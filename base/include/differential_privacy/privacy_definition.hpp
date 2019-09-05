@@ -1,0 +1,10 @@
+
+#ifndef DIFFERENTIAL_PRIVACY_PRIVACY_DEFINITION_HPP
+#define DIFFERENTIAL_PRIVACY_PRIVACY_DEFINITION_HPP
+
+class PrivacyDefinition {
+public:
+    std::string function;
+};
+
+#endif //DIFFERENTIAL_PRIVACY_PRIVACY_DEFINITION_HPP
