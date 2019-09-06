@@ -1,6 +1,4 @@
-#include "../include/differential_privacy/base.hpp"
-#include <Eigen/Dense>
-#include <iostream>
+#include "../include/differential_privacy/components.hpp"
 #include <cmath>
 #include <utility>
 
@@ -24,6 +22,15 @@ bool Component::get_will_release() {
 std::string Component::get_name() {
     return this->_name;
 }
+
+std::list<DatasourceTag>* Component::get_sources() {
+    auto* sources = new std::list<std::pair<std::string, std::string>>();
+    for (Component child : *this->_children)
+        for (const auto& source : *child.get_sources())
+            sources->push_back(source);
+    return sources;
+}
+
 double Component::get_epsilon() {
     if (!std::isnan(this->_epsilon)) return this->_epsilon;
     double total = 0;
@@ -36,11 +43,21 @@ double Component::get_epsilon() {
     return total;
 }
 
+std::list<Component> Component::get_children() {
+    return *this->_children;
+}
 Aggregate::Aggregate(Component child) : Component(&child) {}
 Transform::Transform(Component child) : Component(&child) {}
 Mechanism::Mechanism(Component child) : Component(&child) {}
-Datasource::Datasource(std::string tag) : Component(), tag{std::move(tag)} {}
+
+Datasource::Datasource(std::string dataset, std::string column) : Component(), _dataset{std::move(dataset)}, _column{std::move(column)} {}
+std::list<DatasourceTag>* Datasource::get_sources() {
+    return new std::list<DatasourceTag>({{this->_dataset, this->_column}});
+}
+
+CountVectorize::CountVectorize(Component child) : Component(&child) {};
 
 bool Analysis::add(const Component& child) {
     this->_children->push_back(child);
+    return false;
 }

@@ -3,7 +3,7 @@
 //
 
 #include "../include/differential_privacy/mechanisms.hpp"
-#include "../include/differential_privacy/base.hpp"
+#include "../include/differential_privacy/components.hpp"
 #include <utility>
 
 Laplace::Laplace(Component child) : Mechanism(std::move(child)) {}

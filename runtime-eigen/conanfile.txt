@@ -1,4 +1,5 @@
 [requires]
+eigen/3.3.7@conan/stable
 
 [generators]
 cmake

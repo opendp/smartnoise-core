@@ -13,6 +13,7 @@ This is a proposal for what a centralized differential privacy library might loo
 4. Install dependencies for each project  
 ```
 python -m pip install conan  
+conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
 . ./dependencies.sh
 ```
 

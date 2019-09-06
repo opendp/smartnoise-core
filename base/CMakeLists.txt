@@ -10,7 +10,7 @@ conan_basic_setup()
 # define files to use in build
 set(SOURCE_FILES
         src/aggregations.cpp
-        src/base.cpp
+        src/components.cpp
         src/mechanisms.cpp
         src/pipelines.cpp
         src/privacy_definition.cpp
@@ -18,7 +18,7 @@ set(SOURCE_FILES
         )
 set(HEADER_FILES
         include/differential_privacy/aggregations.hpp
-        include/differential_privacy/base.hpp
+        include/differential_privacy/components.hpp
         include/differential_privacy/mechanisms.hpp
         include/differential_privacy/pipelines.hpp
         include/differential_privacy/privacy_definition.hpp

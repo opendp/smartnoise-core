@@ -1,7 +1,7 @@
 #ifndef DIFFERENTIAL_PRIVACY_AGGREGATIONS_HPP
 #define DIFFERENTIAL_PRIVACY_AGGREGATIONS_HPP
 
-#include "base.hpp"
+#include "components.hpp"
 
 class Mean : public Aggregate {
 public:

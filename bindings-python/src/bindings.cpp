@@ -1,5 +1,5 @@
 #include <pybind11/pybind11.h>
-#include "../../base/include/differential_privacy/base.hpp"
+#include "../../base/include/differential_privacy/components.hpp"
 
 // following examples from:
 // https://pybind11.readthedocs.io/en/stable/classes.html

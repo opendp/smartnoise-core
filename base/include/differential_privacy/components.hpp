@@ -1,17 +1,17 @@
-#ifndef DIFFERENTIAL_PRIVACY_BASE_HPP
-#define DIFFERENTIAL_PRIVACY_BASE_HPP
+#ifndef DIFFERENTIAL_PRIVACY_COMPONENTS_HPP
+#define DIFFERENTIAL_PRIVACY_COMPONENTS_HPP
 
 #include <list>
 #include <string>
 #include "privacy_definition.hpp"
-#include "iostream"
+
+typedef std::pair<std::string, std::string> DatasourceTag;
 
 // most elementary primitive
 class Component {
 protected:
     std::string _name;
     bool _will_release = false;
-    bool _privatizer = false;
 
     double _epsilon = std::numeric_limits<double>::quiet_NaN();
     std::list<Component>* _children = nullptr;
@@ -22,8 +22,10 @@ public:
     explicit Component(std::list<Component>* children);
 
     virtual std::string get_name();
+    virtual std::list<DatasourceTag>* get_sources();
 
     double get_epsilon();
+    std::list<Component> get_children();
 
     bool set_will_release(bool state);
     bool get_will_release();
@@ -31,7 +33,7 @@ public:
 
 // components that obfuscate data
 class Mechanism : public Component {
-    bool _privatizer = true;
+    PrivacyDefinition _privacy_definition;
 public:
     explicit Mechanism(Component child);
 };
@@ -54,14 +56,20 @@ public:
     explicit Analysis(Component child) : Component(&child) {};
     explicit Analysis(std::list<Component>* children) : Component(children) {};
     bool add(const Component& child);
-    PrivacyDefinition privacy_definition;
 };
 
 // component that identifies which data input to use
 class Datasource : public Component {
-    std::string tag;
+    std::string _dataset;
+    std::string _column;
 public:
-    explicit Datasource(std::string tag);
+    explicit Datasource(std::string dataset, std::string column);
+    std::list<DatasourceTag>* get_sources() override;
 };
 
-#endif //DIFFERENTIAL_PRIVACY_BASE_HPP
+class CountVectorize : public Component {
+public:
+    explicit CountVectorize(Component child);
+};
+
+#endif //DIFFERENTIAL_PRIVACY_COMPONENTS_HPP
