@@ -1,9 +1,7 @@
-//
-// Created by shoe on 9/4/19.
-//
-
 #include "../include/differential_privacy/mechanisms.hpp"
 #include "../include/differential_privacy/components.hpp"
-#include <utility>
 
-Laplace::Laplace(Component child) : Mechanism(std::move(child)) {}
+Laplace::Laplace(Component* child) : Mechanism(child) {}
+std::string Laplace::get_name() {
+    return "laplace";
+}

@@ -5,6 +5,6 @@
 #include "../include/differential_privacy/aggregations.hpp"
 #include "../include/differential_privacy/mechanisms.hpp"
 
-Laplace DPMean(Component child, std::list<double> bounds) {
-    return Laplace(Mean(Clip(Impute(std::move(child)), std::move(bounds))));
+Laplace* DPMean(Component* child, std::list<double> bounds) {
+    return new Laplace(new Mean(new Clip(new Impute(child), std::move(bounds))));
 }

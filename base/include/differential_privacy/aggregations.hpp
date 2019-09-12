@@ -5,7 +5,8 @@
 
 class Mean : public Aggregate {
 public:
-    Mean(Component child);
+    std::string get_name() override;
+    Mean(Component* child);
 };
 
 #endif //DIFFERENTIAL_PRIVACY_AGGREGATIONS_HPP

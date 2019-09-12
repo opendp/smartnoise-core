@@ -4,14 +4,18 @@
 #include "components.hpp"
 
 class Impute : public Transform {
+protected:
+    std::string _name = "impute";
 public:
-    explicit Impute(Component child);
+    explicit Impute(Component* child);
 };
 
 class Clip : public Transform {
-    std::list<double> bounds;
+protected:
+    std::list<double> _bounds;
+    std::string _name = "clip";
 public:
-    explicit Clip(Component child, std::list<double> bounds);
+    explicit Clip(Component* child, std::list<double> bounds);
 };
 
 #endif //DIFFERENTIAL_PRIVACY_TRANSFORMS_HPP

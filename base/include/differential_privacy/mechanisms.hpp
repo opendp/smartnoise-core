@@ -5,7 +5,8 @@
 
 class Laplace : public Mechanism {
 public:
-    explicit Laplace(Component child);
+    std::string get_name() override;
+    explicit Laplace(Component* child);
 };
 
 #endif //DIFFERENTIAL_PRIVACY_MECHANISMS_HPP

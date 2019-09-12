@@ -5,8 +5,8 @@
 #include "differential_privacy_runtime_eigen/base.hpp"
 
 TEST_CASE("Mean", "[Statistics]") {
-    Datasource datasource = Datasource("dataset_1", "column_1");
-    Component mean = (Component) DPMean(datasource, std::list<double>({0., 1.}));
+    auto* datasource = new Datasource("dataset_1", "column_1");
+    auto mean = DPMean(datasource, std::list<double>({0., 1.}));
 
     std::map<std::string, std::map<std::string, std::vector<double>>> data = {
             {"dataset_1", {

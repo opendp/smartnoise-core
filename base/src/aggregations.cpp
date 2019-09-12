@@ -1,5 +1,7 @@
 #include "../include/differential_privacy/aggregations.hpp"
 
-#include <utility>
+Mean::Mean(Component* child) : Aggregate(child) {}
 
-Mean::Mean(Component child) : Aggregate(std::move(child)) {}
+std::string Mean::get_name() {
+    return "mean";
+}
