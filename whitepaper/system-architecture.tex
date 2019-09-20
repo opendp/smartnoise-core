@@ -1,0 +1,236 @@
+%\def\draft{1}
+
+\documentclass[11pt]{article}
+\usepackage[reqno]{amsmath}
+\usepackage{natbib,amssymb,amsthm,graphicx,verbatim,url,verbatim}
+\usepackage{color}
+\usepackage{url}
+\usepackage{rotating}
+\usepackage{setspace}
+\usepackage[lofdepth,lotdepth]{subfig}
+\usepackage[top=1in, right=1in, left=1in, bottom=1.6in]{geometry}
+\usepackage{tikz}
+
+\usepackage{color}\definecolor{spot}{rgb}{0.6,0,0}
+\usepackage[pdftex, bookmarksopen=true, bookmarksnumbered=true,
+  pdfstartview=FitH, breaklinks=true, urlbordercolor={0 1 0},
+  citebordercolor={0 0 1}, colorlinks=true,
+            citecolor=spot,
+            linkcolor=spot,
+            urlcolor=spot,
+            pdfauthor={Michael Shoemate},
+pdftitle={Title}]{hyperref}
+\usetikzlibrary {positioning}
+
+
+\begin{document}
+
+\title{Privacy System Design Proposal}
+\author{Michael Shoemate}
+
+\maketitle
+
+\begin{abstract}
+A privacy preserving system design is proposed, containing abstractions for a statistical analysis and differentially private release. The statistical analysis is a computational graph and privacy definition. The system has three layers, one each for analysis construction, validation, and execution. Parsers and bindings may be written for analysis construction, and runtimes for analysis execution. Analysis verification is centralized in a core C++ library. The primary runtime is written in C++.
+\end{abstract}
+
+\section{Overview}
+\paragraph{Goals}  The goal of this system is to provide a flexible framework on which
+\begin{itemize}
+    \item Researchers can contribute new algorithms flexible enough to encompass a broad range of topics and approaches to differential privacy, 
+    \item conceptually organized enough that peer researchers and/or automated validation systems can more easily review contributed work 
+    \item and which allows both Analysts using the library and System Builders creating applications to make use of vetted differentially private algorithms with a low bar with languages native to their workflow.
+\end{itemize}
+
+
+% \paragraph{Components}
+
+% The library consists of:
+% \begin{itemize}
+% \item \textbf{components} Data in, data out. Individual nodes in a computational graph.
+% \item \textbf{operators} Components representing data manipulations.
+% \item \textbf{statistics} Components with data input, and releasable data output.
+% \item \textbf{mechanisms} Nondeterministic components.
+% \end{itemize}
+
+%\paragraph{Requirements}
+
+\section{Abstractions}
+\subsection{Analysis}
+To allow for pre- and post-processing, nested composition and code modularity, an analysis is a computational graph of instances of components. Each component in the analysis graph is either an operator or statistic. An operator may be a transformation, subset or join. The analysis conforms to either a JSON or protobuf schema. No data is stored in the analysis, it is only stored in the release.
+
+\subsection{Release}
+The second primary abstraction is the release. The release is a set of values that are associated with nodes in the accompanying analysis. Entries in a release include the initial variable bounds, the record count and estimated statistics. The types of released statistics may be numeric, string, or even function-valued, depending on the mechanism. Relevant information for a released statistic include the corresponding node id, value, batch, whether the release came from the user or from the runtime, and whether the value is privatized. \\
+
+In some situations it can be useful to evaluate a computational graph to release private data. Three such examples are for evaluating loss functions, filters, and executing graphs across multiple runtimes.
+
+\section{Components}
+A list of components is available at \href{https://bit.ly/privacy_components}{https://bit.ly/privacy\_components}. This list is still in-progress.
+\subsection{Operators}
+Operators, or manipulations, include transformations, subsets, aggregations and joins. Analyses using manipulations are validated using Lipschitz constants in a "stability" framework. Manipulation primitives may also be reused to define arbitrary objective functions for optimization, for filters, or to describe a differentially private release of a function.
+
+\subsection{Mechanisms}
+Mechanisms are building blocks used by statistics, and if placed in an analysis graph, are not capable of privatizing data on their own. Example mechanisms include the laplace mechanism and exponential mechanism.
+
+\subsection{Statistics}
+A statistic contains several components. For example, a "Mean" may be composed of "Sum" and "Divide" components, and a "Differentially Private Mean" composed of "Impute", "Clip", "Mean" and "Laplace" components. A statistic is the only kind of component that can privatize data.
+
+\subsection{Miscellaneous}
+A "Constant" component propagates a value included from a release. A "Literal" component propagates a value included in its constructor. These components are easily hidden from the user.
+
+\section{System Layers}
+\subsection{Analysis Construction}
+An analysis consists of a computational graph and a privacy definition. The computational graph may be constructed via a graphical interface, manually via language bindings, or automatically via a parser. Any such tools emit an analysis and optionally a partial release. The privacy definition is simply a string label.
+
+\subsection{Analysis Validation}
+The C++ validator has two tasks- checking the graph and computing meta-statistics. \\
+
+The validator ensures every path through an analysis graph passes through a privatizing statistic, and that the graph is executable (static type checking). Note that mechanisms are not capable of privatizing data alone; released data must pass through curated plans that include clipping, imputation, and have sensible aggregation/mechanism pairings. In addition to these checks, all primitives in an analysis must support the same privacy definition. For example, resampling may not be supported by concentrated privacy. Optionally checks can be made to ensure N is not being manipulated by the user through the computational graph, by enforcing the the child of N parameters to be of type "Constant". \\
+
+The validator may also compute meta-statistics (accuracy, disclosure risk measures, confidences) from an analysis and partial release, as well as overall epsilon after applying known composition theorems.
+
+\subsection{Analysis Execution}
+The execution layer is the only layer with data access. The execution layer takes an analysis and optionally a partial release, and emits a release. Including the prior release will make sources of randomness across batches deterministic. Protection against timing attacks may be implemented in the execution layer. \\
+
+An implementation of an execution layer is a runtime. A runtime is deployed remotely at the location of the data. Due to the language-agnostic representation of the analysis and release, a runtime may be written in any language, with any framework. The aim for this project is to provide one standard runtime in C++. It still remains possible to support components/algorithms that are only available in, say, Python, via a separate python runtime. In this case, the execution of an analysis/release can take multiple steps, where the analysis is partially evaluated, a release is serialized (including private data), and then passed between runtimes to continue execution.
+
+\section{Examples}
+\textbf{\textit{The JSON samples used in the examples are simplified.}} 
+\subsection{Mean}
+To compute a mean, an analyst would first construct an analysis and a partial release. \\
+1. a partial release:
+\begin{verbatim}
+    {"N": 50, "Minimum": 23, "Maximum": 45}
+\end{verbatim}
+2. an analysis:
+\begin {center}
+\begin {tikzpicture}[-latex ,auto ,node distance =1 cm and 5cm ,on grid ,
+semithick , state/.style ={ draw, minimum width =2 cm}]
+\node[state] (DataSource) {$DataSource$};
+\node[state] (N) [below=of DataSource] {$Constant (N)$};
+\node[state] (Minimum) [below=of N] {$Constant (Minimum)$};
+\node[state] (Maximum) [below=of Minimum] {$Constant (Maximum)$};
+\node[state] (DPMean)  [right=of N] {$DPMean$};
+\path (DataSource) edge (DPMean);
+\path (N) edge (DPMean);
+\path (Minimum) edge (DPMean);
+\path (Maximum) edge (DPMean);
+\end{tikzpicture}
+\end{center}
+The system passes the analysis and release to the validator and gets accuracy estimates.
+\begin{verbatim}
+    {"DPMean": 2.3}
+\end{verbatim}
+The researcher then submits the analysis to a runtime for a new release:
+\begin{verbatim}
+    {"N": 500, "Minimum": 23, "Maximum": 45, "DPMean": 30.2}
+\end{verbatim}
+
+\subsection{Mean with Nesting}
+If the record count is private and the researcher is unable to provide an estimate, then an interactive analysis may be useful. The following metadata is now used. \\
+1. a partial release:
+\begin{verbatim}
+    {}
+\end{verbatim}
+2. an analysis:
+\begin {center}
+\begin {tikzpicture}[-latex ,auto ,node distance =1 cm and 5cm ,on grid ,
+semithick , state/.style ={ draw, minimum width =2 cm}]
+\node[state] (NoisyCount) {$NoisyCount$};
+\node[state] (DataSource) [left=of NoisyCount] {$DataSource$};
+\path (DataSource) edge (NoisyCount);
+\end{tikzpicture}
+\end{center}
+The system passes the analysis and release to the validator for accuracy estimates.
+\begin{verbatim}
+    {"NoisyCount": 8}
+\end{verbatim}
+The researcher submits the analysis to a runtime for a release.
+\begin{verbatim}
+    {"NoisyCount": 502}
+\end{verbatim} 
+The researcher may now interactively extend the analysis with the mean using the estimated record count.
+\begin {center}
+\begin {tikzpicture}[-latex ,auto ,node distance =1 cm and 5cm ,on grid ,
+semithick , state/.style ={ draw, minimum width =2 cm}]
+\node[state] (DataSource) {$DataSource$};
+\node[state] (NoisyCount) [right=of DataSource] {$NoisyCount$};
+\node[state] (Minimum) [below=of NoisyCount] {$Constant (Minimum)$};
+\node[state] (Maximum) [below=of Minimum] {$Constant (Maximum)$};
+\node[state] (DPMean) [right=of Minimum] {$DPMean$};
+\path (DataSource) edge (NoisyCount);
+\path (DataSource) edge (DPMean);
+\path (NoisyCount) edge (DPMean);
+\path (Minimum) edge (DPMean);
+\path (Maximum) edge (DPMean);
+\end{tikzpicture}
+\end{center}
+The system passes the analysis and release to the validator for accuracy estimates.
+\begin{verbatim}
+    {"NoisyCount": 8, "DPMean": 2.3}
+\end{verbatim}
+The researcher submits the analysis to a runtime for a release.
+\begin{verbatim}
+    {
+        "N": 50, "Minimum": 23, "Maximum": 45, 
+        "NoisyCount": 502, "DPMean": 30.2
+    }
+\end{verbatim}
+
+
+\subsection{Mean with Transformation}
+A new analysis is started, with a separate privacy budget. Given the nature of privacy, a computational graph with released statistics is immutable- however, a graph may be extended interactively. \\
+A transformation may be applied before or after statistics. Transformations modify meta-statistics released by the validator, like accuracy and confidence. Preprocess changes to these meta-statistics are tracked via accumulated stability penalties. The following metadata is now used. \\
+1. a partial release:
+\begin{verbatim}
+    {"Offset": 45, "Minimum": 68, "Maximum": 90}
+\end{verbatim}
+2. an analysis:
+\begin {center}
+\begin {tikzpicture}[-latex ,auto ,node distance =1 cm and 4cm ,on grid ,
+semithick , state/.style ={ draw, minimum width =2 cm}]
+
+\node[state] (DataSource) {$DataSource$};
+\node[state] (Constant) [below=of DataSource] {$Constant (Offset)$};
+\node[state] (Add) [right=of DataSource]  {$Add$};
+
+\node[state] (NoisyCount) [right=of Add] {$NoisyCount$};
+\node[state] (Minimum) [below=of NoisyCount] {$Constant (Minimum)$};
+\node[state] (Maximum) [below=of Minimum] {$Constant (Maximum)$};
+
+\node[state] (DPMean) [right =of Minimum] {$DPMean$};
+
+\path (DataSource) edge (Add);
+\path (Constant) edge (Add);
+
+\path (Add) edge (NoisyCount);
+\path (Add) edge (DPMean);
+
+\path (NoisyCount) edge (DPMean);
+\path (Minimum) edge (DPMean);
+\path (Maximum) edge (DPMean);
+\end{tikzpicture}
+\end{center}
+The system passes the analysis and release to the validator for accuracy estimates.
+\begin{verbatim}
+    {"NoisyCount": 8}
+\end{verbatim}
+The researcher submits the analysis to a runtime and receives an updated release.
+\begin{verbatim}
+    {
+        "Offset": 45, "Minimum": 68, "Maximum": 90,
+        "NoisyCount": 498, "DPMean": 74.7
+    }
+\end{verbatim} 
+In this situation, the system was unable to provide accuracy estimates for the DPMean statistic, due to missing dependencies, but was able to release an estimate from the runtime. If accuracy estimates are desired, the release may be passed to the validator to retrieve the DPMean node's accuracy estimates.
+\begin{verbatim}
+    {"NoisyCount": 8, "DPMean": 2.7}
+\end{verbatim}
+One might expect the accuracy estimates for the DPMean node to be the same as the estimates in the previous example, because Add is a stability-1 transformation. However, this is a separate analysis from the previous example, and accuracy is dependent on the random quantity released from the NoisyCount node.
+
+\section{Conclusion}
+Much of the verbosity of the system can be hidden behind language bindings. The bindings can automatically initialize constant nodes, the interfaces between the validator and runtimes can be unified, and languages that support operator overloading can build up function graphs implicitly. The flexibility of the core architecture permits language bindings with seamless construction of verifiable and secure statistical analyses.
+
+The proposal outlines a language-agnostic centralized differential privacy library. The analysis abstraction permits bindings, parsers and runtimes in any language and on any platform, as the need arises. By using modular components, security-critical code is isolated. A single C++ runtime will allow bindings from any language to compute differentially private analyses. At the same time, potential runtimes in SQL, Spark, Dask, Pandas or C++, may implement a subset or all available primitives as desired.
+
+\end{document}
