@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+import "types.proto";
+
+message Analysis {
+    repeated Component graph = 1;
+    PrivacyDefinition definition = 2;
+}
+
+message Component {
+    oneof value {
+        Add add = 1;
+        Laplace laplace = 2;
+    }
+}
+
+message Add {
+    uint32 ID = 1;
+    Component left = 2;
+    Component right = 3;
+}
+
+message Laplace {
+    uint32 ID = 1;
+    Component input = 2;
+}
+
+message Literal {
+    uint32 ID = 1;
+    NDArray ndarray = 2;
+}
+
+message Constant {
+    uint32 ID = 1;
+}

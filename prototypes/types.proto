@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+message NDArray {
+    bytes data = 1;
+
+    // length of axes
+    repeated uint64 shape = 2;
+
+    // order of axes
+    repeated uint64 order = 3;
+
+    // length of element
+    enum type {
+        BYTES = 0; // default value is the unset type
+        DOUBLE = 1;
+        STRING = 2;
+    }
+}
+
+message PrivacyDefinition {
+    // upper bound
+    double epsilon = 1;
+    double delta = 2;
+    double rho = 3;
+
+    enum definition {
+        // (e, 0)-differential privacy
+        PURE = 0;
+
+        // (e, d)-differential privacy
+        APPROXIMATE = 1;
+
+        // https://arxiv.org/pdf/1702.07476.pdf
+        RENYI = 2;
+
+        // https://arxiv.org/pdf/1603.01887.pdf
+        CONCENTRATED = 3;
+
+        // https://arxiv.org/pdf/1905.02383.pdf
+        F = 4;
+    }
+}
