@@ -39,4 +39,9 @@ message PrivacyDefinition {
         // https://arxiv.org/pdf/1905.02383.pdf
         F = 4;
     }
+
+    enum neighboring {
+        SUBSTITUTE = 0;
+        ADD_REMOVE = 1;
+    }
 }

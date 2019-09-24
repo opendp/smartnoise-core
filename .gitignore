@@ -55,3 +55,6 @@ cmake-build-debug
 
 # Build directories for conan library dependencies
 build
+
+# generated protobuf bindings
+*/prototypes

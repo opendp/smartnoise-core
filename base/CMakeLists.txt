@@ -9,25 +9,48 @@ conan_basic_setup()
 
 # define files to use in build
 set(SOURCE_FILES
-        src/aggregations.cpp
-        src/components.cpp
-        src/mechanisms.cpp
-        src/pipelines.cpp
-        src/privacy_definition.cpp
-        src/transforms.cpp
+        src/graph.cpp
         )
 set(HEADER_FILES
-        include/differential_privacy/aggregations.hpp
-        include/differential_privacy/components.hpp
-        include/differential_privacy/mechanisms.hpp
-        include/differential_privacy/pipelines.hpp
-        include/differential_privacy/privacy_definition.hpp
-        include/differential_privacy/transforms.hpp
+        include/differential_privacy/graph.hpp
         )
 
+set(PROTO_FILES
+        ../prototypes/analysis.proto
+        ../prototypes/release.proto
+        ../prototypes/types.proto
+        )
+
+include(FindProtobuf)
+find_package(Protobuf REQUIRED)
+
+# check if protobuf was found
+if(PROTOBUF_FOUND)
+    message ("protobuf found")
+else()
+    message (FATAL_ERROR "Cannot find Protobuf")
+endif()
+
+protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${PROTO_FILES})
+
+# Print path to generated files
+message ("PROTO_SRCS = ${PROTO_SRCS}")
+message ("PROTO_HDRS = ${PROTO_HDRS}")
+
+#add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../prototypes ./prototypes)
+#add_library(prototypes ${PROTO_HEADER} ${PROTO_SRC})
+
 # create shared library
-add_library(differential_privacy SHARED ${SOURCE_FILES} ${HEADER_FILES})
+add_library(differential_privacy SHARED ${PROTO_SRCS} ${PROTO_HDRS} ${SOURCE_FILES} ${HEADER_FILES})
+
+
+target_include_directories(differential_privacy
+    PUBLIC
+    ${PROTOBUF_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_BINARY_DIR}
+    )
+
 # link libraries used from package manager
-target_link_libraries(differential_privacy ${CONAN_LIBS})
+target_link_libraries(differential_privacy PUBLIC ${CONAN_LIBS} ${PROTOBUF_LIBRARIES})
 
 set_target_properties(differential_privacy PROPERTIES VERSION ${PROJECT_VERSION})

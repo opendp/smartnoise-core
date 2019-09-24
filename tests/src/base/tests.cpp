@@ -1,32 +1,17 @@
 #include <catch2/catch.hpp>
-#include <differential_privacy/pipelines.hpp>
-#include <differential_privacy/aggregations.hpp>
-#include "differential_privacy/components.hpp"
+#include <differential_privacy/graph.hpp>
+#include "analysis.pb.h"
 
 #include <iostream>
 
-TEST_CASE("Node_1", "[Component]") {
-    Component node = Component();
-    assert(!node.get_will_release());
-}
-
-TEST_CASE("PrivacyDefinition_1", "[PrivacyDefinition]") {
-    PrivacyDefinition definition = PrivacyDefinition();
-}
-
-TEST_CASE("Analysis_graph", "[Analysis]") {
-    Analysis analysis = Analysis();
-    std::string input_tag = "dataset";
-
-    auto* datasource = new Datasource("dataset_1", "column_1");
-    auto* test = new Mean(datasource);
-    std::cout << "type" << std::endl << test->get_name();
-}
-
-TEST_CASE("Analysis_epsilon", "[Analysis]") {
-    auto* datasource = new Datasource("dataset_1", "column_1");
+TEST_CASE("Validate_1", "[Validate]") {
     auto* analysis = new Analysis();
-    auto* mean = DPMean(datasource, std::list<double>({0., 1.}));
-    analysis->add(mean);
-//    std::cout << "Epsilon: " << analysis.get_epsilon();
+    auto* constant = new Constant();
+
+    constant->set_id(23);
+    Component* graph = analysis->add_graph();
+    graph->set_allocated_constant(constant);
+
+    std::string message = analysis->SerializeAsString();
+    assert(validate(const_cast<char *>(message.c_str())));
 }

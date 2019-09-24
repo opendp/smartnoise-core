@@ -2,9 +2,25 @@
 
 This is a proposal for what a centralized differential privacy library might look like.
 
+## Initial Install
+1. clone the repository 
 
-## Install
-1. Clone this repository `git clone $REPOSITORY_URI`  
+
+    git clone $REPOSITORY_URI
+
+2. Install protobuf compiler. For ubuntu, this is:
+
+
+    sudo snap install protobuf
+
+
+
+## C++ Install
+1. build the protobuf for C++. For ubuntu, this is:
+    
+    
+    protoc --cpp_out=./base/ prototypes/*.proto
+  
 2. Install cmake  
     - https://askubuntu.com/a/865294  
     - re-open terminal after installation  
@@ -17,7 +33,7 @@ conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-co
 . ./dependencies.sh
 ```
 
-## Debug/Release
+### C++ Debug/Release
 1. move into repository `cd $REPOSITORY_PATH`
     - to build all projects, move into root
     - to build a specific project, move into the project folder
@@ -28,3 +44,15 @@ conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-co
 ```
 cmake -DCMAKE_BUILD_TYPE=${DP_BUILD_TYPE:=Debug} ./ -G "Unix Makefiles"
 ```
+
+## Python Install
+1. install dependencies  
+    
+
+    python -m pip install -r bindings-python/requirements.txt
+    
+2. build the protobuf for python. For ubuntu, this is:
+    
+    
+    protoc --python_out=./bindings-python/ prototypes/*.proto
+

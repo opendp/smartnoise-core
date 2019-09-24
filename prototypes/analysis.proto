@@ -9,20 +9,36 @@ message Analysis {
 
 message Component {
     oneof value {
-        Add add = 1;
+        Transformation transformation = 1;
         Laplace laplace = 2;
+        Literal literal = 3;
+        Constant constant = 4;
+        Mean mean = 5;
+        DataSource datasource = 6;
     }
 }
 
-message Add {
+message Transformation {
     uint32 ID = 1;
-    Component left = 2;
-    Component right = 3;
+    string name = 2;
+    map<string, Component> arguments = 3;
+}
+
+message Mean {
+    uint32 ID = 1;
+    string columnID = 2;
+    Component data = 3;
 }
 
 message Laplace {
     uint32 ID = 1;
     Component input = 2;
+}
+
+message DataSource {
+    uint32 ID = 1;
+    string datasetID = 2;
+    string columnID = 3;
 }
 
 message Literal {
