@@ -23,7 +23,7 @@ message PrivacyDefinition {
     double delta = 2;
     double rho = 3;
 
-    enum definition {
+    enum Definition {
         // (e, 0)-differential privacy
         PURE = 0;
 
@@ -39,9 +39,11 @@ message PrivacyDefinition {
         // https://arxiv.org/pdf/1905.02383.pdf
         F = 4;
     }
+    Definition definition = 4;
 
-    enum neighboring {
+    enum Neighboring {
         SUBSTITUTE = 0;
         ADD_REMOVE = 1;
     }
+    Neighboring neighboring = 5;
 }

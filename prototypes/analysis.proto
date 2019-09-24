@@ -3,7 +3,7 @@ syntax = "proto3";
 import "types.proto";
 
 message Analysis {
-    repeated Component graph = 1;
+    map<uint32, Component> graph = 1;
     PrivacyDefinition definition = 2;
 }
 
@@ -19,33 +19,30 @@ message Component {
 }
 
 message Transformation {
-    uint32 ID = 1;
+    map<string, uint32> arguments = 1;
     string name = 2;
-    map<string, Component> arguments = 3;
 }
 
 message Mean {
-    uint32 ID = 1;
+    uint32 argument = 1;
     string columnID = 2;
-    Component data = 3;
 }
 
 message Laplace {
-    uint32 ID = 1;
-    Component input = 2;
+    map<string, uint32> arguments = 1;
+    string columnID = 2;
+    Component input = 3;
 }
 
 message DataSource {
-    uint32 ID = 1;
     string datasetID = 2;
     string columnID = 3;
 }
 
 message Literal {
-    uint32 ID = 1;
     NDArray ndarray = 2;
 }
 
 message Constant {
-    uint32 ID = 1;
+    string name = 1;
 }

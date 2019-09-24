@@ -1,2 +1,3 @@
-prototypes/
+*_pb2.py
 bindings-python.iml
+__pycache__/

@@ -37,9 +37,6 @@ protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${PROTO_FILES})
 message ("PROTO_SRCS = ${PROTO_SRCS}")
 message ("PROTO_HDRS = ${PROTO_HDRS}")
 
-#add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../prototypes ./prototypes)
-#add_library(prototypes ${PROTO_HEADER} ${PROTO_SRC})
-
 # create shared library
 add_library(differential_privacy SHARED ${PROTO_SRCS} ${PROTO_HDRS} ${SOURCE_FILES} ${HEADER_FILES})
 

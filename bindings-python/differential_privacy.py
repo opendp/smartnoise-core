@@ -1,5 +1,8 @@
+# generated from protoc command in README.md
+import analysis_pb2
+import types_pb2
+
 import ctypes
-from prototypes import analysis_pb2
 
 ID_count = 0
 
@@ -12,27 +15,44 @@ def get_id():
 
 data = analysis_pb2.Component(
     datasource=analysis_pb2.DataSource(datasetID='PUMS'))
+data_id = get_id()
 
 constant = analysis_pb2.Component(
     constant=analysis_pb2.Constant(
-        ID=get_id()))
+        name="test"
+    ))
+constant_id = get_id()
 
-data = analysis_pb2.Component(
+transform = analysis_pb2.Component(
     transformation=analysis_pb2.Transformation(
-        ID=get_id(), name="add",
-        arguments={"left": constant, "right": data}))
+        name="add",
+        arguments={"left": data_id, "right": constant_id}))
+transform_id = get_id()
 
-data = analysis_pb2.Component(
+mean = analysis_pb2.Component(
     mean=analysis_pb2.Mean(
-        ID=get_id(),
-        columnID="income",
-        data=data))
+        argument=transform_id,
+        columnID="income"))
+mean_id = get_id()
 
-serialized = data.SerializeToString()
+analysis = analysis_pb2.Analysis(
+    graph={
+        data_id: data,
+        constant_id: constant,
+        transform_id: transform,
+        mean_id: mean
+    },
+    definition=types_pb2.PrivacyDefinition(
+        definition=types_pb2.PrivacyDefinition.Definition.Value('RENYI'),
+        neighboring=types_pb2.PrivacyDefinition.Neighboring.Value('ADD_REMOVE')
+    )
+)
+
+serialized = analysis.SerializeToString()
 # print(analysis_pb2.Component.FromString(serialized))
 
 lib_dp = ctypes.cdll.LoadLibrary('../base/cmake-build-debug/lib/libdifferential_privacy.so')
-lib_dp.validate.argtypes = (ctypes.c_char_p,)
-lib_dp.validate.restype = ctypes.c_bool
+lib_dp.validate_analysis.argtypes = (ctypes.c_char_p,)
+lib_dp.validate_analysis.restype = ctypes.c_bool
 
-print(lib_dp.validate(ctypes.c_char_p(serialized)))
+print(lib_dp.validate_analysis(ctypes.c_char_p(serialized)))

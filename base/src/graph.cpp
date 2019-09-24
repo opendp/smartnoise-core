@@ -5,11 +5,11 @@
 // Uncomment to force error if protobuf versions mismatch
 //GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-signed int validate(char* buffer) {
+signed int validate_analysis(char* analysisBuffer) {
 
-    std::string protoString(buffer);
+    std::string analysisString(analysisBuffer);
     Analysis analysis;
-    analysis.ParseFromString(protoString);
+    analysis.ParseFromString(analysisString);
 
     std::cout << analysis.DebugString();
 
