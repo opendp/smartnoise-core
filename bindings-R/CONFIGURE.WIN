@@ -1,0 +1,12 @@
+where cmake
+
+rm -rf _builds
+
+cmake -H. -B_builds \
+    -DCMAKE_VERBOSE_MAKEFILE=ON \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=_install
+
+cmake --build _builds --target install --config Release
+
+cp _install/lib/dp_R_shim.dll src/ || echo "Failed: dp_R_shim.dll -> src"

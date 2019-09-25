@@ -58,3 +58,7 @@ build
 
 # generated protobuf bindings
 */prototypes
+.Rproj.user
+
+
+*.DS_Store
