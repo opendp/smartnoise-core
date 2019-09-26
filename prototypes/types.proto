@@ -23,7 +23,9 @@ message PrivacyDefinition {
     double delta = 2;
     double rho = 3;
 
-    enum Definition {
+    uint32 group_size = 4;
+
+    enum Distance {
         // (e, 0)-differential privacy
         PURE = 0;
 
@@ -39,11 +41,11 @@ message PrivacyDefinition {
         // https://arxiv.org/pdf/1905.02383.pdf
         F = 4;
     }
-    Definition definition = 4;
+    Distance distance = 5;
 
     enum Neighboring {
         SUBSTITUTE = 0;
         ADD_REMOVE = 1;
     }
-    Neighboring neighboring = 5;
+    Neighboring neighboring = 6;
 }

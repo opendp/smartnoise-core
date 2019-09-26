@@ -43,7 +43,7 @@ analysis = analysis_pb2.Analysis(
         mean_id: mean
     },
     definition=types_pb2.PrivacyDefinition(
-        definition=types_pb2.PrivacyDefinition.Definition.Value('RENYI'),
+        distance=types_pb2.PrivacyDefinition.Definition.Value('RENYI'),
         neighboring=types_pb2.PrivacyDefinition.Neighboring.Value('ADD_REMOVE')
     )
 )
