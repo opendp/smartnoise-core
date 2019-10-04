@@ -3,17 +3,13 @@
 #include "analysis.pb.h"
 
 #include <iostream>
+#include "../../include/tests/main.hpp"
 
 TEST_CASE("Validate_1", "[Validate]") {
-    auto* analysis = new Analysis();
-    auto* constant = new Constant();
-
-    auto* component = new Component();
-    component->set_allocated_constant(constant);
-
-    auto& graph = *analysis->mutable_graph();
-    graph[23] = *component;
+    Analysis* analysis = make_test_analysis();
 
     std::string message = analysis->SerializeAsString();
-    assert(validate_analysis(const_cast<char *>(message.c_str())));
+    std::cout << analysis->DebugString();
+
+    assert(validateAnalysis(&message[0], message.length()));
 }

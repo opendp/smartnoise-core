@@ -1,6 +1,7 @@
 [requires]
 Catch2/2.9.2@catchorg/stable
 protobuf/3.9.1@bincrafters/stable
+eigen/3.3.7@conan/stable
 
 [generators]
 cmake
