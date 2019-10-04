@@ -8,39 +8,39 @@ message Analysis {
 }
 
 message Component {
+    map<string, uint32> arguments = 1;
+
     oneof value {
-        Transformation transformation = 1;
-        Laplace laplace = 2;
-        Literal literal = 3;
-        Constant constant = 4;
-        Mean mean = 5;
-        DataSource datasource = 6;
+        Transformation transformation = 2;
+        Laplace laplace = 3;
+        Literal literal = 4;
+        Constant constant = 5;
+        Mean mean = 6;
+        DataSource datasource = 7;
     }
+
 }
 
 message Transformation {
-    map<string, uint32> arguments = 1;
-    string name = 2;
+    string name = 1;
 }
 
 message Mean {
-    uint32 argument = 1;
-    string columnID = 2;
+    string columnID = 1;
 }
 
 message Laplace {
-    map<string, uint32> arguments = 1;
-    string columnID = 2;
-    Component input = 3;
+    string columnID = 1;
+    Component input = 2;
 }
 
 message DataSource {
-    string datasetID = 2;
-    string columnID = 3;
+    string datasetID = 1;
+    string columnID = 2;
 }
 
 message Literal {
-    NDArray ndarray = 2;
+    NDArray ndarray = 1;
 }
 
 message Constant {
