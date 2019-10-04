@@ -8,5 +8,4 @@
     
     
     cd ${REPOSITORY_DIR}
-    mkdir -p ./bindings-python/prototypes/
-    (cd prototypes && protoc --python_out=../bindings-python/prototypes/ *.proto)
+    (cd prototypes && protoc --python_out=../bindings-python/ *.proto)
