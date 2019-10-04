@@ -29,7 +29,7 @@ set(PROTO_FILES
         ../prototypes/types.proto)
 
 include(FindProtobuf)
-find_package(Protobuf REQUIRED)
+find_package(Protobuf 3.9.0 REQUIRED)
 
 # check if protobuf was found
 if(PROTOBUF_FOUND)
@@ -41,20 +41,22 @@ endif()
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${PROTO_FILES})
 
 # Print path to generated files
-message ("PROTO_SRCS = ${PROTO_SRCS}")
-message ("PROTO_HDRS = ${PROTO_HDRS}")
+#message ("PROTO_SRCS = ${PROTO_SRCS}")
+#message ("PROTO_HDRS = ${PROTO_HDRS}")
 
 # 4. MAKE TARGET
 add_library(differential_privacy_runtime_eigen SHARED
         ${SOURCE_FILES} ${HEADER_FILES}
-        ${PROTO_SRCS} ${PROTO_HDRS})
+        ${PROTO_SRCS} ${PROTO_HDRS}
+        )
 
-target_link_libraries(
-        differential_privacy_runtime_eigen
+#message(${PROTOBUF_INCLUDE_DIRS})
+target_include_directories(differential_privacy_runtime_eigen PUBLIC
+        ${PROTOBUF_INLUDE_DIRS}
+        ${CMAKE_CURRENT_BINARY_DIR})
+
+target_link_libraries(differential_privacy_runtime_eigen PUBLIC
         differential_privacy
+        ${PROTOBUF_LIBRARIES}
         ${CONAN_LIBS})
 
-target_include_directories(differential_privacy_runtime_eigen
-        PUBLIC
-        ${PROTOBUF_INCLUDE_DIRS}
-        ${CMAKE_CURRENT_BINARY_DIR})

@@ -14,6 +14,7 @@ This is a proposal for what a centralized differential privacy library might loo
     sudo snap install protobuf
 
 3. Install cmake (once)  
+    - this can be skipped if building with most IDE's, because the IDE bundles CMake  
     - https://askubuntu.com/a/865294  
     - re-open terminal after installation  
     - ~~sudo apt install cmake~~ is outdated (pinned to the last LTS release)
