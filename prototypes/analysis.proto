@@ -8,7 +8,7 @@ message Analysis {
 }
 
 message Component {
-    map<string, uint32> arguments = 1;
+    map<uint32, string> arguments = 1;
 
     oneof value {
         Transformation transformation = 2;
@@ -26,17 +26,17 @@ message Transformation {
 }
 
 message Mean {
-    string columnID = 1;
+    string column_id = 1;
 }
 
 message Laplace {
-    string columnID = 1;
+    string column_id = 1;
     Component input = 2;
 }
 
 message DataSource {
-    string datasetID = 1;
-    string columnID = 2;
+    string dataset_id = 1;
+    string column_id = 2;
 }
 
 message Literal {

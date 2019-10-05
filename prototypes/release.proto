@@ -3,5 +3,13 @@ syntax = "proto3";
 import "types.proto";
 
 message Release {
-    
+    map<uint32, ReleaseNode> values = 1;
+}
+
+message ReleaseNode {
+	oneof value {
+		double double = 1;
+		string string = 2;
+		NDArray array = 3;
+	}
 }
