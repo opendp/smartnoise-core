@@ -7,34 +7,55 @@
 // Uncomment to force error if protobuf versions mismatch
 //GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-signed int validateAnalysis(char* analysisBuffer, size_t length) {
+unsigned int validateAnalysis(char* analysisBuffer, size_t analysisLength) {
 
-    std::string analysisString(analysisBuffer, length);
+    std::string analysisString(analysisBuffer, analysisLength);
     Analysis analysis;
     analysis.ParseFromString(analysisString);
 
     bool validity = true;
     if (!checkAllPathsPrivatized(analysis)) validity = false;
 
+    // check that this function works
+    toGraph(analysis);
+
     google::protobuf::ShutdownProtobufLibrary();
     return validity;
 }
 
+double computeEpsilon(char* analysisBuffer, size_t analysisLength) {
+
+    std::string analysisString(analysisBuffer, analysisLength);
+    Analysis analysis;
+    analysis.ParseFromString(analysisString);
+
+    // TODO: compute epsilon
+    return 23.2;
+}
+
+char* generateReport(
+        char* analysisBuffer, size_t analysisLength,
+        char* releaseBuffer, size_t releaseLength) {
+
+    std::string reportString(R"({"message": "this is a release in the json schema format"})");
+    return &reportString[0];
+}
+
 std::set<unsigned int> getSinks(const Analysis& analysis) {
     auto nodeIds = std::set<unsigned int>();
-    for (const std::pair<unsigned int, Component>& nodePair : analysis.graph())
+    for (const auto& nodePair : analysis.graph())
         nodeIds.insert(nodePair.first);
 
-    for (const std::pair<unsigned int, Component>& node : analysis.graph())
-        for (const std::pair<std::string, unsigned int>& argument : node.second.arguments())
-            nodeIds.erase(argument.second);
+    for (const auto& nodePair : analysis.graph())
+        for (const auto& argumentPair : nodePair.second.arguments())
+            nodeIds.erase(argumentPair.first);
 
     return nodeIds;
 }
 
 std::set<unsigned int> getSources(const Analysis& analysis) {
     auto nodeIds = std::set<unsigned int>();
-    for (const std::pair<unsigned int, Component>& nodePair : analysis.graph()) {
+    for (const auto& nodePair : analysis.graph()) {
         if (nodePair.second.arguments_size() > 0) continue;
         nodeIds.insert(nodePair.first);
     }
@@ -58,7 +79,7 @@ std::set<unsigned int> getReleaseNodes(Analysis analysis) {
             releaseNodeIds.insert(nodeId);
         else
             for (const auto& argumentPair : component.arguments())
-                nodeQueue.push(argumentPair.second);
+                nodeQueue.push(argumentPair.first);
     }
 
     return releaseNodeIds;
@@ -93,4 +114,24 @@ bool is_disjoint(const Set1 &set1, const Set2 &set2) {
     }
 
     return true;
+}
+
+DirectedGraph toGraph(const Analysis& analysis) {
+    DirectedGraph graph;
+
+    typedef boost::graph_traits<DirectedGraph>::vertex_descriptor Descriptor;
+
+    std::map<unsigned int, Descriptor> descriptors;
+    for (const auto& nodePair : analysis.graph()) {
+        Descriptor descriptor = graph.add_vertex(nodePair.second);
+        descriptors[nodePair.first] = descriptor;
+    }
+
+    for (const auto& nodePair : analysis.graph()) {
+        auto component = nodePair.second;
+        for (const auto& argumentPair : component.arguments())
+            graph.add_edge(descriptors[nodePair.first], descriptors[argumentPair.first]);
+    }
+
+    return graph;
 }
