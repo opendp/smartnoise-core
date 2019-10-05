@@ -94,6 +94,17 @@ The execution layer is the only layer with data access. The execution layer take
 
 An implementation of an execution layer is a runtime. A runtime is deployed remotely at the location of the data. Due to the language-agnostic representation of the analysis and release, a runtime may be written in any language, with any framework. The aim for this project is to provide one standard runtime in C++. It still remains possible to support components/algorithms that are only available in, say, Python, via a separate python runtime. In this case, the execution of an analysis/release can take multiple steps, where the analysis is partially evaluated, a release is serialized (including private data), and then passed between runtimes to continue execution.
 
+% \begin {center}
+% \begin {tikzpicture}[-latex ,auto ,node distance =1 cm and 5cm ,on grid ,
+% semithick , state/.style={ draw, minimum width =2 cm}]
+% \node[state] (Bindings-Python) {$Python Bindings$};
+% \node[state] (Bindings-R) [below=of Bindings-Python] {$R Bindings$};
+% \node[state] (Validator) [right above=of Bindings-Python] {$Validator$};
+% \node[state] (Runtime-Eigen) [below=of Validator] {$Eigen Runtime$};
+% \node[state] (Runtime-SQL) [right=of Runtime-Eigen] {$SQL Runtime$};
+% \end{tikzpicture}
+% \end{center}
+
 \section{Examples}
 \textbf{\textit{The JSON samples used in the examples are simplified.}} 
 \subsection{Mean}
