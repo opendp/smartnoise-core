@@ -1,12 +1,68 @@
 #include "../include/differential_privacy_runtime_eigen/base.hpp"
+#include "../../base/include/differential_privacy/graph.hpp"
 
 #include <iostream>
+#include <queue>
+#include <fstream>
 
-int release(
+#include <boost/graph/directed_graph.hpp>
+
+extern "C" char* release(
         char* analysisBuffer, size_t analysisLength,
         char* releaseBuffer, size_t releaseLength,
-        int m, int n, const double** data, char** columns,
-        char* responseBuffer, size_t responseLength) {
+        char* dataPath, size_t dataPathLength,
+        char* header, size_t headerLength) {
+
+    // parse analysis from protocol buffer
+    std::string analysisString(analysisBuffer, analysisLength);
+    Analysis analysisProto;
+    analysisProto.ParseFromString(analysisString);
+
+    std::string releaseString(releaseBuffer, releaseLength);
+    Release releaseProto;
+    releaseProto.ParseFromString(releaseString);
+
+    // construct eigen matrix from double pointers
+    auto matrix = load_csv<Eigen::MatrixXd>(std::string(dataPath, dataPathLength));
+
+    // get column names from char pointer
+    auto* columns = new std::vector<std::string>();
+    std::string headerStr(header, headerLength);
+
+    size_t position = 0;
+    std::string delimiter(",");
+
+    while ((position = headerStr.find(delimiter)) != std::string::npos) {
+        columns->push_back(headerStr.substr(0, position));
+        headerStr.erase(0, position + delimiter.length());
+    }
+
+    // DEBUGGING
+    std::cout << "Analysis:\n" << analysisProto.DebugString();
+    std::cout << "Release:\n" << releaseProto.DebugString();
+    for (const auto & column : *columns) std::cout << column << ' ';
+    std::cout << std::endl <<  matrix;
+
+
+    // EXECUTION
+    Release releaseProtoAfter = execute(analysisProto, releaseProto, matrix, *columns);
+
+    std::cout << "Release After:\n" << releaseProtoAfter.DebugString();
+
+    std::string releaseMessage = releaseProtoAfter.SerializeAsString();
+
+    google::protobuf::ShutdownProtobufLibrary();
+    return const_cast<char *>(releaseMessage.c_str());
+
+//    strncpy(responseBuffer, responseBufferRaw, responseLength);
+//    return releaseMessage.length();
+}
+
+extern "C" char* releaseArray(
+        char* analysisBuffer, size_t analysisLength,
+        char* releaseBuffer, size_t releaseLength,
+        int m, int n, const double** data,
+        char* header, size_t headerLength) {
 
     // parse analysis from protocol buffer
     std::string analysisString(analysisBuffer, analysisLength);
@@ -23,36 +79,72 @@ int release(
         for (unsigned int j = 0; j < n; ++j)
             matrix(i, j) = data[i][j];
 
-    // get column names from char pointers
-    auto* colnames = new std::vector<std::string>();
-    for (int i = 0; i < n; ++i) colnames->push_back(std::string(columns[i]));
+    // get column names from char pointer
+    auto* columns = new std::vector<std::string>();
+    std::string headerStr(header, headerLength);
 
+    size_t position = 0;
+    std::string delimiter(",");
+
+    while ((position = headerStr.find(delimiter)) != std::string::npos) {
+        columns->push_back(headerStr.substr(0, position));
+        headerStr.erase(0, position + delimiter.length());
+    }
 
     // DEBUGGING
     std::cout << "Analysis:\n" << analysisProto.DebugString();
     std::cout << "Release:\n" << releaseProto.DebugString();
-    for (int i = 0; i < n; ++i) std::cout << columns[i] << ' ';
+    for (const auto & column : *columns) std::cout << column << ' ';
     std::cout << std::endl <<  matrix;
 
-
     // EXECUTION
-    Release releaseProtoAfter = execute(analysisProto, releaseProto, matrix, *colnames);
+    Release releaseProtoAfter = execute(analysisProto, releaseProto, matrix, *columns);
 
     std::cout << "Release After:\n" << releaseProtoAfter.DebugString();
 
     std::string releaseMessage = releaseProtoAfter.SerializeAsString();
 
     google::protobuf::ShutdownProtobufLibrary();
-    auto* responseBufferRaw = const_cast<char *>(releaseMessage.c_str());
+    return const_cast<char *>(releaseMessage.c_str());
 
-    strncpy(responseBuffer, responseBufferRaw, responseLength);
-    return releaseMessage.length();
+//    strncpy(responseBuffer, responseBufferRaw, responseLength);
+//    return releaseMessage.length();
 }
 
-Release execute(Analysis analysisProto, Release releaseProto, Eigen::MatrixXd data, std::vector<std::string> columns) {
-    google::protobuf::Map<google::protobuf::uint32, Component> graph = analysisProto.graph();
+Release execute(
+        const Analysis& analysis, const Release& release,
+        const Eigen::MatrixXd& data, std::vector<std::string> columns) {
+
+    std::set<unsigned int> sinkIds = getSinks(analysis);
+    std::queue<unsigned int, std::deque<unsigned int>> nodeQueue(
+            std::deque<unsigned int>(sinkIds.begin(), sinkIds.end()));
+
+    DirectedGraph graph = toGraph(analysis);
+    return release;
+}
 
 
+template<typename M>
+M load_csv(const std::string & path) {
+    std::ifstream indata;
+    indata.open(path);
+    std::string line;
+    std::vector<double> values;
+    uint rows = 0;
+    while (std::getline(indata, line)) {
+        std::stringstream lineStream(line);
+        std::string cell;
+        while (std::getline(lineStream, cell, ',')) {
+            values.push_back(std::stod(cell));
+        }
+        ++rows;
+    }
 
-    return releaseProto;
+    typedef const Eigen::Matrix<
+            typename M::Scalar,
+            M::RowsAtCompileTime,
+            M::ColsAtCompileTime,
+            Eigen::RowMajor> MatrixCSV;
+
+    return Eigen::Map<MatrixCSV>(values.data(), rows, values.size()/rows);
 }

@@ -1,5 +1,6 @@
 [requires]
 eigen/3.3.7@conan/stable
+boost_graph/1.69.0@bincrafters/stable
 
 [generators]
 cmake
