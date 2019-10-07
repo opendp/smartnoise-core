@@ -4,6 +4,7 @@
 #include <iostream>
 #include <queue>
 #include <fstream>
+#include <stack>
 
 #include <boost/graph/directed_graph.hpp>
 
@@ -45,7 +46,7 @@ extern "C" char* release(
 
 
     // EXECUTION
-    Release releaseProtoAfter = execute(analysisProto, releaseProto, matrix, *columns);
+    Release releaseProtoAfter = executeGraph(analysisProto, releaseProto, matrix, *columns);
 
     std::cout << "Release After:\n" << releaseProtoAfter.DebugString();
 
@@ -98,7 +99,7 @@ extern "C" char* releaseArray(
     std::cout << std::endl <<  matrix;
 
     // EXECUTION
-    Release releaseProtoAfter = execute(analysisProto, releaseProto, matrix, *columns);
+    Release releaseProtoAfter = executeGraph(analysisProto, releaseProto, matrix, *columns);
 
     std::cout << "Release After:\n" << releaseProtoAfter.DebugString();
 
@@ -111,16 +112,76 @@ extern "C" char* releaseArray(
 //    return releaseMessage.length();
 }
 
-Release execute(
+Release executeGraph(
         const Analysis& analysis, const Release& release,
         const Eigen::MatrixXd& data, std::vector<std::string> columns) {
 
-    std::set<unsigned int> sinkIds = getSinks(analysis);
-    std::queue<unsigned int, std::deque<unsigned int>> nodeQueue(
-            std::deque<unsigned int>(sinkIds.begin(), sinkIds.end()));
+    std::stack<unsigned int> traversal;
+    std::set<unsigned int> nodeIdsRelease = getReleaseNodes(analysis);
+    for (const auto& nodeId : getSinks(analysis)) traversal.push(nodeId);
 
-    DirectedGraph graph = toGraph(analysis);
-    return release;
+    std::map<unsigned int, Evaluation> evaluations = releaseToEvaluations(release);
+    google::protobuf::Map<unsigned int, Component> graph = analysis.graph();
+
+    // track node parents
+    std::map<unsigned int, std::set<unsigned int>> parents;
+    for (const auto& nodePair : graph) {
+        for (const auto& argumentPair : nodePair.second.arguments()) {
+            if (parents.find(argumentPair.first) == parents.end())
+                parents[argumentPair.first] = std::set<unsigned int>();
+            parents[argumentPair.first].insert(nodePair.first);
+        }
+    }
+
+    while (!traversal.empty()) {
+        unsigned int nodeId = traversal.top();
+
+        auto arguments = graph[nodeId].arguments();
+        auto it = arguments.begin();
+
+        bool evaluable = true;
+        while (evaluable && it != arguments.end()) {
+            if (evaluations.find((*it).first) != evaluations.end())
+                evaluable = false;
+        }
+
+        // check if all arguments are available
+        if (it == arguments.end()) {
+            traversal.pop();
+
+            // TODO evaluate node via evaluations map
+
+            evaluations[nodeId] = executeComponent(graph[nodeId], evaluations, data, columns);
+
+            // remove references to parent node, and if empty and private
+            for (const auto& argumentPair : arguments) {
+                parents[argumentPair.first].erase(nodeId);
+                if (parents[argumentPair.first].size() == 0) {
+                    if (nodeIdsRelease.find(argumentPair.first) != nodeIdsRelease.end()) {
+                        evaluations.erase(argumentPair.first);
+                        // parents.erase(argumentPair.first); // optional
+                    }
+                }
+            }
+        }
+
+    }
+    return evaluationsToRelease(evaluations);
+}
+
+Evaluation executeComponent(const Component& component,
+        std::map<unsigned int, Evaluation> evaluations,
+        const Eigen::MatrixXd& data, std::vector<std::string> columns) {
+
+
+}
+
+std::map<unsigned int, Evaluation> releaseToEvaluations(const Release& release) {
+
+}
+
+const Release& evaluationsToRelease(std::map<unsigned int, Evaluation> evaluations) {
+
 }
 
 

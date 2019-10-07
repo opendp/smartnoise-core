@@ -23,11 +23,22 @@ extern "C" {
         int m, int n, const double** data,
         char* header, size_t headerLength);
 }
+class Evaluation {
 
-Release execute(const Analysis& analysis, const Release& release,
-        const Eigen::MatrixXd& data, std::vector<std::string> columns);
+};
 
+
+Release executeGraph(const Analysis& analysis, const Release& release,
+                     const Eigen::MatrixXd& data, std::vector<std::string> columns);
+
+Evaluation executeComponent(const Component& component,
+                            std::map<unsigned int, Evaluation> evaluations,
+                            const Eigen::MatrixXd& data, std::vector<std::string> columns);
 template<typename M>
 M load_csv(const std::string & path);
 
+
+
+std::map<unsigned int, Evaluation> releaseToEvaluations(const Release& release);
+const Release& evaluationsToRelease(std::map<unsigned int, Evaluation> evaluations);
 #endif //DIFFERENTIAL_PRIVACY_BASE_HPP
