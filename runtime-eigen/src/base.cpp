@@ -46,11 +46,11 @@ extern "C" char* release(
 
 
     // EXECUTION
-    Release releaseProtoAfter = executeGraph(analysisProto, releaseProto, matrix, *columns);
+    Release* releaseProtoAfter = executeGraph(analysisProto, releaseProto, matrix, *columns);
 
-    std::cout << "Release After:\n" << releaseProtoAfter.DebugString();
+    std::cout << "Release After:\n" << releaseProtoAfter->DebugString();
 
-    std::string releaseMessage = releaseProtoAfter.SerializeAsString();
+    std::string releaseMessage = releaseProtoAfter->SerializeAsString();
 
     google::protobuf::ShutdownProtobufLibrary();
     return const_cast<char *>(releaseMessage.c_str());
@@ -99,11 +99,11 @@ extern "C" char* releaseArray(
     std::cout << std::endl <<  matrix;
 
     // EXECUTION
-    Release releaseProtoAfter = executeGraph(analysisProto, releaseProto, matrix, *columns);
+    Release* releaseProtoAfter = executeGraph(analysisProto, releaseProto, matrix, *columns);
 
-    std::cout << "Release After:\n" << releaseProtoAfter.DebugString();
+    std::cout << "Release After:\n" << releaseProtoAfter->DebugString();
 
-    std::string releaseMessage = releaseProtoAfter.SerializeAsString();
+    std::string releaseMessage = releaseProtoAfter->SerializeAsString();
 
     google::protobuf::ShutdownProtobufLibrary();
     return const_cast<char *>(releaseMessage.c_str());
@@ -112,7 +112,7 @@ extern "C" char* releaseArray(
 //    return releaseMessage.length();
 }
 
-Release executeGraph(
+Release* executeGraph(
         const Analysis& analysis, const Release& release,
         const Eigen::MatrixXd& data, std::vector<std::string> columns) {
 
@@ -120,16 +120,17 @@ Release executeGraph(
     std::set<unsigned int> nodeIdsRelease = getReleaseNodes(analysis);
     for (const auto& nodeId : getSinks(analysis)) traversal.push(nodeId);
 
-    std::map<unsigned int, Evaluation> evaluations = releaseToEvaluations(release);
+    Evaluations evaluations = releaseToEvaluations(release);
     google::protobuf::Map<unsigned int, Component> graph = analysis.graph();
 
     // track node parents
     std::map<unsigned int, std::set<unsigned int>> parents;
     for (const auto& nodePair : graph) {
-        for (const auto& argumentPair : nodePair.second.arguments()) {
-            if (parents.find(argumentPair.first) == parents.end())
-                parents[argumentPair.first] = std::set<unsigned int>();
-            parents[argumentPair.first].insert(nodePair.first);
+        for (const Argument& argument : nodePair.second.arguments()) {
+            unsigned int argumentNodeId = argument.node_id();
+            if (parents.find(argumentNodeId) == parents.end())
+                parents[argumentNodeId] = std::set<unsigned int>();
+            parents[argumentNodeId].insert(nodePair.first);
         }
     }
 
@@ -141,7 +142,7 @@ Release executeGraph(
 
         bool evaluable = true;
         while (evaluable && it != arguments.end()) {
-            if (evaluations.find((*it).first) != evaluations.end())
+            if (evaluations.find((*it).node_id()) != evaluations.end())
                 evaluable = false;
         }
 
@@ -154,12 +155,13 @@ Release executeGraph(
             evaluations[nodeId] = executeComponent(graph[nodeId], evaluations, data, columns);
 
             // remove references to parent node, and if empty and private
-            for (const auto& argumentPair : arguments) {
-                parents[argumentPair.first].erase(nodeId);
-                if (parents[argumentPair.first].size() == 0) {
-                    if (nodeIdsRelease.find(argumentPair.first) != nodeIdsRelease.end()) {
-                        evaluations.erase(argumentPair.first);
-                        // parents.erase(argumentPair.first); // optional
+            for (const Argument& argument : arguments) {
+                unsigned int argumentNodeId = argument.node_id();
+                parents[argumentNodeId].erase(nodeId);
+                if (parents[argumentNodeId].size() == 0) {
+                    if (nodeIdsRelease.find(argumentNodeId) != nodeIdsRelease.end()) {
+                        evaluations.erase(argumentNodeId);
+                        // parents.erase(argumentNodeId); // optional
                     }
                 }
             }
@@ -169,19 +171,69 @@ Release executeGraph(
     return evaluationsToRelease(evaluations);
 }
 
-Evaluation executeComponent(const Component& component,
-        std::map<unsigned int, Evaluation> evaluations,
-        const Eigen::MatrixXd& data, std::vector<std::string> columns) {
-
-
+std::map<std::string, RuntimeValue> executeComponent(const Component& component, const Evaluations& evaluations,
+                                                     const Eigen::MatrixXd& data, std::vector<std::string> columns) {
 }
 
-std::map<unsigned int, Evaluation> releaseToEvaluations(const Release& release) {
-
+RuntimeValue::RuntimeValue() {}
+RuntimeValue::RuntimeValue(double value) {
+    this->valueScalar = value;
+    this->type = typeScalarNumeric;
 }
 
-const Release& evaluationsToRelease(std::map<unsigned int, Evaluation> evaluations) {
+RuntimeValue::RuntimeValue(Eigen::VectorXd value) {
+    this->valueVector = value;
+    this->type = typeVectorNumeric;
+}
 
+EvaluationDatatype RuntimeValue::getDatatype() {
+    return this->type;
+}
+
+Evaluations releaseToEvaluations(const Release& release) {
+    Evaluations evaluations;
+
+    for (std::pair<unsigned int, ReleaseNode> releaseNodePair : release.values()) {
+        ReleaseNode releaseNode = releaseNodePair.second;
+
+        for (std::pair<std::string, Value> valuePair : releaseNode.values()) {
+            Value value = valuePair.second;
+            if (value.type() == DataType::scalar_numeric)
+                evaluations[releaseNodePair.first][valuePair.first] = RuntimeValue(value.scalar_numeric());;
+
+            // TODO: read in other types of values
+        }
+    }
+
+    return evaluations;
+}
+
+Release* evaluationsToRelease(const Evaluations& evaluations) {
+    auto* release = new Release();
+    auto* releaseValues = release->mutable_values();
+
+    for (const auto& evaluatedNodePair : evaluations) {
+        unsigned int nodeId = evaluatedNodePair.first;
+        ReleaseNode releaseNode;
+        auto releaseNodeValues = releaseNode.mutable_values();
+
+        std::map<std::string, RuntimeValue> evaluatedNodeValues = evaluatedNodePair.second;
+
+        for (const auto& valuePair : evaluatedNodeValues) {
+            std::string argumentName = valuePair.first;
+            RuntimeValue runtimeValue = valuePair.second;
+
+            if (runtimeValue.getDatatype() == EvaluationDatatype::typeScalarNumeric) {
+                Value value;
+                value.set_scalar_numeric(runtimeValue.valueScalar);
+                (*releaseNodeValues)[argumentName] = value;
+            }
+            // TODO: read in other types of values
+        }
+        (*releaseValues)[nodeId] = releaseNode;
+    }
+
+    return release;
 }
 
 

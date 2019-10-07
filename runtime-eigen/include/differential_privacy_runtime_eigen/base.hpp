@@ -23,22 +23,35 @@ extern "C" {
         int m, int n, const double** data,
         char* header, size_t headerLength);
 }
-class Evaluation {
 
+enum EvaluationDatatype {
+    typeScalarNumeric, typeVectorNumeric
 };
 
+class RuntimeValue {
+public:
+    double valueScalar = 0;
+    Eigen::VectorXd valueVector;
+    EvaluationDatatype type;
+    explicit RuntimeValue();
+    explicit RuntimeValue(double value);
+    explicit RuntimeValue(Eigen::VectorXd value);
+    EvaluationDatatype getDatatype();
+};
 
-Release executeGraph(const Analysis& analysis, const Release& release,
+typedef std::map<unsigned int, std::map<std::string, RuntimeValue>> Evaluations;
+
+
+Release* executeGraph(const Analysis& analysis, const Release& release,
                      const Eigen::MatrixXd& data, std::vector<std::string> columns);
 
-Evaluation executeComponent(const Component& component,
-                            std::map<unsigned int, Evaluation> evaluations,
-                            const Eigen::MatrixXd& data, std::vector<std::string> columns);
+std::map<std::string, RuntimeValue> executeComponent(const Component& component, const Evaluations& evaluations,
+                                                     const Eigen::MatrixXd& data, std::vector<std::string> columns);
 template<typename M>
 M load_csv(const std::string & path);
 
 
 
-std::map<unsigned int, Evaluation> releaseToEvaluations(const Release& release);
-const Release& evaluationsToRelease(std::map<unsigned int, Evaluation> evaluations);
+Evaluations releaseToEvaluations(const Release& release);
+Release* evaluationsToRelease(const Evaluations& evaluations);
 #endif //DIFFERENTIAL_PRIVACY_BASE_HPP
