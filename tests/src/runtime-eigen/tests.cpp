@@ -1,8 +1,8 @@
 #include <catch2/catch.hpp>
-#include "differential_privacy/graph.hpp"
 #include "analysis.pb.h"
 
-#include "differential_privacy_runtime_eigen/base.hpp"
+#include <differential_privacy_runtime_eigen/api.hpp>
+
 #include "../../include/tests/main.hpp"
 
 TEST_CASE("Mean", "[Statistics]") {
@@ -23,15 +23,11 @@ TEST_CASE("Mean", "[Statistics]") {
             data[i][j] = (double) i * j;
     }
 
-    std::string colnames[] = {"col_A", "col_B", "col_C"};
+    std::string colnames("col_A,col_B,col_C");
 
-    char** columns = new char*[n];
-    for (int i = 0; i < n; ++i) columns[i] = const_cast<char *>(colnames[i].c_str());
-
-    release(
-            const_cast<char *>(analysisMessage.c_str()),
-            const_cast<char *>(releaseMessage.c_str()),
-            m, n,
-            const_cast<const double**>(data),
-            columns);
+    releaseArray(
+            const_cast<char *>(analysisMessage.c_str()), analysisMessage.size(),
+            const_cast<char *>(releaseMessage.c_str()), releaseMessage.size(),
+            m, n, const_cast<const double**>(data),
+            &colnames[0], colnames.size());
 }

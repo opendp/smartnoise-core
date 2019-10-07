@@ -11,7 +11,7 @@ conan_basic_setup()
 add_library(differential_privacy SHARED IMPORTED)
 set_property(TARGET differential_privacy
         PROPERTY IMPORTED_LOCATION
-        ${PROJECT_SOURCE_DIR}/../base/cmake-build-debug/lib/libdifferential_privacy.so)
+        ${PROJECT_SOURCE_DIR}/../validator-c++/cmake-build-debug/lib/libdifferential_privacy.so)
 
 # import reference runtime
 add_library(differential_privacy_runtime_eigen SHARED IMPORTED)
@@ -19,7 +19,7 @@ set_property(TARGET differential_privacy_runtime_eigen
         PROPERTY IMPORTED_LOCATION
         ${PROJECT_SOURCE_DIR}/../runtime-eigen/cmake-build-debug/lib/libdifferential_privacy_runtime_eigen.so)
 
-include_directories(${PROJECT_SOURCE_DIR}/../base/include/)
+include_directories(${PROJECT_SOURCE_DIR}/../validator-c++/include/)
 include_directories(${PROJECT_SOURCE_DIR}/../runtime-eigen/include/)
 
 set(SOURCE_FILES

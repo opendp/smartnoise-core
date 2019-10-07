@@ -25,12 +25,9 @@ message Add {
 }
 
 message Mean {
-    string column_id = 1;
 }
 
 message Laplace {
-    string column_id = 1;
-    Component input = 2;
 }
 
 message DataSource {
@@ -43,5 +40,4 @@ message Literal {
 }
 
 message Constant {
-    string name = 1;
 }

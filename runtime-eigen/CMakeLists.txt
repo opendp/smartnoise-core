@@ -20,9 +20,9 @@ set(HEADER_FILES
 # import compiled sources libdifferential_privacy.so
 add_library(differential_privacy SHARED IMPORTED)
 set_property(TARGET differential_privacy
-        PROPERTY IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/../base/cmake-build-debug/lib/libdifferential_privacy.so)
+        PROPERTY IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/../validator-c++/cmake-build-debug/lib/libdifferential_privacy.so)
 # include headers
-include_directories(${PROJECT_SOURCE_DIR}/../base/include/)
+include_directories(${PROJECT_SOURCE_DIR}/../validator-c++/include/)
 
 # 3. SETUP PROTOBUF
 set(PROTO_FILES

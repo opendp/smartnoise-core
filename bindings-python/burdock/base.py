@@ -10,7 +10,7 @@ import analysis_pb2
 import types_pb2
 import release_pb2
 
-validator_path = '../base/cmake-build-debug/lib/libdifferential_privacy.so'
+validator_path = '../validator-c++/cmake-build-debug/lib/libdifferential_privacy.so'
 runtime_path = '../runtime-eigen/cmake-build-debug/lib/libdifferential_privacy_runtime_eigen.so'
 
 # load validator functions
@@ -61,7 +61,7 @@ class Component(object):
         return Component('Add', {'left': self, 'right': -other})
 
     def __neg__(self):
-        return Component('Add', {'x': self})
+        return Component('Negate', {'x': self})
 
 
 def mean(x):
