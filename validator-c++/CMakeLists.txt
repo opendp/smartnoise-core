@@ -9,10 +9,12 @@ conan_basic_setup()
 
 # define files to use in build
 set(SOURCE_FILES
-        src/graph.cpp)
+        src/base.cpp
+        src/api.cpp)
 
 set(HEADER_FILES
-        include/differential_privacy/graph.hpp)
+        include/differential_privacy/base.hpp
+        include/differential_privacy/api.hpp)
 
 set(PROTO_FILES
         ../prototypes/analysis.proto

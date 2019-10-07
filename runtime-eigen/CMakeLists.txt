@@ -9,9 +9,11 @@ include(${PROJECT_SOURCE_DIR}/build/conanbuildinfo.cmake)
 conan_basic_setup()
 
 set(SOURCE_FILES
+        src/api.cpp
         src/base.cpp)
 
 set(HEADER_FILES
+        include/differential_privacy_runtime_eigen/api.hpp
         include/differential_privacy_runtime_eigen/base.hpp)
 
 # 2. SETUP VALIDATOR LIBRARY

@@ -1,45 +1,10 @@
-#include "../include/differential_privacy/graph.hpp"
+#include "../include/differential_privacy/base.hpp"
 
 #include "analysis.pb.h"
-#include <iostream>
 #include <queue>
 
 // Uncomment to force error if protobuf versions mismatch
 //GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-unsigned int validateAnalysis(char* analysisBuffer, size_t analysisLength) {
-
-    std::string analysisString(analysisBuffer, analysisLength);
-    Analysis analysis;
-    analysis.ParseFromString(analysisString);
-
-    bool validity = true;
-    if (!checkAllPathsPrivatized(analysis)) validity = false;
-
-    // check that this function works
-    toGraph(analysis);
-
-    google::protobuf::ShutdownProtobufLibrary();
-    return validity;
-}
-
-double computeEpsilon(char* analysisBuffer, size_t analysisLength) {
-
-    std::string analysisString(analysisBuffer, analysisLength);
-    Analysis analysis;
-    analysis.ParseFromString(analysisString);
-
-    // TODO: compute epsilon
-    return 23.2;
-}
-
-char* generateReport(
-        char* analysisBuffer, size_t analysisLength,
-        char* releaseBuffer, size_t releaseLength) {
-
-    std::string reportString(R"({"message": "this is a release in the json schema format"})");
-    return &reportString[0];
-}
 
 std::set<unsigned int> getSinks(const Analysis& analysis) {
     auto nodeIds = std::set<unsigned int>();
@@ -47,8 +12,8 @@ std::set<unsigned int> getSinks(const Analysis& analysis) {
         nodeIds.insert(nodePair.first);
 
     for (const auto& nodePair : analysis.graph())
-        for (const auto& argumentPair : nodePair.second.arguments())
-            nodeIds.erase(argumentPair.first);
+        for (const Argument& argument : nodePair.second.arguments())
+            nodeIds.erase(argument.node_id());
 
     return nodeIds;
 }
@@ -78,8 +43,8 @@ std::set<unsigned int> getReleaseNodes(Analysis analysis) {
         if (isPrivatizer(component))
             releaseNodeIds.insert(nodeId);
         else
-            for (const auto& argumentPair : component.arguments())
-                nodeQueue.push(argumentPair.first);
+            for (const Argument& argument : component.arguments())
+                nodeQueue.push(argument.node_id());
     }
 
     return releaseNodeIds;
@@ -129,8 +94,8 @@ DirectedGraph toGraph(const Analysis& analysis) {
 
     for (const auto& nodePair : analysis.graph()) {
         auto component = nodePair.second;
-        for (const auto& argumentPair : component.arguments())
-            graph.add_edge(descriptors[nodePair.first], descriptors[argumentPair.first]);
+        for (const Argument& argument : component.arguments())
+            graph.add_edge(descriptors[nodePair.first], descriptors[argument.node_id()]);
     }
 
     return graph;
