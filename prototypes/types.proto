@@ -1,5 +1,10 @@
 syntax = "proto3";
 
+message Argument {
+    uint32 node_id = 1;
+    string column = 2;
+}
+
 message NDArray {
     bytes data = 1;
 
@@ -14,6 +19,23 @@ message NDArray {
         BYTES = 0; // default value is the unset type
         DOUBLE = 1;
         STRING = 2;
+    }
+}
+
+enum DataType {
+    scalar_nominal = 0;
+    scalar_numeric = 1;
+    array_numeric = 2;
+}
+
+message Value {
+
+    DataType type = 1;
+
+    oneof value {
+        string scalar_nominal = 2;
+        NDArray array_numeric = 3;
+        double scalar_numeric = 4;
     }
 }
 

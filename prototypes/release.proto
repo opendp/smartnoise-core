@@ -7,9 +7,5 @@ message Release {
 }
 
 message ReleaseNode {
-	oneof value {
-		double double = 1;
-		string string = 2;
-		NDArray array = 3;
-	}
+	map<string, Value> values = 1;
 }
