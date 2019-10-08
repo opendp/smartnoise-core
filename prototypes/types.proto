@@ -1,10 +1,5 @@
 syntax = "proto3";
 
-message Argument {
-    uint32 node_id = 1;
-    string column = 2;
-}
-
 message NDArray {
     bytes data = 1;
 

@@ -10,11 +10,13 @@ conan_basic_setup()
 
 set(SOURCE_FILES
         src/api.cpp
-        src/base.cpp)
+        src/base.cpp
+        src/utilities.cpp)
 
 set(HEADER_FILES
         include/differential_privacy_runtime_eigen/api.hpp
-        include/differential_privacy_runtime_eigen/base.hpp)
+        include/differential_privacy_runtime_eigen/base.hpp
+        include/differential_privacy_runtime_eigen/utilities.hpp)
 
 # 2. SETUP VALIDATOR LIBRARY
 # import compiled sources libdifferential_privacy.so

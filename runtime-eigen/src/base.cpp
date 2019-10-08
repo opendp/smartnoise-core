@@ -20,8 +20,8 @@ Release* executeGraph(
     // track node parents
     std::map<unsigned int, std::set<unsigned int>> parents;
     for (const auto& nodePair : graph) {
-        for (const Argument& argument : nodePair.second.arguments()) {
-            unsigned int argumentNodeId = argument.node_id();
+        for (const auto& argumentPair : nodePair.second.arguments()) {
+            unsigned int argumentNodeId = argumentPair.second.source_node_id();
             if (parents.find(argumentNodeId) == parents.end())
                 parents[argumentNodeId] = std::set<unsigned int>();
             parents[argumentNodeId].insert(nodePair.first);
@@ -36,7 +36,7 @@ Release* executeGraph(
 
         bool evaluable = true;
         while (evaluable && it != arguments.end()) {
-            if (evaluations.find((*it).node_id()) != evaluations.end())
+            if (evaluations.find((*it).second.source_node_id()) != evaluations.end())
                 evaluable = false;
         }
 
@@ -49,8 +49,8 @@ Release* executeGraph(
             evaluations[nodeId] = executeComponent(graph[nodeId], evaluations, data, columns);
 
             // remove references to parent node, and if empty and private
-            for (const Argument& argument : arguments) {
-                unsigned int argumentNodeId = argument.node_id();
+            for (const auto& argumentPair : arguments) {
+                unsigned int argumentNodeId = argumentPair.second.source_node_id();
                 parents[argumentNodeId].erase(nodeId);
                 if (parents[argumentNodeId].size() == 0) {
                     if (nodeIdsRelease.find(argumentNodeId) != nodeIdsRelease.end()) {
@@ -65,8 +65,47 @@ Release* executeGraph(
     return evaluationsToRelease(evaluations);
 }
 
-std::map<std::string, RuntimeValue> executeComponent(const Component& component, const Evaluations& evaluations,
-                                                     const Eigen::MatrixXd& data, std::vector<std::string> columns) {
+std::map<std::string, RuntimeValue> executeComponent(Component component,
+        Evaluations evaluations,
+        const Eigen::MatrixXd& data, std::vector<std::string> columns) {
+
+    auto arguments = component.mutable_arguments();
+
+    if (component.has_datasource()) {
+        DataSource datasource = component.datasource();
+        auto it = std::find(columns.begin(), columns.end(), datasource.column_id());
+        int index = std::distance(columns.begin(), it);
+        RuntimeValue runtimeValue(data.col(index));
+        return std::map<std::string, RuntimeValue>({{"data", runtimeValue}});
+    }
+
+    if (component.has_mean()) {
+        auto argData = arguments->at("data");
+        auto argumentData = evaluations[argData.source_node_id()][argData.source_field()];
+        RuntimeValue runtimeValue(argumentData.valueVector.mean());
+        return std::map<std::string, RuntimeValue>({{"data", runtimeValue}});
+    }
+
+    if (component.has_add()) {
+        auto argLeft = arguments->at("left");
+        auto argRight = arguments->at("right");
+        RuntimeValue runtimeValue(
+                evaluations[argLeft.source_node_id()][argLeft.source_field()].valueVector +
+                evaluations[argRight.source_node_id()][argRight.source_field()].valueVector);
+        return std::map<std::string, RuntimeValue>({{"data", runtimeValue}});
+    }
+
+//    if (component.has_literal()) {
+//        // TODO: unwrap ndarray from protobuf. Just assuming len(shape) == 1
+//        auto dataProto = component.literal().ndarray().data();
+//        Eigen::VectorXd dataVector = {dataProto.begin(), dataProto.end()};
+//        RuntimeValue runtimeValue(dataVector);
+//        return std::map<std::string, RuntimeValue>({{"data", runtimeValue}});
+//    }
+
+    if (component.has_laplace()) {
+
+    }
 }
 
 RuntimeValue::RuntimeValue() {}

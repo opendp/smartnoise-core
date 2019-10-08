@@ -29,7 +29,7 @@ typedef std::map<unsigned int, std::map<std::string, RuntimeValue>> Evaluations;
 Release* executeGraph(const Analysis& analysis, const Release& release,
                      const Eigen::MatrixXd& data, std::vector<std::string> columns);
 
-std::map<std::string, RuntimeValue> executeComponent(const Component& component, const Evaluations& evaluations,
+std::map<std::string, RuntimeValue> executeComponent(Component component, Evaluations evaluations,
                                                      const Eigen::MatrixXd& data, std::vector<std::string> columns);
 Eigen::MatrixXd load_csv(const std::string & path);
 

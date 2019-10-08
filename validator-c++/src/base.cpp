@@ -12,8 +12,8 @@ std::set<unsigned int> getSinks(const Analysis& analysis) {
         nodeIds.insert(nodePair.first);
 
     for (const auto& nodePair : analysis.graph())
-        for (const Argument& argument : nodePair.second.arguments())
-            nodeIds.erase(argument.node_id());
+        for (const auto& argumentPair : nodePair.second.arguments())
+            nodeIds.erase(argumentPair.second.source_node_id());
 
     return nodeIds;
 }
@@ -43,8 +43,8 @@ std::set<unsigned int> getReleaseNodes(Analysis analysis) {
         if (isPrivatizer(component))
             releaseNodeIds.insert(nodeId);
         else
-            for (const Argument& argument : component.arguments())
-                nodeQueue.push(argument.node_id());
+            for (const auto& argument : component.arguments())
+                nodeQueue.push(argument.second.source_node_id());
     }
 
     return releaseNodeIds;
@@ -94,8 +94,8 @@ DirectedGraph toGraph(const Analysis& analysis) {
 
     for (const auto& nodePair : analysis.graph()) {
         auto component = nodePair.second;
-        for (const Argument& argument : component.arguments())
-            graph.add_edge(descriptors[nodePair.first], descriptors[argument.node_id()]);
+        for (const auto& argumentPair : component.arguments())
+            graph.add_edge(descriptors[nodePair.first], descriptors[argumentPair.second.source_node_id()]);
     }
 
     return graph;
