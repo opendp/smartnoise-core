@@ -22,7 +22,14 @@ endif()
 # fix dyld dynamic linker in mac
 set(CMAKE_MACOSX_RPATH OFF)
 
-# import libdifferential_privacy.so
+
+# import protobuf definitions
+add_library(differential_privacy_proto SHARED IMPORTED)
+message(${PROJECT_SOURCE_DIR}/../validator-c++/cmake-build-debug/lib/libdifferential_privacy_proto${EXTENSION})
+set_property(TARGET differential_privacy_proto
+        PROPERTY IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/../validator-c++/cmake-build-debug/lib/libdifferential_privacy_proto${EXTENSION})
+
+# import validator
 add_library(differential_privacy SHARED IMPORTED)
 set_property(TARGET differential_privacy
         PROPERTY IMPORTED_LOCATION
@@ -37,38 +44,25 @@ set_property(TARGET differential_privacy_runtime_eigen
 include_directories(${PROJECT_SOURCE_DIR}/../validator-c++/include/)
 include_directories(${PROJECT_SOURCE_DIR}/../runtime-eigen/include/)
 
-file(GLOB SOURCE_FILES src/*.cpp)
+file(GLOB SOURCE_FILES src/validator-c++/*.cpp src/runtime-eigen/*.cpp src/*.cpp)
 file(GLOB HEADER_FILES include/tests/*.hpp)
 file(GLOB PROTO_FILES ../prototypes/*.proto)
 
 include(FindProtobuf)
 find_package(Protobuf 3.9.0 REQUIRED)
-
-# check if protobuf was found
-if(PROTOBUF_FOUND)
-    message ("protobuf found")
-else()
-    message (FATAL_ERROR "Cannot find Protobuf")
-endif()
-
-protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${PROTO_FILES})
-
-# Print path to generated files
-message ("PROTO_SRCS = ${PROTO_SRCS}")
-message ("PROTO_HDRS = ${PROTO_HDRS}")
+include_directories(${Protobuf_INCLUDE_DIRS})
 
 add_executable(tests
         ${SOURCE_FILES} ${HEADER_FILES}
         ${PROTO_SRCS} ${PROTO_HDRS})
 
 target_include_directories(tests PUBLIC
-        ${PROTOBUF_INCLUDE_DIRS}
         ${CMAKE_CURRENT_BINARY_DIR})
 
 target_link_libraries(tests PUBLIC
+        differential_privacy_proto
         differential_privacy
         differential_privacy_runtime_eigen
-        ${PROTOBUF_LIBRARIES}
         ${CONAN_LIBS})
 
 find_package(Catch2 REQUIRED)

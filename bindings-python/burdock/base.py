@@ -19,9 +19,11 @@ elif platform == "darwin":
 elif platform == "win32":
     extension = ".dll"
 
+protobuf_c_path = '../../validator-c++/cmake-build-debug/lib/libdifferential_privacy_proto' + extension
 validator_path = '../../validator-c++/cmake-build-debug/lib/libdifferential_privacy' + extension
 runtime_path = '../../runtime-eigen/cmake-build-debug/lib/libdifferential_privacy_runtime_eigen' + extension
 
+lib_dp = ctypes.cdll.LoadLibrary(protobuf_c_path)
 # load validator functions
 lib_dp = ctypes.cdll.LoadLibrary(validator_path)
 lib_dp.validateAnalysis.argtypes = (ctypes.c_char_p, ctypes.c_int64)  # input analysis

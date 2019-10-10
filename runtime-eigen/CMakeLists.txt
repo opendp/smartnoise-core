@@ -35,31 +35,19 @@ set_property(TARGET differential_privacy
 # include headers
 include_directories(${PROJECT_SOURCE_DIR}/../validator-c++/include/)
 
-# 3. SETUP PROTOBUF
-file(GLOB PROTO_FILES ../prototypes/*.proto)
+add_library(differential_privacy_proto SHARED IMPORTED)
+message(${PROJECT_SOURCE_DIR}/../validator-c++/cmake-build-debug/lib/libdifferential_privacy_proto${EXTENSION})
+set_property(TARGET differential_privacy_proto
+        PROPERTY IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/../validator-c++/cmake-build-debug/lib/libdifferential_privacy_proto${EXTENSION})
+
 
 include(FindProtobuf)
 find_package(Protobuf 3.9.0 REQUIRED)
 include_directories(${Protobuf_INCLUDE_DIRS})
 
-# check if protobuf was found
-if(PROTOBUF_FOUND)
-    message ("protobuf found")
-else()
-    message (FATAL_ERROR "Cannot find Protobuf")
-endif()
-
-protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${PROTO_FILES})
-
-# Print path to generated files
-#message ("PROTO_SRCS = ${PROTO_SRCS}")
-#message ("PROTO_HDRS = ${PROTO_HDRS}")
-
 # 4. MAKE TARGET
 add_library(differential_privacy_runtime_eigen SHARED
-        ${SOURCE_FILES} ${HEADER_FILES}
-        ${PROTO_SRCS} ${PROTO_HDRS}
-        )
+        ${SOURCE_FILES} ${HEADER_FILES})
 
 #message(${PROTOBUF_INCLUDE_DIRS})
 target_include_directories(differential_privacy_runtime_eigen PUBLIC
@@ -67,6 +55,7 @@ target_include_directories(differential_privacy_runtime_eigen PUBLIC
         ${CMAKE_CURRENT_BINARY_DIR})
 
 target_link_libraries(differential_privacy_runtime_eigen PUBLIC
+        differential_privacy_proto
         differential_privacy
         ${PROTOBUF_LIBRARIES}
         ${CONAN_LIBS})
