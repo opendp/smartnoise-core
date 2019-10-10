@@ -51,10 +51,11 @@ file(GLOB PROTO_FILES ../prototypes/*.proto)
 include(FindProtobuf)
 find_package(Protobuf 3.9.0 REQUIRED)
 include_directories(${Protobuf_INCLUDE_DIRS})
+file(GLOB PROTO_FILES ../prototypes/*.proto)
+protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${PROTO_FILES})
 
 add_executable(tests
-        ${SOURCE_FILES} ${HEADER_FILES}
-        ${PROTO_SRCS} ${PROTO_HDRS})
+        ${SOURCE_FILES} ${HEADER_FILES} ${PROTO_HDRS})
 
 target_include_directories(tests PUBLIC
         ${CMAKE_CURRENT_BINARY_DIR})

@@ -8,18 +8,18 @@ This is a proposal for what a centralized differential privacy library might loo
 
     git clone $REPOSITORY_URI
 
-2. Install protobuf compiler from source
-    Mac:
-        - install xcode `sudo xcode-select --install`
-        - install macports https://www.macports.org/install.php
-        - install unix make tools `sudo /opt/local/bin/port install autoconf automake libtool`
-        - continue on with the Ubuntu install directions
-    Ubuntu:
-        - download the "all" Github release. Use version 3.9.x (because of conan)
-          `https://github.com/protocolbuffers/protobuf/releases/download/v3.9.1/protobuf-all-3.9.1.zip`
-        - Follow the Protobuf instructions, starting from `./configure`
-          `https://github.com/protocolbuffers/protobuf/blob/master/src/README.md`
-          NOTE: move to a directory without spaces in the path
+2. Install protobuf compiler from source  
+    Mac:  
+        - install xcode `sudo xcode-select --install`  
+        - install macports https://www.macports.org/install.php  
+        - install unix make tools `sudo /opt/local/bin/port install autoconf automake libtool`  
+        - continue on with the Ubuntu install directions  
+    Ubuntu:  
+        - download the "all" Github release. Use version 3.9.x (because of conan)  
+          `https://github.com/protocolbuffers/protobuf/releases/download/v3.9.1/protobuf-all-3.9.1.zip`  
+        - Follow the Protobuf instructions, starting from `./configure`  
+          `https://github.com/protocolbuffers/protobuf/blob/master/src/README.md`  
+          NOTE: move to a directory without spaces in the path  
 
 
 3. Install cmake (once, optional)  
@@ -37,7 +37,10 @@ conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-co
 ```
 
 5. Build C++ projects (after every C++ code modification)
-    Opening a subproject in an IDE will load the CMakeLists automatically into run configurations.  
+    Opening a subproject in an IDE will load the CMakeLists automatically into run configurations.
+    NOTE: shared libraries only need to be built, not run- look for artifacts in `cmake-build-debug/lib/`
+    NOTE: code completion on protobuf classes are only as current as the last compilation, when their sources are generated
+
     Alternatively, to manually build:  
     - move into repository `cd $REPOSITORY_PATH`
         * to build all projects, stay in root

@@ -19,9 +19,9 @@ elif platform == "darwin":
 elif platform == "win32":
     extension = ".dll"
 
-protobuf_c_path = '../../validator-c++/cmake-build-debug/lib/libdifferential_privacy_proto' + extension
-validator_path = '../../validator-c++/cmake-build-debug/lib/libdifferential_privacy' + extension
-runtime_path = '../../runtime-eigen/cmake-build-debug/lib/libdifferential_privacy_runtime_eigen' + extension
+protobuf_c_path = '../validator-c++/cmake-build-debug/lib/libdifferential_privacy_proto' + extension
+validator_path = '../validator-c++/cmake-build-debug/lib/libdifferential_privacy' + extension
+runtime_path = '../runtime-eigen/cmake-build-debug/lib/libdifferential_privacy_runtime_eigen' + extension
 
 lib_dp = ctypes.cdll.LoadLibrary(protobuf_c_path)
 # load validator functions
@@ -58,7 +58,7 @@ lib_runtime.releaseArray.restype = ctypes.c_char_p
 class Component(object):
     def __init__(self, name: str, arguments: dict = None, options: dict = None):
         self.name: str = name
-        self.arguments: dict = arguments
+        self.arguments: dict = arguments or {}
         self.options: dict = options
 
         global context
@@ -86,7 +86,7 @@ class Analysis(object):
         self.distance: str = distance
         self.neighboring: str = neighboring
 
-        self._context_cache
+        self._context_cache = None
 
     def _make_analysis_proto(self):
 
@@ -118,9 +118,13 @@ class Analysis(object):
 
             vertices[component_id] = analysis_pb2.Component(**{
                 'arguments': {
-                    enqueue(component): name for name, component in component.arguments.items()
+                    name: analysis_pb2.Component.Field(
+                        source_node_id=enqueue(component_child),
+                        # TODO: this is not always necessarily data! if a component has multiple outputs...
+                        source_field="data"
+                    ) for name, component_child in component.arguments.items()
                 },
-                component.name.toLower():
+                component.name.lower():
                     getattr(analysis_pb2, component.name)(**(component.options or {}))
             })
 
@@ -193,6 +197,7 @@ class Analysis(object):
         global context
         self._context = context
         context = self
+        return context
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         global context

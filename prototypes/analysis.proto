@@ -42,6 +42,8 @@ message DataSource {
 
 message Literal {
     NDArray ndarray = 1;
+    double numeric = 2;
+    string nominal = 3;
 }
 
 message Constant {

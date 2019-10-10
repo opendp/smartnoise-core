@@ -90,22 +90,32 @@ std::map<std::string, RuntimeValue> executeComponent(Component component,
         auto argLeft = arguments->at("left");
         auto argRight = arguments->at("right");
         RuntimeValue runtimeValue(
-                evaluations[argLeft.source_node_id()][argLeft.source_field()].valueVector +
-                evaluations[argRight.source_node_id()][argRight.source_field()].valueVector);
+                evaluations[argLeft.source_node_id()][argLeft.source_field()] +
+                evaluations[argRight.source_node_id()][argRight.source_field()]);
         return std::map<std::string, RuntimeValue>({{"data", runtimeValue}});
     }
 
-//    if (component.has_literal()) {
-//        // TODO: unwrap ndarray from protobuf. Just assuming len(shape) == 1
-//        auto dataProto = component.literal().ndarray().data();
-//        Eigen::VectorXd dataVector = {dataProto.begin(), dataProto.end()};
-//        RuntimeValue runtimeValue(dataVector);
-//        return std::map<std::string, RuntimeValue>({{"data", runtimeValue}});
-//    }
+    if (component.has_literal()) {
+        auto literalProto = component.literal();
+
+        RuntimeValue* runtimeValue = nullptr;
+        if (literalProto.has_ndarray()) {
+            // TODO: unwrap ndarray from protobuf. Just assuming len(shape) == 1
+//            auto dataProto = literalProto.ndarray().data();
+//            Eigen::VectorXd dataVector = {dataProto.begin(), dataProto.end()};
+//            runtimeValue = new RuntimeValue(dataVector);
+        }
+        else {
+            runtimeValue = new RuntimeValue(literalProto.numeric());
+        }
+        return std::map<std::string, RuntimeValue>({{"data", *runtimeValue}});
+    }
 
     if (component.has_laplace()) {
 
     }
+
+    return std::map<std::string, RuntimeValue>();
 }
 
 RuntimeValue::RuntimeValue() {}
@@ -121,6 +131,22 @@ RuntimeValue::RuntimeValue(Eigen::VectorXd value) {
 
 EvaluationDatatype RuntimeValue::getDatatype() {
     return this->type;
+}
+RuntimeValue RuntimeValue::operator+(RuntimeValue right) {
+    // TODO: code small here, enumerating all the cases, but my C++ is rusty
+    if (this->getDatatype() == EvaluationDatatype::typeScalarNumeric && right.getDatatype() == EvaluationDatatype::typeScalarNumeric) {
+        return RuntimeValue(this->valueScalar + right.valueScalar);
+    }
+    if (this->getDatatype() == EvaluationDatatype::typeScalarNumeric && right.getDatatype() == EvaluationDatatype::typeVectorNumeric) {
+        return RuntimeValue(this->valueScalar + right.valueVector.array());
+    }
+    if (this->getDatatype() == EvaluationDatatype::typeVectorNumeric && right.getDatatype() == EvaluationDatatype::typeVectorNumeric) {
+        return RuntimeValue(this->valueVector + right.valueVector);
+    }
+    if (this->getDatatype() == EvaluationDatatype::typeVectorNumeric && right.getDatatype() == EvaluationDatatype::typeScalarNumeric) {
+        return RuntimeValue(this->valueVector.array() + right.valueScalar);
+    }
+    throw std::invalid_argument("RuntimeValue type is not handled.");
 }
 
 Evaluations releaseToEvaluations(const Release& release) {

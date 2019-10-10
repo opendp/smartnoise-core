@@ -44,14 +44,16 @@ set_property(TARGET differential_privacy_proto
 include(FindProtobuf)
 find_package(Protobuf 3.9.0 REQUIRED)
 include_directories(${Protobuf_INCLUDE_DIRS})
+file(GLOB PROTO_FILES ../prototypes/*.proto)
+protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${PROTO_FILES})
 
 # 4. MAKE TARGET
 add_library(differential_privacy_runtime_eigen SHARED
-        ${SOURCE_FILES} ${HEADER_FILES})
+        ${SOURCE_FILES} ${HEADER_FILES} ${PROTO_HDRS})
 
 #message(${PROTOBUF_INCLUDE_DIRS})
 target_include_directories(differential_privacy_runtime_eigen PUBLIC
-        ${PROTOBUF_INLUDE_DIRS}
+        ${PROTOBUF_INCLUDE_DIRS}
         ${CMAKE_CURRENT_BINARY_DIR})
 
 target_link_libraries(differential_privacy_runtime_eigen PUBLIC

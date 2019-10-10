@@ -21,6 +21,7 @@ public:
     explicit RuntimeValue(double value);
     explicit RuntimeValue(Eigen::VectorXd value);
     EvaluationDatatype getDatatype();
+    RuntimeValue operator+(RuntimeValue right);
 };
 
 typedef std::map<unsigned int, std::map<std::string, RuntimeValue>> Evaluations;

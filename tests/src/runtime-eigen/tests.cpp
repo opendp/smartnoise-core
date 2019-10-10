@@ -29,5 +29,5 @@ TEST_CASE("Mean", "[Statistics]") {
             const_cast<char *>(analysisMessage.c_str()), analysisMessage.size(),
             const_cast<char *>(releaseMessage.c_str()), releaseMessage.size(),
             m, n, const_cast<const double**>(data),
-            &colnames[0], colnames.size());
+            const_cast<char *>(colnames.c_str()), colnames.size());
 }
