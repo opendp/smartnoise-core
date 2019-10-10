@@ -7,33 +7,39 @@ set(CMAKE_CXX_STANDARD 17)
 include(${PROJECT_SOURCE_DIR}/build/conanbuildinfo.cmake)
 conan_basic_setup()
 
+if (UNIX AND NOT APPLE)
+    set(EXTENSION .so)
+endif()
+
+if (APPLE)
+    set(EXTENSION .dylib)
+endif()
+
+if (WIN32)
+    set(EXTENSION .dll)
+endif()
+
+# fix dyld dynamic linker in mac
+set(CMAKE_MACOSX_RPATH OFF)
+
 # import libdifferential_privacy.so
 add_library(differential_privacy SHARED IMPORTED)
 set_property(TARGET differential_privacy
         PROPERTY IMPORTED_LOCATION
-        ${PROJECT_SOURCE_DIR}/../validator-c++/cmake-build-debug/lib/libdifferential_privacy.so)
+        ${PROJECT_SOURCE_DIR}/../validator-c++/cmake-build-debug/lib/libdifferential_privacy${EXTENSION})
 
 # import reference runtime
 add_library(differential_privacy_runtime_eigen SHARED IMPORTED)
 set_property(TARGET differential_privacy_runtime_eigen
         PROPERTY IMPORTED_LOCATION
-        ${PROJECT_SOURCE_DIR}/../runtime-eigen/cmake-build-debug/lib/libdifferential_privacy_runtime_eigen.so)
+        ${PROJECT_SOURCE_DIR}/../runtime-eigen/cmake-build-debug/lib/libdifferential_privacy_runtime_eigen${EXTENSION})
 
 include_directories(${PROJECT_SOURCE_DIR}/../validator-c++/include/)
 include_directories(${PROJECT_SOURCE_DIR}/../runtime-eigen/include/)
 
-set(SOURCE_FILES
-        src/main.cpp
-        src/base/tests.cpp
-        src/runtime-eigen/tests.cpp)
-
-set(HEADER_FILES
-        include/tests/main.hpp)
-
-set(PROTO_FILES
-        ../prototypes/analysis.proto
-        ../prototypes/release.proto
-        ../prototypes/types.proto)
+file(GLOB SOURCE_FILES src/*.cpp)
+file(GLOB HEADER_FILES include/tests/*.hpp)
+file(GLOB PROTO_FILES ../prototypes/*.proto)
 
 include(FindProtobuf)
 find_package(Protobuf 3.9.0 REQUIRED)

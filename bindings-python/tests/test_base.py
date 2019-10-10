@@ -3,7 +3,6 @@ import pandas as pd
 
 test_csv_path = '/home/shoe/PSI/data/California Demographic Dataset.csv'
 
-
 def test_basic():
 
     with burdock.Analysis() as analysis:

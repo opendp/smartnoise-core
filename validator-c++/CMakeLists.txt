@@ -7,19 +7,13 @@ set(CMAKE_CXX_STANDARD 17)
 include(${PROJECT_SOURCE_DIR}/build/conanbuildinfo.cmake)
 conan_basic_setup()
 
+# fix dyld dynamic linker in mac
+set(CMAKE_MACOSX_RPATH OFF)
+
 # define files to use in build
-set(SOURCE_FILES
-        src/base.cpp
-        src/api.cpp)
-
-set(HEADER_FILES
-        include/differential_privacy/base.hpp
-        include/differential_privacy/api.hpp)
-
-set(PROTO_FILES
-        ../prototypes/analysis.proto
-        ../prototypes/release.proto
-        ../prototypes/types.proto)
+file(GLOB SOURCE_FILES src/*.cpp)
+file(GLOB HEADER_FILES include/differential_privacy/*.hpp)
+file(GLOB PROTO_FILES ../prototypes/*.proto)
 
 include(FindProtobuf)
 find_package(Protobuf 3.9.0 REQUIRED)
@@ -39,8 +33,8 @@ message ("PROTO_HDRS = ${PROTO_HDRS}")
 
 # create shared library
 add_library(differential_privacy SHARED
-        ${SOURCE_FILES} ${HEADER_FILES}
-        ${PROTO_SRCS} ${PROTO_HDRS})
+    ${SOURCE_FILES} ${HEADER_FILES}
+    ${PROTO_SRCS} ${PROTO_HDRS})
 
 target_include_directories(differential_privacy PUBLIC
     ${PROTOBUF_INCLUDE_DIRS}
@@ -48,8 +42,8 @@ target_include_directories(differential_privacy PUBLIC
 
 # link libraries used from package manager
 target_link_libraries(differential_privacy PUBLIC
-        ${CONAN_LIBS}
-        ${PROTOBUF_LIBRARIES})
+    ${CONAN_LIBS}
+    ${PROTOBUF_LIBRARIES})
 
 set_target_properties(differential_privacy PROPERTIES
-        VERSION ${PROJECT_VERSION})
+    VERSION ${PROJECT_VERSION})

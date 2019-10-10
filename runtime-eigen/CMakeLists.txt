@@ -8,32 +8,39 @@ project(differential_privacy_runtime_eigen)
 include(${PROJECT_SOURCE_DIR}/build/conanbuildinfo.cmake)
 conan_basic_setup()
 
-set(SOURCE_FILES
-        src/api.cpp
-        src/base.cpp
-        src/utilities.cpp)
+# fix dyld dynamic linker in mac
+set(CMAKE_MACOSX_RPATH OFF)
 
-set(HEADER_FILES
-        include/differential_privacy_runtime_eigen/api.hpp
-        include/differential_privacy_runtime_eigen/base.hpp
-        include/differential_privacy_runtime_eigen/utilities.hpp)
+file(GLOB SOURCE_FILES src/*.cpp)
+file(GLOB HEADER_FILES include/differential_privacy_runtime_eigen/*.hpp)
+
+if (UNIX AND NOT APPLE)
+    set(EXTENSION .so)
+endif()
+
+if (APPLE)
+    set(EXTENSION .dylib)
+endif()
+
+if (WIN32)
+    set(EXTENSION .dll)
+endif()
 
 # 2. SETUP VALIDATOR LIBRARY
 # import compiled sources libdifferential_privacy.so
 add_library(differential_privacy SHARED IMPORTED)
+message(${PROJECT_SOURCE_DIR}/../validator-c++/cmake-build-debug/lib/libdifferential_privacy${EXTENSION})
 set_property(TARGET differential_privacy
-        PROPERTY IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/../validator-c++/cmake-build-debug/lib/libdifferential_privacy.so)
+        PROPERTY IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/../validator-c++/cmake-build-debug/lib/libdifferential_privacy${EXTENSION})
 # include headers
 include_directories(${PROJECT_SOURCE_DIR}/../validator-c++/include/)
 
 # 3. SETUP PROTOBUF
-set(PROTO_FILES
-        ../prototypes/analysis.proto
-        ../prototypes/release.proto
-        ../prototypes/types.proto)
+file(GLOB PROTO_FILES ../prototypes/*.proto)
 
 include(FindProtobuf)
 find_package(Protobuf 3.9.0 REQUIRED)
+include_directories(${Protobuf_INCLUDE_DIRS})
 
 # check if protobuf was found
 if(PROTOBUF_FOUND)

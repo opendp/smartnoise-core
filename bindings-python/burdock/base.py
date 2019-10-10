@@ -9,9 +9,18 @@ import pandas
 import analysis_pb2
 import types_pb2
 import release_pb2
+from sys import platform
 
-validator_path = '../validator-c++/cmake-build-debug/lib/libdifferential_privacy.so'
-runtime_path = '../runtime-eigen/cmake-build-debug/lib/libdifferential_privacy_runtime_eigen.so'
+extension = None
+if platform == "linux" or platform == "linux2":
+    extension = ".so"
+elif platform == "darwin":
+    extension = ".dylib"
+elif platform == "win32":
+    extension = ".dll"
+
+validator_path = '../../validator-c++/cmake-build-debug/lib/libdifferential_privacy' + extension
+runtime_path = '../../runtime-eigen/cmake-build-debug/lib/libdifferential_privacy_runtime_eigen' + extension
 
 # load validator functions
 lib_dp = ctypes.cdll.LoadLibrary(validator_path)
