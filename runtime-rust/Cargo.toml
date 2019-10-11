@@ -1,0 +1,16 @@
+[package]
+name = "runtime-rust"
+version = "0.1.0"
+authors = ["Shoeboxam <shoeboxam@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+prost = "0.5.0"
+bytes = "0.4.12"
+
+[build-dependencies]
+prost-build = { version = "0.5.0" }
+
+#[lib]
+#name = "libdifferential_privacy_runtime_rust"
+#crate-type = ["dylib"]
