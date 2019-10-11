@@ -51,7 +51,7 @@ std::set<unsigned int> getReleaseNodes(burdock::Analysis analysis) {
 }
 
 bool isPrivatizer(const burdock::Component& component) {
-    if (component.has_mean()) return true;
+    if (component.has_dpmeanlaplace()) return true;
     return false;
 }
 

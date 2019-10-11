@@ -1,4 +1,3 @@
-
 #include <openssl/rand.h>
 #include <openssl/err.h>
 #include <iostream>

@@ -19,13 +19,13 @@ elif platform == "darwin":
 elif platform == "win32":
     extension = ".dll"
 
-runtime_library = 'HASKELL'
+validator_library = 'C++'
 
 validator_path = None
-if runtime_library == 'C++':
+if validator_library == 'C++':
     validator_path = '../validator-c++/cmake-build-debug/lib/libdifferential_privacy' + extension
-if runtime_library == 'HASKELL':
-    validator_path = '../validator-fortran/libdifferential_privacy' + extension
+if validator_library == 'HASKELL':
+    validator_path = '../validator-haskell/libdifferential_privacy' + extension
 
 protobuf_c_path = '../validator-c++/cmake-build-debug/lib/libdifferential_privacy_proto' + extension
 runtime_path = '../runtime-eigen/cmake-build-debug/lib/libdifferential_privacy_runtime_eigen' + extension
@@ -79,11 +79,11 @@ class Component(object):
         return Component('Add', {'left': self, 'right': -other})
 
     def __neg__(self):
-        return Component('Negate', {'x': self})
+        return Component('Negate', {'data': self})
 
 
-def mean(x):
-    return Component('Mean', {'x': x})
+def mean(data):
+    return Component('Mean', {'data': data})
 
 
 class Analysis(object):

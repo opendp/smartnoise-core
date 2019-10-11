@@ -147,13 +147,13 @@ RuntimeValue RuntimeValue::operator+(RuntimeValue right) {
     if (this->getDatatype() == EvaluationDatatype::typeScalarNumeric && right.getDatatype() == EvaluationDatatype::typeScalarNumeric) {
         return RuntimeValue(this->valueScalar + right.valueScalar);
     }
-    if (this->getDatatype() == EvaluationDatatype::typeScalarNumeric && right.getDatatype() == EvaluationDatatype::typeVectorNumeric) {
+    else if (this->getDatatype() == EvaluationDatatype::typeScalarNumeric && right.getDatatype() == EvaluationDatatype::typeVectorNumeric) {
         return RuntimeValue(this->valueScalar + right.valueVector.array());
     }
-    if (this->getDatatype() == EvaluationDatatype::typeVectorNumeric && right.getDatatype() == EvaluationDatatype::typeVectorNumeric) {
+    else if (this->getDatatype() == EvaluationDatatype::typeVectorNumeric && right.getDatatype() == EvaluationDatatype::typeVectorNumeric) {
         return RuntimeValue(this->valueVector + right.valueVector);
     }
-    if (this->getDatatype() == EvaluationDatatype::typeVectorNumeric && right.getDatatype() == EvaluationDatatype::typeScalarNumeric) {
+    else if (this->getDatatype() == EvaluationDatatype::typeVectorNumeric && right.getDatatype() == EvaluationDatatype::typeScalarNumeric) {
         return RuntimeValue(this->valueVector.array() + right.valueScalar);
     }
     throw std::invalid_argument("RuntimeValue type is not handled.");
