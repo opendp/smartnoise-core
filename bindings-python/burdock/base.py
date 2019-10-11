@@ -19,8 +19,15 @@ elif platform == "darwin":
 elif platform == "win32":
     extension = ".dll"
 
+runtime_library = 'HASKELL'
+
+validator_path = None
+if runtime_library == 'C++':
+    validator_path = '../validator-c++/cmake-build-debug/lib/libdifferential_privacy' + extension
+if runtime_library == 'HASKELL':
+    validator_path = '../validator-fortran/libdifferential_privacy' + extension
+
 protobuf_c_path = '../validator-c++/cmake-build-debug/lib/libdifferential_privacy_proto' + extension
-validator_path = '../validator-c++/cmake-build-debug/lib/libdifferential_privacy' + extension
 runtime_path = '../runtime-eigen/cmake-build-debug/lib/libdifferential_privacy_runtime_eigen' + extension
 
 lib_dp = ctypes.cdll.LoadLibrary(protobuf_c_path)

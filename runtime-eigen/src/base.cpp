@@ -1,4 +1,5 @@
 #include "../include/differential_privacy_runtime_eigen/base.hpp"
+#include "../include/differential_privacy_runtime_eigen/components.hpp"
 #include <differential_privacy/base.hpp>
 
 #include <iostream>
@@ -6,16 +7,16 @@
 #include <fstream>
 #include <stack>
 
-Release* executeGraph(
-        const Analysis& analysis, const Release& release,
+burdock::Release* executeGraph(
+        const burdock::Analysis& analysis, const burdock::Release& release,
         const Eigen::MatrixXd& data, std::vector<std::string> columns) {
 
     std::stack<unsigned int> traversal;
     std::set<unsigned int> nodeIdsRelease = getReleaseNodes(analysis);
     for (const auto& nodeId : getSinks(analysis)) traversal.push(nodeId);
 
-    Evaluations evaluations = releaseToEvaluations(release);
-    google::protobuf::Map<unsigned int, Component> graph = analysis.graph();
+    GraphEvaluation evaluations = releaseToEvaluations(release);
+    google::protobuf::Map<unsigned int, burdock::Component> graph = analysis.graph();
 
     // track node parents
     std::map<unsigned int, std::set<unsigned int>> parents;
@@ -65,40 +66,32 @@ Release* executeGraph(
     return evaluationsToRelease(evaluations);
 }
 
-std::map<std::string, RuntimeValue> executeComponent(Component component,
-        Evaluations evaluations,
-        const Eigen::MatrixXd& data, std::vector<std::string> columns) {
+NodeEvaluation executeComponent(burdock::Component component,
+                                const GraphEvaluation& evaluations,
+                                const Eigen::MatrixXd &data, std::vector<std::string> columns) {
 
     auto arguments = component.mutable_arguments();
 
     if (component.has_datasource()) {
-        DataSource datasource = component.datasource();
+        burdock::DataSource datasource = component.datasource();
         auto it = std::find(columns.begin(), columns.end(), datasource.column_id());
         int index = std::distance(columns.begin(), it);
         RuntimeValue runtimeValue(data.col(index));
-        return std::map<std::string, RuntimeValue>({{"data", runtimeValue}});
+        return NodeEvaluation({{"data", runtimeValue}});
     }
 
-    if (component.has_mean()) {
-        auto argData = arguments->at("data");
-        auto argumentData = evaluations[argData.source_node_id()][argData.source_field()];
-        RuntimeValue runtimeValue(argumentData.valueVector.mean());
-        return std::map<std::string, RuntimeValue>({{"data", runtimeValue}});
-    }
+    if (component.has_mean())
+        return componentMean(getArgument(evaluations, arguments->at("data")));
 
     if (component.has_add()) {
-        auto argLeft = arguments->at("left");
-        auto argRight = arguments->at("right");
-        RuntimeValue runtimeValue(
-                evaluations[argLeft.source_node_id()][argLeft.source_field()] +
-                evaluations[argRight.source_node_id()][argRight.source_field()]);
-        return std::map<std::string, RuntimeValue>({{"data", runtimeValue}});
+        RuntimeValue left = getArgument(evaluations, arguments->at("left"));
+        RuntimeValue right = getArgument(evaluations, arguments->at("right"));
+        return componentAdd(left, right);
     }
 
     if (component.has_literal()) {
         auto literalProto = component.literal();
 
-        RuntimeValue* runtimeValue = nullptr;
         if (literalProto.has_ndarray()) {
             // TODO: unwrap ndarray from protobuf. Just assuming len(shape) == 1
 //            auto dataProto = literalProto.ndarray().data();
@@ -106,16 +99,33 @@ std::map<std::string, RuntimeValue> executeComponent(Component component,
 //            runtimeValue = new RuntimeValue(dataVector);
         }
         else {
-            runtimeValue = new RuntimeValue(literalProto.numeric());
+            return NodeEvaluation({{"data", RuntimeValue(literalProto.numeric())}});
         }
-        return std::map<std::string, RuntimeValue>({{"data", *runtimeValue}});
+    }
+
+    if (component.has_dpmeanlaplace()) {
+        double epsilon = component.dpmeanlaplace().epsilon();
+        RuntimeValue valueData = getArgument(evaluations, arguments->at("data"));
+        RuntimeValue valueN = getArgument(evaluations, arguments->at("num_records"));
+        RuntimeValue valueMin = getArgument(evaluations, arguments->at("minimum"));
+        RuntimeValue valueMax = getArgument(evaluations, arguments->at("maximum"));
+        return componentDPMeanLaplace(valueData, valueMin, valueMax, valueN, epsilon);
     }
 
     if (component.has_laplace()) {
-
+        double epsilon = component.laplace().epsilon();
+        RuntimeValue valueData = getArgument(evaluations, arguments->at("data"));
+        RuntimeValue valueN = getArgument(evaluations, arguments->at("num_records"));
+        RuntimeValue valueMin = getArgument(evaluations, arguments->at("minimum"));
+        RuntimeValue valueMax = getArgument(evaluations, arguments->at("maximum"));
+        return componentLaplace(valueData, valueMin, valueMax, valueN, epsilon);
     }
 
     return std::map<std::string, RuntimeValue>();
+}
+
+RuntimeValue getArgument(GraphEvaluation graphEvaluation, burdock::Component::Field argument) {
+    return graphEvaluation[argument.source_node_id()][argument.source_field()];
 }
 
 RuntimeValue::RuntimeValue() {}
@@ -149,15 +159,15 @@ RuntimeValue RuntimeValue::operator+(RuntimeValue right) {
     throw std::invalid_argument("RuntimeValue type is not handled.");
 }
 
-Evaluations releaseToEvaluations(const Release& release) {
-    Evaluations evaluations;
+GraphEvaluation releaseToEvaluations(const burdock::Release& release) {
+    GraphEvaluation evaluations;
 
-    for (std::pair<unsigned int, ReleaseNode> releaseNodePair : release.values()) {
-        ReleaseNode releaseNode = releaseNodePair.second;
+    for (std::pair<unsigned int, burdock::ReleaseNode> releaseNodePair : release.values()) {
+        burdock::ReleaseNode releaseNode = releaseNodePair.second;
 
-        for (std::pair<std::string, Value> valuePair : releaseNode.values()) {
-            Value value = valuePair.second;
-            if (value.type() == DataType::scalar_numeric)
+        for (std::pair<std::string, burdock::Value> valuePair : releaseNode.values()) {
+            burdock::Value value = valuePair.second;
+            if (value.type() == burdock::DataType::scalar_numeric)
                 evaluations[releaseNodePair.first][valuePair.first] = RuntimeValue(value.scalar_numeric());;
 
             // TODO: read in other types of values
@@ -167,13 +177,13 @@ Evaluations releaseToEvaluations(const Release& release) {
     return evaluations;
 }
 
-Release* evaluationsToRelease(const Evaluations& evaluations) {
-    auto* release = new Release();
+burdock::Release* evaluationsToRelease(const GraphEvaluation& evaluations) {
+    auto* release = new burdock::Release();
     auto* releaseValues = release->mutable_values();
 
     for (const auto& evaluatedNodePair : evaluations) {
         unsigned int nodeId = evaluatedNodePair.first;
-        ReleaseNode releaseNode;
+        burdock::ReleaseNode releaseNode;
         auto releaseNodeValues = releaseNode.mutable_values();
 
         std::map<std::string, RuntimeValue> evaluatedNodeValues = evaluatedNodePair.second;
@@ -183,7 +193,7 @@ Release* evaluationsToRelease(const Evaluations& evaluations) {
             RuntimeValue runtimeValue = valuePair.second;
 
             if (runtimeValue.getDatatype() == EvaluationDatatype::typeScalarNumeric) {
-                Value value;
+                burdock::Value value;
                 value.set_scalar_numeric(runtimeValue.valueScalar);
                 (*releaseNodeValues)[argumentName] = value;
             }

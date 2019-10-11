@@ -6,7 +6,7 @@
 // Uncomment to force error if protobuf versions mismatch
 //GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-std::set<unsigned int> getSinks(const Analysis& analysis) {
+std::set<unsigned int> getSinks(const burdock::Analysis& analysis) {
     auto nodeIds = std::set<unsigned int>();
     for (const auto& nodePair : analysis.graph())
         nodeIds.insert(nodePair.first);
@@ -18,7 +18,7 @@ std::set<unsigned int> getSinks(const Analysis& analysis) {
     return nodeIds;
 }
 
-std::set<unsigned int> getSources(const Analysis& analysis) {
+std::set<unsigned int> getSources(const burdock::Analysis& analysis) {
     auto nodeIds = std::set<unsigned int>();
     for (const auto& nodePair : analysis.graph()) {
         if (nodePair.second.arguments_size() > 0) continue;
@@ -27,7 +27,7 @@ std::set<unsigned int> getSources(const Analysis& analysis) {
     return nodeIds;
 }
 
-std::set<unsigned int> getReleaseNodes(Analysis analysis) {
+std::set<unsigned int> getReleaseNodes(burdock::Analysis analysis) {
 
     std::set<unsigned int> releaseNodeIds;
     auto sinkIds = getSinks(analysis);
@@ -39,7 +39,7 @@ std::set<unsigned int> getReleaseNodes(Analysis analysis) {
         unsigned int nodeId = nodeQueue.front();
         nodeQueue.pop();
 
-        Component component = graph[nodeId];
+        burdock::Component component = graph[nodeId];
         if (isPrivatizer(component))
             releaseNodeIds.insert(nodeId);
         else
@@ -50,12 +50,12 @@ std::set<unsigned int> getReleaseNodes(Analysis analysis) {
     return releaseNodeIds;
 }
 
-bool isPrivatizer(const Component& component) {
+bool isPrivatizer(const burdock::Component& component) {
     if (component.has_mean()) return true;
     return false;
 }
 
-bool checkAllPathsPrivatized(const Analysis& analysis) {
+bool checkAllPathsPrivatized(const burdock::Analysis& analysis) {
     auto releaseNodes = getReleaseNodes(analysis);
     auto sourceNodes = getSources(analysis);
 
@@ -81,7 +81,7 @@ bool is_disjoint(const Set1 &set1, const Set2 &set2) {
     return true;
 }
 
-DirectedGraph toGraph(const Analysis& analysis) {
+DirectedGraph toGraph(const burdock::Analysis& analysis) {
     DirectedGraph graph;
 
     typedef boost::graph_traits<DirectedGraph>::vertex_descriptor Descriptor;

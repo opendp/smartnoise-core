@@ -6,10 +6,10 @@
 #include "../../include/tests/main.hpp"
 
 TEST_CASE("Mean", "[Statistics]") {
-    Analysis* analysisProto = make_test_analysis();
+    burdock::Analysis* analysisProto = make_test_analysis();
     std::string analysisMessage = analysisProto->SerializeAsString();
 
-    Release* releaseProto = make_test_release();
+    burdock::Release* releaseProto = make_test_release();
     std::string releaseMessage = releaseProto->SerializeAsString();
 
     int m = 10;

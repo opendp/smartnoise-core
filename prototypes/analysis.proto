@@ -1,5 +1,6 @@
 syntax = "proto3";
 
+package burdock;
 import "types.proto";
 
 message Analysis {
@@ -22,29 +23,28 @@ message Component {
         Constant constant = 5;
         Mean mean = 6;
         DataSource datasource = 7;
+        DPMeanLaplace dpmeanlaplace = 8;
+        Clip clip = 9;
     }
 
 }
 
-message Add {
-}
-
-message Mean {
-}
-
+message Add {}
 message Laplace {
+    double epsilon = 1;
 }
-
-message DataSource {
-    string dataset_id = 1;
-    string column_id = 2;
-}
-
 message Literal {
     NDArray ndarray = 1;
     double numeric = 2;
     string nominal = 3;
 }
-
-message Constant {
+message Constant {}
+message Mean {}
+message DataSource {
+    string dataset_id = 1;
+    string column_id = 2;
 }
+message DPMeanLaplace {
+    double epsilon = 1;
+}
+message Clip {}

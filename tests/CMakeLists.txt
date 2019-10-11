@@ -44,9 +44,13 @@ set_property(TARGET differential_privacy_runtime_eigen
 include_directories(${PROJECT_SOURCE_DIR}/../validator-c++/include/)
 include_directories(${PROJECT_SOURCE_DIR}/../runtime-eigen/include/)
 
-file(GLOB SOURCE_FILES src/validator-c++/*.cpp src/runtime-eigen/*.cpp src/*.cpp)
 file(GLOB HEADER_FILES include/tests/*.hpp)
 file(GLOB PROTO_FILES ../prototypes/*.proto)
+
+set(SOURCE_FILES
+        src/main.cpp
+        src/validator-c++/tests.cpp
+        src/runtime-eigen/tests.cpp)
 
 include(FindProtobuf)
 find_package(Protobuf 3.9.0 REQUIRED)

@@ -9,11 +9,11 @@ extern "C" char* release(
 
     // parse analysis from protocol buffer
     std::string analysisString(analysisBuffer, analysisLength);
-    Analysis analysisProto;
+    burdock::Analysis analysisProto;
     analysisProto.ParseFromString(analysisString);
 
     std::string releaseString(releaseBuffer, releaseLength);
-    Release releaseProto;
+    burdock::Release releaseProto;
     releaseProto.ParseFromString(releaseString);
 
     std::string dataPathString(dataPath, dataPathLength);
@@ -41,7 +41,7 @@ extern "C" char* release(
 
 
     // EXECUTION
-    Release* releaseProtoAfter = executeGraph(analysisProto, releaseProto, matrix, *columns);
+    burdock::Release* releaseProtoAfter = executeGraph(analysisProto, releaseProto, matrix, *columns);
 
     std::cout << "Release After:\n" << releaseProtoAfter->DebugString();
 
@@ -62,11 +62,11 @@ extern "C" char* releaseArray(
 
     // parse analysis from protocol buffer
     std::string analysisString(analysisBuffer, analysisLength);
-    Analysis analysisProto;
+    burdock::Analysis analysisProto;
     analysisProto.ParseFromString(analysisString);
 
     std::string releaseString(releaseBuffer, releaseLength);
-    Release releaseProto;
+    burdock::Release releaseProto;
     releaseProto.ParseFromString(releaseString);
 
     // construct eigen matrix from double pointers
@@ -94,7 +94,7 @@ extern "C" char* releaseArray(
     std::cout << std::endl <<  matrix;
 
     // EXECUTION
-    Release* releaseProtoAfter = executeGraph(analysisProto, releaseProto, matrix, *columns);
+    burdock::Release* releaseProtoAfter = executeGraph(analysisProto, releaseProto, matrix, *columns);
 
     std::cout << "Release After:\n" << releaseProtoAfter->DebugString();
 

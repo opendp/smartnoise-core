@@ -4,11 +4,11 @@
 #include <analysis.pb.h>
 #include <release.pb.h>
 
-Analysis* make_test_analysis() {
-    auto* analysis = new Analysis();
-    auto* constant = new Constant();
+burdock::Analysis* make_test_analysis() {
+    auto* analysis = new burdock::Analysis();
+    auto* constant = new burdock::Constant();
 
-    auto* component = new Component();
+    auto* component = new burdock::Component();
     component->set_allocated_constant(constant);
 
     auto& graph = *analysis->mutable_graph();
@@ -17,6 +17,6 @@ Analysis* make_test_analysis() {
     return analysis;
 }
 
-Release* make_test_release() {
-    return new Release();
+burdock::Release* make_test_release() {
+    return new burdock::Release();
 }

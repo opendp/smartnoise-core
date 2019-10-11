@@ -7,7 +7,7 @@
 unsigned int validateAnalysis(char* analysisBuffer, size_t analysisLength) {
 
     std::string analysisString(analysisBuffer, analysisLength);
-    Analysis analysis;
+    burdock::Analysis analysis;
     analysis.ParseFromString(analysisString);
 
     bool validity = true;
@@ -23,7 +23,7 @@ unsigned int validateAnalysis(char* analysisBuffer, size_t analysisLength) {
 double computeEpsilon(char* analysisBuffer, size_t analysisLength) {
 
     std::string analysisString(analysisBuffer, analysisLength);
-    Analysis analysis;
+    burdock::Analysis analysis;
     analysis.ParseFromString(analysisString);
 
     // TODO: compute epsilon

@@ -24,18 +24,21 @@ public:
     RuntimeValue operator+(RuntimeValue right);
 };
 
-typedef std::map<unsigned int, std::map<std::string, RuntimeValue>> Evaluations;
+typedef std::map<std::string, RuntimeValue> NodeEvaluation;
+typedef std::map<unsigned int, NodeEvaluation> GraphEvaluation;
+
+RuntimeValue getArgument(GraphEvaluation graphEvaluation, burdock::Component::Field argument);
 
 
-Release* executeGraph(const Analysis& analysis, const Release& release,
+burdock::Release* executeGraph(const burdock::Analysis& analysis, const burdock::Release& release,
                      const Eigen::MatrixXd& data, std::vector<std::string> columns);
 
-std::map<std::string, RuntimeValue> executeComponent(Component component, Evaluations evaluations,
+std::map<std::string, RuntimeValue> executeComponent(burdock::Component component, const GraphEvaluation& evaluations,
                                                      const Eigen::MatrixXd& data, std::vector<std::string> columns);
 Eigen::MatrixXd load_csv(const std::string & path);
 
 
 
-Evaluations releaseToEvaluations(const Release& release);
-Release* evaluationsToRelease(const Evaluations& evaluations);
+GraphEvaluation releaseToEvaluations(const burdock::Release& release);
+burdock::Release* evaluationsToRelease(const GraphEvaluation& evaluations);
 #endif //DIFFERENTIAL_PRIVACY_BASE_HPP

@@ -1,5 +1,6 @@
 syntax = "proto3";
 
+package burdock;
 import "types.proto";
 
 message Release {

@@ -7,7 +7,7 @@
 #include "../../../runtime-eigen/src/base.cpp"
 
 TEST_CASE("Validate_1", "[Validate]") {
-    Analysis* analysis = make_test_analysis();
+    burdock::Analysis* analysis = make_test_analysis();
 
     std::string message = analysis->SerializeAsString();
     std::cout << analysis->DebugString();

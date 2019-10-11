@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+package burdock;
+
 message NDArray {
     bytes data = 1;
 
