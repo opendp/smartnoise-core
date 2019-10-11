@@ -1,0 +1,18 @@
+#!/bin/sh
+
+#
+#while [ $# -ne 0 ]; do
+#    case $1 in
+#        --with-compiler=*)
+#            v=`${1#--with-compiler=} --numeric-version`
+#            cat > validator-haskell.buildinfo <<EOF
+#extra-libraries: HSrts-ghc$v
+#EOF
+#            break
+#        ;;
+#        *)
+#            shift
+#    esac
+#done
+
+python2 detect_ghc_buildinfo.py $@
