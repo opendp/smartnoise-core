@@ -8,6 +8,9 @@ extern "C" {
     unsigned int validateAnalysis(char* analysisBuffer, size_t analysisLength);
     double computeEpsilon(char* analysisBuffer, size_t analysisLength);
     char* generateReport(char* analysisBuffer, size_t analysisLength, char* releaseBuffer, size_t releaseLength);
+
+    // for deallocating pointers to malloc'ed char arrays
+    void freePtr(char* ptr);
 }
 
 

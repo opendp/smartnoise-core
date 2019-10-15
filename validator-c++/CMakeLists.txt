@@ -3,6 +3,9 @@ project(differential_privacy VERSION 0.1.0)
 
 set(CMAKE_CXX_STANDARD 17)
 
+# turn on backtraces for sigseg faults
+add_compile_definitions(BACKTRACE_MODE)
+
 # initialize package manager
 include(${PROJECT_SOURCE_DIR}/build/conanbuildinfo.cmake)
 conan_basic_setup()
@@ -57,3 +60,5 @@ target_link_libraries(differential_privacy PUBLIC
 
 set_target_properties(differential_privacy PROPERTIES
     VERSION ${PROJECT_VERSION})
+
+target_compile_options (differential_privacy PRIVATE -g -rdynamic)

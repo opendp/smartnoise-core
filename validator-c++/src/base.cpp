@@ -86,16 +86,18 @@ DirectedGraph toGraph(const burdock::Analysis& analysis) {
 
     typedef boost::graph_traits<DirectedGraph>::vertex_descriptor Descriptor;
 
+    // create vertices
     std::map<unsigned int, Descriptor> descriptors;
     for (const auto& nodePair : analysis.graph()) {
         Descriptor descriptor = graph.add_vertex(nodePair.second);
         descriptors[nodePair.first] = descriptor;
     }
 
+    // create edges
     for (const auto& nodePair : analysis.graph()) {
         auto component = nodePair.second;
-        for (const auto& argumentPair : component.arguments())
-            graph.add_edge(descriptors[nodePair.first], descriptors[argumentPair.second.source_node_id()]);
+//        for (const auto& argumentPair : component.arguments())
+//            graph.add_edge(descriptors[nodePair.first], descriptors[argumentPair.second.source_node_id()]);
     }
 
     return graph;

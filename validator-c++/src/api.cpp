@@ -3,8 +3,23 @@
 
 #include "../include/differential_privacy/api.hpp"
 #include "../include/differential_privacy/base.hpp"
+#include "../include/differential_privacy/backtrace.hpp"
 
 unsigned int validateAnalysis(char* analysisBuffer, size_t analysisLength) {
+
+#if defined(BACKTRACE_MODE)
+    struct sigaction sigact;
+
+    sigact.sa_sigaction = crit_err_hdlr;
+    sigact.sa_flags = SA_RESTART | SA_SIGINFO;
+
+    if (sigaction(SIGSEGV, &sigact, (struct sigaction *) NULL) != 0) {
+        fprintf(stderr, "error setting signal handler for %d (%s)\n",
+                SIGSEGV, strsignal(SIGSEGV));
+
+        exit(EXIT_FAILURE);
+    }
+#endif
 
     std::string analysisString(analysisBuffer, analysisLength);
     burdock::Analysis analysis;
@@ -13,14 +28,28 @@ unsigned int validateAnalysis(char* analysisBuffer, size_t analysisLength) {
     bool validity = true;
     if (!checkAllPathsPrivatized(analysis)) validity = false;
 
-    // check that this function works
     toGraph(analysis);
 
-    google::protobuf::ShutdownProtobufLibrary();
+//    calling this is tricky with dll files
+//    google::protobuf::ShutdownProtobufLibrary();
     return validity;
 }
 
 double computeEpsilon(char* analysisBuffer, size_t analysisLength) {
+
+#if defined(BACKTRACE_MODE)
+    struct sigaction sigact;
+
+    sigact.sa_sigaction = crit_err_hdlr;
+    sigact.sa_flags = SA_RESTART | SA_SIGINFO;
+
+    if (sigaction(SIGSEGV, &sigact, (struct sigaction *) NULL) != 0) {
+        fprintf(stderr, "error setting signal handler for %d (%s)\n",
+                SIGSEGV, strsignal(SIGSEGV));
+
+        exit(EXIT_FAILURE);
+    }
+#endif
 
     std::string analysisString(analysisBuffer, analysisLength);
     burdock::Analysis analysis;
@@ -34,6 +63,26 @@ char* generateReport(
         char* analysisBuffer, size_t analysisLength,
         char* releaseBuffer, size_t releaseLength) {
 
-    std::string reportString(R"({"message": "this is a release in the json schema format"})");
-    return &reportString[0];
+#if defined(BACKTRACE_MODE)
+    struct sigaction sigact;
+
+    sigact.sa_sigaction = crit_err_hdlr;
+    sigact.sa_flags = SA_RESTART | SA_SIGINFO;
+
+    if (sigaction(SIGSEGV, &sigact, (struct sigaction *) NULL) != 0) {
+        fprintf(stderr, "error setting signal handler for %d (%s)\n",
+                SIGSEGV, strsignal(SIGSEGV));
+
+        exit(EXIT_FAILURE);
+    }
+#endif
+
+    const char *reportString(R"({"message": "this is a release in the json schema format"})");
+
+    // invokes malloc for a string duplicate to preserve memory after this stack frame popped
+    return strdup(reportString);
+}
+
+void freePtr(char* ptr) {
+    free(ptr);
 }
