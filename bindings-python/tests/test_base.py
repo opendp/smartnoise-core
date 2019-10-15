@@ -15,9 +15,11 @@ def test_basic():
         burdock.mean(age + two)
 
     print('analysis is valid:', analysis.validate())
-    print('epsilon:', analysis.epsilon())
+
+    print('epsilon:', analysis.epsilon)
 
     # ALERT: data is not inside repository
-    data = pd.read_csv(test_csv_path)[['age', 'income']].to_numpy()
+    data = pd.read_csv(test_csv_path)[['age', 'income']]
 
-    print('release:', analysis.release(data))
+    print('release json:', analysis.release(data))
+    print('release proto:', analysis.release_proto)
