@@ -17,6 +17,9 @@ extern "C" {
             char* releaseBuffer, size_t releaseLength,
             int m, int n, const double** data,
             char* header, size_t headerLength);
+
+    // for deallocating pointers to malloc'ed char arrays
+    void freePtr(char* ptr);
 }
 
 

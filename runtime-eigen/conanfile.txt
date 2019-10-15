@@ -3,5 +3,9 @@ eigen/3.3.7@conan/stable
 boost_graph/1.69.0@bincrafters/stable
 OpenSSL/1.0.2o@conan/stable
 
+[options]
+OpenSSL:shared=False # needed for RAND_bytes to resolve
+
 [generators]
+txt
 cmake

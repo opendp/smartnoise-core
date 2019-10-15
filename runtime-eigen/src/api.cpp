@@ -47,11 +47,11 @@ extern "C" char* release(
 
     std::string releaseMessage = releaseProtoAfter->SerializeAsString();
 
-    google::protobuf::ShutdownProtobufLibrary();
-    return const_cast<char *>(releaseMessage.c_str());
+//    shutting down protobufs are picky in dlls. needs testing
+//    google::protobuf::ShutdownProtobufLibrary();
 
-//    strncpy(responseBuffer, responseBufferRaw, responseLength);
-//    return releaseMessage.length();
+    // NOTE: call lib_dp.freePtr(char* ptr) to free the duplicate string from memory
+    return strdup(releaseMessage.c_str());
 }
 
 extern "C" char* releaseArray(
@@ -74,6 +74,8 @@ extern "C" char* releaseArray(
     for (unsigned int i = 0; i < m; ++i)
         for (unsigned int j = 0; j < n; ++j)
             matrix(i, j) = data[i][j];
+
+//    std::cout << matrix << std::endl;
 
     // get column names from char pointer
     auto* columns = new std::vector<std::string>();
@@ -100,9 +102,10 @@ extern "C" char* releaseArray(
 
     std::string releaseMessage = releaseProtoAfter->SerializeAsString();
 
-    google::protobuf::ShutdownProtobufLibrary();
-    return const_cast<char *>(releaseMessage.c_str());
+//    google::protobuf::ShutdownProtobufLibrary();
+    return strdup(releaseMessage.c_str());
+}
 
-//    strncpy(responseBuffer, responseBufferRaw, responseLength);
-//    return releaseMessage.length();
+void freePtr(char* ptr) {
+    free(ptr);
 }
