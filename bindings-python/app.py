@@ -1,3 +1,7 @@
-from tests.test_base import test_basic
+from tests.test_base import (
+    test_basic_data,
+    test_basic_path
+)
 
-test_basic()
+test_basic_path()
+
