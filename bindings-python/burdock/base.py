@@ -34,9 +34,11 @@ class Component(object):
     def __neg__(self):
         return Component('Negate', {'data': self})
 
-
 def mean(data):
     return Component('Mean', {'data': data})
+
+def DPMeanLaplace(data, epsilon):
+    return Component('DPMeanLaplace', {'data': data}, {'epsilon': epsilon})
 
 
 class Analysis(object):
@@ -61,9 +63,9 @@ class Analysis(object):
             discovered_components.add(component)
 
             nonlocal id_count
+            component_queue.put({'component_id': id_count, 'component': component})
             id_count += 1
 
-            component_queue.put({'component_id': id_count, 'component': component})
             return id_count
 
         for component in self.components:

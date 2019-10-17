@@ -55,8 +55,14 @@ double compute_epsilon(char* analysisBuffer, size_t analysisLength) {
     burdock::Analysis analysis;
     analysis.ParseFromString(analysisString);
 
-    // TODO: compute epsilon
-    return 23.2;
+    double total = 0;
+    for (const auto& componentPair : analysis.graph()) {
+        burdock::Component component = componentPair.second;
+        if (component.has_dpmeanlaplace()) {
+            total += component.dpmeanlaplace().epsilon();
+        }
+    }
+    return total;
 }
 
 char* generate_report(
