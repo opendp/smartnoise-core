@@ -1,30 +1,19 @@
 #![feature(float_to_from_bytes)]
 
 extern crate libc;
-
-use libc::{c_char, strdup};
+use libc::{c_char};
 use std::ffi::CStr;
-use std::str;
-
-use std::path::Path;
 
 extern crate arrow;
-
-use arrow::array::{BinaryArray, Float64Array};
 use arrow::csv;
+
+use std::str;
+use std::path::Path;
 use std::fs::File;
 
 mod base;
 use base::burdock;
-
-
 mod utilities;
-use utilities::sample_laplace;
-
-use arrow::datatypes::ToByteSlice;
-use ffi_support::ByteBuffer;
-use std::collections::HashMap;
-use arrow::datatypes::DataType::Int64;
 use crate::base::execute_graph;
 
 // useful tutorial for proto over ffi here:
@@ -90,15 +79,21 @@ pub extern "C" fn release(
     let response_release = execute_graph(&analysis, &release, &batch);
 
     let mut out_buffer = Vec::new();
-    prost::Message::encode(&response_release, &mut out_buffer);
-    ffi_support::ByteBuffer::from_vec(out_buffer)
+    match prost::Message::encode(&response_release, &mut out_buffer) {
+        Ok(_t) => ffi_support::ByteBuffer::from_vec(out_buffer),
+        Err(error) => {
+            println!("Error encoding response protobuf.");
+            println!("{:?}", error);
+            ffi_support::ByteBuffer::new_with_size(0)
+        }
+    }
 }
 
 #[no_mangle]
 pub extern "C" fn release_array(
     analysis_ptr: *const u8, analysis_length: i32,
     release_ptr: *const u8, release_length: i32,
-    m: i32, n: i32, data: *const*const f64) -> ffi_support::ByteBuffer {
+    _m: i32, _n: i32, _data: *const*const f64) -> ffi_support::ByteBuffer {
 
     let analysis_buffer = unsafe {get_buffer(analysis_ptr, analysis_length)};
     let analysis: burdock::Analysis = prost::Message::decode(analysis_buffer).unwrap();
@@ -106,15 +101,24 @@ pub extern "C" fn release_array(
     let release_buffer = unsafe {get_buffer(release_ptr, release_length)};
     let release: burdock::Release = prost::Message::decode(release_buffer).unwrap();
 
+    println!("proto analysis: {:?}", analysis);
+    println!("proto release : {:?}", release);
 
     let mut out_buffer = Vec::new();
-    prost::Message::encode(&release, &mut out_buffer);
-    ffi_support::ByteBuffer::from_vec(out_buffer)
+    match prost::Message::encode(&release, &mut out_buffer) {
+        Ok(_t) => ffi_support::ByteBuffer::from_vec(out_buffer),
+        Err(error) => {
+            println!("Error encoding response protobuf.");
+            println!("{:?}", error);
+            ffi_support::ByteBuffer::new_with_size(0)
+        }
+    }
 }
 
+// Only left for FFI compatibility with C runtime
 #[no_mangle]
-pub extern "C" fn free_ptr(buffer: *const c_char) {
-//    unsafe { libc::free(buffer)};
+pub extern "C" fn free_ptr(_buffer: *const c_char) {
+//    unsafe { libc::free(_buffer)};
 }
 
 //ffi_support::implement_into_ffi_by_protobuf!(burdock::Release);

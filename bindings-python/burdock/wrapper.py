@@ -11,7 +11,7 @@ from sys import platform
 import release_pb2
 
 # turn on backtraces in rust
-os.environ['RUST_BACKTRACE'] = '1'
+os.environ['RUST_BACKTRACE'] = 'full'  # '1'
 
 
 prefix = {'win32': ''}.get(platform, 'lib')

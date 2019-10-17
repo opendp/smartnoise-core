@@ -1,7 +1,5 @@
 use openssl::rand::rand_bytes;
 
-extern crate byteorder;
-
 pub fn sample_laplace(shift: f64, scale: f64) -> f64 {
     let sample = sample_uniform(0., 1.);
 

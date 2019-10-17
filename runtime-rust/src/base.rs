@@ -1,12 +1,12 @@
+use arrow::record_batch::RecordBatch;
+
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::vec::Vec;
 
-use ndarray::prelude::*;
-use arrow::record_batch::RecordBatch;
-use std::iter::FromIterator;
-use arrow::datatypes::DataType;
-use arrow::array::{ArrayRef, ArrayDataRef, ArrayData, PrimitiveArray, Float64Array};
 use std::sync::Arc;
+use std::iter::FromIterator;
+
+use arrow::array::{ArrayRef, PrimitiveArray};
 
 use crate::utilities;
 
@@ -21,10 +21,6 @@ type GraphEvaluation = HashMap<u32, NodeEvaluation>;
 
 pub fn get_argument(graph_evaluation: &GraphEvaluation, argument: &burdock::component::Field) -> FieldEvaluation {
     graph_evaluation.get(&argument.source_node_id).unwrap().get(&argument.source_field).unwrap().to_owned()
-}
-
-pub fn as_f64(value: &FieldEvaluation) -> &Float64Array {
-    value.as_any().downcast_ref::<arrow::array::Float64Array>().unwrap()
 }
 
 pub fn get_release_nodes(analysis: &burdock::Analysis) -> HashSet<u32> {
@@ -46,7 +42,7 @@ pub fn get_release_nodes(analysis: &burdock::Analysis) -> HashSet<u32> {
             release_node_ids.insert(*node_id);
         }
         else {
-            for (fieldName, field) in &component.arguments {
+            for field in component.arguments.values() {
                 node_queue.push_back(&field.source_node_id);
             }
         }
@@ -57,12 +53,12 @@ pub fn get_release_nodes(analysis: &burdock::Analysis) -> HashSet<u32> {
 
 pub fn get_sinks(analysis: &burdock::Analysis) -> HashSet<u32> {
     let mut node_ids = HashSet::<u32>::new();
-    for (node_id, node) in &analysis.graph {
+    for node_id in analysis.graph.keys() {
         node_ids.insert(*node_id);
     }
 
-    for (node_id, node) in &analysis.graph {
-        for (argument_name, field) in &node.arguments {
+    for node in analysis.graph.values() {
+        for field in node.arguments.values() {
             node_ids.remove(&field.source_node_id);
         }
     }
@@ -70,19 +66,19 @@ pub fn get_sinks(analysis: &burdock::Analysis) -> HashSet<u32> {
     return node_ids.to_owned();
 }
 
-pub fn get_sources(analysis: &burdock::Analysis) -> HashSet<u32> {
-    let mut node_ids = HashSet::<u32>::new();
-    for (node_id, node) in &analysis.graph {
-        if node.arguments.len() > 0 {continue;}
-        node_ids.insert(*node_id);
-    }
-    return node_ids.to_owned();
-}
+//pub fn get_sources(analysis: &burdock::Analysis) -> HashSet<u32> {
+//    let mut node_ids = HashSet::<u32>::new();
+//    for (node_id, node) in &analysis.graph {
+//        if node.arguments.len() > 0 {continue;}
+//        node_ids.insert(*node_id);
+//    }
+//    return node_ids.to_owned();
+//}
 
 pub fn is_privatizer(component: &burdock::Component) -> bool {
     use burdock::component::Value::*;
     match component.to_owned().value.unwrap() {
-        Dpmeanlaplace(x) => true,
+        Dpmeanlaplace(_x) => true,
         _ => false
     }
 }
@@ -104,7 +100,7 @@ pub fn execute_graph(analysis: &burdock::Analysis,
     // track node parents
     let mut parents = HashMap::<u32, HashSet<u32>>::new();
     for (node_id, component) in graph {
-        for (fieldName, field) in &component.arguments {
+        for field in component.arguments.values() {
             let argument_node_id = &field.source_node_id;
             parents.entry(*argument_node_id).or_insert_with(HashSet::<u32>::new).insert(*node_id);
         }
@@ -116,25 +112,23 @@ pub fn execute_graph(analysis: &burdock::Analysis,
         let arguments = component.to_owned().arguments;
 
         // discover if any dependencies remain uncomputed
-        let mut evaluable = false;
-        let mut i = 0;
-        for (fieldName, field) in &arguments {
+        let mut evaluable = true;
+        for field in arguments.values() {
             if !evaluations.contains_key(&field.source_node_id) {
                 evaluable = false;
                 break;
             }
-            i += 1;
         }
 
         // check if all arguments are available
-        if &i == &arguments.len() {
+        if evaluable {
             traversal.pop();
 
             evaluations.insert(node_id, execute_component(
                 &graph.get(&node_id).unwrap(), &evaluations, data));
 
             // remove references to parent node, and if empty and private
-            for (argument_name, argument) in &arguments {
+            for argument in arguments.values() {
                 let argument_node_id = &(argument.source_node_id);
                 let tempval = parents.get_mut(argument_node_id).unwrap();
                 tempval.remove(&node_id);
@@ -159,12 +153,12 @@ pub fn execute_component(component: &burdock::Component,
             println!("datasource");
 
             // https://docs.rs/datafusion-arrow/0.12.0/arrow/array/trait.Array.html
-            let (index, schema) = data.schema().column_with_name(&x.column_id).unwrap();
+            let (index, _schema) = data.schema().column_with_name(&x.column_id).unwrap();
             let mut evaluation = NodeEvaluation::new();
             evaluation.insert("data".to_owned(), data.column(index).to_owned());
             evaluation
         },
-        burdock::component::Value::Add(x) => {
+        burdock::component::Value::Add(_x) => {
             println!("add");
 
             let left_generic = get_argument(
@@ -182,7 +176,7 @@ pub fn execute_component(component: &burdock::Component,
             evaluation.insert("data".to_owned(), Arc::new(data));
             evaluation
         },
-        burdock::component::Value::Dpmeanlaplace(x) => {
+        burdock::component::Value::Dpmeanlaplace(_x) => {
             println!("dpmeanlaplace");
 
             let data_generic = get_argument(
@@ -193,27 +187,22 @@ pub fn execute_component(component: &burdock::Component,
             let min_generic = get_argument(
                 &evaluations,
                 &component.arguments.get("minimum").unwrap());
-            let min = data_generic.as_any().downcast_ref::<arrow::array::Float64Array>().unwrap().value(0);
+            let min = min_generic.as_any().downcast_ref::<arrow::array::Float64Array>().unwrap().value(0);
 
             let max_generic = get_argument(
                 &evaluations,
                 &component.arguments.get("maximum").unwrap());
-            let max = data_generic.as_any().downcast_ref::<arrow::array::Float64Array>().unwrap().value(0);
+            let max = max_generic.as_any().downcast_ref::<arrow::array::Float64Array>().unwrap().value(0);
 
             let num_records_generic = get_argument(
                 &evaluations,
                 &component.arguments.get("num_records").unwrap());
-            let num_records = data_generic.as_any().downcast_ref::<arrow::array::Float64Array>().unwrap().value(0);
-
-            let num_records_generic = get_argument(
-                &evaluations,
-                &component.arguments.get("num_records").unwrap());
-            let num_records = data_generic.as_any().downcast_ref::<arrow::array::Float64Array>().unwrap().value(0);
+            let num_records = num_records_generic.as_any().downcast_ref::<arrow::array::Float64Array>().unwrap().value(0);
 
             let epsilon_generic = get_argument(
                 &evaluations,
                 &component.arguments.get("epsilon").unwrap());
-            let epsilon = data_generic.as_any().downcast_ref::<arrow::array::Float64Array>().unwrap().value(0);
+            let epsilon = epsilon_generic.as_any().downcast_ref::<arrow::array::Float64Array>().unwrap().value(0);
 
             let mut evaluation = NodeEvaluation::new();
             // TODO: don't use len, pull from arguments
@@ -259,7 +248,7 @@ pub fn evaluations_to_release(evaluations: &GraphEvaluation) -> burdock::Release
 
         for (field_name, field_eval) in node_eval {
             let temp = field_eval.as_any().downcast_ref::<arrow::array::Float64Array>().unwrap().value(0);
-            let mut value = burdock::Value {
+            let value = burdock::Value {
                 datatype: 1, // burdock::DataType::ScalarNumeric,
                 data: Some(burdock::value::Data::ScalarNumeric(temp))
             };
