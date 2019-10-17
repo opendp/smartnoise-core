@@ -167,7 +167,7 @@ GraphEvaluation releaseToEvaluations(const burdock::Release& release) {
 
         for (std::pair<std::string, burdock::Value> valuePair : releaseNode.values()) {
             burdock::Value value = valuePair.second;
-            if (value.type() == burdock::DataType::scalar_numeric)
+            if (value.datatype() == burdock::DataType::scalar_numeric)
                 evaluations[releaseNodePair.first][valuePair.first] = RuntimeValue(value.scalar_numeric());;
 
             // TODO: read in other types of values

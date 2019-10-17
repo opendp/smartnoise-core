@@ -4,21 +4,29 @@ use std::vec::Vec;
 use ndarray::prelude::*;
 use arrow::record_batch::RecordBatch;
 use std::iter::FromIterator;
+use arrow::datatypes::DataType;
+use arrow::array::{ArrayRef, ArrayDataRef, ArrayData, PrimitiveArray, Float64Array};
+use std::sync::Arc;
+
+use crate::utilities;
 
 // Include the `items` module, which is generated from items.proto.
 pub mod burdock {
     include!(concat!(env!("OUT_DIR"), "/burdock.rs"));
 }
 
-type FieldEvaluation = arrow::record_batch::RecordBatch;
+type FieldEvaluation = ArrayRef;
 type NodeEvaluation = HashMap<String, FieldEvaluation>;
 type GraphEvaluation = HashMap<u32, NodeEvaluation>;
 
-pub fn get_argument(graph_evaluation: GraphEvaluation, argument: burdock::component::Field) -> FieldEvaluation {
+pub fn get_argument(graph_evaluation: &GraphEvaluation, argument: &burdock::component::Field) -> FieldEvaluation {
     graph_evaluation.get(&argument.source_node_id).unwrap().get(&argument.source_field).unwrap().to_owned()
 }
 
-// TODO: implement
+pub fn as_f64(value: &FieldEvaluation) -> &Float64Array {
+    value.as_any().downcast_ref::<arrow::array::Float64Array>().unwrap()
+}
+
 pub fn get_release_nodes(analysis: &burdock::Analysis) -> HashSet<u32> {
 
     let mut release_node_ids = HashSet::<u32>::new();
@@ -126,7 +134,7 @@ pub fn execute_graph(analysis: &burdock::Analysis,
                 &graph.get(&node_id).unwrap(), &evaluations, data));
 
             // remove references to parent node, and if empty and private
-            for (argumentName, argument) in &arguments {
+            for (argument_name, argument) in &arguments {
                 let argument_node_id = &(argument.source_node_id);
                 let tempval = parents.get_mut(argument_node_id).unwrap();
                 tempval.remove(&node_id);
@@ -145,22 +153,124 @@ pub fn execute_graph(analysis: &burdock::Analysis,
 pub fn execute_component(component: &burdock::Component,
                          evaluations: &GraphEvaluation,
                          data: &RecordBatch) -> NodeEvaluation {
-//    use burdock::component::Value;
-//    match component.to_owned().value.unwrap() {
-//        Value::Add(x) => {
-//            println!("test add");
-//        },
-//        _ => false
-//    }
-    NodeEvaluation::new()
+
+    match component.to_owned().value.unwrap() {
+        burdock::component::Value::Datasource(x) => {
+            println!("datasource");
+
+            // https://docs.rs/datafusion-arrow/0.12.0/arrow/array/trait.Array.html
+            let (index, schema) = data.schema().column_with_name(&x.column_id).unwrap();
+            let mut evaluation = NodeEvaluation::new();
+            evaluation.insert("data".to_owned(), data.column(index).to_owned());
+            evaluation
+        },
+        burdock::component::Value::Add(x) => {
+            println!("add");
+
+            let left_generic = get_argument(
+                &evaluations,
+                &component.arguments.get("left").unwrap());
+            let left = left_generic.as_any().downcast_ref::<arrow::array::Float64Array>().unwrap();
+
+            let right_generic = get_argument(
+                &evaluations,
+                &component.arguments.get("right").unwrap());
+            let right = right_generic.as_any().downcast_ref::<arrow::array::Float64Array>().unwrap();
+
+            let mut evaluation = NodeEvaluation::new();
+            let data = arrow::compute::add(&left, &right).unwrap();
+            evaluation.insert("data".to_owned(), Arc::new(data));
+            evaluation
+        },
+        burdock::component::Value::Dpmeanlaplace(x) => {
+            println!("dpmeanlaplace");
+
+            let data_generic = get_argument(
+                &evaluations,
+                &component.arguments.get("data").unwrap());
+            let data = data_generic.as_any().downcast_ref::<arrow::array::Float64Array>().unwrap();
+
+            let min_generic = get_argument(
+                &evaluations,
+                &component.arguments.get("minimum").unwrap());
+            let min = data_generic.as_any().downcast_ref::<arrow::array::Float64Array>().unwrap().value(0);
+
+            let max_generic = get_argument(
+                &evaluations,
+                &component.arguments.get("maximum").unwrap());
+            let max = data_generic.as_any().downcast_ref::<arrow::array::Float64Array>().unwrap().value(0);
+
+            let num_records_generic = get_argument(
+                &evaluations,
+                &component.arguments.get("num_records").unwrap());
+            let num_records = data_generic.as_any().downcast_ref::<arrow::array::Float64Array>().unwrap().value(0);
+
+            let num_records_generic = get_argument(
+                &evaluations,
+                &component.arguments.get("num_records").unwrap());
+            let num_records = data_generic.as_any().downcast_ref::<arrow::array::Float64Array>().unwrap().value(0);
+
+            let epsilon_generic = get_argument(
+                &evaluations,
+                &component.arguments.get("epsilon").unwrap());
+            let epsilon = data_generic.as_any().downcast_ref::<arrow::array::Float64Array>().unwrap().value(0);
+
+            let mut evaluation = NodeEvaluation::new();
+            // TODO: don't use len, pull from arguments
+            let mean = arrow::compute::sum(&data).unwrap() / data.len() as f64;
+            let sensitivity = (max - min) / num_records;
+            let noised = mean + utilities::sample_laplace(0., sensitivity / epsilon);
+            let result: PrimitiveArray<arrow::datatypes::Float64Type> = vec![noised].into();
+
+            evaluation.insert("data".to_owned(), Arc::new(result));
+            evaluation
+        },
+        _ => NodeEvaluation::new()
+    }
 }
 
 pub fn release_to_evaluations(release: &burdock::Release) -> GraphEvaluation {
-    GraphEvaluation::new()
+    let mut evaluations = GraphEvaluation::new();
+
+    for (node_id, node_release) in &release.values {
+        let mut evaluations_node = NodeEvaluation::new();
+        for (field_id, field_release) in &node_release.values {
+//            burdock::Value {
+//
+//                data: Some(burdock::value::Data::ScalarNumeric(23.2))
+//            };
+            let numeric = match field_release.data.to_owned().unwrap() {
+                burdock::value::Data::ScalarNumeric(x) => x,
+                _ => 0.23
+            };
+
+            let result: PrimitiveArray<arrow::datatypes::Float64Type> = vec![numeric].into();
+            evaluations_node.insert(field_id.to_owned(), Arc::new(result));
+        }
+        evaluations.insert(*node_id, evaluations_node);
+    }
+    evaluations
 }
 
 pub fn evaluations_to_release(evaluations: &GraphEvaluation) -> burdock::Release {
+    let mut releases = HashMap::new();
+    for (node_id, node_eval) in evaluations {
+        let mut node_release = HashMap::new();
+
+        for (field_name, field_eval) in node_eval {
+            let temp = field_eval.as_any().downcast_ref::<arrow::array::Float64Array>().unwrap().value(0);
+            let mut value = burdock::Value {
+                datatype: 1, // burdock::DataType::ScalarNumeric,
+                data: Some(burdock::value::Data::ScalarNumeric(temp))
+            };
+
+            node_release.insert(field_name.to_owned(), value);
+        }
+        releases.insert(*node_id, burdock::ReleaseNode {
+            values: node_release.to_owned()
+        });
+    }
     burdock::Release {
-        values: HashMap::new()
+        values: releases
     }
 }

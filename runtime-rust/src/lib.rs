@@ -1,3 +1,5 @@
+#![feature(float_to_from_bytes)]
+
 extern crate libc;
 
 use libc::{c_char, strdup};
@@ -6,7 +8,6 @@ use std::str;
 
 use std::path::Path;
 
-#[macro_use]
 extern crate arrow;
 
 use arrow::array::{BinaryArray, Float64Array};
@@ -15,10 +16,16 @@ use std::fs::File;
 
 mod base;
 use base::burdock;
+
+
+mod utilities;
+use utilities::sample_laplace;
+
 use arrow::datatypes::ToByteSlice;
 use ffi_support::ByteBuffer;
 use std::collections::HashMap;
 use arrow::datatypes::DataType::Int64;
+use crate::base::execute_graph;
 
 // useful tutorial for proto over ffi here:
 // https://github.com/mozilla/application-services/blob/master/docs/howtos/passing-protobuf-data-over-ffi.md
@@ -80,8 +87,10 @@ pub extern "C" fn release(
     println!("proto analysis: {:?}", analysis);
     println!("proto release : {:?}", release);
 
+    let response_release = execute_graph(&analysis, &release, &batch);
+
     let mut out_buffer = Vec::new();
-    prost::Message::encode(&release, &mut out_buffer);
+    prost::Message::encode(&response_release, &mut out_buffer);
     ffi_support::ByteBuffer::from_vec(out_buffer)
 }
 

@@ -27,9 +27,9 @@ enum DataType {
 
 message Value {
 
-    DataType type = 1;
+    DataType datatype = 1;
 
-    oneof value {
+    oneof data {
         string scalar_nominal = 2;
         NDArray array_numeric = 3;
         double scalar_numeric = 4;
