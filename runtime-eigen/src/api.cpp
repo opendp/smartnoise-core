@@ -54,7 +54,7 @@ extern "C" char* release(
     return strdup(releaseMessage.c_str());
 }
 
-extern "C" char* releaseArray(
+extern "C" char* release_array(
         char* analysisBuffer, size_t analysisLength,
         char* releaseBuffer, size_t releaseLength,
         int m, int n, const double** data,
@@ -106,6 +106,6 @@ extern "C" char* releaseArray(
     return strdup(releaseMessage.c_str());
 }
 
-void freePtr(char* ptr) {
+void free_ptr(char* ptr) {
     free(ptr);
 }

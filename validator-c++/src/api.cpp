@@ -5,7 +5,7 @@
 #include "../include/differential_privacy/base.hpp"
 #include "../include/differential_privacy/backtrace.hpp"
 
-unsigned int validateAnalysis(char* analysisBuffer, size_t analysisLength) {
+unsigned int validate_analysis(char* analysisBuffer, size_t analysisLength) {
 
 #if defined(BACKTRACE_MODE)
     struct sigaction sigact;
@@ -35,7 +35,7 @@ unsigned int validateAnalysis(char* analysisBuffer, size_t analysisLength) {
     return validity;
 }
 
-double computeEpsilon(char* analysisBuffer, size_t analysisLength) {
+double compute_epsilon(char* analysisBuffer, size_t analysisLength) {
 
 #if defined(BACKTRACE_MODE)
     struct sigaction sigact;
@@ -59,7 +59,7 @@ double computeEpsilon(char* analysisBuffer, size_t analysisLength) {
     return 23.2;
 }
 
-char* generateReport(
+char* generate_report(
         char* analysisBuffer, size_t analysisLength,
         char* releaseBuffer, size_t releaseLength) {
 
@@ -83,6 +83,6 @@ char* generateReport(
     return strdup(reportString);
 }
 
-void freePtr(char* ptr) {
+void free_ptr(char* ptr) {
     free(ptr);
 }

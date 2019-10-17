@@ -68,8 +68,7 @@ class LibraryWrapper(object):
         self.lib_runtime.release.argtypes = (
             ctypes.c_char_p, ctypes.c_int,  # input analysis
             ctypes.c_char_p, ctypes.c_int,  # input release
-            ctypes.c_char_p, ctypes.c_int,  # input data path
-            ctypes.c_char_p, ctypes.c_int)  # input columns
+            ctypes.c_char_p, ctypes.c_int)  # input data path
         self.lib_runtime.release.restype = ByteBuffer if runtime == "RUST" else ctypes.c_char_p
 
         # self.lib_runtime.dp_runtime_destroy_bytebuffer.argtypes = (ctypes.POINTER(ByteBuffer),)
@@ -78,8 +77,7 @@ class LibraryWrapper(object):
         self.lib_runtime.release_array.argtypes = (
             ctypes.c_int8, ctypes.c_int,  # input analysis
             ctypes.c_int8, ctypes.c_int,  # input release
-            ctypes.c_int, ctypes.c_int, _doublepp,  # input data
-            ctypes.c_char_p, ctypes.c_int)  # input columns
+            ctypes.c_int, ctypes.c_int, _doublepp)  # input data
         self.lib_runtime.release_array.restype = ByteBuffer if runtime == "RUST" else ctypes.c_char_p
 
         self.lib_runtime.free_ptr.argtypes = (ctypes.c_void_p,)

@@ -5,12 +5,12 @@
 #include <analysis.pb.h>
 
 extern "C" {
-    unsigned int validateAnalysis(char* analysisBuffer, size_t analysisLength);
-    double computeEpsilon(char* analysisBuffer, size_t analysisLength);
-    char* generateReport(char* analysisBuffer, size_t analysisLength, char* releaseBuffer, size_t releaseLength);
+    unsigned int validate_analysis(char* analysisBuffer, size_t analysisLength);
+    double compute_epsilon(char* analysisBuffer, size_t analysisLength);
+    char* generate_report(char* analysisBuffer, size_t analysisLength, char* releaseBuffer, size_t releaseLength);
 
     // for deallocating pointers to malloc'ed char arrays
-    void freePtr(char* ptr);
+    void free_ptr(char* ptr);
 }
 
 
