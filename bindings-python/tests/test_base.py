@@ -28,17 +28,18 @@ def test_basic_path():
 
     with burdock.Analysis() as analysis:
         age = burdock.Component('DataSource', options={"dataset_id": "PUMS", "column_id": "age"})
+        sex = burdock.Component('DataSource', options={"dataset_id": "PUMS", "column_id": "sex"})
 
         # TODO: automatic conversion of elementary types to Literals or Constants
         two = burdock.Component('Literal', options={"numeric": 2})
 
-        burdock.dp_mean_laplace(age + two, epsilon=.1, minimum=2, maximum=102, num_records=500)
+        burdock.dp_mean_laplace(age + sex, epsilon=.1, minimum=2, maximum=102, num_records=500)
 
     print('analysis is valid:', analysis.validate())
 
     print('epsilon:', analysis.epsilon)
 
-    analysis.plot()
+    # analysis.plot()
 
     print('release json:', analysis.release(test_csv_path))
     print('release proto:', analysis.release_proto)

@@ -26,17 +26,18 @@ pub fn get_argument(graph_evaluation: &GraphEvaluation, argument: &burdock::comp
 pub fn get_release_nodes(analysis: &burdock::Analysis) -> HashSet<u32> {
 
     let mut release_node_ids = HashSet::<u32>::new();
+    // assume sinks are private
     let sink_node_ids = get_sinks(analysis);
+//    println!("sink nodes: {:?}", sink_node_ids);
 
+    // traverse back through arguments until privatizers found
     let mut node_queue = VecDeque::from_iter(sink_node_ids.iter());
 
     let graph: &HashMap<u32, burdock::Component> = &analysis.graph;
 
     while !node_queue.is_empty() {
         let node_id = node_queue.pop_front().unwrap();
-
         let component = graph.get(&node_id).unwrap();
-
 
         if is_privatizer(&component) {
             release_node_ids.insert(*node_id);
@@ -53,16 +54,19 @@ pub fn get_release_nodes(analysis: &burdock::Analysis) -> HashSet<u32> {
 
 pub fn get_sinks(analysis: &burdock::Analysis) -> HashSet<u32> {
     let mut node_ids = HashSet::<u32>::new();
+    // start with all nodes
     for node_id in analysis.graph.keys() {
         node_ids.insert(*node_id);
     }
 
+    // remove nodes that are referenced in arguments
     for node in analysis.graph.values() {
         for field in node.arguments.values() {
             node_ids.remove(&field.source_node_id);
         }
     }
 
+    // move to heap, transfer ownership to caller
     return node_ids.to_owned();
 }
 
@@ -111,11 +115,14 @@ pub fn execute_graph(analysis: &burdock::Analysis,
         let component = graph.get(&node_id).unwrap();
         let arguments = component.to_owned().arguments;
 
+        println!("traversal on: {:?}", node_id);
+
         // discover if any dependencies remain uncomputed
         let mut evaluable = true;
         for field in arguments.values() {
             if !evaluations.contains_key(&field.source_node_id) {
                 evaluable = false;
+                traversal.push(field.source_node_id);
                 break;
             }
         }
@@ -149,6 +156,14 @@ pub fn execute_component(component: &burdock::Component,
                          data: &RecordBatch) -> NodeEvaluation {
 
     match component.to_owned().value.unwrap() {
+        burdock::component::Value::Literal(x) => {
+            println!("literal");
+            let result: PrimitiveArray<arrow::datatypes::Float64Type> = vec![x.numeric].into();
+            let mut evaluation = NodeEvaluation::new();
+
+            evaluation.insert("data".to_owned(), Arc::new(result));
+            evaluation
+        },
         burdock::component::Value::Datasource(x) => {
             println!("datasource");
 
@@ -164,6 +179,7 @@ pub fn execute_component(component: &burdock::Component,
             let left_generic = get_argument(
                 &evaluations,
                 &component.arguments.get("left").unwrap());
+            println!("left_generic: {:?}", left_generic);
             let left = left_generic.as_any().downcast_ref::<arrow::array::Float64Array>().unwrap();
 
             let right_generic = get_argument(
@@ -176,7 +192,7 @@ pub fn execute_component(component: &burdock::Component,
             evaluation.insert("data".to_owned(), Arc::new(data));
             evaluation
         },
-        burdock::component::Value::Dpmeanlaplace(_x) => {
+        burdock::component::Value::Dpmeanlaplace(x) => {
             println!("dpmeanlaplace");
 
             let data_generic = get_argument(
@@ -199,10 +215,7 @@ pub fn execute_component(component: &burdock::Component,
                 &component.arguments.get("num_records").unwrap());
             let num_records = num_records_generic.as_any().downcast_ref::<arrow::array::Float64Array>().unwrap().value(0);
 
-            let epsilon_generic = get_argument(
-                &evaluations,
-                &component.arguments.get("epsilon").unwrap());
-            let epsilon = epsilon_generic.as_any().downcast_ref::<arrow::array::Float64Array>().unwrap().value(0);
+            let epsilon = x.epsilon;
 
             let mut evaluation = NodeEvaluation::new();
             // TODO: don't use len, pull from arguments
