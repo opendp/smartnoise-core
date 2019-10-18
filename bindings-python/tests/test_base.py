@@ -11,7 +11,7 @@ def test_basic_data():
         # TODO: automatic conversion of elementary types to Literals or Constants
         two = burdock.Component('Literal', options={"numeric": 2})
 
-        burdock.DPMeanLaplace(age + two, epsilon=.1)
+        burdock.dp_mean_laplace(age + two, epsilon=.1)
 
     print('analysis is valid:', analysis.validate())
 
@@ -32,11 +32,13 @@ def test_basic_path():
         # TODO: automatic conversion of elementary types to Literals or Constants
         two = burdock.Component('Literal', options={"numeric": 2})
 
-        burdock.DPMeanLaplace(age + two, epsilon=.1)
+        burdock.dp_mean_laplace(age + two, epsilon=.1, minimum=2, maximum=102, num_records=500)
 
     print('analysis is valid:', analysis.validate())
 
     print('epsilon:', analysis.epsilon)
+
+    analysis.plot()
 
     print('release json:', analysis.release(test_csv_path))
     print('release proto:', analysis.release_proto)

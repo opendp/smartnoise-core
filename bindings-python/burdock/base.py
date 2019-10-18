@@ -34,11 +34,22 @@ class Component(object):
     def __neg__(self):
         return Component('Negate', {'data': self})
 
+
 def mean(data):
     return Component('Mean', {'data': data})
 
-def DPMeanLaplace(data, epsilon):
-    return Component('DPMeanLaplace', {'data': data}, {'epsilon': epsilon})
+
+def dp_mean_laplace(data, epsilon, minimum=None, maximum=None, num_records=None):
+
+    # TODO: recursively extract from child? potentially implement in validator, or runtime?
+    # if minimum is None:
+    #     minimum =
+    return Component('DPMeanLaplace', {
+        'data': data,
+        'num_records': Component('Literal', options={'numeric': num_records}),
+        'minimum': Component('Literal', options={'numeric': minimum}),
+        'maximum': Component('Literal', options={'numeric': maximum})
+    }, {'epsilon': epsilon})
 
 
 class Analysis(object):
@@ -54,17 +65,18 @@ class Analysis(object):
 
         id_count = 0
 
-        discovered_components = set()
+        discovered_components = {}
         component_queue = queue.Queue()
 
         def enqueue(component):
             if component in discovered_components:
-                return
-            discovered_components.add(component)
+                return discovered_components[component]
 
             nonlocal id_count
-            component_queue.put({'component_id': id_count, 'component': component})
             id_count += 1
+
+            discovered_components[component] = id_count
+            component_queue.put({'component_id': id_count, 'component': component})
 
             return id_count
 
@@ -132,6 +144,22 @@ class Analysis(object):
         global context
         context = self._context
 
+    def plot(self):
+        import networkx as nx
+        import matplotlib.pyplot as plt
+
+        analysis = self._make_analysis_proto()
+        graph = nx.DiGraph()
+
+        def label(node_id):
+            return f'{node_id} {analysis.graph[node_id].WhichOneof("value")}'
+
+        for nodeId, component in list(analysis.graph.items()):
+            for field in component.arguments.values():
+                graph.add_edge(label(field.source_node_id), label(nodeId))
+
+        nx.draw(graph, with_labels=True, node_color='white')
+        plt.pause(.001)
 
 # sugary syntax for managing analysis contexts
 context = None
