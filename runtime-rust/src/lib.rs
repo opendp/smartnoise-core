@@ -1,7 +1,7 @@
 #![feature(float_to_from_bytes)]
 
 extern crate libc;
-use libc::{c_char};
+use libc::c_char;
 use std::ffi::CStr;
 
 extern crate arrow;
@@ -29,6 +29,11 @@ unsafe fn get_buffer<'a>(data: *const u8, len: i32) -> &'a [u8] {
     }
 }
 
+#[repr(C)]
+struct ByteBuffer {
+    len: i64,
+    data: *mut u8,
+}
 
 #[no_mangle]
 pub extern "C" fn release(
@@ -119,6 +124,17 @@ pub extern "C" fn release_array(
 #[no_mangle]
 pub extern "C" fn free_ptr(_buffer: *const c_char) {
 //    unsafe { libc::free(_buffer)};
+}
+
+use std;
+use std::ffi::CString;
+
+#[no_mangle]
+pub extern fn string_from_rust() -> *const std::os::raw::c_char {
+    let s = CString::new("Hello ピカチュウ !").unwrap();
+    let p = s.as_ptr();
+    std::mem::forget(s);
+    p
 }
 
 //ffi_support::implement_into_ffi_by_protobuf!(burdock::Release);
