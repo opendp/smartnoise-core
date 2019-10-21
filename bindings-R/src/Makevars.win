@@ -1,0 +1,14 @@
+TARGET = $(subst 64,x86_64,$(subst 32,i686,$(WIN)))-pc-windows-gnu
+LIBDIR = dp_runtime/target/$(TARGET)/release
+STATLIB = $(LIBDIR)/dp_runtime.lib
+PKG_LIBS = -L$(LIBDIR) -ldp_runtime -lws2_32 -ladvapi32 -luserenv
+
+all: clean
+
+$(SHLIB): $(STATLIB)
+
+$(STATLIB):
+	cargo +nightly build --target=$(TARGET) --release --manifest-path="runtime-rust/Cargo.toml"
+
+clean:
+	rm -Rf $(SHLIB) $(STATLIB) $(OBJECTS) runtime-rust/target

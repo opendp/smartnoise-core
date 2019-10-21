@@ -1,0 +1,13 @@
+LIBDIR = dp_runtime/target/release
+STATLIB = $(LIBDIR)/libdifferential_privacy_runtime.so
+PKG_LIBS = -L$(LIBDIR) -ldp_runtime -lresolv
+
+all: clean
+
+$(SHLIB): $(STATLIB)
+
+$(STATLIB):
+	cargo +nightly build --release --manifest-path="runtime-rust/Cargo.toml"
+
+clean:
+	rm -Rf $(SHLIB) $(STATLIB) $(OBJECTS) "runtime-rust/target"

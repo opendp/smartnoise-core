@@ -20,7 +20,7 @@ set(CMAKE_CXX_STANDARD 17)
 include(GenerateExportHeader)
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
-add_library(dp_R_shim SHARED src/bindings.cpp)
+add_library(dp_R_shim SHARED src/wrapper.c)
 generate_export_header(dp_R_shim)
 
 install(TARGETS dp_R_shim DESTINATION lib)

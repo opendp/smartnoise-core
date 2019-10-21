@@ -10,11 +10,11 @@ loadProtoDescriptors <- function() {
     # print(ls("RProtoBuf:DescriptorPool"))
 }
 
-loadValidator <- function() {
-  dyn.load(file.path(getwd(), '../base/cmake-build-debug/lib/libdifferential_privacy.so'))
-  print('validator loaded')
-  .Call('hello_world_validator')
-}
+# loadValidator <- function() {
+#   dyn.load(file.path(getwd(), '../validator-c++/cmake-build-debug/lib/libdifferential_privacy.so'))
+#   print('validator loaded')
+#   .Call('hello_world_validator')
+# }
 
 buildAnalysisExample <- function() {
     RProtoBuf::new(Analysis,
@@ -34,4 +34,14 @@ validateAnalysis <- function(analysis) {
     print(.Call('validate_analysis', message, package='dpBinding'))
 }
 
-loadValidator()
+#' Hello Rust!
+#'
+#' Examples of rust functions via C.
+#'
+#' @export
+#' @rdname hellorust
+#' @examples hello()
+#' @useDynLib hellorust hello_wrapper
+hello <- function() {
+    .Call(hello_wrapper)
+}

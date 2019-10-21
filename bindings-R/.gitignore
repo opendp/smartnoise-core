@@ -3,3 +3,6 @@
 .RData
 *.Ruserdata
 *.Rproj
+
+src/runtime-rust/
+src/prototypes/
