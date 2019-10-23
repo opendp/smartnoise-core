@@ -43,3 +43,13 @@ Alternatively, you can build a shared library directly from ghc.
     
 You must modify the HSrts-ghc version to be included in the shared object based on the `ghc --version`. 
 Invoking ghc directly may incorrectly handle dependencies or code generation.
+
+When you compile a Haskell module to a shared library, package dependencies are linked dynamically (the package dependencies are not bundled with the library).
+Linking them statically means recompiling the dependencies as static libraries. 
+Trying to recompile something like the ghc runtime statically isn't really reasonable. 
+So using haskell as a validator would require distribution of a set of probably ~10 libraries per OS?
+
+Rust/C++ don't have runtimes, and their dependencies are statically linked, so you get clean distributable libraries.
+
+More information here, and in the linked article:  
+https://github.com/haskell/cabal/issues/1688
