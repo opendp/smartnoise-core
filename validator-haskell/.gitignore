@@ -1,2 +1,3 @@
-validator-haskell.buildinfo
-dist/
+.stack-work/
+validator-haskell.cabal
+*~

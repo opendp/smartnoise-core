@@ -1,22 +1,33 @@
-name:                validator-haskell
-version:             0.1.0
--- synopsis:
--- description:
--- copyright:           
--- category:
-build-type: Configure
-cabal-version:          >=1.10
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 75c2cfd3bf9d56ca1947be134c3b8a9f258d532d5df3f3fa5a02091d86078741
+
+name:           validator-haskell
+version:        0.1.0.0
+description:    Validator for differential privacy analyses
+homepage:       https://github.com/privacytoolsproject/DP-Proposal#readme
+bug-reports:    https://github.com/privacytoolsproject/DP-Proposal/issues
+author:         privacytoolsproject
+maintainer:     privacytoolsproject
+license:        BSD3
+license-file:   LICENSE
+build-type:     Custom
 extra-source-files:
-    configure
-    detect-ghc-buildinfo.py
-    ../prototypes/**/*.proto
-extra-tmp-files:        validator-haskell.buildinfo
+    ../prototypes/analysis.proto
+    ../prototypes/release.proto
+    ../prototypes/types.proto
+    README.md
+
 custom-setup
   setup-depends:        base, Cabal, proto-lens-setup
 
-
 library
   default-language: Haskell2010
+  c-sources: csrc/DPValidatorWrapper.c
   hs-source-dirs:
     src
   exposed-modules:
@@ -28,31 +39,31 @@ library
     Proto.Types
     Proto.Types_Fields
   build-depends:
-    base >=4.9 && <4.10
+    base >=4.11 && <4.13
+    , microlens
+    , proto-lens
     , proto-lens-runtime
   ghc-options:
     -Wall -fwarn-unused-imports
 
-executable libdifferential_privacy.so
-  default-language:     Haskell2010
-  hs-source-dirs:       src
-  main-is:              api.hs
+foreign-library Validator
+  type:                native-shared
+  lib-version-info:    6:3:2
+
+  if os(Windows)
+    options: standalone
+    mod-def-file: DPValidator.def
+
   build-depends:
-    validator-haskell
-    , base
-    , microlens
-    , proto-lens
-    , proto-lens-runtime
+      validator-haskell
+      , base >=4.11 && <4.13
+      , microlens
+      , proto-lens
+      , proto-lens-runtime
+  default-language:    Haskell2010
+  hs-source-dirs:      src
+  c-sources:           csrc/DPValidatorWrapper.c
 
-  ghc-options:
-    -- For building TemplateHaskell with cabal and -dynamic, we have to disable -dynamic sometimes
-    -no-hs-main -fPIC -shared -dynamic
-
-  -- If we don't specify the Haskell RTS as extra-libraries, we get errors like
-  -- the following when calling from some other language:
-  --   /usr/lib/ghc/ghc-prim-0.3.0.0/libHSghc-prim-0.3.0.0-ghc7.6.3.so: undefined symbol: stg_forkOnzh
-  --
-  -- The `build-type: Configure` with the `./configure` script makes sure that
-  -- an `extra-libraries: HSrts-ghc*.*.*` field is added using cabal's .buildinfo infrastructure.
-  -- See http://stackoverflow.com/questions/6034526/how-can-configuration-tools-like-sdl-config-be-used-with-a-cabalized-project
-  -- and https://github.com/nh2/call-haskell-from-anything/pull/2#issuecomment-68638262.
+source-repository head
+  type: git
+  location: https://github.com/privacytoolsproject/DP-Proposal

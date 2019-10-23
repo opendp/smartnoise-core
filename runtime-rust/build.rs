@@ -20,10 +20,4 @@ fn main() {
         cbindgen::Config::from_file("cbindgen.toml").unwrap())
         .expect("Unable to generate bindings")
         .write_to_file("api.h");
-//    println!("TESTx");
-//    cbindgen::Builder::new()
-//        .with_crate(crate_dir)
-//        .generate()
-//        .expect("Unable to generate bindings")
-//        .write_to_file("api.h");
 }
