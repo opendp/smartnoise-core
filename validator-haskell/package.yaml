@@ -16,6 +16,13 @@ extra-source-files:
 dependencies:
 - base >= 4.7 && < 5
 
+#  options for compiling the library with position independent code and statically
+# -Wall -fwarn-unused-imports -fPIC
+#    ld-options: -static
+#  static compilation hits a common bug for gcc wrappers like cabal on ubuntu
+#  https://bugs.launchpad.net/ubuntu/+source/gcc-4.4/+bug/640734
+#  more bugs exist in windows distros
+
 # contents to inject directly to .cabal file
 # (library block could be translated to hpack)
 verbatim: |

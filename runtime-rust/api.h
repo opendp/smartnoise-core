@@ -30,3 +30,7 @@ ByteBuffer release_array(const uint8_t *analysis_ptr,
                          const double *const *_data);
 
 const char *string_from_rust(void);
+
+void test_sample_laplace(double *samples_buf, uint32_t n_samples);
+
+void test_sample_uniform(double *samples_buf, uint32_t n_samples);

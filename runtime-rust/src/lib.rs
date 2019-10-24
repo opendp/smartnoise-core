@@ -137,5 +137,28 @@ pub extern fn string_from_rust() -> *const std::os::raw::c_char {
     p
 }
 
+#[no_mangle]
+pub extern fn test_sample_uniform(samples_buf: *mut f64, n_samples: u32) {
+
+    let samples: Vec<f64> = (0..n_samples)
+        .map(|_x| utilities::sample_uniform(0., 1.)).collect();
+
+    unsafe {
+        std::slice::from_raw_parts_mut(samples_buf, n_samples as usize)
+            .copy_from_slice(&samples);
+    }
+}
+#[no_mangle]
+pub extern fn test_sample_laplace(samples_buf: *mut f64, n_samples: u32) {
+
+    let samples: Vec<f64> = (0..n_samples)
+        .map(|_x| utilities::sample_laplace(0., 1.)).collect();
+
+    unsafe {
+        std::slice::from_raw_parts_mut(samples_buf, n_samples as usize)
+            .copy_from_slice(&samples);
+    }
+}
+
 //ffi_support::implement_into_ffi_by_protobuf!(burdock::Release);
 ffi_support::define_bytebuffer_destructor!(dp_runtime_destroy_bytebuffer);

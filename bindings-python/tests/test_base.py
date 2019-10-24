@@ -63,3 +63,24 @@ def test_haskell_validator():
     print(analysis_pb2.Component.FromString(buffer))
 
     validator_lib.validate_analysis(buffer)
+
+
+def test_rust_sampling():
+    import ctypes
+    import matplotlib.pyplot as plt
+
+    n_samples = 10000
+    buffer_type = ctypes.c_double * n_samples
+    buffer = buffer_type(*(0 for _ in range(n_samples)))
+    burdock.core_wrapper.lib_runtime.test_sample_uniform(buffer, n_samples)
+
+    plt.hist(list(buffer))
+    plt.title = "uniform sampling"
+    plt.show()
+
+    burdock.core_wrapper.lib_runtime.test_sample_laplace(buffer, n_samples)
+
+    plt.hist(list(buffer))
+    plt.title = "laplace sampling"
+    plt.show()
+
