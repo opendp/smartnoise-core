@@ -1,10 +1,11 @@
 {-# LANGUAGE ForeignFunctionInterface, ViewPatterns, OverloadedStrings #-}
-module Validator (foo) where
+module Validator where
 
 import           Proto.Types
 import           Proto.Analysis
 import           Proto.Analysis_Fields
-import           Data.ProtoLens (defMessage, showMessage, encodeMessage, decodeMessage)
+import           Proto.Release
+import           Data.ProtoLens (defMessage, showMessage, encodeMessage, decodeMessageOrDie)
 import           Lens.Micro
 import           Data.ProtoLens.Labels ()
 import           Lens.Micro.Extras (view)
@@ -66,16 +67,36 @@ showProtos = putStrLn (showMessage componentExample)
 foreign export ccall getProto :: IO (CString)
 getProto = unpack(toSingleBuffer(L.fromStrict(encodeMessage(componentExample))))
 
+
 --http://google.github.io/proto-lens/tutorial.html
 
-addNumbers :: Int
-addNumbers = 1 + 7
+-- BEGIN STANDARD API
+foreign export ccall validate_analysis :: CString -> Int -> IO (Bool)
+validate_analysis analysisBuffer analysisLen = do
+  analysisMessage <- B.packCStringLen((analysisBuffer, analysisLen))
+  let analysis = decodeMessageOrDie(analysisMessage) :: Proto.Analysis.Analysis
+  putStrLn "analysis for validation:"
+  putStrLn $ showMessage analysis
+  return True
 
-foreign export ccall foo :: Int -> IO Int
+foreign export ccall compute_epsilon :: CString -> Int -> IO (Double)
+compute_epsilon analysisBuffer analysisLen = do
 
-foo :: Int -> IO Int
-foo n = return (length (f n))
+  analysisMessage <- B.packCStringLen((analysisBuffer, analysisLen))
+  let analysis = decodeMessageOrDie(analysisMessage) :: Proto.Analysis.Analysis
+  putStrLn "analysis for computing epsilon:"
+  putStrLn $ showMessage analysis
+  return 0.1
 
-f :: Int -> [Int]
-f 0 = []
-f n = n:(f (n-1))
+foreign export ccall generate_report :: CString -> Int -> CString -> Int -> IO CString
+generate_report analysisBuffer analysisLen releaseBuffer releaseLen = do
+  analysisMessage <- B.packCStringLen((analysisBuffer, analysisLen))
+  let analysis = decodeMessageOrDie(analysisMessage) :: Proto.Analysis.Analysis
+
+  releaseBuffer <- B.packCStringLen((releaseBuffer, releaseLen))
+  let analysis = decodeMessageOrDie(releaseBuffer) :: Proto.Release.Release
+
+  newCString "{\"key\": \"This is a release in json schema format.\"}"
+
+foreign export ccall free_ptr :: CString -> IO ()
+free_ptr ptr = return ()

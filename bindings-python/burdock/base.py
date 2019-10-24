@@ -12,7 +12,7 @@ import analysis_pb2
 import types_pb2
 import release_pb2
 
-core_wrapper = LibraryWrapper(validator='C++', runtime='RUST')
+core_wrapper = LibraryWrapper(validator='HASKELL', runtime='RUST')
 
 
 class Component(object):

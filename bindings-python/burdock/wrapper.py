@@ -19,7 +19,9 @@ extension = {'darwin': '.dylib', 'win32': '.dll'}.get(platform, '.so')
 
 validator_paths = {
     "C++": f'../validator-c++/cmake-build-debug/lib/{prefix}differential_privacy{extension}',
-    "HASKELL": f'../validator-haskell/{prefix}differential_privacy{extension}'
+    "HASKELL": f"../validator-haskell/.stack-work/install/x86_64-linux/" \
+               f"148d0e92cd3f02b3b71e5e570acc02f4fd5aeac7a29166dac7a6b62c52d8796b/" \
+               f"8.6.5/lib/{prefix}Validator{extension}"
 }
 
 runtime_paths = {
@@ -63,6 +65,9 @@ class LibraryWrapper(object):
 
         self.lib_dp.free_ptr.argtypes = (ctypes.c_void_p,)
 
+        if validator == "HASKELL":
+            self.lib_dp.DPValidatorInit()
+
         # load runtime functions
         self.lib_runtime = ctypes.cdll.LoadLibrary(runtime_path)
         self.lib_runtime.release.argtypes = (
@@ -81,6 +86,10 @@ class LibraryWrapper(object):
         self.lib_runtime.release_array.restype = ByteBuffer if runtime == "RUST" else ctypes.c_char_p
 
         self.lib_runtime.free_ptr.argtypes = (ctypes.c_void_p,)
+
+    def __del__(self):
+        if self.validator == "HASKELL":
+            self.lib_dp.DPValidatorExit()
 
     def computeEpsilon(self, analysis):
         serialized_analysis = analysis.SerializeToString()
