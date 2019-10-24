@@ -38,6 +38,7 @@ verbatim: |
       Proto.Types_Fields
     build-depends:
       base >=4.11 && <4.13
+      , bytestring
       , microlens
       , proto-lens
       , proto-lens-runtime
@@ -55,6 +56,7 @@ verbatim: |
     build-depends:
         validator-haskell
         , base >=4.11 && <4.13
+        , bytestring
         , microlens
         , proto-lens
         , proto-lens-runtime

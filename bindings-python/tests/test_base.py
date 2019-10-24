@@ -40,3 +40,24 @@ def test_basic_path():
 
     print('release json:', analysis.release(test_csv_path))
     print('release proto:', analysis.release_proto)
+
+
+def test_haskell_validator():
+
+    import ctypes
+    import analysis_pb2
+    haskell_path = "../validator-haskell/.stack-work/install/x86_64-linux/" \
+                   "148d0e92cd3f02b3b71e5e570acc02f4fd5aeac7a29166dac7a6b62c52d8796b/" \
+                   "8.6.5/lib/libValidator.so"
+    validator_lib = ctypes.cdll.LoadLibrary(haskell_path)
+    validator_lib.getProto.restype = ctypes.c_char_p
+
+    validator_lib.DPValidatorInit()
+
+    print(validator_lib.foo(7))
+    validator_lib.showProtos()
+
+    buffer = validator_lib.getProto()
+    print("buffer:", buffer)
+
+    print(analysis_pb2.Component.FromString(buffer))
