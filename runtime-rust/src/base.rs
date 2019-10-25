@@ -13,9 +13,9 @@ pub mod burdock {
 }
 
 // equivalent to proto ArrayNd
-//#[derive(Copy, Clone)]
+#[derive(Debug)]
 pub enum FieldEvaluation {
-    Bytes(ArrayD<u8>), // bytes::Bytes
+    Bytes(ArrayD<u8>), // bytes::Bytes BROKEN: only one byte is stored
     Bool(ArrayD<bool>),
     I64(ArrayD<i64>),
     F64(ArrayD<f64>),
@@ -115,19 +115,11 @@ pub fn execute_graph(analysis: &burdock::Analysis,
             parents.entry(*argument_node_id).or_insert_with(HashSet::<u32>::new).insert(*node_id);
         })
     });
-//    for (node_id, component) in graph {
-//        for field in component.arguments.values() {
-//            let argument_node_id = &field.source_node_id;
-//            parents.entry(*argument_node_id).or_insert_with(HashSet::<u32>::new).insert(*node_id);
-//        }
-//    }
 
     while !traversal.is_empty() {
         let node_id: u32 = *traversal.last().unwrap();
         let component = graph.get(&node_id).unwrap();
         let arguments = component.to_owned().arguments;
-
-        println!("traversal on: {:?}", node_id);
 
         // discover if any dependencies remain uncomputed
         let mut evaluable = true;
@@ -220,17 +212,18 @@ pub fn parse_proto_array(value: &burdock::ArrayNd) -> FieldEvaluation {
 }
 
 pub fn serialize_proto_array(evaluation: &FieldEvaluation) -> burdock::ArrayNd {
+
     match evaluation {
         FieldEvaluation::Bytes(x) => burdock::ArrayNd {
             datatype: burdock::DataType::Bytes as i32,
-            data: Some(burdock::array_nd::Data::Bytes(x.to_owned().into_dimensionality::<Ix1>().unwrap().to_vec())),
+            data: Some(burdock::array_nd::Data::Bytes(x.iter().map(|s| *s).collect())),
             order: (1..x.ndim()).map(|x| {x as u64}).collect(),
             shape: x.shape().iter().map(|y| {*y as u64}).collect()
         },
         FieldEvaluation::Bool(x) => burdock::ArrayNd {
             datatype: burdock::DataType::Bool as i32,
             data: Some(burdock::array_nd::Data::Bool(burdock::Array1Dbool {
-                data: x.to_owned().into_dimensionality::<Ix1>().unwrap().to_vec()
+                data: x.iter().map(|s| *s).collect()
             })),
             order: (1..x.ndim()).map(|x| {x as u64}).collect(),
             shape: x.shape().iter().map(|y| {*y as u64}).collect()
@@ -238,7 +231,7 @@ pub fn serialize_proto_array(evaluation: &FieldEvaluation) -> burdock::ArrayNd {
         FieldEvaluation::I64(x) => burdock::ArrayNd {
             datatype: burdock::DataType::I64 as i32,
             data: Some(burdock::array_nd::Data::I64(burdock::Array1Di64 {
-                data: x.to_owned().into_dimensionality::<Ix1>().unwrap().to_vec()
+                data: x.iter().map(|s| *s).collect()
             })),
             order: (1..x.ndim()).map(|x| {x as u64}).collect(),
             shape: x.shape().iter().map(|y| {*y as u64}).collect()
@@ -246,7 +239,7 @@ pub fn serialize_proto_array(evaluation: &FieldEvaluation) -> burdock::ArrayNd {
         FieldEvaluation::F64(x) => burdock::ArrayNd {
             datatype: burdock::DataType::F64 as i32,
             data: Some(burdock::array_nd::Data::F64(burdock::Array1Df64 {
-                data: x.to_owned().into_dimensionality::<Ix1>().unwrap().to_vec()
+                data: x.iter().map(|s| *s).collect()
             })),
             order: (1..x.ndim()).map(|x| {x as u64}).collect(),
             shape: x.shape().iter().map(|y| {*y as u64}).collect()
@@ -254,7 +247,7 @@ pub fn serialize_proto_array(evaluation: &FieldEvaluation) -> burdock::ArrayNd {
         FieldEvaluation::Str(x) => burdock::ArrayNd {
             datatype: burdock::DataType::String as i32,
             data: Some(burdock::array_nd::Data::String(burdock::Array1Dstr {
-                data: x.to_owned().into_dimensionality::<Ix1>().unwrap().to_vec()
+                data: x.iter().cloned().collect()
             })),
             order: (1..x.ndim()).map(|x| {x as u64}).collect(),
             shape: x.shape().iter().map(|y| {*y as u64}).collect()

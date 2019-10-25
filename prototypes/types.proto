@@ -46,3 +46,7 @@ message ArrayND {
     repeated uint64 order = 8;
 }
 
+// return type for validator's computed overall epsilon, per dataset 
+message Epsilon {
+    map<string, float> usage = 1;
+}

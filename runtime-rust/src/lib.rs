@@ -32,50 +32,23 @@ struct ByteBuffer {
 
 #[no_mangle]
 pub extern "C" fn release(
+    dataset_ptr: *const u8, dataset_length: i32,
     analysis_ptr: *const u8, analysis_length: i32,
-    release_ptr: *const u8, release_length: i32,
-    dataset_ptr: *const u8, dataset_length: i32) -> ffi_support::ByteBuffer {
+    release_ptr: *const u8, release_length: i32) -> ffi_support::ByteBuffer {
+
+    let dataset_buffer = unsafe {get_buffer(dataset_ptr, dataset_length)};
+    let dataset: burdock::Dataset = prost::Message::decode(dataset_buffer).unwrap();
 
     let analysis_buffer = unsafe {get_buffer(analysis_ptr, analysis_length)};
     let analysis: burdock::Analysis = prost::Message::decode(analysis_buffer).unwrap();
 
     let release_buffer = unsafe {get_buffer(release_ptr, release_length)};
     let release: burdock::Release = prost::Message::decode(release_buffer).unwrap();
-
-    let dataset_buffer = unsafe {get_buffer(dataset_ptr, dataset_length)};
-    let dataset: burdock::Dataset = prost::Message::decode(dataset_buffer).unwrap();
 
     let response_release = execute_graph(&analysis, &release, &dataset);
 
     let mut out_buffer = Vec::new();
     match prost::Message::encode(&response_release, &mut out_buffer) {
-        Ok(_t) => ffi_support::ByteBuffer::from_vec(out_buffer),
-        Err(error) => {
-            println!("Error encoding response protobuf.");
-            println!("{:?}", error);
-            ffi_support::ByteBuffer::new_with_size(0)
-        }
-    }
-}
-
-// DEPRECATED
-#[no_mangle]
-pub extern "C" fn release_array(
-    analysis_ptr: *const u8, analysis_length: i32,
-    release_ptr: *const u8, release_length: i32,
-    _m: i32, _n: i32, _data: *const*const f64) -> ffi_support::ByteBuffer {
-
-    let analysis_buffer = unsafe {get_buffer(analysis_ptr, analysis_length)};
-    let analysis: burdock::Analysis = prost::Message::decode(analysis_buffer).unwrap();
-
-    let release_buffer = unsafe {get_buffer(release_ptr, release_length)};
-    let release: burdock::Release = prost::Message::decode(release_buffer).unwrap();
-
-    println!("proto analysis: {:?}", analysis);
-    println!("proto release : {:?}", release);
-
-    let mut out_buffer = Vec::new();
-    match prost::Message::encode(&release, &mut out_buffer) {
         Ok(_t) => ffi_support::ByteBuffer::from_vec(out_buffer),
         Err(error) => {
             println!("Error encoding response protobuf.");
@@ -132,13 +105,15 @@ pub extern fn test_ndarray() {
     let temp = Array::from_elem((2, 2, 3, 4), 2.2) * 2.3;
     println!("{:?}", temp);
 
-    // multiply with zero dimensional array
-    let temp = Array::from_elem((2,), 2) * Array::from_elem((), 3);
-    println!("{:?}", temp);
+    println!("FIRST: {:?}", temp.into_dyn().first());
 
-    // string datatype
-    let temp = Array::from_elem((1, 2), "test");
-    println!("{:?}", temp);
+    // multiply with zero dimensional array
+//    let temp = Array::from_elem((2,), 2) * Array::from_elem((), 3);
+//    println!("{:?}", temp);
+//
+//    // string datatype
+//    let temp = Array::from_elem((1, 2), "test");
+//    println!("{:?}", temp);
 
     //
 //    let temp = Array::from_elem((1, 2), "test") * 2;

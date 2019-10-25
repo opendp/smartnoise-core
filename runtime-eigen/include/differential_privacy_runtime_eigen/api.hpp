@@ -12,12 +12,6 @@ extern "C" {
             char* dataPath, size_t dataPathLength,
             char* header, size_t headerLength);
 
-    char* release_array(
-            char* analysisBuffer, size_t analysisLength,
-            char* releaseBuffer, size_t releaseLength,
-            int m, int n, const double** data,
-            char* header, size_t headerLength);
-
     // for deallocating pointers to malloc'ed char arrays
     void free_ptr(char* ptr);
 }

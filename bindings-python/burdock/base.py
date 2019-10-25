@@ -1,6 +1,7 @@
 import subprocess
 import queue
 import os
+import numpy as np
 
 # protoc must be installed and on path
 subprocess.call(f"protoc --python_out={os.getcwd()} *.proto", shell=True, cwd=os.path.abspath('../prototypes/'))
@@ -11,8 +12,9 @@ from burdock.wrapper import LibraryWrapper
 import analysis_pb2
 import types_pb2
 import release_pb2
+import dataset_pb2
 
-core_wrapper = LibraryWrapper(validator='HASKELL', runtime='RUST')
+core_wrapper = LibraryWrapper(validator='C++', runtime='RUST')
 
 
 class Component(object):
@@ -39,6 +41,40 @@ def mean(data):
     return Component('Mean', {'data': data})
 
 
+def array_nd(data):
+
+    if type(data) is bytes:
+        return types_pb2.ArrayND(
+            datatype=types_pb2.DataType.Value("BYTES"),
+            bytes=data
+        )
+
+    data = np.array(data)
+
+    data_type = {
+        np.bool: "BOOL",
+        np.int64: "I64",
+        np.float64: "F64",
+        np.string_: "STRING"
+    }[data.dtype.type]
+
+    container_type = {
+        np.bool: types_pb2.Array1Dbool,
+        np.int64: types_pb2.Array1Di64,
+        np.float64: types_pb2.Array1Df64,
+        np.string_: types_pb2.Array1Dstr
+    }[data.dtype.type]
+
+    proto_args = {
+        "datatype": data_type,
+        data_type.lower(): container_type(data=list(data.flatten())),
+        "shape": list(data.shape),
+        "order": list(range(data.ndim))
+    }
+
+    return types_pb2.ArrayND(**proto_args)
+
+
 def dp_mean_laplace(data, epsilon, minimum=None, maximum=None, num_records=None):
 
     # TODO: recursively extract from child? potentially implement in validator, or runtime?
@@ -46,9 +82,9 @@ def dp_mean_laplace(data, epsilon, minimum=None, maximum=None, num_records=None)
     #     minimum =
     return Component('DPMeanLaplace', {
         'data': data,
-        'num_records': Component('Literal', options={'numeric': num_records}),
-        'minimum': Component('Literal', options={'numeric': minimum}),
-        'maximum': Component('Literal', options={'numeric': maximum})
+        'num_records': Component('Literal', options={'value': array_nd(num_records)}),
+        'minimum': Component('Literal', options={'value': array_nd(minimum)}),
+        'maximum': Component('Literal', options={'value': array_nd(maximum)})
     }, {'epsilon': epsilon})
 
 
@@ -113,26 +149,33 @@ class Analysis(object):
     def _make_release_proto(self):
         return self.release_proto or release_pb2.Release()
 
+    def _make_dataset_proto(self, data):
+        return dataset_pb2.Dataset(
+            tables={
+                table_id: dataset_pb2.Table(
+                    file_path=data[table_id]
+                ) for table_id in data
+            })
+
     def validate(self):
-        return core_wrapper.validateAnalysis(
+        return core_wrapper.validate_analysis(
             self._make_analysis_proto())
 
     @property
     def epsilon(self):
-        return core_wrapper.computeEpsilon(
+        return core_wrapper.compute_epsilon(
             self._make_analysis_proto())
 
     def release(self, data):
-        analysis_proto = self._make_analysis_proto()
-
-        self.release_proto: release_pb2.Release = core_wrapper.computeRelease(
-            analysis_proto,
-            self._make_release_proto(),
-            data)
-
-        return core_wrapper.generateReport(
+        analysis_proto: analysis_pb2.Analysis = self._make_analysis_proto()
+        self.release_proto: release_pb2.Release = core_wrapper.compute_release(
+            self._make_dataset_proto(data),
             analysis_proto,
             self._make_release_proto())
+
+        return core_wrapper.generate_report(
+            analysis_proto,
+            self.release_proto)
 
     def __enter__(self):
         global context
@@ -147,6 +190,8 @@ class Analysis(object):
     def plot(self):
         import networkx as nx
         import matplotlib.pyplot as plt
+        import warnings
+        warnings.filterwarnings("ignore", category=UserWarning, module="matplotlib")
 
         analysis = self._make_analysis_proto()
         graph = nx.DiGraph()
@@ -160,6 +205,7 @@ class Analysis(object):
 
         nx.draw(graph, with_labels=True, node_color='white')
         plt.pause(.001)
+
 
 # sugary syntax for managing analysis contexts
 context = None

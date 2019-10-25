@@ -2,7 +2,6 @@ import os
 import json
 import ctypes
 
-import pandas
 from numpy.ctypeslib import ndpointer
 import numpy as np
 
@@ -39,6 +38,15 @@ class ByteBuffer(ctypes.Structure):
     ]
 
 
+def _serialize_proto(proto):
+    serialized = proto.SerializeToString()
+    # if type(proto) == analysis_pb2.Analysis:
+    #     print(analysis_pb2.Analysis.FromString(serialized))
+    bytes_array = bytearray(serialized)
+    buffer = (ctypes.c_char * len(serialized)).from_buffer(bytes_array)
+    return buffer, len(bytes_array)
+
+
 class LibraryWrapper(object):
     def __init__(self, validator, runtime):
 
@@ -71,19 +79,19 @@ class LibraryWrapper(object):
         # load runtime functions
         self.lib_runtime = ctypes.cdll.LoadLibrary(runtime_path)
         self.lib_runtime.release.argtypes = (
+            ctypes.c_char_p, ctypes.c_int,  # input dataset
             ctypes.c_char_p, ctypes.c_int,  # input analysis
-            ctypes.c_char_p, ctypes.c_int,  # input release
-            ctypes.c_char_p, ctypes.c_int)  # input data path
+            ctypes.c_char_p, ctypes.c_int)  # input release
         self.lib_runtime.release.restype = ByteBuffer if runtime == "RUST" else ctypes.c_char_p
 
         # self.lib_runtime.dp_runtime_destroy_bytebuffer.argtypes = (ctypes.POINTER(ByteBuffer),)
 
-        _doublepp = ndpointer(dtype=np.uintp, ndim=1, flags='C')
-        self.lib_runtime.release_array.argtypes = (
-            ctypes.c_int8, ctypes.c_int,  # input analysis
-            ctypes.c_int8, ctypes.c_int,  # input release
-            ctypes.c_int, ctypes.c_int, _doublepp)  # input data
-        self.lib_runtime.release_array.restype = ByteBuffer if runtime == "RUST" else ctypes.c_char_p
+        # _doublepp = ndpointer(dtype=np.uintp, ndim=1, flags='C')
+        # self.lib_runtime.release_array.argtypes = (
+        #     ctypes.c_int8, ctypes.c_int,  # input analysis
+        #     ctypes.c_int8, ctypes.c_int,  # input release
+        #     ctypes.c_int, ctypes.c_int, _doublepp)  # input data
+        # self.lib_runtime.release_array.restype = ByteBuffer if runtime == "RUST" else ctypes.c_char_p
 
         self.lib_runtime.free_ptr.argtypes = (ctypes.c_void_p,)
 
@@ -91,103 +99,38 @@ class LibraryWrapper(object):
         if self.validator == "HASKELL":
             self.lib_dp.DPValidatorExit()
 
-    def computeEpsilon(self, analysis):
-        serialized_analysis = analysis.SerializeToString()
-        # print(analysis_pb2.Analysis.FromString(serialized_analysis))
-
-        char_array_analysis = ctypes.c_char * len(serialized_analysis)
-        bytes_analysis = bytearray(serialized_analysis)
-        buffer_analysis = char_array_analysis.from_buffer(bytes_analysis)
-
-        return self.lib_dp.compute_epsilon(buffer_analysis, len(bytes_analysis))
-
-    def validateAnalysis(self, analysis):
-        serialized_analysis = analysis.SerializeToString()
-
-        char_array_analysis = ctypes.c_char * len(serialized_analysis)
-        bytes_analysis = bytearray(serialized_analysis)
-        buffer_analysis = char_array_analysis.from_buffer(bytes_analysis)
-
-        return self.lib_dp.validate_analysis(buffer_analysis, len(bytes_analysis))
-
-    def generateReport(self, analysis, release):
-        serialized_analysis = analysis.SerializeToString()
-        serialized_release = release.SerializeToString()
-
-        char_array_analysis = ctypes.c_char * len(serialized_analysis)
-        bytes_analysis = bytearray(serialized_analysis)
-        buffer_analysis = char_array_analysis.from_buffer(bytes_analysis)
-
-        char_array_release = ctypes.c_char * len(serialized_release)
-        bytes_release = bytearray(serialized_release)
-        buffer_release = char_array_release.from_buffer(bytes_release)
-
-        serialized_report_ptr = self.lib_dp.generate_report(
-            buffer_analysis, len(bytes_analysis),
-            buffer_release, len(bytes_release),
+    def compute_epsilon(self, analysis):
+        return self.lib_dp.compute_epsilon(
+            *_serialize_proto(analysis)
         )
+
+    def validate_analysis(self, analysis):
+        return self.lib_dp.validate_analysis(
+            *_serialize_proto(analysis)
+        )
+
+    def generate_report(self, analysis, release):
+        serialized_report_ptr = self.lib_dp.generate_report(
+            *_serialize_proto(analysis),
+            *_serialize_proto(release)
+        )
+
         serialized_report = ctypes.cast(serialized_report_ptr, ctypes.c_char_p).value
         self.lib_dp.free_ptr(ctypes.c_char_p(serialized_report_ptr))
         return json.loads(serialized_report)
 
-    def computeRelease(self, analysis, release, data):
-        serialized_analysis = analysis.SerializeToString()
-        serialized_release = release.SerializeToString()
+    def compute_release(self, dataset, analysis, release):
 
-        if type(data) == str:
-            with open(data, 'r') as datafile:
-                header = datafile.readline().encode('utf-8')
+        byte_buffer = self.lib_runtime.release(
+            *_serialize_proto(dataset),
+            *_serialize_proto(analysis),
+            *_serialize_proto(release)
+        )
 
-            char_array_analysis = ctypes.c_char * len(serialized_analysis)
-            bytes_analysis = bytearray(serialized_analysis)
-            buffer_analysis = char_array_analysis.from_buffer(bytes_analysis)
+        if self.runtime == 'RUST':
+            serialized_response = ctypes.string_at(byte_buffer.data, byte_buffer.len)
+        else:
+            serialized_response = byte_buffer
+        # self.lib_runtime.dp_runtime_destroy_bytebuffer(ctypes.pointer(byte_buffer))
 
-            char_array_release = ctypes.c_char * len(serialized_release)
-            bytes_release = bytearray(serialized_release)
-            buffer_release = char_array_release.from_buffer(bytes_release)
-
-            byte_buffer = self.lib_runtime.release(
-                buffer_analysis, len(bytes_analysis),
-                buffer_release, len(bytes_release),
-                ctypes.c_char_p(data.encode('utf-8')), len(data),
-                ctypes.c_char_p(header), len(header)
-            )
-
-            if self.runtime == 'RUST':
-                serialized_response = ctypes.string_at(byte_buffer.data, byte_buffer.len)
-            else:
-                serialized_response = byte_buffer
-            # self.lib_runtime.dp_runtime_destroy_bytebuffer(ctypes.pointer(byte_buffer))
-
-            return release_pb2.Release.FromString(serialized_response)
-
-        if type(data) == pandas.DataFrame:
-
-            array = data.to_numpy()
-            header = '.'.join(data.columns.values).encode('utf-8')
-
-            if len(data.shape) != 2:
-                raise ValueError('data must be a 2-dimensional array')
-
-            char_array_analysis = ctypes.c_char * len(serialized_analysis)
-            bytes_analysis = bytearray(serialized_analysis)
-            buffer_analysis = char_array_analysis.from_buffer(bytes_analysis)
-
-            char_array_release = ctypes.c_char * len(serialized_release)
-            bytes_release = bytearray(serialized_release)
-            buffer_release = char_array_release.from_buffer(bytes_release)
-
-            byte_buffer = self.lib_runtime.release_array(
-                buffer_analysis, len(bytes_analysis),
-                buffer_release, len(bytes_release),
-                *[ctypes.c_int(i) for i in array.shape],
-                (array.__array_interface__['data'][0] + np.arange(array.shape[0]) * array.strides[0]).astype(np.uintp),
-                ctypes.c_char_p(header), len(header)
-            )
-            if self.runtime == 'RUST':
-                serialized_response = ctypes.string_at(byte_buffer.data, byte_buffer.len)
-            else:
-                serialized_response = byte_buffer
-
-            # self.lib_runtime.dp_runtime_destroy_bytebuffer(ctypes.pointer(byte_buffer))
-            return release_pb2.Release.FromString(serialized_response)
+        return release_pb2.Release.FromString(serialized_response)
