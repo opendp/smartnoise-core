@@ -8,6 +8,39 @@ message Analysis {
     PrivacyDefinition definition = 2;
 }
 
+message PrivacyDefinition {
+    // upper bound
+    double epsilon = 1;
+    double delta = 2;
+    double rho = 3;
+
+    uint32 group_size = 4;
+
+    enum Distance {
+        // (e, 0)-differential privacy
+        PURE = 0;
+
+        // (e, d)-differential privacy
+        APPROXIMATE = 1;
+
+        // https://arxiv.org/pdf/1702.07476.pdf
+        RENYI = 2;
+
+        // https://arxiv.org/pdf/1603.01887.pdf
+        CONCENTRATED = 3;
+
+        // https://arxiv.org/pdf/1905.02383.pdf
+        F = 4;
+    }
+    Distance distance = 5;
+
+    enum Neighboring {
+        SUBSTITUTE = 0;
+        ADD_REMOVE = 1;
+    }
+    Neighboring neighboring = 6;
+}
+
 message Component {
     message Field {
         uint32 source_node_id = 1;
@@ -34,15 +67,26 @@ message Laplace {
     double epsilon = 1;
 }
 message Literal {
-    NDArray ndarray = 1;
-    double numeric = 2;
-    string nominal = 3;
+    ArrayND value = 1;
 }
 message Constant {}
 message Mean {}
 message DataSource {
     string dataset_id = 1;
     string column_id = 2;
+
+    // TODO: constraints/nature should be moved to arguments, THEY ARE PRIVATE
+    // TODO: is nature necessary? if categorical, then could cast the other types to strings
+    DataType datatype = 3;
+    enum Nature {
+        UNKNOWN = 0;
+        CONTINUOUS = 1;
+        CATEGORICAL = 2;
+    }
+    Nature nature = 4;
+
+    // should be a 1D array of the unique values (likely bool, int, or string)
+    ArrayND constraints = 5;
 }
 message DPMeanLaplace {
     double epsilon = 1;

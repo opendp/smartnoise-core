@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package burdock;
+import "types.proto";
+
+message Dataset {
+	Metadata metadata = 1;
+	map<string, Table> tables = 2;
+}
+
+message Table {
+	Metadata metadata = 1;
+	oneof value {
+		string file_path = 2;
+		string url_path = 3;
+		ArrayND literal = 4; // testing only
+	}
+}
+
+message Metadata {
+	string about = 1;
+	string license = 2;
+	// etc...
+}
+

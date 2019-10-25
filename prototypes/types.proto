@@ -2,69 +2,47 @@ syntax = "proto3";
 
 package burdock;
 
-message NDArray {
-    bytes data = 1;
-
-    // length of axes
-    repeated uint64 shape = 2;
-
-    // order of axes
-    repeated uint64 order = 3;
-
-    // length of element
-    enum type {
-        BYTES = 0; // default value is the unset type
-        DOUBLE = 1;
-        STRING = 2;
-    }
-}
 
 enum DataType {
-    scalar_nominal = 0;
-    scalar_numeric = 1;
-    array_numeric = 2;
+    BYTES = 0; // default value is the unset type
+    BOOL = 1;
+    I64 = 2;
+    F64 = 3;
+    STRING = 4;
 }
 
-message Value {
+message Array1Dbool {
+    repeated bool data = 1;
+}
 
-    DataType datatype = 1;
+message Array1Di64 {
+    repeated int64 data = 1;
+}
+
+message Array1Df64 {
+    repeated double data = 1;
+}
+
+message Array1Dstr {
+    repeated string data = 1;
+}
+
+message ArrayND {
+    // type of element
+    DataType datatype = 1;  
 
     oneof data {
-        string scalar_nominal = 2;
-        NDArray array_numeric = 3;
-        double scalar_numeric = 4;
+        bytes bytes = 2;
+        Array1Dbool bool = 3;
+        Array1Di64 i64 = 4;
+        Array1Df64 f64 = 5;
+        Array1Dstr string = 6;
     }
+
+    // length of axes
+    repeated uint64 shape = 7;
+
+    // order of axes
+    repeated uint64 order = 8;
 }
 
-message PrivacyDefinition {
-    // upper bound
-    double epsilon = 1;
-    double delta = 2;
-    double rho = 3;
-
-    uint32 group_size = 4;
-
-    enum Distance {
-        // (e, 0)-differential privacy
-        PURE = 0;
-
-        // (e, d)-differential privacy
-        APPROXIMATE = 1;
-
-        // https://arxiv.org/pdf/1702.07476.pdf
-        RENYI = 2;
-
-        // https://arxiv.org/pdf/1603.01887.pdf
-        CONCENTRATED = 3;
-
-        // https://arxiv.org/pdf/1905.02383.pdf
-        F = 4;
-    }
-    Distance distance = 5;
-
-    enum Neighboring {
-        SUBSTITUTE = 0;
-        ADD_REMOVE = 1;
-    }
-    Neighboring neighboring = 6;
-}

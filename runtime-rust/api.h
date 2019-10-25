@@ -18,8 +18,8 @@ ByteBuffer release(const uint8_t *analysis_ptr,
                    int32_t analysis_length,
                    const uint8_t *release_ptr,
                    int32_t release_length,
-                   const char *data_path,
-                   int32_t _data_path_length);
+                   const uint8_t *dataset_ptr,
+                   int32_t dataset_length);
 
 ByteBuffer release_array(const uint8_t *analysis_ptr,
                          int32_t analysis_length,
@@ -30,6 +30,8 @@ ByteBuffer release_array(const uint8_t *analysis_ptr,
                          const double *const *_data);
 
 const char *string_from_rust(void);
+
+void test_ndarray(void);
 
 void test_sample_laplace(double *samples_buf, uint32_t n_samples);
 

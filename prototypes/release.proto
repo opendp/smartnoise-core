@@ -8,5 +8,5 @@ message Release {
 }
 
 message ReleaseNode {
-	map<string, Value> values = 1;
+	map<string, ArrayND> values = 1;
 }

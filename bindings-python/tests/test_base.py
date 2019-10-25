@@ -53,8 +53,6 @@ def test_haskell_validator():
     validator_lib.getProto.restype = ctypes.c_char_p
 
     validator_lib.DPValidatorInit()
-
-    print(validator_lib.foo(7))
     validator_lib.showProtos()
 
     buffer = validator_lib.getProto()
@@ -70,17 +68,19 @@ def test_rust_sampling():
     import matplotlib.pyplot as plt
 
     n_samples = 10000
-    buffer_type = ctypes.c_double * n_samples
-    buffer = buffer_type(*(0 for _ in range(n_samples)))
-    burdock.core_wrapper.lib_runtime.test_sample_uniform(buffer, n_samples)
+    buffer = (ctypes.c_double * n_samples)(*(0 for _ in range(n_samples)))
 
+    burdock.core_wrapper.lib_runtime.test_sample_uniform(buffer, n_samples)
     plt.hist(list(buffer))
-    plt.title = "uniform sampling"
+    plt.title("uniform samples")
     plt.show()
 
     burdock.core_wrapper.lib_runtime.test_sample_laplace(buffer, n_samples)
-
     plt.hist(list(buffer))
-    plt.title = "laplace sampling"
+    plt.title("laplace samples")
     plt.show()
 
+
+def test_ndarray():
+
+    burdock.core_wrapper.lib_runtime.test_ndarray()

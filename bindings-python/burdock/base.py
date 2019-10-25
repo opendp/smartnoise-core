@@ -2,10 +2,10 @@ import subprocess
 import queue
 import os
 
-from burdock.wrapper import LibraryWrapper
-
 # protoc must be installed and on path
 subprocess.call(f"protoc --python_out={os.getcwd()} *.proto", shell=True, cwd=os.path.abspath('../prototypes/'))
+
+from burdock.wrapper import LibraryWrapper
 
 # these modules are generated via the subprocess call
 import analysis_pb2
@@ -104,9 +104,9 @@ class Analysis(object):
 
         return analysis_pb2.Analysis(
             graph=vertices,
-            definition=types_pb2.PrivacyDefinition(
-                distance=types_pb2.PrivacyDefinition.Distance.Value(self.distance),
-                neighboring=types_pb2.PrivacyDefinition.Neighboring.Value(self.neighboring)
+            definition=analysis_pb2.PrivacyDefinition(
+                distance=analysis_pb2.PrivacyDefinition.Distance.Value(self.distance),
+                neighboring=analysis_pb2.PrivacyDefinition.Neighboring.Value(self.neighboring)
             )
         )
 

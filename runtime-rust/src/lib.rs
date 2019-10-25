@@ -1,19 +1,14 @@
 #![feature(float_to_from_bytes)]
 
+use ndarray::prelude::*;
+
 extern crate libc;
 use libc::c_char;
-use std::ffi::CStr;
-
-extern crate arrow;
-use arrow::csv;
-
-use std::str;
-use std::path::Path;
-use std::fs::File;
 
 mod base;
 use base::burdock;
 mod utilities;
+mod components;
 use crate::base::execute_graph;
 
 // useful tutorial for proto over ffi here:
@@ -39,7 +34,7 @@ struct ByteBuffer {
 pub extern "C" fn release(
     analysis_ptr: *const u8, analysis_length: i32,
     release_ptr: *const u8, release_length: i32,
-    data_path: *const c_char, _data_path_length: i32) -> ffi_support::ByteBuffer {
+    dataset_ptr: *const u8, dataset_length: i32) -> ffi_support::ByteBuffer {
 
     let analysis_buffer = unsafe {get_buffer(analysis_ptr, analysis_length)};
     let analysis: burdock::Analysis = prost::Message::decode(analysis_buffer).unwrap();
@@ -47,41 +42,10 @@ pub extern "C" fn release(
     let release_buffer = unsafe {get_buffer(release_ptr, release_length)};
     let release: burdock::Release = prost::Message::decode(release_buffer).unwrap();
 
-    println!("{:?}", analysis.graph);
+    let dataset_buffer = unsafe {get_buffer(dataset_ptr, dataset_length)};
+    let dataset: burdock::Dataset = prost::Message::decode(dataset_buffer).unwrap();
 
-    let c_str_data_path: &str = unsafe { CStr::from_ptr(data_path) }.to_str().unwrap();
-
-    let data_file = File::open(Path::new(c_str_data_path)).unwrap();
-    let builder = csv::ReaderBuilder::new()
-        .has_headers(true)
-        .infer_schema(Some(100));
-
-    let mut csv = builder.build(data_file).unwrap();
-//    println!("{:?}", csv);
-    let batch = csv.next().unwrap().unwrap();
-    println!(
-        "Loaded {} rows containing {} columns",
-        batch.num_rows(),
-        batch.num_columns()
-    );
-//
-//    for i in 0..batch.num_rows() {
-//        let city_name: String = String::from_utf8(city.value(i).to_vec()).unwrap();
-//
-//        println!(
-//            "City: {}, Latitude: {}, Longitude: {}",
-//            city_name,
-//            lat.value(i),
-//            lng.value(i)
-//        );
-//    }
-
-    println!("Inferred schema: {:?}", batch.schema());
-
-    println!("proto analysis: {:?}", analysis);
-    println!("proto release : {:?}", release);
-
-    let response_release = execute_graph(&analysis, &release, &batch);
+    let response_release = execute_graph(&analysis, &release, &dataset);
 
     let mut out_buffer = Vec::new();
     match prost::Message::encode(&response_release, &mut out_buffer) {
@@ -94,6 +58,7 @@ pub extern "C" fn release(
     }
 }
 
+// DEPRECATED
 #[no_mangle]
 pub extern "C" fn release_array(
     analysis_ptr: *const u8, analysis_length: i32,
@@ -158,6 +123,26 @@ pub extern fn test_sample_laplace(samples_buf: *mut f64, n_samples: u32) {
         std::slice::from_raw_parts_mut(samples_buf, n_samples as usize)
             .copy_from_slice(&samples);
     }
+}
+
+#[no_mangle]
+pub extern fn test_ndarray() {
+
+    // multiply with scalar
+    let temp = Array::from_elem((2, 2, 3, 4), 2.2) * 2.3;
+    println!("{:?}", temp);
+
+    // multiply with zero dimensional array
+    let temp = Array::from_elem((2,), 2) * Array::from_elem((), 3);
+    println!("{:?}", temp);
+
+    // string datatype
+    let temp = Array::from_elem((1, 2), "test");
+    println!("{:?}", temp);
+
+    //
+//    let temp = Array::from_elem((1, 2), "test") * 2;
+//    println!("{:?}", temp);
 }
 
 //ffi_support::implement_into_ffi_by_protobuf!(burdock::Release);

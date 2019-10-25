@@ -1,26 +1,42 @@
-use arrow::record_batch::RecordBatch;
+use ndarray::prelude::*;
 
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::vec::Vec;
 
-use std::sync::Arc;
 use std::iter::FromIterator;
 
-use arrow::array::{ArrayRef, PrimitiveArray};
-
-use crate::utilities;
+use crate::components;
 
 // Include the `items` module, which is generated from items.proto.
 pub mod burdock {
     include!(concat!(env!("OUT_DIR"), "/burdock.rs"));
 }
 
-type FieldEvaluation = ArrayRef;
-type NodeEvaluation = HashMap<String, FieldEvaluation>;
-type GraphEvaluation = HashMap<u32, NodeEvaluation>;
+// equivalent to proto ArrayNd
+//#[derive(Copy, Clone)]
+pub enum FieldEvaluation {
+    Bytes(ArrayD<u8>), // bytes::Bytes
+    Bool(ArrayD<bool>),
+    I64(ArrayD<i64>),
+    F64(ArrayD<f64>),
+    Str(ArrayD<String>),
+}
 
-pub fn get_argument(graph_evaluation: &GraphEvaluation, argument: &burdock::component::Field) -> FieldEvaluation {
-    graph_evaluation.get(&argument.source_node_id).unwrap().get(&argument.source_field).unwrap().to_owned()
+// equivalent to proto ReleaseNode
+pub type NodeEvaluation = HashMap<String, FieldEvaluation>;
+// equivalent to proto Release
+pub type GraphEvaluation = HashMap<u32, NodeEvaluation>;
+
+// arguments to a node prior to evaluation
+pub type NodeArguments<'a> = HashMap<String, &'a FieldEvaluation>;
+
+pub fn get_arguments<'a>(component: &burdock::Component, graph_evaluation: &'a GraphEvaluation) -> NodeArguments<'a> {
+    let mut arguments = NodeArguments::new();
+    component.arguments.iter().for_each(|(field_id, field)| {
+        let evaluation: &'a FieldEvaluation = graph_evaluation.get(&field.source_node_id).unwrap().get(&field.source_field).unwrap().to_owned();
+        arguments.insert(field_id.to_owned(), evaluation);
+    });
+    arguments
 }
 
 pub fn get_release_nodes(analysis: &burdock::Analysis) -> HashSet<u32> {
@@ -70,15 +86,6 @@ pub fn get_sinks(analysis: &burdock::Analysis) -> HashSet<u32> {
     return node_ids.to_owned();
 }
 
-//pub fn get_sources(analysis: &burdock::Analysis) -> HashSet<u32> {
-//    let mut node_ids = HashSet::<u32>::new();
-//    for (node_id, node) in &analysis.graph {
-//        if node.arguments.len() > 0 {continue;}
-//        node_ids.insert(*node_id);
-//    }
-//    return node_ids.to_owned();
-//}
-
 pub fn is_privatizer(component: &burdock::Component) -> bool {
     use burdock::component::Value::*;
     match component.to_owned().value.unwrap() {
@@ -89,26 +96,31 @@ pub fn is_privatizer(component: &burdock::Component) -> bool {
 
 pub fn execute_graph(analysis: &burdock::Analysis,
                      release: &burdock::Release,
-                     data: &RecordBatch) -> burdock::Release {
+                     dataset: &burdock::Dataset) -> burdock::Release {
 
     let node_ids_release: HashSet<u32> = get_release_nodes(&analysis);
 
     // stack for storing which nodes to evaluate next
     let mut traversal = Vec::new();
     traversal.extend(get_sinks(&analysis).into_iter());
-//    for node_id in get_sinks(&analysis) { traversal.push(node_id); }
 
     let mut evaluations = release_to_evaluations(release);
     let graph: &HashMap<u32, burdock::Component> = &analysis.graph;
 
     // track node parents
     let mut parents = HashMap::<u32, HashSet<u32>>::new();
-    for (node_id, component) in graph {
-        for field in component.arguments.values() {
+    graph.iter().for_each(|(node_id, component)| {
+        component.arguments.values().for_each(|field| {
             let argument_node_id = &field.source_node_id;
             parents.entry(*argument_node_id).or_insert_with(HashSet::<u32>::new).insert(*node_id);
-        }
-    }
+        })
+    });
+//    for (node_id, component) in graph {
+//        for field in component.arguments.values() {
+//            let argument_node_id = &field.source_node_id;
+//            parents.entry(*argument_node_id).or_insert_with(HashSet::<u32>::new).insert(*node_id);
+//        }
+//    }
 
     while !traversal.is_empty() {
         let node_id: u32 = *traversal.last().unwrap();
@@ -132,7 +144,7 @@ pub fn execute_graph(analysis: &burdock::Analysis,
             traversal.pop();
 
             evaluations.insert(node_id, execute_component(
-                &graph.get(&node_id).unwrap(), &evaluations, data));
+                &graph.get(&node_id).unwrap(), &evaluations, &dataset));
 
             // remove references to parent node, and if empty and private
             for argument in arguments.values() {
@@ -153,80 +165,15 @@ pub fn execute_graph(analysis: &burdock::Analysis,
 
 pub fn execute_component(component: &burdock::Component,
                          evaluations: &GraphEvaluation,
-                         data: &RecordBatch) -> NodeEvaluation {
+                         dataset: &burdock::Dataset) -> NodeEvaluation {
+
+    let arguments = get_arguments(&component, &evaluations);
 
     match component.to_owned().value.unwrap() {
-        burdock::component::Value::Literal(x) => {
-            println!("literal");
-            let result: PrimitiveArray<arrow::datatypes::Float64Type> = vec![x.numeric].into();
-            let mut evaluation = NodeEvaluation::new();
-
-            evaluation.insert("data".to_owned(), Arc::new(result));
-            evaluation
-        },
-        burdock::component::Value::Datasource(x) => {
-            println!("datasource");
-
-            // https://docs.rs/datafusion-arrow/0.12.0/arrow/array/trait.Array.html
-            let (index, _schema) = data.schema().column_with_name(&x.column_id).unwrap();
-            let mut evaluation = NodeEvaluation::new();
-            evaluation.insert("data".to_owned(), data.column(index).to_owned());
-            evaluation
-        },
-        burdock::component::Value::Add(_x) => {
-            println!("add");
-
-            let left_generic = get_argument(
-                &evaluations,
-                &component.arguments.get("left").unwrap());
-            println!("left_generic: {:?}", left_generic);
-            let left = left_generic.as_any().downcast_ref::<arrow::array::Float64Array>().unwrap();
-
-            let right_generic = get_argument(
-                &evaluations,
-                &component.arguments.get("right").unwrap());
-            let right = right_generic.as_any().downcast_ref::<arrow::array::Float64Array>().unwrap();
-
-            let mut evaluation = NodeEvaluation::new();
-            let data = arrow::compute::add(&left, &right).unwrap();
-            evaluation.insert("data".to_owned(), Arc::new(data));
-            evaluation
-        },
-        burdock::component::Value::Dpmeanlaplace(x) => {
-            println!("dpmeanlaplace");
-
-            let data_generic = get_argument(
-                &evaluations,
-                &component.arguments.get("data").unwrap());
-            let data = data_generic.as_any().downcast_ref::<arrow::array::Float64Array>().unwrap();
-
-            let min_generic = get_argument(
-                &evaluations,
-                &component.arguments.get("minimum").unwrap());
-            let min = min_generic.as_any().downcast_ref::<arrow::array::Float64Array>().unwrap().value(0);
-
-            let max_generic = get_argument(
-                &evaluations,
-                &component.arguments.get("maximum").unwrap());
-            let max = max_generic.as_any().downcast_ref::<arrow::array::Float64Array>().unwrap().value(0);
-
-            let num_records_generic = get_argument(
-                &evaluations,
-                &component.arguments.get("num_records").unwrap());
-            let num_records = num_records_generic.as_any().downcast_ref::<arrow::array::Float64Array>().unwrap().value(0);
-
-            let epsilon = x.epsilon;
-
-            let mut evaluation = NodeEvaluation::new();
-            // TODO: don't use len, pull from arguments
-            let mean = arrow::compute::sum(&data).unwrap() / data.len() as f64;
-            let sensitivity = (max - min) / num_records;
-            let noised = mean + utilities::sample_laplace(0., sensitivity / epsilon);
-            let result: PrimitiveArray<arrow::datatypes::Float64Type> = vec![noised].into();
-
-            evaluation.insert("data".to_owned(), Arc::new(result));
-            evaluation
-        },
+        burdock::component::Value::Literal(x) => components::literal(&x),
+        burdock::component::Value::Datasource(x) => components::datasource(&x, &dataset),
+        burdock::component::Value::Add(x) => components::add(&x, &arguments),
+        burdock::component::Value::Dpmeanlaplace(x) => components::dp_mean_laplace(&x, &arguments),
         _ => NodeEvaluation::new()
     }
 }
@@ -237,17 +184,7 @@ pub fn release_to_evaluations(release: &burdock::Release) -> GraphEvaluation {
     for (node_id, node_release) in &release.values {
         let mut evaluations_node = NodeEvaluation::new();
         for (field_id, field_release) in &node_release.values {
-//            burdock::Value {
-//
-//                data: Some(burdock::value::Data::ScalarNumeric(23.2))
-//            };
-            let numeric = match field_release.data.to_owned().unwrap() {
-                burdock::value::Data::ScalarNumeric(x) => x,
-                _ => 0.23
-            };
-
-            let result: PrimitiveArray<arrow::datatypes::Float64Type> = vec![numeric].into();
-            evaluations_node.insert(field_id.to_owned(), Arc::new(result));
+            evaluations_node.insert(field_id.to_owned(), parse_proto_array(&field_release));
         }
         evaluations.insert(*node_id, evaluations_node);
     }
@@ -260,13 +197,7 @@ pub fn evaluations_to_release(evaluations: &GraphEvaluation) -> burdock::Release
         let mut node_release = HashMap::new();
 
         for (field_name, field_eval) in node_eval {
-            let temp = field_eval.as_any().downcast_ref::<arrow::array::Float64Array>().unwrap().value(0);
-            let value = burdock::Value {
-                datatype: 1, // burdock::DataType::ScalarNumeric,
-                data: Some(burdock::value::Data::ScalarNumeric(temp))
-            };
-
-            node_release.insert(field_name.to_owned(), value);
+            node_release.insert(field_name.to_owned(), serialize_proto_array(&field_eval));
         }
         releases.insert(*node_id, burdock::ReleaseNode {
             values: node_release.to_owned()
@@ -274,5 +205,59 @@ pub fn evaluations_to_release(evaluations: &GraphEvaluation) -> burdock::Release
     }
     burdock::Release {
         values: releases
+    }
+}
+
+pub fn parse_proto_array(value: &burdock::ArrayNd) -> FieldEvaluation {
+    // TODO use shape and axes
+    match value.to_owned().data.unwrap() {
+        burdock::array_nd::Data::Bytes(x) => FieldEvaluation::Bytes(Array1::from(x).into_dyn()),
+        burdock::array_nd::Data::Bool(x) => FieldEvaluation::Bool(Array1::from(x.data).into_dyn()),
+        burdock::array_nd::Data::I64(x) => FieldEvaluation::I64(Array1::from(x.data).into_dyn()),
+        burdock::array_nd::Data::F64(x) => FieldEvaluation::F64(Array1::from(x.data).into_dyn()),
+        burdock::array_nd::Data::String(x) => FieldEvaluation::Str(Array1::from(x.data).into_dyn()),
+    }
+}
+
+pub fn serialize_proto_array(evaluation: &FieldEvaluation) -> burdock::ArrayNd {
+    match evaluation {
+        FieldEvaluation::Bytes(x) => burdock::ArrayNd {
+            datatype: burdock::DataType::Bytes as i32,
+            data: Some(burdock::array_nd::Data::Bytes(x.to_owned().into_dimensionality::<Ix1>().unwrap().to_vec())),
+            order: (1..x.ndim()).map(|x| {x as u64}).collect(),
+            shape: x.shape().iter().map(|y| {*y as u64}).collect()
+        },
+        FieldEvaluation::Bool(x) => burdock::ArrayNd {
+            datatype: burdock::DataType::Bool as i32,
+            data: Some(burdock::array_nd::Data::Bool(burdock::Array1Dbool {
+                data: x.to_owned().into_dimensionality::<Ix1>().unwrap().to_vec()
+            })),
+            order: (1..x.ndim()).map(|x| {x as u64}).collect(),
+            shape: x.shape().iter().map(|y| {*y as u64}).collect()
+        },
+        FieldEvaluation::I64(x) => burdock::ArrayNd {
+            datatype: burdock::DataType::I64 as i32,
+            data: Some(burdock::array_nd::Data::I64(burdock::Array1Di64 {
+                data: x.to_owned().into_dimensionality::<Ix1>().unwrap().to_vec()
+            })),
+            order: (1..x.ndim()).map(|x| {x as u64}).collect(),
+            shape: x.shape().iter().map(|y| {*y as u64}).collect()
+        },
+        FieldEvaluation::F64(x) => burdock::ArrayNd {
+            datatype: burdock::DataType::F64 as i32,
+            data: Some(burdock::array_nd::Data::F64(burdock::Array1Df64 {
+                data: x.to_owned().into_dimensionality::<Ix1>().unwrap().to_vec()
+            })),
+            order: (1..x.ndim()).map(|x| {x as u64}).collect(),
+            shape: x.shape().iter().map(|y| {*y as u64}).collect()
+        },
+        FieldEvaluation::Str(x) => burdock::ArrayNd {
+            datatype: burdock::DataType::String as i32,
+            data: Some(burdock::array_nd::Data::String(burdock::Array1Dstr {
+                data: x.to_owned().into_dimensionality::<Ix1>().unwrap().to_vec()
+            })),
+            order: (1..x.ndim()).map(|x| {x as u64}).collect(),
+            shape: x.shape().iter().map(|y| {*y as u64}).collect()
+        },
     }
 }
