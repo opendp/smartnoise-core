@@ -17,6 +17,40 @@ import dataset_pb2
 core_wrapper = LibraryWrapper(validator='C++', runtime='RUST')
 
 
+class Dataset(object):
+    def __init__(self, name, data):
+        self.name = name
+        self.data = data
+
+        global context
+        if context:
+            context.datasets.append(self)
+
+    def __getitem__(self, identifier):
+        (column_id, datatype) = identifier
+        typemap = {
+            bytes: "BYTES",
+            bool: "BOOL",
+            int: "I64",
+            float: "F64",
+            str: "STRING",
+        }
+        if datatype in typemap:
+            datatype = typemap[datatype]
+
+        if datatype not in typemap.values():
+            raise ValueError(f"Invalid datatype {datatype}. Datatype must be one of {list(typemap.values())}.")
+
+        return Component('DataSource', options={
+            'dataset_id': self.name,
+            'column_id': column_id
+        }, arguments={
+            'datatype': Component('Literal', options={
+                'value': array_nd(datatype)
+            })
+        })
+
+
 class Component(object):
     def __init__(self, name: str, arguments: dict = None, options: dict = None):
         self.name: str = name
@@ -28,13 +62,35 @@ class Component(object):
             context.components.append(self)
 
     def __add__(self, other):
+        if type(other) != self.__class__:
+            other = Component('Literal', options={'value': array_nd(other)})
         return Component('Add', {'left': self, 'right': other})
 
     def __sub__(self, other):
-        return Component('Add', {'left': self, 'right': -other})
+        if type(other) != self.__class__:
+            other = Component('Literal', options={'value': array_nd(other)})
+        return Component('Subtract', {'left': self, 'right': other})
+
+    def __pos__(self):
+        return self
 
     def __neg__(self):
-        return Component('Negate', {'data': self})
+        return Component('Negative', arguments={'data': self})
+
+    def __mul__(self, other):
+        if type(other) != self.__class__:
+            other = Component('Literal', options={'value': array_nd(other)})
+        return Component('Multiply', arguments={'left': self, 'right': other})
+
+    def __truediv__(self, other):
+        if type(other) != self.__class__:
+            other = Component('Literal', options={'value': array_nd(other)})
+        return Component('Divide', arguments={'left': self, 'right': other})
+
+    def __pow__(self, power, modulo=None):
+        if type(power) != self.__class__:
+            power = Component('Literal', options={'value': array_nd(power)})
+        return Component('Power', arguments={'left': self, 'right': power})
 
 
 def mean(data):
@@ -55,14 +111,16 @@ def array_nd(data):
         np.bool: "BOOL",
         np.int64: "I64",
         np.float64: "F64",
-        np.string_: "STRING"
+        np.string_: "STRING",
+        np.str_: "STRING"
     }[data.dtype.type]
 
     container_type = {
         np.bool: types_pb2.Array1Dbool,
         np.int64: types_pb2.Array1Di64,
         np.float64: types_pb2.Array1Df64,
-        np.string_: types_pb2.Array1Dstr
+        np.string_: types_pb2.Array1Dstr,
+        np.str_: types_pb2.Array1Dstr
     }[data.dtype.type]
 
     proto_args = {
@@ -77,20 +135,29 @@ def array_nd(data):
 
 def dp_mean_laplace(data, epsilon, minimum=None, maximum=None, num_records=None):
 
+    if type(minimum) != Component:
+        minimum = Component('Literal', options={'value': array_nd(minimum)})
+    if type(maximum) != Component:
+        maximum = Component('Literal', options={'value': array_nd(maximum)})
+    if type(num_records) != Component:
+        num_records = Component('Literal', options={'value': array_nd(num_records)})
+
     # TODO: recursively extract from child? potentially implement in validator, or runtime?
     # if minimum is None:
     #     minimum =
+
     return Component('DPMeanLaplace', {
         'data': data,
-        'num_records': Component('Literal', options={'value': array_nd(num_records)}),
-        'minimum': Component('Literal', options={'value': array_nd(minimum)}),
-        'maximum': Component('Literal', options={'value': array_nd(maximum)})
+        'num_records': num_records,
+        'minimum': minimum,
+        'maximum': maximum
     }, {'epsilon': epsilon})
 
 
 class Analysis(object):
-    def __init__(self, *components, distance='APPROXIMATE', neighboring='SUBSTITUTE'):
+    def __init__(self, *components, datasets=None, distance='APPROXIMATE', neighboring='SUBSTITUTE'):
         self.components: list = list(components)
+        self.datasets: list = datasets or []
         self.release_proto: release_pb2.Release = None
         self.distance: str = distance
         self.neighboring: str = neighboring
@@ -149,12 +216,12 @@ class Analysis(object):
     def _make_release_proto(self):
         return self.release_proto or release_pb2.Release()
 
-    def _make_dataset_proto(self, data):
+    def _make_dataset_proto(self):
         return dataset_pb2.Dataset(
             tables={
-                table_id: dataset_pb2.Table(
-                    file_path=data[table_id]
-                ) for table_id in data
+                dataset.name: dataset_pb2.Table(
+                    file_path=dataset.data
+                ) for dataset in self.datasets
             })
 
     def validate(self):
@@ -166,10 +233,10 @@ class Analysis(object):
         return core_wrapper.compute_epsilon(
             self._make_analysis_proto())
 
-    def release(self, data):
+    def release(self):
         analysis_proto: analysis_pb2.Analysis = self._make_analysis_proto()
         self.release_proto: release_pb2.Release = core_wrapper.compute_release(
-            self._make_dataset_proto(data),
+            self._make_dataset_proto(),
             analysis_proto,
             self._make_release_proto())
 
@@ -187,11 +254,8 @@ class Analysis(object):
         global context
         context = self._context
 
-    def plot(self):
+    def _make_networkx(self):
         import networkx as nx
-        import matplotlib.pyplot as plt
-        import warnings
-        warnings.filterwarnings("ignore", category=UserWarning, module="matplotlib")
 
         analysis = self._make_analysis_proto()
         graph = nx.DiGraph()
@@ -203,6 +267,25 @@ class Analysis(object):
             for field in component.arguments.values():
                 graph.add_edge(label(field.source_node_id), label(nodeId))
 
+        return graph
+
+    def __str__(self):
+        graph = self._make_networkx()
+        out = "Analysis:\n"
+        out += "\tGraph:\n"
+
+        for sink in (node for node in graph if node.out_degree == 0):
+            print(sink)
+
+        return out
+
+    def plot(self):
+        import networkx as nx
+        import matplotlib.pyplot as plt
+        import warnings
+        warnings.filterwarnings("ignore", category=UserWarning, module="matplotlib")
+
+        graph = self._make_networkx()
         nx.draw(graph, with_labels=True, node_color='white')
         plt.pause(.001)
 

@@ -1,6 +1,4 @@
 import burdock
-import pandas as pd
-import types_pb2
 
 test_csv_path = '/home/shoe/PSI/datasets/data/PUMS_california_demographics_1000/data.csv'
 
@@ -9,18 +7,25 @@ def test_basic_path():
     print('file path test')
 
     with burdock.Analysis() as analysis:
-        age = burdock.Component('DataSource', options={
-            "dataset_id": "PUMS",
-            "column_id": "age",
-            "datatype": types_pb2.DataType.Value("I64")
-        })
-        sex = burdock.Component('DataSource', options={
-            "dataset_id": "PUMS",
-            "column_id": "race",
-            "datatype": types_pb2.DataType.Value("I64")
-        })
+        PUMS = burdock.Dataset('PUMS', test_csv_path)
 
-        burdock.dp_mean_laplace(age + sex, epsilon=.1, minimum=2, maximum=102, num_records=500)
+        age = PUMS[('age', int)]
+        sex = PUMS[('sex', int)]
+
+        mean_age = burdock.dp_mean_laplace(
+            PUMS[('race', float)],
+            epsilon=.065,
+            minimum=0,
+            maximum=100,
+            num_records=500
+        )
+
+        burdock.dp_mean_laplace(
+            age / 2 + (sex + 22),
+            epsilon=.1,
+            minimum=mean_age - 5.2,
+            maximum=102,
+            num_records=500)
 
     print('analysis is valid:', analysis.validate())
 
@@ -28,9 +33,7 @@ def test_basic_path():
 
     analysis.plot()
 
-    print('release json:', analysis.release({
-        "PUMS": test_csv_path
-    }))
+    print('release json:', analysis.release())
     print('release proto:', analysis.release_proto)
 
 

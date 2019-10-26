@@ -2,7 +2,6 @@ use ndarray::prelude::*;
 
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::vec::Vec;
-
 use std::iter::FromIterator;
 
 use crate::components;
@@ -224,13 +223,19 @@ pub fn evaluations_to_release(evaluations: &GraphEvaluation) -> burdock::Release
 }
 
 pub fn parse_proto_array(value: &burdock::ArrayNd) -> FieldEvaluation {
-    // TODO use shape and axes
-    match value.to_owned().data.unwrap() {
-        burdock::array_nd::Data::Bytes(x) => FieldEvaluation::Bytes(Array1::from(x).into_dyn()),
-        burdock::array_nd::Data::Bool(x) => FieldEvaluation::Bool(Array1::from(x.data).into_dyn()),
-        burdock::array_nd::Data::I64(x) => FieldEvaluation::I64(Array1::from(x.data).into_dyn()),
-        burdock::array_nd::Data::F64(x) => FieldEvaluation::F64(Array1::from(x.data).into_dyn()),
-        burdock::array_nd::Data::String(x) => FieldEvaluation::Str(Array1::from(x.data).into_dyn()),
+    let value = value.to_owned();
+    let shape: Vec<usize> = value.shape.iter().map(|x| *x as usize).collect();
+    match value.data.unwrap() {
+        burdock::array_nd::Data::Bytes(x) =>
+            FieldEvaluation::Bytes(Array::from_shape_vec(shape, x).unwrap().into_dyn()),
+        burdock::array_nd::Data::Bool(x) =>
+            FieldEvaluation::Bool(Array::from_shape_vec(shape, x.data).unwrap().into_dyn()),
+        burdock::array_nd::Data::I64(x) =>
+            FieldEvaluation::I64(Array::from_shape_vec(shape, x.data).unwrap().into_dyn()),
+        burdock::array_nd::Data::F64(x) =>
+            FieldEvaluation::F64(Array::from_shape_vec(shape, x.data).unwrap().into_dyn()),
+        burdock::array_nd::Data::String(x) =>
+            FieldEvaluation::Str(Array::from_shape_vec(shape, x.data).unwrap().into_dyn()),
     }
 }
 
