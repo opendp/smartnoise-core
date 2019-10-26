@@ -58,11 +58,22 @@ message Component {
         DataSource datasource = 7;
         DPMeanLaplace dpmeanlaplace = 8;
         Clip clip = 9;
+        Subtract subtract = 10;
+        Divide divide = 11;
+        Multiply multiply = 12;
+        Power power = 13;
+        Negate negate = 14;
     }
 
 }
 
 message Add {}
+message Subtract {}
+message Divide {}
+message Multiply {}
+message Power {}
+message Negate {}
+
 message Laplace {
     double epsilon = 1;
 }

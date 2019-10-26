@@ -162,12 +162,35 @@ pub fn execute_component(component: &burdock::Component,
     let arguments = get_arguments(&component, &evaluations);
 
     match component.to_owned().value.unwrap() {
-        burdock::component::Value::Literal(x) => components::literal(&x),
-        burdock::component::Value::Datasource(x) => components::datasource(&x, &dataset),
-        burdock::component::Value::Add(x) => components::add(&x, &arguments),
-        burdock::component::Value::Dpmeanlaplace(x) => components::dp_mean_laplace(&x, &arguments),
+        burdock::component::Value::Literal(x) => components::component_literal(&x),
+        burdock::component::Value::Datasource(x) => components::component_datasource(&x, &dataset, &arguments),
+        burdock::component::Value::Add(x) => components::component_add(&x, &arguments),
+        burdock::component::Value::Subtract(x) => components::component_subtract(&x, &arguments),
+        burdock::component::Value::Divide(x) => components::component_divide(&x, &arguments),
+        burdock::component::Value::Multiply(x) => components::component_multiply(&x, &arguments),
+        burdock::component::Value::Power(x) => components::component_power(&x, &arguments),
+        burdock::component::Value::Negate(x) => components::component_negate(&x, &arguments),
+        burdock::component::Value::Dpmeanlaplace(x) => components::component_dp_mean_laplace(&x, &arguments),
         _ => NodeEvaluation::new()
     }
+}
+
+pub fn get_f64(arguments: &NodeArguments, column: &str) -> f64 {
+    match arguments.get(column).unwrap() {
+        FieldEvaluation::Bool(x) => Ok(if *x.first().unwrap() {1.} else {0.}),
+        FieldEvaluation::I64(x) => Ok(f64::from(*x.first().unwrap() as i32)),
+        FieldEvaluation::F64(x) => Ok(x.first().unwrap().to_owned()),
+        _ => Err(column.to_string() +" must be numeric")
+    }.unwrap()
+}
+
+pub fn get_array_f64(arguments: &NodeArguments, column: &str) -> ArrayD<f64> {
+    match arguments.get(column).unwrap() {
+        FieldEvaluation::Bool(x) => Ok(x.mapv(|v| if v {1.} else {0.})),
+        FieldEvaluation::I64(x) => Ok(x.mapv(|v| f64::from(v as i32))),
+        FieldEvaluation::F64(x) => Ok(x.to_owned()),
+        _ => Err(column.to_string() +" must be numeric")
+    }.unwrap()
 }
 
 pub fn release_to_evaluations(release: &burdock::Release) -> GraphEvaluation {

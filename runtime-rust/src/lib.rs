@@ -1,14 +1,14 @@
-#![feature(float_to_from_bytes)]
+mod base;
+mod utilities;
+mod components;
+mod algorithms;
 
 use ndarray::prelude::*;
 
 extern crate libc;
 use libc::c_char;
 
-mod base;
 use base::burdock;
-mod utilities;
-mod components;
 use crate::base::execute_graph;
 
 // useful tutorial for proto over ffi here:

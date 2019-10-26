@@ -1,23 +1,30 @@
 use ndarray::prelude::*;
 use crate::base::burdock;
-use crate::base::{NodeArguments, NodeEvaluation, FieldEvaluation, parse_proto_array};
-use crate::utilities;
+use crate::base::{
+    NodeArguments, NodeEvaluation, FieldEvaluation,
+    parse_proto_array, get_f64, get_array_f64
+};
 use std::collections::HashMap;
 extern crate csv;
 use std::str::FromStr;
-
+use crate::algorithms;
 extern crate num;
 
-pub fn literal(x: &burdock::Literal) -> NodeEvaluation {
-//    println!("literal");
-    let mut evaluation = NodeEvaluation::new();
-    evaluation.insert("data".to_owned(), parse_proto_array(&x.to_owned().value.unwrap()));
-    evaluation
+macro_rules! hashmap {
+    ($( $key: expr => $val: expr ),*) => {{
+         let mut map = ::std::collections::HashMap::new();
+         $( map.insert($key, $val); )*
+         map
+    }}
 }
 
-pub fn datasource(datasource: &burdock::DataSource, dataset: &burdock::Dataset) -> NodeEvaluation {
+pub fn component_literal(x: &burdock::Literal) -> NodeEvaluation {
+//    println!("literal");
+    hashmap!["data".to_owned() => parse_proto_array(&x.to_owned().value.unwrap())]
+}
+
+pub fn component_datasource(datasource: &burdock::DataSource, dataset: &burdock::Dataset, arguments: &NodeArguments) -> NodeEvaluation {
 //    println!("datasource");
-    let mut evaluation = NodeEvaluation::new();
 
     let table = dataset.tables.get(&datasource.dataset_id).unwrap();
     let data = match table.value.as_ref().unwrap() {
@@ -33,85 +40,96 @@ pub fn datasource(datasource: &burdock::DataSource, dataset: &burdock::Dataset) 
                 }).collect()
             }
 
-            Ok(match burdock::DataType::from_i32(datasource.datatype).unwrap() {
-                burdock::DataType::Bytes =>
-                    FieldEvaluation::Bytes(Array1::from(get_column::<u8>(&path, &datasource.column_id)).into_dyn()),
-                burdock::DataType::Bool =>
-                    FieldEvaluation::Bool(Array1::from(get_column::<bool>(&path, &datasource.column_id)).into_dyn()),
-                burdock::DataType::I64 =>
-                    FieldEvaluation::I64(Array1::from(get_column::<i64>(&path, &datasource.column_id)).into_dyn()),
-                burdock::DataType::F64 =>
-                    FieldEvaluation::F64(Array1::from(get_column::<f64>(&path, &datasource.column_id)).into_dyn()),
-                burdock::DataType::String =>
-                    FieldEvaluation::Str(Array1::from(get_column::<String>(&path, &datasource.column_id)).into_dyn()),
-            })
+            match arguments.get("datatype").unwrap() {
+                FieldEvaluation::Str(x) => Ok(match x.first().unwrap().as_ref() {
+                    "BYTES" =>
+                        Ok(FieldEvaluation::Bytes(Array1::from(get_column::<u8>(&path, &datasource.column_id)).into_dyn())),
+                    "BOOL" =>
+                        Ok(FieldEvaluation::Bool(Array1::from(get_column::<bool>(&path, &datasource.column_id)).into_dyn())),
+                    "I64" =>
+                        Ok(FieldEvaluation::I64(Array1::from(get_column::<i64>(&path, &datasource.column_id)).into_dyn())),
+                    "F64" =>
+                        Ok(FieldEvaluation::F64(Array1::from(get_column::<f64>(&path, &datasource.column_id)).into_dyn())),
+                    "STRING" =>
+                        Ok(FieldEvaluation::Str(Array1::from(get_column::<String>(&path, &datasource.column_id)).into_dyn())),
+                    _ => Err("Datatype is not recognized.")
+                }.unwrap()),
+                _ => Err("Datatype must be a string.")
+            }
         },
         burdock::table::Value::Literal(value) => Ok(parse_proto_array(&value)),
         _ => Err("Only file paths are supported")
     }.unwrap();
 
-    evaluation.insert("data".to_owned(), data);
-    evaluation
+    hashmap!["data".to_owned() => data]
 }
 
-pub fn add(_x: &burdock::Add, arguments: &NodeArguments) -> NodeEvaluation {
+pub fn component_add(_x: &burdock::Add, arguments: &NodeArguments) -> NodeEvaluation {
 //    println!("add");
-    let mut evaluation = NodeEvaluation::new();
     match (arguments.get("left").unwrap(), arguments.get("right").unwrap()) {
-        (FieldEvaluation::F64(x), FieldEvaluation::F64(y)) => {
-            evaluation.insert("data".to_owned(), FieldEvaluation::F64(x + y));
-            Ok(())
-        },
-        (FieldEvaluation::I64(x), FieldEvaluation::I64(y)) => {
-            evaluation.insert("data".to_owned(), FieldEvaluation::I64(x + y));
-            Ok(())
-        }
+        (FieldEvaluation::F64(x), FieldEvaluation::F64(y)) =>
+            Ok(hashmap!["data".to_string() => FieldEvaluation::F64(x + y)]),
+        (FieldEvaluation::I64(x), FieldEvaluation::I64(y)) =>
+            Ok(hashmap!["data".to_string() => FieldEvaluation::I64(x + y)]),
         _ => Err("Add: Either the argument types are mismatched or non-nnumeric.")
-    }.unwrap();
-    evaluation
+    }.unwrap()
 }
 
-pub fn dp_mean_laplace(component: &burdock::DpMeanLaplace, arguments: &NodeArguments) -> NodeEvaluation {
-//    println!("dpmeanlaplace");
 
-    // unpack
-    let num_records = match arguments.get("num_records").unwrap() {
-        FieldEvaluation::Bool(x) => Ok(if *x.first().unwrap() {1.} else {0.}),
-        FieldEvaluation::I64(x) => Ok(f64::from(*x.first().unwrap() as i32)),
-        FieldEvaluation::F64(x) => Ok(x.first().unwrap().to_owned()),
-        _ => Err("num_records must be numeric")
-    }.unwrap();
-    let minimum: f64 = match arguments.get("minimum").unwrap() {
-        FieldEvaluation::Bool(x) => Ok(if *x.first().unwrap() {1.} else {0.}),
-        FieldEvaluation::I64(x) => Ok(f64::from(*x.first().unwrap() as i32)),
-        FieldEvaluation::F64(x) => Ok(x.first().unwrap().to_owned()),
-        _ => Err("minimum must be numeric")
-    }.unwrap();
-    let maximum: f64 = match arguments.get("maximum").unwrap() {
-        FieldEvaluation::Bool(x) => Ok(if *x.first().unwrap() {1.} else {0.}),
-        FieldEvaluation::I64(x) => Ok(f64::from(*x.first().unwrap() as i32)),
-        FieldEvaluation::F64(x) => Ok(x.first().unwrap().to_owned()),
-        _ => Err("maximum must be numeric")
-    }.unwrap();
-    let data: ArrayD<f64> = match arguments.get("data").unwrap() {
-        FieldEvaluation::Bool(x) => Ok(x.mapv(|v| if v {1.} else {0.})),
-        FieldEvaluation::I64(x) => Ok(x.mapv(|v| f64::from(v as i32))),
-        FieldEvaluation::F64(x) => Ok(x.to_owned()),
-        _ => Err("data must be numeric")
-    }.unwrap();
+pub fn component_subtract(_x: &burdock::Subtract, arguments: &NodeArguments) -> NodeEvaluation {
+    match (arguments.get("left").unwrap(), arguments.get("right").unwrap()) {
+        (FieldEvaluation::F64(x), FieldEvaluation::F64(y)) =>
+            Ok(hashmap!["data".to_string() => FieldEvaluation::F64(x - y)]),
+        (FieldEvaluation::I64(x), FieldEvaluation::I64(y)) =>
+            Ok(hashmap!["data".to_string() => FieldEvaluation::I64(x - y)]),
+        _ => Err("Subtract: Either the argument types are mismatched or non-nnumeric.")
+    }.unwrap()
+}
 
-    let epsilon = component.epsilon;
+pub fn component_divide(_x: &burdock::Divide, arguments: &NodeArguments) -> NodeEvaluation {
+    match (arguments.get("left").unwrap(), arguments.get("right").unwrap()) {
+        (FieldEvaluation::F64(x), FieldEvaluation::F64(y)) =>
+            Ok(hashmap!["data".to_string() => FieldEvaluation::F64(x / y)]),
+        (FieldEvaluation::I64(x), FieldEvaluation::I64(y)) =>
+            Ok(hashmap!["data".to_string() => FieldEvaluation::I64(x / y)]),
+        _ => Err("Divide: Either the argument types are mismatched or non-nnumeric.")
+    }.unwrap()
+}
 
-    // computation
-    let sensitivity = (maximum - minimum) / num_records;
+pub fn component_multiply(_x: &burdock::Multiply, arguments: &NodeArguments) -> NodeEvaluation {
+    match (arguments.get("left").unwrap(), arguments.get("right").unwrap()) {
+        (FieldEvaluation::F64(x), FieldEvaluation::F64(y)) =>
+            Ok(hashmap!["data".to_string() => FieldEvaluation::F64(x * y)]),
+        (FieldEvaluation::I64(x), FieldEvaluation::I64(y)) =>
+            Ok(hashmap!["data".to_string() => FieldEvaluation::I64(x * y)]),
+        _ => Err("Multiply: Either the argument types are mismatched or non-nnumeric.")
+    }.unwrap()
+}
 
-    let mean = data.mapv(|v| num::clamp(v, minimum, maximum)).mean().unwrap();
-    let noise = utilities::sample_laplace(0., sensitivity / epsilon);
+pub fn component_power(_x: &burdock::Power, arguments: &NodeArguments) -> NodeEvaluation {
+    let power: f64 = get_f64(&arguments, "right");
+    let data = get_array_f64(&arguments, "left");
+    hashmap!["data".to_string() => FieldEvaluation::F64(data.mapv(|x| x.powf(power)))]
+}
 
-    let mut evaluation = NodeEvaluation::new();
+pub fn component_negate(_x: &burdock::Negate, arguments: &NodeArguments) -> NodeEvaluation {
+    match arguments.get("data").unwrap() {
+        FieldEvaluation::F64(x) =>
+            Ok(hashmap!["data".to_string() => FieldEvaluation::F64(-x)]),
+        FieldEvaluation::I64(x) =>
+            Ok(hashmap!["data".to_string() => FieldEvaluation::I64(-x)]),
+        _ => Err("Negate: Argument must be numeric.")
+    }.unwrap()
+}
 
-    // repack
-    evaluation.insert("data".to_owned(),
-                      FieldEvaluation::F64(Array::from_elem((), mean + noise).into_dyn()));
-    evaluation
+
+pub fn component_dp_mean_laplace(component: &burdock::DpMeanLaplace, arguments: &NodeArguments) -> NodeEvaluation {
+    // println!("dpmeanlaplace");
+    hashmap!["data".to_string() => FieldEvaluation::F64(Array::from_elem((),algorithms::dp_mean_laplace(
+        get_array_f64(&arguments, "data"),
+        component.epsilon,
+        get_f64(&arguments, "num_records"),
+        get_f64(&arguments, "minimum"),
+        get_f64(&arguments, "maximum")
+    )).into_dyn())]
 }
