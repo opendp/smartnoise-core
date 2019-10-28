@@ -8,6 +8,7 @@ use std::collections::HashMap;
 extern crate csv;
 use std::str::FromStr;
 use crate::algorithms;
+
 extern crate num;
 
 macro_rules! hashmap {
@@ -123,13 +124,66 @@ pub fn component_negate(_x: &burdock::Negate, arguments: &NodeArguments) -> Node
 }
 
 
-pub fn component_dp_mean_laplace(component: &burdock::DpMeanLaplace, arguments: &NodeArguments) -> NodeEvaluation {
-    // println!("dpmeanlaplace");
-    hashmap!["data".to_string() => FieldEvaluation::F64(Array::from_elem((),algorithms::dp_mean_laplace(
-        get_array_f64(&arguments, "data"),
-        component.epsilon,
-        get_f64(&arguments, "num_records"),
-        get_f64(&arguments, "minimum"),
-        get_f64(&arguments, "maximum")
-    )).into_dyn())]
+// TODO: Possibly compute sensitivity here, and pass into algorithm?
+
+pub fn component_dp_mean(component: &burdock::DpMean, arguments: &NodeArguments) -> NodeEvaluation {
+    let data: FieldEvaluation = match burdock::Mechanism::from_i32(component.mechanism).unwrap() {
+        burdock::Mechanism::Laplace => Ok(FieldEvaluation::F64(Array::from_elem((), algorithms::dp_mean_laplace(
+            component.epsilon,
+            get_f64(&arguments, "num_records"),
+            get_array_f64(&arguments, "data"),
+            get_f64(&arguments, "minimum"),
+            get_f64(&arguments, "maximum")
+        )).into_dyn())),
+        _ => Err("Mean: Unknown algorithm type.")
+    }.unwrap();
+    // println!("dpmean");
+    hashmap!["data".to_string() => data]
+}
+
+pub fn component_dp_variance(component: &burdock::DpVariance, arguments: &NodeArguments) -> NodeEvaluation {
+    let data: FieldEvaluation = match burdock::Mechanism::from_i32(component.mechanism).unwrap() {
+        burdock::Mechanism::Laplace => Ok(FieldEvaluation::F64(Array::from_elem((), algorithms::dp_variance_laplace(
+            component.epsilon,
+            get_f64(&arguments, "num_records"),
+            get_array_f64(&arguments, "data"),
+            get_f64(&arguments, "minimum"),
+            get_f64(&arguments, "maximum")
+        )).into_dyn())),
+        _ => Err("Variance: Unknown algorithm type.")
+    }.unwrap();
+    hashmap!["data".to_string() => data]
+}
+
+pub fn component_dp_moment_raw(component: &burdock::DpMomentRaw, arguments: &NodeArguments) -> NodeEvaluation {
+    let data: FieldEvaluation = match burdock::Mechanism::from_i32(component.mechanism).unwrap() {
+        burdock::Mechanism::Laplace => Ok(FieldEvaluation::F64(Array::from_elem((), algorithms::dp_moment_raw_laplace(
+            component.epsilon,
+            get_f64(&arguments, "num_records"),
+            get_array_f64(&arguments, "data"),
+            get_f64(&arguments, "minimum"),
+            get_f64(&arguments, "maximum"),
+            component.order
+        )).into_dyn())),
+        _ => Err("Moment Raw: Unknown algorithm type.")
+    }.unwrap();
+    hashmap!["data".to_string() => data]
+}
+
+
+pub fn component_dp_covariance(component: &burdock::DpCovariance, arguments: &NodeArguments) -> NodeEvaluation {
+    let data: FieldEvaluation = match burdock::Mechanism::from_i32(component.mechanism).unwrap() {
+        burdock::Mechanism::Laplace => Ok(FieldEvaluation::F64(Array::from_elem((), algorithms::dp_covariance(
+            component.epsilon,
+            get_f64(&arguments, "num_records"),
+            get_array_f64(&arguments, "data_x"),
+            get_array_f64(&arguments, "data_y"),
+            get_f64(&arguments, "minimum_x"),
+            get_f64(&arguments, "minimum_y"),
+            get_f64(&arguments, "maximum_x"),
+            get_f64(&arguments, "maximum_y")
+        )).into_dyn())),
+        _ => Err("Covariance: Unknown algorithm type.")
+    }.unwrap();
+    hashmap!["data".to_string() => data]
 }

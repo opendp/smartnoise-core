@@ -5,7 +5,13 @@ import "types.proto";
 
 message Analysis {
     map<uint32, Component> graph = 1;
-    PrivacyDefinition definition = 2;
+    PrivacyDefinition privacy_definition = 2;
+    RuntimeDefinition runtime_definition = 3;
+}
+
+message RuntimeDefinition {
+    string name = 1;
+    string version = 2;
 }
 
 message PrivacyDefinition {
@@ -56,13 +62,16 @@ message Component {
         Constant constant = 5;
         Mean mean = 6;
         DataSource datasource = 7;
-        DPMeanLaplace dpmeanlaplace = 8;
+        DPMean dpmean = 8;
         Clip clip = 9;
         Subtract subtract = 10;
         Divide divide = 11;
         Multiply multiply = 12;
         Power power = 13;
         Negate negate = 14;
+        DPVariance dpvariance = 15;
+        DPMomentRaw dpmomentraw = 16;
+        DPCovariance dpcovariance = 17;
     }
 
 }
@@ -99,7 +108,24 @@ message DataSource {
     // should be a 1D array of the unique values (likely bool, int, or string)
     ArrayND constraints = 5;
 }
-message DPMeanLaplace {
-    double epsilon = 1;
-}
 message Clip {}
+
+message DPMean {
+    double epsilon = 1;
+    Mechanism mechanism = 2;   
+}
+message DPVariance {
+    double epsilon = 1;
+    Mechanism mechanism = 2;   
+}
+
+message DPMomentRaw {
+    double epsilon = 1;
+    Mechanism mechanism = 2;   
+    uint32 order = 3;
+}
+
+message DPCovariance {
+    double epsilon = 1;
+    Mechanism mechanism = 2;
+}

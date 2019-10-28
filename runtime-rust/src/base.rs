@@ -88,7 +88,7 @@ pub fn get_sinks(analysis: &burdock::Analysis) -> HashSet<u32> {
 pub fn is_privatizer(component: &burdock::Component) -> bool {
     use burdock::component::Value::*;
     match component.to_owned().value.unwrap() {
-        Dpmeanlaplace(_x) => true,
+        Dpmean(_x) => true,
         _ => false
     }
 }
@@ -169,7 +169,10 @@ pub fn execute_component(component: &burdock::Component,
         burdock::component::Value::Multiply(x) => components::component_multiply(&x, &arguments),
         burdock::component::Value::Power(x) => components::component_power(&x, &arguments),
         burdock::component::Value::Negate(x) => components::component_negate(&x, &arguments),
-        burdock::component::Value::Dpmeanlaplace(x) => components::component_dp_mean_laplace(&x, &arguments),
+        burdock::component::Value::Dpmean(x) => components::component_dp_mean(&x, &arguments),
+        burdock::component::Value::Dpvariance(x) => components::component_dp_variance(&x, &arguments),
+        burdock::component::Value::Dpmomentraw(x) => components::component_dp_moment_raw(&x, &arguments),
+        burdock::component::Value::Dpcovariance(x) => components::component_dp_covariance(&x, &arguments),
         _ => NodeEvaluation::new()
     }
 }
