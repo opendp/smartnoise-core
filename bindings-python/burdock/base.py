@@ -14,7 +14,11 @@ import types_pb2
 import release_pb2
 import dataset_pb2
 
-core_wrapper = LibraryWrapper(validator='C++', runtime='RUST')
+
+runtime_name = 'RUST'
+validator_name = 'C++'
+
+core_wrapper = LibraryWrapper(validator=validator_name, runtime=runtime_name)
 
 
 class Dataset(object):
@@ -133,25 +137,61 @@ def array_nd(data):
     return types_pb2.ArrayND(**proto_args)
 
 
-def dp_mean_laplace(data, epsilon, minimum=None, maximum=None, num_records=None):
+def _to_component(value):
+    return value if type(value) == Component else Component(
+        'Literal', options={'value': array_nd(value)})
 
-    if type(minimum) != Component:
-        minimum = Component('Literal', options={'value': array_nd(minimum)})
-    if type(maximum) != Component:
-        maximum = Component('Literal', options={'value': array_nd(maximum)})
-    if type(num_records) != Component:
-        num_records = Component('Literal', options={'value': array_nd(num_records)})
 
-    # TODO: recursively extract from child? potentially implement in validator, or runtime?
-    # if minimum is None:
-    #     minimum =
+def dp_mean(data, epsilon, minimum, maximum, num_records):
+    return Component('DPMean', {
+        'data': _to_component(data),
+        'num_records': _to_component(num_records),
+        'minimum': _to_component(minimum),
+        'maximum': _to_component(maximum)
+    }, {
+         'epsilon': epsilon,
+         'mechanism': types_pb2.Mechanism.Value("LAPLACE")
+     })
 
-    return Component('DPMeanLaplace', {
-        'data': data,
-        'num_records': num_records,
-        'minimum': minimum,
-        'maximum': maximum
-    }, {'epsilon': epsilon})
+
+def dp_variance(data, epsilon, minimum, maximum, num_records):
+    return Component('DPVariance', {
+        'data': _to_component(data),
+        'num_records': _to_component(num_records),
+        'minimum': _to_component(minimum),
+        'maximum': _to_component(maximum)
+    }, {
+         'epsilon': epsilon,
+         'mechanism': types_pb2.Mechanism.Value("LAPLACE")
+     })
+
+
+def dp_covariance(data_x, data_y, epsilon, num_records, minimum_x, maximum_x, minimum_y, maximum_y):
+    return Component('DPCovariance', {
+        'data_x': _to_component(data_x),
+        'data_y': _to_component(data_y),
+        'num_records': _to_component(num_records),
+        'minimum_x': _to_component(minimum_x),
+        'maximum_x': _to_component(maximum_x),
+        'minimum_y': _to_component(minimum_y),
+        'maximum_y': _to_component(maximum_y)
+    }, {
+        'epsilon': epsilon,
+        'mechanism': types_pb2.Mechanism.Value("LAPLACE")
+    })
+
+
+def dp_moment_raw(data, epsilon, minimum, maximum, num_records, order):
+    return Component('DPMomentRaw', {
+        'data': _to_component(data),
+        'num_records': _to_component(num_records),
+        'minimum': _to_component(minimum),
+        'maximum': _to_component(maximum)
+    }, {
+        'epsilon': epsilon,
+        'mechanism': types_pb2.Mechanism.Value("LAPLACE"),
+        'order': order
+     })
 
 
 class Analysis(object):
@@ -207,9 +247,13 @@ class Analysis(object):
 
         return analysis_pb2.Analysis(
             graph=vertices,
-            definition=analysis_pb2.PrivacyDefinition(
+            privacy_definition=analysis_pb2.PrivacyDefinition(
                 distance=analysis_pb2.PrivacyDefinition.Distance.Value(self.distance),
                 neighboring=analysis_pb2.PrivacyDefinition.Neighboring.Value(self.neighboring)
+            ),
+            runtime_definition=analysis_pb2.RuntimeDefinition(
+                name=runtime_name,
+                version='0.1'
             )
         )
 

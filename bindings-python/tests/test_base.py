@@ -12,20 +12,48 @@ def test_basic_path():
         age = PUMS[('age', int)]
         sex = PUMS[('sex', int)]
 
-        mean_age = burdock.dp_mean_laplace(
-            PUMS[('race', float)],
+        mean_age = burdock.dp_mean(
+            PUMS[('married', float)],
             epsilon=.065,
             minimum=0,
             maximum=100,
             num_records=500
         )
 
-        burdock.dp_mean_laplace(
+        burdock.dp_mean(
             age / 2 + (sex + 22),
             epsilon=.1,
             minimum=mean_age - 5.2,
             maximum=102,
             num_records=500)
+
+        burdock.dp_variance(
+            PUMS[('educ', int)],
+            epsilon=.15,
+            num_records=1000,
+            minimum=0,
+            maximum=12
+        )
+
+        burdock.dp_moment_raw(
+            PUMS[('married', float)],
+            epsilon=.15,
+            num_records=1000000,
+            minimum=0,
+            maximum=12,
+            order=3
+        )
+
+        burdock.dp_covariance(
+            PUMS[('sex', int)],
+            PUMS[('married', int)],
+            epsilon=.15,
+            num_records=1000,
+            minimum_x=0,
+            maximum_x=1,
+            minimum_y=0,
+            maximum_y=1
+        )
 
     print('analysis is valid:', analysis.validate())
 
