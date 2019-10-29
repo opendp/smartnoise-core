@@ -12,3 +12,18 @@
 
     . install.sh 
 
+
+
+## Debugging
+
+Rebuild the burdock.so
+
+    pkgbuild::compile_dll()
+
+To regenerate documentation, update namespace exports, etc with roxygen.
+
+    devtools::document()
+
+To create a built package file
+
+    devtools::build()

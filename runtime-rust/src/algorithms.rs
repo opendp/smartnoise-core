@@ -25,7 +25,7 @@ pub fn dp_variance_laplace(
     data: ArrayD<f64>,
     minimum: f64, maximum: f64) -> f64 {
 
-    let sensitivity: f64 = (num_records - 1.0) / num_records.powi(2) * (maximum - minimum).powi(2);
+    let sensitivity: f64 = (num_records - 1.0) * ((maximum - minimum) / num_records).powi(2);
 
     let variance: f64 = data
         .mapv(|v| num::clamp(v, minimum, maximum))
@@ -68,7 +68,7 @@ pub fn dp_covariance(
     let mean_x = data_x.mean().unwrap();
     let mean_y = data_y.mean().unwrap();
 
-    let mut products = Array1::<f64>::zeros((data_x.len()));
+    let mut products = Array1::<f64>::zeros(data_x.len());
     Zip::from(&mut products).and(&data_x).and(&data_y)
         .apply(|total, &x, &y| *total += (x - mean_x) * (y - mean_y));
 
@@ -77,3 +77,10 @@ pub fn dp_covariance(
 
     covariance + noise
 }
+
+//pub fn dp_histogram(
+//    epsilon: f64, num_records: f64,
+//    data_x: ArrayD<f64>
+//) -> u64 {
+//
+//}

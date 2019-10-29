@@ -6,3 +6,7 @@
 
 src/runtime-rust/
 src/prototypes/
+*.o
+
+Makevars
+Makevars.win

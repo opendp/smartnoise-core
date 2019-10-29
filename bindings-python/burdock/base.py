@@ -313,15 +313,15 @@ class Analysis(object):
 
         return graph
 
-    def __str__(self):
-        graph = self._make_networkx()
-        out = "Analysis:\n"
-        out += "\tGraph:\n"
-
-        for sink in (node for node in graph if node.out_degree == 0):
-            print(sink)
-
-        return out
+    # def __str__(self):
+    #     graph = self._make_networkx()
+    #     out = "Analysis:\n"
+    #     out += "\tGraph:\n"
+    #
+    #     for sink in (node for node in graph if node.out_degree == 0):
+    #         print(sink)
+    #
+    #     return out
 
     def plot(self):
         import networkx as nx

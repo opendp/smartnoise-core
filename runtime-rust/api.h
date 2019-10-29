@@ -21,14 +21,6 @@ ByteBuffer release(const uint8_t *analysis_ptr,
                    const uint8_t *dataset_ptr,
                    int32_t dataset_length);
 
-ByteBuffer release_array(const uint8_t *analysis_ptr,
-                         int32_t analysis_length,
-                         const uint8_t *release_ptr,
-                         int32_t release_length,
-                         int32_t _m,
-                         int32_t _n,
-                         const double *const *_data);
-
 const char *string_from_rust(void);
 
 void test_ndarray(void);

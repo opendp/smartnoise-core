@@ -1,4 +1,5 @@
 Package: burdock
+Type: Package
 Title: Differential Privacy
 Version: 0.1.0
 Description: Bindings for constructing a differentially private analysis.
@@ -7,7 +8,4 @@ Encoding: UTF-8
 LazyData: true
 Imports:
     RProtoBuf
-Roxygen: list(markdown = TRUE)
 RoxygenNote: 6.1.1
-Suggests: 
-    testthat (>= 2.1.0)

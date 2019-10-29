@@ -25,7 +25,7 @@ def test_basic_path():
             epsilon=.1,
             minimum=mean_age - 5.2,
             maximum=102,
-            num_records=500)
+            num_records=500) + 5.
 
         burdock.dp_variance(
             PUMS[('educ', int)],

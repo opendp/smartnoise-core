@@ -1,8 +1,8 @@
 loadProtoDescriptors <- function() {
-    protoFiles = c('release.proto', 'analysis.proto', 'types.proto')
+    protoFiles = c('release.proto', 'analysis.proto', 'types.proto', 'dataset.proto')
 
     # working directory must be within ./prototypes for imports to work
-    setwd('../../prototypes')
+    setwd('../src/prototypes')
     RProtoBuf::readProtoFiles2(protoFiles)
     setwd('../bindings-R/R')
 
@@ -31,7 +31,7 @@ validateAnalysis <- function(analysis) {
     message <- analysis$serialize(NULL)
     # analysisCopy <- Analysis$read(message)
 
-    print(.Call('validate_analysis', message, package='dpBinding'))
+    print(.Call('validate_analysis', message, package='burdock'))
 }
 
 #' Hello Rust!
@@ -39,9 +39,9 @@ validateAnalysis <- function(analysis) {
 #' Examples of rust functions via C.
 #'
 #' @export
-#' @rdname hellorust
+#' @rdname burdock
 #' @examples hello()
-#' @useDynLib hellorust hello_wrapper
+#' @useDynLib burdock hello_wrapper
 hello <- function() {
     .Call(hello_wrapper)
 }
