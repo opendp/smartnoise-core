@@ -10,3 +10,5 @@ src/prototypes/
 
 Makevars
 Makevars.win
+man/
+NAMESPACE

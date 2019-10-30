@@ -14,12 +14,12 @@ typedef struct {
 
 void free_ptr(const char *_buffer);
 
-ByteBuffer release(const uint8_t *analysis_ptr,
+ByteBuffer release(const uint8_t *dataset_ptr,
+                   int32_t dataset_length,
+                   const uint8_t *analysis_ptr,
                    int32_t analysis_length,
                    const uint8_t *release_ptr,
-                   int32_t release_length,
-                   const uint8_t *dataset_ptr,
-                   int32_t dataset_length);
+                   int32_t release_length);
 
 const char *string_from_rust(void);
 

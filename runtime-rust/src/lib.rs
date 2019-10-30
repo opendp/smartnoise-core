@@ -25,6 +25,7 @@ unsafe fn get_buffer<'a>(data: *const u8, len: i32) -> &'a [u8] {
 }
 
 #[repr(C)]
+#[allow(dead_code)]
 struct ByteBuffer {
     len: i64,
     data: *mut u8,

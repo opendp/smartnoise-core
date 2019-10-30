@@ -24,7 +24,7 @@ cbindgen = "0.9.1"
 
 [lib]
 name = "differential_privacy_runtime_rust"
-crate-type = ["dylib"]
+crate-type = ["cdylib"]
 
 [profile.release]
 debug = true
