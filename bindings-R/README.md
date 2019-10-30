@@ -7,11 +7,9 @@
     <!-- sudo apt-get install protobuf-compiler libprotobuf-dev libprotoc-dev -->
         https://askubuntu.com/a/1072684
 
-2. Run the install script from this directory
-
-
-    . install.sh 
-
+2. Run the install script from this directory 
+    Windows: `install.bat`
+    Else: `. install.sh`
 
 
 ## Debugging

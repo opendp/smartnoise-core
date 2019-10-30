@@ -1,9 +1,8 @@
+from burdock._native import ffi, lib
+
 import os
 import json
 import ctypes
-
-from numpy.ctypeslib import ndpointer
-import numpy as np
 
 from sys import platform
 
@@ -38,13 +37,15 @@ class ByteBuffer(ctypes.Structure):
     ]
 
 
-def _serialize_proto(proto):
+def _serialize_proto(proto, cffi=False):
     serialized = proto.SerializeToString()
-    # if type(proto) == analysis_pb2.Analysis:
-    #     print(analysis_pb2.Analysis.FromString(serialized))
+
+    if cffi:
+        return ffi.new(f"uint8_t[{len(serialized)}]", serialized), len(serialized)
+
     bytes_array = bytearray(serialized)
-    buffer = (ctypes.c_char * len(serialized)).from_buffer(bytes_array)
-    return buffer, len(bytes_array)
+    buffer = (ctypes.c_char * len(bytes_array)).from_buffer(bytes_array)
+    return buffer, len(serialized)
 
 
 class LibraryWrapper(object):
@@ -77,23 +78,19 @@ class LibraryWrapper(object):
             self.lib_dp.DPValidatorInit()
 
         # load runtime functions
-        self.lib_runtime = ctypes.cdll.LoadLibrary(runtime_path)
-        self.lib_runtime.release.argtypes = (
-            ctypes.c_char_p, ctypes.c_int,  # input dataset
-            ctypes.c_char_p, ctypes.c_int,  # input analysis
-            ctypes.c_char_p, ctypes.c_int)  # input release
-        self.lib_runtime.release.restype = ByteBuffer if runtime == "RUST" else ctypes.c_char_p
 
-        # self.lib_runtime.dp_runtime_destroy_bytebuffer.argtypes = (ctypes.POINTER(ByteBuffer),)
+        if runtime == 'RUST':
+            self.lib_runtime = lib
 
-        # _doublepp = ndpointer(dtype=np.uintp, ndim=1, flags='C')
-        # self.lib_runtime.release_array.argtypes = (
-        #     ctypes.c_int8, ctypes.c_int,  # input analysis
-        #     ctypes.c_int8, ctypes.c_int,  # input release
-        #     ctypes.c_int, ctypes.c_int, _doublepp)  # input data
-        # self.lib_runtime.release_array.restype = ByteBuffer if runtime == "RUST" else ctypes.c_char_p
+        if runtime == 'C++':
+            self.lib_runtime = ctypes.cdll.LoadLibrary(runtime_path)
+            self.lib_runtime.release.argtypes = (
+                ctypes.c_char_p, ctypes.c_int,  # input dataset
+                ctypes.c_char_p, ctypes.c_int,  # input analysis
+                ctypes.c_char_p, ctypes.c_int)  # input release
+            self.lib_runtime.release.restype = ByteBuffer if runtime == "RUST" else ctypes.c_char_p
 
-        self.lib_runtime.free_ptr.argtypes = (ctypes.c_void_p,)
+        # self.lib_runtime.free_ptr.argtypes = (ctypes.c_void_p,)
 
     def __del__(self):
         if self.validator == "HASKELL":
@@ -122,13 +119,13 @@ class LibraryWrapper(object):
     def compute_release(self, dataset, analysis, release):
 
         byte_buffer = self.lib_runtime.release(
-            *_serialize_proto(dataset),
-            *_serialize_proto(analysis),
-            *_serialize_proto(release)
+            *_serialize_proto(dataset, cffi=self.runtime == 'RUST'),
+            *_serialize_proto(analysis, cffi=self.runtime == 'RUST'),
+            *_serialize_proto(release, cffi=self.runtime == 'RUST')
         )
 
         if self.runtime == 'RUST':
-            serialized_response = ctypes.string_at(byte_buffer.data, byte_buffer.len)
+            serialized_response = ffi.string(byte_buffer.data, byte_buffer.len)
         else:
             serialized_response = byte_buffer
         # self.lib_runtime.dp_runtime_destroy_bytebuffer(ctypes.pointer(byte_buffer))
