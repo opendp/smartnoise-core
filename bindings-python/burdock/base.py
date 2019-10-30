@@ -1,18 +1,13 @@
-import subprocess
 import queue
-import os
 import numpy as np
-
-# protoc must be installed and on path
-subprocess.call(f"protoc --python_out={os.getcwd()} *.proto", shell=True, cwd=os.path.abspath('../prototypes/'))
 
 from burdock.wrapper import LibraryWrapper
 
 # these modules are generated via the subprocess call
-import analysis_pb2
-import types_pb2
-import release_pb2
-import dataset_pb2
+from burdock import analysis_pb2
+from burdock import types_pb2
+from burdock import release_pb2
+from burdock import dataset_pb2
 
 
 runtime_name = 'RUST'

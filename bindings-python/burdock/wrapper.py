@@ -6,7 +6,7 @@ import ctypes
 
 from sys import platform
 
-import release_pb2
+from . import release_pb2
 
 # turn on backtraces in rust
 os.environ['RUST_BACKTRACE'] = 'full'  # '1'
