@@ -1,17 +1,11 @@
 syntax = "proto3";
 
-package burdock;
+package yarrow;
 import "types.proto";
 
 message Analysis {
     map<uint32, Component> graph = 1;
     PrivacyDefinition privacy_definition = 2;
-    RuntimeDefinition runtime_definition = 3;
-}
-
-message RuntimeDefinition {
-    string name = 1;
-    string version = 2;
 }
 
 message PrivacyDefinition {

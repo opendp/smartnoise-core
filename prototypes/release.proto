@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package burdock;
+package yarrow;
 import "types.proto";
 
 message Release {
@@ -9,4 +9,33 @@ message Release {
 
 message ReleaseNode {
 	map<string, ArrayND> values = 1;
+}
+
+message Validated {
+	bool valid = 1;
+	// repeated string messages = 2;
+}
+
+message PrivacyUsage {
+
+}
+
+message PrivacyUsageNode {
+	
+}
+
+message Report {
+	string value = 1;
+}
+
+message Constraints {
+
+}
+
+message Sensitivities {
+
+}
+
+message Accuracies {
+
 }

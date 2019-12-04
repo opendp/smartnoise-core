@@ -1,6 +1,0 @@
-[requires]
-protobuf/3.9.1@bincrafters/stable
-boost_graph/1.69.0@bincrafters/stable
-
-[generators]
-cmake
