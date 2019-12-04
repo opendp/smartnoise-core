@@ -4,7 +4,7 @@
     
     python -m pip install -r bindings-python/requirements.txt
 
-2. install burdock (rerun when binaries or proto are updated)
+2. install yarrow (rerun when binaries or proto are updated)
 
 
     . install.sh

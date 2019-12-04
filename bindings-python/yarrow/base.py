@@ -1,19 +1,15 @@
 import queue
 import numpy as np
 
-from burdock.wrapper import LibraryWrapper
+from yarrow.wrapper import LibraryWrapper
 
 # these modules are generated via the subprocess call
-from burdock import analysis_pb2
-from burdock import types_pb2
-from burdock import release_pb2
-from burdock import dataset_pb2
+from yarrow import analysis_pb2
+from yarrow import types_pb2
+from yarrow import release_pb2
+from yarrow import dataset_pb2
 
-
-runtime_name = 'RUST'
-validator_name = 'C++'
-
-core_wrapper = LibraryWrapper(validator=validator_name, runtime=runtime_name)
+core_wrapper = LibraryWrapper()
 
 
 class Dataset(object):
@@ -245,10 +241,6 @@ class Analysis(object):
             privacy_definition=analysis_pb2.PrivacyDefinition(
                 distance=analysis_pb2.PrivacyDefinition.Distance.Value(self.distance),
                 neighboring=analysis_pb2.PrivacyDefinition.Neighboring.Value(self.neighboring)
-            ),
-            runtime_definition=analysis_pb2.RuntimeDefinition(
-                name=runtime_name,
-                version='0.1'
             )
         )
 
@@ -270,7 +262,8 @@ class Analysis(object):
     @property
     def epsilon(self):
         return core_wrapper.compute_epsilon(
-            self._make_analysis_proto())
+            self._make_analysis_proto(),
+            self._make_release_proto())
 
     def release(self):
         analysis_proto: analysis_pb2.Analysis = self._make_analysis_proto()

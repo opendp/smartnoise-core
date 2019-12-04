@@ -2,7 +2,6 @@
 bindings-python.iml
 __pycache__/
 
-burdock/_native.py
-burdock/_native__ffi.py
-burdock/_native__lib.so
-burdock.egg-info
+yarrow/_native*
+yarrow.egg-info
+.eggs/
