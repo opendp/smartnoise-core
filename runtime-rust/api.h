@@ -12,8 +12,6 @@ typedef struct {
   uint8_t *data;
 } ByteBuffer;
 
-void free_ptr(const char *_buffer);
-
 ByteBuffer release(const uint8_t *dataset_ptr,
                    int32_t dataset_length,
                    const uint8_t *analysis_ptr,

@@ -1,5 +1,7 @@
+extern crate yarrow_validator;
+use yarrow_validator::yarrow;
+
 use ndarray::prelude::*;
-use crate::base::burdock;
 use crate::base::{
     NodeArguments, NodeEvaluation, FieldEvaluation,
     parse_proto_array, get_f64, get_array_f64
@@ -19,17 +21,17 @@ macro_rules! hashmap {
     }}
 }
 
-pub fn component_literal(x: &burdock::Literal) -> NodeEvaluation {
+pub fn component_literal(x: &yarrow::Literal) -> NodeEvaluation {
 //    println!("literal");
     hashmap!["data".to_owned() => parse_proto_array(&x.to_owned().value.unwrap())]
 }
 
-pub fn component_datasource(datasource: &burdock::DataSource, dataset: &burdock::Dataset, arguments: &NodeArguments) -> NodeEvaluation {
+pub fn component_datasource(datasource: &yarrow::DataSource, dataset: &yarrow::Dataset, arguments: &NodeArguments) -> NodeEvaluation {
 //    println!("datasource");
 
     let table = dataset.tables.get(&datasource.dataset_id).unwrap();
     let data = match table.value.as_ref().unwrap() {
-        burdock::table::Value::FilePath(path) => {
+        yarrow::table::Value::FilePath(path) => {
 
             fn get_column<T>(path: &String, column: &String) -> Vec<T>
                 where T: FromStr, <T as std::str::FromStr>::Err: std::fmt::Debug {
@@ -58,14 +60,14 @@ pub fn component_datasource(datasource: &burdock::DataSource, dataset: &burdock:
                 _ => Err("Datatype must be a string.")
             }
         },
-        burdock::table::Value::Literal(value) => Ok(parse_proto_array(&value)),
+        yarrow::table::Value::Literal(value) => Ok(parse_proto_array(&value)),
         _ => Err("Only file paths are supported")
     }.unwrap();
 
     hashmap!["data".to_owned() => data]
 }
 
-pub fn component_add(_x: &burdock::Add, arguments: &NodeArguments) -> NodeEvaluation {
+pub fn component_add(_x: &yarrow::Add, arguments: &NodeArguments) -> NodeEvaluation {
 //    println!("add");
     match (arguments.get("left").unwrap(), arguments.get("right").unwrap()) {
         (FieldEvaluation::F64(x), FieldEvaluation::F64(y)) =>
@@ -77,7 +79,7 @@ pub fn component_add(_x: &burdock::Add, arguments: &NodeArguments) -> NodeEvalua
 }
 
 
-pub fn component_subtract(_x: &burdock::Subtract, arguments: &NodeArguments) -> NodeEvaluation {
+pub fn component_subtract(_x: &yarrow::Subtract, arguments: &NodeArguments) -> NodeEvaluation {
     match (arguments.get("left").unwrap(), arguments.get("right").unwrap()) {
         (FieldEvaluation::F64(x), FieldEvaluation::F64(y)) =>
             Ok(hashmap!["data".to_string() => FieldEvaluation::F64(x - y)]),
@@ -87,7 +89,7 @@ pub fn component_subtract(_x: &burdock::Subtract, arguments: &NodeArguments) -> 
     }.unwrap()
 }
 
-pub fn component_divide(_x: &burdock::Divide, arguments: &NodeArguments) -> NodeEvaluation {
+pub fn component_divide(_x: &yarrow::Divide, arguments: &NodeArguments) -> NodeEvaluation {
     match (arguments.get("left").unwrap(), arguments.get("right").unwrap()) {
         (FieldEvaluation::F64(x), FieldEvaluation::F64(y)) =>
             Ok(hashmap!["data".to_string() => FieldEvaluation::F64(x / y)]),
@@ -97,7 +99,7 @@ pub fn component_divide(_x: &burdock::Divide, arguments: &NodeArguments) -> Node
     }.unwrap()
 }
 
-pub fn component_multiply(_x: &burdock::Multiply, arguments: &NodeArguments) -> NodeEvaluation {
+pub fn component_multiply(_x: &yarrow::Multiply, arguments: &NodeArguments) -> NodeEvaluation {
     match (arguments.get("left").unwrap(), arguments.get("right").unwrap()) {
         (FieldEvaluation::F64(x), FieldEvaluation::F64(y)) =>
             Ok(hashmap!["data".to_string() => FieldEvaluation::F64(x * y)]),
@@ -107,13 +109,13 @@ pub fn component_multiply(_x: &burdock::Multiply, arguments: &NodeArguments) -> 
     }.unwrap()
 }
 
-pub fn component_power(_x: &burdock::Power, arguments: &NodeArguments) -> NodeEvaluation {
+pub fn component_power(_x: &yarrow::Power, arguments: &NodeArguments) -> NodeEvaluation {
     let power: f64 = get_f64(&arguments, "right");
     let data = get_array_f64(&arguments, "left");
     hashmap!["data".to_string() => FieldEvaluation::F64(data.mapv(|x| x.powf(power)))]
 }
 
-pub fn component_negate(_x: &burdock::Negate, arguments: &NodeArguments) -> NodeEvaluation {
+pub fn component_negate(_x: &yarrow::Negate, arguments: &NodeArguments) -> NodeEvaluation {
     match arguments.get("data").unwrap() {
         FieldEvaluation::F64(x) =>
             Ok(hashmap!["data".to_string() => FieldEvaluation::F64(-x)]),
@@ -126,9 +128,9 @@ pub fn component_negate(_x: &burdock::Negate, arguments: &NodeArguments) -> Node
 
 // TODO: Possibly compute sensitivity here, and pass into algorithm?
 
-pub fn component_dp_mean(component: &burdock::DpMean, arguments: &NodeArguments) -> NodeEvaluation {
-    let data: FieldEvaluation = match burdock::Mechanism::from_i32(component.mechanism).unwrap() {
-        burdock::Mechanism::Laplace => Ok(FieldEvaluation::F64(Array::from_elem((), algorithms::dp_mean_laplace(
+pub fn component_dp_mean(component: &yarrow::DpMean, arguments: &NodeArguments) -> NodeEvaluation {
+    let data: FieldEvaluation = match yarrow::Mechanism::from_i32(component.mechanism).unwrap() {
+        yarrow::Mechanism::Laplace => Ok(FieldEvaluation::F64(Array::from_elem((), algorithms::dp_mean_laplace(
             component.epsilon,
             get_f64(&arguments, "num_records"),
             get_array_f64(&arguments, "data"),
@@ -141,9 +143,9 @@ pub fn component_dp_mean(component: &burdock::DpMean, arguments: &NodeArguments)
     hashmap!["data".to_string() => data]
 }
 
-pub fn component_dp_variance(component: &burdock::DpVariance, arguments: &NodeArguments) -> NodeEvaluation {
-    let data: FieldEvaluation = match burdock::Mechanism::from_i32(component.mechanism).unwrap() {
-        burdock::Mechanism::Laplace => Ok(FieldEvaluation::F64(Array::from_elem((), algorithms::dp_variance_laplace(
+pub fn component_dp_variance(component: &yarrow::DpVariance, arguments: &NodeArguments) -> NodeEvaluation {
+    let data: FieldEvaluation = match yarrow::Mechanism::from_i32(component.mechanism).unwrap() {
+        yarrow::Mechanism::Laplace => Ok(FieldEvaluation::F64(Array::from_elem((), algorithms::dp_variance_laplace(
             component.epsilon,
             get_f64(&arguments, "num_records"),
             get_array_f64(&arguments, "data"),
@@ -155,9 +157,9 @@ pub fn component_dp_variance(component: &burdock::DpVariance, arguments: &NodeAr
     hashmap!["data".to_string() => data]
 }
 
-pub fn component_dp_moment_raw(component: &burdock::DpMomentRaw, arguments: &NodeArguments) -> NodeEvaluation {
-    let data: FieldEvaluation = match burdock::Mechanism::from_i32(component.mechanism).unwrap() {
-        burdock::Mechanism::Laplace => Ok(FieldEvaluation::F64(Array::from_elem((), algorithms::dp_moment_raw_laplace(
+pub fn component_dp_moment_raw(component: &yarrow::DpMomentRaw, arguments: &NodeArguments) -> NodeEvaluation {
+    let data: FieldEvaluation = match yarrow::Mechanism::from_i32(component.mechanism).unwrap() {
+        yarrow::Mechanism::Laplace => Ok(FieldEvaluation::F64(Array::from_elem((), algorithms::dp_moment_raw_laplace(
             component.epsilon,
             get_f64(&arguments, "num_records"),
             get_array_f64(&arguments, "data"),
@@ -171,9 +173,9 @@ pub fn component_dp_moment_raw(component: &burdock::DpMomentRaw, arguments: &Nod
 }
 
 
-pub fn component_dp_covariance(component: &burdock::DpCovariance, arguments: &NodeArguments) -> NodeEvaluation {
-    let data: FieldEvaluation = match burdock::Mechanism::from_i32(component.mechanism).unwrap() {
-        burdock::Mechanism::Laplace => Ok(FieldEvaluation::F64(Array::from_elem((), algorithms::dp_covariance(
+pub fn component_dp_covariance(component: &yarrow::DpCovariance, arguments: &NodeArguments) -> NodeEvaluation {
+    let data: FieldEvaluation = match yarrow::Mechanism::from_i32(component.mechanism).unwrap() {
+        yarrow::Mechanism::Laplace => Ok(FieldEvaluation::F64(Array::from_elem((), algorithms::dp_covariance(
             component.epsilon,
             get_f64(&arguments, "num_records"),
             get_array_f64(&arguments, "data_x"),

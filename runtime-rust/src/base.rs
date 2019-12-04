@@ -1,3 +1,6 @@
+extern crate yarrow_validator;
+use yarrow_validator::yarrow;
+
 use ndarray::prelude::*;
 
 use std::collections::{HashMap, HashSet, VecDeque};
@@ -5,11 +8,6 @@ use std::vec::Vec;
 use std::iter::FromIterator;
 
 use crate::components;
-
-// Include the `items` module, which is generated from items.proto.
-pub mod burdock {
-    include!(concat!(env!("OUT_DIR"), "/burdock.rs"));
-}
 
 // equivalent to proto ArrayNd
 #[derive(Debug)]
@@ -29,7 +27,7 @@ pub type GraphEvaluation = HashMap<u32, NodeEvaluation>;
 // arguments to a node prior to evaluation
 pub type NodeArguments<'a> = HashMap<String, &'a FieldEvaluation>;
 
-pub fn get_arguments<'a>(component: &burdock::Component, graph_evaluation: &'a GraphEvaluation) -> NodeArguments<'a> {
+pub fn get_arguments<'a>(component: &yarrow::Component, graph_evaluation: &'a GraphEvaluation) -> NodeArguments<'a> {
     let mut arguments = NodeArguments::new();
     component.arguments.iter().for_each(|(field_id, field)| {
         let evaluation: &'a FieldEvaluation = graph_evaluation.get(&field.source_node_id).unwrap().get(&field.source_field).unwrap().to_owned();
@@ -38,7 +36,7 @@ pub fn get_arguments<'a>(component: &burdock::Component, graph_evaluation: &'a G
     arguments
 }
 
-pub fn get_release_nodes(analysis: &burdock::Analysis) -> HashSet<u32> {
+pub fn get_release_nodes(analysis: &yarrow::Analysis) -> HashSet<u32> {
 
     let mut release_node_ids = HashSet::<u32>::new();
     // assume sinks are private
@@ -48,7 +46,7 @@ pub fn get_release_nodes(analysis: &burdock::Analysis) -> HashSet<u32> {
     // traverse back through arguments until privatizers found
     let mut node_queue = VecDeque::from_iter(sink_node_ids.iter());
 
-    let graph: &HashMap<u32, burdock::Component> = &analysis.graph;
+    let graph: &HashMap<u32, yarrow::Component> = &analysis.graph;
 
     while !node_queue.is_empty() {
         let node_id = node_queue.pop_front().unwrap();
@@ -67,7 +65,7 @@ pub fn get_release_nodes(analysis: &burdock::Analysis) -> HashSet<u32> {
     return release_node_ids;
 }
 
-pub fn get_sinks(analysis: &burdock::Analysis) -> HashSet<u32> {
+pub fn get_sinks(analysis: &yarrow::Analysis) -> HashSet<u32> {
     let mut node_ids = HashSet::<u32>::new();
     // start with all nodes
     for node_id in analysis.graph.keys() {
@@ -85,17 +83,17 @@ pub fn get_sinks(analysis: &burdock::Analysis) -> HashSet<u32> {
     return node_ids.to_owned();
 }
 
-pub fn is_privatizer(component: &burdock::Component) -> bool {
-    use burdock::component::Value::*;
+pub fn is_privatizer(component: &yarrow::Component) -> bool {
+    use yarrow::component::Value::*;
     match component.to_owned().value.unwrap() {
         Dpmean(_x) => true,
         _ => false
     }
 }
 
-pub fn execute_graph(analysis: &burdock::Analysis,
-                     release: &burdock::Release,
-                     dataset: &burdock::Dataset) -> burdock::Release {
+pub fn execute_graph(analysis: &yarrow::Analysis,
+                     release: &yarrow::Release,
+                     dataset: &yarrow::Dataset) -> yarrow::Release {
 
     let node_ids_release: HashSet<u32> = get_release_nodes(&analysis);
 
@@ -104,7 +102,7 @@ pub fn execute_graph(analysis: &burdock::Analysis,
     traversal.extend(get_sinks(&analysis).into_iter());
 
     let mut evaluations = release_to_evaluations(release);
-    let graph: &HashMap<u32, burdock::Component> = &analysis.graph;
+    let graph: &HashMap<u32, yarrow::Component> = &analysis.graph;
 
     // track node parents
     let mut parents = HashMap::<u32, HashSet<u32>>::new();
@@ -154,25 +152,25 @@ pub fn execute_graph(analysis: &burdock::Analysis,
     evaluations_to_release(&evaluations)
 }
 
-pub fn execute_component(component: &burdock::Component,
+pub fn execute_component(component: &yarrow::Component,
                          evaluations: &GraphEvaluation,
-                         dataset: &burdock::Dataset) -> NodeEvaluation {
+                         dataset: &yarrow::Dataset) -> NodeEvaluation {
 
     let arguments = get_arguments(&component, &evaluations);
 
     match component.to_owned().value.unwrap() {
-        burdock::component::Value::Literal(x) => components::component_literal(&x),
-        burdock::component::Value::Datasource(x) => components::component_datasource(&x, &dataset, &arguments),
-        burdock::component::Value::Add(x) => components::component_add(&x, &arguments),
-        burdock::component::Value::Subtract(x) => components::component_subtract(&x, &arguments),
-        burdock::component::Value::Divide(x) => components::component_divide(&x, &arguments),
-        burdock::component::Value::Multiply(x) => components::component_multiply(&x, &arguments),
-        burdock::component::Value::Power(x) => components::component_power(&x, &arguments),
-        burdock::component::Value::Negate(x) => components::component_negate(&x, &arguments),
-        burdock::component::Value::Dpmean(x) => components::component_dp_mean(&x, &arguments),
-        burdock::component::Value::Dpvariance(x) => components::component_dp_variance(&x, &arguments),
-        burdock::component::Value::Dpmomentraw(x) => components::component_dp_moment_raw(&x, &arguments),
-        burdock::component::Value::Dpcovariance(x) => components::component_dp_covariance(&x, &arguments),
+        yarrow::component::Value::Literal(x) => components::component_literal(&x),
+        yarrow::component::Value::Datasource(x) => components::component_datasource(&x, &dataset, &arguments),
+        yarrow::component::Value::Add(x) => components::component_add(&x, &arguments),
+        yarrow::component::Value::Subtract(x) => components::component_subtract(&x, &arguments),
+        yarrow::component::Value::Divide(x) => components::component_divide(&x, &arguments),
+        yarrow::component::Value::Multiply(x) => components::component_multiply(&x, &arguments),
+        yarrow::component::Value::Power(x) => components::component_power(&x, &arguments),
+        yarrow::component::Value::Negate(x) => components::component_negate(&x, &arguments),
+        yarrow::component::Value::Dpmean(x) => components::component_dp_mean(&x, &arguments),
+        yarrow::component::Value::Dpvariance(x) => components::component_dp_variance(&x, &arguments),
+        yarrow::component::Value::Dpmomentraw(x) => components::component_dp_moment_raw(&x, &arguments),
+        yarrow::component::Value::Dpcovariance(x) => components::component_dp_covariance(&x, &arguments),
         _ => NodeEvaluation::new()
     }
 }
@@ -195,7 +193,7 @@ pub fn get_array_f64(arguments: &NodeArguments, column: &str) -> ArrayD<f64> {
     }.unwrap()
 }
 
-pub fn release_to_evaluations(release: &burdock::Release) -> GraphEvaluation {
+pub fn release_to_evaluations(release: &yarrow::Release) -> GraphEvaluation {
     let mut evaluations = GraphEvaluation::new();
 
     for (node_id, node_release) in &release.values {
@@ -208,7 +206,7 @@ pub fn release_to_evaluations(release: &burdock::Release) -> GraphEvaluation {
     evaluations
 }
 
-pub fn evaluations_to_release(evaluations: &GraphEvaluation) -> burdock::Release {
+pub fn evaluations_to_release(evaluations: &GraphEvaluation) -> yarrow::Release {
     let mut releases = HashMap::new();
     for (node_id, node_eval) in evaluations {
         let mut node_release = HashMap::new();
@@ -216,68 +214,68 @@ pub fn evaluations_to_release(evaluations: &GraphEvaluation) -> burdock::Release
         for (field_name, field_eval) in node_eval {
             node_release.insert(field_name.to_owned(), serialize_proto_array(&field_eval));
         }
-        releases.insert(*node_id, burdock::ReleaseNode {
+        releases.insert(*node_id, yarrow::ReleaseNode {
             values: node_release.to_owned()
         });
     }
-    burdock::Release {
+    yarrow::Release {
         values: releases
     }
 }
 
-pub fn parse_proto_array(value: &burdock::ArrayNd) -> FieldEvaluation {
+pub fn parse_proto_array(value: &yarrow::ArrayNd) -> FieldEvaluation {
     let value = value.to_owned();
     let shape: Vec<usize> = value.shape.iter().map(|x| *x as usize).collect();
     match value.data.unwrap() {
-        burdock::array_nd::Data::Bytes(x) =>
+        yarrow::array_nd::Data::Bytes(x) =>
             FieldEvaluation::Bytes(Array::from_shape_vec(shape, x).unwrap().into_dyn()),
-        burdock::array_nd::Data::Bool(x) =>
+        yarrow::array_nd::Data::Bool(x) =>
             FieldEvaluation::Bool(Array::from_shape_vec(shape, x.data).unwrap().into_dyn()),
-        burdock::array_nd::Data::I64(x) =>
+        yarrow::array_nd::Data::I64(x) =>
             FieldEvaluation::I64(Array::from_shape_vec(shape, x.data).unwrap().into_dyn()),
-        burdock::array_nd::Data::F64(x) =>
+        yarrow::array_nd::Data::F64(x) =>
             FieldEvaluation::F64(Array::from_shape_vec(shape, x.data).unwrap().into_dyn()),
-        burdock::array_nd::Data::String(x) =>
+        yarrow::array_nd::Data::String(x) =>
             FieldEvaluation::Str(Array::from_shape_vec(shape, x.data).unwrap().into_dyn()),
     }
 }
 
-pub fn serialize_proto_array(evaluation: &FieldEvaluation) -> burdock::ArrayNd {
+pub fn serialize_proto_array(evaluation: &FieldEvaluation) -> yarrow::ArrayNd {
 
     match evaluation {
-        FieldEvaluation::Bytes(x) => burdock::ArrayNd {
-            datatype: burdock::DataType::Bytes as i32,
-            data: Some(burdock::array_nd::Data::Bytes(x.iter().map(|s| *s).collect())),
+        FieldEvaluation::Bytes(x) => yarrow::ArrayNd {
+            datatype: yarrow::DataType::Bytes as i32,
+            data: Some(yarrow::array_nd::Data::Bytes(x.iter().map(|s| *s).collect())),
             order: (1..x.ndim()).map(|x| {x as u64}).collect(),
             shape: x.shape().iter().map(|y| {*y as u64}).collect()
         },
-        FieldEvaluation::Bool(x) => burdock::ArrayNd {
-            datatype: burdock::DataType::Bool as i32,
-            data: Some(burdock::array_nd::Data::Bool(burdock::Array1Dbool {
+        FieldEvaluation::Bool(x) => yarrow::ArrayNd {
+            datatype: yarrow::DataType::Bool as i32,
+            data: Some(yarrow::array_nd::Data::Bool(yarrow::Array1Dbool {
                 data: x.iter().map(|s| *s).collect()
             })),
             order: (1..x.ndim()).map(|x| {x as u64}).collect(),
             shape: x.shape().iter().map(|y| {*y as u64}).collect()
         },
-        FieldEvaluation::I64(x) => burdock::ArrayNd {
-            datatype: burdock::DataType::I64 as i32,
-            data: Some(burdock::array_nd::Data::I64(burdock::Array1Di64 {
+        FieldEvaluation::I64(x) => yarrow::ArrayNd {
+            datatype: yarrow::DataType::I64 as i32,
+            data: Some(yarrow::array_nd::Data::I64(yarrow::Array1Di64 {
                 data: x.iter().map(|s| *s).collect()
             })),
             order: (1..x.ndim()).map(|x| {x as u64}).collect(),
             shape: x.shape().iter().map(|y| {*y as u64}).collect()
         },
-        FieldEvaluation::F64(x) => burdock::ArrayNd {
-            datatype: burdock::DataType::F64 as i32,
-            data: Some(burdock::array_nd::Data::F64(burdock::Array1Df64 {
+        FieldEvaluation::F64(x) => yarrow::ArrayNd {
+            datatype: yarrow::DataType::F64 as i32,
+            data: Some(yarrow::array_nd::Data::F64(yarrow::Array1Df64 {
                 data: x.iter().map(|s| *s).collect()
             })),
             order: (1..x.ndim()).map(|x| {x as u64}).collect(),
             shape: x.shape().iter().map(|y| {*y as u64}).collect()
         },
-        FieldEvaluation::Str(x) => burdock::ArrayNd {
-            datatype: burdock::DataType::String as i32,
-            data: Some(burdock::array_nd::Data::String(burdock::Array1Dstr {
+        FieldEvaluation::Str(x) => yarrow::ArrayNd {
+            datatype: yarrow::DataType::String as i32,
+            data: Some(yarrow::array_nd::Data::String(yarrow::Array1Dstr {
                 data: x.iter().cloned().collect()
             })),
             order: (1..x.ndim()).map(|x| {x as u64}).collect(),

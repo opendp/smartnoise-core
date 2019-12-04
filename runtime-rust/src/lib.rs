@@ -1,3 +1,6 @@
+extern crate yarrow_validator;
+use yarrow_validator::yarrow;
+
 mod base;
 mod utilities;
 mod components;
@@ -8,7 +11,6 @@ use ndarray::prelude::*;
 extern crate libc;
 use libc::c_char;
 
-use base::burdock;
 use crate::base::execute_graph;
 
 // useful tutorial for proto over ffi here:
@@ -35,19 +37,20 @@ struct ByteBuffer {
 pub extern "C" fn release(
     dataset_ptr: *const u8, dataset_length: i32,
     analysis_ptr: *const u8, analysis_length: i32,
-    release_ptr: *const u8, release_length: i32) -> ffi_support::ByteBuffer {
+    release_ptr: *const u8, release_length: i32
+) -> ffi_support::ByteBuffer {
 
     let dataset_buffer = unsafe {get_buffer(dataset_ptr, dataset_length)};
-    let dataset: burdock::Dataset = prost::Message::decode(dataset_buffer).unwrap();
+    let dataset: yarrow::Dataset = prost::Message::decode(dataset_buffer).unwrap();
 
     let analysis_buffer = unsafe {get_buffer(analysis_ptr, analysis_length)};
-    let analysis: burdock::Analysis = prost::Message::decode(analysis_buffer).unwrap();
+    let analysis: yarrow::Analysis = prost::Message::decode(analysis_buffer).unwrap();
 
     let release_buffer = unsafe {get_buffer(release_ptr, release_length)};
-    let release: burdock::Release = prost::Message::decode(release_buffer).unwrap();
+    let release: yarrow::Release = prost::Message::decode(release_buffer).unwrap();
 
     let response_release = execute_graph(&analysis, &release, &dataset);
-
+    
     let mut out_buffer = Vec::new();
     match prost::Message::encode(&response_release, &mut out_buffer) {
         Ok(_t) => ffi_support::ByteBuffer::from_vec(out_buffer),
@@ -57,12 +60,6 @@ pub extern "C" fn release(
             ffi_support::ByteBuffer::new_with_size(0)
         }
     }
-}
-
-// Only left for FFI compatibility with C runtime
-#[no_mangle]
-pub extern "C" fn free_ptr(_buffer: *const c_char) {
-//    unsafe { libc::free(_buffer)};
 }
 
 use std;
@@ -121,5 +118,5 @@ pub extern fn test_ndarray() {
 //    println!("{:?}", temp);
 }
 
-//ffi_support::implement_into_ffi_by_protobuf!(burdock::Release);
+//ffi_support::implement_into_ffi_by_protobuf!(yarrow::Release);
 ffi_support::define_bytebuffer_destructor!(dp_runtime_destroy_bytebuffer);
