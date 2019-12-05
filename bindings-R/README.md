@@ -14,7 +14,7 @@
 
 ## Debugging
 
-Rebuild the burdock.so
+Rebuild the yarrow.so
 
     pkgbuild::compile_dll()
 

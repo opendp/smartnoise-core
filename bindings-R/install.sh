@@ -18,7 +18,7 @@ else
   cp -fR ../prototypes/ src/prototypes
 
   # runtime's default config is to build a dynamic library
-  # but `ldd src/burdock.so` (the shim) shows the broken (not found) runtime dependency
+  # but `ldd src/yarrow.so` (the shim) shows the broken (not found) runtime dependency
   # fixed by compiling the runtime statically into the shim
   sed -i 's/dylib/staticlib/g' src/runtime-rust/Cargo.toml
 fi

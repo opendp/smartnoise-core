@@ -1,4 +1,4 @@
-library(burdock)
+library(yarrow)
 loadProtoDescriptors()
 
 

@@ -1,4 +1,4 @@
-Package: burdock
+Package: yarrow
 Type: Package
 Title: Differential Privacy
 Version: 0.1.0

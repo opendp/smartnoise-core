@@ -1,4 +1,4 @@
 library(testthat)
-library(burdock)
+library(yarrow)
 
-test_check("burdock")
+test_check("yarrow")

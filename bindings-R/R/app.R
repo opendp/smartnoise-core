@@ -31,7 +31,7 @@ validateAnalysis <- function(analysis) {
     message <- analysis$serialize(NULL)
     # analysisCopy <- Analysis$read(message)
 
-    print(.Call('validate_analysis', message, package='burdock'))
+    print(.Call('validate_analysis', message, package='yarrow'))
 }
 
 #' Hello Rust!
@@ -39,9 +39,9 @@ validateAnalysis <- function(analysis) {
 #' Examples of rust functions via C.
 #'
 #' @export
-#' @rdname burdock
+#' @rdname yarrow
 #' @examples hello()
-#' @useDynLib burdock hello_wrapper
+#' @useDynLib yarrow hello_wrapper
 hello <- function() {
     .Call(hello_wrapper)
 }
