@@ -18,11 +18,3 @@ ByteBuffer release(const uint8_t *dataset_ptr,
                    int32_t analysis_length,
                    const uint8_t *release_ptr,
                    int32_t release_length);
-
-const char *string_from_rust(void);
-
-void test_ndarray(void);
-
-void test_sample_laplace(double *samples_buf, uint32_t n_samples);
-
-void test_sample_uniform(double *samples_buf, uint32_t n_samples);
