@@ -16,6 +16,7 @@ csv = "1.1.1"
 ndarray = "0.13.0"
 ndarray-stats = "0.3.0"
 ffi-support = "0.3.5"
+ieee754 = "0.2"
 yarrow_validator = {path = "../validator-rust"}
 
 [build-dependencies]
