@@ -2,7 +2,7 @@ use ndarray::prelude::*;
 use ndarray_stats::SummaryStatisticsExt;
 use ndarray::Zip;
 
-use crate::utilities;
+use crate::utilities::noise;
 
 pub fn dp_mean_laplace(
     epsilon: f64, num_records: f64,
@@ -15,7 +15,7 @@ pub fn dp_mean_laplace(
         .mapv(|v| num::clamp(v, minimum, maximum))
         .mean().unwrap();
 
-    let noise: f64 = utilities::sample_laplace(0., sensitivity / epsilon);
+    let noise: f64 = noise::sample_laplace(0., sensitivity / epsilon);
 
     mean + noise
 }
@@ -31,7 +31,7 @@ pub fn dp_variance_laplace(
         .mapv(|v| num::clamp(v, minimum, maximum))
         .central_moment(2).unwrap();
 
-    let noise: f64 = utilities::sample_laplace(0., sensitivity / epsilon);
+    let noise: f64 = noise::sample_laplace(0., sensitivity / epsilon);
 
     variance + noise
 }
@@ -48,7 +48,7 @@ pub fn dp_moment_raw_laplace(
         .mapv(|v| num::clamp(v, minimum, maximum).powi(order as i32))
         .mean().unwrap();
 
-    let noise: f64 = utilities::sample_laplace(0., sensitivity / epsilon);
+    let noise: f64 = noise::sample_laplace(0., sensitivity / epsilon);
 
     moment + noise
 }
@@ -73,7 +73,7 @@ pub fn dp_covariance(
         .apply(|total, &x, &y| *total += (x - mean_x) * (y - mean_y));
 
     let covariance = products.mean().unwrap();
-    let noise: f64 = utilities::sample_laplace(0., sensitivity / epsilon);
+    let noise: f64 = noise::sample_laplace(0., sensitivity / epsilon);
 
     covariance + noise
 }
