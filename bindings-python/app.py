@@ -15,10 +15,6 @@ if os.name == 'nt' and not os.path.exists('yarrow/analysis_pb2.py'):
 
 from tests.test_base import (
     test_basic_path,
-    test_rust_sampling,
-    test_ndarray
 )
 
 test_basic_path()
-# test_rust_sampling()
-# test_ndarray()

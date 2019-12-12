@@ -63,25 +63,3 @@ def test_basic_path():
 
     print('release json:', analysis.release())
     print('release proto:', analysis.release_proto)
-
-
-def test_rust_sampling():
-    import ctypes
-    import matplotlib.pyplot as plt
-
-    n_samples = 10000
-    buffer = (ctypes.c_double * n_samples)(*(0 for _ in range(n_samples)))
-
-    yarrow.core_wrapper.lib_runtime.test_sample_uniform(buffer, n_samples)
-    plt.hist(list(buffer))
-    plt.title("uniform samples")
-    plt.show()
-
-    yarrow.core_wrapper.lib_runtime.test_sample_laplace(buffer, n_samples)
-    plt.hist(list(buffer))
-    plt.title("laplace samples")
-    plt.show()
-
-
-def test_ndarray():
-    yarrow.core_wrapper.lib_runtime.test_ndarray()
