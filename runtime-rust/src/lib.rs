@@ -50,7 +50,7 @@ pub extern "C" fn release(
     let release: yarrow::Release = prost::Message::decode(release_buffer).unwrap();
 
     let response_release = execute_graph(&analysis, &release, &dataset);
-    
+
     let mut out_buffer = Vec::new();
     match prost::Message::encode(&response_release, &mut out_buffer) {
         Ok(_t) => ffi_support::ByteBuffer::from_vec(out_buffer),
