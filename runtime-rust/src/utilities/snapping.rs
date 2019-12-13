@@ -63,7 +63,7 @@ pub fn get_geom_prob_one_half() -> i16 {
     return geom;
 }
 
-pub fn f64_to_binary(num: f64) -> String {
+pub fn f64_to_binary(num: &f64) -> String {
     /// Converts f64 to String of length 64, yielding the IEEE-754 binary representation of the number
     ///
     /// # Arguments
@@ -88,7 +88,7 @@ pub fn f64_to_binary(num: f64) -> String {
     return binary_string;
 }
 
-pub fn binary_to_f64(binary_string: String) -> f64 {
+pub fn binary_to_f64(binary_string: &String) -> f64 {
     /// Converts String of length 64 to f64, yielding the floating-point number represented by the String
     ///
     /// # Arguments
@@ -116,4 +116,29 @@ pub fn binary_to_f64(binary_string: String) -> f64 {
     // combine elements into f64 and return
     let num = f64::recompose_raw(sign_bool, exponent_int, mantissa_int);
     return num;
+}
+
+pub fn split_ieee_into_components(binary_string: &String) -> (String, String, String) {
+    /// Takes 64-bit binary string and splits into sign, exponent, and mantissa
+    ///
+    /// # Arguments
+    /// * `binary_string` - 64-bit binary string
+    ///
+    /// # Return
+    /// * `(sign, exponent, mantissa)` - where each is a string
+    return(binary_string[0..1].to_string(), binary_string[1..12].to_string(), binary_string[12..].to_string());
+}
+
+pub fn combine_components_into_ieee(sign: &str, exponent: &str, mantissa: &str) -> String {
+    /// Combines string versions of sign, exponent, and mantissa into single IEEE representation
+    ///
+    /// # Arguments
+    /// * `sign` - Sign bit (length 1)
+    /// * `exponent` - Exponent bits (length 11)
+    /// * `mantissa` - Mantissa bits (length 52)
+    ///
+    /// # Return
+    /// * `combined_string` - concatenation of sign, exponent, and mantissa
+    let combined_string = vec![sign, exponent, mantissa].join("");
+    return combined_string;
 }
