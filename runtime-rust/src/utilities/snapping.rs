@@ -74,7 +74,7 @@ pub fn f64_to_binary(num: &f64) -> String {
 
 
     // decompose num into component parts
-    let (sign, exponent, mantissa) = num.decompose_raw();
+    let (mut sign, mut exponent, mut mantissa) = num.decompose_raw();
 
     // convert each component into strings
     let sign_string = (sign as i64).to_string();
@@ -82,7 +82,7 @@ pub fn f64_to_binary(num: &f64) -> String {
     let exponent_string = format!("{:011b}", exponent);
 
     // join component strings
-    let binary_string = vec![sign_string, exponent_string, mantissa_string].join("");
+    let mut binary_string = vec![sign_string, exponent_string, mantissa_string].join("");
 
     // return string representation
     return binary_string;
@@ -141,4 +141,36 @@ pub fn combine_components_into_ieee(sign: &str, exponent: &str, mantissa: &str) 
     /// * `combined_string` - concatenation of sign, exponent, and mantissa
     let combined_string = vec![sign, exponent, mantissa].join("");
     return combined_string;
+}
+
+pub fn get_smallest_greater_or_eq_power_of_two(x: &f64) -> (f64, i64) {
+    /// Gets smallest power of two that is equal to or greater than x
+    ///
+    /// # Arguments
+    /// * `x` - the number for which we want the next power of two
+    ///
+    /// # Returns
+    /// * (f64 greater power of two value, i64 of the actual power)
+
+
+    // convert x to binary and split it into its component parts
+    let x_binary = f64_to_binary(&x);
+    let (mut sign, mut exponent, mut mantissa) = split_ieee_into_components(&x_binary);
+
+    // build string of all zeros to be used later
+    let mut all_zeros = String::with_capacity(52);
+    for _ in 0..52 {
+        all_zeros.push_str("0");
+    }
+    if mantissa == all_zeros {
+        // if mantissa is all zeros, then x is already a power of two
+        return(*x, i64::from_str_radix(&exponent, 2).unwrap() - 1023);
+    } else {
+        // otherwise, convert the mantissa to all zeros and increment the exponent
+        let exponent_plus_one_int = i64::from_str_radix(&exponent, 2).unwrap() + 1;
+        let exponent_plus_one_bin = format!("{:011b}", exponent_plus_one_int);
+        let greater_or_eq_power_of_two_bin = combine_components_into_ieee(&sign, &exponent_plus_one_bin, &all_zeros);
+        let greater_or_eq_power_of_two_f64 = binary_to_f64(&greater_or_eq_power_of_two_bin);
+        return(greater_or_eq_power_of_two_f64, exponent_plus_one_int-1023);
+    }
 }
