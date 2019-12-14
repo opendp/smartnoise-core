@@ -1,6 +1,7 @@
 use openssl::rand::rand_bytes;
 use std::{cmp, convert::TryFrom};
 use ieee754::Ieee754;
+use rug;
 
 pub fn get_bytes(n_bytes: usize) -> String {
     /// Return bytes of binary data as String
@@ -284,4 +285,20 @@ pub fn get_closest_multiple_of_Lambda(x: &f64, m: &i64) -> f64 {
     let Lambda_mult_binary = combine_components_into_ieee(&sign_d, &exponent_d, &mantissa_d);
     let Lambda_mult_f64 = binary_to_f64(&Lambda_mult_binary);
     return Lambda_mult_f64;
+}
+
+pub fn redefine_epsilon(epsilon: &f64, B: &f64, precision: &f64) -> f64 {
+    /// Redefine epsilon for snapping mechanism such that we can
+    /// ensure that we do not exhaust too much privacy budget
+    ///
+    /// # Arguments
+    /// * `epsilon` - desired privacy guarantee
+    /// * `B` - snapping bound
+    /// * `precision` - amount of arithmetic precision to which we have access
+    ///
+    /// # Returns
+    /// functional epsilon that will determine amount of noise
+
+    let eta = 2_f64.powf(-precision);
+    return (epsilon - 2.0*eta) / (1.0 + 12.0*B*eta);
 }
