@@ -241,7 +241,7 @@ pub fn round_components_to_nearest_int(sign: &str, exponent: &str, mantissa: &st
                 println!("rounding up mantissa");
                 // if integer part of mantissa not all 1s, just increment mantissa
                 let mantissa_subset_increased_numeric = u64::from_str_radix(&mantissa_subset, 2).unwrap() + 1;
-                let mantissa_subset_increased_bin = format!("{:0>width$}", mantissa_subset_increased_numeric, width = unbiased_exponent_numeric);
+                let mantissa_subset_increased_bin = format!("{:0>width$b}", mantissa_subset_increased_numeric, width = unbiased_exponent_numeric);
                 let mantissa_increased_bin = format!("{:0<52}", mantissa_subset_increased_bin); // append zeros to right
                 return(sign.to_string(), exponent.to_string(), mantissa_increased_bin.to_string());
             }
@@ -265,4 +265,23 @@ pub fn round_components_to_nearest_int(sign: &str, exponent: &str, mantissa: &st
             return(sign.to_string(), exponent_for_zero.to_string(), format!("{:0<52}", "0"));
         }
     }
+}
+
+pub fn get_closest_multiple_of_Lambda(x: &f64, m: &i64) -> f64 {
+    ///
+    /// # Arguments
+    /// * `x` - number to be rounded to closest multiple of Lambda
+    /// * `m` - integer such that Lambda = 2^m
+    ///
+    /// # Returns
+    /// closest multiple of Lambda to `x`
+
+    let x_binary = f64_to_binary(&x);
+    let (sign_a, exponent_a, mantissa_a) = split_ieee_into_components(&x_binary);
+    let (sign_b, exponent_b, mantissa_b) = divide_components_by_power_of_two(&sign_a, &exponent_a, &mantissa_a, &m);
+    let (sign_c, exponent_c, mantissa_c) = round_components_to_nearest_int(&sign_b, &exponent_b, &mantissa_b);
+    let (sign_d, exponent_d, mantissa_d) = multiply_components_by_power_of_two(&sign_c, &exponent_c, &mantissa_c, &m);
+    let Lambda_mult_binary = combine_components_into_ieee(&sign_d, &exponent_d, &mantissa_d);
+    let Lambda_mult_f64 = binary_to_f64(&Lambda_mult_binary);
+    return Lambda_mult_f64;
 }
