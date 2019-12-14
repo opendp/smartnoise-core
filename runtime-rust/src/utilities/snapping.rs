@@ -1,5 +1,5 @@
 use openssl::rand::rand_bytes;
-use std::cmp;
+use std::{cmp, convert::TryFrom};
 use ieee754::Ieee754;
 
 pub fn get_bytes(n_bytes: usize) -> String {
@@ -74,7 +74,7 @@ pub fn f64_to_binary(num: &f64) -> String {
 
 
     // decompose num into component parts
-    let (mut sign, mut exponent, mut mantissa) = num.decompose_raw();
+    let (sign, exponent, mantissa) = num.decompose_raw();
 
     // convert each component into strings
     let sign_string = (sign as i64).to_string();
@@ -82,7 +82,7 @@ pub fn f64_to_binary(num: &f64) -> String {
     let exponent_string = format!("{:011b}", exponent);
 
     // join component strings
-    let mut binary_string = vec![sign_string, exponent_string, mantissa_string].join("");
+    let binary_string = vec![sign_string, exponent_string, mantissa_string].join("");
 
     // return string representation
     return binary_string;
@@ -155,7 +155,7 @@ pub fn get_smallest_greater_or_eq_power_of_two(x: &f64) -> (f64, i64) {
 
     // convert x to binary and split it into its component parts
     let x_binary = f64_to_binary(&x);
-    let (mut sign, mut exponent, mut mantissa) = split_ieee_into_components(&x_binary);
+    let (sign, exponent, mantissa) = split_ieee_into_components(&x_binary);
 
     // build string of all zeros to be used later
     let mut all_zeros = String::with_capacity(52);
@@ -172,5 +172,97 @@ pub fn get_smallest_greater_or_eq_power_of_two(x: &f64) -> (f64, i64) {
         let greater_or_eq_power_of_two_bin = combine_components_into_ieee(&sign, &exponent_plus_one_bin, &all_zeros);
         let greater_or_eq_power_of_two_f64 = binary_to_f64(&greater_or_eq_power_of_two_bin);
         return(greater_or_eq_power_of_two_f64, exponent_plus_one_int-1023);
+    }
+}
+
+pub fn divide_components_by_power_of_two(sign: &str, exponent: &str, mantissa: &str, power: &i64) -> (String, String, String) {
+    /// Accepts components of IEEE string and `power`, divides the exponent by `power`, and returns the updated components
+    ///
+    /// # Arguments
+    /// * `sign` - Sign bit (length 1)
+    /// * `exponent` - Exponent bits (length 11)
+    /// * `mantissa` - Mantissa bits (length 52)
+    ///
+    /// # Return
+    /// * updated components - sign, updated exponent, and mantissa
+
+    // update exponent by subtracting power, then convert back to binary
+    let updated_exponent_int = i64::from_str_radix(&exponent, 2).unwrap() - power;
+    let updated_exponent_bin = format!("{:011b}", updated_exponent_int);
+
+    // return components
+    return(sign.to_string(), updated_exponent_bin.to_string(), mantissa.to_string());
+}
+
+pub fn round_components_to_nearest_int(sign: &str, exponent: &str, mantissa: &str) -> (String, String, String) {
+    /// Accepts components of IEEE representation, rounds to the nearest integer, and returns updated components
+    ///
+    /// # Arguments
+    /// * `sign` - Sign bit (length 1)
+    /// * `exponent` - Exponent bits (length 11)
+    /// * `mantissa` - Mantissa bits (length 52)
+    ///
+    /// Returns
+    /// * updated components - sign, exponent, and mantissa
+
+    // get unbiased exponent
+    let unbiased_exponent_numeric_i64 = i64::from_str_radix(&exponent, 2).unwrap() - 1023;
+    let unbiased_exponent_numeric:usize = if unbiased_exponent_numeric_i64 > 0 { usize::try_from(unbiased_exponent_numeric_i64).unwrap()} else { 0 };
+
+    // let unbiased_exponent_numeric = usize::try_from(unbiased_exponent_numeric_i64).unwrap();
+    println!("unbiased exponent numeric: {}", unbiased_exponent_numeric);
+
+    // build strings of all zeros and ones to be used later
+    let mut all_zeros = String::with_capacity(unbiased_exponent_numeric);
+    let mut all_ones = String::with_capacity(unbiased_exponent_numeric);
+    for _ in 0..unbiased_exponent_numeric {
+        all_zeros.push_str("0");
+        all_ones.push_str("1");
+    }
+
+    // return original components if they already represent an integer, otherwise proceed
+    if unbiased_exponent_numeric_i64 >= 52 {
+        return(sign.to_string(), exponent.to_string(), mantissa.to_string());
+    } else if unbiased_exponent_numeric_i64 >= 0 {
+        // get elements of mantissa that represent integers (after being multiplied by 2^unbiased_exponent_num)
+        let mantissa_subset:String = mantissa[0..unbiased_exponent_numeric].into();
+        println!("mantissa_subset: {}", mantissa_subset);
+
+        // check to see if mantissa needs to be rounded up or down
+        // if mantissa needs to be rounded up ...
+        if mantissa[unbiased_exponent_numeric..unbiased_exponent_numeric+1] == *"1" {
+            // if integer part of mantissa is all 1s, rounding needs to be reflected in the exponent instead
+            if mantissa_subset == all_ones {
+                println!("rounding up exponent");
+                let exponent_increased_numeric = i64::from_str_radix(&exponent, 2).unwrap() + 1;
+                let exponent_increased_bin = format!("{:011b}", exponent_increased_numeric);
+                return(sign.to_string(), exponent_increased_bin.to_string(), format!("{:0<52}", "0"));
+            } else {
+                println!("rounding up mantissa");
+                // if integer part of mantissa not all 1s, just increment mantissa
+                let mantissa_subset_increased_numeric = u64::from_str_radix(&mantissa_subset, 2).unwrap() + 1;
+                let mantissa_subset_increased_bin = format!("{:0>width$}", mantissa_subset_increased_numeric, width = unbiased_exponent_numeric);
+                let mantissa_increased_bin = format!("{:0<52}", mantissa_subset_increased_bin); // append zeros to right
+                return(sign.to_string(), exponent.to_string(), mantissa_increased_bin.to_string());
+            }
+        } else {
+            // mantissa needs to be rounded down
+            println!("rounding down mantissa");
+            return(sign.to_string(), exponent.to_string(), format!("{:0<52}", "0"));
+        }
+    } else {
+        // if unbiased_exponent_numeric < 0
+        // let unbiased_exponent_numeric_i64 = unbiased_exponent_numeric as i64;
+        if unbiased_exponent_numeric_i64 == -1 {
+            // round int to +- 1
+            println!("rounding to +- 1");
+            let exponent_for_one = format!("{:1<11}", "0");
+            return(sign.to_string(), exponent_for_one.to_string(), format!("{:0<52}", "0"));
+        } else {
+            // round int to 0
+            println!("rounding to 0");
+            let exponent_for_zero = format!("{:0>11}", "0");
+            return(sign.to_string(), exponent_for_zero.to_string(), format!("{:0<52}", "0"));
+        }
     }
 }
