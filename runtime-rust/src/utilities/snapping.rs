@@ -321,3 +321,47 @@ pub fn get_accuracy(alpha: &f64, epsilon: &f64, sensitivity: &f64, B: &f64, prec
                    * (1.0 + (1.0 / alpha).ln()) * (sensitivity);
     return accuracy;
 }
+
+pub fn get_epsilon(accuracy: &f64, alpha: &f64, sensitivity: &f64, B: &f64, precision: &f64) -> f64 {
+    /// Given accuracy, get epsilon as described in
+    /// https://github.com/ctcovington/floating_point/blob/master/snapping_mechanism/notes/snapping_implementation_notes.pdf
+    ///
+    /// # Arguments
+    /// * `accuracy` - desired accuracy level
+    /// * `alpha` - desired confidence level
+    /// * `sensitivity` - sensitivity for function to which mechanism is being applied
+    /// * `B` - snapping bound
+    /// * `precision` - amount of arithmetic precision to which we have access
+    ///
+    /// # Returns
+    /// epsilon use for snapping mechanism
+
+    let epsilon = ( (1.0 + 12.0 * B *2_f64.powf(-precision)) / accuracy) * (1.0 + (1.0 / alpha).ln())
+                  * (sensitivity) + 2_f64.powf(-precision + 1.0);
+    return epsilon;
+}
+
+pub fn parameter_setup(epsilon: &f64, B: &f64, sensitivity: &f64, precision: &f64) -> (f64, f64, f64, f64, i64) {
+    /// Given input parameters, finds values of parameters for use inside of mechanism
+    /// (e.g. scaled bounds, epsilon_prime to set the inner noise distribution, etc.)
+    /// # Arguments
+    /// * `epsilon` - desired privacy guarantee
+    /// * `B` - snapping bound
+    /// * `sensitivity` - sensitivity for function to which mechanism is being applied
+    /// * `precision` - amount of arithmetic precision to which we have access
+    ///
+    /// # Returns
+    /// updated parameters for snapping mechanism
+
+    // scale clamping bound by sensitivity
+    let B_scaled = B / sensitivity;
+    let epsilon_prime = redefine_epsilon(&epsilon, &B_scaled, &precision);
+
+    // NOTE: this Lambda is calculated relative to lambda = 1/epsilon' rather than sensitivity/epsilon' because we have already
+    //       scaled by the sensitivity
+    let lambda_prime_scaled = 1.0/epsilon_prime;
+    let (Lambda_prime_scaled, m) = get_smallest_greater_or_eq_power_of_two(&lambda_prime_scaled);
+    let Lambda_prime = Lambda_prime_scaled * sensitivity;
+
+    return(B_scaled, epsilon_prime, Lambda_prime, Lambda_prime_scaled, m);
+}
