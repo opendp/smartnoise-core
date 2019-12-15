@@ -302,3 +302,22 @@ pub fn redefine_epsilon(epsilon: &f64, B: &f64, precision: &f64) -> f64 {
     let eta = 2_f64.powf(-precision);
     return (epsilon - 2.0*eta) / (1.0 + 12.0*B*eta);
 }
+
+pub fn get_accuracy(alpha: &f64, epsilon: &f64, sensitivity: &f64, B: &f64, precision: &f64) -> f64 {
+    /// Get accuracy as described in
+    /// https://github.com/ctcovington/floating_point/blob/master/snapping_mechanism/notes/snapping_implementation_notes.pdf
+    ///
+    /// # Arguments
+    /// * `alpha` - desired confidence level
+    /// * `epsilon` - desired privacy guarantee
+    /// * `sensitivity` - sensitivity for function to which mechanism is being applied
+    /// * `B` - snapping bound
+    /// * `precision` - amount of arithmetic precision to which we have access
+    ///
+    /// # Returns
+    /// accuracy guarantee for snapping mechanism
+
+    let accuracy = ( (1.0 + 12.0 * B * 2_f64.powf(-precision)) / (epsilon - 2_f64.powf(-precision + 1.0)) )
+                   * (1.0 + (1.0 / alpha).ln()) * (sensitivity);
+    return accuracy;
+}
