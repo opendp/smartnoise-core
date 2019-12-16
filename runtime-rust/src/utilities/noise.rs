@@ -2,6 +2,8 @@ use openssl::rand::rand_bytes;
 use byteorder::{ByteOrder, LittleEndian};
 use probability::distribution::{Gaussian, Laplace, Inverse};
 use ieee754::Ieee754;
+use num;
+use rug;
 
 use crate::utilities::snapping;
 
@@ -54,3 +56,29 @@ pub fn sample_uniform_snapping() -> f64 {
 
     return uniform_rand;
 }
+
+// pub fn sampling_snapping_noise(mechanism_input &f64, epsilon &f64, B &f64, sensitivity &f64, precision &f64) -> f64 {
+//     // scale mechanism input by sensitivity
+//     let mechanism_input_scaled = mechanism_input / sensitivity
+
+//     // get parameters
+//     let (B_scaled, epsilon_prime, Lambda_prime, Lambda_prime_scaled, m) = parameter_setup(&epsilon, &B, &sensitivity, &precision);
+
+//     // generate random sign and draw from Unif(0,1)
+//     let bit:i64 = get_bytes(1)[0..1].parse().unwrap();
+//     let sign = 2*bit-1;
+//     let u_star_sample = sample_uniform_snapping();
+
+//     // clamp to get inner result
+//     let log_unif = rug::Float(precision, u_star_sample.ln());
+//     let inner_result = num::clamp(input = mechanism_input_scaled, min = -B_scaled.abs(), max = B_scaled.abs()) +
+//                        (sign * 1.0/epsilon_prime * log_unif);
+
+//     // perform rounding and snapping
+//     let inner_result_rounded = get_closest_multiple_of_Lambda(&inner_result, &m);
+//     let private_estimate = num::clamp(sensitivity * inner_result_rounded,
+//                                       min = -B_scaled.abs(), max = B_scaled.abs());
+//     let snapping_mech_noise = private_estimate - mechanism_input;
+
+//     return snapping_mech_noise;
+// }
