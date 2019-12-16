@@ -1,7 +1,6 @@
 use openssl::rand::rand_bytes;
 use std::{cmp, convert::TryFrom};
 use ieee754::Ieee754;
-use rug;
 
 pub fn get_bytes(n_bytes: usize) -> String {
     /// Return bytes of binary data as String
