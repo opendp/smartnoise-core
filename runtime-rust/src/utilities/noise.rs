@@ -83,9 +83,11 @@ pub fn sampling_snapping_noise(mechanism_input: &f64, epsilon: &f64, B: &f64, se
 
     // clamp to get inner result
     let u32_precision:u32 = *precision as u32;
-    let log_unif = rug::Float::with_val(u32_precision, u_star_sample.ln());
+    let sign_precise = rug::Float::with_val(u32_precision, sign);
+    let scale_precise = rug::Float::with_val(u32_precision, 1.0/epsilon_prime);
+    let log_unif_precise = rug::Float::with_val(u32_precision, u_star_sample.ln());
     let inner_result:f64 = num::clamp(mechanism_input_scaled, -B_scaled.abs(), B_scaled.abs()) +
-                       (sign * 1.0/epsilon_prime * log_unif).to_f64();
+                           (sign_precise * scale_precise * log_unif_precise).to_f64();
 
     // perform rounding and snapping
     let inner_result_rounded = snapping::get_closest_multiple_of_Lambda(&inner_result, &m);
