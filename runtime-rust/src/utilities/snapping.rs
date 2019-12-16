@@ -194,6 +194,25 @@ pub fn divide_components_by_power_of_two(sign: &str, exponent: &str, mantissa: &
     return(sign.to_string(), updated_exponent_bin.to_string(), mantissa.to_string());
 }
 
+pub fn multiply_components_by_power_of_two(sign: &str, exponent: &str, mantissa: &str, power: &i64) -> (String, String, String) {
+    /// Accepts components of IEEE string and `power`, multiplies the exponent by `power`, and returns the updated components
+    ///
+    /// # Arguments
+    /// * `sign` - Sign bit (length 1)
+    /// * `exponent` - Exponent bits (length 11)
+    /// * `mantissa` - Mantissa bits (length 52)
+    ///
+    /// # Return
+    /// * updated components - sign, updated exponent, and mantissa
+
+    // update exponent by subtracting power, then convert back to binary
+    let updated_exponent_int = i64::from_str_radix(&exponent, 2).unwrap() + power;
+    let updated_exponent_bin = format!("{:011b}", updated_exponent_int);
+
+    // return components
+    return(sign.to_string(), updated_exponent_bin.to_string(), mantissa.to_string());
+}
+
 pub fn round_components_to_nearest_int(sign: &str, exponent: &str, mantissa: &str) -> (String, String, String) {
     /// Accepts components of IEEE representation, rounds to the nearest integer, and returns updated components
     ///
