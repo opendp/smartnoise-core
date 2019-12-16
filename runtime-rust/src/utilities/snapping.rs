@@ -267,7 +267,7 @@ pub fn round_components_to_nearest_int(sign: &str, exponent: &str, mantissa: &st
         } else {
             // mantissa needs to be rounded down
             println!("rounding down mantissa");
-            return(sign.to_string(), exponent.to_string(), format!("{:0<52}", "0"));
+            return(sign.to_string(), exponent.to_string(), format!("{:0<52}", mantissa_subset));
         }
     } else {
         // if unbiased_exponent_numeric < 0
