@@ -70,6 +70,13 @@ pub fn sampling_snapping_noise(mechanism_input: &f64, epsilon: &f64, B: &f64, se
     /// # Returns
     /// noise according to snapping mechanism
 
+    // ensure that precision is sufficient for exact rounding of log, then check that it is supported by the OS
+    let u32_precision = *precision as u32;
+    let u32_precision = std::cmp::min(u32_precision, 118_u32);
+    if u32_precision > rug::float::prec_max() {
+        panic!("Operating system does not support sufficient precision to use the Snapping Mechanism");
+    }
+
     // scale mechanism input by sensitivity
     let mechanism_input_scaled = mechanism_input / sensitivity;
 
@@ -82,7 +89,6 @@ pub fn sampling_snapping_noise(mechanism_input: &f64, epsilon: &f64, B: &f64, se
     let u_star_sample = sample_uniform_snapping();
 
     // clamp to get inner result
-    let u32_precision:u32 = *precision as u32;
     let sign_precise = rug::Float::with_val(u32_precision, sign);
     let scale_precise = rug::Float::with_val(u32_precision, 1.0/epsilon_prime);
     let log_unif_precise = rug::Float::with_val(u32_precision, u_star_sample.ln());
@@ -91,8 +97,7 @@ pub fn sampling_snapping_noise(mechanism_input: &f64, epsilon: &f64, B: &f64, se
 
     // perform rounding and snapping
     let inner_result_rounded = snapping::get_closest_multiple_of_Lambda(&inner_result, &m);
-    let private_estimate = num::clamp(sensitivity * inner_result_rounded,
-                                     -B_scaled.abs(), B_scaled.abs());
+    let private_estimate = num::clamp(sensitivity * inner_result_rounded, -B_scaled.abs(), B_scaled.abs());
     let snapping_mech_noise = private_estimate - mechanism_input;
 
     return snapping_mech_noise;
