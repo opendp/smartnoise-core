@@ -1,6 +1,8 @@
 use ndarray::prelude::*;
 use ndarray_stats::SummaryStatisticsExt;
 use ndarray::Zip;
+use rand::prelude::*;
+use rand::distributions::WeightedIndex;
 
 use crate::utilities::noise;
 
@@ -76,6 +78,29 @@ pub fn dp_covariance(
     let noise: f64 = noise::sample_laplace(0., sensitivity / epsilon);
 
     covariance + noise
+}
+
+/// NOTE: consider adapting below to use openssl?
+/// could run with the following 
+///     let xs: ArrayD<f64> = arr1(&[1., 2., 3., 4., 5.]).into_dyn();
+
+pub fn dp_exponential<T>(epsilon: &f64, utility: &dyn Fn(&T) -> f64, sensitivity: &f64, data: ArrayD<T>) -> T where T: Copy, {
+    // get vector of e^(util), then use to find probabilities
+    let e_util_vec: Vec<f64> = data.iter().map(|x| std::f64::consts::E.powf(epsilon * utility(x) / (2.0 * sensitivity))).collect();
+    let sum_e_util_vec:f64 = e_util_vec.iter().sum();
+    let probability_vec: Vec<f64> = e_util_vec.iter().map(|x| x / sum_e_util_vec).collect();
+    
+    // call to cryptographically strong RNG
+    let mut rng = thread_rng();
+
+    // define distribution over outputs 
+    let dist = WeightedIndex::new(&probability_vec).unwrap();
+
+    // sample from distribution
+    let exp_mech_output = &data[dist.sample(&mut rng)];
+    
+    // return element of "data" output by exponential mechanism
+    return *exp_mech_output
 }
 
 //pub fn dp_histogram(
