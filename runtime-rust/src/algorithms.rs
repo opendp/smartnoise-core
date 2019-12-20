@@ -84,7 +84,7 @@ pub fn dp_covariance(
 /// could run with the following 
 ///     let xs: ArrayD<f64> = arr1(&[1., 2., 3., 4., 5.]).into_dyn();
 
-pub fn dp_exponential<T>(epsilon: f64, utility: &dyn Fn(&T) -> f64, sensitivity: f64, data: ArrayD<T>) -> T where T: Copy, {
+pub fn dp_exponential<T>(epsilon: f64, data: ArrayD<T>, utility: &dyn Fn(&T) -> f64, sensitivity: f64) -> T where T: Copy, {
     // get vector of e^(util), then use to find probabilities
     let e_util_vec: Vec<f64> = data.iter().map(|x| std::f64::consts::E.powf(epsilon * utility(x) / (2.0 * sensitivity))).collect();
     let sum_e_util_vec:f64 = e_util_vec.iter().sum();
