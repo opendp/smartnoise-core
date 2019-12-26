@@ -80,8 +80,7 @@ pub fn dp_covariance(
     covariance + noise
 }
 
-/// NOTE: consider adapting below to use openssl?
-/// could run with the following 
+/// could run with the following
 ///     let xs: ArrayD<f64> = arr1(&[1., 2., 3., 4., 5.]).into_dyn();
 
 pub fn dp_exponential<T>(epsilon: f64, data: ArrayD<T>, utility: &dyn Fn(&T) -> f64, sensitivity: f64) -> T where T: Copy, {
@@ -89,18 +88,22 @@ pub fn dp_exponential<T>(epsilon: f64, data: ArrayD<T>, utility: &dyn Fn(&T) -> 
     let e_util_vec: Vec<f64> = data.iter().map(|x| std::f64::consts::E.powf(epsilon * utility(x) / (2.0 * sensitivity))).collect();
     let sum_e_util_vec:f64 = e_util_vec.iter().sum();
     let probability_vec: Vec<f64> = e_util_vec.iter().map(|x| x / sum_e_util_vec).collect();
-    
-    // call to cryptographically strong RNG
-    let mut rng = thread_rng();
 
-    // define distribution over outputs 
-    let dist = WeightedIndex::new(&probability_vec).unwrap();
+    // generate cumulative probability distribution
+    let cumulative_probability_vec = probability_vec.iter().scan(0.0, |sum, i| {*sum += i; Some(*sum)}).collect::<Vec<_>>();
 
-    // sample from distribution
-    let exp_mech_output = &data[dist.sample(&mut rng)];
-    
-    // return element of "data" output by exponential mechanism
-    return *exp_mech_output
+    // generate uniform random number on (0,1)
+    let unif:f64 = noise::sample_uniform_snapping();
+
+    // sample an element relative to its probability
+    let mut return_index = 0;
+    for i in 0..cumulative_probability_vec.len() {
+        if unif <= cumulative_probability_vec[i] {
+            return_index = i;
+            break
+        }
+    }
+    return data[return_index]
 }
 
 //pub fn dp_histogram(
