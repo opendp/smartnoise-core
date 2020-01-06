@@ -95,6 +95,12 @@ pub fn dp_exponential<T>(
     /// * `utility` - utility function used within the exponential mechanism
     /// * `sensitivity` - sensitivity of utility function
     ///
+    /// NOTE: This implementation is likely non-private because of the difference between theory on
+    ///       the real numbers and floating-point numbers. See https://arxiv.org/abs/1912.04222 for 
+    ///       more information on the problem and a proposed fix.
+    ///
+    /// TODO: Implement Christina's base-2 exponential mechanism?
+    ///
     /// # Example
     /// ```
     /// use crate::utilities::algorithms
