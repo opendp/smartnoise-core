@@ -80,10 +80,38 @@ pub fn dp_covariance(
     covariance + noise
 }
 
-/// could run with the following
-///     let xs: ArrayD<f64> = arr1(&[1., 2., 3., 4., 5.]).into_dyn();
+pub fn dp_exponential<T>(
+                         epsilon: f64,
+                         data: ArrayD<T>,
+                         utility: &dyn Fn(&T) -> f64,
+                         sensitivity: f64
+                         ) -> T where T: Copy, {
+    /// Returns data element according to the exponential mechanism
+    ///
+    /// # Arguments
+    ///
+    /// * `epsilon` - privacy loss parameter
+    /// * `data` - data from which user wants an element returned
+    /// * `utility` - utility function used within the exponential mechanism
+    /// * `sensitivity` - sensitivity of utility function
+    ///
+    /// # Example
+    /// ```
+    /// use crate::utilities::algorithms
+    /// use ndarray::prelude::*;
+    ///
+    /// // create utility function
+    /// pub fn utility(x:&f64) -> f64 {
+    ///     let util = *x as f64;
+    ///     return util;
+    /// }
+    ///
+    /// // create sample data
+    /// let xs: ArrayD<f64> = arr1(&[1., 2., 3., 4., 5.]).into_dyn();
+    /// let ans:f64 = algorithms::dp_exponential(&1.0, &utility, &1.0, xs);
+    /// println!("{}", ans);
+    /// ```
 
-pub fn dp_exponential<T>(epsilon: f64, data: ArrayD<T>, utility: &dyn Fn(&T) -> f64, sensitivity: f64) -> T where T: Copy, {
     // get vector of e^(util), then use to find probabilities
     let e_util_vec: Vec<f64> = data.iter().map(|x| std::f64::consts::E.powf(epsilon * utility(x) / (2.0 * sensitivity))).collect();
     let sum_e_util_vec:f64 = e_util_vec.iter().sum();
