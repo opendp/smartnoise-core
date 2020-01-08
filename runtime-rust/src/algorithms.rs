@@ -1,8 +1,6 @@
 use ndarray::prelude::*;
 use ndarray_stats::SummaryStatisticsExt;
 use ndarray::Zip;
-use rand::prelude::*;
-use rand::distributions::WeightedIndex;
 
 use crate::utilities::noise;
 
@@ -96,7 +94,7 @@ pub fn dp_exponential<T>(
     /// * `sensitivity` - sensitivity of utility function
     ///
     /// NOTE: This implementation is likely non-private because of the difference between theory on
-    ///       the real numbers and floating-point numbers. See https://arxiv.org/abs/1912.04222 for 
+    ///       the real numbers and floating-point numbers. See https://arxiv.org/abs/1912.04222 for
     ///       more information on the problem and a proposed fix.
     ///
     /// TODO: Implement Christina's base-2 exponential mechanism?
