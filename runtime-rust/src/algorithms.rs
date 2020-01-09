@@ -112,7 +112,7 @@ pub fn dp_exponential<T>(
     ///
     /// // create sample data
     /// let xs: ArrayD<f64> = arr1(&[1., 2., 3., 4., 5.]).into_dyn();
-    /// let ans:f64 = algorithms::dp_exponential(&1.0, &utility, &1.0, xs);
+    /// let ans:f64 = algorithms::dp_exponential(1.0, xs, &utility, 1.0);
     /// println!("{}", ans);
     /// ```
 
