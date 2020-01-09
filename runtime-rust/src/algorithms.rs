@@ -101,7 +101,7 @@ pub fn dp_exponential<T>(
     ///
     /// # Example
     /// ```
-    /// use crate::utilities::algorithms
+    /// use crate::utilities::algorithms;
     /// use ndarray::prelude::*;
     ///
     /// // create utility function
