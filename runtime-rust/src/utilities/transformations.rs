@@ -3,6 +3,36 @@ use std::vec::Vec;
 use ndarray::prelude::*;
 
 pub fn bin(data: ArrayD<f64>, edges: ArrayD<f64>, inclusive_left: bool) -> ArrayD<String> {
+    /// Accepts vector of data and assigns each element to a bin
+    ///
+    /// # Arguments
+    /// * `data` - Array of numeric data to be binned
+    /// * `edges` - Array of bin edges, an array of n+1 edges will yield n bins
+    /// * `inclusive_left` - Boolean for whether or not bins (representing numeric intervals) are closed on the left.
+    ///                      If false, then bins are closed on the right.
+    ///                      The leftmost and rightmost bins are automatically closed on the left/right (respectively),
+    ///                      regardless of the value of `inclusive_left`.
+    ///
+    /// # Return
+    /// ArrayD of bin assignments
+    ///
+    /// # Example
+    /// ```
+    /// // load crates
+    /// use std::string::String;
+    /// use std::vec::Vec;
+    /// use ndarray::prelude::*;
+    ///
+    /// // set up data
+    /// let data: ArrayD<f64> = arr1(&[1., 2., 3., 4., 5., 12., 19., 24., 90., 98.]).into_dyn();
+    /// let edges: ArrayD<f64> = arr1(&[0., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100.]).into_dyn();
+    /// let inclusive_left: bool = false;
+    ///
+    /// // bin data
+    /// let binned_data: ArrayD<String> = bin(data, edges, inclusive_left);
+    /// println!("{:?}", binned_data);
+    /// ```
+
     // create vector versions of data and edges
     let data_vec: Vec<f64> = data.into_dimensionality::<Ix1>().unwrap().to_vec();
     let mut sorted_edges: Vec<f64> = edges.into_dimensionality::<Ix1>().unwrap().to_vec();
