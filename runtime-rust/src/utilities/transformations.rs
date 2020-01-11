@@ -4,6 +4,7 @@ use ndarray::prelude::*;
 
 pub fn bin(data: ArrayD<f64>, edges: ArrayD<f64>, inclusive_left: bool) -> ArrayD<String> {
     /// Accepts vector of data and assigns each element to a bin
+    /// NOTE: bin transformation has C-stability of 1
     ///
     /// # Arguments
     /// * `data` - Array of numeric data to be binned
