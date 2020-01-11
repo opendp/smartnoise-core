@@ -193,6 +193,26 @@ pub fn get_array_f64(arguments: &NodeArguments, column: &str) -> ArrayD<f64> {
     }.unwrap()
 }
 
+pub fn get_bool(arguments: &NodeArguments, column: &str) -> bool {
+    match arguments.get(column).unwrap() {
+        FieldEvaluation::F64(x) && (*x.first().unwrap() == 1. || *x.first().unwrap() == 0.) => Ok(if *x.first().unwrap() == 1. {true} else *x.first().unwrap() == 0. {false}),
+        FieldEvaluation::I64(x) && (*x.first().unwrap() == 1 || *x.first().unwrap() == 0) => Ok(if *x.first().unwrap() == 1 {true} else *x.first().unwrap() == 0 {false}),
+        FieldEvaluation::Str(x) && (*x.first().unwrap() == "true" || *x.first().unwrap() == "false") => Ok(x.first().parse::<bool>().unwrap().to_owned()),
+        FieldEvaluation::Bool(x) => Ok(x.first().unwrap().to_owned()),
+        _ => Err(column.to_string() +" must be boolean")
+    }.unwrap()
+}
+
+pub fn get_bool_array(arguments: &NodeArguments, column: &str) -> ArrayD<bool> {
+    match arguments.get(column).unwrap() {
+        FieldEvaluation::F64(x) && (x.mapv(|v| vec![0., 1.].contains(v)).all(|v| v == true)) => Ok(x.mapv(|v| if v == 1. {true} else if {false})),
+        FieldEvaluation::I64(x) && (x.mapv(|v| vec![0, 1].contains(v)).all(|v| v == true)) => Ok(x.mapv(|v| if v == 1 {true} else if v == 0 {false})),
+        FieldEvaluation::Str(x) && (x.mapv(|v| vec!["false","true"].contains(v)).all(|v| v == true)) => Ok(x.mapv(|v| if v == "true" {true} else if v == "false" {false})),
+        FieldEvaluation::Bool(x) => Ok(x.to_owned()),
+        _ => Err(column.to_string() +" must be boolean")
+    }.unwrap()
+}
+
 pub fn release_to_evaluations(release: &yarrow::Release) -> GraphEvaluation {
     let mut evaluations = GraphEvaluation::new();
 
