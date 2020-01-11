@@ -74,7 +74,7 @@ pub fn component_add(_x: &yarrow::Add, arguments: &NodeArguments) -> NodeEvaluat
             Ok(hashmap!["data".to_string() => FieldEvaluation::F64(x + y)]),
         (FieldEvaluation::I64(x), FieldEvaluation::I64(y)) =>
             Ok(hashmap!["data".to_string() => FieldEvaluation::I64(x + y)]),
-        _ => Err("Add: Either the argument types are mismatched or non-nnumeric.")
+        _ => Err("Add: Either the argument types are mismatched or non-numeric.")
     }.unwrap()
 }
 
@@ -85,7 +85,7 @@ pub fn component_subtract(_x: &yarrow::Subtract, arguments: &NodeArguments) -> N
             Ok(hashmap!["data".to_string() => FieldEvaluation::F64(x - y)]),
         (FieldEvaluation::I64(x), FieldEvaluation::I64(y)) =>
             Ok(hashmap!["data".to_string() => FieldEvaluation::I64(x - y)]),
-        _ => Err("Subtract: Either the argument types are mismatched or non-nnumeric.")
+        _ => Err("Subtract: Either the argument types are mismatched or non-numeric.")
     }.unwrap()
 }
 
@@ -95,7 +95,7 @@ pub fn component_divide(_x: &yarrow::Divide, arguments: &NodeArguments) -> NodeE
             Ok(hashmap!["data".to_string() => FieldEvaluation::F64(x / y)]),
         (FieldEvaluation::I64(x), FieldEvaluation::I64(y)) =>
             Ok(hashmap!["data".to_string() => FieldEvaluation::I64(x / y)]),
-        _ => Err("Divide: Either the argument types are mismatched or non-nnumeric.")
+        _ => Err("Divide: Either the argument types are mismatched or non-numeric.")
     }.unwrap()
 }
 
@@ -105,7 +105,7 @@ pub fn component_multiply(_x: &yarrow::Multiply, arguments: &NodeArguments) -> N
             Ok(hashmap!["data".to_string() => FieldEvaluation::F64(x * y)]),
         (FieldEvaluation::I64(x), FieldEvaluation::I64(y)) =>
             Ok(hashmap!["data".to_string() => FieldEvaluation::I64(x * y)]),
-        _ => Err("Multiply: Either the argument types are mismatched or non-nnumeric.")
+        _ => Err("Multiply: Either the argument types are mismatched or non-numeric.")
     }.unwrap()
 }
 
@@ -125,6 +125,12 @@ pub fn component_negate(_x: &yarrow::Negate, arguments: &NodeArguments) -> NodeE
     }.unwrap()
 }
 
+pub fn component_bin(_X: &yarrow::Bin, argument: &NodeArguments) -> NodeEvaluation {
+    let data: ArrayD<f64> = get_array_f64(&arguments, "data");
+    let edges: ArrayD<f64> = get_array_f64(&arguments, "edges");
+    let inclusive_left: bool = get_bool(&arguments, "inclusive_left");
+    hashmap!["data".to_string() => FieldEvaluation::Str(utilities::transformations::bin(data, edges, inclusive_left)))]
+}
 
 // TODO: Possibly compute sensitivity here, and pass into algorithm?
 
