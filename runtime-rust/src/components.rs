@@ -148,6 +148,12 @@ pub fn component_histogram(_X: &yarrow::Bin, argument: &NodeArguments) -> NodeEv
     hashmap!["data".to_string() => FieldEvaluation::HistHashMap(utilities::aggregations::histogram(&data, &edges, &inclusive_left))]
 }
 
+pub fn component_median(_x: &yarrow::Power, arguments: &NodeArguments) -> NodeEvaluation {
+    // Christian TODO: Simple version here -- need to check with Mike
+    let data: ArrayD<f64> = get_array_f64(&arguments, "data");
+    hashmap!["data".to_string() => FieldEvaluation::F64(utilities::aggregations::median(&data))]
+}
+
 // TODO: Possibly compute sensitivity here, and pass into algorithm?
 
 pub fn component_dp_mean(component: &yarrow::DpMean, arguments: &NodeArguments) -> NodeEvaluation {
