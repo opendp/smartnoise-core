@@ -2,7 +2,7 @@ use std::string::String;
 use std::vec::Vec;
 use ndarray::prelude::*;
 
-pub fn bin(data: ArrayD<f64>, edges: ArrayD<f64>, inclusive_left: bool) -> ArrayD<String> {
+pub fn bin(data: &ArrayD<f64>, edges: &ArrayD<f64>, inclusive_left: &bool) -> ArrayD<String> {
     /// Accepts vector of data and assigns each element to a bin
     /// NOTE: bin transformation has C-stability of 1
     ///
@@ -35,8 +35,8 @@ pub fn bin(data: ArrayD<f64>, edges: ArrayD<f64>, inclusive_left: bool) -> Array
     /// ```
 
     // create vector versions of data and edges
-    let data_vec: Vec<f64> = data.into_dimensionality::<Ix1>().unwrap().to_vec();
-    let mut sorted_edges: Vec<f64> = edges.into_dimensionality::<Ix1>().unwrap().to_vec();
+    let data_vec: Vec<f64> = data.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
+    let mut sorted_edges: Vec<f64> = edges.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
 
     //  ensure edges are sorted in ascending order
     sorted_edges.sort_by(|a, b| a.partial_cmp(b).unwrap());
@@ -55,16 +55,16 @@ pub fn bin(data: ArrayD<f64>, edges: ArrayD<f64>, inclusive_left: bool) -> Array
                 if  // element is less than the right bin edge
                     data_vec[i] < sorted_edges[j+1] ||
                     // element is equal to the right bin edge and we are building our histogram to be 'right-edge inclusive'
-                    (data_vec[i] == sorted_edges[j+1] && inclusive_left == false) ||
+                    (data_vec[i] == sorted_edges[j+1] && inclusive_left == &false) ||
                     // element is equal to the right bin edge and we are checking our rightmost bin
                     (data_vec[i] == sorted_edges[j+1] && j == (sorted_edges.len()-2)) {
-                        if j == 0 && inclusive_left == false {
+                        if j == 0 && inclusive_left == &false {
                             // leftmost bin must be left inclusive even if overall strategy is to be right inclusive
                             bin_vec.push(format!("[{}, {}]", sorted_edges[j], sorted_edges[j+1]));
-                        } else if j == (sorted_edges.len()-2) && inclusive_left == true {
+                        } else if j == (sorted_edges.len()-2) && inclusive_left == &true {
                             // rightmost bin must be right inclusive even if overall strategy is to be left inclusive
                             bin_vec.push(format!("[{}, {}]", sorted_edges[j], sorted_edges[j+1]));
-                        } else if inclusive_left == true {
+                        } else if inclusive_left == &true {
                             bin_vec.push(format!("[{}, {})", sorted_edges[j], sorted_edges[j+1]));
                         } else {
                             bin_vec.push(format!("({}, {}]", sorted_edges[j], sorted_edges[j+1]));
