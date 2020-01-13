@@ -17,6 +17,7 @@ pub enum FieldEvaluation {
     I64(ArrayD<i64>),
     F64(ArrayD<f64>),
     Str(ArrayD<String>),
+    HistHashMap(HashMap<String, f64>),
 }
 
 // equivalent to proto ReleaseNode
@@ -169,6 +170,7 @@ pub fn execute_component(component: &yarrow::Component,
         yarrow::component::Value::Negate(x) => components::component_negate(&x, &arguments),
         yarrow::component::Value::Bin(x) => components::component_bin(&x, &arguments),
         yarrow::component::Value::Count(x) => components::component_count(&x, &arguments),
+        yarrow::component::Value::Histogram(x) => components::component_count(&x, &arguments),
         yarrow::component::Value::Dpmean(x) => components::component_dp_mean(&x, &arguments),
         yarrow::component::Value::Dpvariance(x) => components::component_dp_variance(&x, &arguments),
         yarrow::component::Value::Dpmomentraw(x) => components::component_dp_moment_raw(&x, &arguments),
@@ -227,6 +229,7 @@ pub fn get_T<T>(arguments: &NodeArguments, column: &str) -> T {
 }
 
 pub fn get_array_T<T>(arguments: &NodeArguments, column: &str) -> ArrayD<T> {
+    // Christian TODO: not exactly sure how to go about this -- just want to accept arbitrary types here
     match arguments.get(column).unwrap() {
         FieldEvaluation::F64(x) => Ok(x.to_owned()),
         FieldEvaluation::I64(x) => Ok(x.to_owned()),

@@ -126,16 +126,26 @@ pub fn component_negate(_x: &yarrow::Negate, arguments: &NodeArguments) -> NodeE
 }
 
 pub fn component_bin(_X: &yarrow::Bin, argument: &NodeArguments) -> NodeEvaluation {
+    // Christian TODO: Simple version here -- need to check with Mike
     let data: ArrayD<f64> = get_array_f64(&arguments, "data");
     let edges: ArrayD<f64> = get_array_f64(&arguments, "edges");
     let inclusive_left: bool = get_bool(&arguments, "inclusive_left");
-    hashmap!["data".to_string() => FieldEvaluation::Str(utilities::transformations::bin(&data, &edges, &inclusive_left)))]
+    hashmap!["data".to_string() => FieldEvaluation::Str(utilities::transformations::bin(&data, &edges, &inclusive_left))]
 }
 
 pub fn component_count(_X: &yarrow::Bin, argument: &NodeArguments) -> NodeEvaluation {
+    // Christian TODO: Simple version here -- need to check with Mike
     let data: ArrayD<T> = get_array_T(&arguments, "data");
     let group_by: ArrayD<T> = get_array_T(&arguments, "group_by");
-    hashmap!["data".to_string() => FieldEvaluation::Str(utilities::aggregations::count(&data, &group_by)))]
+    hashmap!["data".to_string() => FieldEvaluation::F64(utilities::aggregations::count(&data, &group_by))]
+}
+
+pub fn component_histogram(_X: &yarrow::Bin, argument: &NodeArguments) -> NodeEvaluation {
+    // Christian TODO: Simple version here -- need to check with Mike
+    let data: ArrayD<f64> = get_array_f64(&arguments, "data");
+    let edges: ArrayD<f64> = get_array_f64(&arguments, "edges");
+    let inclusive_left: bool = get_bool(&arguments, "inclusive_left");
+    hashmap!["data".to_string() => FieldEvaluation::HistHashMap(utilities::aggregations::histogram(&data, &edges, &inclusive_left))]
 }
 
 // TODO: Possibly compute sensitivity here, and pass into algorithm?
