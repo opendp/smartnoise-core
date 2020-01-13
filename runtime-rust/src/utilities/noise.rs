@@ -57,7 +57,7 @@ pub fn sample_uniform_snapping() -> f64 {
     return uniform_rand;
 }
 
-pub fn sampling_snapping_noise(mechanism_input: &f64, epsilon: &f64, B: &f64, sensitivity: &f64, precision: &f64) -> f64 {
+pub fn sample_snapping_noise(mechanism_input: &f64, epsilon: &f64, B: &f64, sensitivity: &f64, precision: &f64) -> f64 {
     /// Get noise according to the snapping mechanism
     ///
     /// # Arguments
@@ -69,6 +69,17 @@ pub fn sampling_snapping_noise(mechanism_input: &f64, epsilon: &f64, B: &f64, se
     ///
     /// # Returns
     /// noise according to snapping mechanism
+    ///
+    /// # Example
+    /// ```
+    /// let mechanism_input: f64 = 50.0;
+    /// let epsilon: f64 = 1.0;
+    /// let B: f64 = 100.0;
+    /// let sensitivity: f64 = 1.0/1000.0;
+    /// let precision: f64 = 64.0;
+    /// let snapping_noise = sampling_snapping_noise(&mechanism_input, &epsilon, &B, &sensitivity, &precision);
+    /// println!("snapping noise: {}", snapping_noise);
+    /// ```
 
     // ensure that precision is sufficient for exact rounding of log, then check that it is supported by the OS
     let u32_precision = *precision as u32;
