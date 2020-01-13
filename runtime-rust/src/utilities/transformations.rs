@@ -30,7 +30,7 @@ pub fn bin(data: &ArrayD<f64>, edges: &ArrayD<f64>, inclusive_left: &bool) -> Ar
     /// let inclusive_left: bool = false;
     ///
     /// // bin data
-    /// let binned_data: ArrayD<String> = bin(data, edges, inclusive_left);
+    /// let binned_data: ArrayD<String> = bin(&data, &edges, &inclusive_left);
     /// println!("{:?}", binned_data);
     /// ```
 
