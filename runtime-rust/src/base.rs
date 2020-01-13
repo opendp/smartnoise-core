@@ -168,6 +168,7 @@ pub fn execute_component(component: &yarrow::Component,
         yarrow::component::Value::Power(x) => components::component_power(&x, &arguments),
         yarrow::component::Value::Negate(x) => components::component_negate(&x, &arguments),
         yarrow::component::Value::Bin(x) => components::component_bin(&x, &arguments),
+        yarrow::component::Value::Count(x) => components::component_count(&x, &arguments),
         yarrow::component::Value::Dpmean(x) => components::component_dp_mean(&x, &arguments),
         yarrow::component::Value::Dpvariance(x) => components::component_dp_variance(&x, &arguments),
         yarrow::component::Value::Dpmomentraw(x) => components::component_dp_moment_raw(&x, &arguments),
@@ -204,13 +205,34 @@ pub fn get_bool(arguments: &NodeArguments, column: &str) -> bool {
     }.unwrap()
 }
 
-pub fn get_bool_array(arguments: &NodeArguments, column: &str) -> ArrayD<bool> {
+pub fn get_array_bool(arguments: &NodeArguments, column: &str) -> ArrayD<bool> {
     match arguments.get(column).unwrap() {
         FieldEvaluation::F64(x) && (x.mapv(|v| vec![0., 1.].contains(v)).all(|v| v == true)) => Ok(x.mapv(|v| if v == 1. {true} else if {false})),
         FieldEvaluation::I64(x) && (x.mapv(|v| vec![0, 1].contains(v)).all(|v| v == true)) => Ok(x.mapv(|v| if v == 1 {true} else if v == 0 {false})),
         FieldEvaluation::Str(x) && (x.mapv(|v| vec!["false","true"].contains(v)).all(|v| v == true)) => Ok(x.mapv(|v| if v == "true" {true} else if v == "false" {false})),
         FieldEvaluation::Bool(x) => Ok(x.to_owned()),
         _ => Err(column.to_string() +" must be boolean")
+    }.unwrap()
+}
+
+pub fn get_T<T>(arguments: &NodeArguments, column: &str) -> T {
+    // Christian TODO: not exactly sure how to go about this -- just want to accept arbitrary types here
+    match arguments.get(column).unwrap() {
+        FieldEvaluation::F64(x) => Ok(x.first().unwrap().to_owned()),
+        FieldEvaluation::I64(x) => Ok(x.first().unwrap().to_owned()),
+        FieldEvaluation::Str(x) => Ok(x.first().unwrap().to_owned()),
+        FieldEvaluation::Bool(x) => Ok(x.first().unwrap().to_owned()),
+        _ => Err(column.to_string() +" must be f64, i64, str, or bool")
+    }.unwrap()
+}
+
+pub fn get_array_T<T>(arguments: &NodeArguments, column: &str) -> ArrayD<T> {
+    match arguments.get(column).unwrap() {
+        FieldEvaluation::F64(x) => Ok(x.to_owned()),
+        FieldEvaluation::I64(x) => Ok(x.to_owned()),
+        FieldEvaluation::Str(x) => Ok(x.to_owned()),
+        FieldEvaluation::Bool(x) => Ok(x.to_owned()),
+        _ => Err(column.to_string() +" must be f64, i64, str, or bool")
     }.unwrap()
 }
 
