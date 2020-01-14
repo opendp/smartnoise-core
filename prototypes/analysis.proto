@@ -63,9 +63,13 @@ message Component {
         Multiply multiply = 12;
         Power power = 13;
         Negate negate = 14;
-        DPVariance dpvariance = 15;
-        DPMomentRaw dpmomentraw = 16;
-        DPCovariance dpcovariance = 17;
+        Bin bin = 15;
+        Count count = 16;
+        Histogram histogram = 17;
+        Median median = 18;
+        DPVariance dpvariance = 19;
+        DPMomentRaw dpmomentraw = 20;
+        DPCovariance dpcovariance = 21;
     }
 
 }
@@ -76,6 +80,10 @@ message Divide {}
 message Multiply {}
 message Power {}
 message Negate {}
+message Bin {}
+message Count {}
+message Histogram {}
+message Median {}
 
 message Laplace {
     double epsilon = 1;
@@ -106,16 +114,16 @@ message Clip {}
 
 message DPMean {
     double epsilon = 1;
-    Mechanism mechanism = 2;   
+    Mechanism mechanism = 2;
 }
 message DPVariance {
     double epsilon = 1;
-    Mechanism mechanism = 2;   
+    Mechanism mechanism = 2;
 }
 
 message DPMomentRaw {
     double epsilon = 1;
-    Mechanism mechanism = 2;   
+    Mechanism mechanism = 2;
     uint32 order = 3;
 }
 
