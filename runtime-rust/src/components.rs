@@ -2,14 +2,13 @@ extern crate yarrow_validator;
 use yarrow_validator::yarrow;
 
 use ndarray::prelude::*;
-use crate::base::{
-    NodeArguments, NodeEvaluation, FieldEvaluation,
-    parse_proto_array, get_f64, get_array_f64
-};
+use crate::base::*;
 use std::collections::HashMap;
 extern crate csv;
 use std::str::FromStr;
 use crate::algorithms;
+use crate::utilities;
+use std::boxed::Box;
 
 extern crate num;
 
@@ -125,30 +124,31 @@ pub fn component_negate(_x: &yarrow::Negate, arguments: &NodeArguments) -> NodeE
     }.unwrap()
 }
 
-pub fn component_bin(_X: &yarrow::Bin, argument: &NodeArguments) -> NodeEvaluation {
-    // Christian TODO: Simple version here -- need to check with Mike
+pub fn component_bin(_X: &yarrow::Bin, arguments: &NodeArguments) -> NodeEvaluation {
     let data: ArrayD<f64> = get_array_f64(&arguments, "data");
     let edges: ArrayD<f64> = get_array_f64(&arguments, "edges");
     let inclusive_left: bool = get_bool(&arguments, "inclusive_left");
     hashmap!["data".to_string() => FieldEvaluation::Str(utilities::transformations::bin(&data, &edges, &inclusive_left))]
 }
 
-pub fn component_count(_X: &yarrow::Bin, argument: &NodeArguments) -> NodeEvaluation {
-    // Christian TODO: Simple version here -- need to check with Mike
-    let data: ArrayD<T> = get_array_T(&arguments, "data");
-    let group_by: ArrayD<T> = get_array_T(&arguments, "group_by");
-    hashmap!["data".to_string() => FieldEvaluation::F64(utilities::aggregations::count(&data, &group_by))]
+pub fn component_count(_X: &yarrow::Count, arguments: &NodeArguments) -> NodeEvaluation {
+    match (arguments.get("data").unwrap(), arguments.get("group_by").unwrap()) {
+        (FieldEvaluation::F64(data), FieldEvaluation::F64(group_by)) => Ok(hashmap!["data".to_string() => FieldEvaluation::F64(utilities::aggregations::count(&get_array_f64(&arguments, "data"), &Some(get_array_f64(&arguments, "group_by"))))]),
+        (FieldEvaluation::Str(data), FieldEvaluation::Str(group_by)) => Ok(hashmap!["data".to_string() => FieldEvaluation::F64(utilities::aggregations::count(&get_array_str(&arguments, "data"), &Some(get_array_str(&arguments, "group_by"))))]),
+        (FieldEvaluation::Bool(data), FieldEvaluation::Bool(group_by)) => Ok(hashmap!["data".to_string() => FieldEvaluation::F64(utilities::aggregations::count(&get_array_bool(&arguments, "data"), &Some(get_array_bool(&arguments, "group_by"))))]),
+        _ => Err("Count: Data type must be f64, string, or bool")
+    }.unwrap()
 }
 
-pub fn component_histogram(_X: &yarrow::Bin, argument: &NodeArguments) -> NodeEvaluation {
-    // Christian TODO: Simple version here -- need to check with Mike
-    let data: ArrayD<f64> = get_array_f64(&arguments, "data");
-    let edges: ArrayD<f64> = get_array_f64(&arguments, "edges");
-    let inclusive_left: bool = get_bool(&arguments, "inclusive_left");
-    hashmap!["data".to_string() => FieldEvaluation::HistHashMap(utilities::aggregations::histogram(&data, &edges, &inclusive_left))]
-}
+// pub fn component_histogram(_X: &yarrow::Bin, argument: &NodeArguments) -> NodeEvaluation {
+//     // Christian TODO: Simple version here -- need to check with Mike
+//     let data: ArrayD<f64> = get_array_f64(&arguments, "data");
+//     let edges: ArrayD<f64> = get_array_f64(&arguments, "edges");
+//     let inclusive_left: bool = get_bool(&arguments, "inclusive_left");
+//     hashmap!["data".to_string() => FieldEvaluation::HistHashMap(utilities::aggregations::histogram(&data, &edges, &inclusive_left))]
+// }
 
-pub fn component_median(_x: &yarrow::Power, arguments: &NodeArguments) -> NodeEvaluation {
+pub fn component_median(_x: &yarrow::Median, arguments: &NodeArguments) -> NodeEvaluation {
     // Christian TODO: Simple version here -- need to check with Mike
     let data: ArrayD<f64> = get_array_f64(&arguments, "data");
     hashmap!["data".to_string() => FieldEvaluation::F64(utilities::aggregations::median(&data))]
