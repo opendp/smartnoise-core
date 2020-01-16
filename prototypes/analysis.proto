@@ -68,9 +68,10 @@ message Component {
         Count count = 16;
         // Histogram histogram = 17;
         Median median = 17;
-        DPVariance dpvariance = 18;
-        DPMomentRaw dpmomentraw = 19;
-        DPCovariance dpcovariance = 20;
+        Sum sum = 18;
+        DPVariance dpvariance = 19;
+        DPMomentRaw dpmomentraw = 20;
+        DPCovariance dpcovariance = 21;
     }
 
 }
@@ -85,6 +86,7 @@ message Bin {}
 message Count {}
 // message Histogram {}
 message Median {}
+message Sum {}
 
 message Laplace {
     double epsilon = 1;

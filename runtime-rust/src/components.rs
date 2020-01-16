@@ -149,9 +149,13 @@ pub fn component_count(_X: &yarrow::Count, arguments: &NodeArguments) -> NodeEva
 // }
 
 pub fn component_median(_x: &yarrow::Median, arguments: &NodeArguments) -> NodeEvaluation {
-    // Christian TODO: Simple version here -- need to check with Mike
     let data: ArrayD<f64> = get_array_f64(&arguments, "data");
     hashmap!["data".to_string() => FieldEvaluation::F64(utilities::aggregations::median(&data))]
+}
+
+pub fn component_sum(_x: &yarrow::Sum, arguments: &NodeArguments) -> NodeEvaluation {
+    let data: ArrayD<f64> = get_array_f64(&arguments, "data");
+    hashmap!["data".to_string() => FieldEvaluation::F64(utilities::aggregations::sum(&data))]
 }
 
 // TODO: Possibly compute sensitivity here, and pass into algorithm?
