@@ -168,6 +168,21 @@ pub fn component_sum(_x: &yarrow::Sum, arguments: &NodeArguments) -> NodeEvaluat
     hashmap!["data".to_string() => FieldEvaluation::F64(utilities::aggregations::sum(&data))]
 }
 
+pub fn component_laplace_mechanism(_x: &yarrow::LaplaceMechanism, arguments: &NodeArguments) -> NodeEvaluation {
+    let data: ArrayD<f64> = get_array_f64(&arguments, "data");
+    let epsilon: f64 = get_f64(&arguments, "epsilon");
+    let sensitivity: f64 = get_f64(&arguments, "sensitivity");
+    hashmap!["data".to_string() => FieldEvaluation::F64(utilities::mechanisms::laplace_mechanism(&data, &epsilon, &sensitivity))]
+}
+
+pub fn component_gaussian_mechanism(_x: &yarrow::GaussianMechanism, arguments: &NodeArguments) -> NodeEvaluation {
+    let data: ArrayD<f64> = get_array_f64(&arguments, "data");
+    let epsilon: f64 = get_f64(&arguments, "epsilon");
+    let delta: f64 = get_f64(&arguments, "delta");
+    let sensitivity: f64 = get_f64(&arguments, "sensitivity");
+    hashmap!["data".to_string() => FieldEvaluation::F64(utilities::mechanisms::gaussian_mechanism(&data, &epsilon, &delta, &sensitivity))]
+}
+
 // TODO: Possibly compute sensitivity here, and pass into algorithm?
 
 pub fn component_dp_mean(component: &yarrow::DpMean, arguments: &NodeArguments) -> NodeEvaluation {

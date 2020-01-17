@@ -73,6 +73,8 @@ message Component {
         DPVariance dpvariance = 20;
         DPMomentRaw dpmomentraw = 21;
         DPCovariance dpcovariance = 22;
+        LaplaceMechanism laplace_mechanism = 23;
+        GaussianMechanism gaussian_mechanism = 24;
     }
 
 }
@@ -136,3 +138,6 @@ message DPCovariance {
     double epsilon = 1;
     Mechanism mechanism = 2;
 }
+
+message LaplaceMechanism {}
+message GaussianMechanism {}
