@@ -16,7 +16,8 @@ pub enum FieldEvaluation {
     Bool(ArrayD<bool>),
     I64(ArrayD<i64>),
     F64(ArrayD<f64>),
-    Str(ArrayD<String>)
+    Str(ArrayD<String>),
+    // String_F64_HashMap(HashMap<String, f64>)
 }
 
 // equivalent to proto ReleaseNode
@@ -167,6 +168,7 @@ pub fn execute_component(component: &yarrow::Component,
         yarrow::component::Value::Multiply(x) => components::component_multiply(&x, &arguments),
         yarrow::component::Value::Power(x) => components::component_power(&x, &arguments),
         yarrow::component::Value::Negate(x) => components::component_negate(&x, &arguments),
+        yarrow::component::Value::Impute(x) => components::component_impute(&x, &arguments),
         yarrow::component::Value::Bin(x) => components::component_bin(&x, &arguments),
         yarrow::component::Value::Count(x) => components::component_count(&x, &arguments),
         // yarrow::component::Value::Histogram(x) => components::component_histogram(&x, &arguments),

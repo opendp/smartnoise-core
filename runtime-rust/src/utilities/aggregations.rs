@@ -1,4 +1,5 @@
 use ndarray::prelude::*;
+use std::collections::HashMap;
 
 use crate::utilities::transformations;
 
@@ -89,48 +90,48 @@ pub fn get_bin_names(edges: &ArrayD<f64>, inclusive_left: &bool) -> ArrayD<Strin
     return arr1(&bin_name_vec).into_dyn();
 }
 
-// pub fn histogram(data: &ArrayD<f64>, edges: &ArrayD<f64>, inclusive_left: &bool) -> HashMap::<String, f64> {
-//     /// Accepts data, bin edges, and a bin definition rule and returns a HashMap of
-//     /// bin names and counts
-//     ///
-//     /// # Arguments
-//     /// * `data` - Array of numeric data to be binned
-//     /// * `edges` - Array of bin edges, an array of n+1 edges will yield n bins
-//     /// * `inclusive_left` - Boolean for whether or not bins (representing numeric intervals) are closed on the left.
-//     ///                      If false, then bins are closed on the right.
-//     ///                      The leftmost and rightmost bins are automatically closed on the left/right (respectively),
-//     ///                      regardless of the value of `inclusive_left`.
-//     ///
-//     /// # Return
-//     /// Hashmap of bin names and counts
-//     ///
-//     /// # Example
-//     /// ```
-//     /// let data: ArrayD<f64> = arr1(&[0., 1., 2., 3., 4., 5., 12., 19., 24., 90., 98., 100.]).into_dyn();
-//     /// let edges: ArrayD<f64> = arr1(&[0., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100.]).into_dyn();
-//     /// let inclusive_left: bool = true;
-//     /// let hist = histogram(&data, &edges, &inclusive_left);
-//     /// println!("{:?}", hist);
-//     /// ```
+pub fn histogram(data: &ArrayD<f64>, edges: &ArrayD<f64>, inclusive_left: &bool) -> HashMap::<String, f64> {
+    /// Accepts data, bin edges, and a bin definition rule and returns a HashMap of
+    /// bin names and counts
+    ///
+    /// # Arguments
+    /// * `data` - Array of numeric data to be binned
+    /// * `edges` - Array of bin edges, an array of n+1 edges will yield n bins
+    /// * `inclusive_left` - Boolean for whether or not bins (representing numeric intervals) are closed on the left.
+    ///                      If false, then bins are closed on the right.
+    ///                      The leftmost and rightmost bins are automatically closed on the left/right (respectively),
+    ///                      regardless of the value of `inclusive_left`.
+    ///
+    /// # Return
+    /// Hashmap of bin names and counts
+    ///
+    /// # Example
+    /// ```
+    /// let data: ArrayD<f64> = arr1(&[0., 1., 2., 3., 4., 5., 12., 19., 24., 90., 98., 100.]).into_dyn();
+    /// let edges: ArrayD<f64> = arr1(&[0., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100.]).into_dyn();
+    /// let inclusive_left: bool = true;
+    /// let hist = histogram(&data, &edges, &inclusive_left);
+    /// println!("{:?}", hist);
+    /// ```
 
-//     // map data to bins
-//     let binned_data: ArrayD<String> = transformations::bin(data, edges, inclusive_left);
+    // map data to bins
+    let binned_data: ArrayD<String> = transformations::bin(data, edges, inclusive_left);
 
-//     // construct bin names
-//     let mut bin_names: ArrayD<String> = get_bin_names(edges, inclusive_left);
-//     let mut bin_names_copy: ArrayD<String> = bin_names.clone();
+    // construct bin names
+    let mut bin_names: ArrayD<String> = get_bin_names(edges, inclusive_left);
+    let mut bin_names_copy: ArrayD<String> = bin_names.clone();
 
-//     // get counts for each bin
-//     let mut bin_counts: ArrayD<f64> = count(&binned_data, &Some(bin_names));
+    // get counts for each bin
+    let mut bin_counts: ArrayD<f64> = count(&binned_data, &Some(bin_names));
 
-//     // construct hashmap of bin_name: count pairs
-//     let mut hist_hashmap: HashMap::<String, f64> = HashMap::new();
-//     for pair in bin_names_copy.iter().zip(bin_counts.iter_mut()) {
-//         let (name, count) = pair;
-//         hist_hashmap.insert(name.to_string(), *count);
-//     }
-//     return hist_hashmap;
-// }
+    // construct hashmap of bin_name: count pairs
+    let mut hist_hashmap: HashMap::<String, f64> = HashMap::new();
+    for pair in bin_names_copy.iter().zip(bin_counts.iter_mut()) {
+        let (name, count) = pair;
+        hist_hashmap.insert(name.to_string(), *count);
+    }
+    return hist_hashmap;
+}
 
 pub fn median(data: &ArrayD<f64>) -> ArrayD<f64> {
     /// Accepts data and returns median

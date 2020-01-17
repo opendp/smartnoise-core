@@ -1,6 +1,8 @@
 use std::string::String;
 use std::vec::Vec;
 use ndarray::prelude::*;
+use crate::utilities::noise;
+use core::f64::NAN;
 
 pub fn bin(data: &ArrayD<f64>, edges: &ArrayD<f64>, inclusive_left: &bool) -> ArrayD<String> {
     /// Accepts vector of data and assigns each element to a bin
@@ -77,4 +79,37 @@ pub fn bin(data: &ArrayD<f64>, edges: &ArrayD<f64>, inclusive_left: &bool) -> Ar
     // convert bin vector to Array and return
     let bin_array: Array1<String> = Array1::from(bin_vec);
     return bin_array.into_dyn();
+}
+
+pub fn impute(data: &ArrayD<f64>, min: &f64, max: &f64) -> ArrayD<f64> {
+    /// Given data and min/max values, returns data with imputed values in place of NaN.
+    /// For now, imputed values are generated uniformly at random between the min and max values provided,
+    /// we may later add the ability to impute according to other distributions
+    ///
+    /// # Arguments
+    /// * `data` - data for which you would like to impute the NaN values
+    /// * `min` - lower bound on imputation range
+    /// * `max` - upper bound on imputation range
+    ///
+    /// # Return
+    /// array of data with imputed values
+    ///
+    /// # Example
+    /// ```
+    /// let data: Vec<f64> = vec![NAN, NAN, 1., 2., NAN, 4., 8.];
+    /// let min: f64 = 0.;
+    /// let max: f64 = 10.;
+    /// let imputed: Vec<f64> = impute(&data, &min, &max);
+    /// println!("{:?}", imputed);
+    /// ```
+
+    let mut data_vec: Vec<f64> = Vec::with_capacity(data.len());
+        for i in 0..data.len() {
+        if data[i].is_nan() {
+            data_vec.push(noise::sample_uniform(*min, *max));
+        } else {
+            data_vec.push(data[i]);
+        }
+    }
+    return arr1(&data_vec).into_dyn();
 }

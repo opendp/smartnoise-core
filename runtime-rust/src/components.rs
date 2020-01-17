@@ -8,7 +8,6 @@ extern crate csv;
 use std::str::FromStr;
 use crate::algorithms;
 use crate::utilities;
-use std::boxed::Box;
 
 extern crate num;
 
@@ -124,6 +123,13 @@ pub fn component_negate(_x: &yarrow::Negate, arguments: &NodeArguments) -> NodeE
     }.unwrap()
 }
 
+pub fn component_impute(_x: &yarrow::Impute, arguments: &NodeArguments) -> NodeEvaluation {
+    let data: ArrayD<f64> = get_array_f64(&arguments, "data");
+    let min: f64 = get_f64(&arguments, "min");
+    let max: f64 = get_f64(&arguments, "max");
+    hashmap!["data".to_string() => FieldEvaluation::F64(utilities::transformations::impute(&data, &min, &max))]
+}
+
 pub fn component_bin(_X: &yarrow::Bin, arguments: &NodeArguments) -> NodeEvaluation {
     let data: ArrayD<f64> = get_array_f64(&arguments, "data");
     let edges: ArrayD<f64> = get_array_f64(&arguments, "edges");
@@ -141,11 +147,10 @@ pub fn component_count(_X: &yarrow::Count, arguments: &NodeArguments) -> NodeEva
 }
 
 // pub fn component_histogram(_X: &yarrow::Bin, argument: &NodeArguments) -> NodeEvaluation {
-//     // Christian TODO: Simple version here -- need to check with Mike
 //     let data: ArrayD<f64> = get_array_f64(&arguments, "data");
 //     let edges: ArrayD<f64> = get_array_f64(&arguments, "edges");
 //     let inclusive_left: bool = get_bool(&arguments, "inclusive_left");
-//     hashmap!["data".to_string() => FieldEvaluation::HistHashMap(utilities::aggregations::histogram(&data, &edges, &inclusive_left))]
+//     hashmap!["data".to_string() => FieldEvaluation::String_F64_HashMap(utilities::aggregations::histogram(&data, &edges, &inclusive_left)]
 // }
 
 pub fn component_mean(_x: &yarrow::Mean, arguments: &NodeArguments) -> NodeEvaluation {

@@ -69,9 +69,10 @@ message Component {
         // Histogram histogram = 17;
         Median median = 17;
         Sum sum = 18;
-        DPVariance dpvariance = 19;
-        DPMomentRaw dpmomentraw = 20;
-        DPCovariance dpcovariance = 21;
+        Impute impute = 19;
+        DPVariance dpvariance = 20;
+        DPMomentRaw dpmomentraw = 21;
+        DPCovariance dpcovariance = 22;
     }
 
 }
@@ -88,6 +89,7 @@ message Count {}
 message Mean{}
 message Median {}
 message Sum {}
+message Impute {}
 
 message Laplace {
     double epsilon = 1;
