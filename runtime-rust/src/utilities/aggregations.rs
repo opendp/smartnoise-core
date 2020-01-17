@@ -166,7 +166,7 @@ pub fn sum(data: &ArrayD<f64>) -> ArrayD<f64> {
     /// Accepts data and returns sum
     ///
     /// # Arguments
-    /// * `data` - Array of data for which you would like the median
+    /// * `data` - Array of data for which you would like the sum
     ///
     /// # Return
     /// sum of the data
@@ -180,4 +180,25 @@ pub fn sum(data: &ArrayD<f64>) -> ArrayD<f64> {
     let data_vec: Vec<f64> = data.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
     let data_sum: f64 = data_vec.iter().map(|x| x).sum();
     return arr1(&[data_sum]).into_dyn();
+}
+
+pub fn mean(data: &ArrayD<f64>) -> ArrayD<f64> {
+    /// Accepts data and returns mean
+    ///
+    /// # Arguments
+    /// * `data` - Array of data for which you would like the mean
+    ///
+    /// # Return
+    /// mean of the data
+    ///
+    /// # Examples
+    /// ```
+    /// let data: ArrayD<f64> = arr1(&[0., 1., 2., 3., 4., 5., 12., 19., 24., 90., 98., 100.]).into_dyn();
+    /// let mean: f64 = mean(&data);
+    /// println!("{}", mean);
+    /// ```
+    let data_vec: Vec<f64> = data.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
+    let data_vec_len: f64 = data_vec.len() as f64;
+    let data_sum: f64 = data_vec.iter().map(|x| x).sum();
+    return arr1(&[data_sum / data_vec_len]).into_dyn();
 }

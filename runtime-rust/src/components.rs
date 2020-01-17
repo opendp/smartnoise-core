@@ -148,6 +148,11 @@ pub fn component_count(_X: &yarrow::Count, arguments: &NodeArguments) -> NodeEva
 //     hashmap!["data".to_string() => FieldEvaluation::HistHashMap(utilities::aggregations::histogram(&data, &edges, &inclusive_left))]
 // }
 
+pub fn component_mean(_x: &yarrow::Mean, arguments: &NodeArguments) -> NodeEvaluation {
+    let data: ArrayD<f64> = get_array_f64(&arguments, "data");
+    hashmap!["data".to_string() => FieldEvaluation::F64(utilities::aggregations::mean(&data))]
+}
+
 pub fn component_median(_x: &yarrow::Median, arguments: &NodeArguments) -> NodeEvaluation {
     let data: ArrayD<f64> = get_array_f64(&arguments, "data");
     hashmap!["data".to_string() => FieldEvaluation::F64(utilities::aggregations::median(&data))]

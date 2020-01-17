@@ -85,6 +85,7 @@ message Negate {}
 message Bin {}
 message Count {}
 // message Histogram {}
+message Mean{}
 message Median {}
 message Sum {}
 
@@ -95,7 +96,6 @@ message Literal {
     ArrayND value = 1;
 }
 message Constant {}
-message Mean {}
 message DataSource {
     string dataset_id = 1;
     string column_id = 2;
