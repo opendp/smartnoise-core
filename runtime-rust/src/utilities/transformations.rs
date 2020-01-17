@@ -96,10 +96,10 @@ pub fn impute(data: &ArrayD<f64>, min: &f64, max: &f64) -> ArrayD<f64> {
     ///
     /// # Example
     /// ```
-    /// let data: Vec<f64> = vec![NAN, NAN, 1., 2., NAN, 4., 8.];
+    /// let data: ArrayD<f64> = arr1(&[1., 2., 3., 4., 5., 12., 19., 24., 90., 98.]).into_dyn();
     /// let min: f64 = 0.;
     /// let max: f64 = 10.;
-    /// let imputed: Vec<f64> = impute(&data, &min, &max);
+    /// let imputed: ArrayD<f64> = impute(&data, &min, &max);
     /// println!("{:?}", imputed);
     /// ```
 
