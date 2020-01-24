@@ -4,6 +4,7 @@ use probability::distribution::{Gaussian, Laplace, Inverse};
 use ieee754::Ieee754;
 use num;
 use rug;
+use std::{cmp, f64::consts};
 
 use crate::utilities::snapping;
 
@@ -112,4 +113,122 @@ pub fn sample_snapping_noise(mechanism_input: &f64, epsilon: &f64, B: &f64, sens
     let snapping_mech_noise = private_estimate - mechanism_input;
 
     return snapping_mech_noise;
+}
+
+pub fn sample_bit(prob: &f64) -> i64 {
+    /// Sample a single bit with arbitrary probability of "success", using only
+    /// an unbiased source of coin flips (get_geom_prob_one_half).
+    /// The strategy for doing this with 2 flips in expectation is described
+    /// at https://amakelov.wordpress.com/2013/10/10/arbitrarily-biasing-a-coin-in-2-expected-tosses/
+    ///
+    /// # Arguments
+    /// * `prob` - probability of success (bit == 1)
+    ///
+    /// # Return
+    /// a bit that is 1 with probability "prob"
+
+    // ensure that prob is a valid probability
+    assert!(prob >= &0.0 || prob <= &1.0);
+
+    // repeatedly flip coin (up to 1024 times) and identify index (0-based) of first heads
+    let first_heads_index: i16 = snapping::get_geom_prob_one_half() - 1;
+
+    // decompose probability into mantissa (string of bits) and exponent integer to quickly identify the value in the first_heads_index
+    let (sign, exponent, mantissa) = prob.decompose_raw();
+    let mantissa_string = format!("1{:052b}", mantissa); // add implicit 1 to mantissa
+    let mantissa_vec: Vec<i64> = mantissa_string.chars().map(|x| x.to_digit(2).unwrap() as i64).collect();
+    let num_leading_zeros = cmp::max(1022_i16 - exponent as i16, 0); // number of leading zeros in binary representation of prob
+
+    // return value at index of interest
+    if first_heads_index < num_leading_zeros {
+        return 0;
+    } else {
+        let index: usize = (num_leading_zeros + first_heads_index) as usize;
+        return mantissa_vec[index];
+    }
+}
+
+pub fn sample_censored_geometric_dist(prob: &f64, max_trials: &f64, enforce_constant_time: &bool) -> f64 {
+    /// Sample from the censored geometric distribution with parameter "prob" and maximum
+    /// number of trials "max_trials".
+    ///
+    /// # Arguments
+    /// * `prob` - parameter for the geometric distribution, the probability of success on any given trials
+    /// * `max_trials` - the maximum number of trials allowed
+    /// * `enforce_constant_time` - whether or not to enforce the algorithm to run in constant time; if true,
+    ///                             it will always run for "max_trials" trials
+    ///
+    /// # Return
+    /// result from censored geometric distribution
+    ///
+    /// # Example
+    /// ```
+    /// let geom: f64 = sample_censored_geometric(&0.1, &20., &false);
+    /// ```
+
+    let mut bit: i64 = 0;
+    let mut n_trials: f64 = 1.0;
+    let mut geom_return: f64 = 0.0;
+
+    // generate bits until we find a 1
+    while n_trials <= *max_trials {
+        bit = sample_bit(prob);
+        if bit == 1 {
+            if geom_return == 0.0 {
+                geom_return = n_trials;
+                if enforce_constant_time == &false {
+                    return geom_return;
+                }
+            }
+        } else {
+            n_trials += 1.;
+        }
+    }
+
+    // set geom_return to max if we never saw a bit equaling 1
+    if geom_return == 0.0 {
+        geom_return = *max_trials; // could also set this equal to n_trials - 1.
+    }
+
+    return geom_return;
+}
+
+pub fn sample_simple_geometric_mechanism(epsilon: &f64, sensitivity: &f64, func_min: &f64, func_max: &f64, enforce_constant_time: &bool) -> f64 {
+    /// Sample noise according to geometric mechanism.
+    /// This function uses coin flips to sample from the geometric distribution,
+    /// rather than using the inverse probability transform. This is done
+    /// to avoid finite precision attacks.
+    ///
+    /// For this algorithm, the number of steps it takes to sample from the geometric
+    /// is bounded above by (func_max - func_min).
+    ///
+    /// # Arguments
+    /// * `epsilon` - privacy parameter
+    /// * `sensitivity` - sensitivity of function to which you want to add noise
+    /// * `func_min` - minimum value of function to which you want to add noise
+    /// * `func_max` - maximum value of function to which you want to add noise
+    /// * `enforce_constant_time` - boolean for whether or not to require the geometric to run for the maximum number of trials
+    ///
+    /// # Return
+    /// noise according to the geometric mechanism
+    ///
+    /// # Example
+    /// ```
+    /// let geom_noise: f64 = sample_simple_geometric_mechanism(&1., &1., &0., &100., &false);
+    /// ```
+
+    let alpha: f64 = consts::E.powf(-*epsilon / *sensitivity);
+    let max_trials: f64 = func_max - func_min;
+
+    // return 0 noise with probability (1-alpha) / (1+alpha), otherwise sample from geometric
+    let unif: f64 = sample_uniform(0., 1.);
+    if unif < (1. - &alpha) / (1. + &alpha) {
+        return 0.0;
+    } else {
+        // get random sign
+        let sign: f64 = 2.0 * (sample_bit(&0.5) as f64) - 1.0;
+        // sample from censored geometric
+        let geom: f64 = sample_censored_geometric_dist(&(1. - alpha), &max_trials, enforce_constant_time);
+        return sign * geom;
+    }
 }

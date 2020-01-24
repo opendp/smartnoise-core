@@ -183,6 +183,18 @@ pub fn component_gaussian_mechanism(_x: &yarrow::GaussianMechanism, arguments: &
     hashmap!["data".to_string() => FieldEvaluation::F64(utilities::mechanisms::gaussian_mechanism(&data, &epsilon, &delta, &sensitivity))]
 }
 
+pub fn component_simple_geometric_mechanism(_x: &yarrow::SimpleGeometricMechanism, arguments: &NodeArguments) -> NodeEvaluation {
+    let data: ArrayD<f64> = get_array_f64(&arguments, "data");
+    let epsilon: f64 = get_f64(&arguments, "epsilon");
+    let sensitivity: f64 = get_f64(&arguments, "sensitivity");
+    let func_min: f64 = get_f64(&arguments, "func_min");
+    let func_max: f64 = get_f64(&arguments, "func_max");
+    let enforce_constant_time: bool = get_bool(&arguments, "enforce_constant_time");
+    hashmap!["data".to_string() =>
+        FieldEvaluation::F64(utilities::mechanisms::simple_geometric_mechanism(
+                             &data, &epsilon, &sensitivity, &func_min, &func_max, &enforce_constant_time))]
+}
+
 // TODO: Possibly compute sensitivity here, and pass into algorithm?
 
 pub fn component_dp_mean(component: &yarrow::DpMean, arguments: &NodeArguments) -> NodeEvaluation {

@@ -75,6 +75,7 @@ message Component {
         DPCovariance dpcovariance = 22;
         LaplaceMechanism laplace_mechanism = 23;
         GaussianMechanism gaussian_mechanism = 24;
+        SimpleGeometricMechanism simple_geometric_mechanism = 25;
     }
 
 }
@@ -141,3 +142,4 @@ message DPCovariance {
 
 message LaplaceMechanism {}
 message GaussianMechanism {}
+message SimpleGeometricMechanism {}
