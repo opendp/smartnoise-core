@@ -69,13 +69,14 @@ message Component {
         // Histogram histogram = 17;
         Median median = 17;
         Sum sum = 18;
-        Impute impute = 19;
-        DPVariance dpvariance = 20;
-        DPMomentRaw dpmomentraw = 21;
-        DPCovariance dpcovariance = 22;
-        LaplaceMechanism laplace_mechanism = 23;
-        GaussianMechanism gaussian_mechanism = 24;
-        SimpleGeometricMechanism simple_geometric_mechanism = 25;
+        Variance variance = 19;
+        Impute impute = 20;
+        DPVariance dpvariance = 21;
+        DPMomentRaw dpmomentraw = 22;
+        DPCovariance dpcovariance = 23;
+        LaplaceMechanism laplace_mechanism = 24;
+        GaussianMechanism gaussian_mechanism = 25;
+        SimpleGeometricMechanism simple_geometric_mechanism = 26;
     }
 
 }
@@ -90,6 +91,7 @@ message Bin {}
 message Count {}
 // message Histogram {}
 message Mean{}
+message Variance{}
 message Median {}
 message Sum {}
 message Impute {}

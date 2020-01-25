@@ -158,6 +158,12 @@ pub fn component_mean(_x: &yarrow::Mean, arguments: &NodeArguments) -> NodeEvalu
     hashmap!["data".to_string() => FieldEvaluation::F64(utilities::aggregations::mean(&data))]
 }
 
+pub fn component_variance(_x: &yarrow::Variance, arguments: &NodeArguments) -> NodeEvaluation {
+    let data: ArrayD<f64> = get_array_f64(&arguments, "data");
+    let finite_sample_correction: bool = get_bool(&arguments, "finite_sample_correction");
+    hashmap!["data".to_string() => FieldEvaluation::F64(utilities::aggregations::variance(&data, &finite_sample_correction))]
+}
+
 pub fn component_median(_x: &yarrow::Median, arguments: &NodeArguments) -> NodeEvaluation {
     let data: ArrayD<f64> = get_array_f64(&arguments, "data");
     hashmap!["data".to_string() => FieldEvaluation::F64(utilities::aggregations::median(&data))]
