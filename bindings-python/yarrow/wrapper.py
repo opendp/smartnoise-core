@@ -52,5 +52,5 @@ class LibraryWrapper(object):
             *_serialize_proto(analysis, ffi_runtime),
             *_serialize_proto(release, ffi_runtime)
         )
-        serialized_response = ffi_runtime.string(byte_buffer.data, byte_buffer.len)
+        serialized_response = ffi_runtime.buffer(byte_buffer.data, byte_buffer.len)
         return release_pb2.Release.FromString(serialized_response)
