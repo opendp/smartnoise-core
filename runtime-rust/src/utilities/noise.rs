@@ -193,20 +193,19 @@ pub fn sample_censored_geometric_dist(prob: &f64, max_trials: &f64, enforce_cons
     return geom_return;
 }
 
-pub fn sample_simple_geometric_mechanism(epsilon: &f64, sensitivity: &f64, func_min: &f64, func_max: &f64, enforce_constant_time: &bool) -> f64 {
+pub fn sample_simple_geometric_mechanism(epsilon: &f64, count_min: &f64, count_max: &f64, enforce_constant_time: &bool) -> f64 {
     /// Sample noise according to geometric mechanism.
     /// This function uses coin flips to sample from the geometric distribution,
     /// rather than using the inverse probability transform. This is done
     /// to avoid finite precision attacks.
     ///
     /// For this algorithm, the number of steps it takes to sample from the geometric
-    /// is bounded above by (func_max - func_min).
+    /// is bounded above by (count_max - count_min).
     ///
     /// # Arguments
     /// * `epsilon` - privacy parameter
-    /// * `sensitivity` - sensitivity of function to which you want to add noise
-    /// * `func_min` - minimum value of function to which you want to add noise
-    /// * `func_max` - maximum value of function to which you want to add noise
+    /// * `count_min` - minimum value of function to which you want to add noise
+    /// * `count_max` - maximum value of function to which you want to add noise
     /// * `enforce_constant_time` - boolean for whether or not to require the geometric to run for the maximum number of trials
     ///
     /// # Return
@@ -217,8 +216,8 @@ pub fn sample_simple_geometric_mechanism(epsilon: &f64, sensitivity: &f64, func_
     /// let geom_noise: f64 = sample_simple_geometric_mechanism(&1., &1., &0., &100., &false);
     /// ```
 
-    let alpha: f64 = consts::E.powf(-*epsilon / *sensitivity);
-    let max_trials: f64 = func_max - func_min;
+    let alpha: f64 = consts::E.powf(-*epsilon);
+    let max_trials: f64 = count_max - count_min;
 
     // return 0 noise with probability (1-alpha) / (1+alpha), otherwise sample from geometric
     let unif: f64 = sample_uniform(0., 1.);
