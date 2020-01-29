@@ -3,3 +3,6 @@
 *.fls
 *.log
 *.xdv
+*.synctex.gz
+*.bbl
+*.blg

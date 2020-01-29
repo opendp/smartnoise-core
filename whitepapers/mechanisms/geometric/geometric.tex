@@ -1,0 +1,153 @@
+\documentclass[11pt]{scrartcl} % Font size
+\input{structure.tex} % Include the file specifying the document structure and custom commands
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\title{
+	\normalfont\normalsize
+	\textsc{Harvard Privacy Tools Project}\\ % Your university, school and/or department name(s)
+	\vspace{25pt} % Whitespace
+	\rule{\linewidth}{0.5pt}\\ % Thin top horizontal rule
+	\vspace{20pt} % Whitespace
+	{\huge Geometric Mechanism Notes}\\ % The assignment title
+	\vspace{12pt} % Whitespace
+	\rule{\linewidth}{2pt}\\ % Thick bottom horizontal rule
+	\vspace{12pt} % Whitespace
+}
+
+\author{\LARGE Christian Covington} % Your name
+
+\date{\normalsize\today} % Today's date (\today) or a custom date
+
+\begin{document}
+
+\maketitle
+
+\section{Overview}
+This document is a write-up of extra notes regarding implementations of the Geometric mechanism
+in yarrow.
+
+\section{Simple Geometric Mechanism}
+\subsection{Background}
+The \emph{Simple Geometric Mechanism} is an implementation of the Geometric
+mechanism proposed in \cite{GRS12}. For a counting query $f$ with true value $f(d)$
+and parameter value $\alpha \in (0,1)$, the $\alpha-$geometric mechanism outputs
+$f(d) + N$, where $\supp N = \Z$ and
+\begin{equation}
+    \label{eq:grs12_geom}
+    \Pr(N = n) = \frac{1-\alpha}{1+\alpha} \alpha^{| n |}.
+\end{equation}
+This mechanism respects pure differential privacy, with a privacy loss parameter of $\alpha$.
+To accommodate privacy parameters outside of $(0,1)$, we can choose a privacy parameter
+$\epsilon > 0$ and let $\alpha = e^{-\epsilon}$. \newline
+
+\subsection{Approximate Implementation}
+Below is pseudocode that is pretty close to our implementation of the mechanism (more on the finer points later).
+This directly matches the $\alpha$-Geometric mechanism from \cite{GRS12}.
+
+\begin{algorithm}[H]
+    \caption{(Almost) Simple Geometric Mechanism $M_{SG}(f(D), \epsilon)$}
+    \label{alg:simp_geo_mec}
+    \begin{algorithmic}[1]
+        \State Let $f(D)$ be the count query we wish to privatize, $\epsilon$ be our privacy parameter and $\alpha = e^{-\epsilon}$.
+        \State $u \gets$ Unif$(0,1)$
+        \If{$u < \frac{1-\alpha}{1+\alpha}$} \label{alg_step:return_zero}
+            \State return $f(D)$
+        \Else
+            \State $s \gets$ uniformly random draw from $\{-1, 1\}$ \label{alg:unif_draw}
+            \State $g \gets$ Geom$(1 - \alpha)$ where $g \in \{1,2,\hdots\}$ \label{alg:draw_geom}
+            \State return $f(D) + s \cdot g$
+        \EndIf
+	\end{algorithmic}
+\end{algorithm}
+
+\subsubsection{Proof that Algorithm \ref{alg:simp_geo_mec} is equivalent to Equation \eqref{eq:grs12_geom}}
+First, note from Equation \eqref{eq:grs12_geom} that the mechanism returns $f(d)$ when $N=0$,
+which happens with probability $\frac{1-\alpha}{1+\alpha}$.
+This is reflected in line \ref{alg_step:return_zero} of Algorithm \ref{alg:simp_geo_mec}. \newline
+
+Now, we have handled the case where $N = 0$, so let's manipulate Equation \eqref{eq:grs12_geom} a bit more.
+For arbitrary $n \in \Z \setminus \{0\}$:
+\begin{align*}
+    \Pr(N = n \vert N \neq 0) &= \left( \frac{1}{1 - \Pr(N = 0)} \right) \cdot \left( \frac{1-\alpha}{1+\alpha} \alpha^{| n |} \right) \\
+               &= \left( \frac{1}{1 - \frac{1-\alpha}{1+\alpha}} \right) \cdot \left( \frac{1-\alpha}{1+\alpha} \alpha^{| n |} \right) \\
+               &= \left( \frac{1 + \alpha}{2\alpha} \right) \cdot \left( \frac{1-\alpha}{1+\alpha} \alpha^{| n |} \right) \\
+               &= \frac{1-\alpha}{2\alpha} \alpha^{|n|}.
+\end{align*}
+We know that the noise induced by the geometric mechanism should be symmetric, so let's now
+consider only $n \in \Z^{+}$, with the knowledge that $\Pr(N=n) = \Pr(N=-n)$. This allows us
+to remove the factor of 2 from the denominator and remove the absolute value around $n$:
+\begin{align*}
+    \Pr(N = n | N \neq 0) &= \frac{1-\alpha}{\alpha} \alpha^{n} \\
+               &= \alpha^{n-1} \cdot (1-\alpha) \\
+               &= (1-p)^{n-1} p \text{ [for $p = (1 - \alpha)$]}.
+\end{align*}
+Notice that this last statement is exactly the PDF of a Geom$(p)$ defined on $\{1,2,\hdots\}$ where
+$p = 1-\alpha$. Thus, the combination of lines \ref{alg:unif_draw} and \ref{alg:draw_geom} from
+Algorithm \ref{alg:simp_geo_mec} is sufficient to generate the modified distribution from
+Equation \eqref{eq:grs12_geom} where we condition on $N \neq 0$.
+
+\subsubsection{Actual Implementation}
+To this point, we have assumed that the noise generated from our mechanism has support
+$\Z$ (we will call this the untruncated mechanism). This presents two major problems. \newline
+
+First, recall that we need to sample from a Geometric distribution within our mechanism.
+We do not want to use inverse transform sampling to do this, as doing so requires manipulation
+of floating-point numbers that can lead to privacy violations.\footnote{See \cite{Mir12} and
+\cite{Ilv19} for examples. \cite{BV17} is the only place I have seen the known problems
+with floating-point numbers extended to their effects on inverse transform sampling.}
+Therefore, we induce a Geometric distribution by randomly sampling bits until we
+see a 1. If the distribution from which we are sampling has support $\Z$, we could hypothetically
+sample an arbitrarily large number of flips and not see a 1. We would like some kind of guarantee
+on the number of samples we need. \newline
+
+Perhaps more importantly, the untruncated mechanism will sometimes yield nonsensical answers.
+For a data set with known sample size $n$, the only reasonable answers to a counting query
+are $\mathcal{S} = \{0,1,2,\hdots,n\}$. \newline
+
+If the untruncated mechanism were to return a value
+outside of $\mathcal{S}$, then we can clip the value so that it is back in the set.
+This does not violate our privacy guarantee, as it is considered data-independent post-processing, and
+can only help us in terms of absolute error. We will refer to this as the
+\emph{Truncated Geometric Mechanism}, as introduced in \cite{GRS12}.
+We also consider what truncating the eventual mechanism output means for how we need
+to sample from the Geometric distribution. \newline
+
+Let's return to Algorithm \ref{alg:simp_geo_mec}, but include truncation so that it
+actually reflects the algorithm in yarrow. \newline
+
+\begin{algorithm}[H]
+    \caption{Simple Geometric Mechanism $M_{SG}(f(D), \epsilon, \text{ count\_min, count\_max, EFC})$}
+    \label{alg:real_simp_geo_mec}
+    \begin{algorithmic}[1]
+        \State Let $f(D)$ be the count query we wish to privatize, $\epsilon$ be our privacy parameter, count\_min be the minimum
+        possible count (likely 0), count\_max be the maximum possible count (probably $n$), and EFC (enforce\_constant\_time) be a boolean
+        for whether or not we want to enforce our geometric sampling to always take the same number of steps.
+        \State Let $\alpha = e^{-\epsilon}$.
+        \State $u \gets$ Unif$(0,1)$
+        \If{$u < \frac{1-\alpha}{1+\alpha}$}
+            \State return $f(D)$
+        \Else
+            \State $s \gets$ uniformly random draw from $\{-1, 1\}$
+            \State $g \gets$ $\text{Geom}_{Trunc}(1 - \alpha)$ where $g \in \{1,2,\hdots, \text{count\_max} - \text{count\_min}\}$
+            \State return $\text{max}\bigg( \text{count\_min}, \text{min}\big(f(D) + s \cdot g, \text{count\_max}\big) \bigg)$ \label{alg:clipped_output}
+        \EndIf
+	\end{algorithmic}
+\end{algorithm}
+You can see in line \ref{alg:clipped_output} of Algorithm \ref{alg:real_simp_geo_mec} where we clip the final output
+to the set
+\[ \mathcal{S} = \{\text{count\_min}, \text{count\_min} + 1, \hdots, \text{count\_max}\}, \]
+again keeping in mind that, in general, count\_min and count\_max will be $0$ and $n$, respectively. \newline
+
+Our final step is to define Geom$_{Trunc}$. We know that our raw count $f(D)$ must be between count\_min and count\_max
+and that our mechanism will eventually return a result between those same bounds. Therefore, the absolute maximum noise
+we could ever add is $r = \text{count\_max} - \text{count\_min}$; any more would always put us outside of the set $\mathcal{S}$
+and eventually be clipped back into the set. Therefore, we can sample at most $r$ bits when generating the draw
+from the Geometric distribution. If we have sampled $r$ bits and not seen a 1, then we can set $g = r$ without
+affecting our eventual result.
+
+\bibliographystyle{alpha}
+\bibliography{geometric}
+\end{document}
