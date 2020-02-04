@@ -96,7 +96,7 @@ pub fn impute(data: &ArrayD<f64>, min: &f64, max: &f64) -> ArrayD<f64> {
     ///
     /// # Example
     /// ```
-    /// let data: ArrayD<f64> = arr1(&[1., 2., 3., 4., 5., 12., 19., 24., 90., 98.]).into_dyn();
+    /// let data: ArrayD<f64> = arr1(&[1., NAN, 3., NAN]).into_dyn();
     /// let min: f64 = 0.;
     /// let max: f64 = 10.;
     /// let imputed: ArrayD<f64> = impute(&data, &min, &max);
