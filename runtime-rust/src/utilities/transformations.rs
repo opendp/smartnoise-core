@@ -81,7 +81,7 @@ pub fn bin(data: &ArrayD<f64>, edges: &ArrayD<f64>, inclusive_left: &bool) -> Ar
     return bin_array.into_dyn();
 }
 
-pub fn impute(data: &ArrayD<f64>, min: &f64, max: &f64) -> ArrayD<f64> {
+pub fn impute_f64(data: &ArrayD<f64>, min: &f64, max: &f64) -> ArrayD<f64> {
     /// Given data and min/max values, returns data with imputed values in place of NaN.
     /// For now, imputed values are generated uniformly at random between the min and max values provided,
     /// we may later add the ability to impute according to other distributions
@@ -107,6 +107,43 @@ pub fn impute(data: &ArrayD<f64>, min: &f64, max: &f64) -> ArrayD<f64> {
         for i in 0..data.len() {
         if data[i].is_nan() {
             data_vec.push(noise::sample_uniform(*min, *max));
+        } else {
+            data_vec.push(data[i]);
+        }
+    }
+    return arr1(&data_vec).into_dyn();
+}
+
+pub fn impute_i64(data: &ArrayD<f64>, min: &i64, max: &i64) -> ArrayD<f64> {
+    /// Given data and min/max values, returns data with imputed values in place of NaN.
+    /// For now, imputed values are generated uniformly at random between the min and max values provided,
+    /// we may later add the ability to impute according to other distributions
+    ///
+    /// NOTE: This function imputes integer values, although the input and output arrays are
+    ///       made up of floats. integer types in rust do not support NAN, so if we have missing data,
+    ///       it needs to be represented as a float
+    ///
+    /// # Arguments
+    /// * `data` - data for which you would like to impute the NaN values
+    /// * `min` - lower bound on imputation range
+    /// * `max` - upper bound on imputation range
+    ///
+    /// # Return
+    /// array of data with imputed values
+    ///
+    /// # Example
+    /// ```
+    /// let data: ArrayD<f64> = arr1(&[1., NAN, 3., NAN]).into_dyn();
+    /// let min: i64 = 0;
+    /// let max: i64 = 10;
+    /// let imputed: ArrayD<f64> = impute(&data, &min, &max);
+    /// println!("{:?}", imputed);
+    /// ```
+
+    let mut data_vec: Vec<f64> = Vec::with_capacity(data.len());
+        for i in 0..data.len() {
+        if data[i].is_nan() {
+            data_vec.push(noise::sample_uniform_int(min, max) as f64);
         } else {
             data_vec.push(data[i]);
         }

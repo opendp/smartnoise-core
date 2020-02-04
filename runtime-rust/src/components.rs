@@ -123,11 +123,18 @@ pub fn component_negate(_x: &yarrow::Negate, arguments: &NodeArguments) -> NodeE
     }.unwrap()
 }
 
-pub fn component_impute(_x: &yarrow::Impute, arguments: &NodeArguments) -> NodeEvaluation {
+pub fn component_impute_f64(_x: &yarrow::ImputeF64, arguments: &NodeArguments) -> NodeEvaluation {
     let data: ArrayD<f64> = get_array_f64(&arguments, "data");
     let min: f64 = get_f64(&arguments, "min");
     let max: f64 = get_f64(&arguments, "max");
-    hashmap!["data".to_string() => FieldEvaluation::F64(utilities::transformations::impute(&data, &min, &max))]
+    hashmap!["data".to_string() => FieldEvaluation::F64(utilities::transformations::impute_f64(&data, &min, &max))]
+}
+
+pub fn component_impute_i64(_x: &yarrow::ImputeI64, arguments: &NodeArguments) -> NodeEvaluation {
+    let data: ArrayD<f64> = get_array_f64(&arguments, "data");
+    let min: i64 = get_i64(&arguments, "min");
+    let max: i64 = get_i64(&arguments, "max");
+    hashmap!["data".to_string() => FieldEvaluation::F64(utilities::transformations::impute_i64(&data, &min, &max))]
 }
 
 pub fn component_bin(_X: &yarrow::Bin, arguments: &NodeArguments) -> NodeEvaluation {

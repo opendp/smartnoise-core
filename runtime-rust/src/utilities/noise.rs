@@ -25,8 +25,38 @@ pub fn sample_uniform(min: f64, max: f64) -> f64 {
     (LittleEndian::read_u64(&buf) as f64) / (std::u64::MAX as f64) * (max - min) + min
 }
 
+pub fn sample_uniform_int(min: &i64, max: &i64) -> i64 {
+    assert!(min <= max);
+
+    // define number of possible integers we could sample and the maximum
+    // number of bits it would take to represent them
+    let n_ints: i64 = max - min + 1;
+    let n_bits: i64 = ( (n_ints as f64).log2() ).ceil() as i64;
+
+    // uniformly sample integers from the set {0, 1, ..., n_ints-1}
+    // by uniformly creating binary strings of length "n_bits"
+    // and rejecting integers that are too large
+    let mut valid_int: bool = false;
+    let mut uniform_int: i64 = 0;
+    while valid_int == false {
+        uniform_int = 0;
+        // generate random bits and increase integer by appropriate power of 2
+        for i in 0..n_bits {
+            let mut bit: i64 = sample_bit(&0.5);
+            uniform_int += bit * 2_i64.pow(i as u32);
+        }
+        if uniform_int < n_ints {
+            valid_int = true;
+        }
+    }
+
+    // return successfully generated integer, scaled to be within
+    // the correct range
+    return uniform_int + min;
+}
+
 pub fn sample_uniform_snapping() -> f64 {
-    /// Returns random sample from Uniform(0,1)
+    /// Returns random sample from Uniform[0,1)
     ///
     /// This algorithm is taken from Mironov (2012) http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.366.5957&rep=rep1&type=pdf
     /// and is important for making some of the guarantees in the paper.

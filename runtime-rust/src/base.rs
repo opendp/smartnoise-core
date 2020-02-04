@@ -168,7 +168,8 @@ pub fn execute_component(component: &yarrow::Component,
         yarrow::component::Value::Multiply(x) => components::component_multiply(&x, &arguments),
         yarrow::component::Value::Power(x) => components::component_power(&x, &arguments),
         yarrow::component::Value::Negate(x) => components::component_negate(&x, &arguments),
-        yarrow::component::Value::Impute(x) => components::component_impute(&x, &arguments),
+        yarrow::component::Value::ImputeF64(x) => components::component_impute_f64(&x, &arguments),
+        yarrow::component::Value::ImputeI64(x) => components::component_impute_i64(&x, &arguments),
         yarrow::component::Value::Bin(x) => components::component_bin(&x, &arguments),
         yarrow::component::Value::Count(x) => components::component_count(&x, &arguments),
         // yarrow::component::Value::Histogram(x) => components::component_histogram(&x, &arguments),
@@ -201,6 +202,22 @@ pub fn get_array_f64(arguments: &NodeArguments, column: &str) -> ArrayD<f64> {
         FieldEvaluation::I64(x) => Ok(x.mapv(|v| f64::from(v as i32))),
         FieldEvaluation::F64(x) => Ok(x.to_owned()),
         _ => Err(column.to_string() +" must be numeric")
+    }.unwrap()
+}
+
+pub fn get_i64(arguments: &NodeArguments, column: &str) -> i64 {
+    match arguments.get(column).unwrap() {
+        FieldEvaluation::Bool(x) => Ok(if *x.first().unwrap() {1} else {0}),
+        FieldEvaluation::I64(x) => Ok(x.first().unwrap().to_owned()),
+        _ => Err(column.to_string() +" must be integer")
+    }.unwrap()
+}
+
+pub fn get_array_i64(arguments: &NodeArguments, column: &str) -> ArrayD<i64> {
+    match arguments.get(column).unwrap() {
+        FieldEvaluation::Bool(x) => Ok(x.mapv(|v| if v {1} else {0})),
+        FieldEvaluation::I64(x) => Ok(x.to_owned()),
+        _ => Err(column.to_string() +" must be integer")
     }.unwrap()
 }
 
