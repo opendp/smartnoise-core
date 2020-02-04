@@ -33,16 +33,16 @@ pub fn get_bytes(n_bytes: usize) -> String {
 pub fn get_geom_prob_one_half() -> i16 {
     /// Return sample from a truncated Geometric distribution with parameter p=0.5
     ///
-    /// The algorithm generates 1024 bits uniformly at random and returns the
-    /// index of the first bit with value 1. If all 1024 bits are 0, then
-    /// the algorithm acts as if the last bit was a 1 and returns 1024.
+    /// The algorithm generates 1023 bits uniformly at random and returns the
+    /// index of the first bit with value 1. If all 1023 bits are 0, then
+    /// the algorithm acts as if the last bit was a 1 and returns 1023.
     ///
     /// This method was written specifically to generate the exponent
     /// that will be used for the uniform random number generation
     /// embedded within the Snapping Mechanism.
     ///
 
-    let mut geom: (i16) = 1024;
+    let mut geom: (i16) = 1023;
     // read bytes in one at a time, need 128 to fully generate geometric
     for i in 0..128 {
         // read random bytes
@@ -56,7 +56,7 @@ pub fn get_geom_prob_one_half() -> i16 {
             let first_one_index_int = first_one_index.unwrap() as i16;
             first_one_overall_index = 8*i + first_one_index_int;
         } else {
-            first_one_overall_index = 1024;
+            first_one_overall_index = 1023;
         }
         geom = cmp::min(geom, first_one_overall_index+1);
     }
