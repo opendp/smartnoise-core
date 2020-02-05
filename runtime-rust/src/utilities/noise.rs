@@ -190,7 +190,7 @@ pub fn sample_bit(prob: &f64) -> i64 {
     }
 }
 
-pub fn sample_censored_geometric_dist(prob: &f64, max_trials: &f64, enforce_constant_time: &bool) -> f64 {
+pub fn sample_geometric_censored(prob: &f64, max_trials: &f64, enforce_constant_time: &bool) -> f64 {
     /// Sample from the censored geometric distribution with parameter "prob" and maximum
     /// number of trials "max_trials".
     ///
@@ -269,7 +269,7 @@ pub fn sample_simple_geometric_mechanism(epsilon: &f64, count_min: &f64, count_m
         // get random sign
         let sign: f64 = 2.0 * (sample_bit(&0.5) as f64) - 1.0;
         // sample from censored geometric
-        let geom: f64 = sample_censored_geometric_dist(&(1. - alpha), &max_trials, enforce_constant_time);
+        let geom: f64 = sample_geometric_censored(&(1. - alpha), &max_trials, enforce_constant_time);
         return sign * geom;
     }
 }
