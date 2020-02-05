@@ -70,14 +70,15 @@ message Component {
         Median median = 17;
         Sum sum = 18;
         Variance variance = 19;
-        ImputeF64 impute_f64 = 20;
-        ImputeI64 impute_i64 = 21;
-        DPVariance dpvariance = 22;
-        DPMomentRaw dpmomentraw = 23;
-        DPCovariance dpcovariance = 24;
-        LaplaceMechanism laplace_mechanism = 25;
-        GaussianMechanism gaussian_mechanism = 26;
-        SimpleGeometricMechanism simple_geometric_mechanism = 27;
+        ImputeF64Uniform impute_f64_uniform = 20;
+        ImputeF64Gaussian impute_f64_gaussian = 21;
+        ImputeI64Uniform impute_i64_uniform = 22;
+        DPVariance dpvariance = 23;
+        DPMomentRaw dpmomentraw = 24;
+        DPCovariance dpcovariance = 25;
+        LaplaceMechanism laplace_mechanism = 26;
+        GaussianMechanism gaussian_mechanism = 27;
+        SimpleGeometricMechanism simple_geometric_mechanism = 28;
     }
 
 }
@@ -95,8 +96,9 @@ message Mean{}
 message Variance{}
 message Median {}
 message Sum {}
-message ImputeF64 {}
-message ImputeI64 {}
+message ImputeF64Uniform {}
+message ImputeF64Gaussian {}
+message ImputeI64Uniform {}
 
 message Laplace {
     double epsilon = 1;

@@ -81,10 +81,9 @@ pub fn bin(data: &ArrayD<f64>, edges: &ArrayD<f64>, inclusive_left: &bool) -> Ar
     return bin_array.into_dyn();
 }
 
-pub fn impute_f64(data: &ArrayD<f64>, min: &f64, max: &f64) -> ArrayD<f64> {
+pub fn impute_f64_uniform(data: &ArrayD<f64>, min: &f64, max: &f64) -> ArrayD<f64> {
     /// Given data and min/max values, returns data with imputed values in place of NaN.
     /// For now, imputed values are generated uniformly at random between the min and max values provided,
-    /// we may later add the ability to impute according to other distributions
     ///
     /// # Arguments
     /// * `data` - data for which you would like to impute the NaN values
@@ -114,7 +113,43 @@ pub fn impute_f64(data: &ArrayD<f64>, min: &f64, max: &f64) -> ArrayD<f64> {
     return arr1(&data_vec).into_dyn();
 }
 
-pub fn impute_i64(data: &ArrayD<f64>, min: &i64, max: &i64) -> ArrayD<f64> {
+pub fn impute_f64_gaussian(data: &ArrayD<f64>, shift: &f64, scale: &f64, min: &f64, max: &f64) -> ArrayD<f64> {
+    /// Given data and min/max values, returns data with imputed values in place of NaN.
+    /// For now, imputed values are generated uniformly at random between the min and max values provided,
+    ///
+    /// # Arguments
+    /// * `data` - data for which you would like to impute the NaN values
+    /// * `shift` - the mean of the untruncated gaussian noise distribution
+    /// * `scale` - the standard deviation of the untruncated gaussian noise distribution
+    /// * `min` - lower bound on imputation range
+    /// * `max` - upper bound on imputation range
+    ///
+    /// # Return
+    /// array of data with imputed values
+    ///
+    /// # Example
+    /// ```
+    /// let data: ArrayD<f64> = arr1(&[1., NAN, 3., NAN]).into_dyn();
+    /// let shift: f64 = 5;
+    /// let scale: f64 = 7;
+    /// let min: f64 = 0.;
+    /// let max: f64 = 10.;
+    /// let imputed: ArrayD<f64> = impute(&data, &shift, &scale, &min, &max);
+    /// println!("{:?}", imputed);
+    /// ```
+
+    let mut data_vec: Vec<f64> = Vec::with_capacity(data.len());
+        for i in 0..data.len() {
+        if data[i].is_nan() {
+            data_vec.push(noise::sample_gaussian_truncated(*shift, *scale, *min, *max));
+        } else {
+            data_vec.push(data[i]);
+        }
+    }
+    return arr1(&data_vec).into_dyn();
+}
+
+pub fn impute_i64_uniform(data: &ArrayD<f64>, min: &i64, max: &i64) -> ArrayD<f64> {
     /// Given data and min/max values, returns data with imputed values in place of NaN.
     /// For now, imputed values are generated uniformly at random between the min and max values provided,
     /// we may later add the ability to impute according to other distributions

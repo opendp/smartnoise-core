@@ -1,10 +1,11 @@
 use openssl::rand::rand_bytes;
 use byteorder::{ByteOrder, LittleEndian};
-use probability::distribution::{Gaussian, Laplace, Inverse};
+use probability::distribution::{Gaussian, Laplace, Inverse, Distribution};
 use ieee754::Ieee754;
 use num;
 use rug;
 use std::{cmp, f64::consts};
+use core::f64::NAN;
 
 use crate::utilities::snapping;
 
@@ -17,6 +18,25 @@ pub fn sample_laplace(shift: f64, scale: f64) -> f64 {
 pub fn sample_gaussian(shift: f64, scale: f64) -> f64 {
     let probability: f64 = sample_uniform(0., 1.);
     Gaussian::new(shift, scale).inverse(probability)
+}
+
+pub fn sample_gaussian_truncated(shift: f64, scale: f64, min: f64, max: f64) -> f64 {
+    /// Sample from truncated Gaussian distribution
+    ///
+
+    let unif_min: f64 = Gaussian::new(shift, scale).distribution(min);
+    let unif_max: f64 = Gaussian::new(shift, scale).distribution(max);
+    let unif: f64 = sample_uniform(unif_min, unif_max);
+    return Gaussian::new(shift, scale).inverse(unif);
+
+    // let mut draw: f64;
+    // while true {
+    //     draw = sample_gaussian(shift, scale);
+    //     if draw >= min & draw <= max {
+    //         return draw;
+    //     }
+    // }
+    // return f64::NAN;
 }
 
 pub fn sample_uniform(min: f64, max: f64) -> f64 {
