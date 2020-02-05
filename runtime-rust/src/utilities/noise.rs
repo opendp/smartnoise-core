@@ -22,21 +22,13 @@ pub fn sample_gaussian(shift: f64, scale: f64) -> f64 {
 
 pub fn sample_gaussian_truncated(shift: f64, scale: f64, min: f64, max: f64) -> f64 {
     /// Sample from truncated Gaussian distribution
-    ///
+    /// We use inverse transform sampling, but only between the CDF
+    /// probabilities associated with the stated min/max truncation values
 
     let unif_min: f64 = Gaussian::new(shift, scale).distribution(min);
     let unif_max: f64 = Gaussian::new(shift, scale).distribution(max);
     let unif: f64 = sample_uniform(unif_min, unif_max);
     return Gaussian::new(shift, scale).inverse(unif);
-
-    // let mut draw: f64;
-    // while true {
-    //     draw = sample_gaussian(shift, scale);
-    //     if draw >= min & draw <= max {
-    //         return draw;
-    //     }
-    // }
-    // return f64::NAN;
 }
 
 pub fn sample_uniform(min: f64, max: f64) -> f64 {
