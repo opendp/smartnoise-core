@@ -146,6 +146,15 @@ message DPCovariance {
     Mechanism mechanism = 2;
 }
 
-message LaplaceMechanism {}
-message GaussianMechanism {}
-message SimpleGeometricMechanism {}
+message LaplaceMechanism {
+    double epsilon = 1;
+}
+message GaussianMechanism {
+    double epsilon = 1;
+}
+message SimpleGeometricMechanism {
+    double epsilon = 1;
+    int64 count_min = 2;
+    int64 count_max = 3;
+    bool enforce_constant_time = 4;
+}
