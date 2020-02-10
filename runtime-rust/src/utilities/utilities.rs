@@ -1,6 +1,8 @@
 use openssl::rand::rand_bytes;
 use ieee754::Ieee754;
 
+use crate::utilities::noise;
+
 pub fn get_bytes(n_bytes: usize) -> String {
     /// Return bytes of binary data as String
     ///
@@ -107,4 +109,22 @@ pub fn combine_components_into_ieee(sign: &str, exponent: &str, mantissa: &str) 
     /// * `combined_string` - concatenation of sign, exponent, and mantissa
     let combined_string = vec![sign, exponent, mantissa].join("");
     return combined_string;
+}
+
+pub fn sample_from_set<T>(candidate_set: &Vec<T>, probabilities: &Vec<f64>) -> T where T: Copy, {
+    // generate uniform random number on (0,1)
+    let unif: f64 = noise::sample_uniform(0., 1.);
+
+    // generate cumulative probability distribution
+    let cumulative_probability_vec = probabilities.iter().scan(0.0, |sum, i| {*sum += i; Some(*sum)}).collect::<Vec<_>>();
+
+    // sample an element relative to its probability
+    let mut return_index = 0;
+    for i in 0..cumulative_probability_vec.len() {
+        if unif <= cumulative_probability_vec[i] {
+            return_index = i;
+            break
+        }
+    }
+    return candidate_set[return_index]
 }

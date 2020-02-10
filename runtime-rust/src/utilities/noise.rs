@@ -31,11 +31,11 @@ pub fn sample_gaussian_truncated(shift: f64, scale: f64, min: f64, max: f64) -> 
     return Gaussian::new(shift, scale).inverse(unif);
 }
 
-pub fn sample_uniform(min: f64, max: f64) -> f64 {
-    let mut buf: [u8; 8] = [0; 8];
-    rand_bytes(&mut buf).unwrap();
-    (LittleEndian::read_u64(&buf) as f64) / (std::u64::MAX as f64) * (max - min) + min
-}
+// pub fn sample_uniform(min: f64, max: f64) -> f64 {
+//     let mut buf: [u8; 8] = [0; 8];
+//     rand_bytes(&mut buf).unwrap();
+//     (LittleEndian::read_u64(&buf) as f64) / (std::u64::MAX as f64) * (max - min) + min
+// }
 
 pub fn sample_uniform_int(min: &i64, max: &i64) -> i64 {
     assert!(min <= max);
@@ -67,8 +67,9 @@ pub fn sample_uniform_int(min: &i64, max: &i64) -> i64 {
     return uniform_int + min;
 }
 
-pub fn sample_uniform_snapping() -> f64 {
-    /// Returns random sample from Uniform[0,1)
+pub fn sample_uniform(min: f64, max: f64) -> f64 {
+    /// Returns random sample from Uniform[min,max)
+    /// All notes below refer to the version that samples from [0,1), before the final scaling takes place
     ///
     /// This algorithm is taken from Mironov (2012) http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.366.5957&rep=rep1&type=pdf
     /// and is important for making some of the guarantees in the paper.
@@ -97,7 +98,7 @@ pub fn sample_uniform_snapping() -> f64 {
     // Generate uniform random number from (0,1)
     let uniform_rand = f64::recompose_raw(false, exponent, mantissa_int);
 
-    return uniform_rand;
+    return uniform_rand * (max - min) + min;
 }
 
 pub fn sample_bit(prob: &f64) -> i64 {

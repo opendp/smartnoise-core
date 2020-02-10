@@ -4,11 +4,7 @@ package yarrow;
 import "types.proto";
 
 message Release {
-    map<uint32, ReleaseNode> values = 1;
-}
-
-message ReleaseNode {
-	map<string, ArrayND> values = 1;
+    map<uint32, ArrayND> values = 1;
 }
 
 message Validated {

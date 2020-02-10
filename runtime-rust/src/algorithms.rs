@@ -78,63 +78,6 @@ pub fn dp_covariance(
     covariance + noise
 }
 
-pub fn dp_exponential<T>(
-                         data: ArrayD<T>,
-                         epsilon: f64,
-                         utility: &dyn Fn(&T) -> f64,
-                         sensitivity: f64
-                         ) -> T where T: Copy, {
-    /// Returns data element according to the exponential mechanism
-    ///
-    /// # Arguments
-    ///
-    /// * `data` - data from which user wants an element returned
-    /// * `epsilon` - privacy loss parameter
-    /// * `utility` - utility function used within the exponential mechanism
-    /// * `sensitivity` - sensitivity of utility function
-    ///
-    /// NOTE: This implementation is likely non-private because of the difference between theory on
-    ///       the real numbers and floating-point numbers. See https://arxiv.org/abs/1912.04222 for
-    ///       more information on the problem and a proposed fix.
-    ///
-    /// TODO: Implement Christina's base-2 exponential mechanism?
-    ///
-    /// # Example
-    /// ```
-    /// // create utility function
-    /// pub fn utility(x:&f64) -> f64 {
-    ///     let util = *x as f64;
-    ///     return util;
-    /// }
-    ///
-    /// // create sample data
-    /// let xs: ArrayD<f64> = arr1(&[1., 2., 3., 4., 5.]).into_dyn();
-    /// let ans:f64 = exponential_mechanism(xs, 1.0, &utility, 1.0);
-    /// println!("{}", ans);
-    /// ```
-
-    // get vector of e^(util), then use to find probabilities
-    let e_util_vec: Vec<f64> = data.iter().map(|x| std::f64::consts::E.powf(epsilon * utility(x) / (2.0 * sensitivity))).collect();
-    let sum_e_util_vec:f64 = e_util_vec.iter().sum();
-    let probability_vec: Vec<f64> = e_util_vec.iter().map(|x| x / sum_e_util_vec).collect();
-
-    // generate cumulative probability distribution
-    let cumulative_probability_vec = probability_vec.iter().scan(0.0, |sum, i| {*sum += i; Some(*sum)}).collect::<Vec<_>>();
-
-    // generate uniform random number on [0,1)
-    let unif:f64 = noise::sample_uniform_snapping();
-
-    // sample an element relative to its probability
-    let mut return_index = 0;
-    for i in 0..cumulative_probability_vec.len() {
-        if unif <= cumulative_probability_vec[i] {
-            return_index = i;
-            break
-        }
-    }
-    return data[return_index]
-}
-
 //pub fn dp_histogram(
 //    epsilon: f64, num_records: f64,
 //    data_x: ArrayD<f64>

@@ -1,59 +1,70 @@
 use ndarray::prelude::*;
 
 use crate::utilities::noise;
+use crate::utilities::utilities;
 
-pub fn laplace_mechanism(epsilon: &ArrayD<f64>, sensitivity: &ArrayD<f64>) -> ArrayD<f64> {
-    let mut epsilon_vec: Vec<f64> = epsilon.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
-    let mut sensitivity_vec: Vec<f64> = sensitivity.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
+pub fn laplace_mechanism(epsilon: &f64, sensitivity: &f64) -> ArrayD<f64> {
+    let scale: f64 = sensitivity / epsilon;
+    let noise: f64 = noise::sample_laplace(0., scale);
 
-    assert!(epsilon_vec.len() == sensitivity_vec.len());
-
-    let mut noise_vec: Vec<f64> = Vec::with_capacity(epsilon_vec.len());
-    let mut scale: f64;
-    for i in 0..epsilon_vec.len() {
-        scale = sensitivity_vec[i] / epsilon_vec[i];
-        noise_vec.push( noise::sample_laplace(0., scale) )
-    }
-    return arr1(&noise_vec).into_dyn();
+    return arr1(&[noise]).into_dyn();
 }
 
-pub fn gaussian_mechanism(epsilon: &ArrayD<f64>, delta: &ArrayD<f64>, sensitivity: &ArrayD<f64>) -> ArrayD<f64> {
-    let mut epsilon_vec: Vec<f64> = epsilon.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
-    let mut delta_vec: Vec<f64> = delta.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
-    let mut sensitivity_vec: Vec<f64> = sensitivity.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
-
-    assert!(epsilon_vec.len() == delta_vec.len() &&
-            epsilon_vec.len() == sensitivity_vec.len());
-
-    let mut noise_vec: Vec<f64> = Vec::with_capacity(epsilon_vec.len());
-    let mut scale: f64;
-
-    for i in 0..epsilon_vec.len() {
-        scale = sensitivity_vec[i] * (2. * (1.25 / delta_vec[i]).ln()).sqrt() / epsilon_vec[i];
-        noise_vec.push( noise::sample_gaussian(0., scale) )
-    }
-    return arr1(&noise_vec).into_dyn();
+pub fn gaussian_mechanism(epsilon: &f64, delta: &f64, sensitivity: &f64) -> ArrayD<f64> {
+    let scale: f64 = sensitivity * (2. * (1.25 / delta).ln()).sqrt() / epsilon;
+    let noise: f64 = noise::sample_gaussian(0., scale);
+    return arr1(&[noise]).into_dyn();
 }
 
-pub fn simple_geometric_mechanism(epsilon: &ArrayD<f64>, sensitivity: &ArrayD<f64>, count_min: &ArrayD<i64>, count_max: &ArrayD<i64>, enforce_constant_time: &ArrayD<bool>) -> ArrayD<i64> {
-    let mut epsilon_vec: Vec<f64> = epsilon.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
-    let mut sensitivity_vec: Vec<f64> = sensitivity.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
-    let mut count_min_vec: Vec<i64> = count_min.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
-    let mut count_max_vec: Vec<i64> = count_max.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
-    let mut enforce_constant_time_vec: Vec<bool> = enforce_constant_time.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
+pub fn simple_geometric_mechanism(epsilon: &f64, sensitivity: &f64, count_min: &i64, count_max: &i64, enforce_constant_time: &bool) -> ArrayD<i64> {
+    let scale: f64 = sensitivity / epsilon;
+    let noise: i64 = noise::sample_simple_geometric_mechanism(&scale, &count_min, &count_max, &enforce_constant_time);
+    return arr1(&[noise]).into_dyn();
+}
 
-    assert!(epsilon_vec.len() == sensitivity_vec.len() &&
-            epsilon_vec.len() == count_min_vec.len() &&
-            epsilon_vec.len() == count_max_vec.len() &&
-            epsilon_vec.len() == enforce_constant_time_vec.len());
+pub fn exponential_mechanism<T>(
+                         epsilon: &f64,
+                         sensitivity: &f64,
+                         candidate_set: ArrayD<T>,
+                         utility: &dyn Fn(&T) -> f64
+                         ) -> T where T: Copy, {
+    /// Returns data element according to the exponential mechanism
+    ///
+    /// # Arguments
+    ///
+    /// * `epsilon` - privacy loss parameter
+    /// * `sensitivity` - sensitivity of utility function
+    /// * `candidate_set` - data from which user wants an element returned
+    /// * `utility` - utility function used within the exponential mechanism
+    ///
+    /// NOTE: This implementation is likely non-private because of the difference between theory on
+    ///       the real numbers and floating-point numbers. See https://arxiv.org/abs/1912.04222 for
+    ///       more information on the problem and a proposed fix.
+    ///
+    /// TODO: Implement Christina's base-2 exponential mechanism?
+    ///
+    /// # Example
+    /// ```
+    /// // create utility function
+    /// pub fn utility(x:&f64) -> f64 {
+    ///     let util = *x as f64;
+    ///     return util;
+    /// }
+    ///
+    /// // create sample data
+    /// let xs: ArrayD<f64> = arr1(&[1., 2., 3., 4., 5.]).into_dyn();
+    /// let ans: f64 = exponential_mechanism(&1.0, &1.0, &xs, &utility);
+    /// println!("{}", ans);
+    /// ```
 
-    let mut noise_vec: Vec<i64> = Vec::with_capacity(epsilon_vec.len());
-    let mut scale: f64;
+    // get vector of e^(util), then use to find probabilities
+    let e_util_vec: Vec<f64> = candidate_set.iter().map(|x| std::f64::consts::E.powf(epsilon * utility(x) / (2.0 * sensitivity))).collect();
+    let sum_e_util_vec: f64 = e_util_vec.iter().sum();
+    let probability_vec: Vec<f64> = e_util_vec.iter().map(|x| x / sum_e_util_vec).collect();
 
-    for i in 0..epsilon_vec.len() {
-        scale = sensitivity_vec[i] / epsilon_vec[i];
-        noise_vec.push( noise::sample_simple_geometric_mechanism(&scale, &count_min[i], &count_max[i], &enforce_constant_time[i]) )
-    }
+    // sample element relative to probability
+    let candidate_vec: Vec<T> = candidate_set.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
+    let elem: T = utilities::sample_from_set(&candidate_vec, &probability_vec);
 
-    return arr1(&noise_vec).into_dyn();
+    return elem;
 }
