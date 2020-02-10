@@ -79,8 +79,8 @@ pub fn dp_covariance(
 }
 
 pub fn dp_exponential<T>(
-                         epsilon: f64,
                          data: ArrayD<T>,
+                         epsilon: f64,
                          utility: &dyn Fn(&T) -> f64,
                          sensitivity: f64
                          ) -> T where T: Copy, {
@@ -88,8 +88,8 @@ pub fn dp_exponential<T>(
     ///
     /// # Arguments
     ///
-    /// * `epsilon` - privacy loss parameter
     /// * `data` - data from which user wants an element returned
+    /// * `epsilon` - privacy loss parameter
     /// * `utility` - utility function used within the exponential mechanism
     /// * `sensitivity` - sensitivity of utility function
     ///
@@ -101,9 +101,6 @@ pub fn dp_exponential<T>(
     ///
     /// # Example
     /// ```
-    /// use crate::utilities::algorithms;
-    /// use ndarray::prelude::*;
-    ///
     /// // create utility function
     /// pub fn utility(x:&f64) -> f64 {
     ///     let util = *x as f64;
@@ -112,7 +109,7 @@ pub fn dp_exponential<T>(
     ///
     /// // create sample data
     /// let xs: ArrayD<f64> = arr1(&[1., 2., 3., 4., 5.]).into_dyn();
-    /// let ans:f64 = algorithms::dp_exponential(1.0, xs, &utility, 1.0);
+    /// let ans:f64 = exponential_mechanism(xs, 1.0, &utility, 1.0);
     /// println!("{}", ans);
     /// ```
 
@@ -124,7 +121,7 @@ pub fn dp_exponential<T>(
     // generate cumulative probability distribution
     let cumulative_probability_vec = probability_vec.iter().scan(0.0, |sum, i| {*sum += i; Some(*sum)}).collect::<Vec<_>>();
 
-    // generate uniform random number on (0,1)
+    // generate uniform random number on [0,1)
     let unif:f64 = noise::sample_uniform_snapping();
 
     // sample an element relative to its probability

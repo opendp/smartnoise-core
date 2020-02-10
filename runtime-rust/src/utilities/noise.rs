@@ -211,7 +211,7 @@ pub fn sample_floating_point_probability_exponent() -> i16 {
     return geom;
 }
 
-pub fn sample_simple_geometric_mechanism(epsilon: &f64, count_min: &i64, count_max: &i64, enforce_constant_time: &bool) -> i64 {
+pub fn sample_simple_geometric_mechanism(scale: &f64, count_min: &i64, count_max: &i64, enforce_constant_time: &bool) -> i64 {
     /// Sample noise according to geometric mechanism.
     /// This function uses coin flips to sample from the geometric distribution,
     /// rather than using the inverse probability transform. This is done
@@ -221,7 +221,7 @@ pub fn sample_simple_geometric_mechanism(epsilon: &f64, count_min: &i64, count_m
     /// is bounded above by (count_max - count_min).
     ///
     /// # Arguments
-    /// * `epsilon` - privacy parameter
+    /// * `scale` - scale parameter
     /// * `count_min` - minimum value of function to which you want to add noise
     /// * `count_max` - maximum value of function to which you want to add noise
     /// * `enforce_constant_time` - boolean for whether or not to require the geometric to run for the maximum number of trials
@@ -231,10 +231,10 @@ pub fn sample_simple_geometric_mechanism(epsilon: &f64, count_min: &i64, count_m
     ///
     /// # Example
     /// ```
-    /// let geom_noise: f64 = sample_simple_geometric_mechanism(&1., &1., &0., &100., &false);
+    /// let geom_noise: ArrayD<64 = sample_simple_geometric_mechanism(&1., &0, &100, &false);
     /// ```
 
-    let alpha: f64 = consts::E.powf(-*epsilon);
+    let alpha: f64 = consts::E.powf(-*scale);
     let max_trials: i64 = count_max - count_min;
 
     // return 0 noise with probability (1-alpha) / (1+alpha), otherwise sample from geometric

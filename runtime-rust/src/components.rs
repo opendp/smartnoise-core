@@ -191,29 +191,27 @@ pub fn component_sum(_x: &yarrow::Sum, arguments: &NodeArguments) -> NodeEvaluat
 }
 
 pub fn component_laplace_mechanism(_x: &yarrow::LaplaceMechanism, arguments: &NodeArguments) -> NodeEvaluation {
-    let data: ArrayD<f64> = get_array_f64(&arguments, "data");
-    let epsilon: f64 = get_f64(&arguments, "epsilon");
-    let sensitivity: f64 = get_f64(&arguments, "sensitivity");
-    hashmap!["data".to_string() => FieldEvaluation::F64(utilities::mechanisms::laplace_mechanism(&data, &epsilon, &sensitivity))]
+    let epsilon: ArrayD<f64> = get_array_f64(&arguments, "epsilon");
+    let sensitivity: ArrayD<f64> = get_array_f64(&arguments, "sensitivity");
+    hashmap!["data".to_string() => FieldEvaluation::F64(utilities::mechanisms::laplace_mechanism(&epsilon, &sensitivity))]
 }
 
 pub fn component_gaussian_mechanism(_x: &yarrow::GaussianMechanism, arguments: &NodeArguments) -> NodeEvaluation {
-    let data: ArrayD<f64> = get_array_f64(&arguments, "data");
-    let epsilon: f64 = get_f64(&arguments, "epsilon");
-    let delta: f64 = get_f64(&arguments, "delta");
-    let sensitivity: f64 = get_f64(&arguments, "sensitivity");
-    hashmap!["data".to_string() => FieldEvaluation::F64(utilities::mechanisms::gaussian_mechanism(&data, &epsilon, &delta, &sensitivity))]
+    let epsilon: ArrayD<f64> = get_array_f64(&arguments, "epsilon");
+    let delta: ArrayD<f64> = get_array_f64(&arguments, "delta");
+    let sensitivity: ArrayD<f64> = get_array_f64(&arguments, "sensitivity");
+    hashmap!["data".to_string() => FieldEvaluation::F64(utilities::mechanisms::gaussian_mechanism(&epsilon, &delta, &sensitivity))]
 }
 
 pub fn component_simple_geometric_mechanism(_x: &yarrow::SimpleGeometricMechanism, arguments: &NodeArguments) -> NodeEvaluation {
-    let data: ArrayD<i64> = get_array_i64(&arguments, "data");
-    let epsilon: f64 = get_f64(&arguments, "epsilon");
-    let count_min: i64 = get_i64(&arguments, "count_min");
-    let count_max: i64 = get_i64(&arguments, "count_max");
-    let enforce_constant_time: bool = get_bool(&arguments, "enforce_constant_time");
+    let epsilon: ArrayD<f64> = get_array_f64(&arguments, "epsilon");
+    let sensitivity: ArrayD<f64> = get_array_f64(&arguments, "sensitivity");
+    let count_min: ArrayD<i64> = get_array_i64(&arguments, "count_min");
+    let count_max: ArrayD<i64> = get_array_i64(&arguments, "count_max");
+    let enforce_constant_time: ArrayD<bool> = get_array_bool(&arguments, "enforce_constant_time");
     hashmap!["data".to_string() =>
         FieldEvaluation::I64(utilities::mechanisms::simple_geometric_mechanism(
-                             &data, &epsilon, &count_min, &count_max, &enforce_constant_time))]
+                             &epsilon, &sensitivity, &count_min, &count_max, &enforce_constant_time))]
 }
 
 // TODO: Possibly compute sensitivity here, and pass into algorithm?
