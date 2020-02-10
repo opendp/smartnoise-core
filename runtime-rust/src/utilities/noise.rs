@@ -8,7 +8,6 @@ use std::{cmp, f64::consts};
 use core::f64::NAN;
 
 use crate::utilities::utilities;
-use crate::utilities::snapping;
 
 pub fn sample_laplace(shift: f64, scale: f64) -> f64 {
     let probability: f64 = sample_uniform(0., 1.);
@@ -99,63 +98,6 @@ pub fn sample_uniform_snapping() -> f64 {
     let uniform_rand = f64::recompose_raw(false, exponent, mantissa_int);
 
     return uniform_rand;
-}
-
-pub fn sample_snapping_noise(mechanism_input: &f64, epsilon: &f64, B: &f64, sensitivity: &f64, precision: &f64) -> f64 {
-    /// Get noise according to the snapping mechanism
-    ///
-    /// # Arguments
-    /// * `mechanism_input` - non-private statistic calculation
-    /// * `epsilon` - desired privacy guarantee
-    /// * `B` - snapping bound
-    /// * `sensitivity` - sensitivity for function to which mechanism is being applied
-    /// * `precision` - amount of arithmetic precision to which we have access
-    ///
-    /// # Returns
-    /// noise according to snapping mechanism
-    ///
-    /// # Example
-    /// ```
-    /// let mechanism_input: f64 = 50.0;
-    /// let epsilon: f64 = 1.0;
-    /// let B: f64 = 100.0;
-    /// let sensitivity: f64 = 1.0/1000.0;
-    /// let precision: f64 = 64.0;
-    /// let snapping_noise = sampling_snapping_noise(&mechanism_input, &epsilon, &B, &sensitivity, &precision);
-    /// println!("snapping noise: {}", snapping_noise);
-    /// ```
-
-    // ensure that precision is sufficient for exact rounding of log, then check that it is supported by the OS
-    let u32_precision = *precision as u32;
-    let u32_precision = std::cmp::min(u32_precision, 118_u32);
-    if u32_precision > rug::float::prec_max() {
-        panic!("Operating system does not support sufficient precision to use the Snapping Mechanism");
-    }
-
-    // scale mechanism input by sensitivity
-    let mechanism_input_scaled = mechanism_input / sensitivity;
-
-    // get parameters
-    let (B_scaled, epsilon_prime, Lambda_prime, Lambda_prime_scaled, m) = snapping::parameter_setup(&epsilon, &B, &sensitivity, &precision);
-
-    // generate random sign and draw from Unif(0,1)
-    let bit:i64 = utilities::get_bytes(1)[0..1].parse().unwrap();
-    let sign = (2*bit-1) as f64;
-    let u_star_sample = sample_uniform_snapping();
-
-    // clamp to get inner result
-    let sign_precise = rug::Float::with_val(u32_precision, sign);
-    let scale_precise = rug::Float::with_val(u32_precision, 1.0/epsilon_prime);
-    let log_unif_precise = rug::Float::with_val(u32_precision, u_star_sample.ln());
-    let inner_result:f64 = num::clamp(mechanism_input_scaled, -B_scaled.abs(), B_scaled.abs()) +
-                           (sign_precise * scale_precise * log_unif_precise).to_f64();
-
-    // perform rounding and snapping
-    let inner_result_rounded = snapping::get_closest_multiple_of_Lambda(&inner_result, &m);
-    let private_estimate = num::clamp(sensitivity * inner_result_rounded, -B_scaled.abs(), B_scaled.abs());
-    let snapping_mech_noise = private_estimate - mechanism_input;
-
-    return snapping_mech_noise;
 }
 
 pub fn sample_bit(prob: &f64) -> i64 {
