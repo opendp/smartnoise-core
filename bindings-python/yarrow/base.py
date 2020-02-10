@@ -226,11 +226,7 @@ class Analysis(object):
 
             vertices[component_id] = analysis_pb2.Component(**{
                 'arguments': {
-                    name: analysis_pb2.Component.Field(
-                        source_node_id=enqueue(component_child),
-                        # TODO: this is not always necessarily data! if a component has multiple outputs...
-                        source_field="data"
-                    ) for name, component_child in component.arguments.items()
+                    name: enqueue(component_child) for name, component_child in component.arguments.items()
                 },
                 component.name.lower():
                     getattr(analysis_pb2, component.name)(**(component.options or {}))
@@ -296,8 +292,8 @@ class Analysis(object):
             return f'{node_id} {analysis.graph[node_id].WhichOneof("value")}'
 
         for nodeId, component in list(analysis.graph.items()):
-            for field in component.arguments.values():
-                graph.add_edge(label(field.source_node_id), label(nodeId))
+            for source_node_id in component.arguments.values():
+                graph.add_edge(label(source_node_id), label(nodeId))
 
         return graph
 
