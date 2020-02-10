@@ -206,13 +206,13 @@ pub fn component_gaussian_mechanism(_x: &yarrow::GaussianMechanism, arguments: &
 }
 
 pub fn component_simple_geometric_mechanism(_x: &yarrow::SimpleGeometricMechanism, arguments: &NodeArguments) -> NodeEvaluation {
-    let data: ArrayD<f64> = get_array_f64(&arguments, "data");
+    let data: ArrayD<i64> = get_array_i64(&arguments, "data");
     let epsilon: f64 = get_f64(&arguments, "epsilon");
-    let count_min: f64 = get_f64(&arguments, "count_min");
-    let count_max: f64 = get_f64(&arguments, "count_max");
+    let count_min: i64 = get_i64(&arguments, "count_min");
+    let count_max: i64 = get_i64(&arguments, "count_max");
     let enforce_constant_time: bool = get_bool(&arguments, "enforce_constant_time");
     hashmap!["data".to_string() =>
-        FieldEvaluation::F64(utilities::mechanisms::simple_geometric_mechanism(
+        FieldEvaluation::I64(utilities::mechanisms::simple_geometric_mechanism(
                              &data, &epsilon, &count_min, &count_max, &enforce_constant_time))]
 }
 
