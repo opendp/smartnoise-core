@@ -7,6 +7,7 @@ use rug;
 use std::{cmp, f64::consts};
 use core::f64::NAN;
 
+use crate::utilities::utilities;
 use crate::utilities::snapping;
 
 pub fn sample_laplace(shift: f64, scale: f64) -> f64 {
@@ -84,7 +85,7 @@ pub fn sample_uniform_snapping() -> f64 {
     /// by generating a 52-bit mantissa uniformly at random.
 
     // Generate mantissa
-    let binary_string = snapping::get_bytes(7);
+    let binary_string = utilities::get_bytes(7);
     let mantissa = &binary_string[0..52];
 
     // convert mantissa to integer
@@ -138,7 +139,7 @@ pub fn sample_snapping_noise(mechanism_input: &f64, epsilon: &f64, B: &f64, sens
     let (B_scaled, epsilon_prime, Lambda_prime, Lambda_prime_scaled, m) = snapping::parameter_setup(&epsilon, &B, &sensitivity, &precision);
 
     // generate random sign and draw from Unif(0,1)
-    let bit:i64 = snapping::get_bytes(1)[0..1].parse().unwrap();
+    let bit:i64 = utilities::get_bytes(1)[0..1].parse().unwrap();
     let sign = (2*bit-1) as f64;
     let u_star_sample = sample_uniform_snapping();
 
@@ -251,7 +252,7 @@ pub fn sample_floating_point_probability_exponent() -> i16 {
     // read bytes in one at a time, need 128 to fully generate geometric
     for i in 0..128 {
         // read random bytes
-        let binary_string = snapping::get_bytes(1);
+        let binary_string = utilities::get_bytes(1);
         let binary_char_vec: Vec<char> = binary_string.chars().collect();
 
         // find first element that is '1' and mark its overall index
