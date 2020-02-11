@@ -93,7 +93,7 @@ pub fn sample_uniform(min: f64, max: f64) -> f64 {
 
     // Generate exponent
     let geom: (i16) = sample_floating_point_probability_exponent();
-    let exponent: (u16) = (-geom + 1023) as u16;
+    let mut exponent: (u16) = (-geom + 1023) as u16;
 
     // Generate uniform random number from (0,1)
     let uniform_rand = f64::recompose_raw(false, exponent, mantissa_int);
@@ -191,7 +191,8 @@ pub fn sample_floating_point_probability_exponent() -> i16 {
     /// ensuring that the numbers are distributed proportionally to
     /// their unit of least precision.
 
-    let mut geom: (i16) = 1023;
+
+    let mut geom: i16 = 1023;
     // read bytes in one at a time, need 128 to fully generate geometric
     for i in 0..128 {
         // read random bytes
@@ -205,7 +206,7 @@ pub fn sample_floating_point_probability_exponent() -> i16 {
             let first_one_index_int = first_one_index.unwrap() as i16;
             first_one_overall_index = 8*i + first_one_index_int;
         } else {
-            first_one_overall_index = 1023;
+            first_one_overall_index = geom;
         }
         geom = cmp::min(geom, first_one_overall_index+1);
     }

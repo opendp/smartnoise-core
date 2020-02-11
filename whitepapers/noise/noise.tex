@@ -37,16 +37,24 @@ When we refer to floating-point numbers, we specifically mean the IEEE 754 float
 \subsection{Uniform Number Generation}
 
 \subsubsection{$sample\_uniform(min: f64, max: f64)$}
-In this method, each representable floating-point number in $[0,1)$
-is generated with probability relative to its unit of least precision.\footnote{The ULP is the value
+In this method, we start by generating a floating-point number in $[0,1)$,
+where each is generated with probability relative to its unit of least precision.\footnote{The ULP is the value
 represented by the least significant bit of the mantissa if that bit is a 1.}
-That is, we generate numbers in $[\frac{1}{2},1)$ with probability $\frac{1}{2}$, numbers in $[\frac{1}{4}, \frac{1}{2})$
-with probability $\frac{1}{4}$, etc. Within each precision band (the set of numbers with the same unit
+That is, we generate $x \in [2^{-i}, 2^{-i+1})$ with probability $\frac{1}{2^i}$
+for all $i \in \{1,2,\hdots,1022\}$ and $x \in [0, 2^{-1022})$ for $i = 1023$.
+
+Within each precision band (the set of numbers with the same unit
 of least precision), numbers are sampled uniformly.
 We achieve this sample our exponent from a geometric distribution with parameter $p = 0.5$ and a mantissa uniformly from $\{0,1\}^{52}$.
-Let $e$ be a draw from $Geom(0.5)$ (truncated such that $e \leq 1023$) and $m_1, m_2 \hdots, m_{52}$ be the bits of our mantissa.
+Let $e$ be a draw from $Geom(0.5)$ (truncated such that $e \in \{1,2,\hdots,1023\}$) and $m_1, m_2 \hdots, m_{52}$ be the bits of our mantissa.
 At the end, we will scale our output from $[0,1)$ to be instead in $[min, max)$. Then our function outputs $u$, where
 \[ u = (1.m_1m_2 \hdots m_{52})_2 * 2^{-e} * (max - min) + min. \]
+
+When $i=1023$ we are sampling from subnormal floating-point numbers. Because processors do not typically support
+subnormals natively, they take much longer to sample and open us up to an easier timing attack, as
+seen in \cite{AKM+15}.
+Protecting against timing attacks is mostly seen as out of scope for now, but I wanted
+to bring this up anyway.
 
 \subsection{Biased Bit Sampling}
 Recall that we are taking as given that we are able to sample uniform bits from OpenSSL.
