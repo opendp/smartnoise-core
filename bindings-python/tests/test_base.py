@@ -1,4 +1,5 @@
 import yarrow
+import numpy as np
 
 test_csv_path = '/home/shoe/PSI/datasets/data/PUMS_california_demographics_1000/data.csv'
 
@@ -61,5 +62,24 @@ def test_basic_path():
 
     analysis.plot()
 
+    print('release json:', analysis.release())
+    print('release proto:', analysis.release_proto)
+
+
+def test_raw_dataset():
+    with yarrow.Analysis() as analysis:
+
+        data_vector = yarrow.Component('Literal', options={
+            'value': yarrow.array_nd(np.array([[1., 2., 3., 4., 5.]]))
+        })
+        yarrow.dp_mean(
+            data=data_vector,
+            epsilon=1,
+            minimum=0,
+            maximum=10,
+            num_records=10
+        )
+
+    analysis.plot()
     print('release json:', analysis.release())
     print('release proto:', analysis.release_proto)
