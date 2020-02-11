@@ -75,6 +75,7 @@ message Component {
         LaplaceMechanism laplace_mechanism = 27;
         GaussianMechanism gaussian_mechanism = 28;
         SimpleGeometricMechanism simple_geometric_mechanism = 29;
+        KthSampleMoment kth_sample_moment = 30;
     }
 
 }
@@ -88,15 +89,18 @@ message Negate {}
 message Bin {}
 message Clip {
     double min = 1;
-    double max = 1;
+    double max = 2;
 }
 message Count {
     // CC TODO: need to figure out how to add groupby Option
 }
 // message Histogram {}
-message Mean{}
-message Variance{
+message Mean {}
+message Variance {
     bool finite_sample_correction = 1;
+}
+message KthSampleMoment {
+    int64 k = 1;
 }
 message Median {}
 message Sum {}

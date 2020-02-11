@@ -145,7 +145,7 @@ pub fn median(data: &ArrayD<f64>) -> ArrayD<f64> {
     /// # Example
     /// ```
     /// let data: ArrayD<f64> = arr1(&[0., 1., 2., 3., 4., 5., 12., 19., 24., 90., 98., 100.]).into_dyn();
-    /// let median: f64 = median(&data);
+    /// let median: ArrayD<f64> = median(&data);
     /// println!("{}", median);
     /// ```
 
@@ -175,7 +175,7 @@ pub fn sum(data: &ArrayD<f64>) -> ArrayD<f64> {
     /// # Examples
     /// ```
     /// let data: ArrayD<f64> = arr1(&[0., 1., 2., 3., 4., 5., 12., 19., 24., 90., 98., 100.]).into_dyn();
-    /// let sum: f64 = sum(&data);
+    /// let sum: ArrayD<f64> = sum(&data);
     /// println!("{}", sum);
     /// ```
     let data_vec: Vec<f64> = data.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
@@ -195,7 +195,7 @@ pub fn mean(data: &ArrayD<f64>) -> ArrayD<f64> {
     /// # Example
     /// ```
     /// let data: ArrayD<f64> = arr1(&[0., 1., 2., 3., 4., 5., 12., 19., 24., 90., 98., 100.]).into_dyn();
-    /// let mean: f64 = mean(&data);
+    /// let mean: ArrayD<f64> = mean(&data);
     /// println!("{}", mean);
     /// ```
 
@@ -218,7 +218,7 @@ pub fn variance(data: &ArrayD<f64>, finite_sample_correction: &bool) -> ArrayD<f
     /// # Example
     /// ```
     /// let data: ArrayD<f64> = arr1(&[0., 1., 2., 3., 4., 5., 12., 19., 24., 90., 98., 100.]).into_dyn();
-    /// let variance: f64 = variance(&data, &false);
+    /// let variance: ArrayD<f64> = variance(&data, &false);
     /// println!("{}", variance);
     /// ```
 
@@ -233,4 +233,27 @@ pub fn variance(data: &ArrayD<f64>, finite_sample_correction: &bool) -> ArrayD<f
         variance *= (&data_vec_len / (&data_vec_len - &1.));
     }
     return arr1(&[variance]).into_dyn();
+}
+
+pub fn kth_sample_moment(data: &ArrayD<f64>, k: &i64) -> ArrayD<f64> {
+    /// Accepts data and returns sample estimate of kth raw moment
+    ///
+    /// # Arguments
+    /// * `data` - Array of data for which you would like the kth raw moment
+    /// * `k` - integer representing moment you want
+    ///
+    /// # Return
+    /// kth sample moment
+    ///
+    /// # Example
+    /// ```
+    /// let data: ArrayD<f64> = arr1(&[0., 1., 2., 3., 4., 5., 12., 19., 24., 90., 98., 100.]).into_dyn();
+    /// let third_moment: ArrayD<f64> = (&data, &3);
+    /// println!("{}", third_moment);
+    /// ```
+
+    assert!(k >= &0);
+    let data_vec: Vec<f64> = data.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
+    let data_to_kth_power: Vec<f64> = data_vec.iter().map(|x| x.powf(*k as f64)).collect();
+    return mean(&arr1(&data_to_kth_power).into_dyn());
 }
