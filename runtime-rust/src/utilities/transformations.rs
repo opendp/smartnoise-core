@@ -1,8 +1,10 @@
 use std::string::String;
 use std::vec::Vec;
 use ndarray::prelude::*;
-use crate::utilities::noise;
 use core::f64::NAN;
+use num;
+
+use crate::utilities::noise;
 
 pub fn bin(data: &ArrayD<f64>, edges: &ArrayD<f64>, inclusive_left: &bool) -> ArrayD<String> {
     /// Accepts vector of data and assigns each element to a bin
@@ -182,6 +184,33 @@ pub fn impute_i64_uniform(data: &ArrayD<f64>, min: &i64, max: &i64) -> ArrayD<f6
         } else {
             data_vec.push(data[i]);
         }
+    }
+    return arr1(&data_vec).into_dyn();
+}
+
+pub fn clip(data: &ArrayD<f64>, min: &f64, max: &f64) -> ArrayD<f64> {
+    /// Clips data to [min, max]
+    ///
+    /// # Arguments
+    /// * `data` - data you want to clip
+    /// * `min` - lower bound on data
+    /// * `max` - upper bound on data
+    ///
+    /// # Return
+    /// array of clipped data
+    ///
+    /// # Example
+    /// ```
+    /// let data: ArrayD<f64> = arr1(&[1., -2., 3., 5.]).into_dyn();
+    /// let min: f64 = 0.;
+    /// let max: f64 = 4.;
+    /// let clipped: ArrayD<f64> = clip(&data, &min, &max);
+    /// println!("{:?}", clipped);
+    /// ```
+
+    let mut data_vec: Vec<f64> = data.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
+    for i in 0..data_vec.len() {
+        data_vec[i] = num::clamp(data_vec[i], *min, *max);
     }
     return arr1(&data_vec).into_dyn();
 }

@@ -151,6 +151,13 @@ pub fn component_bin(_X: &yarrow::Bin, arguments: &NodeArguments) -> NodeEvaluat
     NodeEvaluation::Str(utilities::transformations::bin(&data, &edges, &inclusive_left))
 }
 
+pub fn component_clip(_X: &yarrow::Clip, arguments: &NodeArguments) -> NodeEvaluation {
+    let data: ArrayD<f64> = get_array_f64(&arguments, "data");
+    let min: f64 = get_f64(&arguments, "min");
+    let max: f64 = get_f64(&arguments, "max");
+    NodeEvaluation::F64(utilities::transformations::clip(&data, &min, &max))
+}
+
 pub fn component_count(_X: &yarrow::Count, arguments: &NodeArguments) -> NodeEvaluation {
     match (arguments.get("data").unwrap(), arguments.get("group_by").unwrap()) {
         (NodeEvaluation::F64(data), NodeEvaluation::F64(group_by)) =>
