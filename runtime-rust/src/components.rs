@@ -151,11 +151,11 @@ pub fn component_bin(_X: &yarrow::Bin, arguments: &NodeArguments) -> NodeEvaluat
     NodeEvaluation::Str(utilities::transformations::bin(&data, &edges, &inclusive_left))
 }
 
-pub fn component_clip(_X: &yarrow::Clip, arguments: &NodeArguments) -> NodeEvaluation {
+pub fn component_clamp(_X: &yarrow::Clamp, arguments: &NodeArguments) -> NodeEvaluation {
     let data: ArrayD<f64> = get_array_f64(&arguments, "data");
     let min: f64 = get_f64(&arguments, "min");
     let max: f64 = get_f64(&arguments, "max");
-    NodeEvaluation::F64(utilities::transformations::clip(&data, &min, &max))
+    NodeEvaluation::F64(utilities::transformations::clamp(&data, &min, &max))
 }
 
 // pub fn component_count(_X: &yarrow::Count, arguments: &NodeArguments) -> NodeEvaluation {

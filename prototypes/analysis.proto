@@ -54,7 +54,7 @@ message Component {
         Mean mean = 6;
         DataSource datasource = 7;
         DPMean dpmean = 8;
-        Clip clip = 9;
+        Clamp clamp = 9;
         Subtract subtract = 10;
         Divide divide = 11;
         Multiply multiply = 12;
@@ -87,13 +87,13 @@ message Multiply {}
 message Power {}
 message Negate {}
 message Bin {}
-message Clip {
+message Clamp {
     double min = 1;
     double max = 2;
 }
 // message Count {
 //     // CC TODO: need to figure out how to add groupby Option
-}
+// }
 // message Histogram {}
 message Mean {}
 message Variance {

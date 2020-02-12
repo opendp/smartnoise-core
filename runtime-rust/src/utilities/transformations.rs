@@ -188,29 +188,33 @@ pub fn impute_i64_uniform(data: &ArrayD<f64>, min: &i64, max: &i64) -> ArrayD<f6
     return arr1(&data_vec).into_dyn();
 }
 
-pub fn clip(data: &ArrayD<f64>, min: &f64, max: &f64) -> ArrayD<f64> {
-    /// Clips data to [min, max]
+pub fn clamp(data: &ArrayD<f64>, min: &f64, max: &f64) -> ArrayD<f64> {
+    /// clamps data to [min, max]
     ///
     /// # Arguments
-    /// * `data` - data you want to clip
+    /// * `data` - data you want to clamp
     /// * `min` - lower bound on data
     /// * `max` - upper bound on data
     ///
     /// # Return
-    /// array of clipped data
+    /// array of clamped data
     ///
     /// # Example
     /// ```
     /// let data: ArrayD<f64> = arr1(&[1., -2., 3., 5.]).into_dyn();
     /// let min: f64 = 0.;
     /// let max: f64 = 4.;
-    /// let clipped: ArrayD<f64> = clip(&data, &min, &max);
-    /// println!("{:?}", clipped);
+    /// let clamped: ArrayD<f64> = clamp(&data, &min, &max);
+    /// println!("{:?}", clamped);
     /// ```
 
     let mut data_vec: Vec<f64> = data.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
     for i in 0..data_vec.len() {
-        data_vec[i] = num::clamp(data_vec[i], *min, *max);
+        if data_vec[i] < *min {
+            data_vec[i] = *min;
+        } else if data_vec[i] > *max {
+            data_vec[i] = *max;
+        }
     }
     return arr1(&data_vec).into_dyn();
 }
