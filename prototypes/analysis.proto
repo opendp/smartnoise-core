@@ -61,21 +61,21 @@ message Component {
         Power power = 13;
         Negate negate = 14;
         Bin bin = 15;
-        Count count = 17;
+        // Count count = 17;
         // Histogram histogram = 17;
-        Median median = 18;
-        Sum sum = 19;
-        Variance variance = 20;
-        ImputeF64Uniform impute_f64_uniform = 21;
-        ImputeF64Gaussian impute_f64_gaussian = 22;
-        ImputeI64Uniform impute_i64_uniform = 23;
-        DPVariance dpvariance = 24;
-        DPMomentRaw dpmomentraw = 25;
-        DPCovariance dpcovariance = 26;
-        LaplaceMechanism laplace_mechanism = 27;
-        GaussianMechanism gaussian_mechanism = 28;
-        SimpleGeometricMechanism simple_geometric_mechanism = 29;
-        KthSampleMoment kth_sample_moment = 30;
+        Median median = 16;
+        Sum sum = 17;
+        Variance variance = 18;
+        ImputeF64Uniform impute_f64_uniform = 19;
+        ImputeF64Gaussian impute_f64_gaussian = 20;
+        ImputeI64Uniform impute_i64_uniform = 21;
+        DPVariance dpvariance = 22;
+        DPMomentRaw dpmomentraw = 23;
+        DPCovariance dpcovariance = 24;
+        LaplaceMechanism laplace_mechanism = 25;
+        GaussianMechanism gaussian_mechanism = 26;
+        SimpleGeometricMechanism simple_geometric_mechanism = 27;
+        KthSampleMoment kth_sample_moment = 28;
     }
 
 }
@@ -91,8 +91,8 @@ message Clip {
     double min = 1;
     double max = 2;
 }
-message Count {
-    // CC TODO: need to figure out how to add groupby Option
+// message Count {
+//     // CC TODO: need to figure out how to add groupby Option
 }
 // message Histogram {}
 message Mean {}

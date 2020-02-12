@@ -158,17 +158,17 @@ pub fn component_clip(_X: &yarrow::Clip, arguments: &NodeArguments) -> NodeEvalu
     NodeEvaluation::F64(utilities::transformations::clip(&data, &min, &max))
 }
 
-pub fn component_count(_X: &yarrow::Count, arguments: &NodeArguments) -> NodeEvaluation {
-    match (arguments.get("data").unwrap(), arguments.get("group_by").unwrap()) {
-        (NodeEvaluation::F64(data), NodeEvaluation::F64(group_by)) =>
-            Ok(NodeEvaluation::F64(utilities::aggregations::count(&get_array_f64(&arguments, "data"), &Some(get_array_f64(&arguments, "group_by"))))),
-        (NodeEvaluation::Str(data), NodeEvaluation::Str(group_by)) =>
-            Ok(NodeEvaluation::F64(utilities::aggregations::count(&get_array_str(&arguments, "data"), &Some(get_array_str(&arguments, "group_by"))))),
-        (NodeEvaluation::Bool(data), NodeEvaluation::Bool(group_by)) =>
-            Ok(NodeEvaluation::F64(utilities::aggregations::count(&get_array_bool(&arguments, "data"), &Some(get_array_bool(&arguments, "group_by"))))),
-        _ => Err("Count: Data type must be f64, string, or bool")
-    }.unwrap()
-}
+// pub fn component_count(_X: &yarrow::Count, arguments: &NodeArguments) -> NodeEvaluation {
+//     match (arguments.get("data").unwrap(), arguments.get("group_by").unwrap()) {
+//         (NodeEvaluation::F64(data), NodeEvaluation::F64(group_by)) =>
+//             Ok(NodeEvaluation::F64(utilities::aggregations::count(&get_array_f64(&arguments, "data"), &Some(get_array_f64(&arguments, "group_by"))))),
+//         (NodeEvaluation::Str(data), NodeEvaluation::Str(group_by)) =>
+//             Ok(NodeEvaluation::F64(utilities::aggregations::count(&get_array_str(&arguments, "data"), &Some(get_array_str(&arguments, "group_by"))))),
+//         (NodeEvaluation::Bool(data), NodeEvaluation::Bool(group_by)) =>
+//             Ok(NodeEvaluation::F64(utilities::aggregations::count(&get_array_bool(&arguments, "data"), &Some(get_array_bool(&arguments, "group_by"))))),
+//         _ => Err("Count: Data type must be f64, string, or bool")
+//     }.unwrap()
+// }
 
 // pub fn component_histogram(_X: &yarrow::Bin, argument: &NodeArguments) -> NodeEvaluation {
 //     let data: ArrayD<f64> = get_array_f64(&arguments, "data");
