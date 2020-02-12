@@ -112,7 +112,7 @@ pub fn combine_components_into_ieee(sign: &str, exponent: &str, mantissa: &str) 
 }
 
 pub fn sample_from_set<T>(candidate_set: &Vec<T>, probabilities: &Vec<f64>) -> T where T: Copy, {
-    // generate uniform random number on (0,1)
+    // generate uniform random number on [0,1)
     let unif: f64 = noise::sample_uniform(0., 1.);
 
     // generate cumulative probability distribution

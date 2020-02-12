@@ -239,7 +239,7 @@ pub fn sample_simple_geometric_mechanism(scale: &f64, min: &i64, max: &i64, enfo
     ///
     /// # Example
     /// ```
-    /// let geom_noise: ArrayD<64 = sample_simple_geometric_mechanism(&1., &0, &100, &false);
+    /// let geom_noise: ArrayD<64> = sample_simple_geometric_mechanism(&1., &0, &100, &false);
     /// ```
 
     assert!(min <= max);
