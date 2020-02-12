@@ -235,7 +235,7 @@ pub fn variance(data: &ArrayD<f64>, finite_sample_correction: &bool) -> ArrayD<f
     return arr1(&[variance]).into_dyn();
 }
 
-pub fn kth_sample_moment(data: &ArrayD<f64>, k: &i64) -> ArrayD<f64> {
+pub fn kth_raw_sample_moment(data: &ArrayD<f64>, k: &i64) -> ArrayD<f64> {
     /// Accepts data and returns sample estimate of kth raw moment
     ///
     /// # Arguments

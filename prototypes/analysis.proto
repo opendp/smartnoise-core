@@ -75,7 +75,7 @@ message Component {
         LaplaceMechanism laplace_mechanism = 25;
         GaussianMechanism gaussian_mechanism = 26;
         SimpleGeometricMechanism simple_geometric_mechanism = 27;
-        KthSampleMoment kth_sample_moment = 28;
+        KthRawSampleMoment kth_raw_sample_moment = 28;
     }
 
 }
@@ -86,7 +86,10 @@ message Divide {}
 message Multiply {}
 message Power {}
 message Negate {}
-message Bin {}
+message Bin {
+    ArrayND edges = 1;
+    bool inclusive_left = 2;
+}
 message Clamp {
     double min = 1;
     double max = 2;
@@ -99,7 +102,7 @@ message Mean {}
 message Variance {
     bool finite_sample_correction = 1;
 }
-message KthSampleMoment {
+message KthRawSampleMoment {
     int64 k = 1;
 }
 message Median {}

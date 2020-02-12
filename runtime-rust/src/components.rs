@@ -188,10 +188,10 @@ pub fn component_variance(_x: &yarrow::Variance, arguments: &NodeArguments) -> N
     NodeEvaluation::F64(utilities::aggregations::variance(&data, &finite_sample_correction))
 }
 
-pub fn component_kth_sample_moment(_x: &yarrow::KthSampleMoment, arguments: &NodeArguments) -> NodeEvaluation {
+pub fn component_kth_raw_sample_moment(_x: &yarrow::KthRawSampleMoment, arguments: &NodeArguments) -> NodeEvaluation {
     let data: ArrayD<f64> = get_array_f64(&arguments, "data");
     let k: i64 = get_i64(&arguments, "k");
-    NodeEvaluation::F64(utilities::aggregations::kth_sample_moment(&data, &k))
+    NodeEvaluation::F64(utilities::aggregations::kth_raw_sample_moment(&data, &k))
 }
 
 pub fn component_median(_x: &yarrow::Median, arguments: &NodeArguments) -> NodeEvaluation {
