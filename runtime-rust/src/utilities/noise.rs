@@ -24,7 +24,8 @@ pub fn sample_gaussian_truncated(shift: f64, scale: f64, min: f64, max: f64) -> 
     /// Sample from truncated Gaussian distribution
     /// We use inverse transform sampling, but only between the CDF
     /// probabilities associated with the stated min/max truncation values
-
+    assert!(min <= max);
+    assert!(scale > 0);
     let unif_min: f64 = Gaussian::new(shift, scale).distribution(min);
     let unif_max: f64 = Gaussian::new(shift, scale).distribution(max);
     let unif: f64 = sample_uniform(unif_min, unif_max);
@@ -83,6 +84,8 @@ pub fn sample_uniform(min: f64, max: f64) -> f64 {
     ///
     /// Once the precision band has been selected, floating numbers numbers are generated uniformly within the band
     /// by generating a 52-bit mantissa uniformly at random.
+
+    assert!(min <= max);
 
     // Generate mantissa
     let binary_string = utilities::get_bytes(7);
@@ -149,8 +152,11 @@ pub fn sample_geometric_censored(prob: &f64, max_trials: &i64, enforce_constant_
     ///
     /// # Example
     /// ```
-    /// let geom: f64 = sample_censored_geometric(&0.1, &20., &false);
+    /// let geom: f64 = sample_censored_geometric(&0.1, &20, &false);
     /// ```
+
+    // ensure that prob is a valid probability
+    assert!(prob >= &0.0 || prob <= &1.0);
 
     let mut bit: i64 = 0;
     let mut n_trials: i64 = 1;
@@ -213,19 +219,19 @@ pub fn sample_floating_point_probability_exponent() -> i16 {
     return geom;
 }
 
-pub fn sample_simple_geometric_mechanism(scale: &f64, count_min: &i64, count_max: &i64, enforce_constant_time: &bool) -> i64 {
+pub fn sample_simple_geometric_mechanism(scale: &f64, min: &i64, max: &i64, enforce_constant_time: &bool) -> i64 {
     /// Sample noise according to geometric mechanism.
     /// This function uses coin flips to sample from the geometric distribution,
     /// rather than using the inverse probability transform. This is done
     /// to avoid finite precision attacks.
     ///
     /// For this algorithm, the number of steps it takes to sample from the geometric
-    /// is bounded above by (count_max - count_min).
+    /// is bounded above by (max - min).
     ///
     /// # Arguments
     /// * `scale` - scale parameter
-    /// * `count_min` - minimum value of function to which you want to add noise
-    /// * `count_max` - maximum value of function to which you want to add noise
+    /// * `min` - minimum value of function to which you want to add noise
+    /// * `max` - maximum value of function to which you want to add noise
     /// * `enforce_constant_time` - boolean for whether or not to require the geometric to run for the maximum number of trials
     ///
     /// # Return
@@ -236,8 +242,10 @@ pub fn sample_simple_geometric_mechanism(scale: &f64, count_min: &i64, count_max
     /// let geom_noise: ArrayD<64 = sample_simple_geometric_mechanism(&1., &0, &100, &false);
     /// ```
 
+    assert!(min <= max);
+
     let alpha: f64 = consts::E.powf(-*scale);
-    let max_trials: i64 = count_max - count_min;
+    let max_trials: i64 = max - min;
 
     // return 0 noise with probability (1-alpha) / (1+alpha), otherwise sample from geometric
     let unif: f64 = sample_uniform(0., 1.);
