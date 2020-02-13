@@ -1,0 +1,137 @@
+syntax = "proto3";
+
+package yarrow;
+import "utilities.proto";
+
+// data loading
+message Materialize {
+    string dataset_id = 1;
+}
+message Index {
+    repeated string path = 1;
+}
+message DataSource {
+    string dataset_id = 1;
+    string column_id = 2;
+
+    // TODO: constraints/nature should be moved to arguments, THEY ARE PRIVATE
+    // TODO: is nature necessary? if categorical, then could cast the other types to strings
+    DataType datatype = 3;
+    enum Nature {
+        UNKNOWN = 0;
+        CONTINUOUS = 1;
+        CATEGORICAL = 2;
+    }
+    Nature nature = 4;
+
+    // should be a 1D array of the unique values (likely bool, int, or string)
+    Value constraints = 5;
+}
+message Stack {}
+message Literal {
+    Value value = 1;
+}
+message Constant {}
+
+// -- manipulations --
+// type manipulations 
+message ToString {}
+message ToInt {}
+message ToBool {}
+// general manipulations
+message Bin {}
+message Clamp {
+    double min = 1;
+    double max = 2;
+}
+message Impute {}
+// arithmetic manipulations
+message Add {}
+message Subtract {}
+message Multiply {}
+message Divide {}
+message Power {}
+message Log {}
+message Modulus {}
+message Div {}
+// boolean manipulations
+message Equal {}
+message GreaterThan {}
+message LessThan {}
+message And {}
+message Or {}
+message Negate {}
+
+// high level components
+message DPSum {}
+message DPCount {}
+message DPMean {
+    double epsilon = 1;
+    Mechanism mechanism = 2;
+}
+message DPVariance {
+    double epsilon = 1;
+    Mechanism mechanism = 2;
+}
+message DPMedian {}
+message DPMomentRaw {
+    double epsilon = 1;
+    Mechanism mechanism = 2;
+    uint32 order = 3;
+}
+message DPCovariance {
+    double epsilon = 1;
+    Mechanism mechanism = 2;
+}
+
+
+// public aggregations
+message Sum {}
+message Count {}
+message Mean {}
+message Variance {
+    bool finite_sample_correction = 1;
+}
+message Median {}
+message KthRawSampleMoment {
+    int64 k = 1;
+}
+message Covariance {}
+
+// distribution sampling
+message SampleLaplace {}
+message SampleGeometric {}
+message SampleDiscrete {}
+message SampleGaussian {}
+
+// deprecated
+message Laplace {
+    double epsilon = 1;
+}
+message ImputeF64Uniform {
+    double min = 1;
+    double max = 2;
+}
+message ImputeF64Gaussian {
+    double shift = 1;
+    double scale = 2;
+    double min = 3;
+    double max = 4;
+}
+message ImputeI64Uniform {
+    double min = 1;
+    double max = 2;
+}
+
+message LaplaceMechanism {
+    double epsilon = 1;
+}
+message GaussianMechanism {
+    double epsilon = 1;
+}
+message SimpleGeometricMechanism {
+    double epsilon = 1;
+    int64 count_min = 2;
+    int64 count_max = 3;
+    bool enforce_constant_time = 4;
+}

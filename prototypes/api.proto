@@ -1,0 +1,158 @@
+syntax = "proto3";
+
+package yarrow;
+import "utilities.proto";
+import "components.proto";
+
+message ResultRelease {
+	oneof value {
+		Release release = 1;
+		Error error = 2;
+	}
+}
+
+message Release {
+    map<uint32, Value> values = 1;
+}
+
+message Validated {
+	bool valid = 1;
+	// repeated string messages = 2;
+}
+
+message PrivacyUsage {
+}
+
+message PrivacyUsageNode {
+}
+
+message Report {
+	string value = 1;
+}
+
+message Constraints {
+
+}
+
+message Sensitivities {
+
+}
+
+message Accuracies {
+
+}
+
+
+message Analysis {
+    map<uint32, Component> graph = 1;
+    PrivacyDefinition privacy_definition = 2;
+}
+
+message PrivacyDefinition {
+    // upper bound
+    double epsilon = 1;
+    double delta = 2;
+    double rho = 3;
+
+    uint32 group_size = 4;
+
+    enum Distance {
+        // (e, 0)-differential privacy
+        PURE = 0;
+
+        // (e, d)-differential privacy
+        APPROXIMATE = 1;
+
+        // https://arxiv.org/pdf/1702.07476.pdf
+        RENYI = 2;
+
+        // https://arxiv.org/pdf/1603.01887.pdf
+        CONCENTRATED = 3;
+
+        // https://arxiv.org/pdf/1905.02383.pdf
+        F = 4;
+    }
+    Distance distance = 5;
+
+    enum Neighboring {
+        SUBSTITUTE = 0;
+        ADD_REMOVE = 1;
+    }
+    Neighboring neighboring = 6;
+}
+
+message Component {
+    // uint32 value is source_node_id
+    map<string, uint32> arguments = 1;
+    // if true, then don't include the evaluation for this component in the release
+    bool omit = 2;
+
+    oneof value {
+        // data loading
+        Materialize materialize = 100; // load a string table into columnar hashmap
+        Index index = 101; // collect value from hashmap
+        Stack stack = 102; // stack arguments along an axis of an array
+        Literal literal = 110; // propagate a value in the protobuf
+        Constant constant = 111; // propagate a value in the release
+
+        // -- manipulations --
+        // type manipulations 
+        ToString tostring = 200;
+        ToInt toint = 201;
+        ToBool tobool = 202;
+        // general manipulations
+        Bin bin = 220;
+        Clamp clamp = 221;
+        Impute impute = 222;
+        // arithmetic manipulations
+        Add add = 250;
+        Subtract subtract = 251;
+        Multiply multiply = 252;
+        Divide divide = 253;
+        Power power = 254;
+        Log log = 255;
+        Modulus modulus = 256;
+        Div div = 257;
+        // boolean manipulations
+        Equal equal = 270;
+        GreaterThan greaterthan = 271;
+        LessThan lessthan = 272;
+        And and = 273;
+        Or or = 274;
+        Negate negate = 275;
+
+        // high level components
+        DPSum dpsum = 300;
+        DPCount dpcount = 301;
+        DPMean dpmean = 302;
+        DPVariance dpvariance = 303;
+        DPMedian dpmedian = 304;
+        DPMomentRaw dpmomentraw = 305;
+        DPCovariance dpcovariance = 306;
+
+        // public aggregations
+        Sum sum = 400;
+        Count count = 401;
+        Mean mean = 402;
+        Variance variance = 403;
+        Median median = 404;
+        KthRawSampleMoment kthrawsamplemoment = 405;
+        Covariance covariance = 406;
+
+        // distribution sampling
+        SampleLaplace samplelaplace = 501;
+        SampleGeometric samplegeometric = 502;
+        SampleDiscrete samplediscrete = 503;
+        SampleGaussian samplegaussian = 504;
+
+        // deprecated
+        Laplace laplace = 1000;
+        ImputeF64Uniform impute_f64_uniform = 1001;
+        ImputeF64Gaussian impute_f64_gaussian = 1002;
+        ImputeI64Uniform impute_i64_uniform = 1003;
+        LaplaceMechanism laplace_mechanism = 1004;
+        GaussianMechanism gaussian_mechanism = 1005;
+        SimpleGeometricMechanism simple_geometric_mechanism = 1006;
+        DataSource datasource = 1007; // load a single column from a csv file as type
+    }
+}

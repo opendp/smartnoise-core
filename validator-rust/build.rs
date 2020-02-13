@@ -7,10 +7,9 @@ use std::env;
 fn main() {
     prost_build::compile_protos(
         &[
-            "../prototypes/analysis.proto",
-            "../prototypes/release.proto",
-            "../prototypes/types.proto",
-            "../prototypes/dataset.proto"
+            "../prototypes/api.proto",
+            "../prototypes/components.proto",
+            "../prototypes/utilities.proto"
         ],
         &["../prototypes/"]).unwrap();
 

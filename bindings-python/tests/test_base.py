@@ -70,7 +70,7 @@ def test_raw_dataset():
     with yarrow.Analysis() as analysis:
 
         data_vector = yarrow.Component('Literal', options={
-            'value': yarrow.array_nd(np.array([[1., 2., 3., 4., 5.]]))
+            'value': yarrow.value_proto(np.array([[1., 2., 3., 4., 5.]]))
         })
         yarrow.dp_mean(
             data=data_vector,

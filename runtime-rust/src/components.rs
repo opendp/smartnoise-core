@@ -6,7 +6,6 @@ use crate::base::*;
 use std::collections::HashMap;
 extern crate csv;
 use std::str::FromStr;
-use crate::algorithms;
 use crate::utilities;
 
 extern crate num;
@@ -20,9 +19,17 @@ macro_rules! hashmap {
 }
 
 pub fn component_literal(x: &yarrow::Literal) -> NodeEvaluation {
-//    println!("literal");
-    parse_proto_array(&x.to_owned().value.unwrap())
+    parse_proto_array(&x.to_owned().value.unwrap()).unwrap()
 }
+
+//pub fn component_table(table: &yarrow::Table, dataset: &yarrow::Dataset, arguments: &NodeArguments) -> NodeEvaluation {
+//    let table = dataset.tables.get(&datasource.dataset_id).unwrap();
+//    match table.value.as_ref().unwrap() {
+//        yarrow::table::Value::FilePath(path) => {
+//        },
+//
+//    }
+//}
 
 pub fn component_datasource(datasource: &yarrow::DataSource, dataset: &yarrow::Dataset, arguments: &NodeArguments) -> NodeEvaluation {
 //    println!("datasource");
@@ -43,8 +50,8 @@ pub fn component_datasource(datasource: &yarrow::DataSource, dataset: &yarrow::D
 
             match arguments.get("datatype").unwrap() {
                 NodeEvaluation::Str(x) => Ok(match x.first().unwrap().as_ref() {
-                    "BYTES" =>
-                        Ok(NodeEvaluation::Bytes(Array1::from(get_column::<u8>(&path, &datasource.column_id)).into_dyn())),
+//                    "BYTES" =>
+//                        Ok(NodeEvaluation::Bytes(Array1::from(get_column::<u8>(&path, &datasource.column_id)).into_dyn())),
                     "BOOL" =>
                         Ok(NodeEvaluation::Bool(Array1::from(get_column::<bool>(&path, &datasource.column_id)).into_dyn())),
                     "I64" =>
@@ -58,7 +65,7 @@ pub fn component_datasource(datasource: &yarrow::DataSource, dataset: &yarrow::D
                 _ => Err("Datatype must be a string.")
             }
         },
-        yarrow::table::Value::Literal(value) => Ok(parse_proto_array(&value)),
+        yarrow::table::Value::Literal(value) => parse_proto_array(&value),
         _ => Err("Only file paths are supported")
     }.unwrap()
 }
@@ -225,68 +232,4 @@ pub fn component_simple_geometric_mechanism(_x: &yarrow::SimpleGeometricMechanis
     let enforce_constant_time: bool = get_bool(&arguments, "enforce_constant_time");
     NodeEvaluation::I64(utilities::mechanisms::simple_geometric_mechanism(
                              &epsilon, &sensitivity, &count_min, &count_max, &enforce_constant_time))
-}
-
-// TODO: Possibly compute sensitivity here, and pass into algorithm?
-
-pub fn component_dp_mean(component: &yarrow::DpMean, arguments: &NodeArguments) -> NodeEvaluation {
-    let data: NodeEvaluation = match yarrow::Mechanism::from_i32(component.mechanism).unwrap() {
-        yarrow::Mechanism::Laplace => Ok(NodeEvaluation::F64(Array::from_elem((), algorithms::dp_mean_laplace(
-            component.epsilon,
-            get_f64(&arguments, "num_records"),
-            get_array_f64(&arguments, "data"),
-            get_f64(&arguments, "minimum"),
-            get_f64(&arguments, "maximum")
-        )).into_dyn())),
-        _ => Err("Mean: Unknown algorithm type.")
-    }.unwrap();
-    // println!("dpmean");
-    data
-}
-
-pub fn component_dp_variance(component: &yarrow::DpVariance, arguments: &NodeArguments) -> NodeEvaluation {
-    let data: NodeEvaluation = match yarrow::Mechanism::from_i32(component.mechanism).unwrap() {
-        yarrow::Mechanism::Laplace => Ok(NodeEvaluation::F64(Array::from_elem((), algorithms::dp_variance_laplace(
-            component.epsilon,
-            get_f64(&arguments, "num_records"),
-            get_array_f64(&arguments, "data"),
-            get_f64(&arguments, "minimum"),
-            get_f64(&arguments, "maximum")
-        )).into_dyn())),
-        _ => Err("Variance: Unknown algorithm type.")
-    }.unwrap();
-    data
-}
-
-pub fn component_dp_moment_raw(component: &yarrow::DpMomentRaw, arguments: &NodeArguments) -> NodeEvaluation {
-    let data: NodeEvaluation = match yarrow::Mechanism::from_i32(component.mechanism).unwrap() {
-        yarrow::Mechanism::Laplace => Ok(NodeEvaluation::F64(Array::from_elem((), algorithms::dp_moment_raw_laplace(
-            component.epsilon,
-            get_f64(&arguments, "num_records"),
-            get_array_f64(&arguments, "data"),
-            get_f64(&arguments, "minimum"),
-            get_f64(&arguments, "maximum"),
-            component.order
-        )).into_dyn())),
-        _ => Err("Moment Raw: Unknown algorithm type.")
-    }.unwrap();
-    data
-}
-
-
-pub fn component_dp_covariance(component: &yarrow::DpCovariance, arguments: &NodeArguments) -> NodeEvaluation {
-    let data: NodeEvaluation = match yarrow::Mechanism::from_i32(component.mechanism).unwrap() {
-        yarrow::Mechanism::Laplace => Ok(NodeEvaluation::F64(Array::from_elem((), algorithms::dp_covariance(
-            component.epsilon,
-            get_f64(&arguments, "num_records"),
-            get_array_f64(&arguments, "data_x"),
-            get_array_f64(&arguments, "data_y"),
-            get_f64(&arguments, "minimum_x"),
-            get_f64(&arguments, "minimum_y"),
-            get_f64(&arguments, "maximum_x"),
-            get_f64(&arguments, "maximum_y")
-        )).into_dyn())),
-        _ => Err("Covariance: Unknown algorithm type.")
-    }.unwrap();
-    data
 }

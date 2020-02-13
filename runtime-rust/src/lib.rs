@@ -4,7 +4,6 @@ use yarrow_validator::yarrow;
 mod base;
 mod utilities;
 mod components;
-mod algorithms;
 
 use ndarray::prelude::*;
 
@@ -51,8 +50,17 @@ pub extern "C" fn release(
 
     let response_release = execute_graph(&analysis, &release, &dataset);
 
+    let response_results_release = match response_release {
+        Ok(release) => yarrow::ResultRelease {
+            value: Some(yarrow::result_release::Value::Release(release))
+        },
+        Err(message) => yarrow::ResultRelease {
+            value: Some(yarrow::result_release::Value::Error(yarrow::Error {message: message.to_owned()}))
+        }
+    };
+
     let mut out_buffer = Vec::new();
-    match prost::Message::encode(&response_release, &mut out_buffer) {
+    match prost::Message::encode(&response_results_release, &mut out_buffer) {
         Ok(_t) => ffi_support::ByteBuffer::from_vec(out_buffer),
         Err(error) => {
             println!("Error encoding response protobuf.");

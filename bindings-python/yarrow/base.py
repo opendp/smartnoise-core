@@ -4,10 +4,9 @@ import numpy as np
 from yarrow.wrapper import LibraryWrapper
 
 # these modules are generated via the subprocess call
-from yarrow import analysis_pb2
-from yarrow import types_pb2
-from yarrow import release_pb2
-from yarrow import dataset_pb2
+from yarrow import api_pb2
+from yarrow import utilities_pb2
+from yarrow import components_pb2
 
 core_wrapper = LibraryWrapper()
 
@@ -41,7 +40,7 @@ class Dataset(object):
             'column_id': column_id
         }, arguments={
             'datatype': Component('Literal', options={
-                'value': array_nd(datatype)
+                'value': value_proto(datatype)
             })
         })
 
@@ -58,12 +57,12 @@ class Component(object):
 
     def __add__(self, other):
         if type(other) != self.__class__:
-            other = Component('Literal', options={'value': array_nd(other)})
+            other = Component('Literal', options={'value': value_proto(other)})
         return Component('Add', {'left': self, 'right': other})
 
     def __sub__(self, other):
         if type(other) != self.__class__:
-            other = Component('Literal', options={'value': array_nd(other)})
+            other = Component('Literal', options={'value': value_proto(other)})
         return Component('Subtract', {'left': self, 'right': other})
 
     def __pos__(self):
@@ -74,17 +73,17 @@ class Component(object):
 
     def __mul__(self, other):
         if type(other) != self.__class__:
-            other = Component('Literal', options={'value': array_nd(other)})
+            other = Component('Literal', options={'value': value_proto(other)})
         return Component('Multiply', arguments={'left': self, 'right': other})
 
     def __truediv__(self, other):
         if type(other) != self.__class__:
-            other = Component('Literal', options={'value': array_nd(other)})
+            other = Component('Literal', options={'value': value_proto(other)})
         return Component('Divide', arguments={'left': self, 'right': other})
 
     def __pow__(self, power, modulo=None):
         if type(power) != self.__class__:
-            power = Component('Literal', options={'value': array_nd(power)})
+            power = Component('Literal', options={'value': value_proto(power)})
         return Component('Power', arguments={'left': self, 'right': power})
 
 
@@ -92,12 +91,18 @@ def mean(data):
     return Component('Mean', {'data': data})
 
 
-def array_nd(data):
+def value_proto(data):
 
     if type(data) is bytes:
-        return types_pb2.ArrayND(
-            datatype=types_pb2.DataType.Value("BYTES"),
+        return utilities_pb2.Value(
+            datatype=utilities_pb2.DataType.Value("BYTES"),
             bytes=data
+        )
+
+    if issubclass(type(data), dict):
+        return utilities_pb2.Value(
+            datatype=utilities_pb2.DataType.Value("HASHMAP_STRING"),
+            hashmapString={key: value_proto(data[key]) for key in data}
         )
 
     data = np.array(data)
@@ -111,26 +116,27 @@ def array_nd(data):
     }[data.dtype.type]
 
     container_type = {
-        np.bool: types_pb2.Array1Dbool,
-        np.int64: types_pb2.Array1Di64,
-        np.float64: types_pb2.Array1Df64,
-        np.string_: types_pb2.Array1Dstr,
-        np.str_: types_pb2.Array1Dstr
+        np.bool: utilities_pb2.Array1Dbool,
+        np.int64: utilities_pb2.Array1Di64,
+        np.float64: utilities_pb2.Array1Df64,
+        np.string_: utilities_pb2.Array1Dstr,
+        np.str_: utilities_pb2.Array1Dstr
     }[data.dtype.type]
 
     proto_args = {
         "datatype": data_type,
-        data_type.lower(): container_type(data=list(data.flatten())),
-        "shape": list(data.shape),
-        "order": list(range(data.ndim))
+        data_type.lower(): container_type(
+            data=list(data.flatten()),
+            shape=list(data.shape),
+            order=list(range(data.ndim)))
     }
 
-    return types_pb2.ArrayND(**proto_args)
+    return utilities_pb2.Value(**proto_args)
 
 
 def _to_component(value):
     return value if type(value) == Component else Component(
-        'Literal', options={'value': array_nd(value)})
+        'Literal', options={'value': value_proto(value)})
 
 
 def dp_mean(data, epsilon, minimum, maximum, num_records):
@@ -141,7 +147,7 @@ def dp_mean(data, epsilon, minimum, maximum, num_records):
         'maximum': _to_component(maximum)
     }, {
          'epsilon': epsilon,
-         'mechanism': types_pb2.Mechanism.Value("LAPLACE")
+         'mechanism': utilities_pb2.Mechanism.Value("LAPLACE")
      })
 
 
@@ -153,7 +159,7 @@ def dp_variance(data, epsilon, minimum, maximum, num_records):
         'maximum': _to_component(maximum)
     }, {
          'epsilon': epsilon,
-         'mechanism': types_pb2.Mechanism.Value("LAPLACE")
+         'mechanism': utilities_pb2.Mechanism.Value("LAPLACE")
      })
 
 
@@ -168,7 +174,7 @@ def dp_covariance(data_x, data_y, epsilon, num_records, minimum_x, maximum_x, mi
         'maximum_y': _to_component(maximum_y)
     }, {
         'epsilon': epsilon,
-        'mechanism': types_pb2.Mechanism.Value("LAPLACE")
+        'mechanism': utilities_pb2.Mechanism.Value("LAPLACE")
     })
 
 
@@ -180,7 +186,7 @@ def dp_moment_raw(data, epsilon, minimum, maximum, num_records, order):
         'maximum': _to_component(maximum)
     }, {
         'epsilon': epsilon,
-        'mechanism': types_pb2.Mechanism.Value("LAPLACE"),
+        'mechanism': utilities_pb2.Mechanism.Value("LAPLACE"),
         'order': order
      })
 
@@ -189,7 +195,7 @@ class Analysis(object):
     def __init__(self, *components, datasets=None, distance='APPROXIMATE', neighboring='SUBSTITUTE'):
         self.components: list = list(components)
         self.datasets: list = datasets or []
-        self.release_proto: release_pb2.Release = None
+        self.release_proto: api_pb2.ResultRelease = None
         self.distance: str = distance
         self.neighboring: str = neighboring
 
@@ -224,29 +230,29 @@ class Analysis(object):
             component = item['component']
             component_id = item['component_id']
 
-            vertices[component_id] = analysis_pb2.Component(**{
+            vertices[component_id] = api_pb2.Component(**{
                 'arguments': {
                     name: enqueue(component_child) for name, component_child in component.arguments.items()
                 },
                 component.name.lower():
-                    getattr(analysis_pb2, component.name)(**(component.options or {}))
+                    getattr(components_pb2, component.name)(**(component.options or {}))
             })
 
-        return analysis_pb2.Analysis(
+        return api_pb2.Analysis(
             graph=vertices,
-            privacy_definition=analysis_pb2.PrivacyDefinition(
-                distance=analysis_pb2.PrivacyDefinition.Distance.Value(self.distance),
-                neighboring=analysis_pb2.PrivacyDefinition.Neighboring.Value(self.neighboring)
+            privacy_definition=api_pb2.PrivacyDefinition(
+                distance=api_pb2.PrivacyDefinition.Distance.Value(self.distance),
+                neighboring=api_pb2.PrivacyDefinition.Neighboring.Value(self.neighboring)
             )
         )
 
     def _make_release_proto(self):
-        return self.release_proto or release_pb2.Release()
+        return self.release_proto or api_pb2.ResultRelease()
 
     def _make_dataset_proto(self):
-        return dataset_pb2.Dataset(
+        return utilities_pb2.Dataset(
             tables={
-                dataset.name: dataset_pb2.Table(
+                dataset.name: utilities_pb2.Table(
                     file_path=dataset.data
                 ) for dataset in self.datasets
             })
@@ -262,8 +268,8 @@ class Analysis(object):
             self._make_release_proto())
 
     def release(self):
-        analysis_proto: analysis_pb2.Analysis = self._make_analysis_proto()
-        self.release_proto: release_pb2.Release = core_wrapper.compute_release(
+        analysis_proto: api_pb2.Analysis = self._make_analysis_proto()
+        self.release_proto: api_pb2.ResultRelease = core_wrapper.compute_release(
             self._make_dataset_proto(),
             analysis_proto,
             self._make_release_proto())

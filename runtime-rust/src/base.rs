@@ -9,15 +9,15 @@ use std::iter::FromIterator;
 
 use crate::components;
 
-// equivalent to proto ArrayNd
+// equivalent to proto Value
 #[derive(Debug)]
 pub enum NodeEvaluation {
-    Bytes(ArrayD<u8>), // bytes::Bytes BROKEN: only one byte is stored
+//    Bytes(bytes::Bytes),
     Bool(ArrayD<bool>),
     I64(ArrayD<i64>),
     F64(ArrayD<f64>),
     Str(ArrayD<String>),
-    // String_F64_HashMap(HashMap<String, f64>)
+    HashmapString(HashMap<String, NodeEvaluation>)
 }
 
 // equivalent to proto Release
@@ -51,7 +51,7 @@ pub fn get_release_nodes(analysis: &yarrow::Analysis) -> HashSet<u32> {
         let node_id = node_queue.pop_front().unwrap();
         let component = graph.get(&node_id).unwrap();
 
-        if is_privatizer(&component) {
+        if !component.omit {
             release_node_ids.insert(*node_id);
         }
         else {
@@ -82,17 +82,9 @@ pub fn get_sinks(analysis: &yarrow::Analysis) -> HashSet<u32> {
     return node_ids.to_owned();
 }
 
-pub fn is_privatizer(component: &yarrow::Component) -> bool {
-    use yarrow::component::Value::*;
-    match component.to_owned().value.unwrap() {
-        Dpmean(_x) => true,
-        _ => false
-    }
-}
-
 pub fn execute_graph(analysis: &yarrow::Analysis,
                      release: &yarrow::Release,
-                     dataset: &yarrow::Dataset) -> yarrow::Release {
+                     dataset: &yarrow::Dataset) -> Result<yarrow::Release, &'static str> {
 
     let node_ids_release: HashSet<u32> = get_release_nodes(&analysis);
 
@@ -100,7 +92,11 @@ pub fn execute_graph(analysis: &yarrow::Analysis,
     let mut traversal = Vec::new();
     traversal.extend(get_sinks(&analysis).into_iter());
 
-    let mut evaluations = release_to_evaluations(release);
+    let evaluations_result = release_to_evaluations(release);
+    if let Err(message) = evaluations_result {
+        return Err(message)
+    }
+    let mut evaluations = evaluations_result.unwrap();
     let graph: &HashMap<u32, yarrow::Component> = &analysis.graph;
 
     // track node parents
@@ -130,8 +126,14 @@ pub fn execute_graph(analysis: &yarrow::Analysis,
         if evaluable {
             traversal.pop();
 
-            evaluations.insert(node_id, execute_component(
-                &graph.get(&node_id).unwrap(), &evaluations, &dataset));
+            let evaluation = execute_component(
+                &graph.get(&node_id).unwrap(), &evaluations, &dataset);
+
+            if let Err(message) = evaluation {
+                return Err(message);
+            }
+
+            evaluations.insert(node_id, evaluation.unwrap());
 
             // remove references to parent node, and if empty and private
             for argument_node_id in arguments.values() {
@@ -151,39 +153,34 @@ pub fn execute_graph(analysis: &yarrow::Analysis,
 
 pub fn execute_component(component: &yarrow::Component,
                          evaluations: &GraphEvaluation,
-                         dataset: &yarrow::Dataset) -> NodeEvaluation {
+                         dataset: &yarrow::Dataset) -> Result<NodeEvaluation, &'static str> {
 
     let arguments = get_arguments(&component, &evaluations);
 
     match component.to_owned().value.unwrap() {
-        yarrow::component::Value::Literal(x) => components::component_literal(&x),
-        yarrow::component::Value::Datasource(x) => components::component_datasource(&x, &dataset, &arguments),
-        yarrow::component::Value::Add(x) => components::component_add(&x, &arguments),
-        yarrow::component::Value::Subtract(x) => components::component_subtract(&x, &arguments),
-        yarrow::component::Value::Divide(x) => components::component_divide(&x, &arguments),
-        yarrow::component::Value::Multiply(x) => components::component_multiply(&x, &arguments),
-        yarrow::component::Value::Power(x) => components::component_power(&x, &arguments),
-        yarrow::component::Value::Negate(x) => components::component_negate(&x, &arguments),
-        yarrow::component::Value::ImputeF64Uniform(x) => components::component_impute_f64_uniform(&x, &arguments),
-        yarrow::component::Value::ImputeF64Gaussian(x) => components::component_impute_f64_gaussian(&x, &arguments),
-        yarrow::component::Value::ImputeI64Uniform(x) => components::component_impute_i64_uniform(&x, &arguments),
-        yarrow::component::Value::Bin(x) => components::component_bin(&x, &arguments),
-        // yarrow::component::Value::Count(x) => components::component_count(&x, &arguments),
-        // yarrow::component::Value::Histogram(x) => components::component_histogram(&x, &arguments),
-        yarrow::component::Value::Mean(x) => components::component_mean(&x, &arguments),
-        yarrow::component::Value::Median(x) => components::component_median(&x, &arguments),
-        yarrow::component::Value::Sum(x) => components::component_sum(&x, &arguments),
-        yarrow::component::Value::Variance(x) => components::component_variance(&x, &arguments),
-        yarrow::component::Value::KthRawSampleMoment(x) => components::component_kth_raw_sample_moment(&x, &arguments),
-        yarrow::component::Value::LaplaceMechanism(x) => components::component_laplace_mechanism(&x, &arguments),
-        yarrow::component::Value::GaussianMechanism(x) => components::component_gaussian_mechanism(&x, &arguments),
-        yarrow::component::Value::SimpleGeometricMechanism(x) => components::component_simple_geometric_mechanism(&x, &arguments),
-        // yarrow::component::Value::Dpmean(x) => components::component_dp_mean(&x, &arguments),
-        // yarrow::component::Value::Dpvariance(x) => components::component_dp_variance(&x, &arguments),
-        // yarrow::component::Value::Dpmomentraw(x) => components::component_dp_moment_raw(&x, &arguments),
-        // yarrow::component::Value::Dpcovariance(x) => components::component_dp_covariance(&x, &arguments),
-        // TODO: return an error result
-        _ => NodeEvaluation::Bool(array![false].into_dyn())
+        yarrow::component::Value::Literal(x) => Ok(components::component_literal(&x)),
+        yarrow::component::Value::Datasource(x) => Ok(components::component_datasource(&x, &dataset, &arguments)),
+        yarrow::component::Value::Add(x) => Ok(components::component_add(&x, &arguments)),
+        yarrow::component::Value::Subtract(x) => Ok(components::component_subtract(&x, &arguments)),
+        yarrow::component::Value::Divide(x) => Ok(components::component_divide(&x, &arguments)),
+        yarrow::component::Value::Multiply(x) => Ok(components::component_multiply(&x, &arguments)),
+        yarrow::component::Value::Power(x) => Ok(components::component_power(&x, &arguments)),
+        yarrow::component::Value::Negate(x) => Ok(components::component_negate(&x, &arguments)),
+        yarrow::component::Value::ImputeF64Uniform(x) => Ok(components::component_impute_f64_uniform(&x, &arguments)),
+        yarrow::component::Value::ImputeF64Gaussian(x) => Ok(components::component_impute_f64_gaussian(&x, &arguments)),
+        yarrow::component::Value::ImputeI64Uniform(x) => Ok(components::component_impute_i64_uniform(&x, &arguments)),
+        yarrow::component::Value::Bin(x) => Ok(components::component_bin(&x, &arguments)),
+        // yarrow::component::Value::Count(x) => Ok(components::component_count(&x, &arguments)),
+        // yarrow::component::Value::Histogram(x) => Ok(components::component_histogram(&x, &arguments)),
+        yarrow::component::Value::Mean(x) => Ok(components::component_mean(&x, &arguments)),
+        yarrow::component::Value::Median(x) => Ok(components::component_median(&x, &arguments)),
+        yarrow::component::Value::Sum(x) => Ok(components::component_sum(&x, &arguments)),
+        yarrow::component::Value::Variance(x) => Ok(components::component_variance(&x, &arguments)),
+//        yarrow::component::Value::Kthsamplemoment(x) => Ok(components::component_kth_sample_moment(&x, &arguments)),
+        yarrow::component::Value::LaplaceMechanism(x) => Ok(components::component_laplace_mechanism(&x, &arguments)),
+        yarrow::component::Value::GaussianMechanism(x) => Ok(components::component_gaussian_mechanism(&x, &arguments)),
+        yarrow::component::Value::SimpleGeometricMechanism(x) => Ok(components::component_simple_geometric_mechanism(&x, &arguments)),
+        _ => Err("Component type not implemented.")
     }
 }
 
@@ -257,82 +254,124 @@ pub fn get_array_bool(arguments: &NodeArguments, column: &str) -> ArrayD<bool> {
     }.unwrap()
 }
 
-pub fn release_to_evaluations(release: &yarrow::Release) -> GraphEvaluation {
+pub fn release_to_evaluations(release: &yarrow::Release) -> Result<GraphEvaluation, &'static str> {
     let mut evaluations = GraphEvaluation::new();
 
     for (node_id, node_release) in &release.values {
-        evaluations.insert(*node_id, parse_proto_array(node_release));
+        let parsed_result = parse_proto_array(node_release);
+        if let Err(message) = parsed_result {
+            return Err(message);
+        }
+        let parsed = parsed_result.unwrap();
+        evaluations.insert(*node_id, parsed);
+
     }
-    evaluations
+    Ok(evaluations)
 }
 
-pub fn evaluations_to_release(evaluations: &GraphEvaluation) -> yarrow::Release {
-    let mut releases = HashMap::new();
+pub fn evaluations_to_release(evaluations: &GraphEvaluation) -> Result<yarrow::Release, &'static str> {
+    let mut releases: HashMap<u32, yarrow::Value> = HashMap::new();
     for (node_id, node_eval) in evaluations {
-        releases.insert(*node_id, serialize_proto_array(&node_eval));
+        if let Ok(array_serialized) = serialize_proto_array(node_eval) {
+            releases.insert(*node_id, array_serialized);
+        }
     }
-    yarrow::Release {
+    Ok(yarrow::Release {
         values: releases
-    }
+    })
 }
 
-pub fn parse_proto_array(value: &yarrow::ArrayNd) -> NodeEvaluation {
+pub fn parse_proto_array(value: &yarrow::Value) -> Result<NodeEvaluation, &'static str> {
     let value = value.to_owned();
-    let shape: Vec<usize> = value.shape.iter().map(|x| *x as usize).collect();
     match value.data.unwrap() {
-        yarrow::array_nd::Data::Bytes(x) =>
-            NodeEvaluation::Bytes(Array::from_shape_vec(shape, x).unwrap().into_dyn()),
-        yarrow::array_nd::Data::Bool(x) =>
-            NodeEvaluation::Bool(Array::from_shape_vec(shape, x.data).unwrap().into_dyn()),
-        yarrow::array_nd::Data::I64(x) =>
-            NodeEvaluation::I64(Array::from_shape_vec(shape, x.data).unwrap().into_dyn()),
-        yarrow::array_nd::Data::F64(x) =>
-            NodeEvaluation::F64(Array::from_shape_vec(shape, x.data).unwrap().into_dyn()),
-        yarrow::array_nd::Data::String(x) =>
-            NodeEvaluation::Str(Array::from_shape_vec(shape, x.data).unwrap().into_dyn()),
+//        yarrow::array_nd::Data::Bytes(x) =>
+//            NodeEvaluation::Bytes(bytes::Bytes::from(x)),
+        yarrow::value::Data::Bool(x) => {
+            let shape: Vec<usize> = x.shape.iter().map(|x| *x as usize).collect();
+            Ok(NodeEvaluation::Bool(Array::from_shape_vec(shape, x.data).unwrap().into_dyn()))
+        },
+        yarrow::value::Data::I64(x) => {
+            let shape: Vec<usize> = x.shape.iter().map(|x| *x as usize).collect();
+            Ok(NodeEvaluation::I64(Array::from_shape_vec(shape, x.data).unwrap().into_dyn()))
+        },
+        yarrow::value::Data::F64(x) => {
+            let shape: Vec<usize> = x.shape.iter().map(|x| *x as usize).collect();
+            Ok(NodeEvaluation::F64(Array::from_shape_vec(shape, x.data).unwrap().into_dyn()))
+        },
+        yarrow::value::Data::String(x) => {
+            let shape: Vec<usize> = x.shape.iter().map(|x| *x as usize).collect();
+            Ok(NodeEvaluation::Str(Array::from_shape_vec(shape, x.data).unwrap().into_dyn()))
+        },
+        yarrow::value::Data::HashmapString(x) => {
+            let mut evaluation: HashMap<String, NodeEvaluation> = HashMap::new();
+            for (node_id, value) in &x.data {
+                let parsed_result = parse_proto_array(value);
+                if let Ok(parsed) = parsed_result {
+                    evaluation.insert(node_id.to_owned(), parsed);
+                } else {
+                    return parsed_result;
+                }
+            }
+            Ok(NodeEvaluation::HashmapString(evaluation))
+        }
+        _ => Err("Unsupported proto value encountered.")
     }
 }
 
-pub fn serialize_proto_array(evaluation: &NodeEvaluation) -> yarrow::ArrayNd {
+pub fn serialize_proto_array(evaluation: &NodeEvaluation) -> Result<yarrow::Value, &'static str> {
 
     match evaluation {
-        NodeEvaluation::Bytes(x) => yarrow::ArrayNd {
-            datatype: yarrow::DataType::Bytes as i32,
-            data: Some(yarrow::array_nd::Data::Bytes(x.iter().map(|s| *s).collect())),
-            order: (1..x.ndim()).map(|x| {x as u64}).collect(),
-            shape: x.shape().iter().map(|y| {*y as u64}).collect()
-        },
-        NodeEvaluation::Bool(x) => yarrow::ArrayNd {
+//        NodeEvaluation::Bytes(x) => yarrow::Value {
+//            datatype: yarrow::DataType::Bytes as i32,
+//            data: Some(yarrow::value::Data::Bytes(prost::encoding::bytes::encode(x)))
+//        },
+        NodeEvaluation::Bool(x) => Ok(yarrow::Value {
             datatype: yarrow::DataType::Bool as i32,
-            data: Some(yarrow::array_nd::Data::Bool(yarrow::Array1Dbool {
-                data: x.iter().map(|s| *s).collect()
-            })),
-            order: (1..x.ndim()).map(|x| {x as u64}).collect(),
-            shape: x.shape().iter().map(|y| {*y as u64}).collect()
-        },
-        NodeEvaluation::I64(x) => yarrow::ArrayNd {
+            data: Some(yarrow::value::Data::Bool(yarrow::Array1Dbool {
+                data: x.iter().map(|s| *s).collect(),
+                order: (1..x.ndim()).map(|x| {x as u64}).collect(),
+                shape: x.shape().iter().map(|y| {*y as u64}).collect()
+            }))
+        }),
+        NodeEvaluation::I64(x) => Ok(yarrow::Value {
             datatype: yarrow::DataType::I64 as i32,
-            data: Some(yarrow::array_nd::Data::I64(yarrow::Array1Di64 {
-                data: x.iter().map(|s| *s).collect()
-            })),
-            order: (1..x.ndim()).map(|x| {x as u64}).collect(),
-            shape: x.shape().iter().map(|y| {*y as u64}).collect()
-        },
-        NodeEvaluation::F64(x) => yarrow::ArrayNd {
+            data: Some(yarrow::value::Data::I64(yarrow::Array1Di64 {
+                data: x.iter().map(|s| *s).collect(),
+                order: (1..x.ndim()).map(|x| {x as u64}).collect(),
+                shape: x.shape().iter().map(|y| {*y as u64}).collect()
+            }))
+        }),
+        NodeEvaluation::F64(x) => Ok(yarrow::Value {
             datatype: yarrow::DataType::F64 as i32,
-            data: Some(yarrow::array_nd::Data::F64(yarrow::Array1Df64 {
-                data: x.iter().map(|s| *s).collect()
-            })),
-            order: (1..x.ndim()).map(|x| {x as u64}).collect(),
-            shape: x.shape().iter().map(|y| {*y as u64}).collect()
-        },
-        NodeEvaluation::Str(x) => yarrow::ArrayNd {
+            data: Some(yarrow::value::Data::F64(yarrow::Array1Df64 {
+                data: x.iter().map(|s| *s).collect(),
+                order: (1..x.ndim()).map(|x| {x as u64}).collect(),
+                shape: x.shape().iter().map(|y| {*y as u64}).collect()
+            }))
+        }),
+        NodeEvaluation::Str(x) => Ok(yarrow::Value {
             datatype: yarrow::DataType::String as i32,
-            data: Some(yarrow::array_nd::Data::String(yarrow::Array1Dstr {
-                data: x.iter().cloned().collect()
-            })),
-            order: (1..x.ndim()).map(|x| {x as u64}).collect(),
-            shape: x.shape().iter().map(|y| {*y as u64}).collect()
+            data: Some(yarrow::value::Data::String(yarrow::Array1Dstr {
+                data: x.iter().cloned().collect(),
+                order: (1..x.ndim()).map(|x| {x as u64}).collect(),
+                shape: x.shape().iter().map(|y| {*y as u64}).collect()
+            }))
+        }),
+        NodeEvaluation::HashmapString(x) => {
+            let mut evaluation_serialized: HashMap<String, yarrow::Value> = HashMap::new();
+            for (node_id, node_eval) in x {
+                if let Ok(array_serialized) = serialize_proto_array(node_eval) {
+                    evaluation_serialized.insert(node_id.to_owned(), array_serialized);
+                }
+            }
+
+            return Ok(yarrow::Value {
+                datatype: yarrow::DataType::HashmapString as i32,
+                data: Some(yarrow::value::Data::HashmapString(yarrow::HashmapString {
+                    data: evaluation_serialized
+                }))
+            })
         },
+        _ => Err("Unsupported evaluation type. Could not serialize data to protobuf.")
     }
 }

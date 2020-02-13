@@ -4,7 +4,7 @@ from yarrow._native_runtime import ffi as ffi_runtime, lib as lib_runtime
 import json
 import ctypes
 
-from . import release_pb2
+from . import api_pb2
 
 
 class ByteBuffer(ctypes.Structure):
@@ -53,4 +53,4 @@ class LibraryWrapper(object):
             *_serialize_proto(release, ffi_runtime)
         )
         serialized_response = ffi_runtime.buffer(byte_buffer.data, byte_buffer.len)
-        return release_pb2.Release.FromString(serialized_response)
+        return api_pb2.ResultRelease.FromString(serialized_response)
