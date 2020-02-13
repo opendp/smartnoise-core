@@ -67,10 +67,8 @@ def test_basic_path():
 
 def test_raw_dataset():
     with yarrow.Analysis() as analysis:
-
-        data_vector = yarrow.Component.of([1., 2., 3., 4., 5.])
         yarrow.ops.dp_mean(
-            data=data_vector,
+            data=[1., 2., 3., 4., 5.],
             epsilon=1,
             minimum=0,
             maximum=10,
