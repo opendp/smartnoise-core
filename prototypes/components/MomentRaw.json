@@ -1,0 +1,25 @@
+{
+    "arguments": {
+        "data": {
+            "of": [
+                "int",
+                "bool",
+                "double"
+            ],
+            "type": "Array"
+        }
+    },
+    "id": "MomentRaw",
+    "name": "moment_raw",
+    "options": {
+        "epsilon": {
+            "type": "double"
+        }
+    },
+    "return": {
+        "of": [
+            "double"
+        ],
+        "type": "Array"
+    }
+}

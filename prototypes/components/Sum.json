@@ -1,0 +1,26 @@
+{
+    "arguments": {
+        "data": {
+            "of": [
+                "int",
+                "double",
+                "bool"
+            ],
+            "type": "Array"
+        }
+    },
+    "id": "Sum",
+    "name": "sum",
+    "options": {
+        "epsilon": {
+            "type": "double"
+        }
+    },
+    "return": {
+        "of": [
+            "int",
+            "double"
+        ],
+        "type": "Array"
+    }
+}

@@ -1,0 +1,28 @@
+{
+    "arguments": {
+        "left": {
+            "of": [
+                "int",
+                "double"
+            ],
+            "type": "Array"
+        },
+        "right": {
+            "of": [
+                "int",
+                "double"
+            ],
+            "type": "Array"
+        }
+    },
+    "id": "Divide",
+    "name": "divide",
+    "options": {},
+    "return": {
+        "of": [
+            "int",
+            "double"
+        ],
+        "type": "Array"
+    }
+}

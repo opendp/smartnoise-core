@@ -1,0 +1,20 @@
+{
+    "arguments": {},
+    "description": "pass forward the data contained within the protobuf as an array",
+    "id": "Literal",
+    "name": "literal",
+    "options": {
+        "value": {
+            "type": "Value"
+        }
+    },
+    "return": {
+        "of": [
+            "int",
+            "bool",
+            "double",
+            "string"
+        ],
+        "type": "Array"
+    }
+}

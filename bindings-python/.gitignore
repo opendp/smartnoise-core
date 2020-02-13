@@ -5,3 +5,4 @@ __pycache__/
 yarrow/_native*
 yarrow.egg-info
 .eggs/
+yarrow/components.py

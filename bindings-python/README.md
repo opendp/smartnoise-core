@@ -2,12 +2,12 @@
 1. install dependencies  
     
     
-    python -m pip install -r bindings-python/requirements.txt
+    python3 -m pip install -r bindings-python/requirements.txt
 
 2. install yarrow (rerun when binaries or proto are updated)
 
 
-    . install.sh
+    python3 setup.py develop
 
 
 The `setup.py` is used for building/installing the package, under the assumption that protoc has already run.

@@ -1,0 +1,38 @@
+{
+    "arguments": {
+        "data": {
+            "of": [
+                "string",
+                "int",
+                "bool",
+                "double"
+            ],
+            "type": "Array"
+        },
+        "edges": {
+            "of": [
+                "string",
+                "int",
+                "bool",
+                "double"
+            ],
+            "type": "Array"
+        }
+    },
+    "id": "Bin",
+    "name": "bin",
+    "options": {
+        "interval": {
+            "type": "bool"
+        }
+    },
+    "return": {
+        "of": [
+            "string",
+            "int",
+            "bool",
+            "double"
+        ],
+        "type": "Array"
+    }
+}

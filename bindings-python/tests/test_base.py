@@ -1,5 +1,4 @@
 import yarrow
-import numpy as np
 
 test_csv_path = '/home/shoe/PSI/datasets/data/PUMS_california_demographics_1000/data.csv'
 
@@ -13,47 +12,47 @@ def test_basic_path():
         age = PUMS[('age', int)]
         sex = PUMS[('sex', int)]
 
-        mean_age = yarrow.dp_mean(
+        mean_age = yarrow.ops.dp_mean(
             PUMS[('married', float)],
             epsilon=.065,
             minimum=0,
             maximum=100,
-            num_records=500
+            n=500
         )
 
-        yarrow.dp_mean(
+        yarrow.ops.dp_mean(
             age / 2 + (sex + 22),
             epsilon=.1,
             minimum=mean_age - 5.2,
             maximum=102,
-            num_records=500) + 5.
+            n=500) + 5.
 
-        yarrow.dp_variance(
+        yarrow.ops.dp_variance(
             PUMS[('educ', int)],
             epsilon=.15,
-            num_records=1000,
+            n=1000,
             minimum=0,
             maximum=12
         )
 
-        yarrow.dp_moment_raw(
+        yarrow.ops.dp_moment_raw(
             PUMS[('married', float)],
             epsilon=.15,
-            num_records=1000000,
+            n=1000000,
             minimum=0,
             maximum=12,
             order=3
         )
 
-        yarrow.dp_covariance(
+        yarrow.ops.dp_covariance(
             PUMS[('sex', int)],
             PUMS[('married', int)],
             epsilon=.15,
-            num_records=1000,
-            minimum_x=0,
-            maximum_x=1,
-            minimum_y=0,
-            maximum_y=1
+            n=1000,
+            minimum_left=0,
+            maximum_left=1,
+            minimum_right=0,
+            maximum_right=1
         )
 
     print('analysis is valid:', analysis.validate())
@@ -69,15 +68,13 @@ def test_basic_path():
 def test_raw_dataset():
     with yarrow.Analysis() as analysis:
 
-        data_vector = yarrow.Component('Literal', options={
-            'value': yarrow.value_proto(np.array([[1., 2., 3., 4., 5.]]))
-        })
-        yarrow.dp_mean(
+        data_vector = yarrow.Component.of([1., 2., 3., 4., 5.])
+        yarrow.ops.dp_mean(
             data=data_vector,
             epsilon=1,
             minimum=0,
             maximum=10,
-            num_records=10
+            n=10
         )
 
     analysis.plot()

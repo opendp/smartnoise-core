@@ -1,0 +1,19 @@
+{
+    "arguments": {
+        "data": {
+            "of": [
+                "string"
+            ],
+            "type": "Array"
+        }
+    },
+    "id": "ToInt",
+    "name": "to_int",
+    "options": {},
+    "return": {
+        "of": [
+            "int"
+        ],
+        "type": "Array"
+    }
+}

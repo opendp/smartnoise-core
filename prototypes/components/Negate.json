@@ -1,0 +1,25 @@
+{
+    "arguments": {
+        "left": {
+            "of": [
+                "bool"
+            ],
+            "type": "Array"
+        },
+        "right": {
+            "of": [
+                "bool"
+            ],
+            "type": "Array"
+        }
+    },
+    "id": "Negate",
+    "name": "negate",
+    "options": {},
+    "return": {
+        "of": [
+            "bool"
+        ],
+        "type": "Array"
+    }
+}

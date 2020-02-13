@@ -1,0 +1,21 @@
+{
+    "arguments": {
+        "data": {
+            "of": [
+                "int",
+                "bool",
+                "double"
+            ],
+            "type": "Array"
+        }
+    },
+    "id": "Mean",
+    "name": "mean",
+    "options": {},
+    "return": {
+        "of": [
+            "double"
+        ],
+        "type": "Array"
+    }
+}
