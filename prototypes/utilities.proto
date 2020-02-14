@@ -6,6 +6,52 @@ message Error {
     string message = 1;
 }
 
+message PrivacyDefinition {
+    // upper bound
+    uint32 group_size = 4;
+
+    enum Distance {
+        // (e, 0)-differential privacy
+        PURE = 0;
+
+        // (e, d)-differential privacy
+        APPROXIMATE = 1;
+
+        // https://arxiv.org/pdf/1702.07476.pdf
+        RENYI = 2;
+
+        // https://arxiv.org/pdf/1603.01887.pdf
+        CONCENTRATED = 3;
+
+        // https://arxiv.org/pdf/1905.02383.pdf
+        F = 4;
+    }
+    Distance distance = 5;
+
+    enum Neighboring {
+        SUBSTITUTE = 0;
+        ADD_REMOVE = 1;
+    }
+    Neighboring neighboring = 6;
+}
+
+message Constraint {
+    Array1Di64 num_records = 1;
+
+    message ConstraintContinuous {
+        Value minimum = 1;
+        Value maximum = 2;
+    }
+    message ConstraintCategorical {
+        repeated Value categories = 1;
+    }
+
+    oneof {
+        ConstraintContinuous continuous = 2;
+        ConstraintCategorical categorical = 2;
+    }
+}
+
 enum DataType {
     BYTES = 0; // default value is the unset type
     BOOL = 1;
@@ -71,11 +117,6 @@ message Value {
         Array1Dstr string = 6;
         HashmapString hashmapString = 7;
     }
-}
-
-enum Mechanism {
-    UNKNOWN = 0;
-    LAPLACE = 1;
 }
 
 // return type for validator's computed overall epsilon, per dataset 
