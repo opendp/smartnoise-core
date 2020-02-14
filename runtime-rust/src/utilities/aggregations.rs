@@ -2,6 +2,7 @@ use ndarray::prelude::*;
 use std::collections::HashMap;
 
 use crate::utilities::transformations;
+use crate::utilities::noise;
 
 // pub fn count< T:PartialEq >(data: &ArrayD<T>, group_by: &Option<ArrayD<T>>) -> ArrayD<f64> {
 //     // Accepts data and an optional array of values to be counted, and returns counts of each value.
@@ -256,4 +257,40 @@ pub fn kth_raw_sample_moment(data: &ArrayD<f64>, k: &i64) -> ArrayD<f64> {
     let data_vec: Vec<f64> = data.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
     let data_to_kth_power: Vec<f64> = data_vec.iter().map(|x| x.powf(*k as f64)).collect();
     return mean(&arr1(&data_to_kth_power).into_dyn());
+}
+
+pub fn create_subset<T>(set: &ArrayD<T>, probabilities: &ArrayD<f64>, k: &i64) -> ArrayD<T> where T: Copy {
+    /// Accepts set and element probabilities and returns a subset of size k
+    /// Probabilities are the probability of drawing each element on the first draw (they sum to 1)
+    /// Based on Algorithm A from Raimidis PS, Spirakis PG (2006). “Weighted random sampling with a reservoir.”
+
+    assert!(*k as usize <= set.len());
+
+    let mut set_vec: Vec<T> = set.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
+    let mut probabilities_vec: Vec<f64> = probabilities.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
+    let mut subsample_vec: Vec<T> = Vec::with_capacity(*k as usize);
+
+    //
+    // generate keys and identify top k indices
+    //
+
+    // generate key/index tuples
+    let mut key_vec = Vec::with_capacity(*k as usize);
+    for i in 0..*k {
+        key_vec.push( (noise::sample_uniform(0., 1.).powf(1./probabilities_vec[i as usize]), i) );
+    }
+
+    // sort key/index tuples by key and identify top k indices
+    key_vec.sort_by(|a, b| b.partial_cmp(a).unwrap());
+    let mut top_indices: Vec<i64> = Vec::with_capacity(*k as usize);
+    for i in 0..*k {
+        top_indices.push(key_vec[i as usize].1 as i64);
+    }
+
+    // subsample based on top k indices
+    let mut subset: Vec<T> = Vec::with_capacity(*k as usize);
+    for value in top_indices.iter().map(|&index| set_vec[index as usize]) {
+        subset.push(value);
+    }
+    return arr1(&subset).into_dyn();
 }
