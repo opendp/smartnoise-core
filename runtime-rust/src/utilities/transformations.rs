@@ -1,10 +1,13 @@
 use std::string::String;
 use std::vec::Vec;
+use std::cmp;
 use ndarray::prelude::*;
+use ndarray::stack;
 use core::f64::NAN;
 use num;
 
 use crate::utilities::noise;
+use crate::utilities::aggregations;
 
 pub fn bin(data: &ArrayD<f64>, edges: &ArrayD<f64>, inclusive_left: &bool) -> ArrayD<String> {
     /// Accepts vector of data and assigns each element to a bin
@@ -83,111 +86,6 @@ pub fn bin(data: &ArrayD<f64>, edges: &ArrayD<f64>, inclusive_left: &bool) -> Ar
     return bin_array.into_dyn();
 }
 
-pub fn impute_f64_uniform(data: &ArrayD<f64>, min: &f64, max: &f64) -> ArrayD<f64> {
-    /// Given data and min/max values, returns data with imputed values in place of NaN.
-    /// For now, imputed values are generated uniformly at random between the min and max values provided,
-    ///
-    /// # Arguments
-    /// * `data` - data for which you would like to impute the NaN values
-    /// * `min` - lower bound on imputation range
-    /// * `max` - upper bound on imputation range
-    ///
-    /// # Return
-    /// array of data with imputed values
-    ///
-    /// # Example
-    /// ```
-    /// let data: ArrayD<f64> = arr1(&[1., NAN, 3., NAN]).into_dyn();
-    /// let min: f64 = 0.;
-    /// let max: f64 = 10.;
-    /// let imputed: ArrayD<f64> = impute(&data, &min, &max);
-    /// println!("{:?}", imputed);
-    /// ```
-
-    let mut data_vec: Vec<f64> = Vec::with_capacity(data.len());
-        for i in 0..data.len() {
-        if data[i].is_nan() {
-            data_vec.push(noise::sample_uniform(*min, *max));
-        } else {
-            data_vec.push(data[i]);
-        }
-    }
-    return arr1(&data_vec).into_dyn();
-}
-
-pub fn impute_f64_gaussian(data: &ArrayD<f64>, shift: &f64, scale: &f64, min: &f64, max: &f64) -> ArrayD<f64> {
-    /// Given data and min/max values, returns data with imputed values in place of NaN.
-    /// For now, imputed values are generated uniformly at random between the min and max values provided,
-    ///
-    /// # Arguments
-    /// * `data` - data for which you would like to impute the NaN values
-    /// * `shift` - the mean of the untruncated gaussian noise distribution
-    /// * `scale` - the standard deviation of the untruncated gaussian noise distribution
-    /// * `min` - lower bound on imputation range
-    /// * `max` - upper bound on imputation range
-    ///
-    /// # Return
-    /// array of data with imputed values
-    ///
-    /// # Example
-    /// ```
-    /// let data: ArrayD<f64> = arr1(&[1., NAN, 3., NAN]).into_dyn();
-    /// let shift: f64 = 5;
-    /// let scale: f64 = 7;
-    /// let min: f64 = 0.;
-    /// let max: f64 = 10.;
-    /// let imputed: ArrayD<f64> = impute(&data, &shift, &scale, &min, &max);
-    /// println!("{:?}", imputed);
-    /// ```
-
-    let mut data_vec: Vec<f64> = Vec::with_capacity(data.len());
-        for i in 0..data.len() {
-        if data[i].is_nan() {
-            data_vec.push(noise::sample_gaussian_truncated(*shift, *scale, *min, *max));
-        } else {
-            data_vec.push(data[i]);
-        }
-    }
-    return arr1(&data_vec).into_dyn();
-}
-
-pub fn impute_i64_uniform(data: &ArrayD<f64>, min: &i64, max: &i64) -> ArrayD<f64> {
-    /// Given data and min/max values, returns data with imputed values in place of NaN.
-    /// For now, imputed values are generated uniformly at random between the min and max values provided,
-    /// we may later add the ability to impute according to other distributions
-    ///
-    /// NOTE: This function imputes integer values, although the input and output arrays are
-    ///       made up of floats. integer types in rust do not support NAN, so if we have missing data,
-    ///       it needs to be represented as a float
-    ///
-    /// # Arguments
-    /// * `data` - data for which you would like to impute the NaN values
-    /// * `min` - lower bound on imputation range
-    /// * `max` - upper bound on imputation range
-    ///
-    /// # Return
-    /// array of data with imputed values
-    ///
-    /// # Example
-    /// ```
-    /// let data: ArrayD<f64> = arr1(&[1., NAN, 3., NAN]).into_dyn();
-    /// let min: i64 = 0;
-    /// let max: i64 = 10;
-    /// let imputed: ArrayD<f64> = impute(&data, &min, &max);
-    /// println!("{:?}", imputed);
-    /// ```
-
-    let mut data_vec: Vec<f64> = Vec::with_capacity(data.len());
-        for i in 0..data.len() {
-        if data[i].is_nan() {
-            data_vec.push(noise::sample_uniform_int(min, max) as f64);
-        } else {
-            data_vec.push(data[i]);
-        }
-    }
-    return arr1(&data_vec).into_dyn();
-}
-
 pub fn clamp(data: &ArrayD<f64>, min: &f64, max: &f64) -> ArrayD<f64> {
     /// clamps data to [min, max]
     ///
@@ -217,4 +115,222 @@ pub fn clamp(data: &ArrayD<f64>, min: &f64, max: &f64) -> ArrayD<f64> {
         }
     }
     return arr1(&data_vec).into_dyn();
+}
+
+pub fn impute_float_uniform(data: &ArrayD<f64>, min: &f64, max: &f64) -> ArrayD<f64> {
+    /// Given data and min/max values, returns data with imputed values in place of NaN.
+    /// For now, imputed values are generated uniformly at random between the min and max values provided,
+    ///
+    /// # Arguments
+    /// * `data` - data for which you would like to impute the NaN values
+    /// * `min` - lower bound on imputation range
+    /// * `max` - upper bound on imputation range
+    ///
+    /// # Return
+    /// array of data with imputed values
+    ///
+    /// # Example
+    /// ```
+    /// let data: ArrayD<f64> = arr1(&[1., NAN, 3., NAN]).into_dyn();
+    /// let min: f64 = 0.;
+    /// let max: f64 = 10.;
+    /// let imputed: ArrayD<f64> = impute(&data, &min, &max);
+    /// println!("{:?}", imputed);
+    /// ```
+
+    let mut data_vec: Vec<f64> = Vec::with_capacity(data.len());
+    for i in 0..data.len() {
+        if data[i].is_nan() {
+            data_vec.push(noise::sample_uniform(*min, *max));
+        } else {
+            data_vec.push(data[i]);
+        }
+    }
+    return arr1(&data_vec).into_dyn();
+}
+
+pub fn impute_float_gaussian(data: &ArrayD<f64>, shift: &f64, scale: &f64, min: &f64, max: &f64) -> ArrayD<f64> {
+    /// Given data and min/max values, returns data with imputed values in place of NaN.
+    /// For now, imputed values are generated uniformly at random between the min and max values provided,
+    ///
+    /// # Arguments
+    /// * `data` - data for which you would like to impute the NaN values
+    /// * `shift` - the mean of the untruncated gaussian noise distribution
+    /// * `scale` - the standard deviation of the untruncated gaussian noise distribution
+    /// * `min` - lower bound on imputation range
+    /// * `max` - upper bound on imputation range
+    ///
+    /// # Return
+    /// array of data with imputed values
+    ///
+    /// # Example
+    /// ```
+    /// let data: ArrayD<f64> = arr1(&[1., NAN, 3., NAN]).into_dyn();
+    /// let shift: f64 = 5;
+    /// let scale: f64 = 7;
+    /// let min: f64 = 0.;
+    /// let max: f64 = 10.;
+    /// let imputed: ArrayD<f64> = impute(&data, &shift, &scale, &min, &max);
+    /// println!("{:?}", imputed);
+    /// ```
+
+    let mut data_vec: Vec<f64> = Vec::with_capacity(data.len());
+    for i in 0..data.len() {
+        if data[i].is_nan() {
+            data_vec.push(noise::sample_gaussian_truncated(*shift, *scale, *min, *max));
+        } else {
+            data_vec.push(data[i]);
+        }
+    }
+    return arr1(&data_vec).into_dyn();
+}
+
+pub fn impute_int_uniform(data: &ArrayD<f64>, min: &f64, max: &f64) -> ArrayD<f64> {
+    /// Given data and min/max values, returns data with imputed values in place of NaN.
+    /// For now, imputed values are generated uniformly at random between the min and max values provided,
+    /// we may later add the ability to impute according to other distributions
+    ///
+    /// NOTE: This function imputes integer values, although the input and output arrays are
+    ///       made up of floats. integer types in rust do not support NAN, so if we have missing data,
+    ///       it needs to be represented as a float
+    ///
+    /// # Arguments
+    /// * `data` - data for which you would like to impute the NaN values
+    /// * `min` - lower bound on imputation range
+    /// * `max` - upper bound on imputation range
+    ///
+    /// # Return
+    /// array of data with imputed values
+    ///
+    /// # Example
+    /// ```
+    /// let data: ArrayD<f64> = arr1(&[1., NAN, 3., NAN]).into_dyn();
+    /// let min: i64 = 0;
+    /// let max: i64 = 10;
+    /// let imputed: ArrayD<f64> = impute(&data, &min, &max);
+    /// println!("{:?}", imputed);
+    /// ```
+
+    // ensure that min/max are integers -- they are passed as floats for consistency with our more general imputation architecture
+    assert!(min.fract() == 0.0 && max.fract() == 0.0);
+
+    let mut data_vec: Vec<f64> = Vec::with_capacity(data.len());
+    for i in 0..data.len() {
+        if data[i].is_nan() {
+            data_vec.push(noise::sample_uniform_int(&(*min as i64), &(*max as i64)) as f64);
+        } else {
+            data_vec.push(data[i]);
+        }
+    }
+    return arr1(&data_vec).into_dyn();
+}
+
+pub struct ImputationParameters {
+    n: i64,
+    distribution: ArrayD<String>,
+    data_type: ArrayD<String>,
+    min: ArrayD<f64>,
+    max: ArrayD<f64>,
+    shift: ArrayD<Option<f64>>,
+    scale: ArrayD<Option<f64>>
+}
+
+pub fn clamp_and_impute(data: &ArrayD<f64>, params: &ImputationParameters) -> ArrayD<f64> {
+    // enforce that data are vector or matrix
+    // NOTE: may not want/need this eventually
+    assert!(data.ndim() <= 2);
+
+    // set string literals for fields in ImputationParameters struct that are of type String
+    let Uniform: String = "Uniform".to_string();
+    let Gaussian: String = "Gaussian".to_string();
+    let Float: String = "Float".to_string();
+    let Int: String = "Int".to_string();
+
+    // get parameter array lengths
+    // NOTE: this needs to be kept up to date to reflect every field in the ImputationParameters struct
+    let distribution_len: i64 = params.distribution.len() as i64;
+    let data_type_len: i64 = params.data_type.len() as i64;
+    let min_len: i64 = params.min.len() as i64;
+    let max_len: i64 = params.max.len() as i64;
+    let shift_len: i64 = params.shift.len() as i64;
+    let scale_len: i64 = params.scale.len() as i64;
+
+    // find correct length for each parameter array based on dimensionality of data
+    let correct_param_length: i64 = match data.ndim() {
+        0 => 1, // datum is a single constant
+        1 => 1, // data are a single vector
+        2 => data.len_of(Axis(0)) as i64, // data are k vectors, this finds k
+        _ => panic!("dimension of input data not supported")
+    };
+
+    // ensure that parameters are of correct length
+    assert!(correct_param_length == distribution_len &&
+            correct_param_length == data_type_len &&
+            correct_param_length == min_len &&
+            correct_param_length == max_len &&
+            correct_param_length == shift_len &&
+            correct_param_length == scale_len);
+
+    // get actual number of observations in data
+    let real_n: i64 = match data.ndim() {
+        0 => 1,
+        1 => data.len_of(Axis(0)) as i64,
+        2 => data.len_of(Axis(1)) as i64,
+        _ => panic!("dimension of input data not supported")
+    };
+
+    // initialize new data -- this is what we ultimately return from the function
+    let mut new_data: ArrayD<f64>= match data.ndim() {
+        0 => arr0(0.).into_dyn(),
+        1 => Array1::<f64>::zeros(real_n as usize).into_dyn(),
+        2 => Array2::<f64>::zeros((data.len_of(Axis(0)),real_n as usize)).into_dyn(),
+        _ => panic!("dimension of input data not supported")
+    };
+
+    // initialize all data steps -- we create all of them in order to enforce roughly equal timing
+    // regardless of whether or not n == real_n
+    let mut imputed_data: ArrayD<f64>;
+    let mut imputed_clamped_data: ArrayD<f64>;
+    let mut subsampled_imputed_clamped_data: ArrayD<f64>;
+    let mut augmented_imputed_clamped_data: ArrayD<f64>;
+
+    // for each column in data:
+    for i in 0..correct_param_length {
+        // do standard data imputation
+        imputed_data = match params {
+            ImputationParameters { distribution: Uniform, data_type: Float, .. } => impute_float_uniform(&(data.slice(s![0, ..])).to_owned().into_dyn(), &params.min[i as usize], &params.max[i as usize]),
+            ImputationParameters { distribution: Uniform, data_type: Int, .. } => impute_int_uniform(&(data.slice(s![0, ..])).to_owned().into_dyn(), &params.min[i as usize], &params.max[i as usize]),
+            ImputationParameters { distribution: Gaussian, data_type: Float, .. } => impute_float_gaussian(&(data.slice(s![0, ..])).to_owned().into_dyn(), &params.shift[i as usize].unwrap(), &params.scale[i as usize].unwrap(), &params.min[i as usize], &params.max[i as usize]),
+            _ => panic!("distribution/data_type combination not supported")
+        };
+
+        // clamp data to bounds
+        imputed_clamped_data = clamp(&(imputed_data.slice(s![0, ..])).to_owned().into_dyn(), &params.min[i as usize], &params.max[i as usize]);
+
+        // create subsampled version of data (returned if n < real_n)
+        let k: i64 = cmp::min(params.n, real_n);
+        let probabilities: ArrayD<f64> = arr1(&vec![1./(k as f64)]).into_dyn();
+        subsampled_imputed_clamped_data = aggregations::create_subset(&imputed_clamped_data, &probabilities, &k);
+
+        // create augmented version of data (returned if n > real_n)
+        let mut augmentation_data: ArrayD<f64> = arr1(&vec![NAN; cmp::max(0, params.n - real_n) as usize]).into_dyn();
+        augmentation_data = match params {
+            ImputationParameters { distribution: Uniform, data_type: Float, .. } => impute_float_uniform(&augmentation_data, &params.min[i as usize], &params.max[i as usize]),
+            ImputationParameters { distribution: Uniform, data_type: Int, .. } => impute_int_uniform(&augmentation_data, &params.min[i as usize], &params.max[i as usize]),
+            ImputationParameters { distribution: Gaussian, data_type: Float, .. } => impute_float_gaussian(&augmentation_data, &params.shift[i as usize].unwrap(), &params.scale[i as usize].unwrap(), &params.min[i as usize], &params.max[i as usize]),
+            _ => panic!("distribution/data_type combination not supported")
+        };
+        let augmentation_vec: Vec<f64> = augmentation_data.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
+        augmented_imputed_clamped_data = stack![Axis(0), imputed_clamped_data.slice(s![0, ..]), augmentation_vec].to_owned().into_dyn();
+
+        // create data
+        if params.n == real_n {
+            new_data.slice_mut(s![i as usize, ..]).assign(&imputed_clamped_data);
+        } else if params.n < real_n {
+            new_data.slice_mut(s![i as usize, ..]).assign(&subsampled_imputed_clamped_data);
+        } else if params.n > real_n {
+            new_data.slice_mut(s![i as usize, ..]).assign(&augmented_imputed_clamped_data);
+        }
+    }
+    return new_data;
 }
