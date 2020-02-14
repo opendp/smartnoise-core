@@ -34,7 +34,7 @@ message Literal {
 message Constant {}
 
 // -- manipulations --
-// type manipulations 
+// type manipulations
 message ToString {}
 message ToInt {}
 message ToBool {}
@@ -108,17 +108,17 @@ message SampleGaussian {}
 message Laplace {
     double epsilon = 1;
 }
-message ImputeF64Uniform {
+message ImputeFloatUniform {
     double min = 1;
     double max = 2;
 }
-message ImputeF64Gaussian {
+message ImputeFloatGaussian {
     double shift = 1;
     double scale = 2;
     double min = 3;
     double max = 4;
 }
-message ImputeI64Uniform {
+message ImputeIntUniform {
     double min = 1;
     double max = 2;
 }

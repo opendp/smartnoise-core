@@ -96,7 +96,7 @@ message Component {
         Constant constant = 111; // propagate a value in the release
 
         // -- manipulations --
-        // type manipulations 
+        // type manipulations
         ToString tostring = 200;
         ToInt toint = 201;
         ToBool tobool = 202;
@@ -147,9 +147,9 @@ message Component {
 
         // deprecated
         Laplace laplace = 1000;
-        ImputeF64Uniform impute_f64_uniform = 1001;
-        ImputeF64Gaussian impute_f64_gaussian = 1002;
-        ImputeI64Uniform impute_i64_uniform = 1003;
+        ImputeFloatUniform impute_float_uniform = 1001;
+        ImputeFloatGaussian impute_float_gaussian = 1002;
+        ImputeIntUniform impute_int_uniform = 1003;
         LaplaceMechanism laplace_mechanism = 1004;
         GaussianMechanism gaussian_mechanism = 1005;
         SimpleGeometricMechanism simple_geometric_mechanism = 1006;
