@@ -128,27 +128,27 @@ pub fn component_negate(_x: &yarrow::Negate, arguments: &NodeArguments) -> NodeE
     }.unwrap()
 }
 
-pub fn component_impute_f64_uniform(_x: &yarrow::ImputeF64Uniform, arguments: &NodeArguments) -> NodeEvaluation {
+pub fn component_impute_float_uniform(_x: &yarrow::ImputeFloatUniform, arguments: &NodeArguments) -> NodeEvaluation {
     let data: ArrayD<f64> = get_array_f64(&arguments, "data");
     let min: f64 = get_f64(&arguments, "min");
     let max: f64 = get_f64(&arguments, "max");
-    NodeEvaluation::F64(utilities::transformations::impute_f64_uniform(&data, &min, &max))
+    NodeEvaluation::F64(utilities::transformations::impute_float_uniform(&data, &min, &max))
 }
 
-pub fn component_impute_f64_gaussian(_x: &yarrow::ImputeF64Gaussian, arguments: &NodeArguments) -> NodeEvaluation {
+pub fn component_impute_float_gaussian(_x: &yarrow::ImputeFloatGaussian, arguments: &NodeArguments) -> NodeEvaluation {
     let data: ArrayD<f64> = get_array_f64(&arguments, "data");
     let shift: f64 = get_f64(&arguments, "shift");
     let scale: f64 = get_f64(&arguments, "scale");
     let min: f64 = get_f64(&arguments, "min");
     let max: f64 = get_f64(&arguments, "max");
-    NodeEvaluation::F64(utilities::transformations::impute_f64_gaussian(&data, &shift, &scale, &min, &max))
+    NodeEvaluation::F64(utilities::transformations::impute_float_gaussian(&data, &shift, &scale, &min, &max))
 }
 
-pub fn component_impute_i64_uniform(_x: &yarrow::ImputeI64Uniform, arguments: &NodeArguments) -> NodeEvaluation {
+pub fn component_impute_int_uniform(_x: &yarrow::ImputeIntUniform, arguments: &NodeArguments) -> NodeEvaluation {
     let data: ArrayD<f64> = get_array_f64(&arguments, "data");
-    let min: i64 = get_i64(&arguments, "min");
-    let max: i64 = get_i64(&arguments, "max");
-    NodeEvaluation::F64(utilities::transformations::impute_i64_uniform(&data, &min, &max))
+    let min: f64 = get_f64(&arguments, "min");
+    let max: f64 = get_f64(&arguments, "max");
+    NodeEvaluation::F64(utilities::transformations::impute_int_uniform(&data, &min, &max))
 }
 
 pub fn component_bin(_X: &yarrow::Bin, arguments: &NodeArguments) -> NodeEvaluation {
