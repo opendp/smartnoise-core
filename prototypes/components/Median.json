@@ -1,0 +1,27 @@
+{
+    "arguments": {
+        "data": {
+            "of": [
+                "int",
+                "bool",
+                "double"
+            ],
+            "type": "Array"
+        }
+    },
+    "id": "Median",
+    "name": "median",
+    "options": {
+        "epsilon": {
+            "type": "double"
+        }
+    },
+    "return": {
+        "of": [
+            "int",
+            "bool",
+            "double"
+        ],
+        "type": "Array"
+    }
+}

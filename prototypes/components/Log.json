@@ -1,0 +1,32 @@
+{
+    "arguments": {
+        "base": {
+            "type": {
+                "of": [
+                    "int",
+                    "double"
+                ],
+                "type": "Array"
+            }
+        },
+        "data": {
+            "type": {
+                "of": [
+                    "int",
+                    "double"
+                ],
+                "type": "Array"
+            }
+        }
+    },
+    "id": "Log",
+    "name": "log",
+    "options": {},
+    "return": {
+        "of": [
+            "int",
+            "double"
+        ],
+        "type": "Array"
+    }
+}

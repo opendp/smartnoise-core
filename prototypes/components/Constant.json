@@ -1,0 +1,16 @@
+{
+    "arguments": {},
+    "description": "intended to be used with a release that already contains the value for this node",
+    "id": "Constant",
+    "name": "constant",
+    "options": {},
+    "return": {
+        "of": [
+            "int",
+            "bool",
+            "double",
+            "string"
+        ],
+        "type": "Array"
+    }
+}

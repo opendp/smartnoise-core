@@ -1,0 +1,28 @@
+{
+    "arguments": {
+        "data": {
+            "of": [
+                "int",
+                "double"
+            ],
+            "type": "Array"
+        }
+    },
+    "id": "Clamp",
+    "name": "clamp",
+    "options": {
+        "maximum": {
+            "type": "double"
+        },
+        "minimum": {
+            "type": "double"
+        }
+    },
+    "return": {
+        "of": [
+            "int",
+            "double"
+        ],
+        "type": "Array"
+    }
+}

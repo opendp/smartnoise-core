@@ -1,0 +1,21 @@
+{
+    "arguments": {
+        "data": {
+            "of": [
+                "int",
+                "bool",
+                "double"
+            ],
+            "type": "Array"
+        }
+    },
+    "id": "Variance",
+    "name": "variance",
+    "options": {},
+    "return": {
+        "of": [
+            "double"
+        ],
+        "type": "Array"
+    }
+}

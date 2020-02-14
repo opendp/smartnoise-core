@@ -1,0 +1,47 @@
+{
+    "arguments": {
+        "data": {
+            "of": [
+                "int",
+                "bool",
+                "double",
+                "string"
+            ],
+            "type": "Array"
+        },
+        "maximum": {
+            "dimensions": 0,
+            "of": [
+                "int"
+            ],
+            "type": "Array"
+        },
+        "minimum": {
+            "dimensions": 0,
+            "of": [
+                "int"
+            ],
+            "type": "Array"
+        },
+        "n": {
+            "dimensions": 0,
+            "of": [
+                "int"
+            ],
+            "type": "Array"
+        }
+    },
+    "id": "DPCount",
+    "name": "dp_count",
+    "options": {
+        "epsilon": {
+            "type": "double"
+        }
+    },
+    "return": {
+        "of": [
+            "int"
+        ],
+        "type": "Array"
+    }
+}

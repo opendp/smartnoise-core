@@ -1,0 +1,27 @@
+{
+    "arguments": {
+        "left": {
+            "of": [
+                "int",
+                "double"
+            ],
+            "type": "Array"
+        },
+        "right": {
+            "of": [
+                "int",
+                "double"
+            ],
+            "type": "Array"
+        }
+    },
+    "id": "GreaterThan",
+    "name": "greater_than",
+    "options": {},
+    "return": {
+        "of": [
+            "bool"
+        ],
+        "type": "Array"
+    }
+}

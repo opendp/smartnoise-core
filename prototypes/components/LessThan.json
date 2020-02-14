@@ -1,0 +1,29 @@
+{
+    "arguments": {
+        "left": {
+            "of": [
+                "int",
+                "bool",
+                "double"
+            ],
+            "type": "Array"
+        },
+        "right": {
+            "of": [
+                "int",
+                "bool",
+                "double"
+            ],
+            "type": "Array"
+        }
+    },
+    "id": "LessThan",
+    "name": "less_than",
+    "options": {},
+    "return": {
+        "of": [
+            "bool"
+        ],
+        "type": "Array"
+    }
+}

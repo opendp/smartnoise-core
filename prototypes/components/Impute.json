@@ -1,0 +1,25 @@
+{
+    "arguments": {
+        "data": {
+            "of": [
+                "int",
+                "bool",
+                "string",
+                "double"
+            ],
+            "type": "Array"
+        }
+    },
+    "id": "Impute",
+    "name": "impute",
+    "options": {},
+    "return": {
+        "of": [
+            "int",
+            "bool",
+            "string",
+            "double"
+        ],
+        "type": "Array"
+    }
+}

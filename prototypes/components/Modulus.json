@@ -1,0 +1,31 @@
+{
+    "arguments": {
+        "left": {
+            "of": [
+                "int",
+                "double",
+                "bool"
+            ],
+            "type": "Array"
+        },
+        "right": {
+            "of": [
+                "int",
+                "double",
+                "bool"
+            ],
+            "type": "Array"
+        }
+    },
+    "id": "Modulus",
+    "name": "modulus",
+    "options": {},
+    "return": {
+        "of": [
+            "int",
+            "double",
+            "bool"
+        ],
+        "type": "Array"
+    }
+}

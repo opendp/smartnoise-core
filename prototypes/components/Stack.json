@@ -1,0 +1,25 @@
+{
+    "arguments": {
+        "**kwargs": {
+            "of": [
+                "int",
+                "bool",
+                "string",
+                "double"
+            ],
+            "type": "Array"
+        }
+    },
+    "id": "Stack",
+    "name": "stack",
+    "options": {},
+    "return": {
+        "of": [
+            "int",
+            "bool",
+            "string",
+            "double"
+        ],
+        "type": "Array"
+    }
+}

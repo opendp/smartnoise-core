@@ -1,0 +1,26 @@
+{
+    "arguments": {
+        "data": {
+            "of": [
+                "int",
+                "bool",
+                "double",
+                "string"
+            ],
+            "type": "Array"
+        }
+    },
+    "id": "Count",
+    "name": "count",
+    "options": {
+        "epsilon": {
+            "type": "double"
+        }
+    },
+    "return": {
+        "of": [
+            "int"
+        ],
+        "type": "Array"
+    }
+}

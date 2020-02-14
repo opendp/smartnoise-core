@@ -1,0 +1,30 @@
+{
+    "arguments": {
+        "data": {
+            "of": [
+                "Hashmap",
+                "int",
+                "bool",
+                "string",
+                "double"
+            ],
+            "type": "Hashmap"
+        }
+    },
+    "id": "Index",
+    "name": "index",
+    "options": {
+        "path": {
+            "type": "repeated string"
+        }
+    },
+    "return": {
+        "of": [
+            "int",
+            "bool",
+            "string",
+            "double"
+        ],
+        "type": "Array"
+    }
+}

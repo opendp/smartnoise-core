@@ -1,0 +1,47 @@
+{
+    "arguments": {
+        "data": {
+            "of": [
+                "int",
+                "double",
+                "bool"
+            ],
+            "type": "Array"
+        },
+        "maximum": {
+            "dimensions": 0,
+            "of": [
+                "int"
+            ],
+            "type": "Array"
+        },
+        "minimum": {
+            "dimensions": 0,
+            "of": [
+                "int"
+            ],
+            "type": "Array"
+        },
+        "n": {
+            "dimensions": 0,
+            "of": [
+                "int"
+            ],
+            "type": "Array"
+        }
+    },
+    "id": "DPSum",
+    "name": "dp_sum",
+    "options": {
+        "epsilon": {
+            "type": "double"
+        }
+    },
+    "return": {
+        "of": [
+            "int",
+            "double"
+        ],
+        "type": "Array"
+    }
+}

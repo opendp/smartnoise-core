@@ -30,6 +30,10 @@ def build_native(spec):
         rtld_flags=['NOW', 'NODELETE']
     )
 
+    spec.add_external_build(
+        cmd=['python3', 'code_generation.py'],
+        path="."
+    )
 
 setup(
     name='yarrow',

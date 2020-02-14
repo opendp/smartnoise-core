@@ -1,3 +1,5 @@
+import json
+import os
 import queue
 import numpy as np
 
@@ -39,9 +41,7 @@ class Dataset(object):
             'dataset_id': self.name,
             'column_id': column_id
         }, arguments={
-            'datatype': Component('Literal', options={
-                'value': value_proto(datatype)
-            })
+            'datatype': Component.of(datatype)
         })
 
 
@@ -55,140 +55,101 @@ class Component(object):
         if context:
             context.components.append(self)
 
-    def __add__(self, other):
-        if type(other) != self.__class__:
-            other = Component('Literal', options={'value': value_proto(other)})
-        return Component('Add', {'left': self, 'right': other})
-
-    def __sub__(self, other):
-        if type(other) != self.__class__:
-            other = Component('Literal', options={'value': value_proto(other)})
-        return Component('Subtract', {'left': self, 'right': other})
-
     def __pos__(self):
         return self
 
     def __neg__(self):
         return Component('Negative', arguments={'data': self})
 
+    def __add__(self, other):
+        return Component('Add', {'left': self, 'right': Component.of(other)})
+
+    def __sub__(self, other):
+        return Component('Subtract', {'left': self, 'right': Component.of(other)})
+
     def __mul__(self, other):
-        if type(other) != self.__class__:
-            other = Component('Literal', options={'value': value_proto(other)})
-        return Component('Multiply', arguments={'left': self, 'right': other})
+        return Component('Multiply', arguments={'left': self, 'right': Component.of(other)})
 
     def __truediv__(self, other):
-        if type(other) != self.__class__:
-            other = Component('Literal', options={'value': value_proto(other)})
-        return Component('Divide', arguments={'left': self, 'right': other})
+        return Component('Divide', arguments={'left': self, 'right': Component.of(other)})
 
     def __pow__(self, power, modulo=None):
-        if type(power) != self.__class__:
-            power = Component('Literal', options={'value': value_proto(power)})
-        return Component('Power', arguments={'left': self, 'right': power})
+        return Component('Power', arguments={'left': self, 'right': Component.of(power)})
 
+    def __or__(self, other):
+        return Component('Or', arguments={'left': self, 'right': Component.of(other)})
 
-def mean(data):
-    return Component('Mean', {'data': data})
+    def __and__(self, other):
+        return Component('And', arguments={'left': self, 'right': Component.of(other)})
 
+    def __gt__(self, other):
+        return Component('GreaterThan', arguments={'left': self, 'right': Component.of(other)})
 
-def value_proto(data):
+    def __lt__(self, other):
+        return Component('LessThan', arguments={'left': self, 'right': Component.of(other)})
 
-    if type(data) is bytes:
-        return utilities_pb2.Value(
-            datatype=utilities_pb2.DataType.Value("BYTES"),
-            bytes=data
-        )
+    def __eq__(self, other):
+        return Component('Equal', arguments={'left': self, 'right': Component.of(other)})
 
-    if issubclass(type(data), dict):
-        return utilities_pb2.Value(
-            datatype=utilities_pb2.DataType.Value("HASHMAP_STRING"),
-            hashmapString={key: value_proto(data[key]) for key in data}
-        )
+    def __gte__(self, other):
+        other = Component.of(other)
+        return Component('GreaterThan', arguments={'left': self, 'right': other}) or \
+               Component('Equal', arguments={'left': self, 'right': other})
 
-    data = np.array(data)
+    def __lte__(self, other):
+        other = Component.of(other)
+        return Component('LessThan', arguments={'left': self, 'right': other}) or \
+               Component('Equal', arguments={'left': self, 'right': other})
 
-    data_type = {
-        np.bool: "BOOL",
-        np.int64: "I64",
-        np.float64: "F64",
-        np.string_: "STRING",
-        np.str_: "STRING"
-    }[data.dtype.type]
+    def __hash__(self):
+        return id(self)
 
-    container_type = {
-        np.bool: utilities_pb2.Array1Dbool,
-        np.int64: utilities_pb2.Array1Di64,
-        np.float64: utilities_pb2.Array1Df64,
-        np.string_: utilities_pb2.Array1Dstr,
-        np.str_: utilities_pb2.Array1Dstr
-    }[data.dtype.type]
+    @staticmethod
+    def of(value):
+        def value_proto(data):
 
-    proto_args = {
-        "datatype": data_type,
-        data_type.lower(): container_type(
-            data=list(data.flatten()),
-            shape=list(data.shape),
-            order=list(range(data.ndim)))
-    }
+            if type(data) is bytes:
+                return utilities_pb2.Value(
+                    datatype=utilities_pb2.DataType.Value("BYTES"),
+                    bytes=data
+                )
 
-    return utilities_pb2.Value(**proto_args)
+            if issubclass(type(data), dict):
+                return utilities_pb2.Value(
+                    datatype=utilities_pb2.DataType.Value("HASHMAP_STRING"),
+                    hashmapString={key: value_proto(data[key]) for key in data}
+                )
 
+            data = np.array(data)
 
-def _to_component(value):
-    return value if type(value) == Component else Component(
-        'Literal', options={'value': value_proto(value)})
+            data_type = {
+                np.bool: "BOOL",
+                np.int64: "I64",
+                np.float64: "F64",
+                np.string_: "STRING",
+                np.str_: "STRING"
+            }[data.dtype.type]
 
+            container_type = {
+                np.bool: utilities_pb2.Array1Dbool,
+                np.int64: utilities_pb2.Array1Di64,
+                np.float64: utilities_pb2.Array1Df64,
+                np.string_: utilities_pb2.Array1Dstr,
+                np.str_: utilities_pb2.Array1Dstr
+            }[data.dtype.type]
 
-def dp_mean(data, epsilon, minimum, maximum, num_records):
-    return Component('DPMean', {
-        'data': _to_component(data),
-        'num_records': _to_component(num_records),
-        'minimum': _to_component(minimum),
-        'maximum': _to_component(maximum)
-    }, {
-         'epsilon': epsilon,
-         'mechanism': utilities_pb2.Mechanism.Value("LAPLACE")
-     })
+            proto_args = {
+                "datatype": data_type,
+                data_type.lower(): container_type(
+                    data=list(data.flatten()),
+                    shape=list(data.shape),
+                    order=list(range(data.ndim)))
+            }
 
+            return utilities_pb2.Value(**proto_args)
 
-def dp_variance(data, epsilon, minimum, maximum, num_records):
-    return Component('DPVariance', {
-        'data': _to_component(data),
-        'num_records': _to_component(num_records),
-        'minimum': _to_component(minimum),
-        'maximum': _to_component(maximum)
-    }, {
-         'epsilon': epsilon,
-         'mechanism': utilities_pb2.Mechanism.Value("LAPLACE")
-     })
-
-
-def dp_covariance(data_x, data_y, epsilon, num_records, minimum_x, maximum_x, minimum_y, maximum_y):
-    return Component('DPCovariance', {
-        'data_x': _to_component(data_x),
-        'data_y': _to_component(data_y),
-        'num_records': _to_component(num_records),
-        'minimum_x': _to_component(minimum_x),
-        'maximum_x': _to_component(maximum_x),
-        'minimum_y': _to_component(minimum_y),
-        'maximum_y': _to_component(maximum_y)
-    }, {
-        'epsilon': epsilon,
-        'mechanism': utilities_pb2.Mechanism.Value("LAPLACE")
-    })
-
-
-def dp_moment_raw(data, epsilon, minimum, maximum, num_records, order):
-    return Component('DPMomentRaw', {
-        'data': _to_component(data),
-        'num_records': _to_component(num_records),
-        'minimum': _to_component(minimum),
-        'maximum': _to_component(maximum)
-    }, {
-        'epsilon': epsilon,
-        'mechanism': utilities_pb2.Mechanism.Value("LAPLACE"),
-        'order': order
-     })
+        return value if type(value) == Component else Component(
+            'Literal', options={'value': value_proto(value)})
 
 
 class Analysis(object):
