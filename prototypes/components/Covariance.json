@@ -27,9 +27,6 @@
     "id": "Covariance",
     "name": "covariance",
     "options": {
-        "epsilon": {
-            "type": "double"
-        }
     },
     "return": {
         "of": [

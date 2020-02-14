@@ -1,3 +1,5 @@
+mod base;
+mod utilities;
 
 // include protobuf-generated traits
 pub mod yarrow {
@@ -47,7 +49,7 @@ pub extern "C" fn validate_analysis(
     let analysis_buffer = unsafe {ptr_to_buffer(analysis_ptr, analysis_length)};
     let analysis: yarrow::Analysis = prost::Message::decode(analysis_buffer).unwrap();
 
-    let validation_response: yarrow::Validated = yarrow::Validated {valid: true};
+    let validation_response: yarrow::Validated = base::validate_analysis(analysis);
     buffer_to_ptr(validation_response)
 }
 
@@ -63,7 +65,7 @@ pub extern "C" fn compute_privacy(
     let release_buffer = unsafe {ptr_to_buffer(release_ptr, release_length)};
     let release: yarrow::Release = prost::Message::decode(release_buffer).unwrap();
 
-    let privacy_usage_response: yarrow::PrivacyUsage = yarrow::PrivacyUsage {};
+    let privacy_usage_response: yarrow::PrivacyUsage = base::compute_privacy_usage(analysis, release);
     buffer_to_ptr(privacy_usage_response)
 }
 

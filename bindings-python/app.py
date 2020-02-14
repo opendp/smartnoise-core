@@ -19,4 +19,11 @@ from tests.test_base import (
 )
 
 # test_basic_path()
-test_raw_dataset()
+# test_raw_dataset()
+
+import yarrow
+
+covariance = yarrow.ops.covariance([1, 2, 3], [2, 4, 7], 3, 45)
+
+print(covariance.arguments)
+print(covariance.name)

@@ -35,68 +35,18 @@ pub fn get_arguments<'a>(component: &yarrow::Component, graph_evaluation: &'a Gr
     arguments
 }
 
-pub fn get_release_nodes(analysis: &yarrow::Analysis) -> HashSet<u32> {
-
-    let mut release_node_ids = HashSet::<u32>::new();
-    // assume sinks are private
-    let sink_node_ids = get_sinks(analysis);
-//    println!("sink nodes: {:?}", sink_node_ids);
-
-    // traverse back through arguments until privatizers found
-    let mut node_queue = VecDeque::from_iter(sink_node_ids.iter());
-
-    let graph: &HashMap<u32, yarrow::Component> = &analysis.graph;
-
-    while !node_queue.is_empty() {
-        let node_id = node_queue.pop_front().unwrap();
-        let component = graph.get(&node_id).unwrap();
-
-        if !component.omit {
-            release_node_ids.insert(*node_id);
-        }
-        else {
-            for source_node_id in component.arguments.values() {
-                node_queue.push_back(&source_node_id);
-            }
-        }
-    }
-
-    return release_node_ids;
-}
-
-pub fn get_sinks(analysis: &yarrow::Analysis) -> HashSet<u32> {
-    let mut node_ids = HashSet::<u32>::new();
-    // start with all nodes
-    for node_id in analysis.graph.keys() {
-        node_ids.insert(*node_id);
-    }
-
-    // remove nodes that are referenced in arguments
-    for node in analysis.graph.values() {
-        for source_node_id in node.arguments.values() {
-            node_ids.remove(&source_node_id);
-        }
-    }
-
-    // move to heap, transfer ownership to caller
-    return node_ids.to_owned();
-}
-
 pub fn execute_graph(analysis: &yarrow::Analysis,
                      release: &yarrow::Release,
                      dataset: &yarrow::Dataset) -> Result<yarrow::Release, &'static str> {
 
-    let node_ids_release: HashSet<u32> = get_release_nodes(&analysis);
+    let node_ids_release: HashSet<u32> = get_release_nodes(&analysis)?;
 
     // stack for storing which nodes to evaluate next
     let mut traversal = Vec::new();
     traversal.extend(get_sinks(&analysis).into_iter());
 
-    let evaluations_result = release_to_evaluations(release);
-    if let Err(message) = evaluations_result {
-        return Err(message)
-    }
-    let mut evaluations = evaluations_result.unwrap();
+    let mut evaluations = release_to_evaluations(release)?;
+
     let graph: &HashMap<u32, yarrow::Component> = &analysis.graph;
 
     // track node parents
@@ -129,11 +79,7 @@ pub fn execute_graph(analysis: &yarrow::Analysis,
             let evaluation = execute_component(
                 &graph.get(&node_id).unwrap(), &evaluations, &dataset);
 
-            if let Err(message) = evaluation {
-                return Err(message);
-            }
-
-            evaluations.insert(node_id, evaluation.unwrap());
+            evaluations.insert(node_id, evaluation?);
 
             // remove references to parent node, and if empty and private
             for argument_node_id in arguments.values() {
@@ -157,7 +103,7 @@ pub fn execute_component(component: &yarrow::Component,
 
     let arguments = get_arguments(&component, &evaluations);
 
-    match component.to_owned().value.unwrap() {
+    match component.to_owned().value? {
         yarrow::component::Value::Literal(x) => Ok(components::component_literal(&x)),
         yarrow::component::Value::Datasource(x) => Ok(components::component_datasource(&x, &dataset, &arguments)),
         yarrow::component::Value::Add(x) => Ok(components::component_add(&x, &arguments)),
@@ -258,13 +204,7 @@ pub fn release_to_evaluations(release: &yarrow::Release) -> Result<GraphEvaluati
     let mut evaluations = GraphEvaluation::new();
 
     for (node_id, node_release) in &release.values {
-        let parsed_result = parse_proto_array(node_release);
-        if let Err(message) = parsed_result {
-            return Err(message);
-        }
-        let parsed = parsed_result.unwrap();
-        evaluations.insert(*node_id, parsed);
-
+        evaluations.insert(*node_id, parse_proto_array(node_release)?);
     }
     Ok(evaluations)
 }

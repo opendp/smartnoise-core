@@ -12,7 +12,12 @@ message ResultRelease {
 }
 
 message Release {
-    map<uint32, Value> values = 1;
+    map<uint32, ReleaseNode> values = 1;
+}
+
+message ReleaseNode {
+	Value value = 1;
+	PrivacyUsage privacy_usage = 2;
 }
 
 message Validated {
@@ -21,6 +26,10 @@ message Validated {
 }
 
 message PrivacyUsage {
+	oneof usage {
+		DistancePure distance_pure = 1;
+		DistanceApproximate distance_approximate = 2;
+	}
 }
 
 message PrivacyUsageNode {
@@ -48,44 +57,15 @@ message Analysis {
     PrivacyDefinition privacy_definition = 2;
 }
 
-message PrivacyDefinition {
-    // upper bound
-    double epsilon = 1;
-    double delta = 2;
-    double rho = 3;
-
-    uint32 group_size = 4;
-
-    enum Distance {
-        // (e, 0)-differential privacy
-        PURE = 0;
-
-        // (e, d)-differential privacy
-        APPROXIMATE = 1;
-
-        // https://arxiv.org/pdf/1702.07476.pdf
-        RENYI = 2;
-
-        // https://arxiv.org/pdf/1603.01887.pdf
-        CONCENTRATED = 3;
-
-        // https://arxiv.org/pdf/1905.02383.pdf
-        F = 4;
-    }
-    Distance distance = 5;
-
-    enum Neighboring {
-        SUBSTITUTE = 0;
-        ADD_REMOVE = 1;
-    }
-    Neighboring neighboring = 6;
-}
-
 message Component {
     // uint32 value is source_node_id
     map<string, uint32> arguments = 1;
     // if true, then don't include the evaluation for this component in the release
     bool omit = 2;
+    // for interactive analyses
+    uint32 batch = 3;
+
+    Constraint constraint = 4;
 
     oneof value {
         // data loading
