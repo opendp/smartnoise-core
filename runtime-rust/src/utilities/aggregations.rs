@@ -259,12 +259,19 @@ pub fn kth_raw_sample_moment(data: &ArrayD<f64>, k: &i64) -> ArrayD<f64> {
     return mean(&arr1(&data_to_kth_power).into_dyn());
 }
 
-pub fn create_subset<T>(set: &ArrayD<T>, probabilities: &ArrayD<f64>, k: &i64) -> ArrayD<T> where T: Copy {
+pub fn create_subset<T>(set: &ArrayD<T>, probabilities: &ArrayD<f64>, k: &i64, seed: &Option<[u8; 32]>) -> ArrayD<T> where T: Copy {
     /// Accepts set and element probabilities and returns a subset of size k
     /// Probabilities are the probability of drawing each element on the first draw (they sum to 1)
     /// Based on Algorithm A from Raimidis PS, Spirakis PG (2006). “Weighted random sampling with a reservoir.”
 
     assert!(*k as usize <= set.len());
+
+    // if seed was provided, set local seed to whatever it was
+    // if not, default to [0; 32] (it will not be used)
+    let mut local_seed: [u8; 32] = match seed {
+        Some(seed) => *seed,
+        _ => [0; 32]
+    };
 
     let mut set_vec: Vec<T> = set.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
     let mut probabilities_vec: Vec<f64> = probabilities.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
@@ -277,7 +284,10 @@ pub fn create_subset<T>(set: &ArrayD<T>, probabilities: &ArrayD<f64>, k: &i64) -
     // generate key/index tuples
     let mut key_vec = Vec::with_capacity(*k as usize);
     for i in 0..*k {
-        key_vec.push( (noise::sample_uniform(0., 1.).powf(1./probabilities_vec[i as usize]), i) );
+        match seed {
+            Some(seed) => key_vec.push( (noise::sample_uniform(0., 1.).powf(1./probabilities_vec[i as usize]), i) ),
+            _ => key_vec.push( (noise::sample_uniform_with_seed(0., 1., local_seed).powf(1./probabilities_vec[i as usize]), i) )
+        }
     }
 
     // sort key/index tuples by key and identify top k indices

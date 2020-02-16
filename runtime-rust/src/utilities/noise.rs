@@ -6,6 +6,7 @@ use num;
 use rug;
 use std::{cmp, f64::consts};
 use core::f64::NAN;
+use rand::{Rng, SeedableRng, rngs::StdRng};
 
 use crate::utilities::utilities;
 
@@ -102,6 +103,11 @@ pub fn sample_uniform(min: f64, max: f64) -> f64 {
     let uniform_rand = f64::recompose_raw(false, exponent, mantissa_int);
 
     return uniform_rand * (max - min) + min;
+}
+
+pub fn sample_uniform_with_seed(min: f64, max: f64, seed: [u8; 32]) -> f64 {
+    let mut rng: StdRng = SeedableRng::from_seed(seed);
+    return rng.gen::<f64>() * (max - min) + min;
 }
 
 pub fn sample_bit(prob: &f64) -> i64 {
