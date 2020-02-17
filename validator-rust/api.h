@@ -12,38 +12,14 @@ typedef struct {
   uint8_t *data;
 } ByteBuffer;
 
-ByteBuffer compute_privacy(const uint8_t *analysis_ptr,
-                           int32_t analysis_length,
-                           const uint8_t *release_ptr,
-                           int32_t release_length);
+ByteBuffer accuracy_to_privacy_usage(const uint8_t *request_ptr, int32_t request_length);
 
-ByteBuffer compute_sensitivities(const uint8_t *analysis_ptr,
-                                 int32_t analysis_length,
-                                 const uint8_t *release_ptr,
-                                 int32_t release_length);
+ByteBuffer compute_privacy_usage(const uint8_t *request_ptr, int32_t request_length);
 
-ByteBuffer from_accuracy(const uint8_t *analysis_ptr,
-                         int32_t analysis_length,
-                         const uint8_t *release_ptr,
-                         int32_t release_length,
-                         const uint8_t *accuracy_ptr,
-                         int32_t accuracy_length);
+ByteBuffer expand_graph(const uint8_t *request_ptr, int32_t request_length);
 
-ByteBuffer generate_report(const uint8_t *analysis_ptr,
-                           int32_t analysis_length,
-                           const uint8_t *release_ptr,
-                           int32_t release_length);
+ByteBuffer generate_report(const uint8_t *request_ptr, int32_t request_length);
 
-ByteBuffer infer_constraints(const uint8_t *analysis_ptr,
-                             int32_t analysis_length,
-                             const uint8_t *release_ptr,
-                             int32_t release_length,
-                             const uint8_t *constraints_ptr,
-                             int32_t constraints_length);
+ByteBuffer privacy_usage_to_accuracy(const uint8_t *request_ptr, int32_t request_length);
 
-ByteBuffer to_accuracy(const uint8_t *analysis_ptr,
-                       int32_t analysis_length,
-                       const uint8_t *release_ptr,
-                       int32_t release_length);
-
-ByteBuffer validate_analysis(const uint8_t *analysis_ptr, int32_t analysis_length);
+ByteBuffer validate_analysis(const uint8_t *request_ptr, int32_t request_length);

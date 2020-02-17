@@ -43,115 +43,134 @@ struct ByteBuffer {
 
 #[no_mangle]
 pub extern "C" fn validate_analysis(
-    analysis_ptr: *const u8, analysis_length: i32
+    request_ptr: *const u8, request_length: i32
 ) -> ffi_support::ByteBuffer {
 
-    let analysis_buffer = unsafe {ptr_to_buffer(analysis_ptr, analysis_length)};
-    let analysis: yarrow::Analysis = prost::Message::decode(analysis_buffer).unwrap();
+    let request_buffer = unsafe {ptr_to_buffer(request_ptr, request_length)};
+    let request: yarrow::RequestValidateAnalysis = prost::Message::decode(request_buffer).unwrap();
 
-    let validation_response: yarrow::Validated = base::validate_analysis(analysis);
-    buffer_to_ptr(validation_response)
+    let analysis: yarrow::Analysis = request.analysis.unwrap();
+
+    let response = yarrow::ResponseValidateAnalysis {
+        value: match base::validate_analysis(&analysis) {
+            Ok(x) => Some(yarrow::response_validate_analysis::Value::Data(x)),
+            Err(err) => Some(yarrow::response_validate_analysis::Value::Error(
+                yarrow::Error{message: err.to_string()}
+            ))
+        }
+    };
+    buffer_to_ptr(response)
 }
 
 #[no_mangle]
-pub extern "C" fn compute_privacy(
-    analysis_ptr: *const u8, analysis_length: i32,
-    release_ptr: *const u8, release_length: i32
+pub extern "C" fn compute_privacy_usage(
+    request_ptr: *const u8, request_length: i32
 ) -> ffi_support::ByteBuffer {
 
-    let analysis_buffer = unsafe {ptr_to_buffer(analysis_ptr, analysis_length)};
-    let analysis: yarrow::Analysis = prost::Message::decode(analysis_buffer).unwrap();
+    let request_buffer = unsafe {ptr_to_buffer(request_ptr, request_length)};
+    let request: yarrow::RequestComputePrivacyUsage = prost::Message::decode(request_buffer).unwrap();
 
-    let release_buffer = unsafe {ptr_to_buffer(release_ptr, release_length)};
-    let release: yarrow::Release = prost::Message::decode(release_buffer).unwrap();
+    let analysis = request.analysis.unwrap();
+    let release = request.release.unwrap();
 
-    let privacy_usage_response: yarrow::PrivacyUsage = base::compute_privacy_usage(analysis, release);
-    buffer_to_ptr(privacy_usage_response)
+    let response = yarrow::ResponseComputePrivacyUsage {
+        value: match base::compute_privacy_usage(&analysis, &release) {
+            Ok(x) => Some(yarrow::response_compute_privacy_usage::Value::Data(x)),
+            Err(err) => Some(yarrow::response_compute_privacy_usage::Value::Error(
+                yarrow::Error{message: err.to_string()}
+            ))
+        }
+    };
+    buffer_to_ptr(response)
 }
 
 #[no_mangle]
 pub extern "C" fn generate_report(
-    analysis_ptr: *const u8, analysis_length: i32,
-    release_ptr: *const u8, release_length: i32
+    request_ptr: *const u8, request_length: i32
 ) -> ffi_support::ByteBuffer {
-    let analysis_buffer = unsafe {ptr_to_buffer(analysis_ptr, analysis_length)};
-    let analysis: yarrow::Analysis = prost::Message::decode(analysis_buffer).unwrap();
 
-    let release_buffer = unsafe {ptr_to_buffer(release_ptr, release_length)};
-    let release: yarrow::Release = prost::Message::decode(release_buffer).unwrap();
+    let request_buffer = unsafe {ptr_to_buffer(request_ptr, request_length)};
+    let request: yarrow::RequestGenerateReport = prost::Message::decode(request_buffer).unwrap();
 
-    let report_response: yarrow::Report = yarrow::Report {
-        value: "{\"key\": \"value\"}".to_owned()
+    let analysis = request.analysis.unwrap();
+    let release = request.release.unwrap();
+
+    let response = yarrow::ResponseGenerateReport {
+        value: match base::generate_report(&analysis, &release) {
+            Ok(x) => Some(yarrow::response_generate_report::Value::Data(x)),
+            Err(err) => Some(yarrow::response_generate_report::Value::Error(
+                yarrow::Error{message: err.to_string()}
+            ))
+        }
     };
-    buffer_to_ptr(report_response)
+    buffer_to_ptr(response)
 }
 
 #[no_mangle]
-pub extern "C" fn infer_constraints(
-    analysis_ptr: *const u8, analysis_length: i32,
-    release_ptr: *const u8, release_length: i32,
-    constraints_ptr: *const u8, constraints_length: i32
+pub extern "C" fn accuracy_to_privacy_usage(
+    request_ptr: *const u8, request_length: i32
 ) -> ffi_support::ByteBuffer {
-    let analysis_buffer = unsafe {ptr_to_buffer(analysis_ptr, analysis_length)};
-    let analysis: yarrow::Analysis = prost::Message::decode(analysis_buffer).unwrap();
 
-    let release_buffer = unsafe {ptr_to_buffer(release_ptr, release_length)};
-    let release: yarrow::Release = prost::Message::decode(release_buffer).unwrap();
+    let request_buffer = unsafe {ptr_to_buffer(request_ptr, request_length)};
+    let request: yarrow::RequestAccuracyToPrivacyUsage = prost::Message::decode(request_buffer).unwrap();
 
-    let constraints_buffer = unsafe {ptr_to_buffer(constraints_ptr, constraints_length)};
-    let constraints: yarrow::Constraints = prost::Message::decode(constraints_buffer).unwrap();
+    let privacy_definition: yarrow::PrivacyDefinition = request.privacy_definition.unwrap();
+    let component: yarrow::Component = request.component.unwrap();
+    let constraint: yarrow::Constraint = request.constraint.unwrap();
+    let accuracy: yarrow::Accuracy = request.accuracy.unwrap();
 
-    let analysis_response: yarrow::Analysis = analysis;
-    buffer_to_ptr(analysis_response)
+    let response = yarrow::ResponseAccuracyToPrivacyUsage {
+        value: match base::accuracy_to_privacy_usage(&privacy_definition, &component, &constraint, &accuracy) {
+            Ok(x) => Some(yarrow::response_accuracy_to_privacy_usage::Value::Data(x)),
+            Err(err) => Some(yarrow::response_accuracy_to_privacy_usage::Value::Error(
+                yarrow::Error{message: err.to_string()}
+            ))
+        }
+    };
+    buffer_to_ptr(response)
 }
 
 #[no_mangle]
-pub extern "C" fn compute_sensitivities(
-    analysis_ptr: *const u8, analysis_length: i32,
-    release_ptr: *const u8, release_length: i32
+pub extern "C" fn privacy_usage_to_accuracy(
+    request_ptr: *const u8, request_length: i32
 ) -> ffi_support::ByteBuffer {
-    let analysis_buffer = unsafe { ptr_to_buffer(analysis_ptr, analysis_length) };
-    let analysis: yarrow::Analysis = prost::Message::decode(analysis_buffer).unwrap();
 
-    let release_buffer = unsafe { ptr_to_buffer(release_ptr, release_length) };
-    let release: yarrow::Release = prost::Message::decode(release_buffer).unwrap();
+    let request_buffer = unsafe {ptr_to_buffer(request_ptr, request_length)};
+    let request: yarrow::RequestPrivacyUsageToAccuracy = prost::Message::decode(request_buffer).unwrap();
 
-    let sensitivities_response: yarrow::Sensitivities = yarrow::Sensitivities {};
-    buffer_to_ptr(sensitivities_response)
+    let privacy_definition: yarrow::PrivacyDefinition = request.privacy_definition.unwrap();
+    let component: yarrow::Component = request.component.unwrap();
+    let constraint: yarrow::Constraint = request.constraint.unwrap();
+
+    let response = yarrow::ResponsePrivacyUsageToAccuracy {
+        value: match base::privacy_usage_to_accuracy(&privacy_definition, &component, &constraint) {
+            Ok(x) => Some(yarrow::response_privacy_usage_to_accuracy::Value::Data(x)),
+            Err(err) => Some(yarrow::response_privacy_usage_to_accuracy::Value::Error(
+                yarrow::Error{message: err.to_string()}
+            ))
+        }
+    };
+    buffer_to_ptr(response)
 }
 
 #[no_mangle]
-pub extern "C" fn from_accuracy(
-    analysis_ptr: *const u8, analysis_length: i32,
-    release_ptr: *const u8, release_length: i32,
-    accuracy_ptr: *const u8, accuracy_length: i32
+pub extern "C" fn expand_graph(
+    request_ptr: *const u8, request_length: i32
 ) -> ffi_support::ByteBuffer {
 
-    let analysis_buffer = unsafe { ptr_to_buffer(analysis_ptr, analysis_length) };
-    let analysis: yarrow::Analysis = prost::Message::decode(analysis_buffer).unwrap();
+    let request_buffer = unsafe {ptr_to_buffer(request_ptr, request_length)};
+    let request: yarrow::RequestExpandGraph = prost::Message::decode(request_buffer).unwrap();
 
-    let release_buffer = unsafe { ptr_to_buffer(release_ptr, release_length) };
-    let release: yarrow::Release = prost::Message::decode(release_buffer).unwrap();
+    let analysis = request.analysis.unwrap();
+    let release = request.release.unwrap();
 
-    let accuracies_buffer = unsafe { ptr_to_buffer(accuracy_ptr, accuracy_length) };
-    let accuracies: yarrow::Accuracies = prost::Message::decode(accuracies_buffer).unwrap();
-
-    let privacy_usage_node_response: yarrow::PrivacyUsageNode = yarrow::PrivacyUsageNode {};
-    buffer_to_ptr(privacy_usage_node_response)
-}
-
-#[no_mangle]
-pub extern "C" fn to_accuracy(
-    analysis_ptr: *const u8, analysis_length: i32,
-    release_ptr: *const u8, release_length: i32
-) -> ffi_support::ByteBuffer {
-
-    let analysis_buffer = unsafe { ptr_to_buffer(analysis_ptr, analysis_length) };
-    let analysis: yarrow::Analysis = prost::Message::decode(analysis_buffer).unwrap();
-
-    let release_buffer = unsafe { ptr_to_buffer(release_ptr, release_length) };
-    let release: yarrow::Release = prost::Message::decode(release_buffer).unwrap();
-
-    let accuracies_response: yarrow::Accuracies = yarrow::Accuracies {};
-    buffer_to_ptr(accuracies_response)
+    let response = yarrow::ResponseExpandGraph {
+        value: match base::expand_graph(&analysis, &release) {
+            Ok(x) => Some(yarrow::response_expand_graph::Value::Data(x)),
+            Err(err) => Some(yarrow::response_expand_graph::Value::Error(
+                yarrow::Error{message: err.to_string()}
+            ))
+        }
+    };
+    buffer_to_ptr(response)
 }

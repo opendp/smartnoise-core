@@ -1,56 +1,84 @@
 from yarrow._native_validator import ffi as ffi_validator, lib as lib_validator
 from yarrow._native_runtime import ffi as ffi_runtime, lib as lib_runtime
 
-import json
-import ctypes
-
 from . import api_pb2
-
-
-class ByteBuffer(ctypes.Structure):
-    _fields_ = [
-        ("len", ctypes.c_uint64),
-        ("data", ctypes.POINTER(ctypes.c_uint8))
-    ]
-
-
-def _serialize_proto(proto, ffi):
-    serialized = proto.SerializeToString()
-    return ffi.new(f"uint8_t[{len(serialized)}]", serialized), len(serialized)
 
 
 class LibraryWrapper(object):
 
-    def compute_epsilon(self, analysis, release):
-        return lib_validator.compute_privacy(
-            *_serialize_proto(analysis, ffi_validator),
-            *_serialize_proto(release, ffi_validator)
-        )
+    @staticmethod
+    def validate_analysis(analysis):
+        return _communicate(
+            argument=api_pb2.RequestValidateAnalysis(analysis=analysis),
+            function=lib_validator.validate_analysis,
+            response_type=api_pb2.ResponseValidateAnalysis,
+            ffi=ffi_validator)
 
-    def validate_analysis(self, analysis):
-        return lib_validator.validate_analysis(
-            *_serialize_proto(analysis, ffi_validator)
-        )
+    @staticmethod
+    def compute_privacy_usage(analysis, release):
+        return _communicate(
+            argument=api_pb2.RequestComputePrivacyUsage(analysis=analysis, release=release),
+            function=lib_validator.compute_privacy_usage,
+            response_type=api_pb2.ResponseComputePrivacyUsage,
+            ffi=ffi_validator)
 
-    def generate_report(self, analysis, release):
-        byte_buffer = lib_validator.generate_report(
-            *_serialize_proto(analysis, ffi_validator),
-            *_serialize_proto(release, ffi_validator)
-        )
-
-        json_string = ffi_runtime.string(byte_buffer.data, byte_buffer.len)
+    @staticmethod
+    def generate_report(analysis, release):
+        json_string = _communicate(
+            argument=api_pb2.RequestGenerateReport(analysis=analysis, release=release),
+            function=lib_validator.generate_report,
+            response_type=api_pb2.ResponseReport,
+            ffi=ffi_validator)
 
         # TODO: why is ffi returning two extra characters: \n\x10, a newline and data link escape control character?
-        json_string = json_string[2:]
+        return json_string[2:]
 
-        return json.loads(json_string)
+    @staticmethod
+    def accuracy_to_privacy_usage(privacy_definition, component, constraint, accuracy):
+        return _communicate(
+            argument=api_pb2.RequestAccuracyToPrivacyUsage(
+                privacy_usage=privacy_definition, component=component, constraint=constraint, accuracy=accuracy),
+            function=lib_validator.accuracy_to_privacy_usage,
+            response_type=api_pb2.RequestAccuracyToPrivacyUsage,
+            ffi=ffi_validator)
 
-    def compute_release(self, dataset, analysis, release):
+    @staticmethod
+    def privacy_usage_to_accuracy(privacy_definition, component, constraint):
+        return _communicate(
+            argument=api_pb2.RequestPrivacyUsageToAccuracy(
+                privacy_usage=privacy_definition, component=component, constraint=constraint),
+            function=lib_validator.privacy_usage_to_accuracy,
+            response_type=api_pb2.RequestPrivacyUsageToAccuracy,
+            ffi=ffi_validator)
 
-        byte_buffer = lib_runtime.release(
-            *_serialize_proto(dataset, ffi_runtime),
-            *_serialize_proto(analysis, ffi_runtime),
-            *_serialize_proto(release, ffi_runtime)
-        )
-        serialized_response = ffi_runtime.buffer(byte_buffer.data, byte_buffer.len)
-        return api_pb2.ResultRelease.FromString(serialized_response)
+    @staticmethod
+    def compute_release(dataset, analysis, release):
+        return _communicate(
+            argument=api_pb2.RequestRelease(dataset=dataset, analysis=analysis, release=release),
+            function=lib_runtime.release,
+            response_type=api_pb2.ResponseRelease,
+            ffi=ffi_runtime)
+
+
+def _communicate(function, argument, response_type, ffi):
+    """
+    Call the function with the proto argument, over the ffi. Deserialize the response and optionally throw an error.
+    @param function: function from lib_*
+    @param argument: proto object from api.proto
+    @param response_type: proto object from api.proto
+    @param ffi: one of the ffi_* objects
+    @return: the .data field of the protobuf response
+    """
+    serialized_argument = argument.SerializeToString()
+
+    byte_buffer = function(
+        ffi.new(f"uint8_t[{len(serialized_argument)}]", serialized_argument),
+        len(serialized_argument))
+
+    serialized_response = ffi.buffer(byte_buffer.data, byte_buffer.len)
+
+    response = response_type.FromString(serialized_response)
+
+    if response.HasField("error"):
+        raise response.error
+    return response.data

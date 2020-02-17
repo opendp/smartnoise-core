@@ -8,8 +8,9 @@ fn main() {
     prost_build::compile_protos(
         &[
             "../prototypes/api.proto",
+            "../prototypes/base.proto",
             "../prototypes/components.proto",
-            "../prototypes/utilities.proto"
+            "../prototypes/value.proto"
         ],
         &["../prototypes/"]).unwrap();
 
