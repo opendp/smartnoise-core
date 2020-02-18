@@ -1,28 +1,48 @@
 {
-    "arguments": {
-        "left": {
-            "of": [
-                "int",
-                "double"
-            ],
-            "type": "Array"
-        },
-        "right": {
-            "of": [
-                "int",
-                "double"
-            ],
-            "type": "Array"
-        }
+  "arguments": {
+    "left": {
+      "constraints": [
+        "n"
+      ],
+      "nature": [
+        "continuous"
+      ],
+      "of": [
+        "int",
+        "double"
+      ],
+      "type": "Array"
     },
-    "id": "Divide",
-    "name": "divide",
-    "options": {},
-    "return": {
-        "of": [
-            "int",
-            "double"
-        ],
-        "type": "Array"
+    "right": {
+      "constraints": [
+        "n"
+      ],
+      "nature": [
+        "continuous"
+      ],
+      "of": [
+        "int",
+        "double"
+      ],
+      "type": "Array"
     }
+  },
+  "id": "Divide",
+  "name": "divide",
+  "options": {},
+  "return": {
+    "constraints": [
+      "n",
+      "min",
+      "max"
+    ],
+    "nature": [
+      "continuous"
+    ],
+    "of": [
+      "int",
+      "double"
+    ],
+    "type": "Array"
+  }
 }

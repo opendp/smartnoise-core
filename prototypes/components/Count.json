@@ -1,26 +1,53 @@
 {
-    "arguments": {
-        "data": {
-            "of": [
-                "int",
-                "bool",
-                "double",
-                "string"
-            ],
-            "type": "Array"
-        }
+  "arguments": {
+    "data": {
+      "constraints": [],
+      "nature": [
+        "continuous",
+        "categorical"
+      ],
+      "of": [
+        "int",
+        "bool",
+        "double",
+        "string"
+      ],
+      "type": "Array"
     },
-    "id": "Count",
-    "name": "count",
-    "options": {
-        "epsilon": {
-            "type": "double"
-        }
-    },
-    "return": {
-        "of": [
-            "int"
-        ],
-        "type": "Array"
+    "group_by": {
+      "constraints": [
+        "categories"
+      ],
+      "nature": [
+        "continuous",
+        "categorical"
+      ],
+      "of": [
+        "int",
+        "bool",
+        "double",
+        "string"
+      ],
+      "type": "Array"
     }
+  },
+  "id": "Count",
+  "name": "count",
+  "options": {
+    "categories": {
+      "type": "Value"
+    }
+  },
+  "return": {
+    "constraints": [
+      "n"
+    ],
+    "nature": [
+      "continuous"
+    ],
+    "of": [
+      "int"
+    ],
+    "type": "Array"
+  }
 }

@@ -1,16 +1,18 @@
 {
-    "arguments": {},
-    "id": "Materialize",
-    "name": "materialize",
-    "options": {
-        "dataset_id": {
-            "type": "string"
-        }
-    },
-    "return": {
-        "of": [
-            "string"
-        ],
-        "type": "Hashmap"
+  "arguments": {},
+  "id": "Materialize",
+  "name": "materialize",
+  "options": {
+    "dataset_id": {
+      "type": "string"
     }
+  },
+  "return": {
+    "constraints": [],
+    "nature": null,
+    "of": [
+      "string"
+    ],
+    "type": "Hashmap"
+  }
 }

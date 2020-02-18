@@ -1,47 +1,56 @@
 {
-    "arguments": {
-        "data": {
-            "of": [
-                "int",
-                "bool",
-                "double",
-                "string"
-            ],
-            "type": "Array"
-        },
-        "maximum": {
-            "dimensions": 0,
-            "of": [
-                "int"
-            ],
-            "type": "Array"
-        },
-        "minimum": {
-            "dimensions": 0,
-            "of": [
-                "int"
-            ],
-            "type": "Array"
-        },
-        "n": {
-            "dimensions": 0,
-            "of": [
-                "int"
-            ],
-            "type": "Array"
-        }
+  "arguments": {
+    "data": {
+      "constraints": [],
+      "nature": [
+        "continuous",
+        "categorical"
+      ],
+      "of": [
+        "int",
+        "bool",
+        "double",
+        "string"
+      ],
+      "type": "Array"
     },
-    "id": "DPCount",
-    "name": "dp_count",
-    "options": {
-        "epsilon": {
-            "type": "double"
-        }
-    },
-    "return": {
-        "of": [
-            "int"
-        ],
-        "type": "Array"
+    "group_by": {
+      "constraints": [
+        "categories"
+      ],
+      "nature": [
+        "continuous",
+        "categorical"
+      ],
+      "of": [
+        "int",
+        "bool",
+        "double",
+        "string"
+      ],
+      "type": "Array"
     }
+  },
+  "id": "DPCount",
+  "name": "dp_count",
+  "options": {
+    "labels": {
+      "type": "Value"
+    },
+    "privacy_usage": {
+      "type": "PrivacyUsage"
+    }
+  },
+  "return": {
+    "constraints": [
+      "n"
+    ],
+    "nature": [
+      "continuous"
+    ],
+    "of": [
+      "int"
+    ],
+    "type": "Array"
+  }
 }

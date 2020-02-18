@@ -1,37 +1,56 @@
 {
-    "arguments": {
-        "data_left": {
-            "of": [
-                "int",
-                "double",
-                "bool"
-            ],
-            "type": "Array"
-        },
-        "data_right": {
-            "of": [
-                "int",
-                "double",
-                "bool"
-            ],
-            "type": "Array"
-        },
-        "n": {
-            "dimensions": 0,
-            "of": [
-                "int"
-            ],
-            "type": "Array"
-        }
+  "arguments": {
+    "left": {
+      "constraints": [
+        "n",
+        "min",
+        "max",
+        "non-null"
+      ],
+      "nature": [
+        "continuous"
+      ],
+      "of": [
+        "int",
+        "double",
+        "bool"
+      ],
+      "type": "Array"
     },
-    "id": "Covariance",
-    "name": "covariance",
-    "options": {
-    },
-    "return": {
-        "of": [
-            "double"
-        ],
-        "type": "Array"
+    "right": {
+      "constraints": [
+        "n",
+        "min",
+        "max",
+        "non-null"
+      ],
+      "nature": [
+        "continuous"
+      ],
+      "of": [
+        "int",
+        "double",
+        "bool"
+      ],
+      "type": "Array"
     }
+  },
+  "id": "Covariance",
+  "name": "covariance",
+  "options": {},
+  "return": {
+    "constraints": [
+      "n",
+      "min",
+      "max",
+      "non-null"
+    ],
+    "nature": [
+      "continuous"
+    ],
+    "of": [
+      "double"
+    ],
+    "type": "Array"
+  }
 }

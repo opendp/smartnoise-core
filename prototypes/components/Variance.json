@@ -1,21 +1,29 @@
 {
-    "arguments": {
-        "data": {
-            "of": [
-                "int",
-                "bool",
-                "double"
-            ],
-            "type": "Array"
-        }
-    },
-    "id": "Variance",
-    "name": "variance",
-    "options": {},
-    "return": {
-        "of": [
-            "double"
-        ],
-        "type": "Array"
+  "arguments": {
+    "data": {
+      "constraints": [],
+      "nature": [
+        "continuous"
+      ],
+      "of": [
+        "int",
+        "bool",
+        "double"
+      ],
+      "type": "Array"
     }
+  },
+  "id": "Variance",
+  "name": "variance",
+  "options": {},
+  "return": {
+    "constraints": [],
+    "nature": [
+      "continuous"
+    ],
+    "of": [
+      "double"
+    ],
+    "type": "Array"
+  }
 }

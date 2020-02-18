@@ -1,27 +1,36 @@
 {
-    "arguments": {
-        "data": {
-            "of": [
-                "int",
-                "bool",
-                "double"
-            ],
-            "type": "Array"
-        }
-    },
-    "id": "Median",
-    "name": "median",
-    "options": {
-        "epsilon": {
-            "type": "double"
-        }
-    },
-    "return": {
-        "of": [
-            "int",
-            "bool",
-            "double"
-        ],
-        "type": "Array"
+  "arguments": {
+    "data": {
+      "constraints": [
+        "non-null"
+      ],
+      "nature": [
+        "continuous"
+      ],
+      "of": [
+        "int",
+        "bool",
+        "double"
+      ],
+      "type": "Array"
     }
+  },
+  "id": "Median",
+  "name": "median",
+  "options": {},
+  "return": {
+    "constraints": [
+      "n",
+      "non-null"
+    ],
+    "nature": [
+      "continuous"
+    ],
+    "of": [
+      "int",
+      "bool",
+      "double"
+    ],
+    "type": "Array"
+  }
 }

@@ -1,25 +1,37 @@
 {
-    "arguments": {
-        "left": {
-            "of": [
-                "bool"
-            ],
-            "type": "Array"
-        },
-        "right": {
-            "of": [
-                "bool"
-            ],
-            "type": "Array"
-        }
+  "arguments": {
+    "left": {
+      "constraints": [
+        "n"
+      ],
+      "nature": [],
+      "of": [
+        "bool"
+      ],
+      "type": "Array"
     },
-    "id": "Or",
-    "name": "logical_or",
-    "options": {},
-    "return": {
-        "of": [
-            "bool"
-        ],
-        "type": "Array"
+    "right": {
+      "constraints": [
+        "n"
+      ],
+      "nature": [],
+      "of": [
+        "bool"
+      ],
+      "type": "Array"
     }
+  },
+  "id": "Or",
+  "name": "logical_or",
+  "options": {},
+  "return": {
+    "constraints": [
+      "n"
+    ],
+    "nature": [],
+    "of": [
+      "bool"
+    ],
+    "type": "Array"
+  }
 }

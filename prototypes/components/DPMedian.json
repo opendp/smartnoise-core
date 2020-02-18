@@ -1,48 +1,38 @@
 {
-    "arguments": {
-        "data": {
-            "of": [
-                "int",
-                "bool",
-                "double"
-            ],
-            "type": "Array"
-        },
-        "maximum": {
-            "dimensions": 0,
-            "of": [
-                "int"
-            ],
-            "type": "Array"
-        },
-        "minimum": {
-            "dimensions": 0,
-            "of": [
-                "int"
-            ],
-            "type": "Array"
-        },
-        "n": {
-            "dimensions": 0,
-            "of": [
-                "int"
-            ],
-            "type": "Array"
-        }
-    },
-    "id": "DPMedian",
-    "name": "dp_median",
-    "options": {
-        "epsilon": {
-            "type": "double"
-        }
-    },
-    "return": {
-        "of": [
-            "int",
-            "bool",
-            "double"
-        ],
-        "type": "Array"
+  "arguments": {
+    "data": {
+      "constraints": [
+        "n",
+        "categories"
+      ],
+      "nature": [
+        "continuous"
+      ],
+      "of": [
+        "int",
+        "bool",
+        "double"
+      ],
+      "type": "Array"
     }
+  },
+  "id": "DPMedian",
+  "name": "dp_median",
+  "options": {
+    "privacy_usage": {
+      "type": "PrivacyUsage"
+    }
+  },
+  "return": {
+    "constraints": [
+      "n",
+      "categories"
+    ],
+    "of": [
+      "int",
+      "bool",
+      "double"
+    ],
+    "type": "Array"
+  }
 }
