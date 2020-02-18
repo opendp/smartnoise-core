@@ -19,7 +19,7 @@ from tests.test_base import (
 )
 
 # test_basic_path()
-# test_raw_dataset()
+test_raw_dataset()
 
 import yarrow
 

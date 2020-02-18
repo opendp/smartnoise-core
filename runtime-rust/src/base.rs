@@ -78,9 +78,9 @@ pub fn execute_graph(analysis: &yarrow::Analysis,
             traversal.pop();
 
             let evaluation = execute_component(
-                &graph.get(&node_id).unwrap(), &evaluations, &dataset);
+                &graph.get(&node_id).unwrap(), &evaluations, &dataset)?;
 
-            evaluations.insert(node_id, evaluation?);
+            evaluations.insert(node_id, evaluation);
 
             // remove references to parent node, and if empty and private
             for argument_node_id in arguments.values() {

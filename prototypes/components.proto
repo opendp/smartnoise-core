@@ -31,6 +31,8 @@ message Component {
         Bin bin = 220;
         Clamp clamp = 221;
         Impute impute = 222;
+        RowMax rowmax = 223;
+        RowMin rowmin = 224;
         // arithmetic manipulations
         Add add = 250;
         Subtract subtract = 251;
@@ -228,3 +230,6 @@ message SimpleGeometricMechanism {
     int64 count_max = 3;
     bool enforce_constant_time = 4;
 }
+
+message RowMax {}
+message RowMin {}

@@ -15,6 +15,25 @@ core_wrapper = LibraryWrapper()
 ALL_CONSTRAINTS = ["n", "min", "max", "categories"]
 
 
+def privacy_usage(epsilon=None, delta=None):
+    if epsilon is not None and delta is not None:
+        return value_pb2.PrivacyUsage(
+            distance_approximate=value_pb2.PrivacyUsage.DistanceApproximate(
+                epsilon=epsilon,
+                delta=delta
+            )
+        )
+
+    if epsilon is not None and delta is None:
+        return value_pb2.PrivacyUsage(
+            distance_pure=value_pb2.PrivacyUsage.DistancePure(
+                epsilon=epsilon
+            )
+        )
+
+    raise ValueError("Unknown privacy definition.")
+
+
 class Dataset(object):
     def __init__(self, name, data):
         self.name = name
@@ -167,13 +186,13 @@ class Component(object):
                            if i in ALL_CONSTRAINTS]
 
             if 'max' in filtered:
-                arguments[argument] = Component('Max', arguments={
+                arguments[argument] = Component('RowMax', arguments={
                     "left": arguments[argument],
                     "right": Component.of(constraints[argument + '_max'])
                 })
 
             if 'min' in filtered:
-                arguments[argument] = Component('Min', arguments={
+                arguments[argument] = Component('RowMin', arguments={
                     "left": arguments[argument],
                     "right": Component.of(constraints[argument + '_min'])
                 })
@@ -240,7 +259,7 @@ class Analysis(object):
                     getattr(components_pb2, component.name)(**(component.options or {}))
             })
 
-        return api_pb2.Analysis(
+        return base_pb2.Analysis(
             graph=vertices,
             privacy_definition=base_pb2.PrivacyDefinition(
                 distance=base_pb2.PrivacyDefinition.Distance.Value(self.distance),
