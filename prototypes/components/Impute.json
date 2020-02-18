@@ -16,17 +16,7 @@
   },
   "id": "Impute",
   "name": "impute",
-  "options": {
-    "categories": {
-      "type": "Value"
-    },
-    "maximum": {
-      "type": "double"
-    },
-    "minimum": {
-      "type": "double"
-    }
-  },
+  "options": {},
   "return": {
     "constraints": [
       "n",

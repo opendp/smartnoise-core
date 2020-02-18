@@ -20,7 +20,7 @@
   "options": {},
   "return": {
     "constraints": [
-        "non-null"
+      "non-null",
       "n"
     ],
     "nature": [

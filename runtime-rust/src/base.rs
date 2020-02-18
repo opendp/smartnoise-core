@@ -1,5 +1,6 @@
 extern crate yarrow_validator;
 use yarrow_validator::yarrow;
+use yarrow_validator::utilities::graph as yarrow_graph;
 
 use ndarray::prelude::*;
 
@@ -39,11 +40,11 @@ pub fn execute_graph(analysis: &yarrow::Analysis,
                      release: &yarrow::Release,
                      dataset: &yarrow::Dataset) -> Result<yarrow::Release, &'static str> {
 
-    let node_ids_release: HashSet<u32> = get_release_nodes(&analysis)?;
+    let node_ids_release: HashSet<u32> = yarrow_graph::get_release_nodes(&analysis)?;
 
     // stack for storing which nodes to evaluate next
     let mut traversal = Vec::new();
-    traversal.extend(get_sinks(&analysis).into_iter());
+    traversal.extend(yarrow_graph::get_sinks(&analysis).into_iter());
 
     let mut evaluations = release_to_evaluations(release)?;
 
@@ -103,7 +104,7 @@ pub fn execute_component(component: &yarrow::Component,
 
     let arguments = get_arguments(&component, &evaluations);
 
-    match component.to_owned().value? {
+    match component.to_owned().value.unwrap() {
         yarrow::component::Value::Literal(x) => Ok(components::component_literal(&x)),
         yarrow::component::Value::Datasource(x) => Ok(components::component_datasource(&x, &dataset, &arguments)),
         yarrow::component::Value::Add(x) => Ok(components::component_add(&x, &arguments)),
@@ -204,16 +205,18 @@ pub fn release_to_evaluations(release: &yarrow::Release) -> Result<GraphEvaluati
     let mut evaluations = GraphEvaluation::new();
 
     for (node_id, node_release) in &release.values {
-        evaluations.insert(*node_id, parse_proto_array(node_release)?);
+        evaluations.insert(*node_id, parse_proto_array(&node_release.value.to_owned().unwrap())?);
     }
     Ok(evaluations)
 }
 
 pub fn evaluations_to_release(evaluations: &GraphEvaluation) -> Result<yarrow::Release, &'static str> {
-    let mut releases: HashMap<u32, yarrow::Value> = HashMap::new();
+    let mut releases: HashMap<u32, yarrow::ReleaseNode> = HashMap::new();
     for (node_id, node_eval) in evaluations {
         if let Ok(array_serialized) = serialize_proto_array(node_eval) {
-            releases.insert(*node_id, array_serialized);
+            releases.insert(*node_id, yarrow::ReleaseNode{
+                value: Some(array_serialized), privacy_usage: None
+            });
         }
     }
     Ok(yarrow::Release {

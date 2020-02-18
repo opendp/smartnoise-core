@@ -12,19 +12,6 @@ use libc::c_char;
 
 use crate::base::execute_graph;
 
-// useful tutorial for proto over ffi here:
-// https://github.com/mozilla/application-services/blob/master/docs/howtos/passing-protobuf-data-over-ffi.md
-unsafe fn get_buffer<'a>(data: *const u8, len: i32) -> &'a [u8] {
-    assert!(len >= 0, "Bad buffer len: {}", len);
-    if len == 0 {
-        // This will still fail, but as a bad protobuf format.
-        &[]
-    } else {
-        assert!(!data.is_null(), "Unexpected null data pointer");
-        std::slice::from_raw_parts(data, len as usize)
-    }
-}
-
 #[repr(C)]
 #[allow(dead_code)]
 struct ByteBuffer {
@@ -34,40 +21,25 @@ struct ByteBuffer {
 
 #[no_mangle]
 pub extern "C" fn release(
-    dataset_ptr: *const u8, dataset_length: i32,
-    analysis_ptr: *const u8, analysis_length: i32,
-    release_ptr: *const u8, release_length: i32
+    request_ptr: *const u8, request_length: i32
 ) -> ffi_support::ByteBuffer {
 
-    let dataset_buffer = unsafe {get_buffer(dataset_ptr, dataset_length)};
-    let dataset: yarrow::Dataset = prost::Message::decode(dataset_buffer).unwrap();
+    let request_buffer = unsafe {yarrow_validator::ptr_to_buffer(request_ptr, request_length)};
+    let request: yarrow::RequestRelease = prost::Message::decode(request_buffer).unwrap();
 
-    let analysis_buffer = unsafe {get_buffer(analysis_ptr, analysis_length)};
-    let analysis: yarrow::Analysis = prost::Message::decode(analysis_buffer).unwrap();
+    let analysis: yarrow::Analysis = request.analysis.unwrap();
+    let release: yarrow::Release = request.release.unwrap();
+    let dataset: yarrow::Dataset = request.dataset.unwrap();
 
-    let release_buffer = unsafe {get_buffer(release_ptr, release_length)};
-    let release: yarrow::Release = prost::Message::decode(release_buffer).unwrap();
-
-    let response_release = execute_graph(&analysis, &release, &dataset);
-
-    let response_results_release = match response_release {
-        Ok(release) => yarrow::ResultRelease {
-            value: Some(yarrow::result_release::Value::Release(release))
-        },
-        Err(message) => yarrow::ResultRelease {
-            value: Some(yarrow::result_release::Value::Error(yarrow::Error {message: message.to_owned()}))
+    let response = yarrow::ResponseRelease {
+        value: match base::execute_graph(&analysis, &release, &dataset) {
+            Ok(release) => Some(yarrow::response_release::Value::Data(release)),
+            Err(err) => Some(yarrow::response_release::Value::Error(
+                yarrow::Error{message: err.to_string()}
+            ))
         }
     };
-
-    let mut out_buffer = Vec::new();
-    match prost::Message::encode(&response_results_release, &mut out_buffer) {
-        Ok(_t) => ffi_support::ByteBuffer::from_vec(out_buffer),
-        Err(error) => {
-            println!("Error encoding response protobuf.");
-            println!("{:?}", error);
-            ffi_support::ByteBuffer::new_with_size(0)
-        }
-    }
+    yarrow_validator::buffer_to_ptr(response)
 }
 
 //ffi_support::implement_into_ffi_by_protobuf!(yarrow::Release);

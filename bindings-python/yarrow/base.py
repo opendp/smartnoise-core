@@ -12,6 +12,8 @@ from yarrow import value_pb2
 
 core_wrapper = LibraryWrapper()
 
+ALL_CONSTRAINTS = ["n", "min", "max", "categories"]
+
 
 class Dataset(object):
     def __init__(self, name, data):
@@ -46,9 +48,10 @@ class Dataset(object):
 
 
 class Component(object):
-    def __init__(self, name: str, arguments: dict = None, options: dict = None):
+    def __init__(self, name: str, arguments: dict = None, options: dict = None, constraints: dict = None):
+
         self.name: str = name
-        self.arguments: dict = arguments or {}
+        self.arguments: dict = Component._expand_constraints(arguments or {}, constraints)
         self.options: dict = options
 
         global context
@@ -150,6 +153,44 @@ class Component(object):
 
         return value if type(value) == Component else Component(
             'Literal', options={'value': value_proto(value)})
+
+    @staticmethod
+    def _expand_constraints(arguments, constraints):
+
+        if not constraints:
+            return arguments
+
+        for argument in arguments.keys():
+            filtered = [i[len(argument) + 1:] for i in constraints.keys()
+                           if i.startswith(argument)]
+            filtered = [i for i in filtered
+                           if i in ALL_CONSTRAINTS]
+
+            if 'max' in filtered:
+                arguments[argument] = Component('Max', arguments={
+                    "left": arguments[argument],
+                    "right": Component.of(constraints[argument + '_max'])
+                })
+
+            if 'min' in filtered:
+                arguments[argument] = Component('Min', arguments={
+                    "left": arguments[argument],
+                    "right": Component.of(constraints[argument + '_min'])
+                })
+
+            if 'categories' in filtered:
+                arguments[argument] = Component('Bin', arguments={
+                    "data": arguments[argument],
+                    "categories": Component.of(constraints[argument + '_categories'])
+                })
+
+            if 'n' in filtered:
+                arguments[argument] = Component('Impute', arguments={
+                    "data": arguments[argument],
+                    "n": Component.of(constraints[argument + '_n'])
+                })
+
+        return arguments
 
 
 class Analysis(object):
