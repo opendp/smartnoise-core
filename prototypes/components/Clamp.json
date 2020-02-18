@@ -1,28 +1,44 @@
 {
-    "arguments": {
-        "data": {
-            "of": [
-                "int",
-                "double"
-            ],
-            "type": "Array"
-        }
-    },
-    "id": "Clamp",
-    "name": "clamp",
-    "options": {
-        "maximum": {
-            "type": "double"
-        },
-        "minimum": {
-            "type": "double"
-        }
-    },
-    "return": {
-        "of": [
-            "int",
-            "double"
-        ],
-        "type": "Array"
+  "arguments": {
+    "data": {
+      "constraints": [],
+      "nature": [
+        "continuous",
+        "categorical"
+      ],
+      "of": [
+        "int",
+        "double",
+        "string"
+      ],
+      "type": "Array"
     }
+  },
+  "id": "Clamp",
+  "name": "clamp",
+  "options": {
+    "categories": {
+      "type": "Value"
+    },
+    "maximum": {
+      "type": "double"
+    },
+    "minimum": {
+      "type": "double"
+    }
+  },
+  "return": {
+    "constraints": [
+      "n"
+    ],
+    "nature": [
+      "continuous",
+      "categorical"
+    ],
+    "of": [
+      "int",
+      "double"
+    ],
+    "type": "Array"
+  }
 }

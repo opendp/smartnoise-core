@@ -1,49 +1,34 @@
 {
-    "arguments": {
-        "data": {
-            "of": [
-                "int",
-                "bool",
-                "double"
-            ],
-            "type": "Array"
-        },
-        "maximum": {
-            "dimensions": 0,
-            "of": [
-                "int"
-            ],
-            "type": "Array"
-        },
-        "minimum": {
-            "dimensions": 0,
-            "of": [
-                "int"
-            ],
-            "type": "Array"
-        },
-        "n": {
-            "dimensions": 0,
-            "of": [
-                "int"
-            ],
-            "type": "Array"
-        }
-    },
-    "id": "DPMomentRaw",
-    "name": "dp_moment_raw",
-    "options": {
-        "epsilon": {
-            "type": "double"
-        },
-        "order": {
-            "type": "int"
-        }
-    },
-    "return": {
-        "of": [
-            "double"
-        ],
-        "type": "Array"
+  "arguments": {
+    "data": {
+      "nature": [
+        "continuous"
+      ],
+      "of": [
+        "int",
+        "bool",
+        "double"
+      ],
+      "type": "Array"
     }
+  },
+  "id": "DPMomentRaw",
+  "name": "dp_moment_raw",
+  "options": {
+    "order": {
+      "type": "int"
+    },
+    "privacy_usage": {
+      "type": "PrivacyUsage"
+    }
+  },
+  "return": {
+    "nature": [
+      "continuous"
+    ],
+    "of": [
+      "double"
+    ],
+    "type": "Array"
+  }
 }

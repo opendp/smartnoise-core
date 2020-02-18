@@ -1,22 +1,31 @@
 {
-    "arguments": {
-        "data": {
-            "of": [
-                "int",
-                "bool",
-                "double",
-                "string"
-            ],
-            "type": "Array"
-        }
-    },
-    "id": "ToString",
-    "name": "to_string",
-    "options": {},
-    "return": {
-        "of": [
-            "string"
-        ],
-        "type": "Array"
+  "arguments": {
+    "data": {
+      "constraints": [],
+      "nature": [
+        "categorical",
+        "continuous"
+      ],
+      "of": [
+        "int",
+        "bool",
+        "double",
+        "string"
+      ],
+      "type": "Array"
     }
+  },
+  "id": "ToString",
+  "name": "to_string",
+  "options": {},
+  "return": {
+    "constraints": [],
+    "nature": [
+      "categorical"
+    ],
+    "of": [
+      "string"
+    ],
+    "type": "Array"
+  }
 }

@@ -1,50 +1,42 @@
 {
-    "arguments": {
-        "data": {
-            "of": [
-                "int",
-                "bool",
-                "double"
-            ],
-            "type": "Array"
-        },
-        "maximum": {
-            "dimensions": 0,
-            "of": [
-                "int",
-                "double",
-                "bool"
-            ],
-            "type": "Array"
-        },
-        "minimum": {
-            "dimensions": 0,
-            "of": [
-                "int",
-                "double",
-                "bool"
-            ],
-            "type": "Array"
-        },
-        "n": {
-            "dimensions": 0,
-            "of": [
-                "int"
-            ],
-            "type": "Array"
-        }
-    },
-    "id": "DPVariance",
-    "name": "dp_variance",
-    "options": {
-        "epsilon": {
-            "type": "double"
-        }
-    },
-    "return": {
-        "of": [
-            "double"
-        ],
-        "type": "Array"
+  "arguments": {
+    "data": {
+      "constraints": [
+        "n",
+        "min",
+        "max",
+        "non-null"
+      ],
+      "nature": [
+        "continuous"
+      ],
+      "of": [
+        "int",
+        "bool",
+        "double"
+      ],
+      "type": "Array"
     }
+  },
+  "id": "DPVariance",
+  "name": "dp_variance",
+  "options": {
+    "privacy_usage": {
+      "type": "PrivacyUsage"
+    }
+  },
+  "return": {
+    "constraints": [
+      "n",
+      "min",
+      "non-null"
+    ],
+    "nature": [
+      "continuous"
+    ],
+    "of": [
+      "double"
+    ],
+    "type": "Array"
+  }
 }

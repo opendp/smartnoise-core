@@ -1,20 +1,30 @@
 {
-    "arguments": {},
-    "description": "pass forward the data contained within the protobuf as an array",
-    "id": "Literal",
-    "name": "literal",
-    "options": {
-        "value": {
-            "type": "Value"
-        }
-    },
-    "return": {
-        "of": [
-            "int",
-            "bool",
-            "double",
-            "string"
-        ],
-        "type": "Array"
+  "arguments": {},
+  "description": "pass forward the data contained within the protobuf as an array",
+  "id": "Literal",
+  "name": "literal",
+  "options": {
+    "value": {
+      "type": "Value"
     }
+  },
+  "return": {
+    "constraints": [
+        "n",
+        "min",
+        "max",
+        "categories"
+    ],
+    "nature": [
+      "continuous",
+      "categorical"
+    ],
+    "of": [
+      "int",
+      "bool",
+      "double",
+      "string"
+    ],
+    "type": "Array"
+  }
 }

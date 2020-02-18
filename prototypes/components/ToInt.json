@@ -1,19 +1,29 @@
 {
-    "arguments": {
-        "data": {
-            "of": [
-                "string"
-            ],
-            "type": "Array"
-        }
-    },
-    "id": "ToInt",
-    "name": "to_int",
-    "options": {},
-    "return": {
-        "of": [
-            "int"
-        ],
-        "type": "Array"
+  "arguments": {
+    "data": {
+      "constraints": [],
+      "nature": [
+        "continuous"
+      ],
+      "of": [
+        "double",
+        "bool",
+        "string"
+      ],
+      "type": "Array"
     }
+  },
+  "id": "ToInt",
+  "name": "to_int",
+  "options": {},
+  "return": {
+    "constraints": [],
+    "nature": [
+      "continuous"
+    ],
+    "of": [
+      "int"
+    ],
+    "type": "Array"
+  }
 }

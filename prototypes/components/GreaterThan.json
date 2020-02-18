@@ -1,27 +1,43 @@
 {
-    "arguments": {
-        "left": {
-            "of": [
-                "int",
-                "double"
-            ],
-            "type": "Array"
-        },
-        "right": {
-            "of": [
-                "int",
-                "double"
-            ],
-            "type": "Array"
-        }
+  "arguments": {
+    "left": {
+      "constraints": [
+        "n"
+      ],
+      "nature": [
+        "continuous"
+      ],
+      "of": [
+        "int",
+        "double"
+      ],
+      "type": "Array"
     },
-    "id": "GreaterThan",
-    "name": "greater_than",
-    "options": {},
-    "return": {
-        "of": [
-            "bool"
-        ],
-        "type": "Array"
+    "right": {
+      "constraints": [
+        "n"
+      ],
+      "nature": [
+        "continuous"
+      ],
+      "of": [
+        "int",
+        "double"
+      ],
+      "type": "Array"
     }
+  },
+  "id": "GreaterThan",
+  "name": "greater_than",
+  "options": {},
+  "return": {
+    "constraints": [
+      "n"
+    ],
+    "nature": [],
+    "of": [
+      "bool"
+    ],
+    "type": "Array"
+  }
 }
