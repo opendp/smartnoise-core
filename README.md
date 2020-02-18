@@ -70,11 +70,11 @@ The steps for adding bindings in a new language are essentially:
   + follow tutorial to build a C++ Hello World, compiled with Mingw-w64
   + Terminal > Configure Default Build Task > C/C++: g++.exe build active file
   + Terminal > Tasks: Run Build Task
-  + configure and build protobuf
-    - `cd path_to_cloned_protobuf_repo\cmake`
-    - `mkdir build\release & cd build\release`
-    - invoke CMake to create and build the Makefile artifacts
-    - `cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=..\..\..\install -DCMAKE_C_COMPILER=gcc.exe -DCMAKE_CXX_COMPILER=g++.exe ..\..`
+* configure and build protobuf
+  + `cd path_to_cloned_protobuf_repo\cmake`
+  + `mkdir build\release & cd build\release`
+  + invoke CMake to create and build the Makefile artifacts
+  + `cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=..\..\..\install -DCMAKE_C_COMPILER=gcc.exe -DCMAKE_CXX_COMPILER=g++.exe ..\..`
 * compile and test protobuf
   + `cd path_to_cloned_protobuf_repo\cmake\build\release`
   + `mingw32-make all`
