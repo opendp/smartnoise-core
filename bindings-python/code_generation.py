@@ -5,13 +5,12 @@ if os.name != 'nt':
     # auto-update the protos
     import subprocess
 
-    # auto-recompile proto files when developing
     # protoc must be installed and on path
     package_dir = os.path.join(os.getcwd(), 'yarrow')
     subprocess.call(f"protoc --python_out={package_dir} *.proto", shell=True, cwd=os.path.abspath('../prototypes/'))
     subprocess.call(f"sed -i -E 's/^import.*_pb2/from . \\0/' *.py", shell=True, cwd=package_dir)
 
-if os.name == 'nt' and not os.path.exists('yarrow/analysis_pb2.py'):
+if os.name == 'nt' and not os.path.exists('yarrow/api_pb2.py'):
     print('make sure to run protoc to generate python proto bindings, and fix package imports to be relative to yarrow')
 
 components_dir = os.path.abspath("../prototypes/components")
@@ -22,23 +21,28 @@ for file_name in os.listdir(components_dir):
     with open(component_path, 'r') as component_schema_file:
         component_schema = json.load(component_schema_file)
         signature_arguments = ", ".join(
-            list(component_schema['arguments'].keys()) + list(component_schema['options'].keys()))
+            list(dict.fromkeys([
+                *component_schema['arguments'].keys(),
+                *component_schema['options'].keys(),
+                '**kwargs'])))
 
         component_arguments = "{\n            "\
                               + ",\n            ".join([f"'{name}': Component.of({name})"
                                                       for name in component_schema['arguments']
                                                       if name != "**kwargs"]) \
                               + "\n        }"
-        if "**kwargs" in component_schema['arguments']:
-            component_arguments = f"{{**kwargs, **{component_arguments}}}"
-
         component_options = "{\n            " \
                             + ",\n            ".join([f"'{name}': {name}"
-                                                    for name in component_schema['options']
-                                                    if name != "**kwargs"]) \
+                                                      for name in component_schema['options']
+                                                      if name != "**kwargs"]) \
                             + "\n        }"
-        if "**kwargs" in component_schema['options']:
+        component_constraints = "None"
+        if "**kwargs" in component_schema['arguments']:
+            component_arguments = f"{{**kwargs, **{component_arguments}}}"
+        elif "**kwargs" in component_schema['options']:
             component_options = f"{{**kwargs, **{component_options}}}"
+        else:
+            component_constraints = "kwargs"
 
         generated_code += f"""
 def {component_schema['name']}({signature_arguments}):
@@ -46,7 +50,8 @@ def {component_schema['name']}({signature_arguments}):
     return Component(
         "{component_schema['id']}", 
         arguments={component_arguments}, 
-        options={component_options})
+        options={component_options},
+        constraints={component_constraints})
 
 """
 

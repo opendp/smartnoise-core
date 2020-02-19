@@ -1,25 +1,36 @@
 {
-    "arguments": {
-        "data": {
-            "of": [
-                "int",
-                "bool",
-                "string",
-                "double"
-            ],
-            "type": "Array"
-        }
-    },
-    "id": "Impute",
-    "name": "impute",
-    "options": {},
-    "return": {
-        "of": [
-            "int",
-            "bool",
-            "string",
-            "double"
-        ],
-        "type": "Array"
+  "arguments": {
+    "data": {
+      "constraints": [],
+      "nature": [
+        "continuous"
+      ],
+      "of": [
+        "int",
+        "bool",
+        "string",
+        "double"
+      ],
+      "type": "Array"
     }
+  },
+  "id": "Impute",
+  "name": "impute",
+  "options": {},
+  "return": {
+    "constraints": [
+      "n",
+      "non-null"
+    ],
+    "nature": [
+      "continuous"
+    ],
+    "of": [
+      "int",
+      "bool",
+      "string",
+      "double"
+    ],
+    "type": "Array"
+  }
 }

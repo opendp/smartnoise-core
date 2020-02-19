@@ -1,38 +1,55 @@
 {
-    "arguments": {
-        "data": {
-            "of": [
-                "string",
-                "int",
-                "bool",
-                "double"
-            ],
-            "type": "Array"
-        },
-        "edges": {
-            "of": [
-                "string",
-                "int",
-                "bool",
-                "double"
-            ],
-            "type": "Array"
-        }
+  "arguments": {
+    "data": {
+      "constraints": [
+        "n"
+      ],
+      "nature": [
+        "continuous",
+        "categorical"
+      ],
+      "of": [
+        "string",
+        "int",
+        "bool",
+        "double"
+      ],
+      "type": "Array"
     },
-    "id": "Bin",
-    "name": "bin",
-    "options": {
-        "interval": {
-            "type": "bool"
-        }
-    },
-    "return": {
-        "of": [
-            "string",
-            "int",
-            "bool",
-            "double"
-        ],
-        "type": "Array"
+    "edges": {
+      "constraints": [],
+      "nature": [
+        "continuous",
+        "categorical"
+      ],
+      "of": [
+        "string",
+        "int",
+        "bool",
+        "double"
+      ],
+      "type": "Array"
     }
+  },
+  "id": "Bin",
+  "name": "bin",
+  "options": {
+    "interval": {
+      "type": "bool"
+    }
+  },
+  "return": {
+    "constraints": [
+      "n"
+    ],
+    "nature": [
+      "continuous"
+    ],
+    "of": [
+      "int",
+      "bool",
+      "double"
+    ],
+    "type": "Array"
+  }
 }

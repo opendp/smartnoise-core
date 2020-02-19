@@ -1,5 +1,4 @@
 import json
-import os
 import queue
 import numpy as np
 
@@ -7,10 +6,32 @@ from yarrow.wrapper import LibraryWrapper
 
 # these modules are generated via the subprocess call
 from yarrow import api_pb2
-from yarrow import utilities_pb2
+from yarrow import base_pb2
 from yarrow import components_pb2
+from yarrow import value_pb2
 
 core_wrapper = LibraryWrapper()
+
+ALL_CONSTRAINTS = ["n", "min", "max", "categories"]
+
+
+def privacy_usage(epsilon=None, delta=None):
+    if epsilon is not None and delta is not None:
+        return value_pb2.PrivacyUsage(
+            distance_approximate=value_pb2.PrivacyUsage.DistanceApproximate(
+                epsilon=epsilon,
+                delta=delta
+            )
+        )
+
+    if epsilon is not None and delta is None:
+        return value_pb2.PrivacyUsage(
+            distance_pure=value_pb2.PrivacyUsage.DistancePure(
+                epsilon=epsilon
+            )
+        )
+
+    raise ValueError("Unknown privacy definition.")
 
 
 class Dataset(object):
@@ -46,9 +67,10 @@ class Dataset(object):
 
 
 class Component(object):
-    def __init__(self, name: str, arguments: dict = None, options: dict = None):
+    def __init__(self, name: str, arguments: dict = None, options: dict = None, constraints: dict = None):
+
         self.name: str = name
-        self.arguments: dict = arguments or {}
+        self.arguments: dict = Component._expand_constraints(arguments or {}, constraints)
         self.options: dict = options
 
         global context
@@ -109,14 +131,14 @@ class Component(object):
         def value_proto(data):
 
             if type(data) is bytes:
-                return utilities_pb2.Value(
-                    datatype=utilities_pb2.DataType.Value("BYTES"),
+                return value_pb2.Value(
+                    datatype=value_pb2.DataType.Value("BYTES"),
                     bytes=data
                 )
 
             if issubclass(type(data), dict):
-                return utilities_pb2.Value(
-                    datatype=utilities_pb2.DataType.Value("HASHMAP_STRING"),
+                return value_pb2.Value(
+                    datatype=value_pb2.DataType.Value("HASHMAP_STRING"),
                     hashmapString={key: value_proto(data[key]) for key in data}
                 )
 
@@ -131,11 +153,11 @@ class Component(object):
             }[data.dtype.type]
 
             container_type = {
-                np.bool: utilities_pb2.Array1Dbool,
-                np.int64: utilities_pb2.Array1Di64,
-                np.float64: utilities_pb2.Array1Df64,
-                np.string_: utilities_pb2.Array1Dstr,
-                np.str_: utilities_pb2.Array1Dstr
+                np.bool: value_pb2.Array1Dbool,
+                np.int64: value_pb2.Array1Di64,
+                np.float64: value_pb2.Array1Df64,
+                np.string_: value_pb2.Array1Dstr,
+                np.str_: value_pb2.Array1Dstr
             }[data.dtype.type]
 
             proto_args = {
@@ -146,17 +168,55 @@ class Component(object):
                     order=list(range(data.ndim)))
             }
 
-            return utilities_pb2.Value(**proto_args)
+            return value_pb2.Value(**proto_args)
 
         return value if type(value) == Component else Component(
             'Literal', options={'value': value_proto(value)})
+
+    @staticmethod
+    def _expand_constraints(arguments, constraints):
+
+        if not constraints:
+            return arguments
+
+        for argument in arguments.keys():
+            filtered = [i[len(argument) + 1:] for i in constraints.keys()
+                           if i.startswith(argument)]
+            filtered = [i for i in filtered
+                           if i in ALL_CONSTRAINTS]
+
+            if 'max' in filtered:
+                arguments[argument] = Component('RowMax', arguments={
+                    "left": arguments[argument],
+                    "right": Component.of(constraints[argument + '_max'])
+                })
+
+            if 'min' in filtered:
+                arguments[argument] = Component('RowMin', arguments={
+                    "left": arguments[argument],
+                    "right": Component.of(constraints[argument + '_min'])
+                })
+
+            if 'categories' in filtered:
+                arguments[argument] = Component('Bin', arguments={
+                    "data": arguments[argument],
+                    "categories": Component.of(constraints[argument + '_categories'])
+                })
+
+            if 'n' in filtered:
+                arguments[argument] = Component('Impute', arguments={
+                    "data": arguments[argument],
+                    "n": Component.of(constraints[argument + '_n'])
+                })
+
+        return arguments
 
 
 class Analysis(object):
     def __init__(self, *components, datasets=None, distance='APPROXIMATE', neighboring='SUBSTITUTE'):
         self.components: list = list(components)
         self.datasets: list = datasets or []
-        self.release_proto: api_pb2.ResultRelease = None
+        self.release_proto: base_pb2.Release = None
         self.distance: str = distance
         self.neighboring: str = neighboring
 
@@ -191,7 +251,7 @@ class Analysis(object):
             component = item['component']
             component_id = item['component_id']
 
-            vertices[component_id] = api_pb2.Component(**{
+            vertices[component_id] = components_pb2.Component(**{
                 'arguments': {
                     name: enqueue(component_child) for name, component_child in component.arguments.items()
                 },
@@ -199,21 +259,21 @@ class Analysis(object):
                     getattr(components_pb2, component.name)(**(component.options or {}))
             })
 
-        return api_pb2.Analysis(
+        return base_pb2.Analysis(
             graph=vertices,
-            privacy_definition=api_pb2.PrivacyDefinition(
-                distance=api_pb2.PrivacyDefinition.Distance.Value(self.distance),
-                neighboring=api_pb2.PrivacyDefinition.Neighboring.Value(self.neighboring)
+            privacy_definition=base_pb2.PrivacyDefinition(
+                distance=base_pb2.PrivacyDefinition.Distance.Value(self.distance),
+                neighboring=base_pb2.PrivacyDefinition.Neighboring.Value(self.neighboring)
             )
         )
 
     def _make_release_proto(self):
-        return self.release_proto or api_pb2.ResultRelease()
+        return self.release_proto or base_pb2.Release()
 
     def _make_dataset_proto(self):
-        return utilities_pb2.Dataset(
+        return base_pb2.Dataset(
             tables={
-                dataset.name: utilities_pb2.Table(
+                dataset.name: base_pb2.Table(
                     file_path=dataset.data
                 ) for dataset in self.datasets
             })
@@ -224,20 +284,20 @@ class Analysis(object):
 
     @property
     def epsilon(self):
-        return core_wrapper.compute_epsilon(
+        return core_wrapper.compute_privacy_usage(
             self._make_analysis_proto(),
             self._make_release_proto())
 
     def release(self):
-        analysis_proto: api_pb2.Analysis = self._make_analysis_proto()
-        self.release_proto: api_pb2.ResultRelease = core_wrapper.compute_release(
+        analysis_proto: base_pb2.Analysis = self._make_analysis_proto()
+        self.release_proto: base_pb2.Release = core_wrapper.compute_release(
             self._make_dataset_proto(),
             analysis_proto,
             self._make_release_proto())
 
-        return core_wrapper.generate_report(
+        return json.loads(core_wrapper.generate_report(
             analysis_proto,
-            self.release_proto)
+            self.release_proto))
 
     def __enter__(self):
         global context

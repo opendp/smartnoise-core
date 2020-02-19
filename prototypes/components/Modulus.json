@@ -1,31 +1,46 @@
 {
-    "arguments": {
-        "left": {
-            "of": [
-                "int",
-                "double",
-                "bool"
-            ],
-            "type": "Array"
-        },
-        "right": {
-            "of": [
-                "int",
-                "double",
-                "bool"
-            ],
-            "type": "Array"
-        }
+  "arguments": {
+    "left": {
+      "constraints": [
+        "n"
+      ],
+      "nature": [
+        "continuous"
+      ],
+      "of": [
+        "int",
+        "double"
+      ],
+      "type": "Array"
     },
-    "id": "Modulus",
-    "name": "modulus",
-    "options": {},
-    "return": {
-        "of": [
-            "int",
-            "double",
-            "bool"
-        ],
-        "type": "Array"
+    "right": {
+      "constraints": [
+        "n"
+      ],
+      "nature": [
+        "continuous"
+      ],
+      "of": [
+        "int",
+        "double"
+      ],
+      "type": "Array"
     }
+  },
+  "id": "Modulus",
+  "name": "modulus",
+  "options": {},
+  "return": {
+    "constraints": [
+      "n"
+    ],
+    "nature": [
+      "continuous"
+    ],
+    "of": [
+      "int",
+      "double"
+    ],
+    "type": "Array"
+  }
 }

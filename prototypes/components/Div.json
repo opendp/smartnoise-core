@@ -1,28 +1,46 @@
 {
-    "arguments": {
-        "left": {
-            "of": [
-                "int",
-                "double"
-            ],
-            "type": "Array"
-        },
-        "right": {
-            "of": [
-                "int",
-                "double"
-            ],
-            "type": "Array"
-        }
+  "arguments": {
+    "left": {
+      "constraints": [
+        "n"
+      ],
+      "nature": [
+        "continuous"
+      ],
+      "of": [
+        "int",
+        "double"
+      ],
+      "type": "Array"
     },
-    "id": "Div",
-    "name": "div",
-    "options": {},
-    "return": {
-        "of": [
-            "int",
-            "double"
-        ],
-        "type": "Array"
+    "right": {
+      "constraints": [
+        "n"
+      ],
+      "nature": [
+        "continuous"
+      ],
+      "of": [
+        "int",
+        "double"
+      ],
+      "type": "Array"
     }
+  },
+  "id": "Div",
+  "name": "div",
+  "options": {},
+  "return": {
+    "constraints": [
+      "n"
+    ],
+    "nature": [
+      "continuous"
+    ],
+    "of": [
+      "int",
+      "double"
+    ],
+    "type": "Array"
+  }
 }

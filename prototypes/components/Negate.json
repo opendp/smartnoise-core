@@ -1,25 +1,27 @@
 {
-    "arguments": {
-        "left": {
-            "of": [
-                "bool"
-            ],
-            "type": "Array"
-        },
-        "right": {
-            "of": [
-                "bool"
-            ],
-            "type": "Array"
-        }
-    },
-    "id": "Negate",
-    "name": "negate",
-    "options": {},
-    "return": {
-        "of": [
-            "bool"
-        ],
-        "type": "Array"
+  "arguments": {
+    "data": {
+      "nature": [],
+      "of": [
+        "int",
+        "double",
+        "bool",
+        "string"
+      ],
+      "type": "Array"
     }
+  },
+  "id": "Negate",
+  "name": "negate",
+  "options": {},
+  "return": {
+    "constraints": [],
+    "nature": [
+      "continuous"
+    ],
+    "of": [
+      "bool"
+    ],
+    "type": "Array"
+  }
 }

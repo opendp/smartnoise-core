@@ -1,32 +1,48 @@
 {
-    "arguments": {
-        "base": {
-            "type": {
-                "of": [
-                    "int",
-                    "double"
-                ],
-                "type": "Array"
-            }
-        },
-        "data": {
-            "type": {
-                "of": [
-                    "int",
-                    "double"
-                ],
-                "type": "Array"
-            }
-        }
-    },
-    "id": "Log",
-    "name": "log",
-    "options": {},
-    "return": {
+  "arguments": {
+    "base": {
+      "constraints": [
+        "n"
+      ],
+      "nature": [
+        "continuous"
+      ],
+      "type": {
         "of": [
-            "int",
-            "double"
+          "int",
+          "double"
         ],
         "type": "Array"
+      }
+    },
+    "data": {
+      "constraints": [
+        "n"
+      ],
+      "nature": [
+        "continuous"
+      ],
+      "type": {
+        "of": [
+          "int",
+          "double"
+        ],
+        "type": "Array"
+      }
     }
+  },
+  "id": "Log",
+  "name": "log",
+  "options": {},
+  "return": {
+    "constraints": ["n"],
+    "nature": [
+      "continuous"
+    ],
+    "of": [
+      "int",
+      "double"
+    ],
+    "type": "Array"
+  }
 }

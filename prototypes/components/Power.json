@@ -1,28 +1,46 @@
 {
-    "arguments": {
-        "data": {
-            "of": [
-                "int",
-                "double"
-            ],
-            "type": "Array"
-        },
-        "radical": {
-            "of": [
-                "int",
-                "double"
-            ],
-            "type": "Array"
-        }
+  "arguments": {
+    "data": {
+      "constraints": [
+        "n"
+      ],
+      "nature": [
+        "continuous"
+      ],
+      "of": [
+        "int",
+        "double"
+      ],
+      "type": "Array"
     },
-    "id": "Power",
-    "name": "power",
-    "options": {},
-    "return": {
-        "of": [
-            "int",
-            "double"
-        ],
-        "type": "Array"
+    "radical": {
+      "constraints": [
+        "n"
+      ],
+      "nature": [
+        "continuous"
+      ],
+      "of": [
+        "int",
+        "double"
+      ],
+      "type": "Array"
     }
+  },
+  "id": "Power",
+  "name": "power",
+  "options": {},
+  "return": {
+    "constraints": [
+      "n"
+    ],
+    "nature": [
+      "continuous"
+    ],
+    "of": [
+      "int",
+      "double"
+    ],
+    "type": "Array"
+  }
 }

@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package yarrow;
+
+import "value.proto";
+import "components.proto";
+
+message Error {
+    string message = 1;
+}
+
+message Analysis {
+    PrivacyDefinition privacy_definition = 1;
+    map<uint32, Component> graph = 2;
+}
+
+message PrivacyDefinition {
+    // upper bound
+    uint32 group_size = 4;
+
+    enum Distance {
+        // (e, 0)-differential privacy
+        PURE = 0;
+
+        // (e, d)-differential privacy
+        APPROXIMATE = 1;
+
+        // https://arxiv.org/pdf/1702.07476.pdf
+        RENYI = 2;
+
+        // https://arxiv.org/pdf/1603.01887.pdf
+        CONCENTRATED = 3;
+
+        // https://arxiv.org/pdf/1905.02383.pdf
+        F = 4;
+    }
+    Distance distance = 5;
+
+    enum Neighboring {
+        SUBSTITUTE = 0;
+        ADD_REMOVE = 1;
+    }
+    Neighboring neighboring = 6;
+}
+
+message Release {
+    map<uint32, ReleaseNode> values = 1;
+}
+message ReleaseNode {
+    Value value = 1;
+    PrivacyUsage privacy_usage = 2;
+}
+
+message Constraint {
+    // Array1Di64 num_records = 1;
+
+    // message ConstraintContinuous {
+    //     Value minimum = 1;
+    //     Value maximum = 2;
+    // }
+    // message ConstraintCategorical {
+    //     repeated Value categories = 1;
+    // }
+
+    // oneof nature {
+    //     ConstraintContinuous continuous = 2;
+    //     ConstraintCategorical categorical = 3;
+    // }
+}
+message Accuracy {
+    double value = 1;
+}
+
+message Dataset {
+    Metadata metadata = 1;
+    map<string, Table> tables = 2;
+}
+message Table {
+    Metadata metadata = 1;
+    oneof value {
+        string file_path = 2;
+        string url_path = 3;
+        Value literal = 4;
+    }
+}
+message Metadata {
+    string about = 1;
+    string license = 2;
+}

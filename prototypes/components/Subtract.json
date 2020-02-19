@@ -1,28 +1,46 @@
 {
-    "arguments": {
-        "left": {
-            "of": [
-                "double",
-                "int"
-            ],
-            "type": "Array"
-        },
-        "right": {
-            "of": [
-                "double",
-                "int"
-            ],
-            "type": "Array"
-        }
+  "arguments": {
+    "left": {
+      "constraints": [
+        "n"
+      ],
+      "nature": [
+        "continuous"
+      ],
+      "of": [
+        "double",
+        "int"
+      ],
+      "type": "Array"
     },
-    "id": "Subtract",
-    "name": "subtract",
-    "options": {},
-    "return": {
-        "of": [
-            "double",
-            "int"
-        ],
-        "type": "Array"
+    "right": {
+      "constraints": [
+        "n"
+      ],
+      "nature": [
+        "continuous"
+      ],
+      "of": [
+        "double",
+        "int"
+      ],
+      "type": "Array"
     }
+  },
+  "id": "Subtract",
+  "name": "subtract",
+  "options": {},
+  "return": {
+    "constraints": [
+      "n"
+    ],
+    "nature": [
+      "continuous"
+    ],
+    "of": [
+      "double",
+      "int"
+    ],
+    "type": "Array"
+  }
 }

@@ -2,9 +2,6 @@ syntax = "proto3";
 
 package yarrow;
 
-message Error {
-    string message = 1;
-}
 
 enum DataType {
     BYTES = 0; // default value is the unset type
@@ -73,33 +70,17 @@ message Value {
     }
 }
 
-enum Mechanism {
-    UNKNOWN = 0;
-    LAPLACE = 1;
-}
+message PrivacyUsage {  
 
-// return type for validator's computed overall epsilon, per dataset 
-message Epsilon {
-    map<string, float> usage = 1;
-}
-
-message Dataset {
-    Metadata metadata = 1;
-    map<string, Table> tables = 2;
-}
-
-message Table {
-    Metadata metadata = 1;
-    oneof value {
-        string file_path = 2;
-        string url_path = 3;
-        Value literal = 4; // testing only
+    message DistancePure {
+        double epsilon = 1;
+    }
+    message DistanceApproximate {
+        double epsilon = 1;
+        double delta = 2;
+    }
+    oneof usage {
+        DistancePure distance_pure = 1;
+        DistanceApproximate distance_approximate = 2;
     }
 }
-
-message Metadata {
-    string about = 1;
-    string license = 2;
-    // etc...
-}
-

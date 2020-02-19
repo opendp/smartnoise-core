@@ -24,19 +24,25 @@
         "int",
         "double"
       ],
-      "type": "Array"
+      "type": {
+        "of": [
+          "int",
+          "double"
+        ],
+        "type": "Array"
+      }
     }
   },
-  "id": "GreaterThan",
-  "name": "greater_than",
+  "id": "RowMax",
+  "name": "row_wise_max",
   "options": {},
   "return": {
-    "constraints": [
-      "n"
+    "nature": [
+      "continuous"
     ],
-    "nature": [],
     "of": [
-      "bool"
+      "int",
+      "double"
     ],
     "type": "Array"
   }

@@ -24,19 +24,25 @@
         "int",
         "double"
       ],
-      "type": "Array"
+      "type": {
+        "of": [
+          "int",
+          "double"
+        ],
+        "type": "Array"
+      }
     }
   },
-  "id": "GreaterThan",
-  "name": "greater_than",
+  "id": "RowMin",
+  "name": "row_wise_min",
   "options": {},
   "return": {
-    "constraints": [
-      "n"
+    "nature": [
+      "continuous"
     ],
-    "nature": [],
     "of": [
-      "bool"
+      "int",
+      "double"
     ],
     "type": "Array"
   }
