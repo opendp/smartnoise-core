@@ -259,7 +259,7 @@ pub fn kth_raw_sample_moment(data: &ArrayD<f64>, k: &i64) -> ArrayD<f64> {
     return mean(&arr1(&data_to_kth_power).into_dyn());
 }
 
-pub fn create_subset<T>(set: &ArrayD<T>, probabilities: &ArrayD<f64>, k: &i64) -> ArrayD<T> where T: Copy {
+pub fn create_subset<T>(set: &ArrayD<T>, probabilities: &ArrayD<f64>, k: &u64) -> ArrayD<T> where T: Copy {
     /// Accepts set and element probabilities and returns a subset of size k
     /// Probabilities are the probability of drawing each element on the first draw (they sum to 1)
     /// Based on Algorithm A from Raimidis PS, Spirakis PG (2006). “Weighted random sampling with a reservoir.”
@@ -295,29 +295,48 @@ pub fn create_subset<T>(set: &ArrayD<T>, probabilities: &ArrayD<f64>, k: &i64) -
     return arr1(&subset).into_dyn();
 }
 
-pub fn create_sampling_indices(k: &i64, n: &i64) -> ArrayD<i64> {
-    // create vector of all indices
-    let mut index_vec: Vec<i64> = Vec::with_capacity(*n as usize);
+pub fn create_sampling_indices(k: &u64, n: &u64) -> ArrayD<u64> {
+    /// Creates set of indices for subsampling from data without replacement
+
+    // create set of all indices
+    let mut index_vec: Vec<u64> = Vec::with_capacity(*n as usize);
     for i in 0..*n {
-        index_vec.push(i);
+        index_vec.push(i as u64);
     }
+    let index_array: ArrayD<u64> = arr1(&index_vec).into_dyn();
 
-    //
-    // generate keys and identify k indices
-    //
+    // create uniform selection probabilities
+    let prob_array: ArrayD<f64> = arr1(&vec![1./(*n as f64); *n as usize]).into_dyn();
 
-    // generate key/index tuples
-    let mut key_vec = Vec::with_capacity(*n as usize);
-    for i in 0..*n {
-        key_vec.push( (noise::sample_uniform(0., 1.).powf(*n as f64), i) );
-    }
+    // create set of sampling indices
+    let sampling_indices: ArrayD<u64> = create_subset(&index_array, &prob_array, k);
 
-    // sort key/index tuples by key and identify k indices
-    key_vec.sort_by(|a, b| b.partial_cmp(a).unwrap());
-    let mut indices: Vec<i64> = Vec::with_capacity(*k as usize);
-    for i in 0..*k {
-        indices.push(key_vec[i as usize].1 as i64);
-    }
-
-    return arr1(&indices).into_dyn();
+    return sampling_indices;
 }
+
+// pub fn create_sampling_indices(k: &i64, n: &i64) -> ArrayD<u64> {
+//     // create vector of all indices
+//     let mut index_vec: Vec<i64> = Vec::with_capacity(*n as usize);
+//     for i in 0..*n {
+//         index_vec.push(i);
+//     }
+
+//     //
+//     // generate keys and identify k indices
+//     //
+
+//     // generate key/index tuples
+//     let mut key_vec: Vec<f64> = Vec::with_capacity(*n as usize);
+//     for i in 0..*n {
+//         key_vec.push( (noise::sample_uniform(0., 1.).powf(*n as f64), i) );
+//     }
+
+//     // sort key/index tuples by key and identify k indices
+//     key_vec.sort_by(|a, b| b.partial_cmp(a).unwrap());
+//     let mut indices: Vec<i64> = Vec::with_capacity(*k as usize);
+//     for i in 0..*k {
+//         indices.push(key_vec[i as usize].1 as u64);
+//     }
+
+//     return arr1(&indices).into_dyn();
+// }
