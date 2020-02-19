@@ -79,6 +79,7 @@ def _communicate(function, argument, response_type, ffi):
 
     response = response_type.FromString(serialized_response)
 
+    # Errors from here are propagated up from either the rust validator or runtime
     if response.HasField("error"):
         raise RuntimeError(response.error)
     return response.data
