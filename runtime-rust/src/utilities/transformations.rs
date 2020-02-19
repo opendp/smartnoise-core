@@ -9,7 +9,17 @@ use num;
 use crate::utilities::noise;
 use crate::utilities::aggregations;
 
-pub fn bin(data: &ArrayD<f64>, edges: &ArrayD<f64>, inclusive_left: &bool) -> ArrayD<String> {
+// TODO: this is temporary function for testing purposes
+pub fn convert_to_matrix<T>(data: &ArrayD<T>) -> ArrayD<T> where T: Clone {
+    match data.ndim() {
+        0 => data.clone().insert_axis(Axis(0)).clone().insert_axis(Axis(0)),
+        1 => data.clone().insert_axis(Axis(0)),
+        2 => data.clone(),
+        _ => panic!("unsupported dimension")
+    }
+}
+
+pub fn bin(data: &ArrayD<f64>, edges: &ArrayD<f64>, inclusive_left: &ArrayD<bool>) -> ArrayD<String> {
     /// Accepts vector of data and assigns each element to a bin
     /// NOTE: bin transformation has C-stability of 1
     ///
@@ -26,71 +36,74 @@ pub fn bin(data: &ArrayD<f64>, edges: &ArrayD<f64>, inclusive_left: &bool) -> Ar
     ///
     /// # Example
     /// ```
-    /// // load crates
-    /// use std::string::String;
-    /// use std::vec::Vec;
-    /// use ndarray::prelude::*;
-    ///
     /// // set up data
     /// let data: ArrayD<f64> = arr1(&[1., 2., 3., 4., 5., 12., 19., 24., 90., 98.]).into_dyn();
     /// let edges: ArrayD<f64> = arr1(&[0., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100.]).into_dyn();
-    /// let inclusive_left: bool = false;
+    /// let inclusive_left: bool = arr1(&[false]).into_dyn();
     ///
     /// // bin data
     /// let binned_data: ArrayD<String> = bin(&data, &edges, &inclusive_left);
     /// println!("{:?}", binned_data);
     /// ```
 
-    // create vector versions of data and edges
-    let data_vec: Vec<f64> = data.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
-    let mut sorted_edges: Vec<f64> = edges.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
+    // initialize new data -- this is what we ultimately return from the function
+    let mut new_data: ArrayD<f64> = convert_to_matrix(data);
+    let mut new_bin_array: ArrayD<String> = Array::default(data.shape());
 
-    //  ensure edges are sorted in ascending order
-    sorted_edges.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    let n_cols: i64 = data.len_of(Axis(0)) as i64;
 
-    // initialize output vector
-    let mut bin_vec: Vec<String> = Vec::with_capacity(data_vec.len());
+    for k in 0..n_cols {
+        // create vector versions of data and edges
+        let data_vec: Vec<f64> = data.slice(s![k as usize, ..]).clone().into_dimensionality::<Ix1>().unwrap().to_vec();
+        let mut sorted_edges: Vec<f64> = edges.slice(s![k as usize, ..]).clone().into_dimensionality::<Ix1>().unwrap().to_vec();
 
-    // for each data element, look for correct bin and append name to bin_vec
-    for i in 0..data_vec.len() {
-        // append empty string if data are outside of bin ranges
-        if data_vec[i] < sorted_edges[0] || data_vec[i] > sorted_edges[sorted_edges.len()-1] {
-            bin_vec.push("".to_string());
-        } else {
-            // for each bin
-            for j in 0..(sorted_edges.len()-1) {
-                if  // element is less than the right bin edge
-                    data_vec[i] < sorted_edges[j+1] ||
-                    // element is equal to the right bin edge and we are building our histogram to be 'right-edge inclusive'
-                    (data_vec[i] == sorted_edges[j+1] && inclusive_left == &false) ||
-                    // element is equal to the right bin edge and we are checking our rightmost bin
-                    (data_vec[i] == sorted_edges[j+1] && j == (sorted_edges.len()-2)) {
-                        if j == 0 && inclusive_left == &false {
-                            // leftmost bin must be left inclusive even if overall strategy is to be right inclusive
-                            bin_vec.push(format!("[{}, {}]", sorted_edges[j], sorted_edges[j+1]));
-                        } else if j == (sorted_edges.len()-2) && inclusive_left == &true {
-                            // rightmost bin must be right inclusive even if overall strategy is to be left inclusive
-                            bin_vec.push(format!("[{}, {}]", sorted_edges[j], sorted_edges[j+1]));
-                        } else if inclusive_left == &true {
-                            bin_vec.push(format!("[{}, {})", sorted_edges[j], sorted_edges[j+1]));
-                        } else {
-                            bin_vec.push(format!("({}, {}]", sorted_edges[j], sorted_edges[j+1]));
-                        }
-                        break;
+        //  ensure edges are sorted in ascending order
+        sorted_edges.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
+        // initialize output vector
+        let mut bin_vec: Vec<String> = Vec::with_capacity(data_vec.len());
+
+        // for each data element, look for correct bin and append name to bin_vec
+        for i in 0..data_vec.len() {
+            // append empty string if data are outside of bin ranges
+            if data_vec[i] < sorted_edges[0] || data_vec[i] > sorted_edges[sorted_edges.len()-1] {
+                bin_vec.push("".to_string());
+            } else {
+                // for each bin
+                for j in 0..(sorted_edges.len()-1) {
+                    if  // element is less than the right bin edge
+                        data_vec[i] < sorted_edges[j+1] ||
+                        // element is equal to the right bin edge and we are building our histogram to be 'right-edge inclusive'
+                        (data_vec[i] == sorted_edges[j+1] && inclusive_left[k as usize] == false) ||
+                        // element is equal to the right bin edge and we are checking our rightmost bin
+                        (data_vec[i] == sorted_edges[j+1] && j == (sorted_edges.len()-2)) {
+                            if j == 0 && inclusive_left[k as usize] == false {
+                                // leftmost bin must be left inclusive even if overall strategy is to be right inclusive
+                                bin_vec.push(format!("[{}, {}]", sorted_edges[j], sorted_edges[j+1]));
+                            } else if j == (sorted_edges.len()-2) && inclusive_left[k as usize] == true {
+                                // rightmost bin must be right inclusive even if overall strategy is to be left inclusive
+                                bin_vec.push(format!("[{}, {}]", sorted_edges[j], sorted_edges[j+1]));
+                            } else if inclusive_left[k as usize] == true {
+                                bin_vec.push(format!("[{}, {})", sorted_edges[j], sorted_edges[j+1]));
+                            } else {
+                                bin_vec.push(format!("({}, {}]", sorted_edges[j], sorted_edges[j+1]));
+                            }
+                            break;
+                    }
                 }
             }
         }
+        // convert bin vector to Array and return
+        let mut bin_array: ArrayD<String> = arr1(&bin_vec).into_dyn();
+        new_bin_array.slice_mut(s![k as usize, ..]).assign(&bin_array);
     }
-    // convert bin vector to Array and return
-    let bin_array: Array1<String> = Array1::from(bin_vec);
-    return bin_array.into_dyn();
+    return new_bin_array;
 }
 
 pub fn broadcast_map<T>(
     left: &ArrayD<T>,
     right: &ArrayD<T>,
-    operator: &dyn Fn(&T, &T) -> T
-) -> Result<ArrayD<T>, String> where T: std::clone::Clone, T: num::Zero, T: Copy {
+    operator: &dyn Fn(&T, &T) -> T ) -> Result<ArrayD<T>, String> where T: std::clone::Clone, T: num::Zero, T: Copy {
     /// Broadcast left and right to match each other, and map an operator over the pairs
     ///
     /// # Arguments
@@ -138,36 +151,91 @@ pub fn broadcast_map<T>(
     }
 }
 
-pub fn clamp(data: &ArrayD<f64>, min: &f64, max: &f64) -> ArrayD<f64> {
-    /// clamps data to [min, max]
-    ///
-    /// # Arguments
-    /// * `data` - data you want to clamp
-    /// * `min` - lower bound on data
-    /// * `max` - upper bound on data
-    ///
-    /// # Return
-    /// array of clamped data
+pub fn clamp_numeric(data: &ArrayD<f64>, min: &ArrayD<f64>, max: &ArrayD<f64>) -> ArrayD<f64> {
+    /// Clamps each column of numeric data to [min, max]
     ///
     /// # Example
     /// ```
-    /// let data: ArrayD<f64> = arr1(&[1., -2., 3., 5.]).into_dyn();
-    /// let min: f64 = 0.;
-    /// let max: f64 = 4.;
-    /// let clamped: ArrayD<f64> = clamp(&data, &min, &max);
-    /// println!("{:?}", clamped);
+    /// let data = arr2(&[ [1.,2.,3.], [7.,11.,9.] ]).into_dyn();
+    /// let mut data_2d: ArrayD<f64> = convert_to_matrix(&data);
+    /// let mins: ArrayD<f64> = arr1(&[0.5,8.]).into_dyn();
+    /// let maxes: ArrayD<f64> = arr1(&[2.5,10.]).into_dyn();
+    /// let mut clamped_data = clamp_numeric(&data_2d, &mins, &maxes);
+    /// println!("{:?}", data_2d);
+    /// println!("{:?}", clamped_data);
     /// ```
+    let mut data_2d: ArrayD<f64> = convert_to_matrix(data);
+    let mut clamped_data: ArrayD<f64> = Array::default(data_2d.shape());
 
-    let mut data_vec: Vec<f64> = data.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
-    for i in 0..data_vec.len() {
-        if data_vec[i] < *min {
-            data_vec[i] = *min;
-        } else if data_vec[i] > *max {
-            data_vec[i] = *max;
+    let n_cols: i64 = data_2d.len_of(Axis(0)) as i64;
+
+    for i in 0..n_cols {
+        let mut data_vec = data_2d.slice(s![i as usize, ..]).to_owned().into_dyn().clone().
+                           into_dimensionality::<Ix1>().unwrap().to_vec();
+        for j in 0..data_vec.len() {
+                if data_vec[j] < min[i as usize] {
+                    data_vec[j] = min[i as usize];
+                } else if data_vec[j] > max[i as usize] {
+                    data_vec[j] = max[i as usize];
+                }
         }
+        clamped_data.slice_mut(s![i as usize, ..]).assign(&arr1(&data_vec).into_dyn());
     }
-    return arr1(&data_vec).into_dyn();
+    return clamped_data;
 }
+
+pub fn clamp_categorical(data: &ArrayD<String>, categories: &ArrayD<String>, null_value: &String) -> ArrayD<String> {
+    let mut data_2d: ArrayD<String> = convert_to_matrix(data);
+    let mut clamped_data: ArrayD<String> = Array::default(data_2d.shape());
+
+    let n_cols: i64 = data_2d.len_of(Axis(0)) as i64;
+    let category_vec: Vec<String> = categories.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
+    let n_categories: i64 = category_vec.len() as i64;
+
+    for i in 0..n_cols {
+        let mut data_vec = data_2d.slice(s![i as usize, ..]).to_owned().into_dyn().clone().
+                           into_dimensionality::<Ix1>().unwrap().to_vec();
+        for j in 0..data_vec.len() {
+                if !category_vec.contains(&data_vec[j]) {
+                    // sample uni
+                    data_vec[j] = null_value.to_string();
+                }
+        }
+        clamped_data.slice_mut(s![i as usize, ..]).assign(&arr1(&data_vec).into_dyn());
+    }
+    return clamped_data;
+}
+
+// pub fn clamp<T>(data: &ArrayD<T>, min: &Option(ArrayD<f64>),
+//              max: &Option(ArrayD<f64>), categories: &Option(ArrayD<String>)
+//              ) -> ArrayD<T> where T: Copy {
+
+//     let mut data_2d = convert_to_matrix(data);
+//     let mut clamped_data = Array::default(data_2d.shape());
+
+//     let n_cols: i64 = data_2d.len_of(Axis(0)) as i64;
+
+//     for i in 0..n_cols {
+//         let mut data_vec = data_2d.slice(s![i as usize, ..]).to_owned().into_dyn().clone().
+//                            into_dimensionality::<Ix1>().unwrap().to_vec();
+//         for j in 0..data_vec.len() {
+//             if min.is_some() && max.is_some() {
+//                 if data_vec[j] < min.unwrap()[i as usize] {
+//                     data_vec[j] = min.unwrap()[i as usize];
+//                 } else if data_vec[j] > max.unwrap()[i as usize] {
+//                     data_vec[j] = max.unwrap()[i as usize];
+//                 }
+//             } else if categories.is_some() {
+//                 // TODO: write what to do if elem not in categories
+//                 panic!("either min/max or categories must be set");
+//             } else {
+//                 panic!("either min/max or categories must be set");
+//             }
+//         }
+//         clamped_data.slice_mut(s![i as usize, ..]).assign(&arr1(&data_vec).into_dyn());
+//     }
+//     return clamped_data;
+// }
 
 pub fn impute_float_uniform(data: &ArrayD<f64>, min: &f64, max: &f64) -> ArrayD<f64> {
     /// Given data and min/max values, returns data with imputed values in place of NaN.

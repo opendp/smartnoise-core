@@ -23,7 +23,7 @@ message Component {
         Constant constant = 111; // propagate a value in the release
 
         // -- manipulations --
-        // type manipulations 
+        // type manipulations
         ToString tostring = 200;
         ToInt toint = 201;
         ToBool tobool = 202;
@@ -118,12 +118,9 @@ message ToInt {}
 message ToBool {}
 // general manipulations
 message Bin {}
-message Clamp {
-    double min = 1;
-    double max = 2;
-}
+message Clamp {}
 message Impute {
-    
+
 }
 // arithmetic manipulations
 message Add {}

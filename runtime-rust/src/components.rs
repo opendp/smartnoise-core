@@ -186,7 +186,7 @@ pub fn component_bin(
 
     let data: ArrayD<f64> = get_array_f64(&arguments, "data");
     let edges: ArrayD<f64> = get_array_f64(&arguments, "edges");
-    let inclusive_left: bool = get_bool(&arguments, "inclusive_left");
+    let inclusive_left: ArrayD<bool> = get_array_bool(&arguments, "inclusive_left");
     Ok(NodeEvaluation::Str(utilities::transformations::bin(&data, &edges, &inclusive_left)))
 }
 
@@ -223,11 +223,17 @@ pub fn component_row_wise_max(
 pub fn component_clamp(
     _X: &proto::Clamp, arguments: &NodeArguments
 ) -> Result<NodeEvaluation, String> {
-
-    let data: ArrayD<f64> = get_array_f64(&arguments, "data");
-    let min: f64 = get_f64(&arguments, "min");
-    let max: f64 = get_f64(&arguments, "max");
-    Ok(NodeEvaluation::F64(utilities::transformations::clamp(&data, &min, &max)))
+    match (*arguments.get("data").unwrap(),
+           *arguments.get("min").unwrap(),
+           *arguments.get("max").unwrap(),
+           *arguments.get("categories").unwrap(),
+           *arguments.get("null_value").unwrap(),) {
+                (NodeEvaluation::F64(data), NodeEvaluation::F64(min), NodeEvaluation::F64(max), ..) =>
+                    Ok(NodeEvaluation::F64(utilities::transformations::clamp_numeric(data, min, max))),
+                (NodeEvaluation::Str(data), NodeEvaluation::Str(categories), NodeEvaluation::Str(null_value), ..) =>
+                    Ok(NodeEvaluation::Str(utilities::transformations::clamp_categorical(data, categories, null_value.first().unwrap()))),
+                _ => Err("unsupported types".to_string())
+    }
 }
 
 //pub fn component_count(
