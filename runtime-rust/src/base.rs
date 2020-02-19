@@ -9,6 +9,7 @@ use std::vec::Vec;
 use std::iter::FromIterator;
 
 use crate::components;
+use crate::components::component_add;
 
 // equivalent to proto Value
 #[derive(Debug)]
@@ -104,29 +105,32 @@ pub fn execute_component(component: &yarrow::Component,
 
     let arguments = get_arguments(&component, &evaluations);
 
+    use yarrow::component::Value as Value;
     match component.to_owned().value.unwrap() {
-        yarrow::component::Value::Literal(x) => Ok(components::component_literal(&x)),
-        yarrow::component::Value::Datasource(x) => Ok(components::component_datasource(&x, &dataset, &arguments)),
-        yarrow::component::Value::Add(x) => Ok(components::component_add(&x, &arguments)),
-        yarrow::component::Value::Subtract(x) => Ok(components::component_subtract(&x, &arguments)),
-        yarrow::component::Value::Divide(x) => Ok(components::component_divide(&x, &arguments)),
-        yarrow::component::Value::Multiply(x) => Ok(components::component_multiply(&x, &arguments)),
-        yarrow::component::Value::Power(x) => Ok(components::component_power(&x, &arguments)),
-        yarrow::component::Value::Negate(x) => Ok(components::component_negate(&x, &arguments)),
-        yarrow::component::Value::ImputeFloatUniform(x) => Ok(components::component_impute_float_uniform(&x, &arguments)),
-        yarrow::component::Value::ImputeFloatGaussian(x) => Ok(components::component_impute_float_gaussian(&x, &arguments)),
-        yarrow::component::Value::ImputeIntUniform(x) => Ok(components::component_impute_int_uniform(&x, &arguments)),
-        yarrow::component::Value::Bin(x) => Ok(components::component_bin(&x, &arguments)),
-        // yarrow::component::Value::Count(x) => Ok(components::component_count(&x, &arguments)),
-        // yarrow::component::Value::Histogram(x) => Ok(components::component_histogram(&x, &arguments)),
-        yarrow::component::Value::Mean(x) => Ok(components::component_mean(&x, &arguments)),
-        yarrow::component::Value::Median(x) => Ok(components::component_median(&x, &arguments)),
-        yarrow::component::Value::Sum(x) => Ok(components::component_sum(&x, &arguments)),
-        yarrow::component::Value::Variance(x) => Ok(components::component_variance(&x, &arguments)),
-//        yarrow::component::Value::Kthsamplemoment(x) => Ok(components::component_kth_sample_moment(&x, &arguments)),
-        yarrow::component::Value::LaplaceMechanism(x) => Ok(components::component_laplace_mechanism(&x, &arguments)),
-        yarrow::component::Value::GaussianMechanism(x) => Ok(components::component_gaussian_mechanism(&x, &arguments)),
-        yarrow::component::Value::SimpleGeometricMechanism(x) => Ok(components::component_simple_geometric_mechanism(&x, &arguments)),
+        Value::Literal(x) => components::component_literal(&x),
+        Value::Datasource(x) => components::component_datasource(&x, &dataset, &arguments),
+        Value::Add(x) => components::component_add(&x, &arguments),
+        Value::Subtract(x) => components::component_subtract(&x, &arguments),
+        Value::Divide(x) => components::component_divide(&x, &arguments),
+        Value::Multiply(x) => components::component_multiply(&x, &arguments),
+        Value::Power(x) => components::component_power(&x, &arguments),
+        Value::Negate(x) => components::component_negate(&x, &arguments),
+        Value::ImputeFloatUniform(x) => components::component_impute_float_uniform(&x, &arguments),
+        Value::ImputeFloatGaussian(x) => components::component_impute_float_gaussian(&x, &arguments),
+        Value::ImputeIntUniform(x) => components::component_impute_int_uniform(&x, &arguments),
+        Value::Bin(x) => components::component_bin(&x, &arguments),
+        Value::Rowmin(x) => components::component_row_wise_min(&x, &arguments),
+        Value::Rowmax(x) => components::component_row_wise_max(&x, &arguments),
+        // Value::Count(x) => components::component_count(&x, &arguments),
+        // Value::Histogram(x) => components::component_histogram(&x, &arguments),
+        Value::Mean(x) => components::component_mean(&x, &arguments),
+        Value::Median(x) => components::component_median(&x, &arguments),
+        Value::Sum(x) => components::component_sum(&x, &arguments),
+        Value::Variance(x) => components::component_variance(&x, &arguments),
+//        Value::Kthsamplemoment(x) => components::component_kth_sample_moment(&x, &arguments),
+        Value::LaplaceMechanism(x) => components::component_laplace_mechanism(&x, &arguments),
+        Value::GaussianMechanism(x) => components::component_gaussian_mechanism(&x, &arguments),
+        Value::SimpleGeometricMechanism(x) => components::component_simple_geometric_mechanism(&x, &arguments),
         _ => Err("Component type not implemented.")
     }
 }
@@ -182,6 +186,7 @@ pub fn get_array_str(arguments: &NodeArguments, column: &str) -> ArrayD<String> 
 pub fn get_bool(arguments: &NodeArguments, column: &str) -> bool {
     match arguments.get(column).unwrap() {
         // maybe want to figure out how to accept wider range of bool arguments -- for now, comment out
+        // Mike: @ above ^^ : the Equal component is sufficient for more complex casting. It is safe to assume bool data here
         // (NodeEvaluation::F64(x) && (*x.first().unwrap() == 1. || x.first().unwrap() == 0.)) => Ok(if *x.first().unwrap() == 1. {true} else *x.first().unwrap() == 0. {false}),
         // (NodeEvaluation::I64(x) && (*x.first().unwrap() == 1 || x.first().unwrap() == 0)) => Ok(if *x.first().unwrap() == 1 {true} else *x.first().unwrap() == 0 {false}),
         // (NodeEvaluation::Str(x) && (*x.first().unwrap() == "true" || x.first().unwrap() == "false")) => Ok(x.first().parse::<bool>().unwrap().to_owned()),
@@ -193,6 +198,7 @@ pub fn get_bool(arguments: &NodeArguments, column: &str) -> bool {
 pub fn get_array_bool(arguments: &NodeArguments, column: &str) -> ArrayD<bool> {
     match arguments.get(column).unwrap() {
         // maybe want to figure out how to accept wider range of bool arguments -- for now, comment out
+        // Mike: @ above ^^ : the Equal component is sufficient for more complex casting. It is safe to assume bool data here
         // (NodeEvaluation::F64(x) && (x.mapv(|v| vec![0., 1.].contains(v)).all(|v| v == true))) => Ok(x.mapv(|v| if v == 1. {true} else if {false})),
         // (NodeEvaluation::I64(x) && (*x.mapv(|v| vec![0, 1].contains(v)).all(|v| v == true))) => Ok(x.mapv(|v| if v == 1 {true} else if v == 0 {false})),
         // (NodeEvaluation::Str(x) && (*x.mapv(|v| vec!["false","true"].contains(v)).all(|v| v == true))) => Ok(x.mapv(|v| if v == "true" {true} else if v == "false" {false})),

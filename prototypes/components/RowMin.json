@@ -1,0 +1,49 @@
+{
+  "arguments": {
+    "left": {
+      "constraints": [
+        "n"
+      ],
+      "nature": [
+        "continuous"
+      ],
+      "of": [
+        "int",
+        "double"
+      ],
+      "type": "Array"
+    },
+    "right": {
+      "constraints": [
+        "n"
+      ],
+      "nature": [
+        "continuous"
+      ],
+      "of": [
+        "int",
+        "double"
+      ],
+      "type": {
+        "of": [
+          "int",
+          "double"
+        ],
+        "type": "Array"
+      }
+    }
+  },
+  "id": "RowMin",
+  "name": "row_wise_min",
+  "options": {},
+  "return": {
+    "nature": [
+      "continuous"
+    ],
+    "of": [
+      "int",
+      "double"
+    ],
+    "type": "Array"
+  }
+}

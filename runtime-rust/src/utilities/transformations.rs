@@ -2,7 +2,7 @@ use std::string::String;
 use std::vec::Vec;
 use std::cmp;
 use ndarray::prelude::*;
-use ndarray::stack;
+use ndarray::{stack, Zip};
 use core::f64::NAN;
 use num;
 
@@ -84,6 +84,52 @@ pub fn bin(data: &ArrayD<f64>, edges: &ArrayD<f64>, inclusive_left: &bool) -> Ar
     // convert bin vector to Array and return
     let bin_array: Array1<String> = Array1::from(bin_vec);
     return bin_array.into_dyn();
+}
+
+pub fn broadcast_map<T>(
+    left: &ArrayD<T>,
+    right: &ArrayD<T>,
+    operator: &dyn Fn(&T, &T) -> T
+) -> Result<ArrayD<T>, &'static str> where T: std::clone::Clone, T: num::Zero {
+    /// Broadcast left and right to match each other, and map an operator over the pairs
+    ///
+    /// # Arguments
+    /// * `left` - left vector to map over
+    /// * `right` - right vector to map over
+    /// * `operator` - function to apply to each pair
+    ///
+    /// # Return
+    /// An array of mapped data
+    ///
+    /// # Example
+    /// ```
+    /// let left: Array1<f64> = arr1!([1., -2., 3., 5.]);
+    /// let right: Array1<f64> = arr1!([2.]);
+    /// let mapped: Array1<f64> = broadcast_map(&left, &right, &|l, r| l.max(r));
+    /// println!("{:?}", mapped); // [2., 2., 3., 5.]
+    /// ```
+
+    let left = left.clone().into_dimensionality::<Ix1>().unwrap();
+    let right = right.clone().into_dimensionality::<Ix1>().unwrap();
+
+    // broadcast left or right or neither to the larger of the two
+    if left.len() < right.len() {
+        let left = left.broadcast(right.shape());
+    }
+    if right.len() < left.len() {
+        let right = right.broadcast(left.shape());
+    }
+
+    // map the operator over the broadcasted arrays
+    let mut accumulator: Array1<T> = Array1::zeros(
+        (left.shape().first().unwrap().to_owned()));
+
+    Zip::from(&mut accumulator)
+        .and(&left)
+        .and(&right)
+        .apply(|acc_elem, l, r| *acc_elem = operator(l, r));
+
+    Ok(accumulator.into_dyn())
 }
 
 pub fn clamp(data: &ArrayD<f64>, min: &f64, max: &f64) -> ArrayD<f64> {

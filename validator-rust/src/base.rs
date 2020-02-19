@@ -167,27 +167,16 @@ pub fn expand_component(
 
     match component.value.to_owned().unwrap() {
         yarrow::component::Value::Dpmean(x) => {
-            // impute
-            current_id += 1;
-            let id_impute = current_id.clone();
-            graph.insert(id_impute, yarrow::Component {
-                arguments: hashmap!["data".to_owned() => *component.arguments.get("data").unwrap()],
-                value: Some(yarrow::component::Value::Impute(yarrow::Impute {})),
-                omit: true, batch: component.batch
-            });
-            constraints.insert(id_impute, constraint.to_owned());
             // mean
             current_id += 1;
             let id_mean = current_id.clone();
             graph.insert(id_mean, yarrow::Component {
-                arguments: hashmap!["data".to_owned() => id_impute],
+                arguments: hashmap!["data".to_owned() => *component.arguments.get("data").unwrap()],
                 value: Some(yarrow::component::Value::Mean(yarrow::Mean {})),
                 omit: true, batch: component.batch
             });
             // noising
-            current_id += 1;
-            let id_count = current_id.clone();
-            graph.insert(id_count, yarrow::Component {
+            graph.insert(component_id, yarrow::Component {
                 arguments: hashmap!["data".to_owned() => id_mean],
                 value: Some(yarrow::component::Value::LaplaceMechanism(yarrow::LaplaceMechanism {
                     privacy_usage: x.privacy_usage,

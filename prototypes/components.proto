@@ -68,20 +68,16 @@ message Component {
         KthRawSampleMoment kthrawsamplemoment = 405;
         Covariance covariance = 406;
 
-        // distribution sampling
-        SampleLaplace samplelaplace = 501;
-        SampleGeometric samplegeometric = 502;
-        SampleDiscrete samplediscrete = 503;
-        SampleGaussian samplegaussian = 504;
+        // mechanisms
+        LaplaceMechanism laplace_mechanism = 500;
+        GaussianMechanism gaussian_mechanism = 501;
+        SimpleGeometricMechanism simple_geometric_mechanism = 502;
 
         // deprecated
         Laplace laplace = 1000;
         ImputeFloatUniform impute_float_uniform = 1001;
         ImputeFloatGaussian impute_float_gaussian = 1002;
         ImputeIntUniform impute_int_uniform = 1003;
-        LaplaceMechanism laplace_mechanism = 1004;
-        GaussianMechanism gaussian_mechanism = 1005;
-        SimpleGeometricMechanism simple_geometric_mechanism = 1006;
         DataSource datasource = 1007; // load a single column from a csv file as type
     }
 }

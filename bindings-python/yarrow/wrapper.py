@@ -80,5 +80,5 @@ def _communicate(function, argument, response_type, ffi):
     response = response_type.FromString(serialized_response)
 
     if response.HasField("error"):
-        raise response.error
+        raise RuntimeError(response.error)
     return response.data
