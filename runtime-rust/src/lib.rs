@@ -35,7 +35,7 @@ pub extern "C" fn release(
         value: match base::execute_graph(&analysis, &release, &dataset) {
             Ok(release) => Some(yarrow::response_release::Value::Data(release)),
             Err(err) => Some(yarrow::response_release::Value::Error(
-                yarrow::Error{message: err.to_string()}
+                yarrow::Error{message: err}
             ))
         }
     };
