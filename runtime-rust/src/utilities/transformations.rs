@@ -90,7 +90,7 @@ pub fn broadcast_map<T>(
     left: &ArrayD<T>,
     right: &ArrayD<T>,
     operator: &dyn Fn(&T, &T) -> T
-) -> Result<ArrayD<T>, String> where T: std::clone::Clone, T: num::Zero, T: std::marker::Copy {
+) -> Result<ArrayD<T>, String> where T: std::clone::Clone, T: num::Zero, T: Copy {
     /// Broadcast left and right to match each other, and map an operator over the pairs
     ///
     /// # Arguments
