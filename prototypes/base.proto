@@ -52,19 +52,21 @@ message ReleaseNode {
 }
 
 message Constraint {
-    // Array1Di64 num_records = 1;
+    // uint32 num_records = 1;
+    // bool non_null = 2;
+    // bool is_releasable = 3;
 
     // message ConstraintContinuous {
-    //     Value minimum = 1;
-    //     Value maximum = 2;
+    //     double minimum = 1;
+    //     double maximum = 2;
     // }
     // message ConstraintCategorical {
-    //     repeated Value categories = 1;
+    //     Value categories = 1;
     // }
 
     // oneof nature {
-    //     ConstraintContinuous continuous = 2;
-    //     ConstraintCategorical categorical = 3;
+    //     ConstraintContinuous continuous = 10;
+    //     ConstraintCategorical categorical = 11;
     // }
 }
 message Accuracy {

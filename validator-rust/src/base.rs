@@ -1,32 +1,212 @@
-use crate::yarrow;
+use crate::proto;
 use itertools::Itertools;
 
 use crate::utilities;
-use std::collections::HashMap;
+use crate::components;
 
-macro_rules! hashmap {
-    ($( $key: expr => $val: expr ),*) => {{
-         let mut map = ::std::collections::HashMap::new();
-         $( map.insert($key, $val); )*
-         map
-    }}
+use std::collections::HashMap;
+use crate::hashmap;
+
+#[derive(Clone, Debug)]
+pub struct Constraint<T> {
+    pub nullity: bool,
+    pub is_releasable: bool,
+    pub min: Option<T>,
+    pub max: Option<T>,
+    pub categories: Option<Vec<T>>,
+    pub num_records: Option<i32>,
 }
 
+// TODO: implement constraint struct to/from proto
+impl<T> Constraint<T> {
+    pub fn to_proto(&self) -> proto::Constraint {
+        proto::Constraint {}
+    }
+    pub fn from_proto(other: &proto::Constraint) -> Constraint<T> {
+        Constraint::<T> {
+            nullity: true,
+            is_releasable: false,
+            min: None,
+            max: None,
+            categories: None,
+            num_records: None
+        }
+    }
+}
+
+pub trait Component {
+    // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
+    fn propagate_constraint<T>(
+        &self,
+        constraints: &HashMap<String, Constraint<T>>,
+    ) -> Constraint<T>;
+
+    fn is_valid<T>(
+        &self,
+        constraints: &HashMap<String, Constraint<T>>,
+    ) -> bool;
+
+    // return a hashmap of an expanded subgraph
+    fn expand_graph<T>(
+        &self,
+        privacy_definition: &proto::PrivacyDefinition,
+        component: &proto::Component,
+        maximum_id: i32,
+        component_id: i32,
+        constraints: &HashMap<String, Constraint<T>>,
+    ) -> (i32, HashMap<i32, proto::Component>);
+
+    fn compute_sensitivity<T>(
+        &self,
+        privacy_definition: &proto::PrivacyDefinition,
+        constraint: &Constraint<T>,
+    ) -> Option<f64>;
+
+    fn accuracy_to_privacy_usage<T>(
+        &self,
+        privacy_definition: &proto::PrivacyDefinition,
+        constraints: &HashMap<String, Constraint<T>>,
+        accuracy: &proto::Accuracy,
+    ) -> Option<proto::PrivacyUsage>;
+
+    fn privacy_usage_to_accuracy<T>(
+        &self,
+        privacy_definition: &proto::PrivacyDefinition,
+        constraints: &HashMap<String, Constraint<T>>,
+    ) -> Option<f64>;
+
+    // for json construction. Return type should be a generic serializable struct, not a String
+    fn summarize<T>(
+        &self,
+        constraints: &HashMap<String, Constraint<T>>,
+    ) -> String;
+}
+
+impl Component for proto::component::Value {
+    // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
+    fn propagate_constraint<T>(
+        &self,
+        constraints: &HashMap<String, Constraint<T>>,
+    ) -> Constraint<T> {
+        use proto::component::Value;
+        match self {
+            // TODO: write a macro for delegating enum variants
+            Value::Rowmin(x) => x.propagate_constraint(constraints),
+            _ => panic!("a proto component is missing its Component trait")
+        }
+    }
+
+    fn is_valid<T>(
+        &self,
+        constraints: &HashMap<String, Constraint<T>>,
+    ) -> bool {
+        use proto::component::Value;
+        match self {
+            // TODO: write a macro for delegating enum variants
+            Value::Rowmin(x) => x.is_valid(constraints),
+            _ => panic!("a proto component is missing its Component trait")
+        }
+    }
+
+    // return a hashmap of an expanded subgraph
+    fn expand_graph<T>(
+        &self,
+        privacy_definition: &proto::PrivacyDefinition,
+        component: &proto::Component,
+        maximum_id: i32,
+        component_id: i32,
+        constraints: &HashMap<String, Constraint<T>>,
+    ) -> (i32, HashMap<i32, proto::Component>) {
+        use proto::component::Value;
+        match self {
+            // TODO: write a macro for delegating enum variants
+            Value::Rowmin(x) => x.expand_graph(
+                privacy_definition,
+                component,
+                maximum_id,
+                component_id,
+                constraints),
+            _ => panic!("a proto component is missing its Component trait")
+        }
+    }
+
+    fn compute_sensitivity<T>(
+        &self,
+        privacy_definition: &proto::PrivacyDefinition,
+        constraint: &Constraint<T>,
+    ) -> Option<f64> {
+        use proto::component::Value;
+        match self {
+            // TODO: write a macro for delegating enum variants
+            Value::Rowmin(x) => x.compute_sensitivity(
+                privacy_definition,
+                constraint),
+            _ => panic!("a proto component is missing its Component trait")
+        }
+    }
+
+    fn accuracy_to_privacy_usage<T>(
+        &self,
+        privacy_definition: &proto::PrivacyDefinition,
+        constraints: &HashMap<String, Constraint<T>>,
+        accuracy: &proto::Accuracy,
+    ) -> Option<proto::PrivacyUsage> {
+        use proto::component::Value;
+        match self {
+            // TODO: write a macro for delegating enum variants
+            Value::Rowmin(x) => x.accuracy_to_privacy_usage(
+                privacy_definition,
+                constraints,
+                accuracy),
+            _ => panic!("a proto component is missing its Component trait")
+        }
+    }
+
+    fn privacy_usage_to_accuracy<T>(
+        &self,
+        privacy_definition: &proto::PrivacyDefinition,
+        constraints: &HashMap<String, Constraint<T>>,
+    ) -> Option<f64> {
+        use proto::component::Value;
+        match self {
+            // TODO: write a macro for delegating enum variants
+            Value::Rowmin(x) => x.privacy_usage_to_accuracy(
+                privacy_definition,
+                constraints),
+            _ => panic!("a proto component is missing its Component trait")
+        }
+    }
+
+    // for json construction. Return type should be a generic serializable struct, not a String
+    fn summarize<T>(
+        &self,
+        constraints: &HashMap<String, Constraint<T>>,
+    ) -> String {
+        use proto::component::Value;
+        match self {
+            // TODO: write a macro for delegating enum variants
+            Value::Rowmin(x) => x.summarize(constraints),
+            _ => panic!("a proto component is missing its Component trait")
+        }
+    }
+}
+
+
 pub fn validate_analysis(
-    analysis: &yarrow::Analysis
-) -> Result<yarrow::response_validate_analysis::Validated, &'static str> {
+    analysis: &proto::Analysis
+) -> Result<proto::response_validate_analysis::Validated, &'static str> {
     // check if acyclic
     let traversal = utilities::graph::get_traversal(analysis)?;
 
     // TODO: check that there is at most one Materialize
     // TODO: check shapes and lengths (to prevent leaking from errors)
-    return Ok(yarrow::response_validate_analysis::Validated {value: true, message: "The analysis is valid.".to_string()})
+    return Ok(proto::response_validate_analysis::Validated {value: true, message: "The analysis is valid.".to_string()})
 }
 
 pub fn compute_privacy_usage(
-    analysis: &yarrow::Analysis, release: &yarrow::Release
-) -> Result<yarrow::PrivacyUsage, &'static str> {
-    let graph: &HashMap<u32, yarrow::Component> = &analysis.graph;
+    analysis: &proto::Analysis, release: &proto::Release
+) -> Result<proto::PrivacyUsage, &'static str> {
+    let graph: &HashMap<u32, proto::Component> = &analysis.graph;
 
     let usage_option = graph.iter()
         // optionally extract the minimum usage between the analysis and release
@@ -38,7 +218,7 @@ pub fn compute_privacy_usage(
         .fold1(|usage_1, usage_2| privacy_usage_reducer(
             &usage_1, &usage_2, &|l, r| l + r));
 
-    // TODO: this should probably return a yarrow::PrivacyUsage with zero based on the privacy definition
+    // TODO: this should probably return a proto::PrivacyUsage with zero based on the privacy definition
     match usage_option {
         Some(x) => Ok(x),
         None => Err("no information is released; privacy usage is none")
@@ -46,17 +226,17 @@ pub fn compute_privacy_usage(
 }
 
 pub fn get_component_privacy_usage(
-    component: &yarrow::Component,
-    release_node: Option<&yarrow::ReleaseNode>
-) -> Option<yarrow::PrivacyUsage> {
+    component: &proto::Component,
+    release_node: Option<&proto::ReleaseNode>
+) -> Option<proto::PrivacyUsage> {
 
-    let privacy_usage_option: Option<yarrow::PrivacyUsage> = match component.to_owned().value? {
-        yarrow::component::Value::Dpsum(x) => x.privacy_usage,
-        yarrow::component::Value::Dpcount(x) => x.privacy_usage,
-        yarrow::component::Value::Dpmean(x) => x.privacy_usage,
-        yarrow::component::Value::Dpvariance(x) => x.privacy_usage,
-        yarrow::component::Value::Dpmomentraw(x) => x.privacy_usage,
-        yarrow::component::Value::Dpvariance(x) => x.privacy_usage,
+    let privacy_usage_option: Option<proto::PrivacyUsage> = match component.to_owned().value? {
+        proto::component::Value::Dpsum(x) => x.privacy_usage,
+        proto::component::Value::Dpcount(x) => x.privacy_usage,
+        proto::component::Value::Dpmean(x) => x.privacy_usage,
+        proto::component::Value::Dpvariance(x) => x.privacy_usage,
+        proto::component::Value::Dpmomentraw(x) => x.privacy_usage,
+        proto::component::Value::Dpvariance(x) => x.privacy_usage,
         _ => None
     };
 
@@ -76,19 +256,19 @@ pub fn get_component_privacy_usage(
 }
 
 pub fn privacy_usage_reducer(
-    left: &yarrow::PrivacyUsage,
-    right: &yarrow::PrivacyUsage,
+    left: &proto::PrivacyUsage,
+    right: &proto::PrivacyUsage,
     operator: &dyn Fn(f64, f64) -> f64
-) -> yarrow::PrivacyUsage {
+) -> proto::PrivacyUsage {
 
-    use yarrow::privacy_usage::Usage as Usage;
+    use proto::privacy_usage::Usage as Usage;
 
-    yarrow::PrivacyUsage {
+    proto::PrivacyUsage {
         usage: match (left.usage.to_owned().unwrap(), right.usage.to_owned().unwrap()) {
-            (Usage::DistancePure(x), Usage::DistancePure(y)) => Some(Usage::DistancePure(yarrow::privacy_usage::DistancePure {
+            (Usage::DistancePure(x), Usage::DistancePure(y)) => Some(Usage::DistancePure(proto::privacy_usage::DistancePure {
                 epsilon: operator(x.epsilon, y.epsilon)
             })),
-            (Usage::DistanceApproximate(x), Usage::DistanceApproximate(y)) => Some(Usage::DistanceApproximate(yarrow::privacy_usage::DistanceApproximate {
+            (Usage::DistanceApproximate(x), Usage::DistanceApproximate(y)) => Some(Usage::DistanceApproximate(proto::privacy_usage::DistanceApproximate {
                 epsilon: operator(x.epsilon, y.epsilon),
                 delta: operator(x.delta, y.delta)
             })),
@@ -97,18 +277,18 @@ pub fn privacy_usage_reducer(
     }
 }
 
-// TODO: implement constraint propagation
+// TODO: implement constraint propagation, return type should be keyed by i32, and needs a get_arguments function
 pub fn propagate_constraints(
-    analysis: &yarrow::Analysis,
-    release: &yarrow::Release
-) -> Result<HashMap<u32, yarrow::Constraint>, &'static str> {
+    analysis: &proto::Analysis,
+    release: &proto::Release
+) -> Result<HashMap<String, proto::Constraint>, &'static str> {
     Ok(hashmap![])
 }
 
 pub fn expand_graph(
-    analysis: &yarrow::Analysis,
-    release: &yarrow::Release
-) -> Result<yarrow::Analysis, &'static str> {
+    analysis: &proto::Analysis,
+    release: &proto::Release
+) -> Result<proto::Analysis, &'static str> {
     match propagate_constraints(analysis, release) {
         Ok(constraints) => expand_graph_recursive(analysis, &constraints),
         Err(e) => Err(e)
@@ -116,12 +296,12 @@ pub fn expand_graph(
 }
 
 pub fn expand_graph_recursive(
-    analysis: &yarrow::Analysis,
-    constraints: &HashMap<u32, yarrow::Constraint>
-) -> Result<yarrow::Analysis, &'static str> {
+    analysis: &proto::Analysis,
+    constraints: &HashMap<String, proto::Constraint>
+) -> Result<proto::Analysis, &'static str> {
 
-    let mut graph: HashMap<u32, yarrow::Component> = analysis.graph.to_owned();
-    let mut extension: HashMap<u32, yarrow::Component> = HashMap::new();
+    let mut graph: HashMap<u32, proto::Component> = analysis.graph.to_owned();
+    let mut extension: HashMap<u32, proto::Component> = HashMap::new();
     let max_node_id_option = graph.keys().fold1(std::cmp::max);
 
     // the graph is empty, and empty graphs are trivially fully expanded
@@ -135,7 +315,7 @@ pub fn expand_graph_recursive(
         let result = expand_component(
             graph.get(node_id).unwrap(),
             &analysis.privacy_definition.to_owned().unwrap(),
-            &yarrow::Constraint{},
+            &proto::Constraint{},
             *node_id,
             max_node_id
         );
@@ -144,92 +324,64 @@ pub fn expand_graph_recursive(
     });
 
     graph.extend(extension);
-    Ok(yarrow::Analysis {
+    Ok(proto::Analysis {
         graph: graph,
         privacy_definition: None
     })
 }
 
-// TODO: insert component expansions
+// TODO: call out to Component trait
 pub fn expand_component(
-    component: &yarrow::Component,
-    privacy_definition: &yarrow::PrivacyDefinition,
-    constraint: &yarrow::Constraint,
+    component: &proto::Component,
+    privacy_definition: &proto::PrivacyDefinition,
+    constraint: &proto::Constraint,
     component_id: u32,
-    minimum_id: u32
-) -> (u32, HashMap<u32, yarrow::Component>) {
-    let mut current_id = minimum_id.clone();
+    maximum_id: u32
+) -> (u32, HashMap<u32, proto::Component>) {
+    let mut current_id = maximum_id.clone();
     let arguments = component.arguments.to_owned();
 
-    let mut constraints: HashMap<u32, yarrow::Constraint> = HashMap::new();
+    let mut constraints: HashMap<String, proto::Constraint> = HashMap::new();
 
-    let mut graph: HashMap<u32, yarrow::Component> = HashMap::new();
+    let mut graph: HashMap<u32, proto::Component> = HashMap::new();
 
     match component.value.to_owned().unwrap() {
-        yarrow::component::Value::Dpmean(x) => {
+        proto::component::Value::Dpmean(x) => {
             // mean
             current_id += 1;
             let id_mean = current_id.clone();
-            graph.insert(id_mean, yarrow::Component {
+            graph.insert(id_mean, proto::Component {
                 arguments: hashmap!["data".to_owned() => *component.arguments.get("data").unwrap()],
-                value: Some(yarrow::component::Value::Mean(yarrow::Mean {})),
+                value: Some(proto::component::Value::Mean(proto::Mean {})),
                 omit: true, batch: component.batch
             });
             // noising
-            graph.insert(component_id, yarrow::Component {
+            graph.insert(component_id, proto::Component {
                 arguments: hashmap!["data".to_owned() => id_mean],
-                value: Some(yarrow::component::Value::LaplaceMechanism(yarrow::LaplaceMechanism {
+                value: Some(proto::component::Value::LaplaceMechanism(proto::LaplaceMechanism {
                     privacy_usage: x.privacy_usage,
-                    sensitivity: compute_sensitivity(component, constraint, privacy_definition)
+                    sensitivity: component.value.to_owned().unwrap()
+                        .compute_sensitivity(
+                            privacy_definition,
+                            &Constraint::<f64>::from_proto(constraint))
+                        .unwrap()
                 })),
                 omit: true, batch: component.batch
             });
 
-            (current_id, expand_graph_recursive(&yarrow::Analysis {
+            (current_id, expand_graph_recursive(&proto::Analysis {
                 graph,
                 privacy_definition: None
             }, &constraints).unwrap().graph)
         },
-        _ => (minimum_id, hashmap![component_id => component.to_owned()])
+        _ => (maximum_id, hashmap![component_id => component.to_owned()])
     }
-}
-
-// TODO: insert sensitivity derivations
-pub fn compute_sensitivity(
-    component: &yarrow::Component,
-    constraint: &yarrow::Constraint,
-    privacy_definition: &yarrow::PrivacyDefinition
-) -> f64 {
-    1.
 }
 
 // TODO: create report json
 pub fn generate_report(
-    analysis: &yarrow::Analysis,
-    release: &yarrow::Release
+    analysis: &proto::Analysis,
+    release: &proto::Release
 ) -> Result<String, &'static str> {
     return Ok("{\"key\": \"value\"}".to_owned());
-}
-
-// TODO: insert accuracy to privacy_usage derivations
-pub fn accuracy_to_privacy_usage(
-    privacy_definition: &yarrow::PrivacyDefinition,
-    component: &yarrow::Component,
-    constraint: &yarrow::Constraint,
-    accuracy: &yarrow::Accuracy
-) -> Result<yarrow::PrivacyUsage, &'static str> {
-    Ok(yarrow::PrivacyUsage {
-        usage: Some(yarrow::privacy_usage::Usage::DistancePure(yarrow::privacy_usage::DistancePure {
-            epsilon: 0.
-        }))
-    })
-}
-
-// TODO: insert privacy_usage to accuracy derivations
-pub fn privacy_usage_to_accuracy(
-    privacy_definition: &yarrow::PrivacyDefinition,
-    component: &yarrow::Component,
-    constraint: &yarrow::Constraint
-) -> Result<yarrow::Accuracy, &'static str> {
-    Ok(yarrow::Accuracy {value: 12.})
 }

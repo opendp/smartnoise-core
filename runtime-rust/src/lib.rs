@@ -1,5 +1,5 @@
 extern crate yarrow_validator;
-use yarrow_validator::yarrow;
+use yarrow_validator::proto;
 
 mod base;
 mod utilities;
@@ -25,22 +25,22 @@ pub extern "C" fn release(
 ) -> ffi_support::ByteBuffer {
 
     let request_buffer = unsafe {yarrow_validator::ptr_to_buffer(request_ptr, request_length)};
-    let request: yarrow::RequestRelease = prost::Message::decode(request_buffer).unwrap();
+    let request: proto::RequestRelease = prost::Message::decode(request_buffer).unwrap();
 
-    let analysis: yarrow::Analysis = request.analysis.unwrap();
-    let release: yarrow::Release = request.release.unwrap();
-    let dataset: yarrow::Dataset = request.dataset.unwrap();
+    let analysis: proto::Analysis = request.analysis.unwrap();
+    let release: proto::Release = request.release.unwrap();
+    let dataset: proto::Dataset = request.dataset.unwrap();
 
-    let response = yarrow::ResponseRelease {
+    let response = proto::ResponseRelease {
         value: match base::execute_graph(&analysis, &release, &dataset) {
-            Ok(release) => Some(yarrow::response_release::Value::Data(release)),
-            Err(err) => Some(yarrow::response_release::Value::Error(
-                yarrow::Error{message: err.to_string()}
+            Ok(release) => Some(proto::response_release::Value::Data(release)),
+            Err(err) => Some(proto::response_release::Value::Error(
+                proto::Error{message: err}
             ))
         }
     };
     yarrow_validator::buffer_to_ptr(response)
 }
 
-//ffi_support::implement_into_ffi_by_protobuf!(yarrow::Release);
+//ffi_support::implement_into_ffi_by_protobuf!(proto::Release);
 ffi_support::define_bytebuffer_destructor!(dp_runtime_destroy_bytebuffer);

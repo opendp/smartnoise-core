@@ -90,7 +90,7 @@ pub fn broadcast_map<T>(
     left: &ArrayD<T>,
     right: &ArrayD<T>,
     operator: &dyn Fn(&T, &T) -> T
-) -> Result<ArrayD<T>, &'static str> where T: std::clone::Clone, T: num::Zero {
+) -> Result<ArrayD<T>, String> where T: std::clone::Clone, T: num::Zero, T: Copy {
     /// Broadcast left and right to match each other, and map an operator over the pairs
     ///
     /// # Arguments
@@ -109,27 +109,33 @@ pub fn broadcast_map<T>(
     /// println!("{:?}", mapped); // [2., 2., 3., 5.]
     /// ```
 
-    let left = left.clone().into_dimensionality::<Ix1>().unwrap();
-    let right = right.clone().into_dimensionality::<Ix1>().unwrap();
+    match (left.ndim(), right.ndim()) {
+        (l, r) if l == 0 && r == 0 =>
+            Ok(Array::from_shape_vec(vec![],
+                                  vec![operator(left.first().unwrap(), right.first().unwrap())]).unwrap()),
+        (l, r) if l == 1 && r == 1 => {
+            if left.len() != right.len() {
+                return Err("the size of the left and right vectors do not match".to_string())
+            }
 
-    // broadcast left or right or neither to the larger of the two
-    if left.len() < right.len() {
-        let left = left.broadcast(right.shape());
+            let mut zeros: ArrayD<T> = Array::zeros(left.shape());
+            Zip::from(&mut zeros)
+                .and(left)
+                .and(right).apply(|acc, &l, &r| *acc = operator(&l, &r));
+            Ok(zeros)
+        },
+        (l, r) if l == 1 && r == 0 => {
+            let mut zeros: ArrayD<T> = Array::zeros(left.shape());
+            Zip::from(&mut zeros).and(left).apply(|acc, &l| *acc = operator(&l, &right.first().unwrap()));
+            Ok(zeros)
+        },
+        (l, r) if l == 0 && r == 1 => {
+            let mut zeros: ArrayD<T> = Array::zeros(left.shape());
+            Zip::from(&mut zeros).and(right).apply(|acc, &r| *acc = operator(&left.first().unwrap(), &r));
+            Ok(zeros)
+        },
+        _ => Err("unsupported shapes for left and right vector in broadcast_map".to_string())
     }
-    if right.len() < left.len() {
-        let right = right.broadcast(left.shape());
-    }
-
-    // map the operator over the broadcasted arrays
-    let mut accumulator: Array1<T> = Array1::zeros(
-        (left.shape().first().unwrap().to_owned()));
-
-    Zip::from(&mut accumulator)
-        .and(&left)
-        .and(&right)
-        .apply(|acc_elem, l, r| *acc_elem = operator(l, r));
-
-    Ok(accumulator.into_dyn())
 }
 
 pub fn clamp(data: &ArrayD<f64>, min: &f64, max: &f64) -> ArrayD<f64> {

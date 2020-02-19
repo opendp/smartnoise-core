@@ -6,3 +6,7 @@ yarrow/_native*
 yarrow.egg-info
 .eggs/
 yarrow/components.py
+
+debug_build.log
+debug_app.log
+debug_tests.log
