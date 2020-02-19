@@ -28,7 +28,7 @@ impl base::Component for proto::RowMin {
         false
     }
 
-    fn expand<T>(
+    fn expand_graph<T>(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
@@ -39,7 +39,7 @@ impl base::Component for proto::RowMin {
         (maximum_id, hashmap![component_id => component.to_owned()])
     }
 
-    fn sensitivity<T>(
+    fn compute_sensitivity<T>(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         constraint: &Constraint<T>,
@@ -50,7 +50,7 @@ impl base::Component for proto::RowMin {
     fn accuracy_to_privacy_usage<T>(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
-        constraint: &Constraint<T>,
+        constraints: &HashMap<String, Constraint<T>>,
         accuracy: &proto::Accuracy,
     ) -> Option<proto::PrivacyUsage> {
         None

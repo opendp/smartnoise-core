@@ -1,6 +1,7 @@
 mod base;
 pub mod utilities;
 pub mod components;
+use base::Component;
 
 // include protobuf-generated traits
 pub mod proto {
@@ -18,6 +19,7 @@ macro_rules! hashmap {
 }
 
 use prost::Message;
+use std::collections::HashMap;
 
 // useful tutorial for proto over ffi here:
 // https://github.com/mozilla/application-services/blob/master/docs/howtos/passing-protobuf-data-over-ffi.md
@@ -123,11 +125,16 @@ pub extern "C" fn accuracy_to_privacy_usage(
 
     let privacy_definition: proto::PrivacyDefinition = request.privacy_definition.unwrap();
     let component: proto::Component = request.component.unwrap();
-    let constraint: proto::Constraint = request.constraint.unwrap();
+    let constraints: HashMap<String, base::Constraint<f64>> = request.constraints.iter()
+        .map(|(k, v)| (k.to_owned(), base::Constraint::<f64>::from_proto(&v)))
+        .collect();
     let accuracy: proto::Accuracy = request.accuracy.unwrap();
 
+    let privacy_usage: std::result::Result<proto::PrivacyUsage, String> = Ok(component.value.to_owned().unwrap()
+        .accuracy_to_privacy_usage(&privacy_definition, &constraints, &accuracy).unwrap());
+
     let response = proto::ResponseAccuracyToPrivacyUsage {
-        value: match base::accuracy_to_privacy_usage(&privacy_definition, &component, &constraint, &accuracy) {
+        value: match privacy_usage {
             Ok(x) => Some(proto::response_accuracy_to_privacy_usage::Value::Data(x)),
             Err(err) => Some(proto::response_accuracy_to_privacy_usage::Value::Error(
                 proto::Error { message: err.to_string() }
@@ -146,10 +153,17 @@ pub extern "C" fn privacy_usage_to_accuracy(
 
     let privacy_definition: proto::PrivacyDefinition = request.privacy_definition.unwrap();
     let component: proto::Component = request.component.unwrap();
-    let constraint: proto::Constraint = request.constraint.unwrap();
+    let constraints: HashMap<String, base::Constraint<f64>> = request.constraints.iter()
+        .map(|(k, v)| (k.to_owned(), base::Constraint::<f64>::from_proto(&v)))
+        .collect();
+
+    let accuracy: std::result::Result<proto::Accuracy, String> = Ok(proto::Accuracy {
+        value: component.value.to_owned().unwrap()
+            .privacy_usage_to_accuracy(&privacy_definition, &constraints).unwrap()
+    });
 
     let response = proto::ResponsePrivacyUsageToAccuracy {
-        value: match base::privacy_usage_to_accuracy(&privacy_definition, &component, &constraint) {
+        value: match accuracy {
             Ok(x) => Some(proto::response_privacy_usage_to_accuracy::Value::Data(x)),
             Err(err) => Some(proto::response_privacy_usage_to_accuracy::Value::Error(
                 proto::Error { message: err.to_string() }
