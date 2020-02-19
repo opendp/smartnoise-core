@@ -49,3 +49,32 @@ The steps for adding bindings in a new language are essentially:
         - Follow the Protobuf instructions, starting from `./configure`  
           `https://github.com/protocolbuffers/protobuf/blob/master/src/README.md`  
           NOTE: move to a directory without spaces in the path  
+
+    Windows:  
+* download and run installer, accepting defaults, then add /bin directories to PATH
+  + Git
+  + 7z
+  + CMake
+  + Mingw-w64
+  + Visual Studio Code
+* get source for protobuf
+  + `git clone https://github.com/protocolbuffers/protobuf/protobuf.git`
+  + `cd protobuf`
+  + `git submodule update --init --recursive`
+* open the code in integrated developer environment
+  + launch Windows command prompt
+  + `cd path_to_cloned_protobuf_repo`
+  + `code .`
+* OPTIONAL: configure build in Visual Studio Code
+  + https://code.visualstudio.com/docs/cpp/config-mingw#_create-hello-world
+  + follow tutorial to build a C++ Hello World, compiled with Mingw-w64
+  + Terminal > Configure Default Build Task > C/C++: g++.exe build active file
+  + Terminal > Tasks: Run Build Task
+* configure and build protobuf
+  + `cd path_to_cloned_protobuf_repo\cmake`
+  + `mkdir build\release & cd build\release`
+  + invoke CMake to create and build the Makefile artifacts
+  + `cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=..\..\..\install -DCMAKE_C_COMPILER=gcc.exe -DCMAKE_CXX_COMPILER=g++.exe ..\..`
+* compile and test protobuf
+  + `cd path_to_cloned_protobuf_repo\cmake\build\release`
+  + `mingw32-make all`

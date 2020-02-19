@@ -5,7 +5,6 @@ import numpy as np
 from yarrow.wrapper import LibraryWrapper
 
 # these modules are generated via the subprocess call
-from yarrow import api_pb2
 from yarrow import base_pb2
 from yarrow import components_pb2
 from yarrow import value_pb2
