@@ -227,7 +227,6 @@ pub fn impute_int_uniform(data: &ArrayD<f64>, min: &f64, max: &f64) -> ArrayD<f6
 
 pub struct ImputationParameters {
     n: i64,
-    seed: Option<[u8; 32]>,
     distribution: ArrayD<String>,
     data_type: ArrayD<String>,
     min: ArrayD<f64>,
@@ -311,7 +310,7 @@ pub fn clamp_and_impute(data: &ArrayD<f64>, params: &ImputationParameters) -> Ar
         // create subsampled version of data (returned if n < real_n)
         let k: i64 = cmp::min(params.n, real_n);
         let probabilities: ArrayD<f64> = arr1(&vec![1./(k as f64)]).into_dyn();
-        subsampled_imputed_clamped_data = aggregations::create_subset(&imputed_clamped_data, &probabilities, &k, &params.seed);
+        subsampled_imputed_clamped_data = aggregations::create_subset(&imputed_clamped_data, &probabilities, &k);
 
         // create augmented version of data (returned if n > real_n)
         let mut augmentation_data: ArrayD<f64> = arr1(&vec![NAN; cmp::max(0, params.n - real_n) as usize]).into_dyn();
