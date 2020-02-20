@@ -5,7 +5,6 @@ import numpy as np
 from yarrow.wrapper import LibraryWrapper
 
 # these modules are generated via the subprocess call
-from yarrow import api_pb2
 from yarrow import base_pb2
 from yarrow import components_pb2
 from yarrow import value_pb2
@@ -13,6 +12,25 @@ from yarrow import value_pb2
 core_wrapper = LibraryWrapper()
 
 ALL_CONSTRAINTS = ["n", "min", "max", "categories"]
+
+
+def privacy_usage(epsilon=None, delta=None):
+    if epsilon is not None and delta is not None:
+        return value_pb2.PrivacyUsage(
+            distance_approximate=value_pb2.PrivacyUsage.DistanceApproximate(
+                epsilon=epsilon,
+                delta=delta
+            )
+        )
+
+    if epsilon is not None and delta is None:
+        return value_pb2.PrivacyUsage(
+            distance_pure=value_pb2.PrivacyUsage.DistancePure(
+                epsilon=epsilon
+            )
+        )
+
+    raise ValueError("Unknown privacy definition.")
 
 
 class Dataset(object):
@@ -108,7 +126,7 @@ class Component(object):
         return id(self)
 
     @staticmethod
-    def of(value):
+    def of(value, private=False, jagged=False):
         def value_proto(data):
 
             if type(data) is bytes:
@@ -123,14 +141,24 @@ class Component(object):
                     hashmapString={key: value_proto(data[key]) for key in data}
                 )
 
+            if jagged:
+                data = []
+                for column in data:
+                    if column:
+                        data.append(value_pb2.JaggedArray2D.OptionalArray1D(data=column))
+                    else:
+                        data.append(value_pb2.JaggedArray2D.OptionalArray1D())
+
+                return value_pb2.Value(jaggedArray2D=value_pb2.JaggedArray2D(data=data))
+
             data = np.array(data)
 
             data_type = {
-                np.bool: "BOOL",
-                np.int64: "I64",
-                np.float64: "F64",
-                np.string_: "STRING",
-                np.str_: "STRING"
+                np.bool: "bool",
+                np.int64: "i64",
+                np.float64: "f64",
+                np.string_: "string",
+                np.str_: "string"
             }[data.dtype.type]
 
             container_type = {
@@ -141,18 +169,17 @@ class Component(object):
                 np.str_: value_pb2.Array1Dstr
             }[data.dtype.type]
 
-            proto_args = {
-                "datatype": data_type,
-                data_type.lower(): container_type(
-                    data=list(data.flatten()),
+            return value_pb2.Value(
+                arrayND=value_pb2.ArrayND(
                     shape=list(data.shape),
-                    order=list(range(data.ndim)))
-            }
-
-            return value_pb2.Value(**proto_args)
+                    order=list(range(data.ndim)),
+                    flattened=value_pb2.Array1D(**{
+                        data_type: container_type(data=list(data.flatten()))
+                    })
+                ))
 
         return value if type(value) == Component else Component(
-            'Literal', options={'value': value_proto(value)})
+            'Literal', options={'value': value_proto(value), 'private': private})
 
     @staticmethod
     def _expand_constraints(arguments, constraints):
@@ -167,13 +194,13 @@ class Component(object):
                            if i in ALL_CONSTRAINTS]
 
             if 'max' in filtered:
-                arguments[argument] = Component('Max', arguments={
+                arguments[argument] = Component('RowMax', arguments={
                     "left": arguments[argument],
                     "right": Component.of(constraints[argument + '_max'])
                 })
 
             if 'min' in filtered:
-                arguments[argument] = Component('Min', arguments={
+                arguments[argument] = Component('RowMin', arguments={
                     "left": arguments[argument],
                     "right": Component.of(constraints[argument + '_min'])
                 })
@@ -240,7 +267,7 @@ class Analysis(object):
                     getattr(components_pb2, component.name)(**(component.options or {}))
             })
 
-        return api_pb2.Analysis(
+        return base_pb2.Analysis(
             graph=vertices,
             privacy_definition=base_pb2.PrivacyDefinition(
                 distance=base_pb2.PrivacyDefinition.Distance.Value(self.distance),

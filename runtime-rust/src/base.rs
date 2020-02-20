@@ -1,5 +1,7 @@
 extern crate yarrow_validator;
-use yarrow_validator::yarrow;
+
+use yarrow_validator::proto;
+use yarrow_validator::utilities::buffer;
 use yarrow_validator::utilities::graph as yarrow_graph;
 
 use ndarray::prelude::*;
@@ -10,45 +12,19 @@ use std::iter::FromIterator;
 
 use crate::components;
 
-// equivalent to proto Value
-#[derive(Debug)]
-pub enum NodeEvaluation {
-//    Bytes(bytes::Bytes),
-    Bool(ArrayD<bool>),
-    I64(ArrayD<i64>),
-    F64(ArrayD<f64>),
-    Str(ArrayD<String>),
-    HashmapString(HashMap<String, NodeEvaluation>)
-}
 
-// equivalent to proto Release
-pub type GraphEvaluation = HashMap<u32, NodeEvaluation>;
-
-// arguments to a node prior to evaluation
-pub type NodeArguments<'a> = HashMap<String, &'a NodeEvaluation>;
-
-pub fn get_arguments<'a>(component: &yarrow::Component, graph_evaluation: &'a GraphEvaluation) -> NodeArguments<'a> {
-    let mut arguments = NodeArguments::new();
-    component.arguments.iter().for_each(|(field_id, field)| {
-        let evaluation: &'a NodeEvaluation = graph_evaluation.get(&field).unwrap().to_owned();
-        arguments.insert(field_id.to_owned(), evaluation);
-    });
-    arguments
-}
-
-pub fn execute_graph(analysis: &yarrow::Analysis,
-                     release: &yarrow::Release,
-                     dataset: &yarrow::Dataset) -> Result<yarrow::Release, &'static str> {
-
+pub fn execute_graph(analysis: &proto::Analysis,
+                     release: &proto::Release,
+                     dataset: &proto::Dataset) -> Result<proto::Release, String> {
     let node_ids_release: HashSet<u32> = yarrow_graph::get_release_nodes(&analysis)?;
 
     // stack for storing which nodes to evaluate next
     let mut traversal = Vec::new();
     traversal.extend(yarrow_graph::get_sinks(&analysis).into_iter());
 
-    let mut evaluations = release_to_evaluations(release)?;
+    let mut evaluations = buffer::release_to_evaluations(release)?;
 
-    let graph: &HashMap<u32, yarrow::Component> = &analysis.graph;
+    let graph: &HashMap<u32, proto::Component> = &analysis.graph;
 
     // track node parents
     let mut parents = HashMap::<u32, HashSet<u32>>::new();
@@ -78,9 +54,9 @@ pub fn execute_graph(analysis: &yarrow::Analysis,
             traversal.pop();
 
             let evaluation = execute_component(
-                &graph.get(&node_id).unwrap(), &evaluations, &dataset);
+                &graph.get(&node_id).unwrap(), &evaluations, &dataset)?;
 
-            evaluations.insert(node_id, evaluation?);
+            evaluations.insert(node_id, evaluation);
 
             // remove references to parent node, and if empty and private
             for argument_node_id in arguments.values() {
@@ -95,226 +71,37 @@ pub fn execute_graph(analysis: &yarrow::Analysis,
             }
         }
     }
-    evaluations_to_release(&evaluations)
+    buffer::evaluations_to_release(&evaluations)
 }
 
-pub fn execute_component(component: &yarrow::Component,
-                         evaluations: &GraphEvaluation,
-                         dataset: &yarrow::Dataset) -> Result<NodeEvaluation, &'static str> {
+pub fn execute_component(component: &proto::Component,
+                         evaluations: &buffer::GraphEvaluation,
+                         dataset: &proto::Dataset) -> Result<buffer::NodeEvaluation, String> {
+    let arguments = buffer::get_arguments(&component, &evaluations);
 
-    let arguments = get_arguments(&component, &evaluations);
-
+    use proto::component::Value as Value;
     match component.to_owned().value.unwrap() {
-        yarrow::component::Value::Literal(x) => Ok(components::component_literal(&x)),
-        yarrow::component::Value::Datasource(x) => Ok(components::component_datasource(&x, &dataset, &arguments)),
-        yarrow::component::Value::Add(x) => Ok(components::component_add(&x, &arguments)),
-        yarrow::component::Value::Subtract(x) => Ok(components::component_subtract(&x, &arguments)),
-        yarrow::component::Value::Divide(x) => Ok(components::component_divide(&x, &arguments)),
-        yarrow::component::Value::Multiply(x) => Ok(components::component_multiply(&x, &arguments)),
-        yarrow::component::Value::Power(x) => Ok(components::component_power(&x, &arguments)),
-        yarrow::component::Value::Negate(x) => Ok(components::component_negate(&x, &arguments)),
-        yarrow::component::Value::ImputeFloatUniform(x) => Ok(components::component_impute_float_uniform(&x, &arguments)),
-        yarrow::component::Value::ImputeFloatGaussian(x) => Ok(components::component_impute_float_gaussian(&x, &arguments)),
-        yarrow::component::Value::ImputeIntUniform(x) => Ok(components::component_impute_int_uniform(&x, &arguments)),
-        yarrow::component::Value::Bin(x) => Ok(components::component_bin(&x, &arguments)),
-        // yarrow::component::Value::Count(x) => Ok(components::component_count(&x, &arguments)),
-        // yarrow::component::Value::Histogram(x) => Ok(components::component_histogram(&x, &arguments)),
-        yarrow::component::Value::Mean(x) => Ok(components::component_mean(&x, &arguments)),
-        yarrow::component::Value::Median(x) => Ok(components::component_median(&x, &arguments)),
-        yarrow::component::Value::Sum(x) => Ok(components::component_sum(&x, &arguments)),
-        yarrow::component::Value::Variance(x) => Ok(components::component_variance(&x, &arguments)),
-//        yarrow::component::Value::Kthsamplemoment(x) => Ok(components::component_kth_sample_moment(&x, &arguments)),
-        yarrow::component::Value::LaplaceMechanism(x) => Ok(components::component_laplace_mechanism(&x, &arguments)),
-        yarrow::component::Value::GaussianMechanism(x) => Ok(components::component_gaussian_mechanism(&x, &arguments)),
-        yarrow::component::Value::SimpleGeometricMechanism(x) => Ok(components::component_simple_geometric_mechanism(&x, &arguments)),
-        _ => Err("Component type not implemented.")
-    }
-}
-
-pub fn get_f64(arguments: &NodeArguments, column: &str) -> f64 {
-    match arguments.get(column).unwrap() {
-        NodeEvaluation::Bool(x) => Ok(if *x.first().unwrap() {1.} else {0.}),
-        NodeEvaluation::I64(x) => Ok(f64::from(*x.first().unwrap() as i32)),
-        NodeEvaluation::F64(x) => Ok(x.first().unwrap().to_owned()),
-        _ => Err(column.to_string() +" must be numeric")
-    }.unwrap()
-}
-
-pub fn get_array_f64(arguments: &NodeArguments, column: &str) -> ArrayD<f64> {
-    match arguments.get(column).unwrap() {
-        NodeEvaluation::Bool(x) => Ok(x.mapv(|v| if v {1.} else {0.})),
-        NodeEvaluation::I64(x) => Ok(x.mapv(|v| f64::from(v as i32))),
-        NodeEvaluation::F64(x) => Ok(x.to_owned()),
-        _ => Err(column.to_string() +" must be numeric")
-    }.unwrap()
-}
-
-pub fn get_i64(arguments: &NodeArguments, column: &str) -> i64 {
-    match arguments.get(column).unwrap() {
-        NodeEvaluation::Bool(x) => Ok(if *x.first().unwrap() {1} else {0}),
-        NodeEvaluation::I64(x) => Ok(x.first().unwrap().to_owned()),
-        _ => Err(column.to_string() +" must be integer")
-    }.unwrap()
-}
-
-pub fn get_array_i64(arguments: &NodeArguments, column: &str) -> ArrayD<i64> {
-    match arguments.get(column).unwrap() {
-        NodeEvaluation::Bool(x) => Ok(x.mapv(|v| if v {1} else {0})),
-        NodeEvaluation::I64(x) => Ok(x.to_owned()),
-        _ => Err(column.to_string() +" must be integer")
-    }.unwrap()
-}
-
-pub fn get_str(arguments: &NodeArguments, column: &str) -> String {
-    match arguments.get(column).unwrap() {
-        NodeEvaluation::Str(x) => Ok(x.first().unwrap().to_owned()),
-        _ => Err(column.to_string() +" must be string")
-    }.unwrap()
-}
-
-pub fn get_array_str(arguments: &NodeArguments, column: &str) -> ArrayD<String> {
-    match arguments.get(column).unwrap() {
-        NodeEvaluation::Str(x) => Ok(x.to_owned()),
-        _ => Err(column.to_string() + " must be string")
-    }.unwrap()
-}
-
-pub fn get_bool(arguments: &NodeArguments, column: &str) -> bool {
-    match arguments.get(column).unwrap() {
-        // maybe want to figure out how to accept wider range of bool arguments -- for now, comment out
-        // (NodeEvaluation::F64(x) && (*x.first().unwrap() == 1. || x.first().unwrap() == 0.)) => Ok(if *x.first().unwrap() == 1. {true} else *x.first().unwrap() == 0. {false}),
-        // (NodeEvaluation::I64(x) && (*x.first().unwrap() == 1 || x.first().unwrap() == 0)) => Ok(if *x.first().unwrap() == 1 {true} else *x.first().unwrap() == 0 {false}),
-        // (NodeEvaluation::Str(x) && (*x.first().unwrap() == "true" || x.first().unwrap() == "false")) => Ok(x.first().parse::<bool>().unwrap().to_owned()),
-        NodeEvaluation::Bool(x) => Ok(x.first().unwrap().to_owned()),
-        _ => Err(column.to_string() +" must be boolean")
-    }.unwrap()
-}
-
-pub fn get_array_bool(arguments: &NodeArguments, column: &str) -> ArrayD<bool> {
-    match arguments.get(column).unwrap() {
-        // maybe want to figure out how to accept wider range of bool arguments -- for now, comment out
-        // (NodeEvaluation::F64(x) && (x.mapv(|v| vec![0., 1.].contains(v)).all(|v| v == true))) => Ok(x.mapv(|v| if v == 1. {true} else if {false})),
-        // (NodeEvaluation::I64(x) && (*x.mapv(|v| vec![0, 1].contains(v)).all(|v| v == true))) => Ok(x.mapv(|v| if v == 1 {true} else if v == 0 {false})),
-        // (NodeEvaluation::Str(x) && (*x.mapv(|v| vec!["false","true"].contains(v)).all(|v| v == true))) => Ok(x.mapv(|v| if v == "true" {true} else if v == "false" {false})),
-        NodeEvaluation::Bool(x) => Ok(x.to_owned()),
-        _ => Err(column.to_string() + " must be boolean")
-    }.unwrap()
-}
-
-pub fn release_to_evaluations(release: &yarrow::Release) -> Result<GraphEvaluation, &'static str> {
-    let mut evaluations = GraphEvaluation::new();
-
-    for (node_id, node_release) in &release.values {
-        evaluations.insert(*node_id, parse_proto_array(&node_release.value.to_owned().unwrap())?);
-    }
-    Ok(evaluations)
-}
-
-pub fn evaluations_to_release(evaluations: &GraphEvaluation) -> Result<yarrow::Release, &'static str> {
-    let mut releases: HashMap<u32, yarrow::ReleaseNode> = HashMap::new();
-    for (node_id, node_eval) in evaluations {
-        if let Ok(array_serialized) = serialize_proto_array(node_eval) {
-            releases.insert(*node_id, yarrow::ReleaseNode{
-                value: Some(array_serialized), privacy_usage: None
-            });
-        }
-    }
-    Ok(yarrow::Release {
-        values: releases
-    })
-}
-
-pub fn parse_proto_array(value: &yarrow::Value) -> Result<NodeEvaluation, &'static str> {
-    let value = value.to_owned();
-    match value.data.unwrap() {
-//        yarrow::array_nd::Data::Bytes(x) =>
-//            NodeEvaluation::Bytes(bytes::Bytes::from(x)),
-        yarrow::value::Data::Bool(x) => {
-            let shape: Vec<usize> = x.shape.iter().map(|x| *x as usize).collect();
-            Ok(NodeEvaluation::Bool(Array::from_shape_vec(shape, x.data).unwrap().into_dyn()))
-        },
-        yarrow::value::Data::I64(x) => {
-            let shape: Vec<usize> = x.shape.iter().map(|x| *x as usize).collect();
-            Ok(NodeEvaluation::I64(Array::from_shape_vec(shape, x.data).unwrap().into_dyn()))
-        },
-        yarrow::value::Data::F64(x) => {
-            let shape: Vec<usize> = x.shape.iter().map(|x| *x as usize).collect();
-            Ok(NodeEvaluation::F64(Array::from_shape_vec(shape, x.data).unwrap().into_dyn()))
-        },
-        yarrow::value::Data::String(x) => {
-            let shape: Vec<usize> = x.shape.iter().map(|x| *x as usize).collect();
-            Ok(NodeEvaluation::Str(Array::from_shape_vec(shape, x.data).unwrap().into_dyn()))
-        },
-        yarrow::value::Data::HashmapString(x) => {
-            let mut evaluation: HashMap<String, NodeEvaluation> = HashMap::new();
-            for (node_id, value) in &x.data {
-                let parsed_result = parse_proto_array(value);
-                if let Ok(parsed) = parsed_result {
-                    evaluation.insert(node_id.to_owned(), parsed);
-                } else {
-                    return parsed_result;
-                }
-            }
-            Ok(NodeEvaluation::HashmapString(evaluation))
-        }
-        _ => Err("Unsupported proto value encountered.")
-    }
-}
-
-pub fn serialize_proto_array(evaluation: &NodeEvaluation) -> Result<yarrow::Value, &'static str> {
-
-    match evaluation {
-//        NodeEvaluation::Bytes(x) => yarrow::Value {
-//            datatype: yarrow::DataType::Bytes as i32,
-//            data: Some(yarrow::value::Data::Bytes(prost::encoding::bytes::encode(x)))
-//        },
-        NodeEvaluation::Bool(x) => Ok(yarrow::Value {
-            datatype: yarrow::DataType::Bool as i32,
-            data: Some(yarrow::value::Data::Bool(yarrow::Array1Dbool {
-                data: x.iter().map(|s| *s).collect(),
-                order: (1..x.ndim()).map(|x| {x as u64}).collect(),
-                shape: x.shape().iter().map(|y| {*y as u64}).collect()
-            }))
-        }),
-        NodeEvaluation::I64(x) => Ok(yarrow::Value {
-            datatype: yarrow::DataType::I64 as i32,
-            data: Some(yarrow::value::Data::I64(yarrow::Array1Di64 {
-                data: x.iter().map(|s| *s).collect(),
-                order: (1..x.ndim()).map(|x| {x as u64}).collect(),
-                shape: x.shape().iter().map(|y| {*y as u64}).collect()
-            }))
-        }),
-        NodeEvaluation::F64(x) => Ok(yarrow::Value {
-            datatype: yarrow::DataType::F64 as i32,
-            data: Some(yarrow::value::Data::F64(yarrow::Array1Df64 {
-                data: x.iter().map(|s| *s).collect(),
-                order: (1..x.ndim()).map(|x| {x as u64}).collect(),
-                shape: x.shape().iter().map(|y| {*y as u64}).collect()
-            }))
-        }),
-        NodeEvaluation::Str(x) => Ok(yarrow::Value {
-            datatype: yarrow::DataType::String as i32,
-            data: Some(yarrow::value::Data::String(yarrow::Array1Dstr {
-                data: x.iter().cloned().collect(),
-                order: (1..x.ndim()).map(|x| {x as u64}).collect(),
-                shape: x.shape().iter().map(|y| {*y as u64}).collect()
-            }))
-        }),
-        NodeEvaluation::HashmapString(x) => {
-            let mut evaluation_serialized: HashMap<String, yarrow::Value> = HashMap::new();
-            for (node_id, node_eval) in x {
-                if let Ok(array_serialized) = serialize_proto_array(node_eval) {
-                    evaluation_serialized.insert(node_id.to_owned(), array_serialized);
-                }
-            }
-
-            return Ok(yarrow::Value {
-                datatype: yarrow::DataType::HashmapString as i32,
-                data: Some(yarrow::value::Data::HashmapString(yarrow::HashmapString {
-                    data: evaluation_serialized
-                }))
-            })
-        },
-        _ => Err("Unsupported evaluation type. Could not serialize data to protobuf.")
+        Value::Literal(x) => components::component_literal(&x),
+        Value::Datasource(x) => components::component_datasource(&x, &dataset, &arguments),
+        Value::Add(x) => components::component_add(&x, &arguments),
+        Value::Subtract(x) => components::component_subtract(&x, &arguments),
+        Value::Divide(x) => components::component_divide(&x, &arguments),
+        Value::Multiply(x) => components::component_multiply(&x, &arguments),
+        Value::Power(x) => components::component_power(&x, &arguments),
+        Value::Negate(x) => components::component_negate(&x, &arguments),
+        Value::Bin(x) => components::component_bin(&x, &arguments),
+        Value::Rowmin(x) => components::component_row_wise_min(&x, &arguments),
+        Value::Rowmax(x) => components::component_row_wise_max(&x, &arguments),
+        // Value::Count(x) => components::component_count(&x, &arguments),
+        // Value::Histogram(x) => components::component_histogram(&x, &arguments),
+        Value::Mean(x) => components::component_mean(&x, &arguments),
+        Value::Median(x) => components::component_median(&x, &arguments),
+        Value::Sum(x) => components::component_sum(&x, &arguments),
+        Value::Variance(x) => components::component_variance(&x, &arguments),
+//        Value::Kthsamplemoment(x) => components::component_kth_sample_moment(&x, &arguments),
+        Value::LaplaceMechanism(x) => components::component_laplace_mechanism(&x, &arguments),
+        Value::GaussianMechanism(x) => components::component_gaussian_mechanism(&x, &arguments),
+        Value::SimpleGeometricMechanism(x) => components::component_simple_geometric_mechanism(&x, &arguments),
+        variant => Err(format!("Component type not implemented: {:?}", variant))
     }
 }

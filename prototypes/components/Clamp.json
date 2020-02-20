@@ -12,20 +12,23 @@
         "string"
       ],
       "type": "Array"
+    },
+    "min": {
+      "type": "Array"
+    },
+    "max": {
+      "type": "Array"
+    },
+    "categories": {
+      "type": "Array"
+    },
+    "null_value": {
+      "type": "string"
     }
   },
   "id": "Clamp",
   "name": "clamp",
   "options": {
-    "categories": {
-      "type": "Value"
-    },
-    "maximum": {
-      "type": "double"
-    },
-    "minimum": {
-      "type": "double"
-    }
   },
   "return": {
     "constraints": [

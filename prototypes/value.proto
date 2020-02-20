@@ -3,70 +3,53 @@ syntax = "proto3";
 package yarrow;
 
 
-enum DataType {
-    BYTES = 0; // default value is the unset type
-    BOOL = 1;
-    I64 = 2;
-    F64 = 3;
-    STRING = 4;
-    HASHMAP_STRING = 5;
-}
-
 message Array1Dbool {
     repeated bool data = 1;
-
-    // length of axes
-    repeated uint64 shape = 7;
-
-    // order of axes
-    repeated uint64 order = 8;
 }
-
 message Array1Di64 {
     repeated int64 data = 1;
-
-    // length of axes
-    repeated uint64 shape = 7;
-
-    // order of axes
-    repeated uint64 order = 8;
 }
-
 message Array1Df64 {
     repeated double data = 1;
-
-    // length of axes
-    repeated uint64 shape = 7;
-
-    // order of axes
-    repeated uint64 order = 8;
 }
-
 message Array1Dstr {
     repeated string data = 1;
-
-    // length of axes
-    repeated uint64 shape = 7;
-
-    // order of axes
-    repeated uint64 order = 8;
 }
-
 message HashmapString {
     map<string, Value> data = 1;
 }
 
-message Value {
-    // type of element
-    DataType datatype = 1;
-
+message Array1D {
     oneof data {
-        // bytes bytes = 2;
-        Array1Dbool bool = 3;
-        Array1Di64 i64 = 4;
-        Array1Df64 f64 = 5;
-        Array1Dstr string = 6;
-        HashmapString hashmapString = 7;
+        Array1Dbool bool = 1;
+        Array1Di64 i64 = 2;
+        Array1Df64 f64 = 3;
+        Array1Dstr string = 4;
+    }
+}
+
+message ArrayND {
+    Array1D flattened = 1;
+    
+    // length of axes
+    repeated uint64 shape = 2;
+    // order of axes
+    repeated uint64 order = 3;
+}
+
+message JaggedArray2D {
+    message OptionalArray1D {
+        oneof data {Array1D option = 1;}
+    }
+    repeated OptionalArray1D data = 1;
+}
+
+message Value {
+    oneof data {
+        // bytes bytes = 1;
+        ArrayND arrayND = 2;
+        HashmapString hashmapString = 3;
+        JaggedArray2D jaggedArray2D = 4;
     }
 }
 

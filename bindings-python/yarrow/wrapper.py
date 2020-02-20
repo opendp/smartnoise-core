@@ -27,7 +27,7 @@ class LibraryWrapper(object):
         json_string = _communicate(
             argument=api_pb2.RequestGenerateReport(analysis=analysis, release=release),
             function=lib_validator.generate_report,
-            response_type=api_pb2.ResponseReport,
+            response_type=api_pb2.ResponseGenerateReport,
             ffi=ffi_validator)
 
         # TODO: why is ffi returning two extra characters: \n\x10, a newline and data link escape control character?
@@ -79,6 +79,7 @@ def _communicate(function, argument, response_type, ffi):
 
     response = response_type.FromString(serialized_response)
 
+    # Errors from here are propagated up from either the rust validator or runtime
     if response.HasField("error"):
-        raise response.error
+        raise RuntimeError(response.error)
     return response.data

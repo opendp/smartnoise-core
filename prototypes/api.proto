@@ -22,13 +22,13 @@ message RequestGenerateReport {
 message RequestAccuracyToPrivacyUsage {
 	PrivacyDefinition privacy_definition = 1;
 	Component component = 2;
-	Constraint constraint = 3;
+	map<string, Constraint> constraints = 3;
 	Accuracy accuracy = 4;
 }
 message RequestPrivacyUsageToAccuracy {
 	PrivacyDefinition privacy_definition = 1;
 	Component component = 2;
-	Constraint constraint = 3;
+	map<string, Constraint> constraints = 3;
 }
 message RequestExpandGraph {
 	Analysis analysis = 1;

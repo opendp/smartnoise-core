@@ -12,7 +12,25 @@
         "double"
       ],
       "type": "Array"
-    }
+    },
+    "distribution": {
+      "type": "Array"
+    },
+    "data_type": {
+      "type": "Array"
+    },
+    "min": {
+      "type": "Array"
+    },
+    "max": {
+      "type": "Array"
+    },
+    "shift": {
+      "type": "Array"
+    },
+    "scale": {
+      "type": "Array"
+    },
   },
   "id": "Impute",
   "name": "impute",

@@ -1,12 +1,12 @@
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::iter::FromIterator;
-use crate::yarrow;
+use crate::proto;
 
 pub fn get_traversal(
-    analysis: &yarrow::Analysis
-) -> Result<Vec<u32>, &'static str> {
+    analysis: &proto::Analysis
+) -> Result<Vec<u32>, String> {
 
-    let graph: &HashMap<u32, yarrow::Component> = &analysis.graph;
+    let graph: &HashMap<u32, proto::Component> = &analysis.graph;
 
     // track node parents
     let mut parents = HashMap::<u32, HashSet<u32>>::new();
@@ -51,7 +51,7 @@ pub fn get_traversal(
         });
 
         if is_cyclic {
-            return Err("Graph is cyclic.")
+            return Err("Graph is cyclic.".to_string())
         }
 
     }
@@ -59,11 +59,11 @@ pub fn get_traversal(
 }
 
 pub fn get_unevaluated(
-    analysis: &yarrow::Analysis,
-    release: &yarrow::Release
-) -> Result<HashSet<u32>, &'static str> {
+    analysis: &proto::Analysis,
+    release: &proto::Release
+) -> Result<HashSet<u32>, String> {
 
-    let graph: &HashMap<u32, yarrow::Component> = &analysis.graph;
+    let graph: &HashMap<u32, proto::Component> = &analysis.graph;
 
     let mut traversal: Vec<u32> = Vec::new();
     let mut queue: Vec<u32> = get_sinks(&analysis).into_iter().collect();
@@ -85,7 +85,7 @@ pub fn get_unevaluated(
     Ok(unevaluated)
 }
 
-pub fn get_release_nodes(analysis: &yarrow::Analysis) -> Result<HashSet<u32>, &'static str> {
+pub fn get_release_nodes(analysis: &proto::Analysis) -> Result<HashSet<u32>, String> {
 
     let mut release_node_ids = HashSet::<u32>::new();
     // assume sinks are private
@@ -95,7 +95,7 @@ pub fn get_release_nodes(analysis: &yarrow::Analysis) -> Result<HashSet<u32>, &'
     // traverse back through arguments until privatizers found
     let mut node_queue = VecDeque::from_iter(sink_node_ids.iter());
 
-    let graph: &HashMap<u32, yarrow::Component> = &analysis.graph;
+    let graph: &HashMap<u32, proto::Component> = &analysis.graph;
 
     while !node_queue.is_empty() {
         let node_id = node_queue.pop_front().unwrap();
@@ -105,7 +105,8 @@ pub fn get_release_nodes(analysis: &yarrow::Analysis) -> Result<HashSet<u32>, &'
             release_node_ids.insert(*node_id);
         }
         else {
-            for source_node_id in component.arguments.values() {
+            let arguments: &HashMap<String, u32> = &component.arguments;
+            for source_node_id in arguments.values() {
                 node_queue.push_back(&source_node_id);
             }
         }
@@ -114,7 +115,7 @@ pub fn get_release_nodes(analysis: &yarrow::Analysis) -> Result<HashSet<u32>, &'
     return Ok(release_node_ids);
 }
 
-pub fn get_sinks(analysis: &yarrow::Analysis) -> HashSet<u32> {
+pub fn get_sinks(analysis: &proto::Analysis) -> HashSet<u32> {
     let mut node_ids = HashSet::<u32>::new();
     // start with all nodes
     for node_id in analysis.graph.keys() {
