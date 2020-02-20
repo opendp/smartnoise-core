@@ -96,6 +96,7 @@ message DataSource {
 message Stack {}
 message Literal {
     Value value = 1;
+    bool private = 2;
 }
 message Constant {}
 

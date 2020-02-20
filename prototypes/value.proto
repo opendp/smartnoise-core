@@ -37,11 +37,19 @@ message ArrayND {
     repeated uint64 order = 3;
 }
 
+message JaggedArray2D {
+    message OptionalArray1D {
+        oneof data {Array1D option = 1;}
+    }
+    repeated OptionalArray1D data = 1;
+}
+
 message Value {
     oneof data {
         // bytes bytes = 1;
         ArrayND arrayND = 2;
         HashmapString hashmapString = 3;
+        JaggedArray2D jaggedArray2D = 4;
     }
 }
 

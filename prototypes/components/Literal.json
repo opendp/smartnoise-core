@@ -6,6 +6,9 @@
   "options": {
     "value": {
       "type": "Value"
+    },
+    "private": {
+      "type": "bool"
     }
   },
   "return": {
