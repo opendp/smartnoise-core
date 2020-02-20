@@ -21,10 +21,10 @@ pub fn sample_gaussian(shift: f64, scale: f64) -> f64 {
     Gaussian::new(shift, scale).inverse(probability)
 }
 
+/// Sample from truncated Gaussian distribution
+/// We use inverse transform sampling, but only between the CDF
+/// probabilities associated with the stated min/max truncation values
 pub fn sample_gaussian_truncated(shift: f64, scale: f64, min: f64, max: f64) -> f64 {
-    /// Sample from truncated Gaussian distribution
-    /// We use inverse transform sampling, but only between the CDF
-    /// probabilities associated with the stated min/max truncation values
     assert!(min <= max);
     assert!(scale > 0.0);
     let unif_min: f64 = Gaussian::new(shift, scale).distribution(min);
@@ -69,22 +69,22 @@ pub fn sample_uniform_int(min: &i64, max: &i64) -> i64 {
     return uniform_int + min;
 }
 
+/// Returns random sample from Uniform[min,max)
+/// All notes below refer to the version that samples from [0,1), before the final scaling takes place
+///
+/// This algorithm is taken from Mironov (2012) http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.366.5957&rep=rep1&type=pdf
+/// and is important for making some of the guarantees in the paper.
+///
+/// The idea behind the uniform sampling is to first sample a "precision band".
+/// Each band is a range of floating point numbers with the same level of arithmetic precision
+/// and is situated between powers of two.
+/// A band is sampled with probability relative to the unit of least precision using the Geometric distribution.
+/// That is, the uniform sampler will generate the band [1/2,1) with probability 1/2, [1/4,1/2) with probability 1/4,
+/// and so on.
+///
+/// Once the precision band has been selected, floating numbers numbers are generated uniformly within the band
+/// by generating a 52-bit mantissa uniformly at random.
 pub fn sample_uniform(min: f64, max: f64) -> f64 {
-    /// Returns random sample from Uniform[min,max)
-    /// All notes below refer to the version that samples from [0,1), before the final scaling takes place
-    ///
-    /// This algorithm is taken from Mironov (2012) http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.366.5957&rep=rep1&type=pdf
-    /// and is important for making some of the guarantees in the paper.
-    ///
-    /// The idea behind the uniform sampling is to first sample a "precision band".
-    /// Each band is a range of floating point numbers with the same level of arithmetic precision
-    /// and is situated between powers of two.
-    /// A band is sampled with probability relative to the unit of least precision using the Geometric distribution.
-    /// That is, the uniform sampler will generate the band [1/2,1) with probability 1/2, [1/4,1/2) with probability 1/4,
-    /// and so on.
-    ///
-    /// Once the precision band has been selected, floating numbers numbers are generated uniformly within the band
-    /// by generating a 52-bit mantissa uniformly at random.
 
     assert!(min <= max);
 
@@ -110,17 +110,17 @@ pub fn sample_uniform_with_seed(min: f64, max: f64, seed: [u8; 32]) -> f64 {
     return rng.gen::<f64>() * (max - min) + min;
 }
 
+/// Sample a single bit with arbitrary probability of "success", using only
+/// an unbiased source of coin flips (sample_floating_point_probability_exponent).
+/// The strategy for doing this with 2 flips in expectation is described
+/// at https://amakelov.wordpress.com/2013/10/10/arbitrarily-biasing-a-coin-in-2-expected-tosses/
+///
+/// # Arguments
+/// * `prob` - probability of success (bit == 1)
+///
+/// # Return
+/// a bit that is 1 with probability "prob"
 pub fn sample_bit(prob: &f64) -> i64 {
-    /// Sample a single bit with arbitrary probability of "success", using only
-    /// an unbiased source of coin flips (sample_floating_point_probability_exponent).
-    /// The strategy for doing this with 2 flips in expectation is described
-    /// at https://amakelov.wordpress.com/2013/10/10/arbitrarily-biasing-a-coin-in-2-expected-tosses/
-    ///
-    /// # Arguments
-    /// * `prob` - probability of success (bit == 1)
-    ///
-    /// # Return
-    /// a bit that is 1 with probability "prob"
 
     // ensure that prob is a valid probability
     assert!(prob >= &0.0 || prob <= &1.0);
@@ -143,23 +143,24 @@ pub fn sample_bit(prob: &f64) -> i64 {
     }
 }
 
+/// Sample from the censored geometric distribution with parameter "prob" and maximum
+/// number of trials "max_trials".
+///
+/// # Arguments
+/// * `prob` - parameter for the geometric distribution, the probability of success on any given trials
+/// * `max_trials` - the maximum number of trials allowed
+/// * `enforce_constant_time` - whether or not to enforce the algorithm to run in constant time; if true,
+///                             it will always run for "max_trials" trials
+///
+/// # Return
+/// result from censored geometric distribution
+///
+/// # Example
+/// ```
+/// use yarrow_runtime::utilities::noise::sample_geometric_censored;
+/// let geom: i64 = sample_geometric_censored(&0.1, &20, &false);
+/// ```
 pub fn sample_geometric_censored(prob: &f64, max_trials: &i64, enforce_constant_time: &bool) -> i64 {
-    /// Sample from the censored geometric distribution with parameter "prob" and maximum
-    /// number of trials "max_trials".
-    ///
-    /// # Arguments
-    /// * `prob` - parameter for the geometric distribution, the probability of success on any given trials
-    /// * `max_trials` - the maximum number of trials allowed
-    /// * `enforce_constant_time` - whether or not to enforce the algorithm to run in constant time; if true,
-    ///                             it will always run for "max_trials" trials
-    ///
-    /// # Return
-    /// result from censored geometric distribution
-    ///
-    /// # Example
-    /// ```
-    /// let geom: f64 = sample_censored_geometric(&0.1, &20, &false);
-    /// ```
 
     // ensure that prob is a valid probability
     assert!(prob >= &0.0 || prob <= &1.0);
@@ -191,18 +192,17 @@ pub fn sample_geometric_censored(prob: &f64, max_trials: &i64, enforce_constant_
     return geom_return;
 }
 
+/// Return sample from a censored Geometric distribution with parameter p=0.5
+///
+/// The algorithm generates 1023 bits uniformly at random and returns the
+/// index of the first bit with value 1. If all 1023 bits are 0, then
+/// the algorithm acts as if the last bit was a 1 and returns 1023.
+///
+/// This method was written specifically to generate an exponent
+/// for the floating point representation of a uniform random number on [0,1),
+/// ensuring that the numbers are distributed proportionally to
+/// their unit of least precision.
 pub fn sample_floating_point_probability_exponent() -> i16 {
-    /// Return sample from a censored Geometric distribution with parameter p=0.5
-    ///
-    /// The algorithm generates 1023 bits uniformly at random and returns the
-    /// index of the first bit with value 1. If all 1023 bits are 0, then
-    /// the algorithm acts as if the last bit was a 1 and returns 1023.
-    ///
-    /// This method was written specifically to generate an exponent
-    /// for the floating point representation of a uniform random number on [0,1),
-    /// ensuring that the numbers are distributed proportionally to
-    /// their unit of least precision.
-
 
     let mut geom: i16 = 1023;
     // read bytes in one at a time, need 128 to fully generate geometric
@@ -225,28 +225,30 @@ pub fn sample_floating_point_probability_exponent() -> i16 {
     return geom;
 }
 
+/// Sample noise according to geometric mechanism.
+/// This function uses coin flips to sample from the geometric distribution,
+/// rather than using the inverse probability transform. This is done
+/// to avoid finite precision attacks.
+///
+/// For this algorithm, the number of steps it takes to sample from the geometric
+/// is bounded above by (max - min).
+///
+/// # Arguments
+/// * `scale` - scale parameter
+/// * `min` - minimum value of function to which you want to add noise
+/// * `max` - maximum value of function to which you want to add noise
+/// * `enforce_constant_time` - boolean for whether or not to require the geometric to run for the maximum number of trials
+///
+/// # Return
+/// noise according to the geometric mechanism
+///
+/// # Example
+/// ```
+/// use ndarray::prelude::*;
+/// use yarrow_runtime::utilities::noise::sample_simple_geometric_mechanism;
+/// let geom_noise: i64 = sample_simple_geometric_mechanism(&1., &0, &100, &false);
+/// ```
 pub fn sample_simple_geometric_mechanism(scale: &f64, min: &i64, max: &i64, enforce_constant_time: &bool) -> i64 {
-    /// Sample noise according to geometric mechanism.
-    /// This function uses coin flips to sample from the geometric distribution,
-    /// rather than using the inverse probability transform. This is done
-    /// to avoid finite precision attacks.
-    ///
-    /// For this algorithm, the number of steps it takes to sample from the geometric
-    /// is bounded above by (max - min).
-    ///
-    /// # Arguments
-    /// * `scale` - scale parameter
-    /// * `min` - minimum value of function to which you want to add noise
-    /// * `max` - maximum value of function to which you want to add noise
-    /// * `enforce_constant_time` - boolean for whether or not to require the geometric to run for the maximum number of trials
-    ///
-    /// # Return
-    /// noise according to the geometric mechanism
-    ///
-    /// # Example
-    /// ```
-    /// let geom_noise: ArrayD<64> = sample_simple_geometric_mechanism(&1., &0, &100, &false);
-    /// ```
 
     assert!(min <= max);
 

@@ -2,7 +2,7 @@ extern crate yarrow_validator;
 use yarrow_validator::yarrow;
 
 mod base;
-mod utilities;
+pub mod utilities;
 mod components;
 
 use ndarray::prelude::*;

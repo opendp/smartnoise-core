@@ -49,26 +49,28 @@ use crate::utilities::noise;
 //     }
 // }
 
+/// Accepts bin edges and bin definition rule and returns an array of bin names
+///
+/// # Arguments
+/// * `edges` - Array of bin edges, an array of n+1 edges will yield n bins
+/// * `inclusive_left` - Boolean for whether or not bins (representing numeric intervals) are closed on the left.
+///                      If false, then bins are closed on the right.
+///                      The leftmost and rightmost bins are automatically closed on the left/right (respectively),
+///                      regardless of the value of `inclusive_left`.
+///
+/// Return
+/// Array of bin names.
+///
+/// Example
+/// ```
+/// use yarrow_runtime::utilities::aggregations::get_bin_names;
+/// use ndarray::prelude::*;
+/// let edges: ArrayD<f64> = arr1(&[0., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100.]).into_dyn();
+/// let inclusive_left: bool = true;
+/// let bin_names: ArrayD<String> = get_bin_names(&edges, &inclusive_left);
+/// println!("{}", bin_names);
+/// ```
 pub fn get_bin_names(edges: &ArrayD<f64>, inclusive_left: &bool) -> ArrayD<String> {
-    /// Accepts bin edges and bin definition rule and returns an array of bin names
-    ///
-    /// # Arguments
-    /// * `edges` - Array of bin edges, an array of n+1 edges will yield n bins
-    /// * `inclusive_left` - Boolean for whether or not bins (representing numeric intervals) are closed on the left.
-    ///                      If false, then bins are closed on the right.
-    ///                      The leftmost and rightmost bins are automatically closed on the left/right (respectively),
-    ///                      regardless of the value of `inclusive_left`.
-    ///
-    /// Return
-    /// Array of bin names.
-    ///
-    /// Example
-    /// ```
-    /// let edges: ArrayD<f64> = arr1(&[0., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100.]).into_dyn();
-    /// let inclusive_left: bool = true;
-    /// let bin_names: ArrayD<String> = get_bin_names(&edges, &inclusive_left);
-    /// println!("{}", bin_names);
-    /// ```
 
     let mut bin_name_vec: Vec<String> = Vec::with_capacity(edges.len()-1);
     let mut left_edge = String::new();
@@ -134,21 +136,23 @@ pub fn get_bin_names(edges: &ArrayD<f64>, inclusive_left: &bool) -> ArrayD<Strin
 //     return hist_hashmap;
 // }
 
+/// Accepts data and returns median
+///
+/// # Arguments
+/// * `data` - Array of data for which you would like the median
+///
+/// # Return
+/// median of your data
+///
+/// # Example
+/// ```
+/// use ndarray::prelude::*;
+/// use yarrow_runtime::utilities::aggregations::median;
+/// let data: ArrayD<f64> = arr1(&[0., 1., 2., 3., 4., 5., 12., 19., 24., 90., 98., 100.]).into_dyn();
+/// let median: ArrayD<f64> = median(&data);
+/// println!("{}", median);
+/// ```
 pub fn median(data: &ArrayD<f64>) -> ArrayD<f64> {
-    /// Accepts data and returns median
-    ///
-    /// # Arguments
-    /// * `data` - Array of data for which you would like the median
-    ///
-    /// # Return
-    /// median of your data
-    ///
-    /// # Example
-    /// ```
-    /// let data: ArrayD<f64> = arr1(&[0., 1., 2., 3., 4., 5., 12., 19., 24., 90., 98., 100.]).into_dyn();
-    /// let median: ArrayD<f64> = median(&data);
-    /// println!("{}", median);
-    /// ```
 
     // create vector version of data, get length, and sort it
     let mut data_vec: Vec<f64> = data.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
@@ -164,41 +168,46 @@ pub fn median(data: &ArrayD<f64>) -> ArrayD<f64> {
     }
 }
 
+/// Accepts data and returns sum
+///
+/// # Arguments
+/// * `data` - Array of data for which you would like the sum
+///
+/// # Return
+/// sum of the data
+///
+/// # Examples
+/// ```
+/// use ndarray::prelude::*;
+/// use yarrow_runtime::utilities::aggregations::sum;
+/// let data: ArrayD<f64> = arr1(&[0., 1., 2., 3., 4., 5., 12., 19., 24., 90., 98., 100.]).into_dyn();
+/// let sum: ArrayD<f64> = sum(&data);
+/// println!("{}", sum);
+/// ```
 pub fn sum(data: &ArrayD<f64>) -> ArrayD<f64> {
-    /// Accepts data and returns sum
-    ///
-    /// # Arguments
-    /// * `data` - Array of data for which you would like the sum
-    ///
-    /// # Return
-    /// sum of the data
-    ///
-    /// # Examples
-    /// ```
-    /// let data: ArrayD<f64> = arr1(&[0., 1., 2., 3., 4., 5., 12., 19., 24., 90., 98., 100.]).into_dyn();
-    /// let sum: ArrayD<f64> = sum(&data);
-    /// println!("{}", sum);
-    /// ```
+
     let data_vec: Vec<f64> = data.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
     let data_sum: f64 = data_vec.iter().map(|x| x).sum();
     return arr1(&[data_sum]).into_dyn();
 }
 
+/// Accepts data and returns mean
+///
+/// # Arguments
+/// * `data` - Array of data for which you would like the mean
+///
+/// # Return
+/// mean of the data
+///
+/// # Example
+/// ```
+/// use ndarray::prelude::*;
+/// use yarrow_runtime::utilities::aggregations::mean;
+/// let data: ArrayD<f64> = arr1(&[0., 1., 2., 3., 4., 5., 12., 19., 24., 90., 98., 100.]).into_dyn();
+/// let mean: ArrayD<f64> = mean(&data);
+/// println!("{}", mean);
+/// ```
 pub fn mean(data: &ArrayD<f64>) -> ArrayD<f64> {
-    /// Accepts data and returns mean
-    ///
-    /// # Arguments
-    /// * `data` - Array of data for which you would like the mean
-    ///
-    /// # Return
-    /// mean of the data
-    ///
-    /// # Example
-    /// ```
-    /// let data: ArrayD<f64> = arr1(&[0., 1., 2., 3., 4., 5., 12., 19., 24., 90., 98., 100.]).into_dyn();
-    /// let mean: ArrayD<f64> = mean(&data);
-    /// println!("{}", mean);
-    /// ```
 
     let data_vec: Vec<f64> = data.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
     let data_vec_len: f64 = data_vec.len() as f64;
@@ -206,22 +215,24 @@ pub fn mean(data: &ArrayD<f64>) -> ArrayD<f64> {
     return arr1(&[data_sum / data_vec_len]).into_dyn();
 }
 
+/// Accepts data and returns variance
+///
+/// # Arguments
+/// * `data` - Array of data for which you would like the variance
+/// * `finite_sample_correction` - Whether or not to calculate variance with finite sample correction
+///
+/// # Return
+/// variance of the data
+///
+/// # Example
+/// ```
+/// use ndarray::prelude::*;
+/// use yarrow_runtime::utilities::aggregations::variance;
+/// let data: ArrayD<f64> = arr1(&[0., 1., 2., 3., 4., 5., 12., 19., 24., 90., 98., 100.]).into_dyn();
+/// let variance: ArrayD<f64> = variance(&data, &false);
+/// println!("{}", variance);
+/// ```
 pub fn variance(data: &ArrayD<f64>, finite_sample_correction: &bool) -> ArrayD<f64> {
-    /// Accepts data and returns variance
-    ///
-    /// # Arguments
-    /// * `data` - Array of data for which you would like the variance
-    /// * `finite_sample_correction` - Whether or not to calculate variance with finite sample correction
-    ///
-    /// # Return
-    /// variance of the data
-    ///
-    /// # Example
-    /// ```
-    /// let data: ArrayD<f64> = arr1(&[0., 1., 2., 3., 4., 5., 12., 19., 24., 90., 98., 100.]).into_dyn();
-    /// let variance: ArrayD<f64> = variance(&data, &false);
-    /// println!("{}", variance);
-    /// ```
 
     let data_vec: Vec<f64> = data.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
     let data_vec_len: f64 = data_vec.len() as f64;
@@ -236,22 +247,24 @@ pub fn variance(data: &ArrayD<f64>, finite_sample_correction: &bool) -> ArrayD<f
     return arr1(&[variance]).into_dyn();
 }
 
+/// Accepts data and returns sample estimate of kth raw moment
+///
+/// # Arguments
+/// * `data` - Array of data for which you would like the kth raw moment
+/// * `k` - integer representing moment you want
+///
+/// # Return
+/// kth sample moment
+///
+/// # Example
+/// ```
+/// use ndarray::prelude::*;
+/// use yarrow_runtime::utilities::aggregations::kth_raw_sample_moment;
+/// let data: ArrayD<f64> = arr1(&[0., 1., 2., 3., 4., 5., 12., 19., 24., 90., 98., 100.]).into_dyn();
+/// let third_moment: ArrayD<f64> = kth_raw_sample_moment(&data, &3);
+/// println!("{}", third_moment);
+/// ```
 pub fn kth_raw_sample_moment(data: &ArrayD<f64>, k: &i64) -> ArrayD<f64> {
-    /// Accepts data and returns sample estimate of kth raw moment
-    ///
-    /// # Arguments
-    /// * `data` - Array of data for which you would like the kth raw moment
-    /// * `k` - integer representing moment you want
-    ///
-    /// # Return
-    /// kth sample moment
-    ///
-    /// # Example
-    /// ```
-    /// let data: ArrayD<f64> = arr1(&[0., 1., 2., 3., 4., 5., 12., 19., 24., 90., 98., 100.]).into_dyn();
-    /// let third_moment: ArrayD<f64> = (&data, &3);
-    /// println!("{}", third_moment);
-    /// ```
 
     assert!(k >= &0);
     let data_vec: Vec<f64> = data.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
@@ -259,10 +272,10 @@ pub fn kth_raw_sample_moment(data: &ArrayD<f64>, k: &i64) -> ArrayD<f64> {
     return mean(&arr1(&data_to_kth_power).into_dyn());
 }
 
+/// Accepts set and element probabilities and returns a subset of size k
+/// Probabilities are the probability of drawing each element on the first draw (they sum to 1)
+/// Based on Algorithm A from Raimidis PS, Spirakis PG (2006). “Weighted random sampling with a reservoir.”
 pub fn create_subset<T>(set: &ArrayD<T>, probabilities: &ArrayD<f64>, k: &i64, seed: &Option<[u8; 32]>) -> ArrayD<T> where T: Copy {
-    /// Accepts set and element probabilities and returns a subset of size k
-    /// Probabilities are the probability of drawing each element on the first draw (they sum to 1)
-    /// Based on Algorithm A from Raimidis PS, Spirakis PG (2006). “Weighted random sampling with a reservoir.”
 
     assert!(*k as usize <= set.len());
 

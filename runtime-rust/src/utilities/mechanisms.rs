@@ -22,40 +22,42 @@ pub fn simple_geometric_mechanism(epsilon: &f64, sensitivity: &f64, count_min: &
     return arr1(&[noise]).into_dyn();
 }
 
+/// Returns data element according to the exponential mechanism
+///
+/// # Arguments
+///
+/// * `epsilon` - privacy loss parameter
+/// * `sensitivity` - sensitivity of utility function
+/// * `candidate_set` - data from which user wants an element returned
+/// * `utility` - utility function used within the exponential mechanism
+///
+/// NOTE: This implementation is likely non-private because of the difference between theory on
+///       the real numbers and floating-point numbers. See https://arxiv.org/abs/1912.04222 for
+///       more information on the problem and a proposed fix.
+///
+/// TODO: Implement Christina's base-2 exponential mechanism?
+///
+/// # Example
+/// ```
+/// use ndarray::prelude::*;
+/// use yarrow_runtime::utilities::mechanisms::exponential_mechanism;
+/// // create utility function
+/// pub fn utility(x:&f64) -> f64 {
+///     let util = *x as f64;
+///     return util;
+/// }
+///
+/// // create sample data
+/// let xs: ArrayD<f64> = arr1(&[1., 2., 3., 4., 5.]).into_dyn();
+/// let ans: f64 = exponential_mechanism(&1.0, &1.0, xs, &utility);
+/// println!("{}", ans);
+/// ```
 pub fn exponential_mechanism<T>(
                          epsilon: &f64,
                          sensitivity: &f64,
                          candidate_set: ArrayD<T>,
                          utility: &dyn Fn(&T) -> f64
                          ) -> T where T: Copy, {
-    /// Returns data element according to the exponential mechanism
-    ///
-    /// # Arguments
-    ///
-    /// * `epsilon` - privacy loss parameter
-    /// * `sensitivity` - sensitivity of utility function
-    /// * `candidate_set` - data from which user wants an element returned
-    /// * `utility` - utility function used within the exponential mechanism
-    ///
-    /// NOTE: This implementation is likely non-private because of the difference between theory on
-    ///       the real numbers and floating-point numbers. See https://arxiv.org/abs/1912.04222 for
-    ///       more information on the problem and a proposed fix.
-    ///
-    /// TODO: Implement Christina's base-2 exponential mechanism?
-    ///
-    /// # Example
-    /// ```
-    /// // create utility function
-    /// pub fn utility(x:&f64) -> f64 {
-    ///     let util = *x as f64;
-    ///     return util;
-    /// }
-    ///
-    /// // create sample data
-    /// let xs: ArrayD<f64> = arr1(&[1., 2., 3., 4., 5.]).into_dyn();
-    /// let ans: f64 = exponential_mechanism(&1.0, &1.0, &xs, &utility);
-    /// println!("{}", ans);
-    /// ```
 
     // get vector of e^(util), then use to find probabilities
     let e_util_vec: Vec<f64> = candidate_set.iter().map(|x| std::f64::consts::E.powf(epsilon * utility(x) / (2.0 * sensitivity))).collect();
