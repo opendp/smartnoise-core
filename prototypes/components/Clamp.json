@@ -13,10 +13,10 @@
       ],
       "type": "Array"
     },
-    "minimum": {
+    "min": {
       "type": "Array"
     },
-    "maximum": {
+    "max": {
       "type": "Array"
     },
     "categories": {

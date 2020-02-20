@@ -149,37 +149,37 @@ pub fn component_negate(
     }
 }
 
-pub fn component_impute_float_uniform(
-    _x: &proto::ImputeFloatUniform, arguments: &NodeArguments
-) -> Result<NodeEvaluation, String> {
+// pub fn component_impute_float_uniform(
+//     _x: &proto::ImputeFloatUniform, arguments: &NodeArguments
+// ) -> Result<NodeEvaluation, String> {
 
-    let data: ArrayD<f64> = get_array_f64(&arguments, "data");
-    let min: f64 = get_f64(&arguments, "min");
-    let max: f64 = get_f64(&arguments, "max");
-    Ok(NodeEvaluation::F64(utilities::transformations::impute_float_uniform(&data, &min, &max)))
-}
+//     let data: ArrayD<f64> = get_array_f64(&arguments, "data");
+//     let min: f64 = get_f64(&arguments, "min");
+//     let max: f64 = get_f64(&arguments, "max");
+//     Ok(NodeEvaluation::F64(utilities::transformations::impute_float_uniform(&data, &min, &max)))
+// }
 
-pub fn component_impute_float_gaussian(
-    _x: &proto::ImputeFloatGaussian, arguments: &NodeArguments
-) -> Result<NodeEvaluation, String> {
+// pub fn component_impute_float_gaussian(
+//     _x: &proto::ImputeFloatGaussian, arguments: &NodeArguments
+// ) -> Result<NodeEvaluation, String> {
 
-    let data: ArrayD<f64> = get_array_f64(&arguments, "data");
-    let shift: f64 = get_f64(&arguments, "shift");
-    let scale: f64 = get_f64(&arguments, "scale");
-    let min: f64 = get_f64(&arguments, "min");
-    let max: f64 = get_f64(&arguments, "max");
-    Ok(NodeEvaluation::F64(utilities::transformations::impute_float_gaussian(&data, &shift, &scale, &min, &max)))
-}
+//     let data: ArrayD<f64> = get_array_f64(&arguments, "data");
+//     let shift: f64 = get_f64(&arguments, "shift");
+//     let scale: f64 = get_f64(&arguments, "scale");
+//     let min: f64 = get_f64(&arguments, "min");
+//     let max: f64 = get_f64(&arguments, "max");
+//     Ok(NodeEvaluation::F64(utilities::transformations::impute_float_gaussian(&data, &shift, &scale, &min, &max)))
+// }
 
-pub fn component_impute_int_uniform(
-    _x: &proto::ImputeIntUniform, arguments: &NodeArguments
-) -> Result<NodeEvaluation, String> {
+// pub fn component_impute_int_uniform(
+//     _x: &proto::ImputeIntUniform, arguments: &NodeArguments
+// ) -> Result<NodeEvaluation, String> {
 
-    let data: ArrayD<f64> = get_array_f64(&arguments, "data");
-    let min: f64 = get_f64(&arguments, "min");
-    let max: f64 = get_f64(&arguments, "max");
-    Ok(NodeEvaluation::F64(utilities::transformations::impute_int_uniform(&data, &min, &max)))
-}
+//     let data: ArrayD<f64> = get_array_f64(&arguments, "data");
+//     let min: f64 = get_f64(&arguments, "min");
+//     let max: f64 = get_f64(&arguments, "max");
+//     Ok(NodeEvaluation::F64(utilities::transformations::impute_int_uniform(&data, &min, &max)))
+// }
 
 pub fn component_bin(
     _X: &proto::Bin, arguments: &NodeArguments
@@ -209,7 +209,6 @@ pub fn component_row_wise_min(
 pub fn component_row_wise_max(
     _x: &proto::RowMax, arguments: &NodeArguments
 ) -> Result<NodeEvaluation, String> {
-
     match (*arguments.get("left").unwrap(), *arguments.get("right").unwrap()) {
         (NodeEvaluation::F64(left), NodeEvaluation::F64(right)) =>
             Ok(NodeEvaluation::F64(utilities::transformations::broadcast_map(
@@ -233,9 +232,21 @@ pub fn component_clamp(
                     Ok(NodeEvaluation::F64(utilities::transformations::clamp_numeric(data, min, max))),
                 (NodeEvaluation::Str(data), NodeEvaluation::Str(categories), NodeEvaluation::Str(null_value), ..) =>
                     Ok(NodeEvaluation::Str(utilities::transformations::clamp_categorical(data, categories, null_value.first().unwrap()))),
-                _ => Err("unsupported types".to_string())
+                _ => Err("Unsupported types in clamp".to_string())
     }
 }
+
+// pub fn component_impute(_X: &proto::Impute, arguments: &NodeArguments) -> Result<NodeEvaluation, String> {
+//     // TODO: does not work
+//     let data = *arguments.get("data").unwrap();
+//     let distribution = *arguments.get("distribution").unwrap();
+//     let data_type = *arguments.get("data_type").unwrap();
+//     let min = *arguments.get("min").unwrap();
+//     let max = *arguments.get("max").unwrap();
+//     let shift = *arguments.get("shift").unwrap();
+//     let scale = *arguments.get("scale").unwrap();
+//     Ok(NodeEvaluation::F64(utilities::transformations::impute(data, distribution, data_type, min, max, shift, scale)))
+// }
 
 //pub fn component_count(
 //    _X: &proto::Count, arguments: &NodeArguments,

@@ -48,7 +48,7 @@ pub fn bin(data: &ArrayD<f64>, edges: &ArrayD<f64>, inclusive_left: &ArrayD<bool
 
     // initialize new data -- this is what we ultimately return from the function
     let mut new_data: ArrayD<f64> = convert_to_matrix(data);
-    let mut new_bin_array: ArrayD<String> = Array::default(data.shape());
+    let mut new_bin_array: ArrayD<String> = Array::default(new_data.shape());
 
     let n_cols: i64 = data.len_of(Axis(0)) as i64;
 
@@ -206,37 +206,6 @@ pub fn clamp_categorical(data: &ArrayD<String>, categories: &ArrayD<String>, nul
     return clamped_data;
 }
 
-// pub fn clamp<T>(data: &ArrayD<T>, min: &Option(ArrayD<f64>),
-//              max: &Option(ArrayD<f64>), categories: &Option(ArrayD<String>)
-//              ) -> ArrayD<T> where T: Copy {
-
-//     let mut data_2d = convert_to_matrix(data);
-//     let mut clamped_data = Array::default(data_2d.shape());
-
-//     let n_cols: i64 = data_2d.len_of(Axis(0)) as i64;
-
-//     for i in 0..n_cols {
-//         let mut data_vec = data_2d.slice(s![i as usize, ..]).to_owned().into_dyn().clone().
-//                            into_dimensionality::<Ix1>().unwrap().to_vec();
-//         for j in 0..data_vec.len() {
-//             if min.is_some() && max.is_some() {
-//                 if data_vec[j] < min.unwrap()[i as usize] {
-//                     data_vec[j] = min.unwrap()[i as usize];
-//                 } else if data_vec[j] > max.unwrap()[i as usize] {
-//                     data_vec[j] = max.unwrap()[i as usize];
-//                 }
-//             } else if categories.is_some() {
-//                 // TODO: write what to do if elem not in categories
-//                 panic!("either min/max or categories must be set");
-//             } else {
-//                 panic!("either min/max or categories must be set");
-//             }
-//         }
-//         clamped_data.slice_mut(s![i as usize, ..]).assign(&arr1(&data_vec).into_dyn());
-//     }
-//     return clamped_data;
-// }
-
 pub fn impute_float_uniform(data: &ArrayD<f64>, min: &f64, max: &f64) -> ArrayD<f64> {
     /// Given data and min/max values, returns data with imputed values in place of NaN.
     /// For now, imputed values are generated uniformly at random between the min and max values provided,
@@ -343,6 +312,36 @@ pub fn impute_int_uniform(data: &ArrayD<f64>, min: &f64, max: &f64) -> ArrayD<f6
         }
     }
     return arr1(&data_vec).into_dyn();
+}
+
+pub fn impute(data: &ArrayD<f64>, distribution: &ArrayD<String>, data_type: &ArrayD<String>,
+                  min: &ArrayD<f64>, max: &ArrayD<f64>,
+                  shift: &Option<ArrayD<f64>>, scale: &Option<ArrayD<f64>>) -> ArrayD<f64> {
+    // set string literals for arguments that are of type String
+    let Uniform: String = "Uniform".to_string(); // Distributions
+    let Gaussian: String = "Gaussian".to_string();
+    let Float: String = "Float".to_string(); // Data Types
+    let Int: String = "Int".to_string();
+
+    // initialize new data
+    let mut data_2d: ArrayD<f64> = convert_to_matrix(data);
+    let mut imputed_data: ArrayD<f64> = Array::default(data_2d.shape());
+    let n_cols: i64 = data.len_of(Axis(0)) as i64;
+
+    // for each column in data:
+    let mut imputed_col: ArrayD<f64>;
+    for i in 0..n_cols {
+        // do standard data imputation
+        imputed_col = match (distribution[i as usize].to_string(), data_type[i as usize].to_string()) {
+            (Uniform, Float) => impute_float_uniform(&(data.slice(s![0, ..])).to_owned().into_dyn(), &min[i as usize], &max[i as usize]),
+            (Uniform, Int) => impute_int_uniform(&(data.slice(s![0, ..])).to_owned().into_dyn(), &min[i as usize], &max[i as usize]),
+            (Gaussian, Float) => impute_float_gaussian(&(data.slice(s![0, ..])).to_owned().into_dyn(), &shift.as_ref().unwrap()[i as usize], &scale.as_ref().unwrap()[i as usize],
+                                                                                                       &min[i as usize], &max[i as usize]),
+            _ => panic!("distribution/data_type combination not supported")
+        };
+        imputed_data.slice_mut(s![i as usize, ..]).assign(&imputed_col);
+    }
+    return imputed_data;
 }
 
 // pub struct ImputationParameters {
