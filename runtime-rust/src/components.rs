@@ -21,7 +21,7 @@ macro_rules! hashmap {
 }
 
 pub fn component_literal(x: &proto::Literal) -> Result<NodeEvaluation, String> {
-    Ok(parse_proto_array(&x.to_owned().value.unwrap()).unwrap())
+    Ok(parse_proto_value(&x.to_owned().value.unwrap()).unwrap())
 }
 
 //pub fn component_table(table: &proto::Table, dataset: &proto::Dataset, arguments: &NodeArguments) -> NodeEvaluation {
@@ -69,7 +69,7 @@ pub fn component_datasource(
                 _ => Err("Datatype must be a string.".to_string())
             }
         },
-        proto::table::Value::Literal(value) => parse_proto_array(&value),
+        proto::table::Value::Literal(value) => parse_proto_value(&value),
         _ => Err("Only file paths are supported".to_string())
     }.unwrap())
 }

@@ -14,7 +14,7 @@ impl Component for proto::RowMin {
         constraints: &constraint::NodeConstraints,
     ) -> Constraint {
         Constraint {
-            nullity: vec![false],
+            nullity: false,
             releasable: false,
             nature: None,
             num_records: None

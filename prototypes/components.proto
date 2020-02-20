@@ -91,20 +91,8 @@ message Index {
 message DataSource {
     string dataset_id = 1;
     string column_id = 2;
-
-    // TODO: constraints/nature should be moved to arguments, THEY ARE PRIVATE
-    // TODO: is nature necessary? if categorical, then could cast the other types to strings
-    DataType datatype = 3;
-    enum Nature {
-        UNKNOWN = 0;
-        CONTINUOUS = 1;
-        CATEGORICAL = 2;
-    }
-    Nature nature = 4;
-
-    // should be a 1D array of the unique values (likely bool, int, or string)
-    Value constraints = 5;
 }
+
 message Stack {}
 message Literal {
     Value value = 1;

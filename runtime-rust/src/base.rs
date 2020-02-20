@@ -210,7 +210,7 @@ pub fn release_to_evaluations(release: &proto::Release) -> Result<GraphEvaluatio
     let mut evaluations = GraphEvaluation::new();
 
     for (node_id, node_release) in &release.values {
-        evaluations.insert(*node_id, parse_proto_array(&node_release.value.to_owned().unwrap())?);
+        evaluations.insert(*node_id, parse_proto_value(&node_release.value.to_owned().unwrap())?);
     }
     Ok(evaluations)
 }
@@ -218,7 +218,7 @@ pub fn release_to_evaluations(release: &proto::Release) -> Result<GraphEvaluatio
 pub fn evaluations_to_release(evaluations: &GraphEvaluation) -> Result<proto::Release, String> {
     let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
     for (node_id, node_eval) in evaluations {
-        if let Ok(array_serialized) = serialize_proto_array(node_eval) {
+        if let Ok(array_serialized) = serialize_proto_value(node_eval) {
             releases.insert(*node_id, proto::ReleaseNode{
                 value: Some(array_serialized), privacy_usage: None
             });
@@ -229,31 +229,41 @@ pub fn evaluations_to_release(evaluations: &GraphEvaluation) -> Result<proto::Re
     })
 }
 
-pub fn parse_proto_array(value: &proto::Value) -> Result<NodeEvaluation, String> {
-    let value = value.to_owned();
-    match value.data.unwrap() {
-//        proto::array_nd::Data::Bytes(x) =>
-//            NodeEvaluation::Bytes(bytes::Bytes::from(x)),
-        proto::value::Data::Bool(x) => {
-            let shape: Vec<usize> = x.shape.iter().map(|x| *x as usize).collect();
-            Ok(NodeEvaluation::Bool(Array::from_shape_vec(shape, x.data).unwrap().into_dyn()))
+pub fn parse_proto_value(value: &proto::Value) -> Result<NodeEvaluation, String> {
+    let value = value.to_owned().data;
+    if value.is_none() {
+        return Err("proto value is empty".to_string())
+    }
+    match value.unwrap() {
+        proto::value::Data::ArrayNd(arrayND) => match arrayND.flattened {
+            Some(flattened) => match flattened.data {
+                Some(data) => match data {
+                    proto::array1_d::Data::Bool(array) => {
+                        let shape: Vec<usize> = arrayND.shape.iter().map(|x| *x as usize).collect();
+                        Ok(NodeEvaluation::Bool(Array::from_shape_vec(shape, array.data).unwrap().into_dyn()))
+                    },
+                    proto::array1_d::Data::I64(array) => {
+                        let shape: Vec<usize> = arrayND.shape.iter().map(|x| *x as usize).collect();
+                        Ok(NodeEvaluation::I64(Array::from_shape_vec(shape, array.data).unwrap().into_dyn()))
+                    },
+                    proto::array1_d::Data::F64(array) => {
+                        let shape: Vec<usize> = arrayND.shape.iter().map(|x| *x as usize).collect();
+                        Ok(NodeEvaluation::F64(Array::from_shape_vec(shape, array.data).unwrap().into_dyn()))
+                    },
+                    proto::array1_d::Data::String(array) => {
+                        let shape: Vec<usize> = arrayND.shape.iter().map(|x| *x as usize).collect();
+                        Ok(NodeEvaluation::Str(Array::from_shape_vec(shape, array.data).unwrap().into_dyn()))
+                    },
+                    _ => return Err("unsupported proto array variant encountered".to_string())
+                },
+                None => return Err("proto array is empty".to_string())
+            },
+            None => return Err("proto array is empty".to_string())
         },
-        proto::value::Data::I64(x) => {
-            let shape: Vec<usize> = x.shape.iter().map(|x| *x as usize).collect();
-            Ok(NodeEvaluation::I64(Array::from_shape_vec(shape, x.data).unwrap().into_dyn()))
-        },
-        proto::value::Data::F64(x) => {
-            let shape: Vec<usize> = x.shape.iter().map(|x| *x as usize).collect();
-            Ok(NodeEvaluation::F64(Array::from_shape_vec(shape, x.data).unwrap().into_dyn()))
-        },
-        proto::value::Data::String(x) => {
-            let shape: Vec<usize> = x.shape.iter().map(|x| *x as usize).collect();
-            Ok(NodeEvaluation::Str(Array::from_shape_vec(shape, x.data).unwrap().into_dyn()))
-        },
-        proto::value::Data::HashmapString(x) => {
+        proto::value::Data::HashmapString(hash_map) => {
             let mut evaluation: HashMap<String, NodeEvaluation> = HashMap::new();
-            for (node_id, value) in &x.data {
-                let parsed_result = parse_proto_array(value);
+            for (node_id, value) in &hash_map.data {
+                let parsed_result = parse_proto_value(value);
                 if let Ok(parsed) = parsed_result {
                     evaluation.insert(node_id.to_owned(), parsed);
                 } else {
@@ -262,11 +272,13 @@ pub fn parse_proto_array(value: &proto::Value) -> Result<NodeEvaluation, String>
             }
             Ok(NodeEvaluation::HashmapString(evaluation))
         }
-        _ => Err("Unsupported proto value encountered.".to_string())
+//        proto::array_nd::Data::Bytes(x) =>
+//            NodeEvaluation::Bytes(bytes::Bytes::from(x)),
+        _ => Err("unsupported proto value variant encountered".to_string())
     }
 }
 
-pub fn serialize_proto_array(evaluation: &NodeEvaluation) -> Result<proto::Value, String> {
+pub fn serialize_proto_value(evaluation: &NodeEvaluation) -> Result<proto::Value, String> {
 
     match evaluation {
 //        NodeEvaluation::Bytes(x) => proto::Value {
@@ -274,33 +286,45 @@ pub fn serialize_proto_array(evaluation: &NodeEvaluation) -> Result<proto::Value
 //            data: Some(proto::value::Data::Bytes(prost::encoding::bytes::encode(x)))
 //        },
         NodeEvaluation::Bool(x) => Ok(proto::Value {
-            datatype: proto::DataType::Bool as i32,
-            data: Some(proto::value::Data::Bool(proto::Array1Dbool {
-                data: x.iter().map(|s| *s).collect(),
+            data: Some(proto::value::Data::ArrayNd(proto::ArrayNd {
+                flattened: Some(proto::Array1D {
+                    data: Some(proto::array1_d::Data::Bool(proto::Array1Dbool {
+                        data: x.iter().map(|s| *s).collect(),
+                    }))
+                }),
                 order: (1..x.ndim()).map(|x| {x as u64}).collect(),
                 shape: x.shape().iter().map(|y| {*y as u64}).collect()
             }))
         }),
         NodeEvaluation::I64(x) => Ok(proto::Value {
-            datatype: proto::DataType::I64 as i32,
-            data: Some(proto::value::Data::I64(proto::Array1Di64 {
-                data: x.iter().map(|s| *s).collect(),
+            data: Some(proto::value::Data::ArrayNd(proto::ArrayNd {
+                flattened: Some(proto::Array1D {
+                    data: Some(proto::array1_d::Data::I64(proto::Array1Di64 {
+                        data: x.iter().map(|s| *s).collect()
+                    }))
+                }),
                 order: (1..x.ndim()).map(|x| {x as u64}).collect(),
                 shape: x.shape().iter().map(|y| {*y as u64}).collect()
             }))
         }),
         NodeEvaluation::F64(x) => Ok(proto::Value {
-            datatype: proto::DataType::F64 as i32,
-            data: Some(proto::value::Data::F64(proto::Array1Df64 {
-                data: x.iter().map(|s| *s).collect(),
+            data: Some(proto::value::Data::ArrayNd(proto::ArrayNd {
+                flattened: Some(proto::Array1D {
+                    data: Some(proto::array1_d::Data::F64(proto::Array1Df64 {
+                        data: x.iter().map(|s| *s).collect()
+                    }))
+                }),
                 order: (1..x.ndim()).map(|x| {x as u64}).collect(),
                 shape: x.shape().iter().map(|y| {*y as u64}).collect()
             }))
         }),
         NodeEvaluation::Str(x) => Ok(proto::Value {
-            datatype: proto::DataType::String as i32,
-            data: Some(proto::value::Data::String(proto::Array1Dstr {
-                data: x.iter().cloned().collect(),
+            data: Some(proto::value::Data::ArrayNd(proto::ArrayNd {
+                flattened: Some(proto::Array1D {
+                    data: Some(proto::array1_d::Data::String(proto::Array1Dstr {
+                        data: x.iter().map(|s| s.to_owned()).collect()
+                    }))
+                }),
                 order: (1..x.ndim()).map(|x| {x as u64}).collect(),
                 shape: x.shape().iter().map(|y| {*y as u64}).collect()
             }))
@@ -308,13 +332,12 @@ pub fn serialize_proto_array(evaluation: &NodeEvaluation) -> Result<proto::Value
         NodeEvaluation::HashmapString(x) => {
             let mut evaluation_serialized: HashMap<String, proto::Value> = HashMap::new();
             for (node_id, node_eval) in x {
-                if let Ok(array_serialized) = serialize_proto_array(node_eval) {
+                if let Ok(array_serialized) = serialize_proto_value(node_eval) {
                     evaluation_serialized.insert(node_id.to_owned(), array_serialized);
                 }
             }
 
             return Ok(proto::Value {
-                datatype: proto::DataType::HashmapString as i32,
                 data: Some(proto::value::Data::HashmapString(proto::HashmapString {
                     data: evaluation_serialized
                 }))

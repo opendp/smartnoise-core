@@ -144,11 +144,11 @@ class Component(object):
             data = np.array(data)
 
             data_type = {
-                np.bool: "BOOL",
-                np.int64: "I64",
-                np.float64: "F64",
-                np.string_: "STRING",
-                np.str_: "STRING"
+                np.bool: "bool",
+                np.int64: "i64",
+                np.float64: "f64",
+                np.string_: "string",
+                np.str_: "string"
             }[data.dtype.type]
 
             container_type = {
@@ -159,15 +159,14 @@ class Component(object):
                 np.str_: value_pb2.Array1Dstr
             }[data.dtype.type]
 
-            proto_args = {
-                "datatype": data_type,
-                data_type.lower(): container_type(
-                    data=list(data.flatten()),
+            return value_pb2.Value(
+                arrayND=value_pb2.ArrayND(
                     shape=list(data.shape),
-                    order=list(range(data.ndim)))
-            }
-
-            return value_pb2.Value(**proto_args)
+                    order=list(range(data.ndim)),
+                    flattened=value_pb2.Array1D(**{
+                        data_type: container_type(data=list(data.flatten()))
+                    })
+                ))
 
         return value if type(value) == Component else Component(
             'Literal', options={'value': value_proto(value)})
