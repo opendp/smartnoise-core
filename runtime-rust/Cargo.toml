@@ -27,7 +27,7 @@ cbindgen = "0.9.1"
 
 [lib]
 name = "yarrow_runtime"
-crate-type = ["cdylib"]
+crate-type = ["rlib","cdylib"]
 
 [profile.release]
 debug = true
