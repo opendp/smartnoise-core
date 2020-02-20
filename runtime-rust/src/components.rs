@@ -10,6 +10,7 @@ extern crate csv;
 extern crate num;
 
 use std::str::FromStr;
+use yarrow_validator::utilities::buffer::{parse_proto_value, NodeEvaluation, NodeArguments, get_f64, get_array_f64, get_array_bool, get_bool, get_i64};
 
 
 macro_rules! hashmap {

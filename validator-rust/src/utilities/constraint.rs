@@ -154,8 +154,82 @@ pub fn propagate_constraints(
     traversal.iter().for_each(|node_id| {
         let component: proto::Component = graph.get(node_id).unwrap().to_owned();
         let input_constraints = get_constraints(&component, &graph_constraint);
-        let constraint = component.value.unwrap().propagate_constraint(&input_constraints);
+        let constraint = component.value.unwrap().propagate_constraint(&input_constraints).unwrap();
         graph_constraint.insert(node_id.clone(), constraint);
     });
     Ok(graph_constraint)
+}
+
+
+pub fn get_min(constraints: &NodeConstraints, argument: &str) -> Result<Option<ConstraintVector>, String> {
+    let constraint = match constraints.get(argument) {
+        Some(constraint) => constraint,
+        None => return Err("constraint not found".to_string()),
+    };
+
+    let nature = match &constraint.nature {
+        Some(nature) => match nature {
+            Nature::Continuous(nature) => nature,
+            _ => return Err("a categorical constraint is defined on a continuous argument".to_string())
+        },
+        None => return Err("no nature (min) is defined on a continuous argument".to_string())
+    };
+    Ok(nature.min.clone())
+}
+
+pub fn get_min_f64(constraints: &NodeConstraints, argument: &str) -> Result<Vec<f64>, String> {
+    let min = match get_min(constraints, argument)? {
+        Some(min) => min.to_owned(),
+        None => return Err("no min is defined on a continuous argument".to_string())
+    };
+
+    match min {
+        ConstraintVector::F64(value) => Ok(value.to_owned()),
+        ConstraintVector::I64(value) => Ok(value.iter().map(|&x| x as f64).collect()),
+        _ => Err("the min must be a numeric type".to_string())
+    }
+}
+
+pub fn get_max(constraints: &NodeConstraints, argument: &str) -> Result<Option<ConstraintVector>, String> {
+    let constraint = match constraints.get(argument) {
+        Some(constraint) => constraint,
+        None => return Err("constraint not found".to_string()),
+    };
+
+    let nature = match &constraint.nature {
+        Some(nature) => match nature {
+            Nature::Continuous(nature) => nature,
+            _ => return Err("a categorical constraint is defined on a continuous argument".to_string())
+        },
+        None => return Err("no nature (max) is defined on a continuous argument".to_string())
+    };
+    Ok(nature.max.clone())
+}
+
+pub fn get_max_f64(constraints: &NodeConstraints, argument: &str) -> Result<Vec<f64>, String> {
+
+    let max = match get_max(constraints, argument)? {
+        Some(max) => max.to_owned(),
+        None => return Err("no max is defined on a continuous argument".to_string())
+    };
+
+    match max {
+        ConstraintVector::F64(value) => Ok(value.to_owned()),
+        ConstraintVector::I64(value) => Ok(value.iter().map(|&x| x as f64).collect()),
+        _ => Err("the max must be a numeric type".to_string())
+    }
+}
+
+pub fn get_num_records(constraints: &NodeConstraints, argument: &str) -> Result<Option<u32>, String> {
+    match constraints.get(argument) {
+        Some(constraint) => Ok(constraint.num_records),
+        None => Err("constraint not found".to_string()),
+    }
+}
+
+pub fn get_num_records_u32(constraints: &NodeConstraints, argument: &str) -> Result<u32, String> {
+    match get_num_records(constraints, argument)? {
+        Some(x) => Ok(x),
+        None => Err("n is not known".to_string())
+    }
 }

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use crate::utilities::constraint;
-use crate::utilities::constraint::Constraint;
+use crate::utilities::constraint::{Constraint, NodeConstraints, ConstraintVector};
 use crate::proto;
 
 pub mod add;
@@ -12,12 +12,12 @@ pub trait Component {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_constraint(
         &self,
-        constraints: &constraint::NodeConstraints,
-    ) -> Constraint;
+        constraints: &NodeConstraints,
+    ) -> Result<Constraint, String>;
 
     fn is_valid(
         &self,
-        constraints: &constraint::NodeConstraints,
+        constraints: &NodeConstraints,
     ) -> bool;
 
     // return a hashmap of an expanded subgraph
@@ -27,32 +27,32 @@ pub trait Component {
         component: &proto::Component,
         maximum_id: u32,
         component_id: u32,
-        constraints: &constraint::NodeConstraints,
-    ) -> (u32, HashMap<u32, proto::Component>);
+        constraints: &NodeConstraints,
+    ) -> Result<(u32, HashMap<u32, proto::Component>), String>;
 
     fn compute_sensitivity(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
-        constraint: &Constraint,
-    ) -> Option<f64>;
+        constraints: &NodeConstraints,
+    ) -> Option<Vec<f64>>;
 
     fn accuracy_to_privacy_usage(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
-        constraints: &constraint::NodeConstraints,
+        constraints: &NodeConstraints,
         accuracy: &proto::Accuracy,
     ) -> Option<proto::PrivacyUsage>;
 
     fn privacy_usage_to_accuracy(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
-        constraints: &constraint::NodeConstraints,
+        constraints: &NodeConstraints,
     ) -> Option<f64>;
 
     // for json construction. Return type should be a generic serializable struct, not a String
     fn summarize(
         &self,
-        constraints: &constraint::NodeConstraints,
+        constraints: &NodeConstraints,
     ) -> String;
 }
 
@@ -62,8 +62,8 @@ impl Component for proto::component::Value {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_constraint(
         &self,
-        constraints: &constraint::NodeConstraints,
-    ) -> Constraint {
+        constraints: &NodeConstraints,
+    ) -> Result<Constraint, String> {
         use proto::component::Value;
         match self {
             // TODO: write a macro for delegating enum variants
@@ -74,7 +74,7 @@ impl Component for proto::component::Value {
 
     fn is_valid(
         &self,
-        constraints: &constraint::NodeConstraints,
+        constraints: &NodeConstraints,
     ) -> bool {
         use proto::component::Value;
         match self {
@@ -91,8 +91,8 @@ impl Component for proto::component::Value {
         component: &proto::Component,
         maximum_id: u32,
         component_id: u32,
-        constraints: &constraint::NodeConstraints,
-    ) -> (u32, HashMap<u32, proto::Component>) {
+        constraints: &NodeConstraints,
+    ) -> Result<(u32, HashMap<u32, proto::Component>), String> {
         use proto::component::Value;
         match self {
             // TODO: write a macro for delegating enum variants
@@ -109,14 +109,14 @@ impl Component for proto::component::Value {
     fn compute_sensitivity(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
-        constraint: &Constraint,
-    ) -> Option<f64> {
+        constraints: &NodeConstraints,
+    ) -> Option<Vec<f64>> {
         use proto::component::Value;
         match self {
             // TODO: write a macro for delegating enum variants
             Value::Rowmin(x) => x.compute_sensitivity(
                 privacy_definition,
-                constraint),
+                constraints),
             _ => panic!("a proto component is missing its Component trait")
         }
     }
@@ -124,7 +124,7 @@ impl Component for proto::component::Value {
     fn accuracy_to_privacy_usage(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
-        constraints: &constraint::NodeConstraints,
+        constraints: &NodeConstraints,
         accuracy: &proto::Accuracy,
     ) -> Option<proto::PrivacyUsage> {
         use proto::component::Value;
@@ -141,7 +141,7 @@ impl Component for proto::component::Value {
     fn privacy_usage_to_accuracy(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
-        constraints: &constraint::NodeConstraints,
+        constraints: &NodeConstraints,
     ) -> Option<f64> {
         use proto::component::Value;
         match self {
@@ -156,7 +156,7 @@ impl Component for proto::component::Value {
     // for json construction. Return type should be a generic serializable struct, not a String
     fn summarize(
         &self,
-        constraints: &constraint::NodeConstraints,
+        constraints: &NodeConstraints,
     ) -> String {
         use proto::component::Value;
         match self {

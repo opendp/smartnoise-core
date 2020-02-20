@@ -110,7 +110,7 @@ pub fn expand_graph(
 
     let graph_keys: Vec<u32> = graph.keys().map(|&x: &u32| x.clone()).collect();
     // expand each component in the graph
-    graph_keys.iter().for_each(|&node_id| {
+    for node_id in graph_keys {
         let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
         let result = component.clone().value.unwrap().expand_graph(
             &analysis.privacy_definition.to_owned().unwrap(),
@@ -118,10 +118,10 @@ pub fn expand_graph(
             max_node_id,
             node_id,
             &utilities::constraint::get_constraints(&component, &graph_constraints),
-        );
+        )?;
         max_node_id = result.0;
         graph.extend(result.1);
-    });
+    }
 
     Ok(proto::Analysis {
         graph: graph,

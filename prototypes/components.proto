@@ -200,11 +200,9 @@ message ImputeIntUniform {
 
 message LaplaceMechanism {
     PrivacyUsage privacy_usage = 1;
-    double sensitivity = 2;
 }
 message GaussianMechanism {
     PrivacyUsage privacy_usage = 1;
-    double sensitivity = 2;
 }
 message SimpleGeometricMechanism {
     double epsilon = 1;
