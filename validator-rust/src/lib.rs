@@ -1,7 +1,7 @@
 mod base;
 pub mod utilities;
 pub mod components;
-use base::Component;
+use crate::components::Component;
 
 // include protobuf-generated traits
 pub mod proto {
@@ -125,8 +125,8 @@ pub extern "C" fn accuracy_to_privacy_usage(
 
     let privacy_definition: proto::PrivacyDefinition = request.privacy_definition.unwrap();
     let component: proto::Component = request.component.unwrap();
-    let constraints: HashMap<String, base::Constraint<f64>> = request.constraints.iter()
-        .map(|(k, v)| (k.to_owned(), base::Constraint::<f64>::from_proto(&v)))
+    let constraints: HashMap<String, utilities::constraint::Constraint> = request.constraints.iter()
+        .map(|(k, v)| (k.to_owned(), utilities::constraint::Constraint::from_proto(&v)))
         .collect();
     let accuracy: proto::Accuracy = request.accuracy.unwrap();
 
@@ -153,8 +153,8 @@ pub extern "C" fn privacy_usage_to_accuracy(
 
     let privacy_definition: proto::PrivacyDefinition = request.privacy_definition.unwrap();
     let component: proto::Component = request.component.unwrap();
-    let constraints: HashMap<String, base::Constraint<f64>> = request.constraints.iter()
-        .map(|(k, v)| (k.to_owned(), base::Constraint::<f64>::from_proto(&v)))
+    let constraints: HashMap<String, utilities::constraint::Constraint> = request.constraints.iter()
+        .map(|(k, v)| (k.to_owned(), utilities::constraint::Constraint::from_proto(&v)))
         .collect();
 
     let accuracy: std::result::Result<proto::Accuracy, String> = Ok(proto::Accuracy {

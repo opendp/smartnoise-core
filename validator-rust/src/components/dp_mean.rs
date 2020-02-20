@@ -1,13 +1,13 @@
 use std::collections::HashMap;
+use crate::utilities::constraint;
 use crate::utilities::constraint::Constraint;
 
 use crate::base;
 use crate::proto;
 use crate::hashmap;
 use crate::components::Component;
-use crate::utilities::constraint;
 
-impl Component for proto::RowMin {
+impl Component for proto::DpMean {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_constraint(
         &self,
@@ -36,7 +36,34 @@ impl Component for proto::RowMin {
         component_id: u32,
         constraints: &constraint::NodeConstraints,
     ) -> (u32, HashMap<u32, proto::Component>) {
-        (maximum_id, hashmap![component_id => component.to_owned()])
+        let mut current_id = maximum_id.clone();
+        let mut graph_expansion: HashMap<u32, proto::Component> = HashMap::new();
+
+        // mean
+        current_id += 1;
+        let id_mean = current_id.clone();
+        graph_expansion.insert(id_mean, proto::Component {
+            arguments: hashmap!["data".to_owned() => *component.arguments.get("data").unwrap()],
+            value: Some(proto::component::Value::Mean(proto::Mean {})),
+            omit: true,
+            batch: component.batch,
+        });
+        // noising
+        graph_expansion.insert(component_id, proto::Component {
+            arguments: hashmap!["data".to_owned() => id_mean],
+            value: Some(proto::component::Value::LaplaceMechanism(proto::LaplaceMechanism {
+                privacy_usage: self.privacy_usage.clone(),
+                sensitivity: component.value.to_owned().unwrap()
+                    .compute_sensitivity(
+                        privacy_definition,
+                        constraints.get("data").unwrap())
+                    .unwrap(),
+            })),
+            omit: true,
+            batch: component.batch,
+        });
+
+        (current_id, graph_expansion)
     }
 
     fn compute_sensitivity(

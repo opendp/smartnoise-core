@@ -4,7 +4,7 @@ use crate::proto;
 
 pub fn get_traversal(
     analysis: &proto::Analysis
-) -> Result<Vec<u32>, &'static str> {
+) -> Result<Vec<u32>, String> {
 
     let graph: &HashMap<u32, proto::Component> = &analysis.graph;
 
@@ -51,7 +51,7 @@ pub fn get_traversal(
         });
 
         if is_cyclic {
-            return Err("Graph is cyclic.")
+            return Err("Graph is cyclic.".to_string())
         }
 
     }
@@ -61,7 +61,7 @@ pub fn get_traversal(
 pub fn get_unevaluated(
     analysis: &proto::Analysis,
     release: &proto::Release
-) -> Result<HashSet<u32>, &'static str> {
+) -> Result<HashSet<u32>, String> {
 
     let graph: &HashMap<u32, proto::Component> = &analysis.graph;
 
@@ -85,7 +85,7 @@ pub fn get_unevaluated(
     Ok(unevaluated)
 }
 
-pub fn get_release_nodes(analysis: &proto::Analysis) -> Result<HashSet<u32>, &'static str> {
+pub fn get_release_nodes(analysis: &proto::Analysis) -> Result<HashSet<u32>, String> {
 
     let mut release_node_ids = HashSet::<u32>::new();
     // assume sinks are private
@@ -105,7 +105,8 @@ pub fn get_release_nodes(analysis: &proto::Analysis) -> Result<HashSet<u32>, &'s
             release_node_ids.insert(*node_id);
         }
         else {
-            for source_node_id in component.arguments.values() {
+            let arguments: &HashMap<String, u32> = &component.arguments;
+            for source_node_id in arguments.values() {
                 node_queue.push_back(&source_node_id);
             }
         }
