@@ -6,42 +6,30 @@ use num;
 use rug;
 use std::{cmp, f64::consts};
 use core::f64::NAN;
-use rand::{Rng, SeedableRng, rngs::StdRng};
 
 use crate::utilities::utilities;
 
 pub fn sample_laplace(shift: f64, scale: f64) -> f64 {
     let probability: f64 = sample_uniform(0., 1.);
-    Laplace::new(shift, scale).inverse(probability)
-//    shift - scale * (sample - 0.5).signum() * (1. - 2. * (sample - 0.5).abs()).ln()
+    return Laplace::new(shift, scale).inverse(probability);
 }
 
 pub fn sample_gaussian(shift: f64, scale: f64) -> f64 {
     let probability: f64 = sample_uniform(0., 1.);
-    Gaussian::new(shift, scale).inverse(probability)
+    return Gaussian::new(shift, scale).inverse(probability);
 }
 
 pub fn sample_gaussian_truncated(shift: f64, scale: f64, min: f64, max: f64) -> f64 {
     /// Sample from truncated Gaussian distribution
     /// We use inverse transform sampling, but only between the CDF
     /// probabilities associated with the stated min/max truncation values
-    assert!(min <= max);
-    assert!(scale > 0.0);
     let unif_min: f64 = Gaussian::new(shift, scale).distribution(min);
     let unif_max: f64 = Gaussian::new(shift, scale).distribution(max);
     let unif: f64 = sample_uniform(unif_min, unif_max);
     return Gaussian::new(shift, scale).inverse(unif);
 }
 
-// pub fn sample_uniform(min: f64, max: f64) -> f64 {
-//     let mut buf: [u8; 8] = [0; 8];
-//     rand_bytes(&mut buf).unwrap();
-//     (LittleEndian::read_u64(&buf) as f64) / (std::u64::MAX as f64) * (max - min) + min
-// }
-
 pub fn sample_uniform_int(min: &i64, max: &i64) -> i64 {
-    assert!(min <= max);
-
     // define number of possible integers we could sample and the maximum
     // number of bits it would take to represent them
     let n_ints: i64 = max - min + 1;
@@ -86,8 +74,6 @@ pub fn sample_uniform(min: f64, max: f64) -> f64 {
     /// Once the precision band has been selected, floating numbers numbers are generated uniformly within the band
     /// by generating a 52-bit mantissa uniformly at random.
 
-    assert!(min <= max);
-
     // Generate mantissa
     let binary_string = utilities::get_bytes(7);
     let mantissa = &binary_string[0..52];
@@ -103,11 +89,6 @@ pub fn sample_uniform(min: f64, max: f64) -> f64 {
     let uniform_rand = f64::recompose_raw(false, exponent, mantissa_int);
 
     return uniform_rand * (max - min) + min;
-}
-
-pub fn sample_uniform_with_seed(min: f64, max: f64, seed: [u8; 32]) -> f64 {
-    let mut rng: StdRng = SeedableRng::from_seed(seed);
-    return rng.gen::<f64>() * (max - min) + min;
 }
 
 pub fn sample_bit(prob: &f64) -> i64 {
@@ -247,8 +228,6 @@ pub fn sample_simple_geometric_mechanism(scale: &f64, min: &i64, max: &i64, enfo
     /// ```
     /// let geom_noise: ArrayD<64> = sample_simple_geometric_mechanism(&1., &0, &100, &false);
     /// ```
-
-    assert!(min <= max);
 
     let alpha: f64 = consts::E.powf(-*scale);
     let max_trials: i64 = max - min;
