@@ -10,12 +10,38 @@ use rand::{Rng, SeedableRng, rngs::StdRng};
 
 use crate::utilities::utilities;
 
+/// Sample from Laplace distribution centered at shift and scaled by scale
+///
+/// # Arguments
+/// 
+/// * `shift` - f64, the center of the Laplace distribution 
+/// * `scale` - f64, the scaling parameter of the Laplace distribution
+///
+/// # Example
+/// ```
+/// use yarrow_runtime::utilities::noise::sample_laplace;
+/// let n:f64 = sample_laplace(0.0, 2.0);
+/// ```
 pub fn sample_laplace(shift: f64, scale: f64) -> f64 {
     let probability: f64 = sample_uniform(0., 1.);
     Laplace::new(shift, scale).inverse(probability)
-//    shift - scale * (sample - 0.5).signum() * (1. - 2. * (sample - 0.5).abs()).ln()
 }
 
+/// Sample from Gaussian distribution centered at shift and scaled by scale
+///
+/// # Arguments
+/// 
+/// * `shift` - f64, the center of the Laplace distribution 
+/// * `scale` - f64, the scaling parameter of the Laplace distribution
+///
+/// Return
+/// f64 Gaussian random variable centered at shift and scaled at scale
+/// 
+/// # Example
+/// ```
+/// use yarrow_runtime::utilities::noise::sample_gaussian;
+/// let n:f64 = sample_gaussian(0.0, 2.0);
+/// ```
 pub fn sample_gaussian(shift: f64, scale: f64) -> f64 {
     let probability: f64 = sample_uniform(0., 1.);
     Gaussian::new(shift, scale).inverse(probability)
@@ -24,6 +50,24 @@ pub fn sample_gaussian(shift: f64, scale: f64) -> f64 {
 /// Sample from truncated Gaussian distribution
 /// We use inverse transform sampling, but only between the CDF
 /// probabilities associated with the stated min/max truncation values
+///
+/// # Arguments
+///
+/// * `shift` - f64, the center of the distribution
+/// * `scale` - f64, the scaling parameter of the distribution
+/// * `min` - f64, the minimum value of random variables pulled from the distribution.
+/// * `max` - f64, the maximum value of random variables pulled from the distribution
+/// 
+/// # Return
+/// f64 random gaussian random variable truncated to [min,max]
+///
+/// # Example
+/// ```
+/// use yarrow_runtime::utilities::noise::sample_gaussian_truncated;
+/// let n:f64 = sample_gaussian_truncated(1.0, 1.0, 0.0, 2.0);
+/// assert!(n > 0.0);
+/// assert!(n < 2.0);
+/// ```
 pub fn sample_gaussian_truncated(shift: f64, scale: f64, min: f64, max: f64) -> f64 {
     assert!(min <= max);
     assert!(scale > 0.0);
