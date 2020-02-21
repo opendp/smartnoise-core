@@ -37,18 +37,14 @@ The steps for adding bindings in a new language are essentially:
 
     git clone $REPOSITORY_URI
 
-2. Install protobuf compiler from source  
+2. Install protobuf compiler  
     Mac:  
-        - install xcode `sudo xcode-select --install`  
-        - install macports https://www.macports.org/install.php  
-        - install unix make tools `sudo /opt/local/bin/port install autoconf automake libtool`  
-        - continue on with the Ubuntu install directions  
+
+        brew install protobuf  
+        
     Ubuntu:  
-        - download the "all" Github release. Use version 3.9.x (because of conan)  
-          `https://github.com/protocolbuffers/protobuf/releases/download/v3.9.1/protobuf-all-3.9.1.zip`  
-        - Follow the Protobuf instructions, starting from `./configure`  
-          `https://github.com/protocolbuffers/protobuf/blob/master/src/README.md`  
-          NOTE: move to a directory without spaces in the path  
+
+        sudo snap install protobuf --classic  
 
     Windows:  
 * download and run installer, accepting defaults, then add /bin directories to PATH
