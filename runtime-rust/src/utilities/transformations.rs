@@ -8,12 +8,22 @@ use num;
 
 use crate::utilities::noise;
 use crate::utilities::aggregations;
+use crate::utilities::utilities;
 
 // TODO: this is temporary function for testing purposes
 pub fn convert_to_matrix<T>(data: &ArrayD<T>) -> ArrayD<T> where T: Clone {
     match data.ndim() {
         0 => data.clone().insert_axis(Axis(0)).clone().insert_axis(Axis(0)),
         1 => data.clone().insert_axis(Axis(0)),
+        2 => data.clone(),
+        _ => panic!("unsupported dimension")
+    }
+}
+
+pub fn convert_from_matrix<T>(data: &ArrayD<T>, original_dim: &u8) -> ArrayD<T> where T: Clone {
+    match original_dim {
+        0 => data.clone().remove_axis(Axis(0)).clone().remove_axis(Axis(0)),
+        1 => data.clone().remove_axis(Axis(0)),
         2 => data.clone(),
         _ => panic!("unsupported dimension")
     }
@@ -47,6 +57,7 @@ pub fn bin(data: &ArrayD<f64>, edges: &ArrayD<f64>, inclusive_left: &ArrayD<bool
     /// ```
 
     // initialize new data -- this is what we ultimately return from the function
+    let original_dim: u8 = data.ndim() as u8;
     let mut new_data: ArrayD<f64> = convert_to_matrix(data);
     let mut new_bin_array: ArrayD<String> = Array::default(new_data.shape());
 
@@ -97,7 +108,7 @@ pub fn bin(data: &ArrayD<f64>, edges: &ArrayD<f64>, inclusive_left: &ArrayD<bool
         let mut bin_array: ArrayD<String> = arr1(&bin_vec).into_dyn();
         new_bin_array.slice_mut(s![k as usize, ..]).assign(&bin_array);
     }
-    return new_bin_array;
+    return convert_from_matrix(&new_bin_array, &original_dim);;
 }
 
 pub fn broadcast_map<T>(
@@ -170,13 +181,13 @@ pub fn clamp_numeric(data: &ArrayD<f64>, min: &ArrayD<f64>, max: &ArrayD<f64>) -
     let n_cols: i64 = data_2d.len_of(Axis(0)) as i64;
 
     for i in 0..n_cols {
-        let mut data_vec = data_2d.slice(s![i as usize, ..]).to_owned().into_dyn().clone().
+        let mut data_vec = data_2d.slice(s![i as usize, ..]).clone().into_dyn().clone().
                            into_dimensionality::<Ix1>().unwrap().to_vec();
         for j in 0..data_vec.len() {
                 if data_vec[j] < min[i as usize] {
-                    data_vec[j] = min[i as usize];
+                    data_vec[j] = min[i as usize].clone();
                 } else if data_vec[j] > max[i as usize] {
-                    data_vec[j] = max[i as usize];
+                    data_vec[j] = max[i as usize].clone();
                 }
         }
         clamped_data.slice_mut(s![i as usize, ..]).assign(&arr1(&data_vec).into_dyn());
@@ -184,26 +195,28 @@ pub fn clamp_numeric(data: &ArrayD<f64>, min: &ArrayD<f64>, max: &ArrayD<f64>) -
     return clamped_data;
 }
 
-pub fn clamp_categorical(data: &ArrayD<String>, categories: &ArrayD<String>, null_value: &String) -> ArrayD<String> {
-    let mut data_2d: ArrayD<String> = convert_to_matrix(data);
-    let mut clamped_data: ArrayD<String> = Array::default(data_2d.shape());
+pub fn clamp_categorical<T>(data: &ArrayD<T>, categories: &Vec::<ArrayD<T>>, null_value: &ArrayD<T>) -> ArrayD<T> where T:Clone, T:PartialEq, T:Default {
+    let original_dim: u8 = data.ndim() as u8;
+    let mut data_2d: ArrayD<T> = convert_to_matrix(data);
+    let mut clamped_data: ArrayD<T> = Array::default(data_2d.shape());
 
     let n_cols: i64 = data_2d.len_of(Axis(0)) as i64;
-    let category_vec: Vec<String> = categories.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
-    let n_categories: i64 = category_vec.len() as i64;
+    let mut category_vec: Vec<T>;
+    let mut n_categories: i64;
 
     for i in 0..n_cols {
-        let mut data_vec = data_2d.slice(s![i as usize, ..]).to_owned().into_dyn().clone().
-                           into_dimensionality::<Ix1>().unwrap().to_vec();
+        category_vec = categories[i as usize].clone().into_dimensionality::<Ix1>().unwrap().to_vec();
+        n_categories = category_vec.len() as i64;
+        let mut data_vec = data_2d.slice(s![i as usize, ..]).clone().into_dyn().clone().
+                          into_dimensionality::<Ix1>().unwrap().to_vec();
         for j in 0..data_vec.len() {
                 if !category_vec.contains(&data_vec[j]) {
-                    // sample uni
-                    data_vec[j] = null_value.to_string();
+                    data_vec[j] = null_value[i as usize].clone();
                 }
         }
         clamped_data.slice_mut(s![i as usize, ..]).assign(&arr1(&data_vec).into_dyn());
     }
-    return clamped_data;
+    return convert_from_matrix(&clamped_data, &original_dim);
 }
 
 pub fn impute_float_uniform(data: &ArrayD<f64>, min: &f64, max: &f64) -> ArrayD<f64> {
@@ -314,9 +327,9 @@ pub fn impute_int_uniform(data: &ArrayD<f64>, min: &f64, max: &f64) -> ArrayD<f6
     return arr1(&data_vec).into_dyn();
 }
 
-pub fn impute(data: &ArrayD<f64>, distribution: &ArrayD<String>, data_type: &ArrayD<String>,
-                  min: &ArrayD<f64>, max: &ArrayD<f64>,
-                  shift: &Option<ArrayD<f64>>, scale: &Option<ArrayD<f64>>) -> ArrayD<f64> {
+pub fn impute_numeric(data: &ArrayD<f64>, distribution: &ArrayD<String>, data_type: &ArrayD<String>,
+                      min: &ArrayD<f64>, max: &ArrayD<f64>,
+                      shift: &ArrayD<Option<f64>>, scale: &ArrayD<Option<f64>>) -> ArrayD<f64> {
     // set string literals for arguments that are of type String
     let Uniform: String = "Uniform".to_string(); // Distributions
     let Gaussian: String = "Gaussian".to_string();
@@ -324,6 +337,7 @@ pub fn impute(data: &ArrayD<f64>, distribution: &ArrayD<String>, data_type: &Arr
     let Int: String = "Int".to_string();
 
     // initialize new data
+    let original_dim: u8 = data.ndim() as u8;
     let mut data_2d: ArrayD<f64> = convert_to_matrix(data);
     let mut imputed_data: ArrayD<f64> = Array::default(data_2d.shape());
     let n_cols: i64 = data.len_of(Axis(0)) as i64;
@@ -335,14 +349,239 @@ pub fn impute(data: &ArrayD<f64>, distribution: &ArrayD<String>, data_type: &Arr
         imputed_col = match (distribution[i as usize].to_string(), data_type[i as usize].to_string()) {
             (Uniform, Float) => impute_float_uniform(&(data.slice(s![0, ..])).to_owned().into_dyn(), &min[i as usize], &max[i as usize]),
             (Uniform, Int) => impute_int_uniform(&(data.slice(s![0, ..])).to_owned().into_dyn(), &min[i as usize], &max[i as usize]),
-            (Gaussian, Float) => impute_float_gaussian(&(data.slice(s![0, ..])).to_owned().into_dyn(), &shift.as_ref().unwrap()[i as usize], &scale.as_ref().unwrap()[i as usize],
+            (Gaussian, Float) => impute_float_gaussian(&(data.slice(s![0, ..])).to_owned().into_dyn(), &shift[i as usize].unwrap(), &scale[i as usize].unwrap(),
                                                                                                        &min[i as usize], &max[i as usize]),
             _ => panic!("distribution/data_type combination not supported")
         };
         imputed_data.slice_mut(s![i as usize, ..]).assign(&imputed_col);
     }
-    return imputed_data;
+    return convert_from_matrix(&imputed_data, &original_dim);
 }
+
+pub fn impute_categorical<T>(data: &ArrayD<T>, categories: &Vec::<ArrayD<T>>, probabilities: &Vec::<ArrayD<f64>>, null_value: &ArrayD<T>) ->
+                             ArrayD<T> where T:Clone, T:PartialEq, T:Default {
+    let original_dim: u8 = data.ndim() as u8;
+    let mut data_2d: ArrayD<T> = convert_to_matrix(data);
+    let mut imputed_data: ArrayD<T> = Array::default(data_2d.shape());
+
+    let n_cols: i64 = data_2d.len_of(Axis(0)) as i64;
+    let mut category_vec: Vec<T>;
+    let mut probability_vec: Vec<f64>;
+    let mut n_categories: i64;
+
+    for i in 0..n_cols {
+        category_vec = categories[i as usize].clone().into_dimensionality::<Ix1>().unwrap().to_vec();
+        probability_vec = probabilities[i as usize].clone().into_dimensionality::<Ix1>().unwrap().to_vec();
+        n_categories = category_vec.len() as i64;
+        let mut data_vec = data_2d.slice(s![i as usize, ..]).clone().into_dyn().clone().
+                          into_dimensionality::<Ix1>().unwrap().to_vec();
+        for j in 0..data_vec.len() {
+                if data_vec[j] == null_value[j] {
+                    data_vec[j] = utilities::sample_from_set(&category_vec, &probability_vec);
+                }
+        }
+        imputed_data.slice_mut(s![i as usize, ..]).assign(&arr1(&data_vec).into_dyn());
+    }
+    return convert_from_matrix(&imputed_data, &original_dim);
+}
+
+pub fn resize_numeric(data: &ArrayD<f64>, n: &u64, distribution: &ArrayD<String>, data_type: &ArrayD<String>,
+                      min: &ArrayD<f64>, max: &ArrayD<f64>,
+                      shift: &ArrayD<Option<f64>>, scale: &ArrayD<Option<f64>>) -> ArrayD<f64> {
+    // set string literals for arguments that are of type String
+    let Uniform: String = "Uniform".to_string(); // Distributions
+    let Gaussian: String = "Gaussian".to_string();
+    let Float: String = "Float".to_string(); // Data Types
+    let Int: String = "Int".to_string();
+
+    // get number of observations in actual data
+    let real_n: u64 = data.len_of(Axis(1)) as u64;
+
+    // initialize new data
+    let original_dim: u8 = data.ndim() as u8;
+    let mut data_2d = convert_to_matrix(data);
+    let n_cols: i64 = data.len_of(Axis(0)) as i64;
+    let mut new_data: ArrayD<f64> = Array::default( (data.len_of(Axis(0)), real_n as usize) ).into_dyn();
+
+    // initialize columns for resizing step
+    let mut column: ArrayD<f64>;
+    let mut subsampled_column: ArrayD<f64>;
+    let mut augmented_column: ArrayD<f64>;
+
+    // for each column in data:
+    for i in 0..n_cols {
+        // get column
+        column = data_2d.slice_mut(s![i as usize, ..]).to_owned().into_dyn();
+
+        // create subsampled version of data (returned if n < real_n)
+        let k: u64 = cmp::min(*n, real_n);
+        let sampling_probabilities: ArrayD<f64> = arr1(&vec![1./(k as f64)]).into_dyn();
+        subsampled_column = aggregations::create_subset(&column, &sampling_probabilities, &(k as u64));
+
+        // create augmented version of data (returned if n > real_n)
+        let mut augmentation_data = impute_numeric(&column, &arr1(&[distribution[i as usize].to_owned()]).into_dyn(),
+                                                    &arr1(&[data_type[i as usize].to_owned()]).into_dyn(),
+                                                    &arr1(&[min[i as usize]]).into_dyn(),
+                                                    &arr1(&[max[i as usize]]).into_dyn(),
+                                                    &arr1(&[shift[i as usize]]).into_dyn(),
+                                                    &arr1(&[scale[i as usize]]).into_dyn()
+                                                    );
+        let augmentation_vec = augmentation_data.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
+        let mut augmented_column = stack![Axis(0), column.slice(s![0, ..]), augmentation_vec].clone().into_dyn();
+
+        // create data
+        if n == &real_n {
+            new_data.slice_mut(s![i as usize, ..]).assign(&column);
+        } else if n < &real_n {
+            new_data.slice_mut(s![i as usize, ..]).assign(&subsampled_column);
+        } else if n > &real_n {
+            new_data.slice_mut(s![i as usize, ..]).assign(&augmented_column);
+        }
+    }
+    return new_data;
+}
+
+pub fn resize_categorical<T>(data: &ArrayD<T>, n: &u64,
+                             categories: &Vec<ArrayD<T>>, probabilities: &Vec<ArrayD<f64>>, null_value: &ArrayD<T>,)
+                                -> ArrayD<T> where T: Clone, T: Copy, T: PartialEq, T: Default {
+    // set string literals for arguments that are of type String
+    let Uniform: String = "Uniform".to_string(); // Distributions
+    let Gaussian: String = "Gaussian".to_string();
+    let Float: String = "Float".to_string(); // Data Types
+    let Int: String = "Int".to_string();
+
+    // get number of observations in actual data
+    let real_n: u64 = data.len_of(Axis(1)) as u64;
+
+    // initialize new data
+    let original_dim: u8 = data.ndim() as u8;
+    let mut data_2d = convert_to_matrix(data);
+    let n_cols: i64 = data.len_of(Axis(0)) as i64;
+    let mut new_data: ArrayD<T> = Array::default( (data.len_of(Axis(0)), real_n as usize) ).into_dyn();
+
+    // initialize columns for resizing step
+    // let mut column: ArrayD<T>;
+    // let mut subsampled_column: ArrayD<T>;
+    // let mut augmented_column: ArrayD<T>;
+
+    // for each column in data:
+    for i in 0..n_cols {
+        // get column
+        let mut column = data_2d.slice_mut(s![i as usize, ..]).to_owned().into_dyn();
+
+        // create subsampled version of data (returned if n < real_n)
+        let k: u64 = cmp::min(*n, real_n);
+        let sampling_probabilities: ArrayD<f64> = arr1(&vec![1./(k as f64)]).into_dyn();
+        let mut subsampled_column = aggregations::create_subset(&column, &sampling_probabilities, &(k as u64));
+
+        // create augmented version of data (returned if n > real_n)
+        let mut augmentation_data = impute_categorical(&column, &vec![categories[i as usize].clone()],
+                                                   &vec![probabilities[i as usize].clone()],
+                                                   &arr1(&[null_value[i as usize].clone()]).into_dyn()
+                                    );
+        let augmentation_vec = augmentation_data.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
+        let mut augmented_column = stack![Axis(0), column.slice(s![0, ..]), augmentation_vec].clone().into_dyn();
+
+        // create data
+        if n == &real_n {
+            new_data.slice_mut(s![i as usize, ..]).assign(&column);
+        } else if n < &real_n {
+            new_data.slice_mut(s![i as usize, ..]).assign(&subsampled_column);
+        } else if n > &real_n {
+            new_data.slice_mut(s![i as usize, ..]).assign(&augmented_column);
+        }
+    }
+    return new_data;
+}
+
+// pub fn resize<T>(data: &ArrayD<T>, n: &u64,
+//               categories: &Vec<Option<ArrayD<T>>>, probabilities: &Vec<Option<ArrayD<f64>>>, null_value: &ArrayD<Option<T>>,
+//               distribution: &ArrayD<Option<String>>, data_type: &ArrayD<Option<String>>,
+//               min: &ArrayD<Option<f64>>, max: &ArrayD<Option<f64>>,
+//               shift: &ArrayD<Option<f64>>, scale: &ArrayD<Option<f64>>
+//               ) -> ArrayD<T> where T: Clone, T: PartialEq, T: Default {
+//     // set string literals for arguments that are of type String
+//     let Uniform: String = "Uniform".to_string(); // Distributions
+//     let Gaussian: String = "Gaussian".to_string();
+//     let Float: String = "Float".to_string(); // Data Types
+//     let Int: String = "Int".to_string();
+
+//     // get number of observations in actual data
+//     let real_n: u64 = data.len_of(Axis(1)) as u64;
+
+//     // initialize new data
+//     let original_dim: u8 = data.ndim() as u8;
+//     let mut data_2d = convert_to_matrix(data);
+//     let n_cols: i64 = data.len_of(Axis(0)) as i64;
+//     let mut new_data: ArrayD<T> = Array::default( (data.len_of(Axis(0)), real_n as usize) ).into_dyn();
+
+//     // initialize columns for resizing step
+//     // let mut column: ArrayD<T>;
+//     // let mut subsampled_column: ArrayD<T>;
+//     // let mut augmented_column: ArrayD<T>;
+
+//     // for each column in data:
+//     for i in 0..n_cols {
+//         // get column
+//         let mut column = data_2d.slice_mut(s![i as usize, ..]).to_owned().into_dyn();
+
+//         // create subsampled version of data (returned if n < real_n)
+//         let k: u64 = cmp::min(*n, real_n);
+//         let sampling_probabilities: ArrayD<f64> = arr1(&vec![1./(k as f64)]).into_dyn();
+//         let mut subsampled_column = aggregations::create_subset(&column, &sampling_probabilities, &(k as u64));
+
+//         // create augmented version of data (returned if n > real_n)
+//         let mut augmentation_data = Array::default(column.shape()).into_dyn();
+//         augmentation_data = match (categories[i as usize], ) {
+//             Some(x) => impute_categorical(&column, &vec![categories[i as usize].unwrap()],
+//                                                    &vec![probabilities[i as usize].unwrap()],
+//                                                    &arr1(&[null_value[i as usize].unwrap()]).into_dyn()
+//                                          ),
+
+//             None => impute_numeric(&column, &arr1(&[distribution[i as usize].unwrap()]).into_dyn(),
+//                                             &arr1(&[data_type[i as usize].unwrap()]).into_dyn(),
+//                                             &arr1(&[min[i as usize].unwrap()]).into_dyn(),
+//                                             &arr1(&[max[i as usize].unwrap()]).into_dyn(),
+//                                             &arr1(&[shift[i as usize]]).into_dyn(),
+//                                             &arr1(&[scale[i as usize]]).into_dyn()
+//                                             )
+//         };
+//         let augmentation_vec = augmentation_data.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
+//         let mut augmented_column = stack![Axis(0), column.slice(s![0, ..]), augmentation_vec].clone().into_dyn();
+
+//         // create data
+//         if n == &real_n {
+//             new_data.slice_mut(s![i as usize, ..]).assign(&column);
+//         } else if n < &real_n {
+//             new_data.slice_mut(s![i as usize, ..]).assign(&subsampled_column);
+//         } else if n > &real_n {
+//             new_data.slice_mut(s![i as usize, ..]).assign(&augmented_column);
+//         }
+//     }
+//     return new_data;
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // pub struct ImputationParameters {
 //     n: i64,
@@ -417,14 +656,14 @@ pub fn impute(data: &ArrayD<f64>, distribution: &ArrayD<String>, data_type: &Arr
 //     for i in 0..correct_param_length {
 //         // do standard data imputation
 //         imputed_data = match params {
-//             ImputationParameters { distribution: Uniform, data_type: Float, .. } => impute_float_uniform(&(data.slice(s![0, ..])).to_owned().into_dyn(), &params.min[i as usize], &params.max[i as usize]),
-//             ImputationParameters { distribution: Uniform, data_type: Int, .. } => impute_int_uniform(&(data.slice(s![0, ..])).to_owned().into_dyn(), &params.min[i as usize], &params.max[i as usize]),
-//             ImputationParameters { distribution: Gaussian, data_type: Float, .. } => impute_float_gaussian(&(data.slice(s![0, ..])).to_owned().into_dyn(), &params.shift[i as usize].unwrap(), &params.scale[i as usize].unwrap(), &params.min[i as usize], &params.max[i as usize]),
+//             ImputationParameters { distribution: Uniform, data_type: Float, .. } => impute_float_uniform(&(data.slice(s![0, ..])).clone().into_dyn(), &params.min[i as usize], &params.max[i as usize]),
+//             ImputationParameters { distribution: Uniform, data_type: Int, .. } => impute_int_uniform(&(data.slice(s![0, ..])).clone().into_dyn(), &params.min[i as usize], &params.max[i as usize]),
+//             ImputationParameters { distribution: Gaussian, data_type: Float, .. } => impute_float_gaussian(&(data.slice(s![0, ..])).clone().into_dyn(), &params.shift[i as usize].unwrap(), &params.scale[i as usize].unwrap(), &params.min[i as usize], &params.max[i as usize]),
 //             _ => panic!("distribution/data_type combination not supported")
 //         };
 
 //         // clamp data to bounds
-//         imputed_clamped_data = clamp(&(imputed_data.slice(s![0, ..])).to_owned().into_dyn(), &params.min[i as usize], &params.max[i as usize]);
+//         imputed_clamped_data = clamp(&(imputed_data.slice(s![0, ..])).clone().into_dyn(), &params.min[i as usize], &params.max[i as usize]);
 
 //         // create subsampled version of data (returned if n < real_n)
 //         let k: i64 = cmp::min(params.n, real_n);
@@ -440,7 +679,7 @@ pub fn impute(data: &ArrayD<f64>, distribution: &ArrayD<String>, data_type: &Arr
 //             _ => panic!("distribution/data_type combination not supported")
 //         };
 //         let augmentation_vec: Vec<f64> = augmentation_data.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
-//         augmented_imputed_clamped_data = stack![Axis(0), imputed_clamped_data.slice(s![0, ..]), augmentation_vec].to_owned().into_dyn();
+//         augmented_imputed_clamped_data = stack![Axis(0), imputed_clamped_data.slice(s![0, ..]), augmentation_vec].clone().into_dyn();
 
 //         // create data
 //         if params.n == real_n {
