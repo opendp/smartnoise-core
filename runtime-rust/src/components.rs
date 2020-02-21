@@ -233,47 +233,45 @@ pub fn component_row_wise_max(
     }
 }
 
-pub fn component_clamp(
-    _X: &proto::Clamp, arguments: &NodeArguments
-) -> Result<NodeEvaluation, String> {
-    let data = arguments.get("data").unwrap();
-    if arguments.contains_key("categories") {
-        match (arguments.get("categories").unwrap(), arguments.get("null").unwrap()) {
-                (categories_node_eval, null_node_eval) => {
-                // TODO: need to figure out how to get vec of ArrayD out of vec of NodeEvals
-                // do I need to create a new vector and loop over, checking the type of the NodeEval
-                // for each element in the vector?
-                let categories_eval = match categories_node_eval {
-                    Ok(NodeEvaluation::Vec(categories)) => categories_eval
-                    _ => return Err("categories must be a jagged matrix".to_string())
-                };
+// pub fn component_clamp(_X: &proto::Clamp, arguments: &NodeArguments) -> Result<NodeEvaluation, String> {
+//     let data = arguments.get("data").unwrap();
+//     if arguments.contains_key("categories") {
+//         match (arguments.get("categories").unwrap(), arguments.get("null").unwrap()) {
+//                 (categories_node_eval, null_node_eval) => {
+//                 // TODO: need to figure out how to get vec of ArrayD out of vec of NodeEvals
+//                 // do I need to create a new vector and loop over, checking the type of the NodeEval
+//                 // for each element in the vector?
+//                 let categories_eval = match categories_node_eval {
+//                     Ok(NodeEvaluation::Vec(categories)) => categories_eval
+//                     _ => return Err("categories must be a jagged matrix".to_string())
+//                 };
 
 
 
-                match (data, null_node_eval) {
-                    (NodeEvaluation::F64(data), NodeEvaluation::F64(null)) =>
-                        Ok(NodeEvaluation::F64(utilities::transformations::clamp_categorical(&data, categories, &null))),
-                    (NodeEvaluation::I64(data), NodeEvaluation::I64(null)) =>
-                        Ok(NodeEvaluation::I64(utilities::transformations::clamp_categorical(&data, categories, &null))),
-                    (NodeEvaluation::Bool(data), NodeEvaluation::Bool(null)) =>
-                        Ok(NodeEvaluation::Bool(utilities::transformations::clamp_categorical(&data, categories, &null))),
-                    (NodeEvaluation::Str(data), NodeEvaluation::Str(null)) =>
-                        Ok(NodeEvaluation::Str(utilities::transformations::clamp_categorical(&data, categories, &null))),
-                    _ => return Err("data and null types do not match".to_string())
-                }
-            }
-            _ => return Err("categories and/or null is not defined".to_string())
-        }
-    } else {
-        match (data, arguments.get("min").unwrap(), arguments.get("max").unwrap()) {
-            (NodeEvaluation::F64(data), NodeEvaluation::F64(min), NodeEvaluation::F64(max))
-                => Ok(NodeEvaluation::F64(utilities::transformations::clamp_numeric(&data, &min, &max))),
-            (NodeEvaluation::I64(data), NodeEvaluation::I64(min), NodeEvaluation::I64(max))
-                => Ok(NodeEvaluation::I64(utilities::transformations::clamp_numeric(&data, &min, &max))),
-            _ => return Err("argument types are not homogenous".to_string())
-        }
-    }
-}
+//                 match (data, null_node_eval) {
+//                     (NodeEvaluation::F64(data), NodeEvaluation::F64(null)) =>
+//                         Ok(NodeEvaluation::F64(utilities::transformations::clamp_categorical(&data, categories, &null))),
+//                     (NodeEvaluation::I64(data), NodeEvaluation::I64(null)) =>
+//                         Ok(NodeEvaluation::I64(utilities::transformations::clamp_categorical(&data, categories, &null))),
+//                     (NodeEvaluation::Bool(data), NodeEvaluation::Bool(null)) =>
+//                         Ok(NodeEvaluation::Bool(utilities::transformations::clamp_categorical(&data, categories, &null))),
+//                     (NodeEvaluation::Str(data), NodeEvaluation::Str(null)) =>
+//                         Ok(NodeEvaluation::Str(utilities::transformations::clamp_categorical(&data, categories, &null))),
+//                     _ => return Err("data and null types do not match".to_string())
+//                 }
+//             }
+//             _ => return Err("categories and/or null is not defined".to_string())
+//         }
+//     } else {
+//         match (data, arguments.get("min").unwrap(), arguments.get("max").unwrap()) {
+//             (NodeEvaluation::F64(data), NodeEvaluation::F64(min), NodeEvaluation::F64(max))
+//                 => Ok(NodeEvaluation::F64(utilities::transformations::clamp_numeric(&data, &min, &max))),
+//             (NodeEvaluation::I64(data), NodeEvaluation::I64(min), NodeEvaluation::I64(max))
+//                 => Ok(NodeEvaluation::I64(utilities::transformations::clamp_numeric(&data, &min, &max))),
+//             _ => return Err("argument types are not homogenous".to_string())
+//         }
+//     }
+// }
 
 // pub fn component_impute(_X: &proto::Impute, arguments: &NodeArguments) -> Result<NodeEvaluation, String> {
 //     // TODO: does not work
