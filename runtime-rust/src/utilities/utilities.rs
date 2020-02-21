@@ -111,9 +111,15 @@ pub fn combine_components_into_ieee(sign: &str, exponent: &str, mantissa: &str) 
     return combined_string;
 }
 
-pub fn sample_from_set<T>(candidate_set: &Vec<T>, probabilities: &Vec<f64>) -> T where T: Copy, {
+pub fn sample_from_set<T>(candidate_set: &Vec<T>, weights: &Vec<f64>) -> T where T: Clone, {
     // generate uniform random number on [0,1)
     let unif: f64 = noise::sample_uniform(0., 1.);
+
+    // generate sum of weights
+    let weights_sum: f64 = weights.iter().sum();
+
+    // convert weights to probabilities
+    let probabilities: Vec<f64> = weights.iter().map(|w| w / weights_sum).collect();
 
     // generate cumulative probability distribution
     let cumulative_probability_vec = probabilities.iter().scan(0.0, |sum, i| {*sum += i; Some(*sum)}).collect::<Vec<_>>();
@@ -126,5 +132,5 @@ pub fn sample_from_set<T>(candidate_set: &Vec<T>, probabilities: &Vec<f64>) -> T
             break
         }
     }
-    return candidate_set[return_index]
+    return candidate_set[return_index as usize].clone()
 }
