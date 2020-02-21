@@ -1,4 +1,5 @@
 *_pb2.py
+*.py-E
 bindings-python.iml
 __pycache__/
 
