@@ -1,4 +1,4 @@
-mod base;
+pub mod base;
 pub mod utilities;
 pub mod components;
 use crate::components::Component;
@@ -20,6 +20,8 @@ macro_rules! hashmap {
 
 use prost::Message;
 use std::collections::HashMap;
+use crate::utilities::buffer::{NodeEvaluation, NodeArguments, parse_proto_value};
+use crate::utilities::constraint::NodeConstraints;
 
 // useful tutorial for proto over ffi here:
 // https://github.com/mozilla/application-services/blob/master/docs/howtos/passing-protobuf-data-over-ffi.md
@@ -174,19 +176,29 @@ pub extern "C" fn privacy_usage_to_accuracy(
 }
 
 #[no_mangle]
-pub extern "C" fn expand_graph(
+pub extern "C" fn expand_component(
     request_ptr: *const u8, request_length: i32,
 ) -> ffi_support::ByteBuffer {
     let request_buffer = unsafe { ptr_to_buffer(request_ptr, request_length) };
-    let request: proto::RequestExpandGraph = prost::Message::decode(request_buffer).unwrap();
+    let request: proto::RequestExpandComponent = prost::Message::decode(request_buffer).unwrap();
 
-    let analysis = request.analysis.unwrap();
-    let release = request.release.unwrap();
+    let component: proto::Component = request.component.unwrap();
+    let arguments: HashMap<String, NodeEvaluation> = request.arguments.iter()
+        .map(|(k, v)| (k.to_owned(), parse_proto_value(&v).unwrap()))
+        .collect();
+    let privacy_definition: proto::PrivacyDefinition = request.privacy_definition.unwrap();
 
-    let response = proto::ResponseExpandGraph {
-        value: match base::expand_graph(&analysis, &release) {
-            Ok(x) => Some(proto::response_expand_graph::Value::Data(x)),
-            Err(err) => Some(proto::response_expand_graph::Value::Error(
+    let response = proto::ResponseExpandComponent {
+        value: match base::expand_component(
+            &privacy_definition,
+            &component,
+            &request.constraints,
+            &arguments,
+            request.component_id,
+            request.maximum_id
+        ) {
+            Ok(x) => Some(proto::response_expand_component::Value::Data(x)),
+            Err(err) => Some(proto::response_expand_component::Value::Error(
                 proto::Error { message: err.to_string() }
             ))
         }

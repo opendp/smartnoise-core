@@ -6,8 +6,9 @@ use crate::components;
 use crate::components::Component;
 
 use std::collections::HashMap;
-use crate::utilities::constraint::Constraint;
+use crate::utilities::constraint::{Constraint, NodeConstraints};
 use crate::hashmap;
+use crate::utilities::buffer::{NodeArguments, NodeEvaluation};
 
 
 pub fn validate_analysis(
@@ -24,7 +25,7 @@ pub fn validate_analysis(
 pub fn compute_privacy_usage(
     analysis: &proto::Analysis, release: &proto::Release,
 ) -> Result<proto::PrivacyUsage, String> {
-    let graph: &HashMap<u32, proto::Component> = &analysis.graph;
+    let graph: &HashMap<u32, proto::Component> = &analysis.computation_graph.to_owned().unwrap().value;
 
     let usage_option = graph.iter()
         // optionally extract the minimum usage between the analysis and release
@@ -93,39 +94,34 @@ pub fn privacy_usage_reducer(
     }
 }
 
-pub fn expand_graph(
-    analysis: &proto::Analysis,
-    release: &proto::Release,
-) -> Result<proto::Analysis, String> {
-    let graph_constraints: utilities::constraint::GraphConstraint
-        = utilities::constraint::propagate_constraints(analysis, release)?;
+pub fn expand_component(
+    privacy_definition: &proto::PrivacyDefinition,
+    component: &proto::Component,
+    constraints: &HashMap<String, proto::Constraint>,
+    arguments: &HashMap<String, NodeEvaluation>,
+    node_id_output: u32,
+    node_id_maximum: u32
+) -> Result<proto::response_expand_component::ExpandedComponent, String> {
+    let constraints: NodeConstraints = constraints.iter()
+        .map(|(k, v)| (k.to_owned(), utilities::constraint::Constraint::from_proto(&v)))
+        .collect();
 
-    let mut graph: HashMap<u32, proto::Component> = analysis.graph.to_owned();
+    // TODO update constraints based on release
 
-    let mut max_node_id = match graph.keys().fold1(std::cmp::max) {
-        Some(x) => *x,
-        // the graph is empty, and empty graphs are trivially fully expanded
-        None => return Ok(analysis.to_owned())
-    };
+    let result = component.clone().value.unwrap().expand_graph(
+        privacy_definition,
+        component,
+        &constraints,
+        node_id_output,
+        node_id_maximum,
+    )?;
 
-    let graph_keys: Vec<u32> = graph.keys().map(|&x: &u32| x.clone()).collect();
-    // expand each component in the graph
-    for node_id in graph_keys {
-        let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
-        let result = component.clone().value.unwrap().expand_graph(
-            &analysis.privacy_definition.to_owned().unwrap(),
-            &component,
-            max_node_id,
-            node_id,
-            &utilities::constraint::get_constraints(&component, &graph_constraints),
-        )?;
-        max_node_id = result.0;
-        graph.extend(result.1);
-    }
+    let constraint = component.clone().value.unwrap().propagate_constraint(&constraints)?;
 
-    Ok(proto::Analysis {
-        graph: graph,
-        privacy_definition: analysis.privacy_definition.clone(),
+    Ok(proto::response_expand_component::ExpandedComponent {
+        computation_graph: Some(proto::ComputationGraph { value: result.1 }),
+        constraint: Some(constraint.to_proto()),
+        maximum_id: result.0
     })
 }
 

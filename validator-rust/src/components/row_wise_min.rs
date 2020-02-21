@@ -32,9 +32,9 @@ impl Component for proto::RowMin {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
-        maximum_id: u32,
-        component_id: u32,
         constraints: &NodeConstraints,
+        component_id: u32,
+        maximum_id: u32,
     ) -> Result<(u32, HashMap<u32, proto::Component>), String> {
         Ok((maximum_id, hashmap![component_id => component.to_owned()]))
     }

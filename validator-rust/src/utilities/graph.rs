@@ -6,7 +6,7 @@ pub fn get_traversal(
     analysis: &proto::Analysis
 ) -> Result<Vec<u32>, String> {
 
-    let graph: &HashMap<u32, proto::Component> = &analysis.graph;
+    let graph: &HashMap<u32, proto::Component> = &analysis.computation_graph.to_owned().unwrap().value;
 
     // track node parents
     let mut parents = HashMap::<u32, HashSet<u32>>::new();
@@ -63,7 +63,7 @@ pub fn get_unevaluated(
     release: &proto::Release
 ) -> Result<HashSet<u32>, String> {
 
-    let graph: &HashMap<u32, proto::Component> = &analysis.graph;
+    let graph: &HashMap<u32, proto::Component> = &analysis.computation_graph.to_owned().to_owned().unwrap().value;
 
     let mut traversal: Vec<u32> = Vec::new();
     let mut queue: Vec<u32> = get_sinks(&analysis).into_iter().collect();
@@ -95,7 +95,7 @@ pub fn get_release_nodes(analysis: &proto::Analysis) -> Result<HashSet<u32>, Str
     // traverse back through arguments until privatizers found
     let mut node_queue = VecDeque::from_iter(sink_node_ids.iter());
 
-    let graph: &HashMap<u32, proto::Component> = &analysis.graph;
+    let graph: &HashMap<u32, proto::Component> = &analysis.computation_graph.to_owned().to_owned().unwrap().value;
 
     while !node_queue.is_empty() {
         let node_id = node_queue.pop_front().unwrap();
@@ -118,12 +118,12 @@ pub fn get_release_nodes(analysis: &proto::Analysis) -> Result<HashSet<u32>, Str
 pub fn get_sinks(analysis: &proto::Analysis) -> HashSet<u32> {
     let mut node_ids = HashSet::<u32>::new();
     // start with all nodes
-    for node_id in analysis.graph.keys() {
+    for node_id in analysis.computation_graph.to_owned().unwrap().value.keys() {
         node_ids.insert(*node_id);
     }
 
     // remove nodes that are referenced in arguments
-    for node in analysis.graph.values() {
+    for node in analysis.computation_graph.to_owned().unwrap().value.values() {
         for source_node_id in node.arguments.values() {
             node_ids.remove(&source_node_id);
         }

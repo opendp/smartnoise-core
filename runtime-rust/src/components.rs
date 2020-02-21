@@ -22,7 +22,7 @@ macro_rules! hashmap {
 }
 
 pub fn component_literal(x: &proto::Literal) -> Result<NodeEvaluation, String> {
-    Ok(parse_proto_value(&x.to_owned().value.unwrap()).unwrap())
+    parse_proto_value(&x.to_owned().value.unwrap())
 }
 
 //pub fn component_table(table: &proto::Table, dataset: &proto::Dataset, arguments: &NodeArguments) -> NodeEvaluation {
