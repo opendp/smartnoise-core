@@ -5,7 +5,7 @@ use crate::proto;
 
 
 // equivalent to proto Value
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum NodeEvaluation {
     //    Bytes(bytes::Bytes),
     Bool(ArrayD<bool>),
@@ -13,7 +13,7 @@ pub enum NodeEvaluation {
     F64(ArrayD<f64>),
     Str(ArrayD<String>),
     HashmapString(HashMap<String, NodeEvaluation>),
-    VecOption(Vec<Option<NodeEvaluation>>),
+    Vec(Vec<NodeEvaluation>),
 }
 
 // equivalent to proto Release
@@ -25,7 +25,7 @@ pub type NodeArguments<'a> = HashMap<String, &'a NodeEvaluation>;
 pub fn get_arguments<'a>(component: &proto::Component, graph_evaluation: &'a GraphEvaluation) -> NodeArguments<'a> {
     let mut arguments = NodeArguments::new();
     component.arguments.iter().for_each(|(field_id, field)| {
-        let evaluation: &'a NodeEvaluation = graph_evaluation.get(&field).unwrap().to_owned();
+        let evaluation: &'a NodeEvaluation = graph_evaluation.get(&field).unwrap();
         arguments.insert(field_id.to_owned(), evaluation);
     });
     arguments
@@ -161,25 +161,25 @@ pub fn parse_proto_value(value: &proto::Value) -> Result<NodeEvaluation, String>
             }
             Ok(NodeEvaluation::HashmapString(evaluation))
         }
-        proto::value::Data::JaggedArray2D(jagged) => Ok(NodeEvaluation::VecOption(jagged.data.iter()
+        proto::value::Data::JaggedArray2D(jagged) => Ok(NodeEvaluation::Vec(jagged.data.iter()
             .map(|categories: &proto::jagged_array2_d::OptionalArray1D| match &categories.data {
                 Some(data) => match data {
                     proto::jagged_array2_d::optional_array1_d::Data::Option(vector) => match vector.data.to_owned() {
                         Some(data) => match data {
                             proto::array1_d::Data::Bool(data) =>
-                                Some(NodeEvaluation::Bool(Array::from(data.data).into_dyn())),
+                                NodeEvaluation::Bool(Array::from(data.data).into_dyn()),
                             proto::array1_d::Data::I64(data) =>
-                                Some(NodeEvaluation::I64(Array::from(data.data).into_dyn())),
+                                NodeEvaluation::I64(Array::from(data.data).into_dyn()),
                             proto::array1_d::Data::F64(data) =>
-                                Some(NodeEvaluation::F64(Array::from(data.data).into_dyn())),
+                                NodeEvaluation::F64(Array::from(data.data).into_dyn()),
                             proto::array1_d::Data::String(data) =>
-                                Some(NodeEvaluation::Str(Array::from(data.data).into_dyn())),
+                                NodeEvaluation::Str(Array::from(data.data).into_dyn()),
                         },
-                        None => None
+                        None => panic!("proto array is empty")
                     }
                 },
-                None => None
-            }).collect::<Vec<Option<NodeEvaluation>>>())),
+                None => panic!("proto array is empty")
+            }).collect::<Vec<NodeEvaluation>>())),
 //        proto::array_nd::Data::Bytes(x) =>
 //            NodeEvaluation::Bytes(bytes::Bytes::from(x)),
         _ => Err("unsupported proto value variant encountered".to_string())
@@ -250,36 +250,33 @@ pub fn serialize_proto_value(evaluation: &NodeEvaluation) -> Result<proto::Value
                 }))
             });
         }
-        NodeEvaluation::VecOption(x) => Ok(proto::Value {
+        NodeEvaluation::Vec(x) => Ok(proto::Value {
             data: Some(proto::value::Data::JaggedArray2D(proto::JaggedArray2D {
                 data: x.iter()
                     .map(|column| proto::jagged_array2_d::OptionalArray1D {
-                        data: match column {
-                            Some(data) => Some(proto::jagged_array2_d::optional_array1_d::Data::Option(match data {
-                                NodeEvaluation::Bool(x) => proto::Array1D {
-                                    data: Some(proto::array1_d::Data::Bool(proto::Array1Dbool {
-                                        data: x.to_owned().into_dimensionality::<Ix1>().unwrap().to_vec()
-                                    }))
-                                },
-                                NodeEvaluation::I64(x) => proto::Array1D {
-                                    data: Some(proto::array1_d::Data::I64(proto::Array1Di64 {
-                                        data: x.to_owned().into_dimensionality::<Ix1>().unwrap().to_vec()
-                                    }))
-                                },
-                                NodeEvaluation::F64(x) => proto::Array1D {
-                                    data: Some(proto::array1_d::Data::F64(proto::Array1Df64 {
-                                        data: x.to_owned().into_dimensionality::<Ix1>().unwrap().to_vec()
-                                    }))
-                                },
-                                NodeEvaluation::Str(x) => proto::Array1D {
-                                    data: Some(proto::array1_d::Data::String(proto::Array1Dstr {
-                                        data: x.to_owned().into_dimensionality::<Ix1>().unwrap().to_vec()
-                                    }))
-                                },
-                                _ => panic!("only vectors are implemented for jagged matrices".to_string())
-                            })),
-                            None => None
-                        }
+                        data: Some(proto::jagged_array2_d::optional_array1_d::Data::Option(match column {
+                            NodeEvaluation::Bool(x) => proto::Array1D {
+                                data: Some(proto::array1_d::Data::Bool(proto::Array1Dbool {
+                                    data: x.to_owned().into_dimensionality::<Ix1>().unwrap().to_vec()
+                                }))
+                            },
+                            NodeEvaluation::I64(x) => proto::Array1D {
+                                data: Some(proto::array1_d::Data::I64(proto::Array1Di64 {
+                                    data: x.to_owned().into_dimensionality::<Ix1>().unwrap().to_vec()
+                                }))
+                            },
+                            NodeEvaluation::F64(x) => proto::Array1D {
+                                data: Some(proto::array1_d::Data::F64(proto::Array1Df64 {
+                                    data: x.to_owned().into_dimensionality::<Ix1>().unwrap().to_vec()
+                                }))
+                            },
+                            NodeEvaluation::Str(x) => proto::Array1D {
+                                data: Some(proto::array1_d::Data::String(proto::Array1Dstr {
+                                    data: x.to_owned().into_dimensionality::<Ix1>().unwrap().to_vec()
+                                }))
+                            },
+                            _ => panic!("only vectors are implemented for jagged matrices".to_string())
+                        }))
                     }).collect()
             }))
         }),

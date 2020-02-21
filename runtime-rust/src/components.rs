@@ -10,7 +10,8 @@ extern crate csv;
 extern crate num;
 
 use std::str::FromStr;
-use yarrow_validator::utilities::buffer::{parse_proto_value, NodeEvaluation, NodeArguments, get_f64, get_array_f64, get_array_bool, get_bool, get_i64, to_vec_arrayd_f64, to_vec_arrayd_i64, to_vec_arrayd_bool, to_vec_arrayd_string};
+use yarrow_validator::utilities::buffer::{parse_proto_value, NodeEvaluation, NodeArguments, get_f64, get_array_f64, get_array_bool, get_bool, get_i64};
+use ndarray::stack;
 
 
 macro_rules! hashmap {
@@ -22,17 +23,61 @@ macro_rules! hashmap {
 }
 
 pub fn component_literal(x: &proto::Literal) -> Result<NodeEvaluation, String> {
-    Ok(parse_proto_value(&x.to_owned().value.unwrap()).unwrap())
+    parse_proto_value(&x.to_owned().value.unwrap())
 }
 
-//pub fn component_table(table: &proto::Table, dataset: &proto::Dataset, arguments: &NodeArguments) -> NodeEvaluation {
-//    let table = dataset.tables.get(&datasource.dataset_id).unwrap();
-//    match table.value.as_ref().unwrap() {
-//        proto::table::Value::FilePath(path) => {
-//        },
-//
-//    }
-//}
+pub fn component_materialize(
+    materialize: &proto::Materialize,
+    dataset: &proto::Dataset
+) -> Result<NodeEvaluation, String> {
+    let table = dataset.tables.get(&materialize.dataset_id).unwrap();
+    match table.value.as_ref().unwrap() {
+        proto::table::Value::Literal(value) => parse_proto_value(value),
+        proto::table::Value::FilePath(path) => {
+            let mut response = HashMap::<String, Vec<String>>::new();
+            csv::Reader::from_path(path).unwrap().deserialize()
+                .for_each(|result| {
+                    // parse each record into the yarrow internal format
+                    let record: HashMap<String, String> = result.unwrap();
+                    record.iter().for_each(|(k, v)| response
+                        .entry(k.to_owned()).or_insert_with(Vec::new)
+                        .push(v.clone()));
+                });
+            Ok(NodeEvaluation::HashmapString(response.iter()
+                .map(|(k, v): (&String, &Vec<String>)| (
+                    k.clone(), NodeEvaluation::Str(Array::from(v.to_owned()).into_dyn())
+                ))
+                .collect::<HashMap<String, NodeEvaluation>>()))
+        },
+        _ => Err("the selected table reference format is not implemented".to_string())
+    }
+}
+
+pub fn component_index(index: &proto::Index, arguments: &NodeArguments) -> Result<NodeEvaluation, String> {
+    let data = arguments.get("data").unwrap();
+    let columns = arguments.get("columns").unwrap();
+
+    match data {
+        NodeEvaluation::HashmapString(dataframe) => match columns {
+            NodeEvaluation::Str(column_names) => match column_names.ndim() {
+                0 => Ok(dataframe.get(column_names.first().unwrap()).unwrap().to_owned()),
+//                1 => match column_names.into_dimensionality::<Ix1>() {
+//                    Ok(column_names) =>
+//                        NodeEvaluation::Str(stack(Axis(0), column_names.to_vec().iter()
+//                            .map(|column_name| match dataframe.get(column_names.first().unwrap()).unwrap() {
+//                                NodeEvaluation::Str(array) => array,
+//                                _ => panic!("selected data frame columns are not of a homogenous type".to_string())
+//                            }).collect()).unwrap())
+//                            .collect::<Vec<ArrayD<str>>>(),
+//                    _ => Err("column names must be at most 1-dimensional".to_owned()),
+//                },
+                _ => Err("column names must be at most 1-dimensional".to_owned())
+            },
+            _ => Err("column names must be strings".to_string())
+        },
+        _ => Err("indexing is only implemented for hashmaps".to_string())
+    }
+}
 
 pub fn component_datasource(
     datasource: &proto::DataSource, dataset: &proto::Dataset, arguments: &NodeArguments
@@ -194,20 +239,26 @@ pub fn component_clamp(
     let data = arguments.get("data").unwrap();
     if arguments.contains_key("categories") {
         match (arguments.get("categories").unwrap(), arguments.get("null").unwrap()) {
-            (categories_node_eval, null_node_eval) => {
-                let categories = match categories_node_eval {
-                    NodeEvaluation::VecOption(categories) => categories,
+                (categories_node_eval, null_node_eval) => {
+                // TODO: need to figure out how to get vec of ArrayD out of vec of NodeEvals
+                // do I need to create a new vector and loop over, checking the type of the NodeEval
+                // for each element in the vector?
+                let categories_eval = match categories_node_eval {
+                    Ok(NodeEvaluation::Vec(categories)) => categories_eval
                     _ => return Err("categories must be a jagged matrix".to_string())
                 };
+
+
+
                 match (data, null_node_eval) {
                     (NodeEvaluation::F64(data), NodeEvaluation::F64(null)) =>
-                        Ok(NodeEvaluation::F64(utilities::transformations::clamp_categorical(&data, &to_vec_arrayd_f64(categories.clone().to_vec())?, &null))),
+                        Ok(NodeEvaluation::F64(utilities::transformations::clamp_categorical(&data, categories, &null))),
                     (NodeEvaluation::I64(data), NodeEvaluation::I64(null)) =>
-                        Ok(NodeEvaluation::I64(utilities::transformations::clamp_categorical(&data, &to_vec_arrayd_i64(categories.clone().to_vec())?, &null))),
+                        Ok(NodeEvaluation::I64(utilities::transformations::clamp_categorical(&data, categories, &null))),
                     (NodeEvaluation::Bool(data), NodeEvaluation::Bool(null)) =>
-                        Ok(NodeEvaluation::Bool(utilities::transformations::clamp_categorical(&data, &to_vec_arrayd_bool(categories.clone().to_vec())?, &null))),
+                        Ok(NodeEvaluation::Bool(utilities::transformations::clamp_categorical(&data, categories, &null))),
                     (NodeEvaluation::Str(data), NodeEvaluation::Str(null)) =>
-                        Ok(NodeEvaluation::Str(utilities::transformations::clamp_categorical(&data, &to_vec_arrayd_string(categories.clone().to_vec())?, &null))),
+                        Ok(NodeEvaluation::Str(utilities::transformations::clamp_categorical(&data, categories, &null))),
                     _ => return Err("data and null types do not match".to_string())
                 }
             }

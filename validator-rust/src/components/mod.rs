@@ -25,9 +25,9 @@ pub trait Component {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
-        maximum_id: u32,
-        component_id: u32,
         constraints: &NodeConstraints,
+        component_id: u32,
+        maximum_id: u32,
     ) -> Result<(u32, HashMap<u32, proto::Component>), String>;
 
     fn compute_sensitivity(
@@ -68,6 +68,7 @@ impl Component for proto::component::Value {
         match self {
             // TODO: write a macro for delegating enum variants
             Value::Rowmin(x) => x.propagate_constraint(constraints),
+            Value::Dpmean(x) => x.propagate_constraint(constraints),
             _ => panic!("a proto component is missing its Component trait")
         }
     }
@@ -80,6 +81,7 @@ impl Component for proto::component::Value {
         match self {
             // TODO: write a macro for delegating enum variants
             Value::Rowmin(x) => x.is_valid(constraints),
+            Value::Dpmean(x) => x.is_valid(constraints),
             _ => panic!("a proto component is missing its Component trait")
         }
     }
@@ -89,9 +91,9 @@ impl Component for proto::component::Value {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
-        maximum_id: u32,
-        component_id: u32,
         constraints: &NodeConstraints,
+        component_id: u32,
+        maximum_id: u32,
     ) -> Result<(u32, HashMap<u32, proto::Component>), String> {
         use proto::component::Value;
         match self {
@@ -99,9 +101,17 @@ impl Component for proto::component::Value {
             Value::Rowmin(x) => x.expand_graph(
                 privacy_definition,
                 component,
-                maximum_id,
+                constraints,
                 component_id,
-                constraints),
+                maximum_id,
+            ),
+            Value::Dpmean(x) => x.expand_graph(
+                privacy_definition,
+                component,
+                constraints,
+                component_id,
+                maximum_id,
+            ),
             _ => panic!("a proto component is missing its Component trait")
         }
     }
@@ -115,6 +125,9 @@ impl Component for proto::component::Value {
         match self {
             // TODO: write a macro for delegating enum variants
             Value::Rowmin(x) => x.compute_sensitivity(
+                privacy_definition,
+                constraints),
+            Value::Dpmean(x) => x.compute_sensitivity(
                 privacy_definition,
                 constraints),
             _ => panic!("a proto component is missing its Component trait")
@@ -134,6 +147,10 @@ impl Component for proto::component::Value {
                 privacy_definition,
                 constraints,
                 accuracy),
+            Value::Dpmean(x) => x.accuracy_to_privacy_usage(
+                privacy_definition,
+                constraints,
+                accuracy),
             _ => panic!("a proto component is missing its Component trait")
         }
     }
@@ -149,6 +166,9 @@ impl Component for proto::component::Value {
             Value::Rowmin(x) => x.privacy_usage_to_accuracy(
                 privacy_definition,
                 constraints),
+            Value::Dpmean(x) => x.privacy_usage_to_accuracy(
+                privacy_definition,
+                constraints),
             _ => panic!("a proto component is missing its Component trait")
         }
     }
@@ -162,6 +182,7 @@ impl Component for proto::component::Value {
         match self {
             // TODO: write a macro for delegating enum variants
             Value::Rowmin(x) => x.summarize(constraints),
+            Value::Dpmean(x) => x.summarize(constraints),
             _ => panic!("a proto component is missing its Component trait")
         }
     }

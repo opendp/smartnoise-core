@@ -30,9 +30,13 @@ message RequestPrivacyUsageToAccuracy {
 	Component component = 2;
 	map<string, Constraint> constraints = 3;
 }
-message RequestExpandGraph {
-	Analysis analysis = 1;
-	Release release = 2;
+message RequestExpandComponent {
+	Component component = 1;
+	map<string, Constraint> constraints = 2;
+	map<string, Value> arguments = 3;
+	PrivacyDefinition privacy_definition = 4;
+	uint32 component_id = 5;
+	uint32 maximum_id = 6;
 }
 
 // REQUESTS
@@ -79,9 +83,14 @@ message ResponsePrivacyUsageToAccuracy {
 		Error error = 2;
 	}
 }
-message ResponseExpandGraph {
+message ResponseExpandComponent {
+	message ExpandedComponent {
+		ComputationGraph computation_graph = 1;
+		Constraint constraint = 2;
+		uint32 maximum_id = 3;
+	}
 	oneof value {
-		Analysis data = 1;
+		ExpandedComponent data = 1;
 		Error error = 2;
 	}
 }

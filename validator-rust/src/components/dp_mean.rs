@@ -46,9 +46,9 @@ impl Component for proto::DpMean {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
-        maximum_id: u32,
-        component_id: u32,
         constraints: &constraint_utils::NodeConstraints,
+        component_id: u32,
+        maximum_id: u32,
     ) -> Result<(u32, HashMap<u32, proto::Component>), String> {
         let mut current_id = maximum_id.clone();
         let mut graph_expansion: HashMap<u32, proto::Component> = HashMap::new();

@@ -1,6 +1,6 @@
 extern crate yarrow_validator;
 
-use yarrow_validator::proto;
+use yarrow_validator::{proto, expand_component};
 use yarrow_validator::utilities::buffer;
 use yarrow_validator::utilities::graph as yarrow_graph;
 
@@ -9,8 +9,11 @@ use ndarray::prelude::*;
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::vec::Vec;
 use std::iter::FromIterator;
+use itertools::Itertools;
 
 use crate::components;
+use yarrow_validator::utilities::constraint::{get_constraints, GraphConstraint};
+use yarrow_validator::utilities::buffer::{get_arguments, NodeEvaluation};
 
 
 pub fn execute_graph(analysis: &proto::Analysis,
@@ -24,7 +27,13 @@ pub fn execute_graph(analysis: &proto::Analysis,
 
     let mut evaluations = buffer::release_to_evaluations(release)?;
 
-    let graph: &HashMap<u32, proto::Component> = &analysis.graph;
+    let mut graph: HashMap<u32, proto::Component> = analysis.computation_graph.to_owned().unwrap().value;
+
+    let mut graph_constraints: HashMap<u32, proto::Constraint> = HashMap::new();
+    let mut maximum_id = graph.keys()
+        .fold1(std::cmp::max)
+        .map(|x| x.clone())
+        .unwrap_or(0);
 
     // track node parents
     let mut parents = HashMap::<u32, HashSet<u32>>::new();
@@ -36,7 +45,7 @@ pub fn execute_graph(analysis: &proto::Analysis,
 
     while !traversal.is_empty() {
         let node_id: u32 = *traversal.last().unwrap();
-        let component = graph.get(&node_id).unwrap();
+        let component: &proto::Component = graph.get(&node_id).unwrap();
         let arguments = component.to_owned().arguments;
 
         // discover if any dependencies remain uncomputed
@@ -49,24 +58,50 @@ pub fn execute_graph(analysis: &proto::Analysis,
             }
         }
 
-        // check if all arguments are available
-        if evaluable {
-            traversal.pop();
+        if !evaluable {
+            continue;
+        }
 
-            let evaluation = execute_component(
-                &graph.get(&node_id).unwrap(), &evaluations, &dataset)?;
+        let node_constraints: HashMap<String, proto::Constraint> = get_constraints(&component, &graph_constraints);
+        let public_arguments = node_constraints.iter()
+            .filter(|(k, v)| v.releasable)
+            .map(|(k, v)| (k.clone(), evaluations
+                .get(component.arguments.get(k).unwrap()).unwrap().clone()))
+            .collect::<HashMap<String, NodeEvaluation>>();
 
-            evaluations.insert(node_id, evaluation);
+        // all arguments have been computed, attempt to expand the current node
+        let expansion: proto::response_expand_component::ExpandedComponent = yarrow_validator::base::expand_component(
+            &analysis.privacy_definition.to_owned().unwrap(),
+            &component,
+            &node_constraints,
+            &public_arguments,
+            node_id,
+            maximum_id
+        )?;
 
-            // remove references to parent node, and if empty and private
-            for argument_node_id in arguments.values() {
-                let tempval = parents.get_mut(argument_node_id).unwrap();
-                tempval.remove(&node_id);
-                if parents.get(argument_node_id).unwrap().len() == 0 {
-                    if !node_ids_release.contains(argument_node_id) {
-                        evaluations.remove(argument_node_id);
-                        // parents.remove(argument_node_id); // optional
-                    }
+        graph_constraints.insert(node_id, expansion.constraint.unwrap());
+        graph.extend(expansion.computation_graph.unwrap().value);
+
+        if maximum_id != expansion.maximum_id {
+            maximum_id = expansion.maximum_id;
+            continue
+        }
+
+        traversal.pop();
+
+        let evaluation = execute_component(
+            &graph.get(&node_id).unwrap(), &evaluations, &dataset)?;
+
+        evaluations.insert(node_id, evaluation);
+
+        // remove references to parent node, and if empty and private
+        for argument_node_id in arguments.values() {
+            let tempval = parents.get_mut(argument_node_id).unwrap();
+            tempval.remove(&node_id);
+            if parents.get(argument_node_id).unwrap().len() == 0 {
+                if !node_ids_release.contains(argument_node_id) {
+                    evaluations.remove(argument_node_id);
+                    // parents.remove(argument_node_id); // optional
                 }
             }
         }
@@ -81,6 +116,8 @@ pub fn execute_component(component: &proto::Component,
 
     use proto::component::Value as Value;
     match component.to_owned().value.unwrap() {
+        Value::Materialize(x) => components::component_materialize(&x, &dataset),
+        Value::Index(x) => components::component_index(&x, &arguments),
         Value::Literal(x) => components::component_literal(&x),
         Value::Datasource(x) => components::component_datasource(&x, &dataset, &arguments),
         Value::Add(x) => components::component_add(&x, &arguments),
