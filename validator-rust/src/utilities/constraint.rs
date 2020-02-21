@@ -44,7 +44,10 @@ pub enum ConstraintVector {
 impl Constraint {
     pub fn to_proto(&self) -> proto::Constraint {
         proto::Constraint {
-            num_records: match self.num_records {Some(x) => x as i32, None => -1},
+            num_records: match self.num_records {
+                Some(x) => x as i32,
+                None => -1
+            },
             nullity: self.nullity,
             releasable: self.releasable,
             nature: match &self.nature {
@@ -60,11 +63,11 @@ impl Constraint {
                     })),
                     Nature::Continuous(x) => Some(proto::constraint::Nature::Continuous(proto::constraint::NatureContinuous {
                         minimum: serialize_proto_vector(&x.min),
-                        maximum: serialize_proto_vector(&x.max)
+                        maximum: serialize_proto_vector(&x.max),
                     }))
                 },
                 None => None
-            }
+            },
         }
     }
     pub fn from_proto(other: &proto::Constraint) -> Constraint {
@@ -118,10 +121,10 @@ pub fn serialize_proto_vector(vector: &Option<ConstraintVector>) -> Option<proto
     Some(proto::Array1D {
         data: match vector {
             Some(data) => match data {
-                ConstraintVector::Bool(typed) => Some(proto::array1_d::Data::Bool(proto::Array1Dbool {data: typed.to_owned()})),
-                ConstraintVector::I64(typed) => Some(proto::array1_d::Data::I64(proto::Array1Di64 {data: typed.to_owned()})),
-                ConstraintVector::F64(typed) => Some(proto::array1_d::Data::F64(proto::Array1Df64 {data: typed.to_owned()})),
-                ConstraintVector::Str(typed) => Some(proto::array1_d::Data::String(proto::Array1Dstr {data: typed.to_owned()})),
+                ConstraintVector::Bool(typed) => Some(proto::array1_d::Data::Bool(proto::Array1Dbool { data: typed.to_owned() })),
+                ConstraintVector::I64(typed) => Some(proto::array1_d::Data::I64(proto::Array1Di64 { data: typed.to_owned() })),
+                ConstraintVector::F64(typed) => Some(proto::array1_d::Data::F64(proto::Array1Df64 { data: typed.to_owned() })),
+                ConstraintVector::Str(typed) => Some(proto::array1_d::Data::String(proto::Array1Dstr { data: typed.to_owned() })),
             },
             None => return None
         }
@@ -134,10 +137,12 @@ pub type GraphConstraint = HashMap<u32, Constraint>;
 // constraints for each argument for a node
 pub type NodeConstraints = HashMap<String, Constraint>;
 
-pub fn get_constraints(component: &proto::Component, graph_constraints: &GraphConstraint) -> NodeConstraints {
-    let mut constraints = NodeConstraints::new();
+pub fn get_constraints<T>(
+    component: &proto::Component, graph_constraints: &HashMap<u32, T>,
+) -> HashMap<String, T> where T: std::clone::Clone {
+    let mut constraints = HashMap::<String, T>::new();
     component.arguments.iter().for_each(|(field_id, field)| {
-        let constraint: Constraint = graph_constraints.get(&field).unwrap().clone();
+        let constraint: T = graph_constraints.get(&field).unwrap().clone();
         constraints.insert(field_id.to_owned(), constraint);
     });
     constraints
@@ -147,7 +152,7 @@ pub fn propagate_constraints(
     analysis: &proto::Analysis,
     release: &proto::Release,
 ) -> Result<GraphConstraint, String> {
-    let mut graph: HashMap<u32, proto::Component> = analysis.graph.to_owned();
+    let mut graph: HashMap<u32, proto::Component> = analysis.computation_graph.to_owned().unwrap().value.to_owned();
     let traversal: Vec<u32> = utilities::graph::get_traversal(analysis)?;
 
     let mut graph_constraint = GraphConstraint::new();
@@ -207,7 +212,6 @@ pub fn get_max(constraints: &NodeConstraints, argument: &str) -> Result<Option<C
 }
 
 pub fn get_max_f64(constraints: &NodeConstraints, argument: &str) -> Result<Vec<f64>, String> {
-
     let max = match get_max(constraints, argument)? {
         Some(max) => max.to_owned(),
         None => return Err("no max is defined on a continuous argument".to_string())

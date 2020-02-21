@@ -268,7 +268,7 @@ class Analysis(object):
             })
 
         return base_pb2.Analysis(
-            graph=vertices,
+            computation_graph=base_pb2.ComputationGraph(value=vertices),
             privacy_definition=base_pb2.PrivacyDefinition(
                 distance=base_pb2.PrivacyDefinition.Distance.Value(self.distance),
                 neighboring=base_pb2.PrivacyDefinition.Neighboring.Value(self.neighboring)

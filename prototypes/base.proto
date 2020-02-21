@@ -11,9 +11,8 @@ message Error {
 
 message Analysis {
     PrivacyDefinition privacy_definition = 1;
-    map<uint32, Component> graph = 2;
+    ComputationGraph computation_graph = 2;
 }
-
 message PrivacyDefinition {
     // upper bound
     uint32 group_size = 4;
@@ -41,6 +40,9 @@ message PrivacyDefinition {
         ADD_REMOVE = 1;
     }
     Neighboring neighboring = 6;
+}
+message ComputationGraph {
+    map<uint32, Component> value = 1;
 }
 
 message Release {
