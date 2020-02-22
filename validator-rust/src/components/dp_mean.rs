@@ -129,7 +129,14 @@ impl Component for proto::DpMean {
     fn summarize(
         &self,
         constraints: &constraint_utils::NodeConstraints,
-    ) -> String {
-        "".to_string()
+    ) -> Option<String> {
+        Some("".to_string())
+    }
+
+    fn get_names(
+        &self,
+        constraints: &NodeConstraints,
+    ) -> Result<Vec<String>, String> {
+        Ok(vec!["".to_string()])
     }
 }

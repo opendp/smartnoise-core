@@ -6,6 +6,7 @@ use crate::proto;
 pub mod add;
 pub mod row_wise_min;
 pub mod dp_mean;
+pub mod impute;
 
 
 pub trait Component {
@@ -53,7 +54,12 @@ pub trait Component {
     fn summarize(
         &self,
         constraints: &NodeConstraints,
-    ) -> String;
+    ) -> Option<String>;
+
+    fn get_names(
+        &self,
+        constraints: &NodeConstraints,
+    ) -> Result<Vec<String>, String>;
 }
 
 
@@ -69,6 +75,7 @@ impl Component for proto::component::Value {
             // TODO: write a macro for delegating enum variants
             Value::Rowmin(x) => x.propagate_constraint(constraints),
             Value::Dpmean(x) => x.propagate_constraint(constraints),
+            Value::Impute(x) => x.propagate_constraint(constraints),
             _ => panic!("a proto component is missing its Component trait")
         }
     }
@@ -82,6 +89,7 @@ impl Component for proto::component::Value {
             // TODO: write a macro for delegating enum variants
             Value::Rowmin(x) => x.is_valid(constraints),
             Value::Dpmean(x) => x.is_valid(constraints),
+            Value::Impute(x) => x.is_valid(constraints),
             _ => panic!("a proto component is missing its Component trait")
         }
     }
@@ -112,6 +120,13 @@ impl Component for proto::component::Value {
                 component_id,
                 maximum_id,
             ),
+            Value::Impute(x) => x.expand_graph(
+                privacy_definition,
+                component,
+                constraints,
+                component_id,
+                maximum_id,
+            ),
             _ => panic!("a proto component is missing its Component trait")
         }
     }
@@ -128,6 +143,9 @@ impl Component for proto::component::Value {
                 privacy_definition,
                 constraints),
             Value::Dpmean(x) => x.compute_sensitivity(
+                privacy_definition,
+                constraints),
+            Value::Impute(x) => x.compute_sensitivity(
                 privacy_definition,
                 constraints),
             _ => panic!("a proto component is missing its Component trait")
@@ -151,6 +169,10 @@ impl Component for proto::component::Value {
                 privacy_definition,
                 constraints,
                 accuracy),
+            Value::Impute(x) => x.accuracy_to_privacy_usage(
+                privacy_definition,
+                constraints,
+                accuracy),
             _ => panic!("a proto component is missing its Component trait")
         }
     }
@@ -169,6 +191,9 @@ impl Component for proto::component::Value {
             Value::Dpmean(x) => x.privacy_usage_to_accuracy(
                 privacy_definition,
                 constraints),
+            Value::Impute(x) => x.privacy_usage_to_accuracy(
+                privacy_definition,
+                constraints),
             _ => panic!("a proto component is missing its Component trait")
         }
     }
@@ -177,12 +202,27 @@ impl Component for proto::component::Value {
     fn summarize(
         &self,
         constraints: &NodeConstraints,
-    ) -> String {
+    ) -> Option<String> {
         use proto::component::Value;
         match self {
             // TODO: write a macro for delegating enum variants
             Value::Rowmin(x) => x.summarize(constraints),
             Value::Dpmean(x) => x.summarize(constraints),
+            Value::Impute(x) => x.summarize(constraints),
+            _ => panic!("a proto component is missing its Component trait")
+        }
+    }
+
+    fn get_names(
+        &self,
+        constraints: &NodeConstraints,
+    ) -> Result<Vec<String>, String> {
+        use proto::component::Value;
+        match self {
+            // TODO: write a macro for delegating enum variants
+            Value::Rowmin(x) => x.get_names(constraints),
+            Value::Dpmean(x) => x.get_names(constraints),
+            Value::Impute(x) => x.get_names(constraints),
             _ => panic!("a proto component is missing its Component trait")
         }
     }

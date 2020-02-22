@@ -237,3 +237,10 @@ pub fn get_num_records_u32(constraints: &NodeConstraints, argument: &str) -> Res
         None => Err("n is not known".to_string())
     }
 }
+
+pub fn get_releasable_bool(constraints: &NodeConstraints, argument: &str) -> Result<bool, String> {
+    match constraints.get(argument) {
+        Some(constraint) => Ok(constraint.releasable),
+        None => Err("constraint not found".to_string()),
+    }
+}
