@@ -5,10 +5,10 @@ use crate::utilities::constraint::{Constraint, NodeConstraints};
 use crate::{base, components};
 use crate::proto;
 use crate::hashmap;
-use crate::components::{Component, Expandable};
+use crate::components::Component;
 use ndarray::Array;
 
-impl Component for proto::Impute {
+impl Component for proto::Literal {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_constraint(
         &self,
@@ -33,18 +33,5 @@ impl Component for proto::Impute {
 
         // all checks have passed
         true
-    }
-}
-
-impl Expandable for proto::Impute {
-    fn expand_graph(
-        &self,
-        privacy_definition: &proto::PrivacyDefinition,
-        component: &proto::Component,
-        constraints: &constraint_utils::NodeConstraints,
-        component_id: u32,
-        maximum_id: u32,
-    ) -> Result<(u32, HashMap<u32, proto::Component>), String> {
-        Ok((maximum_id, HashMap::new()))
     }
 }

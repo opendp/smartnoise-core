@@ -1,7 +1,7 @@
 pub mod base;
 pub mod utilities;
 pub mod components;
-use crate::components::Component;
+use crate::components::*;
 
 // include protobuf-generated traits
 pub mod proto {

@@ -3,7 +3,7 @@ use itertools::Itertools;
 
 use crate::utilities;
 use crate::components;
-use crate::components::Component;
+use crate::components::*;
 
 use std::collections::HashMap;
 use crate::utilities::constraint::{Constraint, NodeConstraints};

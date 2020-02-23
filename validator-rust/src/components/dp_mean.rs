@@ -5,7 +5,7 @@ use crate::utilities::constraint::{Constraint, NodeConstraints, get_constraint};
 use crate::{base, components};
 use crate::proto;
 use crate::hashmap;
-use crate::components::Component;
+use crate::components::{Component, Report, Accuracy, Privatize, Expandable};
 use ndarray::Array;
 use crate::utilities::serial::{Value, serialize_value, ArrayND};
 
@@ -37,14 +37,16 @@ impl Component for proto::DpMean {
         if constraint_utils::get_min_f64(constraints, "data").is_err()
             || constraint_utils::get_min_f64(constraints, "data").is_err()
             || num_records.is_err()
-            || num_records.unwrap().iter().all(|v| v.is_some()){
+            || num_records.unwrap().iter().all(|v| v.is_some()) {
             return false;
         }
 
         // all checks have passed
         true
     }
+}
 
+impl Expandable for proto::DpMean {
     fn expand_graph(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
@@ -96,7 +98,9 @@ impl Component for proto::DpMean {
 
         Ok((current_id, graph_expansion))
     }
+}
 
+impl Privatize for proto::DpMean {
     fn compute_sensitivity(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
@@ -113,7 +117,9 @@ impl Component for proto::DpMean {
             .map(|((l, r), n)| (l - r) / n)
             .collect())
     }
+}
 
+impl Accuracy for proto::DpMean {
     fn accuracy_to_privacy_usage(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
@@ -129,19 +135,5 @@ impl Component for proto::DpMean {
         constraint: &constraint_utils::NodeConstraints,
     ) -> Option<f64> {
         None
-    }
-
-    fn summarize(
-        &self,
-        constraints: &constraint_utils::NodeConstraints,
-    ) -> Option<String> {
-        Some("".to_string())
-    }
-
-    fn get_names(
-        &self,
-        constraints: &NodeConstraints,
-    ) -> Result<Vec<String>, String> {
-        Ok(vec!["".to_string()])
     }
 }
