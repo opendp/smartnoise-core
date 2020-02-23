@@ -127,6 +127,9 @@ class Component(object):
 
     @staticmethod
     def of(value, private=False, jagged=False):
+        if type(value) == Component:
+            return value
+
         def value_proto(data):
 
             if type(data) is bytes:
@@ -138,18 +141,13 @@ class Component(object):
             if issubclass(type(data), dict):
                 return value_pb2.Value(
                     datatype=value_pb2.DataType.Value("HASHMAP_STRING"),
-                    hashmapString={key: value_proto(data[key]) for key in data}
+                    hashmap_string={key: value_proto(data[key]) for key in data}
                 )
 
             if jagged:
-                data = []
-                for column in data:
-                    if column:
-                        data.append(value_pb2.JaggedArray2D.OptionalArray1D(data=column))
-                    else:
-                        data.append(value_pb2.JaggedArray2D.OptionalArray1D())
-
-                return value_pb2.Value(jaggedArray2D=value_pb2.JaggedArray2D(data=data))
+                return value_pb2.Value(array_2d_jagged=value_pb2.Array2DJagged(data=[
+                    value_pb2.Array2DJagged.Array1DOption(data=column) for column in data
+                ]))
 
             data = np.array(data)
 
@@ -162,15 +160,15 @@ class Component(object):
             }[data.dtype.type]
 
             container_type = {
-                np.bool: value_pb2.Array1Dbool,
-                np.int64: value_pb2.Array1Di64,
-                np.float64: value_pb2.Array1Df64,
-                np.string_: value_pb2.Array1Dstr,
-                np.str_: value_pb2.Array1Dstr
+                np.bool: value_pb2.Array1DBool,
+                np.int64: value_pb2.Array1DI64,
+                np.float64: value_pb2.Array1DF64,
+                np.string_: value_pb2.Array1DStr,
+                np.str_: value_pb2.Array1DStr
             }[data.dtype.type]
 
             return value_pb2.Value(
-                arrayND=value_pb2.ArrayND(
+                array_nd=value_pb2.ArrayND(
                     shape=list(data.shape),
                     order=list(range(data.ndim)),
                     flattened=value_pb2.Array1D(**{
@@ -178,8 +176,10 @@ class Component(object):
                     })
                 ))
 
-        return value if type(value) == Component else Component(
-            'Literal', options={'value': value_proto(value), 'private': private})
+        return Component('Literal', options={
+            'value': value_proto(value),
+            'private': private
+        })
 
     @staticmethod
     def _expand_constraints(arguments, constraints):

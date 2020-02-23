@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use crate::utilities::constraint::{Constraint, NodeConstraints};
+use crate::utilities::constraint::{Constraint, NodeConstraints, get_constraint};
 
 use crate::base;
 use crate::proto;
@@ -13,12 +13,13 @@ impl Component for proto::RowMin {
         &self,
         constraints: &NodeConstraints,
     ) -> Result<Constraint, String> {
-        Ok(Constraint {
-            nullity: false,
-            releasable: false,
-            nature: None,
-            num_records: None
-        })
+        Ok(get_constraint(constraints, "left")?.to_owned())
+//        Ok(Constraint {
+//            nullity: false,
+//            releasable: false,
+//            nature: None,
+//            num_records: None
+//        })
     }
 
     fn is_valid(

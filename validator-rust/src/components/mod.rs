@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use crate::utilities::constraint;
-use crate::utilities::constraint::{Constraint, NodeConstraints, ConstraintVector};
+use crate::utilities::constraint::{Constraint, NodeConstraints};
 use crate::proto;
 
 pub mod add;

@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 use crate::utilities::constraint as constraint_utils;
-use crate::utilities::constraint::{Constraint, NodeConstraints};
+use crate::utilities::constraint::{Constraint, NodeConstraints, get_constraint};
 
 use crate::{base, components};
 use crate::proto;
 use crate::hashmap;
 use crate::components::Component;
-use crate::utilities::buffer::{serialize_proto_value, NodeEvaluation};
 use ndarray::Array;
+use crate::utilities::serial::{Value, serialize_value, ArrayND};
 
 impl Component for proto::DpMean {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
@@ -15,26 +15,29 @@ impl Component for proto::DpMean {
         &self,
         constraints: &constraint_utils::NodeConstraints,
     ) -> Result<Constraint, String> {
+        Ok(get_constraint(constraints, "left")?.to_owned())
 
-        Ok(Constraint {
-            nullity: false,
-            releasable: true,
-            nature: Some(constraint_utils::Nature::Continuous(constraint_utils::NatureContinuous {
-                min: constraint_utils::get_min(&constraints, "data")?,
-                max: constraint_utils::get_max(&constraints, "data")?,
-            })),
-            num_records: constraint_utils::get_num_records(&constraints, "data")?,
-        })
+//        Ok(Constraint {
+//            nullity: false,
+//            releasable: true,
+//            nature: Some(constraint_utils::Nature::Continuous(constraint_utils::NatureContinuous {
+//                min: constraint_utils::get_min(&constraints, "data")?,
+//                max: constraint_utils::get_max(&constraints, "data")?,
+//            })),
+//            num_records: constraint_utils::get_num_records(&constraints, "data")?,
+//        })
     }
 
     fn is_valid(
         &self,
         constraints: &constraint_utils::NodeConstraints,
     ) -> bool {
+        let num_records = constraint_utils::get_num_records(constraints, "data");
         // check these properties are Some
         if constraint_utils::get_min_f64(constraints, "data").is_err()
             || constraint_utils::get_min_f64(constraints, "data").is_err()
-            || constraint_utils::get_num_records_u32(constraints, "data").is_err() {
+            || num_records.is_err()
+            || num_records.unwrap().iter().all(|v| v.is_some()){
             return false;
         }
 
@@ -63,10 +66,10 @@ impl Component for proto::DpMean {
             batch: component.batch,
         });
 
-        let sensitivity = serialize_proto_value(
-            &NodeEvaluation::F64(Array::from(component.value.to_owned().unwrap()
+        let sensitivity = serialize_value(
+            &Value::ArrayND(ArrayND::F64(Array::from(component.value.to_owned().unwrap()
                 .compute_sensitivity(privacy_definition, constraints)
-                .unwrap()).into_dyn()))?;
+                .unwrap()).into_dyn())))?;
 
         // sensitivity literal
         current_id += 1;
@@ -101,11 +104,13 @@ impl Component for proto::DpMean {
     ) -> Option<Vec<f64>> {
         let min = constraint_utils::get_min_f64(constraints, "data").unwrap();
         let max = constraint_utils::get_max_f64(constraints, "data").unwrap();
-        let num_records = constraint_utils::get_num_records_u32(constraints, "data").unwrap() as f64;
+        let num_records = constraint_utils::get_num_records(constraints, "data").unwrap();
 
         Some(min
-            .iter().zip(max)
-            .map(|(l, r)| (l - r) / num_records)
+            .iter().map(|v| v.unwrap())
+            .zip(max.iter().map(|v| v.unwrap()).collect::<Vec<f64>>())
+            .zip(num_records.iter().map(|v| v.unwrap() as f64).collect::<Vec<f64>>())
+            .map(|((l, r), n)| (l - r) / n)
             .collect())
     }
 

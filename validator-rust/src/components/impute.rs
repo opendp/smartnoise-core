@@ -6,7 +6,6 @@ use crate::{base, components};
 use crate::proto;
 use crate::hashmap;
 use crate::components::Component;
-use crate::utilities::buffer::{serialize_proto_value, NodeEvaluation};
 use ndarray::Array;
 
 impl Component for proto::Impute {
@@ -17,6 +16,7 @@ impl Component for proto::Impute {
     ) -> Result<Constraint, String> {
         let mut data_constraint = constraints.get("data").unwrap().clone();
         data_constraint.nullity = false;
+
         Ok(data_constraint)
     }
 
@@ -27,7 +27,7 @@ impl Component for proto::Impute {
         // check these properties are Some
         if constraint_utils::get_min_f64(constraints, "data").is_err()
             || constraint_utils::get_min_f64(constraints, "data").is_err()
-            || constraint_utils::get_num_records_u32(constraints, "data").is_err() {
+            || constraint_utils::get_num_records(constraints, "data").is_err() {
             return false;
         }
 

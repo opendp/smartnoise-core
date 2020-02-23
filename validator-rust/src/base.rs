@@ -8,7 +8,8 @@ use crate::components::Component;
 use std::collections::HashMap;
 use crate::utilities::constraint::{Constraint, NodeConstraints};
 use crate::hashmap;
-use crate::utilities::buffer::{NodeArguments, NodeEvaluation};
+use crate::utilities::buffer::{NodeArguments};
+use crate::utilities::serial::Value;
 
 
 pub fn validate_analysis(
@@ -98,7 +99,7 @@ pub fn expand_component(
     privacy_definition: &proto::PrivacyDefinition,
     component: &proto::Component,
     constraints: &HashMap<String, proto::Constraint>,
-    arguments: &HashMap<String, NodeEvaluation>,
+    arguments: &HashMap<String, Value>,
     node_id_output: u32,
     node_id_maximum: u32
 ) -> Result<proto::response_expand_component::ExpandedComponent, String> {
