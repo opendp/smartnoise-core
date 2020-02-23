@@ -14,8 +14,6 @@ use yarrow_validator::utilities::buffer::{
     NodeArguments, get_f64, get_array_f64, get_array_bool, get_bool, get_i64};
 use ndarray::stack;
 use yarrow_validator::utilities::serial::{Value, parse_value, ArrayND};
-use std::sync::atomic::Ordering::AcqRel;
-
 
 macro_rules! hashmap {
     ($( $key: expr => $val: expr ),*) => {{

@@ -3,7 +3,7 @@ use crate::proto;
 use std::collections::{HashMap, HashSet, VecDeque};
 
 #[derive(Clone, Debug)]
-pub enum Array1DNull {
+pub enum Vector1DNull {
     Bool(Vec<Option<bool>>),
     I64(Vec<Option<i64>>),
     F64(Vec<Option<f64>>),
@@ -11,7 +11,7 @@ pub enum Array1DNull {
 }
 
 #[derive(Clone, Debug)]
-pub enum Array1D {
+pub enum Vector1D {
     Bool(Vec<bool>),
     I64(Vec<i64>),
     F64(Vec<f64>),
@@ -28,7 +28,7 @@ pub enum ArrayND {
 
 // used for categorical constraints
 #[derive(Clone, Debug)]
-pub enum Array2DJagged {
+pub enum Vector2DJagged {
     Bool(Vec<Option<Vec<bool>>>),
     I64(Vec<Option<Vec<i64>>>),
     F64(Vec<Option<Vec<f64>>>),
@@ -40,7 +40,7 @@ pub enum Array2DJagged {
 pub enum Value {
     ArrayND(ArrayND),
     HashmapString(HashMap<String, Value>),
-    Array2DJagged(Array2DJagged),
+    Vector2DJagged(Vector2DJagged),
 }
 
 // PARSERS
@@ -90,12 +90,12 @@ pub fn parse_array1d_str_null(value: &proto::Array1dStrNull) -> Vec<Option<Strin
     value.data.iter().map(parse_str_null).collect()
 }
 
-pub fn parse_array1d_null(value: &proto::Array1dNull) -> Array1DNull {
+pub fn parse_array1d_null(value: &proto::Array1dNull) -> Vector1DNull {
     match value.data.to_owned().unwrap() {
-        proto::array1d_null::Data::Bool(vector) => Array1DNull::Bool(parse_array1d_bool_null(&vector)),
-        proto::array1d_null::Data::I64(vector) => Array1DNull::I64(parse_array1d_i64_null(&vector)),
-        proto::array1d_null::Data::F64(vector) => Array1DNull::F64(parse_array1d_f64_null(&vector)),
-        proto::array1d_null::Data::String(vector) => Array1DNull::Str(parse_array1d_str_null(&vector)),
+        proto::array1d_null::Data::Bool(vector) => Vector1DNull::Bool(parse_array1d_bool_null(&vector)),
+        proto::array1d_null::Data::I64(vector) => Vector1DNull::I64(parse_array1d_i64_null(&vector)),
+        proto::array1d_null::Data::F64(vector) => Vector1DNull::F64(parse_array1d_f64_null(&vector)),
+        proto::array1d_null::Data::String(vector) => Vector1DNull::Str(parse_array1d_str_null(&vector)),
     }
 }
 
@@ -109,12 +109,12 @@ pub fn parse_array1d_f64(value: &proto::Array1dF64) -> Vec<f64> { value.data.to_
 pub fn parse_array1d_str(value: &proto::Array1dStr) -> Vec<String> { value.data.to_owned() }
 
 
-pub fn parse_array1d(value: &proto::Array1d) -> Array1D {
+pub fn parse_array1d(value: &proto::Array1d) -> Vector1D {
     match value.data.to_owned().unwrap() {
-        proto::array1d::Data::Bool(vector) => Array1D::Bool(parse_array1d_bool(&vector)),
-        proto::array1d::Data::I64(vector) => Array1D::I64(parse_array1d_i64(&vector)),
-        proto::array1d::Data::F64(vector) => Array1D::F64(parse_array1d_f64(&vector)),
-        proto::array1d::Data::String(vector) => Array1D::Str(parse_array1d_str(&vector)),
+        proto::array1d::Data::Bool(vector) => Vector1D::Bool(parse_array1d_bool(&vector)),
+        proto::array1d::Data::I64(vector) => Vector1D::I64(parse_array1d_i64(&vector)),
+        proto::array1d::Data::F64(vector) => Vector1D::F64(parse_array1d_f64(&vector)),
+        proto::array1d::Data::String(vector) => Vector1D::Str(parse_array1d_str(&vector)),
     }
 }
 
@@ -122,10 +122,10 @@ pub fn parse_array1d(value: &proto::Array1d) -> Array1D {
 pub fn parse_arrayNd(value: &proto::ArrayNd) -> ArrayND {
     let shape: Vec<usize> = value.shape.iter().map(|x| *x as usize).collect();
     match parse_array1d(&value.flattened.to_owned().unwrap()) {
-        Array1D::Bool(vector) => ArrayND::Bool(Array::from_shape_vec(shape, vector).unwrap().into_dyn()),
-        Array1D::I64(vector) => ArrayND::I64(Array::from_shape_vec(shape, vector).unwrap().into_dyn()),
-        Array1D::F64(vector) => ArrayND::F64(Array::from_shape_vec(shape, vector).unwrap().into_dyn()),
-        Array1D::Str(vector) => ArrayND::Str(Array::from_shape_vec(shape, vector).unwrap().into_dyn()),
+        Vector1D::Bool(vector) => ArrayND::Bool(Array::from_shape_vec(shape, vector).unwrap().into_dyn()),
+        Vector1D::I64(vector) => ArrayND::I64(Array::from_shape_vec(shape, vector).unwrap().into_dyn()),
+        Vector1D::F64(vector) => ArrayND::F64(Array::from_shape_vec(shape, vector).unwrap().into_dyn()),
+        Vector1D::Str(vector) => ArrayND::Str(Array::from_shape_vec(shape, vector).unwrap().into_dyn()),
     }
 }
 
@@ -133,7 +133,7 @@ pub fn parse_hashmap_str(value: &proto::HashmapString) -> HashMap<String, Value>
     value.data.iter().map(|(name, data)| (name.clone(), parse_value(data).unwrap())).collect()
 }
 
-pub fn parse_array1d_option(value: &proto::Array1dOption) -> Option<Array1D> {
+pub fn parse_array1d_option(value: &proto::Array1dOption) -> Option<Vector1D> {
     match value.data.to_owned() {
         Some(data) => match data {
             proto::array1d_option::Data::Option(data) => Some(parse_array1d(&data)),
@@ -142,33 +142,33 @@ pub fn parse_array1d_option(value: &proto::Array1dOption) -> Option<Array1D> {
     }
 }
 
-pub fn parse_array2d_jagged(value: &proto::Array2dJagged) -> Array2DJagged {
+pub fn parse_array2d_jagged(value: &proto::Array2dJagged) -> Vector2DJagged {
     match proto::array2d_jagged::DataType::from_i32(value.data_type).unwrap() {
-        proto::array2d_jagged::DataType::Bool => Array2DJagged::Bool(value.data.iter()
+        proto::array2d_jagged::DataType::Bool => Vector2DJagged::Bool(value.data.iter()
             .map(|column| match parse_array1d_option(column) {
                 Some(vector) => Some(match vector {
-                    Array1D::Bool(vector) => vector, _ => panic!()
+                    Vector1D::Bool(vector) => vector, _ => panic!()
                 }),
                 None => None
             }).collect::<Vec<Option<Vec<bool>>>>()),
-        proto::array2d_jagged::DataType::F64 => Array2DJagged::F64(value.data.iter()
+        proto::array2d_jagged::DataType::F64 => Vector2DJagged::F64(value.data.iter()
             .map(|column| match parse_array1d_option(column) {
                 Some(vector) => Some(match vector {
-                    Array1D::F64(vector) => vector, _ => panic!()
+                    Vector1D::F64(vector) => vector, _ => panic!()
                 }),
                 None => None
             }).collect::<Vec<Option<Vec<f64>>>>()),
-        proto::array2d_jagged::DataType::I64 => Array2DJagged::I64(value.data.iter()
+        proto::array2d_jagged::DataType::I64 => Vector2DJagged::I64(value.data.iter()
             .map(|column| match parse_array1d_option(column) {
                 Some(vector) => Some(match vector {
-                    Array1D::I64(vector) => vector, _ => panic!()
+                    Vector1D::I64(vector) => vector, _ => panic!()
                 }),
                 None => None
             }).collect::<Vec<Option<Vec<i64>>>>()),
-        proto::array2d_jagged::DataType::String => Array2DJagged::Str(value.data.iter()
+        proto::array2d_jagged::DataType::String => Vector2DJagged::Str(value.data.iter()
             .map(|column| match parse_array1d_option(column) {
                 Some(vector) => Some(match vector {
-                    Array1D::Str(vector) => vector, _ => panic!()
+                    Vector1D::Str(vector) => vector, _ => panic!()
                 }),
                 None => None
             }).collect::<Vec<Option<Vec<String>>>>()),
@@ -182,7 +182,7 @@ pub fn parse_value(value: &proto::Value) -> Result<Value, String> {
         proto::value::Data::HashmapString(data) =>
             Value::HashmapString(parse_hashmap_str(&data)),
         proto::value::Data::Array2dJagged(data) =>
-            Value::Array2DJagged(parse_array2d_jagged(&data))
+            Value::Vector2DJagged(parse_array2d_jagged(&data))
     })
 }
 
@@ -251,13 +251,13 @@ pub fn serialize_array1d_str_null(value: &Vec<Option<String>>) -> proto::Array1d
 }
 
 
-pub fn serialize_array1d_null(value: &Array1DNull) -> proto::Array1dNull {
+pub fn serialize_array1d_null(value: &Vector1DNull) -> proto::Array1dNull {
     proto::Array1dNull {
         data: Some(match value {
-            Array1DNull::Bool(vector) => proto::array1d_null::Data::Bool(serialize_array1d_bool_null(&vector)),
-            Array1DNull::I64(vector) => proto::array1d_null::Data::I64(serialize_array1d_i64_null(&vector)),
-            Array1DNull::F64(vector) => proto::array1d_null::Data::F64(serialize_array1d_f64_null(&vector)),
-            Array1DNull::Str(vector) => proto::array1d_null::Data::String(serialize_array1d_str_null(&vector)),
+            Vector1DNull::Bool(vector) => proto::array1d_null::Data::Bool(serialize_array1d_bool_null(&vector)),
+            Vector1DNull::I64(vector) => proto::array1d_null::Data::I64(serialize_array1d_i64_null(&vector)),
+            Vector1DNull::F64(vector) => proto::array1d_null::Data::F64(serialize_array1d_f64_null(&vector)),
+            Vector1DNull::Str(vector) => proto::array1d_null::Data::String(serialize_array1d_str_null(&vector)),
         })
     }
 }
@@ -272,13 +272,13 @@ pub fn serialize_array1d_f64(value: &Vec<f64>) -> proto::Array1dF64 { proto::Arr
 pub fn serialize_array1d_str(value: &Vec<String>) -> proto::Array1dStr { proto::Array1dStr { data: value.to_owned() } }
 
 
-pub fn serialize_array1d(value: &Array1D) -> proto::Array1d {
+pub fn serialize_array1d(value: &Vector1D) -> proto::Array1d {
     proto::Array1d {
         data: Some(match value {
-            Array1D::Bool(vector) => proto::array1d::Data::Bool(serialize_array1d_bool(vector)),
-            Array1D::I64(vector) => proto::array1d::Data::I64(serialize_array1d_i64(vector)),
-            Array1D::F64(vector) => proto::array1d::Data::F64(serialize_array1d_f64(vector)),
-            Array1D::Str(vector) => proto::array1d::Data::String(serialize_array1d_str(vector)),
+            Vector1D::Bool(vector) => proto::array1d::Data::Bool(serialize_array1d_bool(vector)),
+            Vector1D::I64(vector) => proto::array1d::Data::I64(serialize_array1d_i64(vector)),
+            Vector1D::F64(vector) => proto::array1d::Data::F64(serialize_array1d_f64(vector)),
+            Vector1D::Str(vector) => proto::array1d::Data::String(serialize_array1d_str(vector)),
         })
     }
 }
@@ -286,22 +286,22 @@ pub fn serialize_array1d(value: &Array1D) -> proto::Array1d {
 pub fn serialize_arrayNd(value: &ArrayND) -> proto::ArrayNd {
     match value {
         ArrayND::Bool(array) => proto::ArrayNd {
-            flattened: Some(serialize_array1d(&Array1D::Bool(array.iter().map(|s| s.to_owned()).collect()))),
+            flattened: Some(serialize_array1d(&Vector1D::Bool(array.iter().map(|s| s.to_owned()).collect()))),
             order: (1..array.ndim()).map(|x| { x as u64 }).collect(),
             shape: array.shape().iter().map(|y| { *y as u64 }).collect(),
         },
         ArrayND::F64(array) => proto::ArrayNd {
-            flattened: Some(serialize_array1d(&Array1D::F64(array.iter().map(|s| s.to_owned()).collect()))),
+            flattened: Some(serialize_array1d(&Vector1D::F64(array.iter().map(|s| s.to_owned()).collect()))),
             order: (1..array.ndim()).map(|x| { x as u64 }).collect(),
             shape: array.shape().iter().map(|y| { *y as u64 }).collect(),
         },
         ArrayND::I64(array) => proto::ArrayNd {
-            flattened: Some(serialize_array1d(&Array1D::I64(array.iter().map(|s| s.to_owned()).collect()))),
+            flattened: Some(serialize_array1d(&Vector1D::I64(array.iter().map(|s| s.to_owned()).collect()))),
             order: (1..array.ndim()).map(|x| { x as u64 }).collect(),
             shape: array.shape().iter().map(|y| { *y as u64 }).collect(),
         },
         ArrayND::Str(array) => proto::ArrayNd {
-            flattened: Some(serialize_array1d(&Array1D::Str(array.iter().map(|s| s.to_owned()).collect()))),
+            flattened: Some(serialize_array1d(&Vector1D::Str(array.iter().map(|s| s.to_owned()).collect()))),
             order: (1..array.ndim()).map(|x| { x as u64 }).collect(),
             shape: array.shape().iter().map(|y| { *y as u64 }).collect(),
         }
@@ -316,35 +316,35 @@ pub fn serialize_hashmap_str(value: &HashMap<String, Value>) -> proto::HashmapSt
     }
 }
 
-pub fn serialize_array1d_option(value: &Option<Array1D>) -> proto::Array1dOption {
+pub fn serialize_array1d_option(value: &Option<Vector1D>) -> proto::Array1dOption {
     proto::Array1dOption {
         data: Some(proto::array1d_option::Data::Option(serialize_array1d(&value.to_owned().unwrap())))
     }
 }
 
-pub fn serialize_array2d_jagged(value: &Array2DJagged) -> proto::Array2dJagged {
+pub fn serialize_array2d_jagged(value: &Vector2DJagged) -> proto::Array2dJagged {
     proto::Array2dJagged {
         data_type: match value {
-            Array2DJagged::Bool(_x) => proto::array2d_jagged::DataType::Bool as i32,
-            Array2DJagged::F64(_x) => proto::array2d_jagged::DataType::F64 as i32,
-            Array2DJagged::I64(_x) => proto::array2d_jagged::DataType::I64 as i32,
-            Array2DJagged::Str(_x) => proto::array2d_jagged::DataType::String as i32,
+            Vector2DJagged::Bool(_x) => proto::array2d_jagged::DataType::Bool as i32,
+            Vector2DJagged::F64(_x) => proto::array2d_jagged::DataType::F64 as i32,
+            Vector2DJagged::I64(_x) => proto::array2d_jagged::DataType::I64 as i32,
+            Vector2DJagged::Str(_x) => proto::array2d_jagged::DataType::String as i32,
         },
         data: match value {
-            Array2DJagged::Bool(data) => data.iter().map(|column| serialize_array1d_option(&match column {
-                Some( column) => Some(Array1D::Bool(column.to_owned())),
+            Vector2DJagged::Bool(data) => data.iter().map(|column| serialize_array1d_option(&match column {
+                Some( column) => Some(Vector1D::Bool(column.to_owned())),
                 None => None
             })).collect(),
-            Array2DJagged::F64(data) => data.iter().map(|column| serialize_array1d_option(&match column {
-                Some( column) => Some(Array1D::F64(column.to_owned())),
+            Vector2DJagged::F64(data) => data.iter().map(|column| serialize_array1d_option(&match column {
+                Some( column) => Some(Vector1D::F64(column.to_owned())),
                 None => None
             })).collect(),
-            Array2DJagged::I64(data) => data.iter().map(|column| serialize_array1d_option(&match column {
-                Some( column) => Some(Array1D::I64(column.to_owned())),
+            Vector2DJagged::I64(data) => data.iter().map(|column| serialize_array1d_option(&match column {
+                Some( column) => Some(Vector1D::I64(column.to_owned())),
                 None => None
             })).collect(),
-            Array2DJagged::Str(data) => data.iter().map(|column| serialize_array1d_option(&match column {
-                Some( column) => Some(Array1D::Str(column.to_owned())),
+            Vector2DJagged::Str(data) => data.iter().map(|column| serialize_array1d_option(&match column {
+                Some( column) => Some(Vector1D::Str(column.to_owned())),
                 None => None
             })).collect(),
         }
@@ -358,7 +358,7 @@ pub fn serialize_value(value: &Value) -> Result<proto::Value, String> {
                 proto::value::Data::ArrayNd(serialize_arrayNd(data)),
             Value::HashmapString(data) =>
                 proto::value::Data::HashmapString(serialize_hashmap_str(data)),
-            Value::Array2DJagged(data) =>
+            Value::Vector2DJagged(data) =>
                 proto::value::Data::Array2dJagged(serialize_array2d_jagged(data))
         })
     })

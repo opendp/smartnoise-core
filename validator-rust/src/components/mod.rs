@@ -76,7 +76,7 @@ impl Component for proto::component::Value {
             Value::Rowmin(x) => x.propagate_constraint(constraints),
             Value::Dpmean(x) => x.propagate_constraint(constraints),
             Value::Impute(x) => x.propagate_constraint(constraints),
-            _ => panic!("a proto component is missing its Component trait")
+            _ => Err("a proto component is missing its Component trait".to_string())
         }
     }
 

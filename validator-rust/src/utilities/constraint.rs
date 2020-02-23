@@ -8,8 +8,8 @@ use crate::components::Component;
 use itertools::Itertools;
 use crate::utilities::constraint::Nature::{Continuous, Categorical};
 use ndarray::Array;
-use crate::utilities::serial::{Array1DNull, Array2DJagged, parse_array2d_jagged, serialize_array2d_jagged, serialize_array1d_i64_null, parse_array1d_i64_null, parse_array1d_f64_null, serialize_array1d_f64_null, serialize_array1d_f64, parse_array1d_f64};
-use crate::utilities::serial::{parse_array1d_null, serialize_array1d_null};
+use crate::utilities::serial;
+use crate::utilities::serial::{Vector1DNull, Vector2DJagged};
 
 
 #[derive(Clone, Debug)]
@@ -30,31 +30,31 @@ pub enum Nature {
 
 #[derive(Clone, Debug)]
 pub struct NatureCategorical {
-    pub categories: Array2DJagged
+    pub categories: Vector2DJagged
 }
 
 #[derive(Clone, Debug)]
 pub struct NatureContinuous {
-    pub min: Array1DNull,
-    pub max: Array1DNull,
+    pub min: Vector1DNull,
+    pub max: Vector1DNull,
 }
 
 // TODO: implement constraint struct to/from proto
 impl Constraint {
     pub fn to_proto(&self) -> proto::Constraint {
         proto::Constraint {
-            num_records: Some(serialize_array1d_i64_null(&self.num_records)),
+            num_records: Some(serial::serialize_array1d_i64_null(&self.num_records)),
             nullity: self.nullity,
             releasable: self.releasable,
-            c_stability: Some(serialize_array1d_f64(&self.c_stability)),
+            c_stability: Some(serial::serialize_array1d_f64(&self.c_stability)),
             nature: match &self.nature {
                 Some(nature) => match nature {
                     Nature::Categorical(categorical) => Some(proto::constraint::Nature::Categorical(proto::constraint::NatureCategorical {
-                        categories: Some(serialize_array2d_jagged(&categorical.categories))
+                        categories: Some(serial::serialize_array2d_jagged(&categorical.categories))
                     })),
                     Nature::Continuous(x) => Some(proto::constraint::Nature::Continuous(proto::constraint::NatureContinuous {
-                        minimum: Some(serialize_array1d_null(&x.min)),
-                        maximum: Some(serialize_array1d_null(&x.max)),
+                        minimum: Some(serial::serialize_array1d_null(&x.min)),
+                        maximum: Some(serial::serialize_array1d_null(&x.max)),
                     }))
                 },
                 None => None
@@ -64,23 +64,23 @@ impl Constraint {
     pub fn from_proto(other: &proto::Constraint) -> Constraint {
         Constraint {
             nullity: other.nullity,
-            c_stability: parse_array1d_f64(&other.c_stability.to_owned().unwrap()),
+            c_stability: serial::parse_array1d_f64(&other.c_stability.to_owned().unwrap()),
             nature: match other.nature.to_owned() {
                 Some(nature) => match nature {
                     proto::constraint::Nature::Continuous(continuous) =>
                         Some(Nature::Continuous(NatureContinuous {
-                            min: parse_array1d_null(&continuous.minimum.unwrap()),
-                            max: parse_array1d_null(&continuous.maximum.unwrap()),
+                            min: serial::parse_array1d_null(&continuous.minimum.unwrap()),
+                            max: serial::parse_array1d_null(&continuous.maximum.unwrap()),
                         })),
                     proto::constraint::Nature::Categorical(categorical) =>
                         Some(Nature::Categorical(NatureCategorical {
-                            categories: parse_array2d_jagged(&categorical.categories.unwrap())
+                            categories: serial::parse_array2d_jagged(&categorical.categories.unwrap())
                         }))
                 },
                 None => None
             },
             releasable: other.releasable,
-            num_records: parse_array1d_i64_null(&other.num_records.to_owned().unwrap())
+            num_records: serial::parse_array1d_i64_null(&other.num_records.to_owned().unwrap())
         }
     }
 }
@@ -132,7 +132,7 @@ pub fn get_constraint<'a>(constraints: &'a NodeConstraints, argument: &str) -> R
     }
 }
 
-pub fn get_min(constraints: &NodeConstraints, argument: &str) -> Result<Array1DNull, String> {
+pub fn get_min(constraints: &NodeConstraints, argument: &str) -> Result<Vector1DNull, String> {
     let nature = match &get_constraint(constraints, argument)?.nature {
         Some(nature) => match nature {
             Nature::Continuous(nature) => nature,
@@ -147,14 +147,14 @@ pub fn get_min_f64(constraints: &NodeConstraints, argument: &str) -> Result<Vec<
     let min = get_min(constraints, argument)?;
 
     match min {
-        Array1DNull::F64(value) => Ok(value.to_owned()),
-        Array1DNull::I64(value) => Ok(value.iter()
+        Vector1DNull::F64(value) => Ok(value.to_owned()),
+        Vector1DNull::I64(value) => Ok(value.iter()
             .map(|&x| match x {Some(x) => Some(x as f64), None => None}).collect()),
         _ => Err("the min must be a numeric type".to_string())
     }
 }
 
-pub fn get_max(constraints: &NodeConstraints, argument: &str) -> Result<Array1DNull, String> {
+pub fn get_max(constraints: &NodeConstraints, argument: &str) -> Result<Vector1DNull, String> {
     let nature = match &get_constraint(constraints, argument)?.nature {
         Some(nature) => match nature {
             Nature::Continuous(nature) => nature,
@@ -169,8 +169,8 @@ pub fn get_max_f64(constraints: &NodeConstraints, argument: &str) -> Result<Vec<
     let max = get_max(constraints, argument)?;
 
     match max {
-        Array1DNull::F64(value) => Ok(value.to_owned()),
-        Array1DNull::I64(value) => Ok(value.iter()
+        Vector1DNull::F64(value) => Ok(value.to_owned()),
+        Vector1DNull::I64(value) => Ok(value.iter()
             .map(|&x| match x {Some(x) => Some(x as f64), None => None}).collect()),
         _ => Err("the max must be a numeric type".to_string())
     }

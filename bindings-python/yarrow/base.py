@@ -132,21 +132,14 @@ class Component(object):
 
         def value_proto(data):
 
-            if type(data) is bytes:
-                return value_pb2.Value(
-                    datatype=value_pb2.DataType.Value("BYTES"),
-                    bytes=data
-                )
-
             if issubclass(type(data), dict):
                 return value_pb2.Value(
-                    datatype=value_pb2.DataType.Value("HASHMAP_STRING"),
                     hashmap_string={key: value_proto(data[key]) for key in data}
                 )
 
             if jagged:
-                return value_pb2.Value(array_2d_jagged=value_pb2.Array2DJagged(data=[
-                    value_pb2.Array2DJagged.Array1DOption(data=column) for column in data
+                return value_pb2.Value(array_2d_jagged=value_pb2.Array2dJagged(data=[
+                    value_pb2.Array2dJagged.Array1dOption(data=column) for column in data
                 ]))
 
             data = np.array(data)
@@ -160,18 +153,18 @@ class Component(object):
             }[data.dtype.type]
 
             container_type = {
-                np.bool: value_pb2.Array1DBool,
-                np.int64: value_pb2.Array1DI64,
-                np.float64: value_pb2.Array1DF64,
-                np.string_: value_pb2.Array1DStr,
-                np.str_: value_pb2.Array1DStr
+                np.bool: value_pb2.Array1dBool,
+                np.int64: value_pb2.Array1dI64,
+                np.float64: value_pb2.Array1dF64,
+                np.string_: value_pb2.Array1dStr,
+                np.str_: value_pb2.Array1dStr
             }[data.dtype.type]
 
             return value_pb2.Value(
-                array_nd=value_pb2.ArrayND(
+                array_nd=value_pb2.ArrayNd(
                     shape=list(data.shape),
                     order=list(range(data.ndim)),
-                    flattened=value_pb2.Array1D(**{
+                    flattened=value_pb2.Array1d(**{
                         data_type: container_type(data=list(data.flatten()))
                     })
                 ))
