@@ -13,7 +13,7 @@ use std::str::FromStr;
 use yarrow_validator::utilities::buffer::{
     NodeArguments, get_f64, get_array_f64, get_array_bool, get_bool, get_i64};
 use ndarray::stack;
-use yarrow_validator::utilities::serial::{Value, parse_value, ArrayND};
+use yarrow_validator::utilities::serial::{Value, parse_value, ArrayND, Vector2DJagged};
 
 macro_rules! hashmap {
     ($( $key: expr => $val: expr ),*) => {{
@@ -256,6 +256,61 @@ pub fn component_row_wise_max(
             _ => Err("Max: Either the argument types are mismatched or non-numeric.".to_string())
         },
         _ => Err("Max: Both arguments must be arrays.".to_string())
+    }
+}
+
+pub fn component_clamp(_x: &proto::Clamp, arguments: &NodeArguments,) -> Result<Value, String> {
+    if arguments.contains_key("categories") {
+        match (arguments.get("data").unwrap(), arguments.get("categories").unwrap(), arguments.get("null").unwrap()) {
+            (Value::ArrayND(data), Value::Vector2DJagged(categories), Value::ArrayND(null)) => match (data, categories, null) {
+                (ArrayND::Bool(data), Vector2DJagged::Bool(categories), ArrayND::Bool(null)) =>
+                    {
+                        let mut categories_bool: Vec<Vec<bool>> = Vec::with_capacity(categories.len());;
+                        for i in 0..categories.len() {
+                            categories_bool.push(categories[i].as_ref().unwrap().to_vec());
+                        }
+                        return Ok(Value::ArrayND(ArrayND::Bool(utilities::transformations::clamp_categorical(&data, &categories_bool, &null))));
+                    },
+                (ArrayND::F64(data), Vector2DJagged::F64(categories), ArrayND::F64(null)) =>
+                    {
+                        let mut categories_f64: Vec<Vec<f64>> = Vec::with_capacity(categories.len());;
+                        for i in 0..categories.len() {
+                            categories_f64.push(categories[i].as_ref().unwrap().to_vec());
+                        }
+                        return Ok(Value::ArrayND(ArrayND::F64(utilities::transformations::clamp_categorical(&data, &categories_f64, &null))));
+                    },
+                (ArrayND::I64(data), Vector2DJagged::I64(categories), ArrayND::I64(null)) =>
+                    {
+                        let mut categories_i64: Vec<Vec<i64>> = Vec::with_capacity(categories.len());;
+                        for i in 0..categories.len() {
+                            categories_i64.push(categories[i].as_ref().unwrap().to_vec());
+                        }
+                        return Ok(Value::ArrayND(ArrayND::I64(utilities::transformations::clamp_categorical(&data, &categories_i64, &null))));
+                    },
+                (ArrayND::Str(data), Vector2DJagged::Str(categories), ArrayND::Str(null)) =>
+                    {
+                        let mut categories_str: Vec<Vec<String>> = Vec::with_capacity(categories.len());;
+                        for i in 0..categories.len() {
+                            categories_str.push(categories[i].as_ref().unwrap().to_vec());
+                        }
+                        return Ok(Value::ArrayND(ArrayND::Str(utilities::transformations::clamp_categorical(&data, &categories_str, &null))));
+                    },
+                _ => return Err("types of data, categories, and null must be consistent".to_string())
+            },
+            _ => return Err("data must be ArrayND, categories must be Vector2DJagged, and null must be ArrayND".to_string())
+        }
+    } else {
+        match (arguments.get("data").unwrap(), arguments.get("min").unwrap(), arguments.get("max").unwrap()) {
+            (Value::ArrayND(data), Value::ArrayND(min), Value::ArrayND(max)) => match(data, min, max) {
+                (ArrayND::F64(data), ArrayND::F64(min), ArrayND::F64(max)) =>
+                    return Ok(Value::ArrayND(ArrayND::F64(utilities::transformations::clamp_numeric(&data, &min, &max)))),
+                (ArrayND::I64(data), ArrayND::I64(min), ArrayND::I64(max)) =>
+                    return Ok(Value::ArrayND(ArrayND::I64(utilities::transformations::clamp_numeric(&data, &min, &max)))),
+                _ =>
+                    return Err("data, min, and max must all have type f64 or i64".to_string())
+            },
+            _ => return Err("data, min, and max must all be ArrayND".to_string())
+        }
     }
 }
 
