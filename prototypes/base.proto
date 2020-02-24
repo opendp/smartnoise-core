@@ -55,9 +55,10 @@ message ReleaseNode {
 
 message Constraint {
     Array1dI64Null num_records = 1;
-    bool nullity = 2;
-    bool releasable = 3;
-    Array1dF64 c_stability = 4;
+    I64Null num_columns = 2;
+    bool nullity = 3;
+    bool releasable = 4;
+    Array1dF64 c_stability = 5;
 
     message NatureContinuous {
         Array1dNull minimum = 1;
