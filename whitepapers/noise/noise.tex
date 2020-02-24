@@ -38,7 +38,7 @@ When we refer to floating-point numbers, we specifically mean the IEEE 754 float
 
 \subsubsection{$sample\_uniform(min: f64, max: f64)$}
 In this method, we start by generating a floating-point number in $[0,1)$,
-where each is generated with probability relative to its unit of least precision.\footnote{The ULP is the value
+where each is generated with probability relative to its unit of least precision (ULP).\footnote{The ULP is the value
 represented by the least significant bit of the mantissa if that bit is a 1.}
 That is, we generate $x \in [2^{-i}, 2^{-i+1})$ with probability $\frac{1}{2^i}$
 for all $i \in \{1,2,\hdots,1022\}$ and $x \in [0, 2^{-1022})$ for $i = 1023$.
@@ -50,11 +50,23 @@ Let $e$ be a draw from $Geom(0.5)$ (truncated such that $e \in \{1,2,\hdots,1023
 At the end, we will scale our output from $[0,1)$ to be instead in $[min, max)$. Then our function outputs $u$, where
 \[ u = (1.m_1m_2 \hdots m_{52})_2 * 2^{-e} * (max - min) + min. \]
 
-When $i=1023$ we are sampling from subnormal floating-point numbers. Because processors do not typically support
-subnormals natively, they take much longer to sample and open us up to an easier timing attack, as
-seen in \cite{AKM+15}.
-Protecting against timing attacks is mostly seen as out of scope for now, but I wanted
-to bring this up anyway.
+This method was proposed in \cite{Mir12} as a component of a larger attempt to create
+a version of the Laplace mechanism that is not susceptible to floating-point attacks.\footnote{Note that the
+original method generates values $\in [0,1)$ rather than arbitrary $[min, max)$.}
+There is no universally agreed upon method for generating uniform random numbers (for privacy
+applications or otherwise), but this method seems to approximate the real numbers better than many
+others because of the sampling relative to the ULP. \newline
+
+\begin{tcolorbox}[colback = {green}, title = {Known Privacy Issues}, colbacktitle = black]
+	When $i=1023$ we are sampling from subnormal floating-point numbers. Because processors do not typically support
+	subnormals natively, they take much longer to sample and open us up to an easier timing attack, as
+	seen in \cite{AKM+15}.
+	Protecting against timing attacks is mostly seen as out of scope for now, but I wanted
+	to bring this up anyway. \newline
+
+	We are incurring some floating-point error when converting from $[0,1)$ to $[min, max)$ which
+	could jeopardize privacy guarantees in ways that are difficult to reason about.\cite{Mir12} \cite{Ilv19}
+\end{tcolorbox}
 
 \subsection{Biased Bit Sampling}
 Recall that we are taking as given that we are able to sample uniform bits from OpenSSL.
@@ -106,6 +118,26 @@ Then, our binary expansion is just our mantissa $(1.m_1m_2 \hdots m_{52})_2$, wi
 the radix point shifted based on the value of the exponent.
 We can then index into the properly shifted mantissa and check the value of the $k$th element.
 
+\section{Other Continuous Distributions}
+In general, we generate draws from non-uniform continuous distributions (e.g. Gaussian and Laplace)
+by using \href{https://en.wikipedia.org/wiki/Inverse_transform_sampling}{inverse transform sampling}.
+To draw from a distribution $f$ with CDF $F$,
+we sample $u$ from $Unif[0,1)$ and return $F^{-1}(u)$. \newline
+
+\begin{tcolorbox}[colback = {green}, title = {Known Privacy Issues}, colbacktitle = black]
+	Carrying out the inverse probability transform employs floating-point arithmetic,
+	so we run into the same problems as were described in the uniform sampling section.
+	This is potentially a very significant problem, and one for which we do not
+	currently have a good solution.
+\end{tcolorbox}
+Because of the vulnerabilities inherent in using floating-point arithmetic, we would
+like to avoid using inverse transform sampling when possible.
+
+\section{Geometric Distribution}
+The Geometric is one such case where we can generate a distribution without inverse transform sampling.
+To generate a $Geom(p)$, we can use our $sample\_bit$ function to
+repeatedly sample random bits where $\Pr(bit = 1) = p$. We then return the number of samples
+it takes to get our first $1$.
 
 \section{Truncation vs. Censoring}
 Throughout our noise functions, we use the terms \emph{truncated} and \emph{censored}.
