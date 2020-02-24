@@ -265,35 +265,23 @@ pub fn component_clamp(_x: &proto::Clamp, arguments: &NodeArguments,) -> Result<
             (Value::ArrayND(data), Value::Vector2DJagged(categories), Value::ArrayND(null)) => match (data, categories, null) {
                 (ArrayND::Bool(data), Vector2DJagged::Bool(categories), ArrayND::Bool(null)) =>
                     {
-                        let mut categories_bool: Vec<Vec<bool>> = Vec::with_capacity(categories.len());;
-                        for i in 0..categories.len() {
-                            categories_bool.push(categories[i].as_ref().unwrap().to_vec());
-                        }
-                        return Ok(Value::ArrayND(ArrayND::Bool(utilities::transformations::clamp_categorical(&data, &categories_bool, &null))));
+                        let categories = categories.iter().map(|column| column.as_ref().unwrap().to_vec()).collect::<Vec<Vec<bool>>>();
+                        return Ok(Value::ArrayND(ArrayND::Bool(utilities::transformations::clamp_categorical(&data, &categories, &null))));
                     },
                 (ArrayND::F64(data), Vector2DJagged::F64(categories), ArrayND::F64(null)) =>
                     {
-                        let mut categories_f64: Vec<Vec<f64>> = Vec::with_capacity(categories.len());;
-                        for i in 0..categories.len() {
-                            categories_f64.push(categories[i].as_ref().unwrap().to_vec());
-                        }
-                        return Ok(Value::ArrayND(ArrayND::F64(utilities::transformations::clamp_categorical(&data, &categories_f64, &null))));
+                        let categories = categories.iter().map(|column| column.as_ref().unwrap().to_vec()).collect::<Vec<Vec<f64>>>();
+                        return Ok(Value::ArrayND(ArrayND::F64(utilities::transformations::clamp_categorical(&data, &categories, &null))));
                     },
                 (ArrayND::I64(data), Vector2DJagged::I64(categories), ArrayND::I64(null)) =>
                     {
-                        let mut categories_i64: Vec<Vec<i64>> = Vec::with_capacity(categories.len());;
-                        for i in 0..categories.len() {
-                            categories_i64.push(categories[i].as_ref().unwrap().to_vec());
-                        }
-                        return Ok(Value::ArrayND(ArrayND::I64(utilities::transformations::clamp_categorical(&data, &categories_i64, &null))));
+                        let categories = categories.iter().map(|column| column.as_ref().unwrap().to_vec()).collect::<Vec<Vec<i64>>>();
+                        return Ok(Value::ArrayND(ArrayND::I64(utilities::transformations::clamp_categorical(&data, &categories, &null))));
                     },
                 (ArrayND::Str(data), Vector2DJagged::Str(categories), ArrayND::Str(null)) =>
                     {
-                        let mut categories_str: Vec<Vec<String>> = Vec::with_capacity(categories.len());;
-                        for i in 0..categories.len() {
-                            categories_str.push(categories[i].as_ref().unwrap().to_vec());
-                        }
-                        return Ok(Value::ArrayND(ArrayND::Str(utilities::transformations::clamp_categorical(&data, &categories_str, &null))));
+                        let categories = categories.iter().map(|column| column.as_ref().unwrap().to_vec()).collect::<Vec<Vec<String>>>();
+                        return Ok(Value::ArrayND(ArrayND::Str(utilities::transformations::clamp_categorical(&data, &categories, &null))));
                     },
                 _ => return Err("types of data, categories, and null must be consistent".to_string())
             },
@@ -313,58 +301,6 @@ pub fn component_clamp(_x: &proto::Clamp, arguments: &NodeArguments,) -> Result<
         }
     }
 }
-
-// pub fn component_clamp(_X: &proto::Clamp, arguments: &NodeArguments) -> Result<Value, String> {
-//     let data = arguments.get("data").unwrap();
-//     if arguments.contains_key("categories") {
-//         match (arguments.get("categories").unwrap(), arguments.get("null").unwrap()) {
-//                 (categories_node_eval, null_node_eval) => {
-//                 // TODO: need to figure out how to get vec of ArrayD out of vec of NodeEvals
-//                 // do I need to create a new vector and loop over, checking the type of the NodeEval
-//                 // for each element in the vector?
-//                 let categories_eval = match categories_node_eval {
-//                     Ok(Value::Vec(categories)) => categories_eval
-//                     _ => return Err("categories must be a jagged matrix".to_string())
-//                 };
-
-
-
-//                 match (data, null_node_eval) {
-//                     (Value::F64(data), Value::F64(null)) =>
-//                         Ok(Value::F64(utilities::transformations::clamp_categorical(&data, categories, &null))),
-//                     (Value::I64(data), Value::I64(null)) =>
-//                         Ok(Value::I64(utilities::transformations::clamp_categorical(&data, categories, &null))),
-//                     (Value::Bool(data), Value::Bool(null)) =>
-//                         Ok(Value::Bool(utilities::transformations::clamp_categorical(&data, categories, &null))),
-//                     (Value::Str(data), Value::Str(null)) =>
-//                         Ok(Value::Str(utilities::transformations::clamp_categorical(&data, categories, &null))),
-//                     _ => return Err("data and null types do not match".to_string())
-//                 }
-//             }
-//             _ => return Err("categories and/or null is not defined".to_string())
-//         }
-//     } else {
-//         match (data, arguments.get("min").unwrap(), arguments.get("max").unwrap()) {
-//             (Value::F64(data), Value::F64(min), Value::F64(max))
-//                 => Ok(Value::F64(utilities::transformations::clamp_numeric(&data, &min, &max))),
-//             (Value::I64(data), Value::I64(min), Value::I64(max))
-//                 => Ok(Value::I64(utilities::transformations::clamp_numeric(&data, &min, &max))),
-//             _ => return Err("argument types are not homogenous".to_string())
-//         }
-//     }
-// }
-
-// pub fn component_impute(_X: &proto::Impute, arguments: &NodeArguments) -> Result<Value, String> {
-//     // TODO: does not work
-//     let data = arguments.get("data").unwrap();
-//     let distribution = arguments.get("distribution").unwrap();
-//     let data_type = arguments.get("data_type").unwrap();
-//     let min = arguments.get("min").unwrap();
-//     let max = arguments.get("max").unwrap();
-//     let shift = arguments.get("shift").unwrap();
-//     let scale = arguments.get("scale").unwrap();
-//     Ok(Value::F64(utilities::transformations::impute(data, distribution, data_type, min, max, shift, scale)))
-// }
 
 //pub fn component_count(
 //    _X: &proto::Count, arguments: &NodeArguments,
