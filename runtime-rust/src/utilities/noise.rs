@@ -65,8 +65,8 @@ pub fn sample_gaussian(shift: f64, scale: f64) -> f64 {
 /// ```
 /// use yarrow_runtime::utilities::noise::sample_gaussian_truncated;
 /// let n:f64 = sample_gaussian_truncated(1.0, 1.0, 0.0, 2.0);
-/// assert!(n > 0.0);
-/// assert!(n < 2.0);
+/// assert!(n >= 0.0);
+/// assert!(n <= 2.0);
 /// ```
 pub fn sample_gaussian_truncated(shift: f64, scale: f64, min: f64, max: f64) -> f64 {
     assert!(min <= max);
@@ -83,6 +83,22 @@ pub fn sample_gaussian_truncated(shift: f64, scale: f64, min: f64, max: f64) -> 
 //     (LittleEndian::read_u64(&buf) as f64) / (std::u64::MAX as f64) * (max - min) + min
 // }
 
+/// Sample from uniform integers between min and max (inclusive)
+/// # Arguments 
+/// 
+/// * `min` - &i64, minimum value of distribution to sample from
+/// * `max` - &i64, maximum value of distribution to sample from
+///
+/// # Return
+/// i64 random uniform variable between min and max (inclusive)
+///
+/// # Example
+/// ``` 
+/// use yarrow_runtime::utilities::noise::sample_uniform_int;
+/// let n:f64 = sample_uniform_int(0.0, 2.0);
+/// assert!(n >= 0.0);
+/// assert!(n <= 2.0);
+/// ```
 pub fn sample_uniform_int(min: &i64, max: &i64) -> i64 {
     assert!(min <= max);
 
