@@ -10,6 +10,7 @@ use crate::utilities::constraint::Nature::{Continuous, Categorical};
 use ndarray::Array;
 use crate::utilities::serial;
 use crate::utilities::serial::{Vector1DNull, Vector2DJagged};
+use crate::utilities::buffer::{get_arguments, release_to_evaluations, GraphEvaluation, get_arguments_copy};
 
 
 #[derive(Clone, Debug)]
@@ -114,11 +115,15 @@ pub fn propagate_constraints(
     let mut graph: HashMap<u32, proto::Component> = analysis.computation_graph.to_owned().unwrap().value.to_owned();
     let traversal: Vec<u32> = utilities::graph::get_traversal(analysis)?;
 
+    let graph_evaluation: GraphEvaluation = release_to_evaluations(&release)?;
+
     let mut graph_constraint = GraphConstraint::new();
     traversal.iter().for_each(|node_id| {
         let component: proto::Component = graph.get(node_id).unwrap().to_owned();
         let input_constraints = get_constraints(&component, &graph_constraint);
-        let constraint = component.value.unwrap().propagate_constraint(&input_constraints).unwrap();
+
+        let public_arguments = get_arguments_copy(&component, &graph_evaluation);
+        let constraint = component.value.unwrap().propagate_constraint(&public_arguments, &input_constraints).unwrap();
         graph_constraint.insert(node_id.clone(), constraint);
     });
     Ok(graph_constraint)

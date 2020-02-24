@@ -33,6 +33,7 @@ message Component {
         Impute impute = 222;
         RowMax rowmax = 223;
         RowMin rowmin = 224;
+        Resize resize = 225;
         // arithmetic manipulations
         Add add = 250;
         Subtract subtract = 251;
@@ -213,3 +214,4 @@ message SimpleGeometricMechanism {
 
 message RowMax {}
 message RowMin {}
+message Resize {}

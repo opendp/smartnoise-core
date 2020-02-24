@@ -1,27 +1,30 @@
+pub mod row_wise_min;
+pub mod dp_mean;
+pub mod impute;
+pub mod resize;
+pub mod literal;
+pub mod clamp;
+
 use std::collections::HashMap;
 use crate::utilities::constraint;
 use crate::utilities::constraint::{Constraint, NodeConstraints};
 use crate::proto;
 
-pub mod add;
-pub mod row_wise_min;
-pub mod dp_mean;
-pub mod impute;
-pub mod literal;
-
-
 use crate::hashmap;
-use proto::component::Value;
+use crate::utilities::buffer::NodeArguments;
+use crate::utilities::serial::Value;
 
 pub trait Component {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_constraint(
         &self,
+        public_arguments: &HashMap<String, Value>,
         constraints: &NodeConstraints,
     ) -> Result<Constraint, String>;
 
     fn is_valid(
         &self,
+        public_arguments: &HashMap<String, Value>,
         constraints: &NodeConstraints,
     ) -> bool;
 }
@@ -80,23 +83,24 @@ impl Component for proto::component::Value {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_constraint(
         &self,
+        public_arguments: &HashMap<String, Value>,
         constraints: &NodeConstraints,
     ) -> Result<Constraint, String> {
         macro_rules! propagate_constraint {
-            ($self:ident, $constraints: ident, $( $variant:ident ),*) => {
+            ($self:ident, $public_arguments: ident, $constraints: ident, $( $variant:ident ),*) => {
                 {
                     $(
-                       if let Value::$variant(x) = $self {
-                            return x.propagate_constraint($constraints)
+                       if let proto::component::Value::$variant(x) = $self {
+                            return x.propagate_constraint($public_arguments, $constraints)
                         }
                     )*
                 }
             }
         }
 
-        propagate_constraint!(self, constraints,
+        propagate_constraint!(self, public_arguments, constraints,
             // INSERT COMPONENT LIST
-            Rowmin, Dpmean, Impute
+            Rowmin, Dpmean, Impute, Literal, Resize, Clamp
         );
 
         return Err("a proto component is missing its Component trait".to_string())
@@ -104,23 +108,24 @@ impl Component for proto::component::Value {
 
     fn is_valid(
         &self,
+        public_arguments: &HashMap<String, Value>,
         constraints: &NodeConstraints,
     ) -> bool {
         macro_rules! is_valid {
-            ($self:ident, $constraints: ident, $( $variant:ident ),*) => {
+            ($self:ident, $public_arguments: ident, $constraints: ident, $( $variant:ident ),*) => {
                 {
                     $(
-                       if let Value::$variant(x) = $self {
-                            return x.is_valid($constraints)
+                       if let proto::component::Value::$variant(x) = $self {
+                            return x.is_valid($public_arguments, $constraints)
                         }
                     )*
                 }
             }
         }
 
-        is_valid!(self, constraints,
+        is_valid!(self, public_arguments, constraints,
             // INSERT COMPONENT LIST
-            Rowmin, Dpmean, Impute
+            Rowmin, Dpmean, Impute, Literal, Resize, Clamp
         );
 
         // an unknown component is not valid
@@ -142,7 +147,7 @@ impl Expandable for proto::component::Value {
             ($self:ident, $privacy_definition:ident, $component:ident, $constraints:ident, $component_id:ident, $maximum_id:ident, $( $variant:ident ),*) => {
                 {
                     $(
-                       if let Value::$variant(x) = $self {
+                       if let proto::component::Value::$variant(x) = $self {
                             return x.expand_graph($privacy_definition, $component, $constraints, $component_id, $maximum_id)
                         }
                     )*
@@ -170,7 +175,7 @@ impl Privatize for proto::component::Value {
             ($self:ident, $privacy_definition:ident, $constraints:ident, $( $variant:ident ),*) => {
                 {
                     $(
-                       if let Value::$variant(x) = $self {
+                       if let proto::component::Value::$variant(x) = $self {
                             return x.compute_sensitivity($privacy_definition, $constraints)
                         }
                     )*
@@ -198,7 +203,7 @@ impl Accuracy for proto::component::Value {
             ($self:ident, $privacy_definition:ident, $constraints:ident, $accuracy:ident, $( $variant:ident ),*) => {
                 {
                     $(
-                       if let Value::$variant(x) = $self {
+                       if let proto::component::Value::$variant(x) = $self {
                             return x.accuracy_to_privacy_usage($privacy_definition, $constraints, $accuracy)
                         }
                     )*
@@ -223,7 +228,7 @@ impl Accuracy for proto::component::Value {
             ($self:ident, $privacy_definition:ident, $constraints:ident, $( $variant:ident ),*) => {
                 {
                     $(
-                       if let Value::$variant(x) = $self {
+                       if let proto::component::Value::$variant(x) = $self {
                             return x.privacy_usage_to_accuracy($privacy_definition, $constraints)
                         }
                     )*
@@ -251,7 +256,7 @@ impl Report for proto::component::Value {
             ($self:ident, $constraints:ident, $( $variant:ident ),*) => {
                 {
                     $(
-                       if let Value::$variant(x) = $self {
+                       if let proto::component::Value::$variant(x) = $self {
                             return x.summarize($constraints)
                         }
                     )*
@@ -277,7 +282,7 @@ impl Report for proto::component::Value {
             ($self:ident, $constraints:ident, $( $variant:ident ),*) => {
                 {
                     $(
-                       if let Value::$variant(x) = $self {
+                       if let proto::component::Value::$variant(x) = $self {
                             return x.get_names($constraints)
                         }
                     )*

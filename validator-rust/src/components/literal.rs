@@ -13,6 +13,7 @@ use crate::utilities::serial::{parse_value, Value, ArrayND, Vector2DJagged, Vect
 use crate::utilities::constraint::Nature::Categorical;
 use itertools::Itertools;
 use std::cmp::Ordering;
+use crate::utilities::buffer::NodeArguments;
 
 
 pub fn get_shape(array: &ArrayND) -> Vec<i64> {
@@ -339,6 +340,7 @@ impl Component for proto::Literal {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_constraint(
         &self,
+        public_arguments: &HashMap<String, Value>,
         constraints: &constraint_utils::NodeConstraints,
     ) -> Result<Constraint, String> {
         let value = parse_value(&self.value.clone().unwrap()).unwrap();
@@ -368,6 +370,7 @@ impl Component for proto::Literal {
 
     fn is_valid(
         &self,
+        public_arguments: &HashMap<String, Value>,
         constraints: &constraint_utils::NodeConstraints,
     ) -> bool {
         true

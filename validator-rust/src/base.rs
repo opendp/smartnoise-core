@@ -120,7 +120,7 @@ pub fn expand_component(
         node_id_maximum,
     )?;
 
-    let constraint = component.clone().value.unwrap().propagate_constraint(&constraints)?;
+    let constraint = component.clone().value.unwrap().propagate_constraint(arguments, &constraints)?;
 
     Ok(proto::response_expand_component::ExpandedComponent {
         computation_graph: Some(proto::ComputationGraph { value: result.1 }),

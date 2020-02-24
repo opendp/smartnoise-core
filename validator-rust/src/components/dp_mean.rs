@@ -8,11 +8,13 @@ use crate::hashmap;
 use crate::components::{Component, Report, Accuracy, Privatize, Expandable};
 use ndarray::Array;
 use crate::utilities::serial::{Value, serialize_value, ArrayND};
+use crate::utilities::buffer::NodeArguments;
 
 impl Component for proto::DpMean {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_constraint(
         &self,
+        public_arguments: &HashMap<String, Value>,
         constraints: &constraint_utils::NodeConstraints,
     ) -> Result<Constraint, String> {
         Ok(get_constraint(constraints, "left")?.to_owned())
@@ -30,6 +32,7 @@ impl Component for proto::DpMean {
 
     fn is_valid(
         &self,
+        public_arguments: &HashMap<String, Value>,
         constraints: &constraint_utils::NodeConstraints,
     ) -> bool {
         let num_records = constraint_utils::get_num_records(constraints, "data");
