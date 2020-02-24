@@ -147,28 +147,32 @@ pub fn parse_array2d_jagged(value: &proto::Array2dJagged) -> Vector2DJagged {
         proto::array2d_jagged::DataType::Bool => Vector2DJagged::Bool(value.data.iter()
             .map(|column| match parse_array1d_option(column) {
                 Some(vector) => Some(match vector {
-                    Vector1D::Bool(vector) => vector, _ => panic!()
+                    Vector1D::Bool(vector) => vector,
+                    _ => panic!()
                 }),
                 None => None
             }).collect::<Vec<Option<Vec<bool>>>>()),
         proto::array2d_jagged::DataType::F64 => Vector2DJagged::F64(value.data.iter()
             .map(|column| match parse_array1d_option(column) {
                 Some(vector) => Some(match vector {
-                    Vector1D::F64(vector) => vector, _ => panic!()
+                    Vector1D::F64(vector) => vector,
+                    _ => panic!()
                 }),
                 None => None
             }).collect::<Vec<Option<Vec<f64>>>>()),
         proto::array2d_jagged::DataType::I64 => Vector2DJagged::I64(value.data.iter()
             .map(|column| match parse_array1d_option(column) {
                 Some(vector) => Some(match vector {
-                    Vector1D::I64(vector) => vector, _ => panic!()
+                    Vector1D::I64(vector) => vector,
+                    _ => panic!()
                 }),
                 None => None
             }).collect::<Vec<Option<Vec<i64>>>>()),
         proto::array2d_jagged::DataType::String => Vector2DJagged::Str(value.data.iter()
             .map(|column| match parse_array1d_option(column) {
                 Some(vector) => Some(match vector {
-                    Vector1D::Str(vector) => vector, _ => panic!()
+                    Vector1D::Str(vector) => vector,
+                    _ => panic!()
                 }),
                 None => None
             }).collect::<Vec<Option<Vec<String>>>>()),
@@ -185,7 +189,6 @@ pub fn parse_value(value: &proto::Value) -> Result<Value, String> {
             Value::Vector2DJagged(parse_array2d_jagged(&data))
     })
 }
-
 
 
 // SERIALIZERS
@@ -332,22 +335,22 @@ pub fn serialize_array2d_jagged(value: &Vector2DJagged) -> proto::Array2dJagged 
         },
         data: match value {
             Vector2DJagged::Bool(data) => data.iter().map(|column| serialize_array1d_option(&match column {
-                Some( column) => Some(Vector1D::Bool(column.to_owned())),
+                Some(column) => Some(Vector1D::Bool(column.to_owned())),
                 None => None
             })).collect(),
             Vector2DJagged::F64(data) => data.iter().map(|column| serialize_array1d_option(&match column {
-                Some( column) => Some(Vector1D::F64(column.to_owned())),
+                Some(column) => Some(Vector1D::F64(column.to_owned())),
                 None => None
             })).collect(),
             Vector2DJagged::I64(data) => data.iter().map(|column| serialize_array1d_option(&match column {
-                Some( column) => Some(Vector1D::I64(column.to_owned())),
+                Some(column) => Some(Vector1D::I64(column.to_owned())),
                 None => None
             })).collect(),
             Vector2DJagged::Str(data) => data.iter().map(|column| serialize_array1d_option(&match column {
-                Some( column) => Some(Vector1D::Str(column.to_owned())),
+                Some(column) => Some(Vector1D::Str(column.to_owned())),
                 None => None
             })).collect(),
-        }
+        },
     }
 }
 

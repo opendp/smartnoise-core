@@ -20,6 +20,15 @@ pub fn get_arguments<'a>(component: &proto::Component, graph_evaluation: &'a Gra
     arguments
 }
 
+pub fn get_arguments_copy(component: &proto::Component, graph_evaluation: &GraphEvaluation) -> HashMap<String, Value> {
+    let mut arguments = HashMap::<String, Value>::new();
+    component.arguments.iter().for_each(|(field_id, field)| {
+        let evaluation: Value = graph_evaluation.get(&field).unwrap().to_owned();
+        arguments.insert(field_id.to_owned(), evaluation);
+    });
+    arguments
+}
+
 
 pub fn get_f64(arguments: &NodeArguments, column: &str) -> f64 {
     match arguments.get(column).unwrap() {

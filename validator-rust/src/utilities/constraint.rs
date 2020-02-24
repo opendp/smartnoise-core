@@ -10,6 +10,7 @@ use crate::utilities::constraint::Nature::{Continuous, Categorical};
 use ndarray::Array;
 use crate::utilities::serial;
 use crate::utilities::serial::{Vector1DNull, Vector2DJagged};
+use crate::utilities::buffer::{get_arguments, release_to_evaluations, GraphEvaluation, get_arguments_copy};
 
 
 #[derive(Clone, Debug)]
@@ -18,6 +19,7 @@ pub struct Constraint {
     pub releasable: bool,
     pub nature: Option<Nature>,
     pub c_stability: Vec<f64>,
+    pub num_columns: Option<i64>,
     // vector because some types, like the jagged matrix and hash table, may have mixed lengths
     pub num_records: Vec<Option<i64>>,
 }
@@ -44,6 +46,7 @@ impl Constraint {
     pub fn to_proto(&self) -> proto::Constraint {
         proto::Constraint {
             num_records: Some(serial::serialize_array1d_i64_null(&self.num_records)),
+            num_columns: Some(serial::serialize_i64_null(&self.num_columns)),
             nullity: self.nullity,
             releasable: self.releasable,
             c_stability: Some(serial::serialize_array1d_f64(&self.c_stability)),
@@ -63,7 +66,10 @@ impl Constraint {
     }
     pub fn from_proto(other: &proto::Constraint) -> Constraint {
         Constraint {
+            num_records: serial::parse_array1d_i64_null(&other.num_records.to_owned().unwrap()),
+            num_columns: serial::parse_i64_null(&other.num_columns.to_owned().unwrap()),
             nullity: other.nullity,
+            releasable: other.releasable,
             c_stability: serial::parse_array1d_f64(&other.c_stability.to_owned().unwrap()),
             nature: match other.nature.to_owned() {
                 Some(nature) => match nature {
@@ -78,9 +84,7 @@ impl Constraint {
                         }))
                 },
                 None => None
-            },
-            releasable: other.releasable,
-            num_records: serial::parse_array1d_i64_null(&other.num_records.to_owned().unwrap())
+            }
         }
     }
 }
@@ -111,11 +115,15 @@ pub fn propagate_constraints(
     let mut graph: HashMap<u32, proto::Component> = analysis.computation_graph.to_owned().unwrap().value.to_owned();
     let traversal: Vec<u32> = utilities::graph::get_traversal(analysis)?;
 
+    let graph_evaluation: GraphEvaluation = release_to_evaluations(&release)?;
+
     let mut graph_constraint = GraphConstraint::new();
     traversal.iter().for_each(|node_id| {
         let component: proto::Component = graph.get(node_id).unwrap().to_owned();
         let input_constraints = get_constraints(&component, &graph_constraint);
-        let constraint = component.value.unwrap().propagate_constraint(&input_constraints).unwrap();
+
+        let public_arguments = get_arguments_copy(&component, &graph_evaluation);
+        let constraint = component.value.unwrap().propagate_constraint(&public_arguments, &input_constraints).unwrap();
         graph_constraint.insert(node_id.clone(), constraint);
     });
     Ok(graph_constraint)

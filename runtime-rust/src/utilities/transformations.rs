@@ -114,7 +114,7 @@ pub fn bin(data: &ArrayD<f64>, edges: &ArrayD<f64>, inclusive_left: &ArrayD<bool
 pub fn broadcast_map<T>(
     left: &ArrayD<T>,
     right: &ArrayD<T>,
-    operator: &dyn Fn(&T, &T) -> T ) -> Result<ArrayD<T>, String> where T: std::clone::Clone, T: num::Zero, T: Copy {
+    operator: &dyn Fn(&T, &T) -> T ) -> Result<ArrayD<T>, String> where T: std::clone::Clone, T: Default, T: Copy {
     /// Broadcast left and right to match each other, and map an operator over the pairs
     ///
     /// # Arguments
@@ -142,19 +142,19 @@ pub fn broadcast_map<T>(
                 return Err("the size of the left and right vectors do not match".to_string())
             }
 
-            let mut zeros: ArrayD<T> = Array::zeros(left.shape());
+            let mut zeros: ArrayD<T> = Array::default(left.shape());
             Zip::from(&mut zeros)
                 .and(left)
                 .and(right).apply(|acc, &l, &r| *acc = operator(&l, &r));
             Ok(zeros)
         },
         (l, r) if l == 1 && r == 0 => {
-            let mut zeros: ArrayD<T> = Array::zeros(left.shape());
+            let mut zeros: ArrayD<T> = Array::default(left.shape());
             Zip::from(&mut zeros).and(left).apply(|acc, &l| *acc = operator(&l, &right.first().unwrap()));
             Ok(zeros)
         },
         (l, r) if l == 0 && r == 1 => {
-            let mut zeros: ArrayD<T> = Array::zeros(left.shape());
+            let mut zeros: ArrayD<T> = Array::default(left.shape());
             Zip::from(&mut zeros).and(right).apply(|acc, &r| *acc = operator(&left.first().unwrap(), &r));
             Ok(zeros)
         },

@@ -1,0 +1,22 @@
+{
+  "arguments": {
+    "data": {
+      "nature": [],
+      "type": "Array"
+    },
+    "n": {
+      "nature": [],
+      "type": "Array"
+    }
+  },
+  "id": "Resize",
+  "name": "resize",
+  "options": {},
+  "return": {
+    "constraints": [
+      "n"
+    ],
+    "nature": [],
+    "type": "Array"
+  }
+}

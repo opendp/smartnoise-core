@@ -186,28 +186,43 @@ class Component(object):
             filtered = [i for i in filtered
                            if i in ALL_CONSTRAINTS]
 
-            if 'max' in filtered:
-                arguments[argument] = Component('RowMax', arguments={
-                    "left": arguments[argument],
-                    "right": Component.of(constraints[argument + '_max'])
-                })
-
-            if 'min' in filtered:
-                arguments[argument] = Component('RowMin', arguments={
-                    "left": arguments[argument],
-                    "right": Component.of(constraints[argument + '_min'])
-                })
-
-            if 'categories' in filtered:
-                arguments[argument] = Component('Bin', arguments={
-                    "data": arguments[argument],
-                    "categories": Component.of(constraints[argument + '_categories'])
-                })
-
             if 'n' in filtered:
-                arguments[argument] = Component('Impute', arguments={
+                arguments[argument] = Component('Resize', arguments={
                     "data": arguments[argument],
                     "n": Component.of(constraints[argument + '_n'])
+                })
+
+            if 'max' in filtered and 'min' in filtered:
+                arguments[argument] = Component('Clamp', arguments={
+                    "data": arguments[argument],
+                    "min": Component.of(constraints[argument + '_min']),
+                    "max": Component.of(constraints[argument + '_max'])
+                })
+
+                # TODO: perhaps this impute could be added in the dpmean expansion?
+                arguments[argument] = Component('Impute', arguments={
+                    "data": arguments[argument],
+                    "min": Component.of(constraints[argument + '_min']),
+                    "max": Component.of(constraints[argument + '_max'])
+                })
+
+            else:
+                if 'max' in filtered:
+                    arguments[argument] = Component('RowMax', arguments={
+                        "left": arguments[argument],
+                        "right": Component.of(constraints[argument + '_max'])
+                    })
+
+                if 'min' in filtered:
+                    arguments[argument] = Component('RowMin', arguments={
+                        "left": arguments[argument],
+                        "right": Component.of(constraints[argument + '_min'])
+                    })
+
+            if 'categories' in filtered:
+                arguments[argument] = Component('Clamp', arguments={
+                    "data": arguments[argument],
+                    "categories": Component.of(constraints[argument + '_categories'])
                 })
 
         return arguments

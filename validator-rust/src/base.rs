@@ -3,13 +3,14 @@ use itertools::Itertools;
 
 use crate::utilities;
 use crate::components;
-use crate::components::Component;
+use crate::components::*;
 
 use std::collections::HashMap;
 use crate::utilities::constraint::{Constraint, NodeConstraints};
 use crate::hashmap;
 use crate::utilities::buffer::{NodeArguments};
 use crate::utilities::serial::Value;
+use crate::components::literal::infer_constraint;
 
 
 pub fn validate_analysis(
@@ -103,11 +104,13 @@ pub fn expand_component(
     node_id_output: u32,
     node_id_maximum: u32
 ) -> Result<proto::response_expand_component::ExpandedComponent, String> {
-    let constraints: NodeConstraints = constraints.iter()
+    let mut constraints: NodeConstraints = constraints.iter()
         .map(|(k, v)| (k.to_owned(), utilities::constraint::Constraint::from_proto(&v)))
         .collect();
 
-    // TODO update constraints based on release
+    for (k, v) in arguments {
+        constraints.insert(k.clone(), infer_constraint(&v)?);
+    }
 
     let result = component.clone().value.unwrap().expand_graph(
         privacy_definition,
@@ -117,7 +120,7 @@ pub fn expand_component(
         node_id_maximum,
     )?;
 
-    let constraint = component.clone().value.unwrap().propagate_constraint(&constraints)?;
+    let constraint = component.clone().value.unwrap().propagate_constraint(arguments, &constraints)?;
 
     Ok(proto::response_expand_component::ExpandedComponent {
         computation_graph: Some(proto::ComputationGraph { value: result.1 }),
