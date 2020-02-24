@@ -36,11 +36,16 @@ impl Component for proto::DpMean {
         constraints: &constraint_utils::NodeConstraints,
     ) -> bool {
         let num_records = constraint_utils::get_num_records(constraints, "data");
+        let min = constraint_utils::get_min_f64(constraints, "data");
+        let max = constraint_utils::get_min_f64(constraints, "data");
+
         // check these properties are Some
-        if constraint_utils::get_min_f64(constraints, "data").is_err()
-            || constraint_utils::get_min_f64(constraints, "data").is_err()
+        if min.is_err()
+            || !min.unwrap().iter().all(|v| v.is_some())
+            || max.is_err()
+            || !max.unwrap().iter().all(|v| v.is_some())
             || num_records.is_err()
-            || num_records.unwrap().iter().all(|v| v.is_some()) {
+            || !num_records.unwrap().iter().all(|v| v.is_some()) {
             return false;
         }
 

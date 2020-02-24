@@ -21,6 +21,7 @@ message Component {
         Stack stack = 102; // stack arguments along an axis of an array
         Literal literal = 110; // propagate a value in the protobuf
         Constant constant = 111; // propagate a value in the release
+        ColumnNames columnnames = 112;
 
         // -- manipulations --
         // type manipulations
@@ -82,6 +83,7 @@ message Component {
         DataSource datasource = 1007; // load a single column from a csv file as type
     }
 }
+
 // data loading
 message Materialize {
     string dataset_id = 1;
@@ -100,6 +102,7 @@ message Literal {
     bool private = 2;
 }
 message Constant {}
+message ColumnNames {}
 
 // -- manipulations --
 // type manipulations

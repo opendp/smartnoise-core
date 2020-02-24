@@ -1,10 +1,12 @@
 from tests.test_base import (
     test_basic_path,
+    test_dp_mean,
     test_raw_dataset,
 )
 
 # analysis = test_basic_path()
-analysis = test_raw_dataset()
+analysis = test_dp_mean()
+# analysis = test_raw_dataset()
 
 
 print('analysis is valid:', analysis.validate())

@@ -4,6 +4,7 @@ pub mod impute;
 pub mod resize;
 pub mod literal;
 pub mod clamp;
+pub mod datasource;
 
 use std::collections::HashMap;
 use crate::utilities::constraint;
@@ -100,7 +101,7 @@ impl Component for proto::component::Value {
 
         propagate_constraint!(self, public_arguments, constraints,
             // INSERT COMPONENT LIST
-            Rowmin, Dpmean, Impute, Literal, Resize, Clamp
+            Datasource, Rowmin, Dpmean, Impute, Literal, Resize, Clamp
         );
 
         return Err("a proto component is missing its Component trait".to_string())
@@ -125,7 +126,7 @@ impl Component for proto::component::Value {
 
         is_valid!(self, public_arguments, constraints,
             // INSERT COMPONENT LIST
-            Rowmin, Dpmean, Impute, Literal, Resize, Clamp
+            Datasource, Rowmin, Dpmean, Impute, Literal, Resize, Clamp
         );
 
         // an unknown component is not valid
