@@ -14,7 +14,7 @@ use itertools::Itertools;
 use crate::components;
 use yarrow_validator::utilities::constraint::{get_constraints, GraphConstraint};
 use yarrow_validator::utilities::buffer::{get_arguments};
-use yarrow_validator::utilities::serial::Value;
+use yarrow_validator::utilities::serial::{Value, Vector2DJagged};
 
 
 pub fn execute_graph(analysis: &proto::Analysis,
