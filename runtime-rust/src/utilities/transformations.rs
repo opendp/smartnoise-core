@@ -162,7 +162,8 @@ pub fn broadcast_map<T>(
     }
 }
 
-pub fn clamp_numeric(data: &ArrayD<f64>, min: &ArrayD<f64>, max: &ArrayD<f64>) -> ArrayD<f64> {
+pub fn clamp_numeric<T>(data: &ArrayD<T>, min: &ArrayD<T>, max: &ArrayD<T>)
+    -> ArrayD<T> where T: PartialOrd, T: Clone, T: Default {
     /// Clamps each column of numeric data to [min, max]
     ///
     /// # Example
@@ -175,8 +176,9 @@ pub fn clamp_numeric(data: &ArrayD<f64>, min: &ArrayD<f64>, max: &ArrayD<f64>) -
     /// println!("{:?}", data_2d);
     /// println!("{:?}", clamped_data);
     /// ```
-    let mut data_2d: ArrayD<f64> = convert_to_matrix(data);
-    let mut clamped_data: ArrayD<f64> = Array::default(data_2d.shape());
+
+    let mut data_2d: ArrayD<T> = convert_to_matrix(data);
+    let mut clamped_data: ArrayD<T> = Array::default(data_2d.shape());
 
     let n_cols: i64 = data_2d.len_of(Axis(0)) as i64;
 
@@ -195,7 +197,7 @@ pub fn clamp_numeric(data: &ArrayD<f64>, min: &ArrayD<f64>, max: &ArrayD<f64>) -
     return clamped_data;
 }
 
-pub fn clamp_categorical<T>(data: &ArrayD<T>, categories: &Vec::<ArrayD<T>>, null_value: &ArrayD<T>) -> ArrayD<T> where T:Clone, T:PartialEq, T:Default {
+pub fn clamp_categorical<T>(data: &ArrayD<T>, categories: &Vec::<Vec<T>>, null_value: &ArrayD<T>) -> ArrayD<T> where T:Clone, T:PartialEq, T:Default {
     let original_dim: u8 = data.ndim() as u8;
     let mut data_2d: ArrayD<T> = convert_to_matrix(data);
     let mut clamped_data: ArrayD<T> = Array::default(data_2d.shape());
@@ -205,7 +207,7 @@ pub fn clamp_categorical<T>(data: &ArrayD<T>, categories: &Vec::<ArrayD<T>>, nul
     let mut n_categories: i64;
 
     for i in 0..n_cols {
-        category_vec = categories[i as usize].clone().into_dimensionality::<Ix1>().unwrap().to_vec();
+        category_vec = categories[i as usize].clone();
         n_categories = category_vec.len() as i64;
         let mut data_vec = data_2d.slice(s![i as usize, ..]).clone().into_dyn().clone().
                           into_dimensionality::<Ix1>().unwrap().to_vec();
@@ -358,7 +360,7 @@ pub fn impute_numeric(data: &ArrayD<f64>, distribution: &ArrayD<String>, data_ty
     return convert_from_matrix(&imputed_data, &original_dim);
 }
 
-pub fn impute_categorical<T>(data: &ArrayD<T>, categories: &Vec::<ArrayD<T>>, probabilities: &Vec::<ArrayD<f64>>, null_value: &ArrayD<T>) ->
+pub fn impute_categorical<T>(data: &ArrayD<T>, categories: &Vec::<Vec<T>>, probabilities: &Vec::<ArrayD<f64>>, null_value: &ArrayD<T>) ->
                              ArrayD<T> where T:Clone, T:PartialEq, T:Default {
     let original_dim: u8 = data.ndim() as u8;
     let mut data_2d: ArrayD<T> = convert_to_matrix(data);
@@ -370,7 +372,7 @@ pub fn impute_categorical<T>(data: &ArrayD<T>, categories: &Vec::<ArrayD<T>>, pr
     let mut n_categories: i64;
 
     for i in 0..n_cols {
-        category_vec = categories[i as usize].clone().into_dimensionality::<Ix1>().unwrap().to_vec();
+        category_vec = categories[i as usize].clone();
         probability_vec = probabilities[i as usize].clone().into_dimensionality::<Ix1>().unwrap().to_vec();
         n_categories = category_vec.len() as i64;
         let mut data_vec = data_2d.slice(s![i as usize, ..]).clone().into_dyn().clone().
@@ -442,7 +444,7 @@ pub fn resize_numeric(data: &ArrayD<f64>, n: &u64, distribution: &ArrayD<String>
 }
 
 pub fn resize_categorical<T>(data: &ArrayD<T>, n: &u64,
-                             categories: &Vec<ArrayD<T>>, probabilities: &Vec<ArrayD<f64>>, null_value: &ArrayD<T>,)
+                             categories: &Vec<Vec<T>>, probabilities: &Vec<ArrayD<f64>>, null_value: &ArrayD<T>,)
                                 -> ArrayD<T> where T: Clone, T: Copy, T: PartialEq, T: Default {
     // set string literals for arguments that are of type String
     let Uniform: String = "Uniform".to_string(); // Distributions
