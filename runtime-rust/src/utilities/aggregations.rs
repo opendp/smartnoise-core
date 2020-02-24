@@ -272,12 +272,19 @@ pub fn kth_raw_sample_moment(data: &ArrayD<f64>, k: &i64) -> ArrayD<f64> {
     return mean(&arr1(&data_to_kth_power).into_dyn());
 }
 
-pub fn create_subset<T>(set: &ArrayD<T>, probabilities: &ArrayD<f64>, k: &u64) -> ArrayD<T> where T: Copy {
+pub fn create_subset<T>(set: &ArrayD<T>, weights: &ArrayD<f64>, k: &u64) -> ArrayD<T> where T: Clone {
+    /// Accepts set and element probabilities and returns a subset of size k
+    /// Probabilities are the probability of drawing each element on the first draw (they sum to 1)
+    /// Based on Algorithm A from Raimidis PS, Spirakis PG (2006). “Weighted random sampling with a reservoir.”
 
     assert!(*k as usize <= set.len());
 
     let mut set_vec: Vec<T> = set.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
-    let mut probabilities_vec: Vec<f64> = probabilities.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
+
+    let mut weights_vec: Vec<f64> = weights.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
+    let weights_sum: f64 = weights_vec.iter().sum();
+
+    let mut probabilities_vec: Vec<f64> = weights.iter().map(|w| w / weights_sum).collect();
     let mut subsample_vec: Vec<T> = Vec::with_capacity(*k as usize);
 
     //
@@ -299,7 +306,7 @@ pub fn create_subset<T>(set: &ArrayD<T>, probabilities: &ArrayD<f64>, k: &u64) -
 
     // subsample based on top k indices
     let mut subset: Vec<T> = Vec::with_capacity(*k as usize);
-    for value in top_indices.iter().map(|&index| set_vec[index as usize]) {
+    for value in top_indices.iter().map(|&index| set_vec[index as usize].clone()) {
         subset.push(value);
     }
     return arr1(&subset).into_dyn();

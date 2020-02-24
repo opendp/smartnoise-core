@@ -127,29 +127,20 @@ class Component(object):
 
     @staticmethod
     def of(value, private=False, jagged=False):
-        def value_proto(data):
+        if type(value) == Component:
+            return value
 
-            if type(data) is bytes:
-                return value_pb2.Value(
-                    datatype=value_pb2.DataType.Value("BYTES"),
-                    bytes=data
-                )
+        def value_proto(data):
 
             if issubclass(type(data), dict):
                 return value_pb2.Value(
-                    datatype=value_pb2.DataType.Value("HASHMAP_STRING"),
-                    hashmapString={key: value_proto(data[key]) for key in data}
+                    hashmap_string={key: value_proto(data[key]) for key in data}
                 )
 
             if jagged:
-                data = []
-                for column in data:
-                    if column:
-                        data.append(value_pb2.JaggedArray2D.OptionalArray1D(data=column))
-                    else:
-                        data.append(value_pb2.JaggedArray2D.OptionalArray1D())
-
-                return value_pb2.Value(jaggedArray2D=value_pb2.JaggedArray2D(data=data))
+                return value_pb2.Value(array_2d_jagged=value_pb2.Array2dJagged(data=[
+                    value_pb2.Array2dJagged.Array1dOption(data=column) for column in data
+                ]))
 
             data = np.array(data)
 
@@ -162,24 +153,26 @@ class Component(object):
             }[data.dtype.type]
 
             container_type = {
-                np.bool: value_pb2.Array1Dbool,
-                np.int64: value_pb2.Array1Di64,
-                np.float64: value_pb2.Array1Df64,
-                np.string_: value_pb2.Array1Dstr,
-                np.str_: value_pb2.Array1Dstr
+                np.bool: value_pb2.Array1dBool,
+                np.int64: value_pb2.Array1dI64,
+                np.float64: value_pb2.Array1dF64,
+                np.string_: value_pb2.Array1dStr,
+                np.str_: value_pb2.Array1dStr
             }[data.dtype.type]
 
             return value_pb2.Value(
-                arrayND=value_pb2.ArrayND(
+                array_nd=value_pb2.ArrayNd(
                     shape=list(data.shape),
                     order=list(range(data.ndim)),
-                    flattened=value_pb2.Array1D(**{
+                    flattened=value_pb2.Array1d(**{
                         data_type: container_type(data=list(data.flatten()))
                     })
                 ))
 
-        return value if type(value) == Component else Component(
-            'Literal', options={'value': value_proto(value), 'private': private})
+        return Component('Literal', options={
+            'value': value_proto(value),
+            'private': private
+        })
 
     @staticmethod
     def _expand_constraints(arguments, constraints):
@@ -193,28 +186,43 @@ class Component(object):
             filtered = [i for i in filtered
                            if i in ALL_CONSTRAINTS]
 
-            if 'max' in filtered:
-                arguments[argument] = Component('RowMax', arguments={
-                    "left": arguments[argument],
-                    "right": Component.of(constraints[argument + '_max'])
-                })
-
-            if 'min' in filtered:
-                arguments[argument] = Component('RowMin', arguments={
-                    "left": arguments[argument],
-                    "right": Component.of(constraints[argument + '_min'])
-                })
-
-            if 'categories' in filtered:
-                arguments[argument] = Component('Bin', arguments={
-                    "data": arguments[argument],
-                    "categories": Component.of(constraints[argument + '_categories'])
-                })
-
             if 'n' in filtered:
-                arguments[argument] = Component('Impute', arguments={
+                arguments[argument] = Component('Resize', arguments={
                     "data": arguments[argument],
                     "n": Component.of(constraints[argument + '_n'])
+                })
+
+            if 'max' in filtered and 'min' in filtered:
+                arguments[argument] = Component('Clamp', arguments={
+                    "data": arguments[argument],
+                    "min": Component.of(constraints[argument + '_min']),
+                    "max": Component.of(constraints[argument + '_max'])
+                })
+
+                # TODO: perhaps this impute could be added in the dpmean expansion?
+                arguments[argument] = Component('Impute', arguments={
+                    "data": arguments[argument],
+                    "min": Component.of(constraints[argument + '_min']),
+                    "max": Component.of(constraints[argument + '_max'])
+                })
+
+            else:
+                if 'max' in filtered:
+                    arguments[argument] = Component('RowMax', arguments={
+                        "left": arguments[argument],
+                        "right": Component.of(constraints[argument + '_max'])
+                    })
+
+                if 'min' in filtered:
+                    arguments[argument] = Component('RowMin', arguments={
+                        "left": arguments[argument],
+                        "right": Component.of(constraints[argument + '_min'])
+                    })
+
+            if 'categories' in filtered:
+                arguments[argument] = Component('Clamp', arguments={
+                    "data": arguments[argument],
+                    "categories": Component.of(constraints[argument + '_categories'])
                 })
 
         return arguments

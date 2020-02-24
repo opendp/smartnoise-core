@@ -8,7 +8,7 @@ if os.name != 'nt':
     # protoc must be installed and on path
     package_dir = os.path.join(os.getcwd(), 'yarrow')
     subprocess.call(f"protoc --python_out={package_dir} *.proto", shell=True, cwd=os.path.abspath('../prototypes/'))
-    subprocess.call(f"sed -i -E 's/^import.*_pb2/from . \\0/' *.py", shell=True, cwd=package_dir)
+    subprocess.call(f"sed -i -E 's/^import.*_pb2/from . &/' *.py", shell=True, cwd=package_dir)
 
 if os.name == 'nt' and not os.path.exists('yarrow/api_pb2.py'):
     print('make sure to run protoc to generate python proto bindings, and fix package imports to be relative to yarrow')
@@ -48,12 +48,12 @@ for file_name in os.listdir(components_dir):
 def {component_schema['name']}({signature_arguments}):
     \"\"\"{component_schema.get("description", component_schema["name"] + " step")}\"\"\"
     return Component(
-        "{component_schema['id']}", 
-        arguments={component_arguments}, 
+        "{component_schema['id']}",
+        arguments={component_arguments},
         options={component_options},
         constraints={component_constraints})
 
 """
-
-with open(os.path.join('.', 'yarrow', 'components.py'), 'w') as generated_file:
+output_path = os.path.join(os.getcwd(), 'yarrow', 'components.py')
+with open(output_path, 'w') as generated_file:
     generated_file.write(generated_code)

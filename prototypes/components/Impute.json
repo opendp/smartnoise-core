@@ -30,7 +30,7 @@
     },
     "scale": {
       "type": "Array"
-    },
+    }
   },
   "id": "Impute",
   "name": "impute",

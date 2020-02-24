@@ -3,57 +3,93 @@ syntax = "proto3";
 package yarrow;
 
 
-message Array1Dbool {
-    repeated bool data = 1;
+message BoolNull {oneof data {bool option = 1;}}
+message I64Null {oneof data {int64 option = 1;}}
+message F64Null {oneof data {double option = 1;}}
+message StrNull {oneof data {string option = 1;}}
+
+message Array1dBoolNull {
+    repeated BoolNull data = 1;
 }
-message Array1Di64 {
-    repeated int64 data = 1;
+message Array1dI64Null {
+    repeated I64Null data = 1;
 }
-message Array1Df64 {
-    repeated double data = 1;
+message Array1dF64Null {
+    repeated F64Null data = 1;
 }
-message Array1Dstr {
-    repeated string data = 1;
-}
-message HashmapString {
-    map<string, Value> data = 1;
+message Array1dStrNull {
+    repeated StrNull data = 1;
 }
 
-message Array1D {
+message Array1dNull {
     oneof data {
-        Array1Dbool bool = 1;
-        Array1Di64 i64 = 2;
-        Array1Df64 f64 = 3;
-        Array1Dstr string = 4;
+        Array1dBoolNull bool = 1;
+        Array1dI64Null i64 = 2;
+        Array1dF64Null f64 = 3;
+        Array1dStrNull string = 4;
     }
 }
 
-message ArrayND {
-    Array1D flattened = 1;
-    
+message Array1dBool {
+    repeated bool data = 1;
+}
+message Array1dI64 {
+    repeated int64 data = 1;
+}
+message Array1dF64 {
+    repeated double data = 1;
+}
+message Array1dStr {
+    repeated string data = 1;
+}
+
+message Array1d {
+    oneof data {
+        Array1dBool bool = 1;
+        Array1dI64 i64 = 2;
+        Array1dF64 f64 = 3;
+        Array1dStr string = 4;
+    }
+}
+
+message ArrayNd {
+    Array1d flattened = 1;
     // length of axes
     repeated uint64 shape = 2;
     // order of axes
     repeated uint64 order = 3;
 }
 
-message JaggedArray2D {
-    message OptionalArray1D {
-        oneof data {Array1D option = 1;}
-    }
-    repeated OptionalArray1D data = 1;
+message HashmapString {
+    map<string, Value> data = 1;
 }
 
+// for categorical constraint vectors, categorical releases
+message Array1dOption {
+    oneof data {Array1d option = 1;}
+}
+message Array2dJagged {
+    enum DataType {
+        BOOL = 0;
+        I64 = 1;
+        F64 = 2;
+        STRING = 3;
+    }
+    repeated Array1dOption data = 1;
+    DataType data_type = 2;
+}
+
+// literals
 message Value {
     oneof data {
         // bytes bytes = 1;
-        ArrayND arrayND = 2;
-        HashmapString hashmapString = 3;
-        JaggedArray2D jaggedArray2D = 4;
+        ArrayNd array_nd = 2;
+        HashmapString hashmap_string = 3;
+        Array2dJagged array_2d_jagged = 4;
     }
 }
 
-message PrivacyUsage {  
+message PrivacyUsage {
 
     message DistancePure {
         double epsilon = 1;

@@ -5,6 +5,12 @@ use crate::utilities;
 
 use crate::components;
 use crate::components::Component;
+use itertools::Itertools;
+use crate::utilities::constraint::Nature::{Continuous, Categorical};
+use ndarray::Array;
+use crate::utilities::serial;
+use crate::utilities::serial::{Vector1DNull, Vector2DJagged};
+use crate::utilities::buffer::{get_arguments, release_to_evaluations, GraphEvaluation, get_arguments_copy};
 
 
 #[derive(Clone, Debug)]
@@ -12,7 +18,10 @@ pub struct Constraint {
     pub nullity: bool,
     pub releasable: bool,
     pub nature: Option<Nature>,
-    pub num_records: Option<u32>,
+    pub c_stability: Vec<f64>,
+    pub num_columns: Option<i64>,
+    // vector because some types, like the jagged matrix and hash table, may have mixed lengths
+    pub num_records: Vec<Option<i64>>,
 }
 
 #[derive(Clone, Debug)]
@@ -23,47 +32,32 @@ pub enum Nature {
 
 #[derive(Clone, Debug)]
 pub struct NatureCategorical {
-    pub categories: Vec<Option<ConstraintVector>>
+    pub categories: Vector2DJagged
 }
 
 #[derive(Clone, Debug)]
 pub struct NatureContinuous {
-    pub min: Option<ConstraintVector>,
-    pub max: Option<ConstraintVector>,
-}
-
-#[derive(Clone, Debug)]
-pub enum ConstraintVector {
-    Bool(Vec<bool>),
-    I64(Vec<i64>),
-    F64(Vec<f64>),
-    Str(Vec<String>),
+    pub min: Vector1DNull,
+    pub max: Vector1DNull,
 }
 
 // TODO: implement constraint struct to/from proto
 impl Constraint {
     pub fn to_proto(&self) -> proto::Constraint {
         proto::Constraint {
-            num_records: match self.num_records {
-                Some(x) => x as i32,
-                None => -1
-            },
+            num_records: Some(serial::serialize_array1d_i64_null(&self.num_records)),
+            num_columns: Some(serial::serialize_i64_null(&self.num_columns)),
             nullity: self.nullity,
             releasable: self.releasable,
+            c_stability: Some(serial::serialize_array1d_f64(&self.c_stability)),
             nature: match &self.nature {
                 Some(nature) => match nature {
-                    Nature::Categorical(x) => Some(proto::constraint::Nature::Categorical(proto::constraint::NatureCategorical {
-                        categories: x.categories.iter()
-                            .map(|constraint_categories| proto::constraint::Categories {
-                                data: match serialize_proto_vector(constraint_categories) {
-                                    Some(data) => Some(proto::constraint::categories::Data::Option(data)),
-                                    None => None
-                                }
-                            }).collect()
+                    Nature::Categorical(categorical) => Some(proto::constraint::Nature::Categorical(proto::constraint::NatureCategorical {
+                        categories: Some(serial::serialize_array2d_jagged(&categorical.categories))
                     })),
                     Nature::Continuous(x) => Some(proto::constraint::Nature::Continuous(proto::constraint::NatureContinuous {
-                        minimum: serialize_proto_vector(&x.min),
-                        maximum: serialize_proto_vector(&x.max),
+                        minimum: Some(serial::serialize_array1d_null(&x.min)),
+                        maximum: Some(serial::serialize_array1d_null(&x.max)),
                     }))
                 },
                 None => None
@@ -72,63 +66,27 @@ impl Constraint {
     }
     pub fn from_proto(other: &proto::Constraint) -> Constraint {
         Constraint {
+            num_records: serial::parse_array1d_i64_null(&other.num_records.to_owned().unwrap()),
+            num_columns: serial::parse_i64_null(&other.num_columns.to_owned().unwrap()),
             nullity: other.nullity,
+            releasable: other.releasable,
+            c_stability: serial::parse_array1d_f64(&other.c_stability.to_owned().unwrap()),
             nature: match other.nature.to_owned() {
                 Some(nature) => match nature {
                     proto::constraint::Nature::Continuous(continuous) =>
                         Some(Nature::Continuous(NatureContinuous {
-                            min: parse_proto_vector(&continuous.minimum),
-                            max: parse_proto_vector(&continuous.maximum),
+                            min: serial::parse_array1d_null(&continuous.minimum.unwrap()),
+                            max: serial::parse_array1d_null(&continuous.maximum.unwrap()),
                         })),
                     proto::constraint::Nature::Categorical(categorical) =>
                         Some(Nature::Categorical(NatureCategorical {
-                            categories: categorical.categories.iter()
-                                .map(|categories: &proto::constraint::Categories| match &categories.data {
-                                    Some(data) => match data {
-                                        proto::constraint::categories::Data::Option(vector) => parse_proto_vector(&Some(vector.to_owned()))
-                                    },
-                                    None => None
-                                }).collect::<Vec<Option<ConstraintVector>>>(),
+                            categories: serial::parse_array2d_jagged(&categorical.categories.unwrap())
                         }))
                 },
                 None => None
-            },
-            releasable: other.releasable,
-            num_records: match other.num_records {
-                x if x < 0 => None,
-                x => Some(x as u32)
-            },
+            }
         }
     }
-}
-
-pub fn parse_proto_vector(array: &Option<proto::Array1D>) -> Option<ConstraintVector> {
-    match array {
-        Some(array) => match array.data.to_owned() {
-            Some(data) => match data {
-                proto::array1_d::Data::Bool(typed) => Some(ConstraintVector::Bool(typed.data)),
-                proto::array1_d::Data::I64(typed) => Some(ConstraintVector::I64(typed.data)),
-                proto::array1_d::Data::F64(typed) => Some(ConstraintVector::F64(typed.data)),
-                proto::array1_d::Data::String(typed) => Some(ConstraintVector::Str(typed.data))
-            },
-            None => None
-        },
-        None => None
-    }
-}
-
-pub fn serialize_proto_vector(vector: &Option<ConstraintVector>) -> Option<proto::Array1D> {
-    Some(proto::Array1D {
-        data: match vector {
-            Some(data) => match data {
-                ConstraintVector::Bool(typed) => Some(proto::array1_d::Data::Bool(proto::Array1Dbool { data: typed.to_owned() })),
-                ConstraintVector::I64(typed) => Some(proto::array1_d::Data::I64(proto::Array1Di64 { data: typed.to_owned() })),
-                ConstraintVector::F64(typed) => Some(proto::array1_d::Data::F64(proto::Array1Df64 { data: typed.to_owned() })),
-                ConstraintVector::Str(typed) => Some(proto::array1_d::Data::String(proto::Array1Dstr { data: typed.to_owned() })),
-            },
-            None => return None
-        }
-    })
 }
 
 // constraints for each node in the graph
@@ -152,27 +110,38 @@ pub fn propagate_constraints(
     analysis: &proto::Analysis,
     release: &proto::Release,
 ) -> Result<GraphConstraint, String> {
+    // compute properties for every node in the graph
+
     let mut graph: HashMap<u32, proto::Component> = analysis.computation_graph.to_owned().unwrap().value.to_owned();
     let traversal: Vec<u32> = utilities::graph::get_traversal(analysis)?;
+
+    let graph_evaluation: GraphEvaluation = release_to_evaluations(&release)?;
 
     let mut graph_constraint = GraphConstraint::new();
     traversal.iter().for_each(|node_id| {
         let component: proto::Component = graph.get(node_id).unwrap().to_owned();
         let input_constraints = get_constraints(&component, &graph_constraint);
-        let constraint = component.value.unwrap().propagate_constraint(&input_constraints).unwrap();
+
+        let public_arguments = get_arguments_copy(&component, &graph_evaluation);
+        let constraint = component.value.unwrap().propagate_constraint(&public_arguments, &input_constraints).unwrap();
         graph_constraint.insert(node_id.clone(), constraint);
     });
     Ok(graph_constraint)
 }
 
+//pub fn map_options<T>(left: Vec<T>, right: Vec<T>, operator: &dyn Fn(T, T) -> T) -> Result<Vec<T>, String> {
+//
+//}
 
-pub fn get_min(constraints: &NodeConstraints, argument: &str) -> Result<Option<ConstraintVector>, String> {
-    let constraint = match constraints.get(argument) {
-        Some(constraint) => constraint,
-        None => return Err("constraint not found".to_string()),
-    };
+pub fn get_constraint<'a>(constraints: &'a NodeConstraints, argument: &str) -> Result<&'a Constraint, String> {
+    match constraints.get(argument) {
+        Some(constraint) => Ok(constraint),
+        None => Err("constraint not found".to_string()),
+    }
+}
 
-    let nature = match &constraint.nature {
+pub fn get_min(constraints: &NodeConstraints, argument: &str) -> Result<Vector1DNull, String> {
+    let nature = match &get_constraint(constraints, argument)?.nature {
         Some(nature) => match nature {
             Nature::Continuous(nature) => nature,
             _ => return Err("a categorical constraint is defined on a continuous argument".to_string())
@@ -182,26 +151,19 @@ pub fn get_min(constraints: &NodeConstraints, argument: &str) -> Result<Option<C
     Ok(nature.min.clone())
 }
 
-pub fn get_min_f64(constraints: &NodeConstraints, argument: &str) -> Result<Vec<f64>, String> {
-    let min = match get_min(constraints, argument)? {
-        Some(min) => min.to_owned(),
-        None => return Err("no min is defined on a continuous argument".to_string())
-    };
+pub fn get_min_f64(constraints: &NodeConstraints, argument: &str) -> Result<Vec<Option<f64>>, String> {
+    let min = get_min(constraints, argument)?;
 
     match min {
-        ConstraintVector::F64(value) => Ok(value.to_owned()),
-        ConstraintVector::I64(value) => Ok(value.iter().map(|&x| x as f64).collect()),
+        Vector1DNull::F64(value) => Ok(value.to_owned()),
+        Vector1DNull::I64(value) => Ok(value.iter()
+            .map(|&x| match x {Some(x) => Some(x as f64), None => None}).collect()),
         _ => Err("the min must be a numeric type".to_string())
     }
 }
 
-pub fn get_max(constraints: &NodeConstraints, argument: &str) -> Result<Option<ConstraintVector>, String> {
-    let constraint = match constraints.get(argument) {
-        Some(constraint) => constraint,
-        None => return Err("constraint not found".to_string()),
-    };
-
-    let nature = match &constraint.nature {
+pub fn get_max(constraints: &NodeConstraints, argument: &str) -> Result<Vector1DNull, String> {
+    let nature = match &get_constraint(constraints, argument)?.nature {
         Some(nature) => match nature {
             Nature::Continuous(nature) => nature,
             _ => return Err("a categorical constraint is defined on a continuous argument".to_string())
@@ -211,29 +173,35 @@ pub fn get_max(constraints: &NodeConstraints, argument: &str) -> Result<Option<C
     Ok(nature.max.clone())
 }
 
-pub fn get_max_f64(constraints: &NodeConstraints, argument: &str) -> Result<Vec<f64>, String> {
-    let max = match get_max(constraints, argument)? {
-        Some(max) => max.to_owned(),
-        None => return Err("no max is defined on a continuous argument".to_string())
-    };
+pub fn get_max_f64(constraints: &NodeConstraints, argument: &str) -> Result<Vec<Option<f64>>, String> {
+    let max = get_max(constraints, argument)?;
 
     match max {
-        ConstraintVector::F64(value) => Ok(value.to_owned()),
-        ConstraintVector::I64(value) => Ok(value.iter().map(|&x| x as f64).collect()),
+        Vector1DNull::F64(value) => Ok(value.to_owned()),
+        Vector1DNull::I64(value) => Ok(value.iter()
+            .map(|&x| match x {Some(x) => Some(x as f64), None => None}).collect()),
         _ => Err("the max must be a numeric type".to_string())
     }
 }
 
-pub fn get_num_records(constraints: &NodeConstraints, argument: &str) -> Result<Option<u32>, String> {
+pub fn get_num_records(constraints: &NodeConstraints, argument: &str) -> Result<Vec<Option<i64>>, String> {
+    Ok(get_constraint(constraints, argument)?.to_owned().num_records)
+}
+
+pub fn get_releasable_bool(constraints: &NodeConstraints, argument: &str) -> Result<bool, String> {
     match constraints.get(argument) {
-        Some(constraint) => Ok(constraint.num_records),
+        Some(constraint) => Ok(constraint.releasable),
         None => Err("constraint not found".to_string()),
     }
 }
 
-pub fn get_num_records_u32(constraints: &NodeConstraints, argument: &str) -> Result<u32, String> {
-    match get_num_records(constraints, argument)? {
-        Some(x) => Ok(x),
-        None => Err("n is not known".to_string())
-    }
-}
+//pub fn get_conservative_bounds(
+//    bounds: Vec<Option<Vec<f32>>>,
+//    operator: &dyn Fn(&f64, &f64) -> f64
+//) -> Option<Vec<f64>> {
+//    if !bounds.iter().all(|bound| bound.is_some()) {
+//        return None;
+//    }
+////    bounds.iter().fold1(|accum, bound| bound.unwrap().map())
+//
+//}

@@ -1,7 +1,7 @@
 pub mod base;
 pub mod utilities;
 pub mod components;
-use crate::components::Component;
+use crate::components::*;
 
 // include protobuf-generated traits
 pub mod proto {
@@ -20,8 +20,9 @@ macro_rules! hashmap {
 
 use prost::Message;
 use std::collections::HashMap;
-use crate::utilities::buffer::{NodeEvaluation, NodeArguments, parse_proto_value};
+use crate::utilities::buffer::{NodeArguments};
 use crate::utilities::constraint::NodeConstraints;
+use crate::utilities::serial::{parse_value, Value};
 
 // useful tutorial for proto over ffi here:
 // https://github.com/mozilla/application-services/blob/master/docs/howtos/passing-protobuf-data-over-ffi.md
@@ -183,8 +184,8 @@ pub extern "C" fn expand_component(
     let request: proto::RequestExpandComponent = prost::Message::decode(request_buffer).unwrap();
 
     let component: proto::Component = request.component.unwrap();
-    let arguments: HashMap<String, NodeEvaluation> = request.arguments.iter()
-        .map(|(k, v)| (k.to_owned(), parse_proto_value(&v).unwrap()))
+    let arguments: HashMap<String, Value> = request.arguments.iter()
+        .map(|(k, v)| (k.to_owned(), parse_value(&v).unwrap()))
         .collect();
     let privacy_definition: proto::PrivacyDefinition = request.privacy_definition.unwrap();
 

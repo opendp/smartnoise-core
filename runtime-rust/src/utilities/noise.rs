@@ -6,9 +6,14 @@ use num;
 use rug;
 use std::{cmp, f64::consts};
 use core::f64::NAN;
-use rand::{Rng, SeedableRng, rngs::StdRng};
 
 use crate::utilities::utilities;
+
+/// trying to get printing to work
+/// ```
+/// println!("foobar");
+/// ```
+///
 
 /// Sample from Laplace distribution centered at shift and scaled by scale
 ///
@@ -24,7 +29,7 @@ use crate::utilities::utilities;
 /// ```
 pub fn sample_laplace(shift: f64, scale: f64) -> f64 {
     let probability: f64 = sample_uniform(0., 1.);
-    Laplace::new(shift, scale).inverse(probability)
+    return Laplace::new(shift, scale).inverse(probability);
 }
 
 /// Sample from Gaussian distribution centered at shift and scaled by scale
@@ -44,7 +49,7 @@ pub fn sample_laplace(shift: f64, scale: f64) -> f64 {
 /// ```
 pub fn sample_gaussian(shift: f64, scale: f64) -> f64 {
     let probability: f64 = sample_uniform(0., 1.);
-    Gaussian::new(shift, scale).inverse(probability)
+    return Gaussian::new(shift, scale).inverse(probability);
 }
 
 /// Sample from truncated Gaussian distribution
@@ -77,12 +82,6 @@ pub fn sample_gaussian_truncated(shift: f64, scale: f64, min: f64, max: f64) -> 
     return Gaussian::new(shift, scale).inverse(unif);
 }
 
-// pub fn sample_uniform(min: f64, max: f64) -> f64 {
-//     let mut buf: [u8; 8] = [0; 8];
-//     rand_bytes(&mut buf).unwrap();
-//     (LittleEndian::read_u64(&buf) as f64) / (std::u64::MAX as f64) * (max - min) + min
-// }
-
 /// Sample from uniform integers between min and max (inclusive)
 /// # Arguments 
 /// 
@@ -95,15 +94,21 @@ pub fn sample_gaussian_truncated(shift: f64, scale: f64, min: f64, max: f64) -> 
 /// # Example
 /// ``` 
 /// use yarrow_runtime::utilities::noise::sample_uniform_int;
-/// let n:f64 = sample_uniform_int(0.0, 2.0);
-/// assert!(n >= 0.0);
-/// assert!(n <= 2.0);
+/// let n:i64 = sample_uniform_int(&0, &2);
+/// assert!(n == 0 || n == 1 || n == 2);
+/// ```
+///
+/// ``` should_panic
+/// use yarrow_runtime::utilities::noise::sample_uniform_int;
+/// let n:i64 = sample_uniform_int(&2, &0);
 /// ```
 pub fn sample_uniform_int(min: &i64, max: &i64) -> i64 {
+
     assert!(min <= max);
 
     // define number of possible integers we could sample and the maximum
     // number of bits it would take to represent them
+
     let n_ints: i64 = max - min + 1;
     let n_bits: i64 = ( (n_ints as f64).log2() ).ceil() as i64;
 
@@ -144,6 +149,16 @@ pub fn sample_uniform_int(min: &i64, max: &i64) -> i64 {
 ///
 /// Once the precision band has been selected, floating numbers numbers are generated uniformly within the band
 /// by generating a 52-bit mantissa uniformly at random.
+///
+/// # Arguments
+/// 
+/// `min`: f64 minimum of uniform distribution (inclusive)
+/// `max`: f64 maximum of unifrom distribution (non-inclusive)
+/// 
+/// # Return
+/// f64 uniform random bit from [min, max)
+///
+/// # Example
 pub fn sample_uniform(min: f64, max: f64) -> f64 {
 
     assert!(min <= max);
@@ -165,10 +180,6 @@ pub fn sample_uniform(min: f64, max: f64) -> f64 {
     return uniform_rand * (max - min) + min;
 }
 
-pub fn sample_uniform_with_seed(min: f64, max: f64, seed: [u8; 32]) -> f64 {
-    let mut rng: StdRng = SeedableRng::from_seed(seed);
-    return rng.gen::<f64>() * (max - min) + min;
-}
 
 /// Sample a single bit with arbitrary probability of "success", using only
 /// an unbiased source of coin flips (sample_floating_point_probability_exponent).
@@ -309,8 +320,6 @@ pub fn sample_floating_point_probability_exponent() -> i16 {
 /// let geom_noise: i64 = sample_simple_geometric_mechanism(&1., &0, &100, &false);
 /// ```
 pub fn sample_simple_geometric_mechanism(scale: &f64, min: &i64, max: &i64, enforce_constant_time: &bool) -> i64 {
-
-    assert!(min <= max);
 
     let alpha: f64 = consts::E.powf(-*scale);
     let max_trials: i64 = max - min;

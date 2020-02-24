@@ -21,6 +21,7 @@ message Component {
         Stack stack = 102; // stack arguments along an axis of an array
         Literal literal = 110; // propagate a value in the protobuf
         Constant constant = 111; // propagate a value in the release
+        ColumnNames columnnames = 112;
 
         // -- manipulations --
         // type manipulations
@@ -33,6 +34,7 @@ message Component {
         Impute impute = 222;
         RowMax rowmax = 223;
         RowMin rowmin = 224;
+        Resize resize = 225;
         // arithmetic manipulations
         Add add = 250;
         Subtract subtract = 251;
@@ -81,6 +83,7 @@ message Component {
         DataSource datasource = 1007; // load a single column from a csv file as type
     }
 }
+
 // data loading
 message Materialize {
     string dataset_id = 1;
@@ -99,6 +102,7 @@ message Literal {
     bool private = 2;
 }
 message Constant {}
+message ColumnNames {}
 
 // -- manipulations --
 // type manipulations
@@ -213,3 +217,4 @@ message SimpleGeometricMechanism {
 
 message RowMax {}
 message RowMin {}
+message Resize {}

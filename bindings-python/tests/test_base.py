@@ -60,6 +60,24 @@ def test_basic_path():
     return analysis
 
 
+def test_dp_mean():
+    with yarrow.Analysis() as analysis:
+        dataset_pums = yarrow.Dataset('PUMS', test_csv_path)
+
+        age = dataset_pums[('age', int)]
+
+        yarrow.ops.dp_mean(
+            data=age,
+            privacy_usage=yarrow.privacy_usage(epsilon=.5),
+            data_min=0.,
+            data_max=100.,
+            data_n=500
+        )
+    analysis.release()
+
+    return analysis
+
+
 def test_raw_dataset():
     with yarrow.Analysis() as analysis:
         yarrow.ops.dp_mean(

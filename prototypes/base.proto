@@ -54,20 +54,18 @@ message ReleaseNode {
 }
 
 message Constraint {
-    int32 num_records = 1;
-    bool nullity = 2;
-    bool releasable = 3;
+    Array1dI64Null num_records = 1;
+    I64Null num_columns = 2;
+    bool nullity = 3;
+    bool releasable = 4;
+    Array1dF64 c_stability = 5;
 
     message NatureContinuous {
-        Array1D minimum = 1;
-        Array1D maximum = 2;
-    }
-    message Categories {
-        // allow null category sets within a vector. effectively wrap in an option
-        oneof data {Array1D option = 1;}
+        Array1dNull minimum = 1;
+        Array1dNull maximum = 2;
     }
     message NatureCategorical {
-        repeated Categories categories = 1;
+        Array2dJagged categories = 1;
     }
 
     oneof nature {

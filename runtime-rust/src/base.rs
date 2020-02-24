@@ -13,7 +13,8 @@ use itertools::Itertools;
 
 use crate::components;
 use yarrow_validator::utilities::constraint::{get_constraints, GraphConstraint};
-use yarrow_validator::utilities::buffer::{get_arguments, NodeEvaluation};
+use yarrow_validator::utilities::buffer::{get_arguments};
+use yarrow_validator::utilities::serial::Value;
 
 
 pub fn execute_graph(analysis: &proto::Analysis,
@@ -67,7 +68,7 @@ pub fn execute_graph(analysis: &proto::Analysis,
             .filter(|(k, v)| v.releasable)
             .map(|(k, v)| (k.clone(), evaluations
                 .get(component.arguments.get(k).unwrap()).unwrap().clone()))
-            .collect::<HashMap<String, NodeEvaluation>>();
+            .collect::<HashMap<String, Value>>();
 
         // all arguments have been computed, attempt to expand the current node
         let expansion: proto::response_expand_component::ExpandedComponent = yarrow_validator::base::expand_component(
@@ -111,7 +112,7 @@ pub fn execute_graph(analysis: &proto::Analysis,
 
 pub fn execute_component(component: &proto::Component,
                          evaluations: &buffer::GraphEvaluation,
-                         dataset: &proto::Dataset) -> Result<buffer::NodeEvaluation, String> {
+                         dataset: &proto::Dataset) -> Result<Value, String> {
     let arguments = buffer::get_arguments(&component, &evaluations);
 
     use proto::component::Value as Value;
