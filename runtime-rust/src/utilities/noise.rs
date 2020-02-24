@@ -9,12 +9,6 @@ use core::f64::NAN;
 
 use crate::utilities::utilities;
 
-/// trying to get printing to work
-/// ```
-/// println!("foobar");
-/// ```
-///
-
 /// Sample from Laplace distribution centered at shift and scaled by scale
 ///
 /// # Arguments
@@ -159,6 +153,15 @@ pub fn sample_uniform_int(min: &i64, max: &i64) -> i64 {
 /// f64 uniform random bit from [min, max)
 ///
 /// # Example
+/// ```
+/// use yarrow_runtime::utilities::noise::sample_uniform;
+/// let n:f64 = sample_uniform(0.0, 2.0);
+/// assert!(n >= 0.0 && n < 2.0);
+/// ```
+/// ``` should_panic
+/// use yarrow_runtime::utilities::noise::sample_uniform;
+/// let n:f64 = sample_uniform(2.0, 0.0);
+/// ```
 pub fn sample_uniform(min: f64, max: f64) -> f64 {
 
     assert!(min <= max);
@@ -191,10 +194,26 @@ pub fn sample_uniform(min: f64, max: f64) -> f64 {
 ///
 /// # Return
 /// a bit that is 1 with probability "prob"
+///
+/// # Examples
+/// 
+/// ```
+/// use yarrow_runtime::utilities::noise::sample_bit;
+/// let n:i64 = sample_bit(&0.7);
+/// assert!(n == 0 || n == 1);
+/// ```
+/// ```should_panic
+/// use yarrow_runtime::utilities::noise::sample_bit;
+/// let n:i64 = sample_bit(&1.3);
+/// ```
+/// ```should_panic
+/// use yarrow_runtime::utilities::noise::sample_bit;
+/// let n:i64 = sample_bit(&-0.3);
+/// ```
 pub fn sample_bit(prob: &f64) -> i64 {
 
     // ensure that prob is a valid probability
-    assert!(prob >= &0.0 || prob <= &1.0);
+    assert!(prob >= &0.0 && prob <= &1.0);
 
     // repeatedly flip coin (up to 1023 times) and identify index (0-based) of first heads
     let first_heads_index: i16 = sample_floating_point_probability_exponent() - 1;
