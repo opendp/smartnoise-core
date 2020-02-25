@@ -14,22 +14,25 @@
       ],
       "type": "Array"
     },
-    "group_by": {
-      "constraints": [
-        "categories"
-      ],
-      "nature": [
-        "continuous",
-        "categorical"
-      ],
-      "of": [
-        "int",
-        "bool",
-        "double",
-        "string"
-      ],
-      "type": "Array"
+    "categories": {
+      "type": "JaggedArray2D"
     }
+    // "group_by": {
+    //   "constraints": [
+    //     "categories"
+    //   ],
+    //   "nature": [
+    //     "continuous",
+    //     "categorical"
+    //   ],
+    //   "of": [
+    //     "int",
+    //     "bool",
+    //     "double",
+    //     "string"
+    //   ],
+    //   "type": "Array"
+    // }
   },
   "id": "Count",
   "name": "count",

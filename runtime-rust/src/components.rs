@@ -220,6 +220,26 @@ pub fn component_bin(
     Ok(Value::ArrayND(ArrayND::Str(utilities::transformations::bin(&data, &edges, &inclusive_left))))
 }
 
+pub fn component_count(_X: &proto::Count, arguments: &NodeArguments,) -> Result<Value, String> {
+    match (arguments.get("data").unwrap(), arguments.get("categories").unwrap()) {
+        (Value::ArrayND(data), Value::Vector2DJagged(categories)) => match (data, categories) {
+            (ArrayND::Bool(data), Vector2DJagged::Bool(categories)) =>
+                Ok(Value::Vector2DJagged(Vector2DJagged::I64(utilities::transformations::count(&data, categories)))),
+
+            (ArrayND::F64(data), Vector2DJagged::F64(categories)) =>
+                Ok(Value::Vector2DJagged(Vector2DJagged::I64(utilities::transformations::count(&data, categories)))),
+
+            (ArrayND::I64(data), Vector2DJagged::I64(categories)) =>
+                Ok(Value::Vector2DJagged(Vector2DJagged::I64(utilities::transformations::count(&data, categories)))),
+
+            (ArrayND::Str(data), Vector2DJagged::Str(categories)) =>
+                Ok(Value::Vector2DJagged(Vector2DJagged::I64(utilities::transformations::count(&data, categories)))),
+            _ => return Err("data and categories must be of same atomic type".to_string())
+        }
+        _ => return Err("data must be ArrayND and categories must be Vector2dJagged".to_string())
+    }
+}
+
 pub fn component_row_wise_min(
     _x: &proto::RowMin, arguments: &NodeArguments,
 ) -> Result<Value, String> {
@@ -375,87 +395,8 @@ pub fn component_impute(_x: &proto::Impute, arguments: &NodeArguments,) -> Resul
             },
             _ => return Err("Distribution not supported".to_string())
         }
-        // match (arguments.get("data").unwrap(), arguments.get("distribution").unwrap(), arguments.get("data_type").unwrap(),
-            //    arguments.get("min").unwrap(), arguments.get("max").unwrap(),
-            //    arguments.get("shift").unwrap(), arguments.get("scale").unwrap()) {
-            // (Value::ArrayND(data), Value::ArrayND(distribution), Value::ArrayND(data_type),
-            //  Value::ArrayND(min), Value::ArrayND(max), Value::Vector1DNull(shift), Value::Vector1DNull(scale)) => match(data, distribution, data_type, min, max, shift, scale) {
-                // (ArrayND::F64(data), ArrayND::Str(distribution), ArrayND::Str(data_type),
-                //  ArrayND::F64(min), ArrayND::F64(max), Vector1DNull::F64(shift), Vector1DNull::F64(scale)) =>
-                //     return Ok(Value::ArrayND(ArrayND::F64(utilities::transformations::impute_numeric(&data, &distribution, &data_type, &min, &max, &shift, &scale)))),
-                // // (ArrayND::I64(data), ArrayND::I64(min), ArrayND::I64(max)) =>
-                //     // return Ok(Value::ArrayND(ArrayND::F64(utilities::transformations::impute_numeric(&data, &distribution, &data_type, &min, &max, &shift, &scale)))),
-                // _ => return Err("data, min, max, shift, and scale must all be f64 -- distribution and data_type must be String".to_string())
-            // },
-            // _ => return Err("data, distribution, data_type, min, and max must all be ArrayND -- shift and scale must be Vector1DNull".to_string())
     }
 }
-
-
-// // TODO: still working on this
-// pub fn component_impute(_x: &proto::Impute, arguments: &NodeArguments,) -> Result<Value, String> {
-//     if arguments.contains_key("categories") {
-//         match (arguments.get("data").unwrap(), arguments.get("categories").unwrap(), arguments.get("probabilities").unwrap(), arguments.get("null").unwrap()) {
-//             (Value::ArrayND(data), Value::Vector2DJagged(categories), Value::Vector2DJagged(probabilities), Value::ArrayND(null)) => match (data, categories, probabilities, null) {
-//                 (ArrayND::Bool(data), Vector2DJagged::Bool(categories), Vector2DJagged::F64(probabilities), ArrayND::Bool(null)) =>
-//                     {
-//                         let categories = categories.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<bool>>>();
-//                         let probabilities = probabilities.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<f64>>>();
-//                         return Ok(Value::ArrayND(ArrayND::Bool(utilities::transformations::impute_categorical(&data, &categories, &probabilities, &null))));
-//                     },
-//                 (ArrayND::F64(data), Vector2DJagged::F64(categories), Vector2DJagged::F64(probabilities), ArrayND::F64(null)) =>
-//                     {
-//                         let categories = categories.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<f64>>>();
-//                         let probabilities = probabilities.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<f64>>>();
-//                         return Ok(Value::ArrayND(ArrayND::F64(utilities::transformations::impute_categorical(&data, &categories, &probabilities, &null))));
-//                     },
-//                 (ArrayND::I64(data), Vector2DJagged::I64(categories), Vector2DJagged::F64(probabilities), ArrayND::I64(null)) =>
-//                     {
-//                         let categories = categories.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<i64>>>();
-//                         let probabilities = probabilities.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<f64>>>();
-//                         return Ok(Value::ArrayND(ArrayND::I64(utilities::transformations::impute_categorical(&data, &categories, &probabilities, &null))));
-//                     },
-//                 (ArrayND::Str(data), Vector2DJagged::Str(categories), Vector2DJagged::F64(probabilities), ArrayND::Str(null)) =>
-//                     {
-//                         let categories = categories.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<String>>>();
-//                         let probabilities = probabilities.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<f64>>>();
-//                         return Ok(Value::ArrayND(ArrayND::Str(utilities::transformations::impute_categorical(&data, &categories, &probabilities, &null))));
-//                     },
-//                 _ => return Err("types of data, categories, and null must be consistent and probabilities must be f64".to_string())
-//             },
-//             _ => return Err("data and null must be ArrayND, categories and probabilities must be Vector2DJagged".to_string())
-//         }
-//     } else {
-//         match (arguments.get("data").unwrap(), arguments.get("distribution").unwrap(), arguments.get("data_type").unwrap(),
-//                arguments.get("min").unwrap(), arguments.get("max").unwrap(),
-//                arguments.get("shift").unwrap(), arguments.get("scale").unwrap()) {
-//             (Value::ArrayND(data), Value::ArrayND(distribution), Value::ArrayND(data_type),
-//              Value::ArrayND(min), Value::ArrayND(max), Value::Vector1DNull(shift), Value::Vector1DNull(scale)) => match(data, distribution, data_type, min, max, shift, scale) {
-//                 (ArrayND::F64(data), ArrayND::Str(distribution), ArrayND::Str(data_type),
-//                  ArrayND::F64(min), ArrayND::F64(max), Vector1DNull::F64(shift), Vector1DNull::F64(scale)) =>
-//                     return Ok(Value::ArrayND(ArrayND::F64(utilities::transformations::impute_numeric(&data, &distribution, &data_type, &min, &max, &shift, &scale)))),
-//                 // (ArrayND::I64(data), ArrayND::I64(min), ArrayND::I64(max)) =>
-//                     // return Ok(Value::ArrayND(ArrayND::F64(utilities::transformations::impute_numeric(&data, &distribution, &data_type, &min, &max, &shift, &scale)))),
-//                 _ =>
-//                     return Err("data, min, max, shift, and scale must all be f64 -- distribution and data_type must be String".to_string())
-//             },
-//             _ => return Err("data, distribution, data_type, min, and max must all be ArrayND -- shift and scale must be Vector1DNull".to_string())
-//         }
-//     }
-// }
-
-// pub fn component_impute(_X: &proto::Impute, arguments: &NodeArguments) -> Result<Value, String> {
-//     // TODO: does not work
-//     let data = arguments.get("data").unwrap();
-//     let distribution = arguments.get("distribution").unwrap();
-//     let data_type = arguments.get("data_type").unwrap();
-//     let min = arguments.get("min").unwrap();
-//     let max = arguments.get("max").unwrap();
-//     let shift = arguments.get("shift").unwrap();
-//     let scale = arguments.get("scale").unwrap();
-//     Ok(Value::F64(utilities::transformations::impute(data, distribution, data_type, min, max, shift, scale)))
-// }
-
 
 fn unwrap_jagged<T>(value: &Vec<Option<Vec<T>>>) -> Vec<Vec<T>> where T: Clone {
     value.iter().map(|v| v.clone().unwrap()).collect()

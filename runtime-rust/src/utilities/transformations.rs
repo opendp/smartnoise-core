@@ -111,6 +111,44 @@ pub fn bin(data: &ArrayD<f64>, edges: &ArrayD<f64>, inclusive_left: &ArrayD<bool
     return convert_from_matrix(&new_bin_array, &original_dim);;
 }
 
+pub fn count<T>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>) -> Vec<Option<Vec<i64>>> where T: Clone, T: PartialEq {
+    /// Gets count of data elements for each category
+    ///
+    /// Example
+    /// ```
+    /// let data: ArrayD<i64> = arr2(&[ [1,1,1,1,1,2,2,2,2,3,3,3,4,4,5],
+    ///                                 [1,2,2,3,3,3,4,4,4,4,5,5,5,5,5] ]).into_dyn();
+    /// let categories: Vec<Vec<i64>> = vec![vec![1,3,5], vec![2,4]];
+    /// let t: Vec<Vec<i64>> = count(&data, &categories);
+    /// println!("{:?}", t);
+    /// ```
+
+    let mut data_2d: ArrayD<T> = convert_to_matrix(data);
+    let mut counts: Vec<Option<Vec<i64>>> = Vec::with_capacity(categories.len());
+
+    let n_cols: i64 = data_2d.len_of(Axis(0)) as i64;
+
+    for i in 0..n_cols {
+        let mut data_vec: Vec<T> = data_2d.slice(s![i as usize, ..]).clone().into_dyn().clone().
+                           into_dimensionality::<Ix1>().unwrap().to_vec();
+        let category_vec: Vec<T> = categories[i as usize].clone().unwrap();
+        let mut counts_vec: Vec<i64> = vec![0; category_vec.len()];
+
+        for j in 0..data_vec.len() {
+            for k in 0..category_vec.len() {
+                if data_vec[j as usize] == category_vec[k as usize] {
+                    counts_vec[k] += 1;
+                }
+            }
+        }
+
+        counts.push(Some(counts_vec));
+    }
+
+    return counts;
+}
+
+
 pub fn broadcast_map<T>(
     left: &ArrayD<T>,
     right: &ArrayD<T>,
@@ -335,8 +373,8 @@ pub fn impute_numeric(data: &ArrayD<f64>, distribution: &ArrayD<String>,
     // set string literals for arguments that are of type String
     let Uniform: String = "Uniform".to_string(); // Distributions
     let Gaussian: String = "Gaussian".to_string();
-//    let Float: String = "Float".to_string(); // Data Types
-//    let Int: String = "Int".to_string();
+    // let Float: String = "Float".to_string(); // Data Types
+    // let Int: String = "Int".to_string();
 
     // initialize new data
     let original_dim: u8 = data.ndim() as u8;
@@ -357,7 +395,7 @@ pub fn impute_numeric(data: &ArrayD<f64>, distribution: &ArrayD<String>,
         imputed_col = match distribution.to_string() {
             Uniform => impute_float_uniform(&(data.slice(s![0, ..])).to_owned().into_dyn(),
                                                      &(min[i as usize]), &(max[i as usize])),
-//            (Uniform, Int) => impute_int_uniform(&(data.slice(s![0, ..])).to_owned().into_dyn(), &min[i as usize], &max[i as usize]),
+            // (Uniform, Int) => impute_int_uniform(&(data.slice(s![0, ..])).to_owned().into_dyn(), &min[i as usize], &max[i as usize]),
             Gaussian => impute_float_gaussian(&(data.slice(s![0, ..])).to_owned().into_dyn(), &shift_i.unwrap().first().unwrap(),
                                                                                                        &scale_i.unwrap().first().unwrap(),                                                        &min[i as usize], &max[i as usize]),
             _ => panic!("distribution/data_type combination not supported")
@@ -400,8 +438,8 @@ pub fn resize_numeric(data: &ArrayD<f64>, n: &u64, distribution: &ArrayD<String>
     // set string literals for arguments that are of type String
     let Uniform: String = "Uniform".to_string(); // Distributions
     let Gaussian: String = "Gaussian".to_string();
-    let Float: String = "Float".to_string(); // Data Types
-    let Int: String = "Int".to_string();
+    // let Float: String = "Float".to_string(); // Data Types
+    // let Int: String = "Int".to_string();
 
     // get number of observations in actual data
     let real_n: u64 = data.len_of(Axis(1)) as u64;
