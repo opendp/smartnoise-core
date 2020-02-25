@@ -2,19 +2,19 @@ use std::collections::HashMap;
 use crate::utilities::constraint as constraint_utils;
 use crate::utilities::constraint::{Constraint, NodeConstraints, get_constraint};
 
-use crate::{base, components};
+
 use crate::proto;
 use crate::hashmap;
-use crate::components::{Component, Report, Accuracy, Privatize, Expandable};
+use crate::components::{Component, Accuracy, Privatize, Expandable};
 use ndarray::Array;
 use crate::utilities::serial::{Value, serialize_value, ArrayND};
-use crate::utilities::buffer::NodeArguments;
+
 
 impl Component for proto::DpMean {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_constraint(
         &self,
-        public_arguments: &HashMap<String, Value>,
+        _public_arguments: &HashMap<String, Value>,
         constraints: &constraint_utils::NodeConstraints,
     ) -> Result<Constraint, String> {
         Ok(get_constraint(constraints, "left")?.to_owned())
@@ -32,7 +32,7 @@ impl Component for proto::DpMean {
 
     fn is_valid(
         &self,
-        public_arguments: &HashMap<String, Value>,
+        _public_arguments: &HashMap<String, Value>,
         constraints: &constraint_utils::NodeConstraints,
     ) -> bool {
         let num_records = constraint_utils::get_num_records(constraints, "data");
@@ -111,7 +111,7 @@ impl Expandable for proto::DpMean {
 impl Privatize for proto::DpMean {
     fn compute_sensitivity(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &proto::PrivacyDefinition,
         constraints: &NodeConstraints,
     ) -> Option<Vec<f64>> {
         let min = constraint_utils::get_min_f64(constraints, "data").unwrap();
@@ -130,17 +130,17 @@ impl Privatize for proto::DpMean {
 impl Accuracy for proto::DpMean {
     fn accuracy_to_privacy_usage(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
-        constraints: &constraint_utils::NodeConstraints,
-        accuracy: &proto::Accuracy,
+        _privacy_definition: &proto::PrivacyDefinition,
+        _constraints: &constraint_utils::NodeConstraints,
+        _accuracy: &proto::Accuracy,
     ) -> Option<proto::PrivacyUsage> {
         None
     }
 
     fn privacy_usage_to_accuracy(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
-        constraint: &constraint_utils::NodeConstraints,
+        _privacy_definition: &proto::PrivacyDefinition,
+        _constraint: &constraint_utils::NodeConstraints,
     ) -> Option<f64> {
         None
     }

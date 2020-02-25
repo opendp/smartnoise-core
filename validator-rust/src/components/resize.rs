@@ -1,15 +1,15 @@
 use std::collections::HashMap;
 use crate::utilities::constraint as constraint_utils;
-use crate::utilities::constraint::{Constraint, NodeConstraints, Nature, NatureContinuous, get_min_f64, get_num_records};
+use crate::utilities::constraint::{Constraint};
 
-use crate::{base, components};
+
 use crate::proto;
-use crate::hashmap;
-use crate::components::{Component, Expandable};
-use ndarray::Array;
-use crate::utilities::serial::{Vector1DNull, Value, ArrayND};
-use itertools::Itertools;
-use crate::utilities::buffer::NodeArguments;
+
+use crate::components::{Component};
+
+use crate::utilities::serial::{Value, ArrayND};
+
+
 
 impl Component for proto::Resize {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
@@ -26,7 +26,7 @@ impl Component for proto::Resize {
             Value::ArrayND(array) => match array {
                 ArrayND::I64(array) => match array.ndim() {
                     0 => (0..data_constraint.num_columns.unwrap())
-                        .collect::<Vec<i64>>().iter().map(|x| Some(array.first().unwrap().clone())).collect(),
+                        .collect::<Vec<i64>>().iter().map(|_x| Some(array.first().unwrap().clone())).collect(),
                     _ => return Err("n must be a scalar".to_string())
                 }
                 _ => return Err("n must be an integer".to_string())
@@ -40,7 +40,7 @@ impl Component for proto::Resize {
     fn is_valid(
         &self,
         public_arguments: &HashMap<String, Value>,
-        constraints: &constraint_utils::NodeConstraints,
+        _constraints: &constraint_utils::NodeConstraints,
     ) -> bool {
         public_arguments.contains_key("n")
     }

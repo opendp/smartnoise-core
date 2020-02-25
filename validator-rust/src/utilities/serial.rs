@@ -1,6 +1,6 @@
 use ndarray::prelude::*;
 use crate::proto;
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::{HashMap};
 
 #[derive(Clone, Debug)]
 pub enum Vector1DNull {

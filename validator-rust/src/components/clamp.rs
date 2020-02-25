@@ -2,20 +2,20 @@ use std::collections::HashMap;
 use crate::utilities::constraint as constraint_utils;
 use crate::utilities::constraint::{Constraint, NodeConstraints, Nature, NatureContinuous, get_min_f64, get_num_records};
 
-use crate::{base, components};
+
 use crate::proto;
-use crate::hashmap;
-use crate::components::{Component, Expandable};
-use ndarray::Array;
-use crate::utilities::serial::{Vector1DNull, Value, ArrayND};
+
+use crate::components::{Component};
+
+use crate::utilities::serial::{Vector1DNull, Value};
 use itertools::Itertools;
-use crate::utilities::buffer::NodeArguments;
+
 
 impl Component for proto::Clamp {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_constraint(
         &self,
-        public_arguments: &HashMap<String, Value>,
+        _public_arguments: &HashMap<String, Value>,
         constraints: &constraint_utils::NodeConstraints,
     ) -> Result<Constraint, String> {
         let mut data_constraint = constraints.get("data").unwrap().clone();
@@ -44,7 +44,7 @@ impl Component for proto::Clamp {
 
     fn is_valid(
         &self,
-        public_arguments: &HashMap<String, Value>,
+        _public_arguments: &HashMap<String, Value>,
         constraints: &constraint_utils::NodeConstraints,
     ) -> bool {
         if constraints.contains_key("data") &&

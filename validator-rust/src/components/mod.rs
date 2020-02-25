@@ -7,12 +7,12 @@ pub mod clamp;
 pub mod datasource;
 
 use std::collections::HashMap;
-use crate::utilities::constraint;
+
 use crate::utilities::constraint::{Constraint, NodeConstraints};
 use crate::proto;
 
 use crate::hashmap;
-use crate::utilities::buffer::NodeArguments;
+
 use crate::utilities::serial::Value;
 
 pub trait Component {
@@ -250,7 +250,7 @@ impl Report for proto::component::Value {
     // for json construction. Return type should be a generic serializable struct, not a String
     fn summarize(
         &self,
-        constraints: &NodeConstraints,
+        _constraints: &NodeConstraints,
     ) -> Option<String> {
 
         macro_rules! summarize{
@@ -276,7 +276,7 @@ impl Report for proto::component::Value {
 
     fn get_names(
         &self,
-        constraints: &NodeConstraints,
+        _constraints: &NodeConstraints,
     ) -> Result<Vec<String>, String> {
 
         macro_rules! get_names{

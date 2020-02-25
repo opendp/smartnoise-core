@@ -1,22 +1,22 @@
 use std::collections::HashMap;
 use crate::utilities::constraint as constraint_utils;
 use crate::utilities::constraint::{
-    Constraint, NodeConstraints, Nature, NatureContinuous, get_min_f64};
+    Constraint, Nature, NatureContinuous, get_min_f64};
 
-use crate::{base, components};
+
 use crate::proto;
-use crate::hashmap;
-use crate::components::{Component, Expandable};
-use ndarray::Array;
+
+use crate::components::{Component};
+
 use crate::utilities::serial::{Vector1DNull, Value};
 use itertools::Itertools;
-use crate::utilities::buffer::NodeArguments;
+
 
 impl Component for proto::Impute {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_constraint(
         &self,
-        public_arguments: &HashMap<String, Value>,
+        _public_arguments: &HashMap<String, Value>,
         constraints: &constraint_utils::NodeConstraints,
     ) -> Result<Constraint, String> {
         let mut data_constraint = constraints.get("data").unwrap().clone();
@@ -28,7 +28,7 @@ impl Component for proto::Impute {
                 .zip(get_min_f64(constraints, "max")?)
                 .map(|((d, min), max)| {
                     match d {
-                        Some(x) => vec![d, &min, &max]
+                        Some(_x) => vec![d, &min, &max]
                             .iter().filter(|x| x.is_some())
                             .map(|x| x.unwrap().clone())
                             .fold1(|l, r| l.min(r)),
@@ -43,7 +43,7 @@ impl Component for proto::Impute {
                 .map(|((d, min), max)| {
                     match d {
                         // if there was a prior bound
-                        Some(x) => vec![d, &min, &max]
+                        Some(_x) => vec![d, &min, &max]
                             .iter().filter(|x| x.is_some())
                             .map(|x| x.unwrap().clone())
                             .fold1(|l, r| l.max(r)),
@@ -59,7 +59,7 @@ impl Component for proto::Impute {
 
     fn is_valid(
         &self,
-        public_arguments: &HashMap<String, Value>,
+        _public_arguments: &HashMap<String, Value>,
         constraints: &constraint_utils::NodeConstraints,
     ) -> bool {
         if constraints.contains_key("data") &&

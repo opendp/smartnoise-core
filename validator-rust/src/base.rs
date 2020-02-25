@@ -2,13 +2,13 @@ use crate::proto;
 use itertools::Itertools;
 
 use crate::utilities;
-use crate::components;
+
 use crate::components::*;
 
 use std::collections::HashMap;
-use crate::utilities::constraint::{Constraint, NodeConstraints};
-use crate::hashmap;
-use crate::utilities::buffer::{NodeArguments};
+use crate::utilities::constraint::{NodeConstraints};
+
+
 use crate::utilities::serial::Value;
 use crate::components::literal::infer_constraint;
 
@@ -17,7 +17,7 @@ pub fn validate_analysis(
     analysis: &proto::Analysis
 ) -> Result<proto::response_validate_analysis::Validated, String> {
     // check if acyclic
-    let traversal = utilities::graph::get_traversal(analysis)?;
+    let _traversal = utilities::graph::get_traversal(analysis)?;
 
     // TODO: check that there is at most one Materialize
     // TODO: check shapes and lengths (to prevent leaking from errors)
@@ -131,8 +131,8 @@ pub fn expand_component(
 
 // TODO: create report json
 pub fn generate_report(
-    analysis: &proto::Analysis,
-    release: &proto::Release,
+    _analysis: &proto::Analysis,
+    _release: &proto::Release,
 ) -> Result<String, String> {
     return Ok("{\"key\": \"value\"}".to_owned());
 }
