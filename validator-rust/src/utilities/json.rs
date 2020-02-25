@@ -57,9 +57,5 @@ pub struct AlgorithmInfo {
 
     pub name : String,
     pub cite:String,
-    pub argument: HashMap<String, Value>
-}
-
-
 
 }
