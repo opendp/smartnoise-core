@@ -19,16 +19,16 @@ pub struct JSONRelease {
 }
 #[derive(Serialize, Deserialize)]
 pub struct PureLoss {
-    epsilon: f64
+    pub epsilon: f64
 }
 #[derive(Serialize, Deserialize)]
 pub struct Approx {
-    epsilon: f64,
-    delta:f64
+    pub epsilon: f64,
+    pub delta:f64
 }
 #[derive(Serialize, Deserialize)]
 pub struct Concentrated {
-    rho: f64
+    pub rho: f64
 }
 #[derive(Serialize, Deserialize)]
 pub enum PrivacyLoss {
@@ -38,14 +38,14 @@ pub enum PrivacyLoss {
 }
 #[derive(Serialize, Deserialize)]
 pub struct Accuracy {
-    accuracyValue: f64,
-    alpha: f64
+    pub accuracyValue: f64,
+    pub alpha: f64
 }
 #[derive(Serialize, Deserialize)]
 pub struct AlgorithmInfo {
-    name : String,
-    cite:String,
-    argurment: HashMap<String, Value>
+    pub name : String,
+    pub cite:String,
+    pub argurment: HashMap<String, Value>
 }
 
 fn main(){
