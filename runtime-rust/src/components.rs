@@ -1,8 +1,9 @@
 extern crate yarrow_validator;
+
 use yarrow_validator::proto;
 use crate::utilities;
 use crate::base::*;
-
+use std::convert::TryFrom;
 use ndarray::prelude::*;
 use std::collections::HashMap;
 
@@ -10,8 +11,7 @@ extern crate csv;
 extern crate num;
 
 use std::str::FromStr;
-use yarrow_validator::utilities::buffer::{
-    NodeArguments, get_f64, get_array_f64, get_array_bool, get_bool, get_i64};
+use yarrow_validator::utilities::buffer::{NodeArguments, get_f64, get_array_f64, get_array_bool, get_bool, get_i64, get_str, get_array_str};
 use ndarray::stack;
 use yarrow_validator::utilities::serial::{Value, parse_value, ArrayND, Vector2DJagged};
 
@@ -29,7 +29,7 @@ pub fn component_literal(x: &proto::Literal) -> Result<Value, String> {
 
 pub fn component_materialize(
     materialize: &proto::Materialize,
-    dataset: &proto::Dataset
+    dataset: &proto::Dataset,
 ) -> Result<Value, String> {
     let table = dataset.tables.get(&materialize.dataset_id).unwrap();
     match table.value.as_ref().unwrap() {
@@ -49,7 +49,7 @@ pub fn component_materialize(
                     k.clone(), Value::ArrayND(ArrayND::Str(Array::from(v.to_owned()).into_dyn()))
                 ))
                 .collect::<HashMap<String, Value>>()))
-        },
+        }
         _ => Err("the selected table reference format is not implemented".to_string())
     }
 }
@@ -84,14 +84,13 @@ pub fn component_index(index: &proto::Index, arguments: &NodeArguments) -> Resul
 }
 
 pub fn component_datasource(
-    datasource: &proto::DataSource, dataset: &proto::Dataset, arguments: &NodeArguments
+    datasource: &proto::DataSource, dataset: &proto::Dataset, arguments: &NodeArguments,
 ) -> Result<Value, String> {
 //    println!("datasource");
 
     let table = dataset.tables.get(&datasource.dataset_id).unwrap();
     Ok(match table.value.as_ref().unwrap() {
         proto::table::Value::FilePath(path) => {
-
             fn get_column<T>(path: &String, column: &String) -> Vec<T>
                 where T: FromStr, <T as std::str::FromStr>::Err: std::fmt::Debug {
                 let mut rdr = csv::Reader::from_path(path).unwrap();
@@ -121,14 +120,14 @@ pub fn component_datasource(
                 }
                 _ => Err("Datatype must be contained in an array.".to_string())
             }
-        },
+        }
         proto::table::Value::Literal(value) => parse_value(&value),
         _ => Err("Only file paths are supported".to_string())
     }.unwrap())
 }
 
 pub fn component_add(
-    _x: &proto::Add, arguments: &NodeArguments
+    _x: &proto::Add, arguments: &NodeArguments,
 ) -> Result<Value, String> {
 //    println!("add");
     match (arguments.get("left").unwrap(), arguments.get("right").unwrap()) {
@@ -145,9 +144,8 @@ pub fn component_add(
 
 
 pub fn component_subtract(
-    _x: &proto::Subtract, arguments: &NodeArguments
+    _x: &proto::Subtract, arguments: &NodeArguments,
 ) -> Result<Value, String> {
-
     match (arguments.get("left").unwrap(), arguments.get("right").unwrap()) {
         (Value::ArrayND(left), Value::ArrayND(right)) => match (left, right) {
             (ArrayND::F64(x), ArrayND::F64(y)) =>
@@ -161,9 +159,8 @@ pub fn component_subtract(
 }
 
 pub fn component_divide(
-    _x: &proto::Divide, arguments: &NodeArguments
+    _x: &proto::Divide, arguments: &NodeArguments,
 ) -> Result<Value, String> {
-
     match (arguments.get("left").unwrap(), arguments.get("right").unwrap()) {
         (Value::ArrayND(left), Value::ArrayND(right)) => match (left, right) {
             (ArrayND::F64(x), ArrayND::F64(y)) =>
@@ -177,7 +174,7 @@ pub fn component_divide(
 }
 
 pub fn component_multiply(
-    _x: &proto::Multiply, arguments: &NodeArguments
+    _x: &proto::Multiply, arguments: &NodeArguments,
 ) -> Result<Value, String> {
     match (arguments.get("left").unwrap(), arguments.get("right").unwrap()) {
         (Value::ArrayND(left), Value::ArrayND(right)) => match (left, right) {
@@ -192,17 +189,16 @@ pub fn component_multiply(
 }
 
 pub fn component_power(
-    _x: &proto::Power, arguments: &NodeArguments
+    _x: &proto::Power, arguments: &NodeArguments,
 ) -> Result<Value, String> {
-    let power: f64 = get_f64(&arguments, "right");
-    let data = get_array_f64(&arguments, "left");
+    let power: f64 = get_f64(&arguments, "right")?;
+    let data = get_array_f64(&arguments, "left")?;
     Ok(Value::ArrayND(ArrayND::F64(data.mapv(|x| x.powf(power)))))
 }
 
 pub fn component_negate(
-    _x: &proto::Negate, arguments: &NodeArguments
+    _x: &proto::Negate, arguments: &NodeArguments,
 ) -> Result<Value, String> {
-
     match arguments.get("data").unwrap() {
         Value::ArrayND(data) => match data {
             ArrayND::F64(x) =>
@@ -216,17 +212,16 @@ pub fn component_negate(
 }
 
 pub fn component_bin(
-    _X: &proto::Bin, arguments: &NodeArguments
+    _X: &proto::Bin, arguments: &NodeArguments,
 ) -> Result<Value, String> {
-
-    let data: ArrayD<f64> = get_array_f64(&arguments, "data");
-    let edges: ArrayD<f64> = get_array_f64(&arguments, "edges");
-    let inclusive_left: ArrayD<bool> = get_array_bool(&arguments, "inclusive_left");
+    let data: ArrayD<f64> = get_array_f64(&arguments, "data")?;
+    let edges: ArrayD<f64> = get_array_f64(&arguments, "edges")?;
+    let inclusive_left: ArrayD<bool> = get_array_bool(&arguments, "inclusive_left")?;
     Ok(Value::ArrayND(ArrayND::Str(utilities::transformations::bin(&data, &edges, &inclusive_left))))
 }
 
 pub fn component_row_wise_min(
-    _x: &proto::RowMin, arguments: &NodeArguments
+    _x: &proto::RowMin, arguments: &NodeArguments,
 ) -> Result<Value, String> {
     match (arguments.get("left").unwrap(), arguments.get("right").unwrap()) {
         (Value::ArrayND(left), Value::ArrayND(right)) => match (left, right) {
@@ -259,7 +254,7 @@ pub fn component_row_wise_max(
     }
 }
 
-pub fn component_clamp(_x: &proto::Clamp, arguments: &NodeArguments,) -> Result<Value, String> {
+pub fn component_clamp(_x: &proto::Clamp, arguments: &NodeArguments) -> Result<Value, String> {
     if arguments.contains_key("categories") {
         match (arguments.get("data").unwrap(), arguments.get("categories").unwrap(), arguments.get("null").unwrap()) {
             (Value::ArrayND(data), Value::Vector2DJagged(categories), Value::ArrayND(null)) => match (data, categories, null) {
@@ -289,7 +284,7 @@ pub fn component_clamp(_x: &proto::Clamp, arguments: &NodeArguments,) -> Result<
         }
     } else {
         match (arguments.get("data").unwrap(), arguments.get("min").unwrap(), arguments.get("max").unwrap()) {
-            (Value::ArrayND(data), Value::ArrayND(min), Value::ArrayND(max)) => match(data, min, max) {
+            (Value::ArrayND(data), Value::ArrayND(min), Value::ArrayND(max)) => match (data, min, max) {
                 (ArrayND::F64(data), ArrayND::F64(min), ArrayND::F64(max)) =>
                     return Ok(Value::ArrayND(ArrayND::F64(utilities::transformations::clamp_numeric(&data, &min, &max)))),
                 (ArrayND::I64(data), ArrayND::I64(min), ArrayND::I64(max)) =>
@@ -349,14 +344,14 @@ pub fn component_impute(_x: &proto::Impute, arguments: &NodeArguments,) -> Resul
             _ => return Err("distribution must be wrapped in an ArrayND".to_string())
         };
 
-        match (distribution) {
+        match distribution {
             Uniform => {
                 match (arguments.get("data").unwrap(), arguments.get("min").unwrap(), arguments.get("max").unwrap()) {
                     (Value::ArrayND(data), Value::ArrayND(min), Value::ArrayND(max))
                         => match (data, min, max) {
                             (ArrayND::F64(data), ArrayND::F64(min), ArrayND::F64(max))
                                 => return Ok(Value::ArrayND(ArrayND::F64(utilities::transformations::impute_numeric(
-                                             &data, &distribution, &Float, &min, &max, &None, &None)))),
+                                             &data, &Array::from(vec![distribution.clone()]).into_dyn(), &min, &max, &None, &None)))),
                             (ArrayND::I64(data), ArrayND::I64(min), ArrayND::I64(max))
                                 => return Ok(Value::ArrayND(ArrayND::I64(data.clone()))),
                             _ => return Err("data, min, and max must all be the same type".to_string())
@@ -371,7 +366,7 @@ pub fn component_impute(_x: &proto::Impute, arguments: &NodeArguments,) -> Resul
                         => match(data, min, max, shift, scale) {
                             (ArrayND::F64(data), ArrayND::F64(min), ArrayND::F64(max), ArrayND::F64(shift), ArrayND::F64(scale))
                                 => return Ok(Value::ArrayND(ArrayND::F64(utilities::transformations::impute_numeric(
-                                             &data, &distribution, &Float, &min, &max, &Some(shift.to_owned()), &Some(scale.to_owned()))))),
+                                             &data, &Array::from(vec![distribution.clone()]).into_dyn(),  &min, &max, &Some(shift.to_owned()), &Some(scale.to_owned()))))),
                             _ => return Err("data, min, max, shift, and scale must all be f64".to_string())
                         },
                     _ =>
@@ -449,95 +444,148 @@ pub fn component_impute(_x: &proto::Impute, arguments: &NodeArguments,) -> Resul
 //     }
 // }
 
+// pub fn component_impute(_X: &proto::Impute, arguments: &NodeArguments) -> Result<Value, String> {
+//     // TODO: does not work
+//     let data = arguments.get("data").unwrap();
+//     let distribution = arguments.get("distribution").unwrap();
+//     let data_type = arguments.get("data_type").unwrap();
+//     let min = arguments.get("min").unwrap();
+//     let max = arguments.get("max").unwrap();
+//     let shift = arguments.get("shift").unwrap();
+//     let scale = arguments.get("scale").unwrap();
+//     Ok(Value::F64(utilities::transformations::impute(data, distribution, data_type, min, max, shift, scale)))
+// }
+
+
+fn unwrap_jagged<T>(value: &Vec<Option<Vec<T>>>) -> Vec<Vec<T>> where T: Clone {
+    value.iter().map(|v| v.clone().unwrap()).collect()
+}
+
+pub fn component_resize(_x: &proto::Resize, arguments: &NodeArguments) -> Result<Value, String> {
+    let distribution = get_array_str(arguments, "distribution")?;
+    let n = u64::try_from(get_i64(arguments, "n")?).unwrap();
+
+    if arguments.contains_key("categories") {
+
+        // TODO: refactor into separate function
+        let probabilities = match arguments.get("probabilities") {
+            Some(probabilities) => match probabilities {
+                Value::Vector2DJagged(probabilities) => match probabilities {
+                    Vector2DJagged::F64(probabilities) =>
+                        probabilities.iter().map(|prob| prob.to_owned().unwrap()).collect(),
+                    _ => return Err("probability vectors must be floats".to_string())
+                }
+                _ => return Err("probability vectors must be contained within jagged matrices".to_string())
+            },
+            // TODO: infer uniform probability
+            None => return Err("probability vectors must be supplied as an argument".to_string())
+        };
+
+        match (arguments.get("data").unwrap(), arguments.get("categories").unwrap(), arguments.get("null").unwrap()) {
+            (Value::ArrayND(data), Value::Vector2DJagged(categories), Value::ArrayND(nulls)) => match (data, categories, nulls) {
+                (ArrayND::F64(data), Vector2DJagged::F64(categories), ArrayND::F64(nulls)) =>
+                    Ok(Value::ArrayND(ArrayND::F64(utilities::transformations::resize_categorical(&data, &n, &unwrap_jagged(&categories), &probabilities, &nulls)))),
+                (ArrayND::I64(data), Vector2DJagged::I64(categories), ArrayND::I64(nulls)) =>
+                    Ok(Value::ArrayND(ArrayND::I64(utilities::transformations::resize_categorical(&data, &n, &unwrap_jagged(&categories), &probabilities, &nulls)))),
+                (ArrayND::Bool(data), Vector2DJagged::Bool(categories), ArrayND::Bool(nulls)) =>
+                    Ok(Value::ArrayND(ArrayND::Bool(utilities::transformations::resize_categorical(&data, &n, &unwrap_jagged(&categories), &probabilities, &nulls)))),
+//                (ArrayND::Str(data), Vector2DJagged::Str(categories), ArrayND::Str(nulls)) =>
+//                    Ok(Value::ArrayND(ArrayND::Str(utilities::transformations::resize_categorical(&data, &n, &unwrap_jagged(&categories), &probabilities, &nulls)))),
+                _ => Err("types of data, categories and nulls must be homogenous".to_string())
+            },
+            _ => Err("data and nulls must be arrays, categories must be a jagged matrix".to_string())
+        }
+    } else {
+        let shift = get_array_f64(arguments, "shift")?;
+        let scale = get_array_f64(arguments, "scale")?;
+        match (arguments.get("data").unwrap(), arguments.get("min").unwrap(), arguments.get("max").unwrap()) {
+            (Value::ArrayND(data), Value::ArrayND(min), Value::ArrayND(max)) => match (data, min, max) {
+                (ArrayND::F64(data), ArrayND::F64(min), ArrayND::F64(max)) =>
+                    Ok(Value::ArrayND(ArrayND::F64(utilities::transformations::resize_numeric(&data, &n, &distribution, &min, &max, &shift, &scale)))),
+                _ => Err("data, min and max must all be of float type".to_string())
+            },
+            _ => Err("data, min and max must all be arrays".to_string())
+        }
+    }
+}
+
 //pub fn component_count(
 //    _X: &proto::Count, arguments: &NodeArguments,
 //) -> Result<Value, String> {
 //
 //    match (arguments.get("data").unwrap(), arguments.get("group_by").unwrap()) {
 //        (Value::F64(data), Value::F64(group_by)) =>
-//            Ok(Value::F64(utilities::aggregations::count(&get_array_f64(&arguments, "data"), &Some(get_array_f64(&arguments, "group_by"))))),
+//            Ok(Value::F64(utilities::aggregations::count(&get_array_f64(&arguments, "data")?, &Some(get_array_f64(&arguments, "group_by")?)))),
 //        (Value::Str(data), Value::Str(group_by)) =>
-//            Ok(Value::F64(utilities::aggregations::count(&get_array_str(&arguments, "data"), &Some(get_array_str(&arguments, "group_by"))))),
+//            Ok(Value::F64(utilities::aggregations::count(&get_array_str(&arguments, "data")?, &Some(get_array_str(&arguments, "group_by")?)))),
 //        (Value::Bool(data), Value::Bool(group_by)) =>
-//            Ok(Value::F64(utilities::aggregations::count(&get_array_bool(&arguments, "data"), &Some(get_array_bool(&arguments, "group_by"))))),
+//            Ok(Value::F64(utilities::aggregations::count(&get_array_bool(&arguments, "data")?, &Some(get_array_bool(&arguments, "group_by")?)))),
 //        _ => Err("Count: Data type must be f64, string, or bool".to_string())
 //    }
 //}
 
-//pub fn component_histogram(
-//    _X: &proto::Bin, argument: &NodeArguments
-//) -> Result<Value, String> {
-//    let data: ArrayD<f64> = get_array_f64(&arguments, "data");
-//    let edges: ArrayD<f64> = get_array_f64(&arguments, "edges");
-//    let inclusive_left: bool = get_bool(&arguments, "inclusive_left");
-//    Ok(Value::String_F64_HashMap(utilities::aggregations::histogram(&data, &edges, &inclusive_left))
-//}
-
 pub fn component_mean(
-    _x: &proto::Mean, arguments: &NodeArguments
+    _x: &proto::Mean, arguments: &NodeArguments,
 ) -> Result<Value, String> {
-
-    let data: ArrayD<f64> = get_array_f64(&arguments, "data");
+    let data: ArrayD<f64> = get_array_f64(&arguments, "data")?;
     Ok(Value::ArrayND(ArrayND::F64(utilities::aggregations::mean(&data))))
 }
 
 pub fn component_variance(
-    _x: &proto::Variance, arguments: &NodeArguments
+    _x: &proto::Variance, arguments: &NodeArguments,
 ) -> Result<Value, String> {
-
-    let data: ArrayD<f64> = get_array_f64(&arguments, "data");
-    let finite_sample_correction: bool = get_bool(&arguments, "finite_sample_correction");
+    let data: ArrayD<f64> = get_array_f64(&arguments, "data")?;
+    let finite_sample_correction: bool = get_bool(&arguments, "finite_sample_correction")?;
     Ok(Value::ArrayND(ArrayND::F64(utilities::aggregations::variance(&data, &finite_sample_correction))))
 }
 
 pub fn component_kth_raw_sample_moment(
-    _x: &proto::KthRawSampleMoment, arguments: &NodeArguments
+    _x: &proto::KthRawSampleMoment, arguments: &NodeArguments,
 ) -> Result<Value, String> {
-    let data: ArrayD<f64> = get_array_f64(&arguments, "data");
-    let k: i64 = get_i64(&arguments, "k");
+    let data: ArrayD<f64> = get_array_f64(&arguments, "data")?;
+    let k: i64 = get_i64(&arguments, "k")?;
     Ok(Value::ArrayND(ArrayND::F64(utilities::aggregations::kth_raw_sample_moment(&data, &k))))
 }
 
 pub fn component_median(
-    _x: &proto::Median, arguments: &NodeArguments
+    _x: &proto::Median, arguments: &NodeArguments,
 ) -> Result<Value, String> {
-    let data: ArrayD<f64> = get_array_f64(&arguments, "data");
+    let data: ArrayD<f64> = get_array_f64(&arguments, "data")?;
     Ok(Value::ArrayND(ArrayND::F64(utilities::aggregations::median(&data))))
 }
 
 pub fn component_sum(
-    _x: &proto::Sum, arguments: &NodeArguments
+    _x: &proto::Sum, arguments: &NodeArguments,
 ) -> Result<Value, String> {
-
-    let data: ArrayD<f64> = get_array_f64(&arguments, "data");
+    let data: ArrayD<f64> = get_array_f64(&arguments, "data")?;
     Ok(Value::ArrayND(ArrayND::F64(utilities::aggregations::sum(&data))))
 }
 
 pub fn component_laplace_mechanism(
-    _x: &proto::LaplaceMechanism, arguments: &NodeArguments
+    _x: &proto::LaplaceMechanism, arguments: &NodeArguments,
 ) -> Result<Value, String> {
-    let epsilon: f64 = get_f64(&arguments, "epsilon");
-    let sensitivity: f64 = get_f64(&arguments, "sensitivity");
+    let epsilon: f64 = get_f64(&arguments, "epsilon")?;
+    let sensitivity: f64 = get_f64(&arguments, "sensitivity")?;
     Ok(Value::ArrayND(ArrayND::F64(utilities::mechanisms::laplace_mechanism(&epsilon, &sensitivity))))
 }
 
 pub fn component_gaussian_mechanism(
-    _x: &proto::GaussianMechanism, arguments: &NodeArguments
+    _x: &proto::GaussianMechanism, arguments: &NodeArguments,
 ) -> Result<Value, String> {
-    let epsilon: f64 = get_f64(&arguments, "epsilon");
-    let delta: f64 = get_f64(&arguments, "delta");
-    let sensitivity: f64 = get_f64(&arguments, "sensitivity");
+    let epsilon: f64 = get_f64(&arguments, "epsilon")?;
+    let delta: f64 = get_f64(&arguments, "delta")?;
+    let sensitivity: f64 = get_f64(&arguments, "sensitivity")?;
     Ok(Value::ArrayND(ArrayND::F64(utilities::mechanisms::gaussian_mechanism(&epsilon, &delta, &sensitivity))))
 }
 
 pub fn component_simple_geometric_mechanism(
-    _x: &proto::SimpleGeometricMechanism, arguments: &NodeArguments
+    _x: &proto::SimpleGeometricMechanism, arguments: &NodeArguments,
 ) -> Result<Value, String> {
-    let epsilon: f64 = get_f64(&arguments, "epsilon");
-    let sensitivity: f64 = get_f64(&arguments, "sensitivity");
-    let count_min: i64 = get_i64(&arguments, "count_min");
-    let count_max: i64 = get_i64(&arguments, "count_max");
-    let enforce_constant_time: bool = get_bool(&arguments, "enforce_constant_time");
+    let epsilon: f64 = get_f64(&arguments, "epsilon")?;
+    let sensitivity: f64 = get_f64(&arguments, "sensitivity")?;
+    let count_min: i64 = get_i64(&arguments, "count_min")?;
+    let count_max: i64 = get_i64(&arguments, "count_max")?;
+    let enforce_constant_time: bool = get_bool(&arguments, "enforce_constant_time")?;
     Ok(Value::ArrayND(ArrayND::I64(utilities::mechanisms::simple_geometric_mechanism(
-                             &epsilon, &sensitivity, &count_min, &count_max, &enforce_constant_time))))
+        &epsilon, &sensitivity, &count_min, &count_max, &enforce_constant_time))))
 }

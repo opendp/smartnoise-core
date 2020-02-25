@@ -2,6 +2,8 @@ import yarrow
 
 test_csv_path = '/home/shoe/PSI/datasets/data/PUMS_california_demographics_1000/data.csv'
 
+import pandas
+print(pandas.read_csv(test_csv_path).shape)
 
 def test_basic_path():
     print('file path test')

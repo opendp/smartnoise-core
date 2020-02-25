@@ -30,90 +30,114 @@ pub fn get_arguments_copy(component: &proto::Component, graph_evaluation: &Graph
 }
 
 
-pub fn get_f64(arguments: &NodeArguments, column: &str) -> f64 {
-    match arguments.get(column).unwrap() {
-        Value::ArrayND(array) => match array {
-            ArrayND::Bool(x) => Ok(if *x.first().unwrap() { 1. } else { 0. }),
-            ArrayND::I64(x) => Ok(f64::from(*x.first().unwrap() as i32)),
-            ArrayND::F64(x) => Ok(x.first().unwrap().to_owned()),
-            _ => Err(column.to_string() + " must be numeric")
+pub fn get_f64(arguments: &NodeArguments, column: &str) -> Result<f64, String> {
+    match arguments.get(column) {
+        Some(value) => match value {
+            Value::ArrayND(array) => match array {
+                ArrayND::Bool(x) => Ok(if *x.first().unwrap() { 1. } else { 0. }),
+                ArrayND::I64(x) => Ok(f64::from(*x.first().unwrap() as i32)),
+                ArrayND::F64(x) => Ok(x.first().unwrap().to_owned()),
+                _ => Err((column.to_string() + " must be numeric").to_string())
+            },
+            _ => Err((column.to_string() + " must be an array").to_string())
         },
-        _ => Err("getters may only be called on an ArrayND".to_string())
-    }.unwrap()
+        _ => Err((column.to_string() + " is not defined").to_string())
+    }
 }
 
-pub fn get_array_f64(arguments: &NodeArguments, column: &str) -> ArrayD<f64> {
-    match arguments.get(column).unwrap() {
-        Value::ArrayND(array) => match array {
-            ArrayND::Bool(x) => Ok(x.mapv(|v| if v { 1. } else { 0. })),
-            ArrayND::I64(x) => Ok(x.mapv(|v| f64::from(v as i32))),
-            ArrayND::F64(x) => Ok(x.to_owned()),
-            _ => Err(column.to_string() + " must be numeric")
-        },
-        _ => Err("getters may only be called on an ArrayND".to_string())
-    }.unwrap()
+pub fn get_array_f64(arguments: &NodeArguments, column: &str) -> Result<ArrayD<f64>, String> {
+    match arguments.get(column) {
+        Some(value) => match value {
+            Value::ArrayND(array) => match array {
+                ArrayND::Bool(x) => Ok(x.mapv(|v| if v { 1. } else { 0. })),
+                ArrayND::I64(x) => Ok(x.mapv(|v| f64::from(v as i32))),
+                ArrayND::F64(x) => Ok(x.to_owned()),
+                _ => Err((column.to_string() + " must be numeric").to_string())
+            },
+            _ => Err((column.to_string() + " must be an array").to_string())
+        }
+        _ => Err((column.to_string() + " is not defined").to_string())
+    }
 }
 
-pub fn get_i64(arguments: &NodeArguments, column: &str) -> i64 {
-    match arguments.get(column).unwrap() {
-        Value::ArrayND(array) => match array {
-            ArrayND::Bool(x) => Ok(if *x.first().unwrap() { 1 } else { 0 }),
-            ArrayND::I64(x) => Ok(x.first().unwrap().to_owned()),
-            _ => Err(column.to_string() + " must be integer"),
-        },
-        _ => Err("getters may only be called on an ArrayND".to_string())
-    }.unwrap()
+pub fn get_i64(arguments: &NodeArguments, column: &str) -> Result<i64, String> {
+    match arguments.get(column) {
+        Some(value) => match value {
+            Value::ArrayND(array) => match array {
+                ArrayND::Bool(x) => Ok(if *x.first().unwrap() { 1 } else { 0 }),
+                ArrayND::I64(x) => Ok(x.first().unwrap().to_owned()),
+                _ => Err((column.to_string() + " must be numeric").to_string())
+            },
+            _ => Err((column.to_string() + " must be an array").to_string())
+        }
+        _ => Err((column.to_string() + " is not defined").to_string())
+    }
 }
 
-pub fn get_array_i64(arguments: &NodeArguments, column: &str) -> ArrayD<i64> {
-    match arguments.get(column).unwrap() {
-        Value::ArrayND(array) => match array {
-            ArrayND::Bool(x) => Ok(x.mapv(|v| if v { 1 } else { 0 })),
-            ArrayND::I64(x) => Ok(x.to_owned()),
-            _ => Err(column.to_string() + " must be integer")
+pub fn get_array_i64(arguments: &NodeArguments, column: &str) -> Result<ArrayD<i64>, String> {
+    match arguments.get(column) {
+        Some(value) => match value {
+            Value::ArrayND(array) => match array {
+                ArrayND::Bool(x) => Ok(x.mapv(|v| if v { 1 } else { 0 })),
+                ArrayND::I64(x) => Ok(x.to_owned()),
+                _ => Err((column.to_string() + " must be numeric").to_string())
+            },
+            _ => Err((column.to_string() + " must be an array").to_string())
         },
-        _ => Err("getters may only be called on an ArrayND".to_string())
-    }.unwrap()
+        _ => Err((column.to_string() + " is not defined").to_string())
+    }
 }
 
-pub fn get_str(arguments: &NodeArguments, column: &str) -> String {
-    match arguments.get(column).unwrap() {
-        Value::ArrayND(array) => match array {
-            ArrayND::Str(x) => Ok(x.first().unwrap().to_owned()),
-            _ => Err(column.to_string() + " must be string"),
+pub fn get_str(arguments: &NodeArguments, column: &str) -> Result<String, String> {
+    match arguments.get(column) {
+        Some(argument) => match argument {
+            Value::ArrayND(array) => match array {
+                ArrayND::Str(x) => Ok(x.first().unwrap().to_owned()),
+                _ => Err((column.to_string() + " must be string").to_string())
+            },
+            _ => Err((column.to_string() + " must be an array").to_string())
         },
-        _ => Err("getters may only be called on an ArrayND".to_string())
-    }.unwrap()
+        _ => Err((column.to_string() + " is not defined").to_string())
+    }
 }
 
-pub fn get_array_str(arguments: &NodeArguments, column: &str) -> ArrayD<String> {
-    match arguments.get(column).unwrap() {
-        Value::ArrayND(array) => match array {
-            ArrayND::Str(x) => Ok(x.to_owned()),
-            _ => Err(column.to_string() + " must be string"),
+pub fn get_array_str(arguments: &NodeArguments, column: &str) -> Result<ArrayD<String>, String> {
+    match arguments.get(column) {
+        Some(value) => match value {
+            Value::ArrayND(array) => match array {
+                ArrayND::Str(x) => Ok(x.to_owned()),
+                _ => Err((column.to_string() + " must be string").to_string())
+            },
+            _ => Err((column.to_string() + " must be an array").to_string())
         },
-        _ => Err("getters may only be called on an ArrayND".to_string())
-    }.unwrap()
+        _ => Err((column.to_string() + " is not defined").to_string())
+    }
 }
 
-pub fn get_bool(arguments: &NodeArguments, column: &str) -> bool {
-    match arguments.get(column).unwrap() {
-        Value::ArrayND(array) => match array {
-            ArrayND::Bool(x) => Ok(x.first().unwrap().to_owned()),
-            _ => Err(column.to_string() + " must be boolean"),
+pub fn get_bool(arguments: &NodeArguments, column: &str) -> Result<bool, String> {
+    match arguments.get(column) {
+        Some(value) => match value {
+            Value::ArrayND(array) => match array {
+                ArrayND::Bool(x) => Ok(x.first().unwrap().to_owned()),
+                _ => Err((column.to_string() + " must be bool").to_string())
+            },
+            _ => Err((column.to_string() + " must be an array").to_string())
         },
-        _ => Err("getters may only be called on an ArrayND".to_string())
-    }.unwrap()
+        _ => Err((column.to_string() + " is not defined").to_string())
+    }
 }
 
-pub fn get_array_bool(arguments: &NodeArguments, column: &str) -> ArrayD<bool> {
-    match arguments.get(column).unwrap() {
-        Value::ArrayND(array) => match array {
-            ArrayND::Bool(x) => Ok(x.to_owned()),
-            _ => Err(column.to_string() + " must be boolean"),
+pub fn get_array_bool(arguments: &NodeArguments, column: &str) -> Result<ArrayD<bool>, String> {
+    match arguments.get(column) {
+        Some(value) => match value {
+            Value::ArrayND(array) => match array {
+                ArrayND::Bool(x) => Ok(x.to_owned()),
+                _ => Err((column.to_string() + " must be bool").to_string())
+            },
+            _ => Err((column.to_string() + " must be an array").to_string())
         },
-        _ => Err("getters may only be called on an ArrayND".to_string())
-    }.unwrap()
+        _ => Err((column.to_string() + " is not defined").to_string())
+    }
 }
 
 pub fn release_to_evaluations(release: &proto::Release) -> Result<GraphEvaluation, String> {

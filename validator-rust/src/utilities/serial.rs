@@ -43,6 +43,21 @@ pub enum Value {
     Vector2DJagged(Vector2DJagged),
 }
 
+impl Value {
+    fn get_str(self) -> Result<String, String> {
+        match self {
+            Value::ArrayND(array) => match array {
+                ArrayND::Str(str_array) => match str_array.first() {
+                    Some(string) => Ok(string.to_string()),
+                    None => Err("string array is empty".to_string())
+                },
+                _ => return Err("value must be a string".to_string())
+            },
+            _ => return Err("value must be wrapped in an ArrayND".to_string())
+        }
+    }
+}
+
 // PARSERS
 pub fn parse_bool_null(value: &proto::BoolNull) -> Option<bool> {
 //    match value { proto::bool_null::Data::Option(x) => Some(x), _ => None }

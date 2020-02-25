@@ -119,6 +119,7 @@ pub fn execute_component(component: &proto::Component,
     match component.to_owned().value.unwrap() {
         Value::Materialize(x) => components::component_materialize(&x, &dataset),
         Value::Index(x) => components::component_index(&x, &arguments),
+        Value::Resize(x) => components::component_resize(&x, &arguments),
         Value::Literal(x) => components::component_literal(&x),
         Value::Datasource(x) => components::component_datasource(&x, &dataset, &arguments),
         Value::Add(x) => components::component_add(&x, &arguments),
