@@ -2,6 +2,7 @@ from tests.test_base import (
     test_basic_path,
     test_dp_mean,
     test_raw_dataset,
+    test_report
 )
 
 # analysis = test_basic_path()

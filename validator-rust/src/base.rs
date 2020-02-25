@@ -12,6 +12,7 @@ use ndarray::prelude::Ix1;
 use std::collections::HashMap;
 
 
+
 use crate::utilities::serial::{parse_value, serialize_value, parse_release};
 use std::ops::Deref;
 use ndarray::{ArrayD, Array};
@@ -589,6 +590,26 @@ pub fn expand_component(
 pub fn generate_report(
     _analysis: &proto::Analysis,
     _release: &proto::Release,
-) -> Result<String> {
-    return Ok("{\"key\": \"value\"}".to_owned());
+
+) -> Result<String>  {
+    let mut schema = JSONRelease {
+        description: "".to_string(),
+        variables: vec![],
+        statistics: "".to_string(),
+        releaseInfo: Default::default(),
+        privacyLoss: PrivacyLoss::Pure(PureLoss { epsilon: 0.5 }),
+        accuracy: None,
+        batch: 0,
+        nodeID: 0,
+        postprocess: false,
+        algorithmInfo: AlgorithmInfo {
+            name: "Laplace".to_string(),
+            cite: "haghsg".to_string(),
+            argument: HashMap::new(),
+        },
+    };
+    let j = serde_json::to_string(&schema).unwrap();
+    println!("schema is: {}", j);
+    return Ok(j);
+
 }

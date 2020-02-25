@@ -139,6 +139,45 @@ class Component(object):
         return Component('Constant', release=value)
 
     @staticmethod
+    def _make_value(data, is_jagged=False):
+        if issubclass(type(data), dict):
+            return value_pb2.Value(
+                hashmap_string={key: Component._make_value(data[key]) for key in data}
+            )
+
+        if is_jagged:
+            return value_pb2.Value(array_2d_jagged=value_pb2.Array2dJagged(data=[
+                value_pb2.Array2dJagged.Array1dOption(data=column) for column in data
+            ]))
+
+        data = np.array(data)
+
+        data_type = {
+            np.bool: "bool",
+            np.int64: "i64",
+            np.float64: "f64",
+            np.string_: "string",
+            np.str_: "string"
+        }[data.dtype.type]
+
+        container_type = {
+            np.bool: value_pb2.Array1dBool,
+            np.int64: value_pb2.Array1dI64,
+            np.float64: value_pb2.Array1dF64,
+            np.string_: value_pb2.Array1dStr,
+            np.str_: value_pb2.Array1dStr
+        }[data.dtype.type]
+
+        return value_pb2.Value(
+            array_nd=value_pb2.ArrayNd(
+                shape=list(data.shape),
+                order=list(range(data.ndim)),
+                flattened=value_pb2.Array1d(**{
+                    data_type: container_type(data=list(data.flatten()))
+                })
+            ))
+
+    @staticmethod
     def _expand_constraints(arguments, constraints):
 
         if not constraints:
@@ -324,6 +363,38 @@ class Analysis(object):
         return json.loads(core_wrapper.generate_report(
             self._make_analysis_proto(),
             self.release_proto))
+
+    @staticmethod
+    def test_release():
+        fake_analysis = base_pb2.Analysis(
+            computation_graph=base_pb2.ComputationGraph(value={
+                0: components_pb2.Component(
+                    arguments={},
+                    omit=False,
+                    batch=0,
+                    dpmean=components_pb2.DPMean(
+                        privacy_usage=privacy_usage(.1),
+                        implementation="Laplace"
+                    )
+                )
+            }),
+            privacy_definition=base_pb2.PrivacyDefinition(
+                distance=base_pb2.PrivacyDefinition.Distance.Value('APPROXIMATE'),
+                neighboring=base_pb2.PrivacyDefinition.Neighboring.Value('SUBSTITUTE')
+            )
+        )
+
+        fake_release = base_pb2.Release(
+            values={
+                0: base_pb2.ReleaseNode(
+                    value=Component._make_value(2),
+                    privacy_usage=privacy_usage(.1))
+            }
+        )
+        value = core_wrapper.generate_report(fake_analysis, fake_release)
+        print("RAW STRING")
+        print(value)
+        return json.loads(value)
 
     def __enter__(self):
         global context

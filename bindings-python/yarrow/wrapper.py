@@ -29,7 +29,6 @@ class LibraryWrapper(object):
             function=lib_validator.generate_report,
             response_type=api_pb2.ResponseGenerateReport,
             ffi=ffi_validator)
-
         return json_string
 
     @staticmethod

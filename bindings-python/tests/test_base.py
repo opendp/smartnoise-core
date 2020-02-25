@@ -90,3 +90,9 @@ def test_raw_dataset():
     analysis.release()
 
     return analysis
+
+
+def test_report():
+    parsed = yarrow.Analysis.test_release()
+    print("parsed report:")
+    print(parsed)
