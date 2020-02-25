@@ -356,22 +356,25 @@ pub fn component_impute(_x: &proto::Impute, arguments: &NodeArguments,) -> Resul
             _ => return Err("data and null must be ArrayND, categories and probabilities must be Vector2DJagged".to_string())
         }
     } else {
-        let distribution = match arguments.get("distribution").unwrap() {
-            Value::ArrayND(array) => match array {
-                ArrayND::Str(distribution) => distribution.first().unwrap(),
-                _ => return Err("distribution must be a string".to_string())
+        let distribution = match arguments.get("distribution") {
+            Some(distribution) => match distribution {
+                Value::ArrayND(array) => match array {
+                    ArrayND::Str(distribution) => distribution.first().unwrap().to_owned(),
+                    _ => return Err("distribution must be a string".to_string())
+                },
+                _ => return Err("distribution must be wrapped in an ArrayND".to_string())
             },
-            _ => return Err("distribution must be wrapped in an ArrayND".to_string())
+            None => "Uniform".to_string()
         };
 
-        match distribution {
+        match distribution.clone() {
             Uniform => {
                 match (arguments.get("data").unwrap(), arguments.get("min").unwrap(), arguments.get("max").unwrap()) {
                     (Value::ArrayND(data), Value::ArrayND(min), Value::ArrayND(max))
                         => match (data, min, max) {
                             (ArrayND::F64(data), ArrayND::F64(min), ArrayND::F64(max))
                                 => return Ok(Value::ArrayND(ArrayND::F64(utilities::transformations::impute_numeric(
-                                             &data, &Array::from(vec![distribution.clone()]).into_dyn(), &min, &max, &None, &None)))),
+                                             &data, &distribution, &min, &max, &None, &None)))),
                             (ArrayND::I64(data), ArrayND::I64(min), ArrayND::I64(max))
                                 => return Ok(Value::ArrayND(ArrayND::I64(data.clone()))),
                             _ => return Err("data, min, and max must all be the same type".to_string())
@@ -386,7 +389,7 @@ pub fn component_impute(_x: &proto::Impute, arguments: &NodeArguments,) -> Resul
                         => match(data, min, max, shift, scale) {
                             (ArrayND::F64(data), ArrayND::F64(min), ArrayND::F64(max), ArrayND::F64(shift), ArrayND::F64(scale))
                                 => return Ok(Value::ArrayND(ArrayND::F64(utilities::transformations::impute_numeric(
-                                             &data, &Array::from(vec![distribution.clone()]).into_dyn(),  &min, &max, &Some(shift.to_owned()), &Some(scale.to_owned()))))),
+                                             &data, &distribution,  &min, &max, &Some(shift.clone()), &Some(scale.clone()))))),
                             _ => return Err("data, min, max, shift, and scale must all be f64".to_string())
                         },
                     _ =>
@@ -403,7 +406,10 @@ fn unwrap_jagged<T>(value: &Vec<Option<Vec<T>>>) -> Vec<Vec<T>> where T: Clone {
 }
 
 pub fn component_resize(_x: &proto::Resize, arguments: &NodeArguments) -> Result<Value, String> {
-    let distribution = get_array_str(arguments, "distribution")?;
+    let distribution = match get_array_str(arguments, "distribution") {
+        Ok(distribution) => distribution.to_string(),
+        Err(_) => "Uniform".to_string()
+    };
     let n = u64::try_from(get_i64(arguments, "n")?).unwrap();
 
     if arguments.contains_key("categories") {
@@ -437,12 +443,12 @@ pub fn component_resize(_x: &proto::Resize, arguments: &NodeArguments) -> Result
             _ => Err("data and nulls must be arrays, categories must be a jagged matrix".to_string())
         }
     } else {
-        let shift = get_array_f64(arguments, "shift")?;
-        let scale = get_array_f64(arguments, "scale")?;
+        let shift = get_array_f64(arguments, "shift");
+        let scale = get_array_f64(arguments, "scale");
         match (arguments.get("data").unwrap(), arguments.get("min").unwrap(), arguments.get("max").unwrap()) {
             (Value::ArrayND(data), Value::ArrayND(min), Value::ArrayND(max)) => match (data, min, max) {
                 (ArrayND::F64(data), ArrayND::F64(min), ArrayND::F64(max)) =>
-                    Ok(Value::ArrayND(ArrayND::F64(utilities::transformations::resize_numeric(&data, &n, &distribution, &min, &max, &shift, &scale)))),
+                    Ok(Value::ArrayND(ArrayND::F64(utilities::transformations::resize_numeric(&data, &n, &distribution, &min, &max, &shift.ok(), &scale.ok())))),
                 _ => Err("data, min and max must all be of float type".to_string())
             },
             _ => Err("data, min and max must all be arrays".to_string())

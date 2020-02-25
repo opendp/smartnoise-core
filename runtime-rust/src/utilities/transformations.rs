@@ -367,7 +367,7 @@ pub fn impute_int_uniform(data: &ArrayD<f64>, min: &f64, max: &f64) -> ArrayD<f6
     return arr1(&data_vec).into_dyn();
 }
 
-pub fn impute_numeric(data: &ArrayD<f64>, distribution: &ArrayD<String>,
+pub fn impute_numeric(data: &ArrayD<f64>, distribution: &String,
                       min: &ArrayD<f64>, max: &ArrayD<f64>,
                       shift: &Option<ArrayD<f64>>, scale: &Option<ArrayD<f64>>) -> ArrayD<f64> {
     // set string literals for arguments that are of type String
@@ -432,9 +432,9 @@ pub fn impute_categorical<T>(data: &ArrayD<T>, categories: &Vec::<Vec<T>>, proba
     return convert_from_matrix(&imputed_data, &original_dim);
 }
 
-pub fn resize_numeric(data: &ArrayD<f64>, n: &u64, distribution: &ArrayD<String>,
+pub fn resize_numeric(data: &ArrayD<f64>, n: &u64, distribution: &String,
                       min: &ArrayD<f64>, max: &ArrayD<f64>,
-                      shift: &ArrayD<f64>, scale: &ArrayD<f64>) -> ArrayD<f64> {
+                      shift: &Option<ArrayD<f64>>, scale: &Option<ArrayD<f64>>) -> ArrayD<f64> {
     // set string literals for arguments that are of type String
     let Uniform: String = "Uniform".to_string(); // Distributions
     let Gaussian: String = "Gaussian".to_string();
@@ -467,17 +467,20 @@ pub fn resize_numeric(data: &ArrayD<f64>, n: &u64, distribution: &ArrayD<String>
 
         // create augmented version of data (returned if n > real_n)
         let (mut shift_i, mut scale_i): (Option<ArrayD<f64>>, Option<ArrayD<f64>>) = match distribution {
-            Gaussian => (Some(arr1(&[shift[i as usize]]).into_dyn()),
-                         Some(arr1(&[scale[i as usize]]).into_dyn())),
+            Gaussian => match (shift, scale) {
+                (Some(shift), Some(scale)) =>
+                    (Some(arr1(&[shift[i as usize]]).into_dyn()), Some(arr1(&[scale[i as usize]]).into_dyn())),
+                _ => panic!("gaussian distribution requires both shift and scale to be defined".to_string())
+            },
             Uniform => (None, None),
             _ => panic!("distribution not supported".to_string())
         };
 
-        let mut augmentation_data = impute_numeric(&column, &arr1(&[distribution[i as usize].to_owned()]).into_dyn(),
+        let mut augmentation_data = impute_numeric(&column, distribution,
                                                     &arr1(&[min[i as usize]]).into_dyn(),
                                                     &arr1(&[max[i as usize]]).into_dyn(),
-                                                    &Some(arr1(&[shift[i as usize]]).into_dyn()),
-                                                    &Some(arr1(&[scale[i as usize]]).into_dyn())
+                                                    &shift_i,
+                                                    &scale_i,
                                                     );
         let augmentation_vec = augmentation_data.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
         let mut augmented_column = stack![Axis(0), column.slice(s![0, ..]), augmentation_vec].clone().into_dyn();
