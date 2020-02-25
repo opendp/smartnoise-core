@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 //use schemars::{schema_for, JsonSchema};
 extern crate serde_json;
 use serde_json:: Value;
+#[derive(Serialize, Deserialize)]
 pub struct JSONRelease {
     pub description: String,
     pub variables: Vec<String>,
@@ -16,26 +17,31 @@ pub struct JSONRelease {
     pub postprocess:bool,
     pub algorithmInfo:AlgorithmInfo
 }
-
+#[derive(Serialize, Deserialize)]
 pub struct PureLoss {
     epsilon: f64
 }
+#[derive(Serialize, Deserialize)]
 pub struct Approx {
     epsilon: f64,
     delta:f64
 }
+#[derive(Serialize, Deserialize)]
 pub struct Concentrated {
     rho: f64
 }
+#[derive(Serialize, Deserialize)]
 pub enum PrivacyLoss {
     Pure(PureLoss),
     Approximate(Approx),
     concentrated(Concentrated)
 }
+#[derive(Serialize, Deserialize)]
 pub struct Accuracy {
     accuracyValue: f64,
     alpha: f64
 }
+#[derive(Serialize, Deserialize)]
 pub struct AlgorithmInfo {
     name : String,
     cite:String,
@@ -58,6 +64,7 @@ fn main(){
         cite:"haghsg".to_string(),
         argurment: HashMap::new()
     }
-
 };
+let j= serde_json::to_string(&schema).unwrap();
+println!("schema is: {}",j)
 }
