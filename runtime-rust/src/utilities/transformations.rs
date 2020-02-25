@@ -371,8 +371,8 @@ pub fn impute_numeric(data: &ArrayD<f64>, distribution: &String,
                       min: &ArrayD<f64>, max: &ArrayD<f64>,
                       shift: &Option<ArrayD<f64>>, scale: &Option<ArrayD<f64>>) -> ArrayD<f64> {
     // set string literals for arguments that are of type String
-    let _Uniform: String = "Uniform".to_string(); // Distributions
-    let _Gaussian: String = "Gaussian".to_string();
+    let uniform: String = "Uniform".to_string(); // Distributions
+    let gaussian: String = "Gaussian".to_string();
     // let Float: String = "Float".to_string(); // Data Types
     // let Int: String = "Int".to_string();
 
@@ -386,17 +386,17 @@ pub fn impute_numeric(data: &ArrayD<f64>, distribution: &String,
     let mut imputed_col: ArrayD<f64>;
     for i in 0..n_cols {
         let (shift_i, scale_i): (Option<ArrayD<f64>>, Option<ArrayD<f64>>) = match distribution {
-            _Gaussian => (Some(arr1(&[shift.as_ref().unwrap()[i as usize]]).into_dyn()),
+            x if x == &gaussian => (Some(arr1(&[shift.as_ref().unwrap()[i as usize]]).into_dyn()),
                          Some(arr1(&[scale.as_ref().unwrap()[i as usize]]).into_dyn())),
-            _Uniform => (None, None),
+            x if x == &uniform => (None, None),
             _ => panic!("distribution not supported".to_string())
         };
         // do standard data imputation
-        imputed_col = match distribution.to_string() {
-            _Uniform => impute_float_uniform(&(data.slice(s![0, ..])).to_owned().into_dyn(),
+        imputed_col = match distribution {
+            x if x == &uniform => impute_float_uniform(&(data.slice(s![0, ..])).to_owned().into_dyn(),
                                                      &(min[i as usize]), &(max[i as usize])),
             // (Uniform, Int) => impute_int_uniform(&(data.slice(s![0, ..])).to_owned().into_dyn(), &min[i as usize], &max[i as usize]),
-            _Gaussian => impute_float_gaussian(&(data.slice(s![0, ..])).to_owned().into_dyn(), &shift_i.unwrap().first().unwrap(),
+            x if x == &gaussian => impute_float_gaussian(&(data.slice(s![0, ..])).to_owned().into_dyn(), &shift_i.unwrap().first().unwrap(),
                                                                                                        &scale_i.unwrap().first().unwrap(),                                                        &min[i as usize], &max[i as usize]),
             _ => panic!("distribution/data_type combination not supported")
         };
@@ -436,8 +436,8 @@ pub fn resize_numeric(data: &ArrayD<f64>, n: &u64, distribution: &String,
                       min: &ArrayD<f64>, max: &ArrayD<f64>,
                       shift: &Option<ArrayD<f64>>, scale: &Option<ArrayD<f64>>) -> ArrayD<f64> {
     // set string literals for arguments that are of type String
-    let _Uniform: String = "Uniform".to_string(); // Distributions
-    let _Gaussian: String = "Gaussian".to_string();
+    let uniform: String = "Uniform".to_string(); // Distributions
+    let gaussian: String = "Gaussian".to_string();
     // let Float: String = "Float".to_string(); // Data Types
     // let Int: String = "Int".to_string();
 
@@ -467,12 +467,12 @@ pub fn resize_numeric(data: &ArrayD<f64>, n: &u64, distribution: &String,
 
         // create augmented version of data (returned if n > real_n)
         let (shift_i, scale_i): (Option<ArrayD<f64>>, Option<ArrayD<f64>>) = match distribution {
-            _Gaussian => match (shift, scale) {
+            x if x == &gaussian => match (shift, scale) {
                 (Some(shift), Some(scale)) =>
                     (Some(arr1(&[shift[i as usize]]).into_dyn()), Some(arr1(&[scale[i as usize]]).into_dyn())),
                 _ => panic!("gaussian distribution requires both shift and scale to be defined".to_string())
             },
-            _Uniform => (None, None),
+            x if x == &uniform => (None, None),
             _ => panic!("distribution not supported".to_string())
         };
 
@@ -500,12 +500,6 @@ pub fn resize_numeric(data: &ArrayD<f64>, n: &u64, distribution: &String,
 pub fn resize_categorical<T>(data: &ArrayD<T>, n: &u64,
                              categories: &Vec<Vec<T>>, probabilities: &Vec<Vec<f64>>, null_value: &ArrayD<T>,)
                                 -> ArrayD<T> where T: Clone, T: Copy, T: PartialEq, T: Default {
-    // set string literals for arguments that are of type String
-    let _Uniform: String = "Uniform".to_string(); // Distributions
-    let _Gaussian: String = "Gaussian".to_string();
-    let _Float: String = "Float".to_string(); // Data Types
-    let _Int: String = "Int".to_string();
-
     // get number of observations in actual data
     let real_n: u64 = data.len_of(Axis(1)) as u64;
 

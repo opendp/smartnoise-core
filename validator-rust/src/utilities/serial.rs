@@ -51,9 +51,9 @@ impl Value {
                     Some(string) => Ok(string.to_string()),
                     None => Err("string array is empty".to_string())
                 },
-                _ => return Err("value must be a string".to_string())
+                _ => Err("value must be a string".to_string())
             },
-            _ => return Err("value must be wrapped in an ArrayND".to_string())
+            _ => Err("value must be wrapped in an ArrayND".to_string())
         }
     }
 }
@@ -134,7 +134,7 @@ pub fn parse_array1d(value: &proto::Array1d) -> Vector1D {
 }
 
 
-pub fn parse_arrayNd(value: &proto::ArrayNd) -> ArrayND {
+pub fn parse_arraynd(value: &proto::ArrayNd) -> ArrayND {
     let shape: Vec<usize> = value.shape.iter().map(|x| *x as usize).collect();
     match parse_array1d(&value.flattened.to_owned().unwrap()) {
         Vector1D::Bool(vector) => ArrayND::Bool(Array::from_shape_vec(shape, vector).unwrap().into_dyn()),
@@ -197,7 +197,7 @@ pub fn parse_array2d_jagged(value: &proto::Array2dJagged) -> Vector2DJagged {
 pub fn parse_value(value: &proto::Value) -> Result<Value, String> {
     Ok(match value.data.to_owned().unwrap() {
         proto::value::Data::ArrayNd(data) =>
-            Value::ArrayND(parse_arrayNd(&data)),
+            Value::ArrayND(parse_arraynd(&data)),
         proto::value::Data::HashmapString(data) =>
             Value::HashmapString(parse_hashmap_str(&data)),
         proto::value::Data::Array2dJagged(data) =>
@@ -301,7 +301,7 @@ pub fn serialize_array1d(value: &Vector1D) -> proto::Array1d {
     }
 }
 
-pub fn serialize_arrayNd(value: &ArrayND) -> proto::ArrayNd {
+pub fn serialize_arraynd(value: &ArrayND) -> proto::ArrayNd {
     match value {
         ArrayND::Bool(array) => proto::ArrayNd {
             flattened: Some(serialize_array1d(&Vector1D::Bool(array.iter().map(|s| s.to_owned()).collect()))),
@@ -373,7 +373,7 @@ pub fn serialize_value(value: &Value) -> Result<proto::Value, String> {
     Ok(proto::Value {
         data: Some(match value {
             Value::ArrayND(data) =>
-                proto::value::Data::ArrayNd(serialize_arrayNd(data)),
+                proto::value::Data::ArrayNd(serialize_arraynd(data)),
             Value::HashmapString(data) =>
                 proto::value::Data::HashmapString(serialize_hashmap_str(data)),
             Value::Vector2DJagged(data) =>

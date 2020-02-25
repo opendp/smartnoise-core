@@ -212,7 +212,7 @@ pub fn component_negate(
 }
 
 pub fn component_bin(
-    _X: &proto::Bin, arguments: &NodeArguments,
+    _x: &proto::Bin, arguments: &NodeArguments,
 ) -> Result<Value, String> {
     let data: ArrayD<f64> = get_array_f64(&arguments, "data")?;
     let edges: ArrayD<f64> = get_array_f64(&arguments, "edges")?;
@@ -220,7 +220,7 @@ pub fn component_bin(
     Ok(Value::ArrayND(ArrayND::Str(utilities::transformations::bin(&data, &edges, &inclusive_left))))
 }
 
-pub fn component_count(_X: &proto::Count, arguments: &NodeArguments,) -> Result<Value, String> {
+pub fn component_count(_x: &proto::Count, arguments: &NodeArguments,) -> Result<Value, String> {
     match (arguments.get("data").unwrap(), arguments.get("categories").unwrap()) {
         (Value::ArrayND(data), Value::Vector2DJagged(categories)) => match (data, categories) {
             (ArrayND::Bool(data), Vector2DJagged::Bool(categories)) =>
@@ -319,10 +319,10 @@ pub fn component_clamp(_x: &proto::Clamp, arguments: &NodeArguments) -> Result<V
 
 // TODO: still working on this
 pub fn component_impute(_x: &proto::Impute, arguments: &NodeArguments,) -> Result<Value, String> {
-    let _Uniform: String = "Uniform".to_string(); // Distributions
-    let _Gaussian: String = "Gaussian".to_string();
-    let _Float: String = "Float".to_string(); // Data Types
-    let _Int: String = "Int".to_string();
+    let uniform: String = "Uniform".to_string(); // Distributions
+    let gaussian: String = "Gaussian".to_string();
+    let float: String = "Float".to_string(); // Data Types
+    let int: String = "Int".to_string();
 
     if arguments.contains_key("categories") {
         match (arguments.get("data").unwrap(), arguments.get("categories").unwrap(), arguments.get("probabilities").unwrap(), arguments.get("null").unwrap()) {
@@ -367,8 +367,8 @@ pub fn component_impute(_x: &proto::Impute, arguments: &NodeArguments,) -> Resul
             None => "Uniform".to_string()
         };
 
-        match distribution.clone() {
-            _Uniform => {
+        match &distribution.clone() {
+            x if x == &uniform => {
                 match (arguments.get("data").unwrap(), arguments.get("min").unwrap(), arguments.get("max").unwrap()) {
                     (Value::ArrayND(data), Value::ArrayND(min), Value::ArrayND(max))
                         => match (data, min, max) {
@@ -382,7 +382,7 @@ pub fn component_impute(_x: &proto::Impute, arguments: &NodeArguments,) -> Resul
                     _ => return Err("data, min, max, shift, and scale must be ArrayND".to_string())
                 }
             },
-            _Gaussian => {
+            x if x == &gaussian => {
                 match (arguments.get("data").unwrap(), arguments.get("min").unwrap(),
                        arguments.get("max").unwrap(), arguments.get("shift").unwrap(), arguments.get("scale").unwrap()) {
                     (Value::ArrayND(data), Value::ArrayND(min), Value::ArrayND(max), Value::ArrayND(shift), Value::ArrayND(scale))

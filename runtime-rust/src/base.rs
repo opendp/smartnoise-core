@@ -118,7 +118,11 @@ pub fn execute_component(component: &proto::Component,
     use proto::component::Value as Value;
     match component.to_owned().value.unwrap() {
         Value::Materialize(x) => components::component_materialize(&x, &dataset),
+        Value::Count(x) => components::component_count(&x, &arguments),
+        Value::Clamp(x) => components::component_clamp(&x, &arguments),
+        Value::Impute(x) => components::component_impute(&x, &arguments),
         Value::Index(x) => components::component_index(&x, &arguments),
+        Value::Kthrawsamplemoment(x) => components::component_kth_raw_sample_moment(&x, &arguments),
         Value::Resize(x) => components::component_resize(&x, &arguments),
         Value::Literal(x) => components::component_literal(&x),
         Value::Datasource(x) => components::component_datasource(&x, &dataset, &arguments),

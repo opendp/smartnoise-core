@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use crate::utilities::constraint as constraint_utils;
-use crate::utilities::constraint::{Constraint, NodeConstraints, Nature, NatureContinuous, get_min_f64, get_num_records};
+use crate::utilities::constraint::{Constraint, Nature, NatureContinuous, get_min_f64};
 
 
 use crate::proto;

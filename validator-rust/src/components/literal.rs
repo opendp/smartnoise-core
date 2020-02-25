@@ -6,7 +6,7 @@ use crate::utilities::constraint::{Constraint, NatureCategorical, Nature, Nature
 use crate::proto;
 
 use crate::components::Component;
-use ndarray::{Array, ArrayD, Axis, IntoDimension};
+use ndarray::{Axis};
 use ndarray::prelude::*;
 use ndarray_stats::QuantileExt;
 use crate::utilities::serial::{parse_value, Value, ArrayND, Vector2DJagged, Vector1DNull};
