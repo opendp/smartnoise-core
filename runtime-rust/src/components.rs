@@ -2,7 +2,7 @@ extern crate yarrow_validator;
 
 use yarrow_validator::proto;
 use crate::utilities;
-use crate::base::*;
+
 use std::convert::TryFrom;
 use ndarray::prelude::*;
 use std::collections::HashMap;
@@ -11,8 +11,8 @@ extern crate csv;
 extern crate num;
 
 use std::str::FromStr;
-use yarrow_validator::utilities::buffer::{NodeArguments, get_f64, get_array_f64, get_array_bool, get_bool, get_i64, get_str, get_array_str};
-use ndarray::stack;
+use yarrow_validator::utilities::buffer::{NodeArguments, get_f64, get_array_f64, get_array_bool, get_bool, get_i64, get_array_str};
+
 use yarrow_validator::utilities::serial::{Value, parse_value, ArrayND, Vector2DJagged};
 
 macro_rules! hashmap {
@@ -54,7 +54,7 @@ pub fn component_materialize(
     }
 }
 
-pub fn component_index(index: &proto::Index, arguments: &NodeArguments) -> Result<Value, String> {
+pub fn component_index(_index: &proto::Index, arguments: &NodeArguments) -> Result<Value, String> {
     let data = arguments.get("data").unwrap();
     let columns = arguments.get("columns").unwrap();
 
@@ -319,10 +319,10 @@ pub fn component_clamp(_x: &proto::Clamp, arguments: &NodeArguments) -> Result<V
 
 // TODO: still working on this
 pub fn component_impute(_x: &proto::Impute, arguments: &NodeArguments,) -> Result<Value, String> {
-    let Uniform: String = "Uniform".to_string(); // Distributions
-    let Gaussian: String = "Gaussian".to_string();
-    let Float: String = "Float".to_string(); // Data Types
-    let Int: String = "Int".to_string();
+    let _Uniform: String = "Uniform".to_string(); // Distributions
+    let _Gaussian: String = "Gaussian".to_string();
+    let _Float: String = "Float".to_string(); // Data Types
+    let _Int: String = "Int".to_string();
 
     if arguments.contains_key("categories") {
         match (arguments.get("data").unwrap(), arguments.get("categories").unwrap(), arguments.get("probabilities").unwrap(), arguments.get("null").unwrap()) {
@@ -368,21 +368,21 @@ pub fn component_impute(_x: &proto::Impute, arguments: &NodeArguments,) -> Resul
         };
 
         match distribution.clone() {
-            Uniform => {
+            _Uniform => {
                 match (arguments.get("data").unwrap(), arguments.get("min").unwrap(), arguments.get("max").unwrap()) {
                     (Value::ArrayND(data), Value::ArrayND(min), Value::ArrayND(max))
                         => match (data, min, max) {
                             (ArrayND::F64(data), ArrayND::F64(min), ArrayND::F64(max))
                                 => return Ok(Value::ArrayND(ArrayND::F64(utilities::transformations::impute_numeric(
                                              &data, &distribution, &min, &max, &None, &None)))),
-                            (ArrayND::I64(data), ArrayND::I64(min), ArrayND::I64(max))
+                            (ArrayND::I64(data), ArrayND::I64(_min), ArrayND::I64(_max))
                                 => return Ok(Value::ArrayND(ArrayND::I64(data.clone()))),
                             _ => return Err("data, min, and max must all be the same type".to_string())
                         }
                     _ => return Err("data, min, max, shift, and scale must be ArrayND".to_string())
                 }
             },
-            Gaussian => {
+            _Gaussian => {
                 match (arguments.get("data").unwrap(), arguments.get("min").unwrap(),
                        arguments.get("max").unwrap(), arguments.get("shift").unwrap(), arguments.get("scale").unwrap()) {
                     (Value::ArrayND(data), Value::ArrayND(min), Value::ArrayND(max), Value::ArrayND(shift), Value::ArrayND(scale))

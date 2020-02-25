@@ -1,19 +1,19 @@
 extern crate yarrow_validator;
 
-use yarrow_validator::{proto, expand_component};
+use yarrow_validator::{proto};
 use yarrow_validator::utilities::buffer;
 use yarrow_validator::utilities::graph as yarrow_graph;
 
-use ndarray::prelude::*;
 
-use std::collections::{HashMap, HashSet, VecDeque};
+
+use std::collections::{HashMap, HashSet};
 use std::vec::Vec;
-use std::iter::FromIterator;
+
 use itertools::Itertools;
 
 use crate::components;
-use yarrow_validator::utilities::constraint::{get_constraints, GraphConstraint};
-use yarrow_validator::utilities::buffer::{get_arguments};
+use yarrow_validator::utilities::constraint::{get_constraints};
+
 use yarrow_validator::utilities::serial::Value;
 
 
@@ -65,8 +65,8 @@ pub fn execute_graph(analysis: &proto::Analysis,
 
         let node_constraints: HashMap<String, proto::Constraint> = get_constraints(&component, &graph_constraints);
         let public_arguments = node_constraints.iter()
-            .filter(|(k, v)| v.releasable)
-            .map(|(k, v)| (k.clone(), evaluations
+            .filter(|(_k, v)| v.releasable)
+            .map(|(k, _v)| (k.clone(), evaluations
                 .get(component.arguments.get(k).unwrap()).unwrap().clone()))
             .collect::<HashMap<String, Value>>();
 
