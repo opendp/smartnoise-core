@@ -224,19 +224,53 @@ pub fn component_count(_X: &proto::Count, arguments: &NodeArguments,) -> Result<
     match (arguments.get("data").unwrap(), arguments.get("categories").unwrap()) {
         (Value::ArrayND(data), Value::Vector2DJagged(categories)) => match (data, categories) {
             (ArrayND::Bool(data), Vector2DJagged::Bool(categories)) =>
-                Ok(Value::Vector2DJagged(Vector2DJagged::I64(utilities::transformations::count(&data, categories)))),
+                Ok(Value::Vector2DJagged(Vector2DJagged::I64(utilities::transformations::count(&data, categories)?))),
 
             (ArrayND::F64(data), Vector2DJagged::F64(categories)) =>
-                Ok(Value::Vector2DJagged(Vector2DJagged::I64(utilities::transformations::count(&data, categories)))),
+                Ok(Value::Vector2DJagged(Vector2DJagged::I64(utilities::transformations::count(&data, categories)?))),
 
             (ArrayND::I64(data), Vector2DJagged::I64(categories)) =>
-                Ok(Value::Vector2DJagged(Vector2DJagged::I64(utilities::transformations::count(&data, categories)))),
+                Ok(Value::Vector2DJagged(Vector2DJagged::I64(utilities::transformations::count(&data, categories)?))),
 
             (ArrayND::Str(data), Vector2DJagged::Str(categories)) =>
-                Ok(Value::Vector2DJagged(Vector2DJagged::I64(utilities::transformations::count(&data, categories)))),
+                Ok(Value::Vector2DJagged(Vector2DJagged::I64(utilities::transformations::count(&data, categories)?))),
             _ => return Err("data and categories must be of same atomic type".to_string())
         }
         _ => return Err("data must be ArrayND and categories must be Vector2dJagged".to_string())
+    }
+}
+
+pub fn component_sum(_X: &proto::Sum, arguments: &NodeArguments,) -> Result<Value, String> {
+    let data = match arguments.get("data").unwrap() {
+        Value::ArrayND(data) => data,
+        _ => return Err("data must be an ArrayND".to_string())
+    };
+
+    match (arguments.get("by").unwrap(), arguments.get("categories").unwrap()) {
+        (Value::ArrayND(by), Value::Vector2DJagged(categories)) => match (by, categories) {
+            (ArrayND::Bool(by), Vector2DJagged::Bool(categories)) => match(data) {
+                ArrayND::I64(data) => Ok(Value::Vector2DJagged(Vector2DJagged::I64(utilities::transformations::sum(&data, by, categories)?))),
+                ArrayND::F64(data) => Ok(Value::Vector2DJagged(Vector2DJagged::F64(utilities::transformations::sum(&data, by, categories)?))),
+                _ => return Err("data must be either f64 or i64".to_string())
+            }
+            (ArrayND::F64(by), Vector2DJagged::F64(categories)) => match(data) {
+                ArrayND::I64(data) => Ok(Value::Vector2DJagged(Vector2DJagged::I64(utilities::transformations::sum(&data, by, categories)?))),
+                ArrayND::F64(data) => Ok(Value::Vector2DJagged(Vector2DJagged::F64(utilities::transformations::sum(&data, by, categories)?))),
+                _ => return Err("data must be either f64 or i64".to_string())
+            }
+            (ArrayND::I64(by), Vector2DJagged::I64(categories)) => match(data) {
+                ArrayND::I64(data) => Ok(Value::Vector2DJagged(Vector2DJagged::I64(utilities::transformations::sum(&data, by, categories)?))),
+                ArrayND::F64(data) => Ok(Value::Vector2DJagged(Vector2DJagged::F64(utilities::transformations::sum(&data, by, categories)?))),
+                _ => return Err("data must be either f64 or i64".to_string())
+            }
+            (ArrayND::Str(by), Vector2DJagged::Str(categories)) => match(data) {
+                ArrayND::I64(data) => Ok(Value::Vector2DJagged(Vector2DJagged::I64(utilities::transformations::sum(&data, by, categories)?))),
+                ArrayND::F64(data) => Ok(Value::Vector2DJagged(Vector2DJagged::F64(utilities::transformations::sum(&data, by, categories)?))),
+                _ => return Err("data must be either f64 or i64".to_string())
+            }
+        _ => return Err("data and by must be ArrayND and categories must be Vector2dJagged".to_string())
+        }
+        _ => return Err("by must be ArrayND and categories must be Vector2DJagged".to_string())
     }
 }
 
@@ -365,7 +399,7 @@ pub fn component_impute(_x: &proto::Impute, arguments: &NodeArguments,) -> Resul
         };
 
         match distribution {
-            Uniform => {
+            x if *x == Uniform => {
                 match (arguments.get("data").unwrap(), arguments.get("min").unwrap(), arguments.get("max").unwrap()) {
                     (Value::ArrayND(data), Value::ArrayND(min), Value::ArrayND(max))
                         => match (data, min, max) {
@@ -379,7 +413,7 @@ pub fn component_impute(_x: &proto::Impute, arguments: &NodeArguments,) -> Resul
                     _ => return Err("data, min, max, shift, and scale must be ArrayND".to_string())
                 }
             },
-            Gaussian => {
+            x if *x == Gaussian => {
                 match (arguments.get("data").unwrap(), arguments.get("min").unwrap(),
                        arguments.get("max").unwrap(), arguments.get("shift").unwrap(), arguments.get("scale").unwrap()) {
                     (Value::ArrayND(data), Value::ArrayND(min), Value::ArrayND(max), Value::ArrayND(shift), Value::ArrayND(scale))
@@ -493,13 +527,6 @@ pub fn component_median(
 ) -> Result<Value, String> {
     let data: ArrayD<f64> = get_array_f64(&arguments, "data")?;
     Ok(Value::ArrayND(ArrayND::F64(utilities::aggregations::median(&data))))
-}
-
-pub fn component_sum(
-    _x: &proto::Sum, arguments: &NodeArguments,
-) -> Result<Value, String> {
-    let data: ArrayD<f64> = get_array_f64(&arguments, "data")?;
-    Ok(Value::ArrayND(ArrayND::F64(utilities::aggregations::sum(&data))))
 }
 
 pub fn component_laplace_mechanism(

@@ -4,7 +4,9 @@ use std::cmp;
 use ndarray::prelude::*;
 use ndarray::{stack, Zip};
 use core::f64::NAN;
+use core::ops::Add;
 use num;
+
 
 use crate::utilities::noise;
 use crate::utilities::aggregations;
@@ -111,7 +113,7 @@ pub fn bin(data: &ArrayD<f64>, edges: &ArrayD<f64>, inclusive_left: &ArrayD<bool
     return convert_from_matrix(&new_bin_array, &original_dim);;
 }
 
-pub fn count<T>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>) -> Vec<Option<Vec<i64>>> where T: Clone, T: PartialEq {
+pub fn count<T>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>) -> Result<Vec<Option<Vec<i64>>>, String> where T: Clone, T: PartialEq {
     /// Gets count of data elements for each category
     ///
     /// Example
@@ -145,9 +147,40 @@ pub fn count<T>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>) -> Vec<Optio
         counts.push(Some(counts_vec));
     }
 
-    return counts;
+    return Ok(counts);
 }
 
+pub fn sum<T,S>(data: &ArrayD<T>, by: &ArrayD<S>, categories: &Vec<Option<Vec<S>>>)
+    -> Result<Vec<Option<Vec<T>>>, String>
+       where T: Clone, T: Default, T: PartialEq, T: Add<T, Output=T>,
+             S: Clone, S: Default, S: PartialEq {
+
+    let mut data_2d: ArrayD<T> = convert_to_matrix(data);
+    let mut by_2d: ArrayD<S> = convert_to_matrix(by);
+    let mut sums: Vec<Option<Vec<T>>> = Vec::with_capacity(categories.len());
+
+    let n_cols: i64 = data_2d.len_of(Axis(0)) as i64;
+
+    for i in 0..n_cols {
+        let mut data_vec: Vec<T> = data_2d.slice(s![i as usize, ..]).clone().into_dyn().clone().
+                           into_dimensionality::<Ix1>().unwrap().to_vec();
+        let mut by_vec: Vec<S> = by_2d.slice(s![i as usize, ..]).clone().into_dyn().clone().
+                           into_dimensionality::<Ix1>().unwrap().to_vec();
+        let category_vec: Vec<S> = categories[i as usize].clone().unwrap();
+        let mut sum_vec: Vec<T> = vec![Default::default(); category_vec.len()];
+
+        for j in 0..by_vec.len() {
+            for k in 0..category_vec.len() {
+                if by_vec[j as usize] == category_vec[k as usize] {
+                    sum_vec[k] = sum_vec[k as usize].clone() + data_vec[j as usize].clone();
+                }
+            }
+        }
+
+        sums.push(Some(sum_vec))
+    }
+    return Ok(sums)
+}
 
 pub fn broadcast_map<T>(
     left: &ArrayD<T>,
