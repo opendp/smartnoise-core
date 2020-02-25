@@ -14,10 +14,10 @@
       "type": "Array"
     },
     "distribution": {
-      "type": "Array"
+      "type": "String"
     },
     "data_type": {
-      "type": "Array"
+      "type": "String"
     },
     "min": {
       "type": "Array"

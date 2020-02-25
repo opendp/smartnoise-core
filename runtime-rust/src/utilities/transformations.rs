@@ -329,9 +329,10 @@ pub fn impute_int_uniform(data: &ArrayD<f64>, min: &f64, max: &f64) -> ArrayD<f6
     return arr1(&data_vec).into_dyn();
 }
 
-pub fn impute_numeric(data: &ArrayD<f64>, distribution: &ArrayD<String>, data_type: &ArrayD<String>,
+pub fn impute_numeric(data: &ArrayD<f64>, distribution: &String, data_type: &String,
                       min: &ArrayD<f64>, max: &ArrayD<f64>,
-                      shift: &ArrayD<Option<f64>>, scale: &ArrayD<Option<f64>>) -> ArrayD<f64> {
+                      shift: &Option<ArrayD<f64>>, scale: &Option<ArrayD<f64>>)
+                        -> ArrayD<f64> {
     // set string literals for arguments that are of type String
     let Uniform: String = "Uniform".to_string(); // Distributions
     let Gaussian: String = "Gaussian".to_string();
@@ -347,11 +348,19 @@ pub fn impute_numeric(data: &ArrayD<f64>, distribution: &ArrayD<String>, data_ty
     // for each column in data:
     let mut imputed_col: ArrayD<f64>;
     for i in 0..n_cols {
+        let (mut shift_i, mut scale_i): (Option<ArrayD<f64>>, Option<ArrayD<f64>>) = match distribution {
+            Gaussian => (Some(arr1(&[shift.as_ref().unwrap()[i as usize]]).into_dyn()),
+                         Some(arr1(&[scale.as_ref().unwrap()[i as usize]]).into_dyn())),
+            Uniform => (None, None),
+            _ => panic!("distribution not supported".to_string())
+        };
         // do standard data imputation
-        imputed_col = match (distribution[i as usize].to_string(), data_type[i as usize].to_string()) {
-            (Uniform, Float) => impute_float_uniform(&(data.slice(s![0, ..])).to_owned().into_dyn(), &min[i as usize], &max[i as usize]),
+        imputed_col = match (distribution.to_string(), data_type.to_string()) {
+            (Uniform, Float) => impute_float_uniform(&(data.slice(s![0, ..])).to_owned().into_dyn(),
+                                                     &(min[i as usize]), &(max[i as usize])),
             (Uniform, Int) => impute_int_uniform(&(data.slice(s![0, ..])).to_owned().into_dyn(), &min[i as usize], &max[i as usize]),
-            (Gaussian, Float) => impute_float_gaussian(&(data.slice(s![0, ..])).to_owned().into_dyn(), &shift[i as usize].unwrap(), &scale[i as usize].unwrap(),
+            (Gaussian, Float) => impute_float_gaussian(&(data.slice(s![0, ..])).to_owned().into_dyn(), &shift_i.unwrap().first().unwrap(),
+                                                                                                       &scale_i.unwrap().first().unwrap(),
                                                                                                        &min[i as usize], &max[i as usize]),
             _ => panic!("distribution/data_type combination not supported")
         };
@@ -360,7 +369,7 @@ pub fn impute_numeric(data: &ArrayD<f64>, distribution: &ArrayD<String>, data_ty
     return convert_from_matrix(&imputed_data, &original_dim);
 }
 
-pub fn impute_categorical<T>(data: &ArrayD<T>, categories: &Vec::<Vec<T>>, probabilities: &Vec::<ArrayD<f64>>, null_value: &ArrayD<T>) ->
+pub fn impute_categorical<T>(data: &ArrayD<T>, categories: &Vec::<Vec<T>>, probabilities: &Vec::<Vec<f64>>, null_value: &ArrayD<T>) ->
                              ArrayD<T> where T:Clone, T:PartialEq, T:Default {
     let original_dim: u8 = data.ndim() as u8;
     let mut data_2d: ArrayD<T> = convert_to_matrix(data);
@@ -373,7 +382,7 @@ pub fn impute_categorical<T>(data: &ArrayD<T>, categories: &Vec::<Vec<T>>, proba
 
     for i in 0..n_cols {
         category_vec = categories[i as usize].clone();
-        probability_vec = probabilities[i as usize].clone().into_dimensionality::<Ix1>().unwrap().to_vec();
+        probability_vec = probabilities[i as usize].clone();
         n_categories = category_vec.len() as i64;
         let mut data_vec = data_2d.slice(s![i as usize, ..]).clone().into_dyn().clone().
                           into_dimensionality::<Ix1>().unwrap().to_vec();
@@ -387,9 +396,9 @@ pub fn impute_categorical<T>(data: &ArrayD<T>, categories: &Vec::<Vec<T>>, proba
     return convert_from_matrix(&imputed_data, &original_dim);
 }
 
-pub fn resize_numeric(data: &ArrayD<f64>, n: &u64, distribution: &ArrayD<String>, data_type: &ArrayD<String>,
+pub fn resize_numeric(data: &ArrayD<f64>, n: &u64, distribution: &String, data_type: &String,
                       min: &ArrayD<f64>, max: &ArrayD<f64>,
-                      shift: &ArrayD<Option<f64>>, scale: &ArrayD<Option<f64>>) -> ArrayD<f64> {
+                      shift: &Option<ArrayD<f64>>, scale: &Option<ArrayD<f64>>) -> ArrayD<f64> {
     // set string literals for arguments that are of type String
     let Uniform: String = "Uniform".to_string(); // Distributions
     let Gaussian: String = "Gaussian".to_string();
@@ -421,12 +430,18 @@ pub fn resize_numeric(data: &ArrayD<f64>, n: &u64, distribution: &ArrayD<String>
         subsampled_column = aggregations::create_subset(&column, &sampling_probabilities, &(k as u64));
 
         // create augmented version of data (returned if n > real_n)
-        let mut augmentation_data = impute_numeric(&column, &arr1(&[distribution[i as usize].to_owned()]).into_dyn(),
-                                                    &arr1(&[data_type[i as usize].to_owned()]).into_dyn(),
+        let (mut shift_i, mut scale_i): (Option<ArrayD<f64>>, Option<ArrayD<f64>>) = match distribution {
+            Gaussian => (Some(arr1(&[shift.as_ref().unwrap()[i as usize]]).into_dyn()),
+                         Some(arr1(&[scale.as_ref().unwrap()[i as usize]]).into_dyn())),
+            Uniform => (None, None),
+            _ => panic!("distribution not supported".to_string())
+        };
+        let mut augmentation_data = impute_numeric(&column, &distribution,
+                                                    &data_type,
                                                     &arr1(&[min[i as usize]]).into_dyn(),
                                                     &arr1(&[max[i as usize]]).into_dyn(),
-                                                    &arr1(&[shift[i as usize]]).into_dyn(),
-                                                    &arr1(&[scale[i as usize]]).into_dyn()
+                                                    &shift_i,
+                                                    &scale_i
                                                     );
         let augmentation_vec = augmentation_data.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
         let mut augmented_column = stack![Axis(0), column.slice(s![0, ..]), augmentation_vec].clone().into_dyn();
@@ -444,7 +459,7 @@ pub fn resize_numeric(data: &ArrayD<f64>, n: &u64, distribution: &ArrayD<String>
 }
 
 pub fn resize_categorical<T>(data: &ArrayD<T>, n: &u64,
-                             categories: &Vec<Vec<T>>, probabilities: &Vec<ArrayD<f64>>, null_value: &ArrayD<T>,)
+                             categories: &Vec<Vec<T>>, probabilities: &Vec<Vec<f64>>, null_value: &ArrayD<T>,)
                                 -> ArrayD<T> where T: Clone, T: Copy, T: PartialEq, T: Default {
     // set string literals for arguments that are of type String
     let Uniform: String = "Uniform".to_string(); // Distributions
@@ -460,11 +475,6 @@ pub fn resize_categorical<T>(data: &ArrayD<T>, n: &u64,
     let mut data_2d = convert_to_matrix(data);
     let n_cols: i64 = data.len_of(Axis(0)) as i64;
     let mut new_data: ArrayD<T> = Array::default( (data.len_of(Axis(0)), real_n as usize) ).into_dyn();
-
-    // initialize columns for resizing step
-    // let mut column: ArrayD<T>;
-    // let mut subsampled_column: ArrayD<T>;
-    // let mut augmented_column: ArrayD<T>;
 
     // for each column in data:
     for i in 0..n_cols {
