@@ -32,8 +32,8 @@ impl Component for proto::DataSource {
         &self,
         _public_arguments: &HashMap<String, Value>,
         _constraints: &constraint_utils::NodeConstraints,
-    ) -> bool {
-        true
+    ) -> Result<(), String> {
+        Ok(())
     }
 
     fn get_names(

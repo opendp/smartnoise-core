@@ -34,23 +34,14 @@ impl Component for proto::DpMean {
         &self,
         _public_arguments: &HashMap<String, Value>,
         constraints: &constraint_utils::NodeConstraints,
-    ) -> bool {
-        let num_records = constraint_utils::get_num_records(constraints, "data");
-        let min = constraint_utils::get_min_f64(constraints, "data");
-        let max = constraint_utils::get_min_f64(constraints, "data");
+    ) -> Result<(), String> {
+        let data_constraint = constraint_utils::get_constraint(&constraints, "data")?.clone();
 
-        // check these properties are Some
-        if min.is_err()
-            || !min.unwrap().iter().all(|v| v.is_some())
-            || max.is_err()
-            || !max.unwrap().iter().all(|v| v.is_some())
-            || num_records.is_err()
-            || !num_records.unwrap().iter().all(|v| v.is_some()) {
-            return false;
-        }
+        data_constraint.get_n()?;
+        data_constraint.get_min_f64()?;
+        data_constraint.get_max_f64()?;
 
-        // all checks have passed
-        true
+        Ok(())
     }
 
     fn get_names(
@@ -112,15 +103,16 @@ impl Privatize for proto::DpMean {
         _privacy_definition: &proto::PrivacyDefinition,
         constraints: &NodeConstraints,
     ) -> Option<Vec<f64>> {
-        let min = constraint_utils::get_min_f64(constraints, "data").unwrap();
-        let max = constraint_utils::get_max_f64(constraints, "data").unwrap();
-        let num_records = constraint_utils::get_num_records(constraints, "data").unwrap();
+        let data_constraint = constraint_utils::get_constraint(constraints, "data").ok()?;
+        let min = data_constraint.get_min_f64().ok()?;
+        let max = data_constraint.get_max_f64().ok()?;
+        let num_records = data_constraint.get_n().ok()?;
 
         Some(min
-            .iter().map(|v| v.unwrap())
-            .zip(max.iter().map(|v| v.unwrap()).collect::<Vec<f64>>())
-            .zip(num_records.iter().map(|v| v.unwrap() as f64).collect::<Vec<f64>>())
-            .map(|((l, r), n)| (l - r) / n)
+            .iter()
+            .zip(max)
+            .zip(num_records)
+            .map(|((l, r), n)| (l - r) / n as f64)
             .collect())
     }
 }

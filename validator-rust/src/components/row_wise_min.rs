@@ -30,8 +30,9 @@ impl Component for proto::RowMin {
         &self,
         _public_arguments: &HashMap<String, Value>,
         _constraints: &NodeConstraints,
-    ) -> bool {
-        false
+    ) -> Result<(), String> {
+        // TODO: finish implementation
+        Ok(())
     }
 
     fn get_names(

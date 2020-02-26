@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use crate::utilities::constraint as constraint_utils;
-use crate::utilities::constraint::{Constraint, Nature, NatureContinuous, get_min_f64, NodeConstraints, get_literal};
+use crate::utilities::constraint::{Constraint, Nature, NatureContinuous, NodeConstraints, get_literal};
 
 use crate::hashmap;
 use crate::proto;
@@ -20,12 +20,14 @@ impl Component for proto::Impute {
         constraints: &constraint_utils::NodeConstraints,
     ) -> Result<Constraint, String> {
         let mut data_constraint = constraints.get("data").unwrap().clone();
+        let mut min_constraint = constraints.get("min").unwrap().clone();
+        let mut max_constraint = constraints.get("max").unwrap().clone();
 
         data_constraint.nullity = false;
         data_constraint.nature = Some(Nature::Continuous(NatureContinuous {
-            min: Vector1DNull::F64(get_min_f64(constraints, "data")?.iter()
-                .zip(get_min_f64(constraints, "min")?)
-                .zip(get_min_f64(constraints, "max")?)
+            min: Vector1DNull::F64(data_constraint.get_min_f64_option()?.iter()
+                .zip(min_constraint.get_min_f64_option()?)
+                .zip(max_constraint.get_min_f64_option()?)
                 .map(|((d, min), max)| {
                     match d {
                         Some(_x) => vec![d, &min, &max]
@@ -37,9 +39,9 @@ impl Component for proto::Impute {
                     }
                 })
                 .collect()),
-            max: Vector1DNull::F64(get_min_f64(constraints, "data")?.iter()
-                .zip(get_min_f64(constraints, "min")?)
-                .zip(get_min_f64(constraints, "max")?)
+            max: Vector1DNull::F64(data_constraint.get_max_f64_option()?.iter()
+                .zip(min_constraint.get_max_f64_option()?)
+                .zip(max_constraint.get_max_f64_option()?)
                 .map(|((d, min), max)| {
                     match d {
                         // if there was a prior bound
@@ -61,8 +63,8 @@ impl Component for proto::Impute {
         &self,
         _public_arguments: &HashMap<String, Value>,
         constraints: &constraint_utils::NodeConstraints,
-    ) -> bool {
-        if !constraints.contains_key("data") {return false}
+    ) -> Result<(), String> {
+        constraint_utils::get_constraint(constraints, "data")?;
 
         let has_min = constraints.contains_key("min") || constraints.get("data").unwrap().to_owned().get_min_f64().is_ok();
         let has_max = constraints.contains_key("max") || constraints.get("data").unwrap().to_owned().get_max_f64().is_ok();
@@ -70,7 +72,10 @@ impl Component for proto::Impute {
         let has_continuous = has_min && has_max;
         let has_categorical = constraints.contains_key("categories");
 
-        return has_continuous || has_categorical;
+        match has_continuous || has_categorical {
+            true => Ok(()),
+            false => Err("bounds are missing for the imputation component".to_string())
+        }
     }
 
     fn get_names(

@@ -40,9 +40,12 @@ impl Component for proto::Resize {
     fn is_valid(
         &self,
         public_arguments: &HashMap<String, Value>,
-        _constraints: &constraint_utils::NodeConstraints,
-    ) -> bool {
-        public_arguments.contains_key("n")
+        constraints: &constraint_utils::NodeConstraints,
+    ) -> Result<(), String> {
+        // TODO: stricter checks for bounds
+        constraint_utils::get_constraint(constraints, "n")?;
+
+        Ok(())
     }
 
     fn get_names(
@@ -89,7 +92,7 @@ impl Expandable for proto::Resize {
             current_id += 1;
             let id_n = current_id.clone();
             let value = Value::ArrayND(ArrayND::I64(Array::from_shape_vec(
-                (), vec![constraints.get("data").unwrap().to_owned().get_n()?])
+                (), constraints.get("data").unwrap().to_owned().get_n()?)
                 .unwrap().into_dyn()));
 
             graph_expansion.insert(id_n, get_literal(&value, &component.batch));

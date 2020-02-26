@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use crate::utilities::constraint as constraint_utils;
-use crate::utilities::constraint::{Constraint, Nature, NatureContinuous, get_min_f64, NodeConstraints, get_literal};
+use crate::utilities::constraint::{Constraint, Nature, NatureContinuous, NodeConstraints, get_literal, get_constraint};
 
 
 use crate::proto;
@@ -22,17 +22,17 @@ impl Component for proto::Clamp {
         let mut data_constraint = constraints.get("data").unwrap().clone();
 
         data_constraint.nature = Some(Nature::Continuous(NatureContinuous {
-            min: Vector1DNull::F64(get_min_f64(constraints, "data")?.iter()
-                .zip(get_min_f64(constraints, "min")?)
-                .zip(get_min_f64(constraints, "max")?)
+            min: Vector1DNull::F64(get_constraint(constraints, "data")?.get_min_f64_option()?.iter()
+                .zip(get_constraint(constraints, "min")?.get_min_f64_option()?)
+                .zip(get_constraint(constraints, "max")?.get_min_f64_option()?)
                 .map(|((d, min), max)| vec![d, &min, &max]
                     .iter().filter(|x| x.is_some())
                     .map(|x| x.unwrap().clone())
                     .fold1(|l, r| l.min(r)))
                 .collect()),
-            max: Vector1DNull::F64(get_min_f64(constraints, "data")?.iter()
-                .zip(get_min_f64(constraints, "min")?)
-                .zip(get_min_f64(constraints, "max")?)
+            max: Vector1DNull::F64(get_constraint(constraints, "data")?.get_max_f64_option()?.iter()
+                .zip(get_constraint(constraints, "min")?.get_max_f64_option()?)
+                .zip(get_constraint(constraints, "max")?.get_max_f64_option()?)
                 .map(|((d, min), max)| vec![d, &min, &max]
                     .iter().filter(|x| x.is_some())
                     .map(|x| x.unwrap().clone())
@@ -47,13 +47,14 @@ impl Component for proto::Clamp {
         &self,
         _public_arguments: &HashMap<String, Value>,
         constraints: &constraint_utils::NodeConstraints,
-    ) -> bool {
+    ) -> Result<(), String> {
+
         if constraints.contains_key("data") &&
             ((constraints.contains_key("min") && constraints.contains_key("max")) ||
                 constraints.contains_key("categories")) {
-            return true
+            return Ok(())
         }
-        false
+        return Err("arguments missing to clamp component".to_string())
     }
 
     fn get_names(

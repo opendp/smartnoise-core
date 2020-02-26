@@ -27,7 +27,7 @@ pub trait Component {
         &self,
         public_arguments: &HashMap<String, Value>,
         constraints: &NodeConstraints,
-    ) -> bool;
+    ) -> Result<(), String>;
 
     fn get_names(
         &self,
@@ -111,7 +111,7 @@ impl Component for proto::component::Value {
         &self,
         public_arguments: &HashMap<String, Value>,
         constraints: &NodeConstraints,
-    ) -> bool {
+    ) -> Result<(), String> {
         macro_rules! is_valid {
             ($self:ident, $public_arguments: ident, $constraints: ident, $( $variant:ident ),*) => {
                 {
@@ -130,7 +130,7 @@ impl Component for proto::component::Value {
         );
 
         // an unknown component is not valid
-        false
+        Err("a component is missing its validator implementation".to_string())
     }
 
     fn get_names(

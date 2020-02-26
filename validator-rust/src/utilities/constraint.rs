@@ -24,54 +24,6 @@ pub struct Constraint {
     pub num_records: Vec<Option<i64>>,
 }
 
-impl Constraint {
-    pub fn get_min_f64(self) -> Result<Vec<f64>, String> {
-        match self.nature {
-            Some(value) => match value {
-                Nature::Continuous(continuous) => match continuous.min {
-                    Vector1DNull::F64(bound) => {
-                        let value = bound.iter().map(|v| v.to_owned().unwrap()).collect::<Vec<f64>>();
-                        match bound.len() == value.len() {
-                            true => Ok(value),
-                            false => Err("not all mins are known".to_string())
-                        }
-                    }
-                    _ => Err("min must be composed of floats".to_string())
-                },
-                _ => Err("min must be an array".to_string())
-            },
-            None => Err("nature is not defined".to_string())
-        }
-    }
-
-    pub fn get_max_f64(self) -> Result<Vec<f64>, String> {
-        match self.nature {
-            Some(value) => match value {
-                Nature::Continuous(continuous) => match continuous.max {
-                    Vector1DNull::F64(bound) => {
-                        let value = bound.iter().map(|v| v.to_owned().unwrap()).collect::<Vec<f64>>();
-                        match bound.len() == value.len() {
-                            true => Ok(value),
-                            false => Err("not all max are known".to_string())
-                        }
-                    }
-                    _ => Err("max must be composed of floats".to_string())
-                },
-                _ => Err("max must be an array".to_string())
-            },
-            None => Err("nature is not defined".to_string())
-        }
-    }
-
-    pub fn get_n(self) -> Result<i64, String> {
-        let value = self.num_records.iter().map(|v| v.to_owned().unwrap()).collect::<Vec<i64>>();
-        match self.num_records.len() == value.len() {
-            true => Ok(value.first().unwrap().to_owned()),
-            false => Err("n is not known".to_string())
-        }
-    }
-}
-
 #[derive(Clone, Debug)]
 pub enum Nature {
     Continuous(NatureContinuous),
@@ -135,6 +87,58 @@ impl Constraint {
             }
         }
     }
+
+    pub fn get_min_f64_option(&self) -> Result<Vec<Option<f64>>, String> {
+        match self.nature.to_owned() {
+            Some(value) => match value {
+                Nature::Continuous(continuous) => match continuous.min {
+                    Vector1DNull::F64(bound) => Ok(bound),
+                    _ => Err("min must be composed of floats".to_string())
+                },
+                _ => Err("min must be an array".to_string())
+            },
+            None => Err("nature is not defined".to_string())
+        }
+    }
+    pub fn get_min_f64(&self) -> Result<Vec<f64>, String> {
+        let bound = self.get_min_f64_option()?;
+        let value = bound.iter().filter_map(|v| v.to_owned()).collect::<Vec<f64>>();
+        match bound.len() == value.len() {
+            true => Ok(value),
+            false => Err("not all min are known".to_string())
+        }
+    }
+    pub fn get_max_f64_option(&self) -> Result<Vec<Option<f64>>, String> {
+        match self.nature.to_owned() {
+            Some(value) => match value {
+                Nature::Continuous(continuous) => match continuous.max {
+                    Vector1DNull::F64(bound) => Ok(bound),
+                    _ => Err("max must be composed of floats".to_string())
+                },
+                _ => Err("max must be an array".to_string())
+            },
+            None => Err("nature is not defined".to_string())
+        }
+    }
+    pub fn get_max_f64(&self) -> Result<Vec<f64>, String> {
+        let bound = self.get_max_f64_option()?;
+        let value = bound.iter().filter_map(|v| v.to_owned()).collect::<Vec<f64>>();
+        match bound.len() == value.len() {
+            true => Ok(value),
+            false => Err("not all max are known".to_string())
+        }
+    }
+    // just for consistency
+    pub fn get_n_option(&self) -> Result<Vec<Option<i64>>, String> {
+        Ok(self.num_records.clone())
+    }
+    pub fn get_n(&self) -> Result<Vec<i64>, String> {
+        let value = self.num_records.iter().map(|v| v.to_owned().unwrap()).collect::<Vec<i64>>();
+        match self.num_records.len() == value.len() {
+            true => Ok(value),
+            false => Err("n is not known".to_string())
+        }
+    }
 }
 
 // constraints for each node in the graph
@@ -186,54 +190,6 @@ pub fn get_constraint<'a>(constraints: &'a NodeConstraints, argument: &str) -> R
         Some(constraint) => Ok(constraint),
         None => Err("constraint not found".to_string()),
     }
-}
-
-pub fn get_min(constraints: &NodeConstraints, argument: &str) -> Result<Vector1DNull, String> {
-    let nature = match &get_constraint(constraints, argument)?.nature {
-        Some(nature) => match nature {
-            Nature::Continuous(nature) => nature,
-            _ => return Err("a categorical constraint is defined on a continuous argument".to_string())
-        },
-        None => return Err("no nature (min) is defined on a continuous argument".to_string())
-    };
-    Ok(nature.min.clone())
-}
-
-pub fn get_min_f64(constraints: &NodeConstraints, argument: &str) -> Result<Vec<Option<f64>>, String> {
-    let min = get_min(constraints, argument)?;
-
-    match min {
-        Vector1DNull::F64(value) => Ok(value.to_owned()),
-        Vector1DNull::I64(value) => Ok(value.iter()
-            .map(|&x| match x {Some(x) => Some(x as f64), None => None}).collect()),
-        _ => Err("the min must be a numeric type".to_string())
-    }
-}
-
-pub fn get_max(constraints: &NodeConstraints, argument: &str) -> Result<Vector1DNull, String> {
-    let nature = match &get_constraint(constraints, argument)?.nature {
-        Some(nature) => match nature {
-            Nature::Continuous(nature) => nature,
-            _ => return Err("a categorical constraint is defined on a continuous argument".to_string())
-        },
-        None => return Err("no nature (max) is defined on a continuous argument".to_string())
-    };
-    Ok(nature.max.clone())
-}
-
-pub fn get_max_f64(constraints: &NodeConstraints, argument: &str) -> Result<Vec<Option<f64>>, String> {
-    let max = get_max(constraints, argument)?;
-
-    match max {
-        Vector1DNull::F64(value) => Ok(value.to_owned()),
-        Vector1DNull::I64(value) => Ok(value.iter()
-            .map(|&x| match x {Some(x) => Some(x as f64), None => None}).collect()),
-        _ => Err("the max must be a numeric type".to_string())
-    }
-}
-
-pub fn get_num_records(constraints: &NodeConstraints, argument: &str) -> Result<Vec<Option<i64>>, String> {
-    Ok(get_constraint(constraints, argument)?.to_owned().num_records)
 }
 
 pub fn get_releasable_bool(constraints: &NodeConstraints, argument: &str) -> Result<bool, String> {
