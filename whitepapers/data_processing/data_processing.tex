@@ -27,7 +27,37 @@
 
 \section{Overview}
 This document contains notes on our choices regarding ``data processing'', which I am using to stand in
-for all things related to data book-keeping (data bounds, imputation, sample size calculations, etc.).
+for all things related to data bookkeeping (data bounds, imputation, sample size calculations, etc.).
+
+\section{Clamping}
+Many operations in the library require the definition of a set of possible data values
+we would like to use for said operation. For numeric variables, this typically
+takes the form of a closed interval $[min, max] \in \R$ or $\Z$. For categorical
+variables, this is a discrete set of elements.
+In our system, we have slightly different notions of clamping for numeric and categorical variables.
+We consider $f64$ and $i64$ to be allowable numeric types, and $f64, i64, bool,$ and $String$ to be
+allowable categorical types. \newline
+
+Our method for clamping numeric types should be familiar; it accepts data, a min, and a max,
+and maps data elements outside of the interval $[min, max]$ to the nearest point in the interval.
+Null values (represented as $NAN$ for the $f64$ type and which do not exist for the $i64$ type)
+are preserved by numeric clamping. \newline
+
+Our categorical clamping accepts data, a set of feasible values, and a null value.
+Data elements that are outside the set of feasible values are mapped to the null value.
+Null values are preserved by the categorical clamping. \newline
+
+\section{Imputation}
+Much like clamping, we have slightly different notions of imputation for numeric and categorical variables.
+In this case, we consider only $f64$ to be an allowable numeric type, while
+$f64, i64, bool,$ and $String$ are allowable categorical types. \newline
+
+Numeric imputation is parameterized by min, max, and a supported probability distribution (e.g. Gaussian or Uniform)
+with appropriate arguments. $NAN$ values are replaced with a draw from the provided distribution. \newline
+
+Categorical imputation is parameterized by categories, probabilities, and a null value.
+Each data element equal to the null value is replaced with a draw from the set of categories,
+according to the probabilities provided.
 
 \section{Public vs. Private $n$}
 We want our library to support cases both in which the analyst does and does not have access to
@@ -70,18 +100,29 @@ If $\hat{n} < n$, then we can subsample $x$ to get $\tilde{x}$ where $|\tilde{x}
 If $\hat{n} > n$, then we will add elements to $x$ to get $\tilde{x}$ where $|\tilde{x}| = \hat{n}$. \newline
 We generate these new elements by imputing values for the $\hat{n} - n$ elements we need to create, using
 the user-provided data bounds specified for the statistic in question.
-This could be done via any imputation method supported by the library. \newline
+This could be done via any imputation method supported by the library.
 
 We considered sampling with replacement to generate $\tilde{x}$ for the case where $\hat{n} > n$,
 but this complicates sensitivity calculations as any element in $x$ could appear in $\tilde{x}$ multiple times.
 We could sample with replacement in a way that guarantees for $\hat{n} < c \cdot n$ that any element in
 $x$ occurs in $\tilde{x}$ at most $c$ times, but we cannot establish such a $c$ (with probability 1 that our
-$c$ is correct) without leaking extra information about $n$. \newline
+$c$ is correct) without leaking extra information about $n$.
 
 \subsection{Accuracy/Error}
 Our accuracy and error calculations always assume that $\tilde{x}$ is the true data in question.
 That is, the additional error induced by subsampling or imputing extra values is not considered.
 
-\bibliographystyle{alpha}
-\bibliography{data_processing}
+\subsection{Maintaining Subset Consistency}
+There are cases where a user may want to enforce consistent subsampling across multiple calls to the data --
+that is, ensuring that subsampling produces the same subset, and arranged in the same order.
+To this end, we let users define a set of indices that can be used arbitrarily often across an analysis.
+
+\subsubsection{Defining the index set}
+In order to define a set of indices, we use the function
+$create\_sampling\_indices(k, n)$, where $k$ is the size of the desired subset
+and $n$ is the size of the original data. The function returns $k$ integers from the set
+$\{0, 1, \hdots, n-1\}$, sampled uniformly at random, that will serve as the indices for subsampling.
+
+% \bibliographystyle{alpha}
+% \bibliography{data_processing}
 \end{document}
