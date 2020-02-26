@@ -208,10 +208,18 @@ pub fn component_negate(
 pub fn component_bin(
     _x: &proto::Bin, arguments: &NodeArguments,
 ) -> Result<Value, String> {
-    let data: ArrayD<f64> = get_argument(&arguments, "data")?.get_arraynd()?.get_f64()?;
-    let edges: ArrayD<f64> = get_argument(&arguments, "edges")?.get_arraynd()?.get_f64()?;
+    // let data: ArrayD<f64> = get_argument(&arguments, "data")?.get_arraynd()?.get_f64()?;
+    // let edges: ArrayD<f64> = get_argument(&arguments, "edges")?.get_arraynd()?.get_f64()?;
     let inclusive_left: ArrayD<bool> = get_argument(&arguments, "inclusive_left")?.get_arraynd()?.get_bool()?;
-    Ok(Value::ArrayND(ArrayND::Str(utilities::transformations::bin(&data, &edges, &inclusive_left))))
+
+    let data = get_argument(&arguments, "data")?.get_arraynd()?;
+    let edges = get_argument(&arguments, "edges")?.get_arraynd()?;
+
+    match (data, edges) {
+        (ArrayND::F64(data), ArrayND::F64(edges)) => Ok(Value::ArrayND(ArrayND::Str(utilities::transformations::bin(&data, &edges, &inclusive_left)?))),
+        (ArrayND::I64(data), ArrayND::I64(edges)) => Ok(Value::ArrayND(ArrayND::Str(utilities::transformations::bin(&data, &edges, &inclusive_left)?))),
+        _ => return Err("data and edges must both be f64 or i64".to_string())
+    }
 }
 
 pub fn component_count(_x: &proto::Count, arguments: &NodeArguments,) -> Result<Value, String> {

@@ -31,7 +31,8 @@ pub fn convert_from_matrix<T>(data: &ArrayD<T>, original_dim: &u8) -> ArrayD<T> 
     }
 }
 
-pub fn bin(data: &ArrayD<f64>, edges: &ArrayD<f64>, inclusive_left: &ArrayD<bool>) -> ArrayD<String> {
+pub fn bin<T>(data: &ArrayD<T>, edges: &ArrayD<T>, inclusive_left: &ArrayD<bool>)
+    -> Result<ArrayD<String>, String> where T: Clone, T: PartialOrd, T: std::fmt::Display {
     /// Accepts vector of data and assigns each element to a bin
     /// NOTE: bin transformation has C-stability of 1
     ///
@@ -60,15 +61,15 @@ pub fn bin(data: &ArrayD<f64>, edges: &ArrayD<f64>, inclusive_left: &ArrayD<bool
 
     // initialize new data -- this is what we ultimately return from the function
     let original_dim: u8 = data.ndim() as u8;
-    let new_data: ArrayD<f64> = convert_to_matrix(data);
+    let new_data: ArrayD<T> = convert_to_matrix(data);
     let mut new_bin_array: ArrayD<String> = Array::default(new_data.shape());
 
     let n_cols: i64 = data.len_of(Axis(0)) as i64;
 
     for k in 0..n_cols {
         // create vector versions of data and edges
-        let data_vec: Vec<f64> = data.slice(s![k as usize, ..]).clone().into_dimensionality::<Ix1>().unwrap().to_vec();
-        let mut sorted_edges: Vec<f64> = edges.slice(s![k as usize, ..]).clone().into_dimensionality::<Ix1>().unwrap().to_vec();
+        let data_vec: Vec<T> = data.slice(s![k as usize, ..]).clone().into_dimensionality::<Ix1>().unwrap().to_vec();
+        let mut sorted_edges: Vec<T> = edges.slice(s![k as usize, ..]).clone().into_dimensionality::<Ix1>().unwrap().to_vec();
 
         //  ensure edges are sorted in ascending order
         sorted_edges.sort_by(|a, b| a.partial_cmp(b).unwrap());
@@ -110,7 +111,7 @@ pub fn bin(data: &ArrayD<f64>, edges: &ArrayD<f64>, inclusive_left: &ArrayD<bool
         let bin_array: ArrayD<String> = arr1(&bin_vec).into_dyn();
         new_bin_array.slice_mut(s![k as usize, ..]).assign(&bin_array);
     }
-    return convert_from_matrix(&new_bin_array, &original_dim);;
+    return Ok(convert_from_matrix(&new_bin_array, &original_dim));
 }
 
 pub fn count<T>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>) -> Result<Vec<Option<Vec<i64>>>, String> where T: Clone, T: PartialEq {
