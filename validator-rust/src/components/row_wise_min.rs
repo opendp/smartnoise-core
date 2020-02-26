@@ -9,6 +9,7 @@ use crate::components::Component;
 
 use crate::utilities::serial::Value;
 
+
 impl Component for proto::RowMin {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_constraint(
@@ -31,5 +32,12 @@ impl Component for proto::RowMin {
         _constraints: &NodeConstraints,
     ) -> bool {
         false
+    }
+
+    fn get_names(
+        &self,
+        _constraints: &NodeConstraints,
+    ) -> Result<Vec<String>, String> {
+        Err("get_names not implemented".to_string())
     }
 }

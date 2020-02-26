@@ -11,17 +11,10 @@ extern crate csv;
 extern crate num;
 
 use std::str::FromStr;
-use yarrow_validator::utilities::buffer::{NodeArguments, get_f64, get_array_f64, get_array_bool, get_bool, get_i64, get_array_str};
+use yarrow_validator::base::{NodeArguments, get_argument};
 
 use yarrow_validator::utilities::serial::{Value, parse_value, ArrayND, Vector2DJagged};
 
-macro_rules! hashmap {
-    ($( $key: expr => $val: expr ),*) => {{
-         let mut map = ::std::collections::HashMap::new();
-         $( map.insert($key, $val); )*
-         map
-    }}
-}
 
 pub fn component_literal(x: &proto::Literal) -> Result<Value, String> {
     parse_value(&x.to_owned().value.unwrap())
@@ -191,8 +184,8 @@ pub fn component_multiply(
 pub fn component_power(
     _x: &proto::Power, arguments: &NodeArguments,
 ) -> Result<Value, String> {
-    let power: f64 = get_f64(&arguments, "right")?;
-    let data = get_array_f64(&arguments, "left")?;
+    let power: f64 = get_argument(&arguments, "right")?.get_first_f64()?;
+    let data = get_argument(&arguments, "right")?.get_arraynd()?.get_f64()?;
     Ok(Value::ArrayND(ArrayND::F64(data.mapv(|x| x.powf(power)))))
 }
 
@@ -214,9 +207,9 @@ pub fn component_negate(
 pub fn component_bin(
     _x: &proto::Bin, arguments: &NodeArguments,
 ) -> Result<Value, String> {
-    let data: ArrayD<f64> = get_array_f64(&arguments, "data")?;
-    let edges: ArrayD<f64> = get_array_f64(&arguments, "edges")?;
-    let inclusive_left: ArrayD<bool> = get_array_bool(&arguments, "inclusive_left")?;
+    let data: ArrayD<f64> = get_argument(&arguments, "data")?.get_arraynd()?.get_f64()?;
+    let edges: ArrayD<f64> = get_argument(&arguments, "edges")?.get_arraynd()?.get_f64()?;
+    let inclusive_left: ArrayD<bool> = get_argument(&arguments, "inclusive_left")?.get_arraynd()?.get_bool()?;
     Ok(Value::ArrayND(ArrayND::Str(utilities::transformations::bin(&data, &edges, &inclusive_left))))
 }
 
@@ -321,8 +314,6 @@ pub fn component_clamp(_x: &proto::Clamp, arguments: &NodeArguments) -> Result<V
 pub fn component_impute(_x: &proto::Impute, arguments: &NodeArguments,) -> Result<Value, String> {
     let uniform: String = "Uniform".to_string(); // Distributions
     let gaussian: String = "Gaussian".to_string();
-    let float: String = "Float".to_string(); // Data Types
-    let int: String = "Int".to_string();
 
     if arguments.contains_key("categories") {
         match (arguments.get("data").unwrap(), arguments.get("categories").unwrap(), arguments.get("probabilities").unwrap(), arguments.get("null").unwrap()) {
@@ -406,11 +397,11 @@ fn unwrap_jagged<T>(value: &Vec<Option<Vec<T>>>) -> Vec<Vec<T>> where T: Clone {
 }
 
 pub fn component_resize(_x: &proto::Resize, arguments: &NodeArguments) -> Result<Value, String> {
-    let distribution = match get_array_str(arguments, "distribution") {
+    let distribution = match get_argument(&arguments, "distribution")?.get_first_str() {
         Ok(distribution) => distribution.to_string(),
         Err(_) => "Uniform".to_string()
     };
-    let n = u64::try_from(get_i64(arguments, "n")?).unwrap();
+    let n = u64::try_from(get_argument(&arguments, "n")?.get_first_i64()?).unwrap();
 
     if arguments.contains_key("categories") {
 
@@ -443,8 +434,8 @@ pub fn component_resize(_x: &proto::Resize, arguments: &NodeArguments) -> Result
             _ => Err("data and nulls must be arrays, categories must be a jagged matrix".to_string())
         }
     } else {
-        let shift = get_array_f64(arguments, "shift");
-        let scale = get_array_f64(arguments, "scale");
+        let shift = get_argument(&arguments, "shift")?.get_arraynd()?.get_f64();
+        let scale = get_argument(&arguments, "scale")?.get_arraynd()?.get_f64();
         match (arguments.get("data").unwrap(), arguments.get("min").unwrap(), arguments.get("max").unwrap()) {
             (Value::ArrayND(data), Value::ArrayND(min), Value::ArrayND(max)) => match (data, min, max) {
                 (ArrayND::F64(data), ArrayND::F64(min), ArrayND::F64(max)) =>
@@ -474,65 +465,66 @@ pub fn component_resize(_x: &proto::Resize, arguments: &NodeArguments) -> Result
 pub fn component_mean(
     _x: &proto::Mean, arguments: &NodeArguments,
 ) -> Result<Value, String> {
-    let data: ArrayD<f64> = get_array_f64(&arguments, "data")?;
+    let data = get_argument(&arguments, "data")?.get_arraynd()?.get_f64()?;
     Ok(Value::ArrayND(ArrayND::F64(utilities::aggregations::mean(&data))))
 }
 
 pub fn component_variance(
     _x: &proto::Variance, arguments: &NodeArguments,
 ) -> Result<Value, String> {
-    let data: ArrayD<f64> = get_array_f64(&arguments, "data")?;
-    let finite_sample_correction: bool = get_bool(&arguments, "finite_sample_correction")?;
+    let data = get_argument(&arguments, "data")?.get_arraynd()?.get_f64()?;
+    let finite_sample_correction = get_argument(&arguments, "shift")?.get_first_bool()?;
     Ok(Value::ArrayND(ArrayND::F64(utilities::aggregations::variance(&data, &finite_sample_correction))))
 }
 
 pub fn component_kth_raw_sample_moment(
     _x: &proto::KthRawSampleMoment, arguments: &NodeArguments,
 ) -> Result<Value, String> {
-    let data: ArrayD<f64> = get_array_f64(&arguments, "data")?;
-    let k: i64 = get_i64(&arguments, "k")?;
+    let data = get_argument(&arguments, "data")?.get_arraynd()?.get_f64()?;
+    let k = get_argument(&arguments, "k")?.get_first_i64()?;
     Ok(Value::ArrayND(ArrayND::F64(utilities::aggregations::kth_raw_sample_moment(&data, &k))))
 }
 
 pub fn component_median(
     _x: &proto::Median, arguments: &NodeArguments,
 ) -> Result<Value, String> {
-    let data: ArrayD<f64> = get_array_f64(&arguments, "data")?;
+    let data = get_argument(&arguments, "data")?.get_arraynd()?.get_f64()?;
     Ok(Value::ArrayND(ArrayND::F64(utilities::aggregations::median(&data))))
 }
 
 pub fn component_sum(
     _x: &proto::Sum, arguments: &NodeArguments,
 ) -> Result<Value, String> {
-    let data: ArrayD<f64> = get_array_f64(&arguments, "data")?;
+    let data = get_argument(&arguments, "data")?.get_arraynd()?.get_f64()?;
     Ok(Value::ArrayND(ArrayND::F64(utilities::aggregations::sum(&data))))
 }
 
 pub fn component_laplace_mechanism(
     _x: &proto::LaplaceMechanism, arguments: &NodeArguments,
 ) -> Result<Value, String> {
-    let epsilon: f64 = get_f64(&arguments, "epsilon")?;
-    let sensitivity: f64 = get_f64(&arguments, "sensitivity")?;
+    let epsilon = get_argument(&arguments, "epsilon")?.get_first_f64()?;
+    let sensitivity = get_argument(&arguments, "sensitivity")?.get_first_f64()?;
     Ok(Value::ArrayND(ArrayND::F64(utilities::mechanisms::laplace_mechanism(&epsilon, &sensitivity))))
 }
 
 pub fn component_gaussian_mechanism(
     _x: &proto::GaussianMechanism, arguments: &NodeArguments,
 ) -> Result<Value, String> {
-    let epsilon: f64 = get_f64(&arguments, "epsilon")?;
-    let delta: f64 = get_f64(&arguments, "delta")?;
-    let sensitivity: f64 = get_f64(&arguments, "sensitivity")?;
+    let epsilon = get_argument(&arguments, "epsilon")?.get_first_f64()?;
+    let delta = get_argument(&arguments, "delta")?.get_first_f64()?;
+    let sensitivity = get_argument(&arguments, "sensitivity")?.get_first_f64()?;
     Ok(Value::ArrayND(ArrayND::F64(utilities::mechanisms::gaussian_mechanism(&epsilon, &delta, &sensitivity))))
 }
 
 pub fn component_simple_geometric_mechanism(
     _x: &proto::SimpleGeometricMechanism, arguments: &NodeArguments,
 ) -> Result<Value, String> {
-    let epsilon: f64 = get_f64(&arguments, "epsilon")?;
-    let sensitivity: f64 = get_f64(&arguments, "sensitivity")?;
-    let count_min: i64 = get_i64(&arguments, "count_min")?;
-    let count_max: i64 = get_i64(&arguments, "count_max")?;
-    let enforce_constant_time: bool = get_bool(&arguments, "enforce_constant_time")?;
+    let epsilon = get_argument(&arguments, "epsilon")?.get_first_f64()?;
+    let sensitivity = get_argument(&arguments, "sensitivity")?.get_first_f64()?;
+    let count_min = get_argument(&arguments, "count_min")?.get_first_i64()?;
+    let count_max = get_argument(&arguments, "count_max")?.get_first_i64()?;
+    let enforce_constant_time = get_argument(&arguments, "enforce_constant_time")?.get_first_bool()?;
+
     Ok(Value::ArrayND(ArrayND::I64(utilities::mechanisms::simple_geometric_mechanism(
         &epsilon, &sensitivity, &count_min, &count_max, &enforce_constant_time))))
 }

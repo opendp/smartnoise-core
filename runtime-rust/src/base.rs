@@ -1,7 +1,6 @@
 extern crate yarrow_validator;
 
-use yarrow_validator::{proto};
-use yarrow_validator::utilities::buffer;
+use yarrow_validator::{proto, base};
 use yarrow_validator::utilities::graph as yarrow_graph;
 
 
@@ -26,7 +25,7 @@ pub fn execute_graph(analysis: &proto::Analysis,
     let mut traversal = Vec::new();
     traversal.extend(yarrow_graph::get_sinks(&analysis).into_iter());
 
-    let mut evaluations = buffer::release_to_evaluations(release)?;
+    let mut evaluations = base::release_to_evaluations(release)?;
 
     let mut graph: HashMap<u32, proto::Component> = analysis.computation_graph.to_owned().unwrap().value;
 
@@ -107,13 +106,13 @@ pub fn execute_graph(analysis: &proto::Analysis,
             }
         }
     }
-    buffer::evaluations_to_release(&evaluations)
+    base::evaluations_to_release(&evaluations)
 }
 
 pub fn execute_component(component: &proto::Component,
-                         evaluations: &buffer::GraphEvaluation,
+                         evaluations: &base::GraphEvaluation,
                          dataset: &proto::Dataset) -> Result<Value, String> {
-    let arguments = buffer::get_arguments(&component, &evaluations);
+    let arguments = base::get_arguments(&component, &evaluations);
 
     use proto::component::Value as Value;
     match component.to_owned().value.unwrap() {

@@ -9,8 +9,8 @@ use crate::components::Component;
 
 
 use crate::utilities::serial;
-use crate::utilities::serial::{Vector1DNull, Vector2DJagged};
-use crate::utilities::buffer::{release_to_evaluations, GraphEvaluation, get_arguments_copy};
+use crate::utilities::serial::{Vector1DNull, Vector2DJagged, Value, serialize_value};
+use crate::base::{release_to_evaluations, GraphEvaluation, get_arguments_copy};
 
 
 #[derive(Clone, Debug)]
@@ -22,6 +22,54 @@ pub struct Constraint {
     pub num_columns: Option<i64>,
     // vector because some types, like the jagged matrix and hash table, may have mixed lengths
     pub num_records: Vec<Option<i64>>,
+}
+
+impl Constraint {
+    pub fn get_min_f64(self) -> Result<Vec<f64>, String> {
+        match self.nature {
+            Some(value) => match value {
+                Nature::Continuous(continuous) => match continuous.min {
+                    Vector1DNull::F64(bound) => {
+                        let value = bound.iter().map(|v| v.to_owned().unwrap()).collect::<Vec<f64>>();
+                        match bound.len() == value.len() {
+                            true => Ok(value),
+                            false => Err("not all mins are known".to_string())
+                        }
+                    }
+                    _ => Err("min must be composed of floats".to_string())
+                },
+                _ => Err("min must be an array".to_string())
+            },
+            None => Err("nature is not defined".to_string())
+        }
+    }
+
+    pub fn get_max_f64(self) -> Result<Vec<f64>, String> {
+        match self.nature {
+            Some(value) => match value {
+                Nature::Continuous(continuous) => match continuous.max {
+                    Vector1DNull::F64(bound) => {
+                        let value = bound.iter().map(|v| v.to_owned().unwrap()).collect::<Vec<f64>>();
+                        match bound.len() == value.len() {
+                            true => Ok(value),
+                            false => Err("not all max are known".to_string())
+                        }
+                    }
+                    _ => Err("max must be composed of floats".to_string())
+                },
+                _ => Err("max must be an array".to_string())
+            },
+            None => Err("nature is not defined".to_string())
+        }
+    }
+
+    pub fn get_n(self) -> Result<i64, String> {
+        let value = self.num_records.iter().map(|v| v.to_owned().unwrap()).collect::<Vec<i64>>();
+        match self.num_records.len() == value.len() {
+            true => Ok(value.first().unwrap().to_owned()),
+            false => Err("n is not known".to_string())
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -195,13 +243,14 @@ pub fn get_releasable_bool(constraints: &NodeConstraints, argument: &str) -> Res
     }
 }
 
-//pub fn get_conservative_bounds(
-//    bounds: Vec<Option<Vec<f32>>>,
-//    operator: &dyn Fn(&f64, &f64) -> f64
-//) -> Option<Vec<f64>> {
-//    if !bounds.iter().all(|bound| bound.is_some()) {
-//        return None;
-//    }
-////    bounds.iter().fold1(|accum, bound| bound.unwrap().map())
-//
-//}
+pub fn get_literal(value: &Value, batch: &u32) -> proto::Component {
+    proto::Component {
+        arguments: HashMap::new(),
+        value: Some(proto::component::Value::Literal(proto::Literal {
+            value: serialize_value(&value).ok(),
+            private: false
+        })),
+        omit: true,
+        batch: batch.clone(),
+    }
+}

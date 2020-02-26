@@ -186,12 +186,6 @@ class Component(object):
             filtered = [i for i in filtered
                            if i in ALL_CONSTRAINTS]
 
-            if 'n' in filtered:
-                arguments[argument] = Component('Resize', arguments={
-                    "data": arguments[argument],
-                    "n": Component.of(constraints[argument + '_n'])
-                })
-
             if 'max' in filtered and 'min' in filtered:
                 arguments[argument] = Component('Clamp', arguments={
                     "data": arguments[argument],
@@ -223,6 +217,12 @@ class Component(object):
                 arguments[argument] = Component('Clamp', arguments={
                     "data": arguments[argument],
                     "categories": Component.of(constraints[argument + '_categories'])
+                })
+
+            if 'n' in filtered:
+                arguments[argument] = Component('Resize', arguments={
+                    "data": arguments[argument],
+                    "n": Component.of(constraints[argument + '_n'])
                 })
 
         return arguments

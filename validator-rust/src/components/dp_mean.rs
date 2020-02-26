@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 use crate::utilities::constraint as constraint_utils;
-use crate::utilities::constraint::{Constraint, NodeConstraints, get_constraint};
+use crate::utilities::constraint::{Constraint, NodeConstraints, get_constraint, get_literal};
 
 
 use crate::proto;
 use crate::hashmap;
-use crate::components::{Component, Accuracy, Privatize, Expandable};
+use crate::components::{Component, Accuracy, Privatize, Expandable, Report};
 use ndarray::Array;
 use crate::utilities::serial::{Value, serialize_value, ArrayND};
 
@@ -52,6 +52,13 @@ impl Component for proto::DpMean {
         // all checks have passed
         true
     }
+
+    fn get_names(
+        &self,
+        _constraints: &NodeConstraints,
+    ) -> Result<Vec<String>, String> {
+        Err("get_names not implemented".to_string())
+    }
 }
 
 impl Expandable for proto::DpMean {
@@ -76,23 +83,14 @@ impl Expandable for proto::DpMean {
             batch: component.batch,
         });
 
-        let sensitivity = serialize_value(
-            &Value::ArrayND(ArrayND::F64(Array::from(component.value.to_owned().unwrap()
+        let sensitivity = Value::ArrayND(ArrayND::F64(Array::from(component.value.to_owned().unwrap()
                 .compute_sensitivity(privacy_definition, constraints)
-                .unwrap()).into_dyn())))?;
+                .unwrap()).into_dyn()));
 
         // sensitivity literal
         current_id += 1;
         let id_sensitivity = current_id.clone();
-        graph_expansion.insert(id_sensitivity, proto::Component {
-            arguments: hashmap![],
-            value: Some(proto::component::Value::Literal(proto::Literal {
-                value: Some(sensitivity),
-                private: true
-            })),
-            omit: true,
-            batch: component.batch
-        });
+        graph_expansion.insert(id_sensitivity, get_literal(&sensitivity, &component.batch));
 
         // noising
         graph_expansion.insert(component_id, proto::Component {
@@ -142,6 +140,15 @@ impl Accuracy for proto::DpMean {
         _privacy_definition: &proto::PrivacyDefinition,
         _constraint: &constraint_utils::NodeConstraints,
     ) -> Option<f64> {
+        None
+    }
+}
+
+impl Report for proto::DpMean {
+    fn summarize(
+        &self,
+        _constraints: &NodeConstraints,
+    ) -> Option<String> {
         None
     }
 }

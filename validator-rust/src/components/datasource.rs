@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use crate::utilities::constraint as constraint_utils;
-use crate::utilities::constraint::{
-    Constraint};
+use crate::utilities::constraint::{Constraint, NodeConstraints};
 
 
 use crate::proto;
@@ -35,5 +34,12 @@ impl Component for proto::DataSource {
         _constraints: &constraint_utils::NodeConstraints,
     ) -> bool {
         true
+    }
+
+    fn get_names(
+        &self,
+        _constraints: &NodeConstraints,
+    ) -> Result<Vec<String>, String> {
+        Err("get_names not implemented".to_string())
     }
 }

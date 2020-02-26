@@ -44,16 +44,92 @@ pub enum Value {
 }
 
 impl Value {
-    fn get_str(self) -> Result<String, String> {
+    pub fn get_arraynd(self) -> Result<ArrayND, String> {
         match self {
-            Value::ArrayND(array) => match array {
-                ArrayND::Str(str_array) => match str_array.first() {
-                    Some(string) => Ok(string.to_string()),
-                    None => Err("string array is empty".to_string())
-                },
-                _ => Err("value must be a string".to_string())
-            },
+            Value::ArrayND(array) => Ok(array.to_owned()),
             _ => Err("value must be wrapped in an ArrayND".to_string())
+        }
+    }
+
+    pub fn get_first_f64(self) -> Result<f64, String> {
+        match self {
+            Value::ArrayND(array) => array.get_first_f64(),
+            _ => Err("cannot retrieve first float".to_string())
+        }
+    }
+    pub fn get_first_i64(self) -> Result<i64, String> {
+        match self {
+            Value::ArrayND(array) => array.get_first_i64(),
+            _ => Err("cannot retrieve integer".to_string())
+        }
+    }
+    pub fn get_first_str(self) -> Result<String, String> {
+        match self {
+            Value::ArrayND(array) => array.get_first_str(),
+            _ => Err("cannot retrieve string".to_string())
+        }
+    }
+    pub fn get_first_bool(self) -> Result<bool, String> {
+        match self {
+            Value::ArrayND(array) => array.get_first_bool(),
+            _ => Err("cannot retrieve bool".to_string())
+        }
+    }
+}
+
+impl ArrayND {
+    pub fn get_f64(self) -> Result<ArrayD<f64>, String> {
+        match self {
+            ArrayND::Bool(x) => Ok(x.mapv(|v| if v { 1. } else { 0. })),
+            ArrayND::I64(x) => Ok(x.mapv(|v| f64::from(v as i32))),
+            ArrayND::F64(x) => Ok(x.to_owned()),
+            _ => Err("expected a float on a non-float ArrayND".to_string())
+        }
+    }
+    pub fn get_first_f64(self) -> Result<f64, String> {
+        match self {
+            ArrayND::Bool(x) => Ok(if *x.first().unwrap() { 1. } else { 0. }),
+            ArrayND::I64(x) => Ok(f64::from(*x.first().unwrap() as i32)),
+            ArrayND::F64(x) => Ok(x.first().unwrap().to_owned()),
+            _ => Err("value must be numeric".to_string())
+        }
+    }
+    pub fn get_i64(self) -> Result<ArrayD<i64>, String> {
+        match self {
+            ArrayND::Bool(x) => Ok(x.mapv(|v| if v { 1 } else { 0 })),
+            ArrayND::I64(x) => Ok(x.to_owned()),
+            _ => Err("expected a float on a non-float ArrayND".to_string())
+        }
+    }
+    pub fn get_first_i64(self) -> Result<i64, String> {
+        match self {
+            ArrayND::Bool(x) => Ok(if *x.first().unwrap() { 1 } else { 0 }),
+            ArrayND::I64(x) => Ok(x.first().unwrap().to_owned()),
+            _ => Err("value must be numeric".to_string())
+        }
+    }
+    pub fn get_str(self) -> Result<ArrayD<String>, String> {
+        match self {
+            ArrayND::Str(x) => Ok(x.to_owned()),
+            _ => Err("value must be a string".to_string())
+        }
+    }
+    pub fn get_first_str(self) -> Result<String, String> {
+        match self {
+            ArrayND::Str(x) => Ok(x.first().unwrap().to_owned()),
+            _ => Err("value must be a string".to_string())
+        }
+    }
+    pub fn get_bool(self) -> Result<ArrayD<bool>, String> {
+        match self {
+            ArrayND::Bool(x) => Ok(x.to_owned()),
+            _ => Err("value must be a bool".to_string())
+        }
+    }
+    pub fn get_first_bool(self) -> Result<bool, String> {
+        match self {
+            ArrayND::Bool(x) => Ok(x.first().unwrap().to_owned()),
+            _ => Err("value must be a bool".to_string())
         }
     }
 }

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use crate::utilities::constraint as constraint_utils;
-use crate::utilities::constraint::{Constraint, NatureCategorical, Nature, NatureContinuous};
+use crate::utilities::constraint::{Constraint, NatureCategorical, Nature, NatureContinuous, NodeConstraints};
 
 
 use crate::proto;
@@ -374,5 +374,12 @@ impl Component for proto::Literal {
         _constraints: &constraint_utils::NodeConstraints,
     ) -> bool {
         true
+    }
+
+    fn get_names(
+        &self,
+        _constraints: &NodeConstraints,
+    ) -> Result<Vec<String>, String> {
+        Err("get_names not implemented".to_string())
     }
 }

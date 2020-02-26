@@ -9,8 +9,66 @@ use std::collections::HashMap;
 use crate::utilities::constraint::{NodeConstraints};
 
 
-use crate::utilities::serial::Value;
+use crate::utilities::serial::{Value, parse_value, serialize_value};
 use crate::components::literal::infer_constraint;
+use std::ops::Deref;
+
+
+// equivalent to proto Release
+pub type GraphEvaluation = HashMap<u32, Value>;
+
+// arguments to a node prior to evaluation
+pub type NodeArguments<'a> = HashMap<String, &'a Value>;
+
+pub fn get_arguments<'a>(component: &proto::Component, graph_evaluation: &'a GraphEvaluation) -> NodeArguments<'a> {
+    let mut arguments = NodeArguments::new();
+    component.arguments.iter().for_each(|(field_id, field)| {
+        let evaluation: &'a Value = graph_evaluation.get(&field).unwrap();
+        arguments.insert(field_id.to_owned(), evaluation);
+    });
+    arguments
+}
+
+pub fn get_arguments_copy(component: &proto::Component, graph_evaluation: &GraphEvaluation) -> HashMap<String, Value> {
+    let mut arguments = HashMap::<String, Value>::new();
+    component.arguments.iter().for_each(|(field_id, field)| {
+        let evaluation: Value = graph_evaluation.get(&field).unwrap().to_owned();
+        arguments.insert(field_id.to_owned(), evaluation);
+    });
+    arguments
+}
+
+pub fn get_argument(arguments: &NodeArguments, name: &str) -> Result<Value, String> {
+    match arguments.get(name) {
+        Some(argument) => Ok(argument.deref().to_owned()),
+        _ => Err((name.to_string() + " is not defined").to_string())
+    }
+}
+
+pub fn release_to_evaluations(release: &proto::Release) -> Result<GraphEvaluation, String> {
+    let mut evaluations = GraphEvaluation::new();
+
+    for (node_id, node_release) in &release.values {
+        evaluations.insert(*node_id, parse_value(&node_release.value.to_owned().unwrap()).unwrap());
+    }
+    Ok(evaluations)
+}
+
+pub fn evaluations_to_release(evaluations: &GraphEvaluation) -> Result<proto::Release, String> {
+    let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
+    for (node_id, node_eval) in evaluations {
+        if let Ok(array_serialized) = serialize_value(node_eval) {
+            releases.insert(*node_id, proto::ReleaseNode {
+                value: Some(array_serialized),
+                privacy_usage: None,
+            });
+        }
+    }
+    Ok(proto::Release {
+        values: releases
+    })
+}
+
 
 
 pub fn validate_analysis(

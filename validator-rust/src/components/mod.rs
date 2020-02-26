@@ -28,6 +28,11 @@ pub trait Component {
         public_arguments: &HashMap<String, Value>,
         constraints: &NodeConstraints,
     ) -> bool;
+
+    fn get_names(
+        &self,
+        constraints: &NodeConstraints,
+    ) -> Result<Vec<String>, String>;
 }
 
 pub trait Expandable {
@@ -71,11 +76,6 @@ pub trait Report {
         &self,
         constraints: &NodeConstraints,
     ) -> Option<String>;
-
-    fn get_names(
-        &self,
-        constraints: &NodeConstraints,
-    ) -> Result<Vec<String>, String>;
 }
 
 
@@ -132,6 +132,32 @@ impl Component for proto::component::Value {
         // an unknown component is not valid
         false
     }
+
+    fn get_names(
+        &self,
+        _constraints: &NodeConstraints,
+    ) -> Result<Vec<String>, String> {
+
+        macro_rules! get_names{
+            ($self:ident, $constraints:ident, $( $variant:ident ),*) => {
+                {
+                    $(
+                       if let proto::component::Value::$variant(x) = $self {
+                            return x.get_names($constraints)
+                        }
+                    )*
+                }
+            }
+        }
+
+        get_names!(self, constraints,
+            // INSERT COMPONENT LIST
+//            Rowmin, Dpmean, Impute
+        );
+        // TODO: default implementation
+
+        Err("get_names not implemented".to_string())
+    }
 }
 
 impl Expandable for proto::component::Value {
@@ -158,7 +184,7 @@ impl Expandable for proto::component::Value {
 
         expand_graph!(self, privacy_definition, component, constraints, component_id, maximum_id,
             // INSERT COMPONENT LIST
-            Dpmean
+            Dpmean, Clamp, Impute, Resize
         );
 
         // no expansion
@@ -272,31 +298,5 @@ impl Report for proto::component::Value {
         // TODO: default implementation
 
         None
-    }
-
-    fn get_names(
-        &self,
-        _constraints: &NodeConstraints,
-    ) -> Result<Vec<String>, String> {
-
-        macro_rules! get_names{
-            ($self:ident, $constraints:ident, $( $variant:ident ),*) => {
-                {
-                    $(
-                       if let proto::component::Value::$variant(x) = $self {
-                            return x.get_names($constraints)
-                        }
-                    )*
-                }
-            }
-        }
-
-        get_names!(self, constraints,
-            // INSERT COMPONENT LIST
-//            Rowmin, Dpmean, Impute
-        );
-        // TODO: default implementation
-
-        Err("get_names not implemented".to_string())
     }
 }
