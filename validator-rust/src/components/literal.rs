@@ -1,3 +1,6 @@
+use crate::errors::*;
+use crate::ErrorKind::{PrivateError, PublicError};
+
 use std::collections::HashMap;
 
 
@@ -23,7 +26,7 @@ pub fn get_shape(array: &ArrayND) -> Vec<i64> {
     }.iter().map(|arr| arr.clone() as i64).collect()
 }
 
-pub fn infer_num_columns(value: &Value) -> Result<Option<i64>, String> {
+pub fn infer_num_columns(value: &Value) -> Result<Option<i64>> {
     match value {
         Value::ArrayND(array) => {
             let shape = get_shape(&array);
@@ -31,7 +34,7 @@ pub fn infer_num_columns(value: &Value) -> Result<Option<i64>, String> {
                 0 => Ok(None),
                 1 => Ok(Some(shape[0])),
                 2 => Ok(Some(shape[1])),
-                _ => Err("arrays may have max dimensionality of 2".to_owned())
+                _ => Err("arrays may have max dimensionality of 2".into())
             }
         },
         Value::HashmapString(hashmap) => Ok(Some(hashmap.len() as i64)),
@@ -43,7 +46,7 @@ pub fn infer_num_columns(value: &Value) -> Result<Option<i64>, String> {
         } as i64))
     }
 }
-pub fn infer_num_rows(value: &Value) -> Result<Vec<Option<i64>>, String> {
+pub fn infer_num_rows(value: &Value) -> Result<Vec<Option<i64>>> {
     match value {
         Value::ArrayND(array) => {
             let shape = get_shape(array);
@@ -51,7 +54,7 @@ pub fn infer_num_rows(value: &Value) -> Result<Vec<Option<i64>>, String> {
                 0 => Ok(vec![None]),
                 1 => Ok((0..shape[0]).collect::<Vec<i64>>().iter().map(|_| Some(1)).collect()),
                 2 => Ok((0..shape[1]).collect::<Vec<i64>>().iter().map(|_| Some(shape[0])).collect()),
-                _ => Err("arrays may have max dimensionality of 2".to_owned())
+                _ => Err("arrays may have max dimensionality of 2".into())
             }
         },
         Value::HashmapString(hashmap) => hashmap.values().map(|value| match value {
@@ -61,10 +64,10 @@ pub fn infer_num_rows(value: &Value) -> Result<Vec<Option<i64>>, String> {
                     0 => Ok(Some(1)),
                     1 => Ok(Some(1)),
                     2 => Ok(Some(shape[0])),
-                    _ => Err("arrays may have max dimensionality of 2".to_owned())
+                    _ => Err("arrays may have max dimensionality of 2".into())
                 }
             },
-            _ => Err("properties on hashmaps are only implemented for single-column arrays".to_string())
+            _ => Err("properties on hashmaps are only implemented for single-column arrays".into())
         }).collect(),
         Value::Vector2DJagged(jagged) => Ok(match jagged {
             Vector2DJagged::Bool(vector) => vector.iter()
@@ -315,15 +318,15 @@ pub fn infer_nature(value: &Value) -> Nature {
     }
 }
 
-pub fn infer_nullity(_value: &Value) -> Result<bool, String> {
+pub fn infer_nullity(_value: &Value) -> Result<bool> {
     Ok(true)
 }
 
-pub fn infer_c_stability(_value: &Value) -> Result<Vec<f64>, String> {
+pub fn infer_c_stability(_value: &Value) -> Result<Vec<f64>> {
     Ok(vec![])
 }
 
-pub fn infer_property(value: &Value) -> Result<Properties, String> {
+pub fn infer_property(value: &Value) -> Result<Properties> {
     Ok(Properties {
         nullity: infer_nullity(&value)?,
         releasable: true,
@@ -340,7 +343,7 @@ impl Component for proto::Literal {
         &self,
         _public_arguments: &HashMap<String, Value>,
         _properties: &base::NodeProperties,
-    ) -> Result<Properties, String> {
+    ) -> Result<Properties> {
         let value = parse_value(&self.value.clone().unwrap()).unwrap();
 
         match self.private {
@@ -370,14 +373,14 @@ impl Component for proto::Literal {
         &self,
         _public_arguments: &HashMap<String, Value>,
         _properties: &base::NodeProperties,
-    ) -> Result<(), String> {
+    ) -> Result<()> {
         Ok(())
     }
 
     fn get_names(
         &self,
         _properties: &NodeProperties,
-    ) -> Result<Vec<String>, String> {
-        Err("get_names not implemented".to_string())
+    ) -> Result<Vec<String>> {
+        Err("get_names not implemented".into())
     }
 }

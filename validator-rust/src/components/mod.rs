@@ -1,3 +1,6 @@
+use crate::errors::*;
+use crate::ErrorKind::{PrivateError, PublicError};
+
 pub mod row_wise_min;
 pub mod dp_mean;
 pub mod impute;
@@ -19,18 +22,18 @@ pub trait Component {
         &self,
         public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
-    ) -> Result<Properties, String>;
+    ) -> Result<Properties>;
 
     fn is_valid(
         &self,
         public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
-    ) -> Result<(), String>;
+    ) -> Result<()>;
 
     fn get_names(
         &self,
         properties: &NodeProperties,
-    ) -> Result<Vec<String>, String>;
+    ) -> Result<Vec<String>>;
 }
 
 pub trait Expandable {
@@ -42,7 +45,7 @@ pub trait Expandable {
         properties: &NodeProperties,
         component_id: u32,
         maximum_id: u32,
-    ) -> Result<(u32, HashMap<u32, proto::Component>), String>;
+    ) -> Result<(u32, HashMap<u32, proto::Component>)>;
 }
 
 pub trait Privatize {
@@ -84,7 +87,7 @@ impl Component for proto::component::Value {
         &self,
         public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
-    ) -> Result<Properties, String> {
+    ) -> Result<Properties> {
         macro_rules! propagate_property {
             ($self:ident, $public_arguments: ident, $properties: ident, $( $variant:ident ),*) => {
                 {
@@ -102,14 +105,14 @@ impl Component for proto::component::Value {
             Datasource, Rowmin, Dpmean, Impute, Literal, Resize, Clamp
         );
 
-        return Err("a proto component is missing its Component trait".to_string())
+        return Err("a proto component is missing its Component trait".into())
     }
 
     fn is_valid(
         &self,
         public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
-    ) -> Result<(), String> {
+    ) -> Result<()> {
         macro_rules! is_valid {
             ($self:ident, $public_arguments: ident, $properties: ident, $( $variant:ident ),*) => {
                 {
@@ -128,13 +131,13 @@ impl Component for proto::component::Value {
         );
 
         // an unknown component is not valid
-        Err("a component is missing its validator implementation".to_string())
+        Err("a component is missing its validator implementation".into())
     }
 
     fn get_names(
         &self,
         _properties: &NodeProperties,
-    ) -> Result<Vec<String>, String> {
+    ) -> Result<Vec<String>> {
 
         macro_rules! get_names{
             ($self:ident, $properties:ident, $( $variant:ident ),*) => {
@@ -154,7 +157,7 @@ impl Component for proto::component::Value {
         );
         // TODO: default implementation
 
-        Err("get_names not implemented".to_string())
+        Err("get_names not implemented".into())
     }
 }
 
@@ -167,7 +170,7 @@ impl Expandable for proto::component::Value {
         properties: &NodeProperties,
         component_id: u32,
         maximum_id: u32,
-    ) -> Result<(u32, HashMap<u32, proto::Component>), String> {
+    ) -> Result<(u32, HashMap<u32, proto::Component>)> {
         macro_rules! expand_graph {
             ($self:ident, $privacy_definition:ident, $component:ident, $properties:ident, $component_id:ident, $maximum_id:ident, $( $variant:ident ),*) => {
                 {

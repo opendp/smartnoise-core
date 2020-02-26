@@ -1,3 +1,6 @@
+use crate::errors::*;
+use crate::ErrorKind::{PrivateError, PublicError};
+
 use ndarray::prelude::*;
 use crate::proto;
 use std::collections::{HashMap};
@@ -5,7 +8,6 @@ use crate::base::{Release, Properties, Nature, Vector2DJagged, Vector1D, Value, 
 
 // PARSERS
 pub fn parse_bool_null(value: &proto::BoolNull) -> Option<bool> {
-//    match value { proto::bool_null::Data::Option(x) => Some(x), _ => None }
     match value.data.to_owned() {
         Some(elem_data) => match elem_data { proto::bool_null::Data::Option(x) => Some(x) },
         None => None
@@ -139,7 +141,7 @@ pub fn parse_array2d_jagged(value: &proto::Array2dJagged) -> Vector2DJagged {
     }
 }
 
-pub fn parse_value(value: &proto::Value) -> Result<Value, String> {
+pub fn parse_value(value: &proto::Value) -> Result<Value> {
     Ok(match value.data.to_owned().unwrap() {
         proto::value::Data::ArrayNd(data) =>
             Value::ArrayND(parse_arraynd(&data)),
@@ -150,7 +152,7 @@ pub fn parse_value(value: &proto::Value) -> Result<Value, String> {
     })
 }
 
-pub fn parse_release(release: &proto::Release) -> Result<Release, String> {
+pub fn parse_release(release: &proto::Release) -> Result<Release> {
     let mut evaluations = Release::new();
     for (node_id, node_release) in &release.values {
         evaluations.insert(*node_id, parse_value(&node_release.value.to_owned().unwrap()).unwrap());
@@ -347,7 +349,7 @@ pub fn serialize_array2d_jagged(value: &Vector2DJagged) -> proto::Array2dJagged 
     }
 }
 
-pub fn serialize_value(value: &Value) -> Result<proto::Value, String> {
+pub fn serialize_value(value: &Value) -> Result<proto::Value> {
     Ok(proto::Value {
         data: Some(match value {
             Value::ArrayND(data) =>
@@ -360,7 +362,7 @@ pub fn serialize_value(value: &Value) -> Result<proto::Value, String> {
     })
 }
 
-pub fn serialize_release(release: &Release) -> Result<proto::Release, String> {
+pub fn serialize_release(release: &Release) -> Result<proto::Release> {
     let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
     for (node_id, node_eval) in release {
         if let Ok(array_serialized) = serialize_value(node_eval) {

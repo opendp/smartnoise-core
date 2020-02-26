@@ -1,3 +1,6 @@
+use yarrow_validator::errors::*;
+use yarrow_validator::ErrorKind::{PrivateError, PublicError};
+
 extern crate yarrow_validator;
 
 use yarrow_validator::{proto, base};
@@ -18,7 +21,7 @@ pub type NodeArguments<'a> = HashMap<String, &'a Value>;
 
 pub fn execute_graph(analysis: &proto::Analysis,
                      release: &proto::Release,
-                     dataset: &proto::Dataset) -> Result<proto::Release, String> {
+                     dataset: &proto::Dataset) -> Result<proto::Release> {
     let node_ids_release: HashSet<u32> = yarrow_graph::get_release_nodes(&analysis)?;
 
     // stack for storing which nodes to evaluate next
@@ -111,7 +114,7 @@ pub fn execute_graph(analysis: &proto::Analysis,
 
 pub fn execute_component(component: &proto::Component,
                          evaluations: &base::Release,
-                         dataset: &proto::Dataset) -> Result<Value, String> {
+                         dataset: &proto::Dataset) -> Result<Value> {
 
     let mut arguments = NodeArguments::new();
     component.arguments.iter().for_each(|(field_id, field)| {
@@ -148,6 +151,6 @@ pub fn execute_component(component: &proto::Component,
         Value::LaplaceMechanism(x) => components::component_laplace_mechanism(&x, &arguments),
         Value::GaussianMechanism(x) => components::component_gaussian_mechanism(&x, &arguments),
         Value::SimpleGeometricMechanism(x) => components::component_simple_geometric_mechanism(&x, &arguments),
-        variant => Err(format!("Component type not implemented: {:?}", variant))
+        variant => Err(format!("Component type not implemented: {:?}", variant).into())
     }
 }

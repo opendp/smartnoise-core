@@ -1,3 +1,30 @@
+
+// `error_chain!` can recurse deeply
+#![recursion_limit = "1024"]
+#[macro_use]
+extern crate error_chain;
+pub mod errors {
+    // Create the Error, ErrorKind, ResultExt, and Result types
+    error_chain! {}
+}
+
+error_chain! {
+    errors {
+        PrivateError(t: String) {
+            description("privacy compromised"),
+            display("privacy compromised: '{}'", t),
+        }
+        PublicError(t: String) {
+            description("privacy preserved"),
+            display("privacy preserved: '{}'", t),
+        }
+    }
+}
+pub use errors::*;
+use error_chain::ChainedError;
+use std::io::Write; // trait which holds `display_chain`
+pub static ERR_STDERR: &'static str = "Error writing to stderr";
+
 pub mod base;
 pub mod utilities;
 pub mod components;
@@ -69,9 +96,16 @@ pub extern "C" fn validate_analysis(
     let response = proto::ResponseValidateAnalysis {
         value: match base::validate_analysis(&analysis) {
             Ok(x) => Some(proto::response_validate_analysis::Value::Data(x)),
-            Err(err) => Some(proto::response_validate_analysis::Value::Error(
-                proto::Error { message: err.to_string() }
-            ))
+            Err(err) => {
+
+                let stderr = &mut ::std::io::stderr();
+                writeln!(stderr, "{}", err.display_chain()).expect(ERR_STDERR);
+                ::std::process::exit(1);
+
+                Some(proto::response_validate_analysis::Value::Error(
+                    proto::Error { message: format!("{:?}", err).to_string() }
+                ))
+            }
         }
     };
     buffer_to_ptr(response)
@@ -90,9 +124,16 @@ pub extern "C" fn compute_privacy_usage(
     let response = proto::ResponseComputePrivacyUsage {
         value: match base::compute_privacy_usage(&analysis, &release) {
             Ok(x) => Some(proto::response_compute_privacy_usage::Value::Data(x)),
-            Err(err) => Some(proto::response_compute_privacy_usage::Value::Error(
-                proto::Error { message: err.to_string() }
-            ))
+            Err(err) => {
+
+                let stderr = &mut ::std::io::stderr();
+                writeln!(stderr, "{}", err.display_chain()).expect(ERR_STDERR);
+                ::std::process::exit(1);
+
+                Some(proto::response_compute_privacy_usage::Value::Error(
+                    proto::Error { message: format!("{:?}", err).to_string() }
+                ))
+            }
         }
     };
     buffer_to_ptr(response)
@@ -111,9 +152,16 @@ pub extern "C" fn generate_report(
     let response = proto::ResponseGenerateReport {
         value: match base::generate_report(&analysis, &release) {
             Ok(x) => Some(proto::response_generate_report::Value::Data(x)),
-            Err(err) => Some(proto::response_generate_report::Value::Error(
-                proto::Error { message: err.to_string() }
-            ))
+            Err(err) => {
+
+                let stderr = &mut ::std::io::stderr();
+                writeln!(stderr, "{}", err.display_chain()).expect(ERR_STDERR);
+                ::std::process::exit(1);
+
+                Some(proto::response_generate_report::Value::Error(
+                    proto::Error { message: format!("{:?}", err).to_string() }
+                ))
+            }
         }
     };
     buffer_to_ptr(response)
@@ -133,15 +181,22 @@ pub extern "C" fn accuracy_to_privacy_usage(
         .collect();
     let accuracy: proto::Accuracy = request.accuracy.unwrap();
 
-    let privacy_usage: std::result::Result<proto::PrivacyUsage, String> = Ok(component.value.to_owned().unwrap()
+    let privacy_usage: Result<proto::PrivacyUsage> = Ok(component.value.to_owned().unwrap()
         .accuracy_to_privacy_usage(&privacy_definition, &properties, &accuracy).unwrap());
 
     let response = proto::ResponseAccuracyToPrivacyUsage {
         value: match privacy_usage {
             Ok(x) => Some(proto::response_accuracy_to_privacy_usage::Value::Data(x)),
-            Err(err) => Some(proto::response_accuracy_to_privacy_usage::Value::Error(
-                proto::Error { message: err.to_string() }
-            ))
+            Err(err) => {
+
+                let stderr = &mut ::std::io::stderr();
+                writeln!(stderr, "{}", err.display_chain()).expect(ERR_STDERR);
+                ::std::process::exit(1);
+
+                Some(proto::response_accuracy_to_privacy_usage::Value::Error(
+                    proto::Error { message: format!("{:?}", err).to_string() }
+                ))
+            }
         }
     };
     buffer_to_ptr(response)
@@ -160,7 +215,7 @@ pub extern "C" fn privacy_usage_to_accuracy(
         .map(|(k, v)| (k.to_owned(), utilities::serial::parse_properties(&v)))
         .collect();
 
-    let accuracy: std::result::Result<proto::Accuracy, String> = Ok(proto::Accuracy {
+    let accuracy: Result<proto::Accuracy> = Ok(proto::Accuracy {
         value: component.value.to_owned().unwrap()
             .privacy_usage_to_accuracy(&privacy_definition, &properties).unwrap()
     });
@@ -168,9 +223,16 @@ pub extern "C" fn privacy_usage_to_accuracy(
     let response = proto::ResponsePrivacyUsageToAccuracy {
         value: match accuracy {
             Ok(x) => Some(proto::response_privacy_usage_to_accuracy::Value::Data(x)),
-            Err(err) => Some(proto::response_privacy_usage_to_accuracy::Value::Error(
-                proto::Error { message: err.to_string() }
-            ))
+            Err(err) => {
+
+                let stderr = &mut ::std::io::stderr();
+                writeln!(stderr, "{}", err.display_chain()).expect(ERR_STDERR);
+                ::std::process::exit(1);
+
+                Some(proto::response_privacy_usage_to_accuracy::Value::Error(
+                    proto::Error { message: format!("{:?}", err).to_string() }
+                ))
+            }
         }
     };
     buffer_to_ptr(response)
@@ -199,9 +261,16 @@ pub extern "C" fn expand_component(
             request.maximum_id
         ) {
             Ok(x) => Some(proto::response_expand_component::Value::Data(x)),
-            Err(err) => Some(proto::response_expand_component::Value::Error(
-                proto::Error { message: err.to_string() }
-            ))
+            Err(err) => {
+
+                let stderr = &mut ::std::io::stderr();
+                writeln!(stderr, "{}", err.display_chain()).expect(ERR_STDERR);
+                ::std::process::exit(1);
+
+                Some(proto::response_expand_component::Value::Error(
+                    proto::Error { message: format!("{:?}", err).to_string() }
+                ))
+            }
         }
     };
     buffer_to_ptr(response)

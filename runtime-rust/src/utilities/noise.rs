@@ -1,4 +1,5 @@
-
+use yarrow_validator::errors::*;
+use yarrow_validator::ErrorKind::{PrivateError, PublicError};
 
 use probability::distribution::{Gaussian, Laplace, Inverse, Distribution};
 use ieee754::Ieee754;

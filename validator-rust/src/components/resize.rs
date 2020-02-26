@@ -1,3 +1,6 @@
+use crate::errors::*;
+use crate::ErrorKind::{PrivateError, PublicError};
+
 use std::collections::HashMap;
 
 use crate::{hashmap, base};
@@ -15,7 +18,7 @@ impl Component for proto::Resize {
         &self,
         public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
-    ) -> Result<Properties, String> {
+    ) -> Result<Properties> {
         let mut data_property = properties.get("data").unwrap().clone();
 
         // when resizing, nullity may become true to add additional rows
@@ -25,11 +28,11 @@ impl Component for proto::Resize {
                 ArrayND::I64(array) => match array.ndim() {
                     0 => (0..data_property.num_columns.unwrap())
                         .collect::<Vec<i64>>().iter().map(|_x| Some(array.first().unwrap().clone())).collect(),
-                    _ => return Err("n must be a scalar".to_string())
+                    _ => return Err("n must be a scalar".into())
                 }
-                _ => return Err("n must be an integer".to_string())
+                _ => return Err("n must be an integer".into())
             }
-            _ => return Err("n must be packed inside an ArrayND".to_string())
+            _ => return Err("n must be packed inside an ArrayND".into())
         };
 
         Ok(data_property)
@@ -39,7 +42,7 @@ impl Component for proto::Resize {
         &self,
         public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
-    ) -> Result<(), String> {
+    ) -> Result<()> {
         // TODO: stricter checks for bounds
         base::get_properties(properties, "n")?;
 
@@ -49,8 +52,8 @@ impl Component for proto::Resize {
     fn get_names(
         &self,
         _properties: &NodeProperties,
-    ) -> Result<Vec<String>, String> {
-        Err("get_names not implemented".to_string())
+    ) -> Result<Vec<String>> {
+        Err("get_names not implemented".into())
     }
 }
 
@@ -62,7 +65,7 @@ impl Expandable for proto::Resize {
         properties: &base::NodeProperties,
         component_id: u32,
         maximum_id: u32,
-    ) -> Result<(u32, HashMap<u32, proto::Component>), String> {
+    ) -> Result<(u32, HashMap<u32, proto::Component>)> {
         let mut current_id = maximum_id;
         let mut graph_expansion: HashMap<u32, proto::Component> = HashMap::new();
 

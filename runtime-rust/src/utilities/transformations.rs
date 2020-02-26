@@ -1,3 +1,6 @@
+use yarrow_validator::errors::*;
+use yarrow_validator::ErrorKind::{PrivateError, PublicError};
+
 use std::string::String;
 use std::vec::Vec;
 use std::cmp;
@@ -32,7 +35,7 @@ pub fn convert_from_matrix<T>(data: &ArrayD<T>, original_dim: &u8) -> ArrayD<T> 
 }
 
 pub fn bin<T>(data: &ArrayD<T>, edges: &ArrayD<T>, inclusive_left: &ArrayD<bool>)
-    -> Result<ArrayD<String>, String> where T: Clone, T: PartialOrd, T: std::fmt::Display {
+    -> Result<ArrayD<String>> where T: Clone, T: PartialOrd, T: std::fmt::Display {
     /// Accepts vector of data and assigns each element to a bin
     /// NOTE: bin transformation has C-stability of 1
     ///
@@ -114,7 +117,7 @@ pub fn bin<T>(data: &ArrayD<T>, edges: &ArrayD<T>, inclusive_left: &ArrayD<bool>
     return Ok(convert_from_matrix(&new_bin_array, &original_dim));
 }
 
-pub fn count<T>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>) -> Result<Vec<Option<Vec<i64>>>, String> where T: Clone, T: PartialEq {
+pub fn count<T>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>) -> Result<Vec<Option<Vec<i64>>>> where T: Clone, T: PartialEq {
     /// Gets count of data elements for each category
     ///
     /// Example
@@ -152,7 +155,7 @@ pub fn count<T>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>) -> Result<Ve
 }
 
 pub fn sum<T,S>(data: &ArrayD<T>, by: &ArrayD<S>, categories: &Vec<Option<Vec<S>>>)
-    -> Result<Vec<Option<Vec<T>>>, String>
+    -> Result<Vec<Option<Vec<T>>>>
        where T: Clone, T: Default, T: PartialEq, T: Add<T, Output=T>,
              S: Clone, S: Default, S: PartialEq {
 
@@ -186,7 +189,7 @@ pub fn sum<T,S>(data: &ArrayD<T>, by: &ArrayD<S>, categories: &Vec<Option<Vec<S>
 pub fn broadcast_map<T>(
     left: &ArrayD<T>,
     right: &ArrayD<T>,
-    operator: &dyn Fn(&T, &T) -> T ) -> Result<ArrayD<T>, String> where T: std::clone::Clone, T: Default, T: Copy {
+    operator: &dyn Fn(&T, &T) -> T ) -> Result<ArrayD<T>> where T: std::clone::Clone, T: Default, T: Copy {
     /// Broadcast left and right to match each other, and map an operator over the pairs
     ///
     /// # Arguments
@@ -211,7 +214,7 @@ pub fn broadcast_map<T>(
                                   vec![operator(left.first().unwrap(), right.first().unwrap())]).unwrap()),
         (l, r) if l == 1 && r == 1 => {
             if left.len() != right.len() {
-                return Err("the size of the left and right vectors do not match".to_string())
+                return Err("the size of the left and right vectors do not match".into())
             }
 
             let mut zeros: ArrayD<T> = Array::default(left.shape());
@@ -230,7 +233,7 @@ pub fn broadcast_map<T>(
             Zip::from(&mut zeros).and(right).apply(|acc, &r| *acc = operator(&left.first().unwrap(), &r));
             Ok(zeros)
         },
-        _ => Err("unsupported shapes for left and right vector in broadcast_map".to_string())
+        _ => Err("unsupported shapes for left and right vector in broadcast_map".into())
     }
 }
 
@@ -270,7 +273,7 @@ pub fn clamp_numeric<T>(data: &ArrayD<T>, min: &ArrayD<T>, max: &ArrayD<T>)
 }
 
 pub fn clamp_categorical<T>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>, null_value: &Vec<Option<Vec<T>>>)
-    -> Result<ArrayD<T>, String> where T:Clone, T:PartialEq, T:Default {
+    -> Result<ArrayD<T>> where T:Clone, T:PartialEq, T:Default {
 
     let original_dim: u8 = data.ndim() as u8;
     let data_2d: ArrayD<T> = convert_to_matrix(data);
@@ -301,7 +304,7 @@ pub fn clamp_categorical<T>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>, 
                                 into_dimensionality::<Ix1>().unwrap().to_vec();
                 clamped_data.slice_mut(s![i as usize, ..]).assign(&arr1(&data_vec).into_dyn());
             },
-            _ => return Err("categories and null must both be Some or both be None".to_string())
+            _ => return Err("categories and null must both be Some or both be None".into())
         }
     }
     return Ok(convert_from_matrix(&clamped_data, &original_dim));
@@ -455,7 +458,7 @@ pub fn impute_numeric(data: &ArrayD<f64>, distribution: &String,
 
 pub fn impute_categorical<T>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>,
                              probabilities: &Vec<Option<Vec<f64>>>, null_value: &Vec<Option<Vec<T>>>)
-                             -> Result<ArrayD<T>, String> where T:Clone, T:PartialEq, T:Default {
+                             -> Result<ArrayD<T>> where T:Clone, T:PartialEq, T:Default {
     let original_dim: u8 = data.ndim() as u8;
     let data_2d: ArrayD<T> = convert_to_matrix(data);
     let mut imputed_data: ArrayD<T> = Array::default(data_2d.shape());
@@ -488,7 +491,7 @@ pub fn impute_categorical<T>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>,
                                 into_dimensionality::<Ix1>().unwrap().to_vec();
                 imputed_data.slice_mut(s![i as usize, ..]).assign(&arr1(&data_vec).into_dyn());
             },
-            _ => return Err("each set of associated categories, probabilities, and null value must all be Some or None".to_string())
+            _ => return Err("each set of associated categories, probabilities, and null value must all be Some or None".into())
         }
     }
     return Ok(convert_from_matrix(&imputed_data, &original_dim));
@@ -586,7 +589,7 @@ pub fn resize_categorical<T>(data: &ArrayD<T>, n: &u64,
                                                    &vec![probabilities[i as usize].clone()],
                                                    &vec![null_value[i as usize].clone()]
                                     );
-        let augmentation_vec = augmentation_data.clone().unwrap().into_dimensionality::<Ix1>().unwrap().to_vec();
+        let augmentation_vec = augmentation_data.unwrap().clone().into_dimensionality::<Ix1>().unwrap().to_vec();
         let augmented_column = stack![Axis(0), column.slice(s![0, ..]), augmentation_vec].clone().into_dyn();
 
         // create data

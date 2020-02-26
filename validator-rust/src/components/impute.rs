@@ -1,3 +1,6 @@
+use crate::errors::*;
+use crate::ErrorKind::{PrivateError, PublicError};
+
 use std::collections::HashMap;
 
 use crate::{hashmap, base};
@@ -17,7 +20,7 @@ impl Component for proto::Impute {
         &self,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
-    ) -> Result<Properties, String> {
+    ) -> Result<Properties> {
         let mut data_property = properties.get("data").unwrap().clone();
         let mut min_property = properties.get("min").unwrap().clone();
         let mut max_property = properties.get("max").unwrap().clone();
@@ -62,7 +65,7 @@ impl Component for proto::Impute {
         &self,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
-    ) -> Result<(), String> {
+    ) -> Result<()> {
         base::get_properties(properties, "data")?;
 
         let has_min = properties.contains_key("min") || properties.get("data").unwrap().to_owned().get_min_f64().is_ok();
@@ -73,15 +76,15 @@ impl Component for proto::Impute {
 
         match has_continuous || has_categorical {
             true => Ok(()),
-            false => Err("bounds are missing for the imputation component".to_string())
+            false => Err("bounds are missing for the imputation component".into())
         }
     }
 
     fn get_names(
         &self,
         _properties: &NodeProperties,
-    ) -> Result<Vec<String>, String> {
-        Err("get_names not implemented".to_string())
+    ) -> Result<Vec<String>> {
+        Err("get_names not implemented".into())
     }
 }
 
@@ -93,7 +96,7 @@ impl Expandable for proto::Impute {
         properties: &base::NodeProperties,
         component_id: u32,
         maximum_id: u32,
-    ) -> Result<(u32, HashMap<u32, proto::Component>), String> {
+    ) -> Result<(u32, HashMap<u32, proto::Component>)> {
         let mut current_id = maximum_id;
         let mut graph_expansion: HashMap<u32, proto::Component> = HashMap::new();
 

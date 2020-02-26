@@ -1,10 +1,13 @@
+use crate::errors::*;
+use crate::ErrorKind::{PrivateError, PublicError};
+
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::iter::FromIterator;
 use crate::proto;
 
 pub fn get_traversal(
     analysis: &proto::Analysis
-) -> Result<Vec<u32>, String> {
+) -> Result<Vec<u32>> {
 
     let graph: &HashMap<u32, proto::Component> = &analysis.computation_graph.to_owned().unwrap().value;
 
@@ -51,7 +54,7 @@ pub fn get_traversal(
         });
 
         if is_cyclic {
-            return Err("Graph is cyclic.".to_string())
+            return Err("Graph is cyclic.".into())
         }
 
     }
@@ -61,7 +64,7 @@ pub fn get_traversal(
 pub fn get_unevaluated(
     analysis: &proto::Analysis,
     release: &proto::Release
-) -> Result<HashSet<u32>, String> {
+) -> Result<HashSet<u32>> {
 
     let graph: &HashMap<u32, proto::Component> = &analysis.computation_graph.to_owned().to_owned().unwrap().value;
 
@@ -85,7 +88,7 @@ pub fn get_unevaluated(
     Ok(unevaluated)
 }
 
-pub fn get_release_nodes(analysis: &proto::Analysis) -> Result<HashSet<u32>, String> {
+pub fn get_release_nodes(analysis: &proto::Analysis) -> Result<HashSet<u32>> {
 
     let mut release_node_ids = HashSet::<u32>::new();
     // assume sinks are private

@@ -1,3 +1,6 @@
+use yarrow_validator::errors::*;
+use yarrow_validator::ErrorKind::{PrivateError, PublicError};
+
 use openssl::rand::rand_bytes;
 use ieee754::Ieee754;
 
