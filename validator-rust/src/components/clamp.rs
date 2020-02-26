@@ -1,15 +1,14 @@
 use std::collections::HashMap;
-use crate::utilities::properties as property_utils;
-use crate::utilities::properties::{Properties, Nature, NatureContinuous, NodeProperties, get_literal, get_properties};
+use crate::base::{Vector2DJagged, Nature, Vector1DNull, NatureCategorical, NodeProperties, get_properties, ArrayND, get_literal};
 
-
-use crate::proto;
+use crate::{proto, base};
 
 use crate::components::{Component, Expandable};
 
-use crate::utilities::serial::{Vector1DNull, Value, serialize_value, ArrayND};
+use crate::utilities::serial::{serialize_value};
 use itertools::Itertools;
 use ndarray::Array;
+use crate::base::{Value, Properties, NatureContinuous};
 
 
 impl Component for proto::Clamp {
@@ -17,7 +16,7 @@ impl Component for proto::Clamp {
     fn propagate_property(
         &self,
         _public_arguments: &HashMap<String, Value>,
-        properties: &property_utils::NodeProperties,
+        properties: &base::NodeProperties,
     ) -> Result<Properties, String> {
         let mut data_property = properties.get("data").unwrap().clone();
 
@@ -46,7 +45,7 @@ impl Component for proto::Clamp {
     fn is_valid(
         &self,
         _public_arguments: &HashMap<String, Value>,
-        properties: &property_utils::NodeProperties,
+        properties: &base::NodeProperties,
     ) -> Result<(), String> {
 
         if properties.contains_key("data") &&
@@ -71,7 +70,7 @@ impl Expandable for proto::Clamp {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
-        properties: &property_utils::NodeProperties,
+        properties: &base::NodeProperties,
         component_id: u32,
         maximum_id: u32,
     ) -> Result<(u32, HashMap<u32, proto::Component>), String> {

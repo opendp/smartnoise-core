@@ -1,13 +1,11 @@
 use std::collections::HashMap;
-use crate::utilities::properties as property_utils;
-use crate::utilities::properties::{Properties, NodeProperties, get_properties, get_literal};
 
-
-use crate::proto;
+use crate::{proto, base};
 use crate::hashmap;
 use crate::components::{Component, Accuracy, Privatize, Expandable, Report};
 use ndarray::Array;
-use crate::utilities::serial::{Value, serialize_value, ArrayND};
+use crate::utilities::serial::{serialize_value};
+use crate::base::{Properties, get_properties, NodeProperties, Value, get_literal, ArrayND};
 
 
 impl Component for proto::DpMean {
@@ -15,27 +13,27 @@ impl Component for proto::DpMean {
     fn propagate_property(
         &self,
         _public_arguments: &HashMap<String, Value>,
-        properties: &property_utils::NodeProperties,
+        properties: &base::NodeProperties,
     ) -> Result<Properties, String> {
         Ok(get_properties(properties, "left")?.to_owned())
 
 //        Ok(Properties {
 //            nullity: false,
 //            releasable: true,
-//            nature: Some(property_utils::Nature::Continuous(property_utils::NatureContinuous {
-//                min: property_utils::get_min(&properties, "data")?,
-//                max: property_utils::get_max(&properties, "data")?,
+//            nature: Some(base::Nature::Continuous(base::NatureContinuous {
+//                min: base::get_min(&properties, "data")?,
+//                max: base::get_max(&properties, "data")?,
 //            })),
-//            num_records: property_utils::get_num_records(&properties, "data")?,
+//            num_records: base::get_num_records(&properties, "data")?,
 //        })
     }
 
     fn is_valid(
         &self,
         _public_arguments: &HashMap<String, Value>,
-        properties: &property_utils::NodeProperties,
+        properties: &base::NodeProperties,
     ) -> Result<(), String> {
-        let data_property = property_utils::get_properties(&properties, "data")?.clone();
+        let data_property = base::get_properties(&properties, "data")?.clone();
 
         data_property.get_n()?;
         data_property.get_min_f64()?;
@@ -58,7 +56,7 @@ impl Expandable for proto::DpMean {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
-        properties: &property_utils::NodeProperties,
+        properties: &base::NodeProperties,
         component_id: u32,
         maximum_id: u32,
     ) -> Result<(u32, HashMap<u32, proto::Component>), String> {
@@ -104,7 +102,7 @@ impl Privatize for proto::DpMean {
         _privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
     ) -> Option<Vec<f64>> {
-        let data_property = property_utils::get_properties(properties, "data").ok()?;
+        let data_property = base::get_properties(properties, "data").ok()?;
         let min = data_property.get_min_f64().ok()?;
         let max = data_property.get_max_f64().ok()?;
         let num_records = data_property.get_n().ok()?;
@@ -122,7 +120,7 @@ impl Accuracy for proto::DpMean {
     fn accuracy_to_privacy_usage(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
-        _properties: &property_utils::NodeProperties,
+        _properties: &base::NodeProperties,
         _accuracy: &proto::Accuracy,
     ) -> Option<proto::PrivacyUsage> {
         None
@@ -131,7 +129,7 @@ impl Accuracy for proto::DpMean {
     fn privacy_usage_to_accuracy(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
-        _property: &property_utils::NodeProperties,
+        _property: &base::NodeProperties,
     ) -> Option<f64> {
         None
     }

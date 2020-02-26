@@ -1,7 +1,7 @@
 extern crate yarrow_validator;
 
 use yarrow_validator::{proto, base};
-use yarrow_validator::utilities::graph as yarrow_graph;
+use yarrow_validator::utilities::{graph as yarrow_graph, serial};
 
 
 
@@ -11,10 +11,10 @@ use std::vec::Vec;
 use itertools::Itertools;
 
 use crate::components;
-use yarrow_validator::utilities::properties::{get_properties, get_input_properties};
 
-use yarrow_validator::utilities::serial::Value;
+use yarrow_validator::base::{get_input_properties, Value};
 
+pub type NodeArguments<'a> = HashMap<String, &'a Value>;
 
 pub fn execute_graph(analysis: &proto::Analysis,
                      release: &proto::Release,
@@ -25,7 +25,7 @@ pub fn execute_graph(analysis: &proto::Analysis,
     let mut traversal = Vec::new();
     traversal.extend(yarrow_graph::get_sinks(&analysis).into_iter());
 
-    let mut evaluations = base::release_to_evaluations(release)?;
+    let mut evaluations = serial::parse_release(release)?;
 
     let mut graph: HashMap<u32, proto::Component> = analysis.computation_graph.to_owned().unwrap().value;
 
@@ -106,13 +106,18 @@ pub fn execute_graph(analysis: &proto::Analysis,
             }
         }
     }
-    base::evaluations_to_release(&evaluations)
+    serial::serialize_release(&evaluations)
 }
 
 pub fn execute_component(component: &proto::Component,
-                         evaluations: &base::GraphEvaluation,
+                         evaluations: &base::Release,
                          dataset: &proto::Dataset) -> Result<Value, String> {
-    let arguments = base::get_arguments(&component, &evaluations);
+
+    let mut arguments = NodeArguments::new();
+    component.arguments.iter().for_each(|(field_id, field)| {
+        let evaluation = evaluations.get(&field).unwrap();
+        arguments.insert(field_id.to_owned(), evaluation);
+    });
 
     use proto::component::Value as Value;
     match component.to_owned().value.unwrap() {
@@ -140,7 +145,6 @@ pub fn execute_component(component: &proto::Component,
         Value::Median(x) => components::component_median(&x, &arguments),
         Value::Sum(x) => components::component_sum(&x, &arguments),
         Value::Variance(x) => components::component_variance(&x, &arguments),
-//        Value::Kthsamplemoment(x) => components::component_kth_sample_moment(&x, &arguments),
         Value::LaplaceMechanism(x) => components::component_laplace_mechanism(&x, &arguments),
         Value::GaussianMechanism(x) => components::component_gaussian_mechanism(&x, &arguments),
         Value::SimpleGeometricMechanism(x) => components::component_simple_geometric_mechanism(&x, &arguments),

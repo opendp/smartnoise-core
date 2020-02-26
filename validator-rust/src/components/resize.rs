@@ -1,14 +1,12 @@
 use std::collections::HashMap;
-use crate::utilities::properties as property_utils;
-use crate::utilities::properties::{Properties, NodeProperties, get_literal};
 
-use crate::hashmap;
+use crate::{hashmap, base};
 use crate::proto;
 
 use crate::components::{Component, Expandable};
 use ndarray::Array;
-use crate::utilities::serial::{Value, ArrayND, serialize_value};
-
+use crate::utilities::serial::{serialize_value};
+use crate::base::{Value, Properties, ArrayND, NodeProperties, get_literal};
 
 
 impl Component for proto::Resize {
@@ -16,7 +14,7 @@ impl Component for proto::Resize {
     fn propagate_property(
         &self,
         public_arguments: &HashMap<String, Value>,
-        properties: &property_utils::NodeProperties,
+        properties: &base::NodeProperties,
     ) -> Result<Properties, String> {
         let mut data_property = properties.get("data").unwrap().clone();
 
@@ -40,10 +38,10 @@ impl Component for proto::Resize {
     fn is_valid(
         &self,
         public_arguments: &HashMap<String, Value>,
-        properties: &property_utils::NodeProperties,
+        properties: &base::NodeProperties,
     ) -> Result<(), String> {
         // TODO: stricter checks for bounds
-        property_utils::get_properties(properties, "n")?;
+        base::get_properties(properties, "n")?;
 
         Ok(())
     }
@@ -61,7 +59,7 @@ impl Expandable for proto::Resize {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
-        properties: &property_utils::NodeProperties,
+        properties: &base::NodeProperties,
         component_id: u32,
         maximum_id: u32,
     ) -> Result<(u32, HashMap<u32, proto::Component>), String> {

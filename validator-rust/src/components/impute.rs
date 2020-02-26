@@ -1,15 +1,14 @@
 use std::collections::HashMap;
-use crate::utilities::properties as property_utils;
-use crate::utilities::properties::{Properties, Nature, NatureContinuous, NodeProperties, get_literal};
 
-use crate::hashmap;
+use crate::{hashmap, base};
 use crate::proto;
 
 use crate::components::{Component, Expandable};
 
-use crate::utilities::serial::{Vector1DNull, Value, serialize_value, ArrayND};
+use crate::utilities::serial::{serialize_value};
 use itertools::Itertools;
 use ndarray::Array;
+use crate::base::{Properties, Vector1DNull, Nature, NatureContinuous, Value, NodeProperties, ArrayND, get_literal};
 
 
 impl Component for proto::Impute {
@@ -17,7 +16,7 @@ impl Component for proto::Impute {
     fn propagate_property(
         &self,
         _public_arguments: &HashMap<String, Value>,
-        properties: &property_utils::NodeProperties,
+        properties: &base::NodeProperties,
     ) -> Result<Properties, String> {
         let mut data_property = properties.get("data").unwrap().clone();
         let mut min_property = properties.get("min").unwrap().clone();
@@ -62,9 +61,9 @@ impl Component for proto::Impute {
     fn is_valid(
         &self,
         _public_arguments: &HashMap<String, Value>,
-        properties: &property_utils::NodeProperties,
+        properties: &base::NodeProperties,
     ) -> Result<(), String> {
-        property_utils::get_properties(properties, "data")?;
+        base::get_properties(properties, "data")?;
 
         let has_min = properties.contains_key("min") || properties.get("data").unwrap().to_owned().get_min_f64().is_ok();
         let has_max = properties.contains_key("max") || properties.get("data").unwrap().to_owned().get_max_f64().is_ok();
@@ -91,7 +90,7 @@ impl Expandable for proto::Impute {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
-        properties: &property_utils::NodeProperties,
+        properties: &base::NodeProperties,
         component_id: u32,
         maximum_id: u32,
     ) -> Result<(u32, HashMap<u32, proto::Component>), String> {

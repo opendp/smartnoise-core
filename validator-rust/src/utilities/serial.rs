@@ -1,138 +1,7 @@
 use ndarray::prelude::*;
 use crate::proto;
 use std::collections::{HashMap};
-
-#[derive(Clone, Debug)]
-pub enum Vector1DNull {
-    Bool(Vec<Option<bool>>),
-    I64(Vec<Option<i64>>),
-    F64(Vec<Option<f64>>),
-    Str(Vec<Option<String>>),
-}
-
-#[derive(Clone, Debug)]
-pub enum Vector1D {
-    Bool(Vec<bool>),
-    I64(Vec<i64>),
-    F64(Vec<f64>),
-    Str(Vec<String>),
-}
-
-#[derive(Clone, Debug)]
-pub enum ArrayND {
-    Bool(ArrayD<bool>),
-    I64(ArrayD<i64>),
-    F64(ArrayD<f64>),
-    Str(ArrayD<String>),
-}
-
-// used for categorical properties
-#[derive(Clone, Debug)]
-pub enum Vector2DJagged {
-    Bool(Vec<Option<Vec<bool>>>),
-    I64(Vec<Option<Vec<i64>>>),
-    F64(Vec<Option<Vec<f64>>>),
-    Str(Vec<Option<Vec<String>>>),
-}
-
-// used exclusively in the runtime for node evaluation
-#[derive(Clone, Debug)]
-pub enum Value {
-    ArrayND(ArrayND),
-    HashmapString(HashMap<String, Value>),
-    Vector2DJagged(Vector2DJagged),
-}
-
-impl Value {
-    pub fn get_arraynd(self) -> Result<ArrayND, String> {
-        match self {
-            Value::ArrayND(array) => Ok(array.to_owned()),
-            _ => Err("value must be wrapped in an ArrayND".to_string())
-        }
-    }
-
-    pub fn get_first_f64(self) -> Result<f64, String> {
-        match self {
-            Value::ArrayND(array) => array.get_first_f64(),
-            _ => Err("cannot retrieve first float".to_string())
-        }
-    }
-    pub fn get_first_i64(self) -> Result<i64, String> {
-        match self {
-            Value::ArrayND(array) => array.get_first_i64(),
-            _ => Err("cannot retrieve integer".to_string())
-        }
-    }
-    pub fn get_first_str(self) -> Result<String, String> {
-        match self {
-            Value::ArrayND(array) => array.get_first_str(),
-            _ => Err("cannot retrieve string".to_string())
-        }
-    }
-    pub fn get_first_bool(self) -> Result<bool, String> {
-        match self {
-            Value::ArrayND(array) => array.get_first_bool(),
-            _ => Err("cannot retrieve bool".to_string())
-        }
-    }
-}
-
-impl ArrayND {
-    pub fn get_f64(self) -> Result<ArrayD<f64>, String> {
-        match self {
-            ArrayND::Bool(x) => Ok(x.mapv(|v| if v { 1. } else { 0. })),
-            ArrayND::I64(x) => Ok(x.mapv(|v| f64::from(v as i32))),
-            ArrayND::F64(x) => Ok(x.to_owned()),
-            _ => Err("expected a float on a non-float ArrayND".to_string())
-        }
-    }
-    pub fn get_first_f64(self) -> Result<f64, String> {
-        match self {
-            ArrayND::Bool(x) => Ok(if *x.first().unwrap() { 1. } else { 0. }),
-            ArrayND::I64(x) => Ok(f64::from(*x.first().unwrap() as i32)),
-            ArrayND::F64(x) => Ok(x.first().unwrap().to_owned()),
-            _ => Err("value must be numeric".to_string())
-        }
-    }
-    pub fn get_i64(self) -> Result<ArrayD<i64>, String> {
-        match self {
-            ArrayND::Bool(x) => Ok(x.mapv(|v| if v { 1 } else { 0 })),
-            ArrayND::I64(x) => Ok(x.to_owned()),
-            _ => Err("expected a float on a non-float ArrayND".to_string())
-        }
-    }
-    pub fn get_first_i64(self) -> Result<i64, String> {
-        match self {
-            ArrayND::Bool(x) => Ok(if *x.first().unwrap() { 1 } else { 0 }),
-            ArrayND::I64(x) => Ok(x.first().unwrap().to_owned()),
-            _ => Err("value must be numeric".to_string())
-        }
-    }
-    pub fn get_str(self) -> Result<ArrayD<String>, String> {
-        match self {
-            ArrayND::Str(x) => Ok(x.to_owned()),
-            _ => Err("value must be a string".to_string())
-        }
-    }
-    pub fn get_first_str(self) -> Result<String, String> {
-        match self {
-            ArrayND::Str(x) => Ok(x.first().unwrap().to_owned()),
-            _ => Err("value must be a string".to_string())
-        }
-    }
-    pub fn get_bool(self) -> Result<ArrayD<bool>, String> {
-        match self {
-            ArrayND::Bool(x) => Ok(x.to_owned()),
-            _ => Err("value must be a bool".to_string())
-        }
-    }
-    pub fn get_first_bool(self) -> Result<bool, String> {
-        match self {
-            ArrayND::Bool(x) => Ok(x.first().unwrap().to_owned()),
-            _ => Err("value must be a bool".to_string())
-        }
-    }
-}
+use crate::base::{Release, Properties, Nature, Vector2DJagged, Vector1D, Value, ArrayND, Vector1DNull, NatureCategorical, NatureContinuous};
 
 // PARSERS
 pub fn parse_bool_null(value: &proto::BoolNull) -> Option<bool> {
@@ -280,6 +149,39 @@ pub fn parse_value(value: &proto::Value) -> Result<Value, String> {
             Value::Vector2DJagged(parse_array2d_jagged(&data))
     })
 }
+
+pub fn parse_release(release: &proto::Release) -> Result<Release, String> {
+    let mut evaluations = Release::new();
+    for (node_id, node_release) in &release.values {
+        evaluations.insert(*node_id, parse_value(&node_release.value.to_owned().unwrap()).unwrap());
+    }
+    Ok(evaluations)
+}
+
+pub fn parse_properties(other: &proto::Properties) -> Properties {
+    Properties {
+        num_records: parse_array1d_i64_null(&other.num_records.to_owned().unwrap()),
+        num_columns: parse_i64_null(&other.num_columns.to_owned().unwrap()),
+        nullity: other.nullity,
+        releasable: other.releasable,
+        c_stability: parse_array1d_f64(&other.c_stability.to_owned().unwrap()),
+        nature: match other.nature.to_owned() {
+            Some(nature) => match nature {
+                proto::properties::Nature::Continuous(continuous) =>
+                    Some(Nature::Continuous(NatureContinuous {
+                        min: parse_array1d_null(&continuous.minimum.unwrap()),
+                        max: parse_array1d_null(&continuous.maximum.unwrap()),
+                    })),
+                proto::properties::Nature::Categorical(categorical) =>
+                    Some(Nature::Categorical(NatureCategorical {
+                        categories: parse_array2d_jagged(&categorical.categories.unwrap())
+                    }))
+            },
+            None => None
+        }
+    }
+}
+
 
 
 // SERIALIZERS
@@ -456,4 +358,41 @@ pub fn serialize_value(value: &Value) -> Result<proto::Value, String> {
                 proto::value::Data::Array2dJagged(serialize_array2d_jagged(data))
         })
     })
+}
+
+pub fn serialize_release(release: &Release) -> Result<proto::Release, String> {
+    let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
+    for (node_id, node_eval) in release {
+        if let Ok(array_serialized) = serialize_value(node_eval) {
+            releases.insert(*node_id, proto::ReleaseNode {
+                value: Some(array_serialized),
+                privacy_usage: None,
+            });
+        }
+    }
+    Ok(proto::Release {
+        values: releases
+    })
+}
+
+pub fn serialize_properties(value: &Properties) -> proto::Properties {
+    proto::Properties {
+        num_records: Some(serialize_array1d_i64_null(&value.num_records)),
+        num_columns: Some(serialize_i64_null(&value.num_columns)),
+        nullity: value.nullity,
+        releasable: value.releasable,
+        c_stability: Some(serialize_array1d_f64(&value.c_stability)),
+        nature: match value.to_owned().nature {
+            Some(nature) => match nature {
+                Nature::Categorical(categorical) => Some(proto::properties::Nature::Categorical(proto::properties::NatureCategorical {
+                    categories: Some(serialize_array2d_jagged(&categorical.categories))
+                })),
+                Nature::Continuous(x) => Some(proto::properties::Nature::Continuous(proto::properties::NatureContinuous {
+                    minimum: Some(serialize_array1d_null(&x.min)),
+                    maximum: Some(serialize_array1d_null(&x.max)),
+                }))
+            },
+            None => None
+        },
+    }
 }

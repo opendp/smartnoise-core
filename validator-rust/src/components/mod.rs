@@ -8,12 +8,10 @@ pub mod datasource;
 
 use std::collections::HashMap;
 
-use crate::utilities::properties::{Properties, NodeProperties};
+use crate::base::{ArrayND, Value, Vector2DJagged, Nature, Vector1DNull, NatureContinuous, NatureCategorical, Properties, NodeProperties};
 use crate::proto;
 
 use crate::hashmap;
-
-use crate::utilities::serial::Value;
 
 pub trait Component {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component

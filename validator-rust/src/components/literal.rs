@@ -1,19 +1,17 @@
 use std::collections::HashMap;
-use crate::utilities::properties as property_utils;
-use crate::utilities::properties::{Properties, NatureCategorical, Nature, NatureContinuous, NodeProperties};
 
 
-use crate::proto;
+use crate::{proto, base};
 
 use crate::components::Component;
 use ndarray::{Axis};
 use ndarray::prelude::*;
 use ndarray_stats::QuantileExt;
-use crate::utilities::serial::{parse_value, Value, ArrayND, Vector2DJagged, Vector1DNull};
+use crate::utilities::serial::{parse_value};
 
 use itertools::Itertools;
 use std::cmp::Ordering;
-
+use crate::base::{ArrayND, Value, Vector2DJagged, Nature, Vector1DNull, NatureContinuous, NatureCategorical, Properties, NodeProperties};
 
 
 pub fn get_shape(array: &ArrayND) -> Vec<i64> {
@@ -341,7 +339,7 @@ impl Component for proto::Literal {
     fn propagate_property(
         &self,
         _public_arguments: &HashMap<String, Value>,
-        _properties: &property_utils::NodeProperties,
+        _properties: &base::NodeProperties,
     ) -> Result<Properties, String> {
         let value = parse_value(&self.value.clone().unwrap()).unwrap();
 
@@ -371,7 +369,7 @@ impl Component for proto::Literal {
     fn is_valid(
         &self,
         _public_arguments: &HashMap<String, Value>,
-        _properties: &property_utils::NodeProperties,
+        _properties: &base::NodeProperties,
     ) -> Result<(), String> {
         Ok(())
     }

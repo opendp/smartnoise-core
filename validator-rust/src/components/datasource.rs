@@ -1,14 +1,11 @@
 use std::collections::HashMap;
-use crate::utilities::properties as property_utils;
-use crate::utilities::properties::{Properties, NodeProperties};
+
+use crate::base::{ArrayND, Value, Vector2DJagged, Nature, Vector1DNull, NatureContinuous, NatureCategorical, Properties, NodeProperties};
 
 
-use crate::proto;
+use crate::{proto, base};
 
 use crate::components::{Component};
-
-use crate::utilities::serial::{Value};
-
 
 
 impl Component for proto::DataSource {
@@ -16,7 +13,7 @@ impl Component for proto::DataSource {
     fn propagate_property(
         &self,
         _public_arguments: &HashMap<String, Value>,
-        _properties: &property_utils::NodeProperties,
+        _properties: &base::NodeProperties,
     ) -> Result<Properties, String> {
         Ok(Properties {
             nullity: true,
@@ -31,7 +28,7 @@ impl Component for proto::DataSource {
     fn is_valid(
         &self,
         _public_arguments: &HashMap<String, Value>,
-        _properties: &property_utils::NodeProperties,
+        _properties: &base::NodeProperties,
     ) -> Result<(), String> {
         Ok(())
     }

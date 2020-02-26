@@ -11,9 +11,10 @@ extern crate csv;
 extern crate num;
 
 use std::str::FromStr;
-use yarrow_validator::base::{NodeArguments, get_argument};
+use yarrow_validator::base::{get_argument, Value, ArrayND, Vector2DJagged};
 
-use yarrow_validator::utilities::serial::{Value, parse_value, ArrayND, Vector2DJagged};
+use yarrow_validator::utilities::serial::{parse_value};
+use crate::base::NodeArguments;
 
 
 pub fn component_literal(x: &proto::Literal) -> Result<Value, String> {

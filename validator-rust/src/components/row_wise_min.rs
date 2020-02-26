@@ -1,13 +1,10 @@
 use std::collections::HashMap;
-use crate::utilities::properties::{Properties, NodeProperties, get_properties};
+use crate::base::{Properties, NodeProperties, get_properties, Value};
 
 
 use crate::proto;
 
 use crate::components::Component;
-
-
-use crate::utilities::serial::Value;
 
 
 impl Component for proto::RowMin {

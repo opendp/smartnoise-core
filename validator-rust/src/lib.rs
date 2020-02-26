@@ -21,8 +21,8 @@ macro_rules! hashmap {
 use prost::Message;
 use std::collections::HashMap;
 
-
-use crate::utilities::serial::{parse_value, Value};
+use crate::base::Value;
+use crate::utilities::serial::parse_value;
 
 // useful tutorial for proto over ffi here:
 // https://github.com/mozilla/application-services/blob/master/docs/howtos/passing-protobuf-data-over-ffi.md
@@ -128,8 +128,8 @@ pub extern "C" fn accuracy_to_privacy_usage(
 
     let privacy_definition: proto::PrivacyDefinition = request.privacy_definition.unwrap();
     let component: proto::Component = request.component.unwrap();
-    let properties: HashMap<String, utilities::properties::Properties> = request.properties.iter()
-        .map(|(k, v)| (k.to_owned(), utilities::properties::Properties::from_proto(&v)))
+    let properties: HashMap<String, base::Properties> = request.properties.iter()
+        .map(|(k, v)| (k.to_owned(), utilities::serial::parse_properties(&v)))
         .collect();
     let accuracy: proto::Accuracy = request.accuracy.unwrap();
 
@@ -156,8 +156,8 @@ pub extern "C" fn privacy_usage_to_accuracy(
 
     let privacy_definition: proto::PrivacyDefinition = request.privacy_definition.unwrap();
     let component: proto::Component = request.component.unwrap();
-    let properties: HashMap<String, utilities::properties::Properties> = request.properties.iter()
-        .map(|(k, v)| (k.to_owned(), utilities::properties::Properties::from_proto(&v)))
+    let properties: HashMap<String, base::Properties> = request.properties.iter()
+        .map(|(k, v)| (k.to_owned(), utilities::serial::parse_properties(&v)))
         .collect();
 
     let accuracy: std::result::Result<proto::Accuracy, String> = Ok(proto::Accuracy {
