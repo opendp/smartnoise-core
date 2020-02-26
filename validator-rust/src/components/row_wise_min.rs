@@ -1,3 +1,6 @@
+use crate::errors::*;
+use crate::ErrorKind::{PrivateError, PublicError};
+
 use std::collections::HashMap;
 use crate::base::{Properties, NodeProperties, get_properties, Value};
 
@@ -13,7 +16,7 @@ impl Component for proto::RowMin {
         &self,
         _public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
-    ) -> Result<Properties, String> {
+    ) -> Result<Properties> {
         Ok(get_properties(properties, "left")?.to_owned())
 //        Ok(property {
 //            nullity: false,
@@ -27,7 +30,7 @@ impl Component for proto::RowMin {
         &self,
         _public_arguments: &HashMap<String, Value>,
         _properties: &NodeProperties,
-    ) -> Result<(), String> {
+    ) -> Result<()> {
         // TODO: finish implementation
         Ok(())
     }
@@ -35,7 +38,7 @@ impl Component for proto::RowMin {
     fn get_names(
         &self,
         _properties: &NodeProperties,
-    ) -> Result<Vec<String>, String> {
-        Err("get_names not implemented".to_string())
+    ) -> Result<Vec<String>> {
+        Err("get_names not implemented".into())
     }
 }

@@ -1,3 +1,6 @@
+use crate::errors::*;
+use crate::ErrorKind::{PrivateError, PublicError};
+
 use crate::proto;
 use itertools::Itertools;
 
@@ -58,92 +61,92 @@ pub enum Value {
 }
 
 impl Value {
-    pub fn get_arraynd(self) -> Result<ArrayND, String> {
+    pub fn get_arraynd(self) -> Result<ArrayND> {
         match self {
             Value::ArrayND(array) => Ok(array.to_owned()),
-            _ => Err("value must be wrapped in an ArrayND".to_string())
+            _ => Err("value must be wrapped in an ArrayND".into())
         }
     }
 
-    pub fn get_first_f64(self) -> Result<f64, String> {
+    pub fn get_first_f64(self) -> Result<f64> {
         match self {
             Value::ArrayND(array) => array.get_first_f64(),
-            _ => Err("cannot retrieve first float".to_string())
+            _ => Err("cannot retrieve first float".into())
         }
     }
-    pub fn get_first_i64(self) -> Result<i64, String> {
+    pub fn get_first_i64(self) -> Result<i64> {
         match self {
             Value::ArrayND(array) => array.get_first_i64(),
-            _ => Err("cannot retrieve integer".to_string())
+            _ => Err("cannot retrieve integer".into())
         }
     }
-    pub fn get_first_str(self) -> Result<String, String> {
+    pub fn get_first_str(self) -> Result<String> {
         match self {
             Value::ArrayND(array) => array.get_first_str(),
-            _ => Err("cannot retrieve string".to_string())
+            _ => Err("cannot retrieve string".into())
         }
     }
-    pub fn get_first_bool(self) -> Result<bool, String> {
+    pub fn get_first_bool(self) -> Result<bool> {
         match self {
             Value::ArrayND(array) => array.get_first_bool(),
-            _ => Err("cannot retrieve bool".to_string())
+            _ => Err("cannot retrieve bool".into())
         }
     }
 }
 
 impl ArrayND {
-    pub fn get_f64(self) -> Result<ArrayD<f64>, String> {
+    pub fn get_f64(self) -> Result<ArrayD<f64>> {
         match self {
             ArrayND::Bool(x) => Ok(x.mapv(|v| if v { 1. } else { 0. })),
             ArrayND::I64(x) => Ok(x.mapv(|v| f64::from(v as i32))),
             ArrayND::F64(x) => Ok(x.to_owned()),
-            _ => Err("expected a float on a non-float ArrayND".to_string())
+            _ => Err("expected a float on a non-float ArrayND".into())
         }
     }
-    pub fn get_first_f64(self) -> Result<f64, String> {
+    pub fn get_first_f64(self) -> Result<f64> {
         match self {
             ArrayND::Bool(x) => Ok(if *x.first().unwrap() { 1. } else { 0. }),
             ArrayND::I64(x) => Ok(f64::from(*x.first().unwrap() as i32)),
             ArrayND::F64(x) => Ok(x.first().unwrap().to_owned()),
-            _ => Err("value must be numeric".to_string())
+            _ => Err("value must be numeric".into())
         }
     }
-    pub fn get_i64(self) -> Result<ArrayD<i64>, String> {
+    pub fn get_i64(self) -> Result<ArrayD<i64>> {
         match self {
             ArrayND::Bool(x) => Ok(x.mapv(|v| if v { 1 } else { 0 })),
             ArrayND::I64(x) => Ok(x.to_owned()),
-            _ => Err("expected a float on a non-float ArrayND".to_string())
+            _ => Err("expected a float on a non-float ArrayND".into())
         }
     }
-    pub fn get_first_i64(self) -> Result<i64, String> {
+    pub fn get_first_i64(self) -> Result<i64> {
         match self {
             ArrayND::Bool(x) => Ok(if *x.first().unwrap() { 1 } else { 0 }),
             ArrayND::I64(x) => Ok(x.first().unwrap().to_owned()),
-            _ => Err("value must be numeric".to_string())
+            _ => Err("value must be numeric".into())
         }
     }
-    pub fn get_str(self) -> Result<ArrayD<String>, String> {
+    pub fn get_str(self) -> Result<ArrayD<String>> {
         match self {
             ArrayND::Str(x) => Ok(x.to_owned()),
-            _ => Err("value must be a string".to_string())
+            _ => Err("value must be a string".into())
         }
     }
-    pub fn get_first_str(self) -> Result<String, String> {
+    pub fn get_first_str(self) -> Result<String> {
         match self {
             ArrayND::Str(x) => Ok(x.first().unwrap().to_owned()),
-            _ => Err("value must be a string".to_string())
+            _ => Err("value must be a string".into())
         }
     }
-    pub fn get_bool(self) -> Result<ArrayD<bool>, String> {
+    pub fn get_bool(self) -> Result<ArrayD<bool>> {
         match self {
             ArrayND::Bool(x) => Ok(x.to_owned()),
-            _ => Err("value must be a bool".to_string())
+            _ => Err("value must be a bool".into())
         }
     }
-    pub fn get_first_bool(self) -> Result<bool, String> {
+    pub fn get_first_bool(self) -> Result<bool> {
         match self {
             ArrayND::Bool(x) => Ok(x.first().unwrap().to_owned()),
-            _ => Err("value must be a bool".to_string())
+            _ => Err("value must be a bool".into())
         }
     }
 }
@@ -177,67 +180,67 @@ pub struct NatureContinuous {
 }
 
 impl Properties {
-    pub fn get_min_f64_option(&self) -> Result<Vec<Option<f64>>, String> {
+    pub fn get_min_f64_option(&self) -> Result<Vec<Option<f64>>> {
         match self.nature.to_owned() {
             Some(value) => match value {
                 Nature::Continuous(continuous) => match continuous.min {
                     Vector1DNull::F64(bound) => Ok(bound),
-                    _ => Err("min must be composed of floats".to_string())
+                    _ => Err("min must be composed of floats".into())
                 },
-                _ => Err("min must be an array".to_string())
+                _ => Err("min must be an array".into())
             },
-            None => Err("nature is not defined".to_string())
+            None => Err("nature is not defined".into())
         }
     }
-    pub fn get_min_f64(&self) -> Result<Vec<f64>, String> {
+    pub fn get_min_f64(&self) -> Result<Vec<f64>> {
         let bound = self.get_min_f64_option()?;
         let value = bound.iter().filter_map(|v| v.to_owned()).collect::<Vec<f64>>();
         match bound.len() == value.len() {
             true => Ok(value),
-            false => Err("not all min are known".to_string())
+            false => Err("not all min are known".into())
         }
     }
-    pub fn get_max_f64_option(&self) -> Result<Vec<Option<f64>>, String> {
+    pub fn get_max_f64_option(&self) -> Result<Vec<Option<f64>>> {
         match self.nature.to_owned() {
             Some(value) => match value {
                 Nature::Continuous(continuous) => match continuous.max {
                     Vector1DNull::F64(bound) => Ok(bound),
-                    _ => Err("max must be composed of floats".to_string())
+                    _ => Err("max must be composed of floats".into())
                 },
-                _ => Err("max must be an array".to_string())
+                _ => Err("max must be an array".into())
             },
-            None => Err("nature is not defined".to_string())
+            None => Err("nature is not defined".into())
         }
     }
-    pub fn get_max_f64(&self) -> Result<Vec<f64>, String> {
+    pub fn get_max_f64(&self) -> Result<Vec<f64>> {
         let bound = self.get_max_f64_option()?;
         let value = bound.iter().filter_map(|v| v.to_owned()).collect::<Vec<f64>>();
         match bound.len() == value.len() {
             true => Ok(value),
-            false => Err("not all max are known".to_string())
+            false => Err("not all max are known".into())
         }
     }
     // just for consistency
-    pub fn get_n_option(&self) -> Result<Vec<Option<i64>>, String> {
+    pub fn get_n_option(&self) -> Result<Vec<Option<i64>>> {
         Ok(self.num_records.clone())
     }
-    pub fn get_n(&self) -> Result<Vec<i64>, String> {
+    pub fn get_n(&self) -> Result<Vec<i64>> {
         let value = self.num_records.iter().map(|v| v.to_owned().unwrap()).collect::<Vec<i64>>();
         match self.num_records.len() == value.len() {
             true => Ok(value),
-            false => Err("n is not known".to_string())
+            false => Err("n is not known".into())
         }
     }
-    pub fn assert_non_null(&self) -> Result<(), String> {
+    pub fn assert_non_null(&self) -> Result<()> {
         match self.nullity {
             false => Ok(()),
-            true => Err("data may contain nullity when non-nullity is required".to_string())
+            true => Err("data may contain nullity when non-nullity is required".into())
         }
     }
-    pub fn assert_is_releasable(&self) -> Result<(), String> {
+    pub fn assert_is_releasable(&self) -> Result<()> {
         match self.releasable {
             false => Ok(()),
-            true => Err("data is not releasable when releasability is required".to_string())
+            true => Err("data is not releasable when releasability is required".into())
         }
     }
 }
@@ -263,10 +266,10 @@ pub fn get_input_arguments(
 pub fn get_argument(
     arguments: &HashMap<String, &Value>,
     name: &str
-) -> Result<Value, String> {
+) -> Result<Value> {
     match arguments.get(name) {
         Some(argument) => Ok(argument.deref().to_owned()),
-        _ => Err((name.to_string() + " is not defined").to_string())
+        _ => Err((name.to_string() + " is not defined").into())
     }
 }
 
@@ -285,17 +288,17 @@ pub fn get_input_properties<T>(
 pub fn get_properties<'a>(
     properties: &'a NodeProperties,
     argument: &str
-) -> Result<&'a Properties, String> {
+) -> Result<&'a Properties> {
     match properties.get(argument) {
         Some(property) => Ok(property),
-        None => Err("property not found".to_string()),
+        None => Err("property not found".into()),
     }
 }
 
 pub fn propagate_properties(
     analysis: &proto::Analysis,
     release: &proto::Release,
-) -> Result<GraphProperties, String> {
+) -> Result<GraphProperties> {
     // compute properties for every node in the graph
 
     let graph: HashMap<u32, proto::Component> = analysis.computation_graph.to_owned().unwrap().value.to_owned();
@@ -329,7 +332,7 @@ pub fn get_literal(value: &Value, batch: &u32) -> proto::Component {
 
 pub fn validate_analysis(
     analysis: &proto::Analysis
-) -> Result<proto::response_validate_analysis::Validated, String> {
+) -> Result<proto::response_validate_analysis::Validated> {
     // check if acyclic
     let _traversal = utilities::graph::get_traversal(analysis)?;
 
@@ -340,7 +343,7 @@ pub fn validate_analysis(
 
 pub fn compute_privacy_usage(
     analysis: &proto::Analysis, release: &proto::Release,
-) -> Result<proto::PrivacyUsage, String> {
+) -> Result<proto::PrivacyUsage> {
     let graph: &HashMap<u32, proto::Component> = &analysis.computation_graph.to_owned().unwrap().value;
 
     let usage_option = graph.iter()
@@ -356,7 +359,7 @@ pub fn compute_privacy_usage(
     // TODO: this should probably return a proto::PrivacyUsage with zero based on the privacy definition
     match usage_option {
         Some(x) => Ok(x),
-        None => Err("no information is released; privacy usage is none".to_string())
+        None => Err("no information is released; privacy usage is none".into())
     }
 }
 
@@ -417,7 +420,7 @@ pub fn expand_component(
     arguments: &HashMap<String, Value>,
     node_id_output: u32,
     node_id_maximum: u32
-) -> Result<proto::response_expand_component::ExpandedComponent, String> {
+) -> Result<proto::response_expand_component::ExpandedComponent> {
     let mut properties: NodeProperties = properties.iter()
         .map(|(k, v)| (k.to_owned(), utilities::serial::parse_properties(&v)))
         .collect();
@@ -447,6 +450,6 @@ pub fn expand_component(
 pub fn generate_report(
     _analysis: &proto::Analysis,
     _release: &proto::Release,
-) -> Result<String, String> {
+) -> Result<String> {
     return Ok("{\"key\": \"value\"}".to_owned());
 }

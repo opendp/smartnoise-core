@@ -1,3 +1,6 @@
+use crate::errors::*;
+use crate::ErrorKind::{PrivateError, PublicError};
+
 use std::collections::HashMap;
 
 use crate::base::{ArrayND, Value, Vector2DJagged, Nature, Vector1DNull, NatureContinuous, NatureCategorical, Properties, NodeProperties};
@@ -14,7 +17,7 @@ impl Component for proto::DataSource {
         &self,
         _public_arguments: &HashMap<String, Value>,
         _properties: &base::NodeProperties,
-    ) -> Result<Properties, String> {
+    ) -> Result<Properties> {
         Ok(Properties {
             nullity: true,
             releasable: false,
@@ -29,14 +32,14 @@ impl Component for proto::DataSource {
         &self,
         _public_arguments: &HashMap<String, Value>,
         _properties: &base::NodeProperties,
-    ) -> Result<(), String> {
+    ) -> Result<()> {
         Ok(())
     }
 
     fn get_names(
         &self,
         _properties: &NodeProperties,
-    ) -> Result<Vec<String>, String> {
-        Err("get_names not implemented".to_string())
+    ) -> Result<Vec<String>> {
+        Err("get_names not implemented".into())
     }
 }

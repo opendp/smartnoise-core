@@ -1,3 +1,6 @@
+use crate::errors::*;
+use crate::ErrorKind::{PrivateError, PublicError};
+
 use std::collections::HashMap;
 
 use crate::{proto, base};
@@ -14,7 +17,7 @@ impl Component for proto::DpMean {
         &self,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
-    ) -> Result<Properties, String> {
+    ) -> Result<Properties> {
         Ok(get_properties(properties, "left")?.to_owned())
 
 //        Ok(Properties {
@@ -32,7 +35,7 @@ impl Component for proto::DpMean {
         &self,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
-    ) -> Result<(), String> {
+    ) -> Result<()> {
         let data_property = base::get_properties(&properties, "data")?.clone();
 
         data_property.get_n()?;
@@ -46,8 +49,8 @@ impl Component for proto::DpMean {
     fn get_names(
         &self,
         _properties: &NodeProperties,
-    ) -> Result<Vec<String>, String> {
-        Err("get_names not implemented".to_string())
+    ) -> Result<Vec<String>> {
+        Err("get_names not implemented".into())
     }
 }
 
@@ -59,7 +62,7 @@ impl Expandable for proto::DpMean {
         properties: &base::NodeProperties,
         component_id: u32,
         maximum_id: u32,
-    ) -> Result<(u32, HashMap<u32, proto::Component>), String> {
+    ) -> Result<(u32, HashMap<u32, proto::Component>)> {
         let mut current_id = maximum_id.clone();
         let mut graph_expansion: HashMap<u32, proto::Component> = HashMap::new();
 

@@ -1,3 +1,7 @@
+use crate::errors::*;
+use crate::ErrorKind::{PrivateError, PublicError};
+
+
 use std::collections::HashMap;
 use crate::base::{Vector2DJagged, Nature, Vector1DNull, NatureCategorical, NodeProperties, get_properties, ArrayND, get_literal};
 
@@ -17,7 +21,7 @@ impl Component for proto::Clamp {
         &self,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
-    ) -> Result<Properties, String> {
+    ) -> Result<Properties> {
         let mut data_property = properties.get("data").unwrap().clone();
 
         data_property.nature = Some(Nature::Continuous(NatureContinuous {
@@ -46,21 +50,21 @@ impl Component for proto::Clamp {
         &self,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
-    ) -> Result<(), String> {
+    ) -> Result<()> {
 
         if properties.contains_key("data") &&
             ((properties.contains_key("min") && properties.contains_key("max")) ||
                 properties.contains_key("categories")) {
             return Ok(())
         }
-        return Err("arguments missing to clamp component".to_string())
+        return Err("arguments missing to clamp component".into())
     }
 
     fn get_names(
         &self,
         _properties: &NodeProperties,
-    ) -> Result<Vec<String>, String> {
-        Err("get_names not implemented".to_string())
+    ) -> Result<Vec<String>> {
+        Err("get_names not implemented".into())
     }
 }
 
@@ -73,7 +77,7 @@ impl Expandable for proto::Clamp {
         properties: &base::NodeProperties,
         component_id: u32,
         maximum_id: u32,
-    ) -> Result<(u32, HashMap<u32, proto::Component>), String> {
+    ) -> Result<(u32, HashMap<u32, proto::Component>)> {
         let mut current_id = maximum_id;
         let mut graph_expansion: HashMap<u32, proto::Component> = HashMap::new();
 

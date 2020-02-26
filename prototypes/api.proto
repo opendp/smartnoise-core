@@ -45,6 +45,7 @@ message RequestRelease {
 	Analysis analysis = 1;
 	Release release = 2;
 	Dataset dataset = 3;
+	bool stack_trace = 10;
 }
 
 // RESPONSES
