@@ -268,28 +268,42 @@ pub fn clamp_numeric<T>(data: &ArrayD<T>, min: &ArrayD<T>, max: &ArrayD<T>)
     return clamped_data;
 }
 
-pub fn clamp_categorical<T>(data: &ArrayD<T>, categories: &Vec::<Vec<T>>, null_value: &ArrayD<T>) -> ArrayD<T> where T:Clone, T:PartialEq, T:Default {
+pub fn clamp_categorical<T>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>, null_value: &Vec<Option<Vec<T>>>)
+    -> Result<ArrayD<T>, String> where T:Clone, T:PartialEq, T:Default {
+
     let original_dim: u8 = data.ndim() as u8;
     let data_2d: ArrayD<T> = convert_to_matrix(data);
     let mut clamped_data: ArrayD<T> = Array::default(data_2d.shape());
 
     let n_cols: i64 = data_2d.len_of(Axis(0)) as i64;
-    let mut category_vec: Vec<T>;
+    let mut category_vec: Option<Vec<T>>;
+    let mut null_vec: Option<Vec<T>>;
     let mut n_categories: i64;
 
     for i in 0..n_cols {
         category_vec = categories[i as usize].clone();
-        n_categories = category_vec.len() as i64;
-        let mut data_vec = data_2d.slice(s![i as usize, ..]).clone().into_dyn().clone().
-                          into_dimensionality::<Ix1>().unwrap().to_vec();
-        for j in 0..data_vec.len() {
-                if !category_vec.contains(&data_vec[j]) {
-                    data_vec[j] = null_value[i as usize].clone();
+        null_vec = null_value[i as usize].clone();
+        match (category_vec, null_vec) {
+            (Some(category_vec), Some(null_vec)) => {
+                n_categories = category_vec.len() as i64;
+                let mut data_vec = data_2d.slice(s![i as usize, ..]).clone().into_dyn().clone().
+                                into_dimensionality::<Ix1>().unwrap().to_vec();
+                for j in 0..data_vec.len() {
+                        if !category_vec.contains(&data_vec[j]) {
+                            data_vec[j] = null_vec[i as usize].clone();
+                        }
                 }
+                clamped_data.slice_mut(s![i as usize, ..]).assign(&arr1(&data_vec).into_dyn());
+            }
+            (None, None) => {
+                let mut data_vec = data_2d.slice(s![i as usize, ..]).clone().into_dyn().clone().
+                                into_dimensionality::<Ix1>().unwrap().to_vec();
+                clamped_data.slice_mut(s![i as usize, ..]).assign(&arr1(&data_vec).into_dyn());
+            },
+            _ => return Err("categories and null must both be Some or both be None".to_string())
         }
-        clamped_data.slice_mut(s![i as usize, ..]).assign(&arr1(&data_vec).into_dyn());
     }
-    return convert_from_matrix(&clamped_data, &original_dim);
+    return Ok(convert_from_matrix(&clamped_data, &original_dim));
 }
 
 pub fn impute_float_uniform(data: &ArrayD<f64>, min: &f64, max: &f64) -> ArrayD<f64> {
@@ -438,31 +452,45 @@ pub fn impute_numeric(data: &ArrayD<f64>, distribution: &String,
     return convert_from_matrix(&imputed_data, &original_dim);
 }
 
-pub fn impute_categorical<T>(data: &ArrayD<T>, categories: &Vec::<Vec<T>>, probabilities: &Vec::<Vec<f64>>, null_value: &ArrayD<T>) ->
-                             ArrayD<T> where T:Clone, T:PartialEq, T:Default {
+pub fn impute_categorical<T>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>,
+                             probabilities: &Vec<Option<Vec<f64>>>, null_value: &Vec<Option<Vec<T>>>)
+                             -> Result<ArrayD<T>, String> where T:Clone, T:PartialEq, T:Default {
     let original_dim: u8 = data.ndim() as u8;
     let data_2d: ArrayD<T> = convert_to_matrix(data);
     let mut imputed_data: ArrayD<T> = Array::default(data_2d.shape());
 
     let n_cols: i64 = data_2d.len_of(Axis(0)) as i64;
-    let mut category_vec: Vec<T>;
-    let mut probability_vec: Vec<f64>;
+    let mut category_vec: Option<Vec<T>>;
+    let mut probability_vec: Option<Vec<f64>>;
+    let mut null_value_vec: Option<Vec<T>>;
     let mut n_categories: i64;
 
     for i in 0..n_cols {
         category_vec = categories[i as usize].clone();
         probability_vec = probabilities[i as usize].clone();
-        n_categories = category_vec.len() as i64;
-        let mut data_vec = data_2d.slice(s![i as usize, ..]).clone().into_dyn().clone().
-                          into_dimensionality::<Ix1>().unwrap().to_vec();
-        for j in 0..data_vec.len() {
-                if data_vec[j] == null_value[j] {
-                    data_vec[j] = utilities::sample_from_set(&category_vec, &probability_vec);
+        null_value_vec = null_value[i as usize].clone();
+        match (category_vec, probability_vec, null_value_vec) {
+            (Some(category_vec), Some(probability_vec), Some(null_value_vec)) => {
+                n_categories = category_vec.len() as i64;
+                let mut data_vec = data_2d.slice(s![i as usize, ..]).clone().into_dyn().clone().
+                                into_dimensionality::<Ix1>().unwrap().to_vec();
+                for j in 0..data_vec.len() {
+                        if data_vec[j] == null_value_vec[j] {
+                            data_vec[j] = utilities::sample_from_set(&category_vec, &probability_vec);
+                        }
                 }
+                imputed_data.slice_mut(s![i as usize, ..]).assign(&arr1(&data_vec).into_dyn());
+            },
+
+            (None, None, None) => {
+                let mut data_vec = data_2d.slice(s![i as usize, ..]).clone().into_dyn().clone().
+                                into_dimensionality::<Ix1>().unwrap().to_vec();
+                imputed_data.slice_mut(s![i as usize, ..]).assign(&arr1(&data_vec).into_dyn());
+            },
+            _ => return Err("each set of associated categories, probabilities, and null value must all be Some or None".to_string())
         }
-        imputed_data.slice_mut(s![i as usize, ..]).assign(&arr1(&data_vec).into_dyn());
     }
-    return convert_from_matrix(&imputed_data, &original_dim);
+    return Ok(convert_from_matrix(&imputed_data, &original_dim));
 }
 
 pub fn resize_numeric(data: &ArrayD<f64>, n: &u64, distribution: &String,
@@ -531,7 +559,7 @@ pub fn resize_numeric(data: &ArrayD<f64>, n: &u64, distribution: &String,
 }
 
 pub fn resize_categorical<T>(data: &ArrayD<T>, n: &u64,
-                             categories: &Vec<Vec<T>>, probabilities: &Vec<Vec<f64>>, null_value: &ArrayD<T>,)
+                             categories: &Vec<Option<Vec<T>>>, probabilities: &Vec<Option<Vec<f64>>>, null_value: &Vec<Option<Vec<T>>>,)
                                 -> ArrayD<T> where T: Clone, T: Copy, T: PartialEq, T: Default {
     // get number of observations in actual data
     let real_n: u64 = data.len_of(Axis(1)) as u64;
@@ -555,9 +583,9 @@ pub fn resize_categorical<T>(data: &ArrayD<T>, n: &u64,
         // create augmented version of data (returned if n > real_n)
         let augmentation_data = impute_categorical(&column, &vec![categories[i as usize].clone()],
                                                    &vec![probabilities[i as usize].clone()],
-                                                   &arr1(&[null_value[i as usize].clone()]).into_dyn()
+                                                   &vec![null_value[i as usize].clone()]
                                     );
-        let augmentation_vec = augmentation_data.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
+        let augmentation_vec = augmentation_data.clone().unwrap().into_dimensionality::<Ix1>().unwrap().to_vec();
         let augmented_column = stack![Axis(0), column.slice(s![0, ..]), augmentation_vec].clone().into_dyn();
 
         // create data

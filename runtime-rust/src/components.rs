@@ -269,7 +269,7 @@ pub fn component_sum(_X: &proto::Sum, arguments: &NodeArguments,) -> Result<Valu
 
 pub fn component_row_wise_min(
     _x: &proto::RowMin, arguments: &NodeArguments,
-) -> Result<Value, String> {
+     ) -> Result<Value, String> {
     match (arguments.get("left").unwrap(), arguments.get("right").unwrap()) {
         (Value::ArrayND(left), Value::ArrayND(right)) => match (left, right) {
             (ArrayND::F64(x), ArrayND::F64(y)) =>
@@ -286,7 +286,7 @@ pub fn component_row_wise_min(
 
 pub fn component_row_wise_max(
     _x: &proto::RowMax, arguments: &NodeArguments,
-) -> Result<Value, String> {
+     ) -> Result<Value, String> {
     match (arguments.get("left").unwrap(), arguments.get("right").unwrap()) {
         (Value::ArrayND(left), Value::ArrayND(right)) => match (left, right) {
             (ArrayND::F64(x), ArrayND::F64(y)) =>
@@ -304,26 +304,30 @@ pub fn component_row_wise_max(
 pub fn component_clamp(_x: &proto::Clamp, arguments: &NodeArguments) -> Result<Value, String> {
     if arguments.contains_key("categories") {
         match (arguments.get("data").unwrap(), arguments.get("categories").unwrap(), arguments.get("null").unwrap()) {
-            (Value::ArrayND(data), Value::Vector2DJagged(categories), Value::ArrayND(null)) => match (data, categories, null) {
-                (ArrayND::Bool(data), Vector2DJagged::Bool(categories), ArrayND::Bool(null)) =>
+            (Value::ArrayND(data), Value::Vector2DJagged(categories), Value::Vector2DJagged(nulls)) => match (data, categories, nulls) {
+                (ArrayND::Bool(data), Vector2DJagged::Bool(categories), Vector2DJagged::Bool(nulls)) =>
                     {
-                        let categories = categories.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<bool>>>();
-                        return Ok(Value::ArrayND(ArrayND::Bool(utilities::transformations::clamp_categorical(&data, &categories, &null))));
+                        // let categories = categories.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<bool>>>();
+                        // let nulls = nulls.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<bool>>>();
+                        return Ok(Value::ArrayND(ArrayND::Bool(utilities::transformations::clamp_categorical(&data, &categories, &nulls)?)));
                     },
-                (ArrayND::F64(data), Vector2DJagged::F64(categories), ArrayND::F64(null)) =>
+                (ArrayND::F64(data), Vector2DJagged::F64(categories), Vector2DJagged::F64(nulls)) =>
                     {
-                        let categories = categories.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<f64>>>();
-                        return Ok(Value::ArrayND(ArrayND::F64(utilities::transformations::clamp_categorical(&data, &categories, &null))));
+                        // let categories = categories.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<f64>>>();
+                        // let nulls = nulls.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<f64>>>();
+                        return Ok(Value::ArrayND(ArrayND::F64(utilities::transformations::clamp_categorical(&data, &categories, &nulls)?)));
                     },
-                (ArrayND::I64(data), Vector2DJagged::I64(categories), ArrayND::I64(null)) =>
+                (ArrayND::I64(data), Vector2DJagged::I64(categories), Vector2DJagged::I64(nulls)) =>
                     {
-                        let categories = categories.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<i64>>>();
-                        return Ok(Value::ArrayND(ArrayND::I64(utilities::transformations::clamp_categorical(&data, &categories, &null))));
+                        // let categories = categories.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<i64>>>();
+                        // let nulls = nulls.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<i64>>>();
+                        return Ok(Value::ArrayND(ArrayND::I64(utilities::transformations::clamp_categorical(&data, &categories, &nulls)?)));
                     },
-                (ArrayND::Str(data), Vector2DJagged::Str(categories), ArrayND::Str(null)) =>
+                (ArrayND::Str(data), Vector2DJagged::Str(categories), Vector2DJagged::Str(nulls)) =>
                     {
-                        let categories = categories.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<String>>>();
-                        return Ok(Value::ArrayND(ArrayND::Str(utilities::transformations::clamp_categorical(&data, &categories, &null))));
+                        // let categories = categories.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<String>>>();
+                        // let nulls = nulls.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<String>>>();
+                        return Ok(Value::ArrayND(ArrayND::Str(utilities::transformations::clamp_categorical(&data, &categories, &nulls)?)));
                     },
                 _ => return Err("types of data, categories, and null must be consistent".to_string())
             },
@@ -351,30 +355,34 @@ pub fn component_impute(_x: &proto::Impute, arguments: &NodeArguments,) -> Resul
 
     if arguments.contains_key("categories") {
         match (arguments.get("data").unwrap(), arguments.get("categories").unwrap(), arguments.get("probabilities").unwrap(), arguments.get("null").unwrap()) {
-            (Value::ArrayND(data), Value::Vector2DJagged(categories), Value::Vector2DJagged(probabilities), Value::ArrayND(null)) => match (data, categories, probabilities, null) {
-                (ArrayND::Bool(data), Vector2DJagged::Bool(categories), Vector2DJagged::F64(probabilities), ArrayND::Bool(null)) =>
+            (Value::ArrayND(data), Value::Vector2DJagged(categories), Value::Vector2DJagged(probabilities), Value::Vector2DJagged(nulls)) => match (data, categories, probabilities, nulls) {
+                (ArrayND::Bool(data), Vector2DJagged::Bool(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::Bool(nulls)) =>
                     {
-                        let categories = categories.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<bool>>>();
-                        let probabilities = probabilities.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<f64>>>();
-                        return Ok(Value::ArrayND(ArrayND::Bool(utilities::transformations::impute_categorical(&data, &categories, &probabilities, &null))));
+                        // let categories = categories.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<bool>>>();
+                        // let probabilities = probabilities.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<f64>>>();
+                        // let nulls = nulls.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<bool>>>();
+                        return Ok(Value::ArrayND(ArrayND::Bool(utilities::transformations::impute_categorical(&data, &categories, &probabilities, &nulls)?)));
                     },
-                (ArrayND::F64(data), Vector2DJagged::F64(categories), Vector2DJagged::F64(probabilities), ArrayND::F64(null)) =>
+                (ArrayND::F64(data), Vector2DJagged::F64(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::F64(nulls)) =>
                     {
-                        let categories = categories.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<f64>>>();
-                        let probabilities = probabilities.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<f64>>>();
-                        return Ok(Value::ArrayND(ArrayND::F64(utilities::transformations::impute_categorical(&data, &categories, &probabilities, &null))));
+                        // let categories = categories.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<f64>>>();
+                        // let probabilities = probabilities.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<f64>>>();
+                        // let nulls = nulls.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<f64>>>();
+                        return Ok(Value::ArrayND(ArrayND::F64(utilities::transformations::impute_categorical(&data, &categories, &probabilities, &nulls)?)));
                     },
-                (ArrayND::I64(data), Vector2DJagged::I64(categories), Vector2DJagged::F64(probabilities), ArrayND::I64(null)) =>
+                (ArrayND::I64(data), Vector2DJagged::I64(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::I64(nulls)) =>
                     {
-                        let categories = categories.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<i64>>>();
-                        let probabilities = probabilities.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<f64>>>();
-                        return Ok(Value::ArrayND(ArrayND::I64(utilities::transformations::impute_categorical(&data, &categories, &probabilities, &null))));
+                        // let categories = categories.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<i64>>>();
+                        // let probabilities = probabilities.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<f64>>>();
+                        // let nulls = nulls.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<i64>>>();
+                        return Ok(Value::ArrayND(ArrayND::I64(utilities::transformations::impute_categorical(&data, &categories, &probabilities, &nulls)?)));
                     },
-                (ArrayND::Str(data), Vector2DJagged::Str(categories), Vector2DJagged::F64(probabilities), ArrayND::Str(null)) =>
+                (ArrayND::Str(data), Vector2DJagged::Str(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::Str(nulls)) =>
                     {
-                        let categories = categories.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<String>>>();
-                        let probabilities = probabilities.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<f64>>>();
-                        return Ok(Value::ArrayND(ArrayND::Str(utilities::transformations::impute_categorical(&data, &categories, &probabilities, &null))));
+                        // let categories = categories.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<String>>>();
+                        // let probabilities = probabilities.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<f64>>>();
+                        // let nulls = nulls.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<String>>>();
+                        return Ok(Value::ArrayND(ArrayND::Str(utilities::transformations::impute_categorical(&data, &categories, &probabilities, &nulls)?)));
                     },
                 _ => return Err("types of data, categories, and null must be consistent and probabilities must be f64".to_string())
             },
@@ -439,31 +447,42 @@ pub fn component_resize(_x: &proto::Resize, arguments: &NodeArguments) -> Result
 
     if arguments.contains_key("categories") {
 
-        // TODO: refactor into separate function
-        let probabilities = match arguments.get("probabilities") {
-            Some(probabilities) => match probabilities {
-                Value::Vector2DJagged(probabilities) => match probabilities {
-                    Vector2DJagged::F64(probabilities) =>
-                        probabilities.iter().map(|prob| prob.to_owned().unwrap()).collect(),
-                    _ => return Err("probability vectors must be floats".to_string())
-                }
-                _ => return Err("probability vectors must be contained within jagged matrices".to_string())
-            },
-            // TODO: infer uniform probability
-            None => return Err("probability vectors must be supplied as an argument".to_string())
-        };
+        // // TODO: refactor into separate function
+        // let probabilities = match arguments.get("probabilities") {
+        //     Some(probabilities) => match probabilities {
+        //         Value::Vector2DJagged(probabilities) => match probabilities {
+        //             Vector2DJagged::F64(probabilities) =>
+        //                 probabilities.iter().map(|prob| prob.to_owned().unwrap()).collect(),
+        //             _ => return Err("probability vectors must be floats".to_string())
+        //         }
+        //         _ => return Err("probability vectors must be contained within jagged matrices".to_string())
+        //     },
+        //     // TODO: infer uniform probability
+        //     None => return Err("probability vectors must be supplied as an argument".to_string())
+        // };
 
-        match (arguments.get("data").unwrap(), arguments.get("categories").unwrap(), arguments.get("null").unwrap()) {
-            (Value::ArrayND(data), Value::Vector2DJagged(categories), Value::ArrayND(nulls)) => match (data, categories, nulls) {
-                (ArrayND::F64(data), Vector2DJagged::F64(categories), ArrayND::F64(nulls)) =>
-                    Ok(Value::ArrayND(ArrayND::F64(utilities::transformations::resize_categorical(&data, &n, &unwrap_jagged(&categories), &probabilities, &nulls)))),
-                (ArrayND::I64(data), Vector2DJagged::I64(categories), ArrayND::I64(nulls)) =>
-                    Ok(Value::ArrayND(ArrayND::I64(utilities::transformations::resize_categorical(&data, &n, &unwrap_jagged(&categories), &probabilities, &nulls)))),
-                (ArrayND::Bool(data), Vector2DJagged::Bool(categories), ArrayND::Bool(nulls)) =>
-                    Ok(Value::ArrayND(ArrayND::Bool(utilities::transformations::resize_categorical(&data, &n, &unwrap_jagged(&categories), &probabilities, &nulls)))),
+        match (arguments.get("data").unwrap(), arguments.get("categories").unwrap(),
+               arguments.get("probabilities").unwrap(), arguments.get("null").unwrap()) {
+            (Value::ArrayND(data), Value::Vector2DJagged(categories), Value::Vector2DJagged(probabilities), Value::Vector2DJagged(nulls))
+                => match (data, categories, probabilities, nulls) {
+
+                (ArrayND::F64(data), Vector2DJagged::F64(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::F64(nulls)) => {
+                    // let nulls = nulls.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<f64>>>();
+                    Ok(Value::ArrayND(ArrayND::F64(utilities::transformations::resize_categorical(&data, &n, &categories, &probabilities, &nulls))))
+                },
+
+                (ArrayND::I64(data), Vector2DJagged::I64(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::I64(nulls)) => {
+                    // let nulls = nulls.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<i64>>>();
+                    Ok(Value::ArrayND(ArrayND::I64(utilities::transformations::resize_categorical(&data, &n, &categories, &probabilities, &nulls))))
+                }
+
+                (ArrayND::Bool(data), Vector2DJagged::Bool(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::Bool(nulls)) => {
+                    // let nulls = nulls.iter().map(|column| column.to_owned().unwrap()).collect::<Vec<Vec<bool>>>();
+                    Ok(Value::ArrayND(ArrayND::Bool(utilities::transformations::resize_categorical(&data, &n, &categories, &probabilities, &nulls))))
+                }
 //                (ArrayND::Str(data), Vector2DJagged::Str(categories), ArrayND::Str(nulls)) =>
 //                    Ok(Value::ArrayND(ArrayND::Str(utilities::transformations::resize_categorical(&data, &n, &unwrap_jagged(&categories), &probabilities, &nulls)))),
-                _ => Err("types of data, categories and nulls must be homogenous".to_string())
+                _ => Err("types of data, categories and nulls must be homogenous, probabilities must be f64".to_string())
             },
             _ => Err("data and nulls must be arrays, categories must be a jagged matrix".to_string())
         }
