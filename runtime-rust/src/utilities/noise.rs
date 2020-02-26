@@ -229,7 +229,7 @@ pub fn sample_simple_geometric_mechanism(scale: &f64, min: &i64, max: &i64, enfo
     /// let geom_noise: ArrayD<64> = sample_simple_geometric_mechanism(&1., &0, &100, &false);
     /// ```
 
-    let alpha: f64 = consts::E.powf(-*scale);
+    let alpha: f64 = consts::E.powf(-1. / *scale);
     let max_trials: i64 = max - min;
 
     // return 0 noise with probability (1-alpha) / (1+alpha), otherwise sample from geometric
