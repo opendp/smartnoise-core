@@ -135,12 +135,30 @@ impl Accuracy for proto::DpMean {
         None
     }
 }
-
 impl Report for proto::DpMean {
     fn summarize(
         &self,
-        _properties: &NodeProperties,
-    ) -> Option<String> {
-        None
+        _constraints: &NodeConstraints,
+    ) -> Option<JSONRelease> {
+        Some(JSONRelease{
+            description:"DP release information",
+            statistics:"dpmean".to_string(),
+            variables:Vec<String>,
+            releaseInfo:hashmap![],
+            provacyLoss:PirvacyLoss,
+            accuracy:Acuuracy,
+            batch:i64,
+            nodeID:i64,
+            postprocess: bool,
+            algorithmInfo: AlgorithmInfo
+            })
+            //if PrivacyLoss(name==pure){
+            //    return epsilon;
+            //} else if PrivacyLoss(name=concentrated){
+            //    return rho;
+            //}
+            //if PrivacyLoss(name=concentrated){
+            //    return ;
+        //    }
     }
 }
