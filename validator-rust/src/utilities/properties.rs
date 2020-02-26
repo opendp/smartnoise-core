@@ -14,7 +14,7 @@ use crate::base::{release_to_evaluations, GraphEvaluation, get_arguments_copy};
 
 
 #[derive(Clone, Debug)]
-pub struct Constraint {
+pub struct Properties {
     pub nullity: bool,
     pub releasable: bool,
     pub nature: Option<Nature>,
@@ -41,10 +41,10 @@ pub struct NatureContinuous {
     pub max: Vector1DNull,
 }
 
-// TODO: implement constraint struct to/from proto
-impl Constraint {
-    pub fn to_proto(&self) -> proto::Constraint {
-        proto::Constraint {
+// TODO: implement property struct to/from proto
+impl Properties {
+    pub fn to_proto(&self) -> proto::Properties {
+        proto::Properties {
             num_records: Some(serial::serialize_array1d_i64_null(&self.num_records)),
             num_columns: Some(serial::serialize_i64_null(&self.num_columns)),
             nullity: self.nullity,
@@ -52,10 +52,10 @@ impl Constraint {
             c_stability: Some(serial::serialize_array1d_f64(&self.c_stability)),
             nature: match &self.nature {
                 Some(nature) => match nature {
-                    Nature::Categorical(categorical) => Some(proto::constraint::Nature::Categorical(proto::constraint::NatureCategorical {
+                    Nature::Categorical(categorical) => Some(proto::properties::Nature::Categorical(proto::properties::NatureCategorical {
                         categories: Some(serial::serialize_array2d_jagged(&categorical.categories))
                     })),
-                    Nature::Continuous(x) => Some(proto::constraint::Nature::Continuous(proto::constraint::NatureContinuous {
+                    Nature::Continuous(x) => Some(proto::properties::Nature::Continuous(proto::properties::NatureContinuous {
                         minimum: Some(serial::serialize_array1d_null(&x.min)),
                         maximum: Some(serial::serialize_array1d_null(&x.max)),
                     }))
@@ -64,8 +64,8 @@ impl Constraint {
             },
         }
     }
-    pub fn from_proto(other: &proto::Constraint) -> Constraint {
-        Constraint {
+    pub fn from_proto(other: &proto::Properties) -> Properties {
+        Properties {
             num_records: serial::parse_array1d_i64_null(&other.num_records.to_owned().unwrap()),
             num_columns: serial::parse_i64_null(&other.num_columns.to_owned().unwrap()),
             nullity: other.nullity,
@@ -73,12 +73,12 @@ impl Constraint {
             c_stability: serial::parse_array1d_f64(&other.c_stability.to_owned().unwrap()),
             nature: match other.nature.to_owned() {
                 Some(nature) => match nature {
-                    proto::constraint::Nature::Continuous(continuous) =>
+                    proto::properties::Nature::Continuous(continuous) =>
                         Some(Nature::Continuous(NatureContinuous {
                             min: serial::parse_array1d_null(&continuous.minimum.unwrap()),
                             max: serial::parse_array1d_null(&continuous.maximum.unwrap()),
                         })),
-                    proto::constraint::Nature::Categorical(categorical) =>
+                    proto::properties::Nature::Categorical(categorical) =>
                         Some(Nature::Categorical(NatureCategorical {
                             categories: serial::parse_array2d_jagged(&categorical.categories.unwrap())
                         }))
@@ -139,29 +139,35 @@ impl Constraint {
             false => Err("n is not known".to_string())
         }
     }
+    pub fn assert_non_null(&self) -> Result<(), String> {
+        match self.nullity {
+            false => Ok(()),
+            true => Err("DPMean requires non-null data".to_string())
+        }
+    }
 }
 
-// constraints for each node in the graph
-pub type GraphConstraint = HashMap<u32, Constraint>;
+// properties for each node in the graph
+pub type GraphProperties = HashMap<u32, Properties>;
 
-// constraints for each argument for a node
-pub type NodeConstraints = HashMap<String, Constraint>;
+// properties for each argument for a node
+pub type NodeProperties = HashMap<String, Properties>;
 
-pub fn get_constraints<T>(
-    component: &proto::Component, graph_constraints: &HashMap<u32, T>,
+pub fn get_input_properties<T>(
+    component: &proto::Component, graph_properties: &HashMap<u32, T>,
 ) -> HashMap<String, T> where T: std::clone::Clone {
-    let mut constraints = HashMap::<String, T>::new();
+    let mut properties = HashMap::<String, T>::new();
     component.arguments.iter().for_each(|(field_id, field)| {
-        let constraint: T = graph_constraints.get(&field).unwrap().clone();
-        constraints.insert(field_id.to_owned(), constraint);
+        let property: T = graph_properties.get(&field).unwrap().clone();
+        properties.insert(field_id.to_owned(), property);
     });
-    constraints
+    properties
 }
 
-pub fn propagate_constraints(
+pub fn propagate_properties(
     analysis: &proto::Analysis,
     release: &proto::Release,
-) -> Result<GraphConstraint, String> {
+) -> Result<GraphProperties, String> {
     // compute properties for every node in the graph
 
     let graph: HashMap<u32, proto::Component> = analysis.computation_graph.to_owned().unwrap().value.to_owned();
@@ -169,33 +175,33 @@ pub fn propagate_constraints(
 
     let graph_evaluation: GraphEvaluation = release_to_evaluations(&release)?;
 
-    let mut graph_constraint = GraphConstraint::new();
+    let mut graph_property = GraphProperties::new();
     traversal.iter().for_each(|node_id| {
         let component: proto::Component = graph.get(node_id).unwrap().to_owned();
-        let input_constraints = get_constraints(&component, &graph_constraint);
+        let input_properties = get_input_properties(&component, &graph_property);
 
         let public_arguments = get_arguments_copy(&component, &graph_evaluation);
-        let constraint = component.value.unwrap().propagate_constraint(&public_arguments, &input_constraints).unwrap();
-        graph_constraint.insert(node_id.clone(), constraint);
+        let property = component.value.unwrap().propagate_property(&public_arguments, &input_properties).unwrap();
+        graph_property.insert(node_id.clone(), property);
     });
-    Ok(graph_constraint)
+    Ok(graph_property)
 }
 
 //pub fn map_options<T>(left: Vec<T>, right: Vec<T>, operator: &dyn Fn(T, T) -> T) -> Result<Vec<T>, String> {
 //
 //}
 
-pub fn get_constraint<'a>(constraints: &'a NodeConstraints, argument: &str) -> Result<&'a Constraint, String> {
-    match constraints.get(argument) {
-        Some(constraint) => Ok(constraint),
-        None => Err("constraint not found".to_string()),
+pub fn get_properties<'a>(properties: &'a NodeProperties, argument: &str) -> Result<&'a Properties, String> {
+    match properties.get(argument) {
+        Some(property) => Ok(property),
+        None => Err("property not found".to_string()),
     }
 }
 
-pub fn get_releasable_bool(constraints: &NodeConstraints, argument: &str) -> Result<bool, String> {
-    match constraints.get(argument) {
-        Some(constraint) => Ok(constraint.releasable),
-        None => Err("constraint not found".to_string()),
+pub fn get_releasable_bool(properties: &NodeProperties, argument: &str) -> Result<bool, String> {
+    match properties.get(argument) {
+        Some(property) => Ok(property.releasable),
+        None => Err("property not found".to_string()),
     }
 }
 

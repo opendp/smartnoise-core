@@ -1,6 +1,6 @@
 use std::collections::HashMap;
-use crate::utilities::constraint as constraint_utils;
-use crate::utilities::constraint::{Constraint, Nature, NatureContinuous, NodeConstraints, get_literal};
+use crate::utilities::properties as property_utils;
+use crate::utilities::properties::{Properties, Nature, NatureContinuous, NodeProperties, get_literal};
 
 use crate::hashmap;
 use crate::proto;
@@ -14,20 +14,20 @@ use ndarray::Array;
 
 impl Component for proto::Impute {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
-    fn propagate_constraint(
+    fn propagate_property(
         &self,
         _public_arguments: &HashMap<String, Value>,
-        constraints: &constraint_utils::NodeConstraints,
-    ) -> Result<Constraint, String> {
-        let mut data_constraint = constraints.get("data").unwrap().clone();
-        let mut min_constraint = constraints.get("min").unwrap().clone();
-        let mut max_constraint = constraints.get("max").unwrap().clone();
+        properties: &property_utils::NodeProperties,
+    ) -> Result<Properties, String> {
+        let mut data_property = properties.get("data").unwrap().clone();
+        let mut min_property = properties.get("min").unwrap().clone();
+        let mut max_property = properties.get("max").unwrap().clone();
 
-        data_constraint.nullity = false;
-        data_constraint.nature = Some(Nature::Continuous(NatureContinuous {
-            min: Vector1DNull::F64(data_constraint.get_min_f64_option()?.iter()
-                .zip(min_constraint.get_min_f64_option()?)
-                .zip(max_constraint.get_min_f64_option()?)
+        data_property.nullity = false;
+        data_property.nature = Some(Nature::Continuous(NatureContinuous {
+            min: Vector1DNull::F64(data_property.get_min_f64_option()?.iter()
+                .zip(min_property.get_min_f64_option()?)
+                .zip(max_property.get_min_f64_option()?)
                 .map(|((d, min), max)| {
                     match d {
                         Some(_x) => vec![d, &min, &max]
@@ -39,9 +39,9 @@ impl Component for proto::Impute {
                     }
                 })
                 .collect()),
-            max: Vector1DNull::F64(data_constraint.get_max_f64_option()?.iter()
-                .zip(min_constraint.get_max_f64_option()?)
-                .zip(max_constraint.get_max_f64_option()?)
+            max: Vector1DNull::F64(data_property.get_max_f64_option()?.iter()
+                .zip(min_property.get_max_f64_option()?)
+                .zip(max_property.get_max_f64_option()?)
                 .map(|((d, min), max)| {
                     match d {
                         // if there was a prior bound
@@ -56,21 +56,21 @@ impl Component for proto::Impute {
                 .collect()),
         }));
 
-        Ok(data_constraint)
+        Ok(data_property)
     }
 
     fn is_valid(
         &self,
         _public_arguments: &HashMap<String, Value>,
-        constraints: &constraint_utils::NodeConstraints,
+        properties: &property_utils::NodeProperties,
     ) -> Result<(), String> {
-        constraint_utils::get_constraint(constraints, "data")?;
+        property_utils::get_properties(properties, "data")?;
 
-        let has_min = constraints.contains_key("min") || constraints.get("data").unwrap().to_owned().get_min_f64().is_ok();
-        let has_max = constraints.contains_key("max") || constraints.get("data").unwrap().to_owned().get_max_f64().is_ok();
+        let has_min = properties.contains_key("min") || properties.get("data").unwrap().to_owned().get_min_f64().is_ok();
+        let has_max = properties.contains_key("max") || properties.get("data").unwrap().to_owned().get_max_f64().is_ok();
 
         let has_continuous = has_min && has_max;
-        let has_categorical = constraints.contains_key("categories");
+        let has_categorical = properties.contains_key("categories");
 
         match has_continuous || has_categorical {
             true => Ok(()),
@@ -80,7 +80,7 @@ impl Component for proto::Impute {
 
     fn get_names(
         &self,
-        _constraints: &NodeConstraints,
+        _properties: &NodeProperties,
     ) -> Result<Vec<String>, String> {
         Err("get_names not implemented".to_string())
     }
@@ -91,7 +91,7 @@ impl Expandable for proto::Impute {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
-        constraints: &constraint_utils::NodeConstraints,
+        properties: &property_utils::NodeProperties,
         component_id: u32,
         maximum_id: u32,
     ) -> Result<(u32, HashMap<u32, proto::Component>), String> {
@@ -100,20 +100,20 @@ impl Expandable for proto::Impute {
 
         let mut component = component.clone();
 
-        if !constraints.contains_key("min") {
+        if !properties.contains_key("min") {
             current_id += 1;
             let id_min = current_id.clone();
             let value = Value::ArrayND(ArrayND::F64(
-                Array::from(constraints.get("data").unwrap().to_owned().get_min_f64()?).into_dyn()));
+                Array::from(properties.get("data").unwrap().to_owned().get_min_f64()?).into_dyn()));
             graph_expansion.insert(id_min.clone(), get_literal(&value, &component.batch));
             component.arguments.insert("min".to_string(), id_min);
         }
 
-        if !constraints.contains_key("max") {
+        if !properties.contains_key("max") {
             current_id += 1;
             let id_max = current_id.clone();
             let value = Value::ArrayND(ArrayND::F64(
-                Array::from(constraints.get("data").unwrap().to_owned().get_max_f64()?).into_dyn()));
+                Array::from(properties.get("data").unwrap().to_owned().get_max_f64()?).into_dyn()));
             graph_expansion.insert(id_max, get_literal(&value, &component.batch));
             component.arguments.insert("max".to_string(), id_max);
         }

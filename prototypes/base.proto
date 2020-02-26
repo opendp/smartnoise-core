@@ -53,7 +53,7 @@ message ReleaseNode {
     PrivacyUsage privacy_usage = 2;
 }
 
-message Constraint {
+message Properties {
     Array1dI64Null num_records = 1;
     I64Null num_columns = 2;
     bool nullity = 3;

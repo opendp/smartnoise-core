@@ -6,11 +6,11 @@ use crate::utilities;
 use crate::components::*;
 
 use std::collections::HashMap;
-use crate::utilities::constraint::{NodeConstraints};
+use crate::utilities::properties::{NodeProperties};
 
 
 use crate::utilities::serial::{Value, parse_value, serialize_value};
-use crate::components::literal::infer_constraint;
+use crate::components::literal::infer_property;
 use std::ops::Deref;
 
 
@@ -157,32 +157,32 @@ pub fn privacy_usage_reducer(
 pub fn expand_component(
     privacy_definition: &proto::PrivacyDefinition,
     component: &proto::Component,
-    constraints: &HashMap<String, proto::Constraint>,
+    properties: &HashMap<String, proto::Properties>,
     arguments: &HashMap<String, Value>,
     node_id_output: u32,
     node_id_maximum: u32
 ) -> Result<proto::response_expand_component::ExpandedComponent, String> {
-    let mut constraints: NodeConstraints = constraints.iter()
-        .map(|(k, v)| (k.to_owned(), utilities::constraint::Constraint::from_proto(&v)))
+    let mut properties: NodeProperties = properties.iter()
+        .map(|(k, v)| (k.to_owned(), utilities::properties::Properties::from_proto(&v)))
         .collect();
 
     for (k, v) in arguments {
-        constraints.insert(k.clone(), infer_constraint(&v)?);
+        properties.insert(k.clone(), infer_property(&v)?);
     }
 
     let result = component.clone().value.unwrap().expand_graph(
         privacy_definition,
         component,
-        &constraints,
+        &properties,
         node_id_output,
         node_id_maximum,
     )?;
 
-    let constraint = component.clone().value.unwrap().propagate_constraint(arguments, &constraints)?;
+    let property = component.clone().value.unwrap().propagate_property(arguments, &properties)?;
 
     Ok(proto::response_expand_component::ExpandedComponent {
         computation_graph: Some(proto::ComputationGraph { value: result.1 }),
-        constraint: Some(constraint.to_proto()),
+        properties: Some(property.to_proto()),
         maximum_id: result.0
     })
 }

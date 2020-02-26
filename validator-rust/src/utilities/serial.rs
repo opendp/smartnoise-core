@@ -26,7 +26,7 @@ pub enum ArrayND {
     Str(ArrayD<String>),
 }
 
-// used for categorical constraints
+// used for categorical properties
 #[derive(Clone, Debug)]
 pub enum Vector2DJagged {
     Bool(Vec<Option<Vec<bool>>>),

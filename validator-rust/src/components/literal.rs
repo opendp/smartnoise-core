@@ -1,6 +1,6 @@
 use std::collections::HashMap;
-use crate::utilities::constraint as constraint_utils;
-use crate::utilities::constraint::{Constraint, NatureCategorical, Nature, NatureContinuous, NodeConstraints};
+use crate::utilities::properties as property_utils;
+use crate::utilities::properties::{Properties, NatureCategorical, Nature, NatureContinuous, NodeProperties};
 
 
 use crate::proto;
@@ -66,7 +66,7 @@ pub fn infer_num_rows(value: &Value) -> Result<Vec<Option<i64>>, String> {
                     _ => Err("arrays may have max dimensionality of 2".to_owned())
                 }
             },
-            _ => Err("Constraints on hashmaps are only implemented for single-column arrays".to_string())
+            _ => Err("properties on hashmaps are only implemented for single-column arrays".to_string())
         }).collect(),
         Value::Vector2DJagged(jagged) => Ok(match jagged {
             Vector2DJagged::Bool(vector) => vector.iter()
@@ -325,8 +325,8 @@ pub fn infer_c_stability(_value: &Value) -> Result<Vec<f64>, String> {
     Ok(vec![])
 }
 
-pub fn infer_constraint(value: &Value) -> Result<Constraint, String> {
-    Ok(Constraint {
+pub fn infer_property(value: &Value) -> Result<Properties, String> {
+    Ok(Properties {
         nullity: infer_nullity(&value)?,
         releasable: true,
         nature: Some(infer_nature(&value)),
@@ -338,18 +338,18 @@ pub fn infer_constraint(value: &Value) -> Result<Constraint, String> {
 
 impl Component for proto::Literal {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
-    fn propagate_constraint(
+    fn propagate_property(
         &self,
         _public_arguments: &HashMap<String, Value>,
-        _constraints: &constraint_utils::NodeConstraints,
-    ) -> Result<Constraint, String> {
+        _properties: &property_utils::NodeProperties,
+    ) -> Result<Properties, String> {
         let value = parse_value(&self.value.clone().unwrap()).unwrap();
 
         match self.private {
             true => {
                 let num_columns = infer_num_columns(&value)?;
 
-                Ok(Constraint {
+                Ok(Properties {
                     num_records: match num_columns {
                         Some(num_cols) => (0..num_cols).collect::<Vec<i64>>().iter().map(|_v| None).collect(),
                         None => vec![Some(1)]
@@ -364,21 +364,21 @@ impl Component for proto::Literal {
                     nature: None,
                 })
             },
-            false => infer_constraint(&value)
+            false => infer_property(&value)
         }
     }
 
     fn is_valid(
         &self,
         _public_arguments: &HashMap<String, Value>,
-        _constraints: &constraint_utils::NodeConstraints,
+        _properties: &property_utils::NodeProperties,
     ) -> Result<(), String> {
         Ok(())
     }
 
     fn get_names(
         &self,
-        _constraints: &NodeConstraints,
+        _properties: &NodeProperties,
     ) -> Result<Vec<String>, String> {
         Err("get_names not implemented".to_string())
     }

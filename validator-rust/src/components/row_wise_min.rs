@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use crate::utilities::constraint::{Constraint, NodeConstraints, get_constraint};
+use crate::utilities::properties::{Properties, NodeProperties, get_properties};
 
 
 use crate::proto;
@@ -12,13 +12,13 @@ use crate::utilities::serial::Value;
 
 impl Component for proto::RowMin {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
-    fn propagate_constraint(
+    fn propagate_property(
         &self,
         _public_arguments: &HashMap<String, Value>,
-        constraints: &NodeConstraints,
-    ) -> Result<Constraint, String> {
-        Ok(get_constraint(constraints, "left")?.to_owned())
-//        Ok(Constraint {
+        properties: &NodeProperties,
+    ) -> Result<Properties, String> {
+        Ok(get_properties(properties, "left")?.to_owned())
+//        Ok(property {
 //            nullity: false,
 //            releasable: false,
 //            nature: None,
@@ -29,7 +29,7 @@ impl Component for proto::RowMin {
     fn is_valid(
         &self,
         _public_arguments: &HashMap<String, Value>,
-        _constraints: &NodeConstraints,
+        _properties: &NodeProperties,
     ) -> Result<(), String> {
         // TODO: finish implementation
         Ok(())
@@ -37,7 +37,7 @@ impl Component for proto::RowMin {
 
     fn get_names(
         &self,
-        _constraints: &NodeConstraints,
+        _properties: &NodeProperties,
     ) -> Result<Vec<String>, String> {
         Err("get_names not implemented".to_string())
     }

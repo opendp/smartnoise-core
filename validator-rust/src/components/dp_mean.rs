@@ -1,6 +1,6 @@
 use std::collections::HashMap;
-use crate::utilities::constraint as constraint_utils;
-use crate::utilities::constraint::{Constraint, NodeConstraints, get_constraint, get_literal};
+use crate::utilities::properties as property_utils;
+use crate::utilities::properties::{Properties, NodeProperties, get_properties, get_literal};
 
 
 use crate::proto;
@@ -12,41 +12,42 @@ use crate::utilities::serial::{Value, serialize_value, ArrayND};
 
 impl Component for proto::DpMean {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
-    fn propagate_constraint(
+    fn propagate_property(
         &self,
         _public_arguments: &HashMap<String, Value>,
-        constraints: &constraint_utils::NodeConstraints,
-    ) -> Result<Constraint, String> {
-        Ok(get_constraint(constraints, "left")?.to_owned())
+        properties: &property_utils::NodeProperties,
+    ) -> Result<Properties, String> {
+        Ok(get_properties(properties, "left")?.to_owned())
 
-//        Ok(Constraint {
+//        Ok(Properties {
 //            nullity: false,
 //            releasable: true,
-//            nature: Some(constraint_utils::Nature::Continuous(constraint_utils::NatureContinuous {
-//                min: constraint_utils::get_min(&constraints, "data")?,
-//                max: constraint_utils::get_max(&constraints, "data")?,
+//            nature: Some(property_utils::Nature::Continuous(property_utils::NatureContinuous {
+//                min: property_utils::get_min(&properties, "data")?,
+//                max: property_utils::get_max(&properties, "data")?,
 //            })),
-//            num_records: constraint_utils::get_num_records(&constraints, "data")?,
+//            num_records: property_utils::get_num_records(&properties, "data")?,
 //        })
     }
 
     fn is_valid(
         &self,
         _public_arguments: &HashMap<String, Value>,
-        constraints: &constraint_utils::NodeConstraints,
+        properties: &property_utils::NodeProperties,
     ) -> Result<(), String> {
-        let data_constraint = constraint_utils::get_constraint(&constraints, "data")?.clone();
+        let data_property = property_utils::get_properties(&properties, "data")?.clone();
 
-        data_constraint.get_n()?;
-        data_constraint.get_min_f64()?;
-        data_constraint.get_max_f64()?;
+        data_property.get_n()?;
+        data_property.get_min_f64()?;
+        data_property.get_max_f64()?;
+        data_property.assert_non_null()?;
 
         Ok(())
     }
 
     fn get_names(
         &self,
-        _constraints: &NodeConstraints,
+        _properties: &NodeProperties,
     ) -> Result<Vec<String>, String> {
         Err("get_names not implemented".to_string())
     }
@@ -57,7 +58,7 @@ impl Expandable for proto::DpMean {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
-        constraints: &constraint_utils::NodeConstraints,
+        properties: &property_utils::NodeProperties,
         component_id: u32,
         maximum_id: u32,
     ) -> Result<(u32, HashMap<u32, proto::Component>), String> {
@@ -75,7 +76,7 @@ impl Expandable for proto::DpMean {
         });
 
         let sensitivity = Value::ArrayND(ArrayND::F64(Array::from(component.value.to_owned().unwrap()
-                .compute_sensitivity(privacy_definition, constraints)
+                .compute_sensitivity(privacy_definition, properties)
                 .unwrap()).into_dyn()));
 
         // sensitivity literal
@@ -101,12 +102,12 @@ impl Privatize for proto::DpMean {
     fn compute_sensitivity(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
-        constraints: &NodeConstraints,
+        properties: &NodeProperties,
     ) -> Option<Vec<f64>> {
-        let data_constraint = constraint_utils::get_constraint(constraints, "data").ok()?;
-        let min = data_constraint.get_min_f64().ok()?;
-        let max = data_constraint.get_max_f64().ok()?;
-        let num_records = data_constraint.get_n().ok()?;
+        let data_property = property_utils::get_properties(properties, "data").ok()?;
+        let min = data_property.get_min_f64().ok()?;
+        let max = data_property.get_max_f64().ok()?;
+        let num_records = data_property.get_n().ok()?;
 
         Some(min
             .iter()
@@ -121,7 +122,7 @@ impl Accuracy for proto::DpMean {
     fn accuracy_to_privacy_usage(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
-        _constraints: &constraint_utils::NodeConstraints,
+        _properties: &property_utils::NodeProperties,
         _accuracy: &proto::Accuracy,
     ) -> Option<proto::PrivacyUsage> {
         None
@@ -130,7 +131,7 @@ impl Accuracy for proto::DpMean {
     fn privacy_usage_to_accuracy(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
-        _constraint: &constraint_utils::NodeConstraints,
+        _property: &property_utils::NodeProperties,
     ) -> Option<f64> {
         None
     }
@@ -139,7 +140,7 @@ impl Accuracy for proto::DpMean {
 impl Report for proto::DpMean {
     fn summarize(
         &self,
-        _constraints: &NodeConstraints,
+        _properties: &NodeProperties,
     ) -> Option<String> {
         None
     }

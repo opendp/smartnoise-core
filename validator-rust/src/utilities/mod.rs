@@ -1,3 +1,3 @@
 pub mod graph;
-pub mod constraint;
+pub mod properties;
 pub mod serial;

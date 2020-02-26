@@ -11,7 +11,7 @@ use std::vec::Vec;
 use itertools::Itertools;
 
 use crate::components;
-use yarrow_validator::utilities::constraint::{get_constraints};
+use yarrow_validator::utilities::properties::{get_properties, get_input_properties};
 
 use yarrow_validator::utilities::serial::Value;
 
@@ -29,7 +29,7 @@ pub fn execute_graph(analysis: &proto::Analysis,
 
     let mut graph: HashMap<u32, proto::Component> = analysis.computation_graph.to_owned().unwrap().value;
 
-    let mut graph_constraints: HashMap<u32, proto::Constraint> = HashMap::new();
+    let mut graph_properties: HashMap<u32, proto::Properties> = HashMap::new();
     let mut maximum_id = graph.keys()
         .fold1(std::cmp::max)
         .map(|x| x.clone())
@@ -62,8 +62,8 @@ pub fn execute_graph(analysis: &proto::Analysis,
             continue;
         }
 
-        let node_constraints: HashMap<String, proto::Constraint> = get_constraints(&component, &graph_constraints);
-        let public_arguments = node_constraints.iter()
+        let node_properties: HashMap<String, proto::Properties> = get_input_properties(&component, &graph_properties);
+        let public_arguments = node_properties.iter()
             .filter(|(_k, v)| v.releasable)
             .map(|(k, _v)| (k.clone(), evaluations
                 .get(component.arguments.get(k).unwrap()).unwrap().clone()))
@@ -73,13 +73,13 @@ pub fn execute_graph(analysis: &proto::Analysis,
         let expansion: proto::response_expand_component::ExpandedComponent = yarrow_validator::base::expand_component(
             &analysis.privacy_definition.to_owned().unwrap(),
             &component,
-            &node_constraints,
+            &node_properties,
             &public_arguments,
             node_id,
             maximum_id
         )?;
 
-        graph_constraints.insert(node_id, expansion.constraint.unwrap());
+        graph_properties.insert(node_id, expansion.properties.unwrap());
         graph.extend(expansion.computation_graph.unwrap().value);
 
         if maximum_id != expansion.maximum_id {
