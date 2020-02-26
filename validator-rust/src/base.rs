@@ -2,22 +2,80 @@ use crate::proto;
 use itertools::Itertools;
 
 use crate::utilities;
-use crate::components;
+
 use crate::components::*;
 
 use std::collections::HashMap;
-use crate::utilities::constraint::{Constraint, NodeConstraints};
-use crate::hashmap;
-use crate::utilities::buffer::{NodeArguments};
-use crate::utilities::serial::Value;
-use crate::components::literal::infer_constraint;
+use crate::utilities::properties::{NodeProperties};
+
+
+use crate::utilities::serial::{Value, parse_value, serialize_value};
+use crate::components::literal::infer_property;
+use std::ops::Deref;
+
+
+// equivalent to proto Release
+pub type GraphEvaluation = HashMap<u32, Value>;
+
+// arguments to a node prior to evaluation
+pub type NodeArguments<'a> = HashMap<String, &'a Value>;
+
+pub fn get_arguments<'a>(component: &proto::Component, graph_evaluation: &'a GraphEvaluation) -> NodeArguments<'a> {
+    let mut arguments = NodeArguments::new();
+    component.arguments.iter().for_each(|(field_id, field)| {
+        let evaluation: &'a Value = graph_evaluation.get(&field).unwrap();
+        arguments.insert(field_id.to_owned(), evaluation);
+    });
+    arguments
+}
+
+pub fn get_arguments_copy(component: &proto::Component, graph_evaluation: &GraphEvaluation) -> HashMap<String, Value> {
+    let mut arguments = HashMap::<String, Value>::new();
+    component.arguments.iter().for_each(|(field_id, field)| {
+        let evaluation: Value = graph_evaluation.get(&field).unwrap().to_owned();
+        arguments.insert(field_id.to_owned(), evaluation);
+    });
+    arguments
+}
+
+pub fn get_argument(arguments: &NodeArguments, name: &str) -> Result<Value, String> {
+    match arguments.get(name) {
+        Some(argument) => Ok(argument.deref().to_owned()),
+        _ => Err((name.to_string() + " is not defined").to_string())
+    }
+}
+
+pub fn release_to_evaluations(release: &proto::Release) -> Result<GraphEvaluation, String> {
+    let mut evaluations = GraphEvaluation::new();
+
+    for (node_id, node_release) in &release.values {
+        evaluations.insert(*node_id, parse_value(&node_release.value.to_owned().unwrap()).unwrap());
+    }
+    Ok(evaluations)
+}
+
+pub fn evaluations_to_release(evaluations: &GraphEvaluation) -> Result<proto::Release, String> {
+    let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
+    for (node_id, node_eval) in evaluations {
+        if let Ok(array_serialized) = serialize_value(node_eval) {
+            releases.insert(*node_id, proto::ReleaseNode {
+                value: Some(array_serialized),
+                privacy_usage: None,
+            });
+        }
+    }
+    Ok(proto::Release {
+        values: releases
+    })
+}
+
 
 
 pub fn validate_analysis(
     analysis: &proto::Analysis
 ) -> Result<proto::response_validate_analysis::Validated, String> {
     // check if acyclic
-    let traversal = utilities::graph::get_traversal(analysis)?;
+    let _traversal = utilities::graph::get_traversal(analysis)?;
 
     // TODO: check that there is at most one Materialize
     // TODO: check shapes and lengths (to prevent leaking from errors)
@@ -99,40 +157,40 @@ pub fn privacy_usage_reducer(
 pub fn expand_component(
     privacy_definition: &proto::PrivacyDefinition,
     component: &proto::Component,
-    constraints: &HashMap<String, proto::Constraint>,
+    properties: &HashMap<String, proto::Properties>,
     arguments: &HashMap<String, Value>,
     node_id_output: u32,
     node_id_maximum: u32
 ) -> Result<proto::response_expand_component::ExpandedComponent, String> {
-    let mut constraints: NodeConstraints = constraints.iter()
-        .map(|(k, v)| (k.to_owned(), utilities::constraint::Constraint::from_proto(&v)))
+    let mut properties: NodeProperties = properties.iter()
+        .map(|(k, v)| (k.to_owned(), utilities::properties::Properties::from_proto(&v)))
         .collect();
 
     for (k, v) in arguments {
-        constraints.insert(k.clone(), infer_constraint(&v)?);
+        properties.insert(k.clone(), infer_property(&v)?);
     }
 
     let result = component.clone().value.unwrap().expand_graph(
         privacy_definition,
         component,
-        &constraints,
+        &properties,
         node_id_output,
         node_id_maximum,
     )?;
 
-    let constraint = component.clone().value.unwrap().propagate_constraint(arguments, &constraints)?;
+    let property = component.clone().value.unwrap().propagate_property(arguments, &properties)?;
 
     Ok(proto::response_expand_component::ExpandedComponent {
         computation_graph: Some(proto::ComputationGraph { value: result.1 }),
-        constraint: Some(constraint.to_proto()),
+        properties: Some(property.to_proto()),
         maximum_id: result.0
     })
 }
 
 // TODO: create report json
 pub fn generate_report(
-    analysis: &proto::Analysis,
-    release: &proto::Release,
+    _analysis: &proto::Analysis,
+    _release: &proto::Release,
 ) -> Result<String, String> {
     return Ok("{\"key\": \"value\"}".to_owned());
 }

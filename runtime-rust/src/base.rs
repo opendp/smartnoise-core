@@ -1,19 +1,18 @@
 extern crate yarrow_validator;
 
-use yarrow_validator::{proto, expand_component};
-use yarrow_validator::utilities::buffer;
+use yarrow_validator::{proto, base};
 use yarrow_validator::utilities::graph as yarrow_graph;
 
-use ndarray::prelude::*;
 
-use std::collections::{HashMap, HashSet, VecDeque};
+
+use std::collections::{HashMap, HashSet};
 use std::vec::Vec;
-use std::iter::FromIterator;
+
 use itertools::Itertools;
 
 use crate::components;
-use yarrow_validator::utilities::constraint::{get_constraints, GraphConstraint};
-use yarrow_validator::utilities::buffer::{get_arguments};
+use yarrow_validator::utilities::properties::{get_properties, get_input_properties};
+
 use yarrow_validator::utilities::serial::Value;
 
 
@@ -26,11 +25,11 @@ pub fn execute_graph(analysis: &proto::Analysis,
     let mut traversal = Vec::new();
     traversal.extend(yarrow_graph::get_sinks(&analysis).into_iter());
 
-    let mut evaluations = buffer::release_to_evaluations(release)?;
+    let mut evaluations = base::release_to_evaluations(release)?;
 
     let mut graph: HashMap<u32, proto::Component> = analysis.computation_graph.to_owned().unwrap().value;
 
-    let mut graph_constraints: HashMap<u32, proto::Constraint> = HashMap::new();
+    let mut graph_properties: HashMap<u32, proto::Properties> = HashMap::new();
     let mut maximum_id = graph.keys()
         .fold1(std::cmp::max)
         .map(|x| x.clone())
@@ -63,10 +62,10 @@ pub fn execute_graph(analysis: &proto::Analysis,
             continue;
         }
 
-        let node_constraints: HashMap<String, proto::Constraint> = get_constraints(&component, &graph_constraints);
-        let public_arguments = node_constraints.iter()
-            .filter(|(k, v)| v.releasable)
-            .map(|(k, v)| (k.clone(), evaluations
+        let node_properties: HashMap<String, proto::Properties> = get_input_properties(&component, &graph_properties);
+        let public_arguments = node_properties.iter()
+            .filter(|(_k, v)| v.releasable)
+            .map(|(k, _v)| (k.clone(), evaluations
                 .get(component.arguments.get(k).unwrap()).unwrap().clone()))
             .collect::<HashMap<String, Value>>();
 
@@ -74,13 +73,13 @@ pub fn execute_graph(analysis: &proto::Analysis,
         let expansion: proto::response_expand_component::ExpandedComponent = yarrow_validator::base::expand_component(
             &analysis.privacy_definition.to_owned().unwrap(),
             &component,
-            &node_constraints,
+            &node_properties,
             &public_arguments,
             node_id,
             maximum_id
         )?;
 
-        graph_constraints.insert(node_id, expansion.constraint.unwrap());
+        graph_properties.insert(node_id, expansion.properties.unwrap());
         graph.extend(expansion.computation_graph.unwrap().value);
 
         if maximum_id != expansion.maximum_id {
@@ -107,18 +106,22 @@ pub fn execute_graph(analysis: &proto::Analysis,
             }
         }
     }
-    buffer::evaluations_to_release(&evaluations)
+    base::evaluations_to_release(&evaluations)
 }
 
 pub fn execute_component(component: &proto::Component,
-                         evaluations: &buffer::GraphEvaluation,
+                         evaluations: &base::GraphEvaluation,
                          dataset: &proto::Dataset) -> Result<Value, String> {
-    let arguments = buffer::get_arguments(&component, &evaluations);
+    let arguments = base::get_arguments(&component, &evaluations);
 
     use proto::component::Value as Value;
     match component.to_owned().value.unwrap() {
         Value::Materialize(x) => components::component_materialize(&x, &dataset),
+        Value::Count(x) => components::component_count(&x, &arguments),
+        Value::Clamp(x) => components::component_clamp(&x, &arguments),
+        Value::Impute(x) => components::component_impute(&x, &arguments),
         Value::Index(x) => components::component_index(&x, &arguments),
+        Value::Kthrawsamplemoment(x) => components::component_kth_raw_sample_moment(&x, &arguments),
         Value::Resize(x) => components::component_resize(&x, &arguments),
         Value::Literal(x) => components::component_literal(&x),
         Value::Datasource(x) => components::component_datasource(&x, &dataset, &arguments),

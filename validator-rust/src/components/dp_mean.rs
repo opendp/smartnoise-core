@@ -1,56 +1,55 @@
 use std::collections::HashMap;
-use crate::utilities::constraint as constraint_utils;
-use crate::utilities::constraint::{Constraint, NodeConstraints, get_constraint};
+use crate::utilities::properties as property_utils;
+use crate::utilities::properties::{Properties, NodeProperties, get_properties, get_literal};
 
-use crate::{base, components};
+
 use crate::proto;
 use crate::hashmap;
-use crate::components::{Component, Report, Accuracy, Privatize, Expandable};
+use crate::components::{Component, Accuracy, Privatize, Expandable, Report};
 use ndarray::Array;
 use crate::utilities::serial::{Value, serialize_value, ArrayND};
-use crate::utilities::buffer::NodeArguments;
+
 
 impl Component for proto::DpMean {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
-    fn propagate_constraint(
+    fn propagate_property(
         &self,
-        public_arguments: &HashMap<String, Value>,
-        constraints: &constraint_utils::NodeConstraints,
-    ) -> Result<Constraint, String> {
-        Ok(get_constraint(constraints, "left")?.to_owned())
+        _public_arguments: &HashMap<String, Value>,
+        properties: &property_utils::NodeProperties,
+    ) -> Result<Properties, String> {
+        Ok(get_properties(properties, "left")?.to_owned())
 
-//        Ok(Constraint {
+//        Ok(Properties {
 //            nullity: false,
 //            releasable: true,
-//            nature: Some(constraint_utils::Nature::Continuous(constraint_utils::NatureContinuous {
-//                min: constraint_utils::get_min(&constraints, "data")?,
-//                max: constraint_utils::get_max(&constraints, "data")?,
+//            nature: Some(property_utils::Nature::Continuous(property_utils::NatureContinuous {
+//                min: property_utils::get_min(&properties, "data")?,
+//                max: property_utils::get_max(&properties, "data")?,
 //            })),
-//            num_records: constraint_utils::get_num_records(&constraints, "data")?,
+//            num_records: property_utils::get_num_records(&properties, "data")?,
 //        })
     }
 
     fn is_valid(
         &self,
-        public_arguments: &HashMap<String, Value>,
-        constraints: &constraint_utils::NodeConstraints,
-    ) -> bool {
-        let num_records = constraint_utils::get_num_records(constraints, "data");
-        let min = constraint_utils::get_min_f64(constraints, "data");
-        let max = constraint_utils::get_min_f64(constraints, "data");
+        _public_arguments: &HashMap<String, Value>,
+        properties: &property_utils::NodeProperties,
+    ) -> Result<(), String> {
+        let data_property = property_utils::get_properties(&properties, "data")?.clone();
 
-        // check these properties are Some
-        if min.is_err()
-            || !min.unwrap().iter().all(|v| v.is_some())
-            || max.is_err()
-            || !max.unwrap().iter().all(|v| v.is_some())
-            || num_records.is_err()
-            || !num_records.unwrap().iter().all(|v| v.is_some()) {
-            return false;
-        }
+        data_property.get_n()?;
+        data_property.get_min_f64()?;
+        data_property.get_max_f64()?;
+        data_property.assert_non_null()?;
 
-        // all checks have passed
-        true
+        Ok(())
+    }
+
+    fn get_names(
+        &self,
+        _properties: &NodeProperties,
+    ) -> Result<Vec<String>, String> {
+        Err("get_names not implemented".to_string())
     }
 }
 
@@ -59,7 +58,7 @@ impl Expandable for proto::DpMean {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
-        constraints: &constraint_utils::NodeConstraints,
+        properties: &property_utils::NodeProperties,
         component_id: u32,
         maximum_id: u32,
     ) -> Result<(u32, HashMap<u32, proto::Component>), String> {
@@ -76,23 +75,14 @@ impl Expandable for proto::DpMean {
             batch: component.batch,
         });
 
-        let sensitivity = serialize_value(
-            &Value::ArrayND(ArrayND::F64(Array::from(component.value.to_owned().unwrap()
-                .compute_sensitivity(privacy_definition, constraints)
-                .unwrap()).into_dyn())))?;
+        let sensitivity = Value::ArrayND(ArrayND::F64(Array::from(component.value.to_owned().unwrap()
+                .compute_sensitivity(privacy_definition, properties)
+                .unwrap()).into_dyn()));
 
         // sensitivity literal
         current_id += 1;
         let id_sensitivity = current_id.clone();
-        graph_expansion.insert(id_sensitivity, proto::Component {
-            arguments: hashmap![],
-            value: Some(proto::component::Value::Literal(proto::Literal {
-                value: Some(sensitivity),
-                private: true
-            })),
-            omit: true,
-            batch: component.batch
-        });
+        graph_expansion.insert(id_sensitivity, get_literal(&sensitivity, &component.batch));
 
         // noising
         graph_expansion.insert(component_id, proto::Component {
@@ -111,18 +101,19 @@ impl Expandable for proto::DpMean {
 impl Privatize for proto::DpMean {
     fn compute_sensitivity(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
-        constraints: &NodeConstraints,
+        _privacy_definition: &proto::PrivacyDefinition,
+        properties: &NodeProperties,
     ) -> Option<Vec<f64>> {
-        let min = constraint_utils::get_min_f64(constraints, "data").unwrap();
-        let max = constraint_utils::get_max_f64(constraints, "data").unwrap();
-        let num_records = constraint_utils::get_num_records(constraints, "data").unwrap();
+        let data_property = property_utils::get_properties(properties, "data").ok()?;
+        let min = data_property.get_min_f64().ok()?;
+        let max = data_property.get_max_f64().ok()?;
+        let num_records = data_property.get_n().ok()?;
 
         Some(min
-            .iter().map(|v| v.unwrap())
-            .zip(max.iter().map(|v| v.unwrap()).collect::<Vec<f64>>())
-            .zip(num_records.iter().map(|v| v.unwrap() as f64).collect::<Vec<f64>>())
-            .map(|((l, r), n)| (l - r) / n)
+            .iter()
+            .zip(max)
+            .zip(num_records)
+            .map(|((l, r), n)| (l - r) / n as f64)
             .collect())
     }
 }
@@ -130,18 +121,27 @@ impl Privatize for proto::DpMean {
 impl Accuracy for proto::DpMean {
     fn accuracy_to_privacy_usage(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
-        constraints: &constraint_utils::NodeConstraints,
-        accuracy: &proto::Accuracy,
+        _privacy_definition: &proto::PrivacyDefinition,
+        _properties: &property_utils::NodeProperties,
+        _accuracy: &proto::Accuracy,
     ) -> Option<proto::PrivacyUsage> {
         None
     }
 
     fn privacy_usage_to_accuracy(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
-        constraint: &constraint_utils::NodeConstraints,
+        _privacy_definition: &proto::PrivacyDefinition,
+        _property: &property_utils::NodeProperties,
     ) -> Option<f64> {
+        None
+    }
+}
+
+impl Report for proto::DpMean {
+    fn summarize(
+        &self,
+        _properties: &NodeProperties,
+    ) -> Option<String> {
         None
     }
 }

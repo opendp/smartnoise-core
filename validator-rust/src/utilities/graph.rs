@@ -21,8 +21,8 @@ pub fn get_traversal(
 
     // collect all sources (nodes with zero arguments)
     let mut queue: Vec<u32> = graph.iter()
-        .filter(|(node_id, component)| component.arguments.is_empty())
-        .map(|(node_id, component)| node_id.to_owned()).collect();
+        .filter(|(_node_id, component)| component.arguments.is_empty())
+        .map(|(node_id, _component)| node_id.to_owned()).collect();
 
     let mut visited = HashMap::new();
 

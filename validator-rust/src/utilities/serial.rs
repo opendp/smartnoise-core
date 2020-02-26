@@ -1,6 +1,6 @@
 use ndarray::prelude::*;
 use crate::proto;
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::{HashMap};
 
 #[derive(Clone, Debug)]
 pub enum Vector1DNull {
@@ -26,7 +26,7 @@ pub enum ArrayND {
     Str(ArrayD<String>),
 }
 
-// used for categorical constraints
+// used for categorical properties
 #[derive(Clone, Debug)]
 pub enum Vector2DJagged {
     Bool(Vec<Option<Vec<bool>>>),
@@ -44,16 +44,92 @@ pub enum Value {
 }
 
 impl Value {
-    fn get_str(self) -> Result<String, String> {
+    pub fn get_arraynd(self) -> Result<ArrayND, String> {
         match self {
-            Value::ArrayND(array) => match array {
-                ArrayND::Str(str_array) => match str_array.first() {
-                    Some(string) => Ok(string.to_string()),
-                    None => Err("string array is empty".to_string())
-                },
-                _ => return Err("value must be a string".to_string())
-            },
-            _ => return Err("value must be wrapped in an ArrayND".to_string())
+            Value::ArrayND(array) => Ok(array.to_owned()),
+            _ => Err("value must be wrapped in an ArrayND".to_string())
+        }
+    }
+
+    pub fn get_first_f64(self) -> Result<f64, String> {
+        match self {
+            Value::ArrayND(array) => array.get_first_f64(),
+            _ => Err("cannot retrieve first float".to_string())
+        }
+    }
+    pub fn get_first_i64(self) -> Result<i64, String> {
+        match self {
+            Value::ArrayND(array) => array.get_first_i64(),
+            _ => Err("cannot retrieve integer".to_string())
+        }
+    }
+    pub fn get_first_str(self) -> Result<String, String> {
+        match self {
+            Value::ArrayND(array) => array.get_first_str(),
+            _ => Err("cannot retrieve string".to_string())
+        }
+    }
+    pub fn get_first_bool(self) -> Result<bool, String> {
+        match self {
+            Value::ArrayND(array) => array.get_first_bool(),
+            _ => Err("cannot retrieve bool".to_string())
+        }
+    }
+}
+
+impl ArrayND {
+    pub fn get_f64(self) -> Result<ArrayD<f64>, String> {
+        match self {
+            ArrayND::Bool(x) => Ok(x.mapv(|v| if v { 1. } else { 0. })),
+            ArrayND::I64(x) => Ok(x.mapv(|v| f64::from(v as i32))),
+            ArrayND::F64(x) => Ok(x.to_owned()),
+            _ => Err("expected a float on a non-float ArrayND".to_string())
+        }
+    }
+    pub fn get_first_f64(self) -> Result<f64, String> {
+        match self {
+            ArrayND::Bool(x) => Ok(if *x.first().unwrap() { 1. } else { 0. }),
+            ArrayND::I64(x) => Ok(f64::from(*x.first().unwrap() as i32)),
+            ArrayND::F64(x) => Ok(x.first().unwrap().to_owned()),
+            _ => Err("value must be numeric".to_string())
+        }
+    }
+    pub fn get_i64(self) -> Result<ArrayD<i64>, String> {
+        match self {
+            ArrayND::Bool(x) => Ok(x.mapv(|v| if v { 1 } else { 0 })),
+            ArrayND::I64(x) => Ok(x.to_owned()),
+            _ => Err("expected a float on a non-float ArrayND".to_string())
+        }
+    }
+    pub fn get_first_i64(self) -> Result<i64, String> {
+        match self {
+            ArrayND::Bool(x) => Ok(if *x.first().unwrap() { 1 } else { 0 }),
+            ArrayND::I64(x) => Ok(x.first().unwrap().to_owned()),
+            _ => Err("value must be numeric".to_string())
+        }
+    }
+    pub fn get_str(self) -> Result<ArrayD<String>, String> {
+        match self {
+            ArrayND::Str(x) => Ok(x.to_owned()),
+            _ => Err("value must be a string".to_string())
+        }
+    }
+    pub fn get_first_str(self) -> Result<String, String> {
+        match self {
+            ArrayND::Str(x) => Ok(x.first().unwrap().to_owned()),
+            _ => Err("value must be a string".to_string())
+        }
+    }
+    pub fn get_bool(self) -> Result<ArrayD<bool>, String> {
+        match self {
+            ArrayND::Bool(x) => Ok(x.to_owned()),
+            _ => Err("value must be a bool".to_string())
+        }
+    }
+    pub fn get_first_bool(self) -> Result<bool, String> {
+        match self {
+            ArrayND::Bool(x) => Ok(x.first().unwrap().to_owned()),
+            _ => Err("value must be a bool".to_string())
         }
     }
 }
@@ -134,7 +210,7 @@ pub fn parse_array1d(value: &proto::Array1d) -> Vector1D {
 }
 
 
-pub fn parse_arrayNd(value: &proto::ArrayNd) -> ArrayND {
+pub fn parse_arraynd(value: &proto::ArrayNd) -> ArrayND {
     let shape: Vec<usize> = value.shape.iter().map(|x| *x as usize).collect();
     match parse_array1d(&value.flattened.to_owned().unwrap()) {
         Vector1D::Bool(vector) => ArrayND::Bool(Array::from_shape_vec(shape, vector).unwrap().into_dyn()),
@@ -197,7 +273,7 @@ pub fn parse_array2d_jagged(value: &proto::Array2dJagged) -> Vector2DJagged {
 pub fn parse_value(value: &proto::Value) -> Result<Value, String> {
     Ok(match value.data.to_owned().unwrap() {
         proto::value::Data::ArrayNd(data) =>
-            Value::ArrayND(parse_arrayNd(&data)),
+            Value::ArrayND(parse_arraynd(&data)),
         proto::value::Data::HashmapString(data) =>
             Value::HashmapString(parse_hashmap_str(&data)),
         proto::value::Data::Array2dJagged(data) =>
@@ -301,7 +377,7 @@ pub fn serialize_array1d(value: &Vector1D) -> proto::Array1d {
     }
 }
 
-pub fn serialize_arrayNd(value: &ArrayND) -> proto::ArrayNd {
+pub fn serialize_arraynd(value: &ArrayND) -> proto::ArrayNd {
     match value {
         ArrayND::Bool(array) => proto::ArrayNd {
             flattened: Some(serialize_array1d(&Vector1D::Bool(array.iter().map(|s| s.to_owned()).collect()))),
@@ -373,7 +449,7 @@ pub fn serialize_value(value: &Value) -> Result<proto::Value, String> {
     Ok(proto::Value {
         data: Some(match value {
             Value::ArrayND(data) =>
-                proto::value::Data::ArrayNd(serialize_arrayNd(data)),
+                proto::value::Data::ArrayNd(serialize_arraynd(data)),
             Value::HashmapString(data) =>
                 proto::value::Data::HashmapString(serialize_hashmap_str(data)),
             Value::Vector2DJagged(data) =>

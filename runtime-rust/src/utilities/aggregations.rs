@@ -1,7 +1,7 @@
 use ndarray::prelude::*;
-use std::collections::HashMap;
 
-use crate::utilities::transformations;
+
+
 use crate::utilities::noise;
 
 // pub fn count< T:PartialEq >(data: &ArrayD<T>, group_by: &Option<ArrayD<T>>) -> ArrayD<f64> {
@@ -77,9 +77,9 @@ pub fn get_bin_names(edges: &ArrayD<f64>, inclusive_left: &bool) -> ArrayD<Strin
     for i in 0..(edges.len()-1) {
         left_edge = edges[i].to_string();
         right_edge = edges[i+1].to_string();
-        if (i == 0 && inclusive_left == &false) {
+        if i == 0 && inclusive_left == &false {
             bin_name = format!("[{}, {}]", left_edge, right_edge);
-        } else if (i == (edges.len()-2) && inclusive_left == &true) {
+        } else if i == (edges.len()-2) && inclusive_left == &true {
             bin_name = format!("[{}, {}]", left_edge, right_edge);
         } else if inclusive_left == &true {
             bin_name = format!("[{}, {})", left_edge, right_edge);
@@ -231,7 +231,7 @@ pub fn variance(data: &ArrayD<f64>, finite_sample_correction: &bool) -> ArrayD<f
 
     let mut variance: f64 = (expectation_squared_data - expectation_data_squared).into_dimensionality::<Ix1>().unwrap().to_vec()[0];
     if finite_sample_correction == &true {
-        variance *= (&data_vec_len / (&data_vec_len - &1.));
+        variance *= &data_vec_len / (&data_vec_len - &1.);
     }
     return arr1(&[variance]).into_dyn();
 }
@@ -266,13 +266,13 @@ pub fn create_subset<T>(set: &ArrayD<T>, weights: &ArrayD<f64>, k: &u64) -> Arra
 
     assert!(*k as usize <= set.len());
 
-    let mut set_vec: Vec<T> = set.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
+    let set_vec: Vec<T> = set.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
 
-    let mut weights_vec: Vec<f64> = weights.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
+    let weights_vec: Vec<f64> = weights.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
     let weights_sum: f64 = weights_vec.iter().sum();
 
-    let mut probabilities_vec: Vec<f64> = weights.iter().map(|w| w / weights_sum).collect();
-    let mut subsample_vec: Vec<T> = Vec::with_capacity(*k as usize);
+    let probabilities_vec: Vec<f64> = weights.iter().map(|w| w / weights_sum).collect();
+    let _subsample_vec: Vec<T> = Vec::with_capacity(*k as usize);
 
     //
     // generate keys and identify top k indices

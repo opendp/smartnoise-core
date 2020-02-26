@@ -20,8 +20,8 @@ macro_rules! hashmap {
 
 use prost::Message;
 use std::collections::HashMap;
-use crate::utilities::buffer::{NodeArguments};
-use crate::utilities::constraint::NodeConstraints;
+
+
 use crate::utilities::serial::{parse_value, Value};
 
 // useful tutorial for proto over ffi here:
@@ -128,13 +128,13 @@ pub extern "C" fn accuracy_to_privacy_usage(
 
     let privacy_definition: proto::PrivacyDefinition = request.privacy_definition.unwrap();
     let component: proto::Component = request.component.unwrap();
-    let constraints: HashMap<String, utilities::constraint::Constraint> = request.constraints.iter()
-        .map(|(k, v)| (k.to_owned(), utilities::constraint::Constraint::from_proto(&v)))
+    let properties: HashMap<String, utilities::properties::Properties> = request.properties.iter()
+        .map(|(k, v)| (k.to_owned(), utilities::properties::Properties::from_proto(&v)))
         .collect();
     let accuracy: proto::Accuracy = request.accuracy.unwrap();
 
     let privacy_usage: std::result::Result<proto::PrivacyUsage, String> = Ok(component.value.to_owned().unwrap()
-        .accuracy_to_privacy_usage(&privacy_definition, &constraints, &accuracy).unwrap());
+        .accuracy_to_privacy_usage(&privacy_definition, &properties, &accuracy).unwrap());
 
     let response = proto::ResponseAccuracyToPrivacyUsage {
         value: match privacy_usage {
@@ -156,13 +156,13 @@ pub extern "C" fn privacy_usage_to_accuracy(
 
     let privacy_definition: proto::PrivacyDefinition = request.privacy_definition.unwrap();
     let component: proto::Component = request.component.unwrap();
-    let constraints: HashMap<String, utilities::constraint::Constraint> = request.constraints.iter()
-        .map(|(k, v)| (k.to_owned(), utilities::constraint::Constraint::from_proto(&v)))
+    let properties: HashMap<String, utilities::properties::Properties> = request.properties.iter()
+        .map(|(k, v)| (k.to_owned(), utilities::properties::Properties::from_proto(&v)))
         .collect();
 
     let accuracy: std::result::Result<proto::Accuracy, String> = Ok(proto::Accuracy {
         value: component.value.to_owned().unwrap()
-            .privacy_usage_to_accuracy(&privacy_definition, &constraints).unwrap()
+            .privacy_usage_to_accuracy(&privacy_definition, &properties).unwrap()
     });
 
     let response = proto::ResponsePrivacyUsageToAccuracy {
@@ -193,7 +193,7 @@ pub extern "C" fn expand_component(
         value: match base::expand_component(
             &privacy_definition,
             &component,
-            &request.constraints,
+            &request.properties,
             &arguments,
             request.component_id,
             request.maximum_id

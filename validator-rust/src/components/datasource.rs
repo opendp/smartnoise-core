@@ -1,25 +1,24 @@
 use std::collections::HashMap;
-use crate::utilities::constraint as constraint_utils;
-use crate::utilities::constraint::{
-    Constraint, NodeConstraints, Nature, NatureContinuous, get_min_f64};
+use crate::utilities::properties as property_utils;
+use crate::utilities::properties::{Properties, NodeProperties};
 
-use crate::{base, components};
+
 use crate::proto;
-use crate::hashmap;
-use crate::components::{Component, Expandable};
-use ndarray::Array;
-use crate::utilities::serial::{Vector1DNull, Value};
-use itertools::Itertools;
-use crate::utilities::buffer::NodeArguments;
+
+use crate::components::{Component};
+
+use crate::utilities::serial::{Value};
+
+
 
 impl Component for proto::DataSource {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
-    fn propagate_constraint(
+    fn propagate_property(
         &self,
-        public_arguments: &HashMap<String, Value>,
-        constraints: &constraint_utils::NodeConstraints,
-    ) -> Result<Constraint, String> {
-        Ok(Constraint {
+        _public_arguments: &HashMap<String, Value>,
+        _properties: &property_utils::NodeProperties,
+    ) -> Result<Properties, String> {
+        Ok(Properties {
             nullity: true,
             releasable: false,
             nature: None,
@@ -31,9 +30,16 @@ impl Component for proto::DataSource {
 
     fn is_valid(
         &self,
-        public_arguments: &HashMap<String, Value>,
-        constraints: &constraint_utils::NodeConstraints,
-    ) -> bool {
-        true
+        _public_arguments: &HashMap<String, Value>,
+        _properties: &property_utils::NodeProperties,
+    ) -> Result<(), String> {
+        Ok(())
+    }
+
+    fn get_names(
+        &self,
+        _properties: &NodeProperties,
+    ) -> Result<Vec<String>, String> {
+        Err("get_names not implemented".to_string())
     }
 }
