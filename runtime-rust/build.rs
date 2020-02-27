@@ -1,5 +1,5 @@
 extern crate prost_build;
-extern crate cbindgen;
+//extern crate cbindgen;
 
 use std::env;
 

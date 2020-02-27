@@ -341,26 +341,31 @@ pub fn clamp_categorical<T>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>, 
     return Ok(convert_from_matrix(&clamped_data, &original_dim));
 }
 
+/// Given data and min/max values, returns data with imputed values in place of NaN.
+/// For now, imputed values are generated uniformly at random between the min and max values provided,
+///
+/// # Arguments
+/// * `data` - data for which you would like to impute the NaN values
+/// * `min` - lower bound on imputation range
+/// * `max` - upper bound on imputation range
+///
+/// # Return
+/// array of data with imputed values
+///
+/// # Example
+/// ```
+/// use ndarray::prelude::*;
+/// use yarrow_runtime::utilities::transformations::impute_float_uniform;
+/// use core::f64::NAN;
+///
+/// let data: ArrayD<f64> = arr1(&[1., NAN, 3., NAN]).into_dyn();
+/// let min: f64 = 0.;
+/// let max: f64 = 10.;
+/// let imputed: ArrayD<f64> = impute_float_uniform(&data, &min, &max);
+/// println!("{:?}", imputed);
+/// ```
+
 pub fn impute_float_uniform(data: &ArrayD<f64>, min: &f64, max: &f64) -> ArrayD<f64> {
-    /// Given data and min/max values, returns data with imputed values in place of NaN.
-    /// For now, imputed values are generated uniformly at random between the min and max values provided,
-    ///
-    /// # Arguments
-    /// * `data` - data for which you would like to impute the NaN values
-    /// * `min` - lower bound on imputation range
-    /// * `max` - upper bound on imputation range
-    ///
-    /// # Return
-    /// array of data with imputed values
-    ///
-    /// # Example
-    /// ```
-    /// let data: ArrayD<f64> = arr1(&[1., NAN, 3., NAN]).into_dyn();
-    /// let min: f64 = 0.;
-    /// let max: f64 = 10.;
-    /// let imputed: ArrayD<f64> = impute(&data, &min, &max);
-    /// println!("{:?}", imputed);
-    /// ```
 
     let mut data_vec: Vec<f64> = Vec::with_capacity(data.len());
     for i in 0..data.len() {
@@ -373,30 +378,33 @@ pub fn impute_float_uniform(data: &ArrayD<f64>, min: &f64, max: &f64) -> ArrayD<
     return arr1(&data_vec).into_dyn();
 }
 
+/// Given data and min/max values, returns data with imputed values in place of NaN.
+/// For now, imputed values are generated uniformly at random between the min and max values provided,
+///
+/// # Arguments
+/// * `data` - data for which you would like to impute the NaN values
+/// * `shift` - the mean of the untruncated gaussian noise distribution
+/// * `scale` - the standard deviation of the untruncated gaussian noise distribution
+/// * `min` - lower bound on imputation range
+/// * `max` - upper bound on imputation range
+///
+/// # Return
+/// array of data with imputed values
+///
+/// # Example
+/// ```
+/// use ndarray::prelude::*;
+/// use yarrow_runtime::utilities::transformations::impute_float_gaussian;
+/// use core::f64::NAN;
+/// let data: ArrayD<f64> = arr1(&[1., NAN, 3., NAN]).into_dyn();
+/// let shift: f64 = 5.0;
+/// let scale: f64 = 7.0;
+/// let min: f64 = 0.0;
+/// let max: f64 = 10.0;
+/// let imputed: ArrayD<f64> = impute_float_gaussian(&data, &shift, &scale, &min, &max);
+/// println!("{:?}", imputed);
+/// ```
 pub fn impute_float_gaussian(data: &ArrayD<f64>, shift: &f64, scale: &f64, min: &f64, max: &f64) -> ArrayD<f64> {
-    /// Given data and min/max values, returns data with imputed values in place of NaN.
-    /// For now, imputed values are generated uniformly at random between the min and max values provided,
-    ///
-    /// # Arguments
-    /// * `data` - data for which you would like to impute the NaN values
-    /// * `shift` - the mean of the untruncated gaussian noise distribution
-    /// * `scale` - the standard deviation of the untruncated gaussian noise distribution
-    /// * `min` - lower bound on imputation range
-    /// * `max` - upper bound on imputation range
-    ///
-    /// # Return
-    /// array of data with imputed values
-    ///
-    /// # Example
-    /// ```
-    /// let data: ArrayD<f64> = arr1(&[1., NAN, 3., NAN]).into_dyn();
-    /// let shift: f64 = 5;
-    /// let scale: f64 = 7;
-    /// let min: f64 = 0.;
-    /// let max: f64 = 10.;
-    /// let imputed: ArrayD<f64> = impute(&data, &shift, &scale, &min, &max);
-    /// println!("{:?}", imputed);
-    /// ```
 
     let mut data_vec: Vec<f64> = Vec::with_capacity(data.len());
     for i in 0..data.len() {
@@ -409,31 +417,34 @@ pub fn impute_float_gaussian(data: &ArrayD<f64>, shift: &f64, scale: &f64, min: 
     return arr1(&data_vec).into_dyn();
 }
 
+/// Given data and min/max values, returns data with imputed values in place of NaN.
+/// For now, imputed values are generated uniformly at random between the min and max values provided,
+/// we may later add the ability to impute according to other distributions
+///
+/// NOTE: This function imputes integer values, although the input and output arrays are
+///       made up of floats. integer types in rust do not support NAN, so if we have missing data,
+///       it needs to be represented as a float
+///
+/// # Arguments
+/// * `data` - data for which you would like to impute the NaN values
+/// * `min` - lower bound on imputation range
+/// * `max` - upper bound on imputation range
+///
+/// # Return
+/// array of data with imputed values
+///
+/// # Example
+/// ```
+/// use ndarray::prelude::*;
+/// use core::f64::NAN;
+/// use yarrow_runtime::utilities::transformations::impute_int_uniform;
+/// let data: ArrayD<f64> = arr1(&[1., NAN, 3., NAN]).into_dyn();
+/// let min: f64 = 0.0;
+/// let max: f64 = 10.0;
+/// let imputed: ArrayD<f64> = impute_int_uniform(&data, &min, &max);
+/// println!("{:?}", imputed);
+/// ```
 pub fn impute_int_uniform(data: &ArrayD<f64>, min: &f64, max: &f64) -> ArrayD<f64> {
-    /// Given data and min/max values, returns data with imputed values in place of NaN.
-    /// For now, imputed values are generated uniformly at random between the min and max values provided,
-    /// we may later add the ability to impute according to other distributions
-    ///
-    /// NOTE: This function imputes integer values, although the input and output arrays are
-    ///       made up of floats. integer types in rust do not support NAN, so if we have missing data,
-    ///       it needs to be represented as a float
-    ///
-    /// # Arguments
-    /// * `data` - data for which you would like to impute the NaN values
-    /// * `min` - lower bound on imputation range
-    /// * `max` - upper bound on imputation range
-    ///
-    /// # Return
-    /// array of data with imputed values
-    ///
-    /// # Example
-    /// ```
-    /// let data: ArrayD<f64> = arr1(&[1., NAN, 3., NAN]).into_dyn();
-    /// let min: i64 = 0;
-    /// let max: i64 = 10;
-    /// let imputed: ArrayD<f64> = impute(&data, &min, &max);
-    /// println!("{:?}", imputed);
-    /// ```
 
     // ensure that min/max are integers -- they are passed as floats for consistency with our more general imputation architecture
     assert!(min.fract() == 0.0 && max.fract() == 0.0);

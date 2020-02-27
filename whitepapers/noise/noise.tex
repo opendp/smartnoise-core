@@ -95,7 +95,7 @@ We will give a general form of the algorithm, and then talk about implementation
 \end{algorithm}
 Let's first show that this procedure gives the correct expectation:
 \begin{align*}
-	prob &= \Pr(bit = 1) \\
+	p &= \Pr(bit = 1) \\
 		 &= \sum_{i=1}^{\infty} \Pr(bit = 1 \vert k = i) \Pr(k = i) \\
 		 &= \sum_{i=1}^{\infty} b_i \cdot \frac{1}{2^i} \\
 		 &= \sum_{i=1}^{\infty}\frac{b_i}{2^i}.
@@ -103,7 +103,7 @@ Let's first show that this procedure gives the correct expectation:
 This is consistent with the statement in Algorithm~\ref{alg:biasing_a_coin}, so we know that
 the process returns bits with the correct bias.
 In terms of efficiency, we know that we can stop coin flipping once we get a heads,
-so that part of the algorithm hsa $\E(\# flips) = 2$. \newline
+so that part of the algorithm has $\E(\# flips) = 2$. \newline
 
 The part that is a bit more difficult is constructing the infinite binary expansion of $p$.
 We start by noting that, for our purposes, we do not actually need an infinite binary expansion.

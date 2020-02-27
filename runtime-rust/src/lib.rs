@@ -5,7 +5,7 @@ use yarrow_validator::ErrorKind::{PrivateError, PublicError};
 use std::io::Write; // trait which holds `display_chain`
 use error_chain::ChainedError;
 mod base;
-mod utilities;
+pub mod utilities;
 mod components;
 
 
