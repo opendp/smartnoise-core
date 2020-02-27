@@ -54,7 +54,11 @@ class LibraryWrapper(object):
     @staticmethod
     def compute_release(dataset, analysis, release):
         return _communicate(
-            argument=api_pb2.RequestRelease(dataset=dataset, analysis=analysis, release=release),
+            argument=api_pb2.RequestRelease(
+                dataset=dataset,
+                analysis=analysis,
+                release=release,
+                stack_trace=True),
             function=lib_runtime.release,
             response_type=api_pb2.ResponseRelease,
             ffi=ffi_runtime)

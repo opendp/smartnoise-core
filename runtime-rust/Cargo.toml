@@ -21,6 +21,7 @@ rug = "0.6.0"
 rand = "0.7.3"
 yarrow_validator = {path = "../validator-rust"}
 itertools = "0.8.2"
+error-chain = "0.12.2"
 
 [build-dependencies]
 prost-build = "0.5.0"

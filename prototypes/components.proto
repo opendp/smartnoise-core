@@ -8,11 +8,11 @@ import "value.proto";
 
 message Component {
     // uint32 value is source_node_id
-    map<string, uint32> arguments = 1;
+    map<string, uint32> arguments = 1500;
     // if true, then don't include the evaluation for this component in the release
-    bool omit = 2;
+    bool omit = 1501;
     // for interactive analyses
-    uint32 batch = 3;
+    uint32 batch = 1502;
 
     oneof value {
         // data loading

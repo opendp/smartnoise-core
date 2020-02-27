@@ -186,12 +186,6 @@ class Component(object):
             filtered = [i for i in filtered
                            if i in ALL_CONSTRAINTS]
 
-            if 'n' in filtered:
-                arguments[argument] = Component('Resize', arguments={
-                    "data": arguments[argument],
-                    "n": Component.of(constraints[argument + '_n'])
-                })
-
             if 'max' in filtered and 'min' in filtered:
                 arguments[argument] = Component('Clamp', arguments={
                     "data": arguments[argument],
@@ -223,6 +217,12 @@ class Component(object):
                 arguments[argument] = Component('Clamp', arguments={
                     "data": arguments[argument],
                     "categories": Component.of(constraints[argument + '_categories'])
+                })
+
+            if 'n' in filtered:
+                arguments[argument] = Component('Resize', arguments={
+                    "data": arguments[argument],
+                    "n": Component.of(constraints[argument + '_n'])
                 })
 
         return arguments
@@ -332,9 +332,9 @@ class Analysis(object):
         graph = nx.DiGraph()
 
         def label(node_id):
-            return f'{node_id} {analysis.graph[node_id].WhichOneof("value")}'
+            return f'{node_id} {analysis.computation_graph.value[node_id].WhichOneof("value")}'
 
-        for nodeId, component in list(analysis.graph.items()):
+        for nodeId, component in list(analysis.computation_graph.value.items()):
             for source_node_id in component.arguments.values():
                 graph.add_edge(label(source_node_id), label(nodeId))
 

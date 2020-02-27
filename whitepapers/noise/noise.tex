@@ -112,9 +112,10 @@ expansion that covers all representable numbers in our floating-point standard t
 also valid probabilities.
 Luckily, the underlying structure of floating-point numbers makes this quite easy. \newline
 
-In the 64-bit standard, floating-point numbers in $[0,1]$ are represented as
-\[ (1.m_1m_2 \hdots m_{52})_2 * 2^{(e_{1}e_2 \hdots e_{11})_2 - 1023}. \]
-Then, our binary expansion is just our mantissa $(1.m_1m_2 \hdots m_{52})_2$, with
+In the 64-bit standard, floating-point numbers are represented as
+\[ (-1)^s(1.m_1m_2 \hdots m_{52})_2 * 2^{(e_{1}e_2 \hdots e_{11})_2 - 1023}, \]
+where $s$ is a sign bit we ignore for our purposes.
+Our binary expansion is just the mantissa $(1.m_1m_2 \hdots m_{52})_2$, with
 the radix point shifted based on the value of the exponent.
 We can then index into the properly shifted mantissa and check the value of the $k$th element.
 

@@ -10,6 +10,8 @@ import "value.proto";
 // VALIDATOR API
 message RequestValidateAnalysis {
 	Analysis analysis = 1;
+	// optional
+	Release release = 2;
 }
 message RequestComputePrivacyUsage {
 	Analysis analysis = 1;
@@ -22,17 +24,17 @@ message RequestGenerateReport {
 message RequestAccuracyToPrivacyUsage {
 	PrivacyDefinition privacy_definition = 1;
 	Component component = 2;
-	map<string, Constraint> constraints = 3;
+	map<string, Properties> properties = 3;
 	Accuracy accuracy = 4;
 }
 message RequestPrivacyUsageToAccuracy {
 	PrivacyDefinition privacy_definition = 1;
 	Component component = 2;
-	map<string, Constraint> constraints = 3;
+	map<string, Properties> properties = 3;
 }
 message RequestExpandComponent {
 	Component component = 1;
-	map<string, Constraint> constraints = 2;
+	map<string, Properties> properties = 2;
 	map<string, Value> arguments = 3;
 	PrivacyDefinition privacy_definition = 4;
 	uint32 component_id = 5;
@@ -45,6 +47,7 @@ message RequestRelease {
 	Analysis analysis = 1;
 	Release release = 2;
 	Dataset dataset = 3;
+	bool stack_trace = 10;
 }
 
 // RESPONSES
@@ -86,7 +89,7 @@ message ResponsePrivacyUsageToAccuracy {
 message ResponseExpandComponent {
 	message ExpandedComponent {
 		ComputationGraph computation_graph = 1;
-		Constraint constraint = 2;
+		Properties properties = 2;
 		uint32 maximum_id = 3;
 	}
 	oneof value {

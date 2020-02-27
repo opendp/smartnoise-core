@@ -41,14 +41,17 @@ $f(d) + \Delta$, where $\supp \Delta = \Z$ and
 \end{equation}
 This mechanism respects pure differential privacy, with a privacy loss parameter of $\alpha$.
 To accommodate privacy parameters outside of $(0,1)$, we can choose a privacy parameter
-$\epsilon > 0$ and let $\alpha = e^{-\epsilon}$. \newline
+$\epsilon > 0$ and let $\alpha = e^{-\epsilon}$.
+Note that although this mechanism was designed for counting queries (with sensitivity $s = 1$),
+it is generalizable to queries with $s \in \Z^{> 1}$. In this case, we can keep an $\epsilon$-level
+privacy guarantee by setting $\alpha = e^{-\epsilon / s}$. \newline
 
 \subsection{Approximate Implementation}
 Below is pseudocode that is pretty close to our implementation of the mechanism (more on the finer points later).
 This directly matches the $\alpha$-Geometric mechanism from \cite{GRS12}.
 
 \begin{algorithm}[H]
-    \caption{(Almost) Simple Geometric Mechanism $M_{SG}(f(D), \epsilon)$}
+    \caption{(Not Quite Correct) Simple Geometric Mechanism $M_{SG}(f(D), \epsilon)$}
     \label{alg:simp_geo_mec}
     \begin{algorithmic}[1]
         \State Let $f(D)$ be the count query we wish to privatize, $\epsilon$ be our privacy parameter and $\alpha = e^{-\epsilon}$.

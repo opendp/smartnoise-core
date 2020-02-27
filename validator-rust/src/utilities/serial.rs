@@ -1,51 +1,13 @@
+use crate::errors::*;
+use crate::ErrorKind::{PrivateError, PublicError};
+
 use ndarray::prelude::*;
 use crate::proto;
-use std::collections::{HashMap, HashSet, VecDeque};
-
-#[derive(Clone, Debug)]
-pub enum Vector1DNull {
-    Bool(Vec<Option<bool>>),
-    I64(Vec<Option<i64>>),
-    F64(Vec<Option<f64>>),
-    Str(Vec<Option<String>>),
-}
-
-#[derive(Clone, Debug)]
-pub enum Vector1D {
-    Bool(Vec<bool>),
-    I64(Vec<i64>),
-    F64(Vec<f64>),
-    Str(Vec<String>),
-}
-
-#[derive(Clone, Debug)]
-pub enum ArrayND {
-    Bool(ArrayD<bool>),
-    I64(ArrayD<i64>),
-    F64(ArrayD<f64>),
-    Str(ArrayD<String>),
-}
-
-// used for categorical constraints
-#[derive(Clone, Debug)]
-pub enum Vector2DJagged {
-    Bool(Vec<Option<Vec<bool>>>),
-    I64(Vec<Option<Vec<i64>>>),
-    F64(Vec<Option<Vec<f64>>>),
-    Str(Vec<Option<Vec<String>>>),
-}
-
-// used exclusively in the runtime for node evaluation
-#[derive(Clone, Debug)]
-pub enum Value {
-    ArrayND(ArrayND),
-    HashmapString(HashMap<String, Value>),
-    Vector2DJagged(Vector2DJagged),
-}
+use std::collections::{HashMap};
+use crate::base::{Release, Properties, Nature, Vector2DJagged, Vector1D, Value, ArrayND, Vector1DNull, NatureCategorical, NatureContinuous};
 
 // PARSERS
 pub fn parse_bool_null(value: &proto::BoolNull) -> Option<bool> {
-//    match value { proto::bool_null::Data::Option(x) => Some(x), _ => None }
     match value.data.to_owned() {
         Some(elem_data) => match elem_data { proto::bool_null::Data::Option(x) => Some(x) },
         None => None
@@ -119,7 +81,7 @@ pub fn parse_array1d(value: &proto::Array1d) -> Vector1D {
 }
 
 
-pub fn parse_arrayNd(value: &proto::ArrayNd) -> ArrayND {
+pub fn parse_arraynd(value: &proto::ArrayNd) -> ArrayND {
     let shape: Vec<usize> = value.shape.iter().map(|x| *x as usize).collect();
     match parse_array1d(&value.flattened.to_owned().unwrap()) {
         Vector1D::Bool(vector) => ArrayND::Bool(Array::from_shape_vec(shape, vector).unwrap().into_dyn()),
@@ -179,16 +141,49 @@ pub fn parse_array2d_jagged(value: &proto::Array2dJagged) -> Vector2DJagged {
     }
 }
 
-pub fn parse_value(value: &proto::Value) -> Result<Value, String> {
+pub fn parse_value(value: &proto::Value) -> Result<Value> {
     Ok(match value.data.to_owned().unwrap() {
         proto::value::Data::ArrayNd(data) =>
-            Value::ArrayND(parse_arrayNd(&data)),
+            Value::ArrayND(parse_arraynd(&data)),
         proto::value::Data::HashmapString(data) =>
             Value::HashmapString(parse_hashmap_str(&data)),
         proto::value::Data::Array2dJagged(data) =>
             Value::Vector2DJagged(parse_array2d_jagged(&data))
     })
 }
+
+pub fn parse_release(release: &proto::Release) -> Result<Release> {
+    let mut evaluations = Release::new();
+    for (node_id, node_release) in &release.values {
+        evaluations.insert(*node_id, parse_value(&node_release.value.to_owned().unwrap()).unwrap());
+    }
+    Ok(evaluations)
+}
+
+pub fn parse_properties(other: &proto::Properties) -> Properties {
+    Properties {
+        num_records: parse_array1d_i64_null(&other.num_records.to_owned().unwrap()),
+        num_columns: parse_i64_null(&other.num_columns.to_owned().unwrap()),
+        nullity: other.nullity,
+        releasable: other.releasable,
+        c_stability: parse_array1d_f64(&other.c_stability.to_owned().unwrap()),
+        nature: match other.nature.to_owned() {
+            Some(nature) => match nature {
+                proto::properties::Nature::Continuous(continuous) =>
+                    Some(Nature::Continuous(NatureContinuous {
+                        min: parse_array1d_null(&continuous.minimum.unwrap()),
+                        max: parse_array1d_null(&continuous.maximum.unwrap()),
+                    })),
+                proto::properties::Nature::Categorical(categorical) =>
+                    Some(Nature::Categorical(NatureCategorical {
+                        categories: parse_array2d_jagged(&categorical.categories.unwrap())
+                    }))
+            },
+            None => None
+        }
+    }
+}
+
 
 
 // SERIALIZERS
@@ -286,7 +281,7 @@ pub fn serialize_array1d(value: &Vector1D) -> proto::Array1d {
     }
 }
 
-pub fn serialize_arrayNd(value: &ArrayND) -> proto::ArrayNd {
+pub fn serialize_arraynd(value: &ArrayND) -> proto::ArrayNd {
     match value {
         ArrayND::Bool(array) => proto::ArrayNd {
             flattened: Some(serialize_array1d(&Vector1D::Bool(array.iter().map(|s| s.to_owned()).collect()))),
@@ -354,15 +349,52 @@ pub fn serialize_array2d_jagged(value: &Vector2DJagged) -> proto::Array2dJagged 
     }
 }
 
-pub fn serialize_value(value: &Value) -> Result<proto::Value, String> {
+pub fn serialize_value(value: &Value) -> Result<proto::Value> {
     Ok(proto::Value {
         data: Some(match value {
             Value::ArrayND(data) =>
-                proto::value::Data::ArrayNd(serialize_arrayNd(data)),
+                proto::value::Data::ArrayNd(serialize_arraynd(data)),
             Value::HashmapString(data) =>
                 proto::value::Data::HashmapString(serialize_hashmap_str(data)),
             Value::Vector2DJagged(data) =>
                 proto::value::Data::Array2dJagged(serialize_array2d_jagged(data))
         })
     })
+}
+
+pub fn serialize_release(release: &Release) -> Result<proto::Release> {
+    let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
+    for (node_id, node_eval) in release {
+        if let Ok(array_serialized) = serialize_value(node_eval) {
+            releases.insert(*node_id, proto::ReleaseNode {
+                value: Some(array_serialized),
+                privacy_usage: None,
+            });
+        }
+    }
+    Ok(proto::Release {
+        values: releases
+    })
+}
+
+pub fn serialize_properties(value: &Properties) -> proto::Properties {
+    proto::Properties {
+        num_records: Some(serialize_array1d_i64_null(&value.num_records)),
+        num_columns: Some(serialize_i64_null(&value.num_columns)),
+        nullity: value.nullity,
+        releasable: value.releasable,
+        c_stability: Some(serialize_array1d_f64(&value.c_stability)),
+        nature: match value.to_owned().nature {
+            Some(nature) => match nature {
+                Nature::Categorical(categorical) => Some(proto::properties::Nature::Categorical(proto::properties::NatureCategorical {
+                    categories: Some(serialize_array2d_jagged(&categorical.categories))
+                })),
+                Nature::Continuous(x) => Some(proto::properties::Nature::Continuous(proto::properties::NatureContinuous {
+                    minimum: Some(serialize_array1d_null(&x.min)),
+                    maximum: Some(serialize_array1d_null(&x.max)),
+                }))
+            },
+            None => None
+        },
+    }
 }

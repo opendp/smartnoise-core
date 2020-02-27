@@ -4,28 +4,36 @@ import os
 # turn on backtraces in rust
 os.environ['RUST_BACKTRACE'] = 'full'  # '1'
 
+release = False
+
+rust_build_path = 'target/' + ('release' if release else 'debug')
+rust_build_cmd = ['cargo', 'build']
+
+if release:
+    rust_build_cmd += '--release'
+
 
 def build_native(spec):
     build_validator = spec.add_external_build(
-        cmd=['cargo', 'build', '--release'],
+        cmd=rust_build_cmd,
         path='../validator-rust'
     )
 
     spec.add_cffi_module(
         module_path='yarrow._native_validator',
-        dylib=lambda: build_validator.find_dylib('yarrow_validator', in_path='target/release'),
+        dylib=lambda: build_validator.find_dylib('yarrow_validator', in_path=rust_build_path),
         header_filename=lambda: build_validator.find_header('api.h', in_path='.'),
         rtld_flags=['NOW', 'NODELETE']
     )
 
     build_runtime = spec.add_external_build(
-        cmd=['cargo', 'build', '--release'],
+        cmd=rust_build_cmd,
         path='../runtime-rust'
     )
 
     spec.add_cffi_module(
         module_path='yarrow._native_runtime',
-        dylib=lambda: build_runtime.find_dylib('yarrow_runtime', in_path='target/release'),
+        dylib=lambda: build_runtime.find_dylib('yarrow_runtime', in_path=rust_build_path),
         header_filename=lambda: build_runtime.find_header('api.h', in_path='.'),
         rtld_flags=['NOW', 'NODELETE']
     )

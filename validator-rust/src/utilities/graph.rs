@@ -1,28 +1,41 @@
+use crate::errors::*;
+use crate::ErrorKind::{PrivateError, PublicError};
+
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::iter::FromIterator;
 use crate::proto;
 
 pub fn get_traversal(
     analysis: &proto::Analysis
-) -> Result<Vec<u32>, String> {
+) -> Result<Vec<u32>> {
 
+    println!("PRE");
     let graph: &HashMap<u32, proto::Component> = &analysis.computation_graph.to_owned().unwrap().value;
 
+    println!("A");
     // track node parents
     let mut parents = HashMap::<u32, HashSet<u32>>::new();
     graph.iter().for_each(|(node_id, component)| {
-        component.arguments.values().for_each(|source_node_id| {
-            parents.entry(*source_node_id).or_insert_with(HashSet::<u32>::new).insert(*node_id);
+        if !parents.contains_key(node_id) {
+            parents.insert(*node_id, HashSet::<u32>::new());
+        }
+        component.arguments.values().for_each(|argument_node_id| {
+            parents.entry(*argument_node_id)
+                .or_insert_with(HashSet::<u32>::new)
+                .insert(*node_id);
         })
     });
 
+    println!("B");
     // store the optimal computation order of node ids
     let mut traversal = Vec::new();
 
     // collect all sources (nodes with zero arguments)
     let mut queue: Vec<u32> = graph.iter()
-        .filter(|(node_id, component)| component.arguments.is_empty())
-        .map(|(node_id, component)| node_id.to_owned()).collect();
+        .filter(|(_node_id, component)| component.arguments.is_empty())
+        .map(|(node_id, _component)| node_id.to_owned()).collect();
+
+    println!("C");
 
     let mut visited = HashMap::new();
 
@@ -30,6 +43,8 @@ pub fn get_traversal(
         let queue_node_id: u32 = *queue.last().unwrap();
         queue.pop();
         traversal.push(queue_node_id);
+
+        println!("C.1");
 
         let mut is_cyclic = false;
 
@@ -39,10 +54,11 @@ pub fn get_traversal(
             // if parent has been reached more times than it has arguments, then it is cyclic
             let count = visited.entry(*parent_node_id).or_insert(0);
             *count += 1;
-
+            println!("C.2");
             if visited.get(parent_node_id).unwrap() > &parent_arguments.len() {
                 is_cyclic = true;
             }
+            println!("C.3");
 
             // check that all arguments of parent_node have been evaluated before adding to queue
             if parent_arguments.values().all(|argument_node_id| traversal.contains(argument_node_id)) {
@@ -51,7 +67,7 @@ pub fn get_traversal(
         });
 
         if is_cyclic {
-            return Err("Graph is cyclic.".to_string())
+            return Err("Graph is cyclic.".into())
         }
 
     }
@@ -61,7 +77,7 @@ pub fn get_traversal(
 pub fn get_unevaluated(
     analysis: &proto::Analysis,
     release: &proto::Release
-) -> Result<HashSet<u32>, String> {
+) -> Result<HashSet<u32>> {
 
     let graph: &HashMap<u32, proto::Component> = &analysis.computation_graph.to_owned().to_owned().unwrap().value;
 
@@ -85,7 +101,7 @@ pub fn get_unevaluated(
     Ok(unevaluated)
 }
 
-pub fn get_release_nodes(analysis: &proto::Analysis) -> Result<HashSet<u32>, String> {
+pub fn get_release_nodes(analysis: &proto::Analysis) -> Result<HashSet<u32>> {
 
     let mut release_node_ids = HashSet::<u32>::new();
     // assume sinks are private

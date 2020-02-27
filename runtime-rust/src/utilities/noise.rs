@@ -1,11 +1,12 @@
-use openssl::rand::rand_bytes;
-use byteorder::{ByteOrder, LittleEndian};
+use yarrow_validator::errors::*;
+use yarrow_validator::ErrorKind::{PrivateError, PublicError};
+
 use probability::distribution::{Gaussian, Laplace, Inverse, Distribution};
 use ieee754::Ieee754;
-use num;
-use rug;
+
+
 use std::{cmp, f64::consts};
-use core::f64::NAN;
+
 
 use crate::utilities::utilities;
 
@@ -115,7 +116,7 @@ pub fn sample_uniform_int(min: &i64, max: &i64) -> i64 {
         uniform_int = 0;
         // generate random bits and increase integer by appropriate power of 2
         for i in 0..n_bits {
-            let mut bit: i64 = sample_bit(&0.5);
+            let bit: i64 = sample_bit(&0.5);
             uniform_int += bit * 2_i64.pow(i as u32);
         }
         if uniform_int < n_ints {
@@ -175,7 +176,7 @@ pub fn sample_uniform(min: f64, max: f64) -> f64 {
 
     // Generate exponent
     let geom: (i16) = sample_floating_point_probability_exponent();
-    let mut exponent: (u16) = (-geom + 1023) as u16;
+    let exponent: (u16) = (-geom + 1023) as u16;
 
     // Generate uniform random number from (0,1)
     let uniform_rand = f64::recompose_raw(false, exponent, mantissa_int);
@@ -219,7 +220,7 @@ pub fn sample_bit(prob: &f64) -> i64 {
     let first_heads_index: i16 = sample_floating_point_probability_exponent() - 1;
 
     // decompose probability into mantissa (string of bits) and exponent integer to quickly identify the value in the first_heads_index
-    let (sign, exponent, mantissa) = prob.decompose_raw();
+    let (_sign, exponent, mantissa) = prob.decompose_raw();
     let mantissa_string = format!("1{:052b}", mantissa); // add implicit 1 to mantissa
     let mantissa_vec: Vec<i64> = mantissa_string.chars().map(|x| x.to_digit(2).unwrap() as i64).collect();
     let num_leading_zeros = cmp::max(1022_i16 - exponent as i16, 0); // number of leading zeros in binary representation of prob
@@ -340,7 +341,7 @@ pub fn sample_floating_point_probability_exponent() -> i16 {
 /// ```
 pub fn sample_simple_geometric_mechanism(scale: &f64, min: &i64, max: &i64, enforce_constant_time: &bool) -> i64 {
 
-    let alpha: f64 = consts::E.powf(-1. / scale);
+    let alpha: f64 = consts::E.powf(-1. / *scale);
     let max_trials: i64 = max - min;
 
     // return 0 noise with probability (1-alpha) / (1+alpha), otherwise sample from geometric

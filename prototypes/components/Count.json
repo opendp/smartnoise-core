@@ -1,23 +1,10 @@
 {
   "arguments": {
+    "categories": {
+      "type": "JaggedArray2D"
+    },
     "data": {
       "constraints": [],
-      "nature": [
-        "continuous",
-        "categorical"
-      ],
-      "of": [
-        "int",
-        "bool",
-        "double",
-        "string"
-      ],
-      "type": "Array"
-    },
-    "group_by": {
-      "constraints": [
-        "categories"
-      ],
       "nature": [
         "continuous",
         "categorical"

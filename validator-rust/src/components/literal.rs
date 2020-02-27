@@ -1,19 +1,20 @@
-use std::collections::HashMap;
-use crate::utilities::constraint as constraint_utils;
-use crate::utilities::constraint::{Constraint, NodeConstraints, NatureCategorical, Nature, NatureContinuous};
+use crate::errors::*;
+use crate::ErrorKind::{PrivateError, PublicError};
 
-use crate::{base, components};
-use crate::proto;
-use crate::hashmap;
+use std::collections::HashMap;
+
+
+use crate::{proto, base};
+
 use crate::components::Component;
-use ndarray::{Array, ArrayD, Axis, IntoDimension};
+use ndarray::{Axis};
 use ndarray::prelude::*;
 use ndarray_stats::QuantileExt;
-use crate::utilities::serial::{parse_value, Value, ArrayND, Vector2DJagged, Vector1DNull};
-use crate::utilities::constraint::Nature::Categorical;
+use crate::utilities::serial::{parse_value};
+
 use itertools::Itertools;
 use std::cmp::Ordering;
-use crate::utilities::buffer::NodeArguments;
+use crate::base::{ArrayND, Value, Vector2DJagged, Nature, Vector1DNull, NatureContinuous, NatureCategorical, Properties, NodeProperties};
 
 
 pub fn get_shape(array: &ArrayND) -> Vec<i64> {
@@ -25,7 +26,7 @@ pub fn get_shape(array: &ArrayND) -> Vec<i64> {
     }.iter().map(|arr| arr.clone() as i64).collect()
 }
 
-pub fn infer_num_columns(value: &Value) -> Result<Option<i64>, String> {
+pub fn infer_num_columns(value: &Value) -> Result<Option<i64>> {
     match value {
         Value::ArrayND(array) => {
             let shape = get_shape(&array);
@@ -33,7 +34,7 @@ pub fn infer_num_columns(value: &Value) -> Result<Option<i64>, String> {
                 0 => Ok(None),
                 1 => Ok(Some(shape[0])),
                 2 => Ok(Some(shape[1])),
-                _ => Err("arrays may have max dimensionality of 2".to_owned())
+                _ => Err("arrays may have max dimensionality of 2".into())
             }
         },
         Value::HashmapString(hashmap) => Ok(Some(hashmap.len() as i64)),
@@ -45,7 +46,7 @@ pub fn infer_num_columns(value: &Value) -> Result<Option<i64>, String> {
         } as i64))
     }
 }
-pub fn infer_num_rows(value: &Value) -> Result<Vec<Option<i64>>, String> {
+pub fn infer_num_rows(value: &Value) -> Result<Vec<Option<i64>>> {
     match value {
         Value::ArrayND(array) => {
             let shape = get_shape(array);
@@ -53,7 +54,7 @@ pub fn infer_num_rows(value: &Value) -> Result<Vec<Option<i64>>, String> {
                 0 => Ok(vec![None]),
                 1 => Ok((0..shape[0]).collect::<Vec<i64>>().iter().map(|_| Some(1)).collect()),
                 2 => Ok((0..shape[1]).collect::<Vec<i64>>().iter().map(|_| Some(shape[0])).collect()),
-                _ => Err("arrays may have max dimensionality of 2".to_owned())
+                _ => Err("arrays may have max dimensionality of 2".into())
             }
         },
         Value::HashmapString(hashmap) => hashmap.values().map(|value| match value {
@@ -63,10 +64,10 @@ pub fn infer_num_rows(value: &Value) -> Result<Vec<Option<i64>>, String> {
                     0 => Ok(Some(1)),
                     1 => Ok(Some(1)),
                     2 => Ok(Some(shape[0])),
-                    _ => Err("arrays may have max dimensionality of 2".to_owned())
+                    _ => Err("arrays may have max dimensionality of 2".into())
                 }
             },
-            _ => Err("Constraints on hashmaps are only implemented for single-column arrays".to_string())
+            _ => Err("properties on hashmaps are only implemented for single-column arrays".into())
         }).collect(),
         Value::Vector2DJagged(jagged) => Ok(match jagged {
             Vector2DJagged::Bool(vector) => vector.iter()
@@ -233,7 +234,7 @@ pub fn infer_categories(value: &Value) -> Vector2DJagged {
                     Some(column_categories)
                 }).collect())
         },
-        Value::HashmapString(hashmap) => panic!("category inference is not implemented for hashmaps"),
+        Value::HashmapString(_hashmap) => panic!("category inference is not implemented for hashmaps"),
         Value::Vector2DJagged(jagged) => match jagged {
             Vector2DJagged::Bool(array) =>
                 Vector2DJagged::Bool(array.iter().map(|column_categories| match column_categories {
@@ -297,7 +298,7 @@ pub fn infer_nature(value: &Value) -> Nature {
                 categories: infer_categories(&Value::ArrayND(ArrayND::Str(array.clone()))),
             }),
         },
-        Value::HashmapString(hashmap) => panic!("nature inference is not implemented for hashmaps"),
+        Value::HashmapString(_hashmap) => panic!("nature inference is not implemented for hashmaps"),
         Value::Vector2DJagged(jagged) => match jagged {
             Vector2DJagged::F64(jagged) => Nature::Continuous(NatureContinuous {
                 min: Vector1DNull::F64(infer_min(&Value::Vector2DJagged(Vector2DJagged::F64(jagged.clone())))),
@@ -317,16 +318,16 @@ pub fn infer_nature(value: &Value) -> Nature {
     }
 }
 
-pub fn infer_nullity(value: &Value) -> Result<bool, String> {
+pub fn infer_nullity(_value: &Value) -> Result<bool> {
     Ok(true)
 }
 
-pub fn infer_c_stability(value: &Value) -> Result<Vec<f64>, String> {
+pub fn infer_c_stability(_value: &Value) -> Result<Vec<f64>> {
     Ok(vec![])
 }
 
-pub fn infer_constraint(value: &Value) -> Result<Constraint, String> {
-    Ok(Constraint {
+pub fn infer_property(value: &Value) -> Result<Properties> {
+    Ok(Properties {
         nullity: infer_nullity(&value)?,
         releasable: true,
         nature: Some(infer_nature(&value)),
@@ -338,20 +339,20 @@ pub fn infer_constraint(value: &Value) -> Result<Constraint, String> {
 
 impl Component for proto::Literal {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
-    fn propagate_constraint(
+    fn propagate_property(
         &self,
-        public_arguments: &HashMap<String, Value>,
-        constraints: &constraint_utils::NodeConstraints,
-    ) -> Result<Constraint, String> {
+        _public_arguments: &HashMap<String, Value>,
+        _properties: &base::NodeProperties,
+    ) -> Result<Properties> {
         let value = parse_value(&self.value.clone().unwrap()).unwrap();
 
         match self.private {
             true => {
                 let num_columns = infer_num_columns(&value)?;
 
-                Ok(Constraint {
+                Ok(Properties {
                     num_records: match num_columns {
-                        Some(num_cols) => (0..num_cols).collect::<Vec<i64>>().iter().map(|v| None).collect(),
+                        Some(num_cols) => (0..num_cols).collect::<Vec<i64>>().iter().map(|_v| None).collect(),
                         None => vec![Some(1)]
                     },
                     num_columns: infer_num_columns(&value)?,
@@ -364,15 +365,21 @@ impl Component for proto::Literal {
                     nature: None,
                 })
             },
-            false => infer_constraint(&value)
+            false => infer_property(&value)
         }
     }
 
     fn is_valid(
         &self,
-        public_arguments: &HashMap<String, Value>,
-        constraints: &constraint_utils::NodeConstraints,
-    ) -> bool {
-        true
+        _properties: &base::NodeProperties,
+    ) -> Result<()> {
+        Ok(())
+    }
+
+    fn get_names(
+        &self,
+        _properties: &NodeProperties,
+    ) -> Result<Vec<String>> {
+        Err("get_names not implemented".into())
     }
 }
