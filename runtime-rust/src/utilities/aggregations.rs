@@ -68,10 +68,15 @@ use crate::utilities::noise;
 /// ```
 /// use yarrow_runtime::utilities::aggregations::get_bin_names;
 /// use ndarray::prelude::*;
-/// let edges: ArrayD<f64> = arr1(&[0., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100.]).into_dyn();
+/// let edges: ArrayD<f64> = arr1(&[0., 10., 20.]).into_dyn();
+///
 /// let inclusive_left: bool = true;
 /// let bin_names: ArrayD<String> = get_bin_names(&edges, &inclusive_left);
-/// println!("{}", bin_names);
+/// assert_eq!(arr1(&["[0, 10)", "[10, 20]"]).into_dyn(), bin_names);
+///
+/// let inclusive_left: bool = false;
+/// let bin_names: ArrayD<String> = get_bin_names(&edges, &inclusive_left);
+/// assert_eq!(arr1(&["[0, 10]", "(10, 20]"]).into_dyn(), bin_names);
 /// ```
 pub fn get_bin_names(edges: &ArrayD<f64>, inclusive_left: &bool) -> ArrayD<String> {
 
@@ -154,6 +159,7 @@ pub fn get_bin_names(edges: &ArrayD<f64>, inclusive_left: &bool) -> ArrayD<Strin
 /// let data: ArrayD<f64> = arr1(&[0., 1., 2., 3., 4., 5., 12., 19., 24., 90., 98., 100.]).into_dyn();
 /// let median: ArrayD<f64> = median(&data);
 /// println!("{}", median);
+/// assert_eq!(median, arr1(&[8.5]).into_dyn());
 /// ```
 pub fn median(data: &ArrayD<f64>) -> ArrayD<f64> {
 
@@ -185,7 +191,7 @@ pub fn median(data: &ArrayD<f64>) -> ArrayD<f64> {
 /// use yarrow_runtime::utilities::aggregations::sum;
 /// let data: ArrayD<f64> = arr1(&[0., 1., 2., 3., 4., 5., 12., 19., 24., 90., 98., 100.]).into_dyn();
 /// let sum: ArrayD<f64> = sum(&data);
-/// println!("{}", sum);
+/// assert_eq!(sum, arr1(&[358.]).into_dyn());
 /// ```
 pub fn sum(data: &ArrayD<f64>) -> ArrayD<f64> {
 
@@ -208,7 +214,7 @@ pub fn sum(data: &ArrayD<f64>) -> ArrayD<f64> {
 /// use yarrow_runtime::utilities::aggregations::mean;
 /// let data: ArrayD<f64> = arr1(&[0., 1., 2., 3., 4., 5., 12., 19., 24., 90., 98., 100.]).into_dyn();
 /// let mean: ArrayD<f64> = mean(&data);
-/// println!("{}", mean);
+/// assert_eq!(mean, arr1(&[358. / 12.]).into_dyn());
 /// ```
 pub fn mean(data: &ArrayD<f64>) -> ArrayD<f64> {
 
@@ -233,7 +239,7 @@ pub fn mean(data: &ArrayD<f64>) -> ArrayD<f64> {
 /// use yarrow_runtime::utilities::aggregations::variance;
 /// let data: ArrayD<f64> = arr1(&[0., 1., 2., 3., 4., 5., 12., 19., 24., 90., 98., 100.]).into_dyn();
 /// let variance: ArrayD<f64> = variance(&data, &false);
-/// println!("{}", variance);
+/// assert!(variance[0] - 1513.31 < 0.01);
 /// ```
 pub fn variance(data: &ArrayD<f64>, finite_sample_correction: &bool) -> ArrayD<f64> {
 
