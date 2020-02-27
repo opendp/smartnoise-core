@@ -253,7 +253,7 @@ pub fn sample_bit(prob: &f64) -> i64 {
 pub fn sample_geometric_censored(prob: &f64, max_trials: &i64, enforce_constant_time: &bool) -> i64 {
 
     // ensure that prob is a valid probability
-    assert!(prob >= &0.0 || prob <= &1.0);
+    assert!(prob >= &0.0 && prob <= &1.0);
 
     let mut bit: i64 = 0;
     let mut n_trials: i64 = 1;
@@ -340,7 +340,7 @@ pub fn sample_floating_point_probability_exponent() -> i16 {
 /// ```
 pub fn sample_simple_geometric_mechanism(scale: &f64, min: &i64, max: &i64, enforce_constant_time: &bool) -> i64 {
 
-    let alpha: f64 = consts::E.powf(-*scale);
+    let alpha: f64 = consts::E.powf(-1. / scale);
     let max_trials: i64 = max - min;
 
     // return 0 noise with probability (1-alpha) / (1+alpha), otherwise sample from geometric
