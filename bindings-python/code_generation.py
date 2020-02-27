@@ -19,7 +19,13 @@ generated_code = "from . import Component\n\n"
 for file_name in os.listdir(components_dir):
     component_path = os.path.join(components_dir, file_name)
     with open(component_path, 'r') as component_schema_file:
-        component_schema = json.load(component_schema_file)
+
+        try:
+            component_schema = json.load(component_schema_file)
+        except json.JSONDecodeError as err:
+            print("MALFORMED JSON FILE: ", file_name)
+            raise err
+
         signature_arguments = ", ".join(
             list(dict.fromkeys([
                 *component_schema['arguments'].keys(),

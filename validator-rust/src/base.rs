@@ -189,7 +189,7 @@ impl Properties {
                 },
                 _ => Err("min must be an array".into())
             },
-            None => Err("nature is not defined".into())
+            None => Err("continuous nature for min is not defined".into())
         }
     }
     pub fn get_min_f64(&self) -> Result<Vec<f64>> {
@@ -209,7 +209,7 @@ impl Properties {
                 },
                 _ => Err("max must be an array".into())
             },
-            None => Err("nature is not defined".into())
+            None => Err("continuous nature for max is not defined".into())
         }
     }
     pub fn get_max_f64(&self) -> Result<Vec<f64>> {
@@ -225,7 +225,7 @@ impl Properties {
         Ok(self.num_records.clone())
     }
     pub fn get_n(&self) -> Result<Vec<i64>> {
-        let value = self.num_records.iter().map(|v| v.to_owned().unwrap()).collect::<Vec<i64>>();
+        let value = self.num_records.iter().filter_map(|v| v.to_owned()).collect::<Vec<i64>>();
         match self.num_records.len() == value.len() {
             true => Ok(value),
             false => Err("n is not known".into())
@@ -243,6 +243,15 @@ impl Properties {
             true => Err("data is not releasable when releasability is required".into())
         }
     }
+    pub fn get_categories(&self) -> Result<Vector2DJagged> {
+        match self.nature.to_owned() {
+            Some(nature) => match nature {
+                Nature::Categorical(nature) => Ok(nature.categories),
+                _ => Err("categories is not defined".into())
+            },
+            None => Err("categorical nature is not defined".into())
+        }
+    }
 }
 
 // properties for each node in the graph
@@ -254,13 +263,14 @@ pub type NodeProperties = HashMap<String, Properties>;
 pub fn get_input_arguments(
     component: &proto::Component,
     graph_evaluation: &Release
-) -> HashMap<String, Value> {
+) -> Result<HashMap<String, Value>> {
     let mut arguments = HashMap::<String, Value>::new();
-    component.arguments.iter().for_each(|(field_id, field)| {
-        let evaluation: Value = graph_evaluation.get(&field).unwrap().to_owned();
-        arguments.insert(field_id.to_owned(), evaluation);
-    });
-    arguments
+    for (field_id, field) in component.arguments.clone() {
+        if let Some(evaluation) = graph_evaluation.get(&field) {
+            arguments.insert(field_id.to_owned(), evaluation.to_owned());
+        }
+    }
+    Ok(arguments)
 }
 
 pub fn get_argument(
@@ -276,23 +286,14 @@ pub fn get_argument(
 pub fn get_input_properties<T>(
     component: &proto::Component,
     graph_properties: &HashMap<u32, T>,
-) -> HashMap<String, T> where T: std::clone::Clone {
+) -> Result<HashMap<String, T>> where T: std::clone::Clone {
     let mut properties = HashMap::<String, T>::new();
-    component.arguments.iter().for_each(|(field_id, field)| {
-        let property: T = graph_properties.get(&field).unwrap().clone();
-        properties.insert(field_id.to_owned(), property);
-    });
-    properties
-}
-
-pub fn get_properties<'a>(
-    properties: &'a NodeProperties,
-    argument: &str
-) -> Result<&'a Properties> {
-    match properties.get(argument) {
-        Some(property) => Ok(property),
-        None => Err("property not found".into()),
+    for (field_id, field) in component.arguments.clone() {
+        if let Some(property) = graph_properties.get(&field).clone() {
+            properties.insert(field_id.to_owned(), property.clone());
+        }
     }
+    Ok(properties)
 }
 
 pub fn propagate_properties(
@@ -307,14 +308,19 @@ pub fn propagate_properties(
     let graph_evaluation: Release = parse_release(&release)?;
 
     let mut graph_property = GraphProperties::new();
-    traversal.iter().for_each(|node_id| {
-        let component: proto::Component = graph.get(node_id).unwrap().to_owned();
-        let input_properties = get_input_properties(&component, &graph_property);
 
-        let public_arguments = get_input_arguments(&component, &graph_evaluation);
+    for node_id in traversal {
+        let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
+        println!("{:?}", component);
+        let input_properties = get_input_properties(&component, &graph_property)?;
+
+        let public_arguments = get_input_arguments(&component, &graph_evaluation)?;
+
+        component.value.clone().unwrap().is_valid(&input_properties)?;
+
         let property = component.value.unwrap().propagate_property(&public_arguments, &input_properties).unwrap();
         graph_property.insert(node_id.clone(), property);
-    });
+    }
     Ok(graph_property)
 }
 
@@ -331,14 +337,29 @@ pub fn get_literal(value: &Value, batch: &u32) -> proto::Component {
 }
 
 pub fn validate_analysis(
-    analysis: &proto::Analysis
+    analysis: &proto::Analysis,
+    release: &proto::Release
 ) -> Result<proto::response_validate_analysis::Validated> {
-    // check if acyclic
-    let _traversal = utilities::graph::get_traversal(analysis)?;
+    let graph = analysis.computation_graph.to_owned()
+        .ok_or("the computation graph must be defined in an analysis")?
+        .value;
 
-    // TODO: check that there is at most one Materialize
-    // TODO: check shapes and lengths (to prevent leaking from errors)
-    return Ok(proto::response_validate_analysis::Validated { value: true, message: "The analysis is valid.".to_string() });
+    let graph_properties = propagate_properties(&analysis, &release)?;
+    for node_id in utilities::graph::get_traversal(analysis)? {
+        let component = graph.get(&node_id).unwrap();
+        let argument_properties = component.arguments.iter()
+            .map(|(argument_name, argument_id)| (argument_name.clone(), graph_properties.get(argument_id).unwrap().clone()))
+            .collect::<HashMap<String, Properties>>();
+
+        component.value.to_owned()
+            .ok_or("every component's value must be defined")?
+            .is_valid(&argument_properties)?;
+    }
+
+    return Ok(proto::response_validate_analysis::Validated {
+        value: true,
+        message: "The analysis is valid.".to_string()
+    });
 }
 
 pub fn compute_privacy_usage(

@@ -65,7 +65,7 @@ pub fn execute_graph(analysis: &proto::Analysis,
             continue;
         }
 
-        let node_properties: HashMap<String, proto::Properties> = get_input_properties(&component, &graph_properties);
+        let node_properties: HashMap<String, proto::Properties> = get_input_properties(&component, &graph_properties)?;
         let public_arguments = node_properties.iter()
             .filter(|(_k, v)| v.releasable)
             .map(|(k, _v)| (k.clone(), evaluations
@@ -116,11 +116,17 @@ pub fn execute_component(component: &proto::Component,
                          evaluations: &base::Release,
                          dataset: &proto::Dataset) -> Result<Value> {
 
+    println!("executing component:");
+    println!("{:?}", component);
+
     let mut arguments = NodeArguments::new();
     component.arguments.iter().for_each(|(field_id, field)| {
         let evaluation = evaluations.get(&field).unwrap();
         arguments.insert(field_id.to_owned(), evaluation);
     });
+
+    println!("arguments:");
+    println!("{:?}", arguments);
 
     use proto::component::Value as Value;
     match component.to_owned().value.unwrap() {

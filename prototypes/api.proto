@@ -10,6 +10,8 @@ import "value.proto";
 // VALIDATOR API
 message RequestValidateAnalysis {
 	Analysis analysis = 1;
+	// optional
+	Release release = 2;
 }
 message RequestComputePrivacyUsage {
 	Analysis analysis = 1;

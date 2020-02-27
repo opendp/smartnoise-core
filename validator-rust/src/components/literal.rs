@@ -371,7 +371,6 @@ impl Component for proto::Literal {
 
     fn is_valid(
         &self,
-        _public_arguments: &HashMap<String, Value>,
         _properties: &base::NodeProperties,
     ) -> Result<()> {
         Ok(())

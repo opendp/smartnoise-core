@@ -3,13 +3,13 @@ use crate::ErrorKind::{PrivateError, PublicError};
 
 
 use std::collections::HashMap;
-use crate::base::{Vector2DJagged, Nature, Vector1DNull, NatureCategorical, NodeProperties, get_properties, ArrayND, get_literal};
+use crate::base::{Vector2DJagged, Nature, Vector1DNull, NatureCategorical, NodeProperties, ArrayND, get_literal};
 
 use crate::{proto, base};
 
 use crate::components::{Component, Expandable};
 
-use crate::utilities::serial::{serialize_value};
+use crate::utilities::serial::serialize_value;
 use itertools::Itertools;
 use ndarray::Array;
 use crate::base::{Value, Properties, NatureContinuous};
@@ -22,20 +22,24 @@ impl Component for proto::Clamp {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<Properties> {
-        let mut data_property = properties.get("data").unwrap().clone();
+        let mut data_property = properties.get("data").ok_or("data missing from Clamp")?.clone();
+        let min_property = properties.get("min").ok_or("min missing from Clamp")?.clone();
+        let max_property = properties.get("max").ok_or("max missing from Clamp")?.clone();
 
         data_property.nature = Some(Nature::Continuous(NatureContinuous {
-            min: Vector1DNull::F64(get_properties(properties, "data")?.get_min_f64_option()?.iter()
-                .zip(get_properties(properties, "min")?.get_min_f64_option()?)
-                .zip(get_properties(properties, "max")?.get_min_f64_option()?)
+            min: Vector1DNull::F64(data_property.get_min_f64_option()
+                .or(min_property.get_min_f64_option())?.iter()
+                .zip(min_property.get_min_f64_option()?)
+                .zip(max_property.get_min_f64_option()?)
                 .map(|((d, min), max)| vec![d, &min, &max]
                     .iter().filter(|x| x.is_some())
                     .map(|x| x.unwrap().clone())
                     .fold1(|l, r| l.min(r)))
                 .collect()),
-            max: Vector1DNull::F64(get_properties(properties, "data")?.get_max_f64_option()?.iter()
-                .zip(get_properties(properties, "min")?.get_max_f64_option()?)
-                .zip(get_properties(properties, "max")?.get_max_f64_option()?)
+            max: Vector1DNull::F64(data_property.get_max_f64_option()
+                .or(max_property.get_max_f64_option())?.iter()
+                .zip(min_property.get_max_f64_option()?)
+                .zip(max_property.get_max_f64_option()?)
                 .map(|((d, min), max)| vec![d, &min, &max]
                     .iter().filter(|x| x.is_some())
                     .map(|x| x.unwrap().clone())
@@ -48,16 +52,33 @@ impl Component for proto::Clamp {
 
     fn is_valid(
         &self,
-        _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<()> {
+        // ensure data is passed
+        let data_props = properties.get("data")
+            .ok_or::<Error>("data missing from Clamp".into())?;
+        let min_props = properties.get("min");
+        let max_props = properties.get("max");
 
-        if properties.contains_key("data") &&
-            ((properties.contains_key("min") && properties.contains_key("max")) ||
-                properties.contains_key("categories")) {
+        // min and max may either come from props, or as an argument
+        let has_min = data_props.get_min_f64().is_ok()
+            || (min_props.is_some() && min_props.unwrap().get_min_f64().is_ok());
+        let has_max = data_props.get_max_f64().is_ok()
+            || (max_props.is_some() && max_props.unwrap().get_min_f64().is_ok());
+
+        if has_min && has_max {
             return Ok(())
         }
-        return Err("arguments missing to clamp component".into())
+
+        // categories may either come from props, or as an argument
+        let cat_props = properties.get("categories");
+        let has_categories = data_props.get_categories().is_ok()
+            || (cat_props.is_some() && cat_props.unwrap().get_categories().is_ok());
+
+        if has_categories {
+            return Ok(())
+        }
+        return Err("arguments missing to clamp component".into());
     }
 
     fn get_names(
@@ -84,6 +105,7 @@ impl Expandable for proto::Clamp {
         let mut component = component.clone();
 
         if !properties.contains_key("min") {
+            println!("filling in min");
             current_id += 1;
             let id_min = current_id.clone();
             let value = Value::ArrayND(ArrayND::F64(

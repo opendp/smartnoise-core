@@ -332,9 +332,9 @@ class Analysis(object):
         graph = nx.DiGraph()
 
         def label(node_id):
-            return f'{node_id} {analysis.graph[node_id].WhichOneof("value")}'
+            return f'{node_id} {analysis.computation_graph.value[node_id].WhichOneof("value")}'
 
-        for nodeId, component in list(analysis.graph.items()):
+        for nodeId, component in list(analysis.computation_graph.value.items()):
             for source_node_id in component.arguments.values():
                 graph.add_edge(label(source_node_id), label(nodeId))
 

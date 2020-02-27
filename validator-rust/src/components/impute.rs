@@ -63,10 +63,9 @@ impl Component for proto::Impute {
 
     fn is_valid(
         &self,
-        _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<()> {
-        base::get_properties(properties, "data")?;
+        properties.get("data").ok_or("data is missing from imputation component")?;
 
         let has_min = properties.contains_key("min") || properties.get("data").unwrap().to_owned().get_min_f64().is_ok();
         let has_max = properties.contains_key("max") || properties.get("data").unwrap().to_owned().get_max_f64().is_ok();

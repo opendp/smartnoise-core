@@ -7,8 +7,8 @@
 2. install yarrow (rerun when binaries or proto are updated)
 
 
-    python3 setup.py develop
+    pip install -e .
 
 
-The `setup.py` is used for building/installing the package, under the assumption that protoc has already run.
-On Windows, be sure to manually build the protobufs before calling `setup.py`.
+I recommend `debug.py` for debugging.
+On Windows, be sure to manually build the protobufs first.

@@ -88,19 +88,24 @@ struct ByteBuffer {
 pub extern "C" fn validate_analysis(
     request_ptr: *const u8, request_length: i32,
 ) -> ffi_support::ByteBuffer {
+    println!("VALIDATE");
+
     let request_buffer = unsafe { ptr_to_buffer(request_ptr, request_length) };
     let request: proto::RequestValidateAnalysis = prost::Message::decode(request_buffer).unwrap();
 
     let analysis: proto::Analysis = request.analysis.unwrap();
+    let release: proto::Release = match request.release {
+        Some(value) => value, None => proto::Release {values: HashMap::new()}
+    };
 
     let response = proto::ResponseValidateAnalysis {
-        value: match base::validate_analysis(&analysis) {
+        value: match base::validate_analysis(&analysis, &release) {
             Ok(x) => Some(proto::response_validate_analysis::Value::Data(x)),
             Err(err) => {
 
-                let stderr = &mut ::std::io::stderr();
-                writeln!(stderr, "{}", err.display_chain()).expect(ERR_STDERR);
-                ::std::process::exit(1);
+//                let stderr = &mut ::std::io::stderr();
+//                writeln!(stderr, "{}", err.display_chain()).expect(ERR_STDERR);
+//                ::std::process::exit(1);
 
                 Some(proto::response_validate_analysis::Value::Error(
                     proto::Error { message: format!("{:?}", err).to_string() }

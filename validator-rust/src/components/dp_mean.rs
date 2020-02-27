@@ -8,7 +8,7 @@ use crate::hashmap;
 use crate::components::{Component, Accuracy, Privatize, Expandable, Report};
 use ndarray::Array;
 use crate::utilities::serial::{serialize_value};
-use crate::base::{Properties, get_properties, NodeProperties, Value, get_literal, ArrayND};
+use crate::base::{Properties, NodeProperties, Value, get_literal, ArrayND};
 
 
 impl Component for proto::DpMean {
@@ -18,7 +18,9 @@ impl Component for proto::DpMean {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<Properties> {
-        Ok(get_properties(properties, "left")?.to_owned())
+        Ok(properties.get("left")
+            .ok_or("left argument missing from DPMean")?
+            .to_owned())
 
 //        Ok(Properties {
 //            nullity: false,
@@ -33,10 +35,10 @@ impl Component for proto::DpMean {
 
     fn is_valid(
         &self,
-        _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<()> {
-        let data_property = base::get_properties(&properties, "data")?.clone();
+        let data_property = properties.get("data")
+            .ok_or("data argument missing from DPMean")?.clone();
 
         data_property.get_n()?;
         data_property.get_min_f64()?;
@@ -105,7 +107,8 @@ impl Privatize for proto::DpMean {
         _privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
     ) -> Option<Vec<f64>> {
-        let data_property = base::get_properties(properties, "data").ok()?;
+        let data_property = properties.get("data")?;
+
         let min = data_property.get_min_f64().ok()?;
         let max = data_property.get_max_f64().ok()?;
         let num_records = data_property.get_n().ok()?;

@@ -21,6 +21,11 @@ impl Component for proto::Resize {
     ) -> Result<Properties> {
         let mut data_property = properties.get("data").unwrap().clone();
 
+        println!("resize metadata:");
+//        println!("min: {:?}", min_property);
+//        println!("max: {:?}", max_property);
+        println!("properties: {:?}", properties);
+        println!("public arguments: {:?}", public_arguments);
         // when resizing, nullity may become true to add additional rows
         data_property.nullity = true;
         data_property.num_records = match public_arguments.get("n").unwrap() {
@@ -40,11 +45,11 @@ impl Component for proto::Resize {
 
     fn is_valid(
         &self,
-        public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<()> {
         // TODO: stricter checks for bounds
-        base::get_properties(properties, "n")?;
+        properties.get("n")
+            .ok_or::<Error>("n is missing from resize".into())?;
 
         Ok(())
     }

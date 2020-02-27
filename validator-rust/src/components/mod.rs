@@ -26,7 +26,6 @@ pub trait Component {
 
     fn is_valid(
         &self,
-        public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
     ) -> Result<()>;
 
@@ -94,7 +93,7 @@ impl Component for proto::component::Value {
                     $(
                        if let proto::component::Value::$variant(x) = $self {
                             return x.propagate_property($public_arguments, $properties)
-                        }
+                       }
                     )*
                 }
             }
@@ -110,22 +109,21 @@ impl Component for proto::component::Value {
 
     fn is_valid(
         &self,
-        public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
     ) -> Result<()> {
         macro_rules! is_valid {
-            ($self:ident, $public_arguments: ident, $properties: ident, $( $variant:ident ),*) => {
+            ($self:ident, $properties: ident, $( $variant:ident ),*) => {
                 {
                     $(
                        if let proto::component::Value::$variant(x) = $self {
-                            return x.is_valid($public_arguments, $properties)
-                        }
+                            return x.is_valid($properties)
+                       }
                     )*
                 }
             }
         }
 
-        is_valid!(self, public_arguments, properties,
+        is_valid!(self, properties,
             // INSERT COMPONENT LIST
             Datasource, Rowmin, Dpmean, Impute, Literal, Resize, Clamp
         );
@@ -145,7 +143,7 @@ impl Component for proto::component::Value {
                     $(
                        if let proto::component::Value::$variant(x) = $self {
                             return x.get_names($properties)
-                        }
+                       }
                     )*
                 }
             }
@@ -177,7 +175,7 @@ impl Expandable for proto::component::Value {
                     $(
                        if let proto::component::Value::$variant(x) = $self {
                             return x.expand_graph($privacy_definition, $component, $properties, $component_id, $maximum_id)
-                        }
+                       }
                     )*
                 }
             }
@@ -205,7 +203,7 @@ impl Privatize for proto::component::Value {
                     $(
                        if let proto::component::Value::$variant(x) = $self {
                             return x.compute_sensitivity($privacy_definition, $properties)
-                        }
+                       }
                     )*
                 }
             }
@@ -233,7 +231,7 @@ impl Accuracy for proto::component::Value {
                     $(
                        if let proto::component::Value::$variant(x) = $self {
                             return x.accuracy_to_privacy_usage($privacy_definition, $properties, $accuracy)
-                        }
+                       }
                     )*
                 }
             }
@@ -258,7 +256,7 @@ impl Accuracy for proto::component::Value {
                     $(
                        if let proto::component::Value::$variant(x) = $self {
                             return x.privacy_usage_to_accuracy($privacy_definition, $properties)
-                        }
+                       }
                     )*
                 }
             }
@@ -286,7 +284,7 @@ impl Report for proto::component::Value {
                     $(
                        if let proto::component::Value::$variant(x) = $self {
                             return x.summarize($properties)
-                        }
+                       }
                     )*
                 }
             }

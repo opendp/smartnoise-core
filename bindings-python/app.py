@@ -8,11 +8,11 @@ from tests.test_base import (
 analysis = test_dp_mean()
 # analysis = test_raw_dataset()
 
+analysis.plot()
 
 print('analysis is valid:', analysis.validate())
 
-print('epsilon:', analysis.epsilon)
-
-print('release json:', analysis.release())
-print('release proto:', analysis.release_proto)
-analysis.plot()
+# print('epsilon:', analysis.epsilon)
+#
+# print('release json:', analysis.release())
+# print('release proto:', analysis.release_proto)

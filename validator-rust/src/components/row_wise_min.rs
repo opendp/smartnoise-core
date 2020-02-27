@@ -2,7 +2,7 @@ use crate::errors::*;
 use crate::ErrorKind::{PrivateError, PublicError};
 
 use std::collections::HashMap;
-use crate::base::{Properties, NodeProperties, get_properties, Value};
+use crate::base::{Properties, NodeProperties, Value};
 
 
 use crate::proto;
@@ -17,7 +17,10 @@ impl Component for proto::RowMin {
         _public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
     ) -> Result<Properties> {
-        Ok(get_properties(properties, "left")?.to_owned())
+        let left_prop = properties.get("left")
+            .ok_or::<Error>("left is missing from row_wise_min".into())?.clone();
+
+        Ok(left_prop)
 //        Ok(property {
 //            nullity: false,
 //            releasable: false,
@@ -28,7 +31,6 @@ impl Component for proto::RowMin {
 
     fn is_valid(
         &self,
-        _public_arguments: &HashMap<String, Value>,
         _properties: &NodeProperties,
     ) -> Result<()> {
         // TODO: finish implementation

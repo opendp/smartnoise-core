@@ -73,7 +73,6 @@ def test_dp_mean():
             data_max=100.,
             data_n=500
         )
-    analysis.release()
 
     return analysis
 
