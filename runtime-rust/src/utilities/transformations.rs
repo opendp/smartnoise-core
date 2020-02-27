@@ -186,6 +186,37 @@ pub fn sum<T,S>(data: &ArrayD<T>, by: &ArrayD<S>, categories: &Vec<Option<Vec<S>
     return Ok(sums)
 }
 
+pub fn mean<T,S>(data: &ArrayD<T>, by: &ArrayD<S>, categories: &Vec<Option<Vec<S>>>)
+    -> Result<Vec<Option<Vec<f64>>>>
+       where T: Clone, T: Default, T: PartialEq, T: Add<T, Output=T>, T: std::convert::Into<f64>,
+             S: Clone, S: Default, S: PartialEq {
+
+    let mut counts: Vec<Option<Vec<i64>>> = count(by, categories).unwrap();
+    let mut sums: Vec<Option<Vec<T>>> = sum(data, by, categories).unwrap();
+    let mut means: Vec<Option<Vec<f64>>> = vec![Default::default(); sums.len()];
+
+    for i in 0..counts.len() {
+        let sum_vec: Option<Vec<T>> = sums[i].to_owned();
+        let count_vec: Option<Vec<i64>> = counts[i].to_owned();
+        means[i] = match (sum_vec, count_vec) {
+            (Some(sum), Some(mut count)) => {
+                let mut m: Vec<f64> = vec![Default::default(); count.len()];
+                let mut counter: i64 = 0;
+                for iter in sum.iter().zip(count.iter_mut()) {
+                    let (s, c) = iter;
+                    m[i] = (s.clone().into()) / (*c as f64);
+                    counter = counter + 1;
+                }
+                Some(m)
+            },
+            (None, None) => None,
+            _ => return Err("implicit sums and counts must have Some and None in same indices".into())
+        };
+    }
+
+    return Ok(means)
+}
+
 pub fn broadcast_map<T>(
     left: &ArrayD<T>,
     right: &ArrayD<T>,

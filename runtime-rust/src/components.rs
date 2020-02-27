@@ -276,6 +276,41 @@ pub fn component_sum(_x: &proto::Sum, arguments: &NodeArguments,) -> Result<Valu
     }
 }
 
+// TODO: may want to accept i64 as input, but need to find way to convert to f64 at some point (talk to Mike)
+pub fn component_mean(_x: &proto::Mean, arguments: &NodeArguments,) -> Result<Value> {
+    let data = match arguments.get("data").unwrap() {
+        Value::ArrayND(data) => data,
+        _ => return Err("data must be an ArrayND".into())
+    };
+
+    match (arguments.get("by").unwrap(), arguments.get("categories").unwrap()) {
+        (Value::ArrayND(by), Value::Vector2DJagged(categories)) => match (by, categories) {
+            (ArrayND::Bool(by), Vector2DJagged::Bool(categories)) => match(data) {
+                // ArrayND::I64(data) => Ok(Value::Vector2DJagged(Vector2DJagged::F64(utilities::transformations::mean(&data, by, categories)?))),
+                ArrayND::F64(data) => Ok(Value::Vector2DJagged(Vector2DJagged::F64(utilities::transformations::mean(&data, by, categories)?))),
+                _ => return Err("data must be f64".into())
+            }
+            (ArrayND::F64(by), Vector2DJagged::F64(categories)) => match(data) {
+                // ArrayND::I64(data) => Ok(Value::Vector2DJagged(Vector2DJagged::F64(utilities::transformations::mean(&data, by, categories)?))),
+                ArrayND::F64(data) => Ok(Value::Vector2DJagged(Vector2DJagged::F64(utilities::transformations::mean(&data, by, categories)?))),
+                _ => return Err("data must be f64".into())
+            }
+            (ArrayND::I64(by), Vector2DJagged::I64(categories)) => match(data) {
+                // ArrayND::I64(data) => Ok(Value::Vector2DJagged(Vector2DJagged::F64(utilities::transformations::mean(&data, by, categories)?))),
+                ArrayND::F64(data) => Ok(Value::Vector2DJagged(Vector2DJagged::F64(utilities::transformations::mean(&data, by, categories)?))),
+                _ => return Err("data must be f64".into())
+            }
+            (ArrayND::Str(by), Vector2DJagged::Str(categories)) => match(data) {
+                // ArrayND::I64(data) => Ok(Value::Vector2DJagged(Vector2DJagged::F64(utilities::transformations::mean(&data, by, categories)?))),
+                ArrayND::F64(data) => Ok(Value::Vector2DJagged(Vector2DJagged::F64(utilities::transformations::mean(&data, by, categories)?))),
+                _ => return Err("data must be f64".into())
+            }
+        _ => return Err("data and by must be ArrayND and categories must be Vector2dJagged".into())
+        }
+        _ => return Err("by must be ArrayND and categories must be Vector2DJagged".into())
+    }
+}
+
 pub fn component_row_wise_min(
     _x: &proto::RowMin, arguments: &NodeArguments,
      ) -> Result<Value> {
@@ -521,12 +556,12 @@ pub fn component_resize(_x: &proto::Resize, arguments: &NodeArguments) -> Result
 //    }
 //}
 
-pub fn component_mean(
-    _x: &proto::Mean, arguments: &NodeArguments,
-) -> Result<Value> {
-    let data = get_argument(&arguments, "data")?.get_arraynd()?.get_f64()?;
-    Ok(Value::ArrayND(ArrayND::F64(utilities::aggregations::mean(&data))))
-}
+// pub fn component_mean(
+//     _x: &proto::Mean, arguments: &NodeArguments,
+// ) -> Result<Value> {
+//     let data = get_argument(&arguments, "data")?.get_arraynd()?.get_f64()?;
+//     Ok(Value::ArrayND(ArrayND::F64(utilities::aggregations::mean(&data))))
+// }
 
 pub fn component_variance(
     _x: &proto::Variance, arguments: &NodeArguments,
