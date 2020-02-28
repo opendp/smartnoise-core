@@ -9,7 +9,7 @@ use crate::proto;
 use crate::components::{Component, Expandable};
 use ndarray::Array;
 use crate::utilities::serial::{serialize_value};
-use crate::base::{Value, Properties, ArrayND, NodeProperties, get_constant};
+use crate::base::{Value, Properties, ArrayND, NodeProperties, get_constant, Nature, NatureContinuous, Vector1DNull};
 
 
 impl Component for proto::Resize {
@@ -20,21 +20,80 @@ impl Component for proto::Resize {
         properties: &base::NodeProperties,
     ) -> Result<Properties> {
         let mut data_property = properties.get("data")
-            .ok_or::<Error>("data must be passed to Resize".into())?.clone();
+            .ok_or("data must be passed to Resize")?.clone();
 
         let num_columns = data_property.num_columns
-            .ok_or::<Error>("num_columns must be passed to Resize".into())?;
+            .ok_or("num_columns must be passed to Resize")?;
 
         let num_records = public_arguments.get("n")
-            .ok_or::<Error>("n must be passed to resize".into())?.clone().get_arraynd()?.get_i64()?;
+            .ok_or("n must be passed to resize")?.clone().get_arraynd()?.get_i64()?;
 
         if num_records.len() as i64 > 1 {
-            Err::<Properties, Error>("n must be a scalar".into())?;
+            Err("n must be a scalar")?;
         }
         let num_records: i64 = match num_records.first() {
             Some(first) => first.to_owned(),
             None => return Err("n cannot be none".into())
         };
+
+        // 1. check public arguments (constant n)
+        let impute_minimum = match public_arguments.get("min") {
+            Some(min) => min.clone().get_arraynd()?.get_vec_f64(Some(num_columns))?,
+
+            // 2. then private arguments (for example from another clamped column)
+            None => match properties.get("min") {
+                Some(min) => min.get_min_f64()?,
+
+                // 3. then data properties (propagated from prior clamping/min/max)
+                None => data_property
+                    .get_min_f64()?
+            }
+        };
+
+        // 1. check public arguments (constant n)
+        let impute_maximum = match public_arguments.get("max") {
+            Some(max) => max.clone().get_arraynd()?.get_vec_f64(Some(num_columns))?,
+
+            // 2. then private arguments (for example from another clamped column)
+            None => match properties.get("max") {
+                Some(min) => min.get_max_f64()?,
+
+                // 3. then data properties (propagated from prior clamping/min/max)
+                None => data_property
+                    .get_max_f64()?
+            }
+        };
+
+        if !impute_minimum.iter().zip(impute_maximum.clone()).all(|(min, max)| *min < max) {
+            return Err("minimum is greater than maximum".into());
+        }
+
+        // the actual data bound (if it exists) may be wider than the imputation parameters
+        let impute_minimum = match data_property.get_min_f64_option() {
+            Ok(data_minimum) => impute_minimum.iter().zip(data_minimum)
+                .map(|(impute_min, optional_data_min)| match optional_data_min {
+                    Some(data_min) => Some(impute_min.min(data_min)),
+                    // since there was no prior bound, nothing is known about the min
+                    None => None
+                }).collect(),
+            Err(_) => (0..num_columns).map(|_| None).collect()
+        };
+
+        let impute_maximum = match data_property.get_max_f64_option() {
+            Ok(data_maximum) => impute_maximum.iter().zip(data_maximum)
+                .map(|(impute_max, optional_data_max)| match optional_data_max {
+                    Some(data_max) => Some(impute_max.max(data_max)),
+                    // since there was no prior bound, nothing is known about the max
+                    None => None
+                }).collect(),
+            Err(_) => (0..num_columns).map(|_| None).collect()
+        };
+
+        // impute may only ever widen prior existing bounds
+        data_property.nature = Some(Nature::Continuous(NatureContinuous {
+            min: Vector1DNull::F64(impute_minimum),
+            max: Vector1DNull::F64(impute_maximum),
+        }));
 
         data_property.num_records = (0..num_columns)
             .map(|x| Some(num_records.clone()))

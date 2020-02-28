@@ -65,13 +65,18 @@ pub fn execute_graph(analysis: &proto::Analysis,
             continue;
         }
 
-        let node_properties: HashMap<String, proto::Properties> = get_input_properties(&component, &graph_properties)?;
+        let node_properties: HashMap<String, proto::Properties> =
+            get_input_properties(&component, &graph_properties)?;
+
         let public_arguments = node_properties.iter()
             .filter(|(_k, v)| v.releasable)
             .map(|(k, _v)| (k.clone(), evaluations
                 .get(component.arguments.get(k).unwrap()).unwrap().clone()))
             .collect::<HashMap<String, Value>>();
 
+        println!("expanding component {:?}", component);
+        println!("public arguments {:?}", public_arguments);
+        println!("node properties {:?}", node_properties);
         // all arguments have been computed, attempt to expand the current node
         let expansion: proto::response_expand_component::ExpandedComponent = yarrow_validator::base::expand_component(
             &analysis.privacy_definition.to_owned().unwrap(),

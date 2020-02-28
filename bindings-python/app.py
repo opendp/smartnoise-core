@@ -12,7 +12,7 @@ analysis.plot()
 
 print('analysis is valid:', analysis.validate())
 
-# print('epsilon:', analysis.epsilon)
+print('epsilon:', analysis.epsilon)
 #
-# print('release json:', analysis.release())
+print('release json:', analysis.release())
 # print('release proto:', analysis.release_proto)

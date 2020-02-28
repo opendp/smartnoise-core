@@ -161,16 +161,13 @@ class Component(object):
                 min_component = Component.of(constraints[argument + '_min'])
                 max_component = Component.of(constraints[argument + '_max'])
 
-                arguments[argument] = Component('Impute', arguments={
-                    "data": arguments[argument],
-                    "min": min_component,
-                    "max": max_component
-                })
-
                 arguments[argument] = Component('Clamp', arguments={
                     "data": arguments[argument],
                     "min": min_component,
                     "max": max_component
+                })
+                arguments[argument] = Component('Impute', arguments={
+                    "data": arguments[argument]
                 })
 
             else:
