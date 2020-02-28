@@ -9,7 +9,7 @@ use crate::proto;
 use crate::components::{Component, Expandable};
 use ndarray::Array;
 use crate::utilities::serial::{serialize_value};
-use crate::base::{Value, Properties, ArrayND, NodeProperties, get_literal};
+use crate::base::{Value, Properties, ArrayND, NodeProperties, get_constant};
 
 
 impl Component for proto::Resize {
@@ -19,39 +19,28 @@ impl Component for proto::Resize {
         public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<Properties> {
-        let mut data_property = properties.get("data").unwrap().clone();
+        let mut data_property = properties.get("data")
+            .ok_or::<Error>("data must be passed to Resize".into())?.clone();
 
-        println!("resize metadata:");
-//        println!("min: {:?}", min_property);
-//        println!("max: {:?}", max_property);
-        println!("properties: {:?}", properties);
-        println!("public arguments: {:?}", public_arguments);
-        // when resizing, nullity may become true to add additional rows
-        data_property.nullity = true;
-        data_property.num_records = match public_arguments.get("n").unwrap() {
-            Value::ArrayND(array) => match array {
-                ArrayND::I64(array) => match array.ndim() {
-                    0 => (0..data_property.num_columns.unwrap())
-                        .collect::<Vec<i64>>().iter().map(|_x| Some(array.first().unwrap().clone())).collect(),
-                    _ => return Err("n must be a scalar".into())
-                }
-                _ => return Err("n must be an integer".into())
-            }
-            _ => return Err("n must be packed inside an ArrayND".into())
+        let num_columns = data_property.num_columns
+            .ok_or::<Error>("num_columns must be passed to Resize".into())?;
+
+        let num_records = public_arguments.get("n")
+            .ok_or::<Error>("n must be passed to resize".into())?.clone().get_arraynd()?.get_i64()?;
+
+        if num_records.len() as i64 > 1 {
+            Err::<Properties, Error>("n must be a scalar".into())?;
+        }
+        let num_records: i64 = match num_records.first() {
+            Some(first) => first.to_owned(),
+            None => return Err("n cannot be none".into())
         };
 
+        data_property.num_records = (0..num_columns)
+            .map(|x| Some(num_records.clone()))
+            .collect::<Vec<Option<i64>>>();
+
         Ok(data_property)
-    }
-
-    fn is_valid(
-        &self,
-        properties: &base::NodeProperties,
-    ) -> Result<()> {
-        // TODO: stricter checks for bounds
-        properties.get("n")
-            .ok_or::<Error>("n is missing from resize".into())?;
-
-        Ok(())
     }
 
     fn get_names(
@@ -81,7 +70,7 @@ impl Expandable for proto::Resize {
             let id_min = current_id.clone();
             let value = Value::ArrayND(ArrayND::F64(
                 Array::from(properties.get("data").unwrap().to_owned().get_min_f64()?).into_dyn()));
-            graph_expansion.insert(id_min.clone(), get_literal(&value, &component.batch));
+            graph_expansion.insert(id_min.clone(), get_constant(&value, &component.batch));
             component.arguments.insert("min".to_string(), id_min);
         }
 
@@ -90,7 +79,7 @@ impl Expandable for proto::Resize {
             let id_max = current_id.clone();
             let value = Value::ArrayND(ArrayND::F64(
                 Array::from(properties.get("data").unwrap().to_owned().get_max_f64()?).into_dyn()));
-            graph_expansion.insert(id_max, get_literal(&value, &component.batch));
+            graph_expansion.insert(id_max, get_constant(&value, &component.batch));
             component.arguments.insert("max".to_string(), id_max);
         }
 
@@ -101,7 +90,7 @@ impl Expandable for proto::Resize {
                 (), properties.get("data").unwrap().to_owned().get_n()?)
                 .unwrap().into_dyn()));
 
-            graph_expansion.insert(id_n, get_literal(&value, &component.batch));
+            graph_expansion.insert(id_n, get_constant(&value, &component.batch));
             component.arguments.insert("n".to_string(), id_n);
         }
 

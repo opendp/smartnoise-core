@@ -9,10 +9,8 @@ pub fn get_traversal(
     analysis: &proto::Analysis
 ) -> Result<Vec<u32>> {
 
-    println!("PRE");
     let graph: &HashMap<u32, proto::Component> = &analysis.computation_graph.to_owned().unwrap().value;
 
-    println!("A");
     // track node parents
     let mut parents = HashMap::<u32, HashSet<u32>>::new();
     graph.iter().for_each(|(node_id, component)| {
@@ -26,7 +24,6 @@ pub fn get_traversal(
         })
     });
 
-    println!("B");
     // store the optimal computation order of node ids
     let mut traversal = Vec::new();
 
@@ -35,16 +32,12 @@ pub fn get_traversal(
         .filter(|(_node_id, component)| component.arguments.is_empty())
         .map(|(node_id, _component)| node_id.to_owned()).collect();
 
-    println!("C");
-
     let mut visited = HashMap::new();
 
     while !queue.is_empty() {
         let queue_node_id: u32 = *queue.last().unwrap();
         queue.pop();
         traversal.push(queue_node_id);
-
-        println!("C.1");
 
         let mut is_cyclic = false;
 
@@ -54,11 +47,9 @@ pub fn get_traversal(
             // if parent has been reached more times than it has arguments, then it is cyclic
             let count = visited.entry(*parent_node_id).or_insert(0);
             *count += 1;
-            println!("C.2");
             if visited.get(parent_node_id).unwrap() > &parent_arguments.len() {
                 is_cyclic = true;
             }
-            println!("C.3");
 
             // check that all arguments of parent_node have been evaluated before adding to queue
             if parent_arguments.values().all(|argument_node_id| traversal.contains(argument_node_id)) {

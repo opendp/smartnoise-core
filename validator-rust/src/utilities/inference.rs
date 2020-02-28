@@ -1,16 +1,9 @@
 use crate::errors::*;
 use crate::ErrorKind::{PrivateError, PublicError};
 
-use std::collections::HashMap;
-
-
-use crate::{proto, base};
-
-use crate::components::Component;
 use ndarray::{Axis};
 use ndarray::prelude::*;
 use ndarray_stats::QuantileExt;
-use crate::utilities::serial::{parse_value};
 
 use itertools::Itertools;
 use std::cmp::Ordering;
@@ -335,51 +328,4 @@ pub fn infer_property(value: &Value) -> Result<Properties> {
         num_columns: infer_num_columns(&value)?,
         num_records: infer_num_rows(&value)?
     })
-}
-
-impl Component for proto::Literal {
-    // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
-    fn propagate_property(
-        &self,
-        _public_arguments: &HashMap<String, Value>,
-        _properties: &base::NodeProperties,
-    ) -> Result<Properties> {
-        let value = parse_value(&self.value.clone().unwrap()).unwrap();
-
-        match self.private {
-            true => {
-                let num_columns = infer_num_columns(&value)?;
-
-                Ok(Properties {
-                    num_records: match num_columns {
-                        Some(num_cols) => (0..num_cols).collect::<Vec<i64>>().iter().map(|_v| None).collect(),
-                        None => vec![Some(1)]
-                    },
-                    num_columns: infer_num_columns(&value)?,
-                    nullity: true,
-                    releasable: false,
-                    c_stability: match num_columns {
-                        Some(num_cols) => (0..num_cols).collect::<Vec<i64>>().iter().map(|_| 1.).collect(),
-                        None => vec![1.]
-                    },
-                    nature: None,
-                })
-            },
-            false => infer_property(&value)
-        }
-    }
-
-    fn is_valid(
-        &self,
-        _properties: &base::NodeProperties,
-    ) -> Result<()> {
-        Ok(())
-    }
-
-    fn get_names(
-        &self,
-        _properties: &NodeProperties,
-    ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
-    }
 }

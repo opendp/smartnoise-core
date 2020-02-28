@@ -11,72 +11,84 @@ use crate::components::{Component, Expandable};
 use crate::utilities::serial::{serialize_value};
 use itertools::Itertools;
 use ndarray::Array;
-use crate::base::{Properties, Vector1DNull, Nature, NatureContinuous, Value, NodeProperties, ArrayND, get_literal};
+use crate::base::{Properties, Vector1DNull, Nature, NatureContinuous, Value, NodeProperties, ArrayND, get_constant};
 
 
 impl Component for proto::Impute {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
         &self,
-        _public_arguments: &HashMap<String, Value>,
+        public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<Properties> {
-        let mut data_property = properties.get("data").unwrap().clone();
-        let mut min_property = properties.get("min").unwrap().clone();
-        let mut max_property = properties.get("max").unwrap().clone();
+        let mut data_property = properties.get("data")
+            .ok_or::<Error>("data is a required argument for Impute".into())?.clone();
+
+        let num_columns = data_property.num_columns
+            .ok_or("number of data columns must be known to check imputation")?;
+
+        // 1. check public arguments (constant n)
+        let impute_minimum = match public_arguments.get("min") {
+            Some(min) => min.clone().get_arraynd()?.get_vec_f64(Some(num_columns))?,
+
+            // 2. then private arguments (for example from another clamped column)
+            None => match properties.get("min") {
+                Some(min) => min.get_min_f64()?,
+
+                // 3. then data properties (propagated from prior clamping/min/max)
+                None => data_property
+                    .get_min_f64()?
+            }
+        };
+
+        // 1. check public arguments (constant n)
+        let impute_maximum = match public_arguments.get("max") {
+            Some(max) => max.clone().get_arraynd()?.get_vec_f64(Some(num_columns))?,
+
+            // 2. then private arguments (for example from another clamped column)
+            None => match properties.get("max") {
+                Some(min) => min.get_max_f64()?,
+
+                // 3. then data properties (propagated from prior clamping/min/max)
+                None => data_property
+                    .get_max_f64()?
+            }
+        };
+
+        if !impute_minimum.iter().zip(impute_maximum.clone()).all(|(min, max)| *min < max) {
+            return Err("minimum is greater than maximum".into());
+        }
+
+        // the actual data bound (if it exists) may be wider than the imputation parameters
+        let impute_minimum = match data_property.get_min_f64_option() {
+            Ok(data_minimum) => impute_minimum.iter().zip(data_minimum)
+                .map(|(impute_min, optional_data_min)| match optional_data_min {
+                    Some(data_min) => Some(impute_min.min(data_min)),
+                    // since there was no prior bound, nothing is known about the min
+                    None => None
+                }).collect(),
+            Err(_) => (0..num_columns).map(|_| None).collect()
+        };
+
+        let impute_maximum = match data_property.get_max_f64_option() {
+            Ok(data_maximum) => impute_maximum.iter().zip(data_maximum)
+                .map(|(impute_max, optional_data_max)| match optional_data_max {
+                    Some(data_max) => Some(impute_max.max(data_max)),
+                    // since there was no prior bound, nothing is known about the max
+                    None => None
+                }).collect(),
+            Err(_) => (0..num_columns).map(|_| None).collect()
+        };
 
         data_property.nullity = false;
+
+        // impute may only ever widen prior existing bounds
         data_property.nature = Some(Nature::Continuous(NatureContinuous {
-            min: Vector1DNull::F64(data_property.get_min_f64_option()?.iter()
-                .zip(min_property.get_min_f64_option()?)
-                .zip(max_property.get_min_f64_option()?)
-                .map(|((d, min), max)| {
-                    match d {
-                        Some(_x) => vec![d, &min, &max]
-                            .iter().filter(|x| x.is_some())
-                            .map(|x| x.unwrap().clone())
-                            .fold1(|l, r| l.min(r)),
-                        // since there was no prior bound, nothing is known about the min
-                        None => None
-                    }
-                })
-                .collect()),
-            max: Vector1DNull::F64(data_property.get_max_f64_option()?.iter()
-                .zip(min_property.get_max_f64_option()?)
-                .zip(max_property.get_max_f64_option()?)
-                .map(|((d, min), max)| {
-                    match d {
-                        // if there was a prior bound
-                        Some(_x) => vec![d, &min, &max]
-                            .iter().filter(|x| x.is_some())
-                            .map(|x| x.unwrap().clone())
-                            .fold1(|l, r| l.max(r)),
-                        // since there was no prior bound, nothing is known about the max
-                        None => None
-                    }
-                })
-                .collect()),
+            min: Vector1DNull::F64(impute_minimum),
+            max: Vector1DNull::F64(impute_maximum),
         }));
 
         Ok(data_property)
-    }
-
-    fn is_valid(
-        &self,
-        properties: &base::NodeProperties,
-    ) -> Result<()> {
-        properties.get("data").ok_or("data is missing from imputation component")?;
-
-        let has_min = properties.contains_key("min") || properties.get("data").unwrap().to_owned().get_min_f64().is_ok();
-        let has_max = properties.contains_key("max") || properties.get("data").unwrap().to_owned().get_max_f64().is_ok();
-
-        let has_continuous = has_min && has_max;
-        let has_categorical = properties.contains_key("categories");
-
-        match has_continuous || has_categorical {
-            true => Ok(()),
-            false => Err("bounds are missing for the imputation component".into())
-        }
     }
 
     fn get_names(
@@ -106,7 +118,7 @@ impl Expandable for proto::Impute {
             let id_min = current_id.clone();
             let value = Value::ArrayND(ArrayND::F64(
                 Array::from(properties.get("data").unwrap().to_owned().get_min_f64()?).into_dyn()));
-            graph_expansion.insert(id_min.clone(), get_literal(&value, &component.batch));
+            graph_expansion.insert(id_min.clone(), get_constant(&value, &component.batch));
             component.arguments.insert("min".to_string(), id_min);
         }
 
@@ -115,7 +127,7 @@ impl Expandable for proto::Impute {
             let id_max = current_id.clone();
             let value = Value::ArrayND(ArrayND::F64(
                 Array::from(properties.get("data").unwrap().to_owned().get_max_f64()?).into_dyn()));
-            graph_expansion.insert(id_max, get_literal(&value, &component.batch));
+            graph_expansion.insert(id_max, get_constant(&value, &component.batch));
             component.arguments.insert("max".to_string(), id_max);
         }
 

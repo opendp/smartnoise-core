@@ -1,5 +1,4 @@
 import json
-import queue
 import numpy as np
 
 from yarrow.wrapper import LibraryWrapper
@@ -66,15 +65,28 @@ class Dataset(object):
 
 
 class Component(object):
-    def __init__(self, name: str, arguments: dict = None, options: dict = None, constraints: dict = None):
+    def __init__(self, name: str, arguments: dict = None, options: dict = None, constraints: dict = None, release=None):
 
         self.name: str = name
         self.arguments: dict = Component._expand_constraints(arguments or {}, constraints)
         self.options: dict = options
 
+        # these are set when add_component is called
+        self.analysis = None
+        self.component_id = None
+
         global context
         if context:
-            context.components.append(self)
+            context.add_component(self, release=release)
+        else:
+            raise ValueError("all Yarrow components must be created within the context of an analysis")
+
+    # pull the released values out from the analysis' release protobuf
+    def __call__(self):
+        return self.analysis.release_proto.get(self.component_id)
+
+    def get(self):
+        return self()
 
     def __pos__(self):
         return self
@@ -126,53 +138,12 @@ class Component(object):
         return id(self)
 
     @staticmethod
-    def of(value, private=False, jagged=False):
+    # TODO: handle jagged
+    def of(value, jagged=False):
         if type(value) == Component:
             return value
 
-        def value_proto(data):
-
-            if issubclass(type(data), dict):
-                return value_pb2.Value(
-                    hashmap_string={key: value_proto(data[key]) for key in data}
-                )
-
-            if jagged:
-                return value_pb2.Value(array_2d_jagged=value_pb2.Array2dJagged(data=[
-                    value_pb2.Array2dJagged.Array1dOption(data=column) for column in data
-                ]))
-
-            data = np.array(data)
-
-            data_type = {
-                np.bool: "bool",
-                np.int64: "i64",
-                np.float64: "f64",
-                np.string_: "string",
-                np.str_: "string"
-            }[data.dtype.type]
-
-            container_type = {
-                np.bool: value_pb2.Array1dBool,
-                np.int64: value_pb2.Array1dI64,
-                np.float64: value_pb2.Array1dF64,
-                np.string_: value_pb2.Array1dStr,
-                np.str_: value_pb2.Array1dStr
-            }[data.dtype.type]
-
-            return value_pb2.Value(
-                array_nd=value_pb2.ArrayNd(
-                    shape=list(data.shape),
-                    order=list(range(data.ndim)),
-                    flattened=value_pb2.Array1d(**{
-                        data_type: container_type(data=list(data.flatten()))
-                    })
-                ))
-
-        return Component('Literal', options={
-            'value': value_proto(value),
-            'private': private
-        })
+        return Component('Constant', release=value)
 
     @staticmethod
     def _expand_constraints(arguments, constraints):
@@ -187,17 +158,19 @@ class Component(object):
                            if i in ALL_CONSTRAINTS]
 
             if 'max' in filtered and 'min' in filtered:
-                arguments[argument] = Component('Clamp', arguments={
-                    "data": arguments[argument],
-                    "min": Component.of(constraints[argument + '_min']),
-                    "max": Component.of(constraints[argument + '_max'])
-                })
+                min_component = Component.of(constraints[argument + '_min'])
+                max_component = Component.of(constraints[argument + '_max'])
 
-                # TODO: perhaps this impute could be added in the dpmean expansion?
                 arguments[argument] = Component('Impute', arguments={
                     "data": arguments[argument],
-                    "min": Component.of(constraints[argument + '_min']),
-                    "max": Component.of(constraints[argument + '_max'])
+                    "min": min_component,
+                    "max": max_component
+                })
+
+                arguments[argument] = Component('Clamp', arguments={
+                    "data": arguments[argument],
+                    "min": min_component,
+                    "max": max_component
                 })
 
             else:
@@ -230,46 +203,49 @@ class Component(object):
 
 class Analysis(object):
     def __init__(self, *components, datasets=None, distance='APPROXIMATE', neighboring='SUBSTITUTE'):
-        self.components: list = list(components)
-        self.datasets: list = datasets or []
-        self.release_proto: base_pb2.Release = None
+
+        # privacy definition
         self.distance: str = distance
         self.neighboring: str = neighboring
 
+        # core data structures
+        self.components: dict = {}
+        self.release_values = {}
+        self.datasets: list = datasets or []
+
+        # TODO: temporary. should be converted into self.release_values upon return from runtime
+        self.release_proto = None
+
+        # track node ids
+        self.component_count = 0
+        for component in components:
+            self.add_component(component)
+
+        # nested analyses
         self._context_cache = None
+
+    def add_component(self, component, release=None):
+        if component.analysis:
+            raise ValueError("this component is already a part of another analysis")
+
+        # component should be able to reference back to the analysis to get released values/ownership
+        component.analysis = self
+        component.component_id = self.component_count
+
+        if release is not None:
+            self.release_values[self.component_count] = release
+        self.components[self.component_count] = component
+        self.component_count += 1
 
     def _make_analysis_proto(self):
 
-        id_count = 0
-
-        discovered_components = {}
-        component_queue = queue.Queue()
-
-        def enqueue(component):
-            if component in discovered_components:
-                return discovered_components[component]
-
-            nonlocal id_count
-            id_count += 1
-
-            discovered_components[component] = id_count
-            component_queue.put({'component_id': id_count, 'component': component})
-
-            return id_count
-
-        for component in self.components:
-            enqueue(component)
-
         vertices = {}
-
-        while not component_queue.empty():
-            item = component_queue.get()
-            component = item['component']
-            component_id = item['component_id']
+        for component_id in self.components:
+            component = self.components[component_id]
 
             vertices[component_id] = components_pb2.Component(**{
                 'arguments': {
-                    name: enqueue(component_child) for name, component_child in component.arguments.items()
+                    name: component_child.component_id for name, component_child in component.arguments.items()
                 },
                 component.name.lower():
                     getattr(components_pb2, component.name)(**(component.options or {}))
@@ -284,7 +260,53 @@ class Analysis(object):
         )
 
     def _make_release_proto(self):
-        return self.release_proto or base_pb2.Release()
+
+        def make_value(data, is_jagged=False):
+            if issubclass(type(data), dict):
+                return value_pb2.Value(
+                    hashmap_string={key: make_value(data[key], is_jagged=is_jagged) for key in data}
+                )
+
+            if is_jagged:
+                return value_pb2.Value(array_2d_jagged=value_pb2.Array2dJagged(data=[
+                    value_pb2.Array2dJagged.Array1dOption(data=column) for column in data
+                ]))
+
+            data = np.array(data)
+
+            data_type = {
+                np.bool: "bool",
+                np.int64: "i64",
+                np.float64: "f64",
+                np.string_: "string",
+                np.str_: "string"
+            }[data.dtype.type]
+
+            container_type = {
+                np.bool: value_pb2.Array1dBool,
+                np.int64: value_pb2.Array1dI64,
+                np.float64: value_pb2.Array1dF64,
+                np.string_: value_pb2.Array1dStr,
+                np.str_: value_pb2.Array1dStr
+            }[data.dtype.type]
+
+            return value_pb2.Value(
+                array_nd=value_pb2.ArrayNd(
+                    shape=list(data.shape),
+                    order=list(range(data.ndim)),
+                    flattened=value_pb2.Array1d(**{
+                        data_type: container_type(data=list(data.flatten()))
+                    })
+                ))
+
+        return base_pb2.Release(
+            values={
+                component_id: base_pb2.ReleaseNode(
+                    value=make_value(self.release_values[component_id]),
+                    privacy_usage=None)
+                for component_id in self.components
+                if component_id in self.release_values
+            })
 
     def _make_dataset_proto(self):
         return base_pb2.Dataset(
@@ -296,7 +318,8 @@ class Analysis(object):
 
     def validate(self):
         return core_wrapper.validate_analysis(
-            self._make_analysis_proto())
+            self._make_analysis_proto(),
+            self._make_release_proto())
 
     @property
     def epsilon(self):
@@ -305,14 +328,14 @@ class Analysis(object):
             self._make_release_proto())
 
     def release(self):
-        analysis_proto: base_pb2.Analysis = self._make_analysis_proto()
+        # TODO: convert into python representation
         self.release_proto: base_pb2.Release = core_wrapper.compute_release(
             self._make_dataset_proto(),
-            analysis_proto,
+            self._make_analysis_proto(),
             self._make_release_proto())
 
         return json.loads(core_wrapper.generate_report(
-            analysis_proto,
+            self._make_analysis_proto(),
             self.release_proto))
 
     def __enter__(self):

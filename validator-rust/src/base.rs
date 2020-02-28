@@ -7,14 +7,15 @@ use itertools::Itertools;
 use crate::utilities;
 
 use crate::components::*;
+use ndarray::prelude::Ix1;
 
 use std::collections::HashMap;
 
 
 use crate::utilities::serial::{parse_value, serialize_value, parse_release};
-use crate::components::literal::infer_property;
 use std::ops::Deref;
 use ndarray::ArrayD;
+use crate::utilities::inference::infer_property;
 
 // equivalent to proto Release
 pub type Release = HashMap<u32, Value>;
@@ -111,6 +112,18 @@ impl ArrayND {
             _ => Err("value must be numeric".into())
         }
     }
+    pub fn get_vec_f64(self, optional_length: Option<i64>) -> Result<Vec<f64>> {
+        let data = self.get_f64()?;
+        let err_msg = "failed attempt to cast f64 ArrayD to vector".into();
+        match data.ndim().clone() {
+            0 => match (optional_length, data.first()) {
+                (Some(length), Some(v)) => Ok((0..length).map(|_| v.clone()).collect()),
+                _ => Err(err_msg)
+            },
+            1 => Ok(data.into_dimensionality::<Ix1>().unwrap().to_vec()),
+            _ => Err(err_msg)
+        }
+    }
     pub fn get_i64(self) -> Result<ArrayD<i64>> {
         match self {
             ArrayND::Bool(x) => Ok(x.mapv(|v| if v { 1 } else { 0 })),
@@ -123,6 +136,18 @@ impl ArrayND {
             ArrayND::Bool(x) => Ok(if *x.first().unwrap() { 1 } else { 0 }),
             ArrayND::I64(x) => Ok(x.first().unwrap().to_owned()),
             _ => Err("value must be numeric".into())
+        }
+    }
+    pub fn get_vec_i64(self, optional_length: Option<i64>) -> Result<Vec<i64>> {
+        let data = self.get_i64()?;
+        let err_msg = "failed attempt to cast i64 ArrayD to vector".into();
+        match data.ndim().clone() {
+            0 => match (optional_length, data.first()) {
+                (Some(length), Some(v)) => Ok((0..length).map(|_| v.clone()).collect()),
+                _ => Err(err_msg)
+            },
+            1 => Ok(data.into_dimensionality::<Ix1>().unwrap().to_vec()),
+            _ => Err(err_msg)
         }
     }
     pub fn get_str(self) -> Result<ArrayD<String>> {
@@ -306,30 +331,34 @@ pub fn propagate_properties(
     let traversal: Vec<u32> = utilities::graph::get_traversal(analysis)?;
 
     let graph_evaluation: Release = parse_release(&release)?;
-
+    println!("GRAPH EVALUATION: {:?}", graph_evaluation);
     let mut graph_property = GraphProperties::new();
 
     for node_id in traversal {
-        let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
-        println!("{:?}", component);
-        let input_properties = get_input_properties(&component, &graph_property)?;
 
-        let public_arguments = get_input_arguments(&component, &graph_evaluation)?;
+        println!("node_id, {:?}", node_id);
+        println!("{:?}", graph_evaluation.contains_key(&node_id));
 
-        component.value.clone().unwrap().is_valid(&input_properties)?;
+        let property = match graph_evaluation.get(&node_id) {
+            Some(value) => infer_property(&value)?,
+            None => {
+                let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
+                let input_properties = get_input_properties(&component, &graph_property)?;
+                let public_arguments = get_input_arguments(&component, &graph_evaluation)?;
 
-        let property = component.value.unwrap().propagate_property(&public_arguments, &input_properties).unwrap();
+                component.value.unwrap().propagate_property(&public_arguments, &input_properties)?
+            }
+        };
         graph_property.insert(node_id.clone(), property);
     }
     Ok(graph_property)
 }
 
-pub fn get_literal(value: &Value, batch: &u32) -> proto::Component {
+pub fn get_constant(value: &Value, batch: &u32) -> proto::Component {
     proto::Component {
         arguments: HashMap::new(),
-        value: Some(proto::component::Value::Literal(proto::Literal {
-            value: serialize_value(&value).ok(),
-            private: false
+        value: Some(proto::component::Value::Constant(proto::Constant {
+            value: serialize_value(&value).ok()
         })),
         omit: true,
         batch: batch.clone(),
@@ -344,17 +373,7 @@ pub fn validate_analysis(
         .ok_or("the computation graph must be defined in an analysis")?
         .value;
 
-    let graph_properties = propagate_properties(&analysis, &release)?;
-    for node_id in utilities::graph::get_traversal(analysis)? {
-        let component = graph.get(&node_id).unwrap();
-        let argument_properties = component.arguments.iter()
-            .map(|(argument_name, argument_id)| (argument_name.clone(), graph_properties.get(argument_id).unwrap().clone()))
-            .collect::<HashMap<String, Properties>>();
-
-        component.value.to_owned()
-            .ok_or("every component's value must be defined")?
-            .is_valid(&argument_properties)?;
-    }
+    propagate_properties(&analysis, &release)?;
 
     return Ok(proto::response_validate_analysis::Validated {
         value: true,

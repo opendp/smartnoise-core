@@ -29,14 +29,6 @@ impl Component for proto::RowMin {
 //        })
     }
 
-    fn is_valid(
-        &self,
-        _properties: &NodeProperties,
-    ) -> Result<()> {
-        // TODO: finish implementation
-        Ok(())
-    }
-
     fn get_names(
         &self,
         _properties: &NodeProperties,

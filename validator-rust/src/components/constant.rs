@@ -3,29 +3,22 @@ use crate::ErrorKind::{PrivateError, PublicError};
 
 use std::collections::HashMap;
 
-use crate::base::{ArrayND, Value, Vector2DJagged, Nature, Vector1DNull, NatureContinuous, NatureCategorical, Properties, NodeProperties};
-
 
 use crate::{proto, base};
 
-use crate::components::{Component};
+use crate::components::Component;
+use crate::utilities::serial::{parse_value};
+use crate::base::{Value, Properties, NodeProperties};
+use crate::utilities::inference::{infer_num_columns, infer_property};
 
-
-impl Component for proto::DataSource {
+impl Component for proto::Constant {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
         &self,
         _public_arguments: &HashMap<String, Value>,
         _properties: &base::NodeProperties,
     ) -> Result<Properties> {
-        Ok(Properties {
-            nullity: true,
-            releasable: false,
-            nature: None,
-            c_stability: vec![1.],
-            num_columns: Some(1),
-            num_records: vec![None]
-        })
+        Err("release value for constant is missing".into())
     }
 
     fn get_names(

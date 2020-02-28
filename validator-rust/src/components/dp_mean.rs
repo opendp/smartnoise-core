@@ -8,7 +8,7 @@ use crate::hashmap;
 use crate::components::{Component, Accuracy, Privatize, Expandable, Report};
 use ndarray::Array;
 use crate::utilities::serial::{serialize_value};
-use crate::base::{Properties, NodeProperties, Value, get_literal, ArrayND};
+use crate::base::{Properties, NodeProperties, Value, get_constant, ArrayND};
 
 
 impl Component for proto::DpMean {
@@ -18,34 +18,19 @@ impl Component for proto::DpMean {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<Properties> {
-        Ok(properties.get("left")
-            .ok_or("left argument missing from DPMean")?
-            .to_owned())
-
-//        Ok(Properties {
-//            nullity: false,
-//            releasable: true,
-//            nature: Some(base::Nature::Continuous(base::NatureContinuous {
-//                min: base::get_min(&properties, "data")?,
-//                max: base::get_max(&properties, "data")?,
-//            })),
-//            num_records: base::get_num_records(&properties, "data")?,
-//        })
-    }
-
-    fn is_valid(
-        &self,
-        properties: &base::NodeProperties,
-    ) -> Result<()> {
-        let data_property = properties.get("data")
+        let mut data_property = properties.get("data")
             .ok_or("data argument missing from DPMean")?.clone();
 
+        // check that all properties are satisfied
         data_property.get_n()?;
         data_property.get_min_f64()?;
         data_property.get_max_f64()?;
         data_property.assert_non_null()?;
 
-        Ok(())
+        data_property.num_records = (0..data_property.num_columns.unwrap()).map(|_| Some(1)).collect();
+        data_property.releasable = true;
+
+        Ok(data_property)
     }
 
     fn get_names(
@@ -85,7 +70,7 @@ impl Expandable for proto::DpMean {
         // sensitivity literal
         current_id += 1;
         let id_sensitivity = current_id.clone();
-        graph_expansion.insert(id_sensitivity, get_literal(&sensitivity, &component.batch));
+        graph_expansion.insert(id_sensitivity, get_constant(&sensitivity, &component.batch));
 
         // noising
         graph_expansion.insert(component_id, proto::Component {

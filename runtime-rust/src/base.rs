@@ -116,8 +116,8 @@ pub fn execute_component(component: &proto::Component,
                          evaluations: &base::Release,
                          dataset: &proto::Dataset) -> Result<Value> {
 
-    println!("executing component:");
-    println!("{:?}", component);
+//    println!("executing component:");
+//    println!("{:?}", component);
 
     let mut arguments = NodeArguments::new();
     component.arguments.iter().for_each(|(field_id, field)| {
@@ -125,8 +125,8 @@ pub fn execute_component(component: &proto::Component,
         arguments.insert(field_id.to_owned(), evaluation);
     });
 
-    println!("arguments:");
-    println!("{:?}", arguments);
+//    println!("arguments:");
+//    println!("{:?}", arguments);
 
     use proto::component::Value as Value;
     match component.to_owned().value.unwrap() {
@@ -137,7 +137,7 @@ pub fn execute_component(component: &proto::Component,
         Value::Index(x) => components::component_index(&x, &arguments),
         Value::Kthrawsamplemoment(x) => components::component_kth_raw_sample_moment(&x, &arguments),
         Value::Resize(x) => components::component_resize(&x, &arguments),
-        Value::Literal(x) => components::component_literal(&x),
+        Value::Constant(x) => components::component_constant(&x),
         Value::Datasource(x) => components::component_datasource(&x, &dataset, &arguments),
         Value::Add(x) => components::component_add(&x, &arguments),
         Value::Subtract(x) => components::component_subtract(&x, &arguments),

@@ -5,7 +5,7 @@ pub mod row_wise_min;
 pub mod dp_mean;
 pub mod impute;
 pub mod resize;
-pub mod literal;
+pub mod constant;
 pub mod clamp;
 pub mod datasource;
 
@@ -23,11 +23,6 @@ pub trait Component {
         public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
     ) -> Result<Properties>;
-
-    fn is_valid(
-        &self,
-        properties: &NodeProperties,
-    ) -> Result<()>;
 
     fn get_names(
         &self,
@@ -101,35 +96,10 @@ impl Component for proto::component::Value {
 
         propagate_property!(self, public_arguments, properties,
             // INSERT COMPONENT LIST
-            Datasource, Rowmin, Dpmean, Impute, Literal, Resize, Clamp
+            Datasource, Rowmin, Dpmean, Impute, Resize, Clamp, Constant
         );
 
         return Err("a proto component is missing its Component trait".into())
-    }
-
-    fn is_valid(
-        &self,
-        properties: &NodeProperties,
-    ) -> Result<()> {
-        macro_rules! is_valid {
-            ($self:ident, $properties: ident, $( $variant:ident ),*) => {
-                {
-                    $(
-                       if let proto::component::Value::$variant(x) = $self {
-                            return x.is_valid($properties)
-                       }
-                    )*
-                }
-            }
-        }
-
-        is_valid!(self, properties,
-            // INSERT COMPONENT LIST
-            Datasource, Rowmin, Dpmean, Impute, Literal, Resize, Clamp
-        );
-
-        // an unknown component is not valid
-        Err("a component is missing its validator implementation".into())
     }
 
     fn get_names(

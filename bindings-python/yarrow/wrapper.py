@@ -7,9 +7,9 @@ from . import api_pb2
 class LibraryWrapper(object):
 
     @staticmethod
-    def validate_analysis(analysis):
+    def validate_analysis(analysis, release):
         return _communicate(
-            argument=api_pb2.RequestValidateAnalysis(analysis=analysis),
+            argument=api_pb2.RequestValidateAnalysis(analysis=analysis, release=release),
             function=lib_validator.validate_analysis,
             response_type=api_pb2.ResponseValidateAnalysis,
             ffi=ffi_validator)
@@ -66,7 +66,7 @@ class LibraryWrapper(object):
 
 def _communicate(function, argument, response_type, ffi):
     """
-    Call the function with the proto argument, over the ffi. Deserialize the response and optionally throw an error.
+    Call the function with the proto argument, over ffi. Deserialize the response and optionally throw an error.
     @param function: function from lib_*
     @param argument: proto object from api.proto
     @param response_type: proto object from api.proto
@@ -85,5 +85,5 @@ def _communicate(function, argument, response_type, ffi):
 
     # Errors from here are propagated up from either the rust validator or runtime
     if response.HasField("error"):
-        raise RuntimeError(response.error)
+        raise RuntimeError(response.error.message)
     return response.data

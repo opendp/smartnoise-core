@@ -8,19 +8,19 @@ import "value.proto";
 
 message Component {
     // uint32 value is source_node_id
-    map<string, uint32> arguments = 1500;
+    map<string, uint32> arguments = 1;
     // if true, then don't include the evaluation for this component in the release
-    bool omit = 1501;
+    bool omit = 2;
     // for interactive analyses
-    uint32 batch = 1502;
+    uint32 batch = 3;
 
     oneof value {
         // data loading
         Materialize materialize = 100; // load a string table into columnar hashmap
         Index index = 101; // collect value from hashmap
         Stack stack = 102; // stack arguments along an axis of an array
-        Literal literal = 110; // propagate a value in the protobuf
-        Constant constant = 111; // propagate a value in the release
+        Literal literal = 110; // propagate a preset value in the release
+        Constant constant = 111; // pass a value from the analysis. Internal use only
         ColumnNames columnnames = 112;
 
         // -- manipulations --
@@ -98,10 +98,11 @@ message DataSource {
 
 message Stack {}
 message Literal {
-    Value value = 1;
-    bool private = 2;
+    bool private = 1;
 }
-message Constant {}
+message Constant {
+    Value value = 1;
+}
 message ColumnNames {}
 
 // -- manipulations --

@@ -18,8 +18,7 @@ use yarrow_validator::base::{get_argument, Value, ArrayND, Vector2DJagged};
 use yarrow_validator::utilities::serial::{parse_value};
 use crate::base::NodeArguments;
 
-
-pub fn component_literal(x: &proto::Literal) -> Result<Value> {
+pub fn component_constant(x: &proto::Constant) -> Result<Value> {
     parse_value(&x.to_owned().value.unwrap())
 }
 

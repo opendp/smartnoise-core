@@ -3,7 +3,7 @@ use crate::ErrorKind::{PrivateError, PublicError};
 
 
 use std::collections::HashMap;
-use crate::base::{Vector2DJagged, Nature, Vector1DNull, NatureCategorical, NodeProperties, ArrayND, get_literal};
+use crate::base::{Vector2DJagged, Nature, Vector1DNull, NatureCategorical, NodeProperties, ArrayND, get_constant};
 
 use crate::{proto, base};
 
@@ -19,66 +19,70 @@ impl Component for proto::Clamp {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
         &self,
-        _public_arguments: &HashMap<String, Value>,
+        public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<Properties> {
         let mut data_property = properties.get("data").ok_or("data missing from Clamp")?.clone();
-        let min_property = properties.get("min").ok_or("min missing from Clamp")?.clone();
-        let max_property = properties.get("max").ok_or("max missing from Clamp")?.clone();
 
+        let num_columns = data_property.num_columns
+            .ok_or("number of data columns must be known to check imputation")?;
+
+        // 1. check public arguments (constant n)
+        let mut clamp_minimum = match public_arguments.get("min") {
+            Some(min) => min.clone().get_arraynd()?.get_vec_f64(Some(num_columns))?,
+
+            // 2. then private arguments (for example from another clamped column)
+            None => match properties.get("min") {
+                Some(min) => min.get_min_f64()?,
+
+                // 3. then data properties (propagated from prior clamping/min/max)
+                None => data_property
+                    .get_min_f64()?
+            }
+        };
+
+        // 1. check public arguments (constant n)
+        let mut clamp_maximum = match public_arguments.get("max") {
+            Some(max) => max.clone().get_arraynd()?.get_vec_f64(Some(num_columns))?,
+
+            // 2. then private arguments (for example from another clamped column)
+            None => match properties.get("max") {
+                Some(min) => min.get_max_f64()?,
+
+                // 3. then data properties (propagated from prior clamping/min/max)
+                None => data_property
+                    .get_max_f64()?
+            }
+        };
+
+        if !clamp_minimum.iter().zip(clamp_maximum.clone()).all(|(min, max)| *min < max) {
+            return Err("minimum is greater than maximum".into());
+        }
+
+        // the actual data bound (if it exists) may be tighter than the clamping parameters
+        if let Ok(data_minimum) = data_property.get_min_f64_option() {
+            clamp_minimum = clamp_minimum.iter().zip(data_minimum)
+                // match on if the actual bound exists for each column, and remain conservative if not
+                .map(|(clamp_min, optional_data_min)| match optional_data_min {
+                    Some(data_min) => clamp_min.max(data_min), // tighter data bound is only applied here
+                    None => clamp_min.clone()
+                }).collect()
+        }
+        if let Ok(data_maximum) = data_property.get_max_f64_option() {
+            clamp_maximum = clamp_maximum.iter().zip(data_maximum)
+                .map(|(clamp_max, optional_data_max)| match optional_data_max {
+                    Some(data_max) => clamp_max.min(data_max),
+                    None => clamp_max.clone()
+                }).collect()
+        }
+
+        // save revised bounds
         data_property.nature = Some(Nature::Continuous(NatureContinuous {
-            min: Vector1DNull::F64(data_property.get_min_f64_option()
-                .or(min_property.get_min_f64_option())?.iter()
-                .zip(min_property.get_min_f64_option()?)
-                .zip(max_property.get_min_f64_option()?)
-                .map(|((d, min), max)| vec![d, &min, &max]
-                    .iter().filter(|x| x.is_some())
-                    .map(|x| x.unwrap().clone())
-                    .fold1(|l, r| l.min(r)))
-                .collect()),
-            max: Vector1DNull::F64(data_property.get_max_f64_option()
-                .or(max_property.get_max_f64_option())?.iter()
-                .zip(min_property.get_max_f64_option()?)
-                .zip(max_property.get_max_f64_option()?)
-                .map(|((d, min), max)| vec![d, &min, &max]
-                    .iter().filter(|x| x.is_some())
-                    .map(|x| x.unwrap().clone())
-                    .fold1(|l, r| l.max(r)))
-                .collect()),
+            min: Vector1DNull::F64(clamp_minimum.iter().map(|x| Some(x.clone())).collect()),
+            max: Vector1DNull::F64(clamp_maximum.iter().map(|x| Some(x.clone())).collect()),
         }));
 
         Ok(data_property)
-    }
-
-    fn is_valid(
-        &self,
-        properties: &base::NodeProperties,
-    ) -> Result<()> {
-        // ensure data is passed
-        let data_props = properties.get("data")
-            .ok_or::<Error>("data missing from Clamp".into())?;
-        let min_props = properties.get("min");
-        let max_props = properties.get("max");
-
-        // min and max may either come from props, or as an argument
-        let has_min = data_props.get_min_f64().is_ok()
-            || (min_props.is_some() && min_props.unwrap().get_min_f64().is_ok());
-        let has_max = data_props.get_max_f64().is_ok()
-            || (max_props.is_some() && max_props.unwrap().get_min_f64().is_ok());
-
-        if has_min && has_max {
-            return Ok(())
-        }
-
-        // categories may either come from props, or as an argument
-        let cat_props = properties.get("categories");
-        let has_categories = data_props.get_categories().is_ok()
-            || (cat_props.is_some() && cat_props.unwrap().get_categories().is_ok());
-
-        if has_categories {
-            return Ok(())
-        }
-        return Err("arguments missing to clamp component".into());
     }
 
     fn get_names(
@@ -105,12 +109,11 @@ impl Expandable for proto::Clamp {
         let mut component = component.clone();
 
         if !properties.contains_key("min") {
-            println!("filling in min");
             current_id += 1;
             let id_min = current_id.clone();
             let value = Value::ArrayND(ArrayND::F64(
                 Array::from(properties.get("data").unwrap().to_owned().get_min_f64()?).into_dyn()));
-            graph_expansion.insert(id_min.clone(), get_literal(&value, &component.batch));
+            graph_expansion.insert(id_min.clone(), get_constant(&value, &component.batch));
             component.arguments.insert("min".to_string(), id_min);
         }
 
@@ -119,7 +122,7 @@ impl Expandable for proto::Clamp {
             let id_max = current_id.clone();
             let value = Value::ArrayND(ArrayND::F64(
                 Array::from(properties.get("data").unwrap().to_owned().get_max_f64()?).into_dyn()));
-            graph_expansion.insert(id_max, get_literal(&value, &component.batch));
+            graph_expansion.insert(id_max, get_constant(&value, &component.batch));
             component.arguments.insert("max".to_string(), id_max);
         }
 
