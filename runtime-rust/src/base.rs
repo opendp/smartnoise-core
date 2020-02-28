@@ -16,6 +16,8 @@ use itertools::Itertools;
 use crate::components;
 
 use yarrow_validator::base::{get_input_properties, Value};
+use yarrow_validator::utilities::inference::infer_property;
+use yarrow_validator::utilities::serial::serialize_properties;
 
 pub type NodeArguments<'a> = HashMap<String, &'a Value>;
 
@@ -31,12 +33,17 @@ pub fn execute_graph(analysis: &proto::Analysis,
     let mut evaluations = serial::parse_release(release)?;
 
     let mut graph: HashMap<u32, proto::Component> = analysis.computation_graph.to_owned().unwrap().value;
-
     let mut graph_properties: HashMap<u32, proto::Properties> = HashMap::new();
     let mut maximum_id = graph.keys()
         .fold1(std::cmp::max)
         .map(|x| x.clone())
         .unwrap_or(0);
+
+    // TEMP FIX FOR UNEVALUATED PROPERTIES
+    for (node_id, value) in evaluations.clone() {
+        let component = graph.get(&node_id).unwrap();
+        graph_properties.insert(node_id.clone(), serialize_properties(&infer_property(&value)?));
+    }
 
     // track node parents
     let mut parents = HashMap::<u32, HashSet<u32>>::new();

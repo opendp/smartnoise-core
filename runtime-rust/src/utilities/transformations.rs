@@ -53,12 +53,14 @@ pub fn bin<T>(data: &ArrayD<T>, edges: &ArrayD<T>, inclusive_left: &ArrayD<bool>
     /// # Example
     /// ```
     /// // set up data
+    /// use ndarray::{ArrayD, arr1, Array1};
+    /// use yarrow_runtime::utilities::transformations::bin;
     /// let data: ArrayD<f64> = arr1(&[1., 2., 3., 4., 5., 12., 19., 24., 90., 98.]).into_dyn();
     /// let edges: ArrayD<f64> = arr1(&[0., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100.]).into_dyn();
-    /// let inclusive_left: bool = arr1(&[false]).into_dyn();
+    /// let inclusive_left: ArrayD<bool> = arr1(&[false]).into_dyn();
     ///
     /// // bin data
-    /// let binned_data: ArrayD<String> = bin(&data, &edges, &inclusive_left);
+    /// let binned_data: ArrayD<String> = bin(&data, &edges, &inclusive_left)?;
     /// println!("{:?}", binned_data);
     /// ```
 
@@ -122,10 +124,13 @@ pub fn count<T>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>) -> Result<Ve
     ///
     /// Example
     /// ```
+    /// use ndarray::{ArrayD, arr2};
+    /// use yarrow_runtime::utilities::transformations::count;
+    /// use yarrow_validator::errors::*;
     /// let data: ArrayD<i64> = arr2(&[ [1,1,1,1,1,2,2,2,2,3,3,3,4,4,5],
     ///                                 [1,2,2,3,3,3,4,4,4,4,5,5,5,5,5] ]).into_dyn();
-    /// let categories: Vec<Vec<i64>> = vec![vec![1,3,5], vec![2,4]];
-    /// let t: Vec<Vec<i64>> = count(&data, &categories);
+    /// let categories: Vec<Option<Vec<i64>>> = vec![Some(vec![1,3,5]), Some(vec![2,4])];
+    /// let t: Result<Vec<Option<Vec<i64>>>> = count(&data, &categories);
     /// println!("{:?}", t);
     /// ```
 
@@ -233,9 +238,12 @@ pub fn broadcast_map<T>(
     ///
     /// # Example
     /// ```
-    /// let left: Array1<f64> = arr1!([1., -2., 3., 5.]);
-    /// let right: Array1<f64> = arr1!([2.]);
-    /// let mapped: Array1<f64> = broadcast_map(&left, &right, &|l, r| l.max(r));
+    /// use yarrow_validator::errors::*;
+    /// use ndarray::{Array1, arr1, ArrayD};
+    /// use yarrow_runtime::utilities::transformations::broadcast_map;
+    /// let left: ArrayD<f64> = arr1!([1., -2., 3., 5.]).into_dyn();
+    /// let right: ArrayD<f64> = arr1!([2.]).into_dyn();
+    /// let mapped: Result<ArrayD<f64>> = broadcast_map(&left, &right, &|l, r| l.max(r.clone()));
     /// println!("{:?}", mapped); // [2., 2., 3., 5.]
     /// ```
 
@@ -274,6 +282,8 @@ pub fn clamp_numeric<T>(data: &ArrayD<T>, min: &ArrayD<T>, max: &ArrayD<T>)
     ///
     /// # Example
     /// ```
+    /// use ndarray::{ArrayD, arr2, arr1};
+    /// use yarrow_runtime::utilities::transformations::{convert_to_matrix, clamp_numeric};
     /// let data = arr2(&[ [1.,2.,3.], [7.,11.,9.] ]).into_dyn();
     /// let mut data_2d: ArrayD<f64> = convert_to_matrix(&data);
     /// let mins: ArrayD<f64> = arr1(&[0.5,8.]).into_dyn();

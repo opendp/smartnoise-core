@@ -64,7 +64,7 @@ def test_dp_mean():
     with yarrow.Analysis() as analysis:
         dataset_pums = yarrow.Dataset('PUMS', test_csv_path)
 
-        age = dataset_pums[('age', int)]
+        age = dataset_pums[('age', float)]
 
         yarrow.ops.dp_mean(
             data=age,

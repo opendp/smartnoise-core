@@ -345,6 +345,7 @@ pub fn component_row_wise_max(
 }
 
 pub fn component_clamp(_x: &proto::Clamp, arguments: &NodeArguments) -> Result<Value> {
+    println!("COMPONENT CLAMP {:?}", arguments);
     if arguments.contains_key("categories") {
         match (arguments.get("data").unwrap(), arguments.get("categories").unwrap(), arguments.get("null").unwrap()) {
             (Value::ArrayND(data), Value::Vector2DJagged(categories), Value::Vector2DJagged(nulls)) => match (data, categories, nulls) {
