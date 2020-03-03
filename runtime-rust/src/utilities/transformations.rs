@@ -18,8 +18,8 @@ use crate::utilities::utilities;
 // TODO: this is temporary function for testing purposes
 pub fn convert_to_matrix<T>(data: &ArrayD<T>) -> ArrayD<T> where T: Clone {
     match data.ndim() {
-        0 => data.clone().insert_axis(Axis(0)).clone().insert_axis(Axis(0)),
-        1 => data.clone().insert_axis(Axis(0)),
+        0 => data.clone().insert_axis(Axis(1)).clone().insert_axis(Axis(1)),
+        1 => data.clone().insert_axis(Axis(1)),
         2 => data.clone(),
         _ => panic!("unsupported dimension")
     }
@@ -27,8 +27,8 @@ pub fn convert_to_matrix<T>(data: &ArrayD<T>) -> ArrayD<T> where T: Clone {
 
 pub fn convert_from_matrix<T>(data: &ArrayD<T>, original_dim: &u8) -> ArrayD<T> where T: Clone {
     match original_dim {
-        0 => data.clone().remove_axis(Axis(0)).clone().remove_axis(Axis(0)),
-        1 => data.clone().remove_axis(Axis(0)),
+        0 => data.clone().remove_axis(Axis(1)).clone().remove_axis(Axis(1)),
+        1 => data.clone().remove_axis(Axis(1)),
         2 => data.clone(),
         _ => panic!("unsupported dimension")
     }
@@ -73,8 +73,8 @@ pub fn bin<T>(data: &ArrayD<T>, edges: &ArrayD<T>, inclusive_left: &ArrayD<bool>
 
     for k in 0..n_cols {
         // create vector versions of data and edges
-        let data_vec: Vec<T> = data.slice(s![k as usize, ..]).clone().into_dimensionality::<Ix1>().unwrap().to_vec();
-        let mut sorted_edges: Vec<T> = edges.slice(s![k as usize, ..]).clone().into_dimensionality::<Ix1>().unwrap().to_vec();
+        let data_vec: Vec<T> = data.slice(s![.., k as usize]).clone().into_dimensionality::<Ix1>().unwrap().to_vec();
+        let mut sorted_edges: Vec<T> = edges.slice(s![.., k as usize]).clone().into_dimensionality::<Ix1>().unwrap().to_vec();
 
         //  ensure edges are sorted in ascending order
         sorted_edges.sort_by(|a, b| a.partial_cmp(b).unwrap());
@@ -114,7 +114,7 @@ pub fn bin<T>(data: &ArrayD<T>, edges: &ArrayD<T>, inclusive_left: &ArrayD<bool>
         }
         // convert bin vector to Array and return
         let bin_array: ArrayD<String> = arr1(&bin_vec).into_dyn();
-        new_bin_array.slice_mut(s![k as usize, ..]).assign(&bin_array);
+        new_bin_array.slice_mut(s![.., k as usize]).assign(&bin_array);
     }
     return Ok(convert_from_matrix(&new_bin_array, &original_dim));
 }
@@ -140,7 +140,7 @@ pub fn count<T>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>) -> Result<Ve
     let n_cols: i64 = data_2d.len_of(Axis(0)) as i64;
 
     for i in 0..n_cols {
-        let data_vec: Vec<T> = data_2d.slice(s![i as usize, ..]).clone().into_dyn().clone().
+        let data_vec: Vec<T> = data_2d.slice(s![.., i as usize]).clone().into_dyn().clone().
                            into_dimensionality::<Ix1>().unwrap().to_vec();
         let category_vec: Vec<T> = categories[i as usize].clone().unwrap();
         let mut counts_vec: Vec<i64> = vec![0; category_vec.len()];
@@ -171,9 +171,9 @@ pub fn sum<T,S>(data: &ArrayD<T>, by: &ArrayD<S>, categories: &Vec<Option<Vec<S>
     let n_cols: i64 = data_2d.len_of(Axis(0)) as i64;
 
     for i in 0..n_cols {
-        let mut data_vec: Vec<T> = data_2d.slice(s![i as usize, ..]).clone().into_dyn().clone().
+        let mut data_vec: Vec<T> = data_2d.slice(s![.., i as usize]).clone().into_dyn().clone().
                            into_dimensionality::<Ix1>().unwrap().to_vec();
-        let mut by_vec: Vec<S> = by_2d.slice(s![i as usize, ..]).clone().into_dyn().clone().
+        let mut by_vec: Vec<S> = by_2d.slice(s![.., i as usize]).clone().into_dyn().clone().
                            into_dimensionality::<Ix1>().unwrap().to_vec();
         let category_vec: Vec<S> = categories[i as usize].clone().unwrap();
         let mut sum_vec: Vec<T> = vec![Default::default(); category_vec.len()];
@@ -299,7 +299,7 @@ pub fn clamp_numeric<T>(data: &ArrayD<T>, min: &ArrayD<T>, max: &ArrayD<T>)
     let n_cols: i64 = data_2d.len_of(Axis(0)) as i64;
 
     for i in 0..n_cols {
-        let mut data_vec = data_2d.slice(s![i as usize, ..]).clone().into_dyn().clone().
+        let mut data_vec = data_2d.slice(s![.., i as usize]).clone().into_dyn().clone().
                            into_dimensionality::<Ix1>().unwrap().to_vec();
         for j in 0..data_vec.len() {
                 if data_vec[j] < min[i as usize] {
@@ -308,7 +308,7 @@ pub fn clamp_numeric<T>(data: &ArrayD<T>, min: &ArrayD<T>, max: &ArrayD<T>)
                     data_vec[j] = max[i as usize].clone();
                 }
         }
-        clamped_data.slice_mut(s![i as usize, ..]).assign(&arr1(&data_vec).into_dyn());
+        clamped_data.slice_mut(s![.., i as usize]).assign(&arr1(&data_vec).into_dyn());
     }
     return clamped_data;
 }
@@ -331,19 +331,19 @@ pub fn clamp_categorical<T>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>, 
         match (category_vec, null_vec) {
             (Some(category_vec), Some(null_vec)) => {
                 n_categories = category_vec.len() as i64;
-                let mut data_vec = data_2d.slice(s![i as usize, ..]).clone().into_dyn().clone().
+                let mut data_vec = data_2d.slice(s![.., i as usize]).clone().into_dyn().clone().
                                 into_dimensionality::<Ix1>().unwrap().to_vec();
                 for j in 0..data_vec.len() {
                         if !category_vec.contains(&data_vec[j]) {
                             data_vec[j] = null_vec[i as usize].clone();
                         }
                 }
-                clamped_data.slice_mut(s![i as usize, ..]).assign(&arr1(&data_vec).into_dyn());
+                clamped_data.slice_mut(s![.., i as usize]).assign(&arr1(&data_vec).into_dyn());
             }
             (None, None) => {
-                let mut data_vec = data_2d.slice(s![i as usize, ..]).clone().into_dyn().clone().
+                let mut data_vec = data_2d.slice(s![.., i as usize]).clone().into_dyn().clone().
                                 into_dimensionality::<Ix1>().unwrap().to_vec();
-                clamped_data.slice_mut(s![i as usize, ..]).assign(&arr1(&data_vec).into_dyn());
+                clamped_data.slice_mut(s![.., i as usize]).assign(&arr1(&data_vec).into_dyn());
             },
             _ => return Err("categories and null must both be Some or both be None".into())
         }
@@ -496,14 +496,14 @@ pub fn impute_numeric(data: &ArrayD<f64>, distribution: &String,
         };
         // do standard data imputation
         imputed_col = match distribution {
-            x if x == &uniform => impute_float_uniform(&(data.slice(s![0, ..])).to_owned().into_dyn(),
+            x if x == &uniform => impute_float_uniform(&(data.slice(s![.., 0])).to_owned().into_dyn(),
                                                      &(min[i as usize]), &(max[i as usize])),
-            // (Uniform, Int) => impute_int_uniform(&(data.slice(s![0, ..])).to_owned().into_dyn(), &min[i as usize], &max[i as usize]),
-            x if x == &gaussian => impute_float_gaussian(&(data.slice(s![0, ..])).to_owned().into_dyn(), &shift_i.unwrap().first().unwrap(),
+            // (Uniform, Int) => impute_int_uniform(&(data.slice(s![.., 0])).to_owned().into_dyn(), &min[i as usize], &max[i as usize]),
+            x if x == &gaussian => impute_float_gaussian(&(data.slice(s![.., 0])).to_owned().into_dyn(), &shift_i.unwrap().first().unwrap(),
                                                                                                        &scale_i.unwrap().first().unwrap(),                                                        &min[i as usize], &max[i as usize]),
             _ => panic!("distribution/data_type combination not supported")
         };
-        imputed_data.slice_mut(s![i as usize, ..]).assign(&imputed_col);
+        imputed_data.slice_mut(s![.., i as usize]).assign(&imputed_col);
     }
     return convert_from_matrix(&imputed_data, &original_dim);
 }
@@ -528,20 +528,20 @@ pub fn impute_categorical<T>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>,
         match (category_vec, probability_vec, null_value_vec) {
             (Some(category_vec), Some(probability_vec), Some(null_value_vec)) => {
                 n_categories = category_vec.len() as i64;
-                let mut data_vec = data_2d.slice(s![i as usize, ..]).clone().into_dyn().clone().
+                let mut data_vec = data_2d.slice(s![.., i as usize]).clone().into_dyn().clone().
                                 into_dimensionality::<Ix1>().unwrap().to_vec();
                 for j in 0..data_vec.len() {
                         if data_vec[j] == null_value_vec[j] {
                             data_vec[j] = utilities::sample_from_set(&category_vec, &probability_vec);
                         }
                 }
-                imputed_data.slice_mut(s![i as usize, ..]).assign(&arr1(&data_vec).into_dyn());
+                imputed_data.slice_mut(s![.., i as usize]).assign(&arr1(&data_vec).into_dyn());
             },
 
             (None, None, None) => {
-                let mut data_vec = data_2d.slice(s![i as usize, ..]).clone().into_dyn().clone().
+                let mut data_vec = data_2d.slice(s![.., i as usize]).clone().into_dyn().clone().
                                 into_dimensionality::<Ix1>().unwrap().to_vec();
-                imputed_data.slice_mut(s![i as usize, ..]).assign(&arr1(&data_vec).into_dyn());
+                imputed_data.slice_mut(s![.., i as usize]).assign(&arr1(&data_vec).into_dyn());
             },
             _ => return Err("each set of associated categories, probabilities, and null value must all be Some or None".into())
         }
@@ -575,7 +575,7 @@ pub fn resize_numeric(data: &ArrayD<f64>, n: &u64, distribution: &String,
     // for each column in data:
     for i in 0..n_cols {
         // get column
-        column = data_2d.slice_mut(s![i as usize, ..]).to_owned().into_dyn();
+        column = data_2d.slice_mut(s![.., i as usize]).to_owned().into_dyn();
 
         // create subsampled version of data (returned if n < real_n)
         let k: u64 = cmp::min(*n, real_n);
@@ -600,15 +600,15 @@ pub fn resize_numeric(data: &ArrayD<f64>, n: &u64, distribution: &String,
                                                     &scale_i,
                                                     );
         let augmentation_vec = augmentation_data.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
-        let augmented_column = stack![Axis(0), column.slice(s![0, ..]), augmentation_vec].clone().into_dyn();
+        let augmented_column = stack![Axis(0), column.slice(s![.., 0]), augmentation_vec].clone().into_dyn();
 
         // create data
         if n == &real_n {
-            new_data.slice_mut(s![i as usize, ..]).assign(&column);
+            new_data.slice_mut(s![.., i as usize]).assign(&column);
         } else if n < &real_n {
-            new_data.slice_mut(s![i as usize, ..]).assign(&subsampled_column);
+            new_data.slice_mut(s![.., i as usize]).assign(&subsampled_column);
         } else if n > &real_n {
-            new_data.slice_mut(s![i as usize, ..]).assign(&augmented_column);
+            new_data.slice_mut(s![.., i as usize]).assign(&augmented_column);
         }
     }
     return new_data;
@@ -629,7 +629,7 @@ pub fn resize_categorical<T>(data: &ArrayD<T>, n: &u64,
     // for each column in data:
     for i in 0..n_cols {
         // get column
-        let column = data_2d.slice_mut(s![i as usize, ..]).to_owned().into_dyn();
+        let column = data_2d.slice_mut(s![.., i as usize]).to_owned().into_dyn();
 
         // create subsampled version of data (returned if n < real_n)
         let k: u64 = cmp::min(*n, real_n);
@@ -642,15 +642,15 @@ pub fn resize_categorical<T>(data: &ArrayD<T>, n: &u64,
                                                    &vec![null_value[i as usize].clone()]
                                     );
         let augmentation_vec = augmentation_data.unwrap().clone().into_dimensionality::<Ix1>().unwrap().to_vec();
-        let augmented_column = stack![Axis(0), column.slice(s![0, ..]), augmentation_vec].clone().into_dyn();
+        let augmented_column = stack![Axis(0), column.slice(s![.., 0]), augmentation_vec].clone().into_dyn();
 
         // create data
         if n == &real_n {
-            new_data.slice_mut(s![i as usize, ..]).assign(&column);
+            new_data.slice_mut(s![.., i as usize]).assign(&column);
         } else if n < &real_n {
-            new_data.slice_mut(s![i as usize, ..]).assign(&subsampled_column);
+            new_data.slice_mut(s![.., i as usize]).assign(&subsampled_column);
         } else if n > &real_n {
-            new_data.slice_mut(s![i as usize, ..]).assign(&augmented_column);
+            new_data.slice_mut(s![.., i as usize]).assign(&augmented_column);
         }
     }
     return new_data;
