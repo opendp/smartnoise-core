@@ -6,8 +6,7 @@ use std::io::Write; // trait which holds `display_chain`
 use error_chain::ChainedError;
 mod base;
 pub mod utilities;
-mod components;
-
+pub mod components;
 
 
 extern crate libc;
@@ -30,10 +29,9 @@ pub extern "C" fn release(
 
     let analysis: proto::Analysis = request.analysis.unwrap();
     let release: proto::Release = request.release.unwrap();
-    let dataset: proto::Dataset = request.dataset.unwrap();
 
     let response = proto::ResponseRelease {
-        value: match base::execute_graph(&analysis, &release, &dataset) {
+        value: match base::execute_graph(&analysis, &release) {
             Ok(release) => Some(proto::response_release::Value::Data(release)),
             Err(err) => {
 

@@ -25,9 +25,7 @@ message Component {
 
         // -- manipulations --
         // type manipulations
-        ToString tostring = 200;
-        ToInt toint = 201;
-        ToBool tobool = 202;
+        Cast cast = 200;
         // general manipulations
         Bin bin = 220;
         Clamp clamp = 221;
@@ -86,7 +84,7 @@ message Component {
 
 // data loading
 message Materialize {
-    string dataset_id = 1;
+    Table table = 1;
 }
 message Index {
     repeated string path = 1;
@@ -107,9 +105,7 @@ message ColumnNames {}
 
 // -- manipulations --
 // type manipulations
-message ToString {}
-message ToInt {}
-message ToBool {}
+message Cast {}
 // general manipulations
 message Bin {}
 message Clamp {}

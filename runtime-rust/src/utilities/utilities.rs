@@ -5,6 +5,8 @@ use openssl::rand::rand_bytes;
 use ieee754::Ieee754;
 
 use crate::utilities::noise;
+use ndarray::{ArrayD, Axis};
+use std::collections::HashSet;
 
 pub fn get_bytes(n_bytes: usize) -> String {
     /// Return bytes of binary data as String
@@ -71,10 +73,10 @@ pub fn binary_to_f64(binary_string: &String) -> f64 {
     // get sign and convert to bool as recompose expects
     let sign = &binary_string[0..1];
     let sign_bool = if sign.parse::<i32>().unwrap() == 0 {
-                        false
-                    } else {
-                        true
-                    };
+        false
+    } else {
+        true
+    };
 
     // convert exponent to int
     let exponent = &binary_string[1..12];
@@ -97,7 +99,7 @@ pub fn split_ieee_into_components(binary_string: &String) -> (String, String, St
     ///
     /// # Return
     /// * `(sign, exponent, mantissa)` - where each is a string
-    return(binary_string[0..1].to_string(), binary_string[1..12].to_string(), binary_string[12..].to_string());
+    return (binary_string[0..1].to_string(), binary_string[1..12].to_string(), binary_string[12..].to_string());
 }
 
 pub fn combine_components_into_ieee(sign: &str, exponent: &str, mantissa: &str) -> String {
@@ -114,9 +116,9 @@ pub fn combine_components_into_ieee(sign: &str, exponent: &str, mantissa: &str) 
     return combined_string;
 }
 
-pub fn sample_from_set<T>(candidate_set: &Vec<T>, weights: &Vec<f64>) -> T where T: Clone, {
+pub fn sample_from_set<T>(candidate_set: &Vec<T>, weights: &Vec<f64>) -> Result<T> where T: Clone, {
     // generate uniform random number on [0,1)
-    let unif: f64 = noise::sample_uniform(0., 1.);
+    let unif: f64 = noise::sample_uniform(&0., &1.)?;
 
     // generate sum of weights
     let weights_sum: f64 = weights.iter().sum();
@@ -125,15 +127,27 @@ pub fn sample_from_set<T>(candidate_set: &Vec<T>, weights: &Vec<f64>) -> T where
     let probabilities: Vec<f64> = weights.iter().map(|w| w / weights_sum).collect();
 
     // generate cumulative probability distribution
-    let cumulative_probability_vec = probabilities.iter().scan(0.0, |sum, i| {*sum += i; Some(*sum)}).collect::<Vec<_>>();
+    let cumulative_probability_vec = probabilities.iter().scan(0.0, |sum, i| {
+        *sum += i;
+        Some(*sum)
+    }).collect::<Vec<_>>();
 
     // sample an element relative to its probability
     let mut return_index = 0;
     for i in 0..cumulative_probability_vec.len() {
         if unif <= cumulative_probability_vec[i] {
             return_index = i;
-            break
+            break;
         }
     }
-    return candidate_set[return_index as usize].clone()
+    Ok(candidate_set[return_index as usize].clone())
+}
+
+pub fn get_num_columns<T>(data: &ArrayD<T>) -> Result<i64> {
+    match data.ndim() {
+        0 => Err("data is a scalar".into()),
+        1 => Ok(1),
+        2 => Ok(data.shape().last().unwrap().clone() as i64),
+        _ => Err("data may be at most 2-dimensional".into())
+    }
 }

@@ -3,17 +3,15 @@ use yarrow_validator::ErrorKind::{PrivateError, PublicError};
 
 extern crate yarrow_validator;
 
-use yarrow_validator::{proto, base};
+use yarrow_validator::{proto};
 use yarrow_validator::utilities::{graph as yarrow_graph, serial};
 
-
+use crate::components::*;
 
 use std::collections::{HashMap, HashSet};
 use std::vec::Vec;
 
 use itertools::Itertools;
-
-use crate::components;
 
 use yarrow_validator::base::{get_input_properties, Value};
 use yarrow_validator::utilities::inference::infer_property;
@@ -22,8 +20,7 @@ use yarrow_validator::utilities::serial::serialize_properties;
 pub type NodeArguments<'a> = HashMap<String, &'a Value>;
 
 pub fn execute_graph(analysis: &proto::Analysis,
-                     release: &proto::Release,
-                     dataset: &proto::Dataset) -> Result<proto::Release> {
+                     release: &proto::Release) -> Result<proto::Release> {
     let node_ids_release: HashSet<u32> = yarrow_graph::get_release_nodes(&analysis)?;
 
     // stack for storing which nodes to evaluate next
@@ -41,7 +38,6 @@ pub fn execute_graph(analysis: &proto::Analysis,
 
     // TEMP FIX FOR UNEVALUATED PROPERTIES
     for (node_id, value) in evaluations.clone() {
-        let component = graph.get(&node_id).unwrap();
         graph_properties.insert(node_id.clone(), serialize_properties(&infer_property(&value)?));
     }
 
@@ -55,7 +51,13 @@ pub fn execute_graph(analysis: &proto::Analysis,
 
     while !traversal.is_empty() {
         let node_id: u32 = *traversal.last().unwrap();
-        let component: &proto::Component = graph.get(&node_id).unwrap();
+
+        if evaluations.contains_key(&node_id) {
+            traversal.pop();
+            continue;
+        }
+
+        let component: proto::Component = graph.get(&node_id).unwrap().clone();
         let arguments = component.to_owned().arguments;
 
         // discover if any dependencies remain uncomputed
@@ -104,8 +106,14 @@ pub fn execute_graph(analysis: &proto::Analysis,
 
         traversal.pop();
 
-        let evaluation = execute_component(
-            &graph.get(&node_id).unwrap(), &evaluations, &dataset)?;
+
+        let mut node_arguments = NodeArguments::new();
+        component.arguments.iter().for_each(|(field_id, field)| {
+            let evaluation = evaluations.get(&field).unwrap();
+            node_arguments.insert(field_id.to_owned(), evaluation);
+        });
+
+        let evaluation = component.to_owned().value.unwrap().evaluate(&node_arguments)?;
 
         evaluations.insert(node_id, evaluation);
 
@@ -122,53 +130,4 @@ pub fn execute_graph(analysis: &proto::Analysis,
         }
     }
     serial::serialize_release(&evaluations)
-}
-
-pub fn execute_component(component: &proto::Component,
-                         evaluations: &base::Release,
-                         dataset: &proto::Dataset) -> Result<Value> {
-
-//    println!("executing component:");
-//    println!("{:?}", component);
-
-    let mut arguments = NodeArguments::new();
-    component.arguments.iter().for_each(|(field_id, field)| {
-        let evaluation = evaluations.get(&field).unwrap();
-        arguments.insert(field_id.to_owned(), evaluation);
-    });
-
-//    println!("arguments:");
-//    println!("{:?}", arguments);
-
-    use proto::component::Value as Value;
-    match component.to_owned().value.unwrap() {
-        Value::Materialize(x) => components::component_materialize(&x, &dataset),
-        Value::Count(x) => components::component_count(&x, &arguments),
-        Value::Clamp(x) => components::component_clamp(&x, &arguments),
-        Value::Impute(x) => components::component_impute(&x, &arguments),
-        Value::Index(x) => components::component_index(&x, &arguments),
-        Value::Kthrawsamplemoment(x) => components::component_kth_raw_sample_moment(&x, &arguments),
-        Value::Resize(x) => components::component_resize(&x, &arguments),
-        Value::Constant(x) => components::component_constant(&x),
-        Value::Datasource(x) => components::component_datasource(&x, &dataset, &arguments),
-        Value::Add(x) => components::component_add(&x, &arguments),
-        Value::Subtract(x) => components::component_subtract(&x, &arguments),
-        Value::Divide(x) => components::component_divide(&x, &arguments),
-        Value::Multiply(x) => components::component_multiply(&x, &arguments),
-        Value::Power(x) => components::component_power(&x, &arguments),
-        Value::Negate(x) => components::component_negate(&x, &arguments),
-        Value::Bin(x) => components::component_bin(&x, &arguments),
-        Value::Rowmin(x) => components::component_row_wise_min(&x, &arguments),
-        Value::Rowmax(x) => components::component_row_wise_max(&x, &arguments),
-        // Value::Count(x) => components::component_count(&x, &arguments),
-        // Value::Histogram(x) => components::component_histogram(&x, &arguments),
-        Value::Mean(x) => components::component_mean(&x, &arguments),
-        Value::Median(x) => components::component_median(&x, &arguments),
-        Value::Sum(x) => components::component_sum(&x, &arguments),
-        Value::Variance(x) => components::component_variance(&x, &arguments),
-        Value::LaplaceMechanism(x) => components::component_laplace_mechanism(&x, &arguments),
-        Value::GaussianMechanism(x) => components::component_gaussian_mechanism(&x, &arguments),
-        Value::SimpleGeometricMechanism(x) => components::component_simple_geometric_mechanism(&x, &arguments),
-        variant => Err(format!("Component type not implemented: {:?}", variant).into())
-    }
 }

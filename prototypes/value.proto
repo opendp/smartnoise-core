@@ -103,3 +103,11 @@ message PrivacyUsage {
         DistanceApproximate distance_approximate = 2;
     }
 }
+
+message Table {
+    oneof value {
+        string file_path = 1;
+        string url_path = 2;
+        Value literal = 3;
+    }
+}

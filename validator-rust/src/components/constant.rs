@@ -18,7 +18,10 @@ impl Component for proto::Constant {
         _public_arguments: &HashMap<String, Value>,
         _properties: &base::NodeProperties,
     ) -> Result<Properties> {
-        Err("release value for constant is missing".into())
+        match self.value.clone() {
+            Some(value) => infer_property(&parse_value(&value)?),
+            None => Err("release value for constant is missing".into())
+        }
     }
 
     fn get_names(

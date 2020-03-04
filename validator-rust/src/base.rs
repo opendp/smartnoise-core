@@ -14,7 +14,7 @@ use std::collections::HashMap;
 
 use crate::utilities::serial::{parse_value, serialize_value, parse_release};
 use std::ops::Deref;
-use ndarray::ArrayD;
+use ndarray::{ArrayD, Array};
 use crate::utilities::inference::infer_property;
 
 // equivalent to proto Release
@@ -352,6 +352,105 @@ pub fn propagate_properties(
         graph_property.insert(node_id.clone(), property);
     }
     Ok(graph_property)
+}
+
+pub fn standardize_numeric_argument<T: Clone>(value: &ArrayD<T>, length: &i64) -> Result<ArrayD<T>> {
+    match value.ndim() {
+        0 => match value.first() {
+            Some(scalar) => Ok(Array::from((0..*length).map(|_| scalar.clone()).collect::<Vec<T>>()).into_dyn()),
+            None => Err("value must be non-empty".into())
+        },
+        1 => match value.len() as i64 == *length {
+            true => Ok(value.clone()),
+            false => Err("value is of incompatible length".into())
+        },
+        _ => Err("value must be a scalar or vector".into())
+    }
+}
+
+pub fn uniform_density(length: usize) -> Vec<f64> {
+    (0..length).map(|_| 1. / (length as f64)).collect()
+}
+
+pub fn normalize_probabilities(probabilities: &Vec<f64>) -> Vec<f64> {
+    let sum: f64 = probabilities.iter().sum();
+    probabilities.iter().map(|prob| prob / sum).collect()
+}
+
+pub fn standardize_categorical_argument<T: Clone>(
+    categories: &Vec<Option<Vec<T>>>,
+    length: &i64
+) -> Result<Vec<Vec<T>>> {
+    // check that no categories are explicitly None
+    let mut categories = categories.iter()
+        .map(|v| v.clone())
+        .collect::<Option<Vec<Vec<T>>>>()
+        .ok_or::<Error>("categories must be defined for all columns".into())?;
+
+    if categories.len() == 0 {
+        return Err("no categories are defined".into());
+    }
+    // broadcast categories across all columns, if only one categories set is defined
+    if categories.len() == 1 {
+        categories = (0..*length).map(|_| categories.first().unwrap().clone()).collect();
+    }
+
+    Ok(categories)
+}
+
+pub fn standardize_null_argument<T: Clone>(
+    value: &Vec<Option<Vec<T>>>,
+    length: &i64
+) -> Result<Vec<T>> {
+    let mut value = value.iter()
+        .map(|v| v.clone())
+        .collect::<Option<Vec<Vec<T>>>>()
+        .ok_or::<Error>("null must be defined for all columns".into())?;
+
+    if value.len() == 0 {
+        return Err("null values cannot be an empty vector".into());
+    }
+
+    let mut value: Vec<T> = value.iter().map(|v| match v.len() {
+        i if i == 1 => Ok(v.clone().first().unwrap().clone()),
+        _ => Err("only one null value may be defined".into())
+    }).collect::<Result<Vec<T>>>()?;
+
+    // broadcast nulls across all columns, if only one null set is defined
+    if value.len() == 1 {
+        value = (0..*length).map(|_| value.clone().first().unwrap().clone()).collect();
+    }
+    Ok(value)
+}
+
+pub fn standardize_weight_argument<T>(
+    categories: &Vec<Vec<T>>,
+    weights: &Vec<Option<Vec<f64>>>,
+    length: &i64
+) -> Result<Vec<Vec<f64>>> {
+    match weights.len() {
+        0 => Ok(categories.iter()
+            .map(|cats| uniform_density(cats.len()))
+            .collect::<Vec<Vec<f64>>>()),
+        1 => {
+            let weights = match weights[0].clone() {
+                Some(weights) => normalize_probabilities(&weights),
+                None => uniform_density(categories[0].len())
+            };
+
+            categories.iter().map(|cats| match cats.len() == weights.len() {
+                true => Ok(weights.clone()),
+                false => Err("length of weights does not match number of categories".into())
+            }).collect::<Result<Vec<Vec<f64>>>>()
+        },
+        _ => match categories.len() == weights.len() {
+            true => categories.iter().zip(weights.iter()).map(|(cats, weights)| match weights {
+                Some(weights) => Ok(normalize_probabilities(weights)),
+                None => Err("category weights must be set once, for all categories, or none".into())
+            }).collect::<Result<Vec<Vec<f64>>>>(),
+            false => return Err("category weights must be the same length as categories, or none".into())
+        }
+    }
 }
 
 pub fn get_constant(value: &Value, batch: &u32) -> proto::Component {

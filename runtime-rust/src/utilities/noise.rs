@@ -20,11 +20,11 @@ use crate::utilities::utilities;
 /// # Example
 /// ```
 /// use yarrow_runtime::utilities::noise::sample_laplace;
-/// let n:f64 = sample_laplace(0.0, 2.0);
+/// let n:f64 = sample_laplace(0.0, 2.0)?;
 /// ```
-pub fn sample_laplace(shift: f64, scale: f64) -> f64 {
-    let probability: f64 = sample_uniform(0., 1.);
-    return Laplace::new(shift, scale).inverse(probability);
+pub fn sample_laplace(shift: f64, scale: f64) -> Result<f64> {
+    let probability: f64 = sample_uniform(&0., &1.)?;
+    Ok(Laplace::new(shift, scale).inverse(probability))
 }
 
 /// Sample from Gaussian distribution centered at shift and scaled by scale
@@ -40,11 +40,11 @@ pub fn sample_laplace(shift: f64, scale: f64) -> f64 {
 /// # Example
 /// ```
 /// use yarrow_runtime::utilities::noise::sample_gaussian;
-/// let n:f64 = sample_gaussian(0.0, 2.0);
+/// let n:f64 = sample_gaussian(&0.0, &2.0)?;
 /// ```
-pub fn sample_gaussian(shift: f64, scale: f64) -> f64 {
-    let probability: f64 = sample_uniform(0., 1.);
-    return Gaussian::new(shift, scale).inverse(probability);
+pub fn sample_gaussian(shift: &f64, scale: &f64) -> Result<f64> {
+    let probability: f64 = sample_uniform(&0., &1.)?;
+    Ok(Gaussian::new(shift.clone(), scale.clone()).inverse(probability))
 }
 
 /// Sample from truncated Gaussian distribution
@@ -64,17 +64,23 @@ pub fn sample_gaussian(shift: f64, scale: f64) -> f64 {
 /// # Example
 /// ```
 /// use yarrow_runtime::utilities::noise::sample_gaussian_truncated;
-/// let n:f64 = sample_gaussian_truncated(1.0, 1.0, 0.0, 2.0);
+/// let n:f64 = sample_gaussian_truncated(&1.0, &1.0, &0.0, &2.0)?;
 /// assert!(n >= 0.0);
 /// assert!(n <= 2.0);
 /// ```
-pub fn sample_gaussian_truncated(shift: f64, scale: f64, min: f64, max: f64) -> f64 {
-    assert!(min <= max);
-    assert!(scale > 0.0);
+pub fn sample_gaussian_truncated(min: &f64, max: &f64, shift: &f64, scale: &f64) -> Result<f64> {
+    // TODO: why can't probability take a ref? perhaps need to drop the dependency
+    let min = min.clone();
+    let max = max.clone();
+    let shift = shift.clone();
+    let scale = scale.clone();
+    if min > max {return Err("min cannot be less than max".into());}
+    if scale <= 0.0 {return Err("scale must be greater than zero".into());}
+
     let unif_min: f64 = Gaussian::new(shift, scale).distribution(min);
     let unif_max: f64 = Gaussian::new(shift, scale).distribution(max);
-    let unif: f64 = sample_uniform(unif_min, unif_max);
-    return Gaussian::new(shift, scale).inverse(unif);
+    let unif: f64 = sample_uniform(&unif_min, &unif_max)?;
+    Ok(Gaussian::new(shift, scale).inverse(unif))
 }
 
 /// Sample from uniform integers between min and max (inclusive)
@@ -89,17 +95,17 @@ pub fn sample_gaussian_truncated(shift: f64, scale: f64, min: f64, max: f64) -> 
 /// # Example
 /// ``` 
 /// use yarrow_runtime::utilities::noise::sample_uniform_int;
-/// let n:i64 = sample_uniform_int(&0, &2);
+/// let n:i64 = sample_uniform_int(&0, &2)?;
 /// assert!(n == 0 || n == 1 || n == 2);
 /// ```
 ///
 /// ``` should_panic
 /// use yarrow_runtime::utilities::noise::sample_uniform_int;
-/// let n:i64 = sample_uniform_int(&2, &0);
+/// let n:i64 = sample_uniform_int(&2, &0)?;
 /// ```
-pub fn sample_uniform_int(min: &i64, max: &i64) -> i64 {
+pub fn sample_uniform_int(min: &i64, max: &i64) -> Result<i64> {
 
-    assert!(min <= max);
+    if min > max {return Err("min cannot be less than max".into());}
 
     // define number of possible integers we could sample and the maximum
     // number of bits it would take to represent them
@@ -126,7 +132,7 @@ pub fn sample_uniform_int(min: &i64, max: &i64) -> i64 {
 
     // return successfully generated integer, scaled to be within
     // the correct range
-    return uniform_int + min;
+    Ok(uniform_int + min)
 }
 
 /// Returns random sample from Uniform[min,max)
@@ -156,16 +162,16 @@ pub fn sample_uniform_int(min: &i64, max: &i64) -> i64 {
 /// # Example
 /// ```
 /// use yarrow_runtime::utilities::noise::sample_uniform;
-/// let n:f64 = sample_uniform(0.0, 2.0);
+/// let n:f64 = sample_uniform(&0.0, &2.0)?;
 /// assert!(n >= 0.0 && n < 2.0);
 /// ```
 /// ``` should_panic
 /// use yarrow_runtime::utilities::noise::sample_uniform;
-/// let n:f64 = sample_uniform(2.0, 0.0);
+/// let n:f64 = sample_uniform(&2.0, &0.0)?;
 /// ```
-pub fn sample_uniform(min: f64, max: f64) -> f64 {
+pub fn sample_uniform(min: &f64, max: &f64) -> Result<f64> {
 
-    assert!(min <= max);
+    if min > max {return Err("min cannot be less than max".into());}
 
     // Generate mantissa
     let binary_string = utilities::get_bytes(7);
@@ -181,7 +187,7 @@ pub fn sample_uniform(min: f64, max: f64) -> f64 {
     // Generate uniform random number from (0,1)
     let uniform_rand = f64::recompose_raw(false, exponent, mantissa_int);
 
-    return uniform_rand * (max - min) + min;
+    Ok(uniform_rand * (max - min) + min)
 }
 
 
@@ -249,12 +255,12 @@ pub fn sample_bit(prob: &f64) -> i64 {
 /// # Example
 /// ```
 /// use yarrow_runtime::utilities::noise::sample_geometric_censored;
-/// let geom: i64 = sample_geometric_censored(&0.1, &20, &false);
+/// let geom: i64 = sample_geometric_censored(&0.1, &20, &false)?;
 /// ```
-pub fn sample_geometric_censored(prob: &f64, max_trials: &i64, enforce_constant_time: &bool) -> i64 {
+pub fn sample_geometric_censored(prob: &f64, max_trials: &i64, enforce_constant_time: &bool) -> Result<i64> {
 
     // ensure that prob is a valid probability
-    assert!(prob >= &0.0 && prob <= &1.0);
+    if prob < &0.0 || prob > &1.0 {return Err("probability is not within [0, 1]".into())}
 
     let mut bit: i64 = 0;
     let mut n_trials: i64 = 1;
@@ -267,7 +273,7 @@ pub fn sample_geometric_censored(prob: &f64, max_trials: &i64, enforce_constant_
             if geom_return == 0 {
                 geom_return = n_trials;
                 if enforce_constant_time == &false {
-                    return geom_return;
+                    return Ok(geom_return);
                 }
             }
         } else {
@@ -280,7 +286,7 @@ pub fn sample_geometric_censored(prob: &f64, max_trials: &i64, enforce_constant_
         geom_return = *max_trials; // could also set this equal to n_trials - 1.
     }
 
-    return geom_return;
+    return Ok(geom_return);
 }
 
 /// Return sample from a censored Geometric distribution with parameter p=0.5
@@ -337,22 +343,22 @@ pub fn sample_floating_point_probability_exponent() -> i16 {
 /// ```
 /// use ndarray::prelude::*;
 /// use yarrow_runtime::utilities::noise::sample_simple_geometric_mechanism;
-/// let geom_noise: i64 = sample_simple_geometric_mechanism(&1., &0, &100, &false);
+/// let geom_noise: i64 = sample_simple_geometric_mechanism(&1., &0, &100, &false)?;
 /// ```
-pub fn sample_simple_geometric_mechanism(scale: &f64, min: &i64, max: &i64, enforce_constant_time: &bool) -> i64 {
+pub fn sample_simple_geometric_mechanism(scale: &f64, min: &i64, max: &i64, enforce_constant_time: &bool) -> Result<i64> {
 
     let alpha: f64 = consts::E.powf(-1. / *scale);
     let max_trials: i64 = max - min;
 
     // return 0 noise with probability (1-alpha) / (1+alpha), otherwise sample from geometric
-    let unif: f64 = sample_uniform(0., 1.);
-    if unif < (1. - &alpha) / (1. + &alpha) {
-        return 0;
+    let unif: f64 = sample_uniform(&0., &1.)?;
+    if unif < (1. - alpha) / (1. + alpha) {
+        return Ok(0);
     } else {
         // get random sign
         let sign: i64 = 2 * sample_bit(&0.5) - 1;
         // sample from censored geometric
-        let geom: i64 = sample_geometric_censored(&(1. - alpha), &max_trials, enforce_constant_time);
-        return sign * geom;
+        let geom: i64 = sample_geometric_censored(&(1. - alpha), &max_trials, enforce_constant_time)?;
+        return Ok(sign * geom);
     }
 }
