@@ -1,13 +1,15 @@
 use crate::errors::*;
 use crate::ErrorKind::{PrivateError, PublicError};
 
-pub mod row_wise_min;
+pub mod cast;
+pub mod clamp;
+pub mod constant;
 pub mod dp_mean;
 pub mod impute;
+pub mod index;
+pub mod materialize;
 pub mod resize;
-pub mod constant;
-pub mod clamp;
-pub mod datasource;
+pub mod row_wise_min;
 
 use std::collections::HashMap;
 
@@ -96,7 +98,7 @@ impl Component for proto::component::Value {
 
         propagate_property!(self, public_arguments, properties,
             // INSERT COMPONENT LIST
-            Datasource, Rowmin, Dpmean, Impute, Resize, Clamp, Constant
+            Rowmin, Dpmean, Impute, Resize, Clamp, Constant, Materialize, Cast, Index
         );
 
         return Err("a proto component is missing its Component trait".into())

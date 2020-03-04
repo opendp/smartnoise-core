@@ -3,15 +3,15 @@ use crate::ErrorKind::{PrivateError, PublicError};
 
 use std::collections::HashMap;
 
-use crate::base::{ArrayND, Value, Vector2DJagged, Nature, Vector1DNull, NatureContinuous, NatureCategorical, Properties, NodeProperties};
 
 
 use crate::{proto, base};
 
 use crate::components::{Component};
+use crate::base::{Value, Properties, NodeProperties};
 
 
-impl Component for proto::DataSource {
+impl Component for proto::Materialize {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
         &self,
@@ -22,9 +22,9 @@ impl Component for proto::DataSource {
             nullity: true,
             releasable: false,
             nature: None,
-            c_stability: vec![1.],
-            num_columns: Some(1),
-            num_records: vec![None]
+            c_stability: vec![],
+            num_columns: None,
+            num_records: vec![]
         })
     }
 
