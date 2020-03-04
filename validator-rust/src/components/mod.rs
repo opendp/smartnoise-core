@@ -8,6 +8,8 @@ pub mod dp_mean;
 pub mod impute;
 pub mod index;
 pub mod materialize;
+pub mod mean;
+pub mod mechanism_laplace;
 pub mod resize;
 pub mod row_wise_min;
 
@@ -98,8 +100,10 @@ impl Component for proto::component::Value {
 
         propagate_property!(self, public_arguments, properties,
             // INSERT COMPONENT LIST
-            Rowmin, Dpmean, Impute, Resize, Clamp, Constant, Materialize, Cast, Index
+            Rowmin, Dpmean, Impute, Resize, Clamp, Constant, Materialize, Cast, Index, LaplaceMechanism, Mean
         );
+
+        println!("{:?}", self);
 
         return Err("a proto component is missing its Component trait".into())
     }

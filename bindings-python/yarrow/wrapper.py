@@ -30,8 +30,7 @@ class LibraryWrapper(object):
             response_type=api_pb2.ResponseGenerateReport,
             ffi=ffi_validator)
 
-        # TODO: why is ffi returning two extra characters: \n\x10, a newline and data link escape control character?
-        return json_string[2:]
+        return json_string
 
     @staticmethod
     def accuracy_to_privacy_usage(privacy_definition, component, constraint, accuracy):

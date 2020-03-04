@@ -319,6 +319,8 @@ class Analysis(object):
             self._make_analysis_proto(),
             self._make_release_proto())
 
+        print(self.release_proto)
+
         return json.loads(core_wrapper.generate_report(
             self._make_analysis_proto(),
             self.release_proto))

@@ -9,7 +9,7 @@ use yarrow_validator::proto;
 
 impl Evaluable for proto::Index {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        let data = get_argument(&arguments, "index")?;
+        let data = get_argument(&arguments, "data")?;
         let columns = get_argument(&arguments, "columns")?;
 
         match data {

@@ -83,9 +83,9 @@ pub fn execute_graph(analysis: &proto::Analysis,
                 .get(component.arguments.get(k).unwrap()).unwrap().clone()))
             .collect::<HashMap<String, Value>>();
 
-        println!("expanding component {:?}", component);
-        println!("public arguments {:?}", public_arguments);
-        println!("node properties {:?}", node_properties);
+//        println!("expanding component {:?}", component);
+//        println!("public arguments {:?}", public_arguments);
+//        println!("node properties {:?}", node_properties);
         // all arguments have been computed, attempt to expand the current node
         let expansion: proto::response_expand_component::ExpandedComponent = yarrow_validator::base::expand_component(
             &analysis.privacy_definition.to_owned().unwrap(),
@@ -113,15 +113,17 @@ pub fn execute_graph(analysis: &proto::Analysis,
             node_arguments.insert(field_id.to_owned(), evaluation);
         });
 
+        println!("Evaluating {:?}", node_id);
         let evaluation = component.to_owned().value.unwrap().evaluate(&node_arguments)?;
 
         evaluations.insert(node_id, evaluation);
 
         // remove references to parent node, and if empty and private
         for argument_node_id in arguments.values() {
-            let tempval = parents.get_mut(argument_node_id).unwrap();
-            tempval.remove(&node_id);
-            if parents.get(argument_node_id).unwrap().len() == 0 {
+            if let Some(temporary_node) = parents.get_mut(argument_node_id) {
+                temporary_node.remove(&node_id);
+            }
+            if let Some(argument_node) = parents.get(argument_node_id) {
                 if !node_ids_release.contains(argument_node_id) {
                     evaluations.remove(argument_node_id);
                     // parents.remove(argument_node_id); // optional

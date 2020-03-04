@@ -33,6 +33,9 @@ use crate::utilities::utilities;
 /// ```
 pub fn laplace_mechanism(epsilon: &f64, sensitivity: &f64) -> Result<f64> {
     let scale: f64 = sensitivity / epsilon;
+    println!("scale {:?}", scale);
+    println!("sens {:?}", sensitivity);
+    println!("eps {:?}", epsilon);
     let noise: f64 = noise::sample_laplace(0., scale)?;
 
     Ok(noise)

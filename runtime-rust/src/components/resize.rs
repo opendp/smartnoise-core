@@ -91,7 +91,7 @@ pub fn resize_float(data: &ArrayD<f64>, n: &i64, distribution: &String,
             }
         },
         real_n if real_n > n =>
-            data.select(Axis(0), &create_sampling_indices(&real_n, &n)?).to_owned(),
+            data.select(Axis(0), &create_sampling_indices(&n, &real_n)?).to_owned(),
         _ => return Err("invalid configuration for n when resizing".into())
     })
 }
@@ -126,7 +126,7 @@ pub fn resize_categorical<T>(data: &ArrayD<T>, n: &i64,
             }
         },
         real_n if real_n > n =>
-            data.select(Axis(0), &create_sampling_indices(&real_n, &n)?).to_owned(),
+            data.select(Axis(0), &create_sampling_indices(&n, &real_n)?).to_owned(),
         _ => return Err("invalid configuration for n when resizing".into())
     })
 }
@@ -136,7 +136,7 @@ pub fn resize_categorical<T>(data: &ArrayD<T>, n: &i64,
 /// Based on Algorithm A from Raimidis PS, Spirakis PG (2006). “Weighted random sampling with a reservoir.”
 pub fn create_subset<T>(set: &Vec<T>, weights: &Vec<f64>, k: &i64) -> Result<Vec<T>> where T: Clone {
 
-    if *k as usize <= set.len() {return Err("k must be less than the set length".into())}
+    if *k as usize > set.len() {return Err("k must be less than the set length".into())}
 
     let weights_sum: f64 = weights.iter().sum();
 
@@ -172,10 +172,7 @@ pub fn create_sampling_indices(k: &i64, n: &i64) -> Result<Vec<usize>> {
     /// Creates set of indices for subsampling from data without replacement
 
     // create set of all indices
-    let mut index_vec: Vec<usize> = Vec::with_capacity(*n as usize);
-    for i in 0..*n {
-        index_vec.push(i as usize);
-    }
+    let mut index_vec: Vec<usize> = (0..*n).map(|v| v as usize).collect();
 
     // create uniform selection probabilities
     let prob_vec: Vec<f64> = vec![1./(*n as f64); *n as usize];

@@ -43,7 +43,7 @@ impl Evaluable for proto::component::Value {
 
         evaluate!(self, arguments,
             // INSERT COMPONENT LIST
-            Cast, Clamp, Impute, Index, Materialize, Mean, LaplaceMechanism, Resize
+            Cast, Clamp, Impute, Index, Materialize, Mean, LaplaceMechanism, Resize, Constant
         );
 
         Err(format!("Component type not implemented: {:?}", self).into())
