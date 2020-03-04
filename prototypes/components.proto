@@ -84,7 +84,12 @@ message Component {
 
 // data loading
 message Materialize {
-    Table table = 1;
+    bool private = 1;
+    oneof value {
+        string file_path = 10;
+        string url_path = 11;
+        Value literal = 12;
+    }
 }
 message Index {
     repeated string path = 1;

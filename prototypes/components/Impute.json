@@ -1,15 +1,8 @@
 {
   "arguments": {
     "data": {
-      "constraints": [],
       "nature": [
         "continuous"
-      ],
-      "of": [
-        "int",
-        "bool",
-        "string",
-        "double"
       ],
       "type": "Array"
     },
@@ -36,19 +29,10 @@
   "name": "impute",
   "options": {},
   "return": {
-    "constraints": [
-      "n",
-      "non-null"
-    ],
     "nature": [
       "continuous"
     ],
-    "of": [
-      "int",
-      "bool",
-      "string",
-      "double"
-    ],
     "type": "Array"
-  }
+  },
+  "docstring": "impute step"
 }

@@ -1,17 +1,8 @@
 {
   "arguments": {
     "data": {
-      "constraints": [
-        "n",
-        "categories"
-      ],
       "nature": [
         "continuous"
-      ],
-      "of": [
-        "int",
-        "bool",
-        "double"
       ],
       "type": "Array"
     }
@@ -24,15 +15,7 @@
     }
   },
   "return": {
-    "constraints": [
-      "n",
-      "categories"
-    ],
-    "of": [
-      "int",
-      "bool",
-      "double"
-    ],
     "type": "Array"
-  }
+  },
+  "docstring": "dp_median step"
 }

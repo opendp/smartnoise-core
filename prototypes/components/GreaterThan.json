@@ -1,28 +1,14 @@
 {
   "arguments": {
     "left": {
-      "constraints": [
-        "n"
-      ],
       "nature": [
         "continuous"
-      ],
-      "of": [
-        "int",
-        "double"
       ],
       "type": "Array"
     },
     "right": {
-      "constraints": [
-        "n"
-      ],
       "nature": [
         "continuous"
-      ],
-      "of": [
-        "int",
-        "double"
       ],
       "type": "Array"
     }
@@ -31,13 +17,8 @@
   "name": "greater_than",
   "options": {},
   "return": {
-    "constraints": [
-      "n"
-    ],
     "nature": [],
-    "of": [
-      "bool"
-    ],
     "type": "Array"
-  }
+  },
+  "docstring": "greater_than step"
 }

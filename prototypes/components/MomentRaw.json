@@ -1,16 +1,8 @@
 {
   "arguments": {
     "data": {
-      "constraints": [
-        "non-null"
-      ],
       "nature": [
         "continuous"
-      ],
-      "of": [
-        "int",
-        "bool",
-        "double"
       ],
       "type": "Array"
     }
@@ -23,16 +15,10 @@
     }
   },
   "return": {
-    "constraints": [
-      "non-null",
-      "n"
-    ],
     "nature": [
       "continuous"
     ],
-    "of": [
-      "double"
-    ],
     "type": "Array"
-  }
+  },
+  "docstring": "moment_raw step"
 }

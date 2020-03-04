@@ -1,9 +1,6 @@
 {
   "arguments": {
     "base": {
-      "constraints": [
-        "n"
-      ],
       "nature": [
         "continuous"
       ],
@@ -16,9 +13,6 @@
       }
     },
     "data": {
-      "constraints": [
-        "n"
-      ],
       "nature": [
         "continuous"
       ],
@@ -35,14 +29,10 @@
   "name": "log",
   "options": {},
   "return": {
-    "constraints": ["n"],
     "nature": [
       "continuous"
     ],
-    "of": [
-      "int",
-      "double"
-    ],
     "type": "Array"
-  }
+  },
+  "docstring": "log step"
 }

@@ -8,11 +8,8 @@
     }
   },
   "return": {
-    "constraints": [],
     "nature": null,
-    "of": [
-      "string"
-    ],
     "type": "Hashmap"
-  }
+  },
+  "docstring": "materialize step"
 }

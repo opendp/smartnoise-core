@@ -1,36 +1,16 @@
 {
   "arguments": {
     "left": {
-      "constraints": [
-        "n"
-      ],
       "nature": [
         "continuous"
-      ],
-      "of": [
-        "int",
-        "double"
       ],
       "type": "Array"
     },
     "right": {
-      "constraints": [
-        "n"
-      ],
       "nature": [
         "continuous"
       ],
-      "of": [
-        "int",
-        "double"
-      ],
-      "type": {
-        "of": [
-          "int",
-          "double"
-        ],
-        "type": "Array"
-      }
+      "type": "Array"
     }
   },
   "id": "Add",
@@ -40,10 +20,7 @@
     "nature": [
       "continuous"
     ],
-    "of": [
-      "int",
-      "double"
-    ],
     "type": "Array"
-  }
+  },
+  "docstring": "add step"
 }

@@ -2,12 +2,6 @@
   "arguments": {
     "data": {
       "nature": [],
-      "of": [
-        "int",
-        "double",
-        "bool",
-        "string"
-      ],
       "type": "Array"
     }
   },
@@ -15,13 +9,10 @@
   "name": "negate",
   "options": {},
   "return": {
-    "constraints": [],
     "nature": [
       "continuous"
     ],
-    "of": [
-      "bool"
-    ],
     "type": "Array"
-  }
+  },
+  "docstring": "negate step"
 }

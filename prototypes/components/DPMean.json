@@ -1,19 +1,8 @@
 {
   "arguments": {
     "data": {
-      "constraints": [
-        "n",
-        "min",
-        "max",
-        "non-null"
-      ],
       "nature": [
         "continuous"
-      ],
-      "of": [
-        "int",
-        "bool",
-        "double"
       ],
       "type": "Array"
     }
@@ -26,14 +15,7 @@
     }
   },
   "return": {
-    "constraints": [
-        "n",
-        "min",
-        "max"
-      ],
-    "of": [
-      "double"
-    ],
     "type": "Array"
-  }
+  },
+  "docstring": "dp_mean step"
 }

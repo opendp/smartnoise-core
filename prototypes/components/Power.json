@@ -1,28 +1,14 @@
 {
   "arguments": {
     "data": {
-      "constraints": [
-        "n"
-      ],
       "nature": [
         "continuous"
-      ],
-      "of": [
-        "int",
-        "double"
       ],
       "type": "Array"
     },
     "radical": {
-      "constraints": [
-        "n"
-      ],
       "nature": [
         "continuous"
-      ],
-      "of": [
-        "int",
-        "double"
       ],
       "type": "Array"
     }
@@ -31,16 +17,10 @@
   "name": "power",
   "options": {},
   "return": {
-    "constraints": [
-      "n"
-    ],
     "nature": [
       "continuous"
     ],
-    "of": [
-      "int",
-      "double"
-    ],
     "type": "Array"
-  }
+  },
+  "docstring": "power step"
 }

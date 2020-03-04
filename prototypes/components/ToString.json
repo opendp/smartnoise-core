@@ -1,16 +1,9 @@
 {
   "arguments": {
     "data": {
-      "constraints": [],
       "nature": [
         "categorical",
         "continuous"
-      ],
-      "of": [
-        "int",
-        "bool",
-        "double",
-        "string"
       ],
       "type": "Array"
     }
@@ -19,13 +12,10 @@
   "name": "to_string",
   "options": {},
   "return": {
-    "constraints": [],
     "nature": [
       "categorical"
     ],
-    "of": [
-      "string"
-    ],
     "type": "Array"
-  }
+  },
+  "docstring": "to_string step"
 }

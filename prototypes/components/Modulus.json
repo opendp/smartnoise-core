@@ -1,28 +1,14 @@
 {
   "arguments": {
     "left": {
-      "constraints": [
-        "n"
-      ],
       "nature": [
         "continuous"
-      ],
-      "of": [
-        "int",
-        "double"
       ],
       "type": "Array"
     },
     "right": {
-      "constraints": [
-        "n"
-      ],
       "nature": [
         "continuous"
-      ],
-      "of": [
-        "int",
-        "double"
       ],
       "type": "Array"
     }
@@ -31,16 +17,10 @@
   "name": "modulus",
   "options": {},
   "return": {
-    "constraints": [
-      "n"
-    ],
     "nature": [
       "continuous"
     ],
-    "of": [
-      "int",
-      "double"
-    ],
     "type": "Array"
-  }
+  },
+  "docstring": "modulus step"
 }

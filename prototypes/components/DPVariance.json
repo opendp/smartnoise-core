@@ -1,19 +1,8 @@
 {
   "arguments": {
     "data": {
-      "constraints": [
-        "n",
-        "min",
-        "max",
-        "non-null"
-      ],
       "nature": [
         "continuous"
-      ],
-      "of": [
-        "int",
-        "bool",
-        "double"
       ],
       "type": "Array"
     }
@@ -26,17 +15,10 @@
     }
   },
   "return": {
-    "constraints": [
-      "n",
-      "min",
-      "non-null"
-    ],
     "nature": [
       "continuous"
     ],
-    "of": [
-      "double"
-    ],
     "type": "Array"
-  }
+  },
+  "docstring": "dp_variance step"
 }

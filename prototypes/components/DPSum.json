@@ -1,35 +1,15 @@
 {
   "arguments": {
     "data": {
-      "constraints": [
-        "n",
-        "min",
-        "max",
-        "non-null"
-      ],
       "nature": [
         "continuous"
-      ],
-      "of": [
-        "int",
-        "double",
-        "bool"
       ],
       "type": "Array"
     },
     "group_by": {
-      "constraints": [
-        "categories"
-      ],
       "nature": [
         "continuous",
         "categorical"
-      ],
-      "of": [
-        "int",
-        "bool",
-        "double",
-        "string"
       ],
       "type": "Array"
     }
@@ -45,19 +25,10 @@
     }
   },
   "return": {
-    "constraints": [
-      "n",
-      "min",
-      "max",
-      "non-null"
-    ],
     "nature": [
       "continuous"
     ],
-    "of": [
-      "int",
-      "double"
-    ],
     "type": "Array"
-  }
+  },
+  "docstring": "dp_sum step"
 }

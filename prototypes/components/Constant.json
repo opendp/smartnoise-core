@@ -1,23 +1,14 @@
 {
   "arguments": {},
-  "description": "intended to be used with a release that already contains the value for this node",
   "id": "Constant",
   "name": "constant",
   "options": {},
   "return": {
-    "constraints": [
-      "n"
-    ],
     "nature": [
       "continuous",
       "categorical"
     ],
-    "of": [
-      "int",
-      "bool",
-      "double",
-      "string"
-    ],
     "type": "Array"
-  }
+  },
+  "docstring": "intended to be used with a release that already contains the value for this node"
 }

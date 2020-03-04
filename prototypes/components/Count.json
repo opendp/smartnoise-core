@@ -4,16 +4,9 @@
       "type": "JaggedArray2D"
     },
     "data": {
-      "constraints": [],
       "nature": [
         "continuous",
         "categorical"
-      ],
-      "of": [
-        "int",
-        "bool",
-        "double",
-        "string"
       ],
       "type": "Array"
     }
@@ -26,15 +19,10 @@
     }
   },
   "return": {
-    "constraints": [
-      "n"
-    ],
     "nature": [
       "continuous"
     ],
-    "of": [
-      "int"
-    ],
     "type": "Array"
-  }
+  },
+  "docstring": "count step"
 }

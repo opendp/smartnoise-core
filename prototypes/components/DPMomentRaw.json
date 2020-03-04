@@ -4,11 +4,6 @@
       "nature": [
         "continuous"
       ],
-      "of": [
-        "int",
-        "bool",
-        "double"
-      ],
       "type": "Array"
     }
   },
@@ -26,9 +21,7 @@
     "nature": [
       "continuous"
     ],
-    "of": [
-      "double"
-    ],
     "type": "Array"
-  }
+  },
+  "docstring": "dp_moment_raw step"
 }

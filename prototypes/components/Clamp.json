@@ -1,15 +1,9 @@
 {
   "arguments": {
     "data": {
-      "constraints": [],
       "nature": [
         "continuous",
         "categorical"
-      ],
-      "of": [
-        "int",
-        "double",
-        "string"
       ],
       "type": "Array"
     },
@@ -28,20 +22,13 @@
   },
   "id": "Clamp",
   "name": "clamp",
-  "options": {
-  },
+  "options": {},
   "return": {
-    "constraints": [
-      "n"
-    ],
     "nature": [
       "continuous",
       "categorical"
     ],
-    "of": [
-      "int",
-      "double"
-    ],
     "type": "Array"
-  }
+  },
+  "docstring": "clamp step"
 }

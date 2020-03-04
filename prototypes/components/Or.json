@@ -1,23 +1,11 @@
 {
   "arguments": {
     "left": {
-      "constraints": [
-        "n"
-      ],
       "nature": [],
-      "of": [
-        "bool"
-      ],
       "type": "Array"
     },
     "right": {
-      "constraints": [
-        "n"
-      ],
       "nature": [],
-      "of": [
-        "bool"
-      ],
       "type": "Array"
     }
   },
@@ -25,13 +13,8 @@
   "name": "logical_or",
   "options": {},
   "return": {
-    "constraints": [
-      "n"
-    ],
     "nature": [],
-    "of": [
-      "bool"
-    ],
     "type": "Array"
-  }
+  },
+  "docstring": "logical_or step"
 }

@@ -52,10 +52,9 @@ class LibraryWrapper(object):
             ffi=ffi_validator)
 
     @staticmethod
-    def compute_release(dataset, analysis, release):
+    def compute_release(analysis, release):
         return _communicate(
             argument=api_pb2.RequestRelease(
-                dataset=dataset,
                 analysis=analysis,
                 release=release,
                 stack_trace=True),

@@ -1,0 +1,29 @@
+{
+  "arguments": {
+    "data": {
+      "type": "Array"
+    },
+    "type": {
+      "type": "Array"
+    },
+    "true_label": {
+      "type": "Array",
+      "default": "None"
+    },
+    "min": {
+      "type": "Array",
+      "default": "None"
+    },
+    "max": {
+      "type": "Array",
+      "default": "None"
+    }
+  },
+  "id": "Cast",
+  "name": "cast",
+  "options": {},
+  "return": {
+    "type": "Array"
+  },
+  "docstring": "cast step"
+}

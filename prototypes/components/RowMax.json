@@ -1,28 +1,14 @@
 {
   "arguments": {
     "left": {
-      "constraints": [
-        "n"
-      ],
       "nature": [
         "continuous"
-      ],
-      "of": [
-        "int",
-        "double"
       ],
       "type": "Array"
     },
     "right": {
-      "constraints": [
-        "n"
-      ],
       "nature": [
         "continuous"
-      ],
-      "of": [
-        "int",
-        "double"
       ],
       "type": {
         "of": [
@@ -40,10 +26,7 @@
     "nature": [
       "continuous"
     ],
-    "of": [
-      "int",
-      "double"
-    ],
     "type": "Array"
-  }
+  },
+  "docstring": "row_wise_max step"
 }

@@ -1,15 +1,7 @@
 {
   "arguments": {
     "data": {
-      "constraints": [],
       "nature": null,
-      "of": [
-        "Hashmap",
-        "int",
-        "bool",
-        "string",
-        "double"
-      ],
       "type": "Hashmap"
     }
   },
@@ -21,14 +13,8 @@
     }
   },
   "return": {
-    "constraints": [],
     "nature": null,
-    "of": [
-      "int",
-      "bool",
-      "string",
-      "double"
-    ],
     "type": "Array"
-  }
+  },
+  "docstring": "index step"
 }

@@ -1,32 +1,16 @@
 {
   "arguments": {
     "data": {
-      "constraints": [],
       "nature": [
         "continuous",
         "categorical"
-      ],
-      "of": [
-        "int",
-        "bool",
-        "double",
-        "string"
       ],
       "type": "Array"
     },
     "group_by": {
-      "constraints": [
-        "categories"
-      ],
       "nature": [
         "continuous",
         "categorical"
-      ],
-      "of": [
-        "int",
-        "bool",
-        "double",
-        "string"
       ],
       "type": "Array"
     }
@@ -42,15 +26,10 @@
     }
   },
   "return": {
-    "constraints": [
-      "n"
-    ],
     "nature": [
       "continuous"
     ],
-    "of": [
-      "int"
-    ],
     "type": "Array"
-  }
+  },
+  "docstring": "dp_count step"
 }

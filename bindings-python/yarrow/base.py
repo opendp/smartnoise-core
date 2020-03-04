@@ -33,35 +33,25 @@ def privacy_usage(epsilon=None, delta=None):
 
 
 class Dataset(object):
-    def __init__(self, name, data):
-        self.name = name
-        self.data = data
+    def __init__(self, *, path=None, value=None, private=True):
 
         global context
-        if context:
-            context.datasets.append(self)
+        if not context:
+            raise ValueError("all Yarrow components must be created within the context of an analysis")
+
+        if sum(int(i is not None) for i in [path, value]) != 1:
+            raise ValueError("either path or value must be set")
+
+        materialize_options = {'private': private}
+        if path is not None:
+            materialize_options['file_path'] = path
+        if value is not None:
+            materialize_options['literal'] = Component._make_value_proto(value)
+
+        self.component = Component('Materialize', options=materialize_options)
 
     def __getitem__(self, identifier):
-        (column_id, datatype) = identifier
-        typemap = {
-            bytes: "BYTES",
-            bool: "BOOL",
-            int: "I64",
-            float: "F64",
-            str: "STRING",
-        }
-        if datatype in typemap:
-            datatype = typemap[datatype]
-
-        if datatype not in typemap.values():
-            raise ValueError(f"Invalid datatype {datatype}. Datatype must be one of {list(typemap.values())}.")
-
-        return Component('DataSource', options={
-            'dataset_id': self.name,
-            'column_id': column_id
-        }, arguments={
-            'datatype': Component.of(datatype)
-        })
+        return Component('Index', arguments={'columns': Component.of(identifier)})
 
 
 class Component(object):
@@ -258,60 +248,54 @@ class Analysis(object):
 
     def _make_release_proto(self):
 
-        def make_value(data, is_jagged=False):
-            if issubclass(type(data), dict):
-                return value_pb2.Value(
-                    hashmap_string={key: make_value(data[key], is_jagged=is_jagged) for key in data}
-                )
-
-            if is_jagged:
-                return value_pb2.Value(array_2d_jagged=value_pb2.Array2dJagged(data=[
-                    value_pb2.Array2dJagged.Array1dOption(data=column) for column in data
-                ]))
-
-            data = np.array(data)
-
-            data_type = {
-                np.bool: "bool",
-                np.int64: "i64",
-                np.float64: "f64",
-                np.string_: "string",
-                np.str_: "string"
-            }[data.dtype.type]
-
-            container_type = {
-                np.bool: value_pb2.Array1dBool,
-                np.int64: value_pb2.Array1dI64,
-                np.float64: value_pb2.Array1dF64,
-                np.string_: value_pb2.Array1dStr,
-                np.str_: value_pb2.Array1dStr
-            }[data.dtype.type]
-
-            return value_pb2.Value(
-                array_nd=value_pb2.ArrayNd(
-                    shape=list(data.shape),
-                    order=list(range(data.ndim)),
-                    flattened=value_pb2.Array1d(**{
-                        data_type: container_type(data=list(data.flatten()))
-                    })
-                ))
-
         return base_pb2.Release(
             values={
                 component_id: base_pb2.ReleaseNode(
-                    value=make_value(self.release_values[component_id]),
+                    value=self._make_value_proto(self.release_values[component_id]),
                     privacy_usage=None)
                 for component_id in self.components
                 if component_id in self.release_values
             })
 
-    def _make_dataset_proto(self):
-        return base_pb2.Dataset(
-            tables={
-                dataset.name: base_pb2.Table(
-                    file_path=dataset.data
-                ) for dataset in self.datasets
-            })
+    @staticmethod
+    def _make_value_proto(data, is_jagged=False):
+
+        if issubclass(type(data), dict):
+            return value_pb2.Value(
+                hashmap_string={key: Component._make_value_proto(data[key], is_jagged=is_jagged) for key in data}
+            )
+
+        if is_jagged:
+            return value_pb2.Value(array_2d_jagged=value_pb2.Array2dJagged(data=[
+                value_pb2.Array2dJagged.Array1dOption(data=column) for column in data
+            ]))
+
+        data = np.array(data)
+
+        data_type = {
+            np.bool: "bool",
+            np.int64: "i64",
+            np.float64: "f64",
+            np.string_: "string",
+            np.str_: "string"
+        }[data.dtype.type]
+
+        container_type = {
+            np.bool: value_pb2.Array1dBool,
+            np.int64: value_pb2.Array1dI64,
+            np.float64: value_pb2.Array1dF64,
+            np.string_: value_pb2.Array1dStr,
+            np.str_: value_pb2.Array1dStr
+        }[data.dtype.type]
+
+        return value_pb2.Value(
+            array_nd=value_pb2.ArrayNd(
+                shape=list(data.shape),
+                order=list(range(data.ndim)),
+                flattened=value_pb2.Array1d(**{
+                    data_type: container_type(data=list(data.flatten()))
+                })
+            ))
 
     def validate(self):
         return core_wrapper.validate_analysis(
@@ -327,7 +311,6 @@ class Analysis(object):
     def release(self):
         # TODO: convert into python representation
         self.release_proto: base_pb2.Release = core_wrapper.compute_release(
-            self._make_dataset_proto(),
             self._make_analysis_proto(),
             self._make_release_proto())
 

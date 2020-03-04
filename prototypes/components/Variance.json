@@ -1,14 +1,8 @@
 {
   "arguments": {
     "data": {
-      "constraints": [],
       "nature": [
         "continuous"
-      ],
-      "of": [
-        "int",
-        "bool",
-        "double"
       ],
       "type": "Array"
     }
@@ -17,13 +11,10 @@
   "name": "variance",
   "options": {},
   "return": {
-    "constraints": [],
     "nature": [
       "continuous"
     ],
-    "of": [
-      "double"
-    ],
     "type": "Array"
-  }
+  },
+  "docstring": "variance step"
 }

@@ -1,32 +1,16 @@
 {
   "arguments": {
     "data": {
-      "constraints": [
-        "n"
-      ],
       "nature": [
         "continuous",
         "categorical"
-      ],
-      "of": [
-        "string",
-        "int",
-        "bool",
-        "double"
       ],
       "type": "Array"
     },
     "edges": {
-      "constraints": [],
       "nature": [
         "continuous",
         "categorical"
-      ],
-      "of": [
-        "string",
-        "int",
-        "bool",
-        "double"
       ],
       "type": "Array"
     }
@@ -39,17 +23,10 @@
     }
   },
   "return": {
-    "constraints": [
-      "n"
-    ],
     "nature": [
       "continuous"
     ],
-    "of": [
-      "int",
-      "bool",
-      "double"
-    ],
     "type": "Array"
-  }
+  },
+  "docstring": "bin step"
 }

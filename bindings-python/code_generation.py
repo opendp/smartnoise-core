@@ -26,12 +26,36 @@ for file_name in os.listdir(components_dir):
             print("MALFORMED JSON FILE: ", file_name)
             raise err
 
-        signature_arguments = ", ".join(
-            list(dict.fromkeys([
-                *component_schema['arguments'].keys(),
-                *component_schema['options'].keys(),
-                '**kwargs'])))
+        # remove dupes while keeping order
+        signature_arguments = list(dict.fromkeys([
+            *component_schema['arguments'].keys(),
+            *component_schema['options'].keys(),
+            '**kwargs']))
 
+        # sort arguments with defaults to the end of the signature
+        default_arguments = {
+            True: [],
+            False: []
+        }
+
+        # add default value to arguments
+        for arg in list(dict.fromkeys([
+            *component_schema['arguments'].keys(),
+            *component_schema['options'].keys()])):
+
+            if arg == '**kwargs':
+                continue
+
+            schema = component_schema['arguments'].get(arg, component_schema['options'].get(arg, {}))
+            if 'default' in schema:
+                default_arguments[True].append(arg + f'={schema["default"]}')
+            else:
+                default_arguments[False].append(arg)
+
+        # create the function signature
+        signature_string = ", ".join([*default_arguments[False], *default_arguments[True], '**kwargs'])
+
+        # create the arguments to the Component constructor
         component_arguments = "{\n            "\
                               + ",\n            ".join([f"'{name}': Component.of({name})"
                                                       for name in component_schema['arguments']
@@ -43,6 +67,8 @@ for file_name in os.listdir(components_dir):
                                                       if name != "**kwargs"]) \
                             + "\n        }"
         component_constraints = "None"
+
+        # handle components with unknown number of arguments
         if "**kwargs" in component_schema['arguments']:
             component_arguments = f"{{**kwargs, **{component_arguments}}}"
         elif "**kwargs" in component_schema['options']:
@@ -50,9 +76,10 @@ for file_name in os.listdir(components_dir):
         else:
             component_constraints = "kwargs"
 
+        # build the call to create a Component with the prior argument strings
         generated_code += f"""
-def {component_schema['name']}({signature_arguments}):
-    \"\"\"{component_schema.get("description", component_schema["name"] + " step")}\"\"\"
+def {component_schema['name']}({signature_string}):
+    \"\"\"{component_schema.get("docstring", component_schema["name"] + " step")}\"\"\"
     return Component(
         "{component_schema['id']}",
         arguments={component_arguments},

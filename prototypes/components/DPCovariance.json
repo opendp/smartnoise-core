@@ -1,36 +1,14 @@
 {
   "arguments": {
     "data_left": {
-      "constraints": [
-        "n",
-        "min",
-        "max",
-        "non-null"
-      ],
       "nature": [
         "continuous"
-      ],
-      "of": [
-        "int",
-        "double",
-        "bool"
       ],
       "type": "Array"
     },
     "data_right": {
-      "constraints": [
-        "n",
-        "min",
-        "max",
-        "non-null"
-      ],
       "nature": [
         "continuous"
-      ],
-      "of": [
-        "int",
-        "double",
-        "bool"
       ],
       "type": "Array"
     }
@@ -43,14 +21,7 @@
     }
   },
   "return": {
-    "constraints": [
-      "n",
-      "min",
-      "non-null"
-    ],
-    "of": [
-      "double"
-    ],
     "type": "Array"
-  }
+  },
+  "docstring": "dp_covariance step"
 }

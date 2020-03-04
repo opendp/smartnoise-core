@@ -11,3 +11,5 @@ yarrow/components.py
 debug_build.log
 debug_app.log
 debug_tests.log
+
+reformat_component_json.py

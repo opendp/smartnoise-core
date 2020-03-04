@@ -13,10 +13,8 @@
   "name": "resize",
   "options": {},
   "return": {
-    "constraints": [
-      "n"
-    ],
     "nature": [],
     "type": "Array"
-  }
+  },
+  "docstring": "resize step"
 }

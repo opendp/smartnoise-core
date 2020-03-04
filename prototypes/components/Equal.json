@@ -1,29 +1,11 @@
 {
   "arguments": {
     "left": {
-      "constraints": [
-        "n"
-      ],
       "nature": [],
-      "of": [
-        "int",
-        "double",
-        "bool",
-        "string"
-      ],
       "type": "Array"
     },
     "right": {
-      "constraints": [
-        "n"
-      ],
       "nature": [],
-      "of": [
-        "int",
-        "double",
-        "bool",
-        "string"
-      ],
       "type": "Array"
     }
   },
@@ -31,14 +13,8 @@
   "name": "equal",
   "options": {},
   "return": {
-    "constraints": [
-      "n",
-      "non-null"
-    ],
     "nature": [],
-    "of": [
-      "bool"
-    ],
     "type": "Array"
-  }
+  },
+  "docstring": "equal step"
 }

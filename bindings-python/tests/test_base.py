@@ -7,13 +7,13 @@ def test_basic_path():
     print('file path test')
 
     with yarrow.Analysis() as analysis:
-        PUMS = yarrow.Dataset('PUMS', test_csv_path)
+        PUMS = yarrow.Dataset(path=test_csv_path)
 
-        age = PUMS[('age', int)]
-        sex = PUMS[('sex', int)]
+        age = yarrow.ops.cast(PUMS['age'], type="FLOAT")
+        sex = yarrow.ops.cast(PUMS['sex'], type="BOOL", positive="TRUE")
 
         mean_age = yarrow.ops.dp_mean(
-            data=PUMS[('married', float)],
+            data=yarrow.ops.cast(PUMS['married'], type="FLOAT"),
             privacy_usage=yarrow.privacy_usage(epsilon=.65),
             data_min=0.,
             data_max=100.,
@@ -28,7 +28,7 @@ def test_basic_path():
             data_n=500) + 5.
 
         yarrow.ops.dp_variance(
-            PUMS[('educ', int)],
+            yarrow.ops.cast(PUMS['educ'], type="FLOAT"),
             privacy_usage=yarrow.privacy_usage(epsilon=.15),
             data_n=1000,
             data_min=0.,
@@ -36,7 +36,7 @@ def test_basic_path():
         )
 
         yarrow.ops.dp_moment_raw(
-            PUMS[('married', float)],
+            yarrow.ops.cast(PUMS['married'], type="FLOAT"),
             privacy_usage=yarrow.privacy_usage(epsilon=.15),
             data_n=1000000,
             data_min=0.,
@@ -45,8 +45,8 @@ def test_basic_path():
         )
 
         yarrow.ops.dp_covariance(
-            PUMS[('sex', int)],
-            PUMS[('married', int)],
+            yarrow.ops.cast(PUMS['age'], type="FLOAT"),
+            yarrow.ops.cast(PUMS['married'], type="FLOAT"),
             privacy_usage=yarrow.privacy_usage(epsilon=.15),
             left_n=1000,
             right_n=1000,
@@ -62,9 +62,10 @@ def test_basic_path():
 
 def test_dp_mean():
     with yarrow.Analysis() as analysis:
-        dataset_pums = yarrow.Dataset('PUMS', test_csv_path)
+        dataset_pums = yarrow.Dataset(path=test_csv_path)
 
-        age = dataset_pums[('age', float)]
+        age = dataset_pums['age']
+        age = yarrow.ops.cast(age, type="FLOAT")
 
         yarrow.ops.dp_mean(
             data=age,
@@ -80,7 +81,7 @@ def test_dp_mean():
 def test_raw_dataset():
     with yarrow.Analysis() as analysis:
         yarrow.ops.dp_mean(
-            data=[1., 2., 3., 4., 5.],
+            data=yarrow.Dataset(value=[1., 2., 3., 4., 5.])[0],
             privacy_usage=yarrow.privacy_usage(epsilon=1),
             data_min=0.,
             data_max=10.,

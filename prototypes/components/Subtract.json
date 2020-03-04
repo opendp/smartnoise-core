@@ -1,28 +1,14 @@
 {
   "arguments": {
     "left": {
-      "constraints": [
-        "n"
-      ],
       "nature": [
         "continuous"
-      ],
-      "of": [
-        "double",
-        "int"
       ],
       "type": "Array"
     },
     "right": {
-      "constraints": [
-        "n"
-      ],
       "nature": [
         "continuous"
-      ],
-      "of": [
-        "double",
-        "int"
       ],
       "type": "Array"
     }
@@ -31,16 +17,10 @@
   "name": "subtract",
   "options": {},
   "return": {
-    "constraints": [
-      "n"
-    ],
     "nature": [
       "continuous"
     ],
-    "of": [
-      "double",
-      "int"
-    ],
     "type": "Array"
-  }
+  },
+  "docstring": "subtract step"
 }

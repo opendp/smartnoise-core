@@ -1,14 +1,7 @@
 {
   "arguments": {
     "**kwargs": {
-      "constraints": [],
       "nature": null,
-      "of": [
-        "int",
-        "bool",
-        "string",
-        "double"
-      ],
       "type": "Array"
     }
   },
@@ -16,17 +9,11 @@
   "name": "stack",
   "options": {},
   "return": {
-    "constraints": [],
     "nature": [
       "continuous",
       "categorical"
     ],
-    "of": [
-      "int",
-      "bool",
-      "string",
-      "double"
-    ],
     "type": "Array"
-  }
+  },
+  "docstring": "stack step"
 }

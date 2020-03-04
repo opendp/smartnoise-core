@@ -1,27 +1,11 @@
 {
   "arguments": {
     "left": {
-      "constraints": [
-        "n"
-      ],
       "nature": [],
-      "of": [
-        "int",
-        "bool",
-        "double"
-      ],
       "type": "Array"
     },
     "right": {
-      "constraints": [
-        "n"
-      ],
       "nature": [],
-      "of": [
-        "int",
-        "bool",
-        "double"
-      ],
       "type": "Array"
     }
   },
@@ -29,13 +13,8 @@
   "name": "less_than",
   "options": {},
   "return": {
-    "constraints": [
-      "n"
-    ],
     "nature": [],
-    "of": [
-      "bool"
-    ],
     "type": "Array"
-  }
+  },
+  "docstring": "less_than step"
 }
