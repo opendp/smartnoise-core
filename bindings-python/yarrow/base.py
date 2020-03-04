@@ -51,7 +51,7 @@ class Dataset(object):
         self.component = Component('Materialize', options=materialize_options)
 
     def __getitem__(self, identifier):
-        return Component('Index', arguments={'columns': Component.of(identifier)})
+        return Component('Index', arguments={'columns': Component.of(identifier), 'data': self.component})
 
 
 class Component(object):
@@ -130,6 +130,9 @@ class Component(object):
     @staticmethod
     # TODO: handle jagged
     def of(value, jagged=False):
+        if value is None:
+            return
+
         if type(value) == Component:
             return value
 
@@ -232,7 +235,9 @@ class Analysis(object):
 
             vertices[component_id] = components_pb2.Component(**{
                 'arguments': {
-                    name: component_child.component_id for name, component_child in component.arguments.items()
+                    name: component_child.component_id
+                    for name, component_child in component.arguments.items()
+                    if component_child is not None
                 },
                 component.name.lower():
                     getattr(components_pb2, component.name)(**(component.options or {}))

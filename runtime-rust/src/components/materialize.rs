@@ -10,10 +10,9 @@ use yarrow_validator::proto;
 
 impl Evaluable for proto::Materialize {
     fn evaluate(&self, _arguments: &NodeArguments) -> Result<Value> {
-        let table: proto::Table = self.table.clone().unwrap();
-        match table.value.as_ref().unwrap() {
-            proto::table::Value::Literal(value) => parse_value(value),
-            proto::table::Value::FilePath(path) => {
+        match self.value.as_ref().unwrap() {
+            proto::materialize::Value::Literal(value) => parse_value(value),
+            proto::materialize::Value::FilePath(path) => {
                 let mut response = HashMap::<String, Vec<String>>::new();
                 csv::Reader::from_path(path).unwrap().deserialize()
                     .for_each(|result| {
