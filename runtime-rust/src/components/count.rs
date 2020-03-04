@@ -9,7 +9,7 @@ use yarrow_validator::proto;
 
 impl Evaluable for proto::Count {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        match (arguments.get("data").unwrap(), arguments.get("categories").unwrap()) {
+        match (get_argument(&arguments, "data")?, get_argument(&arguments, "categories")?) {
             (Value::ArrayND(data), Value::Vector2DJagged(categories)) => match (data, categories) {
                 (ArrayND::Bool(data), Vector2DJagged::Bool(categories)) =>
                     Ok(Value::Vector2DJagged(Vector2DJagged::I64(utilities::transformations::count(&data, categories)?))),

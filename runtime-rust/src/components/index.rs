@@ -1,7 +1,7 @@
 use yarrow_validator::errors::*;
 
 use crate::base::NodeArguments;
-use yarrow_validator::base::{Value, ArrayND};
+use yarrow_validator::base::{Value, ArrayND, get_argument};
 use crate::components::Evaluable;
 use yarrow_validator::proto;
 
@@ -9,8 +9,8 @@ use yarrow_validator::proto;
 
 impl Evaluable for proto::Index {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        let data = arguments.get("data").unwrap();
-        let columns = arguments.get("columns").unwrap();
+        let data = get_argument(&arguments, "index")?;
+        let columns = get_argument(&arguments, "columns")?;
 
         match data {
             Value::HashmapString(dataframe) => match columns {

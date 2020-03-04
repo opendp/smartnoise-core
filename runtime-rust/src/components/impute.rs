@@ -15,7 +15,7 @@ impl Evaluable for proto::Impute {
         let gaussian: String = "Gaussian".to_string();
 
         if arguments.contains_key("categories") {
-            match (arguments.get("data").unwrap(), arguments.get("categories").unwrap(), arguments.get("probabilities").unwrap(), arguments.get("null").unwrap()) {
+            match (get_argument(&arguments, "data")?, get_argument(&arguments, "categories")?, get_argument(&arguments, "probabilities")?, get_argument(&arguments, "null")?) {
                 (Value::ArrayND(data), Value::Vector2DJagged(categories), Value::Vector2DJagged(probabilities), Value::Vector2DJagged(nulls)) => Ok(match (data, categories, probabilities, nulls) {
                     (ArrayND::Bool(data), Vector2DJagged::Bool(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::Bool(nulls)) =>
                         Value::ArrayND(ArrayND::Bool(impute_categorical(&data, &categories, &probabilities, &nulls)?)),
@@ -30,14 +30,14 @@ impl Evaluable for proto::Impute {
                 _ => return Err("data and null must be ArrayND, categories and probabilities must be Vector2DJagged".into())
             }
         } else {
-            let distribution = match arguments.get("distribution") {
-                Some(distribution) => distribution.deref().to_owned().get_first_str()?,
-                None => "Uniform".to_string()
+            let distribution = match get_argument(&arguments, "distribution") {
+                Ok(distribution) => distribution.get_first_str()?,
+                Err(_) => "Uniform".to_string()
             };
 
             match &distribution.clone() {
                 x if x == &uniform => {
-                    return Ok(match (arguments.get("data").unwrap(), arguments.get("min").unwrap(), arguments.get("max").unwrap()) {
+                    return Ok(match (get_argument(&arguments, "data")?, get_argument(&arguments, "min")?, get_argument(&arguments, "max")?) {
                         (Value::ArrayND(data), Value::ArrayND(min), Value::ArrayND(max)) => match (data, min, max) {
                             (ArrayND::F64(data), ArrayND::F64(min), ArrayND::F64(max)) =>
                                 Value::ArrayND(ArrayND::F64(impute_float_uniform(&data, &min, &max)?)),

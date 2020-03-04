@@ -1,7 +1,7 @@
 use yarrow_validator::errors::*;
 
 use crate::base::NodeArguments;
-use yarrow_validator::base::{Value, ArrayND, Vector2DJagged, standardize_numeric_argument, standardize_categorical_argument, standardize_null_argument};
+use yarrow_validator::base::{Value, ArrayND, Vector2DJagged, standardize_numeric_argument, standardize_categorical_argument, standardize_null_argument, get_argument};
 use crate::components::Evaluable;
 use ndarray::ArrayD;
 use crate::utilities::utilities::get_num_columns;
@@ -10,7 +10,7 @@ use yarrow_validator::proto;
 impl Evaluable for proto::Clamp {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
         if arguments.contains_key("categories") {
-            match (arguments.get("data").unwrap(), arguments.get("categories").unwrap(), arguments.get("null").unwrap()) {
+            match (get_argument(&arguments, "data")?, get_argument(&arguments, "categories")?, get_argument(&arguments, "null")?) {
                 (Value::ArrayND(data), Value::Vector2DJagged(categories), Value::Vector2DJagged(nulls)) => Ok(match (data, categories, nulls) {
                     (ArrayND::Bool(data), Vector2DJagged::Bool(categories), Vector2DJagged::Bool(nulls)) =>
                         Value::ArrayND(ArrayND::Bool(clamp_categorical(&data, &categories, &nulls)?)),
@@ -25,7 +25,7 @@ impl Evaluable for proto::Clamp {
                 _ => return Err("data must be ArrayND, categories must be Vector2DJagged, and null must be ArrayND".into())
             }
         } else {
-            match (arguments.get("data").unwrap(), arguments.get("min").unwrap(), arguments.get("max").unwrap()) {
+            match (get_argument(&arguments, "data")?, get_argument(&arguments, "min")?, get_argument(&arguments, "max")?) {
                 (Value::ArrayND(data), Value::ArrayND(min), Value::ArrayND(max)) => Ok(match (data, min, max) {
                     (ArrayND::F64(data), ArrayND::F64(min), ArrayND::F64(max)) =>
                         Value::ArrayND(ArrayND::F64(clamp_numeric_float(&data, &min, &max)?)),

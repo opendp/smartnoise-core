@@ -9,7 +9,7 @@ use yarrow_validator::proto;
 
 impl Evaluable for proto::RowMax {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        match (arguments.get("left").unwrap(), arguments.get("right").unwrap()) {
+        match (get_argument(&arguments, "left")?, get_argument(&arguments, "right")?) {
             (Value::ArrayND(left), Value::ArrayND(right)) => match (left, right) {
                 (ArrayND::F64(x), ArrayND::F64(y)) =>
                     Ok(Value::ArrayND(ArrayND::F64(utilities::transformations::broadcast_map(

@@ -8,7 +8,7 @@ use yarrow_validator::proto;
 
 impl Evaluable for proto::Add {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        match (arguments.get("left").unwrap(), arguments.get("right").unwrap()) {
+        match (get_argument(&arguments, "left")?, get_argument(&arguments, "right")?) {
             (Value::ArrayND(left), Value::ArrayND(right)) => match (left, right) {
                 (ArrayND::F64(x), ArrayND::F64(y)) =>
                     Ok(Value::ArrayND(ArrayND::F64(x + y))),
@@ -23,7 +23,7 @@ impl Evaluable for proto::Add {
 
 impl Evaluable for proto::Subtract {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        match (arguments.get("left").unwrap(), arguments.get("right").unwrap()) {
+        match (get_argument(&arguments, "left")?, get_argument(&arguments, "right")?) {
             (Value::ArrayND(left), Value::ArrayND(right)) => match (left, right) {
                 (ArrayND::F64(x), ArrayND::F64(y)) =>
                     Ok(Value::ArrayND(ArrayND::F64(x - y))),
@@ -38,7 +38,7 @@ impl Evaluable for proto::Subtract {
 
 impl Evaluable for proto::Divide {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        match (arguments.get("left").unwrap(), arguments.get("right").unwrap()) {
+        match (get_argument(&arguments, "left")?, get_argument(&arguments, "right")?) {
             (Value::ArrayND(left), Value::ArrayND(right)) => match (left, right) {
                 (ArrayND::F64(x), ArrayND::F64(y)) =>
                     Ok(Value::ArrayND(ArrayND::F64(x / y))),
@@ -53,7 +53,7 @@ impl Evaluable for proto::Divide {
 
 impl Evaluable for proto::Multiply {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        match (arguments.get("left").unwrap(), arguments.get("right").unwrap()) {
+        match (get_argument(&arguments, "left")?, get_argument(&arguments, "right")?) {
             (Value::ArrayND(left), Value::ArrayND(right)) => match (left, right) {
                 (ArrayND::F64(x), ArrayND::F64(y)) =>
                     Ok(Value::ArrayND(ArrayND::F64(x * y))),
@@ -76,7 +76,7 @@ impl Evaluable for proto::Power {
 
 impl Evaluable for proto::Negate {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        match arguments.get("data").unwrap() {
+        match get_argument(&arguments, "data")? {
             Value::ArrayND(data) => match data {
                 ArrayND::F64(x) =>
                     Ok(Value::ArrayND(ArrayND::F64(-x))),

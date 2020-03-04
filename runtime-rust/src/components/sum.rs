@@ -8,12 +8,12 @@ use yarrow_validator::proto;
 
 impl Evaluable for proto::Sum {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        let data = match arguments.get("data").unwrap() {
+        let data = match get_argument(&arguments, "data")? {
             Value::ArrayND(data) => data,
             _ => return Err("data must be an ArrayND".into())
         };
 
-        match (arguments.get("by").unwrap(), arguments.get("categories").unwrap()) {
+        match (get_argument(&arguments, "by")?, get_argument(&arguments, "categories")?) {
             (Value::ArrayND(by), Value::Vector2DJagged(categories)) => match (by, categories) {
                 (ArrayND::Bool(by), Vector2DJagged::Bool(categories)) => match(data) {
                     ArrayND::I64(data) => Ok(Value::Vector2DJagged(Vector2DJagged::I64(utilities::transformations::sum(&data, by, categories)?))),

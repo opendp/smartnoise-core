@@ -18,8 +18,8 @@ impl Evaluable for proto::Resize {
         let n = get_argument(&arguments, "n")?.get_first_i64()?;
 
         if arguments.contains_key("categories") {
-            match (arguments.get("data").unwrap(), arguments.get("categories").unwrap(),
-                   arguments.get("probabilities").unwrap(), arguments.get("null").unwrap()) {
+            match (get_argument(&arguments, "data")?, get_argument(&arguments, "categories")?,
+                   get_argument(&arguments, "probabilities")?, get_argument(&arguments, "null")?) {
                 (Value::ArrayND(data), Value::Vector2DJagged(categories), Value::Vector2DJagged(probabilities), Value::Vector2DJagged(nulls)) =>
                     Ok(Value::ArrayND(match (data, categories, probabilities, nulls) {
                         (ArrayND::F64(data), Vector2DJagged::F64(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::F64(nulls)) =>
@@ -48,7 +48,7 @@ impl Evaluable for proto::Resize {
                 Ok(scale) => Some(scale.get_arraynd()?.get_f64()?),
                 Err(_) => None
             };
-            match (arguments.get("data").unwrap(), arguments.get("min").unwrap(), arguments.get("max").unwrap()) {
+            match (get_argument(&arguments, "data")?, get_argument(&arguments, "min")?, get_argument(&arguments, "max")?) {
                 // TODO: add support for resizing ints
                 (Value::ArrayND(data), Value::ArrayND(min), Value::ArrayND(max)) => match (data, min, max) {
                     (ArrayND::F64(data), ArrayND::F64(min), ArrayND::F64(max)) =>
