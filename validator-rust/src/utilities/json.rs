@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet, VecDeque};
 use serde::{Deserialize, Serialize};
 
 //use schemars::{schema_for, JsonSchema};
-extern crate json_typegen;
+//extern crate json_typegen;
 extern crate serde_json;
 //use json_typegen::json_typegen;
 use serde_json::Value;
@@ -15,8 +15,8 @@ pub struct JSONRelease {
     pub releaseInfo: HashMap<String, Value>,
     pub privacyLoss: PrivacyLoss,
     pub accuracy: Option<Accuracy>,
-    pub batch: i64,
-    pub nodeID: i64,
+    pub batch: u64,
+    pub nodeID: u64,
     pub postprocess: bool,
     pub algorithmInfo: AlgorithmInfo,
 }

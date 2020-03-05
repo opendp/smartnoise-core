@@ -17,7 +17,7 @@ use std::collections::HashMap;
 
 use crate::base::{ArrayND, Value, Vector2DJagged, Nature, Vector1DNull, NatureContinuous, NatureCategorical, Properties, NodeProperties};
 use crate::proto;
-
+use crate::utilities::json::{JSONRelease};
 use crate::hashmap;
 
 pub trait Component {
@@ -74,7 +74,7 @@ pub trait Report {
     fn summarize(
         &self,
         properties: &NodeProperties,
-    ) -> Option<String>;
+    ) -> Option<JSONRelease>;
 }
 
 
@@ -252,7 +252,7 @@ impl Report for proto::component::Value {
     fn summarize(
         &self,
         _properties: &NodeProperties,
-    ) -> Option<String> {
+    ) -> Option<JSONRelease> {
 
         macro_rules! summarize{
             ($self:ident, $properties:ident, $( $variant:ident ),*) => {

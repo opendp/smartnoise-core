@@ -14,6 +14,8 @@ use std::collections::HashMap;
 
 
 use crate::utilities::serial::{parse_value, serialize_value, parse_release};
+use crate::utilities::json::{JSONRelease, PureLoss, Approx, Concentrated, PrivacyLoss, Accuracy, AlgorithmInfo};
+
 use std::ops::Deref;
 use ndarray::{ArrayD, Array};
 use crate::utilities::inference::infer_property;
@@ -592,10 +594,10 @@ pub fn generate_report(
     _release: &proto::Release,
 
 ) -> Result<String>  {
-    let mut schema = JSONRelease {
+    let mut schema = vec![JSONRelease {
         description: "".to_string(),
         variables: vec![],
-        statistics: "".to_string(),
+        statistics: "dpmean".to_string(),
         releaseInfo: Default::default(),
         privacyLoss: PrivacyLoss::Pure(PureLoss { epsilon: 0.5 }),
         accuracy: None,
@@ -607,9 +609,24 @@ pub fn generate_report(
             cite: "haghsg".to_string(),
             argument: HashMap::new(),
         },
-    };
+    },
+    JSONRelease {
+        description: "".to_string(),
+        variables: vec![],
+        statistics: "dpmean".to_string(),
+        releaseInfo: Default::default(),
+        privacyLoss: PrivacyLoss::concentrated(Concentrated { rho: 0.4 }),
+        accuracy: None,
+        batch: 0,
+        nodeID: 0,
+        postprocess: true,
+        algorithmInfo: AlgorithmInfo {
+            name: "histogram".to_string(),
+            cite: "...".to_string(),
+            argument: HashMap::new(),
+        },
+    }];
     let j = serde_json::to_string(&schema).unwrap();
     println!("schema is: {}", j);
     return Ok(j);
-
 }

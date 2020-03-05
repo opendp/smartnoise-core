@@ -9,7 +9,7 @@ use crate::components::{Component, Accuracy, Privatize, Expandable, Report};
 use ndarray::{Array, arr1};
 use crate::utilities::serial::{serialize_value};
 use crate::base::{Properties, NodeProperties, Value, get_constant, ArrayND};
-
+use crate::utilities::json::{JSONRelease, PureLoss, Approx, Concentrated, PrivacyLoss, AlgorithmInfo};
 
 impl Component for proto::DpMean {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
@@ -138,27 +138,28 @@ impl Accuracy for proto::DpMean {
 impl Report for proto::DpMean {
     fn summarize(
         &self,
-        _constraints: &NodeConstraints,
-    ) -> Option<JSONRelease> {
+        _properties: &NodeProperties,
+    ) ->Option<JSONRelease>{
         Some(JSONRelease{
-            description:"DP release information",
+            description:"DP release information".to_string(),
             statistics:"dpmean".to_string(),
-            variables:Vec<String>,
-            releaseInfo:hashmap![],
-            provacyLoss:PirvacyLoss,
-            accuracy:Acuuracy,
-            batch:i64,
-            nodeID:i64,
-            postprocess: bool,
-            algorithmInfo: AlgorithmInfo
-            })
-            //if PrivacyLoss(name==pure){
-            //    return epsilon;
-            //} else if PrivacyLoss(name=concentrated){
-            //    return rho;
-            //}
-            //if PrivacyLoss(name=concentrated){
-            //    return ;
-        //    }
+            variables:vec![],
+            releaseInfo: Default::default(),
+            privacyLoss: PrivacyLoss::Pure(PureLoss { epsilon: 0.5 }),
+            accuracy: None,
+            batch: 0,
+            nodeID: 0,
+            postprocess: false,
+            algorithmInfo: AlgorithmInfo {
+                name: "".to_string(),
+                cite: "".to_string(),
+                argument: HashMap::new(),
+            }
+
+            //privacyLoss:PirvacyLoss::{},
+            //algorithmInfo: AlgorithmInfo
+            //})
+
+          })
     }
 }
