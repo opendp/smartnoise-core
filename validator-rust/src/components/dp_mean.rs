@@ -191,7 +191,7 @@ impl Report for proto::DpMean {
 
             let mut releaseInfo = HashMap::new();
             releaseInfo.insert("mechanism".to_string(), serde_json::json!(self.implementation.clone()));
-            releaseInfo.insert("releaseValue".to_string(), value_to_json(&release));
+            releaseInfo.insert("releaseValue".to_string(), value_to_json(&release).unwrap());
 
             let release = JSONRelease {
                 description: "DP release information".to_string(),
