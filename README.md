@@ -74,3 +74,6 @@ The steps for adding bindings in a new language are essentially:
 * compile and test protobuf
   + `cd path_to_cloned_protobuf_repo\cmake\build\release`
   + `mingw32-make all`
+
+
+3. Install instructions for the bindings, validator and runtime are located in their respective folders.  
