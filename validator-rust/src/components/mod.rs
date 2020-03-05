@@ -73,8 +73,11 @@ pub trait Report {
     // for json construction. Return type should be a generic serializable struct, not a String
     fn summarize(
         &self,
+        node_id: &u32,
+        component: &proto::Component,
         properties: &NodeProperties,
-    ) -> Option<JSONRelease>;
+        release: &Value
+    ) -> Option<Vec<JSONRelease>>;
 }
 
 
@@ -251,26 +254,28 @@ impl Report for proto::component::Value {
     // for json construction. Return type should be a generic serializable struct, not a String
     fn summarize(
         &self,
-        _properties: &NodeProperties,
-    ) -> Option<JSONRelease> {
+        node_id: &u32,
+        component: &proto::Component,
+        properties: &NodeProperties,
+        release: &Value
+    ) -> Option<Vec<JSONRelease>> {
 
         macro_rules! summarize{
-            ($self:ident, $properties:ident, $( $variant:ident ),*) => {
+            ($self:ident, $node_id:ident, $component:ident, $properties:ident, $release:ident, $( $variant:ident ),*) => {
                 {
                     $(
                        if let proto::component::Value::$variant(x) = $self {
-                            return x.summarize($properties)
+                            return x.summarize($node_id, $component, $properties, $release)
                        }
                     )*
                 }
             }
         }
 
-        summarize!(self, properties,
+        summarize!(self, node_id, component, properties, release,
             // INSERT COMPONENT LIST
-//            Rowmin, Dpmean, Impute
+            Dpmean
         );
-        // TODO: default implementation
 
         None
     }

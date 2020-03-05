@@ -14,7 +14,7 @@ use std::collections::HashMap;
 
 
 use crate::utilities::serial::{parse_value, serialize_value, parse_release};
-use crate::utilities::json::{JSONRelease, PureLoss, Approx, Concentrated, PrivacyLoss, Accuracy, AlgorithmInfo};
+use crate::utilities::json::{JSONRelease, Accuracy, AlgorithmInfo};
 
 use std::ops::Deref;
 use ndarray::{ArrayD, Array};
@@ -590,43 +590,30 @@ pub fn expand_component(
 
 // TODO: create report json
 pub fn generate_report(
-    _analysis: &proto::Analysis,
-    _release: &proto::Release,
+    analysis: &proto::Analysis,
+    release: &proto::Release,
 
 ) -> Result<String>  {
-    let mut schema = vec![JSONRelease {
-        description: "".to_string(),
-        variables: vec![],
-        statistics: "dpmean".to_string(),
-        releaseInfo: Default::default(),
-        privacyLoss: PrivacyLoss::Pure(PureLoss { epsilon: 0.5 }),
-        accuracy: None,
-        batch: 0,
-        nodeID: 0,
-        postprocess: false,
-        algorithmInfo: AlgorithmInfo {
-            name: "Laplace".to_string(),
-            cite: "haghsg".to_string(),
-            argument: HashMap::new(),
-        },
-    },
-    JSONRelease {
-        description: "".to_string(),
-        variables: vec![],
-        statistics: "dpmean".to_string(),
-        releaseInfo: Default::default(),
-        privacyLoss: PrivacyLoss::concentrated(Concentrated { rho: 0.4 }),
-        accuracy: None,
-        batch: 0,
-        nodeID: 0,
-        postprocess: true,
-        algorithmInfo: AlgorithmInfo {
-            name: "histogram".to_string(),
-            cite: "...".to_string(),
-            argument: HashMap::new(),
-        },
-    }];
-    let j = serde_json::to_string(&schema).unwrap();
+
+    let graph = analysis.computation_graph.to_owned()
+        .ok_or("the computation graph must be defined in an analysis")?
+        .value;
+
+    let graph_properties = propagate_properties(&analysis, &release)?;
+    let release = parse_release(&release)?;
+
+
+    let release_schemas = graph.iter()
+        .filter_map(|(node_id, component)| {
+            let input_properties = get_input_properties(&component, &graph_properties).ok()?;
+            let node_release = release.get(node_id)?;
+            component.value.clone().unwrap().summarize(&node_id, &component, &input_properties, &node_release)
+        })
+        .flat_map(|v| v)
+        .collect::<Vec<JSONRelease>>();
+
+
+    let j = serde_json::to_string(&release_schemas).unwrap();
     println!("schema is: {}", j);
     return Ok(j);
 }

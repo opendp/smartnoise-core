@@ -7,9 +7,11 @@ use crate::{proto, base};
 use crate::hashmap;
 use crate::components::{Component, Accuracy, Privatize, Expandable, Report};
 use ndarray::{Array, arr1};
-use crate::utilities::serial::{serialize_value};
+use crate::utilities::serial::serialize_value;
 use crate::base::{Properties, NodeProperties, Value, get_constant, ArrayND};
-use crate::utilities::json::{JSONRelease, PureLoss, Approx, Concentrated, PrivacyLoss, AlgorithmInfo};
+use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, value_to_json};
+
+use serde_json;
 
 impl Component for proto::DpMean {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
@@ -64,8 +66,8 @@ impl Expandable for proto::DpMean {
         });
 
         let sensitivity = Value::ArrayND(ArrayND::F64(Array::from(component.value.to_owned().unwrap()
-                .compute_sensitivity(privacy_definition, properties)
-                .unwrap()).into_dyn()));
+            .compute_sensitivity(privacy_definition, properties)
+            .unwrap()).into_dyn()));
 
         // sensitivity literal
         current_id += 1;
@@ -135,31 +137,88 @@ impl Accuracy for proto::DpMean {
         None
     }
 }
+
 impl Report for proto::DpMean {
     fn summarize(
         &self,
-        _properties: &NodeProperties,
-    ) ->Option<JSONRelease>{
-        Some(JSONRelease{
-            description:"DP release information".to_string(),
-            statistics:"dpmean".to_string(),
-            variables:vec![],
-            releaseInfo: Default::default(),
-            privacyLoss: PrivacyLoss::Pure(PureLoss { epsilon: 0.5 }),
-            accuracy: None,
-            batch: 0,
-            nodeID: 0,
-            postprocess: false,
-            algorithmInfo: AlgorithmInfo {
-                name: "".to_string(),
-                cite: "".to_string(),
-                argument: HashMap::new(),
-            }
+        node_id: &u32,
+        component: &proto::Component,
+        properties: &NodeProperties,
+        release: &Value
+    ) -> Option<Vec<JSONRelease>> {
 
-            //privacyLoss:PirvacyLoss::{},
-            //algorithmInfo: AlgorithmInfo
-            //})
+//    let mut schema = vec![JSONRelease {
+//        description: "".to_string(),
+//        variables: vec![],
+//        statistics: "dpmean".to_string(),
+//        releaseInfo: Default::default(),
+//        privacyLoss: PrivacyLoss::Pure(PureLoss { epsilon: 0.5 }),
+//        accuracy: None,
+//        batch: 0,
+//        nodeID: 0,
+//        postprocess: false,
+//        algorithmInfo: AlgorithmInfo {
+//            name: "Laplace".to_string(),
+//            cite: "haghsg".to_string(),
+//            argument: HashMap::new(),
+//        },
+//    },
+//    JSONRelease {
+//        description: "".to_string(),
+//        variables: vec![],
+//        statistics: "dpmean".to_string(),
+//        releaseInfo: Default::default(),
+//        privacyLoss: PrivacyLoss::Concentrated(Concentrated { rho: 0.4 }),
+//        accuracy: None,
+//        batch: 0,
+//        nodeID: 0,
+//        postprocess: true,
+//        algorithmInfo: AlgorithmInfo {
+//            name: "histogram".to_string(),
+//            cite: "...".to_string(),
+//            argument: HashMap::new(),
+//        },
+//    }];
 
-          })
+        let data_properties: &Properties = properties.get("data").unwrap();
+        let mut releases = Vec::new();
+
+        let minimums = data_properties.get_min_f64().unwrap();
+        let maximums = data_properties.get_max_f64().unwrap();
+        let num_records = data_properties.get_n().unwrap();
+
+        for column_number in (0..data_properties.num_columns.unwrap()) {
+
+            let mut releaseInfo = HashMap::new();
+            releaseInfo.insert("mechanism".to_string(), serde_json::json!(self.implementation.clone()));
+            releaseInfo.insert("releaseValue".to_string(), value_to_json(&release));
+
+            let release = JSONRelease {
+                description: "DP release information".to_string(),
+                statistic: "DPMean".to_string(),
+                variables: vec![],
+                releaseInfo,
+                privacyLoss: privacy_usage_to_json(&self.privacy_usage.clone().unwrap()),
+                accuracy: None,
+                batch: component.batch as u64,
+                nodeID: node_id.clone() as u64,
+                postprocess: false,
+                algorithmInfo: AlgorithmInfo {
+                    name: "".to_string(),
+                    cite: "".to_string(),
+                    argument: serde_json::json!({
+                        "n": num_records[column_number as usize],
+                        "constraint": {
+                            "lowerbound": minimums[column_number as usize],
+                            "upperbound": maximums[column_number as usize]
+                        }
+                    })
+                }
+            };
+
+            releases.push(release);
+        }
+        Some(releases)
+
     }
 }

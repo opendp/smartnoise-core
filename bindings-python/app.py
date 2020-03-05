@@ -4,6 +4,7 @@ from tests.test_base import (
     test_raw_dataset,
     test_report
 )
+import json
 
 # analysis = test_basic_path()
 analysis = test_dp_mean()
@@ -14,6 +15,6 @@ analysis.plot()
 print('analysis is valid:', analysis.validate())
 
 print('epsilon:', analysis.epsilon)
-#
-print('release json:', analysis.release())
-# print('release proto:', analysis.release_proto)
+
+release_report = analysis.release()
+print('release json:', json.dumps(release_report, indent=4))

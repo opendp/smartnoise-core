@@ -364,38 +364,6 @@ class Analysis(object):
             self._make_analysis_proto(),
             self.release_proto))
 
-    @staticmethod
-    def test_release():
-        fake_analysis = base_pb2.Analysis(
-            computation_graph=base_pb2.ComputationGraph(value={
-                0: components_pb2.Component(
-                    arguments={},
-                    omit=False,
-                    batch=0,
-                    dpmean=components_pb2.DPMean(
-                        privacy_usage=privacy_usage(.1),
-                        implementation="Laplace"
-                    )
-                )
-            }),
-            privacy_definition=base_pb2.PrivacyDefinition(
-                distance=base_pb2.PrivacyDefinition.Distance.Value('APPROXIMATE'),
-                neighboring=base_pb2.PrivacyDefinition.Neighboring.Value('SUBSTITUTE')
-            )
-        )
-
-        fake_release = base_pb2.Release(
-            values={
-                0: base_pb2.ReleaseNode(
-                    value=Component._make_value(2),
-                    privacy_usage=privacy_usage(.1))
-            }
-        )
-        value = core_wrapper.generate_report(fake_analysis, fake_release)
-        print("RAW STRING")
-        print(value)
-        return json.loads(value)
-
     def __enter__(self):
         global context
         self._context = context
