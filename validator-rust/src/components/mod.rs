@@ -4,14 +4,33 @@ use crate::ErrorKind::{PrivateError, PublicError};
 pub mod cast;
 pub mod clamp;
 pub mod constant;
+pub mod count;
+pub mod covariance;
+pub mod dp_count;
+pub mod dp_variance;
+pub mod dp_covariance;
+pub mod dp_histogram;
+pub mod dp_maximum;
+pub mod dp_median;
+pub mod dp_minimum;
 pub mod dp_mean;
+pub mod dp_moment_raw;
+pub mod dp_sum;
 pub mod impute;
 pub mod index;
+pub mod kth_raw_sample_moment;
+pub mod maximum;
 pub mod materialize;
+pub mod median;
+pub mod minimum;
 pub mod mean;
+pub mod mechanism_gaussian;
 pub mod mechanism_laplace;
+pub mod mechanism_simple_geometric;
 pub mod resize;
 pub mod row_wise_min;
+pub mod sum;
+pub mod variance;
 
 use std::collections::HashMap;
 
@@ -103,7 +122,10 @@ impl Component for proto::component::Variant {
 
         propagate_property!(self, public_arguments, properties,
             // INSERT COMPONENT LIST
-            Rowmin, Dpmean, Impute, Resize, Clamp, Constant, Materialize, Cast, Index, LaplaceMechanism, Mean
+            Cast, Clamp, Constant, Count, Covariance, Dpcount, Dpcovariance, Dphistogram, Dpmaximum,
+            Dpmean, Dpmedian, Dpminimum, Dpmomentraw, Dpsum, Dpvariance, Impute, Index,
+            Kthrawsamplemoment, Materialize, Maximum, Mean, Gaussianmechanism, Laplacemechanism,
+            Simplegeometricmechanism, Median, Minimum, Resize, Rowmin, Sum, Variance
         );
 
         println!("{:?}", self);
@@ -162,7 +184,9 @@ impl Expandable for proto::component::Variant {
 
         expand_graph!(self, privacy_definition, component, properties, component_id, maximum_id,
             // INSERT COMPONENT LIST
-            Dpmean, Clamp, Impute, Resize, LaplaceMechanism
+            Clamp, Dpcount, Dpcovariance, Dphistogram, Dpmaximum, Dpmean, Dpmedian, Dpminimum,
+            Dpmomentraw, Dpsum, Dpvariance, Impute, Gaussianmechanism, Laplacemechanism,
+            Simplegeometricmechanism, Resize
         );
 
         // no expansion
@@ -190,7 +214,7 @@ impl Aggregator for proto::component::Variant {
 
         compute_sensitivity!(self, privacy_definition, properties,
             // INSERT COMPONENT LIST
-            Mean
+            Covariance, Kthrawsamplemoment, Maximum, Mean, Median, Minimum, Sum, Variance
         );
 
         None
@@ -218,7 +242,7 @@ impl Accuracy for proto::component::Variant {
 
         accuracy_to_privacy_usage!(self, privacy_definition, properties, accuracy,
             // INSERT COMPONENT LIST
-            Dpmean
+//            Dpmean
         );
 
         None
@@ -243,7 +267,7 @@ impl Accuracy for proto::component::Variant {
 
         privacy_usage_to_accuracy!(self, privacy_definition, properties,
             // INSERT COMPONENT LIST
-            Dpmean
+//            Dpmean
         );
 
         None

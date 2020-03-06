@@ -1,9 +1,9 @@
 use yarrow_validator::errors::*;
 
 use crate::base::NodeArguments;
-use yarrow_validator::base::{Value, ArrayND};
+use yarrow_validator::base::{Value, ArrayND, get_argument};
 use crate::components::Evaluable;
-use ndarray::{ArrayD, Array, Axis};
+use ndarray::{ArrayD, Array, Axis, arr1};
 use crate::utilities::transformations::convert_to_matrix;
 use yarrow_validator::proto;
 

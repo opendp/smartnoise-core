@@ -68,7 +68,7 @@ impl Expandable for proto::DpMean {
         // noising
         graph_expansion.insert(component_id, proto::Component {
             arguments: hashmap!["data".to_owned() => id_mean],
-            variant: Some(proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
+            variant: Some(proto::component::Variant::from(proto::LaplaceMechanism {
                 privacy_usage: self.privacy_usage.clone()
             })),
             omit: false,

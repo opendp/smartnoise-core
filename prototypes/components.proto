@@ -26,7 +26,6 @@ message Component {
         // type manipulations
         Cast cast = 200;
         // general manipulations
-        Bin bin = 220;
         Clamp clamp = 221;
         Impute impute = 222;
         RowMax rowmax = 223;
@@ -57,6 +56,9 @@ message Component {
         DPMedian dpmedian = 304;
         DPMomentRaw dpmomentraw = 305;
         DPCovariance dpcovariance = 306;
+        DPMinimum dpminimum = 307;
+        DPMaximum dpmaximum = 308;
+        DPHistogram dphistogram = 309;
 
         // public aggregations
         Sum sum = 400;
@@ -66,11 +68,15 @@ message Component {
         Median median = 404;
         KthRawSampleMoment kthrawsamplemoment = 405;
         Covariance covariance = 406;
+        Minimum minimum = 407;
+        Maximum maximum = 408;
+        Bin bin = 409;
 
         // mechanisms
-        LaplaceMechanism laplace_mechanism = 500;
-        GaussianMechanism gaussian_mechanism = 501;
-        SimpleGeometricMechanism simple_geometric_mechanism = 502;
+        LaplaceMechanism laplacemechanism = 500;
+        GaussianMechanism gaussianmechanism = 501;
+        SimpleGeometricMechanism simplegeometricmechanism = 502;
+        ExponentialMechanism exponentialmechanism = 503;
     }
 }
 
@@ -137,6 +143,7 @@ message DPMean {
 message DPVariance {
     repeated PrivacyUsage privacy_usage = 1;
     string implementation = 2;
+    bool finite_sample_correction = 3;
 }
 message DPMedian {
     repeated PrivacyUsage privacy_usage = 1;
@@ -145,13 +152,24 @@ message DPMedian {
 message DPMomentRaw {
     repeated PrivacyUsage privacy_usage = 1;
     string implementation = 2;
-    uint32 order = 3;
+    int64 order = 3;
 }
 message DPCovariance {
     repeated PrivacyUsage privacy_usage = 1;
     string implementation = 2;
 }
-
+message DPMinimum {
+    repeated PrivacyUsage privacy_usage = 1;
+    string implementation = 2;
+}
+message DPMaximum {
+    repeated PrivacyUsage privacy_usage = 1;
+    string implementation = 2;
+}
+message DPHistogram {
+    repeated PrivacyUsage privacy_usage = 1;
+    string implementation = 2;
+}
 
 // public aggregations
 message Sum {}
@@ -165,6 +183,8 @@ message KthRawSampleMoment {
     int64 k = 1;
 }
 message Covariance {}
+message Minimum {}
+message Maximum {}
 
 // distribution sampling
 message SampleLaplace {}
@@ -181,6 +201,9 @@ message GaussianMechanism {
 message SimpleGeometricMechanism {
     repeated PrivacyUsage privacy_usage = 1;
     bool enforce_constant_time = 4;
+}
+message ExponentialMechanism {
+    repeated PrivacyUsage privacy_usage = 1;
 }
 
 message RowMax {}

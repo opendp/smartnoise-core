@@ -8,9 +8,8 @@ use crate::{proto, base};
 use crate::components::{Component, Aggregator};
 use crate::base::{Value, Properties, NodeProperties, AggregatorProperties};
 
-// TODO: more checks needed here
 
-impl Component for proto::Mean {
+impl Component for proto::Variance {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
         &self,
@@ -18,7 +17,7 @@ impl Component for proto::Mean {
         properties: &base::NodeProperties,
     ) -> Result<Properties> {
         let mut data_property = properties.get("data")
-            .ok_or("data must be passed to Mean")?.clone();
+            .ok_or("data must be passed to Variance")?.clone();
 
         // save a snapshot of the state when aggregating
         data_property.aggregator = Some(AggregatorProperties {
@@ -37,7 +36,7 @@ impl Component for proto::Mean {
     }
 }
 
-impl Aggregator for proto::Mean {
+impl Aggregator for proto::Variance {
     fn compute_sensitivity(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
@@ -53,7 +52,7 @@ impl Aggregator for proto::Mean {
             .iter()
             .zip(max)
             .zip(num_records)
-            .map(|((min, max), n)| (max - min) / n as f64)
+            .map(|((min, max), n)| (max - min).powf(2.) / (n as f64))
             .collect())
     }
 }

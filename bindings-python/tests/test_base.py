@@ -78,6 +78,14 @@ def test_dp_mean():
     return analysis
 
 
+def test_dp_count():
+    with yarrow.Analysis() as analysis:
+        dataset_pums = yarrow.Dataset(path=test_csv_path)
+        yarrow.ops.dp_count(dataset_pums['sex'] == '1')
+
+    return analysis
+
+
 def test_raw_dataset():
     with yarrow.Analysis() as analysis:
         yarrow.ops.dp_mean(
