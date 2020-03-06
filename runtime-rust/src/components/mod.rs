@@ -27,13 +27,13 @@ pub trait Evaluable {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value>;
 }
 
-impl Evaluable for proto::component::Value {
+impl Evaluable for proto::component::Variant {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
         macro_rules! evaluate {
             ($self:ident, $arguments:ident, $( $variant:ident ),*) => {
                 {
                     $(
-                       if let proto::component::Value::$variant(x) = $self {
+                       if let proto::component::Variant::$variant(x) = $self {
                             return x.evaluate($arguments)
                        }
                     )*

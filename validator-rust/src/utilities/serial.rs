@@ -179,8 +179,9 @@ pub fn parse_properties(other: &proto::Properties) -> Properties {
                         categories: parse_array2d_jagged(&categorical.categories.unwrap())
                     }))
             },
-            None => None
-        }
+            None => None,
+        },
+        aggregator: other.aggregator.clone()
     }
 }
 
@@ -396,5 +397,6 @@ pub fn serialize_properties(value: &Properties) -> proto::Properties {
             },
             None => None
         },
+        aggregator: value.aggregator.clone()
     }
 }

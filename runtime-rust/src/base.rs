@@ -21,13 +21,11 @@ pub type NodeArguments<'a> = HashMap<String, &'a Value>;
 
 pub fn execute_graph(analysis: &proto::Analysis,
                      release: &proto::Release) -> Result<proto::Release> {
-    let node_ids_release: HashSet<u32> = yarrow_graph::get_release_nodes(&analysis)?;
 
     // stack for storing which nodes to evaluate next
-    let mut traversal = Vec::new();
-    traversal.extend(yarrow_graph::get_sinks(&analysis).into_iter());
+    let mut traversal: Vec<u32> = get_sinks(&analysis).into_iter().collect();
 
-    let mut evaluations = serial::parse_release(release)?;
+    let mut release = serial::parse_release(release)?;
 
     let mut graph: HashMap<u32, proto::Component> = analysis.computation_graph.to_owned().unwrap().value;
     let mut graph_properties: HashMap<u32, proto::Properties> = HashMap::new();
@@ -37,11 +35,11 @@ pub fn execute_graph(analysis: &proto::Analysis,
         .unwrap_or(0);
 
     // TEMP FIX FOR UNEVALUATED PROPERTIES
-    for (node_id, value) in evaluations.clone() {
+    for (node_id, value) in release.clone() {
         graph_properties.insert(node_id.clone(), serialize_properties(&infer_property(&value)?));
     }
 
-    // track node parents
+    // track node parents. Each key is a node id, and the value is the set of node ids that use it
     let mut parents = HashMap::<u32, HashSet<u32>>::new();
     graph.iter().for_each(|(node_id, component)| {
         component.arguments.values().for_each(|source_node_id| {
@@ -52,7 +50,7 @@ pub fn execute_graph(analysis: &proto::Analysis,
     while !traversal.is_empty() {
         let node_id: u32 = *traversal.last().unwrap();
 
-        if evaluations.contains_key(&node_id) {
+        if release.contains_key(&node_id) {
             traversal.pop();
             continue;
         }
@@ -63,7 +61,7 @@ pub fn execute_graph(analysis: &proto::Analysis,
         // discover if any dependencies remain uncomputed
         let mut evaluable = true;
         for source_node_id in arguments.values() {
-            if !evaluations.contains_key(&source_node_id) {
+            if !release.contains_key(&source_node_id) {
                 evaluable = false;
                 traversal.push(*source_node_id);
                 break;
@@ -79,7 +77,7 @@ pub fn execute_graph(analysis: &proto::Analysis,
 
         let public_arguments = node_properties.iter()
             .filter(|(_k, v)| v.releasable)
-            .map(|(k, _v)| (k.clone(), evaluations
+            .map(|(k, _v)| (k.clone(), release
                 .get(component.arguments.get(k).unwrap()).unwrap().clone()))
             .collect::<HashMap<String, Value>>();
 
@@ -109,27 +107,70 @@ pub fn execute_graph(analysis: &proto::Analysis,
 
         let mut node_arguments = NodeArguments::new();
         component.arguments.iter().for_each(|(field_id, field)| {
-            let evaluation = evaluations.get(&field).unwrap();
+            let evaluation = release.get(&field).unwrap();
             node_arguments.insert(field_id.to_owned(), evaluation);
         });
 
         println!("Evaluating {:?}", node_id);
-        let evaluation = component.to_owned().value.unwrap().evaluate(&node_arguments)?;
+        let evaluation = component.to_owned().variant.unwrap().evaluate(&node_arguments)?;
 
-        evaluations.insert(node_id, evaluation);
+        release.insert(node_id, evaluation);
 
-        // remove references to parent node, and if empty and private
+        // prune arguments from the release
         for argument_node_id in arguments.values() {
-            if let Some(temporary_node) = parents.get_mut(argument_node_id) {
-                temporary_node.remove(&node_id);
-            }
-            if let Some(argument_node) = parents.get(argument_node_id) {
-                if !node_ids_release.contains(argument_node_id) {
-                    evaluations.remove(argument_node_id);
-                    // parents.remove(argument_node_id); // optional
+            if let Some(parent_node_ids) = parents.get_mut(argument_node_id) {
+                parent_node_ids.remove(&node_id);
+
+                // remove argument node from release if all children evaluated, and is private or omitted
+                if parent_node_ids.len() == 0 {
+                    let releasable = match graph_properties.get(argument_node_id) {
+                        Some(properties) => properties.releasable,
+                        None => false
+                    };
+                    let argument_component = graph.get(argument_node_id).clone().unwrap();
+
+                    if argument_component.omit || !releasable {
+                        release.remove(argument_node_id);
+                    }
                 }
             }
         }
     }
-    serial::serialize_release(&evaluations)
+
+    // ensure that the only keys remaining in the release are releasable and not omitted
+    for node_id in release.to_owned().keys() {
+        let releasable = match graph_properties.get(node_id) {
+            Some(properties) => properties.releasable,
+            None => false
+        };
+
+        match graph.get(node_id) {
+            Some(component) => if component.omit || !releasable {
+                release.remove(node_id);
+            },
+            // delete node ids in the release that are not present in the graph
+            None => {
+                release.remove(node_id);
+            }
+        }
+    }
+    serial::serialize_release(&release)
+}
+
+pub fn get_sinks(analysis: &proto::Analysis) -> HashSet<u32> {
+    let mut node_ids = HashSet::<u32>::new();
+    // start with all nodes
+    for node_id in analysis.computation_graph.to_owned().unwrap().value.keys() {
+        node_ids.insert(*node_id);
+    }
+
+    // remove nodes that are referenced in arguments
+    for node in analysis.computation_graph.to_owned().unwrap().value.values() {
+        for source_node_id in node.arguments.values() {
+            node_ids.remove(&source_node_id);
+        }
+    }
+
+    // move to heap, transfer ownership to caller
+    return node_ids.to_owned();
 }

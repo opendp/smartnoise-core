@@ -60,12 +60,12 @@ impl Expandable for proto::DpMean {
         let id_mean = current_id.clone();
         graph_expansion.insert(id_mean, proto::Component {
             arguments: hashmap!["data".to_owned() => *component.arguments.get("data").unwrap()],
-            value: Some(proto::component::Value::Mean(proto::Mean {})),
+            variant: Some(proto::component::Variant::Mean(proto::Mean {})),
             omit: true,
             batch: component.batch,
         });
 
-        let sensitivity = Value::ArrayND(ArrayND::F64(Array::from(component.value.to_owned().unwrap()
+        let sensitivity = Value::ArrayND(ArrayND::F64(Array::from(component.variant.to_owned().unwrap()
             .compute_sensitivity(privacy_definition, properties)
             .unwrap()).into_dyn()));
 
@@ -87,10 +87,10 @@ impl Expandable for proto::DpMean {
         // noising
         graph_expansion.insert(component_id, proto::Component {
             arguments: hashmap!["data".to_owned() => id_mean, "sensitivity".to_owned() => id_sensitivity, "epsilon".to_owned() => id_epsilon],
-            value: Some(proto::component::Value::LaplaceMechanism(proto::LaplaceMechanism {
+            variant: Some(proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
                 privacy_usage: self.privacy_usage.clone()
             })),
-            omit: true,
+            omit: false,
             batch: component.batch,
         });
 
@@ -219,6 +219,5 @@ impl Report for proto::DpMean {
             releases.push(release);
         }
         Some(releases)
-
     }
 }

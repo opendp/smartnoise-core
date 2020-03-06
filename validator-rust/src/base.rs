@@ -188,6 +188,7 @@ pub struct Properties {
     pub num_columns: Option<i64>,
     // vector because some types, like the jagged matrix and hash table, may have mixed lengths
     pub num_records: Vec<Option<i64>>,
+    pub aggregator: Option<proto::Component>
 }
 
 #[derive(Clone, Debug)]
@@ -349,7 +350,7 @@ pub fn propagate_properties(
                 let input_properties = get_input_properties(&component, &graph_property)?;
                 let public_arguments = get_input_arguments(&component, &graph_evaluation)?;
 
-                component.value.unwrap().propagate_property(&public_arguments, &input_properties)?
+                component.variant.unwrap().propagate_property(&public_arguments, &input_properties)?
             }
         };
         graph_property.insert(node_id.clone(), property);
@@ -459,11 +460,11 @@ pub fn standardize_weight_argument<T>(
 pub fn get_constant(value: &Value, batch: &u32) -> proto::Component {
     proto::Component {
         arguments: HashMap::new(),
-        value: Some(proto::component::Value::Constant(proto::Constant {
+        variant: Some(proto::component::Variant::Constant(proto::Constant {
             value: serialize_value(&value).ok()
         })),
         omit: true,
-        batch: batch.clone(),
+        batch: batch.clone()
     }
 }
 
@@ -509,13 +510,12 @@ pub fn get_component_privacy_usage(
     component: &proto::Component,
     release_node: Option<&proto::ReleaseNode>,
 ) -> Option<proto::PrivacyUsage> {
-    let privacy_usage_option: Option<proto::PrivacyUsage> = match component.to_owned().value? {
-        proto::component::Value::Dpsum(x) => x.privacy_usage,
-        proto::component::Value::Dpcount(x) => x.privacy_usage,
-        proto::component::Value::Dpmean(x) => x.privacy_usage,
-        proto::component::Value::Dpvariance(x) => x.privacy_usage,
-        proto::component::Value::Dpmomentraw(x) => x.privacy_usage,
-        proto::component::Value::Dpvariance(x) => x.privacy_usage,
+    let privacy_usage_option: Option<proto::PrivacyUsage> = match component.to_owned().variant? {
+        proto::component::Variant::Dpsum(x) => x.privacy_usage,
+        proto::component::Variant::Dpcount(x) => x.privacy_usage,
+        proto::component::Variant::Dpmean(x) => x.privacy_usage,
+        proto::component::Variant::Dpvariance(x) => x.privacy_usage,
+        proto::component::Variant::Dpmomentraw(x) => x.privacy_usage,
         _ => None
     };
 
@@ -571,7 +571,7 @@ pub fn expand_component(
         properties.insert(k.clone(), infer_property(&v)?);
     }
 
-    let result = component.clone().value.unwrap().expand_graph(
+    let result = component.clone().variant.unwrap().expand_graph(
         privacy_definition,
         component,
         &properties,
@@ -579,7 +579,7 @@ pub fn expand_component(
         node_id_maximum,
     )?;
 
-    let properties = component.clone().value.unwrap().propagate_property(arguments, &properties)?;
+    let properties = component.clone().variant.unwrap().propagate_property(arguments, &properties)?;
 
     Ok(proto::response_expand_component::ExpandedComponent {
         computation_graph: Some(proto::ComputationGraph { value: result.1 }),
@@ -607,7 +607,7 @@ pub fn generate_report(
         .filter_map(|(node_id, component)| {
             let input_properties = get_input_properties(&component, &graph_properties).ok()?;
             let node_release = release.get(node_id)?;
-            component.value.clone().unwrap().summarize(&node_id, &component, &input_properties, &node_release)
+            component.variant.clone().unwrap().summarize(&node_id, &component, &input_properties, &node_release)
         })
         .flat_map(|v| v)
         .collect::<Vec<JSONRelease>>();

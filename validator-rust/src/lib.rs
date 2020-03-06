@@ -190,7 +190,7 @@ pub extern "C" fn accuracy_to_privacy_usage(
         .collect();
     let accuracy: proto::Accuracy = request.accuracy.unwrap();
 
-    let privacy_usage: Result<proto::PrivacyUsage> = Ok(component.value.to_owned().unwrap()
+    let privacy_usage: Result<proto::PrivacyUsage> = Ok(component.variant.to_owned().unwrap()
         .accuracy_to_privacy_usage(&privacy_definition, &properties, &accuracy).unwrap());
 
     let response = proto::ResponseAccuracyToPrivacyUsage {
@@ -225,7 +225,7 @@ pub extern "C" fn privacy_usage_to_accuracy(
         .collect();
 
     let accuracy: Result<proto::Accuracy> = Ok(proto::Accuracy {
-        value: component.value.to_owned().unwrap()
+        value: component.variant.to_owned().unwrap()
             .privacy_usage_to_accuracy(&privacy_definition, &properties).unwrap()
     });
 

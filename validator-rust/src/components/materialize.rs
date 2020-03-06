@@ -24,7 +24,8 @@ impl Component for proto::Materialize {
             nature: None,
             c_stability: vec![],
             num_columns: None,
-            num_records: vec![]
+            num_records: vec![],
+            aggregator: None
         })
     }
 

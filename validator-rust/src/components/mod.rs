@@ -82,7 +82,7 @@ pub trait Report {
 
 
 
-impl Component for proto::component::Value {
+impl Component for proto::component::Variant {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
         &self,
@@ -93,7 +93,7 @@ impl Component for proto::component::Value {
             ($self:ident, $public_arguments: ident, $properties: ident, $( $variant:ident ),*) => {
                 {
                     $(
-                       if let proto::component::Value::$variant(x) = $self {
+                       if let proto::component::Variant::$variant(x) = $self {
                             return x.propagate_property($public_arguments, $properties)
                        }
                     )*
@@ -120,7 +120,7 @@ impl Component for proto::component::Value {
             ($self:ident, $properties:ident, $( $variant:ident ),*) => {
                 {
                     $(
-                       if let proto::component::Value::$variant(x) = $self {
+                       if let proto::component::Variant::$variant(x) = $self {
                             return x.get_names($properties)
                        }
                     )*
@@ -138,7 +138,7 @@ impl Component for proto::component::Value {
     }
 }
 
-impl Expandable for proto::component::Value {
+impl Expandable for proto::component::Variant {
     // return a hashmap of an expanded subgraph
     fn expand_graph(
         &self,
@@ -152,7 +152,7 @@ impl Expandable for proto::component::Value {
             ($self:ident, $privacy_definition:ident, $component:ident, $properties:ident, $component_id:ident, $maximum_id:ident, $( $variant:ident ),*) => {
                 {
                     $(
-                       if let proto::component::Value::$variant(x) = $self {
+                       if let proto::component::Variant::$variant(x) = $self {
                             return x.expand_graph($privacy_definition, $component, $properties, $component_id, $maximum_id)
                        }
                     )*
@@ -170,7 +170,7 @@ impl Expandable for proto::component::Value {
     }
 }
 
-impl Privatize for proto::component::Value {
+impl Privatize for proto::component::Variant {
     fn compute_sensitivity(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
@@ -180,7 +180,7 @@ impl Privatize for proto::component::Value {
             ($self:ident, $privacy_definition:ident, $properties:ident, $( $variant:ident ),*) => {
                 {
                     $(
-                       if let proto::component::Value::$variant(x) = $self {
+                       if let proto::component::Variant::$variant(x) = $self {
                             return x.compute_sensitivity($privacy_definition, $properties)
                        }
                     )*
@@ -197,7 +197,7 @@ impl Privatize for proto::component::Value {
     }
 }
 
-impl Accuracy for proto::component::Value {
+impl Accuracy for proto::component::Variant {
     fn accuracy_to_privacy_usage(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
@@ -208,7 +208,7 @@ impl Accuracy for proto::component::Value {
             ($self:ident, $privacy_definition:ident, $properties:ident, $accuracy:ident, $( $variant:ident ),*) => {
                 {
                     $(
-                       if let proto::component::Value::$variant(x) = $self {
+                       if let proto::component::Variant::$variant(x) = $self {
                             return x.accuracy_to_privacy_usage($privacy_definition, $properties, $accuracy)
                        }
                     )*
@@ -233,7 +233,7 @@ impl Accuracy for proto::component::Value {
             ($self:ident, $privacy_definition:ident, $properties:ident, $( $variant:ident ),*) => {
                 {
                     $(
-                       if let proto::component::Value::$variant(x) = $self {
+                       if let proto::component::Variant::$variant(x) = $self {
                             return x.privacy_usage_to_accuracy($privacy_definition, $properties)
                        }
                     )*
@@ -250,7 +250,7 @@ impl Accuracy for proto::component::Value {
     }
 }
 
-impl Report for proto::component::Value {
+impl Report for proto::component::Variant {
     // for json construction. Return type should be a generic serializable struct, not a String
     fn summarize(
         &self,
@@ -264,7 +264,7 @@ impl Report for proto::component::Value {
             ($self:ident, $node_id:ident, $component:ident, $properties:ident, $release:ident, $( $variant:ident ),*) => {
                 {
                     $(
-                       if let proto::component::Value::$variant(x) = $self {
+                       if let proto::component::Variant::$variant(x) = $self {
                             return x.summarize($node_id, $component, $properties, $release)
                        }
                     )*

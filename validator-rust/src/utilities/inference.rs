@@ -326,6 +326,7 @@ pub fn infer_property(value: &Value) -> Result<Properties> {
         nature: Some(infer_nature(&value)),
         c_stability: infer_c_stability(&value)?,
         num_columns: infer_num_columns(&value)?,
-        num_records: infer_num_rows(&value)?
+        num_records: infer_num_rows(&value)?,
+        aggregator: None
     })
 }

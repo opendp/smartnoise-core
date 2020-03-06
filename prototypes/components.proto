@@ -14,7 +14,7 @@ message Component {
     // for interactive analyses
     uint32 batch = 3;
 
-    oneof value {
+    oneof variant {
         // data loading
         Materialize materialize = 100; // load a string table into columnar hashmap
         Index index = 101; // collect value from hashmap
