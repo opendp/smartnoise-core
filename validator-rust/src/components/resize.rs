@@ -26,7 +26,7 @@ impl Component for proto::Resize {
             .ok_or("num_columns must be passed to Resize")?;
 
         let num_records = public_arguments.get("n")
-            .ok_or("n must be passed to resize")?.clone().get_arraynd()?.get_i64()?;
+            .ok_or("n must be passed to Resize")?.clone().get_arraynd()?.get_i64()?;
 
         if num_records.len() as i64 > 1 {
             Err("n must be a scalar")?;

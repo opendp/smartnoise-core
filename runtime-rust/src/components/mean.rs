@@ -24,9 +24,11 @@ impl Evaluable for proto::Mean {
 //                        Ok(Value::Vector2DJagged(Vector2DJagged::F64(mean_grouped(&data, by, categories)?))),
 //                    _ => return Err("data and by must be ArrayND and categories must be Vector2dJagged".into())
 //                }
-                _ => return Err("by must be ArrayND and categories must be Vector2DJagged".into())
+                _ => Err("by must be ArrayND and categories must be Vector2DJagged".into())
             }
-            _ => Ok(Value::ArrayND(ArrayND::F64(mean(&data)?)))
+            (None, None) => Ok(Value::ArrayND(ArrayND::F64(mean(&data)?))),
+            (Some(by), None) => Err("aggregation's 'by' must be categorically clamped".into()),
+            _ => Err("both by and categories must be defined, or neither".into())
         }
     }
 }
@@ -39,11 +41,16 @@ pub fn mean(data: &ArrayD<f64>) -> Result<ArrayD<f64>> {
         .map(|column| column.mean()).collect::<Option<Vec<f64>>>()
         .ok_or::<Error>("attempted mean of an empty column".into())?;
 
-    // TODO: don't unwrap here
-    Ok(match data.ndim() {
-        1 => Array::from_shape_vec(vec![], means).unwrap(),
-        _ => Array::from_shape_vec(vec![1 as usize, get_num_columns(&data)? as usize], means).unwrap()
-    })
+    let array = match data.ndim() {
+        1 => Array::from_shape_vec(vec![], means),
+        2 => Array::from_shape_vec(vec![1 as usize, get_num_columns(&data)? as usize], means),
+        _ => return Err("invalid data shape for Mean".into())
+    };
+
+    match array {
+        Ok(array) => Ok(array),
+        Err(_) => Err("unable to package Mean result into an array".into())
+    }
 }
 
 //pub fn mean_grouped<T,S>(data: &ArrayD<T>, by: &ArrayD<S>, categories: &Vec<Option<Vec<S>>>)

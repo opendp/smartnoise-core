@@ -49,13 +49,23 @@ impl Aggregator for proto::Count {
         // if n is set, and the number of categories is 2, then sensitivity is 1.
         // Otherwise, sensitivity is 2 (changing one person can alter two bins)
         Some(match data_property.get_n() {
+            // known n
             Ok(num_records) => match data_property.get_categories() {
+                // by known categories
                 Ok(categories) => get_lengths(&categories).iter()
                     .map(|column_length| if column_length <= &2 {1.} else {2.})
                     .collect(),
-                Err(_) => (0..num_columns).map(|_| 2.).collect()
+
+                // categories not set (useless: noisy estimate of number of rows, when number of rows is known)
+                Err(_) => (0..num_columns).map(|_| 1.).collect()
             },
-            Err(_) => (0..num_columns).map(|_| 2.).collect()
+            // unknown n
+            Err(_) => match data_property.get_categories() {
+                // by known categories
+                Ok(categories) => (0..num_columns).map(|_| 2.).collect(),
+                // categories not set (estimate of number of rows)
+                Err(_) => (0..num_columns).map(|_| 1.).collect(),
+            }
         })
     }
 }

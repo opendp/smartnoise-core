@@ -6,7 +6,7 @@ use yarrow_validator::utilities::serial::parse_value;
 //mod bin;
 mod cast;
 mod clamp;
-//mod count;
+mod count;
 mod impute;
 mod index;
 //mod kth_raw_sample_moment;
@@ -17,7 +17,7 @@ mod mechanisms;
 mod resize;
 //mod row_max;
 //mod row_min;
-//mod sum;
+mod sum;
 //mod transform;
 
 use yarrow_validator::proto;

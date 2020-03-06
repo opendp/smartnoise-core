@@ -154,10 +154,6 @@ pub extern "C" fn generate_report(
     let analysis = request.analysis.unwrap();
     let release = request.release.unwrap();
 
-    //utilities::json::JSONRelease {
-        //variables: vec!["a".to_string()]
-    //}
-
     let response = proto::ResponseGenerateReport {
         value: match base::generate_report(&analysis, &release) {
             Ok(x) => Some(proto::response_generate_report::Value::Data(x)),
