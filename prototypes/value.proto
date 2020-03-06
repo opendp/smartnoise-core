@@ -98,7 +98,7 @@ message PrivacyUsage {
         double epsilon = 1;
         double delta = 2;
     }
-    oneof usage {
+    oneof distance {
         DistancePure distance_pure = 1;
         DistanceApproximate distance_approximate = 2;
     }

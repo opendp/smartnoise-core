@@ -21,7 +21,6 @@ message Component {
         Stack stack = 102; // stack arguments along an axis of an array
         Literal literal = 110; // propagate a preset value in the release
         Constant constant = 111; // pass a value from the analysis. Internal use only
-        ColumnNames columnnames = 112;
 
         // -- manipulations --
         // type manipulations
@@ -72,13 +71,6 @@ message Component {
         LaplaceMechanism laplace_mechanism = 500;
         GaussianMechanism gaussian_mechanism = 501;
         SimpleGeometricMechanism simple_geometric_mechanism = 502;
-
-        // deprecated
-        Laplace laplace = 1000;
-        ImputeFloatUniform impute_float_uniform = 1001;
-        ImputeFloatGaussian impute_float_gaussian = 1002;
-        ImputeIntUniform impute_int_uniform = 1003;
-        DataSource datasource = 1007; // load a single column from a csv file as type
     }
 }
 
@@ -94,10 +86,6 @@ message Materialize {
 message Index {
     repeated string path = 1;
 }
-message DataSource {
-    string dataset_id = 1;
-    string column_id = 2;
-}
 
 message Stack {}
 message Literal {
@@ -106,7 +94,6 @@ message Literal {
 message Constant {
     Value value = 1;
 }
-message ColumnNames {}
 
 // -- manipulations --
 // type manipulations
@@ -136,32 +123,32 @@ message Negate {}
 
 // high level components
 message DPSum {
-    PrivacyUsage privacy_usage = 1;
+    repeated PrivacyUsage privacy_usage = 1;
     string implementation = 2;
 }
 message DPCount {
-    PrivacyUsage privacy_usage = 1;
+    repeated PrivacyUsage privacy_usage = 1;
     string implementation = 2;
 }
 message DPMean {
-    PrivacyUsage privacy_usage = 1;
+    repeated PrivacyUsage privacy_usage = 1;
     string implementation = 2;
 }
 message DPVariance {
-    PrivacyUsage privacy_usage = 1;
+    repeated PrivacyUsage privacy_usage = 1;
     string implementation = 2;
 }
 message DPMedian {
-    PrivacyUsage privacy_usage = 1;
+    repeated PrivacyUsage privacy_usage = 1;
     string implementation = 2;
 }
 message DPMomentRaw {
-    PrivacyUsage privacy_usage = 1;
+    repeated PrivacyUsage privacy_usage = 1;
     string implementation = 2;
     uint32 order = 3;
 }
 message DPCovariance {
-    PrivacyUsage privacy_usage = 1;
+    repeated PrivacyUsage privacy_usage = 1;
     string implementation = 2;
 }
 
@@ -185,35 +172,14 @@ message SampleGeometric {}
 message SampleDiscrete {}
 message SampleGaussian {}
 
-// deprecated
-message Laplace {
-    double epsilon = 1;
-}
-message ImputeFloatUniform {
-    double min = 1;
-    double max = 2;
-}
-message ImputeFloatGaussian {
-    double shift = 1;
-    double scale = 2;
-    double min = 3;
-    double max = 4;
-}
-message ImputeIntUniform {
-    double min = 1;
-    double max = 2;
-}
-
 message LaplaceMechanism {
-    PrivacyUsage privacy_usage = 1;
+    repeated PrivacyUsage privacy_usage = 1;
 }
 message GaussianMechanism {
-    PrivacyUsage privacy_usage = 1;
+    repeated PrivacyUsage privacy_usage = 1;
 }
 message SimpleGeometricMechanism {
-    double epsilon = 1;
-    int64 count_min = 2;
-    int64 count_max = 3;
+    repeated PrivacyUsage privacy_usage = 1;
     bool enforce_constant_time = 4;
 }
 

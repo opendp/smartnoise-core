@@ -5,7 +5,7 @@ use std::collections::HashMap;
 
 use crate::{proto, base};
 use crate::hashmap;
-use crate::components::{Component, Accuracy, Privatize, Expandable, Report};
+use crate::components::{Component, Accuracy, Expandable, Report};
 use ndarray::{Array, arr1};
 use crate::utilities::serial::serialize_value;
 use crate::base::{Properties, NodeProperties, Value, get_constant, ArrayND};
@@ -65,28 +65,9 @@ impl Expandable for proto::DpMean {
             batch: component.batch,
         });
 
-        let sensitivity = Value::ArrayND(ArrayND::F64(Array::from(component.variant.to_owned().unwrap()
-            .compute_sensitivity(privacy_definition, properties)
-            .unwrap()).into_dyn()));
-
-        // sensitivity literal
-        current_id += 1;
-        let id_sensitivity = current_id.clone();
-        graph_expansion.insert(id_sensitivity, get_constant(&sensitivity, &component.batch));
-
-
-        let epsilon = Value::ArrayND(ArrayND::F64(Array::from(match self.privacy_usage.clone().unwrap().usage.unwrap() {
-            proto::privacy_usage::Usage::DistancePure(distance) => vec![distance.epsilon],
-            proto::privacy_usage::Usage::DistanceApproximate(distance) => vec![distance.epsilon],
-        }).into_dyn()));
-        // epsilon literal
-        current_id += 1;
-        let id_epsilon = current_id.clone();
-        graph_expansion.insert(id_epsilon, get_constant(&epsilon, &component.batch));
-
         // noising
         graph_expansion.insert(component_id, proto::Component {
-            arguments: hashmap!["data".to_owned() => id_mean, "sensitivity".to_owned() => id_sensitivity, "epsilon".to_owned() => id_epsilon],
+            arguments: hashmap!["data".to_owned() => id_mean],
             variant: Some(proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
                 privacy_usage: self.privacy_usage.clone()
             })),
@@ -95,27 +76,6 @@ impl Expandable for proto::DpMean {
         });
 
         Ok((current_id, graph_expansion))
-    }
-}
-
-impl Privatize for proto::DpMean {
-    fn compute_sensitivity(
-        &self,
-        _privacy_definition: &proto::PrivacyDefinition,
-        properties: &NodeProperties,
-    ) -> Option<Vec<f64>> {
-        let data_property = properties.get("data")?;
-
-        let min = data_property.get_min_f64().ok()?;
-        let max = data_property.get_max_f64().ok()?;
-        let num_records = data_property.get_n().ok()?;
-
-        Some(min
-            .iter()
-            .zip(max)
-            .zip(num_records)
-            .map(|((min, max), n)| (max - min) / n as f64)
-            .collect())
     }
 }
 
@@ -198,7 +158,7 @@ impl Report for proto::DpMean {
                 statistic: "DPMean".to_string(),
                 variables: vec![],
                 releaseInfo,
-                privacyLoss: privacy_usage_to_json(&self.privacy_usage.clone().unwrap()),
+                privacyLoss: privacy_usage_to_json(&self.privacy_usage[column_number as usize].clone()),
                 accuracy: None,
                 batch: component.batch as u64,
                 nodeID: node_id.clone() as u64,

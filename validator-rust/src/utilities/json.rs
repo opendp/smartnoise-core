@@ -63,10 +63,10 @@ pub fn arraynd_to_json<T: Serialize + Clone>(array: &ArrayD<T>) -> Result<serde_
 }
 
 pub fn privacy_usage_to_json(privacy_usage: &proto::PrivacyUsage) -> serde_json::Value {
-    match privacy_usage.usage.clone().unwrap() {
-        proto::privacy_usage::Usage::DistancePure(distance) =>
+    match privacy_usage.distance.clone().unwrap() {
+        proto::privacy_usage::Distance::DistancePure(distance) =>
             serde_json::json!({"name": "pure", "epsilon": distance.epsilon}),
-        proto::privacy_usage::Usage::DistanceApproximate(distance) =>
+        proto::privacy_usage::Distance::DistanceApproximate(distance) =>
             serde_json::json!({"name": "approximate", "epsilon": distance.epsilon, "delta": distance.delta})
     }
 }

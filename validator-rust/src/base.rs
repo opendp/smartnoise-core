@@ -188,7 +188,13 @@ pub struct Properties {
     pub num_columns: Option<i64>,
     // vector because some types, like the jagged matrix and hash table, may have mixed lengths
     pub num_records: Vec<Option<i64>>,
-    pub aggregator: Option<proto::Component>
+    pub aggregator: Option<AggregatorProperties>
+}
+
+#[derive(Clone, Debug)]
+pub struct AggregatorProperties {
+    pub component: proto::component::Variant,
+    pub properties: HashMap<String, Properties>
 }
 
 #[derive(Clone, Debug)]
@@ -491,10 +497,7 @@ pub fn compute_privacy_usage(
 
     let usage_option = graph.iter()
         // optionally extract the minimum usage between the analysis and release
-        .map(|(node_id, component)| get_component_privacy_usage(component, release.values.get(node_id)))
-        // ignore nodes without privacy usage
-        .filter(|privacy_usage| privacy_usage.is_some())
-        .map(|privacy_usage| privacy_usage.unwrap())
+        .filter_map(|(node_id, component)| get_component_privacy_usage(component, release.values.get(node_id)))
         // linear sum
         .fold1(|usage_1, usage_2| privacy_usage_reducer(
             &usage_1, &usage_2, &|l, r| l + r));
@@ -510,28 +513,25 @@ pub fn get_component_privacy_usage(
     component: &proto::Component,
     release_node: Option<&proto::ReleaseNode>,
 ) -> Option<proto::PrivacyUsage> {
-    let privacy_usage_option: Option<proto::PrivacyUsage> = match component.to_owned().variant? {
+
+    // otherwise return the maximum possible usage allowed to the component
+    let mut privacy_usage: Vec<proto::PrivacyUsage> = match component.to_owned().variant? {
         proto::component::Variant::Dpsum(x) => x.privacy_usage,
         proto::component::Variant::Dpcount(x) => x.privacy_usage,
         proto::component::Variant::Dpmean(x) => x.privacy_usage,
         proto::component::Variant::Dpvariance(x) => x.privacy_usage,
         proto::component::Variant::Dpmomentraw(x) => x.privacy_usage,
-        _ => None
+        _ => return None
     };
 
-    if privacy_usage_option.is_none() {
-        return None;
+    // if release usage is defined, then use the actual eps, etc. from the release
+    if let Some(release_node) = release_node {
+        privacy_usage = (*release_node.privacy_usage).to_vec();
     }
 
-    if let Some(release_node) = release_node {
-        if let Some(release_node_usage) = &release_node.privacy_usage {
-            return Some(privacy_usage_reducer(
-                &privacy_usage_option.unwrap(),
-                &release_node_usage,
-                &|l, r| l.min(r)));
-        }
-    }
-    privacy_usage_option
+    privacy_usage.into_iter()
+        .fold1(|usage_a, usage_b|
+            privacy_usage_reducer(&usage_a, &usage_b, &|a, b| a + b))
 }
 
 pub fn privacy_usage_reducer(
@@ -539,14 +539,14 @@ pub fn privacy_usage_reducer(
     right: &proto::PrivacyUsage,
     operator: &dyn Fn(f64, f64) -> f64,
 ) -> proto::PrivacyUsage {
-    use proto::privacy_usage::Usage as Usage;
+    use proto::privacy_usage::Distance as Distance;
 
     proto::PrivacyUsage {
-        usage: match (left.usage.to_owned().unwrap(), right.usage.to_owned().unwrap()) {
-            (Usage::DistancePure(x), Usage::DistancePure(y)) => Some(Usage::DistancePure(proto::privacy_usage::DistancePure {
+        distance: match (left.distance.to_owned().unwrap(), right.distance.to_owned().unwrap()) {
+            (Distance::DistancePure(x), Distance::DistancePure(y)) => Some(Distance::DistancePure(proto::privacy_usage::DistancePure {
                 epsilon: operator(x.epsilon, y.epsilon)
             })),
-            (Usage::DistanceApproximate(x), Usage::DistanceApproximate(y)) => Some(Usage::DistanceApproximate(proto::privacy_usage::DistanceApproximate {
+            (Distance::DistanceApproximate(x), Distance::DistanceApproximate(y)) => Some(Distance::DistanceApproximate(proto::privacy_usage::DistanceApproximate {
                 epsilon: operator(x.epsilon, y.epsilon),
                 delta: operator(x.delta, y.delta),
             })),

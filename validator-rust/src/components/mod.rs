@@ -46,7 +46,7 @@ pub trait Expandable {
     ) -> Result<(u32, HashMap<u32, proto::Component>)>;
 }
 
-pub trait Privatize {
+pub trait Aggregator {
     fn compute_sensitivity(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
@@ -162,7 +162,7 @@ impl Expandable for proto::component::Variant {
 
         expand_graph!(self, privacy_definition, component, properties, component_id, maximum_id,
             // INSERT COMPONENT LIST
-            Dpmean, Clamp, Impute, Resize
+            Dpmean, Clamp, Impute, Resize, LaplaceMechanism
         );
 
         // no expansion
@@ -170,7 +170,7 @@ impl Expandable for proto::component::Variant {
     }
 }
 
-impl Privatize for proto::component::Variant {
+impl Aggregator for proto::component::Variant {
     fn compute_sensitivity(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
@@ -190,7 +190,7 @@ impl Privatize for proto::component::Variant {
 
         compute_sensitivity!(self, privacy_definition, properties,
             // INSERT COMPONENT LIST
-            Dpmean
+            Mean
         );
 
         None

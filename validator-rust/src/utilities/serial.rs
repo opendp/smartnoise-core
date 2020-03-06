@@ -4,7 +4,7 @@ use crate::ErrorKind::{PrivateError, PublicError};
 use ndarray::prelude::*;
 use crate::proto;
 use std::collections::{HashMap};
-use crate::base::{Release, Properties, Nature, Vector2DJagged, Vector1D, Value, ArrayND, Vector1DNull, NatureCategorical, NatureContinuous};
+use crate::base::{Release, Properties, Nature, Vector2DJagged, Vector1D, Value, ArrayND, Vector1DNull, NatureCategorical, NatureContinuous, AggregatorProperties};
 
 // PARSERS
 pub fn parse_bool_null(value: &proto::BoolNull) -> Option<bool> {
@@ -160,14 +160,14 @@ pub fn parse_release(release: &proto::Release) -> Result<Release> {
     Ok(evaluations)
 }
 
-pub fn parse_properties(other: &proto::Properties) -> Properties {
+pub fn parse_properties(value: &proto::Properties) -> Properties {
     Properties {
-        num_records: parse_array1d_i64_null(&other.num_records.to_owned().unwrap()),
-        num_columns: parse_i64_null(&other.num_columns.to_owned().unwrap()),
-        nullity: other.nullity,
-        releasable: other.releasable,
-        c_stability: parse_array1d_f64(&other.c_stability.to_owned().unwrap()),
-        nature: match other.nature.to_owned() {
+        num_records: parse_array1d_i64_null(&value.num_records.to_owned().unwrap()),
+        num_columns: parse_i64_null(&value.num_columns.to_owned().unwrap()),
+        nullity: value.nullity,
+        releasable: value.releasable,
+        c_stability: parse_array1d_f64(&value.c_stability.to_owned().unwrap()),
+        nature: match value.nature.to_owned() {
             Some(nature) => match nature {
                 proto::properties::Nature::Continuous(continuous) =>
                     Some(Nature::Continuous(NatureContinuous {
@@ -181,7 +181,15 @@ pub fn parse_properties(other: &proto::Properties) -> Properties {
             },
             None => None,
         },
-        aggregator: other.aggregator.clone()
+        aggregator: match &value.aggregator {
+            Some(aggregator) => Some(AggregatorProperties {
+                component: aggregator.component.clone().unwrap().variant.unwrap(),
+                properties: aggregator.properties.iter()
+                    .map(|(name, properties)| (name.clone(), parse_properties(&properties)))
+                    .collect::<HashMap<String, Properties>>()
+            }),
+            None => None
+        }
     }
 }
 
@@ -369,7 +377,8 @@ pub fn serialize_release(release: &Release) -> Result<proto::Release> {
         if let Ok(array_serialized) = serialize_value(node_eval) {
             releases.insert(*node_id, proto::ReleaseNode {
                 value: Some(array_serialized),
-                privacy_usage: None,
+                // TODO: store actual usage from algorithm. No algorithms actually use this yet
+                privacy_usage: Vec::new(),
             });
         }
     }
@@ -397,6 +406,17 @@ pub fn serialize_properties(value: &Properties) -> proto::Properties {
             },
             None => None
         },
-        aggregator: value.aggregator.clone()
+        aggregator: match value.aggregator.clone() {
+            Some(aggregator) => Some(proto::properties::AggregatorProperties {
+                component: Some(proto::Component {
+                    variant: Some(proto::component::Variant::from(aggregator.component)),
+                    omit: true, batch: 0, arguments: HashMap::new(),
+                }),
+                properties: aggregator.properties.iter()
+                    .map(|(name, properties)| (name.clone(), serialize_properties(&properties)))
+                    .collect::<HashMap<String, proto::Properties>>()
+            }),
+            None => None
+        }
     }
 }

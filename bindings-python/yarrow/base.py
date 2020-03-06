@@ -14,20 +14,33 @@ ALL_CONSTRAINTS = ["n", "min", "max", "categories"]
 
 
 def privacy_usage(epsilon=None, delta=None):
+    # upgrade epsilon/delta to lists if they aren't already
+    if epsilon is not None and not issubclass(type(epsilon), list):
+        epsilon = [epsilon]
+
+    if delta is not None and not issubclass(type(delta), list):
+        delta = [delta]
+
     if epsilon is not None and delta is not None:
-        return value_pb2.PrivacyUsage(
-            distance_approximate=value_pb2.PrivacyUsage.DistanceApproximate(
-                epsilon=epsilon,
-                delta=delta
-            )
-        )
+        return [
+            value_pb2.PrivacyUsage(
+                distance_approximate=value_pb2.PrivacyUsage.DistanceApproximate(
+                    epsilon=val_epsilon,
+                    delta=val_delta
+                )
+            ) 
+            for val_epsilon, val_delta in zip(epsilon, delta)
+        ]
 
     if epsilon is not None and delta is None:
-        return value_pb2.PrivacyUsage(
-            distance_pure=value_pb2.PrivacyUsage.DistancePure(
-                epsilon=epsilon
+        return [
+            value_pb2.PrivacyUsage(
+                distance_pure=value_pb2.PrivacyUsage.DistancePure(
+                    epsilon=val_epsilon
+                )
             )
-        )
+            for val_epsilon in epsilon
+        ]
 
     raise ValueError("Unknown privacy definition.")
 

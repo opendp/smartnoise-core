@@ -5,7 +5,9 @@ use std::env;
 
 
 fn main() {
-    prost_build::compile_protos(
+    let mut config = prost_build::Config::new();
+    config.type_attribute("yarrow.Component.variant", "#[derive(derive_more::From)]");
+    config.compile_protos(
         &[
             "../prototypes/api.proto",
             "../prototypes/base.proto",
