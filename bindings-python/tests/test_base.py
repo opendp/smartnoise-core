@@ -3,8 +3,7 @@ import yarrow
 test_csv_path = '/home/shoe/PSI/datasets/data/PUMS_california_demographics_1000/data.csv'
 
 
-def test_basic_path():
-    print('file path test')
+def test_basic_path(run=True):
 
     with yarrow.Analysis() as analysis:
         PUMS = yarrow.Dataset(path=test_csv_path)
@@ -14,7 +13,7 @@ def test_basic_path():
 
         mean_age = yarrow.ops.dp_mean(
             data=yarrow.ops.cast(PUMS['married'], type="FLOAT"),
-            privacy_usage=yarrow.privacy_usage(epsilon=.65),
+            privacy_usage={'epsilon': .65},
             data_min=0.,
             data_max=100.,
             data_n=500
@@ -22,14 +21,14 @@ def test_basic_path():
 
         yarrow.ops.dp_mean(
             age / 2 + (sex + 22),
-            privacy_usage=yarrow.privacy_usage(epsilon=.1),
+            privacy_usage={'epsilon': .1},
             data_min=mean_age - 5.2,
             data_max=102.,
             data_n=500) + 5.
 
         yarrow.ops.dp_variance(
             yarrow.ops.cast(PUMS['educ'], type="FLOAT"),
-            privacy_usage=yarrow.privacy_usage(epsilon=.15),
+            privacy_usage={'epsilon': .15},
             data_n=1000,
             data_min=0.,
             data_max=12.
@@ -37,7 +36,7 @@ def test_basic_path():
 
         yarrow.ops.dp_moment_raw(
             yarrow.ops.cast(PUMS['married'], type="FLOAT"),
-            privacy_usage=yarrow.privacy_usage(epsilon=.15),
+            privacy_usage={'epsilon': .15},
             data_n=1000000,
             data_min=0.,
             data_max=12.,
@@ -47,7 +46,7 @@ def test_basic_path():
         yarrow.ops.dp_covariance(
             yarrow.ops.cast(PUMS['age'], type="FLOAT"),
             yarrow.ops.cast(PUMS['married'], type="FLOAT"),
-            privacy_usage=yarrow.privacy_usage(epsilon=.15),
+            privacy_usage={'epsilon': .15},
             left_n=1000,
             right_n=1000,
             left_min=0.,
@@ -56,51 +55,61 @@ def test_basic_path():
             right_max=1.
         )
 
-    analysis.release()
+    if run:
+        analysis.release()
+
     return analysis
 
 
-def test_dp_mean():
+def test_dp_mean(run=True):
     with yarrow.Analysis() as analysis:
         dataset_pums = yarrow.Dataset(path=test_csv_path)
 
         age = dataset_pums['age']
         age = yarrow.ops.cast(age, type="FLOAT")
 
-        yarrow.ops.dp_mean(
+        mean = yarrow.ops.dp_mean(
             data=age,
-            privacy_usage=yarrow.privacy_usage(epsilon=.5),
+            privacy_usage={'epsilon': .5},
             data_min=0.,
             data_max=100.,
             data_n=500
         )
 
+    if run:
+        analysis.release()
+
+        # get the mean computed when release() was called
+        print(mean.value)
+
     return analysis
 
 
-def test_dp_count():
+def test_dp_count(run=True):
     with yarrow.Analysis() as analysis:
         dataset_pums = yarrow.Dataset(path=test_csv_path)
-        yarrow.ops.dp_count(dataset_pums['sex'] == '1')
+        count = yarrow.ops.dp_count(
+            dataset_pums['sex'] == '1',
+            privacy_usage={'epsilon': 0.5})
+
+    if run:
+        analysis.release()
+        print(count.value)
 
     return analysis
 
 
-def test_raw_dataset():
+def test_raw_dataset(run=True):
     with yarrow.Analysis() as analysis:
         yarrow.ops.dp_mean(
             data=yarrow.Dataset(value=[1., 2., 3., 4., 5.])[0],
-            privacy_usage=yarrow.privacy_usage(epsilon=1),
+            privacy_usage={'epsilon': 1},
             data_min=0.,
             data_max=10.,
             data_n=10
         )
-    analysis.release()
+
+    if run:
+        analysis.release()
 
     return analysis
-
-
-def test_report():
-    parsed = yarrow.Analysis.test_release()
-    print("parsed report:")
-    print(parsed)

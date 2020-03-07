@@ -42,11 +42,11 @@ def privacy_usage(epsilon=None, delta=None):
             for val_epsilon in epsilon
         ]
 
-    raise ValueError("Unknown privacy definition.")
+    # otherwise, no privacy usage
 
 
 class Dataset(object):
-    def __init__(self, *, path=None, value=None, private=True):
+    def __init__(self, *, path=None, value=None, value_format=None, private=True):
 
         global context
         if not context:
@@ -59,7 +59,7 @@ class Dataset(object):
         if path is not None:
             materialize_options['file_path'] = path
         if value is not None:
-            materialize_options['literal'] = Component._make_value_proto(value)
+            materialize_options['literal'] = Analysis._serialize_value_proto(value, value_format)
 
         self.component = Component('Materialize', options=materialize_options)
 
@@ -68,7 +68,10 @@ class Dataset(object):
 
 
 class Component(object):
-    def __init__(self, name: str, arguments: dict = None, options: dict = None, constraints: dict = None, release=None):
+    def __init__(self, name: str,
+                 arguments: dict = None, options: dict = None,
+                 constraints: dict = None,
+                 value=None, value_format=None):
 
         self.name: str = name
         self.arguments: dict = Component._expand_constraints(arguments or {}, constraints)
@@ -80,16 +83,18 @@ class Component(object):
 
         global context
         if context:
-            context.add_component(self, release=release)
+            context.add_component(self, value=value, value_format=value_format)
         else:
             raise ValueError("all Yarrow components must be created within the context of an analysis")
 
     # pull the released values out from the analysis' release protobuf
-    def __call__(self):
-        return self.analysis.release_proto.get(self.component_id)
+    @property
+    def value(self):
+        return self.analysis.release_values.get(self.component_id, {"value": None})["value"]
 
-    def get(self):
-        return self()
+    @property
+    def actual_privacy_usage(self):
+        return self.analysis.release_values.get(self.component_id, {"privacy_usage": None})["privacy_usage"]
 
     def __pos__(self):
         return self
@@ -141,54 +146,14 @@ class Component(object):
         return id(self)
 
     @staticmethod
-    # TODO: handle jagged
-    def of(value, jagged=False):
+    def of(value, value_format=None):
         if value is None:
             return
 
         if type(value) == Component:
             return value
 
-        return Component('Constant', release=value)
-
-    @staticmethod
-    def _make_value(data, is_jagged=False):
-        if issubclass(type(data), dict):
-            return value_pb2.Value(
-                hashmap_string={key: Component._make_value(data[key]) for key in data}
-            )
-
-        if is_jagged:
-            return value_pb2.Value(array_2d_jagged=value_pb2.Array2dJagged(data=[
-                value_pb2.Array2dJagged.Array1dOption(data=column) for column in data
-            ]))
-
-        data = np.array(data)
-
-        data_type = {
-            np.bool: "bool",
-            np.int64: "i64",
-            np.float64: "f64",
-            np.string_: "string",
-            np.str_: "string"
-        }[data.dtype.type]
-
-        container_type = {
-            np.bool: value_pb2.Array1dBool,
-            np.int64: value_pb2.Array1dI64,
-            np.float64: value_pb2.Array1dF64,
-            np.string_: value_pb2.Array1dStr,
-            np.str_: value_pb2.Array1dStr
-        }[data.dtype.type]
-
-        return value_pb2.Value(
-            array_nd=value_pb2.ArrayNd(
-                shape=list(data.shape),
-                order=list(range(data.ndim)),
-                flattened=value_pb2.Array1d(**{
-                    data_type: container_type(data=list(data.flatten()))
-                })
-            ))
+        return Component('Constant', value=value, value_format=value_format)
 
     @staticmethod
     def _expand_constraints(arguments, constraints):
@@ -266,7 +231,7 @@ class Analysis(object):
         # nested analyses
         self._context_cache = None
 
-    def add_component(self, component, release=None):
+    def add_component(self, component, value=None, value_format=None):
         if component.analysis:
             raise ValueError("this component is already a part of another analysis")
 
@@ -274,12 +239,15 @@ class Analysis(object):
         component.analysis = self
         component.component_id = self.component_count
 
-        if release is not None:
-            self.release_values[self.component_count] = release
+        if value is not None:
+            self.release_values[self.component_count] = {
+                'value': value,
+                'value_format': value_format
+            }
         self.components[self.component_count] = component
         self.component_count += 1
 
-    def _make_analysis_proto(self):
+    def _serialize_analysis_proto(self):
 
         vertices = {}
         for component_id in self.components:
@@ -303,31 +271,45 @@ class Analysis(object):
             )
         )
 
-    def _make_release_proto(self):
+    def _serialize_release_proto(self):
 
         return base_pb2.Release(
             values={
                 component_id: base_pb2.ReleaseNode(
-                    value=self._make_value_proto(self.release_values[component_id]),
-                    privacy_usage=None)
-                for component_id in self.components
-                if component_id in self.release_values
+                    value=self._serialize_value_proto(
+                        self.release_values[component_id]['value'],
+                        self.release_values[component_id].get("value_format")),
+                    privacy_usage=privacy_usage(
+                        **self.release_values[component_id].get("privacy_usage", {})))
+                for component_id in self.release_values
             })
 
     @staticmethod
-    def _make_value_proto(data, is_jagged=False):
+    def _parse_release_proto(release):
+        return {
+            node_id: {
+                "value": Analysis._parse_value_proto(release_node.value),
+                # "privacy_usage": release_node["privacy_usage"]
+            } for node_id, release_node in release.values.items()
+        }
 
-        if issubclass(type(data), dict):
+    @staticmethod
+    def _serialize_value_proto(value, value_format=None):
+
+        if value_format == 'hashmap' or issubclass(type(value), dict):
             return value_pb2.Value(
-                hashmap_string={key: Component._make_value_proto(data[key], is_jagged=is_jagged) for key in data}
+                hashmap_string={key: Analysis._serialize_value_proto(value[key]) for key in value}
             )
 
-        if is_jagged:
+        if value_format == 'jagged':
             return value_pb2.Value(array_2d_jagged=value_pb2.Array2dJagged(data=[
-                value_pb2.Array2dJagged.Array1dOption(data=column) for column in data
+                value_pb2.Array2dJagged.Array1dOption(data=column) for column in value
             ]))
 
-        data = np.array(data)
+        if value_format is not None and value_format != 'array':
+            raise ValueError('format must be either "array", "jagged", "hashmap" or None')
+
+        value = np.array(value)
 
         data_type = {
             np.bool: "bool",
@@ -335,7 +317,7 @@ class Analysis(object):
             np.float64: "f64",
             np.string_: "string",
             np.str_: "string"
-        }[data.dtype.type]
+        }[value.dtype.type]
 
         container_type = {
             np.bool: value_pb2.Array1dBool,
@@ -343,39 +325,68 @@ class Analysis(object):
             np.float64: value_pb2.Array1dF64,
             np.string_: value_pb2.Array1dStr,
             np.str_: value_pb2.Array1dStr
-        }[data.dtype.type]
+        }[value.dtype.type]
 
         return value_pb2.Value(
             array_nd=value_pb2.ArrayNd(
-                shape=list(data.shape),
-                order=list(range(data.ndim)),
+                shape=list(value.shape),
+                order=list(range(value.ndim)),
                 flattened=value_pb2.Array1d(**{
-                    data_type: container_type(data=list(data.flatten()))
+                    data_type: container_type(data=list(value.flatten()))
                 })
             ))
 
+    @staticmethod
+    def _parse_value_proto(value):
+
+        def parse_array1d(array):
+            data_type = array.WhichOneof("data")
+            if data_type:
+                return getattr(array, data_type).data
+
+        def parse_array1d_option(array):
+            if array.HasField("option"):
+                parse_array1d(array.option)
+
+        if value.HasField("array_nd"):
+            data = parse_array1d(value.array_nd.flattened)
+            if data:
+                if value.array_nd.shape:
+                    return np.array(data).reshape(value.array_nd.shape)
+                return data[0]
+
+        if value.HasField("hashmap_string"):
+            return {k: Analysis._parse_value_proto(v) for k, v in value.hashmap_string.data.items()}
+
+        if value.HasField("array_2d_jagged"):
+            return [
+                parse_array1d_option(column) for column in value.array_2d_jagged.data
+            ]
+
     def validate(self):
         return core_wrapper.validate_analysis(
-            self._make_analysis_proto(),
-            self._make_release_proto())
+            self._serialize_analysis_proto(),
+            self._serialize_release_proto())
 
     @property
     def epsilon(self):
         return core_wrapper.compute_privacy_usage(
-            self._make_analysis_proto(),
-            self._make_release_proto())
+            self._serialize_analysis_proto(),
+            self._serialize_release_proto())
 
     def release(self):
-        # TODO: convert into python representation
-        self.release_proto: base_pb2.Release = core_wrapper.compute_release(
-            self._make_analysis_proto(),
-            self._make_release_proto())
+        release_proto: base_pb2.Release = core_wrapper.compute_release(
+            self._serialize_analysis_proto(),
+            self._serialize_release_proto())
 
-        print(self.release_proto)
+        self.release_values = Analysis._parse_release_proto(release_proto)
+
+        print("release values")
+        print(self.release_values)
 
         return json.loads(core_wrapper.generate_report(
-            self._make_analysis_proto(),
-            self.release_proto))
+            self._serialize_analysis_proto(),
+            release_proto))
 
     def __enter__(self):
         global context
@@ -390,7 +401,7 @@ class Analysis(object):
     def _make_networkx(self):
         import networkx as nx
 
-        analysis = self._make_analysis_proto()
+        analysis = self._serialize_analysis_proto()
         graph = nx.DiGraph()
 
         def label(node_id):

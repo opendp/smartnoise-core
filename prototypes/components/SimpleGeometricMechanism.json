@@ -9,7 +9,7 @@
     }
   },
   "id": "SimpleGeometricMechanism",
-  "name": "simple_geometric_mechanisms",
+  "name": "simple_geometric_mechanism",
   "options": {
     "privacy_usage": {
       "type": "repeated PrivacyUsage"
