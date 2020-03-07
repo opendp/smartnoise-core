@@ -3,7 +3,7 @@ use yarrow_validator::errors::*;
 use crate::base::NodeArguments;
 use yarrow_validator::base::{Value, ArrayND, get_argument, Vector2DJagged, standardize_numeric_argument, standardize_categorical_argument};
 use crate::components::Evaluable;
-use ndarray::{ArrayD, Array, Axis, arr1};
+use ndarray::{ArrayD};
 use yarrow_validator::proto;
 use crate::utilities::utilities::get_num_columns;
 use std::ops::{Div, Add};
@@ -63,7 +63,7 @@ pub fn bin<T: std::cmp::PartialOrd + Clone + Div<T, Output=T> + Add<T, Output=T>
             edges.sort_by(|a, b| a.partial_cmp(b).unwrap());
             column.iter_mut()
                 // mutate the cell via the operator
-                .map(|mut v| {
+                .map(|v| {
                     // checks for nullity
                     if edges.len() == 0 || *v < edges[0] || *v > edges[edges.len() - 1] {
                         *v = null.clone();

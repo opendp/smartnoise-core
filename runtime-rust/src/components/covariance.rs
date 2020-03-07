@@ -1,10 +1,10 @@
 use yarrow_validator::errors::*;
 
 use crate::base::NodeArguments;
-use yarrow_validator::base::{Value, ArrayND, Vector2DJagged, get_argument};
+use yarrow_validator::base::{Value, ArrayND, get_argument};
 use crate::components::Evaluable;
-use ndarray::{ArrayD, Axis, Array};
-use crate::utilities::utilities::get_num_columns;
+use ndarray::{ArrayD, Array};
+
 use yarrow_validator::proto;
 use crate::components::mean::mean;
 use ndarray::prelude::*;
@@ -30,7 +30,7 @@ impl Evaluable for proto::Covariance {
                 _ => Err("by must be ArrayND and categories must be Vector2DJagged".into())
             }
             (None, None) => Ok(Value::ArrayND(ArrayND::F64(cross_covariance(&left, &right)?))),
-            (Some(by), None) => Err("aggregation's 'by' must be categorically clamped".into()),
+            (Some(_by), None) => Err("aggregation's 'by' must be categorically clamped".into()),
             _ => Err("both by and categories must be defined, or neither".into())
         }
     }

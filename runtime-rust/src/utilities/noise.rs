@@ -1,5 +1,5 @@
 use yarrow_validator::errors::*;
-use yarrow_validator::ErrorKind::{PrivateError, PublicError};
+
 
 use probability::distribution::{Gaussian, Laplace, Inverse, Distribution};
 use ieee754::Ieee754;
@@ -181,8 +181,8 @@ pub fn sample_uniform(min: &f64, max: &f64) -> Result<f64> {
     let mantissa_int = u64::from_str_radix(mantissa, 2).unwrap();
 
     // Generate exponent
-    let geom: (i16) = sample_floating_point_probability_exponent();
-    let exponent: (u16) = (-geom + 1023) as u16;
+    let geom: i16 = sample_floating_point_probability_exponent();
+    let exponent: u16 = (-geom + 1023) as u16;
 
     // Generate uniform random number from (0,1)
     let uniform_rand = f64::recompose_raw(false, exponent, mantissa_int);

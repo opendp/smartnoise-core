@@ -1,7 +1,7 @@
 use yarrow_validator::errors::*;
 
 use crate::base::NodeArguments;
-use yarrow_validator::base::{Value, ArrayND, Vector2DJagged, get_argument};
+use yarrow_validator::base::{Value, ArrayND, get_argument};
 use crate::components::Evaluable;
 use ndarray::{ArrayD, Array};
 use yarrow_validator::proto;
@@ -10,7 +10,7 @@ use crate::utilities::utilities::get_num_columns;
 
 impl Evaluable for proto::Count {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        let data = get_argument(&arguments, "data")?.get_arraynd()?;
+        let _data = get_argument(&arguments, "data")?.get_arraynd()?;
 
         match arguments.get("categories") {
             Some(categories) => match categories {

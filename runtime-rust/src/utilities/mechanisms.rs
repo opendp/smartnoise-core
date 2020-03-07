@@ -1,5 +1,5 @@
 use yarrow_validator::errors::*;
-use yarrow_validator::ErrorKind::{PrivateError, PublicError};
+
 
 use ndarray::prelude::*;
 

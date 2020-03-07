@@ -1,10 +1,10 @@
 use yarrow_validator::errors::*;
-use yarrow_validator::ErrorKind::{PrivateError, PublicError};
+
 
 extern crate yarrow_validator;
 
 use yarrow_validator::{proto};
-use yarrow_validator::utilities::{graph as yarrow_graph, serial};
+use yarrow_validator::utilities::{serial};
 
 use crate::components::*;
 

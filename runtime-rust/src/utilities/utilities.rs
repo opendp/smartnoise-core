@@ -1,12 +1,12 @@
 use yarrow_validator::errors::*;
-use yarrow_validator::ErrorKind::{PrivateError, PublicError};
+
 
 use openssl::rand::rand_bytes;
 use ieee754::Ieee754;
 
 use crate::utilities::noise;
-use ndarray::{ArrayD, Axis};
-use std::collections::HashSet;
+use ndarray::{ArrayD};
+
 
 pub fn get_bytes(n_bytes: usize) -> String {
     /// Return bytes of binary data as String

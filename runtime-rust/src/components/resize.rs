@@ -2,15 +2,15 @@ use yarrow_validator::errors::*;
 
 use crate::base::NodeArguments;
 use crate::components::Evaluable;
-use yarrow_validator::base::{Value, ArrayND, Vector2DJagged, standardize_categorical_argument, get_argument, standardize_null_argument};
-use std::convert::TryFrom;
-use ndarray::{ArrayD, arr1, Axis, Array1, Array, stack};
-use std::cmp;
+use yarrow_validator::base::{Value, ArrayND, Vector2DJagged, get_argument, standardize_null_argument};
+
+use ndarray::{ArrayD, Axis, Array, stack};
+
 use crate::utilities::noise;
 use crate::components::impute::{impute_float_gaussian, impute_float_uniform, impute_categorical};
 use yarrow_validator::proto;
-use std::collections::HashSet;
-use std::iter::FromIterator;
+
+
 use crate::utilities::utilities::get_num_columns;
 
 impl Evaluable for proto::Resize {
@@ -172,7 +172,7 @@ pub fn create_sampling_indices(k: &i64, n: &i64) -> Result<Vec<usize>> {
     /// Creates set of indices for subsampling from data without replacement
 
     // create set of all indices
-    let mut index_vec: Vec<usize> = (0..*n).map(|v| v as usize).collect();
+    let index_vec: Vec<usize> = (0..*n).map(|v| v as usize).collect();
 
     // create uniform selection probabilities
     let prob_vec: Vec<f64> = vec![1./(*n as f64); *n as usize];

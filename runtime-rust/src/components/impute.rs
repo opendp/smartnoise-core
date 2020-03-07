@@ -4,10 +4,10 @@ use crate::components::Evaluable;
 use yarrow_validator::base::{Value, ArrayND, Vector2DJagged, standardize_numeric_argument, standardize_categorical_argument, standardize_weight_argument, standardize_null_argument, get_argument};
 use crate::base::NodeArguments;
 use crate::utilities::{noise, utilities};
-use ndarray::{ArrayD, arr1};
+use ndarray::{ArrayD};
 use crate::utilities::utilities::get_num_columns;
 use yarrow_validator::proto;
-use std::ops::Deref;
+
 
 impl Evaluable for proto::Impute {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
