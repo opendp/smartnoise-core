@@ -43,7 +43,6 @@ impl Evaluable for proto::Count {
 
 
 pub fn count<T: Clone>(data: &ArrayD<T>) -> Result<ArrayD<i64>> {
-    let data = data.clone();
 
     // iterate over the generalized columns. Of course, all columns will share the same length
     let counts = data.gencolumns().into_iter()

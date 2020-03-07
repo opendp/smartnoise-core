@@ -59,7 +59,9 @@ impl Expandable for proto::DpHistogram {
         let id_bin = current_id.clone();
         graph_expansion.insert(id_bin, proto::Component {
             arguments: hashmap!["data".to_owned() => *component.arguments.get("data").unwrap()],
-            variant: Some(proto::component::Variant::Bin(proto::Bin {})),
+            variant: Some(proto::component::Variant::from(proto::Bin {
+                side: self.side.clone()
+            })),
             omit: true,
             batch: component.batch,
         });
@@ -67,7 +69,7 @@ impl Expandable for proto::DpHistogram {
         // dp_count
         graph_expansion.insert(component_id, proto::Component {
             arguments: hashmap!["data".to_owned() => id_bin],
-            variant: Some(proto::component::Variant::from(proto::DpHistogram {
+            variant: Some(proto::component::Variant::from(proto::DpCount {
                 privacy_usage: self.privacy_usage.clone(),
                 implementation: self.implementation.clone()
             })),

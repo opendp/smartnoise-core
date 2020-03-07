@@ -3,10 +3,11 @@ use crate::base::NodeArguments;
 use yarrow_validator::base::Value;
 use yarrow_validator::utilities::serial::parse_value;
 
-//mod bin;
+mod bin;
 mod cast;
 mod clamp;
 mod count;
+mod covariance;
 mod impute;
 mod index;
 //mod kth_raw_sample_moment;
@@ -19,6 +20,7 @@ mod resize;
 //mod row_min;
 mod sum;
 //mod transform;
+mod variance;
 
 use yarrow_validator::proto;
 
@@ -43,7 +45,7 @@ impl Evaluable for proto::component::Variant {
 
         evaluate!(self, arguments,
             // INSERT COMPONENT LIST
-            Cast, Clamp, Impute, Index, Materialize, Mean, Laplacemechanism, Resize, Constant
+            Constant, Bin, Cast, Clamp, Count, Covariance, Impute, Index, Materialize, Mean, Laplacemechanism, Gaussianmechanism, Simplegeometricmechanism, Resize, Sum, Variance
         );
 
         Err(format!("Component type not implemented: {:?}", self).into())

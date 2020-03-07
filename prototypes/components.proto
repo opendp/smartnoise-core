@@ -105,7 +105,9 @@ message Constant {
 // type manipulations
 message Cast {}
 // general manipulations
-message Bin {}
+message Bin {
+    string side = 1;
+}
 message Clamp {}
 message Impute {
 
@@ -169,6 +171,7 @@ message DPMaximum {
 message DPHistogram {
     repeated PrivacyUsage privacy_usage = 1;
     string implementation = 2;
+    string side = 3;
 }
 
 // public aggregations

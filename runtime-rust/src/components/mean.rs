@@ -34,7 +34,6 @@ impl Evaluable for proto::Mean {
 }
 
 pub fn mean(data: &ArrayD<f64>) -> Result<ArrayD<f64>> {
-    let data = data.clone();
 
     // iterate over the generalized columns
     let means = data.gencolumns().into_iter()

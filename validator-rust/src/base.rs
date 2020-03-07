@@ -96,6 +96,13 @@ impl Value {
             _ => Err("cannot retrieve bool".into())
         }
     }
+
+    pub fn get_jagged(self) -> Result<Vector2DJagged> {
+        match self {
+            Value::Vector2DJagged(jagged) => Ok(jagged.to_owned()),
+            _ => Err("value must be wrapped in an Vector2DJagged".into())
+        }
+    }
 }
 
 impl ArrayND {
