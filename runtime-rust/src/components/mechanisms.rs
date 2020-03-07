@@ -1,29 +1,62 @@
 use yarrow_validator::errors::*;
 
 use crate::base::NodeArguments;
-use yarrow_validator::base::{Value, ArrayND, get_argument};
+use yarrow_validator::base::{Value, ArrayND, get_argument, Vector2DJagged};
 use crate::components::Evaluable;
 use crate::utilities;
 use yarrow_validator::proto;
 
 impl Evaluable for proto::LaplaceMechanism {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        let epsilon: Vec<f64> = self.privacy_usage.iter().map(|usage| get_epsilon(&usage)).collect::<Result<Vec<f64>>>()?;
-        let sensitivity = get_argument(&arguments, "sensitivity")?.get_arraynd()?.get_f64()?;
+        let epsilon: Vec<f64> = self.privacy_usage.iter()
+            .map(|usage| get_epsilon(&usage))
+            .collect::<Result<Vec<f64>>>()?;
 
-        let data = get_argument(&arguments, "data")?.get_arraynd()?.get_f64()?;
+        let sensitivity = get_argument(&arguments, "sensitivity")?;
+        let data = get_argument(&arguments, "data")?;
 
-        let mut data = data.clone();
-        data.iter_mut()
-            .zip(epsilon.iter())
-            .zip(sensitivity.iter())
-            .map(|((v, eps), sens)| {
-                *v += utilities::mechanisms::laplace_mechanism(&eps, &sens)?;
-                Ok(())
-            })
-            .collect::<Result<()>>()?;
+        match (data, sensitivity) {
+            (Value::ArrayND(data), Value::ArrayND(sensitivity)) => {
+                let mut data = data.get_f64()?;
+                let sensitivity = sensitivity.get_f64()?;
 
-        Ok(Value::ArrayND(ArrayND::F64(data)))
+                data.iter_mut()
+                    .zip(epsilon.iter())
+                    .zip(sensitivity.iter())
+                    .map(|((v, eps), sens)| {
+                        *v += utilities::mechanisms::laplace_mechanism(&eps, &sens)?;
+                        Ok(())
+                    })
+                    .collect::<Result<()>>()?;
+                Ok(Value::ArrayND(ArrayND::F64(data)))
+            },
+
+            (Value::Vector2DJagged(data), Value::Vector2DJagged(sensitivity)) => {
+                let mut data = data.get_f64()?;
+                if epsilon.len() != 1 {
+                    return Err("non-uniform epsilon is not implemented for Vector2DJagged".into())
+                }
+                let epsilon = epsilon.first().unwrap();
+                // scale down epsilon to be evenly distributed among each
+                let epsilon = epsilon / data.iter().fold(0, |sum, e| sum + e.len()) as f64;
+                let sensitivity = sensitivity.get_f64()?;
+                if sensitivity.len() != data.len() {
+                    return Err("sensitivity must be same length as data".into())
+                }
+
+                data.iter_mut()
+                    .zip(sensitivity.iter())
+                    .map(|(mut col, sens_col)|
+                        col.iter_mut().zip(sens_col)
+                            .map(|(v, sens)| {
+                                *v += utilities::mechanisms::laplace_mechanism(&epsilon, &sens)?;
+                                Ok(())
+                            }).collect::<Result<()>>()
+                    ).collect::<Result<()>>()?;
+                Ok(Value::Vector2DJagged(Vector2DJagged::F64(data.iter().map(|v| Some(v.clone())).collect())))
+            },
+            _ => Err("data and sensitivity must both be ArrayND or Vector2DJagged".into())
+        }
     }
 }
 

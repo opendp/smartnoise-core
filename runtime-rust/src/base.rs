@@ -3,8 +3,8 @@ use yarrow_validator::errors::*;
 
 extern crate yarrow_validator;
 
-use yarrow_validator::{proto};
-use yarrow_validator::utilities::{serial};
+use yarrow_validator::proto;
+use yarrow_validator::utilities::serial;
 
 use crate::components::*;
 
@@ -20,7 +20,8 @@ use yarrow_validator::utilities::serial::serialize_properties;
 pub type NodeArguments<'a> = HashMap<String, &'a Value>;
 
 pub fn execute_graph(analysis: &proto::Analysis,
-                     release: &proto::Release) -> Result<proto::Release> {
+                     release: &proto::Release,
+) -> Result<proto::Release> {
 
     // stack for storing which nodes to evaluate next
     let mut traversal: Vec<u32> = get_sinks(&analysis).into_iter().collect();
@@ -91,7 +92,7 @@ pub fn execute_graph(analysis: &proto::Analysis,
             &node_properties,
             &public_arguments,
             node_id,
-            maximum_id
+            maximum_id,
         )?;
 
         graph_properties.insert(node_id, expansion.properties.unwrap());
@@ -99,7 +100,7 @@ pub fn execute_graph(analysis: &proto::Analysis,
 
         if maximum_id != expansion.maximum_id {
             maximum_id = expansion.maximum_id;
-            continue
+            continue;
         }
 
         traversal.pop();
@@ -111,7 +112,7 @@ pub fn execute_graph(analysis: &proto::Analysis,
             node_arguments.insert(field_id.to_owned(), evaluation);
         });
 
-        println!("Evaluating node_id {:?}", node_id);
+        println!("Evaluating node_id {:?}, {:?}", node_id, component.variant);
         let evaluation = component.to_owned().variant.unwrap().evaluate(&node_arguments)?;
 
         release.insert(node_id, evaluation);

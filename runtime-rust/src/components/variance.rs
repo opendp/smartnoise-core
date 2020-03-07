@@ -37,7 +37,8 @@ impl Evaluable for proto::Variance {
 
 pub fn variance(data: &ArrayD<f64>) -> Result<ArrayD<f64>> {
 
-    let means: Vec<f64> = mean(&data)?.into_dimensionality::<Ix1>().unwrap().to_vec();
+    let means: Vec<f64> = mean(&data)?.iter().map(|v| v.clone()).collect();
+
     // iterate over the generalized columns
     let variances = data.gencolumns().into_iter().zip(means)
         .map(|(column, mean)| column.iter()

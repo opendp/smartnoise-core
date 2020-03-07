@@ -187,6 +187,37 @@ impl ArrayND {
     }
 }
 
+impl Vector2DJagged {
+    pub fn get_f64(self) -> Result<Vec<Vec<f64>>> {
+        match self {
+            Vector2DJagged::F64(data) => data.iter().cloned().collect::<Option<Vec<Vec<f64>>>>()
+                .ok_or::<Error>("not all columns are known in float Vector2DJagged".into()),
+            _ => Err("expected float type on a non-float Vector2DJagged".into())
+        }
+    }
+    pub fn get_i64(self) -> Result<Vec<Vec<i64>>> {
+        match self {
+            Vector2DJagged::I64(data) => data.iter().cloned().collect::<Option<Vec<Vec<i64>>>>()
+                .ok_or::<Error>("not all columns are known in int Vector2DJagged".into()),
+            _ => Err("expected int type on a non-int Vector2DJagged".into())
+        }
+    }
+    pub fn get_str(self) -> Result<Vec<Vec<String>>> {
+        match self {
+            Vector2DJagged::Str(data) => data.iter().cloned().collect::<Option<Vec<Vec<String>>>>()
+                .ok_or::<Error>("not all columns are known in string Vector2DJagged".into()),
+            _ => Err("expected string type on a non-string Vector2DJagged".into())
+        }
+    }
+    pub fn get_bool(self) -> Result<Vec<Vec<bool>>> {
+        match self {
+            Vector2DJagged::Bool(data) => data.iter().cloned().collect::<Option<Vec<Vec<bool>>>>()
+                .ok_or::<Error>("not all columns are known in bool Vector2DJagged".into()),
+            _ => Err("expected bool type on a non-bool Vector2DJagged".into())
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct Properties {
     pub nullity: bool,
@@ -293,6 +324,12 @@ impl Properties {
                 _ => Err("categories is not defined".into())
             },
             None => Err("categorical nature is not defined".into())
+        }
+    }
+    pub fn assert_is_not_aggregated(&self) -> Result<()> {
+        match self.aggregator.to_owned() {
+            Some(aggregator) => Err("aggregated data may not be manipulated".into()),
+            None => Ok(())
         }
     }
 }

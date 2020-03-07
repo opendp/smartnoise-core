@@ -9,8 +9,7 @@ use crate::components::{Component, Accuracy, Expandable, Report};
 
 
 use crate::base::{Properties, NodeProperties, Value};
-use crate::utilities::json::{JSONRelease};
-
+use crate::utilities::json::JSONRelease;
 
 
 impl Component for proto::DpCovariance {
@@ -24,6 +23,7 @@ impl Component for proto::DpCovariance {
             .ok_or("left argument missing from DPCovariance")?.clone();
 
         // check that all properties are satisfied
+        println!("covariance left");
         let left_n = left_property.get_n()?;
         left_property.get_min_f64()?;
         left_property.get_max_f64()?;
@@ -33,13 +33,14 @@ impl Component for proto::DpCovariance {
             .ok_or("right argument missing from DPCovariance")?.clone();
 
         // check that all properties are satisfied
+        println!("covariance right");
         let right_n = right_property.get_n()?;
         right_property.get_min_f64()?;
         right_property.get_max_f64()?;
         right_property.assert_non_null()?;
 
         if !left_n.iter().zip(right_n).all(|(left, right)| left == &right) {
-            return Err("n for left and right must be equivalent".into())
+            return Err("n for left and right must be equivalent".into());
         }
 
         // TODO: derive proper propagation of covariance property
@@ -74,7 +75,10 @@ impl Expandable for proto::DpCovariance {
         current_id += 1;
         let id_covariance = current_id.clone();
         graph_expansion.insert(id_covariance, proto::Component {
-            arguments: hashmap!["data".to_owned() => *component.arguments.get("data").unwrap()],
+            arguments: hashmap![
+                "left".to_owned() => *component.arguments.get("left").unwrap(),
+                "right".to_owned() => *component.arguments.get("right").unwrap()
+            ],
             variant: Some(proto::component::Variant::from(proto::Covariance {})),
             omit: true,
             batch: component.batch,
@@ -119,7 +123,7 @@ impl Report for proto::DpCovariance {
         _node_id: &u32,
         _component: &proto::Component,
         _properties: &NodeProperties,
-        _release: &Value
+        _release: &Value,
     ) -> Option<Vec<JSONRelease>> {
         None
     }

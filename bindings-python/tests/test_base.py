@@ -3,7 +3,7 @@ import yarrow
 test_csv_path = '/home/shoe/PSI/datasets/data/PUMS_california_demographics_1000/data.csv'
 
 
-def test_basic_path(run=True):
+def test_multilayer_analysis(run=True):
 
     with yarrow.Analysis() as analysis:
         PUMS = yarrow.Dataset(path=test_csv_path)
@@ -61,19 +61,34 @@ def test_basic_path(run=True):
     return analysis
 
 
-def test_dp_mean(run=True):
+def test_dp_linear_stats(run=True):
     with yarrow.Analysis() as analysis:
         dataset_pums = yarrow.Dataset(path=test_csv_path)
 
         age = dataset_pums['age']
         age = yarrow.ops.cast(age, type="FLOAT")
 
+        clamped = yarrow.ops.clamp(age, min=0., max=100.)
+        imputed = yarrow.ops.impute(clamped)
+        resized = yarrow.ops.resize(imputed, n=500)
+
         mean = yarrow.ops.dp_mean(
-            data=age,
+            resized,
+            privacy_usage={'epsilon': .5}
+        )
+
+        variance = yarrow.ops.dp_variance(
+            resized,
+            privacy_usage={'epsilon': .5}
+        )
+
+        yarrow.ops.dp_covariance(
             privacy_usage={'epsilon': .5},
-            data_min=0.,
-            data_max=100.,
-            data_n=500
+            left=resized,
+            right=yarrow.ops.cast(dataset_pums['income'], type="FLOAT"),
+            right_min=0.,
+            right_max=1.,
+            right_n=500
         )
 
     if run:
@@ -81,6 +96,7 @@ def test_dp_mean(run=True):
 
         # get the mean computed when release() was called
         print(mean.value)
+        print(variance.value)
 
     return analysis
 
