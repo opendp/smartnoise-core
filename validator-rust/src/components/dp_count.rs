@@ -1,17 +1,17 @@
 use crate::errors::*;
-use crate::ErrorKind::{PrivateError, PublicError};
+
 
 use std::collections::HashMap;
 
 use crate::{proto, base};
 use crate::hashmap;
 use crate::components::{Component, Accuracy, Expandable, Report};
-use ndarray::{Array, arr1};
-use crate::utilities::serial::serialize_value;
-use crate::base::{Properties, NodeProperties, Value, get_constant, ArrayND};
-use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, value_to_json};
 
-use serde_json;
+
+use crate::base::{Properties, NodeProperties, Value};
+use crate::utilities::json::{JSONRelease};
+
+
 
 impl Component for proto::DpCount {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
@@ -44,9 +44,9 @@ impl Component for proto::DpCount {
 impl Expandable for proto::DpCount {
     fn expand_graph(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
-        properties: &base::NodeProperties,
+        _properties: &base::NodeProperties,
         component_id: u32,
         maximum_id: u32,
     ) -> Result<(u32, HashMap<u32, proto::Component>)> {
@@ -100,10 +100,10 @@ impl Accuracy for proto::DpCount {
 impl Report for proto::DpCount {
     fn summarize(
         &self,
-        node_id: &u32,
-        component: &proto::Component,
-        properties: &NodeProperties,
-        release: &Value
+        _node_id: &u32,
+        _component: &proto::Component,
+        _properties: &NodeProperties,
+        _release: &Value
     ) -> Option<Vec<JSONRelease>> {
         None
     }

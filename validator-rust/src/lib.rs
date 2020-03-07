@@ -39,6 +39,7 @@ pub mod proto {
 #[macro_export]
 macro_rules! hashmap {
     ($( $key: expr => $val: expr ),*) => {{
+         #[allow(unused_mut)]
          let mut map = ::std::collections::HashMap::new();
          $( map.insert($key, $val); )*
          map
@@ -133,7 +134,7 @@ pub extern "C" fn compute_privacy_usage(
 
                 let stderr = &mut ::std::io::stderr();
                 writeln!(stderr, "{}", err.display_chain()).expect(ERR_STDERR);
-                ::std::process::exit(1);
+//                ::std::process::exit(1);
 
                 Some(proto::response_compute_privacy_usage::Value::Error(
                     proto::Error { message: format!("{:?}", err).to_string() }
@@ -161,7 +162,7 @@ pub extern "C" fn generate_report(
 
                 let stderr = &mut ::std::io::stderr();
                 writeln!(stderr, "{}", err.display_chain()).expect(ERR_STDERR);
-                ::std::process::exit(1);
+//                ::std::process::exit(1);
 
                 Some(proto::response_generate_report::Value::Error(
                     proto::Error { message: format!("{:?}", err).to_string() }
@@ -196,7 +197,7 @@ pub extern "C" fn accuracy_to_privacy_usage(
 
                 let stderr = &mut ::std::io::stderr();
                 writeln!(stderr, "{}", err.display_chain()).expect(ERR_STDERR);
-                ::std::process::exit(1);
+//                ::std::process::exit(1);
 
                 Some(proto::response_accuracy_to_privacy_usage::Value::Error(
                     proto::Error { message: format!("{:?}", err).to_string() }
@@ -232,7 +233,7 @@ pub extern "C" fn privacy_usage_to_accuracy(
 
                 let stderr = &mut ::std::io::stderr();
                 writeln!(stderr, "{}", err.display_chain()).expect(ERR_STDERR);
-                ::std::process::exit(1);
+//                ::std::process::exit(1);
 
                 Some(proto::response_privacy_usage_to_accuracy::Value::Error(
                     proto::Error { message: format!("{:?}", err).to_string() }
@@ -270,7 +271,7 @@ pub extern "C" fn expand_component(
 
                 let stderr = &mut ::std::io::stderr();
                 writeln!(stderr, "{}", err.display_chain()).expect(ERR_STDERR);
-                ::std::process::exit(1);
+//                ::std::process::exit(1);
 
                 Some(proto::response_expand_component::Value::Error(
                     proto::Error { message: format!("{:?}", err).to_string() }

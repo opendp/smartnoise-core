@@ -1,16 +1,16 @@
 use crate::errors::*;
-use crate::ErrorKind::{PrivateError, PublicError};
+
 
 use std::collections::HashMap;
 
-use crate::base::{ArrayND, Value, Vector2DJagged, Nature, Vector1DNull, NatureContinuous, NatureCategorical, Properties, NodeProperties};
+use crate::base::{ArrayND, Value, Properties, NodeProperties};
 
 
 use crate::{proto, base};
 
 use crate::components::Component;
-use itertools::all;
-use crate::base::Nature::Continuous;
+
+
 use std::ops::Deref;
 
 // TODO: this could use additional checks to prevent out of bounds

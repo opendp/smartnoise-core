@@ -1,15 +1,15 @@
 use crate::errors::*;
-use crate::ErrorKind::{PrivateError, PublicError};
+
 
 use std::collections::HashMap;
 
-use crate::{hashmap, base};
+use crate::{base};
 use crate::proto;
 
 use crate::components::{Component, Expandable};
 
-use crate::utilities::serial::{serialize_value};
-use itertools::Itertools;
+
+
 use ndarray::Array;
 use crate::base::{Properties, Vector1DNull, Nature, NatureContinuous, Value, NodeProperties, ArrayND, get_constant};
 
@@ -102,7 +102,7 @@ impl Component for proto::Impute {
 impl Expandable for proto::Impute {
     fn expand_graph(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
         properties: &base::NodeProperties,
         component_id: u32,

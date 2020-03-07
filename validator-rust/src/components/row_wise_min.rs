@@ -1,5 +1,5 @@
 use crate::errors::*;
-use crate::ErrorKind::{PrivateError, PublicError};
+
 
 use std::collections::HashMap;
 use crate::base::{Properties, NodeProperties, Value};

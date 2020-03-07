@@ -1,16 +1,16 @@
 use crate::errors::*;
-use crate::ErrorKind::{PrivateError, PublicError};
+
 
 
 use std::collections::HashMap;
-use crate::base::{Vector2DJagged, Nature, Vector1DNull, NatureCategorical, NodeProperties, ArrayND, get_constant};
+use crate::base::{Nature, Vector1DNull, NodeProperties, ArrayND, get_constant};
 
 use crate::{proto, base};
 
 use crate::components::{Component, Expandable};
 
-use crate::utilities::serial::serialize_value;
-use itertools::Itertools;
+
+
 use ndarray::Array;
 use crate::base::{Value, Properties, NatureContinuous};
 
@@ -97,7 +97,7 @@ impl Component for proto::Clamp {
 impl Expandable for proto::Clamp {
     fn expand_graph(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
         properties: &base::NodeProperties,
         component_id: u32,

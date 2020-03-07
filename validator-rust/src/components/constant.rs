@@ -1,5 +1,5 @@
 use crate::errors::*;
-use crate::ErrorKind::{PrivateError, PublicError};
+
 
 use std::collections::HashMap;
 
@@ -9,7 +9,7 @@ use crate::{proto, base};
 use crate::components::Component;
 use crate::utilities::serial::{parse_value};
 use crate::base::{Value, Properties, NodeProperties};
-use crate::utilities::inference::{infer_num_columns, infer_property};
+use crate::utilities::inference::{infer_property};
 
 impl Component for proto::Constant {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component

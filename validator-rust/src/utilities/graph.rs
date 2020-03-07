@@ -1,8 +1,8 @@
 use crate::errors::*;
-use crate::ErrorKind::{PrivateError, PublicError};
 
-use std::collections::{HashMap, HashSet, VecDeque};
-use std::iter::FromIterator;
+
+use std::collections::{HashMap, HashSet};
+
 use crate::proto;
 
 pub fn get_traversal(

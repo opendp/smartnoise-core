@@ -1,17 +1,17 @@
 use crate::errors::*;
-use crate::ErrorKind::{PrivateError, PublicError};
+
 
 use std::collections::HashMap;
 
-use crate::{hashmap, base};
+use crate::{base};
 use crate::proto;
 
-use crate::components::{Component, Expandable};
+use crate::components::{Component};
 
-use crate::utilities::serial::{serialize_value};
-use itertools::Itertools;
-use ndarray::Array;
-use crate::base::{Properties, Vector1DNull, Nature, NatureContinuous, Value, NodeProperties, ArrayND, get_constant};
+
+
+
+use crate::base::{Properties, Value, NodeProperties};
 use std::ops::Deref;
 
 
@@ -25,7 +25,7 @@ impl Component for proto::Cast {
         let mut data_property = properties.get("data")
             .ok_or::<Error>("data is a required argument for Cast".into())?.clone();
 
-        let datatype = public_arguments.get("type")
+        let _datatype = public_arguments.get("type")
             .ok_or::<Error>("data type is a required argument for Cast".into())?.deref().to_owned().get_first_str()?;
 
         // clear continuous properties if casting to categorical-only raw type

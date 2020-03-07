@@ -1,5 +1,5 @@
 use crate::errors::*;
-use crate::ErrorKind::{PrivateError, PublicError};
+
 
 use ndarray::{Axis};
 use ndarray::prelude::*;
@@ -7,7 +7,7 @@ use ndarray_stats::QuantileExt;
 
 use itertools::Itertools;
 use std::cmp::Ordering;
-use crate::base::{ArrayND, Value, Vector2DJagged, Nature, Vector1DNull, NatureContinuous, NatureCategorical, Properties, NodeProperties};
+use crate::base::{ArrayND, Value, Vector2DJagged, Nature, Vector1DNull, NatureContinuous, NatureCategorical, Properties};
 
 
 pub fn get_shape(array: &ArrayND) -> Vec<i64> {

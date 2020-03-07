@@ -1,5 +1,5 @@
 use crate::errors::*;
-use crate::ErrorKind::{PrivateError, PublicError};
+
 
 use ndarray::prelude::*;
 use crate::proto;

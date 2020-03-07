@@ -1,17 +1,17 @@
 use crate::errors::*;
-use crate::ErrorKind::{PrivateError, PublicError};
+
 
 use std::collections::HashMap;
 
 use crate::{proto, base};
 use crate::hashmap;
 use crate::components::{Component, Accuracy, Expandable, Report};
-use ndarray::{Array, arr1};
-use crate::utilities::serial::serialize_value;
-use crate::base::{Properties, NodeProperties, Value, get_constant, ArrayND};
-use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, value_to_json};
 
-use serde_json;
+
+use crate::base::{Properties, NodeProperties, Value};
+use crate::utilities::json::{JSONRelease};
+
+
 
 impl Component for proto::DpMaximum {
     fn propagate_property(
@@ -42,9 +42,9 @@ impl Component for proto::DpMaximum {
 impl Expandable for proto::DpMaximum {
     fn expand_graph(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
-        properties: &base::NodeProperties,
+        _properties: &base::NodeProperties,
         component_id: u32,
         maximum_id: u32,
     ) -> Result<(u32, HashMap<u32, proto::Component>)> {
@@ -53,8 +53,8 @@ impl Expandable for proto::DpMaximum {
 
         // Maximum
         current_id += 1;
-        let id_Maximum = current_id.clone();
-        graph_expansion.insert(id_Maximum, proto::Component {
+        let id_maximum = current_id.clone();
+        graph_expansion.insert(id_maximum, proto::Component {
             arguments: hashmap!["data".to_owned() => *component.arguments.get("data").unwrap()],
             variant: Some(proto::component::Variant::from(proto::Maximum {})),
             omit: true,
@@ -65,7 +65,7 @@ impl Expandable for proto::DpMaximum {
 
         // sanitizing
         graph_expansion.insert(component_id, proto::Component {
-            arguments: hashmap!["data".to_owned() => id_Maximum, "candidates".to_owned() => id_candidates.clone()],
+            arguments: hashmap!["data".to_owned() => id_maximum, "candidates".to_owned() => id_candidates.clone()],
             variant: Some(proto::component::Variant::from(proto::ExponentialMechanism {
                 privacy_usage: self.privacy_usage.clone()
             })),
@@ -99,10 +99,10 @@ impl Accuracy for proto::DpMaximum {
 impl Report for proto::DpMaximum {
     fn summarize(
         &self,
-        node_id: &u32,
-        component: &proto::Component,
-        properties: &NodeProperties,
-        release: &Value
+        _node_id: &u32,
+        _component: &proto::Component,
+        _properties: &NodeProperties,
+        _release: &Value
     ) -> Option<Vec<JSONRelease>> {
         None
     }

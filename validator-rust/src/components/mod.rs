@@ -1,5 +1,5 @@
 use crate::errors::*;
-use crate::ErrorKind::{PrivateError, PublicError};
+
 
 pub mod cast;
 pub mod clamp;
@@ -34,7 +34,7 @@ pub mod variance;
 
 use std::collections::HashMap;
 
-use crate::base::{ArrayND, Value, Vector2DJagged, Nature, Vector1DNull, NatureContinuous, NatureCategorical, Properties, NodeProperties};
+use crate::base::{Value, Properties, NodeProperties};
 use crate::proto;
 use crate::utilities::json::{JSONRelease};
 use crate::hashmap;
@@ -224,9 +224,9 @@ impl Aggregator for proto::component::Variant {
 impl Accuracy for proto::component::Variant {
     fn accuracy_to_privacy_usage(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
-        properties: &NodeProperties,
-        accuracy: &proto::Accuracy,
+        _privacy_definition: &proto::PrivacyDefinition,
+        _properties: &NodeProperties,
+        _accuracy: &proto::Accuracy,
     ) -> Option<proto::PrivacyUsage> {
         macro_rules! accuracy_to_privacy_usage {
             ($self:ident, $privacy_definition:ident, $properties:ident, $accuracy:ident, $( $variant:ident ),*) => {
@@ -250,8 +250,8 @@ impl Accuracy for proto::component::Variant {
 
     fn privacy_usage_to_accuracy(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
-        properties: &NodeProperties,
+        _privacy_definition: &proto::PrivacyDefinition,
+        _properties: &NodeProperties,
     ) -> Option<f64> {
         macro_rules! privacy_usage_to_accuracy {
             ($self:ident, $privacy_definition:ident, $properties:ident, $( $variant:ident ),*) => {

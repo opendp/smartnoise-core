@@ -1,5 +1,5 @@
 use crate::errors::*;
-use crate::ErrorKind::{PrivateError, PublicError};
+
 
 use std::collections::HashMap;
 
@@ -50,7 +50,7 @@ impl Aggregator for proto::Count {
         // Otherwise, sensitivity is 2 (changing one person can alter two bins)
         Some(match data_property.get_n() {
             // known n
-            Ok(num_records) => match data_property.get_categories() {
+            Ok(_num_records) => match data_property.get_categories() {
                 // by known categories
                 Ok(categories) => get_lengths(&categories).iter()
                     .map(|column_length| if column_length <= &2 {1.} else {2.})
@@ -62,7 +62,7 @@ impl Aggregator for proto::Count {
             // unknown n
             Err(_) => match data_property.get_categories() {
                 // by known categories
-                Ok(categories) => (0..num_columns).map(|_| 2.).collect(),
+                Ok(_categories) => (0..num_columns).map(|_| 2.).collect(),
                 // categories not set (estimate of number of rows)
                 Err(_) => (0..num_columns).map(|_| 1.).collect(),
             }

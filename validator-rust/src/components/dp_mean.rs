@@ -1,14 +1,14 @@
 use crate::errors::*;
-use crate::ErrorKind::{PrivateError, PublicError};
+
 
 use std::collections::HashMap;
 
 use crate::{proto, base};
 use crate::hashmap;
 use crate::components::{Component, Accuracy, Expandable, Report};
-use ndarray::{Array, arr1};
-use crate::utilities::serial::serialize_value;
-use crate::base::{Properties, NodeProperties, Value, get_constant, ArrayND};
+
+
+use crate::base::{Properties, NodeProperties, Value};
 use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, value_to_json};
 
 use serde_json;
@@ -46,9 +46,9 @@ impl Component for proto::DpMean {
 impl Expandable for proto::DpMean {
     fn expand_graph(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
-        properties: &base::NodeProperties,
+        _properties: &base::NodeProperties,
         component_id: u32,
         maximum_id: u32,
     ) -> Result<(u32, HashMap<u32, proto::Component>)> {
@@ -147,7 +147,7 @@ impl Report for proto::DpMean {
         let maximums = data_properties.get_max_f64().unwrap();
         let num_records = data_properties.get_n().unwrap();
 
-        for column_number in (0..data_properties.num_columns.unwrap()) {
+        for column_number in 0..data_properties.num_columns.unwrap() {
 
             let mut releaseInfo = HashMap::new();
             releaseInfo.insert("mechanism".to_string(), serde_json::json!(self.implementation.clone()));

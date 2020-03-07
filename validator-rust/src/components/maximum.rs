@@ -1,5 +1,5 @@
 use crate::errors::*;
-use crate::ErrorKind::{PrivateError, PublicError};
+
 
 use std::collections::HashMap;
 
@@ -39,7 +39,7 @@ impl Aggregator for proto::Maximum {
     fn compute_sensitivity(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
-        properties: &NodeProperties,
+        _properties: &NodeProperties,
     ) -> Option<Vec<f64>> {
         None
     }

@@ -1,5 +1,5 @@
 use crate::errors::*;
-use crate::ErrorKind::{PrivateError, PublicError};
+
 
 use crate::proto;
 use itertools::Itertools;
@@ -13,8 +13,8 @@ use std::collections::HashMap;
 
 
 
-use crate::utilities::serial::{parse_value, serialize_value, parse_release};
-use crate::utilities::json::{JSONRelease, Accuracy, AlgorithmInfo};
+use crate::utilities::serial::{serialize_value, parse_release};
+use crate::utilities::json::{JSONRelease};
 
 use std::ops::Deref;
 use ndarray::{ArrayD, Array};
@@ -420,7 +420,7 @@ pub fn standardize_null_argument<T: Clone>(
     value: &Vec<Option<Vec<T>>>,
     length: &i64
 ) -> Result<Vec<T>> {
-    let mut value = value.iter()
+    let value = value.iter()
         .map(|v| v.clone())
         .collect::<Option<Vec<Vec<T>>>>()
         .ok_or::<Error>("null must be defined for all columns".into())?;
@@ -444,7 +444,7 @@ pub fn standardize_null_argument<T: Clone>(
 pub fn standardize_weight_argument<T>(
     categories: &Vec<Vec<T>>,
     weights: &Vec<Option<Vec<f64>>>,
-    length: &i64
+    _length: &i64
 ) -> Result<Vec<Vec<f64>>> {
     match weights.len() {
         0 => Ok(categories.iter()
@@ -462,7 +462,7 @@ pub fn standardize_weight_argument<T>(
             }).collect::<Result<Vec<Vec<f64>>>>()
         },
         _ => match categories.len() == weights.len() {
-            true => categories.iter().zip(weights.iter()).map(|(cats, weights)| match weights {
+            true => categories.iter().zip(weights.iter()).map(|(_cats, weights)| match weights {
                 Some(weights) => Ok(normalize_probabilities(weights)),
                 None => Err("category weights must be set once, for all categories, or none".into())
             }).collect::<Result<Vec<Vec<f64>>>>(),
@@ -486,7 +486,7 @@ pub fn validate_analysis(
     analysis: &proto::Analysis,
     release: &proto::Release
 ) -> Result<proto::response_validate_analysis::Validated> {
-    let graph = analysis.computation_graph.to_owned()
+    let _graph = analysis.computation_graph.to_owned()
         .ok_or("the computation graph must be defined in an analysis")?
         .value;
 

@@ -1,14 +1,14 @@
 use crate::errors::*;
-use crate::ErrorKind::{PrivateError, PublicError};
+
 
 use std::collections::HashMap;
 
-use crate::{hashmap, base};
+use crate::{base};
 use crate::proto;
 
 use crate::components::{Component, Expandable};
 use ndarray::Array;
-use crate::utilities::serial::{serialize_value};
+
 use crate::base::{Value, Properties, ArrayND, NodeProperties, get_constant, Nature, NatureContinuous, Vector1DNull};
 
 
@@ -96,7 +96,7 @@ impl Component for proto::Resize {
         }));
 
         data_property.num_records = (0..num_columns)
-            .map(|x| Some(num_records.clone()))
+            .map(|_x| Some(num_records.clone()))
             .collect::<Vec<Option<i64>>>();
 
         Ok(data_property)
@@ -113,7 +113,7 @@ impl Component for proto::Resize {
 impl Expandable for proto::Resize {
     fn expand_graph(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
         properties: &base::NodeProperties,
         component_id: u32,
