@@ -1,26 +1,16 @@
 {
   "arguments": {
     "data": {
+      "default": "None",
       "nature": [
         "continuous"
       ],
       "type": "Array"
-    },
-    "by": {
-      "nature": [
-        "continuous",
-        "categorical"
-      ],
-      "type": "Array"
     }
   },
-  "id": "DPSum",
-  "name": "dp_sum",
+  "id": "LaplaceMechanism",
+  "name": "laplace_mechanism",
   "options": {
-    "implementation": {
-      "type": "string",
-      "default": "'Laplace'"
-    },
     "privacy_usage": {
       "type": "repeated PrivacyUsage"
     }
@@ -31,5 +21,5 @@
     ],
     "type": "Array"
   },
-  "docstring": "dp_sum step"
+  "docstring": "laplace mechanism step"
 }

@@ -7,10 +7,8 @@
       "type": "Array"
     },
     "by": {
-      "type": "Array"
-    },
-    "categories": {
-      "type": "JaggedArray2D"
+      "type": "Array",
+      "default": "None"
     }
   },
   "id": "Sum",

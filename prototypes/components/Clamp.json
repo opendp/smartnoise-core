@@ -8,15 +8,19 @@
       "type": "Array"
     },
     "min": {
+      "default": "None",
       "type": "Array"
     },
     "max": {
+      "default": "None",
       "type": "Array"
     },
     "categories": {
-      "type": "JaggedArray2D"
+      "default": "None",
+      "type": "Jagged"
     },
     "null_value": {
+      "default": "None",
       "type": "Array"
     }
   },

@@ -12,14 +12,23 @@
         "continuous",
         "categorical"
       ],
-      "type": "Array"
+      "type": "Array",
+      "default": "None"
+    },
+    "inclusive_left": {
+      "nature": [
+        "categorical"
+      ],
+      "type": "Array",
+      "default": "True"
     }
   },
   "id": "Bin",
   "name": "bin",
   "options": {
-    "interval": {
-      "type": "bool"
+    "side": {
+      "type": "string",
+      "default": "'left'"
     }
   },
   "return": {

@@ -13,8 +13,12 @@
     "order": {
       "type": "int"
     },
+    "implementation": {
+      "type": "string",
+      "default": "'Exponential'"
+    },
     "privacy_usage": {
-      "type": "PrivacyUsage"
+      "type": "repeated PrivacyUsage"
     }
   },
   "return": {

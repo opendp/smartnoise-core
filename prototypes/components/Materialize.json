@@ -3,8 +3,21 @@
   "id": "Materialize",
   "name": "materialize",
   "options": {
-    "dataset_id": {
-      "type": "string"
+    "file_path": {
+      "type": "string",
+      "default": "None"
+    },
+    "url_path": {
+      "type": "string",
+      "default": "None"
+    },
+    "literal": {
+      "type": "Value",
+      "default": "None"
+    },
+    "private": {
+      "type": "bool",
+      "default": "True"
     }
   },
   "return": {

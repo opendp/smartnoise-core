@@ -2,7 +2,11 @@
   "arguments": {},
   "id": "Constant",
   "name": "constant",
-  "options": {},
+  "options": {
+    "value": {
+      "type": "Value"
+    }
+  },
   "return": {
     "nature": [
       "continuous",

@@ -3,11 +3,9 @@
   "id": "Literal",
   "name": "literal",
   "options": {
-    "value": {
-      "type": "Value"
-    },
     "private": {
-      "type": "bool"
+      "type": "bool",
+      "default": "False"
     }
   },
   "return": {

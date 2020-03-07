@@ -1,23 +1,36 @@
 {
   "arguments": {
-    "data_left": {
+    "left": {
       "nature": [
         "continuous"
       ],
-      "type": "Array"
+      "type": "Array",
+      "default": "None"
     },
-    "data_right": {
+    "right": {
       "nature": [
         "continuous"
       ],
-      "type": "Array"
+      "type": "Array",
+      "default": "None"
+    },
+    "data": {
+      "nature": [
+        "continuous"
+      ],
+      "type": "Array",
+      "default": "None"
     }
   },
   "id": "DPCovariance",
   "name": "dp_covariance",
   "options": {
+    "implementation": {
+      "type": "string",
+      "default": "'Laplace'"
+    },
     "privacy_usage": {
-      "type": "PrivacyUsage"
+      "type": "repeated PrivacyUsage"
     }
   },
   "return": {

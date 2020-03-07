@@ -7,22 +7,24 @@
       ],
       "type": "Array"
     },
-    "group_by": {
+    "by": {
       "nature": [
         "continuous",
         "categorical"
       ],
-      "type": "Array"
+      "type": "Array",
+      "default": "None"
     }
   },
   "id": "DPCount",
   "name": "dp_count",
   "options": {
-    "labels": {
-      "type": "Value"
+    "implementation": {
+      "type": "string",
+      "default": "'SimpleGeometric'"
     },
     "privacy_usage": {
-      "type": "PrivacyUsage"
+      "type": "repeated PrivacyUsage"
     }
   },
   "return": {

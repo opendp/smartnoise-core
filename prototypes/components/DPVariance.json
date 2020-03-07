@@ -5,13 +5,21 @@
         "continuous"
       ],
       "type": "Array"
+    },
+    "by": {
+      "type": "Jagged",
+      "default": "None"
     }
   },
   "id": "DPVariance",
   "name": "dp_variance",
   "options": {
+    "implementation": {
+      "type": "string",
+      "default": "'Laplace'"
+    },
     "privacy_usage": {
-      "type": "PrivacyUsage"
+      "type": "repeated PrivacyUsage"
     }
   },
   "return": {

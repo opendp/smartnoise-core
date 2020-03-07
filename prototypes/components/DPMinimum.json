@@ -6,20 +6,16 @@
       ],
       "type": "Array"
     },
-    "by": {
-      "nature": [
-        "categorical"
-      ],
-      "type": "Array",
-      "default": "None"
+    "candidates": {
+      "type": "Jagged"
     }
   },
-  "id": "DPMean",
-  "name": "dp_mean",
+  "id": "DPMedian",
+  "name": "dp_minimum",
   "options": {
     "implementation": {
       "type": "string",
-      "default": "'Laplace'"
+      "default": "'Exponential'"
     },
     "privacy_usage": {
       "type": "repeated PrivacyUsage"
@@ -28,5 +24,5 @@
   "return": {
     "type": "Array"
   },
-  "docstring": "dp_mean step"
+  "docstring": "dp_minimum step"
 }

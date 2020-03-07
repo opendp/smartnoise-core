@@ -10,7 +10,6 @@ mod count;
 mod covariance;
 mod impute;
 mod index;
-//mod kth_raw_sample_moment;
 mod materialize;
 mod mean;
 //mod median;

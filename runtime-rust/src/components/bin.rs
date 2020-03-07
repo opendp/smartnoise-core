@@ -59,6 +59,8 @@ pub fn bin<T: std::cmp::PartialOrd + Clone + Div<T, Output=T> + Add<T, Output=T>
         .zip(inclusive_left.iter())
         // for each pairing, iterate over the cells
         .map(|((mut column, (edges, null)), inclusive_left)| {
+            let mut edges = edges.clone();
+            edges.sort_by(|a, b| a.partial_cmp(b).unwrap());
             column.iter_mut()
                 // mutate the cell via the operator
                 .map(|mut v| {

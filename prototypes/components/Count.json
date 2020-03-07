@@ -1,23 +1,24 @@
 {
   "arguments": {
-    "categories": {
-      "type": "JaggedArray2D"
-    },
     "data": {
       "nature": [
         "continuous",
         "categorical"
       ],
       "type": "Array"
+    },
+    "categories": {
+      "type": "Jagged",
+      "default": "None"
+    },
+    "by": {
+      "type": "Array",
+      "default": "None"
     }
   },
   "id": "Count",
   "name": "count",
-  "options": {
-    "categories": {
-      "type": "Value"
-    }
-  },
+  "options": {},
   "return": {
     "nature": [
       "continuous"

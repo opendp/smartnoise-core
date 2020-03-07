@@ -7,6 +7,26 @@
     "n": {
       "nature": [],
       "type": "Array"
+    },
+    "distribution": {
+      "type": "String",
+      "default": "None"
+    },
+    "min": {
+      "type": "Array",
+      "default": "None"
+    },
+    "max": {
+      "type": "Array",
+      "default": "None"
+    },
+    "shift": {
+      "type": "Array",
+      "default": "None"
+    },
+    "scale": {
+      "type": "Array",
+      "default": "None"
     }
   },
   "id": "Resize",

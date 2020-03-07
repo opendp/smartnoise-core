@@ -1,29 +1,26 @@
 {
   "arguments": {
     "left": {
-      "default": "None",
       "nature": [
         "continuous"
       ],
       "type": "Array"
     },
     "right": {
-      "default": "None",
       "nature": [
         "continuous"
       ],
-      "type": "Array"
-    },
-    "data": {
-      "default": "None",
-      "nature": [
-        "continuous"
-      ],
-      "type": "Array"
+      "type": {
+        "of": [
+          "int",
+          "double"
+        ],
+        "type": "Array"
+      }
     }
   },
-  "id": "Covariance",
-  "name": "covariance",
+  "id": "Minimum",
+  "name": "minimum",
   "options": {},
   "return": {
     "nature": [
@@ -31,5 +28,5 @@
     ],
     "type": "Array"
   },
-  "docstring": "covariance step"
+  "docstring": "maximum step"
 }

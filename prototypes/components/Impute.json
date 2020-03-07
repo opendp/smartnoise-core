@@ -7,22 +7,24 @@
       "type": "Array"
     },
     "distribution": {
-      "type": "String"
-    },
-    "data_type": {
-      "type": "String"
+      "type": "String",
+      "default": "None"
     },
     "min": {
-      "type": "Array"
+      "type": "Array",
+      "default": "None"
     },
     "max": {
-      "type": "Array"
+      "type": "Array",
+      "default": "None"
     },
     "shift": {
-      "type": "Array"
+      "type": "Array",
+      "default": "None"
     },
     "scale": {
-      "type": "Array"
+      "type": "Array",
+      "default": "None"
     }
   },
   "id": "Impute",

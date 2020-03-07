@@ -2,31 +2,36 @@
   "arguments": {
     "data": {
       "nature": [
-        "continuous"
+        "continuous",
+        "categorical"
       ],
       "type": "Array"
     },
     "by": {
       "nature": [
+        "continuous",
         "categorical"
       ],
       "type": "Array",
       "default": "None"
     }
   },
-  "id": "DPMean",
-  "name": "dp_mean",
+  "id": "DPHistogram",
+  "name": "dp_histogram",
   "options": {
     "implementation": {
       "type": "string",
-      "default": "'Laplace'"
+      "default": "'SimpleGeometric'"
     },
     "privacy_usage": {
       "type": "repeated PrivacyUsage"
     }
   },
   "return": {
+    "nature": [
+      "continuous"
+    ],
     "type": "Array"
   },
-  "docstring": "dp_mean step"
+  "docstring": "dp_count step"
 }

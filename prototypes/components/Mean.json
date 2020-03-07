@@ -5,6 +5,10 @@
         "continuous"
       ],
       "type": "Array"
+    },
+    "by": {
+      "type": "Array",
+      "default": "None"
     }
   },
   "id": "Mean",
