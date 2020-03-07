@@ -28,7 +28,7 @@ def privacy_usage(epsilon=None, delta=None):
                     epsilon=val_epsilon,
                     delta=val_delta
                 )
-            ) 
+            )
             for val_epsilon, val_delta in zip(epsilon, delta)
         ]
 
@@ -163,9 +163,9 @@ class Component(object):
 
         for argument in arguments.keys():
             filtered = [i[len(argument) + 1:] for i in constraints.keys()
-                           if i.startswith(argument)]
+                        if i.startswith(argument)]
             filtered = [i for i in filtered
-                           if i in ALL_CONSTRAINTS]
+                        if i in ALL_CONSTRAINTS]
 
             if 'max' in filtered and 'min' in filtered:
                 min_component = Component.of(constraints[argument + '_min'])
@@ -286,11 +286,13 @@ class Analysis(object):
 
     @staticmethod
     def _parse_release_proto(release):
+        def parse_release_node(release_node):
+            parsed = {"value": Analysis._parse_value_proto(release_node.value)}
+            if release_node.privacy_usage:
+                parsed['privacy_usage'] = release_node.privacy_usage
+            return parsed
         return {
-            node_id: {
-                "value": Analysis._parse_value_proto(release_node.value),
-                # "privacy_usage": release_node["privacy_usage"]
-            } for node_id, release_node in release.values.items()
+            node_id: parse_release_node(release_node) for node_id, release_node in release.values.items()
         }
 
     @staticmethod
@@ -366,10 +368,10 @@ class Analysis(object):
     def validate(self):
         return core_wrapper.validate_analysis(
             self._serialize_analysis_proto(),
-            self._serialize_release_proto())
+            self._serialize_release_proto()).value
 
     @property
-    def epsilon(self):
+    def privacy_usage(self):
         return core_wrapper.compute_privacy_usage(
             self._serialize_analysis_proto(),
             self._serialize_release_proto())
@@ -381,12 +383,10 @@ class Analysis(object):
 
         self.release_values = Analysis._parse_release_proto(release_proto)
 
-        print("release values")
-        print(self.release_values)
-
+    def report(self):
         return json.loads(core_wrapper.generate_report(
             self._serialize_analysis_proto(),
-            release_proto))
+            self._serialize_release_proto()))
 
     def __enter__(self):
         global context
@@ -412,16 +412,6 @@ class Analysis(object):
                 graph.add_edge(label(source_node_id), label(nodeId))
 
         return graph
-
-    # def __str__(self):
-    #     graph = self._make_networkx()
-    #     out = "Analysis:\n"
-    #     out += "\tGraph:\n"
-    #
-    #     for sink in (node for node in graph if node.out_degree == 0):
-    #         print(sink)
-    #
-    #     return out
 
     def plot(self):
         import networkx as nx

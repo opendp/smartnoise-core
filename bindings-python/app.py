@@ -13,9 +13,9 @@ analysis = test_dp_mean(run=False)
 
 
 print('analysis is valid:', analysis.validate())
+print('privacy usage:', analysis.privacy_usage)
 
-print('epsilon:', analysis.epsilon)
+analysis.release()
 
-release_report = analysis.release()
-print('release json:', json.dumps(release_report, indent=4))
-print('all released values:', analysis.release_values)
+print('all released values (internal):', json.dumps(analysis.release_values, indent=4))
+print('release report:', json.dumps(analysis.report(), indent=4))

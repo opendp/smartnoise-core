@@ -128,9 +128,7 @@ impl Component for proto::component::Variant {
             Simplegeometricmechanism, Median, Minimum, Resize, Rowmin, Sum, Variance
         );
 
-        println!("{:?}", self);
-
-        return Err("a proto component is missing its Component trait".into())
+        return Err(format!("proto component {:?} is missing its Component trait", self).into())
     }
 
     fn get_names(

@@ -8,8 +8,6 @@ use yarrow_validator::proto;
 
 impl Evaluable for proto::LaplaceMechanism {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-
-        println!("laplace mechanism {:?}", arguments);
         let epsilon: Vec<f64> = self.privacy_usage.iter().map(|usage| get_epsilon(&usage)).collect::<Result<Vec<f64>>>()?;
         let sensitivity = get_argument(&arguments, "sensitivity")?.get_arraynd()?.get_f64()?;
 

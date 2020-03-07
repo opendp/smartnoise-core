@@ -107,7 +107,6 @@ impl Expandable for proto::Clamp {
         let mut graph_expansion: HashMap<u32, proto::Component> = HashMap::new();
 
         let mut component = component.clone();
-        println!("properties clamp {:?}", properties);
 
         if !properties.contains_key("min") {
             current_id += 1;

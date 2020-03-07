@@ -349,13 +349,12 @@ pub fn propagate_properties(
     let traversal: Vec<u32> = utilities::graph::get_traversal(analysis)?;
 
     let graph_evaluation: Release = parse_release(&release)?;
-    println!("GRAPH EVALUATION: {:?}", graph_evaluation);
+//    println!("GRAPH EVALUATION: {:?}", graph_evaluation);
     let mut graph_property = GraphProperties::new();
 
     for node_id in traversal {
 
-        println!("node_id, {:?}", node_id);
-        println!("{:?}", graph_evaluation.contains_key(&node_id));
+        println!("Propagating properties at node_id {:?}", node_id);
 
         let property = match graph_evaluation.get(&node_id) {
             Some(value) => infer_property(&value)?,
@@ -596,7 +595,6 @@ pub fn expand_component(
     })
 }
 
-// TODO: create report json
 pub fn generate_report(
     analysis: &proto::Analysis,
     release: &proto::Release,
@@ -620,8 +618,8 @@ pub fn generate_report(
         .flat_map(|v| v)
         .collect::<Vec<JSONRelease>>();
 
-
-    let j = serde_json::to_string(&release_schemas).unwrap();
-    println!("schema is: {}", j);
-    return Ok(j);
+    match serde_json::to_string(&release_schemas) {
+        Ok(serialized) => Ok(serialized),
+        Err(_) => Err("unable to parse report into json".into())
+    }
 }

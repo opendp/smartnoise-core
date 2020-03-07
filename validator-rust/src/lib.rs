@@ -89,7 +89,6 @@ struct ByteBuffer {
 pub extern "C" fn validate_analysis(
     request_ptr: *const u8, request_length: i32,
 ) -> ffi_support::ByteBuffer {
-    println!("VALIDATE");
 
     let request_buffer = unsafe { ptr_to_buffer(request_ptr, request_length) };
     let request: proto::RequestValidateAnalysis = prost::Message::decode(request_buffer).unwrap();

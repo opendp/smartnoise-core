@@ -111,7 +111,7 @@ pub fn execute_graph(analysis: &proto::Analysis,
             node_arguments.insert(field_id.to_owned(), evaluation);
         });
 
-        println!("Evaluating {:?}", node_id);
+        println!("Evaluating node_id {:?}", node_id);
         let evaluation = component.to_owned().variant.unwrap().evaluate(&node_arguments)?;
 
         release.insert(node_id, evaluation);
