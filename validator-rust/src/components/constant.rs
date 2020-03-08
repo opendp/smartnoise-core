@@ -15,6 +15,7 @@ impl Component for proto::Constant {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
         &self,
+        _privacy_definition: &proto::PrivacyDefinition,
         _public_arguments: &HashMap<String, Value>,
         _properties: &base::NodeProperties,
     ) -> Result<Properties> {

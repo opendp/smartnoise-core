@@ -8,7 +8,7 @@ use crate::hashmap;
 use crate::components::{Component, Accuracy, Expandable, Report};
 
 
-use crate::base::{Properties, NodeProperties, Value};
+use crate::base::{Properties, NodeProperties, Value, standardize_categorical_argument, Vector2DJagged};
 use crate::utilities::json::{JSONRelease};
 
 
@@ -17,16 +17,17 @@ impl Component for proto::DpCount {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
         &self,
+        _privacy_definition: &proto::PrivacyDefinition,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<Properties> {
         let mut data_property = properties.get("data")
             .ok_or("data argument missing from DPCount")?.clone();
 
-        // check that all properties are satisfied
-        data_property.get_categories()?;
+        data_property.assert_is_not_aggregated()?;
+        data_property.get_num_columns()?;
 
-        data_property.num_records = (0..data_property.num_columns.unwrap()).map(|_| Some(1)).collect();
+        data_property.num_records = data_property.get_categories_lengths()?;
         data_property.releasable = true;
 
         Ok(data_property)

@@ -43,6 +43,7 @@ pub trait Component {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
         &self,
+        privacy_definition: &proto::PrivacyDefinition,
         public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
     ) -> Result<Properties>;
@@ -70,7 +71,7 @@ pub trait Aggregator {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
-    ) -> Option<Vec<f64>>;
+    ) -> Result<Vec<f64>>;
 }
 
 pub trait Accuracy {
@@ -105,22 +106,23 @@ impl Component for proto::component::Variant {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
         &self,
+        privacy_definition: &proto::PrivacyDefinition,
         public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
     ) -> Result<Properties> {
         macro_rules! propagate_property {
-            ($self:ident, $public_arguments: ident, $properties: ident, $( $variant:ident ),*) => {
+            ($( $variant:ident ),*) => {
                 {
                     $(
-                       if let proto::component::Variant::$variant(x) = $self {
-                            return x.propagate_property($public_arguments, $properties)
+                       if let proto::component::Variant::$variant(x) = self {
+                            return x.propagate_property(privacy_definition, public_arguments, properties)
                        }
                     )*
                 }
             }
         }
 
-        propagate_property!(self, public_arguments, properties,
+        propagate_property!(
             // INSERT COMPONENT LIST
             Cast, Clamp, Constant, Count, Covariance, Dpcount, Dpcovariance, Dphistogram, Dpmaximum,
             Dpmean, Dpmedian, Dpminimum, Dpmomentraw, Dpsum, Dpvariance, Impute, Index,
@@ -133,22 +135,22 @@ impl Component for proto::component::Variant {
 
     fn get_names(
         &self,
-        _properties: &NodeProperties,
+        properties: &NodeProperties,
     ) -> Result<Vec<String>> {
 
         macro_rules! get_names{
-            ($self:ident, $properties:ident, $( $variant:ident ),*) => {
+            ($( $variant:ident ),*) => {
                 {
                     $(
-                       if let proto::component::Variant::$variant(x) = $self {
-                            return x.get_names($properties)
+                       if let proto::component::Variant::$variant(x) = self {
+                            return x.get_names(properties)
                        }
                     )*
                 }
             }
         }
 
-        get_names!(self, properties,
+        get_names!(
             // INSERT COMPONENT LIST
 //            Rowmin, Dpmean, Impute
         );
@@ -169,18 +171,18 @@ impl Expandable for proto::component::Variant {
         maximum_id: u32,
     ) -> Result<(u32, HashMap<u32, proto::Component>)> {
         macro_rules! expand_graph {
-            ($self:ident, $privacy_definition:ident, $component:ident, $properties:ident, $component_id:ident, $maximum_id:ident, $( $variant:ident ),*) => {
+            ($( $variant:ident ),*) => {
                 {
                     $(
-                       if let proto::component::Variant::$variant(x) = $self {
-                            return x.expand_graph($privacy_definition, $component, $properties, $component_id, $maximum_id)
+                       if let proto::component::Variant::$variant(x) = self {
+                            return x.expand_graph(privacy_definition, component, properties, component_id, maximum_id)
                        }
                     )*
                 }
             }
         }
 
-        expand_graph!(self, privacy_definition, component, properties, component_id, maximum_id,
+        expand_graph!(
             // INSERT COMPONENT LIST
             Clamp, Dpcount, Dpcovariance, Dphistogram, Dpmaximum, Dpmean, Dpmedian, Dpminimum,
             Dpmomentraw, Dpsum, Dpvariance, Impute, Gaussianmechanism, Laplacemechanism,
@@ -197,48 +199,48 @@ impl Aggregator for proto::component::Variant {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
-    ) -> Option<Vec<f64>> {
+    ) -> Result<Vec<f64>> {
         macro_rules! compute_sensitivity {
-            ($self:ident, $privacy_definition:ident, $properties:ident, $( $variant:ident ),*) => {
+            ($( $variant:ident ),*) => {
                 {
                     $(
-                       if let proto::component::Variant::$variant(x) = $self {
-                            return x.compute_sensitivity($privacy_definition, $properties)
+                       if let proto::component::Variant::$variant(x) = self {
+                            return x.compute_sensitivity(privacy_definition, properties)
                        }
                     )*
                 }
             }
         }
 
-        compute_sensitivity!(self, privacy_definition, properties,
+        compute_sensitivity!(
             // INSERT COMPONENT LIST
             Covariance, Kthrawsamplemoment, Maximum, Mean, Median, Minimum, Sum, Variance
         );
 
-        None
+        Err("sensitivity is not implemented".into())
     }
 }
 
 impl Accuracy for proto::component::Variant {
     fn accuracy_to_privacy_usage(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
-        _properties: &NodeProperties,
-        _accuracy: &proto::Accuracy,
+        privacy_definition: &proto::PrivacyDefinition,
+        properties: &NodeProperties,
+        accuracy: &proto::Accuracy,
     ) -> Option<proto::PrivacyUsage> {
         macro_rules! accuracy_to_privacy_usage {
-            ($self:ident, $privacy_definition:ident, $properties:ident, $accuracy:ident, $( $variant:ident ),*) => {
+            ($( $variant:ident ),*) => {
                 {
                     $(
-                       if let proto::component::Variant::$variant(x) = $self {
-                            return x.accuracy_to_privacy_usage($privacy_definition, $properties, $accuracy)
+                       if let proto::component::Variant::$variant(x) = self {
+                            return x.accuracy_to_privacy_usage(privacy_definition, properties, accuracy)
                        }
                     )*
                 }
             }
         }
 
-        accuracy_to_privacy_usage!(self, privacy_definition, properties, accuracy,
+        accuracy_to_privacy_usage!(
             // INSERT COMPONENT LIST
 //            Dpmean
         );
@@ -248,22 +250,22 @@ impl Accuracy for proto::component::Variant {
 
     fn privacy_usage_to_accuracy(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
-        _properties: &NodeProperties,
+        privacy_definition: &proto::PrivacyDefinition,
+        properties: &NodeProperties,
     ) -> Option<f64> {
         macro_rules! privacy_usage_to_accuracy {
-            ($self:ident, $privacy_definition:ident, $properties:ident, $( $variant:ident ),*) => {
+            ($( $variant:ident ),*) => {
                 {
                     $(
-                       if let proto::component::Variant::$variant(x) = $self {
-                            return x.privacy_usage_to_accuracy($privacy_definition, $properties)
+                       if let proto::component::Variant::$variant(x) = self {
+                            return x.privacy_usage_to_accuracy(privacy_definition, properties)
                        }
                     )*
                 }
             }
         }
 
-        privacy_usage_to_accuracy!(self, privacy_definition, properties,
+        privacy_usage_to_accuracy!(
             // INSERT COMPONENT LIST
 //            Dpmean
         );
@@ -283,18 +285,18 @@ impl Report for proto::component::Variant {
     ) -> Option<Vec<JSONRelease>> {
 
         macro_rules! summarize{
-            ($self:ident, $node_id:ident, $component:ident, $properties:ident, $release:ident, $( $variant:ident ),*) => {
+            ($( $variant:ident ),*) => {
                 {
                     $(
-                       if let proto::component::Variant::$variant(x) = $self {
-                            return x.summarize($node_id, $component, $properties, $release)
+                       if let proto::component::Variant::$variant(x) = self {
+                            return x.summarize(node_id, component, properties, release)
                        }
                     )*
                 }
             }
         }
 
-        summarize!(self, node_id, component, properties, release,
+        summarize!(
             // INSERT COMPONENT LIST
             Dpmean
         );

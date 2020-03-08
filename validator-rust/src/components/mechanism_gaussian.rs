@@ -15,14 +15,18 @@ impl Component for proto::GaussianMechanism {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
         &self,
+        privacy_definition: &proto::PrivacyDefinition,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<Properties> {
         let mut data_property = properties.get("data")
             .ok_or("data must be passed to GaussianMechanism")?.clone();
 
-        data_property.aggregator.clone()
+        let aggregator = data_property.aggregator.clone()
             .ok_or::<Error>("aggregator must be defined to run GaussianMechanism".into())?;
+
+        // sensitivity must be computable
+        aggregator.component.compute_sensitivity(&privacy_definition, &aggregator.properties)?;
 
         // check that all properties are satisfied
         data_property.get_n()?;

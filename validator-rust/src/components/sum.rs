@@ -14,6 +14,7 @@ impl Component for proto::Sum {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
         &self,
+        _privacy_definition: &proto::PrivacyDefinition,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<Properties> {
@@ -42,15 +43,16 @@ impl Aggregator for proto::Sum {
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
-    ) -> Option<Vec<f64>> {
-        let data_property = properties.get("data")?;
+    ) -> Result<Vec<f64>> {
+        let data_property = properties.get("data")
+            .ok_or::<Error>("data must be passed to compute sensitivity".into())?;
 
-        let min = data_property.get_min_f64().ok()?;
-        let max = data_property.get_max_f64().ok()?;
+        let min = data_property.get_min_f64()?;
+        let max = data_property.get_max_f64()?;
 
-        Some(min.iter()
+        Ok(min.iter()
             .zip(max)
-            .map(|(min, max)| (max - min) as f64)
+            .map(|(min, max)| (max - min))
             .collect())
     }
 }

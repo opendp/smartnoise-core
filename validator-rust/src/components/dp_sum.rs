@@ -17,6 +17,7 @@ impl Component for proto::DpSum {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
         &self,
+        _privacy_definition: &proto::PrivacyDefinition,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<Properties> {
@@ -28,7 +29,7 @@ impl Component for proto::DpSum {
         data_property.get_max_f64()?;
         data_property.assert_non_null()?;
 
-        data_property.num_records = (0..data_property.num_columns.unwrap()).map(|_| Some(1)).collect();
+        data_property.num_records = data_property.get_categories_lengths()?;
         data_property.releasable = true;
 
         Ok(data_property)

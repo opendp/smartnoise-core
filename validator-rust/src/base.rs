@@ -326,10 +326,37 @@ impl Properties {
             None => Err("categorical nature is not defined".into())
         }
     }
+    pub fn get_categories_lengths(&self) -> Result<Vec<Option<i64>>> {
+        let num_columns = self.get_num_columns()?;
+
+        match self.get_categories() {
+            Ok(categories) => Ok(match categories {
+                    Vector2DJagged::Str(categories) =>
+                        standardize_categorical_argument(&categories, &num_columns)?.iter()
+                            .map(|cats| Some(cats.len() as i64)).collect(),
+                    Vector2DJagged::Bool(categories) =>
+                        standardize_categorical_argument(&categories, &num_columns)?.iter()
+                            .map(|cats| Some(cats.len() as i64)).collect(),
+                    Vector2DJagged::I64(categories) =>
+                        standardize_categorical_argument(&categories, &num_columns)?.iter()
+                            .map(|cats| Some(cats.len() as i64)).collect(),
+                    Vector2DJagged::F64(categories) =>
+                        standardize_categorical_argument(&categories, &num_columns)?.iter()
+                            .map(|cats| Some(cats.len() as i64)).collect(),
+            }),
+            Err(_) => Ok((0..num_columns).map(|_| Some(1)).collect())
+        }
+    }
     pub fn assert_is_not_aggregated(&self) -> Result<()> {
         match self.aggregator.to_owned() {
             Some(aggregator) => Err("aggregated data may not be manipulated".into()),
             None => Ok(())
+        }
+    }
+    pub fn get_num_columns(&self) -> Result<i64> {
+        match self.num_columns {
+            Some(num_columns) => Ok(num_columns),
+            None => Err("number of columns is not defined".into())
         }
     }
 }
@@ -382,6 +409,7 @@ pub fn propagate_properties(
 ) -> Result<GraphProperties> {
     // compute properties for every node in the graph
 
+    let privacy_definition = analysis.privacy_definition.to_owned().unwrap();
     let graph: HashMap<u32, proto::Component> = analysis.computation_graph.to_owned().unwrap().value.to_owned();
     let traversal: Vec<u32> = utilities::graph::get_traversal(analysis)?;
 
@@ -400,7 +428,7 @@ pub fn propagate_properties(
                 let input_properties = get_input_properties(&component, &graph_property)?;
                 let public_arguments = get_input_arguments(&component, &graph_evaluation)?;
 
-                component.variant.unwrap().propagate_property(&public_arguments, &input_properties)?
+                component.variant.unwrap().propagate_property(&privacy_definition, &public_arguments, &input_properties)?
             }
         };
         graph_property.insert(node_id.clone(), property);
@@ -479,8 +507,7 @@ pub fn standardize_null_argument<T: Clone>(
 
 pub fn standardize_weight_argument<T>(
     categories: &Vec<Vec<T>>,
-    weights: &Vec<Option<Vec<f64>>>,
-    _length: &i64
+    weights: &Vec<Option<Vec<f64>>>
 ) -> Result<Vec<Vec<f64>>> {
     match weights.len() {
         0 => Ok(categories.iter()
@@ -623,7 +650,7 @@ pub fn expand_component(
         node_id_maximum,
     )?;
 
-    let properties = component.clone().variant.unwrap().propagate_property(arguments, &properties)?;
+    let properties = component.clone().variant.unwrap().propagate_property(privacy_definition, arguments, &properties)?;
 
     Ok(proto::response_expand_component::ExpandedComponent {
         computation_graph: Some(proto::ComputationGraph { value: result.1 }),

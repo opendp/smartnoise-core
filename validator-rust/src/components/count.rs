@@ -6,26 +6,27 @@ use std::collections::HashMap;
 use crate::{proto, base};
 
 use crate::components::{Component, Aggregator};
-use crate::base::{Value, Properties, NodeProperties, AggregatorProperties, Vector2DJagged};
-
-// TODO: more checks needed here
+use crate::base::{Value, Properties, NodeProperties, AggregatorProperties, Vector2DJagged, standardize_categorical_argument};
 
 impl Component for proto::Count {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
         &self,
+        _privacy_definition: &proto::PrivacyDefinition,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<Properties> {
         let mut data_property = properties.get("data")
             .ok_or("data must be passed to Mean")?.clone();
 
+        data_property.assert_is_not_aggregated()?;
+        data_property.num_records = data_property.get_categories_lengths()?;
+
         // save a snapshot of the state when aggregating
         data_property.aggregator = Some(AggregatorProperties {
             component: proto::component::Variant::from(self.clone()),
             properties: properties.clone()
         });
-
         Ok(data_property)
     }
 
@@ -42,13 +43,15 @@ impl Aggregator for proto::Count {
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
-    ) -> Option<Vec<f64>> {
-        let data_property = properties.get("data")?;
-        let num_columns = data_property.num_columns.clone().unwrap();
+    ) -> Result<Vec<f64>> {
+        let data_property = properties.get("data")
+            .ok_or::<Error>("data must be passed to compute sensitivity".into())?;
+
+        let num_columns = data_property.get_num_columns()?;
 
         // if n is set, and the number of categories is 2, then sensitivity is 1.
         // Otherwise, sensitivity is 2 (changing one person can alter two bins)
-        Some(match data_property.get_n() {
+        Ok(match data_property.get_n() {
             // known n
             Ok(_num_records) => match data_property.get_categories() {
                 // by known categories

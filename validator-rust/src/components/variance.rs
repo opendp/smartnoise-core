@@ -13,6 +13,7 @@ impl Component for proto::Variance {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
         &self,
+        _privacy_definition: &proto::PrivacyDefinition,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<Properties> {
@@ -41,18 +42,19 @@ impl Aggregator for proto::Variance {
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
-    ) -> Option<Vec<f64>> {
-        let data_property = properties.get("data")?;
+    ) -> Result<Vec<f64>> {
+        let data_property = properties.get("data")
+            .ok_or::<Error>("data must be passed to compute sensitivity".into())?;
 
-        let min = data_property.get_min_f64().ok()?;
-        let max = data_property.get_max_f64().ok()?;
-        let num_records = data_property.get_n().ok()?;
+        let min = data_property.get_min_f64()?;
+        let max = data_property.get_max_f64()?;
+        let num_records = data_property.get_n()?;
 
-        Some(min
+        Ok(min
             .iter()
             .zip(max)
             .zip(num_records)
-            .map(|((min, max), n)| (max - min).powf(2.) / (n as f64))
+            .map(|((min, max), n)| (max - min).powi(2) / (n as f64))
             .collect())
     }
 }

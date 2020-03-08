@@ -72,23 +72,28 @@ def test_dp_linear_stats(run=True):
         imputed = yarrow.ops.impute(clamped)
         resized = yarrow.ops.resize(imputed, n=500)
 
-        mean = yarrow.ops.dp_mean(
+        # mean = yarrow.ops.dp_mean(
+        #     resized,
+        #     privacy_usage={'epsilon': .5}
+        # )
+        #
+        # variance = yarrow.ops.dp_variance(
+        #     resized,
+        #     privacy_usage={'epsilon': .5}
+        # )
+
+        # yarrow.ops.dp_covariance(
+        #     privacy_usage={'epsilon': .5},
+        #     left=resized,
+        #     right=yarrow.ops.cast(dataset_pums['income'], type="FLOAT"),
+        #     right_min=0.,
+        #     right_max=1.,
+        #     right_n=500
+        # )
+
+        yarrow.ops.dp_count(
             resized,
             privacy_usage={'epsilon': .5}
-        )
-
-        variance = yarrow.ops.dp_variance(
-            resized,
-            privacy_usage={'epsilon': .5}
-        )
-
-        yarrow.ops.dp_covariance(
-            privacy_usage={'epsilon': .5},
-            left=resized,
-            right=yarrow.ops.cast(dataset_pums['income'], type="FLOAT"),
-            right_min=0.,
-            right_max=1.,
-            right_n=500
         )
 
     if run:

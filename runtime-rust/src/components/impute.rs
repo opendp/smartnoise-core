@@ -180,7 +180,7 @@ pub fn impute_categorical<T>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>,
     let num_columns = get_num_columns(&data)?;
 
     let categories = standardize_categorical_argument(&categories, &num_columns)?;
-    let probabilities = standardize_weight_argument(&categories, &weights, &num_columns)?;
+    let probabilities = standardize_weight_argument(&categories, &weights)?;
     let null_value = standardize_null_argument(&null_value, &num_columns)?;
 
     // iterate over the generalized columns

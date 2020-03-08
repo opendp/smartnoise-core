@@ -16,6 +16,7 @@ use crate::utilities::json::{JSONRelease};
 impl Component for proto::DpMedian {
     fn propagate_property(
         &self,
+        _privacy_definition: &proto::PrivacyDefinition,
         public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<Properties> {
@@ -25,7 +26,7 @@ impl Component for proto::DpMedian {
         public_arguments.get("candidates")
             .ok_or::<Error>("candidates must be defined to compute a DPMedian".into())?;
 
-        data_property.num_records = (0..data_property.num_columns.unwrap()).map(|_| Some(1)).collect();
+        data_property.num_records = data_property.get_categories_lengths()?;
         data_property.releasable = true;
 
         Ok(data_property)

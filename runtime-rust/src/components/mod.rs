@@ -29,20 +29,23 @@ pub trait Evaluable {
 }
 
 impl Evaluable for proto::component::Variant {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
+    fn evaluate(
+        &self, arguments: &NodeArguments
+    ) -> Result<Value> {
+
         macro_rules! evaluate {
-            ($self:ident, $arguments:ident, $( $variant:ident ),*) => {
+            ($( $variant:ident ),*) => {
                 {
                     $(
-                       if let proto::component::Variant::$variant(x) = $self {
-                            return x.evaluate($arguments)
+                       if let proto::component::Variant::$variant(x) = self {
+                            return x.evaluate(arguments)
                        }
                     )*
                 }
             }
         }
 
-        evaluate!(self, arguments,
+        evaluate!(
             // INSERT COMPONENT LIST
             Constant, Bin, Cast, Clamp, Count, Covariance, Impute, Index, Materialize, Mean, Laplacemechanism, Gaussianmechanism, Simplegeometricmechanism, Resize, Sum, Variance
         );
