@@ -11,8 +11,6 @@ use ndarray::prelude::Ix1;
 
 use std::collections::HashMap;
 
-
-
 use crate::utilities::serial::{serialize_value, parse_release};
 use crate::utilities::json::{JSONRelease};
 
@@ -66,56 +64,56 @@ pub enum Value {
 }
 
 impl Value {
-    pub fn get_arraynd(self) -> Result<ArrayND> {
+    pub fn get_arraynd<'a>(&'a self) -> Result<&'a ArrayND> {
         match self {
-            Value::ArrayND(array) => Ok(array.to_owned()),
+            Value::ArrayND(array) => Ok(array),
             _ => Err("value must be wrapped in an ArrayND".into())
         }
     }
 
-    pub fn get_first_f64(self) -> Result<f64> {
+    pub fn get_first_f64(&self) -> Result<f64> {
         match self {
             Value::ArrayND(array) => array.get_first_f64(),
             _ => Err("cannot retrieve first float".into())
         }
     }
-    pub fn get_first_i64(self) -> Result<i64> {
+    pub fn get_first_i64(&self) -> Result<i64> {
         match self {
             Value::ArrayND(array) => array.get_first_i64(),
             _ => Err("cannot retrieve integer".into())
         }
     }
-    pub fn get_first_str(self) -> Result<String> {
+    pub fn get_first_str(&self) -> Result<String> {
         match self {
             Value::ArrayND(array) => array.get_first_str(),
             _ => Err("cannot retrieve string".into())
         }
     }
-    pub fn get_first_bool(self) -> Result<bool> {
+    pub fn get_first_bool(&self) -> Result<bool> {
         match self {
             Value::ArrayND(array) => array.get_first_bool(),
             _ => Err("cannot retrieve bool".into())
         }
     }
 
-    pub fn get_jagged(self) -> Result<Vector2DJagged> {
+    pub fn get_jagged<'a>(&'a self) -> Result<&'a Vector2DJagged> {
         match self {
-            Value::Vector2DJagged(jagged) => Ok(jagged.to_owned()),
+            Value::Vector2DJagged(jagged) => Ok(jagged),
             _ => Err("value must be wrapped in an Vector2DJagged".into())
         }
     }
 }
 
 impl ArrayND {
-    pub fn get_f64(self) -> Result<ArrayD<f64>> {
+    pub fn get_f64(&self) -> Result<&ArrayD<f64>> {
         match self {
-            ArrayND::Bool(x) => Ok(x.mapv(|v| if v { 1. } else { 0. })),
-            ArrayND::I64(x) => Ok(x.mapv(|v| f64::from(v as i32))),
-            ArrayND::F64(x) => Ok(x.to_owned()),
+//            ArrayND::Bool(x) => Ok(x.mapv(|v| if v { 1. } else { 0. })),
+//            ArrayND::I64(x) => Ok(x.mapv(|v| f64::from(v as i32))),
+            ArrayND::F64(x) => Ok(x),
             _ => Err("expected a float on a non-float ArrayND".into())
         }
     }
-    pub fn get_first_f64(self) -> Result<f64> {
+    pub fn get_first_f64(&self) -> Result<f64> {
         match self {
             ArrayND::Bool(x) => Ok(if *x.first().unwrap() { 1. } else { 0. }),
             ArrayND::I64(x) => Ok(f64::from(*x.first().unwrap() as i32)),
@@ -123,7 +121,7 @@ impl ArrayND {
             _ => Err("value must be numeric".into())
         }
     }
-    pub fn get_vec_f64(self, optional_length: Option<i64>) -> Result<Vec<f64>> {
+    pub fn get_vec_f64(&self, optional_length: Option<i64>) -> Result<Vec<f64>> {
         let data = self.get_f64()?;
         let err_msg = "failed attempt to cast f64 ArrayD to vector".into();
         match data.ndim().clone() {
@@ -131,25 +129,24 @@ impl ArrayND {
                 (Some(length), Some(v)) => Ok((0..length).map(|_| v.clone()).collect()),
                 _ => Err(err_msg)
             },
-            1 => Ok(data.into_dimensionality::<Ix1>().unwrap().to_vec()),
+            1 => Ok(data.clone().into_dimensionality::<Ix1>().unwrap().to_vec()),
             _ => Err(err_msg)
         }
     }
-    pub fn get_i64(self) -> Result<ArrayD<i64>> {
+    pub fn get_i64(&self) -> Result<&ArrayD<i64>> {
         match self {
-            ArrayND::Bool(x) => Ok(x.mapv(|v| if v { 1 } else { 0 })),
-            ArrayND::I64(x) => Ok(x.to_owned()),
+            ArrayND::I64(x) => Ok(x),
             _ => Err("expected a float on a non-float ArrayND".into())
         }
     }
-    pub fn get_first_i64(self) -> Result<i64> {
+    pub fn get_first_i64(&self) -> Result<i64> {
         match self {
             ArrayND::Bool(x) => Ok(if *x.first().unwrap() { 1 } else { 0 }),
             ArrayND::I64(x) => Ok(x.first().unwrap().to_owned()),
             _ => Err("value must be numeric".into())
         }
     }
-    pub fn get_vec_i64(self, optional_length: Option<i64>) -> Result<Vec<i64>> {
+    pub fn get_vec_i64(&self, optional_length: Option<i64>) -> Result<Vec<i64>> {
         let data = self.get_i64()?;
         let err_msg = "failed attempt to cast i64 ArrayD to vector".into();
         match data.ndim().clone() {
@@ -157,29 +154,29 @@ impl ArrayND {
                 (Some(length), Some(v)) => Ok((0..length).map(|_| v.clone()).collect()),
                 _ => Err(err_msg)
             },
-            1 => Ok(data.into_dimensionality::<Ix1>().unwrap().to_vec()),
+            1 => Ok(data.clone().into_dimensionality::<Ix1>().unwrap().to_vec()),
             _ => Err(err_msg)
         }
     }
-    pub fn get_str(self) -> Result<ArrayD<String>> {
+    pub fn get_str(&self) -> Result<&ArrayD<String>> {
         match self {
-            ArrayND::Str(x) => Ok(x.to_owned()),
+            ArrayND::Str(x) => Ok(x),
             _ => Err("value must be a string".into())
         }
     }
-    pub fn get_first_str(self) -> Result<String> {
+    pub fn get_first_str(&self) -> Result<String> {
         match self {
             ArrayND::Str(x) => Ok(x.first().unwrap().to_owned()),
             _ => Err("value must be a string".into())
         }
     }
-    pub fn get_bool(self) -> Result<ArrayD<bool>> {
+    pub fn get_bool(&self) -> Result<&ArrayD<bool>> {
         match self {
-            ArrayND::Bool(x) => Ok(x.to_owned()),
+            ArrayND::Bool(x) => Ok(x),
             _ => Err("value must be a bool".into())
         }
     }
-    pub fn get_first_bool(self) -> Result<bool> {
+    pub fn get_first_bool(&self) -> Result<bool> {
         match self {
             ArrayND::Bool(x) => Ok(x.first().unwrap().to_owned()),
             _ => Err("value must be a bool".into())
@@ -188,28 +185,28 @@ impl ArrayND {
 }
 
 impl Vector2DJagged {
-    pub fn get_f64(self) -> Result<Vec<Vec<f64>>> {
+    pub fn get_f64(&self) -> Result<Vec<Vec<f64>>> {
         match self {
             Vector2DJagged::F64(data) => data.iter().cloned().collect::<Option<Vec<Vec<f64>>>>()
                 .ok_or::<Error>("not all columns are known in float Vector2DJagged".into()),
             _ => Err("expected float type on a non-float Vector2DJagged".into())
         }
     }
-    pub fn get_i64(self) -> Result<Vec<Vec<i64>>> {
+    pub fn get_i64(&self) -> Result<Vec<Vec<i64>>> {
         match self {
             Vector2DJagged::I64(data) => data.iter().cloned().collect::<Option<Vec<Vec<i64>>>>()
                 .ok_or::<Error>("not all columns are known in int Vector2DJagged".into()),
             _ => Err("expected int type on a non-int Vector2DJagged".into())
         }
     }
-    pub fn get_str(self) -> Result<Vec<Vec<String>>> {
+    pub fn get_str(&self) -> Result<Vec<Vec<String>>> {
         match self {
             Vector2DJagged::Str(data) => data.iter().cloned().collect::<Option<Vec<Vec<String>>>>()
                 .ok_or::<Error>("not all columns are known in string Vector2DJagged".into()),
             _ => Err("expected string type on a non-string Vector2DJagged".into())
         }
     }
-    pub fn get_bool(self) -> Result<Vec<Vec<bool>>> {
+    pub fn get_bool(&self) -> Result<Vec<Vec<bool>>> {
         match self {
             Vector2DJagged::Bool(data) => data.iter().cloned().collect::<Option<Vec<Vec<bool>>>>()
                 .ok_or::<Error>("not all columns are known in bool Vector2DJagged".into()),
@@ -361,9 +358,6 @@ impl Properties {
     }
 }
 
-// properties for each node in the graph
-pub type GraphProperties = HashMap<u32, Properties>;
-
 // properties for each argument for a node
 pub type NodeProperties = HashMap<String, Properties>;
 
@@ -380,12 +374,12 @@ pub fn get_input_arguments(
     Ok(arguments)
 }
 
-pub fn get_argument(
-    arguments: &HashMap<String, &Value>,
+pub fn get_argument<'a>(
+    arguments: &HashMap<String, &'a Value>,
     name: &str
-) -> Result<Value> {
+) -> Result<&'a Value> {
     match arguments.get(name) {
-        Some(argument) => Ok(argument.deref().to_owned()),
+        Some(argument) => Ok(argument),
         _ => Err((name.to_string() + " is not defined").into())
     }
 }
@@ -406,34 +400,69 @@ pub fn get_input_properties<T>(
 pub fn propagate_properties(
     analysis: &proto::Analysis,
     release: &proto::Release,
-) -> Result<GraphProperties> {
+) -> Result<HashMap<u32, Properties>> {
     // compute properties for every node in the graph
 
     let privacy_definition = analysis.privacy_definition.to_owned().unwrap();
-    let graph: HashMap<u32, proto::Component> = analysis.computation_graph.to_owned().unwrap().value.to_owned();
-    let traversal: Vec<u32> = utilities::graph::get_traversal(analysis)?;
+    let mut graph: HashMap<u32, proto::Component> = analysis.computation_graph.to_owned().unwrap().value.to_owned();
+    let mut traversal: Vec<u32> = utilities::graph::get_traversal(&graph)?;
+    traversal.reverse();
 
     let graph_evaluation: Release = parse_release(&release)?;
 //    println!("GRAPH EVALUATION: {:?}", graph_evaluation);
-    let mut graph_property = GraphProperties::new();
+    let mut graph_properties = HashMap::<u32, Properties>::new();
 
-    for node_id in traversal {
+    let mut maximum_id = graph.keys().cloned()
+        .fold(0, std::cmp::max);
 
-        println!("Propagating properties at node_id {:?}", node_id);
+    while !traversal.is_empty() {
+        let node_id = traversal.last().unwrap().clone();
 
-        let property = match graph_evaluation.get(&node_id) {
-            Some(value) => infer_property(&value)?,
+        let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
+        println!("Propagating properties at node_id {:?} {:?}", node_id, component);
+
+        let properties = match graph_evaluation.get(&node_id) {
+            // if node has already been evaluated, infer properties directly from the public data
+            Some(value) => {
+                traversal.pop();
+                infer_property(&value)?
+            },
+
+            // if node has not been evaluated, propagate properties over it
             None => {
                 let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
-                let input_properties = get_input_properties(&component, &graph_property)?;
+                let input_properties = get_input_properties(&component, &graph_properties)?;
                 let public_arguments = get_input_arguments(&component, &graph_evaluation)?;
 
-                component.variant.unwrap().propagate_property(&privacy_definition, &public_arguments, &input_properties)?
+                let result = component.clone().variant.unwrap().expand_graph(
+                    &privacy_definition,
+                    &component,
+                    &input_properties,
+                    node_id.clone(),
+                    maximum_id.clone(),
+                )?;
+
+                // patch the computation graph
+                graph.extend(result.1);
+
+//                println!("maximum id {:?}", maximum_id);
+                // if patch added nodes, extend the traversal
+                if result.0 > maximum_id {
+                    let mut new_nodes = ((maximum_id + 1)..(result.0 + 1)).collect::<Vec<u32>>();
+                    new_nodes.reverse();
+                    traversal.extend(new_nodes);
+                    maximum_id = result.0;
+                    continue;
+                }
+                traversal.pop();
+
+                component.clone().variant.unwrap().propagate_property(
+                    &privacy_definition, &public_arguments, &input_properties)?
             }
         };
-        graph_property.insert(node_id.clone(), property);
+        graph_properties.insert(node_id.clone(), properties);
     }
-    Ok(graph_property)
+    Ok(graph_properties)
 }
 
 pub fn standardize_numeric_argument<T: Clone>(value: &ArrayD<T>, length: &i64) -> Result<ArrayD<T>> {
@@ -634,6 +663,7 @@ pub fn expand_component(
     node_id_output: u32,
     node_id_maximum: u32
 ) -> Result<proto::response_expand_component::ExpandedComponent> {
+
     let mut properties: NodeProperties = properties.iter()
         .map(|(k, v)| (k.to_owned(), utilities::serial::parse_properties(&v)))
         .collect();
@@ -650,15 +680,18 @@ pub fn expand_component(
         node_id_maximum,
     )?;
 
-    let properties = component.clone().variant.unwrap().propagate_property(privacy_definition, arguments, &properties)?;
-
     Ok(proto::response_expand_component::ExpandedComponent {
         computation_graph: Some(proto::ComputationGraph { value: result.1 }),
-        properties: Some(utilities::serial::serialize_properties(&properties)),
+        properties: match result.0 > node_id_maximum {
+            false => Some(utilities::serial::serialize_properties(&component.clone().variant.unwrap()
+                .propagate_property(privacy_definition, arguments, &properties)?)),
+            true => None
+        },
         maximum_id: result.0
     })
 }
 
+// TODO: move this logic into lib
 pub fn generate_report(
     analysis: &proto::Analysis,
     release: &proto::Release,

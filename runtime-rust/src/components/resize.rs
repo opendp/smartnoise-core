@@ -63,7 +63,7 @@ impl Evaluable for proto::Resize {
 
 pub fn resize_float(data: &ArrayD<f64>, n: &i64, distribution: &String,
                     min: &ArrayD<f64>, max: &ArrayD<f64>,
-                    shift: &Option<ArrayD<f64>>, scale: &Option<ArrayD<f64>>) -> Result<ArrayD<f64>> {
+                    shift: &Option<&ArrayD<f64>>, scale: &Option<&ArrayD<f64>>) -> Result<ArrayD<f64>> {
     // get number of observations in actual data
     let real_n: i64 = data.len_of(Axis(0)) as i64;
 
@@ -79,9 +79,9 @@ pub fn resize_float(data: &ArrayD<f64>, n: &i64, distribution: &String,
             let synthetic = match distribution {
                 i if i == &"Uniform".to_string() => impute_float_uniform(&synthetic_base, &min, &max),
                 i if i == &"Gaussian".to_string() => impute_float_gaussian(
-                    &synthetic_base, &min, &max,
-                    &shift.clone().ok_or::<Error>("shift must be defined for gaussian imputation".into())?,
-                    &scale.clone().ok_or::<Error>("scale must be defined for gaussian imputation".into())?),
+                        &synthetic_base, &min, &max,
+                        &shift.cloned().ok_or::<Error>("shift must be defined for gaussian imputation".into())?,
+                        &scale.cloned().ok_or::<Error>("scale must be defined for gaussian imputation".into())?),
                 _ => Err("unrecognized distribution".into())
             }?;
 

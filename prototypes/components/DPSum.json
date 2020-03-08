@@ -11,7 +11,8 @@
         "continuous",
         "categorical"
       ],
-      "type": "Array"
+      "type": "Array",
+      "default": "None"
     }
   },
   "id": "DPSum",

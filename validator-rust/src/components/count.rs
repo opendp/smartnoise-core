@@ -17,7 +17,7 @@ impl Component for proto::Count {
         properties: &base::NodeProperties,
     ) -> Result<Properties> {
         let mut data_property = properties.get("data")
-            .ok_or("data must be passed to Mean")?.clone();
+            .ok_or("data must be passed to Count")?.clone();
 
         data_property.assert_is_not_aggregated()?;
         data_property.num_records = data_property.get_categories_lengths()?;
@@ -46,6 +46,8 @@ impl Aggregator for proto::Count {
     ) -> Result<Vec<f64>> {
         let data_property = properties.get("data")
             .ok_or::<Error>("data must be passed to compute sensitivity".into())?;
+
+        data_property.assert_is_not_aggregated()?;
 
         let num_columns = data_property.get_num_columns()?;
 

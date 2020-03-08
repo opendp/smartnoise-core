@@ -80,6 +80,34 @@ impl Aggregator for proto::Covariance {
         _privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
     ) -> Result<Vec<f64>> {
+        let mut left_property = properties.get("left")
+            .ok_or("left argument missing from DPCovariance")?.clone();
+
+        // check that all properties are satisfied
+        println!("covariance left");
+        let left_n = left_property.get_n()?;
+        left_property.get_min_f64()?;
+        left_property.get_max_f64()?;
+        left_property.assert_non_null()?;
+
+        let right_property = properties.get("right")
+            .ok_or("right argument missing from DPCovariance")?.clone();
+
+        // check that all properties are satisfied
+        println!("covariance right");
+        let right_n = right_property.get_n()?;
+        right_property.get_min_f64()?;
+        right_property.get_max_f64()?;
+        right_property.assert_non_null()?;
+
+        if !left_n.iter().zip(right_n).all(|(left, right)| left == &right) {
+            return Err("n for left and right must be equivalent".into());
+        }
+
+        // TODO: derive proper propagation of covariance property
+        left_property.num_records = (0..left_property.num_columns.unwrap()).map(|_| Some(1)).collect();
+        left_property.releasable = true;
+
         // TODO: cross-covariance
         let data_property = properties.get("data")
             .ok_or::<Error>("data must be passed to compute sensitivity".into())?;

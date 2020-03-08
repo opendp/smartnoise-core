@@ -17,7 +17,7 @@ impl Evaluable for proto::LaplaceMechanism {
 
         match (data, sensitivity) {
             (Value::ArrayND(data), Value::ArrayND(sensitivity)) => {
-                let mut data = data.get_f64()?;
+                let mut data = data.get_f64()?.clone();
                 let sensitivity = sensitivity.get_f64()?;
 
                 data.iter_mut()
@@ -86,13 +86,14 @@ impl Evaluable for proto::GaussianMechanism {
 
 impl Evaluable for proto::SimpleGeometricMechanism {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
+        println!("arguments geometric {:?}", arguments);
         let epsilon: Vec<f64> = self.privacy_usage.iter().map(|usage| get_epsilon(&usage)).collect::<Result<Vec<f64>>>()?;
 
         let sensitivity = get_argument(&arguments, "sensitivity")?.get_arraynd()?.get_f64()?;
         let count_min = get_argument(&arguments, "count_min")?.get_arraynd()?.get_i64()?;
         let count_max = get_argument(&arguments, "count_max")?.get_arraynd()?.get_i64()?;
 
-        let enforce_constant_time = get_argument(&arguments, "enforce_constant_time")?.get_first_bool()?;
+        let enforce_constant_time = self.enforce_constant_time.clone();
 
         let data = get_argument(&arguments, "data")?.get_arraynd()?.get_i64()?;
 

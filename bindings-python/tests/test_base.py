@@ -72,15 +72,20 @@ def test_dp_linear_stats(run=True):
         imputed = yarrow.ops.impute(clamped)
         resized = yarrow.ops.resize(imputed, n=500)
 
-        # mean = yarrow.ops.dp_mean(
-        #     resized,
-        #     privacy_usage={'epsilon': .5}
-        # )
-        #
-        # variance = yarrow.ops.dp_variance(
-        #     resized,
-        #     privacy_usage={'epsilon': .5}
-        # )
+        mean = yarrow.ops.dp_mean(
+            resized,
+            privacy_usage={'epsilon': .5}
+        )
+
+        variance = yarrow.ops.dp_variance(
+            resized,
+            privacy_usage={'epsilon': .5}
+        )
+
+        sum = yarrow.ops.dp_sum(
+            imputed,
+            privacy_usage={'epsilon': .5}
+        )
 
         # yarrow.ops.dp_covariance(
         #     privacy_usage={'epsilon': .5},
@@ -92,8 +97,10 @@ def test_dp_linear_stats(run=True):
         # )
 
         yarrow.ops.dp_count(
-            resized,
-            privacy_usage={'epsilon': .5}
+            age,
+            privacy_usage={'epsilon': .5},
+            count_min=0,
+            count_max=10000
         )
 
     if run:

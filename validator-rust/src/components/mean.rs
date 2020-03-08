@@ -47,6 +47,9 @@ impl Aggregator for proto::Mean {
         let data_property = properties.get("data")
             .ok_or::<Error>("data must be passed to compute sensitivity".into())?;
 
+        data_property.assert_is_not_aggregated()?;
+        data_property.assert_non_null()?;
+
         let min = data_property.get_min_f64()?;
         let max = data_property.get_max_f64()?;
         let num_records = data_property.get_n()?;

@@ -6,6 +6,12 @@
         "categorical"
       ],
       "type": "Array"
+    }, 
+    "count_min": {
+      "type": "Array"
+    },
+    "count_max": {
+      "type": "Array"
     },
     "by": {
       "nature": [

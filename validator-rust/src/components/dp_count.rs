@@ -21,16 +21,7 @@ impl Component for proto::DpCount {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<Properties> {
-        let mut data_property = properties.get("data")
-            .ok_or("data argument missing from DPCount")?.clone();
-
-        data_property.assert_is_not_aggregated()?;
-        data_property.get_num_columns()?;
-
-        data_property.num_records = data_property.get_categories_lengths()?;
-        data_property.releasable = true;
-
-        Ok(data_property)
+        Err("DPCount is ethereal, and has no property propagation".into())
     }
 
     fn get_names(
@@ -51,12 +42,12 @@ impl Expandable for proto::DpCount {
         component_id: u32,
         maximum_id: u32,
     ) -> Result<(u32, HashMap<u32, proto::Component>)> {
-        let mut current_id = maximum_id.clone();
+        let mut maximum_id = maximum_id.clone();
         let mut graph_expansion: HashMap<u32, proto::Component> = HashMap::new();
 
         // count
-        current_id += 1;
-        let id_count = current_id.clone();
+        maximum_id += 1;
+        let id_count = maximum_id.clone();
         graph_expansion.insert(id_count, proto::Component {
             arguments: hashmap!["data".to_owned() => *component.arguments.get("data").unwrap()],
             variant: Some(proto::component::Variant::Count(proto::Count {})),
@@ -66,7 +57,11 @@ impl Expandable for proto::DpCount {
 
         // noising
         graph_expansion.insert(component_id, proto::Component {
-            arguments: hashmap!["data".to_owned() => id_count],
+            arguments: hashmap![
+                "data".to_owned() => id_count,
+                "count_min".to_owned() => *component.arguments.get("count_min").unwrap(),
+                "count_max".to_owned() => *component.arguments.get("count_max").unwrap()
+            ],
             variant: Some(proto::component::Variant::from(proto::SimpleGeometricMechanism {
                 privacy_usage: self.privacy_usage.clone(),
                 enforce_constant_time: false
@@ -75,7 +70,7 @@ impl Expandable for proto::DpCount {
             batch: component.batch,
         });
 
-        Ok((current_id, graph_expansion))
+        Ok((maximum_id, graph_expansion))
     }
 }
 

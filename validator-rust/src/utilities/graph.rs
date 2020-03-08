@@ -6,10 +6,8 @@ use std::collections::{HashMap, HashSet};
 use crate::proto;
 
 pub fn get_traversal(
-    analysis: &proto::Analysis
+    graph: &HashMap<u32, proto::Component>
 ) -> Result<Vec<u32>> {
-
-    let graph: &HashMap<u32, proto::Component> = &analysis.computation_graph.to_owned().unwrap().value;
 
     // track node parents
     let mut parents = HashMap::<u32, HashSet<u32>>::new();

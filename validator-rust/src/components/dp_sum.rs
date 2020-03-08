@@ -21,18 +21,7 @@ impl Component for proto::DpSum {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<Properties> {
-        let mut data_property = properties.get("data")
-            .ok_or("data argument missing from DPSum")?.clone();
-
-        // check that all properties are satisfied
-        data_property.get_min_f64()?;
-        data_property.get_max_f64()?;
-        data_property.assert_non_null()?;
-
-        data_property.num_records = data_property.get_categories_lengths()?;
-        data_property.releasable = true;
-
-        Ok(data_property)
+        Err("DPSum is ethereal, and has no property propagation".into())
     }
 
     fn get_names(

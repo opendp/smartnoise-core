@@ -20,35 +20,7 @@ impl Component for proto::DpCovariance {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<Properties> {
-        let mut left_property = properties.get("left")
-            .ok_or("left argument missing from DPCovariance")?.clone();
-
-        // check that all properties are satisfied
-        println!("covariance left");
-        let left_n = left_property.get_n()?;
-        left_property.get_min_f64()?;
-        left_property.get_max_f64()?;
-        left_property.assert_non_null()?;
-
-        let right_property = properties.get("right")
-            .ok_or("right argument missing from DPCovariance")?.clone();
-
-        // check that all properties are satisfied
-        println!("covariance right");
-        let right_n = right_property.get_n()?;
-        right_property.get_min_f64()?;
-        right_property.get_max_f64()?;
-        right_property.assert_non_null()?;
-
-        if !left_n.iter().zip(right_n).all(|(left, right)| left == &right) {
-            return Err("n for left and right must be equivalent".into());
-        }
-
-        // TODO: derive proper propagation of covariance property
-        left_property.num_records = (0..left_property.num_columns.unwrap()).map(|_| Some(1)).collect();
-        left_property.releasable = true;
-
-        Ok(left_property)
+        Err("DPCovariance is ethereal, and has no property propagation".into())
     }
 
     fn get_names(

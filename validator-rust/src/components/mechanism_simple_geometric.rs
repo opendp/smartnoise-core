@@ -57,11 +57,14 @@ impl Expandable for proto::SimpleGeometricMechanism {
         // TODO: SECURITY: a user must not be able to define this directly
         if !input_properties.contains_key("sensitivity") {
             // sensitivity literal
-            let aggregator = input_properties.get("data").unwrap().aggregator.clone()
+            let aggregator = input_properties.get("data")
+                .ok_or::<Error>("data must be passed to SimpleGeometricMechanism".into())?
+                .aggregator.clone()
                 .ok_or::<Error>("aggregator must be defined to run SimpleGeometricMechanism".into())?;
             let sensitivity = Value::ArrayND(ArrayND::F64(Array::from(aggregator.component
                 .compute_sensitivity(privacy_definition, &aggregator.properties)
                 .unwrap()).into_dyn()));
+
             current_id += 1;
             let id_sensitivity = current_id.clone();
             graph_expansion.insert(id_sensitivity, get_constant(&sensitivity, &component.batch));

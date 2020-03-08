@@ -30,12 +30,6 @@ impl Component for proto::LaplaceMechanism {
 
         data_property.aggregator = None;
 
-        // check that all properties are satisfied
-        data_property.get_n()?;
-        data_property.get_min_f64()?;
-        data_property.get_max_f64()?;
-        data_property.assert_non_null()?;
-
         data_property.releasable = true;
         Ok(data_property)
     }

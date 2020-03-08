@@ -6,6 +6,12 @@
         "continuous"
       ],
       "type": "Array"
+    },
+    "count_min": {
+      "type": "Array"
+    },
+    "count_max": {
+      "type": "Array"
     }
   },
   "id": "SimpleGeometricMechanism",
@@ -13,6 +19,10 @@
   "options": {
     "privacy_usage": {
       "type": "repeated PrivacyUsage"
+    },
+    "enforce_constant_time": {
+      "type": "bool",
+      "default": "False"
     }
   },
   "return": {

@@ -214,7 +214,7 @@ impl Aggregator for proto::component::Variant {
 
         compute_sensitivity!(
             // INSERT COMPONENT LIST
-            Covariance, Kthrawsamplemoment, Maximum, Mean, Median, Minimum, Sum, Variance
+            Count, Covariance, Kthrawsamplemoment, Maximum, Mean, Median, Minimum, Sum, Variance
         );
 
         Err("sensitivity is not implemented".into())

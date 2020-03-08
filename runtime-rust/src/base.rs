@@ -95,13 +95,14 @@ pub fn execute_graph(analysis: &proto::Analysis,
             maximum_id,
         )?;
 
-        graph_properties.insert(node_id, expansion.properties.unwrap());
         graph.extend(expansion.computation_graph.unwrap().value);
 
         if maximum_id != expansion.maximum_id {
             maximum_id = expansion.maximum_id;
             continue;
         }
+
+        graph_properties.insert(node_id, expansion.properties.unwrap());
 
         traversal.pop();
 

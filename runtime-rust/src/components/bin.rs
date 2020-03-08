@@ -10,7 +10,7 @@ use std::ops::{Div, Add};
 
 impl Evaluable for proto::Bin {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        let inclusive_left: ArrayD<bool> = get_argument(&arguments, "inclusive_left")?.get_arraynd()?.get_bool()?;
+        let inclusive_left: &ArrayD<bool> = get_argument(&arguments, "inclusive_left")?.get_arraynd()?.get_bool()?;
 
         let side = match &self.side {
             i if i == &"left".to_string() => BinSide::Left,

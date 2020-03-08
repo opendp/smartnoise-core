@@ -20,16 +20,7 @@ impl Component for proto::DpMedian {
         public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<Properties> {
-        let mut data_property = properties.get("data")
-            .ok_or("data argument missing from DpMedian")?.clone();
-
-        public_arguments.get("candidates")
-            .ok_or::<Error>("candidates must be defined to compute a DPMedian".into())?;
-
-        data_property.num_records = data_property.get_categories_lengths()?;
-        data_property.releasable = true;
-
-        Ok(data_property)
+        Err("DPMedian is ethereal, and has no property propagation".into())
     }
 
     fn get_names(

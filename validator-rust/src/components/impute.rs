@@ -30,7 +30,7 @@ impl Component for proto::Impute {
 
         // 1. check public arguments (constant n)
         let impute_minimum = match public_arguments.get("min") {
-            Some(min) => min.clone().get_arraynd()?.get_vec_f64(Some(num_columns))?,
+            Some(min) => min.get_arraynd()?.clone().get_vec_f64(Some(num_columns))?,
 
             // 2. then private arguments (for example from another clamped column)
             None => match properties.get("min") {
@@ -44,7 +44,7 @@ impl Component for proto::Impute {
 
         // 1. check public arguments (constant n)
         let impute_maximum = match public_arguments.get("max") {
-            Some(max) => max.clone().get_arraynd()?.get_vec_f64(Some(num_columns))?,
+            Some(max) => max.get_arraynd()?.clone().get_vec_f64(Some(num_columns))?,
 
             // 2. then private arguments (for example from another clamped column)
             None => match properties.get("max") {
