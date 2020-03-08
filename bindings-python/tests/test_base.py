@@ -87,6 +87,51 @@ def test_dp_linear_stats(run=True):
             privacy_usage={'epsilon': .5}
         )
 
+        histogram = yarrow.ops.dp_histogram(
+            resized,
+            edges=[float(i) for i in range(0, 100, 10)],
+            inclusive_left=True,
+            null=-1.,
+            side="left",
+            count_min=0,
+            count_max=2000,
+            privacy_usage={'epsilon': .5}
+        )
+
+        custom_mean = yarrow.ops.laplace_mechanism(
+            yarrow.ops.mean(resized),
+            privacy_usage={'epsilon': .5})
+        custom_minimum = yarrow.ops.laplace_mechanism(
+            yarrow.ops.minimum(imputed),
+            privacy_usage={'epsilon': .5})
+        custom_maximum = yarrow.ops.laplace_mechanism(
+            yarrow.ops.maximum(resized),
+            privacy_usage={'epsilon': .5})
+        custom_quantile = yarrow.ops.laplace_mechanism(
+            yarrow.ops.quantile(resized, quantile=.5),
+            privacy_usage={'epsilon': 500})
+
+        # minimum = yarrow.ops.dp_minimum(
+        #     imputed,
+        #     candidates=None,
+        #     privacy_usage={'epsilon': .5},
+        #     implementation="Laplace"
+        # )
+        #
+        # maximum = yarrow.ops.dp_maximum(
+        #     imputed,
+        #     candidates=None,
+        #     privacy_usage={'epsilon': .5},
+        #     implementation="Laplace"
+        # )
+        #
+        # median = yarrow.ops.dp_median(
+        #     imputed,
+        #     candidates=None,
+        #     privacy_usage={'epsilon': .5},
+        #     implementation="Laplace"
+        # )
+
         # yarrow.ops.dp_covariance(
         #     privacy_usage={'epsilon': .5},
         #     left=resized,
@@ -96,12 +141,12 @@ def test_dp_linear_stats(run=True):
         #     right_n=500
         # )
 
-        yarrow.ops.dp_count(
-            age,
-            privacy_usage={'epsilon': .5},
-            count_min=0,
-            count_max=10000
-        )
+        # yarrow.ops.dp_count(
+        #     age,
+        #     privacy_usage={'epsilon': .5},
+        #     count_min=0,
+        #     count_max=10000
+        # )
 
     if run:
         analysis.release()

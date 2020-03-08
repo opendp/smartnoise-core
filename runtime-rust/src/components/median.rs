@@ -10,7 +10,7 @@ use yarrow_validator::proto;
 impl Evaluable for proto::Median {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
         let data = get_argument(&arguments, "data")?.get_arraynd()?.get_f64()?;
-        Ok(Value::ArrayND(ArrayND::F64(utilities::aggregations::median(&data))))
+        Ok(Value::ArrayND(ArrayND::F64(median(&data))))
     }
 }
 
@@ -31,7 +31,27 @@ impl Evaluable for proto::Median {
 /// println!("{}", median);
 /// assert_eq!(median, arr1(&[8.5]).into_dyn());
 /// ```
-pub fn median(data: &ArrayD<f64>) -> ArrayD<f64> {
+pub fn median(data: &ArrayD<f64>) -> Result<ArrayD<f64>> {
+
+    let data = data.clone();
+
+    // iterate over the generalized columns
+    let means = data.gencolumns().into_iter()
+        .map(|column| {
+            
+            column.iter().fold(std::f64::NEG_INFINITY, |a, &b| a.max(b))
+        }).collect::<Vec<f64>>();
+
+    let array = match data.ndim() {
+        1 => Array::from_shape_vec(vec![], means),
+        2 => Array::from_shape_vec(vec![1 as usize, get_num_columns(&data)? as usize], means),
+        _ => return Err("invalid data shape for Minimum".into())
+    };
+
+    match array {
+        Ok(array) => Ok(array),
+        Err(_) => Err("unable to package Minimum result into an array".into())
+    }
 
     // create vector version of data, get length, and sort it
     let mut data_vec: Vec<f64> = data.clone().into_dimensionality::<Ix1>().unwrap().to_vec();

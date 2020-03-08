@@ -1,17 +1,13 @@
 use crate::errors::*;
 
-
 use std::collections::HashMap;
 
 use crate::{proto, base};
 use crate::hashmap;
 use crate::components::{Component, Accuracy, Expandable, Report};
 
-
 use crate::base::{Properties, NodeProperties, Value};
 use crate::utilities::json::{JSONRelease};
-
-
 
 impl Component for proto::DpSum {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component

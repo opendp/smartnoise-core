@@ -298,44 +298,66 @@ class Analysis(object):
     @staticmethod
     def _serialize_value_proto(value, value_format=None):
 
+        def make_array1d(array):
+
+            data_type = {
+                np.bool: "bool",
+                np.int64: "i64",
+                np.float64: "f64",
+                np.bool_: "bool",
+                np.string_: "string",
+                np.str_: "string"
+            }[array.dtype.type]
+
+            container_type = {
+                np.bool: value_pb2.Array1dBool,
+                np.int64: value_pb2.Array1dI64,
+                np.float64: value_pb2.Array1dF64,
+                np.bool_: value_pb2.Array1dBool,
+                np.string_: value_pb2.Array1dStr,
+                np.str_: value_pb2.Array1dStr
+            }[array.dtype.type]
+
+            return value_pb2.Array1d(**{
+                data_type: container_type(data=list(array))
+            })
+
         if value_format == 'hashmap' or issubclass(type(value), dict):
             return value_pb2.Value(
                 hashmap_string={key: Analysis._serialize_value_proto(value[key]) for key in value}
             )
 
         if value_format == 'jagged':
-            return value_pb2.Value(array_2d_jagged=value_pb2.Array2dJagged(data=[
-                value_pb2.Array2dJagged.Array1dOption(data=column) for column in value
-            ]))
+            if not issubclass(type(value), list):
+                value = [value]
+            if not any(issubclass(type(elem), list) for elem in value):
+                value = [value]
+            value = [elem if issubclass(type(elem), list) else [elem] for elem in value]
+
+            return value_pb2.Value(array_2d_jagged=value_pb2.Array2dJagged(
+                data=[value_pb2.Array1dOption(option=None if column is None else make_array1d(np.array(column))) for
+                      column in value],
+                data_type=value_pb2.Array2dJagged.DataType
+                    .Value({
+                               np.bool: "BOOL",
+                               np.int64: "I64",
+                               np.float64: "F64",
+                               np.bool_: "BOOL",
+                               np.string_: "STRING",
+                               np.str_: "STRING"
+                           }[np.array(value[0]).dtype.type])
+            ))
 
         if value_format is not None and value_format != 'array':
             raise ValueError('format must be either "array", "jagged", "hashmap" or None')
 
-        value = np.array(value)
-
-        data_type = {
-            np.bool: "bool",
-            np.int64: "i64",
-            np.float64: "f64",
-            np.string_: "string",
-            np.str_: "string"
-        }[value.dtype.type]
-
-        container_type = {
-            np.bool: value_pb2.Array1dBool,
-            np.int64: value_pb2.Array1dI64,
-            np.float64: value_pb2.Array1dF64,
-            np.string_: value_pb2.Array1dStr,
-            np.str_: value_pb2.Array1dStr
-        }[value.dtype.type]
+        array = np.array(value)
 
         return value_pb2.Value(
             array_nd=value_pb2.ArrayNd(
-                shape=list(value.shape),
-                order=list(range(value.ndim)),
-                flattened=value_pb2.Array1d(**{
-                    data_type: container_type(data=list(value.flatten()))
-                })
+                shape=list(array.shape),
+                order=list(range(array.ndim)),
+                flattened=make_array1d(array.flatten())
             ))
 
     @staticmethod

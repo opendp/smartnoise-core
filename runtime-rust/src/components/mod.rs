@@ -10,9 +10,12 @@ mod count;
 mod covariance;
 mod impute;
 mod index;
+mod maximum;
 mod materialize;
 mod mean;
 //mod median;
+mod minimum;
+mod quantile;
 mod mechanisms;
 mod resize;
 //mod row_max;
@@ -47,7 +50,9 @@ impl Evaluable for proto::component::Variant {
 
         evaluate!(
             // INSERT COMPONENT LIST
-            Constant, Bin, Cast, Clamp, Count, Covariance, Impute, Index, Materialize, Mean, Laplacemechanism, Gaussianmechanism, Simplegeometricmechanism, Resize, Sum, Variance
+            Constant, Bin, Cast, Clamp, Count, Covariance, Impute, Index, Maximum, Materialize, Mean,
+            Minimum, Quantile, Laplacemechanism, Gaussianmechanism, Simplegeometricmechanism, Resize,
+            Sum, Variance
         );
 
         Err(format!("Component type not implemented: {:?}", self).into())

@@ -7,6 +7,18 @@
       ],
       "type": "Array"
     },
+    "edges": {
+      "type": "Jagged"
+    },
+    "null": {
+      "type": "Array"
+    },
+    "count_min": {
+      "type": "Array"
+    },
+    "count_max": {
+      "type": "Array"
+    },
     "by": {
       "nature": [
         "continuous",
@@ -14,6 +26,13 @@
       ],
       "type": "Array",
       "default": "None"
+    },
+    "inclusive_left": {
+      "nature": [
+        "categorical"
+      ],
+      "type": "Array",
+      "default": "True"
     }
   },
   "id": "DPHistogram",
@@ -21,10 +40,14 @@
   "options": {
     "implementation": {
       "type": "string",
-      "default": "'SimpleGeometric'"
+      "default": "'Laplace'"
     },
     "privacy_usage": {
       "type": "repeated PrivacyUsage"
+    },
+    "side": {
+      "type": "string",
+      "default": "'left'"
     }
   },
   "return": {

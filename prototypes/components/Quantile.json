@@ -7,14 +7,18 @@
       "type": "Array"
     }
   },
-  "id": "Median",
-  "name": "median",
-  "options": {},
+  "id": "Quantile",
+  "name": "quantile",
+  "options": {
+    "quantile": {
+      "type": "double"
+    }
+  },
   "return": {
     "nature": [
       "continuous"
     ],
     "type": "Array"
   },
-  "docstring": "median step"
+  "docstring": "quantile step"
 }

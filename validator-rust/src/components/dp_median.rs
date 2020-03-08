@@ -48,7 +48,9 @@ impl Expandable for proto::DpMedian {
         let id_median = current_id.clone();
         graph_expansion.insert(id_median, proto::Component {
             arguments: hashmap!["data".to_owned() => *component.arguments.get("data").unwrap()],
-            variant: Some(proto::component::Variant::from(proto::Median {})),
+            variant: Some(proto::component::Variant::from(proto::Quantile {
+                quantile: 0.5
+            })),
             omit: true,
             batch: component.batch,
         });

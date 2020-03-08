@@ -1,22 +1,10 @@
 {
   "arguments": {
-    "left": {
+    "data": {
       "nature": [
         "continuous"
       ],
       "type": "Array"
-    },
-    "right": {
-      "nature": [
-        "continuous"
-      ],
-      "type": {
-        "of": [
-          "int",
-          "double"
-        ],
-        "type": "Array"
-      }
     }
   },
   "id": "Maximum",

@@ -99,7 +99,7 @@ impl Value {
     pub fn get_jagged<'a>(&'a self) -> Result<&'a Vector2DJagged> {
         match self {
             Value::Vector2DJagged(jagged) => Ok(jagged),
-            _ => Err("value must be wrapped in an Vector2DJagged".into())
+            _ => Err("value must be wrapped in a Vector2DJagged".into())
         }
     }
 }
@@ -186,9 +186,12 @@ impl ArrayND {
 
 impl Vector2DJagged {
     pub fn get_f64(&self) -> Result<Vec<Vec<f64>>> {
+        self.get_f64_option()?.iter().cloned().collect::<Option<Vec<Vec<f64>>>>()
+            .ok_or::<Error>("not all columns are known in float Vector2DJagged".into())
+    }
+    pub fn get_f64_option<'a>(&'a self) -> Result<&'a Vec<Option<Vec<f64>>>> {
         match self {
-            Vector2DJagged::F64(data) => data.iter().cloned().collect::<Option<Vec<Vec<f64>>>>()
-                .ok_or::<Error>("not all columns are known in float Vector2DJagged".into()),
+            Vector2DJagged::F64(data) => Ok(data),
             _ => Err("expected float type on a non-float Vector2DJagged".into())
         }
     }
@@ -358,6 +361,12 @@ impl Properties {
     }
 }
 
+//enum Sensitivity {
+//    KNorm(u32),
+//    InfNorm,
+//    Utility(Vector1D)
+//}
+
 // properties for each argument for a node
 pub type NodeProperties = HashMap<String, Properties>;
 
@@ -400,7 +409,7 @@ pub fn get_input_properties<T>(
 pub fn propagate_properties(
     analysis: &proto::Analysis,
     release: &proto::Release,
-) -> Result<HashMap<u32, Properties>> {
+) -> Result<(HashMap<u32, Properties>, HashMap<u32, proto::Component>)> {
     // compute properties for every node in the graph
 
     let privacy_definition = analysis.privacy_definition.to_owned().unwrap();
@@ -462,7 +471,7 @@ pub fn propagate_properties(
         };
         graph_properties.insert(node_id.clone(), properties);
     }
-    Ok(graph_properties)
+    Ok((graph_properties, graph))
 }
 
 pub fn standardize_numeric_argument<T: Clone>(value: &ArrayD<T>, length: &i64) -> Result<ArrayD<T>> {
@@ -523,7 +532,7 @@ pub fn standardize_null_argument<T: Clone>(
     }
 
     let mut value: Vec<T> = value.iter().map(|v| match v.len() {
-        i if i == 1 => Ok(v.clone().first().unwrap().clone()),
+        1 => Ok(v.clone().first().unwrap().clone()),
         _ => Err("only one null value may be defined".into())
     }).collect::<Result<Vec<T>>>()?;
 
@@ -593,7 +602,8 @@ pub fn validate_analysis(
 pub fn compute_privacy_usage(
     analysis: &proto::Analysis, release: &proto::Release,
 ) -> Result<proto::PrivacyUsage> {
-    let graph: &HashMap<u32, proto::Component> = &analysis.computation_graph.to_owned().unwrap().value;
+
+    let (graph_properties, graph) = propagate_properties(&analysis, &release)?;
 
     let usage_option = graph.iter()
         // optionally extract the minimum usage between the analysis and release
@@ -616,11 +626,10 @@ pub fn get_component_privacy_usage(
 
     // otherwise return the maximum possible usage allowed to the component
     let mut privacy_usage: Vec<proto::PrivacyUsage> = match component.to_owned().variant? {
-        proto::component::Variant::Dpsum(x) => x.privacy_usage,
-        proto::component::Variant::Dpcount(x) => x.privacy_usage,
-        proto::component::Variant::Dpmean(x) => x.privacy_usage,
-        proto::component::Variant::Dpvariance(x) => x.privacy_usage,
-        proto::component::Variant::Dpmomentraw(x) => x.privacy_usage,
+        proto::component::Variant::Laplacemechanism(x) => x.privacy_usage,
+        proto::component::Variant::Gaussianmechanism(x) => x.privacy_usage,
+        proto::component::Variant::Exponentialmechanism(x) => x.privacy_usage,
+        proto::component::Variant::Simplegeometricmechanism(x) => x.privacy_usage,
         _ => return None
     };
 
@@ -702,9 +711,8 @@ pub fn generate_report(
         .ok_or("the computation graph must be defined in an analysis")?
         .value;
 
-    let graph_properties = propagate_properties(&analysis, &release)?;
+    let (graph_properties, graph_expanded) = propagate_properties(&analysis, &release)?;
     let release = parse_release(&release)?;
-
 
     let release_schemas = graph.iter()
         .filter_map(|(node_id, component)| {

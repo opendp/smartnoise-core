@@ -9,7 +9,7 @@ use crate::components::{Component, Aggregator};
 use crate::base::{Value, Properties, NodeProperties, AggregatorProperties};
 
 
-impl Component for proto::Median {
+impl Component for proto::Quantile {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
         &self,
@@ -18,7 +18,7 @@ impl Component for proto::Median {
         properties: &base::NodeProperties,
     ) -> Result<Properties> {
         let mut data_property = properties.get("data")
-            .ok_or("data must be passed to Median")?.clone();
+            .ok_or("data must be passed to Quantile")?.clone();
 
         // save a snapshot of the state when aggregating
         data_property.aggregator = Some(AggregatorProperties {
@@ -37,7 +37,7 @@ impl Component for proto::Median {
     }
 }
 
-impl Aggregator for proto::Median {
+impl Aggregator for proto::Quantile {
     fn compute_sensitivity(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
@@ -46,6 +46,9 @@ impl Aggregator for proto::Median {
 
         let data_property = properties.get("data")
             .ok_or::<Error>("data must be passed to compute sensitivity".into())?;
+
+        data_property.assert_is_not_aggregated()?;
+        data_property.assert_non_null()?;
 
         let min = data_property.get_min_f64()?;
         let max = data_property.get_max_f64()?;

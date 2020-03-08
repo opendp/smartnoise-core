@@ -1,6 +1,7 @@
 use crate::errors::*;
 
 
+pub mod bin;
 pub mod cast;
 pub mod clamp;
 pub mod constant;
@@ -21,8 +22,8 @@ pub mod index;
 pub mod kth_raw_sample_moment;
 pub mod maximum;
 pub mod materialize;
-pub mod median;
 pub mod minimum;
+pub mod quantile;
 pub mod mean;
 pub mod mechanism_gaussian;
 pub mod mechanism_laplace;
@@ -124,10 +125,10 @@ impl Component for proto::component::Variant {
 
         propagate_property!(
             // INSERT COMPONENT LIST
-            Cast, Clamp, Constant, Count, Covariance, Dpcount, Dpcovariance, Dphistogram, Dpmaximum,
+            Bin, Cast, Clamp, Constant, Count, Covariance, Dpcount, Dpcovariance, Dphistogram, Dpmaximum,
             Dpmean, Dpmedian, Dpminimum, Dpmomentraw, Dpsum, Dpvariance, Impute, Index,
             Kthrawsamplemoment, Materialize, Maximum, Mean, Gaussianmechanism, Laplacemechanism,
-            Simplegeometricmechanism, Median, Minimum, Resize, Rowmin, Sum, Variance
+            Simplegeometricmechanism, Minimum, Quantile, Resize, Rowmin, Sum, Variance
         );
 
         return Err(format!("proto component {:?} is missing its Component trait", self).into())
@@ -214,7 +215,7 @@ impl Aggregator for proto::component::Variant {
 
         compute_sensitivity!(
             // INSERT COMPONENT LIST
-            Count, Covariance, Kthrawsamplemoment, Maximum, Mean, Median, Minimum, Sum, Variance
+            Count, Covariance, Kthrawsamplemoment, Maximum, Mean, Minimum, Quantile, Sum, Variance
         );
 
         Err("sensitivity is not implemented".into())

@@ -65,7 +65,7 @@ message Component {
         Count count = 401;
         Mean mean = 402;
         Variance variance = 403;
-        Median median = 404;
+        Quantile quantile = 404;
         KthRawSampleMoment kthrawsamplemoment = 405;
         Covariance covariance = 406;
         Minimum minimum = 407;
@@ -181,7 +181,9 @@ message Mean {}
 message Variance {
     bool finite_sample_correction = 1;
 }
-message Median {}
+message Quantile {
+    double quantile = 1;
+}
 message KthRawSampleMoment {
     int64 k = 1;
 }

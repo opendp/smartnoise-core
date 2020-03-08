@@ -76,9 +76,9 @@ pub fn resize_float(data: &ArrayD<f64>, n: &i64, distribution: &String,
 
             let synthetic_base = Array::from_elem(synthetic_shape, std::f64::NAN).into_dyn();
 
-            let synthetic = match distribution {
-                i if i == &"Uniform".to_string() => impute_float_uniform(&synthetic_base, &min, &max),
-                i if i == &"Gaussian".to_string() => impute_float_gaussian(
+            let synthetic = match distribution.as_str() {
+                "Uniform" => impute_float_uniform(&synthetic_base, &min, &max),
+                "Gaussian" => impute_float_gaussian(
                         &synthetic_base, &min, &max,
                         &shift.cloned().ok_or::<Error>("shift must be defined for gaussian imputation".into())?,
                         &scale.cloned().ok_or::<Error>("scale must be defined for gaussian imputation".into())?),

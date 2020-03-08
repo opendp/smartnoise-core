@@ -45,12 +45,29 @@ impl Expandable for proto::DpHistogram {
         let mut current_id = maximum_id.clone();
         let mut graph_expansion: HashMap<u32, proto::Component> = HashMap::new();
 
+        let data_id = component.arguments.get("data")
+            .ok_or::<Error>("data is a required argument to DPHistogram".into())?;
+        let edges_id = component.arguments.get("edges")
+            .ok_or::<Error>("edges is a required argument to DPHistogram".into())?;
+        let null_id = component.arguments.get("null")
+            .ok_or::<Error>("null is a required argument to DPHistogram".into())?;
+        let inclusive_left_id = component.arguments.get("inclusive_left")
+            .ok_or::<Error>("inclusive_left is a required argument to DPHistogram".into())?;
+        let count_min_id = component.arguments.get("count_min")
+            .ok_or::<Error>("count_min is a required argument to DPHistogram".into())?;
+        let count_max_id = component.arguments.get("count_max")
+            .ok_or::<Error>("count_max is a required argument to DPHistogram".into())?;
         // TODO: also handle categorical case, which doesn't require binning
         // bin
         current_id += 1;
         let id_bin = current_id.clone();
         graph_expansion.insert(id_bin, proto::Component {
-            arguments: hashmap!["data".to_owned() => *component.arguments.get("data").unwrap()],
+            arguments: hashmap![
+                "data".to_owned() => *data_id,
+                "edges".to_owned() => *edges_id,
+                "null".to_owned() => *null_id,
+                "inclusive_left".to_owned() => *inclusive_left_id
+            ],
             variant: Some(proto::component::Variant::from(proto::Bin {
                 side: self.side.clone()
             })),
@@ -60,7 +77,11 @@ impl Expandable for proto::DpHistogram {
 
         // dp_count
         graph_expansion.insert(component_id, proto::Component {
-            arguments: hashmap!["data".to_owned() => id_bin],
+            arguments: hashmap![
+                "data".to_owned() => id_bin,
+                "count_min".to_owned() => *count_min_id,
+                "count_max".to_owned() => *count_max_id
+            ],
             variant: Some(proto::component::Variant::from(proto::DpCount {
                 privacy_usage: self.privacy_usage.clone(),
                 implementation: self.implementation.clone()
