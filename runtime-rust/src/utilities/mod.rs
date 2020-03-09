@@ -1,5 +1,7 @@
 use std::cmp::Ordering;
+pub mod snapping;
 
+use whitenoise_validator::errors::*;
 use ieee754::Ieee754;
 use ndarray::{ArrayD, Axis, Zip};
 use ndarray::prelude::IxDyn;

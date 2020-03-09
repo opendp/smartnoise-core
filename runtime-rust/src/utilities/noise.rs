@@ -76,6 +76,11 @@ pub fn censored_specific_geom(enforce_constant_time: bool) -> Result<i16> {
 /// # Arguments
 /// * `prob`- The desired probability of success (bit = 1).
 ///
+/// * `shift` - f64, the center of the distribution
+/// * `scale` - f64, the scaling parameter of the distribution
+/// * `min` - f64, the minimum value of random variables pulled from the distribution.
+/// * `max` - f64, the maximum value of random variables pulled from the distribution
+///
 /// # Return
 /// A bit that is 1 with probability "prob"
 ///
@@ -225,18 +230,19 @@ mod test_sample_bit {
 ///
 /// # Arguments
 ///
-/// * `min` - Minimum value of distribution from which we sample.
-/// * `max` - Maximum value of distribution from which we sample.
+/// * `min` - &i64, minimum value of distribution to sample from
+/// * `max` - &i64, maximum value of distribution to sample from
 ///
 /// # Return
 /// Random uniform variable between min and max (inclusive).
 ///
 /// # Example
+///
 /// ```
 /// // returns a uniform draw from the set {0,1,2}
 /// use whitenoise_runtime::utilities::noise::sample_uniform_int;
-/// let n = sample_uniform_int(0, 2);
-/// # n.unwrap();
+/// let n = sample_uniform_int(0, 2)?;
+/// assert!(n == 0 || n == 1 || n == 2);
 /// ```
 ///
 /// ```should_panic
@@ -301,8 +307,8 @@ mod test_sample_uniform_int {
 ///
 /// # Arguments
 ///
-/// `min` - Inclusive minimum of uniform distribution.
-/// `max` - Non-inclusive maximum of uniform distribution.
+/// `min`: f64 minimum of uniform distribution (inclusive)
+/// `max`: f64 maximum of uniform distribution (non-inclusive)
 ///
 /// # Return
 /// Random draw from Unif[min, max).
@@ -636,4 +642,61 @@ pub fn sample_simple_geometric_mechanism(
         let geom: i64 = sample_geometric_censored(1. - alpha, max_trials, enforce_constant_time)?;
         sign * geom
     })
+}
+
+pub fn sample_snapping_noise(mechanism_input: &f64, epsilon: &f64, B: &f64, sensitivity: &f64, precision: &f64) -> f64 {
+    /// Get noise according to the snapping mechanism
+    ///
+    /// # Arguments
+    /// * `mechanism_input` - non-private statistic calculation
+    /// * `epsilon` - desired privacy guarantee
+    /// * `B` - snapping bound
+    /// * `sensitivity` - sensitivity for function to which mechanism is being applied
+    /// * `precision` - amount of arithmetic precision to which we have access
+    ///
+    /// # Returns
+    /// noise according to snapping mechanism
+    ///
+    /// # Example
+    /// ```
+    /// let mechanism_input: f64 = 50.0;
+    /// let epsilon: f64 = 1.0;
+    /// let B: f64 = 100.0;
+    /// let sensitivity: f64 = 1.0/1000.0;
+    /// let precision: f64 = 64.0;
+    /// let snapping_noise = sampling_snapping_noise(&mechanism_input, &epsilon, &B, &sensitivity, &precision);
+    /// println!("snapping noise: {}", snapping_noise);
+    /// ```
+
+    // ensure that precision is sufficient for exact rounding of log, then check that it is supported by the OS
+    let u32_precision = *precision as u32;
+    let u32_precision = std::cmp::min(u32_precision, 118_u32);
+    if u32_precision > rug::float::prec_max() {
+        panic!("Operating system does not support sufficient precision to use the Snapping Mechanism");
+    }
+
+    // scale mechanism input by sensitivity
+    let mechanism_input_scaled = mechanism_input / sensitivity;
+
+    // get parameters
+    let (B_scaled, epsilon_prime, Lambda_prime, Lambda_prime_scaled, m) = snapping::parameter_setup(&epsilon, &B, &sensitivity, &precision);
+
+    // generate random sign and draw from Unif(0,1)
+    let bit: i64 = utilities::get_bytes(1)[0..1].parse().unwrap();
+    let sign = (2*bit-1) as f64;
+    let u_star_sample = sample_uniform(&0., &1.).unwrap();
+
+    // clamp to get inner result
+    let sign_precise = rug::Float::with_val(u32_precision, sign);
+    let scale_precise = rug::Float::with_val(u32_precision, 1.0/epsilon_prime);
+    let log_unif_precise = rug::Float::with_val(u32_precision, u_star_sample.ln());
+    let inner_result: f64 = num::clamp(mechanism_input_scaled, -B_scaled.abs(), B_scaled.abs()) +
+                           (sign_precise * scale_precise * log_unif_precise).to_f64();
+
+    // perform rounding and snapping
+    let inner_result_rounded = snapping::get_closest_multiple_of_Lambda(&inner_result, &m);
+    let private_estimate = num::clamp(sensitivity * inner_result_rounded, -B_scaled.abs(), B_scaled.abs());
+    let snapping_mech_noise = private_estimate - mechanism_input;
+
+    return snapping_mech_noise;
 }
