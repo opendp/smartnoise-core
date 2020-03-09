@@ -70,7 +70,17 @@ def test_dp_linear_stats(run=True):
 
         clamped = yarrow.ops.clamp(age, min=0., max=100.)
         imputed = yarrow.ops.impute(clamped)
-        resized = yarrow.ops.resize(imputed, n=500)
+
+        num_records = yarrow.ops.dp_count(
+            age,
+            privacy_usage={'epsilon': .5},
+            count_min=0,
+            count_max=10000
+        )
+
+        analysis.release()
+
+        resized = yarrow.ops.resize(imputed, n=num_records)
 
         mean = yarrow.ops.dp_mean(
             resized,
@@ -116,6 +126,16 @@ def test_dp_linear_stats(run=True):
             yarrow.ops.quantile(resized, quantile=.5),
             privacy_usage={'epsilon': 500})
 
+        income_clamped = yarrow.ops.clamp(
+            yarrow.ops.cast(dataset_pums['income'], type="FLOAT"),
+            data_min=0., data_max=1000000.)
+
+        income_max = yarrow.ops.laplace_mechanism(
+            yarrow.ops.maximum(income_clamped),
+            privacy_usage={'epsilon': 10})
+
+        sum + custom_minimum * 23.
+
         # minimum = yarrow.ops.dp_minimum(
         #     imputed,
         #     candidates=None,
@@ -146,12 +166,10 @@ def test_dp_linear_stats(run=True):
         #     right_n=500
         # )
 
-        yarrow.ops.dp_count(
-            age,
-            privacy_usage={'epsilon': .5},
-            count_min=0,
-            count_max=10000
-        )
+        # custom_mean + yarrow.ops.divide(
+        #     sum,
+        #     income_clamped,
+        #     right_n=num_records) * 2.
 
     if run:
         analysis.release()
