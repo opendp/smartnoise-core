@@ -23,17 +23,19 @@
 
 \begin{document}
 
-\maketitle 
+\maketitle
 
 \begin{definition}
-The sample mean of database $X$ of size $n$ is 
+The sample mean of database $X$ of size $n$ is
 $$\bar{X} = \frac{1}{n} \sum_{i=1}^n x_i $$
 \end{definition}
 
 \section{Neighboring Definition: Change One}
+
+% l1 sensitivity
 \subsection{$\ell_1$-sensitivity}
 \begin{theorem}
-Say database $X$ has size $n$ and is bounded above by $M$ and bounded below by $m$. Then $\bar{X}$ has $\ell_1$-sensitivity bounded above by 
+Say database $X$ has size $n$ and is bounded above by $M$ and bounded below by $m$. Then $\bar{X}$ has $\ell_1$-sensitivity bounded above by
 $$ \frac{M-m}{n}.$$
 \end{theorem}
 
@@ -46,15 +48,39 @@ Say $X$ and $X'$ are neighboring databases which differ at data-point $x_j$. The
 	&\le \frac{M-m}{n}.
 \end{align*}
 \end{proof}
+
+% l2 sensitivity
 \subsection{$\ell_2$-sensitivity}
+\begin{theorem}
+	Say database $X$ has size $n$ and is bounded above by $M$ and bounded below by $m$.
+	Then $\bar{X}$ has $\ell_2$-sensitivity bounded above by
+	% $$ \frac{M-m}{n}. $$
+\end{theorem}
+
+\begin{proof}
+	Say $X$ and $X'$ are neighboring databases which differ only at index $j$. Then
+	\begin{align*}
+		\Delta{\bar{X}} &= \max_{X,X'} (\bar{X} - \bar{X}')^2 \\
+						&= \max_{X,X'} \frac{1}{n^2} \left(
+								\left( \sum_{i \in [n] | i \neq j} x_i \right) + x_j -
+								\left( \sum_{i \in [n] | i \neq j} x'_i \right) - x'_j
+							\right)^2 \\
+						&= \max_{X,X'} \frac{1}{n^2} (x_j - x'_j)^2 \\
+						&\leq \frac{(M-m)^2}{n^2} \\
+						&= \left( \frac{M-m}{n} \right)^2
+	\end{align*}
+\end{proof}
 
 \section{Neighboring Definition: Add/Drop One}
 \subsection{$\ell_1$-sensitivity}
 
 \begin{theorem}
-Say database $X$ has size $n$ and is bounded above by $M$ and bounded below by $m$. Then $\bar{X}$ has $\ell_1$-sensitivity bounded above by 
-$$ \frac{M-m}{n}.$$
+Say database $X$ has size $n \geq 2$ and has elements bounded above by $M$ and bounded below by $m$. Then $\bar{X}$ has $\ell_1$-sensitivity bounded above by
+$$ \frac{M-m}{n}. $$
 \end{theorem}
+
+% TODO: CC is a little confused by the notation here (calling it x_n and then x), particularly because x_n is not the
+%       element in the final position in the "add one" model
 
 \begin{proof}
 WLOG assume point being added/subtracted is $x_n$.
@@ -77,9 +103,43 @@ $X' = X\textbackslash\{x\}$
 	&\le \frac{\left\vert M-m\right\vert}{n}
 \end{align*}
 \end{proof}
+
+% l2 sensitivity
 \subsection{$\ell_2$-sensitivity}
 
-\bibliographystyle{alpha}
-\bibliography{mean}
+\begin{theorem}
+	Say database $X$ has size $n \geq 2$ and has elements bounded above by $M$ and bounded below by $m$.
+	Then $\bar{X}$ has $\ell_2$-sensitivity bounded above by
+	$$ \left( \frac{M-m}{n} \right)^2. $$
+\end{theorem}
+
+\begin{proof}
+	We must consider both adding and removing an element from $X$. \newline
+
+	Adding an element: \newline
+	Let $X' = X \cup x'_{n+1}$. Then,
+	\begin{align*}
+		\Delta \bar{X} &= \max_{X,X'} (\bar{X} - \bar{X}')^2 \\
+					   &= \max_{X,X'} \left( \frac{1}{n}\sum_{i=1}^{n}x_i - \frac{1}{n+1}\sum_{i=1}^{n+1}x'_i \right)^2 \\
+					   &= \max_{X,X'} \left( \left(\frac{1}{n}\sum_{i=1}^{n}x_i\right) - \left(\frac{1}{n+1}\sum_{i=1}^{n}x'_i\right) - \frac{x'_{n+1}}{n+1} \right)^2 \\
+					   &= \max_{X,X'} \left( \frac{ \left(\sum_{i=1}^{n}x_i\right) - nx'_{n+1} }{n(n+1)} \right)^2 \\
+					   &= \left( \frac{nM - nm}{n(n+1)} \right)^2 \\
+					   &= \left( \frac{M - m}{n+1} \right)^2.
+	\end{align*}
+
+	Removing an element: \newline
+	Let $X' = X \setminus \{ x_{n} \}$. Then,
+	\begin{align*}
+		\Delta \bar{X} &= \max_{X,X'} (\bar{X} - \bar{X}')^2 \\
+					   &= \max_{X,X'} \left( \frac{1}{n}\sum_{i=1}^{n}x_i - \frac{1}{n-1}\sum_{i=1}^{n-1}x'_i \right)^2 \\
+					   &= \max_{X,X'} \left( \left( \frac{1}{n}\sum_{i=1}^{n-1}x_i \right) + \frac{x_n}{n} - \left( \frac{1}{n-1}\sum_{i=1}^{n-1}x'_i \right) \right)^2 \\
+					   &= \max_{X,X'} \left( \frac{(n-1)x_n - \sum_{i=1}^{n-1}x_i }{n(n-1)} \right)^2 \\
+					   &= \left( \frac{(n-1)M - (n-1)m}{n(n-1)} \right)^2 \\
+					   &= \left( \frac{M-m}{n} \right)^2.
+	\end{align*}
+\end{proof}
+
+% \bibliographystyle{alpha}
+% \bibliography{mean}
 
 \end{document}
