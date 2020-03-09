@@ -86,11 +86,7 @@ We will give a general form of the algorithm, and then talk about implementation
 		\State Find the infinite binary expansion of $p$, which we call $b = (b_1, b_2, \hdots,)_2$.
 		Note that $p = \sum_{i=1}^{\infty}\frac{b_i}{2^i}$.
 		\State Toss an unbiased coin until the first instance of ``heads''. Call the (1-based) index where this occurred $k$.
-		\If {$b_k = 1$}
-			\State return $1$
-		\Else
-			\State return $0$
-		\EndIf
+		\State return $b_k$
 	\end{algorithmic}
 \end{algorithm}
 Let's first show that this procedure gives the correct expectation:
@@ -156,8 +152,7 @@ a censored distribution would be to generate samples from a probability distribu
 typically would, and then clamp samples that fall outside of your bounds to the closest element
 inside your bounds.
 
-
-
 \bibliographystyle{alpha}
 \bibliography{noise}
+
 \end{document}
