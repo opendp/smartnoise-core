@@ -51,6 +51,32 @@ Say $X$ and $X'$ are neighboring databases which differ at data-point $x_j$. The
 \section{Neighboring Definition: Add/Drop One}
 \subsection{$\ell_1$-sensitivity}
 
+\begin{theorem}
+Say database $X$ has size $n$ and is bounded above by $M$ and bounded below by $m$. Then $\bar{X}$ has $\ell_1$-sensitivity bounded above by 
+$$ \frac{M-m}{n}.$$
+\end{theorem}
+
+\begin{proof}
+WLOG assume point being added/subtracted is $x_n$.
+
+Adding a point:
+$X' = X \cup {x}$
+\begin{align*}
+\left \vert \bar{X} - \bar{X}' \right\vert &= \left\vert \frac{1}{n} \sum_{i=1}^n x_i - \frac{1}{n+1} \sum_{i=1}^{n+1} x_i \right\vert \\
+	&= \left\vert \left(\frac{1}{n} - \frac{1}{n+1}\right) \sum_{i=1}^n x_i - \frac{x}{n+1}\right\vert \\
+	&= \frac{1}{n+1} \left\vert \frac{1}{n} \sum_{i=1}^n x_i - x \right\vert \\
+	&\le \frac{ \left\vert M - m \right\vert}{n+1}
+\end{align*}
+
+Taking a point away:
+$X' = X\textbackslash\{x\}$
+\begin{align*}
+\left \vert \bar{X} - \bar{X}' \right\vert &= \left\vert \frac{1}{n-1} \sum_{i=1}^{n-1} x_i - \frac{1}{n} \sum_{i=1}^n x_i \right\vert \\
+	&= \left\vert \left(\frac{1}{n-1} - \frac{1}{n}\right) \sum_{i=1}^{n-1} x_i - \frac{x}{n}\right\vert \\
+	&= \frac{1}{n} \left\vert \frac{1}{n-1} \sum_{i=1}^{n-1} x_i  - x \right\vert \\
+	&\le \frac{\left\vert M-m\right\vert}{n}
+\end{align*}
+\end{proof}
 \subsection{$\ell_2$-sensitivity}
 
 \bibliographystyle{alpha}
