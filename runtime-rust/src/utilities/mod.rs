@@ -1,4 +1,5 @@
 use std::cmp::Ordering;
+pub mod snapping;
 
 use whitenoise_validator::errors::*;
 use ieee754::Ieee754;
