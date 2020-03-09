@@ -9,12 +9,13 @@ use std::{cmp, f64::consts};
 
 
 use crate::utilities::utilities;
+use crate::utilities::snapping;
 
 /// Sample from Laplace distribution centered at shift and scaled by scale
 ///
 /// # Arguments
-/// 
-/// * `shift` - f64, the center of the Laplace distribution 
+///
+/// * `shift` - f64, the center of the Laplace distribution
 /// * `scale` - f64, the scaling parameter of the Laplace distribution
 ///
 /// # Example
@@ -30,13 +31,13 @@ pub fn sample_laplace(shift: f64, scale: f64) -> Result<f64> {
 /// Sample from Gaussian distribution centered at shift and scaled by scale
 ///
 /// # Arguments
-/// 
-/// * `shift` - f64, the center of the Laplace distribution 
+///
+/// * `shift` - f64, the center of the Laplace distribution
 /// * `scale` - f64, the scaling parameter of the Laplace distribution
 ///
 /// Return
 /// f64 Gaussian random variable centered at shift and scaled at scale
-/// 
+///
 /// # Example
 /// ```
 /// use yarrow_runtime::utilities::noise::sample_gaussian;
@@ -57,7 +58,7 @@ pub fn sample_gaussian(shift: &f64, scale: &f64) -> Result<f64> {
 /// * `scale` - f64, the scaling parameter of the distribution
 /// * `min` - f64, the minimum value of random variables pulled from the distribution.
 /// * `max` - f64, the maximum value of random variables pulled from the distribution
-/// 
+///
 /// # Return
 /// f64 random gaussian random variable truncated to [min,max]
 ///
@@ -84,8 +85,8 @@ pub fn sample_gaussian_truncated(min: &f64, max: &f64, shift: &f64, scale: &f64)
 }
 
 /// Sample from uniform integers between min and max (inclusive)
-/// # Arguments 
-/// 
+/// # Arguments
+///
 /// * `min` - &i64, minimum value of distribution to sample from
 /// * `max` - &i64, maximum value of distribution to sample from
 ///
@@ -93,7 +94,7 @@ pub fn sample_gaussian_truncated(min: &f64, max: &f64, shift: &f64, scale: &f64)
 /// i64 random uniform variable between min and max (inclusive)
 ///
 /// # Example
-/// ``` 
+/// ```
 /// use yarrow_runtime::utilities::noise::sample_uniform_int;
 /// let n:i64 = sample_uniform_int(&0, &2)?;
 /// assert!(n == 0 || n == 1 || n == 2);
@@ -152,10 +153,10 @@ pub fn sample_uniform_int(min: &i64, max: &i64) -> Result<i64> {
 /// by generating a 52-bit mantissa uniformly at random.
 ///
 /// # Arguments
-/// 
+///
 /// `min`: f64 minimum of uniform distribution (inclusive)
 /// `max`: f64 maximum of unifrom distribution (non-inclusive)
-/// 
+///
 /// # Return
 /// f64 uniform random bit from [min, max)
 ///
@@ -203,7 +204,7 @@ pub fn sample_uniform(min: &f64, max: &f64) -> Result<f64> {
 /// a bit that is 1 with probability "prob"
 ///
 /// # Examples
-/// 
+///
 /// ```
 /// use yarrow_runtime::utilities::noise::sample_bit;
 /// let n:i64 = sample_bit(&0.7);
@@ -361,4 +362,61 @@ pub fn sample_simple_geometric_mechanism(scale: &f64, min: &i64, max: &i64, enfo
         let geom: i64 = sample_geometric_censored(&(1. - alpha), &max_trials, enforce_constant_time)?;
         return Ok(sign * geom);
     }
+}
+
+pub fn sample_snapping_noise(mechanism_input: &f64, epsilon: &f64, B: &f64, sensitivity: &f64, precision: &f64) -> f64 {
+    /// Get noise according to the snapping mechanism
+    ///
+    /// # Arguments
+    /// * `mechanism_input` - non-private statistic calculation
+    /// * `epsilon` - desired privacy guarantee
+    /// * `B` - snapping bound
+    /// * `sensitivity` - sensitivity for function to which mechanism is being applied
+    /// * `precision` - amount of arithmetic precision to which we have access
+    ///
+    /// # Returns
+    /// noise according to snapping mechanism
+    ///
+    /// # Example
+    /// ```
+    /// let mechanism_input: f64 = 50.0;
+    /// let epsilon: f64 = 1.0;
+    /// let B: f64 = 100.0;
+    /// let sensitivity: f64 = 1.0/1000.0;
+    /// let precision: f64 = 64.0;
+    /// let snapping_noise = sampling_snapping_noise(&mechanism_input, &epsilon, &B, &sensitivity, &precision);
+    /// println!("snapping noise: {}", snapping_noise);
+    /// ```
+
+    // ensure that precision is sufficient for exact rounding of log, then check that it is supported by the OS
+    let u32_precision = *precision as u32;
+    let u32_precision = std::cmp::min(u32_precision, 118_u32);
+    if u32_precision > rug::float::prec_max() {
+        panic!("Operating system does not support sufficient precision to use the Snapping Mechanism");
+    }
+
+    // scale mechanism input by sensitivity
+    let mechanism_input_scaled = mechanism_input / sensitivity;
+
+    // get parameters
+    let (B_scaled, epsilon_prime, Lambda_prime, Lambda_prime_scaled, m) = snapping::parameter_setup(&epsilon, &B, &sensitivity, &precision);
+
+    // generate random sign and draw from Unif(0,1)
+    let bit: i64 = utilities::get_bytes(1)[0..1].parse().unwrap();
+    let sign = (2*bit-1) as f64;
+    let u_star_sample = sample_uniform(&0., &1.).unwrap();
+
+    // clamp to get inner result
+    let sign_precise = rug::Float::with_val(u32_precision, sign);
+    let scale_precise = rug::Float::with_val(u32_precision, 1.0/epsilon_prime);
+    let log_unif_precise = rug::Float::with_val(u32_precision, u_star_sample.ln());
+    let inner_result: f64 = num::clamp(mechanism_input_scaled, -B_scaled.abs(), B_scaled.abs()) +
+                           (sign_precise * scale_precise * log_unif_precise).to_f64();
+
+    // perform rounding and snapping
+    let inner_result_rounded = snapping::get_closest_multiple_of_Lambda(&inner_result, &m);
+    let private_estimate = num::clamp(sensitivity * inner_result_rounded, -B_scaled.abs(), B_scaled.abs());
+    let snapping_mech_noise = private_estimate - mechanism_input;
+
+    return snapping_mech_noise;
 }
