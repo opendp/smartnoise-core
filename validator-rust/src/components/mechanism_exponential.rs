@@ -11,7 +11,7 @@ use crate::components::{Component, Expandable};
 use crate::base::{Value, Properties, NodeProperties, ArrayND, get_constant, Sensitivity};
 use ndarray::Array;
 
-impl Component for proto::GaussianMechanism {
+impl Component for proto::ExponentialMechanism {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
         &self,
@@ -20,13 +20,14 @@ impl Component for proto::GaussianMechanism {
         properties: &base::NodeProperties,
     ) -> Result<Properties> {
         let mut data_property = properties.get("data")
-            .ok_or("data must be passed to GaussianMechanism")?.clone();
+            .ok_or("data must be passed to ExponentialMechanism")?.clone();
 
         let aggregator = data_property.aggregator.clone()
-            .ok_or::<Error>("aggregator must be defined to run GaussianMechanism".into())?;
+            .ok_or::<Error>("aggregator must be defined to run ExponentialMechanism".into())?;
 
         // sensitivity must be computable
-        aggregator.component.compute_sensitivity(&privacy_definition, &aggregator.properties, &Sensitivity::KNorm(2))?;
+        aggregator.component.compute_sensitivity(&privacy_definition, &aggregator.properties, &Sensitivity::Exponential)?;
+
 
         data_property.releasable = true;
         Ok(data_property)
@@ -41,7 +42,7 @@ impl Component for proto::GaussianMechanism {
 }
 
 
-impl Expandable for proto::GaussianMechanism {
+impl Expandable for proto::ExponentialMechanism {
     fn expand_graph(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
@@ -59,7 +60,7 @@ impl Expandable for proto::GaussianMechanism {
             let aggregator = input_properties.get("data").unwrap().aggregator.clone()
                 .ok_or::<Error>("aggregator must be defined to run GaussianMechanism".into())?;
             let sensitivity = Value::ArrayND(ArrayND::F64(Array::from(aggregator.component
-                .compute_sensitivity(privacy_definition, &aggregator.properties, &Sensitivity::KNorm(2))
+                .compute_sensitivity(privacy_definition, &aggregator.properties, &Sensitivity::Exponential)
                 .unwrap()).into_dyn()));
             current_id += 1;
             let id_sensitivity = current_id.clone();

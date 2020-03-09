@@ -8,7 +8,7 @@ use crate::components::Aggregator;
 use crate::{proto, base};
 
 use crate::components::{Component, Expandable};
-use crate::base::{Value, Properties, NodeProperties, ArrayND, get_constant};
+use crate::base::{Value, Properties, NodeProperties, ArrayND, get_constant, Sensitivity};
 use ndarray::Array;
 
 impl Component for proto::SimpleGeometricMechanism {
@@ -26,7 +26,7 @@ impl Component for proto::SimpleGeometricMechanism {
             .ok_or::<Error>("aggregator must be defined to run SimpleGeometricMechanism".into())?;
 
         // sensitivity must be computable
-        aggregator.component.compute_sensitivity(&privacy_definition, &aggregator.properties)?;
+        aggregator.component.compute_sensitivity(&privacy_definition, &aggregator.properties, &Sensitivity::KNorm(1))?;
 
         data_property.aggregator = None;
         data_property.releasable = true;
@@ -62,7 +62,7 @@ impl Expandable for proto::SimpleGeometricMechanism {
                 .aggregator.clone()
                 .ok_or::<Error>("aggregator must be defined to run SimpleGeometricMechanism".into())?;
             let sensitivity = Value::ArrayND(ArrayND::F64(Array::from(aggregator.component
-                .compute_sensitivity(privacy_definition, &aggregator.properties)
+                .compute_sensitivity(privacy_definition, &aggregator.properties, &Sensitivity::KNorm(1))
                 .unwrap()).into_dyn()));
 
             current_id += 1;

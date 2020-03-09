@@ -2,7 +2,7 @@ use yarrow_validator::errors::*;
 
 use crate::components::Evaluable;
 use crate::base::NodeArguments;
-use yarrow_validator::base::{Value, ArrayND};
+use yarrow_validator::base::{Value, ArrayND, get_argument};
 use yarrow_validator::proto;
 
 
@@ -74,7 +74,7 @@ impl Evaluable for proto::Power {
     }
 }
 
-impl Evaluable for proto::Negate {
+impl Evaluable for proto::Negative {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
         match get_argument(&arguments, "data")? {
             Value::ArrayND(data) => match data {

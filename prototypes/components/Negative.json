@@ -5,8 +5,8 @@
       "type": "Array"
     }
   },
-  "id": "Negate",
-  "name": "negate",
+  "id": "Negative",
+  "name": "negative",
   "options": {},
   "return": {
     "nature": [
@@ -14,5 +14,5 @@
     ],
     "type": "Array"
   },
-  "docstring": "negate step"
+  "docstring": "negative step"
 }

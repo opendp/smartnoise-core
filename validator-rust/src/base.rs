@@ -361,11 +361,11 @@ impl Properties {
     }
 }
 
-//enum Sensitivity {
-//    KNorm(u32),
-//    InfNorm,
-//    Utility(Vector1D)
-//}
+pub enum Sensitivity {
+    KNorm(u32),
+    InfNorm,
+    Exponential
+}
 
 // properties for each argument for a node
 pub type NodeProperties = HashMap<String, Properties>;

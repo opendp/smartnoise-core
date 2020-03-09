@@ -46,7 +46,7 @@ message Component {
         LessThan lessthan = 272;
         And and = 273;
         Or or = 274;
-        Negate negate = 275;
+        Negative negative = 275;
 
         // high level components
         DPSum dpsum = 300;
@@ -127,7 +127,7 @@ message GreaterThan {}
 message LessThan {}
 message And {}
 message Or {}
-message Negate {}
+message Negative {}
 
 // high level components
 message DPSum {

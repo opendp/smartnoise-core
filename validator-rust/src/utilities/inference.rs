@@ -24,7 +24,7 @@ pub fn infer_num_columns(value: &Value) -> Result<Option<i64>> {
         Value::ArrayND(array) => {
             let shape = get_shape(&array);
             match shape.len() {
-                0 => Ok(None),
+                0 => Ok(Some(1)),
                 1 => Ok(Some(shape[0])),
                 2 => Ok(Some(shape[1])),
                 _ => Err("arrays may have max dimensionality of 2".into())
@@ -44,7 +44,7 @@ pub fn infer_num_rows(value: &Value) -> Result<Vec<Option<i64>>> {
         Value::ArrayND(array) => {
             let shape = get_shape(array);
             match shape.len() {
-                0 => Ok(vec![None]),
+                0 => Ok(vec![Some(1)]),
                 1 => Ok((0..shape[0]).collect::<Vec<i64>>().iter().map(|_| Some(1)).collect()),
                 2 => Ok((0..shape[1]).collect::<Vec<i64>>().iter().map(|_| Some(shape[0])).collect()),
                 _ => Err("arrays may have max dimensionality of 2".into())
@@ -315,8 +315,11 @@ pub fn infer_nullity(_value: &Value) -> Result<bool> {
     Ok(true)
 }
 
-pub fn infer_c_stability(_value: &Value) -> Result<Vec<f64>> {
-    Ok(vec![])
+pub fn infer_c_stability(value: &Value) -> Result<Vec<f64>> {
+    Ok(match infer_num_columns(&value)? {
+        Some(num_columns) => (0..num_columns).map(|_| 1.).collect(),
+        None => Vec::new()
+    })
 }
 
 pub fn infer_property(value: &Value) -> Result<Properties> {

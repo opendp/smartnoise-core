@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use crate::{proto, base};
 
 use crate::components::{Component, Aggregator};
-use crate::base::{Value, Properties, NodeProperties, AggregatorProperties, Vector2DJagged, standardize_categorical_argument};
+use crate::base::{Value, Properties, NodeProperties, AggregatorProperties, Vector2DJagged, standardize_categorical_argument, Sensitivity};
 
 impl Component for proto::Count {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
@@ -20,13 +20,16 @@ impl Component for proto::Count {
             .ok_or("data must be passed to Count")?.clone();
 
         data_property.assert_is_not_aggregated()?;
-        data_property.num_records = data_property.get_categories_lengths()?;
 
         // save a snapshot of the state when aggregating
         data_property.aggregator = Some(AggregatorProperties {
             component: proto::component::Variant::from(self.clone()),
             properties: properties.clone()
         });
+
+        data_property.num_records = data_property.get_categories_lengths()?;
+        data_property.nature = None;
+
         Ok(data_property)
     }
 
@@ -43,6 +46,7 @@ impl Aggregator for proto::Count {
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
+        sensitivity_type: &Sensitivity
     ) -> Result<Vec<f64>> {
         let data_property = properties.get("data")
             .ok_or::<Error>("data must be passed to compute sensitivity".into())?;
@@ -51,27 +55,36 @@ impl Aggregator for proto::Count {
 
         let num_columns = data_property.get_num_columns()?;
 
-        // if n is set, and the number of categories is 2, then sensitivity is 1.
-        // Otherwise, sensitivity is 2 (changing one person can alter two bins)
-        Ok(match data_property.get_n() {
-            // known n
-            Ok(_num_records) => match data_property.get_categories() {
-                // by known categories
-                Ok(categories) => get_lengths(&categories).iter()
-                    .map(|column_length| if column_length <= &2 {1.} else {2.})
-                    .collect(),
+        match sensitivity_type {
 
-                // categories not set (useless: noisy estimate of number of rows, when number of rows is known)
-                Err(_) => (0..num_columns).map(|_| 1.).collect()
+            Sensitivity::KNorm(k) => {
+                if k != &1 {
+                    return Err("Count sensitivity is only implemented for KNorm of 1".into())
+                }
+                // if n is set, and the number of categories is 2, then sensitivity is 1.
+                // Otherwise, sensitivity is 2 (changing one person can alter two bins)
+                Ok(match data_property.get_n() {
+                    // known n
+                    Ok(_num_records) => match data_property.get_categories() {
+                        // by known categories
+                        Ok(categories) => get_lengths(&categories).iter()
+                            .map(|column_length| if column_length <= &2 {1.} else {2.})
+                            .collect(),
+
+                        // categories not set (useless: noisy estimate of number of rows, when number of rows is known)
+                        Err(_) => (0..num_columns).map(|_| 1.).collect()
+                    },
+                    // unknown n
+                    Err(_) => match data_property.get_categories() {
+                        // by known categories
+                        Ok(_categories) => (0..num_columns).map(|_| 2.).collect(),
+                        // categories not set (estimate of number of rows)
+                        Err(_) => (0..num_columns).map(|_| 1.).collect(),
+                    }
+                })
             },
-            // unknown n
-            Err(_) => match data_property.get_categories() {
-                // by known categories
-                Ok(_categories) => (0..num_columns).map(|_| 2.).collect(),
-                // categories not set (estimate of number of rows)
-                Err(_) => (0..num_columns).map(|_| 1.).collect(),
-            }
-        })
+            _ => return Err("Count sensitivity is only implemented for KNorm of 1".into())
+        }
     }
 }
 

@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use crate::{proto, base};
 
 use crate::components::{Component, Aggregator};
-use crate::base::{Value, Properties, NodeProperties, AggregatorProperties};
+use crate::base::{Value, Properties, NodeProperties, AggregatorProperties, Sensitivity};
 
 impl Component for proto::Covariance {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
@@ -79,45 +79,56 @@ impl Aggregator for proto::Covariance {
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
+        sensitivity_type: &Sensitivity
     ) -> Result<Vec<f64>> {
         let mut left_property = properties.get("left")
             .ok_or("left argument missing from DPCovariance")?.clone();
 
-        // check that all properties are satisfied
-        println!("covariance left");
-        let left_n = left_property.get_n()?;
-        left_property.get_min_f64()?;
-        left_property.get_max_f64()?;
-        left_property.assert_non_null()?;
 
-        let right_property = properties.get("right")
-            .ok_or("right argument missing from DPCovariance")?.clone();
+        match sensitivity_type {
+            Sensitivity::KNorm(k) => {
+                if k != &1 {
+                    return Err("Covariance sensitivity is only implemented for KNorm of 1".into())
+                }
 
-        // check that all properties are satisfied
-        println!("covariance right");
-        let right_n = right_property.get_n()?;
-        right_property.get_min_f64()?;
-        right_property.get_max_f64()?;
-        right_property.assert_non_null()?;
+                // check that all properties are satisfied
+                println!("covariance left");
+                let left_n = left_property.get_n()?;
+                left_property.get_min_f64()?;
+                left_property.get_max_f64()?;
+                left_property.assert_non_null()?;
 
-        if !left_n.iter().zip(right_n).all(|(left, right)| left == &right) {
-            return Err("n for left and right must be equivalent".into());
+                let right_property = properties.get("right")
+                    .ok_or("right argument missing from DPCovariance")?.clone();
+
+                // check that all properties are satisfied
+                println!("covariance right");
+                let right_n = right_property.get_n()?;
+                right_property.get_min_f64()?;
+                right_property.get_max_f64()?;
+                right_property.assert_non_null()?;
+
+                if !left_n.iter().zip(right_n).all(|(left, right)| left == &right) {
+                    return Err("n for left and right must be equivalent".into());
+                }
+
+                // TODO: derive proper propagation of covariance property
+                left_property.num_records = (0..left_property.num_columns.unwrap()).map(|_| Some(1)).collect();
+                left_property.releasable = true;
+
+                // TODO: cross-covariance
+                let data_property = properties.get("data")
+                    .ok_or::<Error>("data must be passed to compute sensitivity".into())?;
+
+                let min = data_property.get_min_f64()?;
+                let max = data_property.get_max_f64()?;
+
+                Ok(min.iter()
+                    .zip(max)
+                    .map(|(min, max)| (max - min) as f64)
+                    .collect())
+            },
+            _ => return Err("Covariance sensitivity is only implemented for KNorm of 1".into())
         }
-
-        // TODO: derive proper propagation of covariance property
-        left_property.num_records = (0..left_property.num_columns.unwrap()).map(|_| Some(1)).collect();
-        left_property.releasable = true;
-
-        // TODO: cross-covariance
-        let data_property = properties.get("data")
-            .ok_or::<Error>("data must be passed to compute sensitivity".into())?;
-
-        let min = data_property.get_min_f64()?;
-        let max = data_property.get_max_f64()?;
-
-        Ok(min.iter()
-            .zip(max)
-            .map(|(min, max)| (max - min) as f64)
-            .collect())
     }
 }

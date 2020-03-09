@@ -21,7 +21,7 @@ mod resize;
 //mod row_max;
 //mod row_min;
 mod sum;
-//mod transform;
+mod transform;
 mod variance;
 
 use yarrow_validator::proto;
@@ -52,7 +52,8 @@ impl Evaluable for proto::component::Variant {
             // INSERT COMPONENT LIST
             Constant, Bin, Cast, Clamp, Count, Covariance, Impute, Index, Maximum, Materialize, Mean,
             Minimum, Quantile, Laplacemechanism, Gaussianmechanism, Simplegeometricmechanism, Resize,
-            Sum, Variance
+            Sum, Variance,
+            Add, Subtract, Divide, Multiply, Power, Negative
         );
 
         Err(format!("Component type not implemented: {:?}", self).into())

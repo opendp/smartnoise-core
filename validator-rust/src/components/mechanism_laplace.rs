@@ -8,7 +8,7 @@ use crate::components::Aggregator;
 use crate::{proto, base};
 
 use crate::components::{Component, Expandable};
-use crate::base::{Value, Properties, NodeProperties, ArrayND, get_constant};
+use crate::base::{Value, Properties, NodeProperties, ArrayND, get_constant, Sensitivity};
 use ndarray::Array;
 
 impl Component for proto::LaplaceMechanism {
@@ -26,7 +26,7 @@ impl Component for proto::LaplaceMechanism {
             .ok_or::<Error>("aggregator must be defined to run LaplaceMechanism".into())?;
 
         // sensitivity must be computable
-        aggregator.component.compute_sensitivity(&privacy_definition, &aggregator.properties)?;
+        aggregator.component.compute_sensitivity(&privacy_definition, &aggregator.properties, &Sensitivity::KNorm(1))?;
 
         data_property.aggregator = None;
 
@@ -61,7 +61,7 @@ impl Expandable for proto::LaplaceMechanism {
             let aggregator = input_properties.get("data").unwrap().aggregator.clone()
                 .ok_or::<Error>("aggregator must be defined to run LaplaceMechanism".into())?;
             let sensitivity = Value::ArrayND(ArrayND::F64(Array::from(aggregator.component
-                .compute_sensitivity(privacy_definition, &aggregator.properties)
+                .compute_sensitivity(privacy_definition, &aggregator.properties, &Sensitivity::KNorm(1))
                 .unwrap()).into_dyn()));
             current_id += 1;
             let id_sensitivity = current_id.clone();

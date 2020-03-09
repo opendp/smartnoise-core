@@ -1,6 +1,7 @@
 use crate::errors::*;
 
 
+pub mod transforms;
 pub mod bin;
 pub mod cast;
 pub mod clamp;
@@ -25,6 +26,7 @@ pub mod materialize;
 pub mod minimum;
 pub mod quantile;
 pub mod mean;
+pub mod mechanism_exponential;
 pub mod mechanism_gaussian;
 pub mod mechanism_laplace;
 pub mod mechanism_simple_geometric;
@@ -35,7 +37,7 @@ pub mod variance;
 
 use std::collections::HashMap;
 
-use crate::base::{Value, Properties, NodeProperties};
+use crate::base::{Value, Properties, NodeProperties, Sensitivity};
 use crate::proto;
 use crate::utilities::json::{JSONRelease};
 use crate::hashmap;
@@ -72,6 +74,7 @@ pub trait Aggregator {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
+        sensitivity_type: &Sensitivity
     ) -> Result<Vec<f64>>;
 }
 
@@ -127,8 +130,10 @@ impl Component for proto::component::Variant {
             // INSERT COMPONENT LIST
             Bin, Cast, Clamp, Constant, Count, Covariance, Dpcount, Dpcovariance, Dphistogram, Dpmaximum,
             Dpmean, Dpmedian, Dpminimum, Dpmomentraw, Dpsum, Dpvariance, Impute, Index,
-            Kthrawsamplemoment, Materialize, Maximum, Mean, Gaussianmechanism, Laplacemechanism,
-            Simplegeometricmechanism, Minimum, Quantile, Resize, Rowmin, Sum, Variance
+            Kthrawsamplemoment, Materialize, Maximum, Mean, Exponentialmechanism, Gaussianmechanism,
+            Laplacemechanism, Simplegeometricmechanism, Minimum, Quantile, Resize, Rowmin, Sum, Variance,
+
+            Add, Subtract, Divide, Multiply, Power, Negative
         );
 
         return Err(format!("proto component {:?} is missing its Component trait", self).into())
@@ -186,8 +191,8 @@ impl Expandable for proto::component::Variant {
         expand_graph!(
             // INSERT COMPONENT LIST
             Clamp, Dpcount, Dpcovariance, Dphistogram, Dpmaximum, Dpmean, Dpmedian, Dpminimum,
-            Dpmomentraw, Dpsum, Dpvariance, Impute, Gaussianmechanism, Laplacemechanism,
-            Simplegeometricmechanism, Resize
+            Dpmomentraw, Dpsum, Dpvariance, Impute, Exponentialmechanism, Gaussianmechanism,
+            Laplacemechanism, Simplegeometricmechanism, Resize
         );
 
         // no expansion
@@ -200,13 +205,14 @@ impl Aggregator for proto::component::Variant {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
+        sensitivity_type: &Sensitivity
     ) -> Result<Vec<f64>> {
         macro_rules! compute_sensitivity {
             ($( $variant:ident ),*) => {
                 {
                     $(
                        if let proto::component::Variant::$variant(x) = self {
-                            return x.compute_sensitivity(privacy_definition, properties)
+                            return x.compute_sensitivity(privacy_definition, properties, sensitivity_type)
                        }
                     )*
                 }

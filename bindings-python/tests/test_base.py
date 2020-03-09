@@ -87,16 +87,21 @@ def test_dp_linear_stats(run=True):
             privacy_usage={'epsilon': .5}
         )
 
-        histogram = yarrow.ops.dp_histogram(
-            resized,
-            edges=[float(i) for i in range(0, 100, 10)],
-            inclusive_left=True,
-            null=-1.,
-            side="left",
-            count_min=0,
-            count_max=2000,
+        yarrow.ops.dp_mean(
+            -resized + 2. / 3.,
             privacy_usage={'epsilon': .5}
         )
+
+        # histogram = yarrow.ops.dp_histogram(
+        #     resized,
+        #     edges=[float(i) for i in range(0, 100, 10)],
+        #     inclusive_left=True,
+        #     null=-1.,
+        #     side="left",
+        #     count_min=0,
+        #     count_max=2000,
+        #     privacy_usage={'epsilon': .5}
+        # )
 
         custom_mean = yarrow.ops.laplace_mechanism(
             yarrow.ops.mean(resized),
@@ -141,12 +146,12 @@ def test_dp_linear_stats(run=True):
         #     right_n=500
         # )
 
-        # yarrow.ops.dp_count(
-        #     age,
-        #     privacy_usage={'epsilon': .5},
-        #     count_min=0,
-        #     count_max=10000
-        # )
+        yarrow.ops.dp_count(
+            age,
+            privacy_usage={'epsilon': .5},
+            count_min=0,
+            count_max=10000
+        )
 
     if run:
         analysis.release()
