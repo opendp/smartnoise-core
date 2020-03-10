@@ -1,7 +1,6 @@
 
-1. install Rust
 
-2. turn on nightly channel
+1. turn on nightly channel
 
         rustup override set nightly
 
