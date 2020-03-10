@@ -43,6 +43,7 @@ The steps for adding bindings in a new language are essentially:
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
         
     Close terminal and open new terminal to add cargo to path.
+    You can test with `rustc --version`
 
 3. Install protobuf compiler  
     Mac:  
