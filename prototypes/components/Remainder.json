@@ -13,8 +13,8 @@
       "type": "Array"
     }
   },
-  "id": "Div",
-  "name": "div",
+  "id": "Remainder",
+  "name": "remainder",
   "options": {},
   "return": {
     "nature": [
@@ -22,5 +22,5 @@
     ],
     "type": "Array"
   },
-  "docstring": "div step"
+  "docstring": "remainder step"
 }

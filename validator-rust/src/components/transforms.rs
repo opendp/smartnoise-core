@@ -1,7 +1,7 @@
 use crate::errors::*;
 
 use std::collections::HashMap;
-use crate::base::{Nature, Vector1DNull, NodeProperties, ArrayND, get_constant, NatureCategorical, standardize_categorical_argument, Vector2DJagged, standardize_numeric_argument};
+use crate::base::{Nature, Vector1DNull, NodeProperties, ArrayND, get_constant, NatureCategorical, standardize_categorical_argument, Vector2DJagged, standardize_numeric_argument, Vector1D};
 
 use crate::{proto, base};
 
@@ -10,7 +10,7 @@ use crate::components::{Component, Expandable};
 use ndarray::Array;
 use crate::base::{Value, Properties, NatureContinuous};
 use itertools::Itertools;
-use std::ops::Add;
+use std::ops::{Add, Div};
 
 impl Component for proto::Add {
     fn propagate_property(
@@ -24,10 +24,22 @@ impl Component for proto::Add {
         let mut right_property = properties.get("right")
             .ok_or("right missing from Add")?.clone();
 
-        propagate_binary_op::<f64>(&left_property, &right_property, &Operators {
-            f64: Some(Box::new(|l: &f64, r: &f64| l + r)),
-            i64: Some(Box::new(|l: &i64, r: &i64| l + r)),
-            str: None, bool: None
+        let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
+
+        Ok(Properties {
+            nullity: left_property.nullity && right_property.nullity,
+            releasable: left_property.releasable && right_property.releasable,
+            nature: propagate_binary_nature(&left_property, &right_property, &Operators {
+                f64: Some(Box::new(|l: &f64, r: &f64| l + r)),
+                i64: Some(Box::new(|l: &i64, r: &i64| l + r)),
+                str: None, bool: None
+            }, &num_columns)?,
+            c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
+                .zip(broadcast(&right_property.c_stability, &num_columns)?)
+                .map(|(l, r)| l.max(r)).collect(),
+            num_columns: Some(num_columns),
+            num_records,
+            aggregator: None
         })
     }
 
@@ -52,10 +64,22 @@ impl Component for proto::Subtract {
         let mut right_property = properties.get("right")
             .ok_or("right missing from Subtract")?.clone();
 
-        propagate_binary_op::<f64>(&left_property, &right_property, &Operators {
-            f64: Some(Box::new(|l: &f64, r: &f64| l - r)),
-            i64: Some(Box::new(|l: &i64, r: &i64| l - r)),
-            str: None, bool: None
+        let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
+
+        Ok(Properties {
+            nullity: left_property.nullity && right_property.nullity,
+            releasable: left_property.releasable && right_property.releasable,
+            nature: propagate_binary_nature(&left_property, &right_property, &Operators {
+                f64: Some(Box::new(|l: &f64, r: &f64| l - r)),
+                i64: Some(Box::new(|l: &i64, r: &i64| l - r)),
+                str: None, bool: None
+            }, &num_columns)?,
+            c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
+                .zip(broadcast(&right_property.c_stability, &num_columns)?)
+                .map(|(l, r)| l.max(r)).collect(),
+            num_columns: Some(num_columns),
+            num_records,
+            aggregator: None
         })
     }
 
@@ -81,10 +105,22 @@ impl Component for proto::Divide {
         let mut right_property = properties.get("right")
             .ok_or("right missing from Divide")?.clone();
 
-        propagate_binary_op::<f64>(&left_property, &right_property, &Operators {
-            f64: Some(Box::new(|l: &f64, r: &f64| l / r)),
-            i64: Some(Box::new(|l: &i64, r: &i64| l / r)),
-            str: None, bool: None
+        let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
+
+        Ok(Properties {
+            nullity: left_property.nullity && right_property.nullity,
+            releasable: left_property.releasable && right_property.releasable,
+            nature: propagate_binary_nature(&left_property, &right_property, &Operators {
+                f64: Some(Box::new(|l: &f64, r: &f64| l / r)),
+                i64: Some(Box::new(|l: &i64, r: &i64| l / r)),
+                str: None, bool: None
+            }, &num_columns)?,
+            c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
+                .zip(broadcast(&right_property.c_stability, &num_columns)?)
+                .map(|(l, r)| l.max(r)).collect(),
+            num_columns: Some(num_columns),
+            num_records,
+            aggregator: None
         })
     }
 
@@ -110,10 +146,22 @@ impl Component for proto::Multiply {
         let mut right_property = properties.get("right")
             .ok_or("right missing from Multiply")?.clone();
 
-        propagate_binary_op::<f64>(&left_property, &right_property, &Operators {
-            f64: Some(Box::new(|l: &f64, r: &f64| l * r)),
-            i64: Some(Box::new(|l: &i64, r: &i64| l * r)),
-            str: None, bool: None
+        let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
+
+        Ok(Properties {
+            nullity: left_property.nullity && right_property.nullity,
+            releasable: left_property.releasable && right_property.releasable,
+            nature: propagate_binary_nature(&left_property, &right_property, &Operators {
+                f64: Some(Box::new(|l: &f64, r: &f64| l * r)),
+                i64: Some(Box::new(|l: &i64, r: &i64| l * r)),
+                str: None, bool: None
+            }, &num_columns)?,
+            c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
+                .zip(broadcast(&right_property.c_stability, &num_columns)?)
+                .map(|(l, r)| l.max(r)).collect(),
+            num_columns: Some(num_columns),
+            num_records,
+            aggregator: None
         })
     }
 
@@ -138,14 +186,22 @@ impl Component for proto::Power {
         let mut right_property = properties.get("right")
             .ok_or("right missing from Subtract")?.clone();
 
-        fn add<T: Add<T, Output=T> + Clone>(l: &T, r: &T) -> T {
-            l.clone() + r.clone()
-        }
+        let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
-        propagate_binary_op::<f64>(&left_property, &right_property, &Operators {
-            f64: Some(Box::new(|l: &f64, r: &f64| l.powf(*r))),
-            i64: Some(Box::new(|l: &i64, r: &i64| l.pow(*r as u32))),
-            str: None, bool: None
+        Ok(Properties {
+            nullity: left_property.nullity && right_property.nullity,
+            releasable: left_property.releasable && right_property.releasable,
+            nature: propagate_binary_nature(&left_property, &right_property, &Operators {
+                f64: Some(Box::new(|l: &f64, r: &f64| l.powf(*r))),
+                i64: Some(Box::new(|l: &i64, r: &i64| l.pow(*r as u32))),
+                str: None, bool: None
+            }, &num_columns)?,
+            c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
+                .zip(broadcast(&right_property.c_stability, &num_columns)?)
+                .map(|(l, r)| l.max(r)).collect(),
+            num_columns: Some(num_columns),
+            num_records,
+            aggregator: None
         })
     }
 
@@ -156,6 +212,45 @@ impl Component for proto::Power {
         Err("get_names not implemented".into())
     }
 }
+
+impl Component for proto::Log {
+    fn propagate_property(
+        &self,
+        _privacy_definition: &proto::PrivacyDefinition,
+        public_arguments: &HashMap<String, Value>,
+        properties: &base::NodeProperties,
+    ) -> Result<Properties> {
+        let mut left_property = properties.get("left")
+            .ok_or("left missing from Log")?.clone();
+        let mut right_property = properties.get("right")
+            .ok_or("right missing from Log")?.clone();
+
+        let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
+
+        Ok(Properties {
+            nullity: left_property.nullity && right_property.nullity,
+            releasable: left_property.releasable && right_property.releasable,
+            nature: propagate_binary_nature(&left_property, &right_property, &Operators {
+                f64: Some(Box::new(|l: &f64, r: &f64| l.log(*r))),
+                i64: None, str: None, bool: None
+            }, &num_columns)?,
+            c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
+                .zip(broadcast(&right_property.c_stability, &num_columns)?)
+                .map(|(l, r)| l.max(r)).collect(),
+            num_columns: Some(num_columns),
+            num_records,
+            aggregator: None
+        })
+    }
+
+    fn get_names(
+        &self,
+        _properties: &NodeProperties,
+    ) -> Result<Vec<String>> {
+        Err("get_names not implemented".into())
+    }
+}
+
 
 
 impl Component for proto::Negative {
@@ -196,19 +291,313 @@ impl Component for proto::Negative {
     }
 }
 
+impl Component for proto::Modulo {
+    fn propagate_property(
+        &self,
+        _privacy_definition: &proto::PrivacyDefinition,
+        public_arguments: &HashMap<String, Value>,
+        properties: &base::NodeProperties,
+    ) -> Result<Properties> {
+        let mut left_property: Properties = properties.get("left")
+            .ok_or("left missing from Mod")?.clone();
+        let mut right_property = properties.get("right")
+            .ok_or("right missing from Mod")?.clone();
 
 
-struct Operators {
-    f64: Option<Box<dyn Fn(&f64, &f64) -> f64>>,
-    i64: Option<Box<dyn Fn(&i64, &i64) -> i64>>,
-    str: Option<Box<dyn Fn(&String, &String) -> String>>,
-    bool: Option<Box<dyn Fn(&bool, &bool) -> bool>>,
+        let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
+
+        Ok(Properties {
+            nullity: true,
+            releasable: left_property.releasable && right_property.releasable,
+            nature: None,
+            c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
+                .zip(broadcast(&right_property.c_stability, &num_columns)?)
+                .map(|(l, r)| l.max(r)).collect(),
+            num_columns: Some(num_columns),
+            num_records,
+            aggregator: None
+        })
+    }
+
+    fn get_names(
+        &self,
+        _properties: &base::NodeProperties,
+    ) -> Result<Vec<String>> {
+        Err("get_names not implemented".into())
+    }
 }
 
-fn propagate_binary_op<T>(left_property: &Properties, right_property: &Properties, operator: &Operators) -> Result<Properties> {
+impl Component for proto::Remainder {
+    fn propagate_property(
+        &self,
+        _privacy_definition: &proto::PrivacyDefinition,
+        public_arguments: &HashMap<String, Value>,
+        properties: &base::NodeProperties,
+    ) -> Result<Properties> {
+        let mut left_property: Properties = properties.get("left")
+            .ok_or("left missing from Remainder")?.clone();
+        let mut right_property = properties.get("right")
+            .ok_or("right missing from Remainder")?.clone();
 
-    left_property.assert_is_not_aggregated()?;
-    right_property.assert_is_not_aggregated()?;
+
+        let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
+
+        Ok(Properties {
+            nullity: true,
+            releasable: left_property.releasable && right_property.releasable,
+            nature: None,
+            c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
+                .zip(broadcast(&right_property.c_stability, &num_columns)?)
+                .map(|(l, r)| l.max(r)).collect(),
+            num_columns: Some(num_columns),
+            num_records,
+            aggregator: None
+        })
+    }
+
+    fn get_names(
+        &self,
+        _properties: &base::NodeProperties,
+    ) -> Result<Vec<String>> {
+        Err("get_names not implemented".into())
+    }
+}
+
+impl Component for proto::And {
+    fn propagate_property(
+        &self,
+        _privacy_definition: &proto::PrivacyDefinition,
+        public_arguments: &HashMap<String, Value>,
+        properties: &base::NodeProperties,
+    ) -> Result<Properties> {
+        let mut left_property = properties.get("left")
+            .ok_or("left missing from And")?.clone();
+        let mut right_property = properties.get("right")
+            .ok_or("right missing from And")?.clone();
+
+        let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
+
+        Ok(Properties {
+            nullity: left_property.nullity && right_property.nullity,
+            releasable: left_property.releasable && right_property.releasable,
+            nature: Some(Nature::Categorical(NatureCategorical {
+                categories: Vector2DJagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
+            })),
+            c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
+                .zip(broadcast(&right_property.c_stability, &num_columns)?)
+                .map(|(l, r)| l.max(r)).collect(),
+            num_columns: Some(num_columns),
+            num_records,
+            aggregator: None
+        })
+    }
+
+    fn get_names(
+        &self,
+        _properties: &NodeProperties,
+    ) -> Result<Vec<String>> {
+        Err("get_names not implemented".into())
+    }
+}
+
+
+impl Component for proto::Or {
+    fn propagate_property(
+        &self,
+        _privacy_definition: &proto::PrivacyDefinition,
+        public_arguments: &HashMap<String, Value>,
+        properties: &base::NodeProperties,
+    ) -> Result<Properties> {
+        let mut left_property = properties.get("left")
+            .ok_or("left missing from Or")?.clone();
+        let mut right_property = properties.get("right")
+            .ok_or("right missing from Or")?.clone();
+
+        let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
+
+        Ok(Properties {
+            nullity: left_property.nullity && right_property.nullity,
+            releasable: left_property.releasable && right_property.releasable,
+            nature: Some(Nature::Categorical(NatureCategorical {
+                categories: Vector2DJagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
+            })),
+            c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
+                .zip(broadcast(&right_property.c_stability, &num_columns)?)
+                .map(|(l, r)| l.max(r)).collect(),
+            num_columns: Some(num_columns),
+            num_records,
+            aggregator: None
+        })
+    }
+
+    fn get_names(
+        &self,
+        _properties: &NodeProperties,
+    ) -> Result<Vec<String>> {
+        Err("get_names not implemented".into())
+    }
+}
+
+
+impl Component for proto::Negate {
+    fn propagate_property(
+        &self,
+        _privacy_definition: &proto::PrivacyDefinition,
+        public_arguments: &HashMap<String, Value>,
+        properties: &base::NodeProperties,
+    ) -> Result<Properties> {
+        let mut left_property = properties.get("left")
+            .ok_or("left missing from Negate")?.clone();
+        let mut right_property = properties.get("right")
+            .ok_or("right missing from Negate")?.clone();
+
+        let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
+
+        Ok(Properties {
+            nullity: left_property.nullity && right_property.nullity,
+            releasable: left_property.releasable && right_property.releasable,
+            nature: Some(Nature::Categorical(NatureCategorical {
+                categories: Vector2DJagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
+            })),
+            c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
+                .zip(broadcast(&right_property.c_stability, &num_columns)?)
+                .map(|(l, r)| l.max(r)).collect(),
+            num_columns: Some(num_columns),
+            num_records,
+            aggregator: None
+        })
+    }
+
+    fn get_names(
+        &self,
+        _properties: &NodeProperties,
+    ) -> Result<Vec<String>> {
+        Err("get_names not implemented".into())
+    }
+}
+
+
+impl Component for proto::Equal {
+    fn propagate_property(
+        &self,
+        _privacy_definition: &proto::PrivacyDefinition,
+        public_arguments: &HashMap<String, Value>,
+        properties: &base::NodeProperties,
+    ) -> Result<Properties> {
+        let mut left_property = properties.get("left")
+            .ok_or("left missing from Equal")?.clone();
+        let mut right_property = properties.get("right")
+            .ok_or("right missing from Equal")?.clone();
+
+        let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
+
+        Ok(Properties {
+            nullity: left_property.nullity && right_property.nullity,
+            releasable: left_property.releasable && right_property.releasable,
+            nature: Some(Nature::Categorical(NatureCategorical {
+                categories: Vector2DJagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
+            })),
+            c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
+                .zip(broadcast(&right_property.c_stability, &num_columns)?)
+                .map(|(l, r)| l.max(r)).collect(),
+            num_columns: Some(num_columns),
+            num_records,
+            aggregator: None
+        })
+    }
+
+    fn get_names(
+        &self,
+        _properties: &NodeProperties,
+    ) -> Result<Vec<String>> {
+        Err("get_names not implemented".into())
+    }
+}
+
+
+impl Component for proto::LessThan {
+    fn propagate_property(
+        &self,
+        _privacy_definition: &proto::PrivacyDefinition,
+        public_arguments: &HashMap<String, Value>,
+        properties: &base::NodeProperties,
+    ) -> Result<Properties> {
+        let mut left_property = properties.get("left")
+            .ok_or("left missing from LessThan")?.clone();
+        let mut right_property = properties.get("right")
+            .ok_or("right missing from LessThan")?.clone();
+
+        let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
+
+        Ok(Properties {
+            nullity: left_property.nullity && right_property.nullity,
+            releasable: left_property.releasable && right_property.releasable,
+            nature: Some(Nature::Categorical(NatureCategorical {
+                categories: Vector2DJagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
+            })),
+            c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
+                .zip(broadcast(&right_property.c_stability, &num_columns)?)
+                .map(|(l, r)| l.max(r)).collect(),
+            num_columns: Some(num_columns),
+            num_records,
+            aggregator: None
+        })
+    }
+
+    fn get_names(
+        &self,
+        _properties: &NodeProperties,
+    ) -> Result<Vec<String>> {
+        Err("get_names not implemented".into())
+    }
+}
+
+
+impl Component for proto::GreaterThan {
+    fn propagate_property(
+        &self,
+        _privacy_definition: &proto::PrivacyDefinition,
+        public_arguments: &HashMap<String, Value>,
+        properties: &base::NodeProperties,
+    ) -> Result<Properties> {
+        let mut left_property = properties.get("left")
+            .ok_or("left missing from GreaterThan")?.clone();
+        let mut right_property = properties.get("right")
+            .ok_or("right missing from GreaterThan")?.clone();
+
+        let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
+
+        Ok(Properties {
+            nullity: left_property.nullity && right_property.nullity,
+            releasable: left_property.releasable && right_property.releasable,
+            nature: Some(Nature::Categorical(NatureCategorical {
+                categories: Vector2DJagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
+            })),
+            c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
+                .zip(broadcast(&right_property.c_stability, &num_columns)?)
+                .map(|(l, r)| l.max(r)).collect(),
+            num_columns: Some(num_columns),
+            num_records,
+            aggregator: None
+        })
+    }
+
+    fn get_names(
+        &self,
+        _properties: &NodeProperties,
+    ) -> Result<Vec<String>> {
+        Err("get_names not implemented".into())
+    }
+}
+
+pub struct Operators {
+    pub f64: Option<Box<dyn Fn(&f64, &f64) -> f64>>,
+    pub i64: Option<Box<dyn Fn(&i64, &i64) -> i64>>,
+    pub str: Option<Box<dyn Fn(&String, &String) -> String>>,
+    pub bool: Option<Box<dyn Fn(&bool, &bool) -> bool>>,
+}
+
+pub fn propagate_binary_shape(left_property: &Properties, right_property: &Properties) -> Result<(i64, Vec<Option<i64>>)> {
 
     let left_num_columns = left_property.get_num_columns()?;
     let right_num_columns = right_property.get_num_columns()?;
@@ -241,7 +630,16 @@ fn propagate_binary_op<T>(left_property: &Properties, right_property: &Propertie
         return Err("number of rows must be the same for left and right arguments".into());
     }
 
-    let nature = match (left_property.nature.clone(), right_property.nature.clone()) {
+    let num_records = left_num_records.iter()
+        .zip(right_num_records)
+        .map(|(l, r)| Some(l.max(&r).clone()))
+        .collect();
+
+    Ok((output_num_columns, num_records))
+}
+
+pub fn propagate_binary_nature(left_property: &Properties, right_property: &Properties, operator: &Operators, &output_num_columns: &i64) -> Result<Option<Nature>> {
+    Ok(match (left_property.nature.clone(), right_property.nature.clone()) {
         (Some(left_nature), Some(right_nature)) => match (left_nature, right_nature) {
             (Nature::Continuous(left_nature), Nature::Continuous(right_nature)) => {
 
@@ -302,21 +700,6 @@ fn propagate_binary_op<T>(left_property: &Properties, right_property: &Propertie
             _ => None
         },
         _ => None
-    };
-
-    Ok(Properties {
-        nullity: left_property.nullity && right_property.nullity,
-        releasable: left_property.releasable && right_property.releasable,
-        nature,
-        c_stability: broadcast(&left_property.c_stability, &output_num_columns)?.iter()
-            .zip(broadcast(&right_property.c_stability, &output_num_columns)?)
-            .map(|(l, r)| l.max(r)).collect(),
-        num_columns: Some(output_num_columns),
-        num_records: left_num_records.iter()
-            .zip(right_num_records)
-            .map(|(l, r)| Some(l.max(&r).clone()))
-            .collect(),
-        aggregator: None
     })
 }
 

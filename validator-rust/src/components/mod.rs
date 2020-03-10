@@ -133,7 +133,8 @@ impl Component for proto::component::Variant {
             Kthrawsamplemoment, Materialize, Maximum, Mean, Exponentialmechanism, Gaussianmechanism,
             Laplacemechanism, Simplegeometricmechanism, Minimum, Quantile, Resize, Rowmin, Sum, Variance,
 
-            Add, Subtract, Divide, Multiply, Power, Negative
+            Add, Subtract, Divide, Multiply, Power, Log, Modulo, Remainder, And, Or, Negate,
+            Equal, Lessthan, Greaterthan, Negative
         );
 
         return Err(format!("proto component {:?} is missing its Component trait", self).into())

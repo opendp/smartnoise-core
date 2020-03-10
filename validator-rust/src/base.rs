@@ -428,7 +428,7 @@ pub fn propagate_properties(
         let node_id = traversal.last().unwrap().clone();
 
         let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
-        println!("Propagating properties at node_id {:?} {:?}", node_id, component);
+//        println!("Propagating properties at node_id {:?} {:?}", node_id, component);
 
         let properties = match graph_evaluation.get(&node_id) {
             // if node has already been evaluated, infer properties directly from the public data
