@@ -1,5 +1,5 @@
-## Yarrow Differential Privacy
-Yarrow is built around a data representation for a statistical analysis. There are three types of projects:
+## WhiteNoise Core Differential Privacy
+The WhiteNoise Core is built around a data representation for a statistical analysis. There are three types of projects:
 - Validator: validates that an analysis is differentially private
 - Runtime: execute analysis
 - Bindings: helpers to create analysis
@@ -32,12 +32,20 @@ The steps for adding bindings in a new language are essentially:
 
 
 ### Install
-1. clone the repository  
-
+1. Clone the repository  
 
     git clone $REPOSITORY_URI
+  
+2. Install Rust
 
-2. Install protobuf compiler  
+    Mac, Linux:
+    
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+        
+    Close terminal and open new terminal to add cargo to path.
+    You can test with `rustc --version`
+
+3. Install protobuf compiler  
     Mac:  
 
         brew install protobuf  
@@ -76,4 +84,4 @@ The steps for adding bindings in a new language are essentially:
   + `mingw32-make all`
 
 
-3. Install instructions for the bindings, validator and runtime are located in their respective folders.  
+4. Install instructions for the bindings, validator and runtime are located in their respective folders.  
