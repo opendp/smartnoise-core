@@ -37,6 +37,7 @@ The steps for adding bindings in a new language are essentially:
     git clone $REPOSITORY_URI
   
 2. Install Rust
+
     Mac, Linux:
     
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
