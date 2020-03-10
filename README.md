@@ -32,12 +32,13 @@ The steps for adding bindings in a new language are essentially:
 
 
 ### Install
-1. clone the repository  
-
+1. Clone the repository  
 
     git clone $REPOSITORY_URI
+  
+2. Install Rust
 
-2. Install protobuf compiler  
+3. Install protobuf compiler  
     Mac:  
 
         brew install protobuf  
@@ -76,4 +77,4 @@ The steps for adding bindings in a new language are essentially:
   + `mingw32-make all`
 
 
-3. Install instructions for the bindings, validator and runtime are located in their respective folders.  
+4. Install instructions for the bindings, validator and runtime are located in their respective folders.  
