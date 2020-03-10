@@ -1,5 +1,5 @@
-## Yarrow Differential Privacy
-Yarrow is built around a data representation for a statistical analysis. There are three types of projects:
+## WhiteNoise Core Differential Privacy
+The WhiteNoise Core is built around a data representation for a statistical analysis. There are three types of projects:
 - Validator: validates that an analysis is differentially private
 - Runtime: execute analysis
 - Bindings: helpers to create analysis
