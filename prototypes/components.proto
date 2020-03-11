@@ -31,6 +31,9 @@ message Component {
         RowMax rowmax = 223;
         RowMin rowmin = 224;
         Resize resize = 225;
+        Filter filter = 226;
+        Group group = 227;
+
         // arithmetic manipulations
         Add add = 250;
         Subtract subtract = 251;
@@ -111,6 +114,14 @@ message Bin {
 }
 message Clamp {}
 message Impute {}
+message RowMax {}
+message RowMin {}
+message Resize {}
+message Filter {}
+message Group {
+    Component aggregator = 1;
+}
+
 // arithmetic manipulations
 message Add {}
 message Subtract {}
@@ -204,7 +215,3 @@ message SimpleGeometricMechanism {
 message ExponentialMechanism {
     repeated PrivacyUsage privacy_usage = 1;
 }
-
-message RowMax {}
-message RowMin {}
-message Resize {}

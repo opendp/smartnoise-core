@@ -1,0 +1,25 @@
+{
+  "arguments": {
+    "data": {
+      "nature": [
+        "continuous"
+      ],
+      "type": "Array"
+    },
+    "mask": {
+      "nature": [
+      ],
+      "type": "Array"
+    }
+  },
+  "id": "Filter",
+  "name": "filter",
+  "options": {},
+  "return": {
+    "nature": [
+      "continuous"
+    ],
+    "type": "Array"
+  },
+  "docstring": "filter step"
+}

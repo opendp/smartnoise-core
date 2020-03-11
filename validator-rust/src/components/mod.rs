@@ -18,6 +18,7 @@ pub mod dp_minimum;
 pub mod dp_mean;
 pub mod dp_moment_raw;
 pub mod dp_sum;
+pub mod filter;
 pub mod impute;
 pub mod index;
 pub mod kth_raw_sample_moment;
@@ -129,7 +130,7 @@ impl Component for proto::component::Variant {
         propagate_property!(
             // INSERT COMPONENT LIST
             Bin, Cast, Clamp, Constant, Count, Covariance, Dpcount, Dpcovariance, Dphistogram, Dpmaximum,
-            Dpmean, Dpmedian, Dpminimum, Dpmomentraw, Dpsum, Dpvariance, Impute, Index,
+            Dpmean, Dpmedian, Dpminimum, Dpmomentraw, Dpsum, Dpvariance, Filter, Impute, Index,
             Kthrawsamplemoment, Materialize, Maximum, Mean, Exponentialmechanism, Gaussianmechanism,
             Laplacemechanism, Simplegeometricmechanism, Minimum, Quantile, Resize, Rowmin, Sum, Variance,
 

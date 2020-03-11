@@ -8,6 +8,7 @@ mod cast;
 mod clamp;
 mod count;
 mod covariance;
+mod filter;
 mod impute;
 mod index;
 mod maximum;
@@ -24,7 +25,6 @@ mod transforms;
 mod variance;
 
 use yarrow_validator::proto;
-
 
 pub trait Evaluable {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value>;
@@ -49,7 +49,7 @@ impl Evaluable for proto::component::Variant {
 
         evaluate!(
             // INSERT COMPONENT LIST
-            Constant, Bin, Cast, Clamp, Count, Covariance, Impute, Index, Maximum, Materialize, Mean,
+            Constant, Bin, Cast, Clamp, Count, Covariance, Filter, Impute, Index, Maximum, Materialize, Mean,
             Minimum, Quantile, Laplacemechanism, Gaussianmechanism, Simplegeometricmechanism, Resize,
             Sum, Variance,
 

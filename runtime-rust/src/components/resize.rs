@@ -4,7 +4,7 @@ use crate::base::NodeArguments;
 use crate::components::Evaluable;
 use yarrow_validator::base::{Value, ArrayND, Vector2DJagged, get_argument, standardize_null_argument};
 
-use ndarray::{ArrayD, Axis, Array, stack};
+use ndarray::{ArrayD, Axis, Array};
 
 use crate::utilities::noise;
 use crate::components::impute::{impute_float_gaussian, impute_float_uniform, impute_categorical};
@@ -12,6 +12,7 @@ use yarrow_validator::proto;
 
 
 use crate::utilities::utilities::get_num_columns;
+use crate::utilities::array::{select, stack};
 
 impl Evaluable for proto::Resize {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
@@ -28,9 +29,8 @@ impl Evaluable for proto::Resize {
                             ArrayND::I64(resize_categorical(&data, &n, &categories, &probabilities, &nulls)?),
                         (ArrayND::Bool(data), Vector2DJagged::Bool(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::Bool(nulls)) =>
                             ArrayND::Bool(resize_categorical(&data, &n, &categories, &probabilities, &nulls)?),
-                        // TODO: copy is not implemented for strings, so matrices cannot be stacked
-//                        (ArrayND::Str(data), Vector2DJagged::Str(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::Str(nulls)) =>
-//                            ArrayND::Str(resize_categorical(&data, &n, &categories, &probabilities, &nulls)?),
+                        (ArrayND::Str(data), Vector2DJagged::Str(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::Str(nulls)) =>
+                            ArrayND::Str(resize_categorical(&data, &n, &categories, &probabilities, &nulls)?),
                         _ => return Err("types of data, categories and nulls must be homogenous, probabilities must be f64".into())
                     })),
                 _ => return Err("data and nulls must be arrays, categories must be a jagged matrix".into())
@@ -91,14 +91,15 @@ pub fn resize_float(data: &ArrayD<f64>, n: &i64, distribution: &String,
             }
         },
         real_n if real_n > n =>
-            data.select(Axis(0), &create_sampling_indices(&n, &real_n)?).to_owned(),
+            select(&data, Axis(0), &create_sampling_indices(&n, &real_n)?),
+//            data.select(Axis(0), &create_sampling_indices(&n, &real_n)?).to_owned(),
         _ => return Err("invalid configuration for n when resizing".into())
     })
 }
 
 pub fn resize_categorical<T>(data: &ArrayD<T>, n: &i64,
                              categories: &Vec<Option<Vec<T>>>, weights: &Vec<Option<Vec<f64>>>, null_value: &Vec<Option<Vec<T>>>,)
-                             -> Result<ArrayD<T>> where T: Clone, T: Copy, T: PartialEq, T: Default {
+                             -> Result<ArrayD<T>> where T: Clone, T: PartialEq, T: Default {
     // get number of observations in actual data
     let real_n: i64 = data.len_of(Axis(0)) as i64;
 
@@ -126,7 +127,7 @@ pub fn resize_categorical<T>(data: &ArrayD<T>, n: &i64,
             }
         },
         real_n if real_n > n =>
-            data.select(Axis(0), &create_sampling_indices(&n, &real_n)?).to_owned(),
+            select(data, Axis(0), &create_sampling_indices(&n, &real_n)?).to_owned(),
         _ => return Err("invalid configuration for n when resizing".into())
     })
 }
