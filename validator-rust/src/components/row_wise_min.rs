@@ -2,7 +2,7 @@ use crate::errors::*;
 
 
 use std::collections::HashMap;
-use crate::base::{Properties, NodeProperties, Value};
+use crate::base::{NodeProperties, Value, prepend, ValueProperties};
 
 
 use crate::proto;
@@ -11,23 +11,20 @@ use crate::components::Component;
 
 
 impl Component for proto::RowMin {
-    // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         _public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
-    ) -> Result<Properties> {
-        let left_prop = properties.get("left")
-            .ok_or::<Error>("left is missing from row_wise_min".into())?.clone();
-
-        Ok(left_prop)
-//        Ok(property {
-//            nullity: false,
-//            releasable: false,
-//            nature: None,
-//            num_records: None
-//        })
+    ) -> Result<ValueProperties> {
+        // TODO: adjust bounds
+        let mut left_property = properties.get("left")
+            .ok_or("left: missing")?.get_arraynd()
+            .map_err(prepend("left:"))?.clone();
+        let mut right_property = properties.get("right")
+            .ok_or("right: missing")?.get_arraynd()
+            .map_err(prepend("right:"))?.clone();
+        Ok(left_property.into())
     }
 
     fn get_names(

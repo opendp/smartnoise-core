@@ -181,8 +181,8 @@ pub extern "C" fn accuracy_to_privacy_usage(
 
     let privacy_definition: proto::PrivacyDefinition = request.privacy_definition.unwrap();
     let component: proto::Component = request.component.unwrap();
-    let properties: HashMap<String, base::Properties> = request.properties.iter()
-        .map(|(k, v)| (k.to_owned(), utilities::serial::parse_properties(&v)))
+    let properties: HashMap<String, base::ValueProperties> = request.properties.iter()
+        .map(|(k, v)| (k.to_owned(), utilities::serial::parse_value_properties(&v)))
         .collect();
     let accuracy: proto::Accuracy = request.accuracy.unwrap();
 
@@ -216,8 +216,8 @@ pub extern "C" fn privacy_usage_to_accuracy(
 
     let privacy_definition: proto::PrivacyDefinition = request.privacy_definition.unwrap();
     let component: proto::Component = request.component.unwrap();
-    let properties: HashMap<String, base::Properties> = request.properties.iter()
-        .map(|(k, v)| (k.to_owned(), utilities::serial::parse_properties(&v)))
+    let properties: HashMap<String, base::ValueProperties> = request.properties.iter()
+        .map(|(k, v)| (k.to_owned(), utilities::serial::parse_value_properties(&v)))
         .collect();
 
     let accuracy: Result<proto::Accuracy> = Ok(proto::Accuracy {

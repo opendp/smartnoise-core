@@ -1,7 +1,7 @@
 use yarrow_validator::errors::*;
 
 use crate::base::NodeArguments;
-use yarrow_validator::base::{Value, ArrayND};
+use yarrow_validator::base::{Value, ArrayND, Hashmap};
 use crate::components::Evaluable;
 use std::collections::HashMap;
 use yarrow_validator::utilities::serial::parse_value;
@@ -22,11 +22,11 @@ impl Evaluable for proto::Materialize {
                             .entry(k.to_owned()).or_insert_with(Vec::new)
                             .push(v.clone()));
                     });
-                Ok(Value::HashmapString(response.iter()
+                Ok(Value::Hashmap(Hashmap::Str(response.iter()
                     .map(|(k, v): (&String, &Vec<String>)| (
                         k.clone(), Value::ArrayND(ArrayND::Str(Array::from(v.to_owned()).into_dyn()))
                     ))
-                    .collect::<HashMap<String, Value>>()))
+                    .collect::<HashMap<String, Value>>())))
             }
             _ => Err("the selected table reference format is not implemented".into())
         }

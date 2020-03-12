@@ -25,9 +25,9 @@ impl Evaluable for proto::Bin {
 
         match (data, edges, null) {
             (ArrayND::F64(data), Vector2DJagged::F64(edges), ArrayND::F64(null)) =>
-                Ok(Value::ArrayND(ArrayND::F64(bin(&data, &edges, &inclusive_left, &null, &side)?))),
+                Ok(bin(&data, &edges, &inclusive_left, &null, &side)?.into()),
             (ArrayND::I64(data), Vector2DJagged::I64(edges), ArrayND::I64(null)) =>
-                Ok(Value::ArrayND(ArrayND::I64(bin(&data, &edges, &inclusive_left, &null, &side)?))),
+                Ok(bin(&data, &edges, &inclusive_left, &null, &side)?.into()),
             _ => return Err("data and edges must both be f64 or i64".into())
         }
     }
@@ -44,7 +44,7 @@ pub fn bin<T: std::cmp::PartialOrd + Clone + Div<T, Output=T> + Add<T, Output=T>
     null: &ArrayD<T>,
     side: &BinSide
 )-> Result<ArrayD<T>> {
-    let mut data = data.to_owned();
+    let mut data = data.clone();
 
     let num_columns = get_num_columns(&data)?;
 

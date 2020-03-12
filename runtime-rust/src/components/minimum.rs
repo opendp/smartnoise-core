@@ -11,43 +11,10 @@ use num::Zero;
 
 impl Evaluable for proto::Minimum {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        let data = get_argument(&arguments, "data")?.get_arraynd()?;
-
-        match (get_argument(&arguments, "by"), get_argument(&arguments, "categories")) {
-            (Ok(by), Ok(categories)) => match (by, categories) {
-                (Value::ArrayND(by), Value::Vector2DJagged(categories)) => match (by, categories) {
-//                    (ArrayND::Bool(by), Vector2DJagged::Bool(categories)) => match data {
-//                        ArrayND::I64(data) => Ok(Value::Vector2DJagged(Vector2DJagged::I64(minimum_by(&data, &by, &categories)?))),
-//                        ArrayND::F64(data) => Ok(Value::Vector2DJagged(Vector2DJagged::F64(minimum_by(&data, &by, &categories)?))),
-//                        _ => return Err("data must be either f64 or i64".into())
-//                    }
-//                    (ArrayND::F64(by), Vector2DJagged::F64(categories)) => match data {
-//                        ArrayND::I64(data) => Ok(Value::Vector2DJagged(Vector2DJagged::I64(minimum_by(&data, &by, &categories)?))),
-//                        ArrayND::F64(data) => Ok(Value::Vector2DJagged(Vector2DJagged::F64(minimum_by(&data, &by, &categories)?))),
-//                        _ => return Err("data must be either f64 or i64".into())
-//                    }
-//                    (ArrayND::I64(by), Vector2DJagged::I64(categories)) => match data {
-//                        ArrayND::I64(data) => Ok(Value::Vector2DJagged(Vector2DJagged::I64(minimum_by(&data, &by, &categories)?))),
-//                        ArrayND::F64(data) => Ok(Value::Vector2DJagged(Vector2DJagged::F64(minimum_by(&data, &by, &categories)?))),
-//                        _ => return Err("data must be either f64 or i64".into())
-//                    }
-//                    (ArrayND::Str(by), Vector2DJagged::Str(categories)) => match data {
-//                        ArrayND::I64(data) => Ok(Value::Vector2DJagged(Vector2DJagged::I64(minimum_by(&data, &by, &categories)?))),
-//                        ArrayND::F64(data) => Ok(Value::Vector2DJagged(Vector2DJagged::F64(minimum_by(&data, &by, &categories)?))),
-//                        _ => return Err("data must be either f64 or i64".into())
-//                    }
-                    _ => return Err("data and by must be ArrayND and categories must be Vector2dJagged".into())
-                },
-                _ => return Err("by must be ArrayND and categories must be Vector2DJagged".into())
-            }
-            // neither by nor categories can be retrieved
-            (Err(_), Err(_)) => match data {
-                ArrayND::F64(data) => Ok(Value::ArrayND(ArrayND::F64(minimum(&data)?))),
-//                ArrayND::I64(data) => Ok(Value::ArrayND(ArrayND::I64(minimum(&data)?))),
-                _ => return Err("data must be either f64 or i64".into())
-            }
-            (Ok(_by), Err(_)) => Err("aggregation's 'by' must be categorically clamped".into()),
-            _ => Err("both by and categories must be defined, or neither".into())
+        match get_argument(&arguments, "data")?.get_arraynd()? {
+            ArrayND::F64(data) => Ok(minimum(&data)?.into()),
+//                ArrayND::I64(data) => Ok(minimum(&data)?.into()),
+            _ => return Err("data must be either f64 or i64".into())
         }
     }
 }

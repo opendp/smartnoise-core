@@ -12,11 +12,11 @@ impl Evaluable for proto::RowMax {
         match (get_argument(&arguments, "left")?, get_argument(&arguments, "right")?) {
             (Value::ArrayND(left), Value::ArrayND(right)) => match (left, right) {
                 (ArrayND::F64(x), ArrayND::F64(y)) =>
-                    Ok(Value::ArrayND(ArrayND::F64(broadcast_map(
-                        &x, &y, &|l: &f64, r: &f64| l.max(*r))?))),
+                    Ok(broadcast_map(
+                        &x, &y, &|l: &f64, r: &f64| l.max(*r))?.into()),
                 (ArrayND::I64(x), ArrayND::I64(y)) =>
-                    Ok(Value::ArrayND(ArrayND::I64(broadcast_map(
-                        &x, &y, &|l: &i64, r: &i64| *std::cmp::max(l, r))?))),
+                    Ok(broadcast_map(
+                        &x, &y, &|l: &i64, r: &i64| *std::cmp::max(l, r))?.into()),
                 _ => Err("Max: Either the argument types are mismatched or non-numeric.".into())
             },
             _ => Err("Max: Both arguments must be arrays.".into())

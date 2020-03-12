@@ -32,7 +32,7 @@ message Component {
         RowMin rowmin = 224;
         Resize resize = 225;
         Filter filter = 226;
-        Group group = 227;
+        Partition partition = 227;
 
         // arithmetic manipulations
         Add add = 250;
@@ -118,9 +118,7 @@ message RowMax {}
 message RowMin {}
 message Resize {}
 message Filter {}
-message Group {
-    Component aggregator = 1;
-}
+message Partition {}
 
 // arithmetic manipulations
 message Add {}

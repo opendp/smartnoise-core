@@ -11,27 +11,7 @@ use ndarray::prelude::*;
 
 impl Evaluable for proto::Variance {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        let data = get_argument(&arguments, "data")?.get_arraynd()?.get_f64()?;
-
-        match (arguments.get("by"), arguments.get("categories")) {
-            (Some(by), Some(categories)) => match (by, categories) {
-//                (Value::ArrayND(by), Value::Vector2DJagged(categories)) => match (by, categories) {
-//                    (ArrayND::Bool(by), Vector2DJagged::Bool(categories)) =>
-//                        Ok(Value::Vector2DJagged(Vector2DJagged::F64(variance_grouped(&data, &by, &categories)?))),
-//                    (ArrayND::F64(by), Vector2DJagged::F64(categories)) =>
-//                        Ok(Value::Vector2DJagged(Vector2DJagged::F64(variance_grouped(&data, &by, &categories)?))),
-//                    (ArrayND::I64(by), Vector2DJagged::I64(categories)) =>
-//                        Ok(Value::Vector2DJagged(Vector2DJagged::F64(variance_grouped(&data, by, categories)?))),
-//                    (ArrayND::Str(by), Vector2DJagged::Str(categories)) =>
-//                        Ok(Value::Vector2DJagged(Vector2DJagged::F64(variance_grouped(&data, by, categories)?))),
-//                    _ => return Err("data and by must be ArrayND and categories must be Vector2dJagged".into())
-//                }
-                _ => Err("by must be ArrayND and categories must be Vector2DJagged".into())
-            }
-            (None, None) => Ok(Value::ArrayND(ArrayND::F64(variance(&data)?))),
-            (Some(_by), None) => Err("aggregation's 'by' must be categorically clamped".into()),
-            _ => Err("both by and categories must be defined, or neither".into())
-        }
+        Ok(variance(&get_argument(&arguments, "data")?.get_arraynd()?.get_f64()?.clone())?.into())
     }
 }
 

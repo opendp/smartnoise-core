@@ -9,7 +9,7 @@ use crate::proto;
 use crate::components::{Component, Expandable};
 use ndarray::Array;
 
-use crate::base::{Value, Properties, ArrayND, NodeProperties, get_constant, Nature, NatureContinuous, Vector1DNull};
+use crate::base::{Value, ArrayND, NodeProperties, get_constant, Nature, NatureContinuous, Vector1DNull, prepend, ValueProperties};
 
 
 impl Component for proto::Resize {
@@ -19,12 +19,12 @@ impl Component for proto::Resize {
         _privacy_definition: &proto::PrivacyDefinition,
         public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
-    ) -> Result<Properties> {
+    ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
-            .ok_or("data must be passed to Resize")?.clone();
+            .ok_or("data: missing")?.get_arraynd()
+            .map_err(prepend("data:"))?.clone();
 
-        let num_columns = data_property.num_columns
-            .ok_or("num_columns must be passed to Resize")?;
+        let num_columns = data_property.get_num_columns()?;
 
         let num_records = public_arguments.get("n")
             .ok_or("n must be passed to Resize")?.get_arraynd()?.get_i64()?;
@@ -43,7 +43,7 @@ impl Component for proto::Resize {
 
             // 2. then private arguments (for example from another clamped column)
             None => match properties.get("min") {
-                Some(min) => min.get_min_f64()?,
+                Some(min) => min.get_arraynd()?.get_min_f64()?,
 
                 // 3. then data properties (propagated from prior clamping/min/max)
                 None => data_property
@@ -57,7 +57,7 @@ impl Component for proto::Resize {
 
             // 2. then private arguments (for example from another clamped column)
             None => match properties.get("max") {
-                Some(min) => min.get_max_f64()?,
+                Some(min) => min.get_arraynd()?.get_max_f64()?,
 
                 // 3. then data properties (propagated from prior clamping/min/max)
                 None => data_property
@@ -96,11 +96,9 @@ impl Component for proto::Resize {
             max: Vector1DNull::F64(impute_maximum),
         }));
 
-        data_property.num_records = (0..num_columns)
-            .map(|_x| Some(num_records.clone()))
-            .collect::<Vec<Option<i64>>>();
+        data_property.num_records = Some(num_records);
 
-        Ok(data_property)
+        Ok(data_property.into())
     }
 
     fn get_names(
@@ -125,11 +123,15 @@ impl Expandable for proto::Resize {
 
         let mut component = component.clone();
 
+        let mut data_property = properties.get("data")
+            .ok_or("data: missing")?.get_arraynd()
+            .map_err(prepend("data:"))?.clone();
+
         if !properties.contains_key("min") {
             current_id += 1;
             let id_min = current_id.clone();
             let value = Value::ArrayND(ArrayND::F64(
-                Array::from(properties.get("data").unwrap().to_owned().get_min_f64()?).into_dyn()));
+                Array::from(data_property.get_min_f64()?).into_dyn()));
             graph_expansion.insert(id_min.clone(), get_constant(&value, &component.batch));
             component.arguments.insert("min".to_string(), id_min);
         }
@@ -138,7 +140,7 @@ impl Expandable for proto::Resize {
             current_id += 1;
             let id_max = current_id.clone();
             let value = Value::ArrayND(ArrayND::F64(
-                Array::from(properties.get("data").unwrap().to_owned().get_max_f64()?).into_dyn()));
+                Array::from(data_property.get_max_f64()?).into_dyn()));
             graph_expansion.insert(id_max, get_constant(&value, &component.batch));
             component.arguments.insert("max".to_string(), id_max);
         }
@@ -147,7 +149,7 @@ impl Expandable for proto::Resize {
             current_id += 1;
             let id_n = current_id.clone();
             let value = Value::ArrayND(ArrayND::I64(Array::from_shape_vec(
-                (), properties.get("data").unwrap().to_owned().get_n()?)
+                (), vec![data_property.get_num_records()?])
                 .unwrap().into_dyn()));
 
             graph_expansion.insert(id_n, get_constant(&value, &component.batch));

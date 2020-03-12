@@ -22,17 +22,17 @@ impl Evaluable for proto::Resize {
             match (get_argument(&arguments, "data")?, get_argument(&arguments, "categories")?,
                    get_argument(&arguments, "probabilities")?, get_argument(&arguments, "null")?) {
                 (Value::ArrayND(data), Value::Vector2DJagged(categories), Value::Vector2DJagged(probabilities), Value::Vector2DJagged(nulls)) =>
-                    Ok(Value::ArrayND(match (data, categories, probabilities, nulls) {
+                    Ok(match (data, categories, probabilities, nulls) {
                         (ArrayND::F64(data), Vector2DJagged::F64(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::F64(nulls)) =>
-                            ArrayND::F64(resize_categorical(&data, &n, &categories, &probabilities, &nulls)?),
+                            resize_categorical(&data, &n, &categories, &probabilities, &nulls)?.into(),
                         (ArrayND::I64(data), Vector2DJagged::I64(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::I64(nulls)) =>
-                            ArrayND::I64(resize_categorical(&data, &n, &categories, &probabilities, &nulls)?),
+                            resize_categorical(&data, &n, &categories, &probabilities, &nulls)?.into(),
                         (ArrayND::Bool(data), Vector2DJagged::Bool(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::Bool(nulls)) =>
-                            ArrayND::Bool(resize_categorical(&data, &n, &categories, &probabilities, &nulls)?),
+                            resize_categorical(&data, &n, &categories, &probabilities, &nulls)?.into(),
                         (ArrayND::Str(data), Vector2DJagged::Str(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::Str(nulls)) =>
-                            ArrayND::Str(resize_categorical(&data, &n, &categories, &probabilities, &nulls)?),
+                            resize_categorical(&data, &n, &categories, &probabilities, &nulls)?.into(),
                         _ => return Err("types of data, categories and nulls must be homogenous, probabilities must be f64".into())
-                    })),
+                    }),
                 _ => return Err("data and nulls must be arrays, categories must be a jagged matrix".into())
             }
         } else {
@@ -181,30 +181,3 @@ pub fn create_sampling_indices(k: &i64, n: &i64) -> Result<Vec<usize>> {
     // create set of sampling indices
     create_subset(&index_vec, &prob_vec, k)
 }
-
-// pub fn create_sampling_indices(k: &i64, n: &i64) -> ArrayD<i64> {
-//     // create vector of all indices
-//     let mut index_vec: Vec<i64> = Vec::with_capacity(*n as usize);
-//     for i in 0..*n {
-//         index_vec.push(i);
-//     }
-
-//     //
-//     // generate keys and identify k indices
-//     //
-
-//     // generate key/index tuples
-//     let mut key_vec: Vec<f64> = Vec::with_capacity(*n as usize);
-//     for i in 0..*n {
-//         key_vec.push( (noise::sample_uniform(0., 1.).powf(*n as f64), i) );
-//     }
-
-//     // sort key/index tuples by key and identify k indices
-//     key_vec.sort_by(|a, b| b.partial_cmp(a).unwrap());
-//     let mut indices: Vec<i64> = Vec::with_capacity(*k as usize);
-//     for i in 0..*k {
-//         indices.push(key_vec[i as usize].1 as i64);
-//     }
-
-//     return arr1(&indices).into_dyn();
-// }

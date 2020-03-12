@@ -8,7 +8,7 @@ use crate::{proto, base};
 
 use crate::components::Component;
 use crate::utilities::serial::{parse_value};
-use crate::base::{Value, Properties, NodeProperties};
+use crate::base::{Value, NodeProperties, ValueProperties};
 use crate::utilities::inference::{infer_property};
 
 impl Component for proto::Constant {
@@ -18,7 +18,7 @@ impl Component for proto::Constant {
         _privacy_definition: &proto::PrivacyDefinition,
         _public_arguments: &HashMap<String, Value>,
         _properties: &base::NodeProperties,
-    ) -> Result<Properties> {
+    ) -> Result<ValueProperties> {
         match self.value.clone() {
             Some(value) => infer_property(&parse_value(&value)?),
             None => Err("release value for constant is missing".into())

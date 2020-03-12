@@ -8,7 +8,7 @@ use crate::hashmap;
 use crate::components::{Component, Accuracy, Expandable, Report};
 
 
-use crate::base::{Properties, NodeProperties, Value};
+use crate::base::{NodeProperties, Value, ValueProperties, prepend};
 use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, value_to_json};
 
 use serde_json;
@@ -20,7 +20,7 @@ impl Component for proto::DpMean {
         _privacy_definition: &proto::PrivacyDefinition,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
-    ) -> Result<Properties> {
+    ) -> Result<ValueProperties> {
         Err("DPMaximum is ethereal, and has no property propagation".into())
     }
 
@@ -92,9 +92,10 @@ impl Report for proto::DpMean {
         &self,
         node_id: &u32,
         component: &proto::Component,
+        public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
         release: &Value
-    ) -> Option<Vec<JSONRelease>> {
+    ) -> Result<Option<Vec<JSONRelease>>> {
 
 //    let mut schema = vec![JSONRelease {
 //        description: "".to_string(),
@@ -129,14 +130,17 @@ impl Report for proto::DpMean {
 //        },
 //    }];
 
-        let data_properties: &Properties = properties.get("data").unwrap();
+        let mut data_property = properties.get("data")
+            .ok_or("data: missing")?.get_arraynd()
+            .map_err(prepend("data:"))?.clone();
+
         let mut releases = Vec::new();
 
-        let minimums = data_properties.get_min_f64().unwrap();
-        let maximums = data_properties.get_max_f64().unwrap();
-        let num_records = data_properties.get_n().unwrap();
+        let minimums = data_property.get_min_f64().unwrap();
+        let maximums = data_property.get_max_f64().unwrap();
+        let num_records = data_property.get_num_records().unwrap();
 
-        for column_number in 0..data_properties.num_columns.unwrap() {
+        for column_number in 0..data_property.num_columns.unwrap() {
 
             let mut releaseInfo = HashMap::new();
             releaseInfo.insert("mechanism".to_string(), serde_json::json!(self.implementation.clone()));
@@ -156,7 +160,7 @@ impl Report for proto::DpMean {
                     name: "".to_string(),
                     cite: "".to_string(),
                     argument: serde_json::json!({
-                        "n": num_records[column_number as usize],
+                        "n": num_records,
                         "constraint": {
                             "lowerbound": minimums[column_number as usize],
                             "upperbound": maximums[column_number as usize]
@@ -167,6 +171,6 @@ impl Report for proto::DpMean {
 
             releases.push(release);
         }
-        Some(releases)
+        Ok(Some(releases))
     }
 }

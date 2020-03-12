@@ -1,6 +1,5 @@
 use crate::errors::*;
 
-
 use std::collections::HashMap;
 
 use crate::{base};
@@ -8,11 +7,7 @@ use crate::proto;
 
 use crate::components::{Component};
 
-
-
-
-use crate::base::{Properties, Value, NodeProperties};
-use std::ops::Deref;
+use crate::base::{Value, NodeProperties, prepend, ValueProperties};
 
 
 impl Component for proto::Cast {
@@ -21,13 +16,15 @@ impl Component for proto::Cast {
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         public_arguments: &HashMap<String, Value>,
-        properties: &base::NodeProperties,
-    ) -> Result<Properties> {
+        properties: &NodeProperties,
+    ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
-            .ok_or::<Error>("data is a required argument for Cast".into())?.clone();
+            .ok_or::<Error>("data: missing".into())?.get_arraynd()
+            .map_err(prepend("data:"))?.clone();
 
         let _datatype = public_arguments.get("type")
-            .ok_or::<Error>("data type is a required argument for Cast".into())?.deref().to_owned().get_first_str()?;
+            .ok_or::<Error>("type: missing, must be public".into())?.get_first_str()
+            .map_err(prepend("type:"))?;
 
         // clear continuous properties if casting to categorical-only raw type
 //        match &datatype {
@@ -46,7 +43,7 @@ impl Component for proto::Cast {
         data_property.nature = None;
         data_property.nullity = true;
 
-        Ok(data_property)
+        Ok(data_property.into())
     }
 
     fn get_names(

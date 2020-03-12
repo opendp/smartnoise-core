@@ -13,14 +13,13 @@ use crate::utilities::array::select;
 
 impl Evaluable for proto::Filter {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        let data = get_argument(&arguments, "data")?.get_arraynd()?;
         let mask = get_argument(&arguments, "mask")?.get_arraynd()?.get_bool()?;
 
-        Ok(match data {
-            ArrayND::Str(data) => Value::ArrayND(ArrayND::Str(filter(data, mask)?)),
-            ArrayND::F64(data) => Value::ArrayND(ArrayND::F64(filter(data, mask)?)),
-            ArrayND::I64(data) => Value::ArrayND(ArrayND::I64(filter(data, mask)?)),
-            ArrayND::Bool(data) => Value::ArrayND(ArrayND::Bool(filter(data, mask)?)),
+        Ok(match get_argument(&arguments, "data")?.get_arraynd()? {
+            ArrayND::Str(data) => filter(data, mask)?.into(),
+            ArrayND::F64(data) => filter(data, mask)?.into(),
+            ArrayND::I64(data) => filter(data, mask)?.into(),
+            ArrayND::Bool(data) => filter(data, mask)?.into(),
         })
     }
 }

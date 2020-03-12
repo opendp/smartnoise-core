@@ -13,9 +13,9 @@ impl Evaluable for proto::Add {
         match (get_argument(&arguments, "left")?, get_argument(&arguments, "right")?) {
             (Value::ArrayND(left), Value::ArrayND(right)) => match (left, right) {
                 (ArrayND::F64(x), ArrayND::F64(y)) =>
-                    Ok(Value::ArrayND(ArrayND::F64(x + y))),
+                    Ok((x + y).into()),
                 (ArrayND::I64(x), ArrayND::I64(y)) =>
-                    Ok(Value::ArrayND(ArrayND::I64(x + y))),
+                    Ok((x + y).into()),
                 _ => Err("Add: Either the argument types are mismatched or non-numeric.".into())
             },
             _ => Err("Add: Both arguments must be arrays.".into())
@@ -28,9 +28,9 @@ impl Evaluable for proto::Subtract {
         match (get_argument(&arguments, "left")?, get_argument(&arguments, "right")?) {
             (Value::ArrayND(left), Value::ArrayND(right)) => match (left, right) {
                 (ArrayND::F64(x), ArrayND::F64(y)) =>
-                    Ok(Value::ArrayND(ArrayND::F64(x - y))),
+                    Ok((x - y).into()),
                 (ArrayND::I64(x), ArrayND::I64(y)) =>
-                    Ok(Value::ArrayND(ArrayND::I64(x - y))),
+                    Ok((x - y).into()),
                 _ => Err("Subtract: Either the argument types are mismatched or non-numeric.".into())
             },
             _ => Err("Subtract: Both arguments must be arrays.".into())
@@ -43,9 +43,9 @@ impl Evaluable for proto::Divide {
         match (get_argument(&arguments, "left")?, get_argument(&arguments, "right")?) {
             (Value::ArrayND(left), Value::ArrayND(right)) => match (left, right) {
                 (ArrayND::F64(x), ArrayND::F64(y)) =>
-                    Ok(Value::ArrayND(ArrayND::F64(x / y))),
+                    Ok((x / y).into()),
                 (ArrayND::I64(x), ArrayND::I64(y)) =>
-                    Ok(Value::ArrayND(ArrayND::I64(x / y))),
+                    Ok((x / y).into()),
                 _ => Err("Divide: Either the argument types are mismatched or non-numeric.".into())
             },
             _ => Err("Divide: Both arguments must be arrays.".into())
@@ -58,9 +58,9 @@ impl Evaluable for proto::Multiply {
         match (get_argument(&arguments, "left")?, get_argument(&arguments, "right")?) {
             (Value::ArrayND(left), Value::ArrayND(right)) => match (left, right) {
                 (ArrayND::F64(x), ArrayND::F64(y)) =>
-                    Ok(Value::ArrayND(ArrayND::F64(x * y))),
+                    Ok((x * y).into()),
                 (ArrayND::I64(x), ArrayND::I64(y)) =>
-                    Ok(Value::ArrayND(ArrayND::I64(x * y))),
+                    Ok((x * y).into()),
                 _ => Err("Multiply: Either the argument types are mismatched or non-numeric.".into())
             },
             _ => Err("Multiply: Both arguments must be arrays.".into())
@@ -90,12 +90,12 @@ impl Evaluable for proto::Modulo {
         match (get_argument(&arguments, "left")?, get_argument(&arguments, "right")?) {
             (Value::ArrayND(left), Value::ArrayND(right)) => match (left, right) {
                 (ArrayND::F64(x), ArrayND::F64(y)) =>
-                    Ok(Value::ArrayND(ArrayND::F64(broadcast_map(&x, &y, &|l: &f64, r: &f64| l.div_euclid(*r))?))),
+                    Ok(broadcast_map(&x, &y, &|l: &f64, r: &f64| l.div_euclid(*r))?.into()),
                 (ArrayND::I64(x), ArrayND::I64(y)) =>
-                    Ok(Value::ArrayND(ArrayND::I64(broadcast_map(&x, &y, &|l: &i64, r: &i64| match l.checked_div_euclid(*r) {
+                    Ok(broadcast_map(&x, &y, &|l: &i64, r: &i64| match l.checked_div_euclid(*r) {
                         // TODO SECURITY: impute ints
                         Some(v) => v, None => 0
-                    })?))),
+                    })?.into()),
                 _ => Err("Modulo: Either the argument types are mismatched or non-numeric.".into())
             },
             _ => Err("Modulo: Both arguments must be arrays.".into())
@@ -108,9 +108,9 @@ impl Evaluable for proto::Remainder {
         match (get_argument(&arguments, "left")?, get_argument(&arguments, "right")?) {
             (Value::ArrayND(left), Value::ArrayND(right)) => match (left, right) {
                 (ArrayND::F64(x), ArrayND::F64(y)) =>
-                    Ok(Value::ArrayND(ArrayND::F64(broadcast_map(&x, &y, &|l: &f64, r: &f64| l.rem_euclid(*r))?))),
+                    Ok(broadcast_map(&x, &y, &|l: &f64, r: &f64| l.rem_euclid(*r))?.into()),
                 (ArrayND::I64(x), ArrayND::I64(y)) =>
-                    Ok(Value::ArrayND(ArrayND::I64(broadcast_map(&x, &y, &|l: &i64, r: &i64| l.rem(*r))?))),
+                    Ok(broadcast_map(&x, &y, &|l: &i64, r: &i64| l.rem(*r))?.into()),
                 _ => Err("Remainder: Either the argument types are mismatched or non-numeric.".into())
             },
             _ => Err("Remainder: Both arguments must be arrays.".into())
@@ -212,10 +212,8 @@ impl Evaluable for proto::Negative {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
         match get_argument(&arguments, "data")? {
             Value::ArrayND(data) => match data {
-                ArrayND::F64(x) =>
-                    Ok(Value::ArrayND(ArrayND::F64(-x))),
-                ArrayND::I64(x) =>
-                    Ok(Value::ArrayND(ArrayND::I64(-x))),
+                ArrayND::F64(x) => Ok(Value::ArrayND(ArrayND::F64(-x))),
+                ArrayND::I64(x) => Ok(Value::ArrayND(ArrayND::I64(-x))),
                 _ => Err("Negative: Argument must be numeric.".into())
             },
             _ => Err("Negative: Argument must be an array.".into())

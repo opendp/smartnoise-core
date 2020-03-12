@@ -8,7 +8,7 @@ use crate::hashmap;
 use crate::components::{Component, Accuracy, Expandable, Report};
 
 
-use crate::base::{Properties, NodeProperties, Value};
+use crate::base::{NodeProperties, Value, ValueProperties};
 use crate::utilities::json::{JSONRelease};
 
 
@@ -20,7 +20,7 @@ impl Component for proto::DpHistogram {
         _privacy_definition: &proto::PrivacyDefinition,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
-    ) -> Result<Properties> {
+    ) -> Result<ValueProperties> {
         Err("DPCount is ethereal, and has no property propagation".into())
     }
 
@@ -118,9 +118,10 @@ impl Report for proto::DpHistogram {
         &self,
         _node_id: &u32,
         _component: &proto::Component,
+        _public_arguments: &HashMap<String, Value>,
         _properties: &NodeProperties,
         _release: &Value
-    ) -> Option<Vec<JSONRelease>> {
-        None
+    ) -> Result<Option<Vec<JSONRelease>>> {
+        Ok(None)
     }
 }
