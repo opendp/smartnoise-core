@@ -1,7 +1,6 @@
 extern crate yarrow_validator;
 use yarrow_validator::{proto, ERR_STDERR};
 
-
 use std::io::Write; // trait which holds `display_chain`
 use error_chain::ChainedError;
 mod base;
