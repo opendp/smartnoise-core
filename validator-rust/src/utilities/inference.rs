@@ -217,7 +217,7 @@ pub fn infer_categories(value: &Value) -> Vector2DJagged {
                 }).collect()),
             ArrayND::Str(array) =>{
 
-                println!("array in inference {:?}", array);
+//                println!("array in inference {:?}", array);
                 Vector2DJagged::Str(array.gencolumns().into_iter().map(|col| {
                     let mut column_categories = col.into_dyn().
                         into_dimensionality::<Ix1>().unwrap().to_vec();
@@ -273,40 +273,42 @@ pub fn infer_categories(value: &Value) -> Vector2DJagged {
     }
 }
 
-pub fn infer_nature(value: &Value) -> Nature {
+pub fn infer_nature(value: &Value) -> Option<Nature> {
     match value {
         Value::ArrayND(array) => match array {
-            ArrayND::F64(array) => Nature::Continuous(NatureContinuous {
+            ArrayND::F64(array) => Some(Nature::Continuous(NatureContinuous {
                 min: Vector1DNull::F64(infer_min(&Value::ArrayND(ArrayND::F64(array.clone())))),
                 max: Vector1DNull::F64(infer_max(&Value::ArrayND(ArrayND::F64(array.clone())))),
-            }),
-            ArrayND::I64(array) => Nature::Continuous(NatureContinuous {
+            })),
+            ArrayND::I64(array) => Some(Nature::Continuous(NatureContinuous {
                 min: Vector1DNull::F64(infer_min(&Value::ArrayND(ArrayND::I64(array.clone())))),
                 max: Vector1DNull::F64(infer_max(&Value::ArrayND(ArrayND::I64(array.clone())))),
-            }),
-            ArrayND::Bool(array) => Nature::Categorical(NatureCategorical {
+            })),
+            ArrayND::Bool(array) => Some(Nature::Categorical(NatureCategorical {
                 categories: infer_categories(&Value::ArrayND(ArrayND::Bool(array.clone()))),
-            }),
-            ArrayND::Str(array) => Nature::Categorical(NatureCategorical {
-                categories: infer_categories(&Value::ArrayND(ArrayND::Str(array.clone()))),
-            }),
+            })),
+            // This has a nasty side-effect of duplicating columns within the properties
+//            ArrayND::Str(array) => Nature::Categorical(NatureCategorical {
+//                categories: infer_categories(&Value::ArrayND(ArrayND::Str(array.clone()))),
+//            }),
+            _ => None
         },
-        Value::Hashmap(_hashmap) => panic!("nature inference is not implemented for hashmaps"),
+        Value::Hashmap(_hashmap) => None,
         Value::Vector2DJagged(jagged) => match jagged {
-            Vector2DJagged::F64(jagged) => Nature::Continuous(NatureContinuous {
+            Vector2DJagged::F64(jagged) => Some(Nature::Continuous(NatureContinuous {
                 min: Vector1DNull::F64(infer_min(&Value::Vector2DJagged(Vector2DJagged::F64(jagged.clone())))),
                 max: Vector1DNull::F64(infer_max(&Value::Vector2DJagged(Vector2DJagged::F64(jagged.clone())))),
-            }),
-            Vector2DJagged::I64(jagged) => Nature::Continuous(NatureContinuous {
+            })),
+            Vector2DJagged::I64(jagged) => Some(Nature::Continuous(NatureContinuous {
                 min: Vector1DNull::F64(infer_min(&Value::Vector2DJagged(Vector2DJagged::I64(jagged.clone())))),
                 max: Vector1DNull::F64(infer_max(&Value::Vector2DJagged(Vector2DJagged::I64(jagged.clone())))),
-            }),
-            Vector2DJagged::Bool(jagged) => Nature::Categorical(NatureCategorical {
+            })),
+            Vector2DJagged::Bool(jagged) => Some(Nature::Categorical(NatureCategorical {
                 categories: infer_categories(&Value::Vector2DJagged(Vector2DJagged::Bool(jagged.clone()))),
-            }),
-            Vector2DJagged::Str(jagged) => Nature::Categorical(NatureCategorical {
+            })),
+            Vector2DJagged::Str(jagged) => Some(Nature::Categorical(NatureCategorical {
                 categories: infer_categories(&Value::Vector2DJagged(Vector2DJagged::Str(jagged.clone()))),
-            }),
+            })),
         }
     }
 }
@@ -327,7 +329,7 @@ pub fn infer_property(value: &Value) -> Result<ValueProperties> {
         Value::ArrayND(array) => ArrayNDProperties {
             nullity: infer_nullity(&value)?,
             releasable: true,
-            nature: None, // Some(infer_nature(&value)),
+            nature: infer_nature(&value),
             c_stability: infer_c_stability(&value)?,
             num_columns: infer_num_columns(&value)?,
             num_records: infer_num_rows(array)?,

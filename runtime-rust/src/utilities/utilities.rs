@@ -130,7 +130,7 @@ pub fn sample_from_set<T>(candidate_set: &Vec<T>, weights: &Vec<f64>) -> Result<
     let weights_sum: rug::Float = Float::with_val(53, Float::sum(weights_rug.iter()));
 
     // convert weights to probabilities
-    let probabilities: Vec<rug::Float> = weights_rug.iter().map(|w| w / weights_sum).collect();
+    let probabilities: Vec<rug::Float> = weights_rug.iter().map(|w| w / weights_sum.clone()).collect();
 
     // generate cumulative probability distribution
     let mut cumulative_probability_vec: Vec<rug::Float> = Vec::with_capacity(weights.len() as usize);

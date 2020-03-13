@@ -84,15 +84,17 @@ def _communicate(function, argument, response_type, ffi):
     # Errors from here are propagated up from either the rust validator or runtime
     if response.HasField("error"):
 
-        binary_traceback = response.error.message
+        library_traceback = response.error.message
 
+        # noinspection PyBroadException
         try:
-            message, *frames = re.split("\n +[0-9]+: ", binary_traceback)
-            binary_traceback = '\n'.join(reversed(["  " + frame.replace("         at", "at") for frame in frames if
-                                                  ("at src/" in frame or "yarrow_validator" in frame) and "yarrow_validator::errors::Error" not in frame])) \
-                               + "\n  " + message
+            message, *frames = re.split("\n +[0-9]+: ", library_traceback)
+            library_traceback = '\n'.join(reversed(["  " + frame.replace("         at", "at") for frame in frames
+                                                    if ("at src/" in frame or "yarrow_validator" in frame)
+                                                    and "yarrow_validator::errors::Error" not in frame])) \
+                                + "\n  " + message
         except Exception:
             pass
 
-        raise RuntimeError(binary_traceback)
+        raise RuntimeError(library_traceback)
     return response.data

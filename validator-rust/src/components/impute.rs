@@ -28,7 +28,6 @@ impl Component for proto::Impute {
 
         let num_columns = data_property.num_columns
             .ok_or("data: number of columns missing")?;
-
         // 1. check public arguments (constant n)
         let impute_minimum = match public_arguments.get("min") {
             Some(min) => min.get_arraynd()?.clone().get_vec_f64(Some(num_columns))?,

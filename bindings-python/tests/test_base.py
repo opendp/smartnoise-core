@@ -125,7 +125,7 @@ def test_dp_linear_stats(run=True):
 
         # mean with min, max properties propagated up from prior bounds
         transformed_mean = op.dp_mean(
-            -(preprocessed_age + 2.) / 3.,
+            -(preprocessed_age + 2.),
             privacy_usage={'epsilon': .5}
         )
 

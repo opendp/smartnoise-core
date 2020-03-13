@@ -148,7 +148,7 @@ pub fn create_subset<T>(set: &Vec<T>, weights: &Vec<f64>, k: &i64) -> Result<Vec
     let weights_sum: rug::Float = Float::with_val(53, Float::sum(weights_rug.iter()));
 
     // convert weights to probabilities
-    let probabilities: Vec<rug::Float> = weights_rug.iter().map(|w| w / weights_sum).collect();
+    let probabilities: Vec<rug::Float> = weights_rug.iter().map(|w| w / weights_sum.clone()).collect();
 
     let _subsample_vec: Vec<T> = Vec::with_capacity(*k as usize);
 
@@ -159,7 +159,7 @@ pub fn create_subset<T>(set: &Vec<T>, weights: &Vec<f64>, k: &i64) -> Result<Vec
     // generate key/index tuples
     let mut key_vec = Vec::with_capacity(*k as usize);
     for i in 0..*k {
-        key_vec.push( (noise::mpfr_uniform(0., 1.)?.pow(1./probabilities[i as usize]), i) );
+        key_vec.push((noise::mpfr_uniform(0., 1.)?.pow(1. / probabilities[i as usize].clone()), i));
     }
 
     // sort key/index tuples by key and identify top k indices

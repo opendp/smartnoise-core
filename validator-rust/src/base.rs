@@ -727,8 +727,9 @@ pub fn compute_privacy_usage(
 
     let (graph_properties, graph) = propagate_properties(&analysis, &release)?;
 
+    println!("graph: {:?}", graph);
     let usage_option = graph.iter()
-        // optionally extract the minimum usage between the analysis and release
+        // return the privacy usage from the release, else from the analysis
         .filter_map(|(node_id, component)| get_component_privacy_usage(component, release.values.get(node_id)))
         // linear sum
         .fold1(|usage_1, usage_2| privacy_usage_reducer(
@@ -746,7 +747,7 @@ pub fn get_component_privacy_usage(
     release_node: Option<&proto::ReleaseNode>,
 ) -> Option<proto::PrivacyUsage> {
 
-    // otherwise return the maximum possible usage allowed to the component
+    // get the maximum possible usage allowed to the component
     let mut privacy_usage: Vec<proto::PrivacyUsage> = match component.to_owned().variant? {
         proto::component::Variant::Laplacemechanism(x) => x.privacy_usage,
         proto::component::Variant::Gaussianmechanism(x) => x.privacy_usage,
@@ -757,9 +758,13 @@ pub fn get_component_privacy_usage(
 
     // if release usage is defined, then use the actual eps, etc. from the release
     if let Some(release_node) = release_node {
-        privacy_usage = (*release_node.privacy_usage).to_vec();
+        let release_privacy_usage = (*release_node.privacy_usage).to_vec();
+        if release_privacy_usage.len() > 0 {
+            privacy_usage = release_privacy_usage
+        }
     }
 
+    // sum privacy usage within the node
     privacy_usage.into_iter()
         .fold1(|usage_a, usage_b|
             privacy_usage_reducer(&usage_a, &usage_b, &|a, b| a + b))

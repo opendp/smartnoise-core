@@ -259,7 +259,10 @@ class Component(object):
 
 
 class Analysis(object):
-    def __init__(self, *components, datasets=None, distance='APPROXIMATE', neighboring='SUBSTITUTE'):
+    def __init__(self, *components, validate=True, datasets=None, distance='APPROXIMATE', neighboring='SUBSTITUTE'):
+
+        # validate the analysis before running it
+        self.must_validate = validate
 
         # privacy definition
         self.distance: str = distance
@@ -446,6 +449,9 @@ class Analysis(object):
             self._serialize_release_proto())
 
     def release(self):
+        if self.must_validate:
+            assert self.validate(), "cannot release, analysis is not valid"
+
         release_proto: base_pb2.Release = core_wrapper.compute_release(
             self._serialize_analysis_proto(),
             self._serialize_release_proto())
