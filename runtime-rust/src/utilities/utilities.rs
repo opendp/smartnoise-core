@@ -120,14 +120,17 @@ pub fn combine_components_into_ieee(sign: &str, exponent: &str, mantissa: &str) 
 ///
 /// # Return
 /// Element from the candidate set
-
-pub fn sample_from_set<T>(candidate_set: &Vec<T>, weights: &Vec<f64>) -> Result<T> where T: Clone, {
+pub fn sample_from_set<T>(candidate_set: &Vec<T>, weights: &Vec<f64>)
+    -> Result<T> where T: Clone {
     // generate uniform random number on [0,1)
     let unif: rug::Float = Float::with_val(53, noise::mpfr_uniform(0., 1.)?);
 
     // generate sum of weights
     let weights_rug: Vec<rug::Float> = weights.into_iter().map(|w| Float::with_val(53, w)).collect();
     let weights_sum: rug::Float = Float::with_val(53, Float::sum(weights_rug.iter()));
+
+    // NOTE: use this instead of the two lines above if we switch to accepting rug::Float rather than f64 weights
+    // let weights_sum: rug::Float = Float::with_val(53, Float::sum(weights.iter()));
 
     // convert weights to probabilities
     let probabilities: Vec<rug::Float> = weights_rug.iter().map(|w| w / weights_sum.clone()).collect();
@@ -149,6 +152,13 @@ pub fn sample_from_set<T>(candidate_set: &Vec<T>, weights: &Vec<f64>) -> Result<
     Ok(candidate_set[return_index as usize].clone())
 }
 
+///  Accepts an ndarray and returns the number of columns
+///
+/// # Arguments
+/// * `data` - The data for which you want to know the number of columns
+///
+/// # Return
+/// Number of columns in data
 pub fn get_num_columns<T>(data: &ArrayD<T>) -> Result<i64> {
     match data.ndim() {
         0 => Err("data is a scalar".into()),

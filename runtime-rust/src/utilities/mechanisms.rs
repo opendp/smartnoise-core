@@ -3,20 +3,22 @@ use yarrow_validator::errors::*;
 
 use ndarray::prelude::*;
 
+use rug::{float::Constant, Float, ops::Pow};
+
 use crate::utilities::noise;
 use crate::utilities::utilities;
 
 /// Returns noise drawn according to the Laplace distribution
 ///
 /// Noise is drawn with scale sensitivity/epsilon and centered about 0.
-/// For more information, see the Laplace mechanism in 
+/// For more information, see the Laplace mechanism in
 /// C. Dwork, A. Roth The Algorithmic Foundations of Differential Privacy, Chapter 3.3 The Laplace Mechanism p.30-37. August 2014.
 ///
 /// NOTE: this implementation of Laplace draws is likely non-private due to floating-point attacks
-/// See Mironov, Ilya. "On significance of the least significant bits for differential privacy." 
+/// See Mironov, Ilya. "On significance of the least significant bits for differential privacy."
 /// Proceedings of the 2012 ACM conference on Computer and communications security. 2012.
 /// http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.366.5957&rep=rep1&type=pdf
-/// for more information 
+/// for more information
 ///
 /// # Arguments
 ///
@@ -40,17 +42,17 @@ pub fn laplace_mechanism(epsilon: &f64, sensitivity: &f64) -> Result<f64> {
 
 /// Returns noise drawn according to the Gaussian distribution
 ///
-/// Let c = sqrt(2*ln(1.25/delta)). Noise is drawn from a Gaussian distribution with scale 
+/// Let c = sqrt(2*ln(1.25/delta)). Noise is drawn from a Gaussian distribution with scale
 /// sensitivity*c/epsilon and centered about 0.
 ///
-/// For more information, see the Gaussian mechanism in 
+/// For more information, see the Gaussian mechanism in
 /// C. Dwork, A. Roth The Algorithmic Foundations of Differential Privacy, Chapter 3.5.3 Laplace versus Gauss p.53. August 2014.
 ///
 /// NOTE: this implementation of Gaussian draws in likely non-private due to floating-point attacks
-/// See Mironov, Ilya. "On significance of the least significant bits for differential privacy." 
+/// See Mironov, Ilya. "On significance of the least significant bits for differential privacy."
 /// Proceedings of the 2012 ACM conference on Computer and communications security. 2012.
 /// http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.366.5957&rep=rep1&type=pdf
-/// for more information 
+/// for more information
 ///
 /// # Arguments
 ///
@@ -78,9 +80,9 @@ pub fn gaussian_mechanism(epsilon: &f64, delta: &f64, sensitivity: &f64) -> Resu
 ///
 /// * `epsilon` - multiplicative privacy loss parameter
 /// * `sensitivity` - bound on the L2 sensitivity of the function the noise is to be added to the results of.
-/// * `count_min` - 
+/// * `count_min` -
 /// * `count_max` -
-/// * `enforce_constant_time` - Boolean flag that indicates whether or not to run the noise generation algorithm in constant time. 
+/// * `enforce_constant_time` - Boolean flag that indicates whether or not to run the noise generation algorithm in constant time.
 ///                             If true, will run count_max-count_min number of times.
 /// # Return
 /// Array of a single value drawn from the Gaussian distribution with scale defined as above.
@@ -134,10 +136,13 @@ pub fn exponential_mechanism<T>(
                          ) -> Result<T> where T: Copy, {
 
     // get vector of e^(util), then use to find probabilities
-    let e_util_vec: Vec<f64> = candidate_set.iter()
-        .map(|x| std::f64::consts::E.powf(epsilon * utility(x) / (2.0 * sensitivity))).collect();
-    let sum_e_util_vec: f64 = e_util_vec.iter().sum();
-    let probability_vec: Vec<f64> = e_util_vec.iter().map(|x| x / sum_e_util_vec).collect();
+    let rug_e = Float::with_val(53, Constant::Euler);
+    let rug_eps = Float::with_val(53, epsilon);
+    let rug_sens = Float::with_val(53, sensitivity);
+    let e_util_vec: Vec<rug::Float> = candidate_set.iter()
+        .map(|x| rug_e.pow(rug_eps * Float::with_val(53, utility(x)) / (2.0 * rug_sens))).collect();
+    let sum_e_util_vec: rug::Float = Float::with_val(53, Float::sum(e_util_vec.iter()));
+    let probability_vec: Vec<f64> = e_util_vec.iter().map(|x| (x / sum_e_util_vec).to_f64()).collect();
 
     // sample element relative to probability
     let candidate_vec: Vec<T> = candidate_set.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
