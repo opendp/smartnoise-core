@@ -32,7 +32,7 @@ impl Component for proto::DpMinimum {
 }
 
 impl Expandable for proto::DpMinimum {
-    fn expand_graph(
+    fn expand_component(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,

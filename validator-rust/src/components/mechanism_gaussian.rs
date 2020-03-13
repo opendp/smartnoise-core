@@ -46,7 +46,7 @@ impl Component for proto::GaussianMechanism {
 
 
 impl Expandable for proto::GaussianMechanism {
-    fn expand_graph(
+    fn expand_component(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
@@ -68,8 +68,7 @@ impl Expandable for proto::GaussianMechanism {
                 .ok_or::<Error>("aggregator: missing".into())?;
 
             let sensitivity: Value = Array::from(aggregator.component
-                .compute_sensitivity(privacy_definition, &aggregator.properties, &Sensitivity::KNorm(2))
-                .unwrap()).into_dyn().into();
+                .compute_sensitivity(privacy_definition, &aggregator.properties, &Sensitivity::KNorm(2))?).into_dyn().into();
             current_id += 1;
             let id_sensitivity = current_id.clone();
             graph_expansion.insert(id_sensitivity, get_constant(&sensitivity, &component.batch));

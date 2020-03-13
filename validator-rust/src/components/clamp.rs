@@ -98,7 +98,7 @@ impl Component for proto::Clamp {
 
 
 impl Expandable for proto::Clamp {
-    fn expand_graph(
+    fn expand_component(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,

@@ -34,7 +34,7 @@ impl Component for proto::DpHistogram {
 
 
 impl Expandable for proto::DpHistogram {
-    fn expand_graph(
+    fn expand_component(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,

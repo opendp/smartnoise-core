@@ -481,7 +481,6 @@ pub enum Sensitivity {
     Exponential
 }
 
-
 pub fn prepend(text: &str) -> impl Fn(Error) -> Error + '_ {
     move |e| format!("{} {}", text, e).into()
 }
@@ -565,7 +564,7 @@ pub fn propagate_properties(
                 let input_properties = get_input_properties(&component, &graph_properties)?;
                 let public_arguments = get_input_arguments(&component, &graph_evaluation)?;
 
-                let result = component.clone().variant.unwrap().expand_graph(
+                let result = component.clone().variant.unwrap().expand_component(
                     &privacy_definition,
                     &component,
                     &input_properties,
@@ -588,7 +587,8 @@ pub fn propagate_properties(
                 traversal.pop();
 
                 component.clone().variant.unwrap().propagate_property(
-                    &privacy_definition, &public_arguments, &input_properties)?
+                    &privacy_definition, &public_arguments, &input_properties)
+                    .chain_err(|| format!("at node_id {:?},", node_id))?
             }
         };
         graph_properties.insert(node_id.clone(), properties);
@@ -795,6 +795,8 @@ pub fn expand_component(
     node_id_maximum: u32
 ) -> Result<proto::response_expand_component::ExpandedComponent> {
 
+//    println!("expanding node id: {}", node_id_output);
+//    println!("expansion properties before {:?}", properties);
     let mut properties: NodeProperties = properties.iter()
         .map(|(k, v)| (k.to_owned(), utilities::serial::parse_value_properties(&v)))
         .collect();
@@ -803,20 +805,24 @@ pub fn expand_component(
         properties.insert(k.clone(), infer_property(&v)?);
     }
 
-    let result = component.clone().variant.unwrap().expand_graph(
+//    println!("expanding node id: {}", node_id_output);
+//    println!("expansion properties after {:?}", properties);
+//    println!("\n\n");
+    let result = component.clone().variant.unwrap().expand_component(
         privacy_definition,
         component,
         &properties,
         node_id_output,
         node_id_maximum,
-    )?;
+    ).chain_err(|| format!("at node_id {:?},", node_id_output))?;
 
     Ok(proto::response_expand_component::ExpandedComponent {
         computation_graph: Some(proto::ComputationGraph { value: result.1 }),
         properties: match result.0 > node_id_maximum {
+            true => None,
             false => Some(utilities::serial::serialize_value_properties(&component.clone().variant.unwrap()
-                .propagate_property(privacy_definition, arguments, &properties)?)),
-            true => None
+                .propagate_property(privacy_definition, arguments, &properties)
+                .chain_err(|| format!("at node_id {:?},", node_id_output))?))
         },
         maximum_id: result.0
     })

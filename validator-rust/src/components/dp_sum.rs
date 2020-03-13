@@ -29,7 +29,7 @@ impl Component for proto::DpSum {
 }
 
 impl Expandable for proto::DpSum {
-    fn expand_graph(
+    fn expand_component(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,

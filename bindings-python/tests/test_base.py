@@ -3,12 +3,12 @@ import yarrow
 import yarrow.components as op
 
 test_csv_path = '/home/shoe/PSI/datasets/data/PUMS_california_demographics_1000/data.csv'
-
+test_csv_names = ["age", "sex", "educ", "race", "income", "married"]
 
 def test_multilayer_analysis(run=True):
 
     with yarrow.Analysis() as analysis:
-        PUMS = yarrow.Dataset(path=test_csv_path)
+        PUMS = yarrow.Dataset(path=test_csv_path, column_names=test_csv_names)
 
         age = op.cast(PUMS['age'], type="FLOAT")
         sex = op.cast(PUMS['sex'], type="BOOL", true_label="TRUE")
@@ -75,7 +75,7 @@ def test_multilayer_analysis(run=True):
 
 def test_dp_linear_stats(run=True):
     with yarrow.Analysis() as analysis:
-        dataset_pums = yarrow.Dataset(path=test_csv_path)
+        dataset_pums = yarrow.Dataset(path=test_csv_path, column_names=test_csv_names)
 
         age = dataset_pums['age']
 
@@ -85,7 +85,6 @@ def test_dp_linear_stats(run=True):
             count_min=0,
             count_max=10000
         )
-
         analysis.release()
         print("number of records:", num_records.value)
 
@@ -119,7 +118,7 @@ def test_dp_linear_stats(run=True):
         )
 
         # sum doesn't need n, so I pass the data in before resizing
-        sum = op.dp_sum(
+        age_sum = op.dp_sum(
             imputed_age,
             privacy_usage={'epsilon': .5}
         )
@@ -156,7 +155,7 @@ def test_dp_linear_stats(run=True):
             privacy_usage={'epsilon': 10})
 
         # releases may also be postprocessed and reused as arguments to more components
-        sum + custom_minimum * 23.
+        age_sum + custom_minimum * 23.
 
         analysis.release()
         print("laplace quantile:", custom_quantile.value)
@@ -174,7 +173,7 @@ def test_dp_linear_stats(run=True):
 
 def test_dp_count(run=True):
     with yarrow.Analysis() as analysis:
-        dataset_pums = yarrow.Dataset(path=test_csv_path)
+        dataset_pums = yarrow.Dataset(path=test_csv_path, column_names=test_csv_names)
         count = op.dp_count(
             dataset_pums['sex'] == '1',
             privacy_usage={'epsilon': 0.5})

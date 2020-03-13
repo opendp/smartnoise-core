@@ -32,7 +32,7 @@ impl Component for proto::DpMaximum {
 }
 
 impl Expandable for proto::DpMaximum {
-    fn expand_graph(
+    fn expand_component(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,

@@ -110,7 +110,7 @@ impl Component for proto::Resize {
 }
 
 impl Expandable for proto::Resize {
-    fn expand_graph(
+    fn expand_component(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,

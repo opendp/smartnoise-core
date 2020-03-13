@@ -46,7 +46,7 @@ def privacy_usage(epsilon=None, delta=None):
 
 
 class Dataset(object):
-    def __init__(self, *, path=None, value=None, value_format=None, private=True):
+    def __init__(self, *, path=None, value=None, num_columns=None, column_names=None, value_format=None, private=True):
 
         global context
         if not context:
@@ -55,13 +55,21 @@ class Dataset(object):
         if sum(int(i is not None) for i in [path, value]) != 1:
             raise ValueError("either path or value must be set")
 
+        if num_columns is None and column_names is None:
+            raise ValueError("either num_columns or column_names must be set")
+
         materialize_options = {'private': private}
         if path is not None:
             materialize_options['file_path'] = path
         if value is not None:
             materialize_options['literal'] = Analysis._serialize_value_proto(value, value_format)
 
-        self.component = Component('Materialize', options=materialize_options)
+        self.component = Component('Materialize',
+                                   arguments={
+                                       "column_names": Component.of(column_names),
+                                       "num_columns": Component.of(num_columns),
+                                   },
+                                   options=materialize_options)
 
     def __getitem__(self, identifier):
         return Component('Index', arguments={'columns': Component.of(identifier), 'data': self.component})
@@ -125,8 +133,8 @@ class Component(object):
 
     def __truediv__(self, other):
         return Component('Divide', arguments={
-            'left': Component('Cast', arguments={'data': self, "type": "FLOAT"}),
-            'right': Component('Cast', arguments={'data': Component.of(other), "type": "FLOAT"})})
+            'left': Component('Cast', arguments={'data': self, "type": Component.of("FLOAT")}),
+            'right': Component('Cast', arguments={'data': Component.of(other), "type": Component.of("FLOAT")})})
 
     def __rtruediv__(self, other):
         return Component('Divide', arguments={'left': Component.of(other), 'right': self})
@@ -261,9 +269,6 @@ class Analysis(object):
         self.components: dict = {}
         self.release_values = {}
         self.datasets: list = datasets or []
-
-        # TODO: temporary. should be converted into self.release_values upon return from runtime
-        self.release_proto = None
 
         # track node ids
         self.component_count = 0

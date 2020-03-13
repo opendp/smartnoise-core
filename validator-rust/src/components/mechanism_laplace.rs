@@ -12,7 +12,6 @@ use crate::base::{Value, NodeProperties, ArrayND, get_constant, Sensitivity, pre
 use ndarray::Array;
 
 impl Component for proto::LaplaceMechanism {
-    // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
@@ -48,7 +47,7 @@ impl Component for proto::LaplaceMechanism {
 
 
 impl Expandable for proto::LaplaceMechanism {
-    fn expand_graph(
+    fn expand_component(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
@@ -70,8 +69,7 @@ impl Expandable for proto::LaplaceMechanism {
                 .ok_or::<Error>("aggregator: missing".into())?;
 
             let sensitivity: Value = Array::from(aggregator.component
-                .compute_sensitivity(privacy_definition, &aggregator.properties, &Sensitivity::KNorm(1))
-                .unwrap()).into_dyn().into();
+                .compute_sensitivity(privacy_definition, &aggregator.properties, &Sensitivity::KNorm(1))?).into_dyn().into();
 
             current_id += 1;
             let id_sensitivity = current_id.clone();

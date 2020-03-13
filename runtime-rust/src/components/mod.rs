@@ -41,6 +41,7 @@ impl Evaluable for proto::component::Variant {
                     $(
                        if let proto::component::Variant::$variant(x) = self {
                             return x.evaluate(arguments)
+                                .chain_err(|| format!("node specification: {:?}:", self))
                        }
                     )*
                 }

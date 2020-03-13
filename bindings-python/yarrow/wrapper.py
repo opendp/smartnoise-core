@@ -2,6 +2,7 @@ from yarrow._native_validator import ffi as ffi_validator, lib as lib_validator
 from yarrow._native_runtime import ffi as ffi_runtime, lib as lib_runtime
 
 from . import api_pb2
+import re
 
 
 class LibraryWrapper(object):
@@ -82,5 +83,16 @@ def _communicate(function, argument, response_type, ffi):
 
     # Errors from here are propagated up from either the rust validator or runtime
     if response.HasField("error"):
-        raise RuntimeError(response.error.message)
+
+        binary_traceback = response.error.message
+
+        try:
+            message, *frames = re.split("\n +[0-9]+: ", binary_traceback)
+            binary_traceback = '\n'.join(reversed(["  " + frame.replace("         at", "at") for frame in frames if
+                                                  ("at src/" in frame or "yarrow_validator" in frame) and "yarrow_validator::errors::Error" not in frame])) \
+                               + "\n  " + message
+        except Exception:
+            pass
+
+        raise RuntimeError(binary_traceback)
     return response.data

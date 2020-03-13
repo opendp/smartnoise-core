@@ -12,7 +12,6 @@ use crate::base::{NodeProperties, Value, standardize_categorical_argument, Vecto
 use crate::utilities::json::{JSONRelease};
 
 
-
 impl Component for proto::DpCount {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
@@ -34,7 +33,7 @@ impl Component for proto::DpCount {
 
 
 impl Expandable for proto::DpCount {
-    fn expand_graph(
+    fn expand_component(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,

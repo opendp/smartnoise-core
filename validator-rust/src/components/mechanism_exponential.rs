@@ -46,7 +46,7 @@ impl Component for proto::ExponentialMechanism {
 
 
 impl Expandable for proto::ExponentialMechanism {
-    fn expand_graph(
+    fn expand_component(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
@@ -68,8 +68,7 @@ impl Expandable for proto::ExponentialMechanism {
                 .ok_or::<Error>("aggregator: missing".into())?;
 
             let sensitivity = Value::ArrayND(ArrayND::F64(Array::from(aggregator.component
-                .compute_sensitivity(privacy_definition, &aggregator.properties, &Sensitivity::Exponential)
-                .unwrap()).into_dyn()));
+                .compute_sensitivity(privacy_definition, &aggregator.properties, &Sensitivity::Exponential)?).into_dyn()));
             current_id += 1;
             let id_sensitivity = current_id.clone();
             graph_expansion.insert(id_sensitivity, get_constant(&sensitivity, &component.batch));

@@ -32,8 +32,6 @@ impl Component for proto::Sum {
         data_property.num_records = Some(1);
         data_property.nature = None;
 
-        println!("data property {:?}", data_property);
-
         Ok(data_property.into())
     }
 

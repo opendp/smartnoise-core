@@ -229,7 +229,7 @@ pub fn parse_arraynd_properties(value: &proto::ArrayNdProperties) -> ArrayNDProp
         nullity: value.nullity,
         releasable: value.releasable,
         c_stability: parse_array1d_f64(&value.c_stability.to_owned().unwrap()),
-        aggregator: match &value.aggregator {
+        aggregator: match value.aggregator.clone() {
             Some(aggregator) => Some(AggregatorProperties {
                 component: aggregator.component.clone().unwrap().variant.unwrap(),
                 properties: aggregator.properties.iter()

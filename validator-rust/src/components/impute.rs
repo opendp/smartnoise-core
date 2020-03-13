@@ -102,7 +102,7 @@ impl Component for proto::Impute {
 }
 
 impl Expandable for proto::Impute {
-    fn expand_graph(
+    fn expand_component(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,

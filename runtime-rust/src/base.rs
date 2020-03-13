@@ -79,7 +79,7 @@ pub fn execute_graph(analysis: &proto::Analysis,
         let public_arguments = node_properties.iter()
             .filter(|(_k, v)| match v.variant.clone().unwrap() {
                 proto::value_properties::Variant::Arraynd(v) => v.releasable,
-                _=> false
+                _ => false
             })
             .map(|(k, _v)| (k.clone(), release
                 .get(component.arguments.get(k).unwrap()).unwrap().clone()))
@@ -98,6 +98,7 @@ pub fn execute_graph(analysis: &proto::Analysis,
             maximum_id,
         )?;
 
+//        println!("expansion {:?}", expansion);
         graph.extend(expansion.computation_graph.unwrap().value);
 
         if maximum_id != expansion.maximum_id {
@@ -105,7 +106,10 @@ pub fn execute_graph(analysis: &proto::Analysis,
             continue;
         }
 
-        graph_properties.insert(node_id, expansion.properties.unwrap());
+        if let Some(expansion_property) = expansion.properties {
+//            println!("expansion property added to runtime props: {:?}", expansion_property);
+            graph_properties.insert(node_id, expansion_property);
+        }
 
         traversal.pop();
 

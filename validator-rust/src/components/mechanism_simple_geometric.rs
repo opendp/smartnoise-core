@@ -47,7 +47,7 @@ impl Component for proto::SimpleGeometricMechanism {
 
 
 impl Expandable for proto::SimpleGeometricMechanism {
-    fn expand_graph(
+    fn expand_component(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
@@ -69,8 +69,7 @@ impl Expandable for proto::SimpleGeometricMechanism {
                 .ok_or::<Error>("aggregator: missing".into())?;
 
             let sensitivity: Value = Array::from(aggregator.component
-                .compute_sensitivity(privacy_definition, &aggregator.properties, &Sensitivity::KNorm(1))
-                .unwrap()).into_dyn().into();
+                .compute_sensitivity(privacy_definition, &aggregator.properties, &Sensitivity::KNorm(1))?).into_dyn().into();
 
             current_id += 1;
             let id_sensitivity = current_id.clone();

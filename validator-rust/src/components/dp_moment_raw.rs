@@ -33,7 +33,7 @@ impl Component for proto::DpMomentRaw {
 }
 
 impl Expandable for proto::DpMomentRaw {
-    fn expand_graph(
+    fn expand_component(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,

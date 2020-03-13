@@ -1,5 +1,6 @@
 use yarrow_validator::errors::*;
 
+use ndarray::prelude::*;
 use crate::base::NodeArguments;
 use yarrow_validator::base::{Value, ArrayND, Hashmap};
 use crate::components::Evaluable;
@@ -9,22 +10,38 @@ use ndarray::Array;
 use yarrow_validator::proto;
 
 impl Evaluable for proto::Materialize {
-    fn evaluate(&self, _arguments: &NodeArguments) -> Result<Value> {
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
+
+        // TODO: decide if column names should be mandatory
+        let column_names = arguments.get("column_names")
+            .and_then(|column_names| column_names.get_arraynd().ok()?.get_str().ok()).cloned();
+
         match self.value.as_ref().unwrap() {
             proto::materialize::Value::Literal(value) => parse_value(value),
             proto::materialize::Value::FilePath(path) => {
                 let mut response = HashMap::<String, Vec<String>>::new();
-                csv::Reader::from_path(path).unwrap().deserialize()
-                    .for_each(|result| {
+
+                let mut reader = csv::Reader::from_path(path).unwrap();
+                if let Some(column_names) = column_names {
+                    reader.set_headers(csv::StringRecord::from(column_names.into_dimensionality::<Ix1>().unwrap().to_vec()))
+                }
+
+                // parse from csv into response
+                reader.deserialize()
+                    .map(|result| {
                         // parse each record into the yarrow internal format
                         let record: HashMap<String, String> = result.unwrap();
                         record.iter().for_each(|(k, v)| response
                             .entry(k.to_owned()).or_insert_with(Vec::new)
                             .push(v.clone()));
-                    });
+                        Ok(())
+                    }).collect::<Result<()>>()?;
+
+
+                // convert hashmap of vecs into arrays
                 Ok(Value::Hashmap(Hashmap::Str(response.iter()
                     .map(|(k, v): (&String, &Vec<String>)| (
-                        k.clone(), Value::ArrayND(ArrayND::Str(Array::from(v.to_owned()).into_dyn()))
+                        k.clone(), Array::from(v.to_owned()).into_dyn().into()
                     ))
                     .collect::<HashMap<String, Value>>())))
             }

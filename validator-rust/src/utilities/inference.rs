@@ -27,7 +27,7 @@ pub fn infer_num_columns(value: &Value) -> Result<Option<i64>> {
             let shape = get_shape(&array);
             match shape.len() {
                 0 => Ok(Some(1)),
-                1 => Ok(Some(shape[0])),
+                1 => Ok(Some(1)),
                 2 => Ok(Some(shape[1])),
                 _ => Err("arrays may have max dimensionality of 2".into())
             }
@@ -195,34 +195,37 @@ pub fn infer_categories(value: &Value) -> Vector2DJagged {
                 Vector2DJagged::Bool(array.gencolumns().into_iter().map(|col| {
                     let mut column_categories = col.into_dyn().
                         into_dimensionality::<Ix1>().unwrap().to_vec();
-                    column_categories.sort();
-                    column_categories.dedup();
+//                    column_categories.sort();
+//                    column_categories.dedup();
                     Some(column_categories)
                 }).collect()),
             ArrayND::F64(array) =>
                 Vector2DJagged::F64(array.gencolumns().into_iter().map(|col| {
                     let mut column_categories = col.into_dyn().
                         into_dimensionality::<Ix1>().unwrap().to_vec();
-                    column_categories.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal));
-                    column_categories.dedup();
+//                    column_categories.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal));
+//                    column_categories.dedup();
                     Some(column_categories)
                 }).collect()),
             ArrayND::I64(array) =>
                 Vector2DJagged::I64(array.gencolumns().into_iter().map(|col| {
                     let mut column_categories = col.into_dyn().
                         into_dimensionality::<Ix1>().unwrap().to_vec();
-                    column_categories.sort();
-                    column_categories.dedup();
+//                    column_categories.sort();
+//                    column_categories.dedup();
                     Some(column_categories)
                 }).collect()),
-            ArrayND::Str(array) =>
+            ArrayND::Str(array) =>{
+
+                println!("array in inference {:?}", array);
                 Vector2DJagged::Str(array.gencolumns().into_iter().map(|col| {
                     let mut column_categories = col.into_dyn().
                         into_dimensionality::<Ix1>().unwrap().to_vec();
-                    column_categories.sort();
-                    column_categories.dedup();
+//                    column_categories.sort();
+//                    column_categories.dedup();
                     Some(column_categories)
                 }).collect())
+            }
         },
         Value::Hashmap(_hashmap) => panic!("category inference is not implemented for hashmaps"),
         Value::Vector2DJagged(jagged) => match jagged {
@@ -324,7 +327,7 @@ pub fn infer_property(value: &Value) -> Result<ValueProperties> {
         Value::ArrayND(array) => ArrayNDProperties {
             nullity: infer_nullity(&value)?,
             releasable: true,
-            nature: Some(infer_nature(&value)),
+            nature: None, // Some(infer_nature(&value)),
             c_stability: infer_c_stability(&value)?,
             num_columns: infer_num_columns(&value)?,
             num_records: infer_num_rows(array)?,
