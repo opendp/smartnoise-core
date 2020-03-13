@@ -138,11 +138,6 @@ pub fn sample_from_set<T>(candidate_set: &Vec<T>, weights: &Vec<f64>) -> Result<
         cumulative_probability_vec.push( Float::with_val(53, Float::sum(probabilities[0..(i+1)].iter())) );
     }
 
-    // let cumulative_probability_vec = probabilities.iter().scan(0.0, |sum, i| {
-    //     *sum += i;
-    //     Some(*sum)
-    // }).collect::<Vec<_>>();
-
     // sample an element relative to its probability
     let mut return_index = 0;
     for i in 0..cumulative_probability_vec.len() {

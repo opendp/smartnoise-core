@@ -5,11 +5,11 @@ use crate::components::Evaluable;
 use yarrow_validator::base::{Value, ArrayND, Vector2DJagged, get_argument, standardize_null_argument};
 
 use ndarray::{ArrayD, Axis, Array};
+use rug::{Float, ops::Pow};
 
 use crate::utilities::noise;
 use crate::components::impute::{impute_float_gaussian, impute_float_uniform, impute_categorical};
 use yarrow_validator::proto;
-
 
 use crate::utilities::utilities::get_num_columns;
 use crate::utilities::array::{select, stack};
@@ -139,9 +139,17 @@ pub fn create_subset<T>(set: &Vec<T>, weights: &Vec<f64>, k: &i64) -> Result<Vec
 
     if *k as usize > set.len() {return Err("k must be less than the set length".into())}
 
-    let weights_sum: f64 = weights.iter().sum();
+    // let weights_sum: f64 = weights.iter().sum();
 
-    let probabilities_vec: Vec<f64> = weights.iter().map(|w| w / weights_sum).collect();
+    // let probabilities_vec: Vec<f64> = weights.iter().map(|w| w / weights_sum).collect();
+
+    // generate sum of weights
+    let weights_rug: Vec<rug::Float> = weights.into_iter().map(|w| Float::with_val(53, w)).collect();
+    let weights_sum: rug::Float = Float::with_val(53, Float::sum(weights_rug.iter()));
+
+    // convert weights to probabilities
+    let probabilities: Vec<rug::Float> = weights_rug.iter().map(|w| w / weights_sum).collect();
+
     let _subsample_vec: Vec<T> = Vec::with_capacity(*k as usize);
 
     //
@@ -151,7 +159,7 @@ pub fn create_subset<T>(set: &Vec<T>, weights: &Vec<f64>, k: &i64) -> Result<Vec
     // generate key/index tuples
     let mut key_vec = Vec::with_capacity(*k as usize);
     for i in 0..*k {
-        key_vec.push( (noise::sample_uniform(&0., &1.)?.powf(1./probabilities_vec[i as usize]), i) );
+        key_vec.push( (noise::mpfr_uniform(0., 1.)?.pow(1./probabilities[i as usize]), i) );
     }
 
     // sort key/index tuples by key and identify top k indices
