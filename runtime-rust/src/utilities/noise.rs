@@ -1,11 +1,57 @@
 use yarrow_validator::errors::*;
-
 use probability::distribution::{Gaussian, Laplace, Inverse, Distribution};
 use ieee754::Ieee754;
-
 use std::{cmp, f64::consts};
+use rug::rand::{ThreadRandGen, ThreadRandState};
+use rug::Float;
 
 use crate::utilities::utilities;
+
+struct GeneratorOpenSSL;
+impl ThreadRandGen for GeneratorOpenSSL {
+    fn gen(&mut self) -> u32 {
+        return u32::from_str_radix(&utilities::get_bytes(4), 2).unwrap();
+    }
+}
+
+pub fn mpfr_uniform(min: f64, max: f64) -> Result<rug::Float> {
+    /// Generate draw from Unif[0,1) with exact rounding
+
+    // initialize 64-bit floats within mpfr/rug
+    let mpfr_min = Float::with_val(53, min);
+    let mpfr_max = Float::with_val(53, max);
+    let mpfr_diff = Float::with_val(53, &mpfr_max - &mpfr_min);
+
+    // initialize randomness
+    let mut rng = GeneratorOpenSSL {};
+    let mut state = ThreadRandState::new_custom(&mut rng);
+
+    // generate Unif[0,1] according to mpfr standard, then convert to correct scale
+    let mut unif = Float::with_val(53, Float::random_cont(&mut state));
+    unif = unif.mul_add(&mpfr_diff, &mpfr_min);
+
+    // return uniform
+    return Ok(unif);
+}
+
+pub fn mpfr_gaussian(shift: f64, scale:f64) -> Result<rug::Float> {
+    /// Generate draw from Gaussian(0,1) with exact rounding
+
+    // initialize 64-bit floats within mpfr/rug
+    let mpfr_shift = Float::with_val(53, shift);
+    let mpfr_scale = Float::with_val(53, scale);
+
+    // initialize randomness
+    let mut rng = GeneratorOpenSSL {};
+    let mut state = ThreadRandState::new_custom(&mut rng);
+
+    // generate Gaussian(0,1) according to mpfr standard, then convert to correct scale
+    let mut gauss = Float::with_val(64, Float::random_normal(&mut state));
+    gauss = gauss.mul_add(&mpfr_scale, &mpfr_shift);
+
+    // return gaussian
+    return Ok(gauss);
+}
 
 /// Sample from Laplace distribution centered at shift and scaled by scale
 ///

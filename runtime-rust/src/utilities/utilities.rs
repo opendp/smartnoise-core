@@ -6,6 +6,9 @@ use ieee754::Ieee754;
 use crate::utilities::noise;
 use ndarray::{ArrayD};
 
+use rug::Float;
+
+
 /// Return bytes of binary data as String
 ///
 /// Reads bytes from OpenSSL, converts them into a string,
@@ -120,19 +123,25 @@ pub fn combine_components_into_ieee(sign: &str, exponent: &str, mantissa: &str) 
 
 pub fn sample_from_set<T>(candidate_set: &Vec<T>, weights: &Vec<f64>) -> Result<T> where T: Clone, {
     // generate uniform random number on [0,1)
-    let unif: f64 = noise::sample_uniform(&0., &1.)?;
+    let unif: rug::Float = Float::with_val(53, noise::mpfr_uniform(0., 1.)?);
 
     // generate sum of weights
-    let weights_sum: f64 = weights.iter().sum();
+    let weights_rug: Vec<rug::Float> = weights.into_iter().map(|w| Float::with_val(53, w)).collect();
+    let weights_sum: rug::Float = Float::with_val(53, Float::sum(weights_rug.iter()));
 
     // convert weights to probabilities
-    let probabilities: Vec<f64> = weights.iter().map(|w| w / weights_sum).collect();
+    let probabilities: Vec<rug::Float> = weights_rug.iter().map(|w| w / weights_sum).collect();
 
     // generate cumulative probability distribution
-    let cumulative_probability_vec = probabilities.iter().scan(0.0, |sum, i| {
-        *sum += i;
-        Some(*sum)
-    }).collect::<Vec<_>>();
+    let mut cumulative_probability_vec: Vec<rug::Float> = Vec::with_capacity(weights.len() as usize);
+    for i in 0..weights.len() {
+        cumulative_probability_vec.push( Float::with_val(53, Float::sum(probabilities[0..(i+1)].iter())) );
+    }
+
+    // let cumulative_probability_vec = probabilities.iter().scan(0.0, |sum, i| {
+    //     *sum += i;
+    //     Some(*sum)
+    // }).collect::<Vec<_>>();
 
     // sample an element relative to its probability
     let mut return_index = 0;
