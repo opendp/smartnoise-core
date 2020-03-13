@@ -1,20 +1,63 @@
 use yarrow_validator::errors::*;
-
-
 use probability::distribution::{Gaussian, Laplace, Inverse, Distribution};
 use ieee754::Ieee754;
-
-
 use std::{cmp, f64::consts};
-
+use rug::rand::{ThreadRandGen, ThreadRandState};
+use rug::Float;
 
 use crate::utilities::utilities;
+
+struct GeneratorOpenSSL;
+impl ThreadRandGen for GeneratorOpenSSL {
+    fn gen(&mut self) -> u32 {
+        return u32::from_str_radix(&utilities::get_bytes(4), 2).unwrap();
+    }
+}
+
+pub fn mpfr_uniform(min: f64, max: f64) -> Result<rug::Float> {
+    /// Generate draw from Unif[0,1) with exact rounding
+
+    // initialize 64-bit floats within mpfr/rug
+    let mpfr_min = Float::with_val(53, min);
+    let mpfr_max = Float::with_val(53, max);
+    let mpfr_diff = Float::with_val(53, &mpfr_max - &mpfr_min);
+
+    // initialize randomness
+    let mut rng = GeneratorOpenSSL {};
+    let mut state = ThreadRandState::new_custom(&mut rng);
+
+    // generate Unif[0,1] according to mpfr standard, then convert to correct scale
+    let mut unif = Float::with_val(53, Float::random_cont(&mut state));
+    unif = unif.mul_add(&mpfr_diff, &mpfr_min);
+
+    // return uniform
+    return Ok(unif);
+}
+
+pub fn mpfr_gaussian(shift: f64, scale:f64) -> Result<rug::Float> {
+    /// Generate draw from Gaussian(0,1) with exact rounding
+
+    // initialize 64-bit floats within mpfr/rug
+    let mpfr_shift = Float::with_val(53, shift);
+    let mpfr_scale = Float::with_val(53, scale);
+
+    // initialize randomness
+    let mut rng = GeneratorOpenSSL {};
+    let mut state = ThreadRandState::new_custom(&mut rng);
+
+    // generate Gaussian(0,1) according to mpfr standard, then convert to correct scale
+    let mut gauss = Float::with_val(64, Float::random_normal(&mut state));
+    gauss = gauss.mul_add(&mpfr_scale, &mpfr_shift);
+
+    // return gaussian
+    return Ok(gauss);
+}
 
 /// Sample from Laplace distribution centered at shift and scaled by scale
 ///
 /// # Arguments
-/// 
-/// * `shift` - f64, the center of the Laplace distribution 
+///
+/// * `shift` - f64, the center of the Laplace distribution
 /// * `scale` - f64, the scaling parameter of the Laplace distribution
 ///
 /// # Example
@@ -30,13 +73,13 @@ pub fn sample_laplace(shift: f64, scale: f64) -> Result<f64> {
 /// Sample from Gaussian distribution centered at shift and scaled by scale
 ///
 /// # Arguments
-/// 
-/// * `shift` - f64, the center of the Laplace distribution 
+///
+/// * `shift` - f64, the center of the Laplace distribution
 /// * `scale` - f64, the scaling parameter of the Laplace distribution
 ///
 /// Return
 /// f64 Gaussian random variable centered at shift and scaled at scale
-/// 
+///
 /// # Example
 /// ```
 /// use yarrow_runtime::utilities::noise::sample_gaussian;
@@ -57,7 +100,7 @@ pub fn sample_gaussian(shift: &f64, scale: &f64) -> Result<f64> {
 /// * `scale` - f64, the scaling parameter of the distribution
 /// * `min` - f64, the minimum value of random variables pulled from the distribution.
 /// * `max` - f64, the maximum value of random variables pulled from the distribution
-/// 
+///
 /// # Return
 /// f64 random gaussian random variable truncated to [min,max]
 ///
@@ -84,8 +127,8 @@ pub fn sample_gaussian_truncated(min: &f64, max: &f64, shift: &f64, scale: &f64)
 }
 
 /// Sample from uniform integers between min and max (inclusive)
-/// # Arguments 
-/// 
+/// # Arguments
+///
 /// * `min` - &i64, minimum value of distribution to sample from
 /// * `max` - &i64, maximum value of distribution to sample from
 ///
@@ -93,7 +136,7 @@ pub fn sample_gaussian_truncated(min: &f64, max: &f64, shift: &f64, scale: &f64)
 /// i64 random uniform variable between min and max (inclusive)
 ///
 /// # Example
-/// ``` 
+/// ```
 /// use yarrow_runtime::utilities::noise::sample_uniform_int;
 /// let n:i64 = sample_uniform_int(&0, &2)?;
 /// assert!(n == 0 || n == 1 || n == 2);
@@ -152,10 +195,10 @@ pub fn sample_uniform_int(min: &i64, max: &i64) -> Result<i64> {
 /// by generating a 52-bit mantissa uniformly at random.
 ///
 /// # Arguments
-/// 
+///
 /// `min`: f64 minimum of uniform distribution (inclusive)
 /// `max`: f64 maximum of unifrom distribution (non-inclusive)
-/// 
+///
 /// # Return
 /// f64 uniform random bit from [min, max)
 ///
@@ -203,7 +246,7 @@ pub fn sample_uniform(min: &f64, max: &f64) -> Result<f64> {
 /// a bit that is 1 with probability "prob"
 ///
 /// # Examples
-/// 
+///
 /// ```
 /// use yarrow_runtime::utilities::noise::sample_bit;
 /// let n:i64 = sample_bit(&0.7);
