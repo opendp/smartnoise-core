@@ -52,9 +52,7 @@ impl Aggregator for proto::Maximum {
             .ok_or("data: missing")?.get_arraynd()
             .map_err(prepend("data:"))?.clone();
 
-        data_property.assert_is_not_aggregated()?;
         data_property.assert_non_null()?;
-
 
         match sensitivity_type {
             Sensitivity::KNorm(k) => {

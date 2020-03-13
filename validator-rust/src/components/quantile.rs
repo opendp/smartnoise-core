@@ -21,8 +21,6 @@ impl Component for proto::Quantile {
             .ok_or("data: missing")?.get_arraynd()
             .map_err(prepend("data:"))?.clone();
 
-        data_property.assert_is_not_aggregated()?;
-
         // save a snapshot of the state when aggregating
         data_property.aggregator = Some(AggregatorProperties {
             component: proto::component::Variant::from(self.clone()),

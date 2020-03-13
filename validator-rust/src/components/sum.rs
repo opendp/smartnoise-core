@@ -21,7 +21,6 @@ impl Component for proto::Sum {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.get_arraynd()
             .map_err(prepend("data:"))?.clone();
-        data_property.assert_is_not_aggregated()?;
 
         // save a snapshot of the state when aggregating
         data_property.aggregator = Some(AggregatorProperties {
