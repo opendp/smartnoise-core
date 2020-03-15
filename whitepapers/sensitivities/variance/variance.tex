@@ -23,10 +23,10 @@
 
 \begin{document}
 
-\maketitle 
+\maketitle
 
 \begin{definition}
-Let variance be defined as 
+Let variance be defined as
 $$ s^2 = \frac{1}{n-1} \sum_{i=1}^n (x_i - \mean)^2.$$
 \end{definition}
 
@@ -51,7 +51,7 @@ $$ \sum_{i=1}^n (x_i - a)^2 = \sum_{i=1}^n (x_i - \bar{x})^2 + n(a-\bar{x})^2.$$
 \end{proof}
 
 \begin{theorem}
-Let 
+Let
 $$ f(\x) = \sum_{i=1}^n (x_i - \bar{x})^2.$$
 Then for $\x$ bounded between $m$ and $M,$ $f$ has sensitivity bounded above by
 $$\frac{n-1}{n} (M-m)^2.$$
@@ -59,7 +59,7 @@ $$\frac{n-1}{n} (M-m)^2.$$
 
 \begin{proof}
 Consider databases $\xprime$ and $\xprimeprime$ which differ in a single point. For notational ease, call $\x$ the part of $\xprime$ and $\xprimeprime$
-that is the same, and say that $\x$ contains $n$ points. WLOG say that the last data point in the database is the one that differs. I.e.,  
+that is the same, and say that $\x$ contains $n$ points. WLOG say that the last data point in the database is the one that differs. I.e.,
 $\xprime = \x \cup \{x_{n+1}\},$ and $\xprimeprime = \x \cup \{x'_{n+1}\}$. This proof assumes that a ``neighboring database" is one that differs in a single
 data-point, so we will ultimately be comparing $f(\xprime)$ and $f(\xprimeprime)$. However, it is useful to first write $f(\xprime)$ in terms of $f(\x)$.
 Note that
@@ -82,25 +82,86 @@ f(\xprime) &= \sum_{i=1}^n (x_i - \bar{x}')^2 + (x_{n+1} - \bar{x}')^2\\
 
 Now, to bound the sensitivity of $f$, note that
 
-\begin{align*}
-\left\vert f(\xprime) - f(\xprimeprime) \right\vert &= \left\vert (x_{n+1}-\bar{x})^2 \frac{n}{n+1} - (x_{n+1}'-\bar{x})^2 \frac{n}{n+1} \right\vert\\
-	&\le (M-m)^2 \frac{n}{n+1}.
-\end{align*}
+\begin{align}
+	\label{eq:l1_np1_bound}
+\left\vert f(\xprime) - f(\xprimeprime) \right\vert &= \left\vert (x_{n+1}-\bar{x})^2 \frac{n}{n+1} - (x_{n+1}'-\bar{x})^2 \frac{n}{n+1} \right\vert \\
+	&\le (M-m)^2 \frac{n}{n+1}. \nonumber
+\end{align}
+The bound in the final line follows from the case where $x_{n+1} = M$ (resp. $m$) and $\bar{x} = x'_{n+1} = m$ (resp. $M$). \newline
 
-Now, usually we're interested in sensitivities in terms of the total number of values in the database, which here is $n+1$. So, redefining $n$ as $n+1$ in the above equation gives
-
-$$ (M-m)^2 \frac{n-1}{n}.$$
+So we have a bound on the sensitivity of $f$ for a data set of size $n+1$, but traditionally we consider sensitivities
+on a data set of size $n$.
+Redefining $n+1$ as $n$ in the above equation gives
+$$ (M-m)^2 \frac{n-1}{n}. $$
 \end{proof}
 
 \begin{corollary}
-Sample variance has sensitivity bounded above by 
-$$ \frac{(M-m)^2 }{n}.$$
+Sample variance has sensitivity bounded above by
+$$ \frac{(M-m)^2 }{n}. $$
 \end{corollary}
 
 \subsection{$\ell_2$-sensitivity}
+\begin{theorem}
+	Let $X$ be a data set with $n$ elements, $x_1, \hdots, x_n$ and
+	\[ f(X) = \sum_{i=1}^n (x_i - \bar{x})^2 \]
+	be the sample variance.
+	For $X$ bounded between $m$ and $M,$ $f$ has a global sensitivity of
+	\[ \left( \frac{n-1}{n} (M-m)^2 \right)^2 \]
+\end{theorem}
+
+\begin{proof}
+	We can pick up from statement~\ref{eq:l1_np1_bound}, switching from $\ell_1$ to $\ell_2$ norm and interpreting
+	the data sets in question to be of size $n$ rather than $n+1$.
+	\begin{align*}
+		(f(x') - f(x''))^2
+			&= \left( (x_{n}-\bar{x})^2 \frac{n-1}{n} - (x_{n}'-\bar{x})^2 \frac{n-1}{n} \right)^2 \\
+			&= \left( \frac{n-1}{n} \right)^2 \left( (x_n - \bar{x})^2 - (x'_n - \bar{x})^2 \right)^2 \\
+			&\leq \left( \frac{n-1}{n} \right)^2 \left( (M-m)^2 \right)^2 \\
+			&= \left( \frac{n-1}{n} \right)^2 (M - m)^4 \\
+			&= \left( \frac{n-1}{n} (M - m)^2 \right)^2.
+	\end{align*}
+\end{proof}
 
 \section{Neighboring Definition: Add/Drop One}
 \subsection{$\ell_1$-sensitivity}
+% \begin{theorem}
+% 	Let $X$ be a data set with $n$ elements, $x_1, \hdots, x_n$ and
+% 	\[ f(X) = \sum_{i=1}^n (x_i - \bar{X})^2 \]
+% 	be the sample variance.
+% 	For $X$ bounded between $m$ and $M,$ $f$ has a global sensitivity of
+% 	% \[ \left( \frac{n-1}{n} (M-m)^2 \right)^2 \]
+% \end{theorem}
+
+% \begin{proof}
+% 	We must consider both adding and removing an element from $X$. \newline
+
+% 	Adding an element: \newline
+% 	Let $X' = X \cup x'_{n+1}$.
+% 	First, note that
+% 	\begin{align*}
+% 		\bar{X'} &= \frac{1}{n+1}\sum_{i=1}^{n+1}x_i \\
+% 				 &= \frac{1}{n+1} \left( \sum_{i=1}^{n}x_i \right) + \frac{x_{n+1}}{n+1} \\
+% 				 &= \frac{n \bar{X} + x_{n+1}}{n+1}.
+% 	\end{align*}
+% 	Now, consider that
+% 	\begin{align*}
+% 		\max_{X,X'}(\bar{X} - \bar{X'}) &= \max_{X,X'} \left( \frac{1}{n}\sum_{i=1}^{n}x_i - \frac{1}{n+1}\sum_{i=1}^{n+1}x_i \right) \\
+% 										&= \max_{X,X'} \frac{1}{n(n+1)} \left( \sum_{i=1}^{n}x_i \right) - \frac{x_{n+1}}{n+1} \\
+% 										&= \frac{nM}{n(n+1)} - \frac{m}{n+1} \\
+% 										&= \frac{n(M-m)}{n(n+1)} \\
+% 										&= \frac{M-m}{n+1}.
+% 	\end{align*}
+% 	So,
+% 	\begin{align*}
+% 		\Delta f(X) &= \max_{X,X'} (f(X) - f(X')) \\
+% 				    &= \max_{X,X'} \sum_{i=1}^n (x_i - \bar{X})^2 - \sum_{i=1}^{n+1} (x_i - \bar{X'})^2 \\
+% 					&= \max_{X,X'} \left( \sum_{i=1}^n (x_i - \bar{X})^2 - (x_i - \bar{X'})^2 \right) - (x_{n+1} - \bar{X'})^2 \\
+% 					&= \max_{X,X'} \left( \sum_{i=1}^n (x_i - \bar{X})^2 - \left(x_i - \frac{n \bar{X} + x_{n+1}}{n+1}\right)^2 \right) - \left(x_{n+1} - \frac{n \bar{X} - x_{n+1}}{n+1}\right)^2 \\
+% 					&= \max_{X,X'} \left( \sum_{i=1}^{n} \left( \frac{(n+1)(x_i - \bar{X})}{n+1} \right)^2 - \left(\frac{(n+1)x_i - n\bar{X} + x_{n+1}}{n+1}\right)^2 \right) - \left(\frac{(n+1)x_{n+1} - n\bar{X} + x_{n+1}}{n+1}\right)^2
+% 	\end{align*}
+% 	\textbf{NEED TO KEEP WORKING ON THIS}
+% \end{proof}
+
 \subsection{$\ell_2$-sensitivity}
 
 \bibliographystyle{alpha}
