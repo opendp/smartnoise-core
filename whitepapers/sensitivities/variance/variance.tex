@@ -45,7 +45,7 @@ $$ \sum_{i=1}^n (x_i - a)^2 = \sum_{i=1}^n (x_i - \bar{x})^2 + n(a-\bar{x})^2.$$
 	&= \sum_{i=1}^n (x_i - \bar{x})^2 - 2\sum_{i=1}^n \left(x_ia-x_i\bar{x} -\bar{x}a + \bar{x}^2\right) + \sum_{i=1}^n \left( a^2 -2a\bar{x} + \bar{x}^2\right)\\
 	&=  \sum_{i=1}^n (x_i - \bar{x})^2 -2a\sum_{i=1}^n x_i + 2\bar{x}\sum_{i=1}^n x_i + 2\bar{x}an - 2\bar{x}^2n + a^2n-2a\bar{x}n+\bar{x}^2n\\
 	&=  \sum_{i=1}^n (x_i - \bar{x})^2 + a^2n-2a\bar{x}n+\bar{x}^2n\\
-	&=  \sum_{i=1}^n (x_i - \bar{x})^2 + n(a-\bar{x})^2
+	&=  \sum_{i=1}^n (x_i - \bar{x})^2 + n(a-\bar{x})^2 
 \end{align*}
 
 \end{proof}
@@ -71,14 +71,15 @@ Note that
 \end{align}
 
 Then,
-\begin{align*}
-f(\xprime) &= \sum_{i=1}^n (x_i - \bar{x}')^2 + (x_{n+1} - \bar{x}')^2\\
-	&= \sum_{i=1}^n (x_i - \bar{x})^2 + n(\bar{x}'-\bar{x})^2 + (x_{n+1} - \bar{x}')^2 &&\text{(By Lemma \ref{lemma:meansum})}\\
-	&= f(\x) + n\left( \frac{n\bar{x} + x_{n+1}}{n+1}-\bar{x}\right)^2 + \left(x_{n+1} - \frac{n\bar{x} + x_{n+1}}{n+1} \right)^2 &&\text{(By Equation \ref{eqn:meanprime})}\\
-	&= f(\x) + n\left(\frac{x_{n+1}-\bar{x}}{n+1}\right)^2 + \left( \frac{nx_{n+1}-n\bar{x}}{n+1}\right)^2\\
-	&= f(\x) + (x_{n+1}-\bar{x})^2 \frac{n+n^2}{(n+1)^2}\\
-	&= f(\x) + (x_{n+1}-\bar{x})^2 \frac{n}{n+1}\\
-\end{align*}
+\begin{align}
+\label{eq:varAddOnePoint}
+f(\xprime) &= \sum_{i=1}^n (x_i - \bar{x}')^2 + (x_{n+1} - \bar{x}')^2 \notag\\
+	&= \sum_{i=1}^n (x_i - \bar{x})^2 + n(\bar{x}'-\bar{x})^2 + (x_{n+1} - \bar{x}')^2 &&\text{(By Lemma \ref{lemma:meansum})} \notag\\
+	&= f(\x) + n\left( \frac{n\bar{x} + x_{n+1}}{n+1}-\bar{x}\right)^2 + \left(x_{n+1} - \frac{n\bar{x} + x_{n+1}}{n+1} \right)^2 &&\text{(By Equation \ref{eqn:meanprime})} \notag\\
+	&= f(\x) + n\left(\frac{x_{n+1}-\bar{x}}{n+1}\right)^2 + \left( \frac{nx_{n+1}-n\bar{x}}{n+1}\right)^2 \notag\\
+	&= f(\x) + (x_{n+1}-\bar{x})^2 \frac{n+n^2}{(n+1)^2} \notag\\
+	&= f(\x) + (x_{n+1}-\bar{x})^2 \frac{n}{n+1} \notag\\
+\end{align}
 
 Now, to bound the sensitivity of $f$, note that
 
@@ -124,19 +125,34 @@ $$ \frac{(M-m)^2 }{n}. $$
 
 \section{Neighboring Definition: Add/Drop One}
 \subsection{$\ell_1$-sensitivity}
-% \begin{theorem}
-% 	Let $X$ be a data set with $n$ elements, $x_1, \hdots, x_n$ and
-% 	\[ f(X) = \sum_{i=1}^n (x_i - \bar{X})^2 \]
-% 	be the sample variance.
-% 	For $X$ bounded between $m$ and $M,$ $f$ has a global sensitivity of
-% 	% \[ \left( \frac{n-1}{n} (M-m)^2 \right)^2 \]
-% \end{theorem}
+ \begin{theorem}
+ 	Let $X$ be a data set with $n$ elements, $x_1, \hdots, x_n$ and
+ 	\[ f(X) = \sum_{i=1}^n (x_i - \bar{X})^2 \]
+ 	be the sample variance.
+ 	For $X$ bounded between $m$ and $M,$ $f$ has a global sensitivity of
+ 	% \[ \left( \frac{n-1}{n} (M-m)^2 \right)^2 \]
+ \end{theorem}
 
-% \begin{proof}
-% 	We must consider both adding and removing an element from $X$. \newline
+ \begin{proof}
+ 	We must consider both adding and removing an element from $X$. \newline
 
-% 	Adding an element: \newline
-% 	Let $X' = X \cup x'_{n+1}$.
+ 	Adding an element: \newline
+ 	Let $X' = X \cup x'_{n+1}$. Recall from Eq.~\ref{eq:varAddOnePoint} that for 
+	
+	$$ f(x) = \sum_{i=1}^n (x_i - \bar{x})^2, $$
+	$$ f(x') = (x_n+1 - \bar{x})^2 \frac{n}{n+1}.$$ 
+	
+	So,
+	
+	\begin{align*}
+	\left\vert f(x') - f(x) \right\vert &= \left\vert f(x) + (x_{n+1} - \bar{x})^2 \frac{n}{n+1} - f(x) \right\vert \\
+		&= \left\vert (x_{n+1} - \bar{x})^2 \frac{n}{n+1} \right\vert \\
+		&\le \left( M-m \right)^2 \frac{n}{n+1}
+	\end{align*}
+	
+	So the variance between $x$ and $x'$ is bounded by
+	
+	$$ \left( M-m \right)^2 \frac{n}{(n+1)(n-1)}.$$ 
 % 	First, note that
 % 	\begin{align*}
 % 		\bar{X'} &= \frac{1}{n+1}\sum_{i=1}^{n+1}x_i \\
@@ -160,7 +176,7 @@ $$ \frac{(M-m)^2 }{n}. $$
 % 					&= \max_{X,X'} \left( \sum_{i=1}^{n} \left( \frac{(n+1)(x_i - \bar{X})}{n+1} \right)^2 - \left(\frac{(n+1)x_i - n\bar{X} + x_{n+1}}{n+1}\right)^2 \right) - \left(\frac{(n+1)x_{n+1} - n\bar{X} + x_{n+1}}{n+1}\right)^2
 % 	\end{align*}
 % 	\textbf{NEED TO KEEP WORKING ON THIS}
-% \end{proof}
+ \end{proof}
 
 \subsection{$\ell_2$-sensitivity}
 
