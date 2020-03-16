@@ -4,14 +4,15 @@ use crate::base::NodeArguments;
 use crate::components::Evaluable;
 use yarrow_validator::base::{Value, ArrayND, Vector2DJagged, get_argument, standardize_null_argument};
 
-use ndarray::{ArrayD, Axis, Array, stack};
+use ndarray::{ArrayD, Axis, Array};
+use rug::{Float, ops::Pow};
 
 use crate::utilities::noise;
 use crate::components::impute::{impute_float_gaussian, impute_float_uniform, impute_categorical};
 use yarrow_validator::proto;
 
-
 use crate::utilities::utilities::get_num_columns;
+use crate::utilities::array::{select, stack};
 
 impl Evaluable for proto::Resize {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
@@ -21,18 +22,17 @@ impl Evaluable for proto::Resize {
             match (get_argument(&arguments, "data")?, get_argument(&arguments, "categories")?,
                    get_argument(&arguments, "probabilities")?, get_argument(&arguments, "null")?) {
                 (Value::ArrayND(data), Value::Vector2DJagged(categories), Value::Vector2DJagged(probabilities), Value::Vector2DJagged(nulls)) =>
-                    Ok(Value::ArrayND(match (data, categories, probabilities, nulls) {
+                    Ok(match (data, categories, probabilities, nulls) {
                         (ArrayND::F64(data), Vector2DJagged::F64(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::F64(nulls)) =>
-                            ArrayND::F64(resize_categorical(&data, &n, &categories, &probabilities, &nulls)?),
+                            resize_categorical(&data, &n, &categories, &probabilities, &nulls)?.into(),
                         (ArrayND::I64(data), Vector2DJagged::I64(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::I64(nulls)) =>
-                            ArrayND::I64(resize_categorical(&data, &n, &categories, &probabilities, &nulls)?),
+                            resize_categorical(&data, &n, &categories, &probabilities, &nulls)?.into(),
                         (ArrayND::Bool(data), Vector2DJagged::Bool(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::Bool(nulls)) =>
-                            ArrayND::Bool(resize_categorical(&data, &n, &categories, &probabilities, &nulls)?),
-                        // TODO: copy is not implemented for strings, so matrices cannot be stacked
-//                        (ArrayND::Str(data), Vector2DJagged::Str(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::Str(nulls)) =>
-//                            ArrayND::Str(resize_categorical(&data, &n, &categories, &probabilities, &nulls)?),
+                            resize_categorical(&data, &n, &categories, &probabilities, &nulls)?.into(),
+                        (ArrayND::Str(data), Vector2DJagged::Str(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::Str(nulls)) =>
+                            resize_categorical(&data, &n, &categories, &probabilities, &nulls)?.into(),
                         _ => return Err("types of data, categories and nulls must be homogenous, probabilities must be f64".into())
-                    })),
+                    }),
                 _ => return Err("data and nulls must be arrays, categories must be a jagged matrix".into())
             }
         } else {
@@ -91,14 +91,15 @@ pub fn resize_float(data: &ArrayD<f64>, n: &i64, distribution: &String,
             }
         },
         real_n if real_n > n =>
-            data.select(Axis(0), &create_sampling_indices(&n, &real_n)?).to_owned(),
+            select(&data, Axis(0), &create_sampling_indices(&n, &real_n)?),
+//            data.select(Axis(0), &create_sampling_indices(&n, &real_n)?).to_owned(),
         _ => return Err("invalid configuration for n when resizing".into())
     })
 }
 
 pub fn resize_categorical<T>(data: &ArrayD<T>, n: &i64,
                              categories: &Vec<Option<Vec<T>>>, weights: &Vec<Option<Vec<f64>>>, null_value: &Vec<Option<Vec<T>>>,)
-                             -> Result<ArrayD<T>> where T: Clone, T: Copy, T: PartialEq, T: Default {
+                             -> Result<ArrayD<T>> where T: Clone, T: PartialEq, T: Default {
     // get number of observations in actual data
     let real_n: i64 = data.len_of(Axis(0)) as i64;
 
@@ -126,7 +127,7 @@ pub fn resize_categorical<T>(data: &ArrayD<T>, n: &i64,
             }
         },
         real_n if real_n > n =>
-            data.select(Axis(0), &create_sampling_indices(&n, &real_n)?).to_owned(),
+            select(data, Axis(0), &create_sampling_indices(&n, &real_n)?).to_owned(),
         _ => return Err("invalid configuration for n when resizing".into())
     })
 }
@@ -138,9 +139,17 @@ pub fn create_subset<T>(set: &Vec<T>, weights: &Vec<f64>, k: &i64) -> Result<Vec
 
     if *k as usize > set.len() {return Err("k must be less than the set length".into())}
 
-    let weights_sum: f64 = weights.iter().sum();
+    // let weights_sum: f64 = weights.iter().sum();
 
-    let probabilities_vec: Vec<f64> = weights.iter().map(|w| w / weights_sum).collect();
+    // let probabilities_vec: Vec<f64> = weights.iter().map(|w| w / weights_sum).collect();
+
+    // generate sum of weights
+    let weights_rug: Vec<rug::Float> = weights.into_iter().map(|w| Float::with_val(53, w)).collect();
+    let weights_sum: rug::Float = Float::with_val(53, Float::sum(weights_rug.iter()));
+
+    // convert weights to probabilities
+    let probabilities: Vec<rug::Float> = weights_rug.iter().map(|w| w / weights_sum.clone()).collect();
+
     let _subsample_vec: Vec<T> = Vec::with_capacity(*k as usize);
 
     //
@@ -150,7 +159,7 @@ pub fn create_subset<T>(set: &Vec<T>, weights: &Vec<f64>, k: &i64) -> Result<Vec
     // generate key/index tuples
     let mut key_vec = Vec::with_capacity(*k as usize);
     for i in 0..*k {
-        key_vec.push( (noise::sample_uniform(&0., &1.)?.powf(1./probabilities_vec[i as usize]), i) );
+        key_vec.push((noise::mpfr_uniform(0., 1.)?.pow(1. / probabilities[i as usize].clone()), i));
     }
 
     // sort key/index tuples by key and identify top k indices
@@ -180,30 +189,3 @@ pub fn create_sampling_indices(k: &i64, n: &i64) -> Result<Vec<usize>> {
     // create set of sampling indices
     create_subset(&index_vec, &prob_vec, k)
 }
-
-// pub fn create_sampling_indices(k: &i64, n: &i64) -> ArrayD<i64> {
-//     // create vector of all indices
-//     let mut index_vec: Vec<i64> = Vec::with_capacity(*n as usize);
-//     for i in 0..*n {
-//         index_vec.push(i);
-//     }
-
-//     //
-//     // generate keys and identify k indices
-//     //
-
-//     // generate key/index tuples
-//     let mut key_vec: Vec<f64> = Vec::with_capacity(*n as usize);
-//     for i in 0..*n {
-//         key_vec.push( (noise::sample_uniform(0., 1.).powf(*n as f64), i) );
-//     }
-
-//     // sort key/index tuples by key and identify k indices
-//     key_vec.sort_by(|a, b| b.partial_cmp(a).unwrap());
-//     let mut indices: Vec<i64> = Vec::with_capacity(*k as usize);
-//     for i in 0..*k {
-//         indices.push(key_vec[i as usize].1 as i64);
-//     }
-
-//     return arr1(&indices).into_dyn();
-// }

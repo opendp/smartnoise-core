@@ -23,7 +23,7 @@ impl Evaluable for proto::Covariance {
 
             let cross_cov = matrix_cross_covariance(&left, &right)?;
 
-            return Ok(Value::ArrayND(ArrayND::F64(cross_cov)));
+            return Ok(cross_cov.into());
         }
         Err("insufficient data supplied to Covariance".into())
     }

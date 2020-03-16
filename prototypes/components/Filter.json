@@ -1,20 +1,19 @@
 {
   "arguments": {
-    "left": {
+    "data": {
       "nature": [
         "continuous"
       ],
       "type": "Array"
     },
-    "right": {
+    "mask": {
       "nature": [
-        "continuous"
       ],
       "type": "Array"
     }
   },
-  "id": "Div",
-  "name": "div",
+  "id": "Filter",
+  "name": "filter",
   "options": {},
   "return": {
     "nature": [
@@ -22,5 +21,5 @@
     ],
     "type": "Array"
   },
-  "docstring": "div step"
+  "docstring": "filter step"
 }

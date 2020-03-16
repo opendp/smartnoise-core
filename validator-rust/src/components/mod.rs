@@ -18,12 +18,14 @@ pub mod dp_minimum;
 pub mod dp_mean;
 pub mod dp_moment_raw;
 pub mod dp_sum;
+pub mod filter;
 pub mod impute;
 pub mod index;
 pub mod kth_raw_sample_moment;
 pub mod maximum;
 pub mod materialize;
 pub mod minimum;
+pub mod partition;
 pub mod quantile;
 pub mod mean;
 pub mod mechanism_exponential;
@@ -37,7 +39,7 @@ pub mod variance;
 
 use std::collections::HashMap;
 
-use crate::base::{Value, Properties, NodeProperties, Sensitivity};
+use crate::base::{Value, NodeProperties, Sensitivity, ValueProperties};
 use crate::proto;
 use crate::utilities::json::{JSONRelease};
 use crate::hashmap;
@@ -49,7 +51,7 @@ pub trait Component {
         privacy_definition: &proto::PrivacyDefinition,
         public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
-    ) -> Result<Properties>;
+    ) -> Result<ValueProperties>;
 
     fn get_names(
         &self,
@@ -59,7 +61,7 @@ pub trait Component {
 
 pub trait Expandable {
     // return a hashmap of an expanded subgraph
-    fn expand_graph(
+    fn expand_component(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
@@ -99,9 +101,10 @@ pub trait Report {
         &self,
         node_id: &u32,
         component: &proto::Component,
+        public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
         release: &Value
-    ) -> Option<Vec<JSONRelease>>;
+    ) -> Result<Option<Vec<JSONRelease>>>;
 }
 
 
@@ -113,13 +116,14 @@ impl Component for proto::component::Variant {
         privacy_definition: &proto::PrivacyDefinition,
         public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
-    ) -> Result<Properties> {
+    ) -> Result<ValueProperties> {
         macro_rules! propagate_property {
             ($( $variant:ident ),*) => {
                 {
                     $(
                        if let proto::component::Variant::$variant(x) = self {
                             return x.propagate_property(privacy_definition, public_arguments, properties)
+                                .chain_err(|| format!("node specification {:?}:", self))
                        }
                     )*
                 }
@@ -128,12 +132,19 @@ impl Component for proto::component::Variant {
 
         propagate_property!(
             // INSERT COMPONENT LIST
-            Bin, Cast, Clamp, Constant, Count, Covariance, Dpcount, Dpcovariance, Dphistogram, Dpmaximum,
-            Dpmean, Dpmedian, Dpminimum, Dpmomentraw, Dpsum, Dpvariance, Impute, Index,
-            Kthrawsamplemoment, Materialize, Maximum, Mean, Exponentialmechanism, Gaussianmechanism,
-            Laplacemechanism, Simplegeometricmechanism, Minimum, Quantile, Resize, Rowmin, Sum, Variance,
+            Bin, Cast, Clamp, Constant, Count, Covariance,
 
-            Add, Subtract, Divide, Multiply, Power, Negative
+            Dpcount, Dpcovariance, Dphistogram, Dpmaximum, Dpmean, Dpmedian, Dpminimum,
+            Dpmomentraw, Dpsum, Dpvariance,
+
+            Filter, Impute, Index, Kthrawsamplemoment, Materialize, Maximum, Mean,
+
+            Exponentialmechanism, Gaussianmechanism, Laplacemechanism, Simplegeometricmechanism,
+
+            Minimum, Quantile, Resize, Rowmin, Sum, Variance,
+
+            Add, Subtract, Divide, Multiply, Power, Log, Modulo, Remainder, And, Or, Negate,
+            Equal, Lessthan, Greaterthan, Negative
         );
 
         return Err(format!("proto component {:?} is missing its Component trait", self).into())
@@ -150,6 +161,7 @@ impl Component for proto::component::Variant {
                     $(
                        if let proto::component::Variant::$variant(x) = self {
                             return x.get_names(properties)
+                                .chain_err(|| format!("node specification {:?}:", self))
                        }
                     )*
                 }
@@ -168,7 +180,7 @@ impl Component for proto::component::Variant {
 
 impl Expandable for proto::component::Variant {
     // return a hashmap of an expanded subgraph
-    fn expand_graph(
+    fn expand_component(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
@@ -176,19 +188,20 @@ impl Expandable for proto::component::Variant {
         component_id: u32,
         maximum_id: u32,
     ) -> Result<(u32, HashMap<u32, proto::Component>)> {
-        macro_rules! expand_graph {
+        macro_rules! expand_component {
             ($( $variant:ident ),*) => {
                 {
                     $(
                        if let proto::component::Variant::$variant(x) = self {
-                            return x.expand_graph(privacy_definition, component, properties, component_id, maximum_id)
+                            return x.expand_component(privacy_definition, component, properties, component_id, maximum_id)
+                                .chain_err(|| format!("node specification {:?}:", self))
                        }
                     )*
                 }
             }
         }
 
-        expand_graph!(
+        expand_component!(
             // INSERT COMPONENT LIST
             Clamp, Dpcount, Dpcovariance, Dphistogram, Dpmaximum, Dpmean, Dpmedian, Dpminimum,
             Dpmomentraw, Dpsum, Dpvariance, Impute, Exponentialmechanism, Gaussianmechanism,
@@ -213,6 +226,7 @@ impl Aggregator for proto::component::Variant {
                     $(
                        if let proto::component::Variant::$variant(x) = self {
                             return x.compute_sensitivity(privacy_definition, properties, sensitivity_type)
+                                .chain_err(|| format!("node specification {:?}:", self))
                        }
                     )*
                 }
@@ -241,6 +255,7 @@ impl Accuracy for proto::component::Variant {
                     $(
                        if let proto::component::Variant::$variant(x) = self {
                             return x.accuracy_to_privacy_usage(privacy_definition, properties, accuracy)
+                                .chain_err(|| format!("node specification {:?}:", self))
                        }
                     )*
                 }
@@ -266,6 +281,7 @@ impl Accuracy for proto::component::Variant {
                     $(
                        if let proto::component::Variant::$variant(x) = self {
                             return x.privacy_usage_to_accuracy(privacy_definition, properties)
+                                .chain_err(|| format!("node specification {:?}:", self))
                        }
                     )*
                 }
@@ -287,16 +303,18 @@ impl Report for proto::component::Variant {
         &self,
         node_id: &u32,
         component: &proto::Component,
+        public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
         release: &Value
-    ) -> Option<Vec<JSONRelease>> {
+    ) -> Result<Option<Vec<JSONRelease>>> {
 
         macro_rules! summarize{
             ($( $variant:ident ),*) => {
                 {
                     $(
                        if let proto::component::Variant::$variant(x) = self {
-                            return x.summarize(node_id, component, properties, release)
+                            return x.summarize(node_id, component, public_arguments, properties, release)
+                                .chain_err(|| format!("node specification: {:?}:", self))
                        }
                     )*
                 }
@@ -308,6 +326,6 @@ impl Report for proto::component::Variant {
             Dpmean
         );
 
-        None
+        Ok(None)
     }
 }

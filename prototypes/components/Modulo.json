@@ -1,0 +1,26 @@
+{
+  "arguments": {
+    "left": {
+      "nature": [
+        "continuous"
+      ],
+      "type": "Array"
+    },
+    "right": {
+      "nature": [
+        "continuous"
+      ],
+      "type": "Array"
+    }
+  },
+  "id": "Modulo",
+  "name": "modulo",
+  "options": {},
+  "return": {
+    "nature": [
+      "continuous"
+    ],
+    "type": "Array"
+  },
+  "docstring": "modulo step"
+}

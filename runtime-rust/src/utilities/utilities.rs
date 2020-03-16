@@ -1,25 +1,25 @@
 use yarrow_validator::errors::*;
 
-
 use openssl::rand::rand_bytes;
 use ieee754::Ieee754;
 
 use crate::utilities::noise;
 use ndarray::{ArrayD};
 
+use rug::Float;
 
+
+/// Return bytes of binary data as String
+///
+/// Reads bytes from OpenSSL, converts them into a string,
+/// concatenates them, and returns the combined string
+///
+/// # Arguments
+/// * `n_bytes` - A numeric variable
+///
+/// # Return
+/// * `binary_string` - String of n_bytes bytes
 pub fn get_bytes(n_bytes: usize) -> String {
-    /// Return bytes of binary data as String
-    ///
-    /// Reads bytes from OpenSSL, converts them into a string,
-    /// concatenates them, and returns the combined string
-    ///
-    /// # Arguments
-    /// * `n_bytes` - A numeric variable
-    ///
-    /// # Return
-    /// * `binary_string` - String of n_bytes bytes
-
     // read random bytes from OpenSSL
     let mut buffer = vec!(0_u8; n_bytes);
     rand_bytes(&mut buffer).unwrap();
@@ -36,16 +36,14 @@ pub fn get_bytes(n_bytes: usize) -> String {
     return binary_string;
 }
 
+/// Converts f64 to String of length 64, yielding the IEEE-754 binary representation of the number
+///
+/// # Arguments
+/// * `num` - a number of type f64
+///
+/// # Return
+/// * `binary_string`: String showing IEEE-754 binary representation of `num`
 pub fn f64_to_binary(num: &f64) -> String {
-    /// Converts f64 to String of length 64, yielding the IEEE-754 binary representation of the number
-    ///
-    /// # Arguments
-    /// * `num` - a number of type f64
-    ///
-    /// # Return
-    /// * `binary_string`: String showing IEEE-754 binary representation of `num`
-
-
     // decompose num into component parts
     let (sign, exponent, mantissa) = num.decompose_raw();
 
@@ -61,15 +59,14 @@ pub fn f64_to_binary(num: &f64) -> String {
     return binary_string;
 }
 
+/// Converts String of length 64 to f64, yielding the floating-point number represented by the String
+///
+/// # Arguments
+/// * `binary_string`: String showing IEEE-754 binary representation of a number
+///
+/// # Return
+/// * `num`: f64 version of the String
 pub fn binary_to_f64(binary_string: &String) -> f64 {
-    /// Converts String of length 64 to f64, yielding the floating-point number represented by the String
-    ///
-    /// # Arguments
-    /// * `binary_string`: String showing IEEE-754 binary representation of a number
-    ///
-    /// # Return
-    /// * `num`: f64 version of the String
-
     // get sign and convert to bool as recompose expects
     let sign = &binary_string[0..1];
     let sign_bool = if sign.parse::<i32>().unwrap() == 0 {
@@ -91,46 +88,58 @@ pub fn binary_to_f64(binary_string: &String) -> f64 {
     return num;
 }
 
+/// Takes 64-bit binary string and splits into sign, exponent, and mantissa
+///
+/// # Arguments
+/// * `binary_string` - 64-bit binary string
+///
+/// # Return
+/// * `(sign, exponent, mantissa)` - where each is a string
 pub fn split_ieee_into_components(binary_string: &String) -> (String, String, String) {
-    /// Takes 64-bit binary string and splits into sign, exponent, and mantissa
-    ///
-    /// # Arguments
-    /// * `binary_string` - 64-bit binary string
-    ///
-    /// # Return
-    /// * `(sign, exponent, mantissa)` - where each is a string
     return (binary_string[0..1].to_string(), binary_string[1..12].to_string(), binary_string[12..].to_string());
 }
 
+/// Combines string versions of sign, exponent, and mantissa into single IEEE representation
+///
+/// # Arguments
+/// * `sign` - Sign bit (length 1)
+/// * `exponent` - Exponent bits (length 11)
+/// * `mantissa` - Mantissa bits (length 52)
+///
+/// # Return
+/// * `combined_string` - concatenation of sign, exponent, and mantissa
 pub fn combine_components_into_ieee(sign: &str, exponent: &str, mantissa: &str) -> String {
-    /// Combines string versions of sign, exponent, and mantissa into single IEEE representation
-    ///
-    /// # Arguments
-    /// * `sign` - Sign bit (length 1)
-    /// * `exponent` - Exponent bits (length 11)
-    /// * `mantissa` - Mantissa bits (length 52)
-    ///
-    /// # Return
-    /// * `combined_string` - concatenation of sign, exponent, and mantissa
-    let combined_string = vec![sign, exponent, mantissa].join("");
-    return combined_string;
+    return vec![sign, exponent, mantissa].join("");
 }
 
-pub fn sample_from_set<T>(candidate_set: &Vec<T>, weights: &Vec<f64>) -> Result<T> where T: Clone, {
+/// Samples a single element from a set according to provided weights
+///
+/// # Arguments
+/// * `candidate_set` - The set from which you want to sample
+/// * `weights` - Sampling weights for each element
+///
+/// # Return
+/// Element from the candidate set
+pub fn sample_from_set<T>(candidate_set: &Vec<T>, weights: &Vec<f64>)
+    -> Result<T> where T: Clone {
     // generate uniform random number on [0,1)
-    let unif: f64 = noise::sample_uniform(&0., &1.)?;
+    let unif: rug::Float = Float::with_val(53, noise::mpfr_uniform(0., 1.)?);
 
     // generate sum of weights
-    let weights_sum: f64 = weights.iter().sum();
+    let weights_rug: Vec<rug::Float> = weights.into_iter().map(|w| Float::with_val(53, w)).collect();
+    let weights_sum: rug::Float = Float::with_val(53, Float::sum(weights_rug.iter()));
+
+    // NOTE: use this instead of the two lines above if we switch to accepting rug::Float rather than f64 weights
+    // let weights_sum: rug::Float = Float::with_val(53, Float::sum(weights.iter()));
 
     // convert weights to probabilities
-    let probabilities: Vec<f64> = weights.iter().map(|w| w / weights_sum).collect();
+    let probabilities: Vec<rug::Float> = weights_rug.iter().map(|w| w / weights_sum.clone()).collect();
 
     // generate cumulative probability distribution
-    let cumulative_probability_vec = probabilities.iter().scan(0.0, |sum, i| {
-        *sum += i;
-        Some(*sum)
-    }).collect::<Vec<_>>();
+    let mut cumulative_probability_vec: Vec<rug::Float> = Vec::with_capacity(weights.len() as usize);
+    for i in 0..weights.len() {
+        cumulative_probability_vec.push( Float::with_val(53, Float::sum(probabilities[0..(i+1)].iter())) );
+    }
 
     // sample an element relative to its probability
     let mut return_index = 0;
@@ -143,6 +152,13 @@ pub fn sample_from_set<T>(candidate_set: &Vec<T>, weights: &Vec<f64>) -> Result<
     Ok(candidate_set[return_index as usize].clone())
 }
 
+///  Accepts an ndarray and returns the number of columns
+///
+/// # Arguments
+/// * `data` - The data for which you want to know the number of columns
+///
+/// # Return
+/// Number of columns in data
 pub fn get_num_columns<T>(data: &ArrayD<T>) -> Result<i64> {
     match data.ndim() {
         0 => Err("data is a scalar".into()),

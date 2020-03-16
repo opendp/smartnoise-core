@@ -8,7 +8,7 @@ use crate::hashmap;
 use crate::components::{Component, Accuracy, Expandable, Report};
 
 
-use crate::base::{Properties, NodeProperties, Value};
+use crate::base::{NodeProperties, Value, ValueProperties};
 use crate::utilities::json::{JSONRelease};
 
 
@@ -19,7 +19,7 @@ impl Component for proto::DpMaximum {
         _privacy_definition: &proto::PrivacyDefinition,
         public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
-    ) -> Result<Properties> {
+    ) -> Result<ValueProperties> {
         Err("DPMaximum is ethereal, and has no property propagation".into())
     }
 
@@ -32,7 +32,7 @@ impl Component for proto::DpMaximum {
 }
 
 impl Expandable for proto::DpMaximum {
-    fn expand_graph(
+    fn expand_component(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
@@ -93,9 +93,10 @@ impl Report for proto::DpMaximum {
         &self,
         _node_id: &u32,
         _component: &proto::Component,
+        _public_arguments: &HashMap<String, Value>,
         _properties: &NodeProperties,
         _release: &Value
-    ) -> Option<Vec<JSONRelease>> {
-        None
+    ) -> Result<Option<Vec<JSONRelease>>> {
+        Ok(None)
     }
 }

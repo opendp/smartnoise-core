@@ -13,8 +13,8 @@
       "type": "Array"
     }
   },
-  "id": "Modulus",
-  "name": "modulus",
+  "id": "Remainder",
+  "name": "remainder",
   "options": {},
   "return": {
     "nature": [
@@ -22,5 +22,5 @@
     ],
     "type": "Array"
   },
-  "docstring": "modulus step"
+  "docstring": "remainder step"
 }

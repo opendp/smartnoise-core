@@ -1,7 +1,6 @@
 extern crate yarrow_validator;
 use yarrow_validator::{proto, ERR_STDERR};
 
-
 use std::io::Write; // trait which holds `display_chain`
 use error_chain::ChainedError;
 mod base;
@@ -36,12 +35,12 @@ pub extern "C" fn release(
             Err(err) => {
 
                 if request.stack_trace {
-                    let stderr = &mut ::std::io::stderr();
-                    writeln!(stderr, "{}", err.display_chain()).expect(ERR_STDERR);
+//                    let stderr = &mut ::std::io::stderr();
+//                    writeln!(stderr, "{}", err.display_chain()).expect(ERR_STDERR);
 //                    ::std::process::exit(1);
 
                     Some(proto::response_release::Value::Error(
-                        proto::Error { message: format!("{:?}", err).to_string() }
+                        proto::Error { message: err.display_chain().to_string() }
                     ))
 
                 } else {

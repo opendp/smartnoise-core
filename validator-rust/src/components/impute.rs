@@ -11,7 +11,7 @@ use crate::components::{Component, Expandable};
 
 
 use ndarray::Array;
-use crate::base::{Properties, Vector1DNull, Nature, NatureContinuous, Value, NodeProperties, ArrayND, get_constant};
+use crate::base::{Vector1DNull, Nature, NatureContinuous, Value, NodeProperties, ArrayND, get_constant, prepend, ValueProperties};
 
 
 impl Component for proto::Impute {
@@ -21,20 +21,20 @@ impl Component for proto::Impute {
         _privacy_definition: &proto::PrivacyDefinition,
         public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
-    ) -> Result<Properties> {
+    ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
-            .ok_or::<Error>("data is a required argument for Impute".into())?.clone();
+            .ok_or("data: missing")?.get_arraynd()
+            .map_err(prepend("data:"))?.clone();
 
         let num_columns = data_property.num_columns
-            .ok_or("number of data columns must be known to check imputation")?;
-
+            .ok_or("data: number of columns missing")?;
         // 1. check public arguments (constant n)
         let impute_minimum = match public_arguments.get("min") {
             Some(min) => min.get_arraynd()?.clone().get_vec_f64(Some(num_columns))?,
 
             // 2. then private arguments (for example from another clamped column)
             None => match properties.get("min") {
-                Some(min) => min.get_min_f64()?,
+                Some(min) => min.get_arraynd()?.get_min_f64()?,
 
                 // 3. then data properties (propagated from prior clamping/min/max)
                 None => data_property
@@ -48,7 +48,7 @@ impl Component for proto::Impute {
 
             // 2. then private arguments (for example from another clamped column)
             None => match properties.get("max") {
-                Some(min) => min.get_max_f64()?,
+                Some(min) => min.get_arraynd()?.get_max_f64()?,
 
                 // 3. then data properties (propagated from prior clamping/min/max)
                 None => data_property
@@ -89,7 +89,7 @@ impl Component for proto::Impute {
             max: Vector1DNull::F64(impute_maximum),
         }));
 
-        Ok(data_property)
+        Ok(data_property.into())
     }
 
     fn get_names(
@@ -101,7 +101,7 @@ impl Component for proto::Impute {
 }
 
 impl Expandable for proto::Impute {
-    fn expand_graph(
+    fn expand_component(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
@@ -118,7 +118,7 @@ impl Expandable for proto::Impute {
             current_id += 1;
             let id_min = current_id.clone();
             let value = Value::ArrayND(ArrayND::F64(
-                Array::from(properties.get("data").unwrap().to_owned().get_min_f64()?).into_dyn()));
+                Array::from(properties.get("data").unwrap().to_owned().get_arraynd()?.get_min_f64()?).into_dyn()));
             graph_expansion.insert(id_min.clone(), get_constant(&value, &component.batch));
             component.arguments.insert("min".to_string(), id_min);
         }
@@ -127,7 +127,7 @@ impl Expandable for proto::Impute {
             current_id += 1;
             let id_max = current_id.clone();
             let value = Value::ArrayND(ArrayND::F64(
-                Array::from(properties.get("data").unwrap().to_owned().get_max_f64()?).into_dyn()));
+                Array::from(properties.get("data").unwrap().to_owned().get_arraynd()?.get_max_f64()?).into_dyn()));
             graph_expansion.insert(id_max, get_constant(&value, &component.batch));
             component.arguments.insert("max".to_string(), id_max);
         }

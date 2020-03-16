@@ -46,7 +46,7 @@ def privacy_usage(epsilon=None, delta=None):
 
 
 class Dataset(object):
-    def __init__(self, *, path=None, value=None, value_format=None, private=True):
+    def __init__(self, *, path=None, value=None, num_columns=None, column_names=None, value_format=None, private=True):
 
         global context
         if not context:
@@ -55,13 +55,21 @@ class Dataset(object):
         if sum(int(i is not None) for i in [path, value]) != 1:
             raise ValueError("either path or value must be set")
 
+        if num_columns is None and column_names is None:
+            raise ValueError("either num_columns or column_names must be set")
+
         materialize_options = {'private': private}
         if path is not None:
             materialize_options['file_path'] = path
         if value is not None:
             materialize_options['literal'] = Analysis._serialize_value_proto(value, value_format)
 
-        self.component = Component('Materialize', options=materialize_options)
+        self.component = Component('Materialize',
+                                   arguments={
+                                       "column_names": Component.of(column_names),
+                                       "num_columns": Component.of(num_columns),
+                                   },
+                                   options=materialize_options)
 
     def __getitem__(self, identifier):
         return Component('Index', arguments={'columns': Component.of(identifier), 'data': self.component})
@@ -105,42 +113,84 @@ class Component(object):
     def __add__(self, other):
         return Component('Add', {'left': self, 'right': Component.of(other)})
 
+    def __radd__(self, other):
+        return Component('Add', {'left': Component.of(other), 'right': self})
+
     def __sub__(self, other):
         return Component('Subtract', {'left': self, 'right': Component.of(other)})
+
+    def __rsub__(self, other):
+        return Component('Subtract', {'left': Component.of(other), 'right': self})
 
     def __mul__(self, other):
         return Component('Multiply', arguments={'left': self, 'right': Component.of(other)})
 
-    def __truediv__(self, other):
+    def __rmul__(self, other):
+        return Component('Multiply', arguments={'left': Component.of(other), 'right': self})
+
+    def __div__(self, other):
         return Component('Divide', arguments={'left': self, 'right': Component.of(other)})
+
+    def __truediv__(self, other):
+        return Component('Divide', arguments={
+            'left': Component('Cast', arguments={'data': self, "type": Component.of("FLOAT")}),
+            'right': Component('Cast', arguments={'data': Component.of(other), "type": Component.of("FLOAT")})})
+
+    def __rtruediv__(self, other):
+        return Component('Divide', arguments={'left': Component.of(other), 'right': self})
+
+    def __mod__(self, other):
+        return Component('Modulo', arguments={'left': self, 'right': Component.of(other)})
+
+    def __rmod__(self, other):
+        return Component('Modulo', arguments={'left': Component.of(other), 'right': self})
 
     def __pow__(self, power, modulo=None):
         return Component('Power', arguments={'left': self, 'right': Component.of(power)})
 
+    def __rpow__(self, other):
+        return Component('Power', arguments={'left': Component.of(other), 'right': self})
+
     def __or__(self, other):
         return Component('Or', arguments={'left': self, 'right': Component.of(other)})
+
+    def __ror__(self, other):
+        return Component('Or', arguments={'left': Component.of(other), 'right': self})
 
     def __and__(self, other):
         return Component('And', arguments={'left': self, 'right': Component.of(other)})
 
+    def __rand__(self, other):
+        return Component('And', arguments={'left': Component.of(other), 'right': self})
+
+    def __invert__(self):
+        return Component('Negate', arguments={'data': self})
+
+    def __xor__(self, other):
+        return (self | other) & ~(self & other)
+
     def __gt__(self, other):
         return Component('GreaterThan', arguments={'left': self, 'right': Component.of(other)})
+
+    def __ge__(self, other):
+        return Component('GreaterThan', arguments={'left': self, 'right': Component.of(other)}) \
+               or Component('Equal', arguments={'left': self, 'right': Component.of(other)})
 
     def __lt__(self, other):
         return Component('LessThan', arguments={'left': self, 'right': Component.of(other)})
 
+    def __le__(self, other):
+        return Component('LessThan', arguments={'left': self, 'right': Component.of(other)}) \
+               or Component('Equal', arguments={'left': self, 'right': Component.of(other)})
+
     def __eq__(self, other):
         return Component('Equal', arguments={'left': self, 'right': Component.of(other)})
 
-    def __gte__(self, other):
-        other = Component.of(other)
-        return Component('GreaterThan', arguments={'left': self, 'right': other}) or \
-               Component('Equal', arguments={'left': self, 'right': other})
+    def __ne__(self, other):
+        return ~(self == other)
 
-    def __lte__(self, other):
-        other = Component.of(other)
-        return Component('LessThan', arguments={'left': self, 'right': other}) or \
-               Component('Equal', arguments={'left': self, 'right': other})
+    def __abs__(self):
+        return Component('Abs', arguments={'data': self})
 
     def __hash__(self):
         return id(self)
@@ -209,7 +259,10 @@ class Component(object):
 
 
 class Analysis(object):
-    def __init__(self, *components, datasets=None, distance='APPROXIMATE', neighboring='SUBSTITUTE'):
+    def __init__(self, *components, validate=True, datasets=None, distance='APPROXIMATE', neighboring='SUBSTITUTE'):
+
+        # validate the analysis before running it
+        self.must_validate = validate
 
         # privacy definition
         self.distance: str = distance
@@ -219,9 +272,6 @@ class Analysis(object):
         self.components: dict = {}
         self.release_values = {}
         self.datasets: list = datasets or []
-
-        # TODO: temporary. should be converted into self.release_values upon return from runtime
-        self.release_proto = None
 
         # track node ids
         self.component_count = 0
@@ -399,6 +449,9 @@ class Analysis(object):
             self._serialize_release_proto())
 
     def release(self):
+        if self.must_validate:
+            assert self.validate(), "cannot release, analysis is not valid"
+
         release_proto: base_pb2.Release = core_wrapper.compute_release(
             self._serialize_analysis_proto(),
             self._serialize_release_proto())

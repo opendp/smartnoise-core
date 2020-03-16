@@ -1,5 +1,12 @@
 {
-  "arguments": {},
+  "arguments": {
+    "column_names": {
+      "nature": [
+        "categorical"
+      ],
+      "type": "Array"
+    }
+  },
   "id": "Materialize",
   "name": "materialize",
   "options": {

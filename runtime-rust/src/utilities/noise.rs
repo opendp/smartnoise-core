@@ -1,20 +1,63 @@
 use yarrow_validator::errors::*;
-
-
 use probability::distribution::{Gaussian, Laplace, Inverse, Distribution};
 use ieee754::Ieee754;
-
-
 use std::{cmp, f64::consts};
-
+use rug::rand::{ThreadRandGen, ThreadRandState};
+use rug::Float;
 
 use crate::utilities::utilities;
+
+struct GeneratorOpenSSL;
+impl ThreadRandGen for GeneratorOpenSSL {
+    fn gen(&mut self) -> u32 {
+        return u32::from_str_radix(&utilities::get_bytes(4), 2).unwrap();
+    }
+}
+
+pub fn mpfr_uniform(min: f64, max: f64) -> Result<rug::Float> {
+    /// Generate draw from Unif[0,1) with exact rounding
+
+    // initialize 64-bit floats within mpfr/rug
+    let mpfr_min = Float::with_val(53, min);
+    let mpfr_max = Float::with_val(53, max);
+    let mpfr_diff = Float::with_val(53, &mpfr_max - &mpfr_min);
+
+    // initialize randomness
+    let mut rng = GeneratorOpenSSL {};
+    let mut state = ThreadRandState::new_custom(&mut rng);
+
+    // generate Unif[0,1] according to mpfr standard, then convert to correct scale
+    let mut unif = Float::with_val(53, Float::random_cont(&mut state));
+    unif = unif.mul_add(&mpfr_diff, &mpfr_min);
+
+    // return uniform
+    return Ok(unif);
+}
+
+pub fn mpfr_gaussian(shift: f64, scale:f64) -> Result<rug::Float> {
+    /// Generate draw from Gaussian(0,1) with exact rounding
+
+    // initialize 64-bit floats within mpfr/rug
+    let mpfr_shift = Float::with_val(53, shift);
+    let mpfr_scale = Float::with_val(53, scale);
+
+    // initialize randomness
+    let mut rng = GeneratorOpenSSL {};
+    let mut state = ThreadRandState::new_custom(&mut rng);
+
+    // generate Gaussian(0,1) according to mpfr standard, then convert to correct scale
+    let mut gauss = Float::with_val(64, Float::random_normal(&mut state));
+    gauss = gauss.mul_add(&mpfr_scale, &mpfr_shift);
+
+    // return gaussian
+    return Ok(gauss);
+}
 
 /// Sample from Laplace distribution centered at shift and scaled by scale
 ///
 /// # Arguments
-/// 
-/// * `shift` - f64, the center of the Laplace distribution 
+///
+/// * `shift` - f64, the center of the Laplace distribution
 /// * `scale` - f64, the scaling parameter of the Laplace distribution
 ///
 /// # Example
@@ -30,13 +73,13 @@ pub fn sample_laplace(shift: f64, scale: f64) -> Result<f64> {
 /// Sample from Gaussian distribution centered at shift and scaled by scale
 ///
 /// # Arguments
-/// 
-/// * `shift` - f64, the center of the Laplace distribution 
+///
+/// * `shift` - f64, the center of the Laplace distribution
 /// * `scale` - f64, the scaling parameter of the Laplace distribution
 ///
 /// Return
 /// f64 Gaussian random variable centered at shift and scaled at scale
-/// 
+///
 /// # Example
 /// ```
 /// use yarrow_runtime::utilities::noise::sample_gaussian;
@@ -57,7 +100,7 @@ pub fn sample_gaussian(shift: &f64, scale: &f64) -> Result<f64> {
 /// * `scale` - f64, the scaling parameter of the distribution
 /// * `min` - f64, the minimum value of random variables pulled from the distribution.
 /// * `max` - f64, the maximum value of random variables pulled from the distribution
-/// 
+///
 /// # Return
 /// f64 random gaussian random variable truncated to [min,max]
 ///
@@ -84,8 +127,8 @@ pub fn sample_gaussian_truncated(min: &f64, max: &f64, shift: &f64, scale: &f64)
 }
 
 /// Sample from uniform integers between min and max (inclusive)
-/// # Arguments 
-/// 
+/// # Arguments
+///
 /// * `min` - &i64, minimum value of distribution to sample from
 /// * `max` - &i64, maximum value of distribution to sample from
 ///
@@ -93,7 +136,7 @@ pub fn sample_gaussian_truncated(min: &f64, max: &f64, shift: &f64, scale: &f64)
 /// i64 random uniform variable between min and max (inclusive)
 ///
 /// # Example
-/// ``` 
+/// ```
 /// use yarrow_runtime::utilities::noise::sample_uniform_int;
 /// let n:i64 = sample_uniform_int(&0, &2)?;
 /// assert!(n == 0 || n == 1 || n == 2);
@@ -122,7 +165,7 @@ pub fn sample_uniform_int(min: &i64, max: &i64) -> Result<i64> {
         uniform_int = 0;
         // generate random bits and increase integer by appropriate power of 2
         for i in 0..n_bits {
-            let bit: i64 = sample_bit(&0.5);
+            let bit: i64 = sample_bit(&0.5)?;
             uniform_int += bit * 2_i64.pow(i as u32);
         }
         if uniform_int < n_ints {
@@ -152,10 +195,10 @@ pub fn sample_uniform_int(min: &i64, max: &i64) -> Result<i64> {
 /// by generating a 52-bit mantissa uniformly at random.
 ///
 /// # Arguments
-/// 
+///
 /// `min`: f64 minimum of uniform distribution (inclusive)
 /// `max`: f64 maximum of unifrom distribution (non-inclusive)
-/// 
+///
 /// # Return
 /// f64 uniform random bit from [min, max)
 ///
@@ -170,7 +213,6 @@ pub fn sample_uniform_int(min: &i64, max: &i64) -> Result<i64> {
 /// let n:f64 = sample_uniform(&2.0, &0.0)?;
 /// ```
 pub fn sample_uniform(min: &f64, max: &f64) -> Result<f64> {
-
     if min > max {return Err("min cannot be less than max".into());}
 
     // Generate mantissa
@@ -181,7 +223,7 @@ pub fn sample_uniform(min: &f64, max: &f64) -> Result<f64> {
     let mantissa_int = u64::from_str_radix(mantissa, 2).unwrap();
 
     // Generate exponent
-    let geom: i16 = sample_floating_point_probability_exponent();
+    let geom: i16 = sample_floating_point_probability_exponent()?;
     let exponent: u16 = (-geom + 1023) as u16;
 
     // Generate uniform random number from (0,1)
@@ -203,27 +245,27 @@ pub fn sample_uniform(min: &f64, max: &f64) -> Result<f64> {
 /// a bit that is 1 with probability "prob"
 ///
 /// # Examples
-/// 
+///
 /// ```
 /// use yarrow_runtime::utilities::noise::sample_bit;
-/// let n:i64 = sample_bit(&0.7);
+/// let n:i64 = sample_bit(&0.7)?;
 /// assert!(n == 0 || n == 1);
 /// ```
 /// ```should_panic
 /// use yarrow_runtime::utilities::noise::sample_bit;
-/// let n:i64 = sample_bit(&1.3);
+/// let n:i64 = sample_bit(&1.3)?;
 /// ```
 /// ```should_panic
 /// use yarrow_runtime::utilities::noise::sample_bit;
-/// let n:i64 = sample_bit(&-0.3);
+/// let n:i64 = sample_bit(&-0.3)?;
 /// ```
-pub fn sample_bit(prob: &f64) -> i64 {
+pub fn sample_bit(prob: &f64) -> Result<i64> {
 
     // ensure that prob is a valid probability
     assert!(prob >= &0.0 && prob <= &1.0);
 
     // repeatedly flip coin (up to 1023 times) and identify index (0-based) of first heads
-    let first_heads_index: i16 = sample_floating_point_probability_exponent() - 1;
+    let first_heads_index: i16 = sample_floating_point_probability_exponent()? - 1;
 
     // decompose probability into mantissa (string of bits) and exponent integer to quickly identify the value in the first_heads_index
     let (_sign, exponent, mantissa) = prob.decompose_raw();
@@ -233,10 +275,10 @@ pub fn sample_bit(prob: &f64) -> i64 {
 
     // return value at index of interest
     if first_heads_index < num_leading_zeros {
-        return 0;
+        return Ok(0);
     } else {
         let index: usize = (num_leading_zeros + first_heads_index) as usize;
-        return mantissa_vec[index];
+        return Ok(mantissa_vec[index]);
     }
 }
 
@@ -268,7 +310,7 @@ pub fn sample_geometric_censored(prob: &f64, max_trials: &i64, enforce_constant_
 
     // generate bits until we find a 1
     while n_trials <= *max_trials {
-        bit = sample_bit(prob);
+        bit = sample_bit(prob)?;
         if bit == 1 {
             if geom_return == 0 {
                 geom_return = n_trials;
@@ -299,7 +341,7 @@ pub fn sample_geometric_censored(prob: &f64, max_trials: &i64, enforce_constant_
 /// for the floating point representation of a uniform random number on [0,1),
 /// ensuring that the numbers are distributed proportionally to
 /// their unit of least precision.
-pub fn sample_floating_point_probability_exponent() -> i16 {
+pub fn sample_floating_point_probability_exponent() -> Result<i16> {
 
     let mut geom: i16 = 1023;
     // read bytes in one at a time, need 128 to fully generate geometric
@@ -319,7 +361,7 @@ pub fn sample_floating_point_probability_exponent() -> i16 {
         }
         geom = cmp::min(geom, first_one_overall_index+1);
     }
-    return geom;
+    return Ok(geom);
 }
 
 /// Sample noise according to geometric mechanism.
@@ -356,7 +398,7 @@ pub fn sample_simple_geometric_mechanism(scale: &f64, min: &i64, max: &i64, enfo
         return Ok(0);
     } else {
         // get random sign
-        let sign: i64 = 2 * sample_bit(&0.5) - 1;
+        let sign: i64 = 2 * sample_bit(&0.5)? - 1;
         // sample from censored geometric
         let geom: i64 = sample_geometric_censored(&(1. - alpha), &max_trials, enforce_constant_time)?;
         return Ok(sign * geom);

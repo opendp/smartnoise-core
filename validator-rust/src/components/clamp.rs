@@ -3,7 +3,7 @@ use crate::errors::*;
 
 
 use std::collections::HashMap;
-use crate::base::{Nature, Vector1DNull, NodeProperties, ArrayND, get_constant};
+use crate::base::{Nature, Vector1DNull, NodeProperties, ArrayND, get_constant, prepend, ValueProperties};
 
 use crate::{proto, base};
 
@@ -12,7 +12,7 @@ use crate::components::{Component, Expandable};
 
 
 use ndarray::Array;
-use crate::base::{Value, Properties, NatureContinuous};
+use crate::base::{Value, NatureContinuous};
 
 
 impl Component for proto::Clamp {
@@ -22,11 +22,13 @@ impl Component for proto::Clamp {
         _privacy_definition: &proto::PrivacyDefinition,
         public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
-    ) -> Result<Properties> {
-        let mut data_property = properties.get("data").ok_or("data missing from Clamp")?.clone();
+    ) -> Result<ValueProperties> {
+        let mut data_property = properties.get("data")
+            .ok_or("data: missing")?.get_arraynd()
+            .map_err(prepend("data:"))?.clone();
 
         let num_columns = data_property.num_columns
-            .ok_or("number of data columns must be known to check imputation")?;
+            .ok_or("data: number of data columns missing")?;
 
         // 1. check public arguments (constant n)
         let mut clamp_minimum = match public_arguments.get("min") {
@@ -34,7 +36,7 @@ impl Component for proto::Clamp {
 
             // 2. then private arguments (for example from another clamped column)
             None => match properties.get("min") {
-                Some(min) => min.get_min_f64()?,
+                Some(min) => min.get_arraynd()?.get_min_f64()?,
 
                 // 3. then data properties (propagated from prior clamping/min/max)
                 None => data_property
@@ -48,7 +50,7 @@ impl Component for proto::Clamp {
 
             // 2. then private arguments (for example from another clamped column)
             None => match properties.get("max") {
-                Some(min) => min.get_max_f64()?,
+                Some(min) => min.get_arraynd()?.get_max_f64()?,
 
                 // 3. then data properties (propagated from prior clamping/min/max)
                 None => data_property
@@ -83,7 +85,7 @@ impl Component for proto::Clamp {
             max: Vector1DNull::F64(clamp_maximum.iter().map(|x| Some(x.clone())).collect()),
         }));
 
-        Ok(data_property)
+        Ok(data_property.into())
     }
 
     fn get_names(
@@ -96,7 +98,7 @@ impl Component for proto::Clamp {
 
 
 impl Expandable for proto::Clamp {
-    fn expand_graph(
+    fn expand_component(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
@@ -113,7 +115,7 @@ impl Expandable for proto::Clamp {
             current_id += 1;
             let id_min = current_id.clone();
             let value = Value::ArrayND(ArrayND::F64(
-                Array::from(properties.get("data").unwrap().to_owned().get_min_f64()?).into_dyn()));
+                Array::from(properties.get("data").unwrap().to_owned().get_arraynd()?.get_min_f64()?).into_dyn()));
             graph_expansion.insert(id_min.clone(), get_constant(&value, &component.batch));
             component.arguments.insert("min".to_string(), id_min);
         }
@@ -122,7 +124,7 @@ impl Expandable for proto::Clamp {
             current_id += 1;
             let id_max = current_id.clone();
             let value = Value::ArrayND(ArrayND::F64(
-                Array::from(properties.get("data").unwrap().to_owned().get_max_f64()?).into_dyn()));
+                Array::from(properties.get("data").unwrap().to_owned().get_arraynd()?.get_max_f64()?).into_dyn()));
             graph_expansion.insert(id_max, get_constant(&value, &component.batch));
             component.arguments.insert("max".to_string(), id_max);
         }

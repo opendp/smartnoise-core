@@ -17,17 +17,17 @@ impl Evaluable for proto::Cast {
         match &output_type {
             x if x == &"BOOL".to_string() => {
                 let true_label = get_argument(&arguments, "true_label")?.get_arraynd()?;
-                Ok(Value::ArrayND(ArrayND::Bool(cast_bool(&data, &true_label)?)))
+                Ok(cast_bool(&data, &true_label)?.into())
             },
             x if x == &"FLOAT".to_string() => Ok(Value::ArrayND(ArrayND::F64(cast_f64(&data)?))),
             x if x == &"INT".to_string() => {
                 // TODO: handle different bounds on each column
                 let min = get_argument(&arguments, "min")?.get_first_i64()?;
                 let max = get_argument(&arguments, "max")?.get_first_i64()?;
-                Ok(Value::ArrayND(ArrayND::I64(cast_i64(&data, &min, &max)?)))
+                Ok(cast_i64(&data, &min, &max)?.into())
             },
             x if x == &"STRING".to_string() =>
-                Ok(Value::ArrayND(ArrayND::Str(cast_str(&data)?))),
+                Ok(cast_str(&data)?.into()),
             _ => Err("type is not recognized, must be BOOL, FLOAT, INT or STRING".into())
         }
     }

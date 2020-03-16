@@ -8,24 +8,23 @@ mod cast;
 mod clamp;
 mod count;
 mod covariance;
+mod filter;
 mod impute;
 mod index;
 mod maximum;
 mod materialize;
 mod mean;
-//mod median;
 mod minimum;
 mod quantile;
 mod mechanisms;
 mod resize;
-//mod row_max;
-//mod row_min;
+mod row_max;
+mod row_min;
 mod sum;
-mod transform;
+mod transforms;
 mod variance;
 
 use yarrow_validator::proto;
-
 
 pub trait Evaluable {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value>;
@@ -42,6 +41,7 @@ impl Evaluable for proto::component::Variant {
                     $(
                        if let proto::component::Variant::$variant(x) = self {
                             return x.evaluate(arguments)
+                                .chain_err(|| format!("node specification: {:?}:", self))
                        }
                     )*
                 }
@@ -50,10 +50,12 @@ impl Evaluable for proto::component::Variant {
 
         evaluate!(
             // INSERT COMPONENT LIST
-            Constant, Bin, Cast, Clamp, Count, Covariance, Impute, Index, Maximum, Materialize, Mean,
+            Constant, Bin, Cast, Clamp, Count, Covariance, Filter, Impute, Index, Maximum, Materialize, Mean,
             Minimum, Quantile, Laplacemechanism, Gaussianmechanism, Simplegeometricmechanism, Resize,
             Sum, Variance,
-            Add, Subtract, Divide, Multiply, Power, Negative
+
+            Add, Subtract, Divide, Multiply, Power, Log, Modulo, Remainder, And, Or, Negate,
+            Equal, Lessthan, Greaterthan, Negative
         );
 
         Err(format!("Component type not implemented: {:?}", self).into())

@@ -8,7 +8,7 @@ use crate::components::Aggregator;
 use crate::{proto, base};
 
 use crate::components::{Component, Expandable};
-use crate::base::{Value, Properties, NodeProperties, ArrayND, get_constant, Sensitivity};
+use crate::base::{Value, NodeProperties, ArrayND, get_constant, Sensitivity, prepend, ValueProperties};
 use ndarray::Array;
 
 impl Component for proto::SimpleGeometricMechanism {
@@ -18,19 +18,23 @@ impl Component for proto::SimpleGeometricMechanism {
         privacy_definition: &proto::PrivacyDefinition,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
-    ) -> Result<Properties> {
+    ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
-            .ok_or("data must be passed to SimpleGeometricMechanism")?.clone();
+            .ok_or("data: missing")?.get_arraynd()
+            .map_err(prepend("data:"))?.clone();
 
         let aggregator = data_property.aggregator.clone()
-            .ok_or::<Error>("aggregator must be defined to run SimpleGeometricMechanism".into())?;
+            .ok_or::<Error>("aggregator: missing".into())?;
 
         // sensitivity must be computable
-        aggregator.component.compute_sensitivity(&privacy_definition, &aggregator.properties, &Sensitivity::KNorm(1))?;
+        aggregator.component.compute_sensitivity(
+            &privacy_definition,
+            &aggregator.properties,
+            &Sensitivity::KNorm(1))?;
 
         data_property.aggregator = None;
         data_property.releasable = true;
-        Ok(data_property)
+        Ok(data_property.into())
     }
 
     fn get_names(
@@ -43,11 +47,11 @@ impl Component for proto::SimpleGeometricMechanism {
 
 
 impl Expandable for proto::SimpleGeometricMechanism {
-    fn expand_graph(
+    fn expand_component(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
-        input_properties: &base::NodeProperties,
+        properties: &base::NodeProperties,
         component_id: u32,
         maximum_id: u32,
     ) -> Result<(u32, HashMap<u32, proto::Component>)> {
@@ -55,15 +59,17 @@ impl Expandable for proto::SimpleGeometricMechanism {
         let mut graph_expansion: HashMap<u32, proto::Component> = HashMap::new();
 
         // TODO: SECURITY: a user must not be able to define this directly
-        if !input_properties.contains_key("sensitivity") {
+        if !properties.contains_key("sensitivity") {
             // sensitivity literal
-            let aggregator = input_properties.get("data")
-                .ok_or::<Error>("data must be passed to SimpleGeometricMechanism".into())?
-                .aggregator.clone()
-                .ok_or::<Error>("aggregator must be defined to run SimpleGeometricMechanism".into())?;
-            let sensitivity = Value::ArrayND(ArrayND::F64(Array::from(aggregator.component
-                .compute_sensitivity(privacy_definition, &aggregator.properties, &Sensitivity::KNorm(1))
-                .unwrap()).into_dyn()));
+            let mut data_property = properties.get("data")
+                .ok_or("data: missing")?.get_arraynd()
+                .map_err(prepend("data:"))?.clone();
+
+            let aggregator = data_property.aggregator.clone()
+                .ok_or::<Error>("aggregator: missing".into())?;
+
+            let sensitivity: Value = Array::from(aggregator.component
+                .compute_sensitivity(privacy_definition, &aggregator.properties, &Sensitivity::KNorm(1))?).into_dyn().into();
 
             current_id += 1;
             let id_sensitivity = current_id.clone();

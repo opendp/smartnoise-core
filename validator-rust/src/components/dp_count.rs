@@ -8,9 +8,8 @@ use crate::hashmap;
 use crate::components::{Component, Accuracy, Expandable, Report};
 
 
-use crate::base::{Properties, NodeProperties, Value, standardize_categorical_argument, Vector2DJagged};
+use crate::base::{NodeProperties, Value, standardize_categorical_argument, Vector2DJagged, ValueProperties};
 use crate::utilities::json::{JSONRelease};
-
 
 
 impl Component for proto::DpCount {
@@ -20,7 +19,7 @@ impl Component for proto::DpCount {
         _privacy_definition: &proto::PrivacyDefinition,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
-    ) -> Result<Properties> {
+    ) -> Result<ValueProperties> {
         Err("DPCount is ethereal, and has no property propagation".into())
     }
 
@@ -34,7 +33,7 @@ impl Component for proto::DpCount {
 
 
 impl Expandable for proto::DpCount {
-    fn expand_graph(
+    fn expand_component(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
@@ -98,9 +97,10 @@ impl Report for proto::DpCount {
         &self,
         _node_id: &u32,
         _component: &proto::Component,
+        _public_arguments: &HashMap<String, Value>,
         _properties: &NodeProperties,
         _release: &Value
-    ) -> Option<Vec<JSONRelease>> {
-        None
+    ) -> Result<Option<Vec<JSONRelease>>> {
+        Ok(None)
     }
 }

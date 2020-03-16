@@ -6,22 +6,20 @@ use std::collections::HashMap;
 use crate::{proto, base};
 
 use crate::components::{Component, Aggregator};
-use crate::base::{Value, Properties, NodeProperties, AggregatorProperties, Sensitivity};
+use crate::base::{Value, NodeProperties, AggregatorProperties, Sensitivity, prepend, ValueProperties};
 
 // TODO: more checks needed here
 
 impl Component for proto::Mean {
-    // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
-    ) -> Result<Properties> {
+    ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
-            .ok_or("data must be passed to Mean")?.clone();
-
-        data_property.assert_is_not_aggregated()?;
+            .ok_or("data: missing")?.get_arraynd()
+            .map_err(prepend("data:"))?.clone();
 
         // save a snapshot of the state when aggregating
         data_property.aggregator = Some(AggregatorProperties {
@@ -29,9 +27,9 @@ impl Component for proto::Mean {
             properties: properties.clone()
         });
 
-        data_property.num_records = data_property.get_categories_lengths()?;
+        data_property.num_records = Some(1);
 
-        Ok(data_property)
+        Ok(data_property.into())
     }
 
     fn get_names(
@@ -49,8 +47,9 @@ impl Aggregator for proto::Mean {
         properties: &NodeProperties,
         sensitivity_type: &Sensitivity
     ) -> Result<Vec<f64>> {
-        let data_property = properties.get("data")
-            .ok_or::<Error>("data must be passed to compute sensitivity".into())?;
+        let mut data_property = properties.get("data")
+            .ok_or("data: missing")?.get_arraynd()
+            .map_err(prepend("data:"))?.clone();
 
         data_property.assert_is_not_aggregated()?;
         data_property.assert_non_null()?;
@@ -62,13 +61,11 @@ impl Aggregator for proto::Mean {
                 }
                 let min = data_property.get_min_f64()?;
                 let max = data_property.get_max_f64()?;
-                let num_records = data_property.get_n()?;
+                let num_records = data_property.get_num_records()? as f64;
 
-                Ok(min
-                    .iter()
+                Ok(min.iter()
                     .zip(max)
-                    .zip(num_records)
-                    .map(|((min, max), n)| (max - min) / n as f64)
+                    .map(|(min, max)| (max - min) / num_records)
                     .collect())
             },
             _ => return Err("Mean sensitivity is only implemented for KNorm of 1".into())

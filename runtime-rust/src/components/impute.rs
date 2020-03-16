@@ -18,13 +18,13 @@ impl Evaluable for proto::Impute {
             match (get_argument(&arguments, "data")?, get_argument(&arguments, "categories")?, get_argument(&arguments, "probabilities")?, get_argument(&arguments, "null")?) {
                 (Value::ArrayND(data), Value::Vector2DJagged(categories), Value::Vector2DJagged(probabilities), Value::Vector2DJagged(nulls)) => Ok(match (data, categories, probabilities, nulls) {
                     (ArrayND::Bool(data), Vector2DJagged::Bool(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::Bool(nulls)) =>
-                        Value::ArrayND(ArrayND::Bool(impute_categorical(&data, &categories, &probabilities, &nulls)?)),
+                        impute_categorical(&data, &categories, &probabilities, &nulls)?.into(),
                     (ArrayND::F64(data), Vector2DJagged::F64(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::F64(nulls)) =>
-                        Value::ArrayND(ArrayND::F64(impute_categorical(&data, &categories, &probabilities, &nulls)?)),
+                        impute_categorical(&data, &categories, &probabilities, &nulls)?.into(),
                     (ArrayND::I64(data), Vector2DJagged::I64(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::I64(nulls)) =>
-                        Value::ArrayND(ArrayND::I64(impute_categorical(&data, &categories, &probabilities, &nulls)?)),
+                        impute_categorical(&data, &categories, &probabilities, &nulls)?.into(),
                     (ArrayND::Str(data), Vector2DJagged::Str(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::Str(nulls)) =>
-                        Value::ArrayND(ArrayND::Str(impute_categorical(&data, &categories, &probabilities, &nulls)?)),
+                        impute_categorical(&data, &categories, &probabilities, &nulls)?.into(),
                     _ => return Err("types of data, categories, and null must be consistent and probabilities must be f64".into())
                 }),
                 _ => return Err("data and null must be ArrayND, categories and probabilities must be Vector2DJagged".into())
@@ -40,10 +40,10 @@ impl Evaluable for proto::Impute {
                     return Ok(match (get_argument(&arguments, "data")?, get_argument(&arguments, "min")?, get_argument(&arguments, "max")?) {
                         (Value::ArrayND(data), Value::ArrayND(min), Value::ArrayND(max)) => match (data, min, max) {
                             (ArrayND::F64(data), ArrayND::F64(min), ArrayND::F64(max)) =>
-                                Value::ArrayND(ArrayND::F64(impute_float_uniform(&data, &min, &max)?)),
+                                impute_float_uniform(&data, &min, &max)?.into(),
                             (ArrayND::I64(data), ArrayND::I64(_min), ArrayND::I64(_max)) =>
                                 // continuous integers are already non-null
-                                Value::ArrayND(ArrayND::I64(data.clone())),
+                                data.clone().into(),
                             _ => return Err("data, min, and max must all be the same type".into())
                         },
                         _ => return Err("data, min, max, shift, and scale must be ArrayND".into())
@@ -56,7 +56,7 @@ impl Evaluable for proto::Impute {
                     let scale = get_argument(&arguments, "scale")?.get_arraynd()?.get_f64()?;
                     let shift = get_argument(&arguments, "shift")?.get_arraynd()?.get_f64()?;
 
-                    return Ok(Value::ArrayND(ArrayND::F64(impute_float_gaussian(&data, &min, &max, &shift, &scale)?)));
+                    return Ok(impute_float_gaussian(&data, &min, &max, &shift, &scale)?.into());
 
                 },
                 _ => return Err("Distribution not supported".into())

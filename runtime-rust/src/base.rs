@@ -13,9 +13,9 @@ use std::vec::Vec;
 
 use itertools::Itertools;
 
-use yarrow_validator::base::{get_input_properties, Value};
+use yarrow_validator::base::{get_input_properties, Value, ValueProperties};
 use yarrow_validator::utilities::inference::infer_property;
-use yarrow_validator::utilities::serial::serialize_properties;
+use yarrow_validator::utilities::serial::serialize_value_properties;
 
 pub type NodeArguments<'a> = HashMap<String, &'a Value>;
 
@@ -29,7 +29,7 @@ pub fn execute_graph(analysis: &proto::Analysis,
     let mut release = serial::parse_release(release)?;
 
     let mut graph: HashMap<u32, proto::Component> = analysis.computation_graph.to_owned().unwrap().value;
-    let mut graph_properties: HashMap<u32, proto::Properties> = HashMap::new();
+    let mut graph_properties: HashMap<u32, proto::ValueProperties> = HashMap::new();
     let mut maximum_id = graph.keys()
         .fold1(std::cmp::max)
         .map(|x| x.clone())
@@ -37,7 +37,7 @@ pub fn execute_graph(analysis: &proto::Analysis,
 
     // TEMP FIX FOR UNEVALUATED PROPERTIES
     for (node_id, value) in release.clone() {
-        graph_properties.insert(node_id.clone(), serialize_properties(&infer_property(&value)?));
+        graph_properties.insert(node_id.clone(), serialize_value_properties(&infer_property(&value)?));
     }
 
     // track node parents. Each key is a node id, and the value is the set of node ids that use it
@@ -73,11 +73,14 @@ pub fn execute_graph(analysis: &proto::Analysis,
             continue;
         }
 
-        let node_properties: HashMap<String, proto::Properties> =
+        let node_properties: HashMap<String, proto::ValueProperties> =
             get_input_properties(&component, &graph_properties)?;
 
         let public_arguments = node_properties.iter()
-            .filter(|(_k, v)| v.releasable)
+            .filter(|(_k, v)| match v.variant.clone().unwrap() {
+                proto::value_properties::Variant::Arraynd(v) => v.releasable,
+                _ => false
+            })
             .map(|(k, _v)| (k.clone(), release
                 .get(component.arguments.get(k).unwrap()).unwrap().clone()))
             .collect::<HashMap<String, Value>>();
@@ -95,6 +98,7 @@ pub fn execute_graph(analysis: &proto::Analysis,
             maximum_id,
         )?;
 
+//        println!("expansion {:?}", expansion);
         graph.extend(expansion.computation_graph.unwrap().value);
 
         if maximum_id != expansion.maximum_id {
@@ -102,7 +106,10 @@ pub fn execute_graph(analysis: &proto::Analysis,
             continue;
         }
 
-        graph_properties.insert(node_id, expansion.properties.unwrap());
+        if let Some(expansion_property) = expansion.properties {
+//            println!("expansion property added to runtime props: {:?}", expansion_property);
+            graph_properties.insert(node_id, expansion_property);
+        }
 
         traversal.pop();
 
@@ -113,7 +120,7 @@ pub fn execute_graph(analysis: &proto::Analysis,
             node_arguments.insert(field_id.to_owned(), evaluation);
         });
 
-        println!("Evaluating node_id {:?}, {:?}", node_id, component.variant);
+//        println!("Evaluating node_id {:?}, {:?}", node_id, component.variant);
         let evaluation = component.to_owned().variant.unwrap().evaluate(&node_arguments)?;
 
         release.insert(node_id, evaluation);
@@ -126,7 +133,10 @@ pub fn execute_graph(analysis: &proto::Analysis,
                 // remove argument node from release if all children evaluated, and is private or omitted
                 if parent_node_ids.len() == 0 {
                     let releasable = match graph_properties.get(argument_node_id) {
-                        Some(properties) => properties.releasable,
+                        Some(properties) => match properties.variant.clone().unwrap() {
+                            proto::value_properties::Variant::Arraynd(v) => v.releasable,
+                            _=> false
+                        },
                         None => false
                     };
                     let argument_component = graph.get(argument_node_id).clone().unwrap();
@@ -142,7 +152,10 @@ pub fn execute_graph(analysis: &proto::Analysis,
     // ensure that the only keys remaining in the release are releasable and not omitted
     for node_id in release.to_owned().keys() {
         let releasable = match graph_properties.get(node_id) {
-            Some(properties) => properties.releasable,
+            Some(properties) => match properties.variant.clone().unwrap() {
+                proto::value_properties::Variant::Arraynd(v) => v.releasable,
+                _ => false
+            },
             None => false
         };
 

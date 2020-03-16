@@ -31,6 +31,9 @@ message Component {
         RowMax rowmax = 223;
         RowMin rowmin = 224;
         Resize resize = 225;
+        Filter filter = 226;
+        Partition partition = 227;
+
         // arithmetic manipulations
         Add add = 250;
         Subtract subtract = 251;
@@ -38,15 +41,16 @@ message Component {
         Divide divide = 253;
         Power power = 254;
         Log log = 255;
-        Modulus modulus = 256;
-        Div div = 257;
+        Modulo modulo = 256;
+        Remainder remainder = 257;
+        Negative negative = 258;
         // boolean manipulations
         Equal equal = 270;
         GreaterThan greaterthan = 271;
         LessThan lessthan = 272;
         And and = 273;
         Or or = 274;
-        Negative negative = 275;
+        Negate negate = 275;
 
         // high level components
         DPSum dpsum = 300;
@@ -109,9 +113,13 @@ message Bin {
     string side = 1;
 }
 message Clamp {}
-message Impute {
+message Impute {}
+message RowMax {}
+message RowMin {}
+message Resize {}
+message Filter {}
+message Partition {}
 
-}
 // arithmetic manipulations
 message Add {}
 message Subtract {}
@@ -119,15 +127,16 @@ message Multiply {}
 message Divide {}
 message Power {}
 message Log {}
-message Modulus {}
-message Div {}
+message Modulo {}
+message Remainder {}
+message Negative {}
 // boolean manipulations
 message Equal {}
 message GreaterThan {}
 message LessThan {}
 message And {}
 message Or {}
-message Negative {}
+message Negate {}
 
 // high level components
 message DPSum {
@@ -191,12 +200,6 @@ message Covariance {}
 message Minimum {}
 message Maximum {}
 
-// distribution sampling
-message SampleLaplace {}
-message SampleGeometric {}
-message SampleDiscrete {}
-message SampleGaussian {}
-
 message LaplaceMechanism {
     repeated PrivacyUsage privacy_usage = 1;
 }
@@ -205,12 +208,8 @@ message GaussianMechanism {
 }
 message SimpleGeometricMechanism {
     repeated PrivacyUsage privacy_usage = 1;
-    bool enforce_constant_time = 4;
+    bool enforce_constant_time = 2;
 }
 message ExponentialMechanism {
     repeated PrivacyUsage privacy_usage = 1;
 }
-
-message RowMax {}
-message RowMin {}
-message Resize {}

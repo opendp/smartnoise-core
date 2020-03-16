@@ -28,7 +28,7 @@ impl Evaluable for proto::LaplaceMechanism {
                         Ok(())
                     })
                     .collect::<Result<()>>()?;
-                Ok(Value::ArrayND(ArrayND::F64(data)))
+                Ok(data.into())
             },
 
             (Value::Vector2DJagged(data), Value::Vector2DJagged(sensitivity)) => {
@@ -80,7 +80,7 @@ impl Evaluable for proto::GaussianMechanism {
             })
             .collect::<Result<()>>()?;
 
-        Ok(Value::ArrayND(ArrayND::F64(data)))
+        Ok(data.into())
     }
 }
 
@@ -109,7 +109,7 @@ impl Evaluable for proto::SimpleGeometricMechanism {
             })
             .collect::<Result<()>>()?;
 
-        Ok(Value::ArrayND(ArrayND::I64(data)))
+        Ok(data.into())
     }
 }
 

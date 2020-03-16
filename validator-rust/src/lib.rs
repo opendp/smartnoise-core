@@ -102,13 +102,13 @@ pub extern "C" fn validate_analysis(
         value: match base::validate_analysis(&analysis, &release) {
             Ok(x) => Some(proto::response_validate_analysis::Value::Data(x)),
             Err(err) => {
-
+//
 //                let stderr = &mut ::std::io::stderr();
 //                writeln!(stderr, "{}", err.display_chain()).expect(ERR_STDERR);
 //                ::std::process::exit(1);
 
                 Some(proto::response_validate_analysis::Value::Error(
-                    proto::Error { message: format!("{:?}", err).to_string() }
+                    proto::Error { message: err.display_chain().to_string() }
                 ))
             }
         }
@@ -131,12 +131,12 @@ pub extern "C" fn compute_privacy_usage(
             Ok(x) => Some(proto::response_compute_privacy_usage::Value::Data(x)),
             Err(err) => {
 
-                let stderr = &mut ::std::io::stderr();
-                writeln!(stderr, "{}", err.display_chain()).expect(ERR_STDERR);
+//                let stderr = &mut ::std::io::stderr();
+//                writeln!(stderr, "{}", err.display_chain()).expect(ERR_STDERR);
 //                ::std::process::exit(1);
 
                 Some(proto::response_compute_privacy_usage::Value::Error(
-                    proto::Error { message: format!("{:?}", err).to_string() }
+                    proto::Error { message: err.display_chain().to_string() }
                 ))
             }
         }
@@ -159,12 +159,12 @@ pub extern "C" fn generate_report(
             Ok(x) => Some(proto::response_generate_report::Value::Data(x)),
             Err(err) => {
 
-                let stderr = &mut ::std::io::stderr();
-                writeln!(stderr, "{}", err.display_chain()).expect(ERR_STDERR);
+//                let stderr = &mut ::std::io::stderr();
+//                writeln!(stderr, "{}", err.display_chain()).expect(ERR_STDERR);
 //                ::std::process::exit(1);
 
                 Some(proto::response_generate_report::Value::Error(
-                    proto::Error { message: format!("{:?}", err).to_string() }
+                    proto::Error { message: err.display_chain().to_string() }
                 ))
             }
         }
@@ -181,8 +181,8 @@ pub extern "C" fn accuracy_to_privacy_usage(
 
     let privacy_definition: proto::PrivacyDefinition = request.privacy_definition.unwrap();
     let component: proto::Component = request.component.unwrap();
-    let properties: HashMap<String, base::Properties> = request.properties.iter()
-        .map(|(k, v)| (k.to_owned(), utilities::serial::parse_properties(&v)))
+    let properties: HashMap<String, base::ValueProperties> = request.properties.iter()
+        .map(|(k, v)| (k.to_owned(), utilities::serial::parse_value_properties(&v)))
         .collect();
     let accuracy: proto::Accuracy = request.accuracy.unwrap();
 
@@ -194,12 +194,12 @@ pub extern "C" fn accuracy_to_privacy_usage(
             Ok(x) => Some(proto::response_accuracy_to_privacy_usage::Value::Data(x)),
             Err(err) => {
 
-                let stderr = &mut ::std::io::stderr();
-                writeln!(stderr, "{}", err.display_chain()).expect(ERR_STDERR);
+//                let stderr = &mut ::std::io::stderr();
+//                writeln!(stderr, "{}", err.display_chain()).expect(ERR_STDERR);
 //                ::std::process::exit(1);
 
                 Some(proto::response_accuracy_to_privacy_usage::Value::Error(
-                    proto::Error { message: format!("{:?}", err).to_string() }
+                    proto::Error { message: err.display_chain().to_string() }
                 ))
             }
         }
@@ -216,8 +216,8 @@ pub extern "C" fn privacy_usage_to_accuracy(
 
     let privacy_definition: proto::PrivacyDefinition = request.privacy_definition.unwrap();
     let component: proto::Component = request.component.unwrap();
-    let properties: HashMap<String, base::Properties> = request.properties.iter()
-        .map(|(k, v)| (k.to_owned(), utilities::serial::parse_properties(&v)))
+    let properties: HashMap<String, base::ValueProperties> = request.properties.iter()
+        .map(|(k, v)| (k.to_owned(), utilities::serial::parse_value_properties(&v)))
         .collect();
 
     let accuracy: Result<proto::Accuracy> = Ok(proto::Accuracy {
@@ -230,12 +230,12 @@ pub extern "C" fn privacy_usage_to_accuracy(
             Ok(x) => Some(proto::response_privacy_usage_to_accuracy::Value::Data(x)),
             Err(err) => {
 
-                let stderr = &mut ::std::io::stderr();
-                writeln!(stderr, "{}", err.display_chain()).expect(ERR_STDERR);
+//                let stderr = &mut ::std::io::stderr();
+//                writeln!(stderr, "{}", err.display_chain()).expect(ERR_STDERR);
 //                ::std::process::exit(1);
 
                 Some(proto::response_privacy_usage_to_accuracy::Value::Error(
-                    proto::Error { message: format!("{:?}", err).to_string() }
+                    proto::Error { message: err.display_chain().to_string() }
                 ))
             }
         }
@@ -268,12 +268,12 @@ pub extern "C" fn expand_component(
             Ok(x) => Some(proto::response_expand_component::Value::Data(x)),
             Err(err) => {
 
-                let stderr = &mut ::std::io::stderr();
-                writeln!(stderr, "{}", err.display_chain()).expect(ERR_STDERR);
+//                let stderr = &mut ::std::io::stderr();
+//                writeln!(stderr, "{}", err.display_chain()).expect(ERR_STDERR);
 //                ::std::process::exit(1);
 
                 Some(proto::response_expand_component::Value::Error(
-                    proto::Error { message: format!("{:?}", err).to_string() }
+                    proto::Error { message: err.display_chain().to_string() }
                 ))
             }
         }

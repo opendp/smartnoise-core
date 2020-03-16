@@ -13,13 +13,13 @@ impl Evaluable for proto::Clamp {
             match (get_argument(&arguments, "data")?, get_argument(&arguments, "categories")?, get_argument(&arguments, "null")?) {
                 (Value::ArrayND(data), Value::Vector2DJagged(categories), Value::Vector2DJagged(nulls)) => Ok(match (data, categories, nulls) {
                     (ArrayND::Bool(data), Vector2DJagged::Bool(categories), Vector2DJagged::Bool(nulls)) =>
-                        Value::ArrayND(ArrayND::Bool(clamp_categorical(&data, &categories, &nulls)?)),
+                        clamp_categorical(&data, &categories, &nulls)?.into(),
                     (ArrayND::F64(data), Vector2DJagged::F64(categories), Vector2DJagged::F64(nulls)) =>
-                        Value::ArrayND(ArrayND::F64(clamp_categorical(&data, &categories, &nulls)?)),
+                        clamp_categorical(&data, &categories, &nulls)?.into(),
                     (ArrayND::I64(data), Vector2DJagged::I64(categories), Vector2DJagged::I64(nulls)) =>
-                        Value::ArrayND(ArrayND::I64(clamp_categorical(&data, &categories, &nulls)?)),
+                        clamp_categorical(&data, &categories, &nulls)?.into(),
                     (ArrayND::Str(data), Vector2DJagged::Str(categories), Vector2DJagged::Str(nulls)) =>
-                        Value::ArrayND(ArrayND::Str(clamp_categorical(&data, &categories, &nulls)?)),
+                        clamp_categorical(&data, &categories, &nulls)?.into(),
                     _ => return Err("types of data, categories, and null must be consistent".into())
                 }),
                 _ => return Err("data must be ArrayND, categories must be Vector2DJagged, and null must be ArrayND".into())
@@ -28,9 +28,9 @@ impl Evaluable for proto::Clamp {
             match (get_argument(&arguments, "data")?, get_argument(&arguments, "min")?, get_argument(&arguments, "max")?) {
                 (Value::ArrayND(data), Value::ArrayND(min), Value::ArrayND(max)) => Ok(match (data, min, max) {
                     (ArrayND::F64(data), ArrayND::F64(min), ArrayND::F64(max)) =>
-                        Value::ArrayND(ArrayND::F64(clamp_numeric_float(&data, &min, &max)?)),
+                        clamp_numeric_float(&data, &min, &max)?.into(),
 //                    (ArrayND::I64(data), ArrayND::I64(min), ArrayND::I64(max)) =>
-//                        Value::ArrayND(ArrayND::I64(clamp_numeric_integer(data, min, max)?)),
+//                        clamp_numeric_integer(data, min, max)?.into(),
                     _ => return Err("data, min, and max must all have type f64".into())
                 }),
                 _ => return Err("data, min, and max must all be ArrayND".into())

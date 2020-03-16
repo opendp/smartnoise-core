@@ -1,59 +1,71 @@
 import yarrow
 
-test_csv_path = '/home/shoe/PSI/datasets/data/PUMS_california_demographics_1000/data.csv'
+import yarrow.components as op
 
+test_csv_path = '/home/shoe/PSI/datasets/data/PUMS_california_demographics_1000/data.csv'
+test_csv_names = ["age", "sex", "educ", "race", "income", "married"]
 
 def test_multilayer_analysis(run=True):
 
     with yarrow.Analysis() as analysis:
-        PUMS = yarrow.Dataset(path=test_csv_path)
+        PUMS = yarrow.Dataset(path=test_csv_path, column_names=test_csv_names)
 
-        age = yarrow.ops.cast(PUMS['age'], type="FLOAT")
-        sex = yarrow.ops.cast(PUMS['sex'], type="BOOL", positive="TRUE")
+        age = op.cast(PUMS['age'], type="FLOAT")
+        sex = op.cast(PUMS['sex'], type="BOOL", true_label="TRUE")
 
-        mean_age = yarrow.ops.dp_mean(
-            data=yarrow.ops.cast(PUMS['married'], type="FLOAT"),
+        age_clamped = op.clamp(age, min=0., max=150.)
+        age_resized = op.resize(age_clamped, n=1000)
+
+        mean_age = op.dp_mean(
+            data=op.cast(PUMS['married'], type="FLOAT"),
             privacy_usage={'epsilon': .65},
             data_min=0.,
             data_max=100.,
             data_n=500
         )
 
-        yarrow.ops.dp_mean(
-            age / 2 + (sex + 22),
+        analysis.release()
+
+        sex_plus_22 = op.add(
+            op.cast(sex, type="FLOAT"),
+            22.,
+            left_n=1000, left_min=0., left_max=1.)
+
+        op.dp_mean(
+            age_resized / 2. + sex_plus_22,
             privacy_usage={'epsilon': .1},
             data_min=mean_age - 5.2,
             data_max=102.,
             data_n=500) + 5.
 
-        yarrow.ops.dp_variance(
-            yarrow.ops.cast(PUMS['educ'], type="FLOAT"),
+        op.dp_variance(
+            op.cast(PUMS['educ'], type="FLOAT"),
             privacy_usage={'epsilon': .15},
             data_n=1000,
             data_min=0.,
             data_max=12.
         )
 
-        yarrow.ops.dp_moment_raw(
-            yarrow.ops.cast(PUMS['married'], type="FLOAT"),
-            privacy_usage={'epsilon': .15},
-            data_n=1000000,
-            data_min=0.,
-            data_max=12.,
-            order=3
-        )
-
-        yarrow.ops.dp_covariance(
-            yarrow.ops.cast(PUMS['age'], type="FLOAT"),
-            yarrow.ops.cast(PUMS['married'], type="FLOAT"),
-            privacy_usage={'epsilon': .15},
-            left_n=1000,
-            right_n=1000,
-            left_min=0.,
-            left_max=1.,
-            right_min=0.,
-            right_max=1.
-        )
+        # op.dp_moment_raw(
+        #     op.cast(PUMS['married'], type="FLOAT"),
+        #     privacy_usage={'epsilon': .15},
+        #     data_n=1000000,
+        #     data_min=0.,
+        #     data_max=12.,
+        #     order=3
+        # )
+        #
+        # op.dp_covariance(
+        #     left=op.cast(PUMS['age'], type="FLOAT"),
+        #     right=op.cast(PUMS['married'], type="FLOAT"),
+        #     privacy_usage={'epsilon': .15},
+        #     left_n=1000,
+        #     right_n=1000,
+        #     left_min=0.,
+        #     left_max=1.,
+        #     right_min=0.,
+        #     right_max=1.
+        # )
 
     if run:
         analysis.release()
@@ -63,113 +75,91 @@ def test_multilayer_analysis(run=True):
 
 def test_dp_linear_stats(run=True):
     with yarrow.Analysis() as analysis:
-        dataset_pums = yarrow.Dataset(path=test_csv_path)
+        dataset_pums = yarrow.Dataset(path=test_csv_path, column_names=test_csv_names)
 
         age = dataset_pums['age']
-        age = yarrow.ops.cast(age, type="FLOAT")
 
-        clamped = yarrow.ops.clamp(age, min=0., max=100.)
-        imputed = yarrow.ops.impute(clamped)
-
-        num_records = yarrow.ops.dp_count(
+        num_records = op.dp_count(
             age,
             privacy_usage={'epsilon': .5},
             count_min=0,
             count_max=10000
         )
+        analysis.release()
+        print("number of records:", num_records.value)
+
+        age = op.cast(age, type="FLOAT")
+
+        age_variance = op.dp_variance(
+            age,
+            privacy_usage={'epsilon': .5},
+            data_min=0.,
+            data_max=150.,
+            data_n=num_records)
 
         analysis.release()
+        print("age variance:", age_variance.value)
 
-        resized = yarrow.ops.resize(imputed, n=num_records)
+        # If I clamp, impute, resize, then I can reuse their properties for multiple statistics
+        clamped_age = op.clamp(age, min=0., max=100.)
+        imputed_age = op.impute(clamped_age)
+        preprocessed_age = op.resize(imputed_age, n=num_records)
 
-        mean = yarrow.ops.dp_mean(
-            resized,
+        # properties necessary for mean are statically known
+        mean = op.dp_mean(
+            preprocessed_age,
             privacy_usage={'epsilon': .5}
         )
 
-        variance = yarrow.ops.dp_variance(
-            resized,
+        # properties necessary for variance are statically known
+        variance = op.dp_variance(
+            preprocessed_age,
             privacy_usage={'epsilon': .5}
         )
 
-        sum = yarrow.ops.dp_sum(
-            imputed,
+        # sum doesn't need n, so I pass the data in before resizing
+        age_sum = op.dp_sum(
+            imputed_age,
             privacy_usage={'epsilon': .5}
         )
 
-        yarrow.ops.dp_mean(
-            -resized + 2. / 3.,
+        # mean with min, max properties propagated up from prior bounds
+        transformed_mean = op.dp_mean(
+            -(preprocessed_age + 2.),
             privacy_usage={'epsilon': .5}
         )
 
-        # histogram = yarrow.ops.dp_histogram(
-        #     resized,
-        #     edges=[float(i) for i in range(0, 100, 10)],
-        #     inclusive_left=True,
-        #     null=-1.,
-        #     side="left",
-        #     count_min=0,
-        #     count_max=2000,
-        #     privacy_usage={'epsilon': .5}
-        # )
+        analysis.release()
+        print("age transformed mean:", transformed_mean.value)
 
-        custom_mean = yarrow.ops.laplace_mechanism(
-            yarrow.ops.mean(resized),
+        # releases may be pieced together from combinations of smaller components
+        custom_mean = op.laplace_mechanism(
+            op.mean(preprocessed_age),
             privacy_usage={'epsilon': .5})
-        custom_minimum = yarrow.ops.laplace_mechanism(
-            yarrow.ops.minimum(imputed),
+
+        custom_minimum = op.laplace_mechanism(
+            op.minimum(preprocessed_age),
             privacy_usage={'epsilon': .5})
-        custom_maximum = yarrow.ops.laplace_mechanism(
-            yarrow.ops.maximum(resized),
+
+        custom_maximum = op.laplace_mechanism(
+            op.maximum(preprocessed_age),
             privacy_usage={'epsilon': .5})
-        custom_quantile = yarrow.ops.laplace_mechanism(
-            yarrow.ops.quantile(resized, quantile=.5),
+
+        custom_quantile = op.laplace_mechanism(
+            op.quantile(preprocessed_age, quantile=.5),
             privacy_usage={'epsilon': 500})
 
-        income_clamped = yarrow.ops.clamp(
-            yarrow.ops.cast(dataset_pums['income'], type="FLOAT"),
-            data_min=0., data_max=1000000.)
-
-        income_max = yarrow.ops.laplace_mechanism(
-            yarrow.ops.maximum(income_clamped),
+        income = op.cast(dataset_pums['income'], type="FLOAT")
+        income_max = op.laplace_mechanism(
+            op.maximum(income, data_min=0., data_max=1000000.),
             privacy_usage={'epsilon': 10})
 
-        sum + custom_minimum * 23.
+        # releases may also be postprocessed and reused as arguments to more components
+        age_sum + custom_minimum * 23.
 
-        # minimum = yarrow.ops.dp_minimum(
-        #     imputed,
-        #     candidates=None,
-        #     privacy_usage={'epsilon': .5},
-        #     implementation="Laplace"
-        # )
-        #
-        # maximum = yarrow.ops.dp_maximum(
-        #     imputed,
-        #     candidates=None,
-        #     privacy_usage={'epsilon': .5},
-        #     implementation="Laplace"
-        # )
-        #
-        # median = yarrow.ops.dp_median(
-        #     imputed,
-        #     candidates=None,
-        #     privacy_usage={'epsilon': .5},
-        #     implementation="Laplace"
-        # )
+        analysis.release()
+        print("laplace quantile:", custom_quantile.value)
 
-        # yarrow.ops.dp_covariance(
-        #     privacy_usage={'epsilon': .5},
-        #     left=resized,
-        #     right=yarrow.ops.cast(dataset_pums['income'], type="FLOAT"),
-        #     right_min=0.,
-        #     right_max=1.,
-        #     right_n=500
-        # )
-
-        # custom_mean + yarrow.ops.divide(
-        #     sum,
-        #     income_clamped,
-        #     right_n=num_records) * 2.
 
     if run:
         analysis.release()
@@ -183,8 +173,8 @@ def test_dp_linear_stats(run=True):
 
 def test_dp_count(run=True):
     with yarrow.Analysis() as analysis:
-        dataset_pums = yarrow.Dataset(path=test_csv_path)
-        count = yarrow.ops.dp_count(
+        dataset_pums = yarrow.Dataset(path=test_csv_path, column_names=test_csv_names)
+        count = op.dp_count(
             dataset_pums['sex'] == '1',
             privacy_usage={'epsilon': 0.5})
 
@@ -197,7 +187,7 @@ def test_dp_count(run=True):
 
 def test_raw_dataset(run=True):
     with yarrow.Analysis() as analysis:
-        yarrow.ops.dp_mean(
+        op.dp_mean(
             data=yarrow.Dataset(value=[1., 2., 3., 4., 5.])[0],
             privacy_usage={'epsilon': 1},
             data_min=0.,

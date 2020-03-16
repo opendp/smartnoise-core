@@ -1,7 +1,4 @@
-
-1. install Rust
-
-2. run the command (every code change)
+1. run the command (every code change)
 
   - `cargo build`
   - Alternatively build an optimized version (longer compilation/quick runtime):
