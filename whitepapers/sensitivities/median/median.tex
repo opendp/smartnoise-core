@@ -1,0 +1,98 @@
+\documentclass[11pt]{scrartcl} % Font size
+\input{../structure.tex} % Include the file specifying the document structure and custom commands
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\title{
+	\normalfont\normalsize
+	\textsc{Harvard Privacy Tools Project}\\ % Your university, school and/or department name(s)
+	\vspace{25pt} % Whitespace
+	\rule{\linewidth}{0.5pt}\\ % Thin top horizontal rule
+	\vspace{20pt} % Whitespace
+	{\huge Median Sensitivity Proofs}\\ % The assignment title
+	\vspace{12pt} % Whitespace
+	\rule{\linewidth}{2pt}\\ % Thick bottom horizontal rule
+	\vspace{12pt} % Whitespace
+}
+
+% \author{\LARGE} % Your name
+
+\date{\normalsize\today} % Today's date (\today) or a custom date
+
+\begin{document}
+
+\maketitle
+
+\begin{definition}
+The sample median of a database $X = (x_1, \hdots, x_n)$ is given by
+\[ f(X) = \frac{\tilde{x}_l + \tilde{x}_u}{2} \]
+where $l = \lfloor \frac{n+1}{2} \rfloor$ and $u = \lceil \frac{n+1}{2} \rceil$ and
+$\tilde{X} = (\tilde{x}_1, \hdots, \tilde{x}_n)$ is the sorted version of $X$.
+\end{definition}
+
+\section{Neighboring Definition: Change One}
+
+% l1 sensitivity
+\subsection{$\ell_1$-sensitivity}
+\begin{theorem}
+	Let the database $X$ have elements bounded above by $M$ and below by $m$.
+	Then the global sensitivity of the median is
+	\[
+		\Delta f(\cdot) =
+			\begin{cases}
+				\frac{M - m}{2}, \text{ if } n \equiv 0 \pmod{2} \\
+				M-m \text{ if } n \equiv 1 \pmod{2}
+			\end{cases}
+	\]
+\end{theorem}
+
+\begin{proof}
+	First consider the case where $n$ is such that $n \equiv 0 \pmod{2}$. Then our worst-case scenario is that exactly
+	half of the data elements in $X$ are $m$ and the other half are $M$. In this case,
+	$f(X) = \frac{m + M}{2}$. \newline
+
+	Now consider an $X'$ which is identical to $X$ but with one element switched from
+	$m$ to $M$ WLOG.\footnote{The result holds if it is switched from $M$ to $m$.}
+	Then we have that $f(X') = M$. Because we are looking at our worst-case pairing of $X,X'$,
+	we know that
+	\[ \Delta f(\cdot) = \max_{X,X'} |f(X') - f(X)| = \big\vert M - \frac{m+M}{2} \big\vert = \frac{M-m}{2}. \]
+
+	Now consider the case where $n$ is such that $n \equiv 1 \pmod{2}$.
+	Then our worst-case scenario is that $\frac{n-1}{2}$ of the elements of $X$ are $m$,
+	$\frac{n-1}{2}$ of the elements of $X$ are $M$, and the remaining element of $X$ is $m$ (WLOG).
+	In this setting, $f(X) = m$.
+	Let $X'$ be identical to $x$ but with one element switched from $m$ to $M$.
+	Then $f(X') = M$ and we have that
+	\[ \Delta f(\cdot) = \max_{X,X'} |f(X') - f(X)| = |M - m|. \]
+\end{proof}
+
+% l2 sensitivity
+\subsection{$\ell_2$-sensitivity}
+\begin{theorem}
+	Let the database $X$ have elements bounded above by $M$ and below by $m$.
+	Then the global sensitivity of the median is
+	\[
+		\Delta f(\cdot) =
+			\begin{cases}
+				\left( \frac{M - m}{2} \right)^2, \text{ if } n \equiv 0 \pmod{2} \\
+				(M-m)^2 \text{ if } n \equiv 1 \pmod{2}
+			\end{cases}
+	\]
+\end{theorem}
+
+\begin{proof}
+	The logic follows exactly from the proof of the $\ell_1$ sensitivity,
+	just with the norm in the last line of each statement switched from 1 to 2.
+\end{proof}
+
+\section{Neighboring Definition: Add/Drop One}
+
+% l1 sensitivity
+\subsection{$\ell_1$-sensitivity}
+
+% l2 sensitivity
+\subsection{$\ell_2$-sensitivity}
+
+\end{document}
