@@ -140,7 +140,7 @@ $$ \frac{(M-m)^2 }{n}. $$
  	Let $X' = X \cup x'_{n+1}$. Recall from Eq.~\ref{eq:varAddOnePoint} that for 
 	
 	$$ f(x) = \sum_{i=1}^n (x_i - \bar{x})^2, $$
-	$$ f(x') = (x_{n+1} - \bar{x})^2 \frac{n}{n+1}.$$ 
+	$$ f(x') = f(x) + (x_{n+1} - \bar{x})^2 \frac{n}{n+1}.$$ 
 	
 	So,
 	
@@ -150,9 +150,32 @@ $$ \frac{(M-m)^2 }{n}. $$
 		&\le \left( M-m \right)^2 \frac{n}{n+1}
 	\end{align*}
 	
-	So the variance between $x$ and $x'$ is bounded by
+	So the $\ell_1$ distance between the variances of $x$ and $x'$ in this case is bounded by
 	
-	$$ \left( M-m \right)^2 \frac{n}{(n+1)(n-1)}.$$ 
+	$$ \left( M-m \right)^2 \frac{n}{(n+1)(n-1)} = \left( M-m \right)^2 \frac{n}{n^2 - 1}.$$ 
+	
+	Removing an element: \\
+	Let $X' = X \setminus \{x_n\}$. Then, rewriting Eq.~\ref{eq:varAddOnePoint} with $n$ set to $n+1$ since ``$x$'' in this case is the greater set,
+	$$ f(x) = f(x') + (x_n - \bar{x}')^2 \frac{n-1}{n}.$$
+	
+	Then,
+	\begin{align*}
+	\left\vert f(x) - f(x') \right\vert &= \left\vert f(x') + (x_n - \bar{x}')^2 \frac{n-1}{n} - f(x') \right\vert \\
+		&\le (M-m)^2 \frac{n-1}{n},\\
+	\end{align*}
+	
+	and the $\ell_1$ distance between the variances of $x$ and $x'$ in this case is bounded by 
+	
+	$$\frac{(M-m)^2}{n}$$
+	
+	Note that for any $n > 1$, 
+	
+	$$ \frac{n}{n^2 - 1} > \frac{1}{n}.$$
+	
+	So, the worst-case bound always occurs in the ``add-one'' case, and the $\ell_1$-sensitivity of the variance is in general bounded by
+	
+	$$ \left( M-m \right)^2 \frac{n}{n^2 - 1}.$$
+	
 % 	First, note that
 % 	\begin{align*}
 % 		\bar{X'} &= \frac{1}{n+1}\sum_{i=1}^{n+1}x_i \\
