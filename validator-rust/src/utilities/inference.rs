@@ -11,90 +11,11 @@ use crate::base::{ArrayND, Value, Vector2DJagged, Nature, Vector1DNull, NatureCo
 use crate::utilities::serial::parse_data_type;
 use std::collections::HashMap;
 
-
-pub fn get_shape(array: &ArrayND) -> Vec<i64> {
-    match array {
-        ArrayND::Bool(array) => array.shape().to_owned(),
-        ArrayND::F64(array) => array.shape().to_owned(),
-        ArrayND::I64(array) => array.shape().to_owned(),
-        ArrayND::Str(array) => array.shape().to_owned()
-    }.iter().map(|arr| arr.clone() as i64).collect()
-}
-
-pub fn infer_num_columns(value: &Value) -> Result<Option<i64>> {
-    match value {
-        Value::ArrayND(array) => {
-            let shape = get_shape(&array);
-            match shape.len() {
-                0 => Ok(Some(1)),
-                1 => Ok(Some(1)),
-                2 => Ok(Some(shape[1])),
-                _ => Err("arrays may have max dimensionality of 2".into())
-            }
-        },
-        Value::Hashmap(hashmap) => bail!("cannot infer number of columns on a hashmap"),
-        Value::Vector2DJagged(vector) => Ok(Some(match vector {
-            Vector2DJagged::Bool(vector) => vector.len(),
-            Vector2DJagged::F64(vector) => vector.len(),
-            Vector2DJagged::I64(vector) => vector.len(),
-            Vector2DJagged::Str(vector) => vector.len(),
-        } as i64))
-    }
-}
-pub fn infer_num_rows(value: &ArrayND) -> Result<Option<i64>> {
-    let shape = get_shape(value.into());
-    match shape.len() {
-        0 => Ok(Some(1)),
-        1 | 2 => Ok(Some(shape[0])),
-        _ => Err("arrays may have max dimensionality of 2".into())
-    }
-//
-//    match value {
-//        Value::ArrayND(array) => {
-//            *snip*
-//        },
-//        Value::Hashmap(hashmap) => hashmap.values().map(|value| match value {
-//            Value::ArrayND(array) => {
-//                let shape = get_shape(&array);
-//                match shape.len() {
-//                    0 | 1 => Ok(Some(1)),
-//                    2 => Ok(Some(shape[0])),
-//                    _ => Err("arrays may have max dimensionality of 2".into())
-//                }
-//            },
-//            _ => Err("properties on hashmaps are only implemented for single-column arrays".into())
-//        }).collect(),
-//        Value::Vector2DJagged(jagged) => Ok(match jagged {
-//            Vector2DJagged::Bool(vector) => vector.iter()
-//                .map(|col| match col {
-//                    Some(vec) => Some(vec.len() as i64),
-//                    None => None
-//                }).collect(),
-//            Vector2DJagged::F64(vector) => vector.iter()
-//                .map(|col| match col {
-//                    Some(vec) => Some(vec.len() as i64),
-//                    None => None
-//                }).collect(),
-//            Vector2DJagged::I64(vector) => vector.iter()
-//                .map(|col| match col {
-//                    Some(vec) => Some(vec.len() as i64),
-//                    None => None
-//                }).collect(),
-//            Vector2DJagged::Str(vector) => vector.iter()
-//                .map(|col| match col {
-//                    Some(vec) => Some(vec.len() as i64),
-//                    None => None
-//                }).collect(),
-//        })
-//        Value::Vector2DJagged(jagged) => bail!("num_rows for jagged vectors is disabled")
-//    }
-}
-
 pub fn infer_min(value: &Value) -> Vec<Option<f64>> {
     match value {
         Value::ArrayND(array) => {
 
-            match get_shape(&array).len() as i64 {
+            match array.get_shape().len() as i64 {
                 0 => vec![Some(match array {
                     ArrayND::F64(array) =>
                         array.first().unwrap().to_owned(),
@@ -145,7 +66,7 @@ pub fn infer_max(value: &Value) -> Vec<Option<f64>> {
     match value {
         Value::ArrayND(array) => {
 
-            match get_shape(&array).len() as i64 {
+            match array.get_shape().len() as i64 {
                 0 => vec![Some(match array {
                     ArrayND::F64(array) =>
                         array.first().unwrap().to_owned(),
@@ -317,11 +238,8 @@ pub fn infer_nullity(_value: &Value) -> Result<bool> {
     Ok(true)
 }
 
-pub fn infer_c_stability(value: &Value) -> Result<Vec<f64>> {
-    Ok(match infer_num_columns(&value)? {
-        Some(num_columns) => (0..num_columns).map(|_| 1.).collect(),
-        None => Vec::new()
-    })
+pub fn infer_c_stability(value: &ArrayND) -> Result<Vec<f64>> {
+    Ok((0..value.get_num_columns()?).map(|_| 1.).collect())
 }
 
 pub fn infer_property(value: &Value) -> Result<ValueProperties> {
@@ -330,9 +248,9 @@ pub fn infer_property(value: &Value) -> Result<ValueProperties> {
             nullity: infer_nullity(&value)?,
             releasable: true,
             nature: infer_nature(&value),
-            c_stability: infer_c_stability(&value)?,
-            num_columns: infer_num_columns(&value)?,
-            num_records: infer_num_rows(array)?,
+            c_stability: infer_c_stability(&array)?,
+            num_columns: Some(array.get_num_columns()?),
+            num_records: Some(array.get_num_records()?),
             aggregator: None,
             data_type: match array {
                 ArrayND::Bool(_) => DataType::Bool,
@@ -344,7 +262,8 @@ pub fn infer_property(value: &Value) -> Result<ValueProperties> {
         Value::Hashmap(hashmap) => HashmapProperties {
             num_records: None,
             disjoint: false,
-            value_properties: match hashmap {
+            columnar: false,
+            properties: match hashmap {
                 Hashmap::Str(hashmap) => hashmap.iter()
                     .map(|(name, value)| infer_property(value)
                         .map(|v| (name.clone(), v)))

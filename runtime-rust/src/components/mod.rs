@@ -1,6 +1,6 @@
 use yarrow_validator::errors::*;
 use crate::base::NodeArguments;
-use yarrow_validator::base::Value;
+use yarrow_validator::base::{Value, Hashmap};
 use yarrow_validator::utilities::serial::parse_value;
 
 mod bin;
@@ -15,6 +15,7 @@ mod maximum;
 mod materialize;
 mod mean;
 mod minimum;
+mod partition;
 mod quantile;
 mod mechanisms;
 mod resize;
@@ -25,6 +26,7 @@ mod transforms;
 mod variance;
 
 use yarrow_validator::proto;
+use std::collections::HashMap;
 
 pub trait Evaluable {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value>;
@@ -50,9 +52,12 @@ impl Evaluable for proto::component::Variant {
 
         evaluate!(
             // INSERT COMPONENT LIST
-            Constant, Bin, Cast, Clamp, Count, Covariance, Filter, Impute, Index, Maximum, Materialize, Mean,
-            Minimum, Quantile, Laplacemechanism, Gaussianmechanism, Simplegeometricmechanism, Resize,
-            Sum, Variance,
+            Constant, Bin, Cast, Clamp, Count, Covariance, Filter, Impute, Index, Maximum,
+            Materialize, Mean, Minimum, Partition, Quantile,
+
+            Laplacemechanism, Gaussianmechanism, Simplegeometricmechanism,
+
+            Resize, Sum, Variance,
 
             Add, Subtract, Divide, Multiply, Power, Log, Modulo, Remainder, And, Or, Negate,
             Equal, Lessthan, Greaterthan, Negative

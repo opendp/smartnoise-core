@@ -103,19 +103,25 @@ impl From<HashMap<String, Value>> for Value {
         Value::Hashmap(Hashmap::<Value>::Str(value))
     }
 }
-impl From<HashMap<bool, ValueProperties>> for Hashmap<ValueProperties> {
-    fn from(value: HashMap<bool, ValueProperties>) -> Self {
-        Hashmap::<ValueProperties>::Bool(value)
+
+impl From<Hashmap<Value>> for Value {
+    fn from(value: Hashmap<Value>) -> Self {
+        Value::Hashmap(value)
     }
 }
-impl From<HashMap<i64, ValueProperties>> for Hashmap<ValueProperties> {
-    fn from(value: HashMap<i64, ValueProperties>) -> Self {
-        Hashmap::<ValueProperties>::I64(value)
+impl<T> From<HashMap<bool, T>> for Hashmap<T> {
+    fn from(value: HashMap<bool, T>) -> Self {
+        Hashmap::<T>::Bool(value)
     }
 }
-impl From<HashMap<String, ValueProperties>> for Hashmap<ValueProperties> {
-    fn from(value: HashMap<String, ValueProperties>) -> Self {
-        Hashmap::<ValueProperties>::Str(value)
+impl<T> From<HashMap<i64, T>> for Hashmap<T> {
+    fn from(value: HashMap<i64, T>) -> Self {
+        Hashmap::<T>::I64(value)
+    }
+}
+impl<T> From<HashMap<String, T>> for Hashmap<T> {
+    fn from(value: HashMap<String, T>) -> Self {
+        Hashmap::<T>::Str(value)
     }
 }
 impl From<ArrayNDProperties> for ValueProperties {
@@ -221,6 +227,31 @@ impl ArrayND {
             _ => Err("value must be a bool".into())
         }
     }
+    pub fn get_shape(&self) -> Vec<i64> {
+        match self {
+            ArrayND::Bool(array) => array.shape().to_owned(),
+            ArrayND::F64(array) => array.shape().to_owned(),
+            ArrayND::I64(array) => array.shape().to_owned(),
+            ArrayND::Str(array) => array.shape().to_owned()
+        }.iter().map(|arr| arr.clone() as i64).collect()
+    }
+    pub fn get_num_records(&self) -> Result<i64> {
+        let shape = self.get_shape();
+        match shape.len() {
+            0 => Ok(1),
+            1 | 2 => Ok(shape[0]),
+            _ => Err("arrays may have max dimensionality of 2".into())
+        }
+    }
+    pub fn get_num_columns(&self) -> Result<i64> {
+        let shape = self.get_shape();
+        match shape.len() {
+            0 => Ok(1),
+            1 => Ok(1),
+            2 => Ok(shape[1]),
+            _ => Err("arrays may have max dimensionality of 2".into())
+        }
+    }
 }
 
 // used for categorical properties
@@ -264,6 +295,30 @@ impl Vector2DJagged {
             _ => Err("expected bool type on a non-bool Vector2DJagged".into())
         }
     }
+    pub fn get_num_columns(&self) -> i64 {
+        match self {
+            Vector2DJagged::Bool(vector) => vector.len() as i64,
+            Vector2DJagged::F64(vector) => vector.len() as i64,
+            Vector2DJagged::I64(vector) => vector.len() as i64,
+            Vector2DJagged::Str(vector) => vector.len() as i64,
+        }
+    }
+    pub fn get_lengths_option(&self) -> Vec<Option<i64>> {
+        match self {
+            Vector2DJagged::Bool(value) => value.iter()
+                .map(|column| column.as_ref().map(|col| col.len() as i64)).collect(),
+            Vector2DJagged::F64(value) => value.iter()
+                .map(|column| column.as_ref().map(|col| col.len() as i64)).collect(),
+            Vector2DJagged::I64(value) => value.iter()
+                .map(|column| column.as_ref().map(|col| col.len() as i64)).collect(),
+            Vector2DJagged::Str(value) => value.iter()
+                .map(|column| column.as_ref().map(|col| col.len() as i64)).collect()
+        }
+    }
+    pub fn get_lengths(&self) -> Result<Vec<i64>> {
+        self.get_lengths_option().iter().cloned().collect::<Option<Vec<i64>>>()
+            .ok_or("length is not defined for every column".into())
+    }
 }
 
 // used for multi-output components
@@ -272,6 +327,33 @@ pub enum Hashmap<T> {
     Bool(HashMap<bool, T>),
     I64(HashMap<i64, T>),
     Str(HashMap<String, T>),
+}
+
+impl<T> Hashmap<T> {
+    pub fn get_num_keys(&self) -> i64 {
+        match self {
+            Hashmap::Bool(value) => value.keys().len() as i64,
+            Hashmap::I64(value) => value.keys().len() as i64,
+            Hashmap::Str(value) => value.keys().len() as i64,
+        }
+    }
+    pub fn get_values(&self) -> Vec<&T> {
+        match self {
+            Hashmap::Bool(value) => value.values().collect(),
+            Hashmap::I64(value) => value.values().collect(),
+            Hashmap::Str(value) => value.values().collect(),
+        }
+    }
+    pub fn from_values(&self, values: Vec<T>) -> Hashmap<T> where T: Clone {
+        match self {
+            Hashmap::Bool(value) => value.keys().into_iter().cloned()
+                .zip(values).collect::<HashMap<bool, T>>().into(),
+            Hashmap::I64(value) => value.keys().into_iter().cloned()
+                .zip(values).collect::<HashMap<i64, T>>().into(),
+            Hashmap::Str(value) => value.keys().into_iter().cloned()
+                .zip(values).collect::<HashMap<String, T>>().into(),
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -308,7 +390,26 @@ pub struct HashmapProperties {
     // global count over all partitions
     pub num_records: Option<i64>,
     pub disjoint: bool,
-    pub value_properties: Hashmap<ValueProperties>,
+    pub columnar: bool,
+    pub properties: Hashmap<ValueProperties>,
+}
+
+impl HashmapProperties {
+    pub fn assert_is_disjoint(&self) -> Result<()> {
+        match self.disjoint {
+            false => Err("partitions must be disjoint".into()),
+            true => Ok(())
+        }
+    }
+    pub fn assert_is_not_columnar(&self) -> Result<()> {
+        match self.columnar {
+            true => Err("partitions must not be columnar".into()),
+            false => Ok(())
+        }
+    }
+    pub fn get_num_records(&self) -> Result<i64> {
+        self.num_records.ok_or::<Error>("number of rows is not defined".into())
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -475,11 +576,13 @@ pub enum Vector1D {
     Str(Vec<String>),
 }
 
-pub enum Sensitivity {
+pub enum SensitivityType {
     KNorm(u32),
     InfNorm,
     Exponential
 }
+
+pub type Sensitivity = Vec<Vec<f64>>;
 
 pub fn prepend(text: &str) -> impl Fn(Error) -> Error + '_ {
     move |e| format!("{} {}", text, e).into()

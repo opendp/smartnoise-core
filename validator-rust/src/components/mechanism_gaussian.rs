@@ -8,7 +8,7 @@ use crate::components::Aggregator;
 use crate::{proto, base};
 
 use crate::components::{Component, Expandable};
-use crate::base::{Value, NodeProperties, ArrayND, get_constant, Sensitivity, prepend, ValueProperties};
+use crate::base::{Value, NodeProperties, ArrayND, get_constant, SensitivityType, prepend, ValueProperties, Vector2DJagged};
 use ndarray::Array;
 
 impl Component for proto::GaussianMechanism {
@@ -30,7 +30,7 @@ impl Component for proto::GaussianMechanism {
         aggregator.component.compute_sensitivity(
             &privacy_definition,
             &aggregator.properties,
-            &Sensitivity::KNorm(2))?;
+            &SensitivityType::KNorm(2))?;
 
         data_property.releasable = true;
         Ok(data_property.into())
@@ -67,11 +67,15 @@ impl Expandable for proto::GaussianMechanism {
             let aggregator = data_property.aggregator.clone()
                 .ok_or::<Error>("aggregator: missing".into())?;
 
-            let sensitivity: Value = Array::from(aggregator.component
-                .compute_sensitivity(privacy_definition, &aggregator.properties, &Sensitivity::KNorm(2))?).into_dyn().into();
+            let sensitivity_vec = aggregator.component
+                .compute_sensitivity(privacy_definition, &aggregator.properties, &SensitivityType::Exponential)?;
+
+            let sensitivity_value = Value::Vector2DJagged(Vector2DJagged::F64(
+                sensitivity_vec.iter().map(|v| Some(v.clone())).collect()));
+
             current_id += 1;
             let id_sensitivity = current_id.clone();
-            graph_expansion.insert(id_sensitivity, get_constant(&sensitivity, &component.batch));
+            graph_expansion.insert(id_sensitivity, get_constant(&sensitivity_value, &component.batch));
 
             // noising
             let mut noise_component = component.clone();

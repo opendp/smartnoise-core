@@ -24,7 +24,8 @@ impl Component for proto::Materialize {
         Ok(HashmapProperties {
             num_records: None,
             disjoint: false,
-            value_properties: match (column_names, num_columns) {
+            columnar: true,
+            properties: match (column_names, num_columns) {
                 (Some(column_names), _) => Hashmap::<ValueProperties>::Str(column_names.iter()
                     .map(|name| (name.clone(), ValueProperties::ArrayND(ArrayNDProperties {
                         num_records: None,

@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use crate::{proto, base};
 
 use crate::components::{Component, Aggregator};
-use crate::base::{Value, Vector2DJagged, NodeProperties, AggregatorProperties, Sensitivity, prepend, ValueProperties, HashmapProperties, ArrayNDProperties};
+use crate::base::{Value, Vector2DJagged, NodeProperties, AggregatorProperties, SensitivityType, prepend, ValueProperties, HashmapProperties, ArrayNDProperties};
 
 
 impl Component for proto::Partition {
@@ -37,7 +37,8 @@ impl Component for proto::Partition {
                 HashmapProperties {
                     num_records: data_property.num_records,
                     disjoint: true,
-                    value_properties: match categories {
+                    columnar: false,
+                    properties: match categories {
                         Vector2DJagged::Bool(categories) => broadcast_partitions(&categories, &data_property)?.into(),
                         Vector2DJagged::Str(categories) => broadcast_partitions(&categories, &data_property)?.into(),
                         Vector2DJagged::I64(categories) => broadcast_partitions(&categories, &data_property)?.into(),
@@ -61,8 +62,9 @@ impl Component for proto::Partition {
 
                 HashmapProperties {
                     num_records: data_property.num_records,
-                    disjoint: false,
-                    value_properties: lengths.iter().enumerate().map(|(index, partition_num_records)| {
+                    disjoint: true,
+                    columnar: false,
+                    properties: lengths.iter().enumerate().map(|(index, partition_num_records)| {
                         let mut partition_property = data_property.clone();
                         partition_property.num_records = partition_num_records.clone();
                         (index as i64, ValueProperties::ArrayND(partition_property))

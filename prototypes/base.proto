@@ -64,7 +64,8 @@ message ValueProperties {
 message HashmapProperties {
     I64Null num_records = 1;
     bool disjoint = 2;
-    HashmapValueProperties value_properties = 3;
+    bool columnar = 3;
+    HashmapValueProperties properties = 4;
 }
 
 message HashmapValueProperties {

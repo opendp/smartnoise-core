@@ -8,10 +8,22 @@ use crate::utilities::utilities::get_num_columns;
 use yarrow_validator::proto;
 use crate::components::mean::mean;
 use ndarray::prelude::*;
+use crate::components::sum::sum;
+use crate::utilities::array::stack;
 
 impl Evaluable for proto::Variance {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        Ok(variance(&get_argument(&arguments, "data")?.get_arraynd()?.get_f64()?.clone())?.into())
+        match get_argument(&arguments, "data")? {
+            Value::ArrayND(array) => Ok(variance(array.get_f64()?)?.into()),
+            Value::Hashmap(hashmap) => {
+                let aggregations = hashmap.get_values().iter()
+                    .map(|value| sum(value.get_arraynd()?.get_f64()?))
+                    .collect::<Result<Vec<ArrayD<f64>>>>()?;
+                let views = aggregations.iter().map(|k| k.view()).collect();
+                Ok(stack(Axis(0), &views)?.into())
+            },
+            _ => Err("Sum is only implemented for ArrayND and Hashmap".into())
+        }
     }
 }
 

@@ -2,14 +2,25 @@ use yarrow_validator::errors::*;
 
 use crate::base::NodeArguments;
 use yarrow_validator::base::{Value, ArrayND, get_argument};
-use crate::components::Evaluable;
-use ndarray::{ArrayD, Array};
+use crate::components::{Evaluable};
+use ndarray::{ArrayD, Array, Axis};
 use crate::utilities::utilities::get_num_columns;
 use yarrow_validator::proto;
+use crate::utilities::array::stack;
 
 impl Evaluable for proto::Mean {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        Ok(mean(&get_argument(&arguments, "data")?.get_arraynd()?.get_f64()?.clone())?.into())
+        match get_argument(&arguments, "data")? {
+            Value::ArrayND(array) => Ok(mean(array.get_f64()?)?.into()),
+            Value::Hashmap(hashmap) => {
+                let aggregations = hashmap.get_values().iter()
+                    .map(|value| mean(value.get_arraynd()?.get_f64()?))
+                    .collect::<Result<Vec<ArrayD<f64>>>>()?;
+                let views = aggregations.iter().map(|k| k.view()).collect();
+                Ok(stack(Axis(0), &views)?.into())
+            },
+            _ => Err("Mean is only implemented for ArrayND and Hashmap".into())
+        }
     }
 }
 

@@ -140,9 +140,9 @@ pub fn exponential_mechanism<T>(
     let rug_eps = Float::with_val(53, epsilon);
     let rug_sens = Float::with_val(53, sensitivity);
     let e_util_vec: Vec<rug::Float> = candidate_set.iter()
-        .map(|x| rug_e.pow(rug_eps * Float::with_val(53, utility(x)) / (2.0 * rug_sens))).collect();
+        .map(|x| rug_e.clone().pow(rug_eps.clone() * Float::with_val(53, utility(x)) / (2.0 * rug_sens.clone()))).collect();
     let sum_e_util_vec: rug::Float = Float::with_val(53, Float::sum(e_util_vec.iter()));
-    let probability_vec: Vec<f64> = e_util_vec.iter().map(|x| (x / sum_e_util_vec).to_f64()).collect();
+    let probability_vec: Vec<f64> = e_util_vec.iter().map(|x| (x / sum_e_util_vec.clone()).to_f64()).collect();
 
     // sample element relative to probability
     let candidate_vec: Vec<T> = candidate_set.clone().into_dimensionality::<Ix1>().unwrap().to_vec();

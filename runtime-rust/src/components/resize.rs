@@ -1,9 +1,10 @@
 use yarrow_validator::errors::*;
 
 use crate::base::NodeArguments;
-use crate::components::Evaluable;
-use yarrow_validator::base::{Value, ArrayND, Vector2DJagged, get_argument, standardize_null_argument};
+use crate::components::{Evaluable};
+use yarrow_validator::base::{Value, ArrayND, Vector2DJagged, get_argument, standardize_null_argument, Hashmap};
 
+use ndarray::prelude::*;
 use ndarray::{ArrayD, Axis, Array};
 use rug::{Float, ops::Pow};
 
@@ -13,10 +14,29 @@ use yarrow_validator::proto;
 
 use crate::utilities::utilities::get_num_columns;
 use crate::utilities::array::{select, stack};
+use std::collections::HashMap;
 
 impl Evaluable for proto::Resize {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        let n = get_argument(&arguments, "n")?.get_first_i64()?;
+        let data = get_argument(arguments, "data")?;
+        let n = get_argument(&arguments, "n")?;
+
+        if let Value::Hashmap(data) = data {
+            let mut arguments = arguments.clone();
+
+            let n: Vec<Value> = n.get_arraynd()?.get_i64()?.clone()
+                .into_dimensionality::<Ix1>().unwrap().to_vec().iter().map(|n| arr1(&vec![*n]).into_dyn().into()).collect();
+
+            let aggregations = data.get_values().iter().zip(n.iter()).map(|(data, n)| {
+                arguments.insert("data".to_string(), data);
+                arguments.insert("n".to_string(), n);
+                self.evaluate(&arguments)
+            }).collect::<Result<Vec<Value>>>()?;
+
+            return Ok(data.from_values(aggregations).into())
+        }
+
+        let n = n.get_first_i64()?;
 
         if arguments.contains_key("categories") {
             match (get_argument(&arguments, "data")?, get_argument(&arguments, "categories")?,
@@ -85,7 +105,7 @@ pub fn resize_float(data: &ArrayD<f64>, n: &i64, distribution: &String,
                 _ => Err("unrecognized distribution".into())
             }?;
 
-            match stack(Axis(0), &[data.view(), synthetic.view()]) {
+            match stack(Axis(0), &vec![data.view(), synthetic.view()]) {
                 Ok(value) => value,
                 Err(_) => return Err("failed to stack real and synthetic data".into())
             }
@@ -121,7 +141,7 @@ pub fn resize_categorical<T>(data: &ArrayD<T>, n: &i64,
             synthetic = impute_categorical(
                 &synthetic, &categories, &weights, &null_value)?;
 
-            match stack(Axis(0), &[data.view(), synthetic.view()]) {
+            match stack(Axis(0), &vec![data.view(), synthetic.view()]) {
                 Ok(value) => value,
                 Err(_) => return Err("failed to stack real and synthetic data".into())
             }

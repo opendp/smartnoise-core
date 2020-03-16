@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use crate::{proto, base};
 
 use crate::components::{Component, Aggregator};
-use crate::base::{Value, NodeProperties, AggregatorProperties, Sensitivity, prepend, ValueProperties};
+use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivityType, prepend, ValueProperties, Sensitivity};
 
 impl Component for proto::Covariance {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
@@ -77,8 +77,8 @@ impl Aggregator for proto::Covariance {
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
-        sensitivity_type: &Sensitivity
-    ) -> Result<Vec<f64>> {
+        sensitivity_type: &SensitivityType
+    ) -> Result<Sensitivity> {
         let mut left_property = properties.get("left")
             .ok_or("left: missing")?.get_arraynd()
             .map_err(prepend("left:"))?.clone();
@@ -88,7 +88,7 @@ impl Aggregator for proto::Covariance {
             .map_err(prepend("right:"))?.clone();
 
         match sensitivity_type {
-            Sensitivity::KNorm(k) => {
+            SensitivityType::KNorm(k) => {
                 if k != &1 {
                     return Err("Covariance sensitivity is only implemented for KNorm of 1".into())
                 }
@@ -123,10 +123,10 @@ impl Aggregator for proto::Covariance {
                 let min = data_property.get_min_f64()?;
                 let max = data_property.get_max_f64()?;
 
-                Ok(min.iter()
+                Ok(vec![min.iter()
                     .zip(max)
                     .map(|(min, max)| (max - min) as f64)
-                    .collect())
+                    .collect()])
             },
             _ => return Err("Covariance sensitivity is only implemented for KNorm of 1".into())
         }

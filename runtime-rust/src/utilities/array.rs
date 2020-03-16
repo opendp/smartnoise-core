@@ -11,7 +11,7 @@ use itertools::zip;
 
 pub fn stack<A, D>(
     axis: Axis,
-    arrays: &[ArrayView<A, D>],
+    arrays: &Vec<ArrayView<A, D>>,
 ) -> Result<Array<A, D>>
     where
         A: Clone,

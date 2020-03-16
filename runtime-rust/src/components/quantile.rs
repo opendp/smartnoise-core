@@ -13,13 +13,24 @@ use ndarray_stats::interpolate;
 use noisy_float::types::n64;
 use ndarray_stats::interpolate::Interpolate;
 use noisy_float::types::N64;
+use crate::utilities::array::stack;
 
 impl Evaluable for proto::Quantile {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        match get_argument(&arguments, "data")?.get_arraynd()? {
-            ArrayND::F64(data) => Ok(quantile(&data, &self.quantile)?.into()),
+        match get_argument(&arguments, "data")? {
+            Value::ArrayND(array) => match array {
+                ArrayND::F64(data) => Ok(quantile(&data, &self.quantile)?.into()),
 //                ArrayND::I64(data) => Ok(quantile(&data)?.into()),
-            _ => return Err("data must be either f64 or i64".into())
+                _ => return Err("data must be either f64 or i64".into())
+            },
+            Value::Hashmap(hashmap) => {
+                let aggregations = hashmap.get_values().iter()
+                    .map(|value| quantile(value.get_arraynd()?.get_f64()?, &self.quantile))
+                    .collect::<Result<Vec<ArrayD<f64>>>>()?;
+                let views = aggregations.iter().map(|k| k.view()).collect();
+                Ok(stack(Axis(0), &views)?.into())
+            },
+            _ => Err("Quantile is only implemented for ArrayND and Hashmap".into())
         }
     }
 }

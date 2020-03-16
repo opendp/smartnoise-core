@@ -26,7 +26,7 @@ impl Component for proto::Index {
         let columns = public_arguments.get("columns")
             .ok_or::<Error>("columns: missing".into())?.deref().to_owned().get_arraynd()?.clone();
 
-        match (data_property.value_properties, columns) {
+        match (data_property.properties, columns) {
             (Hashmap::Str(value_properties), ArrayND::Str(column_names)) => {
                 let all_properties = column_names.iter()
                     .map(|v| value_properties.get(v))

@@ -39,10 +39,11 @@ pub mod variance;
 
 use std::collections::HashMap;
 
-use crate::base::{Value, NodeProperties, Sensitivity, ValueProperties};
+use crate::base::{Value, NodeProperties, SensitivityType, ValueProperties, Sensitivity, ArrayNDProperties, Hashmap, HashmapProperties, AggregatorProperties};
 use crate::proto;
 use crate::utilities::json::{JSONRelease};
 use crate::hashmap;
+use itertools::Itertools;
 
 pub trait Component {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
@@ -76,8 +77,8 @@ pub trait Aggregator {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
-        sensitivity_type: &Sensitivity
-    ) -> Result<Vec<f64>>;
+        sensitivity_type: &SensitivityType
+    ) -> Result<Sensitivity>;
 }
 
 pub trait Accuracy {
@@ -218,8 +219,8 @@ impl Aggregator for proto::component::Variant {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
-        sensitivity_type: &Sensitivity
-    ) -> Result<Vec<f64>> {
+        sensitivity_type: &SensitivityType
+    ) -> Result<Sensitivity> {
         macro_rules! compute_sensitivity {
             ($( $variant:ident ),*) => {
                 {
@@ -327,5 +328,38 @@ impl Report for proto::component::Variant {
         );
 
         Ok(None)
+    }
+}
+
+pub fn sensitivity_propagation_wrapper(
+    privacy_definition: &proto::PrivacyDefinition,
+    data_property: ValueProperties,
+    sensitivity_type: &SensitivityType,
+    arraynd_sensitivity: &dyn Fn(&proto::PrivacyDefinition, &SensitivityType, &ArrayNDProperties) -> Result<Sensitivity>,
+    hashmap_sensitivity: &dyn Fn(&proto::PrivacyDefinition, &SensitivityType, &HashmapProperties) -> Result<Sensitivity>,
+    aggregate_sensitivity: &dyn Fn(&proto::PrivacyDefinition, &SensitivityType, &AggregatorProperties) -> Result<Sensitivity>,
+) -> Result<Sensitivity> {
+
+    match data_property {
+
+        // input data has been partitioned, compute sensitivity for each partition
+        ValueProperties::Hashmap(data_property) =>
+            hashmap_sensitivity(privacy_definition, sensitivity_type, &data_property),
+
+        // input data is a single array
+        ValueProperties::ArrayND(data_property) => {
+            match data_property.aggregator {
+
+                // input data has already been aggregated
+                Some(aggregator_property) =>
+                    aggregate_sensitivity(privacy_definition, sensitivity_type, &aggregator_property),
+
+                // input data has not been aggregated
+                None =>
+                    arraynd_sensitivity(privacy_definition, sensitivity_type, &data_property)
+            }
+        },
+        ValueProperties::Vector2DJagged(value) =>
+            return Err("sensitivity is not defined for a jagged vector".into())
     }
 }
