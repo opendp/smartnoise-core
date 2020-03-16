@@ -21,10 +21,10 @@ impl ThreadRandGen for GeneratorOpenSSL {
 /// The strategy for doing this with 2 flips in expectation is described [here](https://amakelov.wordpress.com/2013/10/10/arbitrarily-biasing-a-coin-in-2-expected-tosses/).
 ///
 /// # Arguments
-/// * `prob` - f64: The desired probability of success (bit = 1)
+/// * `prob`- The desired probability of success (bit = 1).
 ///
 /// # Return
-/// a bit that is 1 with probability "prob"
+/// A bit that is 1 with probability "prob"
 ///
 /// # Examples
 ///
@@ -67,15 +67,15 @@ pub fn sample_bit(prob: &f64) -> Result<i64> {
     }
 }
 
-/// Sample from uniform integers between min and max (inclusive)
+/// Sample from uniform integers between min and max (inclusive).
 ///
 /// # Arguments
 ///
-/// * `min` - &i64, minimum value of distribution to sample from
-/// * `max` - &i64, maximum value of distribution to sample from
+/// * `min` - Minimum value of distribution from which we sample.
+/// * `max` - Maximum value of distribution from which we sample.
 ///
 /// # Return
-/// i64 random uniform variable between min and max (inclusive)
+/// Random uniform variable between min and max (inclusive).
 ///
 /// # Example
 /// ```
@@ -122,9 +122,9 @@ pub fn sample_uniform_int(min: &i64, max: &i64) -> Result<i64> {
     Ok(uniform_int + min)
 }
 
-/// Returns random sample from Uniform[min,max)
+/// Returns random sample from Uniform[min,max).
 ///
-/// All notes below refer to the version that samples from [0,1), before the final scaling takes place
+/// All notes below refer to the version that samples from [0,1), before the final scaling takes place.
 ///
 /// This algorithm is taken from [Mironov (2012)](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.366.5957&rep=rep1&type=pdf)
 /// and is important for making some of the guarantees in the paper.
@@ -141,11 +141,11 @@ pub fn sample_uniform_int(min: &i64, max: &i64) -> Result<i64> {
 ///
 /// # Arguments
 ///
-/// `min`: inclusive minimum of uniform distribution
-/// `max`: non-inclusive maximum of uniform distribution
+/// `min` - Inclusive minimum of uniform distribution.
+/// `max` - Non-inclusive maximum of uniform distribution.
 ///
 /// # Return
-/// uniform random draw from [min, max)
+/// Random draw from Unif[min, max).
 ///
 /// # Example
 /// ```
@@ -179,7 +179,7 @@ pub fn sample_uniform(min: &f64, max: &f64) -> Result<f64> {
     Ok(uniform_rand * (max - min) + min)
 }
 
-/// Generates a draw from Unif[min, max] using the MPFR library
+/// Generates a draw from Unif[min, max] using the MPFR library.
 ///
 /// If [min, max] == [0, 1],then this is done in a way that respects exact rounding.
 /// Otherwise, the return will be the result of a composition of two operations that
@@ -189,11 +189,11 @@ pub fn sample_uniform(min: &f64, max: &f64) -> Result<f64> {
 /// for more information, see the whitepapers/noise document in the CC_add_mpfr branch.
 ///
 /// # Arguments
-/// * `min` - f64: Lower bound of uniform distribution
-/// * `max` - f64: Upper bound of uniform distribution
+/// * `min` - Lower bound of uniform distribution.
+/// * `max` - Upper bound of uniform distribution.
 ///
 /// # Return
-/// Draw from Unif[min, max]
+/// Draw from Unif[min, max].
 ///
 /// # Example
 /// ```
@@ -228,8 +228,8 @@ pub fn sample_uniform_mpfr(min: f64, max: f64) -> Result<rug::Float> {
 /// for more information, see the whitepapers/noise document in the CC_add_mpfr branch.
 ///
 /// # Arguments
-/// * `shift` - f64: Expectation of Gaussian distribution
-/// * `scale` - f64: Variance of Gaussian Distribution
+/// * `shift` - Expectation of Gaussian distribution.
+/// * `scale` - Variance of Gaussian Distribution.
 ///
 /// # Return
 /// Draw from Gaussian(min, max)
@@ -256,15 +256,15 @@ pub fn sample_gaussian_mpfr(shift: f64, scale:f64) -> Result<rug::Float> {
     return Ok(gauss);
 }
 
-/// Sample from Laplace distribution centered at shift and scaled by scale
+/// Sample from Laplace distribution centered at shift and scaled by scale.
 ///
 /// # Arguments
 ///
-/// * `shift` - f64, the center of the Laplace distribution
-/// * `scale` - f64, the scaling parameter of the Laplace distribution
+/// * `shift` - The expectation of the Laplace distribution.
+/// * `scale` - The scaling parameter of the Laplace distribution.
 ///
 /// Return
-/// Draw from Laplace(shift, scale)
+/// Draw from Laplace(shift, scale).
 ///
 /// # Example
 /// ```
@@ -276,15 +276,15 @@ pub fn sample_laplace(shift: f64, scale: f64) -> Result<f64> {
     Ok(Laplace::new(shift, scale).inverse(probability))
 }
 
-/// Sample from Gaussian distribution centered at shift and scaled by scale
+/// Sample from Gaussian distribution.
 ///
 /// # Arguments
 ///
-/// * `shift` - f64, the center of the Laplace distribution
-/// * `scale` - f64, the scaling parameter of the Laplace distribution
+/// * `shift` - The expectation of the Gaussian distribution.
+/// * `scale` - The scaling parameter (variance) of the Gaussian distribution.
 ///
 /// Return
-/// f64 Gaussian random variable centered at shift and scaled at scale
+/// A draw from Gaussian(shift, scale).
 ///
 /// # Example
 /// ```
@@ -296,20 +296,22 @@ pub fn sample_gaussian(shift: &f64, scale: &f64) -> Result<f64> {
     Ok(Gaussian::new(shift.clone(), scale.clone()).inverse(probability))
 }
 
-/// Sample from truncated Gaussian distribution
+/// Sample from truncated Gaussian distribution.
 ///
 /// This function uses inverse transform sampling for sampling, but only between the CDF
-/// probabilities associated with the stated min/max truncation values
+/// probabilities associated with the stated min/max truncation values.
+/// This means that values outside of the truncation bounds are ignored, rather
+/// than pushed to the bounds (as they would be for a censored distribution).
 ///
 /// # Arguments
 ///
-/// * `shift` - f64, the center of the distribution
-/// * `scale` - f64, the scaling parameter of the distribution
-/// * `min` - f64, the minimum value of random variables pulled from the distribution.
-/// * `max` - f64, the maximum value of random variables pulled from the distribution
+/// * `shift` - The expectation of the Gaussian.
+/// * `scale` - The scaling parameter (variance) of the Gaussian distribution.
+/// * `min` - The minimum value you want to allow to be sampled.
+/// * `max` - The maximum value you want to allow to be sampled.
 ///
 /// # Return
-/// f64 random gaussian random variable truncated to [min,max]
+/// A draw from a Gaussian(shift, scale) truncated to [min, max].
 ///
 /// # Example
 /// ```
