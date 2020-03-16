@@ -7,6 +7,7 @@ use rug::Float;
 
 use crate::utilities::utilities;
 
+// Give MPFR ability to draw randomness from OpenSSL
 struct GeneratorOpenSSL;
 impl ThreadRandGen for GeneratorOpenSSL {
     fn gen(&mut self) -> u32 {
@@ -14,9 +15,27 @@ impl ThreadRandGen for GeneratorOpenSSL {
     }
 }
 
+/// Generates a draw from Unif[min, max].
+/// If [min, max] == [0, 1],then this is done in a way that respects exact rounding.
+/// Otherwise, the return will be the result of a composition of two operations that
+/// respect exact rounding (though the result will not necessarily).
+///
+/// We are working through what exactly exact rounding buys us from a privacy perspective --
+/// for more information, see the whitepapers/noise document in the CC_add_mpfr branch.
+///
+/// # Arguments
+/// * `min` - Lower bound of uniform distribution
+/// * `max` - Upper bound of uniform distribution
+///
+/// # Return
+/// Draw from Unif[min, max]
+///
+/// # Example
+/// ```
+/// use yarrow_runtime::utilities::noise::mpfr_uniform;
+/// let unif: f64 = mpfr_uniform(0.0, 1.0)?;
+/// ```
 pub fn mpfr_uniform(min: f64, max: f64) -> Result<rug::Float> {
-    /// Generate draw from Unif[0,1) with exact rounding
-
     // initialize 64-bit floats within mpfr/rug
     let mpfr_min = Float::with_val(53, min);
     let mpfr_max = Float::with_val(53, max);
@@ -34,9 +53,27 @@ pub fn mpfr_uniform(min: f64, max: f64) -> Result<rug::Float> {
     return Ok(unif);
 }
 
+/// Generates a draw from Gaussian(shift, scale).
+/// If [min, max] == [0, 1],then this is done in a way that respects exact rounding.
+/// Otherwise, the return will be the result of a composition of two operations that
+/// respect exact rounding (though the result will not necessarily).
+///
+/// We are working through what exactly exact rounding buys us from a privacy perspective --
+/// for more information, see the whitepapers/noise document in the CC_add_mpfr branch.
+///
+/// # Arguments
+/// * `shift` - Center (expectation) of Gaussian distribution
+/// * `scale` - Variance of Gaussian Distribution
+///
+/// # Return
+/// Draw from Gaussian(min, max)
+///
+/// # Example
+/// ```
+/// use yarrow_runtime::utilities::noise::mpfr_gaussian;
+/// let gaussian: f64 = mpfr_gaussian(0.0, 1.0)?;
+/// ```
 pub fn mpfr_gaussian(shift: f64, scale:f64) -> Result<rug::Float> {
-    /// Generate draw from Gaussian(0,1) with exact rounding
-
     // initialize 64-bit floats within mpfr/rug
     let mpfr_shift = Float::with_val(53, shift);
     let mpfr_scale = Float::with_val(53, scale);
