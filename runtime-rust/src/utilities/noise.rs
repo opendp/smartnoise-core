@@ -15,155 +15,60 @@ impl ThreadRandGen for GeneratorOpenSSL {
     }
 }
 
-/// Generates a draw from Unif[min, max].
-/// If [min, max] == [0, 1],then this is done in a way that respects exact rounding.
-/// Otherwise, the return will be the result of a composition of two operations that
-/// respect exact rounding (though the result will not necessarily).
+/// Sample a single bit with arbitrary probability of success
 ///
-/// We are working through what exactly exact rounding buys us from a privacy perspective --
-/// for more information, see the whitepapers/noise document in the CC_add_mpfr branch.
+/// Uses only an unbiased source of coin flips (sample_floating_point_probability_exponent).
+/// The strategy for doing this with 2 flips in expectation is described [here](https://amakelov.wordpress.com/2013/10/10/arbitrarily-biasing-a-coin-in-2-expected-tosses/).
 ///
 /// # Arguments
-/// * `min` - Lower bound of uniform distribution
-/// * `max` - Upper bound of uniform distribution
+/// * `prob` - f64: The desired probability of success (bit = 1)
 ///
 /// # Return
-/// Draw from Unif[min, max]
+/// a bit that is 1 with probability "prob"
 ///
-/// # Example
+/// # Examples
+///
 /// ```
-/// use yarrow_runtime::utilities::noise::mpfr_uniform;
-/// let unif: f64 = mpfr_uniform(0.0, 1.0)?;
+/// // returns a bit with Pr(bit = 1) = 0.7
+/// use yarrow_runtime::utilities::noise::sample_bit;
+/// let n:i64 = sample_bit(&0.7)?;
+/// assert!(n == 0 || n == 1);
 /// ```
-pub fn mpfr_uniform(min: f64, max: f64) -> Result<rug::Float> {
-    // initialize 64-bit floats within mpfr/rug
-    let mpfr_min = Float::with_val(53, min);
-    let mpfr_max = Float::with_val(53, max);
-    let mpfr_diff = Float::with_val(53, &mpfr_max - &mpfr_min);
-
-    // initialize randomness
-    let mut rng = GeneratorOpenSSL {};
-    let mut state = ThreadRandState::new_custom(&mut rng);
-
-    // generate Unif[0,1] according to mpfr standard, then convert to correct scale
-    let mut unif = Float::with_val(53, Float::random_cont(&mut state));
-    unif = unif.mul_add(&mpfr_diff, &mpfr_min);
-
-    // return uniform
-    return Ok(unif);
-}
-
-/// Generates a draw from Gaussian(shift, scale).
-/// If [min, max] == [0, 1],then this is done in a way that respects exact rounding.
-/// Otherwise, the return will be the result of a composition of two operations that
-/// respect exact rounding (though the result will not necessarily).
-///
-/// We are working through what exactly exact rounding buys us from a privacy perspective --
-/// for more information, see the whitepapers/noise document in the CC_add_mpfr branch.
-///
-/// # Arguments
-/// * `shift` - Center (expectation) of Gaussian distribution
-/// * `scale` - Variance of Gaussian Distribution
-///
-/// # Return
-/// Draw from Gaussian(min, max)
-///
-/// # Example
+/// ```should_panic
+/// // fails because 1.3 not a valid probability
+/// use yarrow_runtime::utilities::noise::sample_bit;
+/// let n:i64 = sample_bit(&1.3)?;
 /// ```
-/// use yarrow_runtime::utilities::noise::mpfr_gaussian;
-/// let gaussian: f64 = mpfr_gaussian(0.0, 1.0)?;
+/// ```should_panic
+/// // fails because -0.3 is not a valid probability
+/// use yarrow_runtime::utilities::noise::sample_bit;
+/// let n:i64 = sample_bit(&-0.3)?;
 /// ```
-pub fn mpfr_gaussian(shift: f64, scale:f64) -> Result<rug::Float> {
-    // initialize 64-bit floats within mpfr/rug
-    let mpfr_shift = Float::with_val(53, shift);
-    let mpfr_scale = Float::with_val(53, scale);
+pub fn sample_bit(prob: &f64) -> Result<i64> {
 
-    // initialize randomness
-    let mut rng = GeneratorOpenSSL {};
-    let mut state = ThreadRandState::new_custom(&mut rng);
+    // ensure that prob is a valid probability
+    assert!(prob >= &0.0 && prob <= &1.0);
 
-    // generate Gaussian(0,1) according to mpfr standard, then convert to correct scale
-    let mut gauss = Float::with_val(64, Float::random_normal(&mut state));
-    gauss = gauss.mul_add(&mpfr_scale, &mpfr_shift);
+    // repeatedly flip coin (up to 1023 times) and identify index (0-based) of first heads
+    let first_heads_index: i16 = sample_floating_point_probability_exponent()? - 1;
 
-    // return gaussian
-    return Ok(gauss);
-}
+    // decompose probability into mantissa (string of bits) and exponent integer to quickly identify the value in the first_heads_index
+    let (_sign, exponent, mantissa) = prob.decompose_raw();
+    let mantissa_string = format!("1{:052b}", mantissa); // add implicit 1 to mantissa
+    let mantissa_vec: Vec<i64> = mantissa_string.chars().map(|x| x.to_digit(2).unwrap() as i64).collect();
+    let num_leading_zeros = cmp::max(1022_i16 - exponent as i16, 0); // number of leading zeros in binary representation of prob
 
-/// Sample from Laplace distribution centered at shift and scaled by scale
-///
-/// # Arguments
-///
-/// * `shift` - f64, the center of the Laplace distribution
-/// * `scale` - f64, the scaling parameter of the Laplace distribution
-///
-/// # Example
-/// ```
-/// use yarrow_runtime::utilities::noise::sample_laplace;
-/// let n:f64 = sample_laplace(0.0, 2.0)?;
-/// ```
-pub fn sample_laplace(shift: f64, scale: f64) -> Result<f64> {
-    let probability: f64 = sample_uniform(&0., &1.)?;
-    Ok(Laplace::new(shift, scale).inverse(probability))
-}
-
-/// Sample from Gaussian distribution centered at shift and scaled by scale
-///
-/// # Arguments
-///
-/// * `shift` - f64, the center of the Laplace distribution
-/// * `scale` - f64, the scaling parameter of the Laplace distribution
-///
-/// Return
-/// f64 Gaussian random variable centered at shift and scaled at scale
-///
-/// # Example
-/// ```
-/// use yarrow_runtime::utilities::noise::sample_gaussian;
-/// let n:f64 = sample_gaussian(&0.0, &2.0)?;
-/// ```
-pub fn sample_gaussian(shift: &f64, scale: &f64) -> Result<f64> {
-    let probability: f64 = sample_uniform(&0., &1.)?;
-    Ok(Gaussian::new(shift.clone(), scale.clone()).inverse(probability))
-}
-
-/// Sample from truncated Gaussian distribution
-/// We use inverse transform sampling, but only between the CDF
-/// probabilities associated with the stated min/max truncation values
-///
-/// # Arguments
-///
-/// * `shift` - f64, the center of the distribution
-/// * `scale` - f64, the scaling parameter of the distribution
-/// * `min` - f64, the minimum value of random variables pulled from the distribution.
-/// * `max` - f64, the maximum value of random variables pulled from the distribution
-///
-/// # Return
-/// f64 random gaussian random variable truncated to [min,max]
-///
-/// # Example
-/// ```
-/// use yarrow_runtime::utilities::noise::sample_gaussian_truncated;
-/// let n:f64 = sample_gaussian_truncated(&1.0, &1.0, &0.0, &2.0)?;
-/// assert!(n >= 0.0);
-/// assert!(n <= 2.0);
-/// ```
-pub fn sample_gaussian_truncated(min: &f64, max: &f64, shift: &f64, scale: &f64) -> Result<f64> {
-    // TODO: why can't probability take a ref? perhaps need to drop the dependency
-    let min = min.clone();
-    let max = max.clone();
-    let shift = shift.clone();
-    let scale = scale.clone();
-    if min > max {return Err("min cannot be less than max".into());}
-    if scale <= 0.0 {return Err("scale must be greater than zero".into());}
-
-    let unif_min: f64 = Gaussian::new(shift, scale).distribution(min);
-    let unif_max: f64 = Gaussian::new(shift, scale).distribution(max);
-    let unif: f64 = sample_uniform(&unif_min, &unif_max)?;
-    Ok(Gaussian::new(shift, scale).inverse(unif))
+    // return value at index of interest
+    if first_heads_index < num_leading_zeros {
+        return Ok(0);
+    } else {
+        let index: usize = (num_leading_zeros + first_heads_index) as usize;
+        return Ok(mantissa_vec[index]);
+    }
 }
 
 /// Sample from uniform integers between min and max (inclusive)
+///
 /// # Arguments
 ///
 /// * `min` - &i64, minimum value of distribution to sample from
@@ -174,12 +79,14 @@ pub fn sample_gaussian_truncated(min: &f64, max: &f64, shift: &f64, scale: &f64)
 ///
 /// # Example
 /// ```
+/// // returns a uniform draw from the set {0,1,2}
 /// use yarrow_runtime::utilities::noise::sample_uniform_int;
 /// let n:i64 = sample_uniform_int(&0, &2)?;
 /// assert!(n == 0 || n == 1 || n == 2);
 /// ```
 ///
-/// ``` should_panic
+/// ```should_panic
+/// // fails because min > max
 /// use yarrow_runtime::utilities::noise::sample_uniform_int;
 /// let n:i64 = sample_uniform_int(&2, &0)?;
 /// ```
@@ -216,9 +123,10 @@ pub fn sample_uniform_int(min: &i64, max: &i64) -> Result<i64> {
 }
 
 /// Returns random sample from Uniform[min,max)
+///
 /// All notes below refer to the version that samples from [0,1), before the final scaling takes place
 ///
-/// This algorithm is taken from Mironov (2012) http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.366.5957&rep=rep1&type=pdf
+/// This algorithm is taken from [Mironov (2012)](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.366.5957&rep=rep1&type=pdf)
 /// and is important for making some of the guarantees in the paper.
 ///
 /// The idea behind the uniform sampling is to first sample a "precision band".
@@ -233,21 +141,23 @@ pub fn sample_uniform_int(min: &i64, max: &i64) -> Result<i64> {
 ///
 /// # Arguments
 ///
-/// `min`: f64 minimum of uniform distribution (inclusive)
-/// `max`: f64 maximum of unifrom distribution (non-inclusive)
+/// `min`: inclusive minimum of uniform distribution
+/// `max`: non-inclusive maximum of uniform distribution
 ///
 /// # Return
-/// f64 uniform random bit from [min, max)
+/// uniform random draw from [min, max)
 ///
 /// # Example
 /// ```
+/// // valid draw from Unif[0,2)
 /// use yarrow_runtime::utilities::noise::sample_uniform;
-/// let n:f64 = sample_uniform(&0.0, &2.0)?;
-/// assert!(n >= 0.0 && n < 2.0);
+/// let unif: f64 = sample_uniform(&0.0, &2.0)?;
+/// assert!(unif >= 0.0 && unif < 2.0);
 /// ```
 /// ``` should_panic
+/// // fails because min > max
 /// use yarrow_runtime::utilities::noise::sample_uniform;
-/// let n:f64 = sample_uniform(&2.0, &0.0)?;
+/// let unif: f64 = sample_uniform(&2.0, &0.0)?;
 /// ```
 pub fn sample_uniform(min: &f64, max: &f64) -> Result<f64> {
     if min > max {return Err("min cannot be less than max".into());}
@@ -269,54 +179,191 @@ pub fn sample_uniform(min: &f64, max: &f64) -> Result<f64> {
     Ok(uniform_rand * (max - min) + min)
 }
 
-
-/// Sample a single bit with arbitrary probability of "success", using only
-/// an unbiased source of coin flips (sample_floating_point_probability_exponent).
-/// The strategy for doing this with 2 flips in expectation is described
-/// at https://amakelov.wordpress.com/2013/10/10/arbitrarily-biasing-a-coin-in-2-expected-tosses/
+/// Generates a draw from Unif[min, max] using the MPFR library
+///
+/// If [min, max] == [0, 1],then this is done in a way that respects exact rounding.
+/// Otherwise, the return will be the result of a composition of two operations that
+/// respect exact rounding (though the result will not necessarily).
+///
+/// We are working through what exactly exact rounding buys us from a privacy perspective --
+/// for more information, see the whitepapers/noise document in the CC_add_mpfr branch.
 ///
 /// # Arguments
-/// * `prob` - probability of success (bit == 1)
+/// * `min` - f64: Lower bound of uniform distribution
+/// * `max` - f64: Upper bound of uniform distribution
 ///
 /// # Return
-/// a bit that is 1 with probability "prob"
+/// Draw from Unif[min, max]
 ///
-/// # Examples
+/// # Example
+/// ```
+/// use yarrow_runtime::utilities::noise::sample_uniform_mpfr;
+/// let unif: f64 = sample_uniform_mpfr(0.0, 1.0)?;
+/// ```
+pub fn sample_uniform_mpfr(min: f64, max: f64) -> Result<rug::Float> {
+    // initialize 64-bit floats within mpfr/rug
+    let mpfr_min = Float::with_val(53, min);
+    let mpfr_max = Float::with_val(53, max);
+    let mpfr_diff = Float::with_val(53, &mpfr_max - &mpfr_min);
+
+    // initialize randomness
+    let mut rng = GeneratorOpenSSL {};
+    let mut state = ThreadRandState::new_custom(&mut rng);
+
+    // generate Unif[0,1] according to mpfr standard, then convert to correct scale
+    let mut unif = Float::with_val(53, Float::random_cont(&mut state));
+    unif = unif.mul_add(&mpfr_diff, &mpfr_min);
+
+    // return uniform
+    return Ok(unif);
+}
+
+/// Generates a draw from Gaussian(shift, scale) using the MPFR library
 ///
+/// If [min, max] == [0, 1],then this is done in a way that respects exact rounding.
+/// Otherwise, the return will be the result of a composition of two operations that
+/// respect exact rounding (though the result will not necessarily).
+///
+/// We are working through what exactly exact rounding buys us from a privacy perspective --
+/// for more information, see the whitepapers/noise document in the CC_add_mpfr branch.
+///
+/// # Arguments
+/// * `shift` - f64: Expectation of Gaussian distribution
+/// * `scale` - f64: Variance of Gaussian Distribution
+///
+/// # Return
+/// Draw from Gaussian(min, max)
+///
+/// # Example
 /// ```
-/// use yarrow_runtime::utilities::noise::sample_bit;
-/// let n:i64 = sample_bit(&0.7)?;
-/// assert!(n == 0 || n == 1);
+/// use yarrow_runtime::utilities::noise::sample_gaussian_mpfr;
+/// let gaussian: f64 = sample_gaussian_mpfr(0.0, 1.0)?;
 /// ```
-/// ```should_panic
-/// use yarrow_runtime::utilities::noise::sample_bit;
-/// let n:i64 = sample_bit(&1.3)?;
+pub fn sample_gaussian_mpfr(shift: f64, scale:f64) -> Result<rug::Float> {
+    // initialize 64-bit floats within mpfr/rug
+    let mpfr_shift = Float::with_val(53, shift);
+    let mpfr_scale = Float::with_val(53, scale);
+
+    // initialize randomness
+    let mut rng = GeneratorOpenSSL {};
+    let mut state = ThreadRandState::new_custom(&mut rng);
+
+    // generate Gaussian(0,1) according to mpfr standard, then convert to correct scale
+    let mut gauss = Float::with_val(64, Float::random_normal(&mut state));
+    gauss = gauss.mul_add(&mpfr_scale, &mpfr_shift);
+
+    // return gaussian
+    return Ok(gauss);
+}
+
+/// Sample from Laplace distribution centered at shift and scaled by scale
+///
+/// # Arguments
+///
+/// * `shift` - f64, the center of the Laplace distribution
+/// * `scale` - f64, the scaling parameter of the Laplace distribution
+///
+/// Return
+/// Draw from Laplace(shift, scale)
+///
+/// # Example
 /// ```
-/// ```should_panic
-/// use yarrow_runtime::utilities::noise::sample_bit;
-/// let n:i64 = sample_bit(&-0.3)?;
+/// use yarrow_runtime::utilities::noise::sample_laplace;
+/// let n:f64 = sample_laplace(0.0, 2.0)?;
 /// ```
-pub fn sample_bit(prob: &f64) -> Result<i64> {
+pub fn sample_laplace(shift: f64, scale: f64) -> Result<f64> {
+    let probability: f64 = sample_uniform(&0., &1.)?;
+    Ok(Laplace::new(shift, scale).inverse(probability))
+}
 
-    // ensure that prob is a valid probability
-    assert!(prob >= &0.0 && prob <= &1.0);
+/// Sample from Gaussian distribution centered at shift and scaled by scale
+///
+/// # Arguments
+///
+/// * `shift` - f64, the center of the Laplace distribution
+/// * `scale` - f64, the scaling parameter of the Laplace distribution
+///
+/// Return
+/// f64 Gaussian random variable centered at shift and scaled at scale
+///
+/// # Example
+/// ```
+/// use yarrow_runtime::utilities::noise::sample_gaussian;
+/// let n:f64 = sample_gaussian(&0.0, &2.0)?;
+/// ```
+pub fn sample_gaussian(shift: &f64, scale: &f64) -> Result<f64> {
+    let probability: f64 = sample_uniform(&0., &1.)?;
+    Ok(Gaussian::new(shift.clone(), scale.clone()).inverse(probability))
+}
 
-    // repeatedly flip coin (up to 1023 times) and identify index (0-based) of first heads
-    let first_heads_index: i16 = sample_floating_point_probability_exponent()? - 1;
+/// Sample from truncated Gaussian distribution
+///
+/// This function uses inverse transform sampling for sampling, but only between the CDF
+/// probabilities associated with the stated min/max truncation values
+///
+/// # Arguments
+///
+/// * `shift` - f64, the center of the distribution
+/// * `scale` - f64, the scaling parameter of the distribution
+/// * `min` - f64, the minimum value of random variables pulled from the distribution.
+/// * `max` - f64, the maximum value of random variables pulled from the distribution
+///
+/// # Return
+/// f64 random gaussian random variable truncated to [min,max]
+///
+/// # Example
+/// ```
+/// use yarrow_runtime::utilities::noise::sample_gaussian_truncated;
+/// let n:f64 = sample_gaussian_truncated(&1.0, &1.0, &0.0, &2.0)?;
+/// assert!(n >= 0.0);
+/// assert!(n <= 2.0);
+/// ```
+pub fn sample_gaussian_truncated(min: &f64, max: &f64, shift: &f64, scale: &f64) -> Result<f64> {
+    // TODO: why can't probability take a ref? perhaps need to drop the dependency
+    let min = min.clone();
+    let max = max.clone();
+    let shift = shift.clone();
+    let scale = scale.clone();
+    if min > max {return Err("min cannot be less than max".into());}
+    if scale <= 0.0 {return Err("scale must be greater than zero".into());}
 
-    // decompose probability into mantissa (string of bits) and exponent integer to quickly identify the value in the first_heads_index
-    let (_sign, exponent, mantissa) = prob.decompose_raw();
-    let mantissa_string = format!("1{:052b}", mantissa); // add implicit 1 to mantissa
-    let mantissa_vec: Vec<i64> = mantissa_string.chars().map(|x| x.to_digit(2).unwrap() as i64).collect();
-    let num_leading_zeros = cmp::max(1022_i16 - exponent as i16, 0); // number of leading zeros in binary representation of prob
+    let unif_min: f64 = Gaussian::new(shift, scale).distribution(min);
+    let unif_max: f64 = Gaussian::new(shift, scale).distribution(max);
+    let unif: f64 = sample_uniform(&unif_min, &unif_max)?;
+    Ok(Gaussian::new(shift, scale).inverse(unif))
+}
 
-    // return value at index of interest
-    if first_heads_index < num_leading_zeros {
-        return Ok(0);
-    } else {
-        let index: usize = (num_leading_zeros + first_heads_index) as usize;
-        return Ok(mantissa_vec[index]);
+/// Return sample from a censored Geometric distribution with parameter p=0.5
+///
+/// The algorithm generates 1023 bits uniformly at random and returns the
+/// index of the first bit with value 1. If all 1023 bits are 0, then
+/// the algorithm acts as if the last bit was a 1 and returns 1023.
+///
+/// This method was written specifically to generate an exponent
+/// for the floating point representation of a uniform random number on [0,1),
+/// ensuring that the numbers are distributed proportionally to
+/// their unit of least precision.
+pub fn sample_floating_point_probability_exponent() -> Result<i16> {
+
+    let mut geom: i16 = 1023;
+    // read bytes in one at a time, need 128 to fully generate geometric
+    for i in 0..128 {
+        // read random bytes
+        let binary_string = utilities::get_bytes(1);
+        let binary_char_vec: Vec<char> = binary_string.chars().collect();
+
+        // find first element that is '1' and mark its overall index
+        let first_one_index = binary_char_vec.iter().position(|&x| x == '1');
+        let first_one_overall_index: i16;
+        if first_one_index.is_some() {
+            let first_one_index_int = first_one_index.unwrap() as i16;
+            first_one_overall_index = 8*i + first_one_index_int;
+        } else {
+            first_one_overall_index = geom;
+        }
+        geom = cmp::min(geom, first_one_overall_index+1);
     }
+    return Ok(geom);
 }
 
 /// Sample from the censored geometric distribution with parameter "prob" and maximum
@@ -368,40 +415,8 @@ pub fn sample_geometric_censored(prob: &f64, max_trials: &i64, enforce_constant_
     return Ok(geom_return);
 }
 
-/// Return sample from a censored Geometric distribution with parameter p=0.5
+/// Sample noise according to geometric mechanism
 ///
-/// The algorithm generates 1023 bits uniformly at random and returns the
-/// index of the first bit with value 1. If all 1023 bits are 0, then
-/// the algorithm acts as if the last bit was a 1 and returns 1023.
-///
-/// This method was written specifically to generate an exponent
-/// for the floating point representation of a uniform random number on [0,1),
-/// ensuring that the numbers are distributed proportionally to
-/// their unit of least precision.
-pub fn sample_floating_point_probability_exponent() -> Result<i16> {
-
-    let mut geom: i16 = 1023;
-    // read bytes in one at a time, need 128 to fully generate geometric
-    for i in 0..128 {
-        // read random bytes
-        let binary_string = utilities::get_bytes(1);
-        let binary_char_vec: Vec<char> = binary_string.chars().collect();
-
-        // find first element that is '1' and mark its overall index
-        let first_one_index = binary_char_vec.iter().position(|&x| x == '1');
-        let first_one_overall_index: i16;
-        if first_one_index.is_some() {
-            let first_one_index_int = first_one_index.unwrap() as i16;
-            first_one_overall_index = 8*i + first_one_index_int;
-        } else {
-            first_one_overall_index = geom;
-        }
-        geom = cmp::min(geom, first_one_overall_index+1);
-    }
-    return Ok(geom);
-}
-
-/// Sample noise according to geometric mechanism.
 /// This function uses coin flips to sample from the geometric distribution,
 /// rather than using the inverse probability transform. This is done
 /// to avoid finite precision attacks.

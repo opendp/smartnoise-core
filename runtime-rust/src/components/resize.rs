@@ -1,20 +1,31 @@
 use yarrow_validator::errors::*;
-
-use crate::base::NodeArguments;
-use crate::components::Evaluable;
+use yarrow_validator::proto;
 use yarrow_validator::base::{Value, ArrayND, Vector2DJagged, get_argument, standardize_null_argument};
 
 use ndarray::{ArrayD, Axis, Array};
 use rug::{Float, ops::Pow};
 
+use crate::base::NodeArguments;
+use crate::components::Evaluable;
 use crate::utilities::noise;
 use crate::components::impute::{impute_float_gaussian, impute_float_uniform, impute_categorical};
-use yarrow_validator::proto;
-
 use crate::utilities::utilities::get_num_columns;
 use crate::utilities::array::{select, stack};
 
 impl Evaluable for proto::Resize {
+    /// Testing documentation for the resize
+    ///
+    /// # Arguments
+    /// * `data` - The data to be resized
+    /// * `n` - An estimate of the size of the data -- this could be the guess of the user, or the result of a DP release
+    /// * `distribution` - The distribution to be used when imputing records
+    /// * `min` - A lower bound on data elements
+    /// * `max` - An upper bound on data elements
+    /// * `shift` - The shift (expectation) argument for the Gaussian distribution
+    /// * `scale` - The scale (variance) argument for the Gaussian distribution
+    ///
+    /// # Return
+    /// A resized version of data consistent with the provided `n`
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
         let n = get_argument(&arguments, "n")?.get_first_i64()?;
 
@@ -69,6 +80,7 @@ impl Evaluable for proto::Resize {
 }
 
 /// Resizes data (made up exclusively of f64) based on estimate of n and true size of data.
+///
 /// Notice that some arguments are denoted with Option<> -- this is because not every distribution used
 /// for imputation (if necessary) uses every argument (e.g. Uniform does not use shift or scale).
 ///
@@ -84,7 +96,7 @@ impl Evaluable for proto::Resize {
 /// * `scale` - The scale (variance) argument for the Gaussian distribution
 ///
 /// # Return
-/// A resized version of data consistent with the estimated n
+/// A resized version of data consistent with the provided `n`
 pub fn resize_float(data: &ArrayD<f64>, n: &i64, distribution: &String,
                     min: &ArrayD<f64>, max: &ArrayD<f64>,
                     shift: &Option<&ArrayD<f64>>, scale: &Option<&ArrayD<f64>>) -> Result<ArrayD<f64>> {
@@ -137,7 +149,7 @@ pub fn resize_float(data: &ArrayD<f64>, n: &i64, distribution: &String,
 /// * `null_value` - For each data column, the value of the data to be considered NULL.
 ///
 /// # Return
-/// A resized version of data consistent with the estimated n
+/// A resized version of data consistent with the provided `n`
 pub fn resize_categorical<T>(data: &ArrayD<T>, n: &i64,
                              categories: &Vec<Option<Vec<T>>>, weights: &Vec<Option<Vec<f64>>>, null_value: &Vec<Option<Vec<T>>>,)
                              -> Result<ArrayD<T>> where T: Clone, T: PartialEq, T: Default {
@@ -181,11 +193,11 @@ pub fn resize_categorical<T>(data: &ArrayD<T>, n: &i64,
 }
 
 /// Accepts set and element weights and returns a subset of size k (without replacement).
+///
 /// Weights are (after being normalized) the probability of drawing each element on the first draw (they sum to 1)
 /// Based on Algorithm A from Raimidis PS, Spirakis PG (2006). “Weighted random sampling with a reservoir.”
 ///
 /// # Arguments
-///
 /// * `set` - Set of elements for which you would like to create a subset
 /// * `weights` - Weight for each element in the set, corresponding to the probability it is drawn on the first draw.
 /// * `k` - The size of the desired subset
@@ -222,7 +234,7 @@ pub fn create_subset<T>(set: &Vec<T>, weights: &Vec<f64>, k: &i64) -> Result<Vec
     // generate key/index tuples
     let mut key_vec = Vec::with_capacity(*k as usize);
     for i in 0..*k {
-        key_vec.push((noise::mpfr_uniform(0., 1.)?.pow(1. / probabilities[i as usize].clone()), i));
+        key_vec.push((noise::sample_uniform_mpfr(0., 1.)?.pow(1. / probabilities[i as usize].clone()), i));
     }
 
     // sort key/index tuples by key and identify top k indices
@@ -243,6 +255,7 @@ pub fn create_subset<T>(set: &Vec<T>, weights: &Vec<f64>, k: &i64) -> Result<Vec
 
 /// Accepts size of set (n) and size of desired subset(k) and returns a uniformly drawn
 /// set of indices from [1, ..., n] of size k.
+///
 /// This function is used to create a set of indices that can be used across multiple
 /// steps for consistent subsetting.
 ///
