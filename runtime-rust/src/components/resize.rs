@@ -13,7 +13,17 @@ use crate::utilities::utilities::get_num_columns;
 use crate::utilities::array::{select, stack};
 
 impl Evaluable for proto::Resize {
-    /// Testing documentation for the resize
+    /// Resizes the data in question to be consistent with a provided sample size, `n`.
+    ///
+    /// The library does not, in general, assume that the sample size of the data being
+    /// analyzed is known. This introduces a number of problems around how to calculate
+    /// statistics that are a function of the sample size.
+    ///
+    /// To address this problem, the library asks the user to provide `n`,
+    /// an estimate of the true sample size based on their own beliefs about the
+    /// data or a previous differentially private count of the number of
+    /// rows in the data. This component then either subsamples or appends to the
+    /// data in order to make it consistent with the provided `n`.
     ///
     /// # Arguments
     /// * `data` - The data to be resized
