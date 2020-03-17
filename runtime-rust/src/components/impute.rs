@@ -10,10 +10,33 @@ use yarrow_validator::proto;
 
 
 impl Evaluable for proto::Impute {
+    /// Replaces null values with draws from a specified distribution.
+    ///
+    /// If the `categories` argument is provided, the data are considered to be categorical
+    /// (regardless of atomic type) and the elements provided in `null_value` will be replaced with those in
+    /// `categories` according to `weights`.
+    ///
+    /// If the `categories` argument is not provided, the data are considered to be numeric
+    /// and elements that are `f64::NAN` will be replaced according to the specified distribution.
+    ///
+    /// # Arguments
+    /// * `data` - The data for which null values will be imputed.
+    /// * `categories` - For each data column, the set of possible values for elements in the column.
+    /// * `weights` - For each data column, weights for each category to be used when imputing null values. Used only if `categories` argument is provided.
+    /// * `null_value` - For each data column, the value of the data to be considered NULL. Used only if `categories` argument is provided.
+    /// * `distribution` - The distribution to be used when imputing records. Used only if `categories` argument is not provided.
+    /// * `min` - For each data column, a lower bound on data elements. Used only if `categories` argument is not provided.
+    /// * `max` - For each data column, an upper bound on data elements. Used only if `categories` argument is not provided.
+    /// * `shift` - For each data column, the shift (expectation) argument for the Gaussian distribution (if used for imputation). Used only if `categories` argument is not provided and `distribution = Gaussian`.
+    /// * `scale` - For each data column, the scale (standard deviation) argument for the Gaussian distribution (if used for imputation). Used only if `categories` argument is not provided and `distribution = Gaussian`.
+    ///
+    /// # Return
+    /// Data with null values replaced by imputed values.
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
         let uniform: String = "Uniform".to_string(); // Distributions
         let gaussian: String = "Gaussian".to_string();
 
+        // if categories argument is not None, treat data as categorical (regardless of atomic type)
         if arguments.contains_key("categories") {
             match (get_argument(&arguments, "data")?, get_argument(&arguments, "categories")?, get_argument(&arguments, "probabilities")?, get_argument(&arguments, "null")?) {
                 (Value::ArrayND(data), Value::Vector2DJagged(categories), Value::Vector2DJagged(probabilities), Value::Vector2DJagged(nulls)) => Ok(match (data, categories, probabilities, nulls) {
@@ -29,13 +52,19 @@ impl Evaluable for proto::Impute {
                 }),
                 _ => return Err("data and null must be ArrayND, categories and probabilities must be Vector2DJagged".into())
             }
-        } else {
+        }
+        // if categories argument is None, treat data as continuous
+        else {
+            // get specified data distribution for imputation -- default to Uniform if no valid distribution is provided
             let distribution = match get_argument(&arguments, "distribution") {
                 Ok(distribution) => distribution.get_first_str()?,
                 Err(_) => "Uniform".to_string()
             };
 
             match &distribution.clone() {
+                // if specified distribution is uniform, identify whether underlying data are of atomic type f64 or i64
+                // if f64, impute uniform values
+                // if i64, no need to impute (numeric imputation replaces only f64::NAN values, which are not defined for the i64 type)
                 x if x == &uniform => {
                     return Ok(match (get_argument(&arguments, "data")?, get_argument(&arguments, "min")?, get_argument(&arguments, "max")?) {
                         (Value::ArrayND(data), Value::ArrayND(min), Value::ArrayND(max)) => match (data, min, max) {
@@ -49,6 +78,7 @@ impl Evaluable for proto::Impute {
                         _ => return Err("data, min, max, shift, and scale must be ArrayND".into())
                     })
                 },
+                // if specified distribution is Gaussian, get necessary arguments and impute
                 x if x == &gaussian => {
                     let data = get_argument(&arguments, "data")?.get_arraynd()?.get_f64()?;
                     let min = get_argument(&arguments, "min")?.get_arraynd()?.get_f64()?;
@@ -65,9 +95,7 @@ impl Evaluable for proto::Impute {
     }
 }
 
-
-
-/// Returns data with imputed values in place of `NAN`.
+/// Returns data with imputed values in place of `f64::NAN`.
 /// Values are imputed from a uniform distribution.
 ///
 /// # Arguments
@@ -117,7 +145,7 @@ pub fn impute_float_uniform(data: &ArrayD<f64>, min: &ArrayD<f64>, max: &ArrayD<
     Ok(data)
 }
 
-/// Returns data with imputed values in place of `NAN`.
+/// Returns data with imputed values in place of `f64::NAN`.
 /// Values are imputed from a truncated Gaussian distribution.
 ///
 /// # Arguments
@@ -174,10 +202,10 @@ pub fn impute_float_gaussian(data: &ArrayD<f64>, min: &ArrayD<f64>, max: &ArrayD
 /// Returns data with imputed values in place on `null_value`.
 ///
 /// # Arguments
-/// * `data` - The data to be resized
-/// * `n` - An estimate of the size of the data -- this could be the guess of the user, or the result of a DP release
-/// * `categories` - For each data column, the set of possible values for elements in the column
-/// * `weights` - For each data column, weights for each category to be used when imputing null values
+/// * `data` - The data to be resized.
+/// * `n` - An estimate of the size of the data -- this could be the guess of the user, or the result of a DP release.
+/// * `categories` - For each data column, the set of possible values for elements in the column.
+/// * `weights` - For each data column, weights for each category to be used when imputing null values.
 /// * `null_value` - For each data column, the value of the data to be considered NULL.
 ///
 /// # Return
