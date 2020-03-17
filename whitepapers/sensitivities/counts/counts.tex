@@ -46,20 +46,38 @@ A single count query has sensitivity 1. A series of $k$ disjoint counts has sens
 \end{theorem}
 
 \begin{proof}
-Let $q$ be a count query with predicate $I$, and let $x'$ be equal to $x$ with point $x_i$ changed to $x_i'$. Then $I(x_i)$ will change by at most 1, and since no other $x_j$ with $i \ne j$ is changed, this term in $q$ is the only thing affected. Thus, the sensitivity of a single query is bounded by 1.
+Let $q$ be a count query with predicate $I$, and let $x'$ be equal to $x$ with point $x_i$ changed to $x_i'$. Then,
 
-Consider $k$ disjoint count on the same databases $x$ and $x'$. Since they are disjoint, only one of the $k$ counts is influenced by $x_i$, and only one of the counts is affected by $x_i'$. Since each query can be affected by at most 1 by a single data point by the above logic, in total there will be a change of at most 2.
+\begin{align*}
+\left\vert q(x') - q(x) \right\vert &= \left\vert \sum_{j=1}^n I(x_j') - \sum_{j=1}^n I(x_j) \right\vert \\
+	&= \left\vert \sum_{j \ne i}^n I(x_j) + I(x_i') - \sum_{j \ne i}^n I(x_j) - I(x_i) \right\vert \\
+	&= \left\vert I(x_i') - I(x_i) \right\vert \\
+	& \le 1.
+\end{align*}
+
+Consider a series of $k$ disjoint count queries $\mathbf{q} = \{q_1, \ldots, q_k\}$ on the same databases $x$ and $x'$. Note that since the counts are disjoint, only one query will be affected by point $x_i$ and one will be affected by point $x_i'$. Call these affected queries $q_i$ and $q_j$ respectively. Then,
+
+\begin{align*}
+\left\vert \mathbf{q}(x) - \mathbf{q}(x') \right\vert &= \left\vert \left(q_1(x) - q_1(x')\right) + \ldots + \left(q_k(x) - q_k(x')\right) \right\vert \\
+	&= \left\vert \right(q_i(x) - q_i(x')\left) + \right(q_i(x) - q_j(x')\left) \right\vert \\
+	&\le 2
+\end{align*}
 \end{proof}
 
 % l2 sensitivity
 \subsection{$\ell_2$-sensitivity}
 
 \begin{theorem}
-A single count query has sensitivity 1. A series of $k$ disjoint counts has sensitivity 4.
+A single count query has sensitivity 1. A series of $k$ disjoint counts has sensitivity 2.
 \end{theorem}
 
 \begin{proof}
-From the proof of Theorem \ref{thm:change1L1}, the difference between counts on two neighboring databases is at most 1. Squaring this gives the same value. Similarly, the difference between the results of $k$ disjoint counts on two neighboring databases is 2, and squaring this gives 4. 
+From the proof of Theorem \ref{thm:change1L1}, the difference between counts on two neighboring databases is at most 1. Squaring this gives the same value. For a series of $k$ disjoint counts,
+\begin{align*}
+\left\vert \mathbf{q}(x) - \mathbf{q}(x') \right\vert_2 &= \left\vert \left(q_1(x) - q_1(x')\right)^2 + \ldots + \left(q_k(x) - q_k(x')\right)^2 \right\vert \\
+ & \le \left\vert 1^2 + 1^2 \right\vert \\
+ &= 2
+ \end{align*}
 \end{proof}
 
 \section{Neighboring Definition: Add/Drop One}
