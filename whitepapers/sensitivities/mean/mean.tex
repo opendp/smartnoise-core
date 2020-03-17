@@ -83,7 +83,7 @@ $$ \frac{M-m}{n}. $$
 \begin{proof}
 For notational ease, let $n$ always refer to the size of database $x$. We must consider both adding and removing an element from $x$. First, consider adding a point:\\
 
-Let $X' = X \cup {x}$. Without loss of generality, assume the point added is the $(n+1)^{\text{th}}$ element of database $x'$. Note that
+Let $X' = X \cup \{x\}$. Without loss of generality, assume the point added is the $(n+1)^{\text{th}}$ element of database $X'$. Note that
 \begin{align*}
 \left \vert f(X) - f(X)' \right\vert &= \left\vert \frac{1}{n} \sum_{i=1}^n x_i - \frac{1}{n+1} \sum_{i=1}^{n+1} x_i \right\vert \\
 	&= \left\vert \left(\frac{1}{n} - \frac{1}{n+1}\right) \sum_{i=1}^n x_i - \frac{x}{n+1}\right\vert \\
@@ -92,7 +92,7 @@ Let $X' = X \cup {x}$. Without loss of generality, assume the point added is the
 \end{align*}
 
 Second, consider removing a point: \\
-Let $X' = X\textbackslash\{x\}$. Without loss of generality assume that the point subtracted is the $n^{\text{th}}$ element of database $x$.
+Let $X' = X\textbackslash\{x\}$. Without loss of generality assume that the point subtracted is the $n^{\text{th}}$ element of database $X$.
 \begin{align*}
 \left \vert f(X) - f(X') \right\vert &= \left\vert \frac{1}{n-1} \sum_{i=1}^{n-1} x_i - \frac{1}{n} \sum_{i=1}^n x_i \right\vert \\
 	&= \left\vert \left(\frac{1}{n-1} - \frac{1}{n}\right) \sum_{i=1}^{n-1} x_i - \frac{x}{n}\right\vert \\
@@ -118,29 +118,36 @@ Say the space of datapoints $\mathcal{X}$ is bounded above by $M$ and bounded be
 \end{theorem}
 
 \begin{proof}
-	We must consider both adding and removing an element from $X$. \newline
+	For notational ease, let $n$ always refer to the size of database $X$. We must consider both adding and removing an element from $X$. First, consider adding a point:
 
-	Adding an element: \newline
-	Let $X' = X \cup x'_{n+1}$. Then,
+	Let $X' = X \cup x$. Without loss of generality assume the point added is the $(n+1)^\text{th}$ element of database X'. Then,
 	\begin{align*}
 		\Delta f &= \max_{X,X'} (f(X)- f(X)')^2 \\
 					   &= \max_{X,X'} \left( \frac{1}{n}\sum_{i=1}^{n}x_i - \frac{1}{n+1}\sum_{i=1}^{n+1}x'_i \right)^2 \\
-					   &= \max_{X,X'} \left( \left(\frac{1}{n}\sum_{i=1}^{n}x_i\right) - \left(\frac{1}{n+1}\sum_{i=1}^{n}x'_i\right) - \frac{x'_{n+1}}{n+1} \right)^2 \\
-					   &= \max_{X,X'} \left( \frac{ \left(\sum_{i=1}^{n}x_i\right) - nx'_{n+1} }{n(n+1)} \right)^2 \\
+					   &= \max_{X,X'} \left( \left(\frac{1}{n}\sum_{i=1}^{n}x_i\right) - \left(\frac{1}{n+1}\sum_{i=1}^{n}x'_i\right) - \frac{x}{n+1} \right)^2 \\
+					   &= \max_{X,X'} \left( \frac{ \left(\sum_{i=1}^{n}x_i\right) - nx }{n(n+1)} \right)^2 \\
 					   &= \left( \frac{nM - nm}{n(n+1)} \right)^2 \\
 					   &= \left( \frac{M - m}{n+1} \right)^2.
 	\end{align*}
 
-	Removing an element: \newline
-	Let $X' = X \setminus \{ x_{n} \}$. Then,
+Second, consider removing an element:\\
+Let $X' = X \setminus \{ x \}$. Without loss of generality assume that the point subtracted is the $n^\text{th}$ element of database $X$. Then,
 	\begin{align*}
 		\Delta f &= \max_{X,X'} (f(X)- f(X)')^2 \\
 					   &= \max_{X,X'} \left( \frac{1}{n}\sum_{i=1}^{n}x_i - \frac{1}{n-1}\sum_{i=1}^{n-1}x'_i \right)^2 \\
-					   &= \max_{X,X'} \left( \left( \frac{1}{n}\sum_{i=1}^{n-1}x_i \right) + \frac{x_n}{n} - \left( \frac{1}{n-1}\sum_{i=1}^{n-1}x'_i \right) \right)^2 \\
-					   &= \max_{X,X'} \left( \frac{(n-1)x_n - \sum_{i=1}^{n-1}x_i }{n(n-1)} \right)^2 \\
+					   &= \max_{X,X'} \left( \left( \frac{1}{n}\sum_{i=1}^{n-1}x_i \right) + \frac{x}{n} - \left( \frac{1}{n-1}\sum_{i=1}^{n-1}x'_i \right) \right)^2 \\
+					   &= \max_{X,X'} \left( \frac{(n-1)x - \sum_{i=1}^{n-1}x_i }{n(n-1)} \right)^2 \\
 					   &= \left( \frac{(n-1)M - (n-1)m}{n(n-1)} \right)^2 \\
 					   &= \left( \frac{M-m}{n} \right)^2.
 	\end{align*}
+	
+Then, since $\forall n > 0,$
+
+$$ \frac{1}{n+1} < \frac{1}{n},$$
+
+the sensitivity of the mean in general is bound from above by 
+
+$$ \frac{(M-m)^2}{n}.$$
 \end{proof}
 
 % \bibliographystyle{alpha}
