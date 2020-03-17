@@ -15,7 +15,7 @@ before_install:
 script:
   # Build the Rust runtime & run tests
   - cd runtime-rust; cargo build --verbose --all;
-  - cargo test; cd..;
+  - cargo test; cd ..;
   - # Build the Rust validator
   - #cd validator-rust; cargo build --verbose --all; cd ..
 
