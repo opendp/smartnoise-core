@@ -46,7 +46,8 @@ impl Expandable for proto::DpMean {
     /// # Arguments
     /// * `&self` - this
     /// * `_privacy_definition` - privacy definition from protocol buffer descriptor
-    /// * `properties` - NodeProperties
+    /// * `component` - component from prototypes/components.proto
+    /// * `_properties` - NodeProperties
     /// * `component_id` - identifier for component from prototypes/components.proto
     /// * `maximum_id` - last ID value created for sequence, increement used to define current ID
     fn expand_component(
