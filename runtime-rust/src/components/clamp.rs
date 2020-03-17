@@ -44,14 +44,13 @@ impl Evaluable for proto::Clamp {
 /// # Example
 /// ```
 /// use ndarray::{ArrayD, arr2, arr1};
-/// use yarrow_runtime::utilities::transformations::{convert_to_matrix, clamp_numeric};
+/// use yarrow_runtime::components::clamp::clamp_numeric_float;
 /// let data = arr2(&[ [1.,2.,3.], [7.,11.,9.] ]).into_dyn();
-/// let mut data_2d: ArrayD<f64> = convert_to_matrix(&data);
-/// let mins: ArrayD<f64> = arr1(&[0.5,8.]).into_dyn();
-/// let maxes: ArrayD<f64> = arr1(&[2.5,10.]).into_dyn();
-/// let mut clamped_data = clamp_numeric(&data_2d, &mins, &maxes);
-/// println!("{:?}", data_2d);
-/// println!("{:?}", clamped_data);
+/// let mins: ArrayD<f64> = arr1(&[0.5, 8., 4.]).into_dyn();
+/// let maxes: ArrayD<f64> = arr1(&[2.5, 10., 12.]).into_dyn();
+///
+/// let clamped_data = clamp_numeric_float(&data, &mins, &maxes);
+/// # clamped_data.unwrap();
 /// ```
 pub fn clamp_numeric_float(
     data: &ArrayD<f64>, min: &ArrayD<f64>, max: &ArrayD<f64>
