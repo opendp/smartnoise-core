@@ -67,28 +67,28 @@ impl Evaluable for proto::Impute {
 
 
 
-/// Given data and min/max values, returns data with imputed values in place of NaN.
-/// For now, imputed values are generated uniformly at random between the min and max values provided,
+/// Returns data with imputed values in place of `NAN`.
+/// Values are imputed from a uniform distribution.
 ///
 /// # Arguments
-/// * `data` - data for which you would like to impute the NaN values
-/// * `min` - lower bound on imputation range
-/// * `max` - upper bound on imputation range
+/// * `data` - Data for which you would like to impute the `NAN` values.
+/// * `min` - Lower bound on imputation range for each column.
+/// * `max` - Upper bound on imputation range for each column.
 ///
 /// # Return
-/// array of data with imputed values
+/// Data with `NAN` values replaced with imputed values.
 ///
 /// # Example
 /// ```
 /// use ndarray::prelude::*;
-/// use yarrow_runtime::utilities::transformations::impute_float_uniform;
+/// use yarrow_runtime::components::impute::impute_float_uniform;
 /// use core::f64::NAN;
 ///
-/// let data: ArrayD<f64> = arr1(&[1., NAN, 3., NAN]).into_dyn();
-/// let min: f64 = 0.;
-/// let max: f64 = 10.;
-/// let imputed: ArrayD<f64> = impute_float_uniform(&data, &min, &max)?;
-/// println!("{:?}", imputed);
+/// let data: ArrayD<f64> = arr2(&[ [1., NAN, 3., NAN], [2., 2., NAN, NAN] ]).into_dyn();
+/// let min: ArrayD<f64> = arr1(&[0., 2., 3., 4.]).into_dyn();
+/// let max: ArrayD<f64> = arr1(&[10., 2., 5., 5.]).into_dyn();
+/// let imputed = impute_float_uniform(&data, &min, &max);
+/// # imputed.unwrap();
 /// ```
 
 pub fn impute_float_uniform(data: &ArrayD<f64>, min: &ArrayD<f64>, max: &ArrayD<f64>) -> Result<ArrayD<f64>> {
@@ -117,31 +117,31 @@ pub fn impute_float_uniform(data: &ArrayD<f64>, min: &ArrayD<f64>, max: &ArrayD<
     Ok(data)
 }
 
-/// Given data and min/max values, returns data with imputed values in place of NaN.
-/// For now, imputed values are generated uniformly at random between the min and max values provided,
+/// Returns data with imputed values in place of `NAN`.
+/// Values are imputed from a truncated Gaussian distribution.
 ///
 /// # Arguments
-/// * `data` - data for which you would like to impute the NaN values
-/// * `shift` - the mean of the untruncated gaussian noise distribution
-/// * `scale` - the standard deviation of the untruncated gaussian noise distribution
-/// * `min` - lower bound on imputation range
-/// * `max` - upper bound on imputation range
+/// * `data` - Data for which you would like to impute the `NAN` values.
+/// * `shift` - The mean of the untruncated Gaussian noise distribution for each column.
+/// * `scale` - The standard deviation of the untruncated Gaussian noise distribution for each column.
+/// * `min` - Lower bound on imputation range for each column.
+/// * `max` - Upper bound on imputation range for each column.
 ///
 /// # Return
-/// array of data with imputed values
+/// Data with `NAN` values replaced with imputed values.
 ///
 /// # Example
 /// ```
 /// use ndarray::prelude::*;
-/// use yarrow_runtime::utilities::transformations::impute_float_gaussian;
+/// use yarrow_runtime::components::impute::impute_float_gaussian;
 /// use core::f64::NAN;
 /// let data: ArrayD<f64> = arr1(&[1., NAN, 3., NAN]).into_dyn();
-/// let shift: f64 = 5.0;
-/// let scale: f64 = 7.0;
-/// let min: f64 = 0.0;
-/// let max: f64 = 10.0;
-/// let imputed: ArrayD<f64> = impute_float_gaussian(&data, &shift, &scale, &min, &max)?;
-/// println!("{:?}", imputed);
+/// let shift: ArrayD<f64> = arr1(&[5.0]).into_dyn();
+/// let scale: ArrayD<f64> = arr1(&[7.0]).into_dyn();
+/// let min: ArrayD<f64> = arr1(&[0.0]).into_dyn();
+/// let max: ArrayD<f64> = arr1(&[10.0]).into_dyn();
+/// let imputed = impute_float_gaussian(&data, &shift, &scale, &min, &max);
+/// # imputed.unwrap();
 /// ```
 pub fn impute_float_gaussian(data: &ArrayD<f64>, min: &ArrayD<f64>, max: &ArrayD<f64>, shift: &ArrayD<f64>, scale: &ArrayD<f64>) -> Result<ArrayD<f64>> {
 
@@ -171,6 +171,37 @@ pub fn impute_float_gaussian(data: &ArrayD<f64>, min: &ArrayD<f64>, max: &ArrayD
     Ok(data)
 }
 
+/// Returns data with imputed values in place on `null_value`.
+///
+/// # Arguments
+/// * `data` - The data to be resized
+/// * `n` - An estimate of the size of the data -- this could be the guess of the user, or the result of a DP release
+/// * `categories` - For each data column, the set of possible values for elements in the column
+/// * `weights` - For each data column, weights for each category to be used when imputing null values
+/// * `null_value` - For each data column, the value of the data to be considered NULL.
+///
+/// # Return
+/// Data with `null_value` values replaced with imputed values.
+///
+/// # Example
+/// ```
+/// use ndarray::prelude::*;
+/// use yarrow_runtime::components::impute::impute_categorical;
+/// let data: ArrayD<String> = arr2(&[["a".to_string(), "b".to_string(), "null_3".to_string()],
+///                                   ["c".to_string(), "null_2".to_string(), "a".to_string()]]).into_dyn();
+/// let categories: Vec<Option<Vec<String>>> = vec![Some(vec!["a".to_string(), "c".to_string()]),
+///                                                 Some(vec!["b".to_string(), "d".to_string()]),
+///                                                 Some(vec!["f".to_string()])];
+/// let weights: Vec<Option<Vec<f64>>> = vec![Some(vec![1., 1.]),
+///                                           Some(vec![1., 2.]),
+///                                           Some(vec![1.])];
+/// let null_value: Vec<Option<Vec<String>>> = vec![Some(vec!["null_1".to_string()]),
+///                                                 Some(vec!["null_2".to_string()]),
+///                                                 Some(vec!["null_3".to_string()])];
+///
+/// let imputed = impute_categorical(&data, &categories, &weights, &null_value);
+/// # imputed.unwrap();
+/// ```
 pub fn impute_categorical<T>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>,
                              weights: &Vec<Option<Vec<f64>>>, null_value: &Vec<Option<Vec<T>>>)
                              -> Result<ArrayD<T>> where T:Clone, T:PartialEq, T:Default {

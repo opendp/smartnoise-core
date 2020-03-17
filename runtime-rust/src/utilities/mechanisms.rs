@@ -29,7 +29,8 @@ use crate::utilities::utilities;
 /// # Examples
 /// ```
 /// use yarrow_runtime::utilities::mechanisms::laplace_mechanism;
-/// let n = laplace_mechanism(&0.1, &2.0)?;
+/// let n = laplace_mechanism(&0.1, &2.0);
+/// # n.unwrap();
 /// ```
 pub fn laplace_mechanism(epsilon: &f64, sensitivity: &f64) -> Result<f64> {
     let scale: f64 = sensitivity / epsilon;
@@ -62,7 +63,8 @@ pub fn laplace_mechanism(epsilon: &f64, sensitivity: &f64) -> Result<f64> {
 /// # Examples
 /// ```
 /// use yarrow_runtime::utilities::mechanisms::gaussian_mechanism;
-/// let n = gaussian_mechanism(&0.1, &0.0001, &2.0)?;
+/// let n = gaussian_mechanism(&0.1, &0.0001, &2.0);
+/// # n.unwrap();
 /// ```
 pub fn gaussian_mechanism(epsilon: &f64, delta: &f64, sensitivity: &f64) -> Result<f64> {
     let scale: f64 = sensitivity * (2. * (1.25 / delta).ln()).sqrt() / epsilon;
@@ -92,6 +94,7 @@ pub fn gaussian_mechanism(epsilon: &f64, delta: &f64, sensitivity: &f64) -> Resu
 /// ```
 /// use yarrow_runtime::utilities::mechanisms::simple_geometric_mechanism;
 /// let n = simple_geometric_mechanism(&0.1, &1., &0, &10, &true);
+/// # n.unwrap();
 /// ```
 pub fn simple_geometric_mechanism(epsilon: &f64, sensitivity: &f64, count_min: &i64, count_max: &i64, enforce_constant_time: &bool) -> Result<i64> {
     let scale: f64 = sensitivity / epsilon;
@@ -124,8 +127,8 @@ pub fn simple_geometric_mechanism(epsilon: &f64, sensitivity: &f64, count_min: &
 ///
 /// // create sample data
 /// let xs: ArrayD<f64> = arr1(&[1., 2., 3., 4., 5.]).into_dyn();
-/// let ans: f64 = exponential_mechanism(&1.0, &1.0, xs, &utility)?;
-/// println!("{}", ans);
+/// let ans = exponential_mechanism(&1.0, &1.0, xs, &utility);
+/// # ans.unwrap();
 /// ```
 pub fn exponential_mechanism<T>(
                          epsilon: &f64,

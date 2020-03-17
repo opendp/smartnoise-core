@@ -36,11 +36,10 @@ impl Evaluable for proto::Quantile {
 /// # Example
 /// ```
 /// use ndarray::prelude::*;
-/// use crate::components::quantile;
+/// use yarrow_runtime::components::quantile::quantile;
 /// let data: ArrayD<f64> = arr1(&[0., 1., 2., 3., 4., 5., 12., 19., 24., 90., 98., 100.]).into_dyn();
-/// let median: ArrayD<f64> = quantile(&data, &0.5);
-/// println!("{}", median);
-/// assert_eq!(median, arr1(&[8.5]).into_dyn());
+/// let median = quantile(&data, &0.5);
+/// # median.unwrap();
 /// ```
 pub fn quantile(data: &ArrayD<f64>, q: &f64) -> Result<ArrayD<f64>> {
     if &0. > q || q > &1. {

@@ -26,13 +26,13 @@ impl Evaluable for proto::Resize {
     /// data in order to make it consistent with the provided `n`.
     ///
     /// # Arguments
-    /// * `data` - The data to be resized
-    /// * `n` - An estimate of the size of the data -- this could be the guess of the user, or the result of a DP release
-    /// * `distribution` - The distribution to be used when imputing records
-    /// * `min` - A lower bound on data elements
-    /// * `max` - An upper bound on data elements
-    /// * `shift` - The shift (expectation) argument for the Gaussian distribution
-    /// * `scale` - The scale (variance) argument for the Gaussian distribution
+    /// * `data` - The data to be resized.
+    /// * `n` - An estimate of the size of the data -- this could be the guess of the user, or the result of a DP release.
+    /// * `distribution` - The distribution to be used when imputing records.
+    /// * `min` - A lower bound on data elements.
+    /// * `max` - An upper bound on data elements.
+    /// * `shift` - The shift (expectation) argument for the Gaussian distribution (if used for imputation).
+    /// * `scale` - The scale (standard deviation) argument for the Gaussian distribution (if used for imputation).
     ///
     /// # Return
     /// A resized version of data consistent with the provided `n`
@@ -103,7 +103,7 @@ impl Evaluable for proto::Resize {
 /// * `min` - A lower bound on data elements
 /// * `max` - An upper bound on data elements
 /// * `shift` - The shift (expectation) argument for the Gaussian distribution
-/// * `scale` - The scale (variance) argument for the Gaussian distribution
+/// * `scale` - The scale (standard deviation) argument for the Gaussian distribution
 ///
 /// # Return
 /// A resized version of data consistent with the provided `n`
@@ -217,11 +217,12 @@ pub fn resize_categorical<T>(data: &ArrayD<T>, n: &i64,
 ///
 /// # Example
 /// ```
-/// use yarrow_runtime::src::components::resize::create_subset;
-/// let set = vec![1, 2, 3, 4, 5, 6]
-/// let weights = vec![1., 1., 1., 2., 2., 2.]
+/// use yarrow_runtime::components::resize::create_subset;
+/// let set = vec![1, 2, 3, 4, 5, 6];
+/// let weights = vec![1., 1., 1., 2., 2., 2.];
 /// let k = 3;
-/// let subset: Vec<usize> = create_subset(&set, &weights, &k)?;
+/// let subset = create_subset(&set, &weights, &k);
+/// # subset.unwrap();
 /// ```
 pub fn create_subset<T>(set: &Vec<T>, weights: &Vec<f64>, k: &i64) -> Result<Vec<T>> where T: Clone {
 
@@ -279,8 +280,9 @@ pub fn create_subset<T>(set: &Vec<T>, weights: &Vec<f64>, k: &i64) -> Result<Vec
 ///
 /// # Example
 /// ```
-/// use yarrow_runtime::src::components::resize::create_sampling_indices;
-/// let subset_indices: Vec<usize> = create_sampling_indices(&5, &10)?;
+/// use yarrow_runtime::components::resize::create_sampling_indices;
+/// let subset_indices = create_sampling_indices(&5, &10);
+/// # subset_indices.unwrap();
 /// ```
 pub fn create_sampling_indices(k: &i64, n: &i64) -> Result<Vec<usize>> {
     // create set of all indices
