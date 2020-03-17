@@ -1,3 +1,5 @@
+dist: bionic
+
 .branches:
   # all branches
   only:
@@ -10,13 +12,10 @@ rust:
   - stable
 
 before_install:
+  # Update to install python 3.6.9
   - sudo apt update
-  - sudo apt install software-properties-common
-  - sudo add-apt-repository ppa:deadsnakes/ppa
-  - sudo apt install python3.7
-  # - sudo apt update
-  - sudo python3 --version
-  - sudo apt install python3-pip
+  - sudo apt install -y software-properties-common
+  - python3 --version
 
 
 script:
