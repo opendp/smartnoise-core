@@ -1,0 +1,16 @@
+.branches:
+  # all branches
+  only:
+  - gh-pages
+  - /.*/
+
+language: rust
+
+rust:
+  - 1.41
+
+before_install:
+  - # nothing yet
+
+script:
+  - cargo build --verbose --all
