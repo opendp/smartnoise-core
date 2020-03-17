@@ -1,0 +1,133 @@
+\documentclass[11pt]{scrartcl} % Font size
+\input{../structure.tex} % Include the file specifying the document structure and custom commands
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\title{
+	\normalfont\normalsize
+	\textsc{Harvard Privacy Tools Project}\\ % Your university, school and/or department name(s)
+	\vspace{25pt} % Whitespace
+	\rule{\linewidth}{0.5pt}\\ % Thin top horizontal rule
+	\vspace{20pt} % Whitespace
+	{\huge Sum Sensitivity Proofs}\\ % The assignment title
+	\vspace{12pt} % Whitespace
+	\rule{\linewidth}{2pt}\\ % Thick bottom horizontal rule
+	\vspace{12pt} % Whitespace
+}
+
+% \author{\LARGE} % Your name
+
+\date{\normalsize\today} % Today's date (\today) or a custom date
+
+\begin{document}
+
+\maketitle
+
+\begin{definition}
+A sum query on database $x$ of size $n$ is defined to be
+$$s(x) = \sum_{i=1}^n x_i.$$
+\end{definition}
+
+\section{Neighboring Definition: Change One}
+
+% l1 sensitivity
+\subsection{$\ell_1$-sensitivity}
+\begin{theorem}
+Say the space of datapoints $\mathcal{X}$ is bounded above by $M$ and bounded below by $m$. Then $s$ over $\mathcal{X}^n$ has $\ell_1$-sensitivity bounded above by $M-m.$
+\end{theorem}
+
+\begin{proof}
+Say $X$ and $X'$ are neighboring databases which differ at data-point $x_j$. Then
+\begin{align*}
+\Delta{s} &= \max_{X,X'} \left\vert s(X) - s(X)' \right\vert \\
+	&=  \max_{X,X'} \left\vert \left(\sum_{\{ i \in [n] \vert i \ne j\}} x_i\right) + x_j  - \left(\sum_{\{ i \in [n] \vert i \ne j\}} x_i'\right) + x_j'  \right\vert \\
+	&= \max_{X,X'} \left\vert x_j - x_j' \right\vert \\
+	&\le M-m.
+\end{align*}
+\end{proof}
+
+% l2 sensitivity
+\subsection{$\ell_2$-sensitivity}
+\begin{theorem}
+	Say the space of datapoints $\mathcal{X}$ is bounded above by $M$ and bounded below by $m$.
+	Then $s$ over $\mathcal{X}^n$ has $\ell_1$-sensitivity bounded above by $(M-m)^2.$
+\end{theorem}
+
+\begin{proof}
+	Say $X$ and $X'$ are neighboring databases which differ only at index $j$. Then
+	\begin{align*}
+		\Delta{\bar{X}} &= \max_{X,X'} (s(X) - s(X)')^2 \\
+						&= \max_{X,X'} \left(
+								\left( \sum_{i \in [n] | i \neq j} x_i \right) + x_j -
+								\left( \sum_{i \in [n] | i \neq j} x'_i \right) - x'_j
+							\right)^2 \\
+						&= \max_{X,X'} (x_j - x'_j)^2 \\
+						&\leq (M-m)^2.
+	\end{align*}
+\end{proof}
+
+\section{Neighboring Definition: Add/Drop One}
+\subsection{$\ell_1$-sensitivity}
+
+\begin{theorem}
+Say the space of datapoints $\mathcal{X}$ is bounded above by $M$ and bounded below by $m$. Then $s$ has $\ell_1$-sensitivity bounded above by $\max(\vert m \vert,\vert M \vert).$
+\end{theorem}
+
+% TODO: CC is a little confused by the notation here (calling it x_n and then x), particularly because x_n is not the
+%       element in the final position in the "add one" model
+
+\begin{proof}
+For notational ease, let $n$ always refer to the size of database $x$. We must consider both adding and removing an element from $x$. First, consider adding a point:\\
+
+Let $X' = X \cup {x}$. Without loss of generality, assume the point added is the $(n+1)^{\text{th}}$ element of database $x'$. Note that
+\begin{align*}
+\left \vert s(X) - s(X') \right\vert &= \left\vert \sum_{i=1}^n x_i - \sum_{i=1}^{n+1} x_i \right\vert \\
+	&= \left\vert \sum_{i=1}^n x_i - \left(\sum_{i=1}^n x_i\right) - x \right\vert \\
+	&= x \\
+	&\le \max(\vert m \vert,\vert M \vert).
+\end{align*}
+
+Second, consider removing a point: \\
+Let $X' = X\textbackslash\{x\}$. Without loss of generality assume that the point subtracted is the $n^{\text{th}}$ element of database $x$.
+\begin{align*}
+\left \vert s(X) - s(X') \right\vert &= \left\vert \sum_{i=1}^n x_i - \sum_{i=1}^{n-1} x_i \right\vert \\
+	&= \left\vert \left(\sum_{i=1}^{n-1} x_i \right) + x - \sum_{i=1}^{n-1} x_i \right\vert \\
+	&= x \\
+	&\le \max(\vert m \vert,\vert M \vert).
+\end{align*}
+\end{proof}
+
+% l2 sensitivity
+\subsection{$\ell_2$-sensitivity}
+
+\begin{theorem}
+Say the space of datapoints $\mathcal{X}$ is bounded above by $M$ and bounded below by $m$. Then $s$ has $\ell_2$-sensitivity bounded above by $\max(m^2, M^2).$
+\end{theorem}
+
+\begin{proof}
+For notational ease, let $n$ always refer to the size of database $x$. We must consider both adding and removing an element from $x$. First, consider adding a point:\\
+
+Let $X' = X \cup {x}$. Without loss of generality, assume the point added is the $(n+1)^{\text{th}}$ element of database $x'$. Note that
+\begin{align*}
+\left(s(X) - s(X') \right)^2 &= \left( \sum_{i=1}^n x_i - \sum_{i=1}^{n+1} x_i \right)^2 \\
+	&= \left( \sum_{i=1}^n x_i - \sum_{i=1}^n x_i - x \right)^2 \\
+	&= x^2 \\
+	&\le \max(m^2, M^2).
+\end{align*}
+
+Second, consider removing a point: \\
+Let $X' = X\textbackslash\{x\}$. Without loss of generality assume that the point subtracted is the $n^{\text{th}}$ element of database $x$. Then,
+\begin{align*}
+\left(s(X) - s(X') \right)^2 &= \left( \sum_{i=1}^n x_i - \sum_{i=1}^{n-1} x_i \right)^2 \\
+	&= \left( \sum_{i=1}^{n-1} x_i + x - \sum_{i=1}^{n-1} x_i \right)^2 \\
+	 &=x^2 \\
+	 &\le \max(m^2, M^2).
+\end{align*}
+\end{proof}
+
+% \bibliographystyle{alpha}
+% \bibliography{mean}
+
+\end{document}
