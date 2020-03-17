@@ -76,7 +76,7 @@ From the proof of Theorem \ref{thm:change1L1}, the difference between counts on 
 \begin{align*}
 \left\vert \mathbf{q}(x) - \mathbf{q}(x') \right\vert_2 &= \left\vert \left(q_1(x) - q_1(x')\right)^2 + \ldots + \left(q_k(x) - q_k(x')\right)^2 \right\vert \\
  & \le \left\vert 1^2 + 1^2 \right\vert \\
- &= 2
+ &= 2.
  \end{align*}
 \end{proof}
 
@@ -96,7 +96,7 @@ Let $q$ be a count query with predicate $I$, and let $x'$ be equal to database $
 	&\le 1.
 \end{align*}
 
-A nearly identical argument holds for adding a point. 
+A nearly identical argument holds for adding a point. \\
 Consider a series of $k$ disjoint count queries $\mathbf{q} = \{q_1, \ldots, q_k\}$ and consider database $x'$ equal to database $x$ with point $x_i$ removed. Note that only a single one of the $k$ queries will be affected by the change from $x$ to $x'$, so
 \begin{align*}
 \left\vert \mathbf{q}(x) - \mathbf{q}(x') \right\vert &= \left\vert \left(q_1(x) - q_1(x')\right) + \ldots + \left(q_k(x) - q_k(x')\right) \right\vert \\
