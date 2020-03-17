@@ -1,5 +1,5 @@
 # fixes matplotlib plotting bug on ubuntu
-export QT_XKB_CONFIG_ROOT=/usr/share/X11/xkb
+#export QT_XKB_CONFIG_ROOT=/usr/share/X11/xkb
 
 # enables full stack traces
 export RUST_BACKTRACE=1
