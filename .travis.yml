@@ -10,11 +10,11 @@ matrix:
       rust:
         - stable
       script:
-        - echo "---- Rust Runtime: Test & Build ----";
+        - echo "---- Rust Runtime -> Test & Build ----";
         - cd runtime-rust; cargo test --verbose --workspace;
-        - cargo build --verbose --workspace; cd ..;
-        - echo "---- Rust Validator: Test & Build ----";
-        - cd validator-rust; cargo test --verbose --workspace;
-        - cargo build --verbose --workspace; cd ..;
+        #- cargo build --verbose --workspace; cd ..;
+        #- echo "---- Rust Validator -> Test & Build ----";
+        #- cd validator-rust; cargo test --verbose --workspace;
+        #- cargo build --verbose --workspace; cd ..;
       after_success:
         - echo "---- Rust Steps Complete ----"
