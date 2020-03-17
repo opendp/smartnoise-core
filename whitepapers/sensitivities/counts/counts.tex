@@ -50,12 +50,12 @@ Let $q$ be a count query with predicate $I$, and let $x'$ be equal to $x$ with p
 
 \begin{align*}
 \left\vert q(x') - q(x) \right\vert &= \left\vert \sum_{j=1}^n I(x_j') - \sum_{j=1}^n I(x_j) \right\vert \\
-	&= \left\vert \sum_{j \ne i}^n I(x_j) + I(x_i') - \sum_{j \ne i}^n I(x_j) - I(x_i) \right\vert \\
+	&= \left\vert \sum_{\{ i \in [n] \vert i \ne j\}}^n I(x_j) + I(x_i') - \sum_{\{ i \in [n] \vert i \ne j\}}^n I(x_j) - I(x_i) \right\vert \\
 	&= \left\vert I(x_i') - I(x_i) \right\vert \\
 	& \le 1.
 \end{align*}
 
-Consider a series of $k$ disjoint count queries $\mathbf{q} = \{q_1, \ldots, q_k\}$ on the same databases $x$ and $x'$. Note that since the counts are disjoint, only one query will be affected by point $x_i$ and one will be affected by point $x_i'$. Call these affected queries $q_i$ and $q_j$ respectively. Then,
+Consider a series of $k$ disjoint count queries $\mathbf{q} = \{q_1, \ldots, q_k\}$ on the same databases $x$ and $x'$. Note that since the counts are disjoint, $x_i$ and $x_i'$ can at most each increment a single one of the $k$ counts by 1. Call the count that $x_i$ impacts $q_i$, and the count that $x_i'$ impacts $q_j$. Then,
 
 \begin{align*}
 \left\vert \mathbf{q}(x) - \mathbf{q}(x') \right\vert &= \left\vert \left(q_1(x) - q_1(x')\right) + \ldots + \left(q_k(x) - q_k(x')\right) \right\vert \\
@@ -91,8 +91,8 @@ A single count query has sensitivity 1. A series of $k$ disjoint counts also has
 \begin{proof}
 Let $q$ be a count query with predicate $I$, and let $x'$ be equal to database $x$ with point $x_i$ removed. Then 
 \begin{align*}
-\left \vert q(x) - q(x') \right\vert &= \left\vert \sum_{j=1}^n I(x_j) - \sum_{j\ne i}^n I(x_j) \right\vert\\
-	&= \left\vert \sum_{j \ne i} I(x_j) + I(x_i) - \sum_{j\ne i} I(x_j) \right\vert\\
+\left \vert q(x) - q(x') \right\vert &= \left\vert \sum_{j=1}^n I(x_j) - \sum_{\{ i \in [n] \vert i \ne j\}}^n I(x_j) \right\vert\\
+	&= \left\vert \sum_{\{ i \in [n] \vert i \ne j\}} I(x_j) + I(x_i) - \sum_{\{ i \in [n] \vert i \ne j\}} I(x_j) \right\vert\\
 	&\le 1.
 \end{align*}
 
