@@ -13,10 +13,11 @@ before_install:
   - # nothing yet
 
 script:
-  - # Build the Rust runtime
-  - cd runtime-rust; cargo build --verbose --all; cd ..
+  # Build the Rust runtime & run tests
+  - cd runtime-rust; cargo build --verbose --all;
+  - cargo test; cd..;
   - # Build the Rust validator
-  - cd validator-rust; cargo build --verbose --all; cd ..
+  - #cd validator-rust; cargo build --verbose --all; cd ..
 
 after_success:
   - echo $TRAVIS_BRANCH;
