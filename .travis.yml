@@ -20,8 +20,8 @@ before_install:
 
 script:
   # pytest
-  - python --version
-  - cd bindings-python; ./debug_ubuntu.sh; cd ..;
+  - cd bindings-python; python3 -m pip install -r requirements.txt;
+  - ./debug_ubuntu.sh; cd ..;
   # (1) Rust Runtime -> Test & Build
   #- cd runtime-rust; cargo test --verbose --workspace;
   #- cargo build --verbose --workspace; cd ..;
