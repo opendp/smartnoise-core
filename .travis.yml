@@ -7,10 +7,10 @@
 language: rust
 
 rust:
-  - 1.41
+  - stable
 
 before_install:
   - # nothing yet
 
 script:
-  - cargo build --verbose --all
+  - cd runtime-rust; cargo build --verbose --all
