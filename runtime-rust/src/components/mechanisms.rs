@@ -8,6 +8,7 @@ use yarrow_validator::proto;
 
 impl Evaluable for proto::LaplaceMechanism {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
+        // read function arguments
         let epsilon: Vec<f64> = self.privacy_usage.iter()
             .map(|usage| get_epsilon(&usage))
             .collect::<Result<Vec<f64>>>()?;
@@ -59,7 +60,6 @@ impl Evaluable for proto::LaplaceMechanism {
         }
     }
 }
-
 
 impl Evaluable for proto::GaussianMechanism {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {

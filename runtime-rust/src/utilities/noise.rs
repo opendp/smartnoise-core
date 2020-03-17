@@ -31,18 +31,20 @@ impl ThreadRandGen for GeneratorOpenSSL {
 /// ```
 /// // returns a bit with Pr(bit = 1) = 0.7
 /// use yarrow_runtime::utilities::noise::sample_bit;
-/// let n:i64 = sample_bit(&0.7)?;
-/// assert!(n == 0 || n == 1);
+/// let n = sample_bit(&0.7);
+/// # n.unwrap();
 /// ```
 /// ```should_panic
 /// // fails because 1.3 not a valid probability
 /// use yarrow_runtime::utilities::noise::sample_bit;
-/// let n:i64 = sample_bit(&1.3)?;
+/// let n = sample_bit(&1.3);
+/// # n.unwrap();
 /// ```
 /// ```should_panic
 /// // fails because -0.3 is not a valid probability
 /// use yarrow_runtime::utilities::noise::sample_bit;
-/// let n:i64 = sample_bit(&-0.3)?;
+/// let n = sample_bit(&-0.3);
+/// # n.unwrap();
 /// ```
 pub fn sample_bit(prob: &f64) -> Result<i64> {
 
@@ -81,14 +83,15 @@ pub fn sample_bit(prob: &f64) -> Result<i64> {
 /// ```
 /// // returns a uniform draw from the set {0,1,2}
 /// use yarrow_runtime::utilities::noise::sample_uniform_int;
-/// let n:i64 = sample_uniform_int(&0, &2)?;
-/// assert!(n == 0 || n == 1 || n == 2);
+/// let n = sample_uniform_int(&0, &2);
+/// # n.unwrap();
 /// ```
 ///
 /// ```should_panic
 /// // fails because min > max
 /// use yarrow_runtime::utilities::noise::sample_uniform_int;
-/// let n:i64 = sample_uniform_int(&2, &0)?;
+/// let n = sample_uniform_int(&2, &0);
+/// # n.unwrap();
 /// ```
 pub fn sample_uniform_int(min: &i64, max: &i64) -> Result<i64> {
 
@@ -151,13 +154,14 @@ pub fn sample_uniform_int(min: &i64, max: &i64) -> Result<i64> {
 /// ```
 /// // valid draw from Unif[0,2)
 /// use yarrow_runtime::utilities::noise::sample_uniform;
-/// let unif: f64 = sample_uniform(&0.0, &2.0)?;
-/// assert!(unif >= 0.0 && unif < 2.0);
+/// let unif = sample_uniform(&0.0, &2.0);
+/// # unif.unwrap();
 /// ```
 /// ``` should_panic
 /// // fails because min > max
 /// use yarrow_runtime::utilities::noise::sample_uniform;
-/// let unif: f64 = sample_uniform(&2.0, &0.0)?;
+/// let unif = sample_uniform(&2.0, &0.0);
+/// # unif.unwrap();
 /// ```
 pub fn sample_uniform(min: &f64, max: &f64) -> Result<f64> {
     if min > max {return Err("min cannot be less than max".into());}
@@ -198,7 +202,8 @@ pub fn sample_uniform(min: &f64, max: &f64) -> Result<f64> {
 /// # Example
 /// ```
 /// use yarrow_runtime::utilities::noise::sample_uniform_mpfr;
-/// let unif: f64 = sample_uniform_mpfr(0.0, 1.0)?;
+/// let unif = sample_uniform_mpfr(0.0, 1.0);
+/// # unif.unwrap();
 /// ```
 pub fn sample_uniform_mpfr(min: f64, max: f64) -> Result<rug::Float> {
     // initialize 64-bit floats within mpfr/rug
@@ -218,7 +223,7 @@ pub fn sample_uniform_mpfr(min: f64, max: f64) -> Result<rug::Float> {
     return Ok(unif);
 }
 
-/// Generates a draw from Gaussian(shift, scale) using the MPFR library
+/// Generates a draw from a Gaussian distribution using the MPFR library.
 ///
 /// If [min, max] == [0, 1],then this is done in a way that respects exact rounding.
 /// Otherwise, the return will be the result of a composition of two operations that
@@ -227,9 +232,10 @@ pub fn sample_uniform_mpfr(min: f64, max: f64) -> Result<rug::Float> {
 /// We are working through what exactly exact rounding buys us from a privacy perspective --
 /// for more information, see the whitepapers/noise document in the CC_add_mpfr branch.
 ///
+///
 /// # Arguments
-/// * `shift` - Expectation of Gaussian distribution.
-/// * `scale` - Variance of Gaussian Distribution.
+/// * `shift` - The expectation of the Gaussian distribution.
+/// * `scale` - The scaling parameter (standard deviation) of the Gaussian distribution.
 ///
 /// # Return
 /// Draw from Gaussian(min, max)
@@ -237,12 +243,15 @@ pub fn sample_uniform_mpfr(min: f64, max: f64) -> Result<rug::Float> {
 /// # Example
 /// ```
 /// use yarrow_runtime::utilities::noise::sample_gaussian_mpfr;
-/// let gaussian: f64 = sample_gaussian_mpfr(0.0, 1.0)?;
+/// let gaussian = sample_gaussian_mpfr(0.0, 1.0);
+/// # gaussian.unwrap();
 /// ```
-pub fn sample_gaussian_mpfr(shift: f64, scale:f64) -> Result<rug::Float> {
+pub fn sample_gaussian_mpfr(shift: f64, scale: f64) -> Result<rug::Float> {
     // initialize 64-bit floats within mpfr/rug
+    // NOTE: We square the scale here because we ask for the standard deviation as the function input, but
+    //       the mpfr library wants the variance. We ask for std. dev. to be consistent with the rest of the library.
     let mpfr_shift = Float::with_val(53, shift);
-    let mpfr_scale = Float::with_val(53, scale);
+    let mpfr_scale = Float::with_val(53, Float::with_val(53, scale).square());
 
     // initialize randomness
     let mut rng = GeneratorOpenSSL {};
@@ -269,7 +278,8 @@ pub fn sample_gaussian_mpfr(shift: f64, scale:f64) -> Result<rug::Float> {
 /// # Example
 /// ```
 /// use yarrow_runtime::utilities::noise::sample_laplace;
-/// let n:f64 = sample_laplace(0.0, 2.0)?;
+/// let n = sample_laplace(0.0, 2.0);
+/// # n.unwrap();
 /// ```
 pub fn sample_laplace(shift: f64, scale: f64) -> Result<f64> {
     let probability: f64 = sample_uniform(&0., &1.)?;
@@ -281,7 +291,7 @@ pub fn sample_laplace(shift: f64, scale: f64) -> Result<f64> {
 /// # Arguments
 ///
 /// * `shift` - The expectation of the Gaussian distribution.
-/// * `scale` - The scaling parameter (variance) of the Gaussian distribution.
+/// * `scale` - The scaling parameter (standard deviation) of the Gaussian distribution.
 ///
 /// Return
 /// A draw from Gaussian(shift, scale).
@@ -289,7 +299,8 @@ pub fn sample_laplace(shift: f64, scale: f64) -> Result<f64> {
 /// # Example
 /// ```
 /// use yarrow_runtime::utilities::noise::sample_gaussian;
-/// let n:f64 = sample_gaussian(&0.0, &2.0)?;
+/// let n = sample_gaussian(&0.0, &2.0);
+/// # n.unwrap();
 /// ```
 pub fn sample_gaussian(shift: &f64, scale: &f64) -> Result<f64> {
     let probability: f64 = sample_uniform(&0., &1.)?;
@@ -305,8 +316,8 @@ pub fn sample_gaussian(shift: &f64, scale: &f64) -> Result<f64> {
 ///
 /// # Arguments
 ///
-/// * `shift` - The expectation of the Gaussian.
-/// * `scale` - The scaling parameter (variance) of the Gaussian distribution.
+/// * `shift` - The expectation of the untruncated Gaussian distribution.
+/// * `scale` - The scaling parameter (standard deviation) of the untruncated Gaussian distribution.
 /// * `min` - The minimum value you want to allow to be sampled.
 /// * `max` - The maximum value you want to allow to be sampled.
 ///
@@ -316,9 +327,8 @@ pub fn sample_gaussian(shift: &f64, scale: &f64) -> Result<f64> {
 /// # Example
 /// ```
 /// use yarrow_runtime::utilities::noise::sample_gaussian_truncated;
-/// let n:f64 = sample_gaussian_truncated(&1.0, &1.0, &0.0, &2.0)?;
-/// assert!(n >= 0.0);
-/// assert!(n <= 2.0);
+/// let n= sample_gaussian_truncated(&1.0, &1.0, &0.0, &2.0);
+/// # n.unwrap();
 /// ```
 pub fn sample_gaussian_truncated(min: &f64, max: &f64, shift: &f64, scale: &f64) -> Result<f64> {
     // TODO: why can't probability take a ref? perhaps need to drop the dependency
@@ -372,18 +382,19 @@ pub fn sample_floating_point_probability_exponent() -> Result<i16> {
 /// number of trials "max_trials".
 ///
 /// # Arguments
-/// * `prob` - parameter for the geometric distribution, the probability of success on any given trials
-/// * `max_trials` - the maximum number of trials allowed
-/// * `enforce_constant_time` - whether or not to enforce the algorithm to run in constant time; if true,
-///                             it will always run for "max_trials" trials
+/// * `prob` - Parameter for the geometric distribution, the probability of success on any given trials.
+/// * `max_trials` - The maximum number of trials allowed.
+/// * `enforce_constant_time` - Whether or not to enforce the algorithm to run in constant time; if true,
+///                             it will always run for "max_trials" trials.
 ///
 /// # Return
-/// result from censored geometric distribution
+/// A draw from the censored geometric distribution.
 ///
 /// # Example
 /// ```
 /// use yarrow_runtime::utilities::noise::sample_geometric_censored;
-/// let geom: i64 = sample_geometric_censored(&0.1, &20, &false)?;
+/// let geom = sample_geometric_censored(&0.1, &20, &false);
+/// # geom.unwrap();
 /// ```
 pub fn sample_geometric_censored(prob: &f64, max_trials: &i64, enforce_constant_time: &bool) -> Result<i64> {
 
@@ -439,7 +450,8 @@ pub fn sample_geometric_censored(prob: &f64, max_trials: &i64, enforce_constant_
 /// ```
 /// use ndarray::prelude::*;
 /// use yarrow_runtime::utilities::noise::sample_simple_geometric_mechanism;
-/// let geom_noise: i64 = sample_simple_geometric_mechanism(&1., &0, &100, &false)?;
+/// let geom_noise = sample_simple_geometric_mechanism(&1., &0, &100, &false);
+/// # geom_noise.unwrap();
 /// ```
 pub fn sample_simple_geometric_mechanism(scale: &f64, min: &i64, max: &i64, enforce_constant_time: &bool) -> Result<i64> {
 
