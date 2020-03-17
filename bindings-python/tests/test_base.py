@@ -1,14 +1,21 @@
-import yarrow
+from os.path import abspath, dirname, isfile, join
 
+import yarrow
 import yarrow.components as op
 
-test_csv_path = '/home/shoe/PSI/datasets/data/PUMS_california_demographics_1000/data.csv'
+# Path to the test csv file
+#
+TEST_CSV_PATH = join(dirname(abspath(__file__)), 'data',
+                     'PUMS_california_demographics_1000', 'data.csv')
+assert isfile(TEST_CSV_PATH), f'Error: file not found: {TEST_CSV_PATH}'
+
+
 test_csv_names = ["age", "sex", "educ", "race", "income", "married"]
 
 def test_multilayer_analysis(run=True):
 
     with yarrow.Analysis() as analysis:
-        PUMS = yarrow.Dataset(path=test_csv_path, column_names=test_csv_names)
+        PUMS = yarrow.Dataset(path=TEST_CSV_PATH, column_names=test_csv_names)
 
         age = op.cast(PUMS['age'], type="FLOAT")
         sex = op.cast(PUMS['sex'], type="BOOL", true_label="TRUE")
@@ -75,7 +82,7 @@ def test_multilayer_analysis(run=True):
 
 def test_dp_linear_stats(run=True):
     with yarrow.Analysis() as analysis:
-        dataset_pums = yarrow.Dataset(path=test_csv_path, column_names=test_csv_names)
+        dataset_pums = yarrow.Dataset(path=TEST_CSV_PATH, column_names=test_csv_names)
 
         age = dataset_pums['age']
 
@@ -173,7 +180,7 @@ def test_dp_linear_stats(run=True):
 
 def test_dp_count(run=True):
     with yarrow.Analysis() as analysis:
-        dataset_pums = yarrow.Dataset(path=test_csv_path, column_names=test_csv_names)
+        dataset_pums = yarrow.Dataset(path=TEST_CSV_PATH, column_names=test_csv_names)
         count = op.dp_count(
             dataset_pums['sex'] == '1',
             privacy_usage={'epsilon': 0.5})
