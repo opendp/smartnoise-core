@@ -11,7 +11,9 @@ rust:
 
 before_install:
   - sudo apt-get update
-  - sudo apt-get install python3.7
+  - sudo apt-get install python3
+  - sudo python3 --version 
+  - sudo apt-get install python3-pip
 
 
 script:
