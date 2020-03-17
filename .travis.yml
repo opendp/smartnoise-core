@@ -10,10 +10,13 @@ rust:
   - stable
 
 before_install:
-  - sudo apt-get update
-  - sudo apt-get install python3
-  - sudo python3 --version 
-  - sudo apt-get install python3-pip
+  - sudo apt update
+  - sudo apt install software-properties-common
+  - sudo add-apt-repository ppa:deadsnakes/ppa
+  - sudo apt install python3.7
+  # - sudo apt update
+  - sudo python3 --version
+  - sudo apt install python3-pip
 
 
 script:
