@@ -83,25 +83,32 @@ $$ \frac{M-m}{n}. $$
 %       element in the final position in the "add one" model
 
 \begin{proof}
-WLOG assume point being added/subtracted is $x_n$.
+For notational ease, let $n$ always refer to the size of database $x$. We must consider both adding and removing an element from $x$. First, consider adding a point:\\
 
-Adding a point:
-$X' = X \cup {x}$
+Let $X' = X \cup {x}$. Without loss of generality, assume the point added is the $(n+1)^{\text{th}}$ element of database $x'$. Note that
 \begin{align*}
 \left \vert \bar{X} - \bar{X}' \right\vert &= \left\vert \frac{1}{n} \sum_{i=1}^n x_i - \frac{1}{n+1} \sum_{i=1}^{n+1} x_i \right\vert \\
 	&= \left\vert \left(\frac{1}{n} - \frac{1}{n+1}\right) \sum_{i=1}^n x_i - \frac{x}{n+1}\right\vert \\
 	&= \frac{1}{n+1} \left\vert \frac{1}{n} \sum_{i=1}^n x_i - x \right\vert \\
-	&\le \frac{ \left\vert M - m \right\vert}{n+1}
+	&\le \frac{ \left\vert M - m \right\vert}{n+1}.
 \end{align*}
 
-Taking a point away:
-$X' = X\textbackslash\{x\}$
+Second, consider removing a point: \\
+Let $X' = X\textbackslash\{x\}$. Without loss of generality assume that the point subtracted is the $n^{\text{th}}$ element of database $x$.
 \begin{align*}
 \left \vert \bar{X} - \bar{X}' \right\vert &= \left\vert \frac{1}{n-1} \sum_{i=1}^{n-1} x_i - \frac{1}{n} \sum_{i=1}^n x_i \right\vert \\
 	&= \left\vert \left(\frac{1}{n-1} - \frac{1}{n}\right) \sum_{i=1}^{n-1} x_i - \frac{x}{n}\right\vert \\
 	&= \frac{1}{n} \left\vert \frac{1}{n-1} \sum_{i=1}^{n-1} x_i  - x \right\vert \\
-	&\le \frac{\left\vert M-m\right\vert}{n}
+	&\le \frac{\left\vert M-m\right\vert}{n}.
 \end{align*}
+
+Then, since $\forall n > 0,$
+
+$$ \frac{1}{n+1} < \frac{1}{n},$$
+
+the sensitivity of the mean in general is bound from above by 
+
+$$ \frac{M-m}{n}.$$
 \end{proof}
 
 % l2 sensitivity
