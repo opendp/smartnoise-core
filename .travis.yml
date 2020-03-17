@@ -14,6 +14,17 @@ before_install:
 
 script:
   - # Build the Rust runtime
-  - # cd runtime-rust; cargo build --verbose --all; cd ..
+  - cd runtime-rust; cargo build --verbose --all; cd ..
   - # Build the Rust validator
   - cd validator-rust; cargo build --verbose --all; cd ..
+
+after_success:
+  - echo $TRAVIS_BRANCH;
+  - if [ "$TRAVIS_BRANCH" == "develop" ]; then
+    echo "Build some docs!"
+    fi
+#  - if [ "$TRAVIS_BRANCH" == "develop" ]; then
+#    docker build -t tworavens/ravens-main:latest .;
+#    docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+#    docker push tworavens/ravens-main:latest;
+#    fi
