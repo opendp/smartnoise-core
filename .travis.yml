@@ -23,7 +23,7 @@ script:
   # Build python bindings and run tests
   - cd bindings-python; python3 -m pip install -r requirements.txt;
   - export RUST_BACKTRACE=1; python3 -m pip install -e . -v;
-  - python3 -m pytest -x -v cd ..;
+  - python3 -m pytest -x -v; cd ..;
   # (1) Rust Runtime -> Test & Build
   #- cd runtime-rust; cargo test --verbose --workspace;
   #- cargo build --verbose --workspace; cd ..;
