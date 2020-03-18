@@ -1,11 +1,11 @@
-use yarrow_validator::errors::*;
+use whitenoise_validator::errors::*;
 
 use crate::base::NodeArguments;
 use crate::components::Evaluable;
-use yarrow_validator::base::{Value, ArrayND, get_argument};
+use whitenoise_validator::base::{Value, ArrayND, get_argument};
 use std::convert::TryFrom;
 use ndarray::ArrayD;
-use yarrow_validator::proto;
+use whitenoise_validator::proto;
 use crate::components::row_max::broadcast_map;
 
 impl Evaluable for proto::RowMin {

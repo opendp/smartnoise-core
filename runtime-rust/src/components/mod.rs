@@ -1,7 +1,7 @@
-use yarrow_validator::errors::*;
+use whitenoise_validator::errors::*;
 use crate::base::NodeArguments;
-use yarrow_validator::base::Value;
-use yarrow_validator::utilities::serial::parse_value;
+use whitenoise_validator::base::Value;
+use whitenoise_validator::utilities::serial::parse_value;
 
 pub mod bin;
 pub mod cast;
@@ -24,7 +24,7 @@ pub mod sum;
 pub mod transforms;
 pub mod variance;
 
-use yarrow_validator::proto;
+use whitenoise_validator::proto;
 
 pub trait Evaluable {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value>;

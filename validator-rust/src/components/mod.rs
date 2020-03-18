@@ -44,8 +44,28 @@ use crate::proto;
 use crate::utilities::json::{JSONRelease};
 use crate::hashmap;
 
+
+/// Universal Component trait
+///
+/// To be a component, a struct must represent an abstract computation, for which properties can be derived about the resulting data.
 pub trait Component {
-    // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
+    /// Given properties known about private arguments, and public arguments, derive properties about the resulting data.
+    ///
+    /// A component must fail to propagate properties if requirements on the input properties are not met.
+    /// For example, if a Component represents an abstract computation that requires prior knowledge of the number of records to be safe or function properly,
+    /// the propagate_property implementation is expected to return an error state if the prior knowledge is not known.
+    ///
+    /// For example, if a definition of privacy is used that is incompatible with the abstract computation,
+    /// the propagate_property implementation is expected to return an error state.
+    ///
+    /// # Arguments
+    /// * `self` - the protobuf object corresponding to the prost protobuf struct
+    /// * `privacy_definition` - the definition of privacy under which the computation takes place
+    /// * `public_arguments` - actual data values of arguments, typically either supplied literals or released values.
+    /// * `properties` - derived properties of private input arguments
+    ///
+    /// # Returns
+    /// Derived properties on the data resulting from the abstract computation
     fn propagate_property(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
@@ -53,14 +73,32 @@ pub trait Component {
         properties: &NodeProperties,
     ) -> Result<ValueProperties>;
 
+    /// Utility function for a recursive algorithm to derive human readable names on the columns in the output data.
     fn get_names(
         &self,
         properties: &NodeProperties,
     ) -> Result<Vec<String>>;
 }
 
+/// Expandable Component trait
+///
+/// When a component is expandable, it represents a higher order computation that may be expressed in multiple components that are more granular.
+/// Oftentimes Expandable components correspond to differentially private algorithms,
+/// that are represented in terms of an aggregation and a mechanism.
 pub trait Expandable {
-    // return a hashmap of an expanded subgraph
+    /// Concrete implementation for an Expandable component that returns a patch that may be applied to a computation graph.
+    ///
+    /// # Arguments
+    /// * `self` - the protobuf object corresponding to the prost protobuf struct
+    /// * `privacy_definition` - definition of privacy to use when expanding. Some expansions are not valid under some privacy definitions
+    /// * `component` - contains additional metadata about the argument node ids
+    /// * `properties` - properties on the data supplied as arguments
+    /// * `component_id` - the id of the node to expand. The final node in the returned patch must use this id.
+    /// * `maximum_id` - the starting id for which additional nodes may be added to the graph without overwriting existing nodes
+    ///
+    /// # Returns
+    /// * `0` - the new maximum id, for which nodes may be added to the graph without overwriting existing nodes
+    /// * `1` - the patch to be applied to the computation graph, such that the patched graph represents the expanded component
     fn expand_component(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
@@ -71,7 +109,24 @@ pub trait Expandable {
     ) -> Result<(u32, HashMap<u32, proto::Component>)>;
 }
 
+/// Aggregator Component trait
+///
+/// When a component is an aggregator, the abstract computation the component represents combines multiple rows together into a single value.
+/// For example, a mean, minimum, or scoring function on a dataset.
 pub trait Aggregator {
+    /// Derivation for the sensitivity of an aggregator based on available local metadata.
+    ///
+    /// The sensitivity is the maximum amount that a perturbation of input data may have on the resulting value.
+    /// The type of perturbation is described in the privacy_definition.
+    ///
+    /// # Arguments
+    /// * `self` - the protobuf object corresponding to the prost protobuf struct
+    /// * `privacy_definition` - the definition of privacy under which the sensitivity is to be computed
+    /// * `properties` - derived properties for the input data
+    /// * `sensitivity_type` - space for which the sensitivity is computed within
+    ///
+    /// # Returns
+    /// Sensitivities for each of the values in the resulting computation
     fn compute_sensitivity(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
@@ -80,6 +135,7 @@ pub trait Aggregator {
     ) -> Result<Vec<f64>>;
 }
 
+/// Accuracy component trait (not yet implemented)
 pub trait Accuracy {
     fn accuracy_to_privacy_usage(
         &self,
@@ -95,8 +151,11 @@ pub trait Accuracy {
     ) -> Option<f64>;
 }
 
+/// Report component trait
+///
+/// Reportable components correspond to a computation that a researcher may want a JSON summary for
 pub trait Report {
-    // for json construction. Return type should be a generic serializable struct, not a String
+    /// Summarize the relevant metadata around a computation in a readable, JSON-serializable format.
     fn summarize(
         &self,
         node_id: &u32,
@@ -110,7 +169,9 @@ pub trait Report {
 
 
 impl Component for proto::component::Variant {
-    // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
+    /// Utility implementation on the enum containing all variants of a component.
+    ///
+    /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn propagate_property(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
@@ -179,7 +240,9 @@ impl Component for proto::component::Variant {
 }
 
 impl Expandable for proto::component::Variant {
-    // return a hashmap of an expanded subgraph
+    /// Utility implementation on the enum containing all variants of a component.
+    ///
+    /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn expand_component(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
@@ -214,6 +277,9 @@ impl Expandable for proto::component::Variant {
 }
 
 impl Aggregator for proto::component::Variant {
+    /// Utility implementation on the enum containing all variants of a component.
+    ///
+    /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn compute_sensitivity(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
@@ -243,6 +309,9 @@ impl Aggregator for proto::component::Variant {
 }
 
 impl Accuracy for proto::component::Variant {
+    /// Utility implementation on the enum containing all variants of a component.
+    ///
+    /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn accuracy_to_privacy_usage(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
@@ -270,6 +339,9 @@ impl Accuracy for proto::component::Variant {
         None
     }
 
+    /// Utility implementation on the enum containing all variants of a component.
+    ///
+    /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn privacy_usage_to_accuracy(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
@@ -298,7 +370,9 @@ impl Accuracy for proto::component::Variant {
 }
 
 impl Report for proto::component::Variant {
-    // for json construction. Return type should be a generic serializable struct, not a String
+    /// Utility implementation on the enum containing all variants of a component.
+    ///
+    /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn summarize(
         &self,
         node_id: &u32,

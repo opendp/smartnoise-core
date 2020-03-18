@@ -1,11 +1,11 @@
-use yarrow_validator::errors::*;
+use whitenoise_validator::errors::*;
 
 use crate::base::NodeArguments;
-use yarrow_validator::base::{Value, ArrayND, Vector2DJagged, standardize_numeric_argument, standardize_categorical_argument, standardize_null_argument, get_argument};
+use whitenoise_validator::base::{Value, ArrayND, Vector2DJagged, standardize_numeric_argument, standardize_categorical_argument, standardize_null_argument, get_argument};
 use crate::components::Evaluable;
 use ndarray::ArrayD;
 use crate::utilities::utilities::get_num_columns;
-use yarrow_validator::proto;
+use whitenoise_validator::proto;
 
 impl Evaluable for proto::Clamp {
     /// Clamps data to provided bounds.
@@ -69,7 +69,7 @@ impl Evaluable for proto::Clamp {
 /// # Example
 /// ```
 /// use ndarray::{ArrayD, arr2, arr1};
-/// use yarrow_runtime::components::clamp::clamp_numeric_float;
+/// use whitenoise_runtime::components::clamp::clamp_numeric_float;
 /// let data = arr2(&[ [1.,2.,3.], [7.,11.,9.] ]).into_dyn();
 /// let mins: ArrayD<f64> = arr1(&[0.5, 8., 4.]).into_dyn();
 /// let maxes: ArrayD<f64> = arr1(&[2.5, 10., 12.]).into_dyn();

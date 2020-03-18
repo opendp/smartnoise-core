@@ -1,11 +1,11 @@
-use yarrow_validator::errors::*;
+use whitenoise_validator::errors::*;
 
 use crate::base::NodeArguments;
 use crate::components::Evaluable;
-use yarrow_validator::base::{Value, get_argument, ArrayND};
+use whitenoise_validator::base::{Value, get_argument, ArrayND};
 use std::convert::TryFrom;
 use ndarray::{ArrayD, Array, Zip};
-use yarrow_validator::proto;
+use whitenoise_validator::proto;
 
 impl Evaluable for proto::RowMax {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
@@ -42,9 +42,9 @@ pub fn broadcast_map<T, U>(
     ///
     /// # Example
     /// ```
-    /// use yarrow_validator::errors::*;
+    /// use whitenoise_validator::errors::*;
     /// use ndarray::{Array1, arr1, ArrayD};
-    /// use yarrow_runtime::utilities::transformations::broadcast_map;
+    /// use whitenoise_runtime::utilities::transformations::broadcast_map;
     /// let left: ArrayD<f64> = arr1!([1., -2., 3., 5.]).into_dyn();
     /// let right: ArrayD<f64> = arr1!([2.]).into_dyn();
     /// let mapped: Result<ArrayD<f64>> = broadcast_map(&left, &right, &|l, r| l.max(r.clone()));

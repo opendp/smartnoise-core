@@ -6,12 +6,12 @@ if os.name != 'nt':
     import subprocess
 
     # protoc must be installed and on path
-    package_dir = os.path.join(os.getcwd(), 'yarrow')
+    package_dir = os.path.join(os.getcwd(), 'whitenoise')
     subprocess.call(f"protoc --python_out={package_dir} *.proto", shell=True, cwd=os.path.abspath('../prototypes/'))
     subprocess.call(f"sed -i -E 's/^import.*_pb2/from . &/' *.py", shell=True, cwd=package_dir)
 
-if os.name == 'nt' and not os.path.exists('yarrow/api_pb2.py'):
-    print('make sure to run protoc to generate python proto bindings, and fix package imports to be relative to yarrow')
+if os.name == 'nt' and not os.path.exists('whitenoise/api_pb2.py'):
+    print('make sure to run protoc to generate python proto bindings, and fix package imports to be relative to whitenoise')
 
 components_dir = os.path.abspath("../prototypes/components")
 
@@ -105,6 +105,6 @@ def {component_schema['name']}({signature_string}):
         constraints={component_constraints})
 
 """
-output_path = os.path.join(os.getcwd(), 'yarrow', 'components.py')
+output_path = os.path.join(os.getcwd(), 'whitenoise', 'components.py')
 with open(output_path, 'w') as generated_file:
     generated_file.write(generated_code)

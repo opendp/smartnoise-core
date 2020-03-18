@@ -6,6 +6,9 @@ from tests.test_base import (
     test_raw_dataset
 )
 
+# turn on stack traces
+import os
+os.environ['RUST_BACKTRACE'] = 'full'
 
 # analysis = test_multilayer_analysis(run=False)
 analysis = test_dp_linear_stats(run=False)

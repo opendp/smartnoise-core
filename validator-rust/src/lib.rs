@@ -32,7 +32,7 @@ use crate::components::*;
 
 // include protobuf-generated traits
 pub mod proto {
-    include!(concat!(env!("OUT_DIR"), "/yarrow.rs"));
+    include!(concat!(env!("OUT_DIR"), "/whitenoise.rs"));
 }
 
 // define the useful macro for building hashmaps globally

@@ -1,10 +1,10 @@
-use yarrow_validator::errors::*;
+use whitenoise_validator::errors::*;
 
 
-extern crate yarrow_validator;
+extern crate whitenoise_validator;
 
-use yarrow_validator::proto;
-use yarrow_validator::utilities::serial;
+use whitenoise_validator::proto;
+use whitenoise_validator::utilities::serial;
 
 use crate::components::*;
 
@@ -13,9 +13,9 @@ use std::vec::Vec;
 
 use itertools::Itertools;
 
-use yarrow_validator::base::{get_input_properties, Value, ValueProperties};
-use yarrow_validator::utilities::inference::infer_property;
-use yarrow_validator::utilities::serial::serialize_value_properties;
+use whitenoise_validator::base::{get_input_properties, Value, ValueProperties};
+use whitenoise_validator::utilities::inference::infer_property;
+use whitenoise_validator::utilities::serial::serialize_value_properties;
 
 pub type NodeArguments<'a> = HashMap<String, &'a Value>;
 
@@ -89,7 +89,7 @@ pub fn execute_graph(analysis: &proto::Analysis,
 //        println!("public arguments {:?}", public_arguments);
 //        println!("node properties {:?}", node_properties);
         // all arguments have been computed, attempt to expand the current node
-        let expansion: proto::response_expand_component::ExpandedComponent = yarrow_validator::base::expand_component(
+        let expansion: proto::response_expand_component::ExpandedComponent = whitenoise_validator::base::expand_component(
             &analysis.privacy_definition.to_owned().unwrap(),
             &component,
             &node_properties,

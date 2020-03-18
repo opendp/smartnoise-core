@@ -1,12 +1,12 @@
-use yarrow_validator::errors::*;
+use whitenoise_validator::errors::*;
 
 use crate::components::Evaluable;
-use yarrow_validator::base::{Value, ArrayND, Vector2DJagged, standardize_numeric_argument, standardize_categorical_argument, standardize_weight_argument, standardize_null_argument, get_argument};
+use whitenoise_validator::base::{Value, ArrayND, Vector2DJagged, standardize_numeric_argument, standardize_categorical_argument, standardize_weight_argument, standardize_null_argument, get_argument};
 use crate::base::NodeArguments;
 use crate::utilities::{noise, utilities};
 use ndarray::{ArrayD};
 use crate::utilities::utilities::get_num_columns;
-use yarrow_validator::proto;
+use whitenoise_validator::proto;
 
 
 impl Evaluable for proto::Impute {
@@ -109,7 +109,7 @@ impl Evaluable for proto::Impute {
 /// # Example
 /// ```
 /// use ndarray::prelude::*;
-/// use yarrow_runtime::components::impute::impute_float_uniform;
+/// use whitenoise_runtime::components::impute::impute_float_uniform;
 /// use core::f64::NAN;
 ///
 /// let data: ArrayD<f64> = arr2(&[ [1., NAN, 3., NAN], [2., 2., NAN, NAN] ]).into_dyn();
@@ -161,7 +161,7 @@ pub fn impute_float_uniform(data: &ArrayD<f64>, min: &ArrayD<f64>, max: &ArrayD<
 /// # Example
 /// ```
 /// use ndarray::prelude::*;
-/// use yarrow_runtime::components::impute::impute_float_gaussian;
+/// use whitenoise_runtime::components::impute::impute_float_gaussian;
 /// use core::f64::NAN;
 /// let data: ArrayD<f64> = arr1(&[1., NAN, 3., NAN]).into_dyn();
 /// let min: ArrayD<f64> = arr1(&[0.0]).into_dyn();
@@ -213,7 +213,7 @@ pub fn impute_float_gaussian(data: &ArrayD<f64>, min: &ArrayD<f64>, max: &ArrayD
 /// # Example
 /// ```
 /// use ndarray::prelude::*;
-/// use yarrow_runtime::components::impute::impute_categorical;
+/// use whitenoise_runtime::components::impute::impute_categorical;
 /// let data: ArrayD<String> = arr2(&[["a".to_string(), "b".to_string(), "null_3".to_string()],
 ///                                   ["c".to_string(), "null_2".to_string(), "a".to_string()]]).into_dyn();
 /// let categories: Vec<Option<Vec<String>>> = vec![Some(vec!["a".to_string(), "c".to_string()]),

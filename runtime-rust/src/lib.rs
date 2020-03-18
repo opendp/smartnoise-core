@@ -1,5 +1,5 @@
-extern crate yarrow_validator;
-use yarrow_validator::{proto, ERR_STDERR};
+extern crate whitenoise_validator;
+use whitenoise_validator::{proto, ERR_STDERR};
 
 use std::io::Write; // trait which holds `display_chain`
 use error_chain::ChainedError;
@@ -23,7 +23,7 @@ pub extern "C" fn release(
     request_ptr: *const u8, request_length: i32
 ) -> ffi_support::ByteBuffer {
 
-    let request_buffer = unsafe {yarrow_validator::ptr_to_buffer(request_ptr, request_length)};
+    let request_buffer = unsafe {whitenoise_validator::ptr_to_buffer(request_ptr, request_length)};
     let request: proto::RequestRelease = prost::Message::decode(request_buffer).unwrap();
 
     let analysis: proto::Analysis = request.analysis.unwrap();
@@ -51,7 +51,7 @@ pub extern "C" fn release(
             }
         }
     };
-    yarrow_validator::buffer_to_ptr(response)
+    whitenoise_validator::buffer_to_ptr(response)
 }
 
 //ffi_support::implement_into_ffi_by_protobuf!(proto::Release);

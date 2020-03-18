@@ -1,13 +1,13 @@
-use yarrow_validator::errors::*;
+use whitenoise_validator::errors::*;
 
 use ndarray::prelude::*;
 use crate::base::NodeArguments;
-use yarrow_validator::base::{Value, ArrayND, Hashmap};
+use whitenoise_validator::base::{Value, ArrayND, Hashmap};
 use crate::components::Evaluable;
 use std::collections::HashMap;
-use yarrow_validator::utilities::serial::parse_value;
+use whitenoise_validator::utilities::serial::parse_value;
 use ndarray::Array;
-use yarrow_validator::proto;
+use whitenoise_validator::proto;
 
 impl Evaluable for proto::Materialize {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
@@ -21,15 +21,23 @@ impl Evaluable for proto::Materialize {
             proto::materialize::Value::FilePath(path) => {
                 let mut response = HashMap::<String, Vec<String>>::new();
 
-                let mut reader = csv::Reader::from_path(path).unwrap();
+                let mut reader = match csv::Reader::from_path(path) {
+                    Ok(reader) => reader,
+                    Err(_) => return Err("provided file path could not be found".into())
+                };
                 if let Some(column_names) = column_names {
-                    reader.set_headers(csv::StringRecord::from(column_names.into_dimensionality::<Ix1>().unwrap().to_vec()))
+                    let column_names = match column_names.into_dimensionality::<Ix1>() {
+                        Ok(column_names) => column_names,
+                        Err(_) => return Err("column names must be one-dimensional".into())
+                    };
+
+                    reader.set_headers(csv::StringRecord::from(column_names.to_vec()))
                 }
 
                 // parse from csv into response
                 reader.deserialize()
                     .map(|result| {
-                        // parse each record into the yarrow internal format
+                        // parse each record into the whitenoise internal format
                         let record: HashMap<String, String> = result.unwrap();
                         record.iter().for_each(|(k, v)| response
                             .entry(k.to_owned()).or_insert_with(Vec::new)

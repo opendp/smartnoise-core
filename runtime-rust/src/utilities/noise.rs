@@ -1,4 +1,4 @@
-use yarrow_validator::errors::*;
+use whitenoise_validator::errors::*;
 use probability::distribution::{Gaussian, Laplace, Inverse, Distribution};
 use ieee754::Ieee754;
 use std::{cmp, f64::consts};
@@ -30,19 +30,19 @@ impl ThreadRandGen for GeneratorOpenSSL {
 ///
 /// ```
 /// // returns a bit with Pr(bit = 1) = 0.7
-/// use yarrow_runtime::utilities::noise::sample_bit;
+/// use whitenoise_runtime::utilities::noise::sample_bit;
 /// let n = sample_bit(&0.7);
 /// # n.unwrap();
 /// ```
 /// ```should_panic
 /// // fails because 1.3 not a valid probability
-/// use yarrow_runtime::utilities::noise::sample_bit;
+/// use whitenoise_runtime::utilities::noise::sample_bit;
 /// let n = sample_bit(&1.3);
 /// # n.unwrap();
 /// ```
 /// ```should_panic
 /// // fails because -0.3 is not a valid probability
-/// use yarrow_runtime::utilities::noise::sample_bit;
+/// use whitenoise_runtime::utilities::noise::sample_bit;
 /// let n = sample_bit(&-0.3);
 /// # n.unwrap();
 /// ```
@@ -82,14 +82,14 @@ pub fn sample_bit(prob: &f64) -> Result<i64> {
 /// # Example
 /// ```
 /// // returns a uniform draw from the set {0,1,2}
-/// use yarrow_runtime::utilities::noise::sample_uniform_int;
+/// use whitenoise_runtime::utilities::noise::sample_uniform_int;
 /// let n = sample_uniform_int(&0, &2);
 /// # n.unwrap();
 /// ```
 ///
 /// ```should_panic
 /// // fails because min > max
-/// use yarrow_runtime::utilities::noise::sample_uniform_int;
+/// use whitenoise_runtime::utilities::noise::sample_uniform_int;
 /// let n = sample_uniform_int(&2, &0);
 /// # n.unwrap();
 /// ```
@@ -153,13 +153,13 @@ pub fn sample_uniform_int(min: &i64, max: &i64) -> Result<i64> {
 /// # Example
 /// ```
 /// // valid draw from Unif[0,2)
-/// use yarrow_runtime::utilities::noise::sample_uniform;
+/// use whitenoise_runtime::utilities::noise::sample_uniform;
 /// let unif = sample_uniform(&0.0, &2.0);
 /// # unif.unwrap();
 /// ```
 /// ``` should_panic
 /// // fails because min > max
-/// use yarrow_runtime::utilities::noise::sample_uniform;
+/// use whitenoise_runtime::utilities::noise::sample_uniform;
 /// let unif = sample_uniform(&2.0, &0.0);
 /// # unif.unwrap();
 /// ```
@@ -201,7 +201,7 @@ pub fn sample_uniform(min: &f64, max: &f64) -> Result<f64> {
 ///
 /// # Example
 /// ```
-/// use yarrow_runtime::utilities::noise::sample_uniform_mpfr;
+/// use whitenoise_runtime::utilities::noise::sample_uniform_mpfr;
 /// let unif = sample_uniform_mpfr(0.0, 1.0);
 /// # unif.unwrap();
 /// ```
@@ -242,7 +242,7 @@ pub fn sample_uniform_mpfr(min: f64, max: f64) -> Result<rug::Float> {
 ///
 /// # Example
 /// ```
-/// use yarrow_runtime::utilities::noise::sample_gaussian_mpfr;
+/// use whitenoise_runtime::utilities::noise::sample_gaussian_mpfr;
 /// let gaussian = sample_gaussian_mpfr(0.0, 1.0);
 /// # gaussian.unwrap();
 /// ```
@@ -277,7 +277,7 @@ pub fn sample_gaussian_mpfr(shift: f64, scale: f64) -> Result<rug::Float> {
 ///
 /// # Example
 /// ```
-/// use yarrow_runtime::utilities::noise::sample_laplace;
+/// use whitenoise_runtime::utilities::noise::sample_laplace;
 /// let n = sample_laplace(0.0, 2.0);
 /// # n.unwrap();
 /// ```
@@ -298,7 +298,7 @@ pub fn sample_laplace(shift: f64, scale: f64) -> Result<f64> {
 ///
 /// # Example
 /// ```
-/// use yarrow_runtime::utilities::noise::sample_gaussian;
+/// use whitenoise_runtime::utilities::noise::sample_gaussian;
 /// let n = sample_gaussian(&0.0, &2.0);
 /// # n.unwrap();
 /// ```
@@ -326,7 +326,7 @@ pub fn sample_gaussian(shift: &f64, scale: &f64) -> Result<f64> {
 ///
 /// # Example
 /// ```
-/// use yarrow_runtime::utilities::noise::sample_gaussian_truncated;
+/// use whitenoise_runtime::utilities::noise::sample_gaussian_truncated;
 /// let n= sample_gaussian_truncated(&1.0, &1.0, &0.0, &2.0);
 /// # n.unwrap();
 /// ```
@@ -392,7 +392,7 @@ pub fn sample_floating_point_probability_exponent() -> Result<i16> {
 ///
 /// # Example
 /// ```
-/// use yarrow_runtime::utilities::noise::sample_geometric_censored;
+/// use whitenoise_runtime::utilities::noise::sample_geometric_censored;
 /// let geom = sample_geometric_censored(&0.1, &20, &false);
 /// # geom.unwrap();
 /// ```
@@ -449,7 +449,7 @@ pub fn sample_geometric_censored(prob: &f64, max_trials: &i64, enforce_constant_
 /// # Example
 /// ```
 /// use ndarray::prelude::*;
-/// use yarrow_runtime::utilities::noise::sample_simple_geometric_mechanism;
+/// use whitenoise_runtime::utilities::noise::sample_simple_geometric_mechanism;
 /// let geom_noise = sample_simple_geometric_mechanism(&1., &0, &100, &false);
 /// # geom_noise.unwrap();
 /// ```

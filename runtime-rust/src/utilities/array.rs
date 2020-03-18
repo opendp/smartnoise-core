@@ -1,4 +1,4 @@
-use yarrow_validator::errors::*;
+use whitenoise_validator::errors::*;
 
 
 // TODO: open an issue on the rust ndarray package

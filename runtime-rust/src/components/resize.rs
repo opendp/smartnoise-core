@@ -1,6 +1,6 @@
-use yarrow_validator::errors::*;
-use yarrow_validator::proto;
-use yarrow_validator::base::{Value, ArrayND, Vector2DJagged, get_argument, standardize_null_argument};
+use whitenoise_validator::errors::*;
+use whitenoise_validator::proto;
+use whitenoise_validator::base::{Value, ArrayND, Vector2DJagged, get_argument, standardize_null_argument};
 
 use ndarray::{ArrayD, Axis, Array};
 use rug::{Float, ops::Pow};
@@ -217,7 +217,7 @@ pub fn resize_categorical<T>(data: &ArrayD<T>, n: &i64,
 ///
 /// # Example
 /// ```
-/// use yarrow_runtime::components::resize::create_subset;
+/// use whitenoise_runtime::components::resize::create_subset;
 /// let set = vec![1, 2, 3, 4, 5, 6];
 /// let weights = vec![1., 1., 1., 2., 2., 2.];
 /// let k = 3;
@@ -280,7 +280,7 @@ pub fn create_subset<T>(set: &Vec<T>, weights: &Vec<f64>, k: &i64) -> Result<Vec
 ///
 /// # Example
 /// ```
-/// use yarrow_runtime::components::resize::create_sampling_indices;
+/// use whitenoise_runtime::components::resize::create_sampling_indices;
 /// let subset_indices = create_sampling_indices(&5, &10);
 /// # subset_indices.unwrap();
 /// ```
