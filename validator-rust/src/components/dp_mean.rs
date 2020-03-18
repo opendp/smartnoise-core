@@ -138,6 +138,7 @@ impl Accuracy for proto::DpMean {
     }
 }
 
+<<<<<<< Updated upstream
 impl Report for proto::DpMean {
     fn summarize(
         &self,
@@ -147,6 +148,10 @@ impl Report for proto::DpMean {
         release: &Value
     ) -> Option<Vec<JSONRelease>> {
 
+=======
+/// returns JSON Schema for DpMean
+/// example: schema is an array of 2 elements ( for dp mean release)
+>>>>>>> Stashed changes
 //    let mut schema = vec![JSONRelease {
 //        description: "".to_string(),
 //        variables: vec![],
@@ -180,7 +185,26 @@ impl Report for proto::DpMean {
 //        },
 //    }];
 
+<<<<<<< Updated upstream
         let data_properties: &Properties = properties.get("data").unwrap();
+=======
+impl Report for proto::DpMean {
+    fn summarize(
+        &self,
+        node_id: &u32,
+        component: &proto::Component,
+        public_arguments: &HashMap<String, Value>,
+        properties: &NodeProperties,
+        release: &Value
+    ) -> Result<Option<Vec<JSONRelease>>> {
+
+
+
+        let mut data_property = properties.get("data")
+            .ok_or("data: missing")?.get_arraynd()
+            .map_err(prepend("data:"))?.clone();
+
+>>>>>>> Stashed changes
         let mut releases = Vec::new();
 
         let minimums = data_properties.get_min_f64().unwrap();
