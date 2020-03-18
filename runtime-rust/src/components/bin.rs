@@ -9,19 +9,6 @@ use crate::utilities::utilities::get_num_columns;
 use std::ops::{Div, Add};
 
 impl Evaluable for proto::Bin {
-    /// Maps data to bins.
-    ///
-    /// Bins will be of the form [lower, upper) or (lower, upper].
-    ///
-    /// # Arguments
-    /// * `data` - Data to be binned.
-    /// * `edges` - Values representing the edges of bins.
-    /// * `inclusive_left` - Whether or not the left edge of the bin is inclusive, i.e. the bins are of the form [lower, upper).
-    /// * `null` - Value to which to map if there is no valid bin (e.g. if the element falls outside the bin range).
-    /// * `side` - How to refer to each bin. Will be either the `left` edge, the `right` edge, or the `center` (the arithmetic mean of the two).
-    ///
-    /// # Return
-    /// Binned data.
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
         let inclusive_left: &ArrayD<bool> = get_argument(&arguments, "inclusive_left")?.get_arraynd()?.get_bool()?;
 
