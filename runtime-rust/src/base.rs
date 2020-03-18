@@ -19,16 +19,32 @@ use whitenoise_validator::utilities::serial::serialize_value_properties;
 
 pub type NodeArguments<'a> = HashMap<String, &'a Value>;
 
+/// Given a description of computation, and some computed values, execute the computation and return computed values
+///
+/// The analysis is a directed acyclic graph.
+/// - vertices are components (a unit of computation)
+/// - edges are arguments
+///
+/// When a component is executed, the output of the node is stored in the release
+/// When the graph completes execution, the release is filtered and returned
+///
+/// # Arguments
+/// * `analysis` - a computational graph and definition of privacy, in prost protobuf format
+/// * `release` - a collection of precomputed values for components in the graph
+///
+/// # Return
+/// a collection of computed values for components in the graph
 pub fn execute_graph(analysis: &proto::Analysis,
                      release: &proto::Release,
 ) -> Result<proto::Release> {
 
     // stack for storing which nodes to evaluate next
-    let mut traversal: Vec<u32> = get_sinks(&analysis).into_iter().collect();
+    let computation_graph = analysis.computation_graph.to_owned().unwrap();
+    let mut traversal: Vec<u32> = get_sinks(&computation_graph).into_iter().collect();
 
     let mut release = serial::parse_release(release)?;
 
-    let mut graph: HashMap<u32, proto::Component> = analysis.computation_graph.to_owned().unwrap().value;
+    let mut graph: HashMap<u32, proto::Component> = computation_graph.value;
     let mut graph_properties: HashMap<u32, proto::ValueProperties> = HashMap::new();
     let mut maximum_id = graph.keys()
         .fold1(std::cmp::max)
@@ -172,15 +188,20 @@ pub fn execute_graph(analysis: &proto::Analysis,
     serial::serialize_release(&release)
 }
 
-pub fn get_sinks(analysis: &proto::Analysis) -> HashSet<u32> {
+/// # Arguments
+/// * `computation_graph` - a prost protobuf hashmap representing a computation graph
+///
+/// # Returns
+/// The set of node ids that have no dependent nodes
+pub fn get_sinks(computation_graph: &proto::ComputationGraph) -> HashSet<u32> {
     let mut node_ids = HashSet::<u32>::new();
     // start with all nodes
-    for node_id in analysis.computation_graph.to_owned().unwrap().value.keys() {
+    for node_id in computation_graph.value.keys() {
         node_ids.insert(*node_id);
     }
 
     // remove nodes that are referenced in arguments
-    for node in analysis.computation_graph.to_owned().unwrap().value.values() {
+    for node in computation_graph.value.values() {
         for source_node_id in node.arguments.values() {
             node_ids.remove(&source_node_id);
         }
