@@ -14,7 +14,12 @@ use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, 
 use serde_json;
 
 impl Component for proto::DpMean {
-    // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
+    /// modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
+    /// # Arguments
+    /// * `&self` - this
+    /// * `_privacy_definition` - privacy definition from protocol buffer descriptor
+    /// * `_public_arguments` - HashMap of String/Value public arguments
+    /// * `properties` - NodeProperties
     fn propagate_property(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
@@ -24,6 +29,10 @@ impl Component for proto::DpMean {
         Err("DPMaximum is ethereal, and has no property propagation".into())
     }
 
+    /// Accessor method for names
+    /// # Arguments
+    /// * `&self` - this
+    /// * `_properties` - NodeProperties
     fn get_names(
         &self,
         _properties: &NodeProperties,
@@ -33,6 +42,14 @@ impl Component for proto::DpMean {
 }
 
 impl Expandable for proto::DpMean {
+    /// Expand component
+    /// # Arguments
+    /// * `&self` - this
+    /// * `_privacy_definition` - privacy definition from protocol buffer descriptor
+    /// * `component` - component from prototypes/components.proto
+    /// * `_properties` - NodeProperties
+    /// * `component_id` - identifier for component from prototypes/components.proto
+    /// * `maximum_id` - last ID value created for sequence, increement used to define current ID
     fn expand_component(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
@@ -69,6 +86,12 @@ impl Expandable for proto::DpMean {
 }
 
 impl Accuracy for proto::DpMean {
+    /// Accuracy to privacy usage
+    /// # Arguments
+    /// * `&self` - this
+    /// * `_privacy_definition` - privacy definition from protocol buffer descriptor
+    /// * `_properties` - NodeProperties
+    /// * `_accuracy` - accuracy
     fn accuracy_to_privacy_usage(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
@@ -78,6 +101,11 @@ impl Accuracy for proto::DpMean {
         None
     }
 
+    /// Privacy usage to accuracy
+    /// # Arguments
+    /// * `&self` - this
+    /// * `_privacy_definition` - privacy definition from protocol buffer descriptor
+    /// * `_property` - NodeProperties
     fn privacy_usage_to_accuracy(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
@@ -88,6 +116,14 @@ impl Accuracy for proto::DpMean {
 }
 
 impl Report for proto::DpMean {
+    /// summarize results
+    /// # Arguments
+    /// * `&self` - this
+    /// * `node_id` - identifier for node
+    /// * `component` - component from prototypes/components.proto
+    /// * `public_arguments` - HashMap of String, Value public arguments
+    /// * `properties` - NodeProperties
+    /// * `release` - JSONRelease containing DP release information
     fn summarize(
         &self,
         node_id: &u32,
