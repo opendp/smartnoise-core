@@ -26,8 +26,9 @@
 \maketitle
 
 \begin{definition}
-Let variance be defined as
-$$ s^2 = \frac{1}{n-1} \sum_{i=1}^n (x_i - \mean)^2.$$
+Let sample variance be defined as
+$$ s^2 = \frac{1}{n-1} \sum_{i=1}^n (x_i - \mean)^2,$$
+where $\mean$ refers to the sample mean of $x$.
 \end{definition}
 
 \section{Neighboring Definition: Change One}
@@ -126,6 +127,7 @@ $$ \frac{(M-m)^2 }{n}. $$
 \section{Neighboring Definition: Add/Drop One}
 \subsection{$\ell_1$-sensitivity}
  \begin{theorem}
+ \label{thm:l1addsub}
  	Let $X$ be a data set with $n$ elements, $x_1, \hdots, x_n$ and
  	\[ f(X) = \sum_{i=1}^n (x_i - \bar{X})^2. \]
  	For $X$ bounded between $m$ and $M,$ $f$ has a global sensitivity of
@@ -143,37 +145,64 @@ $$ \frac{(M-m)^2 }{n}. $$
 
 	So,
 
-	\begin{align*}
-	\left\vert f(x') - f(x) \right\vert &= \left\vert f(x) + (x_{n+1} - \bar{x})^2 \frac{n}{n+1} - f(x) \right\vert \\
-		&= \left\vert (x_{n+1} - \bar{x})^2 \frac{n}{n+1} \right\vert \\
-		&\le \left( M-m \right)^2 \frac{n}{n+1}
-	\end{align*}
+	\begin{align}
+	\label{eq:L1add}
+	\left\vert f(x') - f(x) \right\vert &= \left\vert f(x) + (x_{n+1} - \bar{x})^2 \frac{n}{n+1} - f(x) \right\vert \nonumber\\
+		&= \left\vert (x_{n+1} - \bar{x})^2 \frac{n}{n+1} \right\vert \nonumber \\
+		&\le \left( M-m \right)^2 \frac{n}{n+1} 
+	\end{align}
 
 	Removing an element: \\
 	Let $X' = X \setminus \{x_n\}$. Then, rewriting Eq.~\ref{eq:varAddOnePoint} with $n$ set to $n+1$ since ``$x$'' in this case is the greater set,
 	$$ f(x) = f(x') + (x_n - \bar{x}')^2 \frac{n-1}{n}.$$
 
 	Then,
-	\begin{align*}
-	\left\vert f(x) - f(x') \right\vert &= \left\vert f(x') + (x_n - \bar{x}')^2 \frac{n-1}{n} - f(x') \right\vert \\
+	\begin{align}
+	\label{eq:L1sub}
+	\left\vert f(x) - f(x') \right\vert &= \left\vert f(x') + (x_n - \bar{x}')^2 \frac{n-1}{n} - f(x') \right\vert \nonumber\\
 		&\le (M-m)^2 \frac{n-1}{n},\\
-	\end{align*}
+	\end{align}
 
-	Note that for any $n > 1$,
-
-	$$ \frac{n}{n + 1} > \frac{n-1}{n}.$$
+	Note that for any $n \ge 1$,
+	\begin{equation}
+	\label{ineq}
+	 \frac{n}{n + 1} > \frac{n-1}{n}.
+	\end{equation}
 
 	So, the worst-case bound always occurs in the ``add-one'' case, and the $\ell_1$-sensitivity of $f(\cdot)$ is in general bounded by
 
-	$$ \left( M-m \right)^2 \frac{n}{n + 1}.$$
+\begin{equation}
+\label{eq:fBoundaddsub}
+\left( M-m \right)^2 \frac{n}{n + 1}.
+\end{equation}
+
  \end{proof}
 
  \begin{corollary}
-	Sample variance has sensitivity bounded above by
-	$$ \left( M-m \right)^2 \frac{n}{(n-1)(n + 1)} = \left( M-m \right)^2 \frac{n}{n^2 - 1}. $$
+ \label{cor:l1addsub}
+	Sample variance has $\ell_1$ sensitivity bounded above by
+	$$\left( M-m \right)^2 \frac{n}{n^2 - 1}. $$
  \end{corollary}
+ 
+ \begin{proof}
+ Define $f$ as in the statement of Theorem \ref{thm:l1addsub}. Note that sample variance is equal to 
+ $$ \frac{f(x)}{n-1} $$. Then, from the bound in Equation \ref{eq:fBoundaddsub} it follows that the sensitivity of the sample variance is bounded from above by 
+ $$ \left( M-m \right)^2 \frac{n}{(n-1)(n + 1)} = \left( M-m \right)^2 \frac{n}{n^2 - 1}. $$
+ \end{proof}
 
 \subsection{$\ell_2$-sensitivity}
+
+\begin{theorem}
+Sample variance has $\ell_2$ sensitivity bounded above by
+	$$ \left( \left( M-m \right)^2 \frac{n}{n^2 - 1} \right)^2.$$
+\end{theorem}
+\begin{proof}
+From the bounds in Equations \ref{eq:L1add} and \ref{eq:L1sub} and the inequality for $n \ge 1$ in Equation \ref{ineq}, because the bounds in Equations \ref{eq:L1add} and \ref{eq:L1sub} are positive it follows that the $\ell_2$ sensitivity of the variance is bounded by 
+$$
+\left( \left( M-m \right)^2 \frac{n}{n^2 - 1} \right)^2,
+$$
+where the change in constant from Equations \ref{eq:L1add} to $n/(n^2 - 1)$ comes from the $1/(n-1)$ in the definition of sample variance, as in the proof of Corollary \ref{cor:l1addsub}.
+\end{proof}
 
 \bibliographystyle{alpha}
 \bibliography{mean}
