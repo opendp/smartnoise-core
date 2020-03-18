@@ -1,3 +1,13 @@
+//! Component trait implementations
+//!
+//! Each component represents an abstract computation.
+//! Example components are Materialize for loading a dataframe, Index for retrieving specific columns from the dataframe, Mean for aggregating data, LaplaceMechanism for privatizing data, etc.
+//!
+//! There are a set of possible behaviours each component may implement. Each behavior corresponds to a trait.
+//! The only trait in the runtime is the Evaluable trait.
+//!
+//! Implementations of the Evaluable trait are distributed among the module files.
+
 use whitenoise_validator::errors::*;
 use crate::base::NodeArguments;
 use whitenoise_validator::base::Value;

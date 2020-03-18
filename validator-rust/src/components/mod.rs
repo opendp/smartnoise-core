@@ -1,41 +1,50 @@
+//! Component trait implementations
+//!
+//! Each component represents an abstract computation.
+//! Example components are Materialize for loading a dataframe, Index for retrieving specific columns from the dataframe, Mean for aggregating data, LaplaceMechanism for privatizing data, etc.
+//!
+//! There are a set of possible behaviours each component may implement. Each behavior corresponds to a trait. A listing of traits is at the bottom of the page.
+//!
+//! Implementations of the traits are distributed among the module files.
+
 use crate::errors::*;
 
 
-pub mod transforms;
-pub mod bin;
-pub mod cast;
-pub mod clamp;
-pub mod constant;
-pub mod count;
-pub mod covariance;
-pub mod dp_count;
-pub mod dp_variance;
-pub mod dp_covariance;
-pub mod dp_histogram;
-pub mod dp_maximum;
-pub mod dp_median;
-pub mod dp_minimum;
-pub mod dp_mean;
-pub mod dp_moment_raw;
-pub mod dp_sum;
-pub mod filter;
-pub mod impute;
-pub mod index;
-pub mod kth_raw_sample_moment;
-pub mod maximum;
-pub mod materialize;
-pub mod minimum;
-pub mod partition;
-pub mod quantile;
-pub mod mean;
-pub mod mechanism_exponential;
-pub mod mechanism_gaussian;
-pub mod mechanism_laplace;
-pub mod mechanism_simple_geometric;
-pub mod resize;
-pub mod row_wise_min;
-pub mod sum;
-pub mod variance;
+mod transforms;
+mod bin;
+mod cast;
+mod clamp;
+mod constant;
+mod count;
+mod covariance;
+mod dp_count;
+mod dp_variance;
+mod dp_covariance;
+mod dp_histogram;
+mod dp_maximum;
+mod dp_median;
+mod dp_minimum;
+mod dp_mean;
+mod dp_moment_raw;
+mod dp_sum;
+mod filter;
+mod impute;
+mod index;
+mod kth_raw_sample_moment;
+mod maximum;
+mod materialize;
+mod minimum;
+mod partition;
+mod quantile;
+mod mean;
+mod mechanism_exponential;
+mod mechanism_gaussian;
+mod mechanism_laplace;
+mod mechanism_simple_geometric;
+mod resize;
+mod row_wise_min;
+mod sum;
+mod variance;
 
 use std::collections::HashMap;
 

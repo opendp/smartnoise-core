@@ -188,6 +188,8 @@ pub fn execute_graph(analysis: &proto::Analysis,
     serial::serialize_release(&release)
 }
 
+/// Retrieve the set of node ids in a ComputationGraph that have no dependent nodes.
+///
 /// # Arguments
 /// * `computation_graph` - a prost protobuf hashmap representing a computation graph
 ///

@@ -21,7 +21,7 @@ impl Component for proto::DpMomentRaw {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
-        Err("DPMomentRaw is ethereal, and has no property propagation".into())
+        Err("DPMomentRaw is abstract, and has no property propagation".into())
     }
 
     fn get_names(

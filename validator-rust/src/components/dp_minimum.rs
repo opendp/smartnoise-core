@@ -20,7 +20,7 @@ impl Component for proto::DpMinimum {
         public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
-        Err("DPMinimum is ethereal, and has no property propagation".into())
+        Err("DPMinimum is abstract, and has no property propagation".into())
     }
 
     fn get_names(
