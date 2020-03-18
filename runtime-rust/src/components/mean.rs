@@ -31,7 +31,7 @@ impl Evaluable for proto::Mean {
 /// # Example
 /// ```
 /// use ndarray::prelude::*;
-/// use yarrow_runtime::components::mean::mean;
+/// use whitenoise_runtime::components::mean::mean;
 /// let data = arr2(&[ [1.,10.], [2., 20.], [3., 30.] ]).into_dyn();
 /// let means = mean(&data).unwrap();
 /// assert!(means == arr2(&[[2., 20.]]).into_dyn());

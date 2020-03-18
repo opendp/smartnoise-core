@@ -119,7 +119,7 @@ pub fn clamp_numeric_float(
 /// # Example
 /// ```
 /// use ndarray::{ArrayD, arr2, arr1};
-/// use yarrow_runtime::components::clamp::clamp_categorical;
+/// use whitenoise_runtime::components::clamp::clamp_categorical;
 /// let data: ArrayD<String> = arr2(&[["a".to_string(), "b".to_string(), "3".to_string()],
 ///                                   ["a".to_string(), "2".to_string(), "b".to_string()]]).into_dyn();
 /// let categories: Vec<Option<Vec<String>>> = vec![Some(vec!["a".to_string(), "b".to_string()]),
@@ -154,4 +154,3 @@ pub fn clamp_categorical<T>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>, 
 
     Ok(data)
 }
-
