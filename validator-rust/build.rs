@@ -6,7 +6,7 @@ extern crate prost_build;
 
 fn main() {
     let mut config = prost_build::Config::new();
-    config.type_attribute("yarrow.Component.variant", "#[derive(derive_more::From)]");
+    config.type_attribute("whitenoise.Component.variant", "#[derive(derive_more::From)]");
     config.compile_protos(
         &[
             "../prototypes/api.proto",

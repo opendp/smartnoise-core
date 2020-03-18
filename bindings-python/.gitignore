@@ -3,10 +3,10 @@
 bindings-python.iml
 __pycache__/
 
-yarrow/_native*
-yarrow.egg-info
+whitenoise/_native*
+whitenoise.egg-info
 .eggs/
-yarrow/components.py
+whitenoise/components.py
 
 debug_build.log
 debug_app.log

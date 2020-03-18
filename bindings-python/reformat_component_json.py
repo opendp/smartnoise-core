@@ -2,7 +2,7 @@ import json
 import os
 
 
-components_dir = '/home/shoe/PSI/yarrow/prototypes/components'
+components_dir = '/home/shoe/PSI/whitenoise/prototypes/components'
 
 for component_name in os.listdir(components_dir):
     component_path = os.path.join(components_dir, component_name)

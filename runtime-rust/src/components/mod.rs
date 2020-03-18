@@ -1,7 +1,17 @@
-use yarrow_validator::errors::*;
+//! Component trait implementations
+//!
+//! Each component represents an abstract computation.
+//! Example components are Materialize for loading a dataframe, Index for retrieving specific columns from the dataframe, Mean for aggregating data, LaplaceMechanism for privatizing data, etc.
+//!
+//! There are a set of possible behaviours each component may implement. Each behavior corresponds to a trait.
+//! The only trait in the runtime is the Evaluable trait.
+//!
+//! Implementations of the Evaluable trait are distributed among the module files.
+
+use whitenoise_validator::errors::*;
 use crate::base::NodeArguments;
-use yarrow_validator::base::Value;
-use yarrow_validator::utilities::serial::parse_value;
+use whitenoise_validator::base::Value;
+use whitenoise_validator::utilities::serial::parse_value;
 
 pub mod bin;
 pub mod cast;
@@ -24,13 +34,26 @@ pub mod sum;
 pub mod transforms;
 pub mod variance;
 
-use yarrow_validator::proto;
+use whitenoise_validator::proto;
 
+/// Evaluable component trait
+///
+/// Evaluable structs represent an abstract computation.
 pub trait Evaluable {
+    /// The concrete implementation of the abstract computation that the struct represents.
+    ///
+    /// # Arguments
+    /// * `arguments` - a hashmap, where the `String` keys are the names of arguments, and the `Value` values are the data inputs
+    ///
+    /// # Returns
+    /// The concrete value corresponding to the abstract computation that the struct represents
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value>;
 }
 
 impl Evaluable for proto::component::Variant {
+    /// Utility implementation on the enum containing all variants of a component.
+    ///
+    /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn evaluate(
         &self, arguments: &NodeArguments
     ) -> Result<Value> {
@@ -65,6 +88,7 @@ impl Evaluable for proto::component::Variant {
 
 
 impl Evaluable for proto::Constant {
+    /// Deprecated. "Evaluate" by returning a precomputed Value stored in the description of computation (self).
     fn evaluate(&self, _arguments: &NodeArguments) -> Result<Value> {
         parse_value(&self.to_owned().value.unwrap())
     }

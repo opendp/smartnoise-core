@@ -1,8 +1,9 @@
-from yarrow._native_validator import ffi as ffi_validator, lib as lib_validator
-from yarrow._native_runtime import ffi as ffi_runtime, lib as lib_runtime
+from whitenoise._native_validator import ffi as ffi_validator, lib as lib_validator
+from whitenoise._native_runtime import ffi as ffi_runtime, lib as lib_runtime
 
 from . import api_pb2
 import re
+import platform
 
 
 class LibraryWrapper(object):
@@ -88,11 +89,13 @@ def _communicate(function, argument, response_type, ffi):
 
         # noinspection PyBroadException
         try:
-            message, *frames = re.split("\n +[0-9]+: ", library_traceback)
-            library_traceback = '\n'.join(reversed(["  " + frame.replace("         at", "at") for frame in frames
-                                                    if ("at src/" in frame or "yarrow_validator" in frame)
-                                                    and "yarrow_validator::errors::Error" not in frame])) \
-                                + "\n  " + message
+            # on Linux, stack traces are more descriptive
+            if platform.system() == "Linux":
+                message, *frames = re.split("\n +[0-9]+: ", library_traceback)
+                library_traceback = '\n'.join(reversed(["  " + frame.replace("         at", "at") for frame in frames
+                                                        if ("at src/" in frame or "whitenoise_validator" in frame)
+                                                        and "whitenoise_validator::errors::Error" not in frame])) \
+                                    + "\n  " + message
         except Exception:
             pass
 

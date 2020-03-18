@@ -1,9 +1,9 @@
-use yarrow_validator::errors::*;
+use whitenoise_validator::errors::*;
 
 use crate::base::NodeArguments;
-use yarrow_validator::base::{Value, get_argument, ArrayND};
+use whitenoise_validator::base::{Value, get_argument, ArrayND};
 use crate::components::Evaluable;
-use yarrow_validator::proto;
+use whitenoise_validator::proto;
 use ndarray::ArrayD;
 use crate::utilities::utilities::get_num_columns;
 
@@ -28,7 +28,7 @@ impl Evaluable for proto::KthRawSampleMoment {
 /// # Example
 /// ```
 /// use ndarray::prelude::*;
-/// use yarrow_runtime::utilities::aggregations::kth_raw_sample_moment;
+/// use whitenoise_runtime::utilities::aggregations::kth_raw_sample_moment;
 /// let data: ArrayD<f64> = arr1(&[0., 1., 2., 3., 4., 5., 12., 19., 24., 90., 98., 100.]).into_dyn();
 /// let third_moment: ArrayD<f64> = kth_raw_sample_moment(&data, &3);
 /// println!("{}", third_moment);

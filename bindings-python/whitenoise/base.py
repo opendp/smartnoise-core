@@ -1,12 +1,12 @@
 import json
 import numpy as np
 
-from yarrow.wrapper import LibraryWrapper
+from whitenoise.wrapper import LibraryWrapper
 
 # these modules are generated via the subprocess call
-from yarrow import base_pb2
-from yarrow import components_pb2
-from yarrow import value_pb2
+from whitenoise import base_pb2
+from whitenoise import components_pb2
+from whitenoise import value_pb2
 
 core_wrapper = LibraryWrapper()
 
@@ -50,7 +50,7 @@ class Dataset(object):
 
         global context
         if not context:
-            raise ValueError("all Yarrow components must be created within the context of an analysis")
+            raise ValueError("all whitenoise components must be created within the context of an analysis")
 
         if sum(int(i is not None) for i in [path, value]) != 1:
             raise ValueError("either path or value must be set")
@@ -93,7 +93,7 @@ class Component(object):
         if context:
             context.add_component(self, value=value, value_format=value_format)
         else:
-            raise ValueError("all Yarrow components must be created within the context of an analysis")
+            raise ValueError("all whitenoise components must be created within the context of an analysis")
 
     # pull the released values out from the analysis' release protobuf
     @property

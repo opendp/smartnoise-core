@@ -1,7 +1,7 @@
 from os.path import abspath, dirname, isfile, join
 import pytest
-import yarrow
-import yarrow.components as op
+import whitenoise
+import whitenoise.components as op
 
 # Path to the test csv file
 #
@@ -9,12 +9,11 @@ TEST_CSV_PATH = join(dirname(abspath(__file__)), 'data',
                      'PUMS_california_demographics_1000', 'data.csv')
 assert isfile(TEST_CSV_PATH), f'Error: file not found: {TEST_CSV_PATH}'
 
-
 test_csv_names = ["age", "sex", "educ", "race", "income", "married"]
 
 def test_multilayer_analysis(run=True):
 
-    with yarrow.Analysis() as analysis:
+    with whitenoise.Analysis() as analysis:
         PUMS = yarrow.Dataset(path=TEST_CSV_PATH, column_names=test_csv_names)
 
         age = op.cast(PUMS['age'], type="FLOAT")
@@ -81,8 +80,8 @@ def test_multilayer_analysis(run=True):
 
 
 def test_dp_linear_stats(run=True):
-    with yarrow.Analysis() as analysis:
-        dataset_pums = yarrow.Dataset(path=TEST_CSV_PATH, column_names=test_csv_names)
+    with whitenoise.Analysis() as analysis:
+        dataset_pums = whitenoise.Dataset(path=TEST_CSV_PATH, column_names=test_csv_names)
 
         age = dataset_pums['age']
 
@@ -179,8 +178,9 @@ def test_dp_linear_stats(run=True):
 
 @pytest.mark.skip(reason="requires count_min and count_max")
 def test_dp_count(run=True):
-    with yarrow.Analysis() as analysis:
-        dataset_pums = yarrow.Dataset(path=TEST_CSV_PATH, column_names=test_csv_names)
+    with whitenoise.Analysis() as analysis:
+        dataset_pums = whitenoise.Dataset(path=TEST_CSV_PATH, column_names=test_csv_names)
+
         count = op.dp_count(
             dataset_pums['sex'] == '1',
             privacy_usage={'epsilon': 0.5})
@@ -194,9 +194,9 @@ def test_dp_count(run=True):
 
 @pytest.mark.skip(reason="Needs num_columns or column_names")
 def test_raw_dataset(run=True):
-    with yarrow.Analysis() as analysis:
+    with whitenoise.Analysis() as analysis:
         op.dp_mean(
-            data=yarrow.Dataset(value=[1., 2., 3., 4., 5.])[0],
+            data=whitenoise.Dataset(value=[1., 2., 3., 4., 5.])[0],
             privacy_usage={'epsilon': 1},
             data_min=0.,
             data_max=10.,

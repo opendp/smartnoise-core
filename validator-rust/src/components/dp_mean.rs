@@ -26,7 +26,7 @@ impl Component for proto::DpMean {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
-        Err("DPMaximum is ethereal, and has no property propagation".into())
+        Err("DPMaximum is abstract, and has no property propagation".into())
     }
 
     /// Accessor method for names

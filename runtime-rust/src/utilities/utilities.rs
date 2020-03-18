@@ -1,4 +1,4 @@
-use yarrow_validator::errors::*;
+use whitenoise_validator::errors::*;
 
 use openssl::rand::rand_bytes;
 use ieee754::Ieee754;

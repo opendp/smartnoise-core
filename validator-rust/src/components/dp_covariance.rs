@@ -20,7 +20,7 @@ impl Component for proto::DpCovariance {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
-        Err("DPCovariance is ethereal, and has no property propagation".into())
+        Err("DPCovariance is abstract, and has no property propagation".into())
     }
 
     fn get_names(

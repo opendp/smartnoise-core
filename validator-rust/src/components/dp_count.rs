@@ -20,7 +20,7 @@ impl Component for proto::DpCount {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
-        Err("DPCount is ethereal, and has no property propagation".into())
+        Err("DPCount is abstract, and has no property propagation".into())
     }
 
     fn get_names(

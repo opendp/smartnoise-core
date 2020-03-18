@@ -1,9 +1,9 @@
-use yarrow_validator::errors::*;
+use whitenoise_validator::errors::*;
 
 use crate::base::NodeArguments;
-use yarrow_validator::base::{Value, get_argument, ArrayND};
+use whitenoise_validator::base::{Value, get_argument, ArrayND};
 use crate::components::Evaluable;
-use yarrow_validator::proto;
+use whitenoise_validator::proto;
 use ndarray::{ArrayD, Array, Axis};
 use std::ops::Add;
 use crate::utilities::utilities::get_num_columns;
@@ -36,7 +36,7 @@ impl Evaluable for proto::Quantile {
 /// # Example
 /// ```
 /// use ndarray::prelude::*;
-/// use yarrow_runtime::components::quantile::quantile;
+/// use whitenoise_runtime::components::quantile::quantile;
 /// let data: ArrayD<f64> = arr1(&[0., 1., 2., 3., 4., 5., 12., 19., 24., 90., 98., 100.]).into_dyn();
 /// let median = quantile(&data, &0.5);
 /// # median.unwrap();

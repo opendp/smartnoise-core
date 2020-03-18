@@ -1,3 +1,8 @@
+//! Infer ValueProperties from a public Value
+//!
+//! When public arguments are provided, the properties about those public arguments are not known.
+//! These utility functions provide a conversion from Value to ValueProperties.
+
 use crate::errors::*;
 
 
