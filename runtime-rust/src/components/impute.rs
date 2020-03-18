@@ -164,11 +164,11 @@ pub fn impute_float_uniform(data: &ArrayD<f64>, min: &ArrayD<f64>, max: &ArrayD<
 /// use yarrow_runtime::components::impute::impute_float_gaussian;
 /// use core::f64::NAN;
 /// let data: ArrayD<f64> = arr1(&[1., NAN, 3., NAN]).into_dyn();
-/// let shift: ArrayD<f64> = arr1(&[5.0]).into_dyn();
-/// let scale: ArrayD<f64> = arr1(&[7.0]).into_dyn();
 /// let min: ArrayD<f64> = arr1(&[0.0]).into_dyn();
 /// let max: ArrayD<f64> = arr1(&[10.0]).into_dyn();
-/// let imputed = impute_float_gaussian(&data, &shift, &scale, &min, &max);
+/// let shift: ArrayD<f64> = arr1(&[5.0]).into_dyn();
+/// let scale: ArrayD<f64> = arr1(&[7.0]).into_dyn();
+/// let imputed = impute_float_gaussian(&data, &min, &max, &shift, &scale);
 /// # imputed.unwrap();
 /// ```
 pub fn impute_float_gaussian(data: &ArrayD<f64>, min: &ArrayD<f64>, max: &ArrayD<f64>, shift: &ArrayD<f64>, scale: &ArrayD<f64>) -> Result<ArrayD<f64>> {
@@ -203,7 +203,6 @@ pub fn impute_float_gaussian(data: &ArrayD<f64>, min: &ArrayD<f64>, max: &ArrayD
 ///
 /// # Arguments
 /// * `data` - The data to be resized.
-/// * `n` - An estimate of the size of the data -- this could be the guess of the user, or the result of a DP release.
 /// * `categories` - For each data column, the set of possible values for elements in the column.
 /// * `weights` - For each data column, weights for each category to be used when imputing null values.
 /// * `null_value` - For each data column, the value of the data to be considered NULL.
