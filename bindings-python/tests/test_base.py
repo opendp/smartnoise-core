@@ -1,5 +1,5 @@
 from os.path import abspath, dirname, isfile, join
-
+import pytest
 import yarrow
 import yarrow.components as op
 
@@ -177,7 +177,7 @@ def test_dp_linear_stats(run=True):
 
     return analysis
 
-
+@pytest.mark.skip(reason="requires count_min and count_max")
 def test_dp_count(run=True):
     with yarrow.Analysis() as analysis:
         dataset_pums = yarrow.Dataset(path=TEST_CSV_PATH, column_names=test_csv_names)
@@ -192,6 +192,7 @@ def test_dp_count(run=True):
     return analysis
 
 
+@pytest.mark.skip(reason="Needs num_columns or column_names")
 def test_raw_dataset(run=True):
     with yarrow.Analysis() as analysis:
         op.dp_mean(
@@ -199,7 +200,7 @@ def test_raw_dataset(run=True):
             privacy_usage={'epsilon': 1},
             data_min=0.,
             data_max=10.,
-            data_n=10
+            data_n=10,
         )
 
     if run:
