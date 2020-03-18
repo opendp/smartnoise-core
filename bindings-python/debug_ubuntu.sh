@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # fixes matplotlib plotting bug on ubuntu
 export QT_XKB_CONFIG_ROOT=/usr/share/X11/xkb
 

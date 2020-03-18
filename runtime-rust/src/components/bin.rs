@@ -1,10 +1,10 @@
-use yarrow_validator::errors::*;
+use whitenoise_validator::errors::*;
 
 use crate::base::NodeArguments;
-use yarrow_validator::base::{Value, ArrayND, get_argument, Vector2DJagged, standardize_numeric_argument, standardize_categorical_argument};
+use whitenoise_validator::base::{Value, ArrayND, get_argument, Vector2DJagged, standardize_numeric_argument, standardize_categorical_argument};
 use crate::components::Evaluable;
 use ndarray::{ArrayD};
-use yarrow_validator::proto;
+use whitenoise_validator::proto;
 use crate::utilities::utilities::get_num_columns;
 use std::ops::{Div, Add};
 
@@ -144,7 +144,7 @@ pub fn bin<T: std::cmp::PartialOrd + Clone + Div<T, Output=T> + Add<T, Output=T>
 //    /// ```
 //    /// // set up data
 //    /// use ndarray::{ArrayD, arr1, Array1};
-//    /// use yarrow_runtime::utilities::transformations::bin;
+//    /// use whitenoise_runtime::utilities::transformations::bin;
 //    /// let data: ArrayD<f64> = arr1(&[1., 2., 3., 4., 5., 12., 19., 24., 90., 98.]).into_dyn();
 //    /// let edges: ArrayD<f64> = arr1(&[0., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100.]).into_dyn();
 //    /// let inclusive_left: ArrayD<bool> = arr1(&[false]).into_dyn();
@@ -227,7 +227,7 @@ pub fn bin<T: std::cmp::PartialOrd + Clone + Div<T, Output=T> + Add<T, Output=T>
 /////
 ///// Example
 ///// ```
-///// use yarrow_runtime::utilities::aggregations::get_bin_names;
+///// use whitenoise_runtime::utilities::aggregations::get_bin_names;
 ///// use ndarray::prelude::*;
 ///// let edges: ArrayD<f64> = arr1(&[0., 10., 20.]).into_dyn();
 /////

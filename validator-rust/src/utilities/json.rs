@@ -1,3 +1,5 @@
+//! Representation for report/json summaries
+
 use crate::errors::*;
 use std::collections::{HashMap};
 use serde::{Deserialize, Serialize};

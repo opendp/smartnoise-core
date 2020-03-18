@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package yarrow;
+package whitenoise;
 
 
 message BoolNull {oneof data {bool option = 1;}}

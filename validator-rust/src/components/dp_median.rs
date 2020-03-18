@@ -20,7 +20,7 @@ impl Component for proto::DpMedian {
         public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
-        Err("DPMedian is ethereal, and has no property propagation".into())
+        Err("DPMedian is abstract, and has no property propagation".into())
     }
 
     fn get_names(

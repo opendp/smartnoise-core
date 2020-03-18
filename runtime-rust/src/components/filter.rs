@@ -1,12 +1,12 @@
-use yarrow_validator::errors::*;
+use whitenoise_validator::errors::*;
 
 use ndarray::prelude::*;
 use crate::base::NodeArguments;
-use yarrow_validator::base::{Value, ArrayND, get_argument};
+use whitenoise_validator::base::{Value, ArrayND, get_argument};
 use crate::components::Evaluable;
 use ndarray::{ArrayD, Array, Axis, Array1, arr1};
 use crate::utilities::utilities::get_num_columns;
-use yarrow_validator::proto;
+use whitenoise_validator::proto;
 use crate::components::resize::create_sampling_indices;
 use crate::utilities::array::select;
 

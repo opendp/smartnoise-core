@@ -22,10 +22,12 @@ before_install:
 script:
   # (1) Rust Runtime -> Test & Build
   - cd runtime-rust; cargo build --verbose --workspace;
-  - cargo test --verbose --workspace; cd ..;
+  - cargo test --verbose --workspace;
+  - cd ..;
   # (2) Rust Validator -> Test & Build
   - cd validator-rust; cargo build --verbose --workspace;
-  - cargo test --verbose --workspace; cd ..;
+  - cargo test --verbose --workspace;
+  - cd ..;
   # (3) Build python bindings and run tests
   #   > Commented out for now.  It works but takes a while to run...
   #- cd bindings-python; python3 -m pip install -r requirements.txt;

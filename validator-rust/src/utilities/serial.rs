@@ -1,3 +1,5 @@
+//! Serialization and deserialization between prost protobuf structs and internal representations
+
 use crate::errors::*;
 
 

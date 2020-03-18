@@ -1,8 +1,9 @@
 from setuptools import setup
 import os
 
-# turn on backtraces in rust
+# turn on backtraces in rust (for build.rs)
 os.environ['RUST_BACKTRACE'] = 'full'  # '1'
+os.environ['RUSTFLAGS'] = ""
 
 release = False
 
@@ -10,7 +11,7 @@ rust_build_path = 'target/' + ('release' if release else 'debug')
 rust_build_cmd = ['cargo', 'build']
 
 if release:
-    rust_build_cmd += '--release'
+    rust_build_cmd.append('--release')
 
 
 def build_native(spec):
@@ -20,8 +21,8 @@ def build_native(spec):
     )
 
     spec.add_cffi_module(
-        module_path='yarrow._native_validator',
-        dylib=lambda: build_validator.find_dylib('yarrow_validator', in_path=rust_build_path),
+        module_path='whitenoise._native_validator',
+        dylib=lambda: build_validator.find_dylib('whitenoise_validator', in_path=rust_build_path),
         header_filename=lambda: build_validator.find_header('api.h', in_path='.'),
         rtld_flags=['NOW', 'NODELETE']
     )
@@ -32,8 +33,8 @@ def build_native(spec):
     )
 
     spec.add_cffi_module(
-        module_path='yarrow._native_runtime',
-        dylib=lambda: build_runtime.find_dylib('yarrow_runtime', in_path=rust_build_path),
+        module_path='whitenoise._native_runtime',
+        dylib=lambda: build_runtime.find_dylib('whitenoise_runtime', in_path=rust_build_path),
         header_filename=lambda: build_runtime.find_header('api.h', in_path='.'),
         rtld_flags=['NOW', 'NODELETE']
     )
@@ -43,10 +44,11 @@ def build_native(spec):
         path="."
     )
 
+
 setup(
-    name='yarrow',
+    name='whitenoise',
     version='0.1.0',
-    packages=['yarrow'],
+    packages=['whitenoise'],
     zip_safe=False,
     platforms='any',
     setup_requires=['milksnake'],
