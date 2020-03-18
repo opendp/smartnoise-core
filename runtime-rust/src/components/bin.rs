@@ -9,6 +9,19 @@ use crate::utilities::utilities::get_num_columns;
 use std::ops::{Div, Add};
 
 impl Evaluable for proto::Bin {
+    /// Maps data to bins.
+    ///
+    /// Bins will be of the form [lower, upper) or (lower, upper].
+    ///
+    /// # Arguments
+    /// * `data` - Data to be binned.
+    /// * `edges` - Values representing the edges of bins.
+    /// * `inclusive_left` - Whether or not the left edge of the bin is inclusive, i.e. the bins are of the form [lower, upper).
+    /// * `null` - Value to which to map if there is no valid bin (e.g. if the element falls outside the bin range).
+    /// * `side` - How to refer to each bin. Will be either the `left` edge, the `right` edge, or the `center` (the arithmetic mean of the two).
+    ///
+    /// # Return
+    /// Binned data.
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
         let inclusive_left: &ArrayD<bool> = get_argument(&arguments, "inclusive_left")?.get_arraynd()?.get_bool()?;
 
@@ -37,6 +50,34 @@ pub enum BinSide {
     Left, Right, Center
 }
 
+/// Maps data to bins.
+///
+/// Bins will be of the form [lower, upper) or (lower, upper].
+///
+/// # Arguments
+/// * `data` - Data to be binned.
+/// * `edges` - Values representing the edges of bins.
+/// * `inclusive_left` - Whether or not the left edge of the bin is inclusive, i.e. the bins are of the form [lower, upper).
+/// * `null` - Value to which to map if there is no valid bin (e.g. if the element falls outside the bin range).
+/// * `side` - How to refer to each bin. Will be either the `left` edge, the `right` edge, or the `center` (the arithmetic mean of the two).
+///
+/// # Return
+/// Binned data.
+///
+/// # Example
+/// ```
+/// use ndarray::{ArrayD, arr2, arr1};
+/// use yarrow_runtime::components::bin::{bin, BinSide};
+///
+/// let data = arr1(&[1.1, 2., 2.9, 4.1, 6.4]).into_dyn();
+/// let edges = vec![Some(vec![0., 1., 2., 3., 4., 5.])];
+/// let inclusive_left = arr1(&[true]).into_dyn();
+/// let null = arr1(&[-1.]).into_dyn();
+/// let side = BinSide::Center;
+///
+/// let binned = bin(&data, &edges, &inclusive_left, &null, &side).unwrap();
+/// assert!(binned == arr1(&[1.5, 2.5, 2.5, 4.5, -1.]).into_dyn());
+/// ```
 pub fn bin<T: std::cmp::PartialOrd + Clone + Div<T, Output=T> + Add<T, Output=T> + From<i32> + Copy>(
     data: &ArrayD<T>,
     edges: &Vec<Option<Vec<T>>>,
@@ -72,10 +113,12 @@ pub fn bin<T: std::cmp::PartialOrd + Clone + Div<T, Output=T> + Add<T, Output=T>
 
                     // assign to edge
                     for idx in 0..edges.len() {
+                        // check whether left or right side of bin should be considered inclusive
                         if match inclusive_left {
                             true => edges[idx] <= *v && *v < edges[idx + 1],
                             false => edges[idx] < *v && *v <= edges[idx + 1]
                         } {
+                            // assign element a new name based on bin naming rule
                             *v = match side {
                                 BinSide::Left => edges[idx],
                                 BinSide::Right => edges[idx + 1],
