@@ -66,9 +66,32 @@ pub fn matrix_cross_covariance(left: &ArrayD<f64>, right: &ArrayD<f64>) -> Resul
     }
 }
 
-fn covariance(left: &ArrayView1<f64>, right: &ArrayView1<f64>, mean_left: &f64, mean_right: &f64) -> f64 {
+/// Get sample covariance between two arrays.
+///
+/// # Arguments
+/// * `left` - One of the two arrays for which you want the covariance.
+/// * `right` - One of the two arrays for which you want the covariance.
+/// * `mean_left' - Arithmetic mean of the left array.
+/// * `mean_right' - Arithmetic mean of the right array.
+///
+/// # Return
+/// Covariance of the two arrays.
+///
+/// # Example
+/// ```
+/// use ndarray::{ArrayD, arr1};
+/// use whitenoise_runtime::components::covariance::covariance;
+///
+/// let left = arr1(&[1.,2.,3.]);
+/// let right = arr1(&[4.,5.,6.]);
+/// let mean_left = 2.;
+/// let mean_right = 5.;
+/// let cov = covariance(&left.view(), &right.view(), &mean_left, &mean_right);
+/// assert!(cov == 1.);
+/// ```
+pub fn covariance(left: &ArrayView1<f64>, right: &ArrayView1<f64>, mean_left: &f64, mean_right: &f64) -> f64 {
     left.iter()
         .zip(right)
         .fold(0., |sum, (val_left, val_right)|
-            sum + ((val_left - mean_left) * (val_right - mean_right))) / left.len() as f64
+            sum + ((val_left - mean_left) * (val_right - mean_right))) / ( (left.len() - 1) as f64)
 }

@@ -19,6 +19,22 @@ impl Evaluable for proto::Count {
     }
 }
 
+/// Gets number of rows of data.
+///
+/// # Arguments
+/// * `data` - Data for which you want a count.
+///
+/// # Return
+/// Number of rows in data.
+///
+/// # Example
+/// ```
+/// use ndarray::{ArrayD, arr1, arr2};
+/// use whitenoise_runtime::components::count::count;
+/// let data = arr2(&[ [false, false, true], [true, true, true] ]).into_dyn();
+/// let n = count(&data).unwrap();
+/// assert!(n == arr2(&[ [2, 2, 2] ]).into_dyn());
+/// ```
 pub fn count<T: Clone>(data: &ArrayD<T>) -> Result<ArrayD<i64>> {
 
     // iterate over the generalized columns. Of course, all columns will share the same length

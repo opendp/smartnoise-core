@@ -13,29 +13,6 @@ use crate::utilities::utilities::get_num_columns;
 use crate::utilities::array::{select, stack};
 
 impl Evaluable for proto::Resize {
-    /// Resizes the data in question to be consistent with a provided sample size, `n`.
-    ///
-    /// The library does not, in general, assume that the sample size of the data being
-    /// analyzed is known. This introduces a number of problems around how to calculate
-    /// statistics that are a function of the sample size.
-    ///
-    /// To address this problem, the library asks the user to provide `n`,
-    /// an estimate of the true sample size based on their own beliefs about the
-    /// data or a previous differentially private count of the number of
-    /// rows in the data. This component then either subsamples or appends to the
-    /// data in order to make it consistent with the provided `n`.
-    ///
-    /// # Arguments
-    /// * `data` - The data to be resized.
-    /// * `n` - An estimate of the size of the data -- this could be the guess of the user, or the result of a DP release.
-    /// * `distribution` - The distribution to be used when imputing records.
-    /// * `min` - A lower bound on data elements.
-    /// * `max` - An upper bound on data elements.
-    /// * `shift` - The shift (expectation) argument for the Gaussian distribution (if used for imputation).
-    /// * `scale` - The scale (standard deviation) argument for the Gaussian distribution (if used for imputation).
-    ///
-    /// # Return
-    /// A resized version of data consistent with the provided `n`
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
         let n = get_argument(&arguments, "n")?.get_first_i64()?;
 
