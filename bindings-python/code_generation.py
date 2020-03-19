@@ -22,6 +22,9 @@ from . import Component, privacy_usage as to_privacy_usage
 
 """
 
+# This links the variant in the Component proto to the corresponding message
+variant_message_map = {}
+
 for file_name in os.listdir(components_dir):
     component_path = os.path.join(components_dir, file_name)
     with open(component_path, 'r') as component_schema_file:
@@ -43,6 +46,27 @@ for file_name in os.listdir(components_dir):
         if option_schema['type'] == 'repeated PrivacyUsage':
             return f'to_privacy_usage(**{name})'
         return name
+
+    def document_argument(prefix, name, argument):
+        return f'{prefix}{name}: {argument.get("description", "")}'
+
+    docstring = f"{component_schema['id']} Component"
+    if 'description' in component_schema:
+        docstring += "\n\n" + component_schema['description'] + "\n"
+
+    for argument in component_schema['arguments']:
+        docstring += "\n" + document_argument(":param ", argument, component_schema['arguments'][argument])
+
+    for option in component_schema['options']:
+        docstring += "\n" + document_argument(":param ", option, component_schema['options'][option])
+
+    docstring += "\n:param kwargs: clamp by min, max, categories, etc by passing parameters of the form [argument]_[bound]=x"
+
+    docstring += "\n" + document_argument(":return", "", component_schema['return'])
+
+    docstring = '\n'.join(["    " + line for line in docstring.split("\n")])
+
+    variant_message_map[component_schema['id']] = component_schema['name']
 
     # remove dupes while keeping order
     signature_arguments = list(dict.fromkeys([
@@ -97,7 +121,8 @@ for file_name in os.listdir(components_dir):
     # build the call to create a Component with the prior argument strings
     generated_code += f"""
 def {component_schema['name']}({signature_string}):
-    \"\"\"{component_schema.get("docstring", component_schema["name"] + " step")}\"\"\"
+    \"\"\"\n{docstring}
+    \"\"\"
     return Component(
         "{component_schema['id']}",
         arguments={component_arguments},
@@ -105,6 +130,11 @@ def {component_schema['name']}({signature_string}):
         constraints={component_constraints})
 
 """
+
 output_path = os.path.join(os.getcwd(), 'whitenoise', 'components.py')
 with open(output_path, 'w') as generated_file:
     generated_file.write(generated_code)
+
+variant_message_map_path = os.path.join(os.getcwd(), 'whitenoise', 'variant_message_map.json')
+with open(variant_message_map_path, 'w') as generated_map_file:
+    json.dump(variant_message_map, generated_map_file, indent=4)

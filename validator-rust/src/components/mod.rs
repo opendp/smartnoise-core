@@ -204,17 +204,17 @@ impl Component for proto::component::Variant {
             // INSERT COMPONENT LIST
             Bin, Cast, Clamp, Constant, Count, Covariance,
 
-            Dpcount, Dpcovariance, Dphistogram, Dpmaximum, Dpmean, Dpmedian, Dpminimum,
-            Dpmomentraw, Dpsum, Dpvariance,
+            DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMedian, DpMinimum,
+            DpMomentRaw, DpSum, DpVariance,
 
-            Filter, Impute, Index, Kthrawsamplemoment, Materialize, Maximum, Mean,
+            Filter, Impute, Index, KthRawSampleMoment, Materialize, Maximum, Mean,
 
-            Exponentialmechanism, Gaussianmechanism, Laplacemechanism, Simplegeometricmechanism,
+            ExponentialMechanism, GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism,
 
-            Minimum, Quantile, Resize, Rowmin, Sum, Variance,
+            Minimum, Quantile, Resize, Sum, Variance,
 
-            Add, Subtract, Divide, Multiply, Power, Log, Modulo, Remainder, And, Or, Negate,
-            Equal, Lessthan, Greaterthan, Negative
+            Add, Subtract, Divide, Multiply, Power, Log, Modulo, Remainder, LogicalAnd, LogicalOr, Negate,
+            Equal, LessThan, GreaterThan, Negative
         );
 
         return Err(format!("proto component {:?} is missing its Component trait", self).into())
@@ -275,9 +275,9 @@ impl Expandable for proto::component::Variant {
 
         expand_component!(
             // INSERT COMPONENT LIST
-            Clamp, Dpcount, Dpcovariance, Dphistogram, Dpmaximum, Dpmean, Dpmedian, Dpminimum,
-            Dpmomentraw, Dpsum, Dpvariance, Impute, Exponentialmechanism, Gaussianmechanism,
-            Laplacemechanism, Simplegeometricmechanism, Resize
+            Clamp, DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMedian, DpMinimum,
+            DpMomentRaw, DpSum, DpVariance, Impute, ExponentialMechanism, GaussianMechanism,
+            LaplaceMechanism, SimpleGeometricMechanism, Resize
         );
 
         // no expansion
@@ -310,7 +310,7 @@ impl Aggregator for proto::component::Variant {
 
         compute_sensitivity!(
             // INSERT COMPONENT LIST
-            Count, Covariance, Kthrawsamplemoment, Maximum, Mean, Minimum, Quantile, Sum, Variance
+            Count, Covariance, KthRawSampleMoment, Maximum, Mean, Minimum, Quantile, Sum, Variance
         );
 
         Err("sensitivity is not implemented".into())
@@ -406,7 +406,7 @@ impl Report for proto::component::Variant {
 
         summarize!(
             // INSERT COMPONENT LIST
-            Dpmean
+            DpMean
         );
 
         Ok(None)

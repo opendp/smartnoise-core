@@ -13,7 +13,12 @@
   },
   "id": "Variance",
   "name": "variance",
-  "options": {},
+  "options": {
+    "finite_sample_correction": {
+      "type": "bool",
+      "default": "True"
+    }
+  },
   "return": {
     "nature": [
       "continuous"

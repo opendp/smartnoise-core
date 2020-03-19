@@ -39,6 +39,8 @@ def build_native(spec):
         rtld_flags=['NOW', 'NODELETE']
     )
 
+
+def build_python(spec):
     spec.add_external_build(
         cmd=['python3', 'code_generation.py'],
         path="."
@@ -54,6 +56,7 @@ setup(
     setup_requires=['milksnake'],
     install_requires=['milksnake'],
     milksnake_tasks=[
-        build_native
+        build_native,
+        build_python
     ]
 )

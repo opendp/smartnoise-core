@@ -7,6 +7,7 @@ whitenoise/_native*
 whitenoise.egg-info
 .eggs/
 whitenoise/components.py
+whitenoise/variant_message_map.json
 
 debug_build.log
 debug_app.log
