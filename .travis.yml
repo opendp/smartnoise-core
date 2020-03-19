@@ -39,7 +39,8 @@ after_success:
   # Build the documentation for gh-pages
   #
   - echo $TRAVIS_BRANCH;
-  - if [ "$TRAVIS_BRANCH" == "62-rp-pages" ]; then
+  # switch to master after initial version
+  - if [ "$TRAVIS_BRANCH" == "develop" ]; then
     cd runtime-rust;
     cargo doc --verbose --target-dir=../docs;
     cd ..; rm -rf docs/debug;
@@ -59,9 +60,6 @@ deploy:
   keep_history: true
   target_branch: gh-pages
   on:
-    branch: 62-rp-pages
-    #branch: master
+    # branch: 62-rp-pages
+    branch: develop # switch to master after initial version
   #verbose: true
-
-#after_success:
-# Do some stuff
