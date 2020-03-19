@@ -16,9 +16,12 @@ impl Evaluable for proto::Materialize {
         let column_names = arguments.get("column_names")
             .and_then(|column_names| column_names.get_arraynd().ok()?.get_str().ok()).cloned();
 
-        match self.value.as_ref().unwrap() {
-            proto::materialize::Value::Literal(value) => parse_value(value),
-            proto::materialize::Value::FilePath(path) => {
+        let data_source = self.data_source.clone()
+            .ok_or::<Error>("data source must be supplied".into())?;
+        
+        match data_source.value.as_ref().unwrap() {
+            proto::data_source::Value::Literal(value) => parse_value(value),
+            proto::data_source::Value::FilePath(path) => {
                 let mut response = HashMap::<String, Vec<String>>::new();
 
                 let mut reader = match csv::Reader::from_path(path) {

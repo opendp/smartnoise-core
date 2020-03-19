@@ -10,7 +10,7 @@
       "type": "Jagged"
     }
   },
-  "id": "DPMedian",
+  "id": "DPMinimum",
   "name": "dp_minimum",
   "options": {
     "implementation": {

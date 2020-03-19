@@ -10,13 +10,7 @@
       "nature": [
         "continuous"
       ],
-      "type": {
-        "of": [
-          "int",
-          "double"
-        ],
-        "type": "Array"
-      }
+      "type": "Array"
     }
   },
   "id": "RowMax",

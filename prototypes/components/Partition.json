@@ -1,26 +1,27 @@
 {
   "arguments": {
-    "base": {
+    "data": {
       "nature": [
-        "continuous"
+        "continuous",
+        "categorical"
       ],
       "type": "Array"
     },
-    "data": {
+    "by": {
       "nature": [
-        "continuous"
+        "categorical"
       ],
       "type": "Array"
     }
   },
-  "id": "Log",
-  "name": "log",
+  "id": "Partition",
+  "name": "partition",
   "options": {},
   "return": {
     "nature": [
       "continuous"
     ],
-    "type": "Array"
+    "type": "Hashmap"
   },
-  "docstring": "log step"
+  "docstring": "partition step"
 }
