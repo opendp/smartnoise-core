@@ -36,14 +36,14 @@ impl Expandable for proto::DpSum {
         _properties: &base::NodeProperties,
         component_id: u32,
         maximum_id: u32,
-    ) -> Result<(u32, HashMap<u32, proto::Component>)> {
+    ) -> Result<proto::ComponentExpansion> {
         let mut current_id = maximum_id.clone();
-        let mut graph_expansion: HashMap<u32, proto::Component> = HashMap::new();
+        let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
 
         // sum
         current_id += 1;
         let id_sum = current_id.clone();
-        graph_expansion.insert(id_sum, proto::Component {
+        computation_graph.insert(id_sum, proto::Component {
             arguments: hashmap!["data".to_owned() => *component.arguments.get("data").unwrap()],
             variant: Some(proto::component::Variant::Sum(proto::Sum {})),
             omit: true,
@@ -51,7 +51,7 @@ impl Expandable for proto::DpSum {
         });
 
         // noising
-        graph_expansion.insert(component_id, proto::Component {
+        computation_graph.insert(component_id, proto::Component {
             arguments: hashmap!["data".to_owned() => id_sum],
             variant: Some(proto::component::Variant::from(proto::LaplaceMechanism {
                 privacy_usage: self.privacy_usage.clone()
@@ -60,7 +60,12 @@ impl Expandable for proto::DpSum {
             batch: component.batch,
         });
 
-        Ok((current_id, graph_expansion))
+        Ok(proto::ComponentExpansion {
+            computation_graph,
+            properties: HashMap::new(),
+            releases: HashMap::new(),
+            traversal: vec![id_sum]
+        })
     }
 }
 

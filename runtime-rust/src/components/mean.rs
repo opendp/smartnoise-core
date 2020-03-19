@@ -8,13 +8,6 @@ use crate::utilities::utilities::get_num_columns;
 use whitenoise_validator::proto;
 
 impl Evaluable for proto::Mean {
-    /// Calculates the arithmetic mean of each column in the provided data.
-    ///
-    /// # Arguments
-    /// * `data` - Data for which you want the mean.
-    ///
-    /// # Return
-    /// Arithmetic mean(s) of the data in question.
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
         Ok(mean(&get_argument(&arguments, "data")?.get_arraynd()?.get_f64()?.clone())?.into())
     }

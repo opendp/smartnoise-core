@@ -40,9 +40,9 @@ impl Expandable for proto::DpHistogram {
         _properties: &base::NodeProperties,
         component_id: u32,
         maximum_id: u32,
-    ) -> Result<(u32, HashMap<u32, proto::Component>)> {
+    ) -> Result<proto::ComponentExpansion> {
         let mut current_id = maximum_id.clone();
-        let mut graph_expansion: HashMap<u32, proto::Component> = HashMap::new();
+        let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
 
         let data_id = component.arguments.get("data")
             .ok_or::<Error>("data is a required argument to DPHistogram".into())?;
@@ -60,7 +60,7 @@ impl Expandable for proto::DpHistogram {
         // bin
         current_id += 1;
         let id_bin = current_id.clone();
-        graph_expansion.insert(id_bin, proto::Component {
+        computation_graph.insert(id_bin, proto::Component {
             arguments: hashmap![
                 "data".to_owned() => *data_id,
                 "edges".to_owned() => *edges_id,
@@ -75,7 +75,7 @@ impl Expandable for proto::DpHistogram {
         });
 
         // dp_count
-        graph_expansion.insert(component_id, proto::Component {
+        computation_graph.insert(component_id, proto::Component {
             arguments: hashmap![
                 "data".to_owned() => id_bin,
                 "count_min".to_owned() => *count_min_id,
@@ -89,7 +89,12 @@ impl Expandable for proto::DpHistogram {
             batch: component.batch,
         });
 
-        Ok((current_id, graph_expansion))
+        Ok(proto::ComponentExpansion {
+            computation_graph,
+            properties: HashMap::new(),
+            releases: HashMap::new(),
+            traversal: vec![id_bin]
+        })
     }
 }
 

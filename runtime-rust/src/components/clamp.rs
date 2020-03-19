@@ -8,20 +8,6 @@ use crate::utilities::utilities::get_num_columns;
 use whitenoise_validator::proto;
 
 impl Evaluable for proto::Clamp {
-    /// Clamps data to provided bounds.
-    ///
-    /// If data are numeric, clamping maps elements outside of an interval `[min, max]` to the closer endpoint.
-    /// If data are categorical, clamping maps elements outside of the `categories` argument to the associated `null`.
-    ///
-    /// # Arguments
-    /// * `data` - Data to be clamped.
-    /// * `min` - Desired lower bound for each column of the data. Used only if `categories` is `None`.
-    /// * `max` - Desired upper bound for each column of the data. Used only if `categories` is `None`.
-    /// * `categories` - For each column, the set of categories you want to be represented.
-    /// * `null` - For each column, the value to which elements not included in `categories` will be mapped. Used only if `categories` is not `None`.
-    ///
-    /// # Return
-    /// Clamped data.
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
         // if categories argument was provided, clamp data as if they are categorical (regardless of atomic type)
         if arguments.contains_key("categories") {
