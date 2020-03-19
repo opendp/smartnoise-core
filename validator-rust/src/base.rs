@@ -926,10 +926,10 @@ pub fn get_component_privacy_usage(
 
     // get the maximum possible usage allowed to the component
     let mut privacy_usage: Vec<proto::PrivacyUsage> = match component.to_owned().variant? {
-        proto::component::Variant::Laplacemechanism(x) => x.privacy_usage,
-        proto::component::Variant::Gaussianmechanism(x) => x.privacy_usage,
-        proto::component::Variant::Exponentialmechanism(x) => x.privacy_usage,
-        proto::component::Variant::Simplegeometricmechanism(x) => x.privacy_usage,
+        proto::component::Variant::LaplaceMechanism(x) => x.privacy_usage,
+        proto::component::Variant::GaussianMechanism(x) => x.privacy_usage,
+        proto::component::Variant::ExponentialMechanism(x) => x.privacy_usage,
+        proto::component::Variant::SimpleGeometricMechanism(x) => x.privacy_usage,
         _ => return None
     };
 

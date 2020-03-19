@@ -7,10 +7,16 @@ from whitenoise.wrapper import LibraryWrapper
 from whitenoise import base_pb2
 from whitenoise import components_pb2
 from whitenoise import value_pb2
+import os
 
 core_wrapper = LibraryWrapper()
 
 ALL_CONSTRAINTS = ["n", "min", "max", "categories"]
+
+variant_message_map_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'variant_message_map.json')
+
+with open(variant_message_map_path, 'r') as variant_message_map_file:
+    variant_message_map = json.load(variant_message_map_file)
 
 
 def privacy_usage(epsilon=None, delta=None):
@@ -58,18 +64,21 @@ class Dataset(object):
         if num_columns is None and column_names is None:
             raise ValueError("either num_columns or column_names must be set")
 
-        materialize_options = {'private': private}
+        data_source = {}
         if path is not None:
-            materialize_options['file_path'] = path
+            data_source['file_path'] = path
         if value is not None:
-            materialize_options['literal'] = Analysis._serialize_value_proto(value, value_format)
+            data_source['literal'] = Analysis._serialize_value_proto(value, value_format)
 
         self.component = Component('Materialize',
                                    arguments={
                                        "column_names": Component.of(column_names),
                                        "num_columns": Component.of(num_columns),
                                    },
-                                   options=materialize_options)
+                                   options={
+                                       "data_source": value_pb2.DataSource(**data_source),
+                                       "private": private
+                                   })
 
     def __getitem__(self, identifier):
         return Component('Index', arguments={'columns': Component.of(identifier), 'data': self.component})
@@ -259,10 +268,10 @@ class Component(object):
 
 
 class Analysis(object):
-    def __init__(self, *components, validate=True, datasets=None, distance='APPROXIMATE', neighboring='SUBSTITUTE'):
+    def __init__(self, *components, dynamic=False, datasets=None, distance='APPROXIMATE', neighboring='SUBSTITUTE'):
 
-        # validate the analysis before running it
-        self.must_validate = validate
+        # if false, validate the analysis before running it (enforces static validation)
+        self.dynamic = dynamic
 
         # privacy definition
         self.distance: str = distance
@@ -309,7 +318,7 @@ class Analysis(object):
                     for name, component_child in component.arguments.items()
                     if component_child is not None
                 },
-                component.name.lower():
+                variant_message_map[component.name]:
                     getattr(components_pb2, component.name)(**(component.options or {}))
             })
 
@@ -449,7 +458,7 @@ class Analysis(object):
             self._serialize_release_proto())
 
     def release(self):
-        if self.must_validate:
+        if not self.dynamic:
             assert self.validate(), "cannot release, analysis is not valid"
 
         release_proto: base_pb2.Release = core_wrapper.compute_release(

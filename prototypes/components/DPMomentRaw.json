@@ -11,7 +11,7 @@
   "name": "dp_moment_raw",
   "options": {
     "order": {
-      "type": "int"
+      "type": "uint32"
     },
     "implementation": {
       "type": "string",

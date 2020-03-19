@@ -10,7 +10,7 @@
       "type": "Jagged"
     }
   },
-  "id": "DPMedian",
+  "id": "DPMaximum",
   "name": "dp_maximum",
   "options": {
     "implementation": {

@@ -5,28 +5,32 @@
         "continuous",
         "categorical"
       ],
-      "type": "Array"
+      "type": "Array",
+      "description": "Data to be binned."
     },
     "edges": {
       "nature": [
         "continuous",
         "categorical"
       ],
-      "type": "Jagged"
+      "type": "Jagged",
+      "description": "Values representing the edges of bins."
     },
     "null": {
       "nature": [
         "continuous",
         "categorical"
       ],
-      "type": "Array"
+      "type": "Array",
+      "description": "Value to which to map if there is no valid bin (e.g. if the element falls outside the bin range)."
     },
     "inclusive_left": {
       "nature": [
         "categorical"
       ],
       "type": "Array",
-      "default": "True"
+      "default": "True",
+      "description": "Whether or not the left edge of the bin is inclusive, i.e. the bins are of the form [lower, upper)."
     }
   },
   "id": "Bin",
@@ -34,7 +38,8 @@
   "options": {
     "side": {
       "type": "string",
-      "default": "'left'"
+      "default": "'left'",
+      "description": "How to refer to each bin. Will be either the `left` edge, the `right` edge, or the `center` (the arithmetic mean of the two)."
     }
   },
   "return": {
@@ -43,5 +48,5 @@
     ],
     "type": "Array"
   },
-  "docstring": "bin step"
+  "description": "Maps data to bins.\n\nBins will be of the form [lower, upper) or (lower, upper]."
 }

@@ -5,7 +5,7 @@ import whitenoise.components as op
 
 # Path to the test csv file
 #
-TEST_CSV_PATH = join(dirname(abspath(__file__)), 'data',
+TEST_CSV_PATH = join(dirname(abspath(__file__)), '..', 'data',
                      'PUMS_california_demographics_1000', 'data.csv')
 assert isfile(TEST_CSV_PATH), f'Error: file not found: {TEST_CSV_PATH}'
 
@@ -14,7 +14,7 @@ test_csv_names = ["age", "sex", "educ", "race", "income", "married"]
 def test_multilayer_analysis(run=True):
 
     with whitenoise.Analysis() as analysis:
-        PUMS = yarrow.Dataset(path=TEST_CSV_PATH, column_names=test_csv_names)
+        PUMS = whitenoise.Dataset(path=TEST_CSV_PATH, column_names=test_csv_names)
 
         age = op.cast(PUMS['age'], type="FLOAT")
         sex = op.cast(PUMS['sex'], type="BOOL", true_label="TRUE")
@@ -84,6 +84,7 @@ def test_dp_linear_stats(run=True):
         dataset_pums = whitenoise.Dataset(path=TEST_CSV_PATH, column_names=test_csv_names)
 
         age = dataset_pums['age']
+        analysis.release()
 
         num_records = op.dp_count(
             age,
