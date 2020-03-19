@@ -545,6 +545,23 @@ pub enum Vector1DNull {
     Str(Vec<Option<String>>),
 }
 
+impl Vector1DNull {
+    /// Retrieve the f64 vec, assuming the data type of the ArrayND is f64
+    pub fn get_f64(&self) -> Result<&Vec<Option<f64>>> {
+        match self {
+            Vector1DNull::F64(x) => Ok(x),
+            _ => Err("expected a float on a non-float Vector1DNull".into())
+        }
+    }
+    /// Retrieve the i64 vec, assuming the data type of the ArrayND is i64
+    pub fn get_i64(&self) -> Result<&Vec<Option<i64>>> {
+        match self {
+            Vector1DNull::I64(x) => Ok(x),
+            _ => Err("expected an integer on a non-integer Vector1DNull".into())
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 pub enum Vector1D {
     Bool(Vec<bool>),

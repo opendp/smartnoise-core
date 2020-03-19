@@ -1,7 +1,7 @@
 use crate::errors::*;
 
 use std::collections::HashMap;
-use crate::base::{Nature, Vector1DNull, NodeProperties, ArrayND, NatureCategorical, standardize_categorical_argument, Vector2DJagged, standardize_numeric_argument, Vector1D, ArrayNDProperties, ValueProperties, prepend};
+use crate::base::{Nature, Vector1DNull, NodeProperties, ArrayND, NatureCategorical, standardize_categorical_argument, Vector2DJagged, standardize_numeric_argument, Vector1D, ArrayNDProperties, ValueProperties, prepend, DataType};
 
 use crate::{proto, base};
 
@@ -29,7 +29,7 @@ impl Component for proto::Add {
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
         Ok(ArrayNDProperties {
-            nullity: left_property.nullity && right_property.nullity,
+            nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
             nature: propagate_binary_nature(&left_property, &right_property, &Operators {
                 f64: Some(Box::new(|l: &f64, r: &f64| l + r)),
@@ -72,7 +72,7 @@ impl Component for proto::Subtract {
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
         Ok(ArrayNDProperties {
-            nullity: left_property.nullity && right_property.nullity,
+            nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
             nature: propagate_binary_nature(&left_property, &right_property, &Operators {
                 f64: Some(Box::new(|l: &f64, r: &f64| l - r)),
@@ -98,7 +98,6 @@ impl Component for proto::Subtract {
 }
 
 
-// TODO: swap max/min if negative
 impl Component for proto::Divide {
     fn propagate_property(
         &self,
@@ -114,15 +113,42 @@ impl Component for proto::Divide {
             .map_err(prepend("right:"))?.clone();
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
+        let float_denominator_may_span_zero = match right_property.clone().nature {
+            Some(nature) => match nature {
+                Nature::Continuous(nature) => nature.min.get_f64()
+                    .map(|min| nature.max.get_f64()
+                        .map(|max| min.iter().zip(max.iter())
+                            .any(|(min, max)| min
+                                .map(|min| max
+                                    .map(|max| min < 0. && max > 0.)
+                                    // if max is not known
+                                    .unwrap_or(min > 0.))
+                                // if min is not known
+                                .unwrap_or(max.map(|max| max < 0.)
+                                    .unwrap_or(true))))
+                        // if max is not float
+                        .unwrap_or(false))
+                    // if min is not float
+                    .unwrap_or(false),
+                Nature::Categorical(nature) => nature.categories.get_f64()
+                    .map(|categories| categories.iter()
+                        .any(|column| column.iter()
+                            .any(|category| category.is_nan() || category == &0.)))
+                    // if categories are not known, a category could be zero or NAN
+                    .unwrap_or(false)
+            },
+            // if nature is not known, data could span zero
+            _ => true
+        };
 
         Ok(ArrayNDProperties {
-            nullity: left_property.nullity && right_property.nullity,
+            nullity: left_property.nullity || right_property.nullity || float_denominator_may_span_zero,
             releasable: left_property.releasable && right_property.releasable,
-            nature: propagate_binary_nature(&left_property, &right_property, &Operators {
+            nature: sort_bounds(propagate_binary_nature(&left_property, &right_property, &Operators {
                 f64: Some(Box::new(|l: &f64, r: &f64| l / r)),
                 i64: Some(Box::new(|l: &i64, r: &i64| l / r)),
                 str: None, bool: None
-            }, &num_columns)?,
+            }, &num_columns)?, &left_property.data_type)?,
             c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
                 .map(|(l, r)| l.max(r)).collect(),
@@ -142,7 +168,6 @@ impl Component for proto::Divide {
 }
 
 
-// TODO: swap max/min if negative
 impl Component for proto::Multiply {
     fn propagate_property(
         &self,
@@ -160,13 +185,13 @@ impl Component for proto::Multiply {
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
         Ok(ArrayNDProperties {
-            nullity: left_property.nullity && right_property.nullity,
+            nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
-            nature: propagate_binary_nature(&left_property, &right_property, &Operators {
+            nature: sort_bounds(propagate_binary_nature(&left_property, &right_property, &Operators {
                 f64: Some(Box::new(|l: &f64, r: &f64| l * r)),
                 i64: Some(Box::new(|l: &i64, r: &i64| l * r)),
                 str: None, bool: None
-            }, &num_columns)?,
+            }, &num_columns)?, &left_property.data_type)?,
             c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
                 .map(|(l, r)| l.max(r)).collect(),
@@ -185,7 +210,6 @@ impl Component for proto::Multiply {
     }
 }
 
-// TODO: swap max/min if negative
 impl Component for proto::Power {
     fn propagate_property(
         &self,
@@ -203,13 +227,13 @@ impl Component for proto::Power {
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
         Ok(ArrayNDProperties {
-            nullity: left_property.nullity && right_property.nullity,
+            nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
-            nature: propagate_binary_nature(&left_property, &right_property, &Operators {
+            nature: sort_bounds(propagate_binary_nature(&left_property, &right_property, &Operators {
                 f64: Some(Box::new(|l: &f64, r: &f64| l.powf(*r))),
                 i64: Some(Box::new(|l: &i64, r: &i64| l.pow(*r as u32))),
                 str: None, bool: None
-            }, &num_columns)?,
+            }, &num_columns)?, &left_property.data_type)?,
             c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
                 .map(|(l, r)| l.max(r)).collect(),
@@ -245,7 +269,7 @@ impl Component for proto::Log {
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
         Ok(ArrayNDProperties {
-            nullity: left_property.nullity && right_property.nullity,
+            nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
             nature: propagate_binary_nature(&left_property, &right_property, &Operators {
                 f64: Some(Box::new(|l: &f64, r: &f64| l.log(*r))),
@@ -404,7 +428,7 @@ impl Component for proto::And {
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
         Ok(ArrayNDProperties {
-            nullity: left_property.nullity && right_property.nullity,
+            nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
             nature: Some(Nature::Categorical(NatureCategorical {
                 categories: Vector2DJagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
@@ -445,7 +469,7 @@ impl Component for proto::Or {
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
         Ok(ArrayNDProperties {
-            nullity: left_property.nullity && right_property.nullity,
+            nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
             nature: Some(Nature::Categorical(NatureCategorical {
                 categories: Vector2DJagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
@@ -486,7 +510,7 @@ impl Component for proto::Negate {
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
         Ok(ArrayNDProperties {
-            nullity: left_property.nullity && right_property.nullity,
+            nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
             nature: Some(Nature::Categorical(NatureCategorical {
                 categories: Vector2DJagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
@@ -527,7 +551,7 @@ impl Component for proto::Equal {
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
         Ok(ArrayNDProperties {
-            nullity: left_property.nullity && right_property.nullity,
+            nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
             nature: Some(Nature::Categorical(NatureCategorical {
                 categories: Vector2DJagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
@@ -568,7 +592,7 @@ impl Component for proto::LessThan {
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
         Ok(ArrayNDProperties {
-            nullity: left_property.nullity && right_property.nullity,
+            nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
             nature: Some(Nature::Categorical(NatureCategorical {
                 categories: Vector2DJagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
@@ -609,7 +633,7 @@ impl Component for proto::GreaterThan {
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
         Ok(ArrayNDProperties {
-            nullity: left_property.nullity && right_property.nullity,
+            nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
             nature: Some(Nature::Categorical(NatureCategorical {
                 categories: Vector2DJagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
@@ -745,4 +769,53 @@ fn broadcast<T: Clone>(data: &Vec<T>, length: &i64) -> Result<Vec<T>> {
     }
 
     Ok((0..length.clone()).map(|_| data[0].clone()).collect())
+}
+
+/// Used for monotonic functions that may be either increasing or decreasing
+///
+/// A monotonically decreasing function may reverse the bounds. In this case, the min/max just needs to be sorted
+fn sort_bounds(mut nature: Option<Nature>, datatype: &DataType) -> Result<Option<Nature>> {
+    let nature = match &nature {
+        Some(value) => match value {
+            Nature::Continuous(continuous) => continuous,
+            Nature::Categorical(categorical) => return Ok(nature)
+        },
+        None => return Ok(nature)
+    };
+
+    let min = match datatype {
+        DataType::F64 => Vector1DNull::F64(nature.min.get_f64()?
+            .into_iter().zip(nature.max.get_f64()?)
+            .map(|(min, max)| match (min, max) {
+                    (Some(min), Some(max)) => Some(min.min(*max)),
+                    _ => *min
+                }).collect()),
+        DataType::I64 => Vector1DNull::I64(nature.min.get_i64()?
+            .into_iter().zip(nature.max.get_i64()?)
+            .map(|(min, max)| match (min, max) {
+                (Some(min), Some(max)) => Some(*min.min(max)),
+                _ => *min
+            }).collect()),
+        _ => return Err("bounds sorting requires numeric data".into())
+    };
+
+    let max = match datatype {
+        DataType::F64 => Vector1DNull::F64(nature.min.get_f64()?
+            .into_iter().zip(nature.max.get_f64()?)
+            .map(|(min, max)| match (min, max) {
+                (Some(min), Some(max)) => Some(min.max(*max)),
+                _ => *min
+            }).collect()),
+        DataType::I64 => Vector1DNull::I64(nature.min.get_i64()?
+            .into_iter().zip(nature.max.get_i64()?)
+            .map(|(min, max)| match (min, max) {
+                (Some(min), Some(max)) => Some(*min.max(max)),
+                _ => *min
+            }).collect()),
+        _ => return Err("bounds sorting requires numeric data".into())
+    };
+
+    Ok(Some(Nature::Continuous(NatureContinuous {
+        min, max
+    })))
 }
