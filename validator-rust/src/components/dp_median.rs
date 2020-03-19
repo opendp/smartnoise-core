@@ -39,14 +39,14 @@ impl Expandable for proto::DpMedian {
         _properties: &base::NodeProperties,
         component_id: u32,
         maximum_id: u32,
-    ) -> Result<(u32, HashMap<u32, proto::Component>)> {
+    ) -> Result<proto::ComponentExpansion> {
         let mut current_id = maximum_id.clone();
-        let mut graph_expansion: HashMap<u32, proto::Component> = HashMap::new();
+        let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
 
         // median
         current_id += 1;
         let id_median = current_id.clone();
-        graph_expansion.insert(id_median, proto::Component {
+        computation_graph.insert(id_median, proto::Component {
             arguments: hashmap!["data".to_owned() => *component.arguments.get("data").unwrap()],
             variant: Some(proto::component::Variant::from(proto::Quantile {
                 quantile: 0.5
@@ -58,7 +58,7 @@ impl Expandable for proto::DpMedian {
         let id_candidates = component.arguments.get("candidates").unwrap().clone();
 
         // sanitizing
-        graph_expansion.insert(component_id, proto::Component {
+        computation_graph.insert(component_id, proto::Component {
             arguments: hashmap!["data".to_owned() => id_median, "candidates".to_owned() => id_candidates],
             variant: Some(proto::component::Variant::from(proto::ExponentialMechanism {
                 privacy_usage: self.privacy_usage.clone()
@@ -67,7 +67,12 @@ impl Expandable for proto::DpMedian {
             batch: component.batch,
         });
 
-        Ok((current_id, graph_expansion))
+        Ok(proto::ComponentExpansion {
+            computation_graph,
+            properties: HashMap::new(),
+            releases: HashMap::new(),
+            traversal: vec![id_median]
+        })
     }
 }
 

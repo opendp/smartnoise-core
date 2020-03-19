@@ -9,7 +9,7 @@ use crate::proto;
 use crate::components::{Component, Expandable};
 use ndarray::Array;
 
-use crate::base::{Value, ArrayND, NodeProperties, get_constant, Nature, NatureContinuous, Vector1DNull, prepend, ValueProperties};
+use crate::base::{Value, ArrayND, NodeProperties, get_literal, Nature, NatureContinuous, Vector1DNull, prepend, ValueProperties};
 
 
 impl Component for proto::Resize {
@@ -117,9 +117,10 @@ impl Expandable for proto::Resize {
         properties: &base::NodeProperties,
         component_id: u32,
         maximum_id: u32,
-    ) -> Result<(u32, HashMap<u32, proto::Component>)> {
+    ) -> Result<proto::ComponentExpansion> {
         let mut current_id = maximum_id;
-        let mut graph_expansion: HashMap<u32, proto::Component> = HashMap::new();
+        let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
+        let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
 
         let mut component = component.clone();
 
@@ -132,7 +133,9 @@ impl Expandable for proto::Resize {
             let id_min = current_id.clone();
             let value = Value::ArrayND(ArrayND::F64(
                 Array::from(data_property.get_min_f64()?).into_dyn()));
-            graph_expansion.insert(id_min.clone(), get_constant(&value, &component.batch));
+            let (patch_node, release) = get_literal(&value, &component.batch)?;
+            computation_graph.insert(id_min.clone(), patch_node);
+            releases.insert(id_min.clone(), release);
             component.arguments.insert("min".to_string(), id_min);
         }
 
@@ -141,7 +144,9 @@ impl Expandable for proto::Resize {
             let id_max = current_id.clone();
             let value = Value::ArrayND(ArrayND::F64(
                 Array::from(data_property.get_max_f64()?).into_dyn()));
-            graph_expansion.insert(id_max, get_constant(&value, &component.batch));
+            let (patch_node, release) = get_literal(&value, &component.batch)?;
+            computation_graph.insert(id_max.clone(), patch_node);
+            releases.insert(id_max.clone(), release);
             component.arguments.insert("max".to_string(), id_max);
         }
 
@@ -151,12 +156,19 @@ impl Expandable for proto::Resize {
             let value = Value::ArrayND(ArrayND::I64(Array::from_shape_vec(
                 (), vec![data_property.get_num_records()?])
                 .unwrap().into_dyn()));
-
-            graph_expansion.insert(id_n, get_constant(&value, &component.batch));
+            let (patch_node, release) = get_literal(&value, &component.batch)?;
+            computation_graph.insert(id_n.clone(), patch_node);
+            releases.insert(id_n.clone(), release);
             component.arguments.insert("n".to_string(), id_n);
         }
 
-        graph_expansion.insert(component_id, component);
-        Ok((current_id, graph_expansion))
+        computation_graph.insert(component_id, component);
+
+        Ok(proto::ComponentExpansion {
+            computation_graph,
+            properties: HashMap::new(),
+            releases,
+            traversal: Vec::new()
+        })
     }
 }

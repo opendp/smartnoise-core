@@ -73,7 +73,7 @@ impl Evaluable for proto::component::Variant {
 
         evaluate!(
             // INSERT COMPONENT LIST
-            Constant, Bin, Cast, Clamp, Count, Covariance, Filter, Impute, Index, Maximum, Materialize, Mean,
+            Bin, Cast, Clamp, Count, Covariance, Filter, Impute, Index, Maximum, Materialize, Mean,
             Minimum, Quantile, LaplaceMechanism, GaussianMechanism, SimpleGeometricMechanism, Resize,
             Sum, Variance,
 
@@ -83,13 +83,5 @@ impl Evaluable for proto::component::Variant {
 
         Err(format!("Component type not implemented: {:?}", self).into())
 
-    }
-}
-
-
-impl Evaluable for proto::Constant {
-    /// Deprecated. "Evaluate" by returning a precomputed Value stored in the description of computation (self).
-    fn evaluate(&self, _arguments: &NodeArguments) -> Result<Value> {
-        parse_value(&self.to_owned().value.unwrap())
     }
 }

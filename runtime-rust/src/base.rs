@@ -15,7 +15,7 @@ use itertools::Itertools;
 
 use whitenoise_validator::base::{get_input_properties, Value, ValueProperties};
 use whitenoise_validator::utilities::inference::infer_property;
-use whitenoise_validator::utilities::serial::serialize_value_properties;
+use whitenoise_validator::utilities::serial::{serialize_value_properties, parse_release};
 
 pub type NodeArguments<'a> = HashMap<String, &'a Value>;
 
@@ -104,8 +104,9 @@ pub fn execute_graph(analysis: &proto::Analysis,
 //        println!("expanding component {:?}", component);
 //        println!("public arguments {:?}", public_arguments);
 //        println!("node properties {:?}", node_properties);
+
         // all arguments have been computed, attempt to expand the current node
-        let expansion: proto::response_expand_component::ExpandedComponent = whitenoise_validator::base::expand_component(
+        let expansion: proto::ComponentExpansion = whitenoise_validator::base::expand_component(
             &analysis.privacy_definition.to_owned().unwrap(),
             &component,
             &node_properties,
@@ -114,21 +115,22 @@ pub fn execute_graph(analysis: &proto::Analysis,
             maximum_id,
         )?;
 
-//        println!("expansion {:?}", expansion);
-        graph.extend(expansion.computation_graph.unwrap().value);
+        graph.extend(expansion.computation_graph.clone());
+        graph_properties.extend(expansion.properties);
+        release.extend(parse_release(&proto::Release{values: expansion.releases})?);
+        traversal.extend(expansion.traversal.clone());
 
-        if maximum_id != expansion.maximum_id {
-            maximum_id = expansion.maximum_id;
+        maximum_id = *expansion.computation_graph.keys()
+            .max().map(|v| v.max(&maximum_id)).unwrap_or(&maximum_id);
+
+        if !expansion.traversal.is_empty() {
             continue;
-        }
-
-        if let Some(expansion_property) = expansion.properties {
-//            println!("expansion property added to runtime props: {:?}", expansion_property);
-            graph_properties.insert(node_id, expansion_property);
         }
 
         traversal.pop();
 
+        // the patch may have overwritten the current component
+        let component = graph.get(&node_id).unwrap();
 
         let mut node_arguments = NodeArguments::new();
         component.arguments.iter().for_each(|(field_id, field)| {

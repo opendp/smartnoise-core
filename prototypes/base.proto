@@ -119,3 +119,9 @@ message Accuracy {
     double value = 1;
 }
 
+message ComponentExpansion {
+    map<uint32, Component> computation_graph = 1;
+    map<uint32, ValueProperties> properties = 2;
+    map<uint32, ReleaseNode> releases = 3;
+    repeated uint32 traversal = 4;
+}

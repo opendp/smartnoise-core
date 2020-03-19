@@ -39,14 +39,14 @@ impl Expandable for proto::DpMaximum {
         _properties: &base::NodeProperties,
         component_id: u32,
         maximum_id: u32,
-    ) -> Result<(u32, HashMap<u32, proto::Component>)> {
+    ) -> Result<proto::ComponentExpansion> {
         let mut current_id = maximum_id.clone();
-        let mut graph_expansion: HashMap<u32, proto::Component> = HashMap::new();
+        let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
 
         // Maximum
         current_id += 1;
         let id_maximum = current_id.clone();
-        graph_expansion.insert(id_maximum, proto::Component {
+        computation_graph.insert(id_maximum, proto::Component {
             arguments: hashmap!["data".to_owned() => *component.arguments.get("data").unwrap()],
             variant: Some(proto::component::Variant::from(proto::Maximum {})),
             omit: true,
@@ -56,7 +56,7 @@ impl Expandable for proto::DpMaximum {
         let id_candidates = component.arguments.get("candidates").unwrap().clone();
 
         // sanitizing
-        graph_expansion.insert(component_id, proto::Component {
+        computation_graph.insert(component_id, proto::Component {
             arguments: hashmap!["data".to_owned() => id_maximum, "candidates".to_owned() => id_candidates.clone()],
             variant: Some(proto::component::Variant::from(proto::ExponentialMechanism {
                 privacy_usage: self.privacy_usage.clone()
@@ -65,7 +65,12 @@ impl Expandable for proto::DpMaximum {
             batch: component.batch,
         });
 
-        Ok((current_id, graph_expansion))
+        Ok(proto::ComponentExpansion {
+            computation_graph,
+            properties: HashMap::new(),
+            releases: HashMap::new(),
+            traversal: vec![id_maximum]
+        })
     }
 }
 
