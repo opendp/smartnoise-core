@@ -11,8 +11,7 @@
     "true_label": {
       "type": "Array",
       "default": "None",
-      "description": "Positive class (class to be mapped to `true`) for each column.
-                      Used only if casting to `bool`."
+      "description": "Positive class (class to be mapped to `true`) for each column. Used only if casting to `bool`."
     },
     "min": {
       "type": "Array",

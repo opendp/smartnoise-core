@@ -8,8 +8,7 @@
     "n": {
       "nature": [],
       "type": "Array",
-      "description": "An estimate of the number of rows in the data.\n\n
-                      This could be the guess of the user, or the result of a DP release."
+      "description": "An estimate of the number of rows in the data.\n\nThis could be the guess of the user, or the result of a DP release."
     },
     "distribution": {
       "type": "String",
@@ -45,10 +44,5 @@
     "type": "Array",
     "description": "A resized version of data consistent with the provided `n`"
   },
-  "description": "Resizes the data in question to be consistent with a provided sample size, `n`.\n\n
-                The library does not, in general, assume that the sample size of the data being analyzed is known. This introduces a number of problems around how to calculate
-                statistics that are a function of the sample size.\n\n
-                To address this problem, the library asks the user to provide `n`, an estimate of the true sample size based on their own beliefs about the
-                data or a previous differentially private count of the number of rows in the data. This component then either subsamples or appends to the
-                data in order to make it consistent with the provided `n`.
+  "description": "Resizes the data in question to be consistent with a provided sample size, `n`.\n\nThe library does not, in general, assume that the sample size of the data being analyzed is known. This introduces a number of problems around how to calculate statistics that are a function of the sample size.\n\nTo address this problem, the library asks the user to provide `n`, an estimate of the true sample size based on their own beliefs about the data or a previous differentially private count of the number of rows in the data. This component then either subsamples or appends to the data in order to make it consistent with the provided `n`."
 }
