@@ -29,7 +29,7 @@ script:
   #- cargo test --verbose --workspace;
   - cd runtime-rust
   - cargo doc --verbose --target-dir=../docs
-  - cd ..
+  - cd ..; rm -rf docs/debug;
 
   # (4) Build python bindings and run tests
   #   > Commented out for now.  It works but takes a while to run...
@@ -45,7 +45,7 @@ script:
 deploy:
   provider: pages
   skip_cleanup: true
-  local_dir: docs/doc
+  local_dir: docs
   # Set in the settings page of your repository, as a secure variable
   github_token: $GITHUB_TOKEN
   # keep_history: true
