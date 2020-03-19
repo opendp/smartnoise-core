@@ -29,6 +29,28 @@ impl Evaluable for proto::Covariance {
     }
 }
 
+/// Construct upper triangular of sample covariance matrix from data matrix.
+///
+/// # Arguments
+/// * `data` - Data for which you want covariance matrix.
+///
+/// # Return
+/// Upper triangular of covariance matrix of your data.
+///
+/// # Example
+/// ```
+/// use ndarray::{ArrayD, arr2};
+/// use whitenoise_runtime::components::covariance::matrix_covariance;
+///
+/// // covariance matrix is:
+/// // [12.5  7.5 -7.5]
+/// // [ 7.5  4.5 -4.5]
+/// // [-7.5 -4.5  4.5]
+///
+/// let data = arr2(&[ [0., 2., 9.], [5., 5., 6.] ]).into_dyn();
+/// let cov_mat = matrix_covariance(&data).unwrap();
+/// assert!(cov_mat == vec![ vec![12.5, 7.5, -7.5], vec![4.5, -4.5], vec![4.5] ]);
+/// ```
 pub fn matrix_covariance(data: &ArrayD<f64>) -> Result<Vec<Vec<f64>>> {
 
     let means: Vec<f64> = mean(&data)?.iter().map(|v| v.clone()).collect();
@@ -46,6 +68,34 @@ pub fn matrix_covariance(data: &ArrayD<f64>) -> Result<Vec<Vec<f64>>> {
     Ok(covariances)
 }
 
+/// Construct sample cross-covariance matrix from pair of data matrices.
+///
+/// Element (i,j) of the cross-covariance matrix will be the covariance of the
+/// column i of `left` and column `j` of `right`
+///
+/// # Arguments
+/// * `left` - One of the two matrices for which you want the cross-covariance matrix.
+/// * `right` - One of the two matrices for which you want the cross-covariance matrix.
+///
+/// # Return
+/// Full cross-covariance matrix.
+///
+/// # Example
+/// ```
+/// use ndarray::{ArrayD, arr2};
+/// use whitenoise_runtime::components::covariance::matrix_cross_covariance;
+///
+/// let left = arr2(&[ [1., 3., 5.,], [2., 4., 6.] ]).into_dyn();
+/// let right = arr2(&[ [2., 4., 6.], [1., 3., 5.] ]).into_dyn();
+///
+/// let cross_covar = matrix_cross_covariance(&left, &right).unwrap();
+/// let left_covar = matrix_cross_covariance(&left, &left).unwrap();
+///
+/// // cross-covariance of left and right matrices
+/// assert!(cross_covar == arr2(&[ [-0.5, -0.5, -0.5], [-0.5, -0.5, -0.5], [-0.5, -0.5, -0.5] ]).into_dyn());
+///
+/// // cross-covariance of left with itself is equivalent to the standard covariance matrix
+/// assert!(left_covar == arr2(&[ [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5] ]).into_dyn());
 pub fn matrix_cross_covariance(left: &ArrayD<f64>, right: &ArrayD<f64>) -> Result<ArrayD<f64>> {
 
     let left_means: Vec<f64> = mean(&left)?.iter().map(|v| v.clone()).collect();
@@ -66,13 +116,13 @@ pub fn matrix_cross_covariance(left: &ArrayD<f64>, right: &ArrayD<f64>) -> Resul
     }
 }
 
-/// Get sample covariance between two arrays.
+/// Get sample covariance between two 1D-arrays.
 ///
 /// # Arguments
 /// * `left` - One of the two arrays for which you want the covariance.
 /// * `right` - One of the two arrays for which you want the covariance.
-/// * `mean_left' - Arithmetic mean of the left array.
-/// * `mean_right' - Arithmetic mean of the right array.
+/// * `mean_left` - Arithmetic mean of the left array.
+/// * `mean_right` - Arithmetic mean of the right array.
 ///
 /// # Return
 /// Covariance of the two arrays.
