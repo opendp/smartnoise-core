@@ -8,12 +8,11 @@ use crate::hashmap;
 use crate::components::{Component, Accuracy, Expandable, Report};
 
 
-use crate::base::{NodeProperties, Value, ValueProperties};
+use crate::base::{NodeProperties, Value, ValueProperties, prepend};
 use crate::utilities::json::{JSONRelease, value_to_json, AlgorithmInfo, privacy_usage_to_json};
 
 
 impl Component for proto::DpCovariance {
-    // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
@@ -118,7 +117,7 @@ impl Report for proto::DpCovariance {
 
             let release = JSONRelease {
                 description: "DP release information".to_string(),
-                statistic: "DPMean".to_string(),
+                statistic: "DPCovariance".to_string(),
                 variables: vec![],
                 releaseInfo,
                 privacyLoss: privacy_usage_to_json(&self.privacy_usage[column_number as usize].clone()),

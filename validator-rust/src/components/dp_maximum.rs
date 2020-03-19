@@ -102,7 +102,6 @@ impl Report for proto::DpMaximum {
 
         let minimums = data_property.get_min_f64().unwrap();
         let maximums = data_property.get_max_f64().unwrap();
-        let num_records = data_property.get_num_records().unwrap();
 
         for column_number in 0..data_property.num_columns.unwrap() {
             let mut releaseInfo = HashMap::new();
@@ -111,7 +110,7 @@ impl Report for proto::DpMaximum {
 
             let release = JSONRelease {
                 description: "DP release information".to_string(),
-                statistic: "DPMean".to_string(),
+                statistic: "DPMaximum".to_string(),
                 variables: vec![],
                 releaseInfo,
                 privacyLoss: privacy_usage_to_json(&self.privacy_usage[column_number as usize].clone()),
@@ -123,7 +122,6 @@ impl Report for proto::DpMaximum {
                     name: "".to_string(),
                     cite: "".to_string(),
                     argument: serde_json::json!({
-                        "n": num_records,
                         "constraint": {
                             "lowerbound": minimums[column_number as usize],
                             "upperbound": maximums[column_number as usize]

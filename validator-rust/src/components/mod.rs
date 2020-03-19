@@ -406,7 +406,8 @@ impl Report for proto::component::Variant {
 
         summarize!(
             // INSERT COMPONENT LIST
-            DpMean
+            DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMinimum, DpMomentRaw,
+            DpSum, DpVariance
         );
 
         Ok(None)

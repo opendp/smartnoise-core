@@ -138,7 +138,7 @@ impl Report for proto::DpHistogram {
 
             let release = JSONRelease {
                 description: "DP release information".to_string(),
-                statistic: "DPMean".to_string(),
+                statistic: "DPHistogram".to_string(),
                 variables: vec![],
                 releaseInfo,
                 privacyLoss: privacy_usage_to_json(&self.privacy_usage[column_number as usize].clone()),
