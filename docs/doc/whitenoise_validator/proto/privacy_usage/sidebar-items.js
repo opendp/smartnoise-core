@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Distance",""]],"struct":[["DistanceApproximate",""],["DistancePure",""]]});
