@@ -37,16 +37,22 @@ script:
   #- export RUST_BACKTRACE=1; python3 -m pip install -e . -v;
   #- python3 -m pytest -x -v; cd ..;
 
+# -------------------------------------------
+# Deploy the Rust documentation to
+# GitHub pages
+# - Triggered when the branch is "master"
+# -------------------------------------------
 deploy:
   provider: pages
   skip_cleanup: true
   local_dir: docs
   # Set in the settings page of your repository, as a secure variable
   github_token: $GITHUB_TOKEN
-  keep_history: true
+  # keep_history: true
   target_branch: gh-pages
   on:
     branch: 62-rp-pages
+    #branch: master
   #verbose: true
 
 #after_success:
