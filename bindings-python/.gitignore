@@ -9,6 +9,12 @@ whitenoise.egg-info
 whitenoise/components.py
 whitenoise/variant_message_map.json
 
+yarrow/_native*
+yarrow.egg-info
+.eggs/
+yarrow/components.py
+yarrow/variant_message_map.json
+
 debug_build.log
 debug_app.log
 debug_tests.log
