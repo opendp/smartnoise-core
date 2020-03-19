@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["quantile","Accepts data and returns nth quantile"]]});
