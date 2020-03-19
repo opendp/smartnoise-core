@@ -74,11 +74,11 @@ impl Evaluable for proto::component::Variant {
         evaluate!(
             // INSERT COMPONENT LIST
             Constant, Bin, Cast, Clamp, Count, Covariance, Filter, Impute, Index, Maximum, Materialize, Mean,
-            Minimum, Quantile, Laplacemechanism, Gaussianmechanism, Simplegeometricmechanism, Resize,
+            Minimum, Quantile, LaplaceMechanism, GaussianMechanism, SimpleGeometricMechanism, Resize,
             Sum, Variance,
 
-            Add, Subtract, Divide, Multiply, Power, Log, Modulo, Remainder, And, Or, Negate,
-            Equal, Lessthan, Greaterthan, Negative
+            Add, Subtract, Divide, Multiply, Power, Log, Modulo, Remainder, LogicalAnd, LogicalOr, Negate,
+            Equal, LessThan, GreaterThan, Negative
         );
 
         Err(format!("Component type not implemented: {:?}", self).into())
