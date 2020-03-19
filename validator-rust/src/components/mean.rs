@@ -8,8 +8,6 @@ use crate::{proto, base};
 use crate::components::{Component, Aggregator};
 use crate::base::{Value, NodeProperties, AggregatorProperties, Sensitivity, prepend, ValueProperties};
 
-// TODO: more checks needed here
-
 impl Component for proto::Mean {
     fn propagate_property(
         &self,

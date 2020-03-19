@@ -10,7 +10,6 @@ use crate::base::{Value, Vector2DJagged, NodeProperties, AggregatorProperties, S
 
 
 impl Component for proto::Partition {
-    // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,

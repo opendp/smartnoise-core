@@ -14,6 +14,5 @@
       "categorical"
     ],
     "type": "Array"
-  },
-  "docstring": "pass forward the data contained within the protobuf as an array"
+  }
 }

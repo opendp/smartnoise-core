@@ -13,6 +13,5 @@
       "continuous"
     ],
     "type": "Array"
-  },
-  "docstring": "negate step"
+  }
 }

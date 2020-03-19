@@ -10,7 +10,6 @@ use crate::base::{Value, NodeProperties, AggregatorProperties, Sensitivity, prep
 
 
 impl Component for proto::KthRawSampleMoment {
-    // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
@@ -26,7 +25,7 @@ impl Component for proto::KthRawSampleMoment {
             component: proto::component::Variant::from(self.clone()),
             properties: properties.clone()
         });
-
+        data_property.num_records = Some(1);
         Ok(data_property.into())
     }
 

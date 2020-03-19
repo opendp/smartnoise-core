@@ -229,11 +229,9 @@ impl Component for proto::Power {
         Ok(ArrayNDProperties {
             nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
-            nature: sort_bounds(propagate_binary_nature(&left_property, &right_property, &Operators {
-                f64: Some(Box::new(|l: &f64, r: &f64| l.powf(*r))),
-                i64: Some(Box::new(|l: &i64, r: &i64| l.pow(*r as u32))),
-                str: None, bool: None
-            }, &num_columns)?, &left_property.data_type)?,
+            // raising data to a power is not monotonic
+            // while it is easy to derive conservative bounds (minimize/maximize a single term polynomial on an interval), for now just drop bounds
+            nature: None,
             c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
                 .map(|(l, r)| l.max(r)).collect(),
@@ -352,10 +350,22 @@ impl Component for proto::Modulo {
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
+        let maximum = right_property.nature.and_then(|nature| match nature {
+            Nature::Continuous(continuous) => Some(continuous.max),
+            _ => None
+        });
+
         Ok(ArrayNDProperties {
             nullity: true,
             releasable: left_property.releasable && right_property.releasable,
-            nature: None,
+            nature: maximum.and_then(|maximum| Some(Nature::Continuous(NatureContinuous {
+                min: match maximum {
+                    Vector1DNull::F64(_) => Vector1DNull::F64((0..num_columns).map(|_| Some(0.)).collect()),
+                    Vector1DNull::I64(_) => Vector1DNull::I64((0..num_columns).map(|_| Some(0)).collect()),
+                    _ => return None
+                },
+                max: maximum
+            }))),
             c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
                 .map(|(l, r)| l.max(r)).collect(),
@@ -365,44 +375,6 @@ impl Component for proto::Modulo {
             aggregator: None
         }.into())
     }
-    fn get_names(
-        &self,
-        _properties: &base::NodeProperties,
-    ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
-    }
-}
-
-impl Component for proto::Remainder {
-    fn propagate_property(
-        &self,
-        _privacy_definition: &proto::PrivacyDefinition,
-        public_arguments: &HashMap<String, Value>,
-        properties: &base::NodeProperties,
-    ) -> Result<ValueProperties> {
-        let mut left_property = properties.get("left")
-            .ok_or("left: missing")?.get_arraynd()
-            .map_err(prepend("left:"))?.clone();
-        let mut right_property = properties.get("right")
-            .ok_or("right: missing")?.get_arraynd()
-            .map_err(prepend("right:"))?.clone();
-
-        let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
-
-        Ok(ArrayNDProperties {
-            nullity: true,
-            releasable: left_property.releasable && right_property.releasable,
-            nature: None,
-            c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
-                .zip(broadcast(&right_property.c_stability, &num_columns)?)
-                .map(|(l, r)| l.max(r)).collect(),
-            num_columns: Some(num_columns),
-            num_records: Some(num_records),
-            data_type: left_property.data_type,
-            aggregator: None
-        }.into())
-    }
-
     fn get_names(
         &self,
         _properties: &base::NodeProperties,
@@ -428,7 +400,7 @@ impl Component for proto::And {
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
         Ok(ArrayNDProperties {
-            nullity: left_property.nullity || right_property.nullity,
+            nullity: false,
             releasable: left_property.releasable && right_property.releasable,
             nature: Some(Nature::Categorical(NatureCategorical {
                 categories: Vector2DJagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
@@ -469,7 +441,7 @@ impl Component for proto::Or {
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
         Ok(ArrayNDProperties {
-            nullity: left_property.nullity || right_property.nullity,
+            nullity: false,
             releasable: left_property.releasable && right_property.releasable,
             nature: Some(Nature::Categorical(NatureCategorical {
                 categories: Vector2DJagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
@@ -510,7 +482,7 @@ impl Component for proto::Negate {
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
         Ok(ArrayNDProperties {
-            nullity: left_property.nullity || right_property.nullity,
+            nullity: false,
             releasable: left_property.releasable && right_property.releasable,
             nature: Some(Nature::Categorical(NatureCategorical {
                 categories: Vector2DJagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
@@ -551,7 +523,7 @@ impl Component for proto::Equal {
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
         Ok(ArrayNDProperties {
-            nullity: left_property.nullity || right_property.nullity,
+            nullity: false,
             releasable: left_property.releasable && right_property.releasable,
             nature: Some(Nature::Categorical(NatureCategorical {
                 categories: Vector2DJagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
@@ -592,7 +564,7 @@ impl Component for proto::LessThan {
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
         Ok(ArrayNDProperties {
-            nullity: left_property.nullity || right_property.nullity,
+            nullity: false,
             releasable: left_property.releasable && right_property.releasable,
             nature: Some(Nature::Categorical(NatureCategorical {
                 categories: Vector2DJagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
@@ -633,7 +605,7 @@ impl Component for proto::GreaterThan {
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
         Ok(ArrayNDProperties {
-            nullity: left_property.nullity || right_property.nullity,
+            nullity: false,
             releasable: left_property.releasable && right_property.releasable,
             nature: Some(Nature::Categorical(NatureCategorical {
                 categories: Vector2DJagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
@@ -705,7 +677,13 @@ pub fn propagate_binary_nature(left_property: &ArrayNDProperties, right_property
                             Some(operator) => Vector1DNull::F64(broadcast(&left_min, &output_num_columns)?.iter()
                                 .zip(broadcast(&right_min, &output_num_columns)?)
                                 .map(|(l, r)| match (l, r) {
-                                    (Some(l), Some(r)) => Some(operator(l, &r)),
+                                    (Some(l), Some(r)) => {
+                                        let result = operator(l, &r);
+                                        match result.is_finite() {
+                                            true => Some(result),
+                                            false => None
+                                        }
+                                    },
                                     _ => None
                                 })
                                 .collect()),

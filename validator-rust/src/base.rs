@@ -501,7 +501,7 @@ impl ArrayNDProperties {
 }
 
 /// Fundamental data types for ArrayNDs and Vector2DJagged Values.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum DataType {
     Bool, Str, F64, I64
 }

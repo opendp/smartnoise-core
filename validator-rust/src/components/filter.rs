@@ -2,7 +2,7 @@ use crate::errors::*;
 
 use crate::components::Component;
 use std::collections::HashMap;
-use crate::base::{Value, AggregatorProperties, prepend, ValueProperties};
+use crate::base::{Value, AggregatorProperties, prepend, ValueProperties, DataType};
 use crate::base;
 use crate::proto;
 use crate::components::transforms::propagate_binary_shape;
@@ -23,9 +23,19 @@ impl Component for proto::Filter {
             .ok_or("mask: missing")?.get_arraynd()
             .map_err(prepend("mask:"))?.clone();
 
+        if mask_property.data_type != DataType::Bool {
+            return Err("mask: must be boolean".into())
+        }
+
+        if mask_property.get_num_columns()? != 1 {
+            return Err("mask: number of columns must be one".into())
+        }
+
         propagate_binary_shape(&data_property, &mask_property)?;
 
         data_property.assert_is_not_aggregated()?;
+
+        // the number of records is not known after filtering rows
         data_property.num_records = None;
 
         Ok(data_property.into())

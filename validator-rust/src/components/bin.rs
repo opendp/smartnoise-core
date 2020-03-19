@@ -1,7 +1,7 @@
 use crate::errors::*;
 
 use std::collections::HashMap;
-use crate::base::{Nature, Vector1DNull, NodeProperties, ArrayND, NatureCategorical, standardize_categorical_argument, Vector2DJagged, ValueProperties, prepend};
+use crate::base::{Nature, Vector1DNull, NodeProperties, ArrayND, NatureCategorical, standardize_categorical_argument, Vector2DJagged, ValueProperties, prepend, DataType};
 
 use crate::{proto, base};
 
@@ -50,6 +50,7 @@ impl Component for proto::Bin {
         data_property.nature = Some(Nature::Categorical(NatureCategorical {
             categories: Vector2DJagged::F64(edges.iter().map(|col| Some(col.clone())).collect()),
         }));
+        data_property.data_type = DataType::F64;
 
         Ok(data_property.into())
     }

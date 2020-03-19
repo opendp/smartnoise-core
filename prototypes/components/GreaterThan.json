@@ -19,6 +19,5 @@
   "return": {
     "nature": [],
     "type": "Array"
-  },
-  "docstring": "greater_than step"
+  }
 }

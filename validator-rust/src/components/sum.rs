@@ -8,8 +8,6 @@ use crate::{proto, base};
 use crate::components::{Component, Aggregator};
 use crate::base::{Value, NodeProperties, AggregatorProperties, Sensitivity, prepend, ValueProperties};
 
-// TODO: more checks needed here
-
 impl Component for proto::Sum {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(

@@ -77,7 +77,7 @@ impl Evaluable for proto::component::Variant {
             Minimum, Quantile, LaplaceMechanism, GaussianMechanism, SimpleGeometricMechanism, Resize,
             Sum, Variance,
 
-            Add, Subtract, Divide, Multiply, Power, Log, Modulo, Remainder, LogicalAnd, LogicalOr, Negate,
+            Add, Subtract, Divide, Multiply, Power, Log, Modulo, LogicalAnd, LogicalOr, Negate,
             Equal, LessThan, GreaterThan, Negative
         );
 

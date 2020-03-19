@@ -6,6 +6,7 @@ use whitenoise_validator::base::{Value, ArrayND, get_argument};
 use whitenoise_validator::proto;
 use std::ops::Rem;
 use crate::components::row_max::broadcast_map;
+use crate::utilities::noise::sample_uniform_int;
 
 
 impl Evaluable for proto::Add {
@@ -90,30 +91,17 @@ impl Evaluable for proto::Modulo {
         match (get_argument(&arguments, "left")?, get_argument(&arguments, "right")?) {
             (Value::ArrayND(left), Value::ArrayND(right)) => match (left, right) {
                 (ArrayND::F64(x), ArrayND::F64(y)) =>
-                    Ok(broadcast_map(&x, &y, &|l: &f64, r: &f64| l.div_euclid(*r))?.into()),
-                (ArrayND::I64(x), ArrayND::I64(y)) =>
-                    Ok(broadcast_map(&x, &y, &|l: &i64, r: &i64| match l.checked_div_euclid(*r) {
-                        // TODO SECURITY: impute ints
-                        Some(v) => v, None => 0
-                    })?.into()),
+                    Ok(broadcast_map(&x, &y, &|l: &f64, r: &f64| l.rem_euclid(*r))?.into()),
+                (ArrayND::I64(x), ArrayND::I64(y)) => {
+                    let min = get_argument(arguments, "min")?.get_first_i64()?;
+                    let max = get_argument(arguments, "max")?.get_first_i64()?;
+                    Ok(broadcast_map(&x, &y, &|l: &i64, r: &i64| match l.checked_rem_euclid(*r) {
+                        Some(v) => v, None => sample_uniform_int(&min, &max)
+                    })?.into())
+                },
                 _ => Err("Modulo: Either the argument types are mismatched or non-numeric.".into())
             },
             _ => Err("Modulo: Both arguments must be arrays.".into())
-        }
-    }
-}
-
-impl Evaluable for proto::Remainder {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        match (get_argument(&arguments, "left")?, get_argument(&arguments, "right")?) {
-            (Value::ArrayND(left), Value::ArrayND(right)) => match (left, right) {
-                (ArrayND::F64(x), ArrayND::F64(y)) =>
-                    Ok(broadcast_map(&x, &y, &|l: &f64, r: &f64| l.rem_euclid(*r))?.into()),
-                (ArrayND::I64(x), ArrayND::I64(y)) =>
-                    Ok(broadcast_map(&x, &y, &|l: &i64, r: &i64| l.rem(*r))?.into()),
-                _ => Err("Remainder: Either the argument types are mismatched or non-numeric.".into())
-            },
-            _ => Err("Remainder: Both arguments must be arrays.".into())
         }
     }
 }

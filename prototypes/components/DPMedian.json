@@ -23,6 +23,5 @@
   },
   "return": {
     "type": "Array"
-  },
-  "docstring": "dp_median step"
+  }
 }
