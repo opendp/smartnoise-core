@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["Iter","An iterator over floating point numbers, created by `Ieee754::upto`."]],"trait":[["Bits",""],["Ieee754","Types that are IEEE754 floating point numbers."]]});

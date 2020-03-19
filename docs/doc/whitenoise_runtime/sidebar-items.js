@@ -1,1 +1,0 @@
-initSidebarItems({"fn":[["release","Evaluate an analysis and release the differentially private results."]],"mod":[["base",""],["components","Component trait implementations"],["proto",""],["utilities",""]],"struct":[["ByteBuffer","Container for responses over FFI."]]});

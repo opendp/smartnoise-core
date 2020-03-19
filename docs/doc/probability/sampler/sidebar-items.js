@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["Independent","A means of drawing a sequence of independent samples."]]});

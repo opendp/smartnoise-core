@@ -1,1 +1,0 @@
-initSidebarItems({"fn":[["arraynd_to_json",""],["privacy_usage_to_json",""],["value_to_json",""]],"struct":[["Accuracy",""],["AlgorithmInfo",""],["JSONRelease",""]]});

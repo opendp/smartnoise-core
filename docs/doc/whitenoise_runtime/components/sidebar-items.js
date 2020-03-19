@@ -1,1 +1,0 @@
-initSidebarItems({"mod":[["bin",""],["cast",""],["clamp",""],["count",""],["covariance",""],["filter",""],["impute",""],["index",""],["materialize",""],["maximum",""],["mean",""],["mechanisms",""],["minimum",""],["quantile",""],["resize",""],["row_max",""],["row_min",""],["sum",""],["transforms",""],["variance",""]],"trait":[["Evaluable","Evaluable component trait"]]});

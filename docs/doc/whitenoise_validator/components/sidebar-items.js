@@ -1,1 +1,0 @@
-initSidebarItems({"trait":[["Accuracy","Accuracy component trait (not yet implemented)"],["Aggregator","Aggregator Component trait"],["Component","Universal Component trait"],["Expandable","Expandable Component trait"],["Report","Report component trait"]]});

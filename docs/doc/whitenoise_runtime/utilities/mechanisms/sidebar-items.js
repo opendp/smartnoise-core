@@ -1,1 +1,0 @@
-initSidebarItems({"fn":[["exponential_mechanism","Returns data element according to the Exponential mechanism."],["gaussian_mechanism","Returns noise drawn according to the Gaussian mechanism."],["laplace_mechanism","Returns noise drawn according to the Laplace mechanism"],["simple_geometric_mechanism","Returns noise drawn according to the Geometric mechanism."]]});
