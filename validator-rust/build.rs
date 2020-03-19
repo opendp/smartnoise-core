@@ -157,7 +157,6 @@ message Component {
         file.write(proto_text.as_bytes())
             .expect("Unable to write components.proto file.");
         file.flush().unwrap();
-        drop(file);
     }
 //    panic to prevent stdout from being masked
 //    panic!("You can't suppress me rustc!");

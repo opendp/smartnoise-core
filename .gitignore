@@ -58,6 +58,9 @@ build
 
 # generated protobuf bindings
 */prototypes
+
+# generated protobuf
+prototypes/components.proto
 .Rproj.user
 
 
