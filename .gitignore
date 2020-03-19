@@ -65,3 +65,6 @@ prototypes/components.proto
 
 
 *.DS_Store
+docs/debug/*
+docs/doc/.lock
+docs/.rustc_info.json
