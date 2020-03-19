@@ -1498,6 +1498,29 @@
 <span id="1498">1498</span>
 <span id="1499">1499</span>
 <span id="1500">1500</span>
+<span id="1501">1501</span>
+<span id="1502">1502</span>
+<span id="1503">1503</span>
+<span id="1504">1504</span>
+<span id="1505">1505</span>
+<span id="1506">1506</span>
+<span id="1507">1507</span>
+<span id="1508">1508</span>
+<span id="1509">1509</span>
+<span id="1510">1510</span>
+<span id="1511">1511</span>
+<span id="1512">1512</span>
+<span id="1513">1513</span>
+<span id="1514">1514</span>
+<span id="1515">1515</span>
+<span id="1516">1516</span>
+<span id="1517">1517</span>
+<span id="1518">1518</span>
+<span id="1519">1519</span>
+<span id="1520">1520</span>
+<span id="1521">1521</span>
+<span id="1522">1522</span>
+<span id="1523">1523</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BoolNull</span> {
@@ -2142,14 +2165,16 @@
 }
 <span class="doccomment">/// Filter Component</span>
 <span class="doccomment">/// </span>
+<span class="doccomment">/// Filters data down into only the desired rows.</span>
+<span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data` - Array</span>
-<span class="doccomment">/// * `mask` - Array</span>
+<span class="doccomment">/// * `data` - Array - Data to be filtered.</span>
+<span class="doccomment">/// * `mask` - Array - Boolean mask giving whether or not each row should be kept.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// * `Value` - Array</span>
+<span class="doccomment">/// * `Value` - Array - Data with only the desired rows.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Filter</span> {
 }
@@ -2192,19 +2217,27 @@
 }
 <span class="doccomment">/// Resize Component</span>
 <span class="doccomment">/// </span>
+<span class="doccomment">/// Resizes the data in question to be consistent with a provided sample size, `n`.</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// The library does not, in general, assume that the sample size of the data being analyzed is known. This introduces a number of problems around how to calculate statistics that are a function of the sample size.</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// To address this problem, the library asks the user to provide `n`, an estimate of the true sample size based on their own beliefs about the data or a previous differentially private count of the number of rows in the data. This component then either subsamples or appends to the data in order to make it consistent with the provided `n`.</span>
+<span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data` - Array</span>
-<span class="doccomment">/// * `distribution` - String</span>
-<span class="doccomment">/// * `max` - Array</span>
-<span class="doccomment">/// * `min` - Array</span>
-<span class="doccomment">/// * `n` - Array</span>
-<span class="doccomment">/// * `scale` - Array</span>
-<span class="doccomment">/// * `shift` - Array</span>
+<span class="doccomment">/// * `data` - Array - The data to be resized.</span>
+<span class="doccomment">/// * `distribution` - String - The distribution to be used when imputing records.</span>
+<span class="doccomment">/// * `max` - Array - An upper bound on data elements for each column.</span>
+<span class="doccomment">/// * `min` - Array - A lower bound on data elements for each column.</span>
+<span class="doccomment">/// * `n` - Array - An estimate of the number of rows in the data.</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// This could be the guess of the user, or the result of a DP release.</span>
+<span class="doccomment">/// * `scale` - Array - The standard deviation of the Gaussian distribution used for imputation (used only if `distribution = Gaussian`).</span>
+<span class="doccomment">/// * `shift` - Array - The expectation of the Gaussian distribution used for imputation (used only if `distribution = Gaussian`).</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// * `Value` - Array</span>
+<span class="doccomment">/// * `Value` - Array - A resized version of data consistent with the provided `n`</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Resize</span> {
 }
@@ -2250,11 +2283,11 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `by` - Array</span>
+<span class="doccomment">/// * `by` - Array - Data for which you want the arithmetic mean.</span>
 <span class="doccomment">/// * `data` - Array</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// * `Value` - Array</span>
+<span class="doccomment">/// * `Value` - Array - Arithmetic mean for each column of the data in question.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Mean</span> {
 }
@@ -2414,17 +2447,22 @@
 }
 <span class="doccomment">/// Clamp Component</span>
 <span class="doccomment">/// </span>
+<span class="doccomment">/// Clamps data to the provided bounds.</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">///  If data are numeric, clamping maps elements outside of an interval `[min, max]` to the closer endpoint.</span>
+<span class="doccomment">/// If data are categorical, clamping maps elements outside of the `categories` argument to the associated `null`.</span>
+<span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `categories` - Jagged</span>
-<span class="doccomment">/// * `data` - Array</span>
-<span class="doccomment">/// * `max` - Array</span>
-<span class="doccomment">/// * `min` - Array</span>
-<span class="doccomment">/// * `null_value` - Array</span>
+<span class="doccomment">/// * `categories` - Jagged - The set of categories you want to be represented for each column of the data.</span>
+<span class="doccomment">/// * `data` - Array - Data to be clamped.</span>
+<span class="doccomment">/// * `max` - Array - Desired upper bound for each column of the data. Used only if `categories` is `None`.</span>
+<span class="doccomment">/// * `min` - Array - Desired lower bound for each column of the data. Used only if `categories` is `None`.</span>
+<span class="doccomment">/// * `null_value` - Array - The value to which elements not included in `categories` will be mapped for each column of the data. Used only if `categories` is not `None`.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// * `Value` - Array</span>
+<span class="doccomment">/// * `Value` - Array - Clamped data.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Clamp</span> {
 }
@@ -2527,18 +2565,24 @@
 }
 <span class="doccomment">/// Impute Component</span>
 <span class="doccomment">/// </span>
+<span class="doccomment">/// Replaces null values with draws from a specified distribution.</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// If the `categories` argument is provided, the data are considered to be categorical regardless of atomic type and the elements provided in `null_value` will be replaced with those in `categories` according to `weights`.</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// If the `categories` argument is not provided, the data are considered to be numeric and elements that are `f64::NAN` will be replaced according to the specified distribution.</span>
+<span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data` - Array</span>
-<span class="doccomment">/// * `distribution` - String</span>
-<span class="doccomment">/// * `max` - Array</span>
-<span class="doccomment">/// * `min` - Array</span>
-<span class="doccomment">/// * `scale` - Array</span>
-<span class="doccomment">/// * `shift` - Array</span>
+<span class="doccomment">/// * `data` - Array - The data for which null values will be imputed.</span>
+<span class="doccomment">/// * `distribution` - String - The distribution to be used when imputing records. Used only if `categories` is `None`.</span>
+<span class="doccomment">/// * `max` - Array - An upper bound on data elements for each column. Used only if `categories` is `None`.</span>
+<span class="doccomment">/// * `min` - Array - A lower bound on data elements for each column. Used only if `categories` is `None`.</span>
+<span class="doccomment">/// * `scale` - Array - The standard deviation of the Gaussian distribution to be used for imputation. Used only if `distribution` is `Gaussian`.</span>
+<span class="doccomment">/// * `shift` - Array - The expectation of the Gaussian distribution to be used for imputation. Used only if `distribution` is `Gaussian`.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// * `Value` - Array</span>
+<span class="doccomment">/// * `Value` - Array - Data with null values replaced by imputed values.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Impute</span> {
 }
@@ -2558,14 +2602,16 @@
 }
 <span class="doccomment">/// Cast Component</span>
 <span class="doccomment">/// </span>
+<span class="doccomment">/// Cast data to a different atomic type.</span>
+<span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data` - Array</span>
-<span class="doccomment">/// * `max` - Array</span>
-<span class="doccomment">/// * `min` - Array</span>
-<span class="doccomment">/// * `true_label` - Array</span>
-<span class="doccomment">/// * `type` - Array</span>
+<span class="doccomment">/// * `data` - Array - Data to be cast to another type.</span>
+<span class="doccomment">/// * `max` - Array - Maximum allowable imputation value. Used only if casting to `i64`.</span>
+<span class="doccomment">/// * `min` - Array - Minimum allowable imputation value. Used only if casting to `i64`.</span>
+<span class="doccomment">/// * `true_label` - Array - Positive class (class to be mapped to `true`) for each column. Used only if casting to `bool`.</span>
+<span class="doccomment">/// * `type` - Array - Type to which data should be cast.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array</span>

@@ -239,28 +239,6 @@
 <span id="239">239</span>
 <span id="240">240</span>
 <span id="241">241</span>
-<span id="242">242</span>
-<span id="243">243</span>
-<span id="244">244</span>
-<span id="245">245</span>
-<span id="246">246</span>
-<span id="247">247</span>
-<span id="248">248</span>
-<span id="249">249</span>
-<span id="250">250</span>
-<span id="251">251</span>
-<span id="252">252</span>
-<span id="253">253</span>
-<span id="254">254</span>
-<span id="255">255</span>
-<span id="256">256</span>
-<span id="257">257</span>
-<span id="258">258</span>
-<span id="259">259</span>
-<span id="260">260</span>
-<span id="261">261</span>
-<span id="262">262</span>
-<span id="263">263</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">whitenoise_validator</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
@@ -274,28 +252,6 @@
 
 
 <span class="kw">impl</span> <span class="ident">Evaluable</span> <span class="kw">for</span> <span class="ident">proto</span>::<span class="ident">Impute</span> {
-    <span class="doccomment">/// Replaces null values with draws from a specified distribution.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If the `categories` argument is provided, the data are considered to be categorical</span>
-    <span class="doccomment">/// (regardless of atomic type) and the elements provided in `null_value` will be replaced with those in</span>
-    <span class="doccomment">/// `categories` according to `weights`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If the `categories` argument is not provided, the data are considered to be numeric</span>
-    <span class="doccomment">/// and elements that are `f64::NAN` will be replaced according to the specified distribution.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Arguments</span>
-    <span class="doccomment">/// * `data` - The data for which null values will be imputed.</span>
-    <span class="doccomment">/// * `categories` - For each data column, the set of possible values for elements in the column.</span>
-    <span class="doccomment">/// * `weights` - For each data column, weights for each category to be used when imputing null values. Used only if `categories` argument is provided.</span>
-    <span class="doccomment">/// * `null_value` - For each data column, the value of the data to be considered NULL. Used only if `categories` argument is provided.</span>
-    <span class="doccomment">/// * `distribution` - The distribution to be used when imputing records. Used only if `categories` argument is not provided.</span>
-    <span class="doccomment">/// * `min` - For each data column, a lower bound on data elements. Used only if `categories` argument is not provided.</span>
-    <span class="doccomment">/// * `max` - For each data column, an upper bound on data elements. Used only if `categories` argument is not provided.</span>
-    <span class="doccomment">/// * `shift` - For each data column, the shift (expectation) argument for the Gaussian distribution (if used for imputation). Used only if `categories` argument is not provided and `distribution = Gaussian`.</span>
-    <span class="doccomment">/// * `scale` - For each data column, the scale (standard deviation) argument for the Gaussian distribution (if used for imputation). Used only if `categories` argument is not provided and `distribution = Gaussian`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Return</span>
-    <span class="doccomment">/// Data with null values replaced by imputed values.</span>
     <span class="kw">fn</span> <span class="ident">evaluate</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">arguments</span>: <span class="kw-2">&amp;</span><span class="ident">NodeArguments</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">uniform</span>: <span class="ident">String</span> <span class="op">=</span> <span class="string">&quot;Uniform&quot;</span>.<span class="ident">to_string</span>(); <span class="comment">// Distributions</span>
         <span class="kw">let</span> <span class="ident">gaussian</span>: <span class="ident">String</span> <span class="op">=</span> <span class="string">&quot;Gaussian&quot;</span>.<span class="ident">to_string</span>();
@@ -524,6 +480,5 @@
         .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
 
     <span class="prelude-val">Ok</span>(<span class="ident">data</span>)
-}
-</pre></div>
+}</pre></div>
 </section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../";window.currentCrate = "whitenoise_runtime";</script><script src="../../../aliases.js"></script><script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script><script defer src="../../../search-index.js"></script></body></html>
