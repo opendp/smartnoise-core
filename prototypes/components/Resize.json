@@ -3,12 +3,12 @@
     "data": {
       "nature": [],
       "type": "Array",
-      "description": "The data to be resized"
+      "description": "The data to be resized."
     },
     "n": {
       "nature": [],
       "type": "Array",
-      "description": "An estimate of the size of the data.\n\n
+      "description": "An estimate of the number of rows in the data.\n\n
                       This could be the guess of the user, or the result of a DP release."
     },
     "distribution": {

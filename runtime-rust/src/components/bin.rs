@@ -54,7 +54,7 @@ pub enum BinSide {
 /// # Example
 /// ```
 /// use ndarray::{ArrayD, arr2, arr1};
-/// use yarrow_runtime::components::bin::{bin, BinSide};
+/// use whitenoise_runtime::components::bin::{bin, BinSide};
 ///
 /// let data = arr1(&[1.1, 2., 2.9, 4.1, 6.4]).into_dyn();
 /// let edges = vec![Some(vec![0., 1., 2., 3., 4., 5.])];

@@ -24,8 +24,26 @@ impl Evaluable for proto::Filter {
     }
 }
 
-
-fn filter<T: Clone>(data: &ArrayD<T>, mask: &ArrayD<bool>) -> Result<ArrayD<T>> {
+/// Filters data down into only the desired rows.
+///
+/// # Arguments
+/// * `data` - Data to be filtered.
+/// * `mask` - Boolean mask giving whether or not each row should be kept.
+///
+/// # Return
+/// Data with only the desired rows.
+///
+/// # Example
+/// ```
+/// use ndarray::{ArrayD, arr1, arr2};
+/// use whitenoise_runtime::components::filter::filter;
+///
+/// let data = arr2(&[ [1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12] ]).into_dyn();
+/// let mask = arr1(&[true, false, true, false]).into_dyn();
+/// let filtered = filter(&data, &mask).unwrap();
+/// assert!(filtered == arr2(&[ [1, 2, 3], [7, 8, 9] ]).into_dyn());
+/// ```
+pub fn filter<T: Clone>(data: &ArrayD<T>, mask: &ArrayD<bool>) -> Result<ArrayD<T>> {
 
     let columnar_mask: Array1<bool> = mask.clone().into_dimensionality::<Ix1>().unwrap();
 

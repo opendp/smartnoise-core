@@ -9,13 +9,6 @@ use crate::utilities::utilities::get_num_columns;
 
 
 impl Evaluable for proto::Count {
-    /// Gets number of rows of data.
-    ///
-    /// # Arguments
-    /// * `data` - Data for which you want a count.
-    ///
-    /// # Return
-    /// Number of rows in data.
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
         Ok(match get_argument(&arguments, "data")?.get_arraynd()? {
             ArrayND::Bool(data) => count(&data)?.into(),
@@ -37,7 +30,7 @@ impl Evaluable for proto::Count {
 /// # Example
 /// ```
 /// use ndarray::{ArrayD, arr1, arr2};
-/// use yarrow_runtime::components::count::count;
+/// use whitenoise_runtime::components::count::count;
 /// let data = arr2(&[ [false, false, true], [true, true, true] ]).into_dyn();
 /// let n = count(&data).unwrap();
 /// assert!(n == arr2(&[ [2, 2, 2] ]).into_dyn());

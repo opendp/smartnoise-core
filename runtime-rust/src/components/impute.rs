@@ -10,28 +10,6 @@ use whitenoise_validator::proto;
 
 
 impl Evaluable for proto::Impute {
-    /// Replaces null values with draws from a specified distribution.
-    ///
-    /// If the `categories` argument is provided, the data are considered to be categorical
-    /// (regardless of atomic type) and the elements provided in `null_value` will be replaced with those in
-    /// `categories` according to `weights`.
-    ///
-    /// If the `categories` argument is not provided, the data are considered to be numeric
-    /// and elements that are `f64::NAN` will be replaced according to the specified distribution.
-    ///
-    /// # Arguments
-    /// * `data` - The data for which null values will be imputed.
-    /// * `categories` - For each data column, the set of possible values for elements in the column.
-    /// * `weights` - For each data column, weights for each category to be used when imputing null values. Used only if `categories` argument is provided.
-    /// * `null_value` - For each data column, the value of the data to be considered NULL. Used only if `categories` argument is provided.
-    /// * `distribution` - The distribution to be used when imputing records. Used only if `categories` argument is not provided.
-    /// * `min` - For each data column, a lower bound on data elements. Used only if `categories` argument is not provided.
-    /// * `max` - For each data column, an upper bound on data elements. Used only if `categories` argument is not provided.
-    /// * `shift` - For each data column, the shift (expectation) argument for the Gaussian distribution (if used for imputation). Used only if `categories` argument is not provided and `distribution = Gaussian`.
-    /// * `scale` - For each data column, the scale (standard deviation) argument for the Gaussian distribution (if used for imputation). Used only if `categories` argument is not provided and `distribution = Gaussian`.
-    ///
-    /// # Return
-    /// Data with null values replaced by imputed values.
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
         let uniform: String = "Uniform".to_string(); // Distributions
         let gaussian: String = "Gaussian".to_string();
