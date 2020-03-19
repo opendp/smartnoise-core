@@ -22,7 +22,7 @@ pub fn variance(data: &ArrayD<f64>) -> Result<ArrayD<f64>> {
     // iterate over the generalized columns
     let variances = data.gencolumns().into_iter().zip(means)
         .map(|(column, mean)| column.iter()
-                .fold(0., |sum, v| sum + (v - mean).powi(2)) / column.len() as f64)
+                .fold(0., |sum, v| sum + (v - mean).powi(2)) / (column.len() - 1) as f64)
         .collect::<Vec<f64>>();
 
     let array = match data.ndim() {
