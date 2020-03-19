@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/opendifferentialprivacy/whitenoise-core.svg?branch=develop)](https://travis-ci.org/opendifferentialprivacy/whitenoise-core)
+
 ## WhiteNoise Core Differential Privacy
 The WhiteNoise Core is built around a data representation for a statistical analysis. There are three types of projects:
 - Validator: validates that an analysis is differentially private
@@ -85,3 +87,7 @@ The steps for adding bindings in a new language are essentially:
 
 
 4. Install instructions for the bindings, validator and runtime are located in their respective folders.  
+
+---
+
+[WhiteNoise Rust Documentation](https://opendifferentialprivacy.github.io/whitenoise-core/)
