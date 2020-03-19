@@ -31,5 +31,5 @@
   "return": {
     "type": "Array"
   },
-  "docstring": "Cast data to a different atomic type."
+  "description": "Cast data to a different atomic type."
 }
