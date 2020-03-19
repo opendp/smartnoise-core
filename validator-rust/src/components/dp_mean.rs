@@ -139,6 +139,8 @@ impl Report for proto::DpMean {
         release: &Value
     ) -> Result<Option<Vec<JSONRelease>>> {
 
+/// returns JSON Schema for DpMean
+/// example: schema is an array of 2 elements ( for dp mean release)
 //    let mut schema = vec![JSONRelease {
 //        description: "".to_string(),
 //        variables: vec![],
