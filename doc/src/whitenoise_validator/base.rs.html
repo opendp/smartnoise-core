@@ -1044,6 +1044,16 @@
 <span id="1044">1044</span>
 <span id="1045">1045</span>
 <span id="1046">1046</span>
+<span id="1047">1047</span>
+<span id="1048">1048</span>
+<span id="1049">1049</span>
+<span id="1050">1050</span>
+<span id="1051">1051</span>
+<span id="1052">1052</span>
+<span id="1053">1053</span>
+<span id="1054">1054</span>
+<span id="1055">1055</span>
+<span id="1056">1056</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Core logic and data structures</span>
 
@@ -1715,22 +1725,23 @@
                 )<span class="question-mark">?</span>;
 
                 <span class="comment">// patch the computation graph</span>
-                <span class="ident">graph</span>.<span class="ident">extend</span>(<span class="ident">result</span>.<span class="number">1</span>);
+                <span class="ident">graph</span>.<span class="ident">extend</span>(<span class="ident">result</span>.<span class="ident">computation_graph</span>);
 
 <span class="comment">//                println!(&quot;maximum id {:?}&quot;, maximum_id);</span>
                 <span class="comment">// if patch added nodes, extend the traversal</span>
-                <span class="kw">if</span> <span class="ident">result</span>.<span class="number">0</span> <span class="op">&gt;</span> <span class="ident">maximum_id</span> {
-                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">new_nodes</span> <span class="op">=</span> ((<span class="ident">maximum_id</span> <span class="op">+</span> <span class="number">1</span>)..(<span class="ident">result</span>.<span class="number">0</span> <span class="op">+</span> <span class="number">1</span>)).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span><span class="op">&gt;</span>();
+                <span class="kw">if</span> <span class="op">!</span><span class="ident">result</span>.<span class="ident">traversal</span>.<span class="ident">is_empty</span>() {
+                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">new_nodes</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">traversal</span>;
                     <span class="ident">new_nodes</span>.<span class="ident">reverse</span>();
+                    <span class="ident">maximum_id</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">new_nodes</span>.<span class="ident">iter</span>().<span class="ident">max</span>()
+                        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">max</span>(<span class="kw-2">&amp;</span><span class="ident">maximum_id</span>)).<span class="ident">unwrap_or</span>(<span class="kw-2">&amp;</span><span class="ident">maximum_id</span>);
                     <span class="ident">traversal</span>.<span class="ident">extend</span>(<span class="ident">new_nodes</span>);
-                    <span class="ident">maximum_id</span> <span class="op">=</span> <span class="ident">result</span>.<span class="number">0</span>;
                     <span class="kw">continue</span>;
                 }
                 <span class="ident">traversal</span>.<span class="ident">pop</span>();
 
                 <span class="ident">component</span>.<span class="ident">clone</span>().<span class="ident">variant</span>.<span class="ident">unwrap</span>().<span class="ident">propagate_property</span>(
                     <span class="kw-2">&amp;</span><span class="ident">privacy_definition</span>, <span class="kw-2">&amp;</span><span class="ident">public_arguments</span>, <span class="kw-2">&amp;</span><span class="ident">input_properties</span>)
-                    .<span class="ident">chain_err</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;at node_id {:?},&quot;</span>, <span class="ident">node_id</span>))<span class="question-mark">?</span>
+                    .<span class="ident">chain_err</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;at node_id {:?}&quot;</span>, <span class="ident">node_id</span>))<span class="question-mark">?</span>
             }
         };
         <span class="ident">graph_properties</span>.<span class="ident">insert</span>(<span class="ident">node_id</span>.<span class="ident">clone</span>(), <span class="ident">properties</span>);
@@ -1917,15 +1928,19 @@
 
 <span class="doccomment">/// Utility for building extra Components to pass back when conducting expansions.</span>
 <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_constant</span>(<span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">Value</span>, <span class="ident">batch</span>: <span class="kw-2">&amp;</span><span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">Component</span> {
-    <span class="ident">proto</span>::<span class="ident">Component</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_literal</span>(<span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">Value</span>, <span class="ident">batch</span>: <span class="kw-2">&amp;</span><span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">proto</span>::<span class="ident">Component</span>, <span class="ident">proto</span>::<span class="ident">ReleaseNode</span>)<span class="op">&gt;</span> {
+    <span class="prelude-val">Ok</span>((<span class="ident">proto</span>::<span class="ident">Component</span> {
         <span class="ident">arguments</span>: <span class="ident">HashMap</span>::<span class="ident">new</span>(),
-        <span class="ident">variant</span>: <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">Constant</span>(<span class="ident">proto</span>::<span class="ident">Constant</span> {
-            <span class="ident">value</span>: <span class="ident">serialize_value</span>(<span class="kw-2">&amp;</span><span class="ident">value</span>).<span class="ident">ok</span>()
+        <span class="ident">variant</span>: <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">Literal</span>(<span class="ident">proto</span>::<span class="ident">Literal</span> {
+            <span class="ident">private</span>: <span class="bool-val">false</span>
         })),
         <span class="ident">omit</span>: <span class="bool-val">true</span>,
         <span class="ident">batch</span>: <span class="ident">batch</span>.<span class="ident">clone</span>()
-    }
+    },
+    <span class="ident">proto</span>::<span class="ident">ReleaseNode</span> {
+        <span class="ident">value</span>: <span class="prelude-val">Some</span>(<span class="ident">serialize_value</span>(<span class="ident">value</span>)<span class="question-mark">?</span>),
+        <span class="ident">privacy_usage</span>: <span class="ident">Vec</span>::<span class="ident">new</span>()
+    }))
 }
 
 <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
@@ -2022,7 +2037,7 @@
     <span class="ident">arguments</span>: <span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Value</span><span class="op">&gt;</span>,
     <span class="ident">node_id_output</span>: <span class="ident">u32</span>,
     <span class="ident">node_id_maximum</span>: <span class="ident">u32</span>
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">response_expand_component</span>::<span class="ident">ExpandedComponent</span><span class="op">&gt;</span> {
+) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">ComponentExpansion</span><span class="op">&gt;</span> {
 
 <span class="comment">//    println!(&quot;expanding node id: {}&quot;, node_id_output);</span>
 <span class="comment">//    println!(&quot;expansion properties before {:?}&quot;, properties);</span>
@@ -2043,17 +2058,22 @@
         <span class="kw-2">&amp;</span><span class="ident">properties</span>,
         <span class="ident">node_id_output</span>,
         <span class="ident">node_id_maximum</span>,
-    ).<span class="ident">chain_err</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;at node_id {:?},&quot;</span>, <span class="ident">node_id_output</span>))<span class="question-mark">?</span>;
+    ).<span class="ident">chain_err</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;at node_id {:?}&quot;</span>, <span class="ident">node_id_output</span>))<span class="question-mark">?</span>;
 
-    <span class="prelude-val">Ok</span>(<span class="ident">proto</span>::<span class="ident">response_expand_component</span>::<span class="ident">ExpandedComponent</span> {
-        <span class="ident">computation_graph</span>: <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">ComputationGraph</span> { <span class="ident">value</span>: <span class="ident">result</span>.<span class="number">1</span> }),
-        <span class="ident">properties</span>: <span class="kw">match</span> <span class="ident">result</span>.<span class="number">0</span> <span class="op">&gt;</span> <span class="ident">node_id_maximum</span> {
-            <span class="bool-val">true</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
-            <span class="bool-val">false</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">utilities</span>::<span class="ident">serial</span>::<span class="ident">serialize_value_properties</span>(<span class="kw-2">&amp;</span><span class="ident">component</span>.<span class="ident">clone</span>().<span class="ident">variant</span>.<span class="ident">unwrap</span>()
-                .<span class="ident">propagate_property</span>(<span class="ident">privacy_definition</span>, <span class="ident">arguments</span>, <span class="kw-2">&amp;</span><span class="ident">properties</span>)
-                .<span class="ident">chain_err</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;at node_id {:?},&quot;</span>, <span class="ident">node_id_output</span>))<span class="question-mark">?</span>))
-        },
-        <span class="ident">maximum_id</span>: <span class="ident">result</span>.<span class="number">0</span>
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">patch_properties</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">properties</span>;
+    <span class="kw">if</span> <span class="ident">result</span>.<span class="ident">traversal</span>.<span class="ident">is_empty</span>() {
+        <span class="kw">let</span> <span class="ident">propagated_property</span> <span class="op">=</span> <span class="ident">component</span>.<span class="ident">clone</span>().<span class="ident">variant</span>.<span class="ident">unwrap</span>()
+            .<span class="ident">propagate_property</span>(<span class="ident">privacy_definition</span>, <span class="ident">arguments</span>, <span class="kw-2">&amp;</span><span class="ident">properties</span>)
+            .<span class="ident">chain_err</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;at node_id {:?}&quot;</span>, <span class="ident">node_id_output</span>))<span class="question-mark">?</span>;
+
+        <span class="ident">patch_properties</span>.<span class="ident">insert</span>(<span class="ident">node_id_output</span>, <span class="ident">utilities</span>::<span class="ident">serial</span>::<span class="ident">serialize_value_properties</span>(<span class="kw-2">&amp;</span><span class="ident">propagated_property</span>));
+    }
+
+    <span class="prelude-val">Ok</span>(<span class="ident">proto</span>::<span class="ident">ComponentExpansion</span> {
+        <span class="ident">computation_graph</span>: <span class="ident">result</span>.<span class="ident">computation_graph</span>,
+        <span class="ident">properties</span>: <span class="ident">patch_properties</span>,
+        <span class="ident">releases</span>: <span class="ident">result</span>.<span class="ident">releases</span>,
+        <span class="ident">traversal</span>: <span class="ident">result</span>.<span class="ident">traversal</span>
     })
 }
 

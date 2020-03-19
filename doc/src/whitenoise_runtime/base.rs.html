@@ -212,6 +212,8 @@
 <span id="212">212</span>
 <span id="213">213</span>
 <span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">whitenoise_validator</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
@@ -230,7 +232,7 @@
 
 <span class="kw">use</span> <span class="ident">whitenoise_validator</span>::<span class="ident">base</span>::{<span class="ident">get_input_properties</span>, <span class="ident">Value</span>, <span class="ident">ValueProperties</span>};
 <span class="kw">use</span> <span class="ident">whitenoise_validator</span>::<span class="ident">utilities</span>::<span class="ident">inference</span>::<span class="ident">infer_property</span>;
-<span class="kw">use</span> <span class="ident">whitenoise_validator</span>::<span class="ident">utilities</span>::<span class="ident">serial</span>::<span class="ident">serialize_value_properties</span>;
+<span class="kw">use</span> <span class="ident">whitenoise_validator</span>::<span class="ident">utilities</span>::<span class="ident">serial</span>::{<span class="ident">serialize_value_properties</span>, <span class="ident">parse_release</span>};
 
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">NodeArguments</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Value</span><span class="op">&gt;</span>;
 
@@ -319,8 +321,9 @@
 <span class="comment">//        println!(&quot;expanding component {:?}&quot;, component);</span>
 <span class="comment">//        println!(&quot;public arguments {:?}&quot;, public_arguments);</span>
 <span class="comment">//        println!(&quot;node properties {:?}&quot;, node_properties);</span>
+
         <span class="comment">// all arguments have been computed, attempt to expand the current node</span>
-        <span class="kw">let</span> <span class="ident">expansion</span>: <span class="ident">proto</span>::<span class="ident">response_expand_component</span>::<span class="ident">ExpandedComponent</span> <span class="op">=</span> <span class="ident">whitenoise_validator</span>::<span class="ident">base</span>::<span class="ident">expand_component</span>(
+        <span class="kw">let</span> <span class="ident">expansion</span>: <span class="ident">proto</span>::<span class="ident">ComponentExpansion</span> <span class="op">=</span> <span class="ident">whitenoise_validator</span>::<span class="ident">base</span>::<span class="ident">expand_component</span>(
             <span class="kw-2">&amp;</span><span class="ident">analysis</span>.<span class="ident">privacy_definition</span>.<span class="ident">to_owned</span>().<span class="ident">unwrap</span>(),
             <span class="kw-2">&amp;</span><span class="ident">component</span>,
             <span class="kw-2">&amp;</span><span class="ident">node_properties</span>,
@@ -329,21 +332,22 @@
             <span class="ident">maximum_id</span>,
         )<span class="question-mark">?</span>;
 
-<span class="comment">//        println!(&quot;expansion {:?}&quot;, expansion);</span>
-        <span class="ident">graph</span>.<span class="ident">extend</span>(<span class="ident">expansion</span>.<span class="ident">computation_graph</span>.<span class="ident">unwrap</span>().<span class="ident">value</span>);
+        <span class="ident">graph</span>.<span class="ident">extend</span>(<span class="ident">expansion</span>.<span class="ident">computation_graph</span>.<span class="ident">clone</span>());
+        <span class="ident">graph_properties</span>.<span class="ident">extend</span>(<span class="ident">expansion</span>.<span class="ident">properties</span>);
+        <span class="ident">release</span>.<span class="ident">extend</span>(<span class="ident">parse_release</span>(<span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">Release</span>{<span class="ident">values</span>: <span class="ident">expansion</span>.<span class="ident">releases</span>})<span class="question-mark">?</span>);
+        <span class="ident">traversal</span>.<span class="ident">extend</span>(<span class="ident">expansion</span>.<span class="ident">traversal</span>.<span class="ident">clone</span>());
 
-        <span class="kw">if</span> <span class="ident">maximum_id</span> <span class="op">!</span><span class="op">=</span> <span class="ident">expansion</span>.<span class="ident">maximum_id</span> {
-            <span class="ident">maximum_id</span> <span class="op">=</span> <span class="ident">expansion</span>.<span class="ident">maximum_id</span>;
+        <span class="ident">maximum_id</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">expansion</span>.<span class="ident">computation_graph</span>.<span class="ident">keys</span>()
+            .<span class="ident">max</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">max</span>(<span class="kw-2">&amp;</span><span class="ident">maximum_id</span>)).<span class="ident">unwrap_or</span>(<span class="kw-2">&amp;</span><span class="ident">maximum_id</span>);
+
+        <span class="kw">if</span> <span class="op">!</span><span class="ident">expansion</span>.<span class="ident">traversal</span>.<span class="ident">is_empty</span>() {
             <span class="kw">continue</span>;
-        }
-
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">expansion_property</span>) <span class="op">=</span> <span class="ident">expansion</span>.<span class="ident">properties</span> {
-<span class="comment">//            println!(&quot;expansion property added to runtime props: {:?}&quot;, expansion_property);</span>
-            <span class="ident">graph_properties</span>.<span class="ident">insert</span>(<span class="ident">node_id</span>, <span class="ident">expansion_property</span>);
         }
 
         <span class="ident">traversal</span>.<span class="ident">pop</span>();
 
+        <span class="comment">// the patch may have overwritten the current component</span>
+        <span class="kw">let</span> <span class="ident">component</span> <span class="op">=</span> <span class="ident">graph</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">node_id</span>).<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">node_arguments</span> <span class="op">=</span> <span class="ident">NodeArguments</span>::<span class="ident">new</span>();
         <span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">iter</span>().<span class="ident">for_each</span>(<span class="op">|</span>(<span class="ident">field_id</span>, <span class="ident">field</span>)<span class="op">|</span> {

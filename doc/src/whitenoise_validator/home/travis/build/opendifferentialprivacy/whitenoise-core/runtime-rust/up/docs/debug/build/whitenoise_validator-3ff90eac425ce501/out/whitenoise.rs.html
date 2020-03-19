@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/build/opendifferentialprivacy/whitenoise-core/runtime-rust/../docs/debug/build/whitenoise_validator-6198c92279ff0f6f/out/whitenoise.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>whitenoise.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../../../../../../../../../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../../../../../../../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../../../../../../../../../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../../../../../../../../../../../../light.css" id="themeStyle"><script src="../../../../../../../../../../../../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../../../../../../../../../../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../../../../../../../../../../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../../../../../../../../../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../../../../../../../../../../../../whitenoise_validator/index.html'><div class='logo-container'><img src='../../../../../../../../../../../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../../../../../../../../../../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../../../../../../../../../../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../../../../../../../../../../../../settings.html"><img src="../../../../../../../../../../../../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/build/opendifferentialprivacy/whitenoise-core/runtime-rust/../docs/debug/build/whitenoise_validator-3ff90eac425ce501/out/whitenoise.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>whitenoise.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../../../../../../../../../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../../../../../../../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../../../../../../../../../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../../../../../../../../../../../../light.css" id="themeStyle"><script src="../../../../../../../../../../../../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../../../../../../../../../../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../../../../../../../../../../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../../../../../../../../../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../../../../../../../../../../../../whitenoise_validator/index.html'><div class='logo-container'><img src='../../../../../../../../../../../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../../../../../../../../../../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../../../../../../../../../../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../../../../../../../../../../../../settings.html"><img src="../../../../../../../../../../../../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -1510,17 +1510,6 @@
 <span id="1510">1510</span>
 <span id="1511">1511</span>
 <span id="1512">1512</span>
-<span id="1513">1513</span>
-<span id="1514">1514</span>
-<span id="1515">1515</span>
-<span id="1516">1516</span>
-<span id="1517">1517</span>
-<span id="1518">1518</span>
-<span id="1519">1519</span>
-<span id="1520">1520</span>
-<span id="1521">1521</span>
-<span id="1522">1522</span>
-<span id="1523">1523</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BoolNull</span> {
@@ -1787,7 +1776,7 @@
     <span class="doccomment">/// for interactive analyses</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">uint32</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;3&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">batch</span>: <span class="ident">u32</span>,
-    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">oneof</span><span class="op">=</span><span class="string">&quot;component::Variant&quot;</span>, <span class="ident">tags</span><span class="op">=</span><span class="string">&quot;100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">oneof</span><span class="op">=</span><span class="string">&quot;component::Variant&quot;</span>, <span class="ident">tags</span><span class="op">=</span><span class="string">&quot;100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">variant</span>: ::<span class="ident">std</span>::<span class="ident">option</span>::<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">component</span>::<span class="ident">Variant</span><span class="op">&gt;</span>,
 }
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">component</span> {
@@ -1805,104 +1794,102 @@
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;104&quot;</span>)]</span>
         <span class="ident">Literal</span>(<span class="kw">super</span>::<span class="ident">Literal</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;105&quot;</span>)]</span>
-        <span class="ident">Constant</span>(<span class="kw">super</span>::<span class="ident">Constant</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;106&quot;</span>)]</span>
         <span class="ident">DpVariance</span>(<span class="kw">super</span>::<span class="ident">DpVariance</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;107&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;106&quot;</span>)]</span>
         <span class="ident">LogicalAnd</span>(<span class="kw">super</span>::<span class="ident">And</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;108&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;107&quot;</span>)]</span>
         <span class="ident">Index</span>(<span class="kw">super</span>::<span class="ident">Index</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;109&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;108&quot;</span>)]</span>
         <span class="ident">LogicalOr</span>(<span class="kw">super</span>::<span class="ident">Or</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;110&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;109&quot;</span>)]</span>
         <span class="ident">LessThan</span>(<span class="kw">super</span>::<span class="ident">LessThan</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;111&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;110&quot;</span>)]</span>
         <span class="ident">Subtract</span>(<span class="kw">super</span>::<span class="ident">Subtract</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;112&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;111&quot;</span>)]</span>
         <span class="ident">Negative</span>(<span class="kw">super</span>::<span class="ident">Negative</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;113&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;112&quot;</span>)]</span>
         <span class="ident">Divide</span>(<span class="kw">super</span>::<span class="ident">Divide</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;114&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;113&quot;</span>)]</span>
         <span class="ident">Modulo</span>(<span class="kw">super</span>::<span class="ident">Modulo</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;115&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;114&quot;</span>)]</span>
         <span class="ident">GaussianMechanism</span>(<span class="kw">super</span>::<span class="ident">GaussianMechanism</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;116&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;115&quot;</span>)]</span>
         <span class="ident">Maximum</span>(<span class="kw">super</span>::<span class="ident">Maximum</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;117&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;116&quot;</span>)]</span>
         <span class="ident">DpCount</span>(<span class="kw">super</span>::<span class="ident">DpCount</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;118&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;117&quot;</span>)]</span>
         <span class="ident">DpCovariance</span>(<span class="kw">super</span>::<span class="ident">DpCovariance</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;119&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;118&quot;</span>)]</span>
         <span class="ident">Filter</span>(<span class="kw">super</span>::<span class="ident">Filter</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;120&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;119&quot;</span>)]</span>
         <span class="ident">KthRawSampleMoment</span>(<span class="kw">super</span>::<span class="ident">KthRawSampleMoment</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;121&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;120&quot;</span>)]</span>
         <span class="ident">Bin</span>(<span class="kw">super</span>::<span class="ident">Bin</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;122&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;121&quot;</span>)]</span>
         <span class="ident">Resize</span>(<span class="kw">super</span>::<span class="ident">Resize</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;123&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;122&quot;</span>)]</span>
         <span class="ident">Log</span>(<span class="kw">super</span>::<span class="ident">Log</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;124&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;123&quot;</span>)]</span>
         <span class="ident">DpHistogram</span>(<span class="kw">super</span>::<span class="ident">DpHistogram</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;125&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;124&quot;</span>)]</span>
         <span class="ident">Mean</span>(<span class="kw">super</span>::<span class="ident">Mean</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;126&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;125&quot;</span>)]</span>
         <span class="ident">LaplaceMechanism</span>(<span class="kw">super</span>::<span class="ident">LaplaceMechanism</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;127&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;126&quot;</span>)]</span>
         <span class="ident">Covariance</span>(<span class="kw">super</span>::<span class="ident">Covariance</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;128&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;127&quot;</span>)]</span>
         <span class="ident">Power</span>(<span class="kw">super</span>::<span class="ident">Power</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;129&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;128&quot;</span>)]</span>
         <span class="ident">DpMinimum</span>(<span class="kw">super</span>::<span class="ident">DpMinimum</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;130&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;129&quot;</span>)]</span>
         <span class="ident">Negate</span>(<span class="kw">super</span>::<span class="ident">Negate</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;131&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;130&quot;</span>)]</span>
         <span class="ident">DpSum</span>(<span class="kw">super</span>::<span class="ident">DpSum</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;132&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;131&quot;</span>)]</span>
         <span class="ident">Count</span>(<span class="kw">super</span>::<span class="ident">Count</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;133&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;132&quot;</span>)]</span>
         <span class="ident">DpMomentRaw</span>(<span class="kw">super</span>::<span class="ident">DpMomentRaw</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;134&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;133&quot;</span>)]</span>
         <span class="ident">DpMean</span>(<span class="kw">super</span>::<span class="ident">DpMean</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;135&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;134&quot;</span>)]</span>
         <span class="ident">SimpleGeometricMechanism</span>(<span class="kw">super</span>::<span class="ident">SimpleGeometricMechanism</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;136&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;135&quot;</span>)]</span>
         <span class="ident">Clamp</span>(<span class="kw">super</span>::<span class="ident">Clamp</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;137&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;136&quot;</span>)]</span>
         <span class="ident">Materialize</span>(<span class="kw">super</span>::<span class="ident">Materialize</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;138&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;137&quot;</span>)]</span>
         <span class="ident">Partition</span>(<span class="kw">super</span>::<span class="ident">Partition</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;139&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;138&quot;</span>)]</span>
         <span class="ident">ExponentialMechanism</span>(<span class="kw">super</span>::<span class="ident">ExponentialMechanism</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;140&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;139&quot;</span>)]</span>
         <span class="ident">RowWiseMax</span>(<span class="kw">super</span>::<span class="ident">RowMax</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;141&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;140&quot;</span>)]</span>
         <span class="ident">Equal</span>(<span class="kw">super</span>::<span class="ident">Equal</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;142&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;141&quot;</span>)]</span>
         <span class="ident">Variance</span>(<span class="kw">super</span>::<span class="ident">Variance</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;143&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;142&quot;</span>)]</span>
         <span class="ident">GreaterThan</span>(<span class="kw">super</span>::<span class="ident">GreaterThan</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;144&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;143&quot;</span>)]</span>
         <span class="ident">Impute</span>(<span class="kw">super</span>::<span class="ident">Impute</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;145&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;144&quot;</span>)]</span>
         <span class="ident">Quantile</span>(<span class="kw">super</span>::<span class="ident">Quantile</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;146&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;145&quot;</span>)]</span>
         <span class="ident">Cast</span>(<span class="kw">super</span>::<span class="ident">Cast</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;147&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;146&quot;</span>)]</span>
         <span class="ident">DpMaximum</span>(<span class="kw">super</span>::<span class="ident">DpMaximum</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;148&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;147&quot;</span>)]</span>
         <span class="ident">Stack</span>(<span class="kw">super</span>::<span class="ident">Stack</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;149&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;148&quot;</span>)]</span>
         <span class="ident">Minimum</span>(<span class="kw">super</span>::<span class="ident">Minimum</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;150&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;149&quot;</span>)]</span>
         <span class="ident">Add</span>(<span class="kw">super</span>::<span class="ident">Add</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;151&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;150&quot;</span>)]</span>
         <span class="ident">Remainder</span>(<span class="kw">super</span>::<span class="ident">Remainder</span>),
     }
 }
 <span class="doccomment">/// Sum Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the sum on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `by` - Array</span>
@@ -1915,7 +1902,7 @@
 }
 <span class="doccomment">/// Multiply Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the multiply on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `left` - Array</span>
@@ -1928,7 +1915,7 @@
 }
 <span class="doccomment">/// RowMin Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the row_wise_min on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `left` - Array</span>
@@ -1941,7 +1928,7 @@
 }
 <span class="doccomment">/// DPMedian Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the dp_median on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `candidates` - Jagged</span>
@@ -1958,7 +1945,7 @@
 }
 <span class="doccomment">/// Literal Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the literal on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array</span>
@@ -1967,20 +1954,9 @@
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">bool</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">private</span>: <span class="ident">bool</span>,
 }
-<span class="doccomment">/// Constant Component</span>
-<span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
-<span class="doccomment">/// </span>
-<span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// * `Value` - Array</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Constant</span> {
-    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">optional</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
-    <span class="kw">pub</span> <span class="ident">value</span>: ::<span class="ident">std</span>::<span class="ident">option</span>::<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&gt;</span>,
-}
 <span class="doccomment">/// DPVariance Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the dp_variance on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `by` - Jagged</span>
@@ -1999,7 +1975,7 @@
 }
 <span class="doccomment">/// And Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the logical_and on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `left` - Array</span>
@@ -2012,7 +1988,7 @@
 }
 <span class="doccomment">/// Index Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the index on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `columns` - Array</span>
@@ -2025,7 +2001,7 @@
 }
 <span class="doccomment">/// Or Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the logical_or on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `left` - Array</span>
@@ -2038,7 +2014,7 @@
 }
 <span class="doccomment">/// LessThan Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the less_than on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `left` - Array</span>
@@ -2051,7 +2027,7 @@
 }
 <span class="doccomment">/// Subtract Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the subtract on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `left` - Array</span>
@@ -2064,7 +2040,7 @@
 }
 <span class="doccomment">/// Negative Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the negative on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `data` - Array</span>
@@ -2076,7 +2052,7 @@
 }
 <span class="doccomment">/// Divide Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the divide on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `left` - Array</span>
@@ -2089,7 +2065,7 @@
 }
 <span class="doccomment">/// Modulo Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the modulo on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `left` - Array</span>
@@ -2102,7 +2078,7 @@
 }
 <span class="doccomment">/// GaussianMechanism Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the gaussian_mechanism on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `data` - Array</span>
@@ -2116,7 +2092,7 @@
 }
 <span class="doccomment">/// Maximum Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the maximum on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `data` - Array</span>
@@ -2128,7 +2104,7 @@
 }
 <span class="doccomment">/// DPCount Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the dp_count on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `by` - Array</span>
@@ -2147,7 +2123,7 @@
 }
 <span class="doccomment">/// DPCovariance Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the dp_covariance on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `data` - Array</span>
@@ -2167,7 +2143,7 @@
 <span class="doccomment">/// </span>
 <span class="doccomment">/// Filters data down into only the desired rows.</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the filter on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `data` - Array - Data to be filtered.</span>
@@ -2180,7 +2156,7 @@
 }
 <span class="doccomment">/// KthRawSampleMoment Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the kth_raw_sample_moment on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `by` - Array</span>
@@ -2199,7 +2175,7 @@
 <span class="doccomment">/// </span>
 <span class="doccomment">/// Bins will be of the form [lower, upper) or (lower, upper].</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the bin on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `data` - Array - Data to be binned.</span>
@@ -2223,7 +2199,7 @@
 <span class="doccomment">/// </span>
 <span class="doccomment">/// To address this problem, the library asks the user to provide `n`, an estimate of the true sample size based on their own beliefs about the data or a previous differentially private count of the number of rows in the data. This component then either subsamples or appends to the data in order to make it consistent with the provided `n`.</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the resize on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `data` - Array - The data to be resized.</span>
@@ -2243,7 +2219,7 @@
 }
 <span class="doccomment">/// Log Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the log on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `base` - Array</span>
@@ -2256,7 +2232,7 @@
 }
 <span class="doccomment">/// DPHistogram Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the dp_histogram on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `by` - Array</span>
@@ -2280,7 +2256,7 @@
 }
 <span class="doccomment">/// Mean Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the mean on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `by` - Array - Data for which you want the arithmetic mean.</span>
@@ -2293,7 +2269,7 @@
 }
 <span class="doccomment">/// LaplaceMechanism Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the laplace_mechanism on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `data` - Array</span>
@@ -2307,7 +2283,7 @@
 }
 <span class="doccomment">/// Covariance Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the covariance on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `data` - Array</span>
@@ -2321,7 +2297,7 @@
 }
 <span class="doccomment">/// Power Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the power on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `data` - Array</span>
@@ -2334,7 +2310,7 @@
 }
 <span class="doccomment">/// DPMinimum Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the dp_minimum on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `candidates` - Jagged</span>
@@ -2351,7 +2327,7 @@
 }
 <span class="doccomment">/// Negate Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the negate on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `data` - Array</span>
@@ -2363,7 +2339,7 @@
 }
 <span class="doccomment">/// DPSum Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the dp_sum on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `by` - Array</span>
@@ -2380,7 +2356,7 @@
 }
 <span class="doccomment">/// Count Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the count on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `by` - Array</span>
@@ -2394,7 +2370,7 @@
 }
 <span class="doccomment">/// DPMomentRaw Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the dp_moment_raw on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `data` - Array</span>
@@ -2412,7 +2388,7 @@
 }
 <span class="doccomment">/// DPMean Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the dp_mean on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `by` - Array</span>
@@ -2429,7 +2405,7 @@
 }
 <span class="doccomment">/// SimpleGeometricMechanism Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the simple_geometric_mechanism on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `count_max` - Array</span>
@@ -2452,7 +2428,7 @@
 <span class="doccomment">///  If data are numeric, clamping maps elements outside of an interval `[min, max]` to the closer endpoint.</span>
 <span class="doccomment">/// If data are categorical, clamping maps elements outside of the `categories` argument to the associated `null`.</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the clamp on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `categories` - Jagged - The set of categories you want to be represented for each column of the data.</span>
@@ -2468,7 +2444,7 @@
 }
 <span class="doccomment">/// Materialize Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the materialize on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `column_names` - Array</span>
@@ -2484,7 +2460,7 @@
 }
 <span class="doccomment">/// Partition Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the partition on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `by` - Array</span>
@@ -2497,7 +2473,7 @@
 }
 <span class="doccomment">/// ExponentialMechanism Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the exponential_mechanism on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `data` - Array</span>
@@ -2511,7 +2487,7 @@
 }
 <span class="doccomment">/// RowMax Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the row_wise_max on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `left` - Array</span>
@@ -2524,7 +2500,7 @@
 }
 <span class="doccomment">/// Equal Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the equal on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `left` - Array</span>
@@ -2537,7 +2513,7 @@
 }
 <span class="doccomment">/// Variance Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the variance on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `by` - Array</span>
@@ -2552,7 +2528,7 @@
 }
 <span class="doccomment">/// GreaterThan Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the greater_than on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `left` - Array</span>
@@ -2571,7 +2547,7 @@
 <span class="doccomment">/// </span>
 <span class="doccomment">/// If the `categories` argument is not provided, the data are considered to be numeric and elements that are `f64::NAN` will be replaced according to the specified distribution.</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the impute on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `data` - Array - The data for which null values will be imputed.</span>
@@ -2588,7 +2564,7 @@
 }
 <span class="doccomment">/// Quantile Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the quantile on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `data` - Array</span>
@@ -2604,7 +2580,7 @@
 <span class="doccomment">/// </span>
 <span class="doccomment">/// Cast data to a different atomic type.</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the cast on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `data` - Array - Data to be cast to another type.</span>
@@ -2620,7 +2596,7 @@
 }
 <span class="doccomment">/// DPMaximum Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the dp_maximum on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `candidates` - Jagged</span>
@@ -2637,7 +2613,7 @@
 }
 <span class="doccomment">/// Stack Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the stack on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `**kwargs` - Array</span>
@@ -2649,7 +2625,7 @@
 }
 <span class="doccomment">/// Minimum Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the minimum on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `data` - Array</span>
@@ -2661,7 +2637,7 @@
 }
 <span class="doccomment">/// Add Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the add on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `left` - Array</span>
@@ -2674,7 +2650,7 @@
 }
 <span class="doccomment">/// Remainder Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.</span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the remainder on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `left` - Array</span>
@@ -2857,6 +2833,17 @@
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">double</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">value</span>: <span class="ident">f64</span>,
 }
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ComponentExpansion</span> {
+    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">map</span><span class="op">=</span><span class="string">&quot;uint32, message&quot;</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
+    <span class="kw">pub</span> <span class="ident">computation_graph</span>: ::<span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">Component</span><span class="op">&gt;</span>,
+    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">map</span><span class="op">=</span><span class="string">&quot;uint32, message&quot;</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
+    <span class="kw">pub</span> <span class="ident">properties</span>: ::<span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">ValueProperties</span><span class="op">&gt;</span>,
+    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">map</span><span class="op">=</span><span class="string">&quot;uint32, message&quot;</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;3&quot;</span>)]</span>
+    <span class="kw">pub</span> <span class="ident">releases</span>: ::<span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">ReleaseNode</span><span class="op">&gt;</span>,
+    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">uint32</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;4&quot;</span>)]</span>
+    <span class="kw">pub</span> <span class="ident">traversal</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
+}
 <span class="doccomment">/// REQUESTS</span>
 <span class="doccomment">/// VALIDATOR API</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
@@ -3012,19 +2999,10 @@
     <span class="kw">pub</span> <span class="ident">value</span>: ::<span class="ident">std</span>::<span class="ident">option</span>::<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">response_expand_component</span>::<span class="ident">Value</span><span class="op">&gt;</span>,
 }
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">response_expand_component</span> {
-    <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ExpandedComponent</span> {
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">optional</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
-        <span class="kw">pub</span> <span class="ident">computation_graph</span>: ::<span class="ident">std</span>::<span class="ident">option</span>::<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">super</span>::<span class="ident">ComputationGraph</span><span class="op">&gt;</span>,
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">optional</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
-        <span class="kw">pub</span> <span class="ident">properties</span>: ::<span class="ident">std</span>::<span class="ident">option</span>::<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">super</span>::<span class="ident">ValueProperties</span><span class="op">&gt;</span>,
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">uint32</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;3&quot;</span>)]</span>
-        <span class="kw">pub</span> <span class="ident">maximum_id</span>: <span class="ident">u32</span>,
-    }
     <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Oneof</span>)]</span>
     <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Value</span> {
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
-        <span class="ident">Data</span>(<span class="ident">ExpandedComponent</span>),
+        <span class="ident">Data</span>(<span class="kw">super</span>::<span class="ident">ComponentExpansion</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
         <span class="ident">Error</span>(<span class="kw">super</span>::<span class="ident">Error</span>),
     }
