@@ -14,7 +14,6 @@ mod transforms;
 mod bin;
 mod cast;
 mod clamp;
-mod constant;
 mod count;
 mod covariance;
 mod dp_count;
@@ -106,8 +105,8 @@ pub trait Expandable {
     /// * `maximum_id` - the starting id for which additional nodes may be added to the graph without overwriting existing nodes
     ///
     /// # Returns
-    /// * `0` - the new maximum id, for which nodes may be added to the graph without overwriting existing nodes
-    /// * `1` - the patch to be applied to the computation graph, such that the patched graph represents the expanded component
+    /// Sufficient information to patch the runtime with more granular steps.
+    /// More documentation at [ComponentExpansion](proto::ComponentExpansion).
     fn expand_component(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
@@ -115,7 +114,7 @@ pub trait Expandable {
         properties: &NodeProperties,
         component_id: u32,
         maximum_id: u32,
-    ) -> Result<(u32, HashMap<u32, proto::Component>)>;
+    ) -> Result<proto::ComponentExpansion>;
 }
 
 /// Aggregator Component trait
@@ -202,7 +201,7 @@ impl Component for proto::component::Variant {
 
         propagate_property!(
             // INSERT COMPONENT LIST
-            Bin, Cast, Clamp, Constant, Count, Covariance,
+            Bin, Cast, Clamp, Count, Covariance,
 
             DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMedian, DpMinimum,
             DpMomentRaw, DpSum, DpVariance,
@@ -259,7 +258,7 @@ impl Expandable for proto::component::Variant {
         properties: &NodeProperties,
         component_id: u32,
         maximum_id: u32,
-    ) -> Result<(u32, HashMap<u32, proto::Component>)> {
+    ) -> Result<proto::ComponentExpansion> {
         macro_rules! expand_component {
             ($( $variant:ident ),*) => {
                 {
@@ -281,7 +280,13 @@ impl Expandable for proto::component::Variant {
         );
 
         // no expansion
-        return Ok((maximum_id, hashmap!()))
+
+        Ok(proto::ComponentExpansion {
+            computation_graph: HashMap::new(),
+            properties: HashMap::new(),
+            releases: HashMap::new(),
+            traversal: Vec::new()
+        })
     }
 }
 
@@ -406,7 +411,8 @@ impl Report for proto::component::Variant {
 
         summarize!(
             // INSERT COMPONENT LIST
-            DpMean
+            DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMinimum, DpMomentRaw,
+            DpSum, DpVariance
         );
 
         Ok(None)

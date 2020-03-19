@@ -8,8 +8,8 @@ use crate::hashmap;
 use crate::components::{Component, Accuracy, Expandable, Report};
 
 
-use crate::base::{NodeProperties, Value, ValueProperties};
-use crate::utilities::json::{JSONRelease};
+use crate::base::{NodeProperties, Value, ValueProperties, prepend};
+use crate::utilities::json::{JSONRelease, value_to_json, privacy_usage_to_json, AlgorithmInfo};
 
 
 
@@ -39,14 +39,14 @@ impl Expandable for proto::DpMinimum {
         _properties: &base::NodeProperties,
         component_id: u32,
         maximum_id: u32,
-    ) -> Result<(u32, HashMap<u32, proto::Component>)> {
+    ) -> Result<proto::ComponentExpansion> {
         let mut current_id = maximum_id.clone();
-        let mut graph_expansion: HashMap<u32, proto::Component> = HashMap::new();
+        let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
 
         // minimum
         current_id += 1;
         let id_minimum = current_id.clone();
-        graph_expansion.insert(id_minimum, proto::Component {
+        computation_graph.insert(id_minimum, proto::Component {
             arguments: hashmap!["data".to_owned() => *component.arguments.get("data").unwrap()],
             variant: Some(proto::component::Variant::from(proto::Minimum {})),
             omit: true,
@@ -56,7 +56,7 @@ impl Expandable for proto::DpMinimum {
         let id_candidates = component.arguments.get("candidates").unwrap().clone();
 
         // sanitizing
-        graph_expansion.insert(component_id, proto::Component {
+        computation_graph.insert(component_id, proto::Component {
             arguments: hashmap!["data".to_owned() => id_minimum, "candidates".to_owned() => id_candidates],
             variant: Some(proto::component::Variant::from(proto::ExponentialMechanism {
                 privacy_usage: self.privacy_usage.clone()
@@ -65,7 +65,12 @@ impl Expandable for proto::DpMinimum {
             batch: component.batch,
         });
 
-        Ok((current_id, graph_expansion))
+        Ok(proto::ComponentExpansion {
+            computation_graph,
+            properties: HashMap::new(),
+            releases: HashMap::new(),
+            traversal: vec![id_minimum]
+        })
     }
 }
 
@@ -88,15 +93,54 @@ impl Accuracy for proto::DpMinimum {
     }
 }
 
+
 impl Report for proto::DpMinimum {
     fn summarize(
         &self,
-        _node_id: &u32,
-        _component: &proto::Component,
-        _public_arguments: &HashMap<String, Value>,
-        _properties: &NodeProperties,
-        _release: &Value
+        node_id: &u32,
+        component: &proto::Component,
+        public_arguments: &HashMap<String, Value>,
+        properties: &NodeProperties,
+        release: &Value,
     ) -> Result<Option<Vec<JSONRelease>>> {
-        Ok(None)
+        let mut data_property = properties.get("data")
+            .ok_or("data: missing")?.get_arraynd()
+            .map_err(prepend("data:"))?.clone();
+
+        let mut releases = Vec::new();
+
+        let minimums = data_property.get_min_f64().unwrap();
+        let maximums = data_property.get_max_f64().unwrap();
+
+        for column_number in 0..data_property.num_columns.unwrap() {
+            let mut releaseInfo = HashMap::new();
+            releaseInfo.insert("mechanism".to_string(), serde_json::json!(self.implementation.clone()));
+            releaseInfo.insert("releaseValue".to_string(), value_to_json(&release).unwrap());
+
+            let release = JSONRelease {
+                description: "DP release information".to_string(),
+                statistic: "DPMinimum".to_string(),
+                variables: vec![],
+                releaseInfo,
+                privacyLoss: privacy_usage_to_json(&self.privacy_usage[column_number as usize].clone()),
+                accuracy: None,
+                batch: component.batch as u64,
+                nodeID: node_id.clone() as u64,
+                postprocess: false,
+                algorithmInfo: AlgorithmInfo {
+                    name: "".to_string(),
+                    cite: "".to_string(),
+                    argument: serde_json::json!({
+                        "constraint": {
+                            "lowerbound": minimums[column_number as usize],
+                            "upperbound": maximums[column_number as usize]
+                        }
+                    }),
+                },
+            };
+
+            releases.push(release);
+        }
+        Ok(Some(releases))
     }
 }

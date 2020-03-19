@@ -86,13 +86,8 @@ message ResponsePrivacyUsageToAccuracy {
 	}
 }
 message ResponseExpandComponent {
-	message ExpandedComponent {
-		ComputationGraph computation_graph = 1;
-		ValueProperties properties = 2;
-		uint32 maximum_id = 3;
-	}
 	oneof value {
-		ExpandedComponent data = 1;
+		ComponentExpansion data = 1;
 		Error error = 2;
 	}
 }

@@ -212,7 +212,7 @@ class Component(object):
         if type(value) == Component:
             return value
 
-        return Component('Constant', value=value, value_format=value_format)
+        return Component('Literal', value=value, value_format=value_format)
 
     @staticmethod
     def _expand_constraints(arguments, constraints):

@@ -8,8 +8,8 @@ use crate::hashmap;
 use crate::components::{Component, Accuracy, Expandable, Report};
 
 
-use crate::base::{NodeProperties, Value, standardize_categorical_argument, Vector2DJagged, ValueProperties};
-use crate::utilities::json::{JSONRelease};
+use crate::base::{NodeProperties, Value, standardize_categorical_argument, Vector2DJagged, ValueProperties, prepend};
+use crate::utilities::json::{JSONRelease, privacy_usage_to_json, AlgorithmInfo, value_to_json};
 
 
 impl Component for proto::DpCount {
@@ -40,14 +40,14 @@ impl Expandable for proto::DpCount {
         _properties: &base::NodeProperties,
         component_id: u32,
         maximum_id: u32,
-    ) -> Result<(u32, HashMap<u32, proto::Component>)> {
+    ) -> Result<proto::ComponentExpansion> {
         let mut maximum_id = maximum_id.clone();
-        let mut graph_expansion: HashMap<u32, proto::Component> = HashMap::new();
+        let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
 
         // count
         maximum_id += 1;
         let id_count = maximum_id.clone();
-        graph_expansion.insert(id_count, proto::Component {
+        computation_graph.insert(id_count.clone(), proto::Component {
             arguments: hashmap!["data".to_owned() => *component.arguments.get("data").unwrap()],
             variant: Some(proto::component::Variant::Count(proto::Count {})),
             omit: true,
@@ -55,7 +55,7 @@ impl Expandable for proto::DpCount {
         });
 
         // noising
-        graph_expansion.insert(component_id, proto::Component {
+        computation_graph.insert(component_id, proto::Component {
             arguments: hashmap![
                 "data".to_owned() => id_count,
                 "count_min".to_owned() => *component.arguments.get("count_min").unwrap(),
@@ -69,7 +69,13 @@ impl Expandable for proto::DpCount {
             batch: component.batch,
         });
 
-        Ok((maximum_id, graph_expansion))
+
+        Ok(proto::ComponentExpansion {
+            computation_graph,
+            properties: HashMap::new(),
+            releases: HashMap::new(),
+            traversal: vec![id_count]
+        })
     }
 }
 
@@ -95,12 +101,43 @@ impl Accuracy for proto::DpCount {
 impl Report for proto::DpCount {
     fn summarize(
         &self,
-        _node_id: &u32,
-        _component: &proto::Component,
-        _public_arguments: &HashMap<String, Value>,
-        _properties: &NodeProperties,
-        _release: &Value
+        node_id: &u32,
+        component: &proto::Component,
+        public_arguments: &HashMap<String, Value>,
+        properties: &NodeProperties,
+        release: &Value
     ) -> Result<Option<Vec<JSONRelease>>> {
-        Ok(None)
+        let mut data_property = properties.get("data")
+            .ok_or("data: missing")?.get_arraynd()
+            .map_err(prepend("data:"))?.clone();
+
+        let mut releases = Vec::new();
+
+        for column_number in 0..data_property.num_columns.unwrap() {
+
+            let mut releaseInfo = HashMap::new();
+            releaseInfo.insert("mechanism".to_string(), serde_json::json!(self.implementation.clone()));
+            releaseInfo.insert("releaseValue".to_string(), value_to_json(&release).unwrap());
+
+            let release = JSONRelease {
+                description: "DP release information".to_string(),
+                statistic: "DPCount".to_string(),
+                variables: vec![],
+                releaseInfo,
+                privacyLoss: privacy_usage_to_json(&self.privacy_usage[column_number as usize].clone()),
+                accuracy: None,
+                batch: component.batch as u64,
+                nodeID: node_id.clone() as u64,
+                postprocess: false,
+                algorithmInfo: AlgorithmInfo {
+                    name: "".to_string(),
+                    cite: "".to_string(),
+                    argument: serde_json::json!({})
+                }
+            };
+
+            releases.push(release);
+        }
+        Ok(Some(releases))
     }
 }

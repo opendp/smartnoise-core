@@ -22,6 +22,10 @@ use std::io::Read;
 use std::collections::{BTreeMap};
 use std::ffi::OsStr;
 
+
+extern crate build_deps;
+
+
 #[derive(Deserialize, Debug)]
 struct ComponentJSON {
     id: String,
@@ -59,6 +63,11 @@ fn doc(text: &Option<String>, prefix: &str) -> String {
 }
 
 fn main() {
+    // Enumerate component json files as relevant resources to the compiler
+    build_deps::rerun_if_changed_paths( "../prototypes/components/*" ).unwrap();
+    // Adding the parent directory "data" to the watch-list will capture new-files being added
+    build_deps::rerun_if_changed_paths( "../prototypes/components" ).unwrap();
+
     let components_dir = "../prototypes/components/";
     let components_proto_path = "../prototypes/components.proto";
 
@@ -120,7 +129,7 @@ message Component {
                 component_description.push_str(&format!("\n\n{}", description));
             }
 
-            component_description.push_str("\n\nThis struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abstract computation on the arguments.");
+            component_description.push_str(&format!("\n\nThis struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the {} on the arguments.", component.name));
 
             let component_arguments = match component.arguments.is_empty() {
                 true => "".to_string(),
