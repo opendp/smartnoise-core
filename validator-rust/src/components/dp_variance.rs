@@ -40,14 +40,14 @@ impl Expandable for proto::DpVariance {
         _properties: &base::NodeProperties,
         component_id: u32,
         maximum_id: u32,
-    ) -> Result<(u32, HashMap<u32, proto::Component>)> {
+    ) -> Result<proto::ComponentExpansion> {
         let mut current_id = maximum_id.clone();
-        let mut graph_expansion: HashMap<u32, proto::Component> = HashMap::new();
+        let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
 
         // variance
         current_id += 1;
         let id_variance = current_id.clone();
-        graph_expansion.insert(id_variance, proto::Component {
+        computation_graph.insert(id_variance, proto::Component {
             arguments: hashmap!["data".to_owned() => *component.arguments.get("data").unwrap()],
             variant: Some(proto::component::Variant::from(proto::Variance {
                 finite_sample_correction: self.finite_sample_correction
@@ -57,7 +57,7 @@ impl Expandable for proto::DpVariance {
         });
 
         // noising
-        graph_expansion.insert(component_id, proto::Component {
+        computation_graph.insert(component_id, proto::Component {
             arguments: hashmap!["data".to_owned() => id_variance],
             variant: Some(proto::component::Variant::from(proto::LaplaceMechanism {
                 privacy_usage: self.privacy_usage.clone()
@@ -66,7 +66,12 @@ impl Expandable for proto::DpVariance {
             batch: component.batch,
         });
 
-        Ok((current_id, graph_expansion))
+        Ok(proto::ComponentExpansion {
+            computation_graph,
+            properties: HashMap::new(),
+            releases: HashMap::new(),
+            traversal: vec![id_variance]
+        })
     }
 }
 

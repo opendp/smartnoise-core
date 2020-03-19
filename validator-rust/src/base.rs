@@ -668,22 +668,23 @@ pub fn propagate_properties(
                 )?;
 
                 // patch the computation graph
-                graph.extend(result.1);
+                graph.extend(result.computation_graph);
 
 //                println!("maximum id {:?}", maximum_id);
                 // if patch added nodes, extend the traversal
-                if result.0 > maximum_id {
-                    let mut new_nodes = ((maximum_id + 1)..(result.0 + 1)).collect::<Vec<u32>>();
+                if !result.traversal.is_empty() {
+                    let mut new_nodes = result.traversal;
                     new_nodes.reverse();
+                    maximum_id = *new_nodes.iter().max()
+                        .map(|v| v.max(&maximum_id)).unwrap_or(&maximum_id);
                     traversal.extend(new_nodes);
-                    maximum_id = result.0;
                     continue;
                 }
                 traversal.pop();
 
                 component.clone().variant.unwrap().propagate_property(
                     &privacy_definition, &public_arguments, &input_properties)
-                    .chain_err(|| format!("at node_id {:?},", node_id))?
+                    .chain_err(|| format!("at node_id {:?}", node_id))?
             }
         };
         graph_properties.insert(node_id.clone(), properties);
@@ -870,15 +871,19 @@ pub fn standardize_weight_argument<T>(
 
 /// Utility for building extra Components to pass back when conducting expansions.
 #[doc(hidden)]
-pub fn get_constant(value: &Value, batch: &u32) -> proto::Component {
-    proto::Component {
+pub fn get_literal(value: &Value, batch: &u32) -> Result<(proto::Component, proto::ReleaseNode)> {
+    Ok((proto::Component {
         arguments: HashMap::new(),
-        variant: Some(proto::component::Variant::Constant(proto::Constant {
-            value: serialize_value(&value).ok()
+        variant: Some(proto::component::Variant::Literal(proto::Literal {
+            private: false
         })),
         omit: true,
         batch: batch.clone()
-    }
+    },
+    proto::ReleaseNode {
+        value: Some(serialize_value(value)?),
+        privacy_usage: Vec::new()
+    }))
 }
 
 #[doc(hidden)]
@@ -975,7 +980,7 @@ pub fn expand_component(
     arguments: &HashMap<String, Value>,
     node_id_output: u32,
     node_id_maximum: u32
-) -> Result<proto::response_expand_component::ExpandedComponent> {
+) -> Result<proto::ComponentExpansion> {
 
 //    println!("expanding node id: {}", node_id_output);
 //    println!("expansion properties before {:?}", properties);
@@ -996,17 +1001,22 @@ pub fn expand_component(
         &properties,
         node_id_output,
         node_id_maximum,
-    ).chain_err(|| format!("at node_id {:?},", node_id_output))?;
+    ).chain_err(|| format!("at node_id {:?}", node_id_output))?;
 
-    Ok(proto::response_expand_component::ExpandedComponent {
-        computation_graph: Some(proto::ComputationGraph { value: result.1 }),
-        properties: match result.0 > node_id_maximum {
-            true => None,
-            false => Some(utilities::serial::serialize_value_properties(&component.clone().variant.unwrap()
-                .propagate_property(privacy_definition, arguments, &properties)
-                .chain_err(|| format!("at node_id {:?},", node_id_output))?))
-        },
-        maximum_id: result.0
+    let mut patch_properties = result.properties;
+    if result.traversal.is_empty() {
+        let propagated_property = component.clone().variant.unwrap()
+            .propagate_property(privacy_definition, arguments, &properties)
+            .chain_err(|| format!("at node_id {:?}", node_id_output))?;
+
+        patch_properties.insert(node_id_output, utilities::serial::serialize_value_properties(&propagated_property));
+    }
+
+    Ok(proto::ComponentExpansion {
+        computation_graph: result.computation_graph,
+        properties: patch_properties,
+        releases: result.releases,
+        traversal: result.traversal
     })
 }
 

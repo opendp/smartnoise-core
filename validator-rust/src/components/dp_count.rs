@@ -10,6 +10,7 @@ use crate::components::{Component, Accuracy, Expandable, Report};
 
 use crate::base::{NodeProperties, Value, standardize_categorical_argument, Vector2DJagged, ValueProperties};
 use crate::utilities::json::{JSONRelease};
+use crate::base::Value::Hashmap;
 
 
 impl Component for proto::DpCount {
@@ -40,14 +41,14 @@ impl Expandable for proto::DpCount {
         _properties: &base::NodeProperties,
         component_id: u32,
         maximum_id: u32,
-    ) -> Result<(u32, HashMap<u32, proto::Component>)> {
+    ) -> Result<proto::ComponentExpansion> {
         let mut maximum_id = maximum_id.clone();
-        let mut graph_expansion: HashMap<u32, proto::Component> = HashMap::new();
+        let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
 
         // count
         maximum_id += 1;
         let id_count = maximum_id.clone();
-        graph_expansion.insert(id_count, proto::Component {
+        computation_graph.insert(id_count.clone(), proto::Component {
             arguments: hashmap!["data".to_owned() => *component.arguments.get("data").unwrap()],
             variant: Some(proto::component::Variant::Count(proto::Count {})),
             omit: true,
@@ -55,7 +56,7 @@ impl Expandable for proto::DpCount {
         });
 
         // noising
-        graph_expansion.insert(component_id, proto::Component {
+        computation_graph.insert(component_id, proto::Component {
             arguments: hashmap![
                 "data".to_owned() => id_count,
                 "count_min".to_owned() => *component.arguments.get("count_min").unwrap(),
@@ -69,7 +70,13 @@ impl Expandable for proto::DpCount {
             batch: component.batch,
         });
 
-        Ok((maximum_id, graph_expansion))
+
+        Ok(proto::ComponentExpansion {
+            computation_graph,
+            properties: HashMap::new(),
+            releases: HashMap::new(),
+            traversal: vec![id_count]
+        })
     }
 }
 
