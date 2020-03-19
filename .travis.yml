@@ -28,15 +28,22 @@ script:
   - cd runtime-rust; cargo build --verbose --workspace;
   - cargo test --verbose --workspace;
   - cd ..;
-  # (3) Docs for (1) and (2)
-  - cd runtime-rust;
-  - cargo doc --verbose --target-dir=../docs;
-  - cd ..; rm -rf docs/debug;
-  # (4) Build python bindings and run tests
+  # (3) Build python bindings and run tests
   #   > Commented out for now.  It works but takes a while to run...
   #- cd bindings-python; python3 -m pip install -r requirements.txt;
   #- export RUST_BACKTRACE=1; python3 -m pip install -e . -v;
   #- python3 -m pytest -x -v; cd ..;
+
+after_success:
+  #
+  # Build the documentation for gh-pages
+  #
+  - echo $TRAVIS_BRANCH;
+  - if [ "$TRAVIS_BRANCH" == "62-rp-pages" ]; then
+    cd runtime-rust;
+    cargo doc --verbose --target-dir=../docs;
+    cd ..; rm -rf docs/debug;
+    fi
 
 # -------------------------------------------
 # Deploy the Rust documentation to
