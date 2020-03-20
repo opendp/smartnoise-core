@@ -272,7 +272,7 @@ pub fn sample_gaussian_mpfr(shift: f64, scale: f64) -> Result<rug::Float> {
 /// * `shift` - The expectation of the Laplace distribution.
 /// * `scale` - The scaling parameter of the Laplace distribution.
 ///
-/// Return
+/// # Return
 /// Draw from Laplace(shift, scale).
 ///
 /// # Example
@@ -293,7 +293,7 @@ pub fn sample_laplace(shift: f64, scale: f64) -> Result<f64> {
 /// * `shift` - The expectation of the Gaussian distribution.
 /// * `scale` - The scaling parameter (standard deviation) of the Gaussian distribution.
 ///
-/// Return
+/// # Return
 /// A draw from Gaussian(shift, scale).
 ///
 /// # Example

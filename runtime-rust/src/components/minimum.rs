@@ -19,17 +19,32 @@ impl Evaluable for proto::Minimum {
     }
 }
 
-
+/// Finds minimum value in each column of data.
+///
+/// # Arguments
+/// * `data` - Data for which you want the minimum of each column.
+///
+/// # Return
+/// The minimum value in each column.
+///
+/// # Example
+/// ```
+/// use ndarray::{ArrayD, arr1, arr2};
+/// use whitenoise_runtime::components::minimum::minimum;
+/// let data = arr2(&[ [1., 4., 5.], [10., 40., 50.] ]).into_dyn();
+/// let mins = minimum(&data).unwrap();
+/// assert!(mins == arr2(&[ [1., 4., 5.] ]).into_dyn());
+/// ```
 pub fn minimum(data: &ArrayD<f64>) -> Result<ArrayD<f64>> {
     let data = data.clone();
 
     // iterate over the generalized columns
-    let means = data.gencolumns().into_iter()
-        .map(|column| column.iter().fold(std::f64::NEG_INFINITY, |a, &b| a.max(b))).collect::<Vec<f64>>();
+    let mins = data.gencolumns().into_iter()
+        .map(|column| column.iter().fold(std::f64::INFINITY, |a, &b| a.min(b))).collect::<Vec<f64>>();
 
     let array = match data.ndim() {
-        1 => Array::from_shape_vec(vec![], means),
-        2 => Array::from_shape_vec(vec![1 as usize, get_num_columns(&data)? as usize], means),
+        1 => Array::from_shape_vec(vec![], mins),
+        2 => Array::from_shape_vec(vec![1 as usize, get_num_columns(&data)? as usize], mins),
         _ => return Err("invalid data shape for Minimum".into())
     };
 

@@ -68,3 +68,6 @@ prototypes/components.proto
 docs/debug/*
 docs/doc/.lock
 docs/.rustc_info.json
+
+# jupyter notebook
+.ipynb_checkpoints

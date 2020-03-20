@@ -4,7 +4,8 @@
       "nature": [
         "continuous"
       ],
-      "type": "Array"
+      "type": "Array",
+      "description": "Data for which you want the maximum value in each column."
     }
   },
   "id": "Maximum",
@@ -14,7 +15,8 @@
     "nature": [
       "continuous"
     ],
-    "type": "Array"
+    "type": "Array",
+    "description": "Maximum of each column in the data."
   },
-  "docstring": "maximum step"
+  "description": "Find the maximum value of each column in the data."
 }
