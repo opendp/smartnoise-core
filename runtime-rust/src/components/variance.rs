@@ -14,6 +14,22 @@ impl Evaluable for proto::Variance {
     }
 }
 
+/// Calculate estimate of variance for each column in data.
+///
+/// # Arguments
+/// * `data` - Data for which you would like the variance for each column.
+///
+/// # Return
+/// Variance for each column in the data.
+///
+/// # Example
+/// ```
+/// use ndarray::prelude::*;
+/// use whitenoise_runtime::components::variance::variance;
+/// let data = arr2(&[ [1.,10.], [2., 20.], [3., 30.] ]).into_dyn();
+/// let variances = variance(&data).unwrap();
+/// assert!(variances == arr2(&[[1., 100.]]).into_dyn());
+/// ```
 pub fn variance(data: &ArrayD<f64>) -> Result<ArrayD<f64>> {
 
     let means: Vec<f64> = mean(&data)?.iter().map(|v| v.clone()).collect();
