@@ -30,6 +30,5 @@
       "continuous"
     ],
     "type": "Array"
-  },
-  "docstring": "simple geometric mechanism step"
+  }
 }

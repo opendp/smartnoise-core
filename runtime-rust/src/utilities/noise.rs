@@ -401,7 +401,7 @@ pub fn sample_geometric_censored(prob: &f64, max_trials: &i64, enforce_constant_
     // ensure that prob is a valid probability
     if prob < &0.0 || prob > &1.0 {return Err("probability is not within [0, 1]".into())}
 
-    let mut bit: i64 = 0;
+    let mut bit: i64;
     let mut n_trials: i64 = 1;
     let mut geom_return: i64 = 0;
 

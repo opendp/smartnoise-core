@@ -1,12 +1,11 @@
 use whitenoise_validator::errors::*;
 
 use crate::base::NodeArguments;
-use crate::components::Evaluable;
+use crate::components::{Evaluable, broadcast_map};
 use whitenoise_validator::base::{Value, ArrayND, get_argument};
-use std::convert::TryFrom;
-use ndarray::ArrayD;
+
+
 use whitenoise_validator::proto;
-use crate::components::row_max::broadcast_map;
 
 impl Evaluable for proto::RowMin {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {

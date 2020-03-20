@@ -5,7 +5,7 @@ use whitenoise_validator::errors::*;
 //  Requiring the Copy trait on stack makes this (necessary) part of ndarray unusable
 //  Pulled from the ndarray library, and tweaked to remove the Copy trait requirement
 
-use ndarray::{Data, RemoveAxis, Axis, Ix, Array, ArrayView, ErrorKind};
+use ndarray::{RemoveAxis, Axis, Ix, Array, ArrayView};
 
 use itertools::zip;
 

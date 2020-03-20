@@ -24,7 +24,7 @@ impl Component for proto::DpMean {
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         _public_arguments: &HashMap<String, Value>,
-        properties: &base::NodeProperties,
+        _properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
         Err("DPMaximum is abstract, and has no property propagation".into())
     }
@@ -134,47 +134,12 @@ impl Report for proto::DpMean {
         &self,
         node_id: &u32,
         component: &proto::Component,
-        public_arguments: &HashMap<String, Value>,
+        _public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
         release: &Value
     ) -> Result<Option<Vec<JSONRelease>>> {
 
-/// returns JSON Schema for DpMean
-/// example: schema is an array of 2 elements ( for dp mean release)
-//    let mut schema = vec![JSONRelease {
-//        description: "".to_string(),
-//        variables: vec![],
-//        statistics: "dpmean".to_string(),
-//        releaseInfo: Default::default(),
-//        privacyLoss: PrivacyLoss::Pure(PureLoss { epsilon: 0.5 }),
-//        accuracy: None,
-//        batch: 0,
-//        nodeID: 0,
-//        postprocess: false,
-//        algorithmInfo: AlgorithmInfo {
-//            name: "Laplace".to_string(),
-//            cite: "haghsg".to_string(),
-//            argument: HashMap::new(),
-//        },
-//    },
-//    JSONRelease {
-//        description: "".to_string(),
-//        variables: vec![],
-//        statistics: "dpmean".to_string(),
-//        releaseInfo: Default::default(),
-//        privacyLoss: PrivacyLoss::Concentrated(Concentrated { rho: 0.4 }),
-//        accuracy: None,
-//        batch: 0,
-//        nodeID: 0,
-//        postprocess: true,
-//        algorithmInfo: AlgorithmInfo {
-//            name: "histogram".to_string(),
-//            cite: "...".to_string(),
-//            argument: HashMap::new(),
-//        },
-//    }];
-
-        let mut data_property = properties.get("data")
+        let data_property = properties.get("data")
             .ok_or("data: missing")?.get_arraynd()
             .map_err(prepend("data:"))?.clone();
 
@@ -186,21 +151,21 @@ impl Report for proto::DpMean {
 
         for column_number in 0..data_property.num_columns.unwrap() {
 
-            let mut releaseInfo = HashMap::new();
-            releaseInfo.insert("mechanism".to_string(), serde_json::json!(self.implementation.clone()));
-            releaseInfo.insert("releaseValue".to_string(), value_to_json(&release).unwrap());
+            let mut release_info = HashMap::new();
+            release_info.insert("mechanism".to_string(), serde_json::json!(self.implementation.clone()));
+            release_info.insert("releaseValue".to_string(), value_to_json(&release).unwrap());
 
             let release = JSONRelease {
                 description: "DP release information".to_string(),
                 statistic: "DPMean".to_string(),
                 variables: vec![],
-                releaseInfo,
-                privacyLoss: privacy_usage_to_json(&self.privacy_usage[column_number as usize].clone()),
+                release_info,
+                privacy_loss: privacy_usage_to_json(&self.privacy_usage[column_number as usize].clone()),
                 accuracy: None,
                 batch: component.batch as u64,
-                nodeID: node_id.clone() as u64,
+                node_id: node_id.clone() as u64,
                 postprocess: false,
-                algorithmInfo: AlgorithmInfo {
+                algorithm_info: AlgorithmInfo {
                     name: "".to_string(),
                     cite: "".to_string(),
                     argument: serde_json::json!({

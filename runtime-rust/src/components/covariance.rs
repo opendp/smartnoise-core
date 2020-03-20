@@ -1,7 +1,7 @@
 use whitenoise_validator::errors::*;
 
 use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value, ArrayND, get_argument, Vector2DJagged};
+use whitenoise_validator::base::{Value, get_argument, Vector2DJagged};
 use crate::components::Evaluable;
 use ndarray::{ArrayD, Array};
 
@@ -60,7 +60,7 @@ pub fn matrix_covariance(data: &ArrayD<f64>) -> Result<Vec<Vec<f64>>> {
         .for_each(|(left_i, left_col)| {
             let mut col_covariances: Vec<f64> = Vec::new();
             data.gencolumns().into_iter().enumerate()
-                .filter(|(right_i, right_col)| &left_i <= right_i)
+                .filter(|(right_i, _right_col)| &left_i <= right_i)
                 .for_each(|(right_i, right_col)|
                     col_covariances.push(covariance(&left_col, &right_col, &means[left_i].clone(), &means[right_i].clone())));
             covariances.push(col_covariances);

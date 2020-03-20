@@ -22,6 +22,5 @@
       "continuous"
     ],
     "type": "Hashmap"
-  },
-  "docstring": "partition step"
+  }
 }

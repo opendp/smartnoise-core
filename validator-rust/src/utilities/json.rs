@@ -22,19 +22,23 @@ pub struct JSONRelease {
     /// User provide a value for either epsilon (epsilon>0), delta (0<delta<1>), or rho depending on the type of dp definitions (i.e. pure, approximated and concerted).
     pub statistic: String,
     /// The value released by the system
-    pub releaseInfo: HashMap<String, Value>,
+    #[serde(rename(serialize = "releaseInfo", deserialize = "releaseInfo"))]
+    pub release_info: HashMap<String, Value>,
     /// The amount of privacy used to compute the release value
-    pub privacyLoss: Value,
+    #[serde(rename(serialize = "privacyLoss", deserialize = "privacyLoss"))]
+    pub privacy_loss: Value,
     /// optional parameter. It is a combination of the accuracy and alpha value
     pub accuracy: Option<Accuracy>,
     /// which release the implemented statistic is originating from. This provides a tool to keep track of overall privacyLoss.
     pub batch: u64,
     /// For advanced users. Corresponds to the node of the graph this release originated from
-    pub nodeID: u64,
+    #[serde(rename(serialize = "nodeID", deserialize = "nodeID"))]
+    pub node_id: u64,
     /// true when the released value is derived from public/released data
     pub postprocess: bool,
     /// the name of the algorithm which is implemented for computation of the given statistic and the arguments of the algorithm such as n(number of observations),  range (upper and lower bound, etc.)
-    pub algorithmInfo: AlgorithmInfo,
+    #[serde(rename(serialize = "algorithmInfo", deserialize = "algorithmInfo"))]
+    pub algorithm_info: AlgorithmInfo,
 }
 
 /// Statistical accuracy summary
@@ -43,7 +47,8 @@ pub struct JSONRelease {
 #[derive(Serialize, Deserialize)]
 pub struct Accuracy {
     /// Upper bound on the distance between the estimated value and actual value.
-    pub accuracyValue: f64,
+    #[serde(rename(serialize = "accuracyValue", deserialize = "accuracyValue"))]
+    pub accuracy_value: f64,
     /// 100(1 - alpha)% confidence that the actual value is within the interval spanned by the accuracyValue.
     pub alpha: f64,
 }

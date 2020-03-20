@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use crate::{proto, base};
 
 use crate::components::{Component, Aggregator};
-use crate::base::{Value, NodeProperties, AggregatorProperties, Vector2DJagged, standardize_categorical_argument, Sensitivity, ValueProperties, prepend};
+use crate::base::{Value, NodeProperties, AggregatorProperties, Vector2DJagged, Sensitivity, ValueProperties, prepend, DataType};
 
 impl Component for proto::Count {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
@@ -28,6 +28,7 @@ impl Component for proto::Count {
 
         data_property.num_records = Some(1);
         data_property.nature = None;
+        data_property.data_type = DataType::I64;
 
         Ok(data_property.into())
     }
@@ -47,7 +48,7 @@ impl Aggregator for proto::Count {
         properties: &NodeProperties,
         sensitivity_type: &Sensitivity
     ) -> Result<Vec<f64>> {
-        let mut data_property = properties.get("data")
+        let data_property = properties.get("data")
             .ok_or("data: missing")?.get_arraynd()
             .map_err(prepend("data:"))?.clone();
 

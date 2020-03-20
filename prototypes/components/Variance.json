@@ -24,6 +24,5 @@
       "continuous"
     ],
     "type": "Array"
-  },
-  "docstring": "variance step"
+  }
 }

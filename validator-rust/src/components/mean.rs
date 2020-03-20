@@ -8,8 +8,6 @@ use crate::{proto, base};
 use crate::components::{Component, Aggregator};
 use crate::base::{Value, NodeProperties, AggregatorProperties, Sensitivity, prepend, ValueProperties};
 
-// TODO: more checks needed here
-
 impl Component for proto::Mean {
     fn propagate_property(
         &self,
@@ -47,7 +45,7 @@ impl Aggregator for proto::Mean {
         properties: &NodeProperties,
         sensitivity_type: &Sensitivity
     ) -> Result<Vec<f64>> {
-        let mut data_property = properties.get("data")
+        let data_property = properties.get("data")
             .ok_or("data: missing")?.get_arraynd()
             .map_err(prepend("data:"))?.clone();
 

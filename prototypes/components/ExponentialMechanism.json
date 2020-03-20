@@ -20,6 +20,5 @@
       "continuous"
     ],
     "type": "Array"
-  },
-  "docstring": "laplace mechanism step"
+  }
 }

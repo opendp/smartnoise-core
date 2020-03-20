@@ -1,7 +1,7 @@
 use crate::errors::*;
 
 use std::collections::HashMap;
-use crate::base::{Nature, Vector1DNull, NodeProperties, ArrayND, get_literal, prepend, ValueProperties, Hashmap};
+use crate::base::{Nature, Vector1DNull, NodeProperties, ArrayND, get_literal, prepend, ValueProperties};
 
 use crate::{proto, base};
 

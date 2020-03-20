@@ -31,6 +31,5 @@
       "continuous"
     ],
     "type": "Array"
-  },
-  "docstring": "dp_variance step"
+  }
 }

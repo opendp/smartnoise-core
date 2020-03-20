@@ -55,6 +55,5 @@
       "continuous"
     ],
     "type": "Array"
-  },
-  "docstring": "dp_count step"
+  }
 }

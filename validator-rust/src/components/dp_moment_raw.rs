@@ -17,7 +17,7 @@ impl Component for proto::DpMomentRaw {
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         _public_arguments: &HashMap<String, Value>,
-        properties: &base::NodeProperties,
+        _properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
         Err("DPMomentRaw is abstract, and has no property propagation".into())
     }
@@ -97,11 +97,11 @@ impl Report for proto::DpMomentRaw {
         &self,
         node_id: &u32,
         component: &proto::Component,
-        public_arguments: &HashMap<String, Value>,
+        _public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
         release: &Value,
     ) -> Result<Option<Vec<JSONRelease>>> {
-        let mut data_property = properties.get("data")
+        let data_property = properties.get("data")
             .ok_or("data: missing")?.get_arraynd()
             .map_err(prepend("data:"))?.clone();
 
@@ -112,21 +112,21 @@ impl Report for proto::DpMomentRaw {
         let num_records = data_property.get_num_records().unwrap();
 
         for column_number in 0..data_property.num_columns.unwrap() {
-            let mut releaseInfo = HashMap::new();
-            releaseInfo.insert("mechanism".to_string(), serde_json::json!(self.implementation.clone()));
-            releaseInfo.insert("releaseValue".to_string(), value_to_json(&release).unwrap());
 
             let release = JSONRelease {
                 description: "DP release information".to_string(),
                 statistic: "DPMomentRaw".to_string(),
                 variables: vec![],
-                releaseInfo,
-                privacyLoss: privacy_usage_to_json(&self.privacy_usage[column_number as usize].clone()),
+                release_info: hashmap![
+                    "mechanism".to_string() => serde_json::json!(self.implementation.clone()),
+                    "releaseValue".to_string() => value_to_json(&release).unwrap()
+                ],
+                privacy_loss: privacy_usage_to_json(&self.privacy_usage[column_number as usize].clone()),
                 accuracy: None,
                 batch: component.batch as u64,
-                nodeID: node_id.clone() as u64,
+                node_id: node_id.clone() as u64,
                 postprocess: false,
-                algorithmInfo: AlgorithmInfo {
+                algorithm_info: AlgorithmInfo {
                     name: "".to_string(),
                     cite: "".to_string(),
                     argument: serde_json::json!({

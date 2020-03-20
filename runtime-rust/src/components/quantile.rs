@@ -4,15 +4,12 @@ use crate::base::NodeArguments;
 use whitenoise_validator::base::{Value, get_argument, ArrayND};
 use crate::components::Evaluable;
 use whitenoise_validator::proto;
-use ndarray::{ArrayD, Array, Axis};
-use std::ops::Add;
-use crate::utilities::utilities::get_num_columns;
-use num::Zero;
+use ndarray::{ArrayD, Axis};
+
 use ndarray_stats::QuantileExt;
 use ndarray_stats::interpolate;
 use noisy_float::types::n64;
-use ndarray_stats::interpolate::Interpolate;
-use noisy_float::types::N64;
+
 
 impl Evaluable for proto::Quantile {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {

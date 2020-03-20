@@ -41,16 +41,17 @@ mod mechanism_gaussian;
 mod mechanism_laplace;
 mod mechanism_simple_geometric;
 mod resize;
-mod row_wise_min;
+//mod row_wise;
 mod sum;
 mod variance;
 
 use std::collections::HashMap;
 
-use crate::base::{Value, NodeProperties, Sensitivity, ValueProperties};
+use crate::base::{Value, NodeProperties, Sensitivity, ValueProperties, prepend, get_literal, ArrayND};
 use crate::proto;
 use crate::utilities::json::{JSONRelease};
-use crate::hashmap;
+
+use ndarray::Array;
 
 
 /// Universal Component trait
@@ -212,7 +213,7 @@ impl Component for proto::component::Variant {
 
             Minimum, Quantile, Resize, Sum, Variance,
 
-            Add, Subtract, Divide, Multiply, Power, Log, Modulo, Remainder, LogicalAnd, LogicalOr, Negate,
+            Add, Subtract, Divide, Multiply, Power, Log, Modulo, LogicalAnd, LogicalOr, Negate,
             Equal, LessThan, GreaterThan, Negative
         );
 
@@ -221,7 +222,7 @@ impl Component for proto::component::Variant {
 
     fn get_names(
         &self,
-        properties: &NodeProperties,
+        _properties: &NodeProperties,
     ) -> Result<Vec<String>> {
 
         macro_rules! get_names{
@@ -276,7 +277,9 @@ impl Expandable for proto::component::Variant {
             // INSERT COMPONENT LIST
             Clamp, DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMedian, DpMinimum,
             DpMomentRaw, DpSum, DpVariance, Impute, ExponentialMechanism, GaussianMechanism,
-            LaplaceMechanism, SimpleGeometricMechanism, Resize
+            LaplaceMechanism, SimpleGeometricMechanism, Resize,
+
+            Modulo
         );
 
         // no expansion
@@ -328,9 +331,9 @@ impl Accuracy for proto::component::Variant {
     /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn accuracy_to_privacy_usage(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
-        properties: &NodeProperties,
-        accuracy: &proto::Accuracy,
+        _privacy_definition: &proto::PrivacyDefinition,
+        _properties: &NodeProperties,
+        _accuracy: &proto::Accuracy,
     ) -> Option<proto::PrivacyUsage> {
         macro_rules! accuracy_to_privacy_usage {
             ($( $variant:ident ),*) => {
@@ -358,8 +361,8 @@ impl Accuracy for proto::component::Variant {
     /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn privacy_usage_to_accuracy(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
-        properties: &NodeProperties,
+        _privacy_definition: &proto::PrivacyDefinition,
+        _properties: &NodeProperties,
     ) -> Option<f64> {
         macro_rules! privacy_usage_to_accuracy {
             ($( $variant:ident ),*) => {
@@ -417,4 +420,50 @@ impl Report for proto::component::Variant {
 
         Ok(None)
     }
+}
+
+
+/// Utility function for building component expansions for dp mechanisms
+pub fn expand_mechanism(
+    sensitivity_type: &Sensitivity,
+    privacy_definition: &proto::PrivacyDefinition,
+    component: &proto::Component,
+    properties: &NodeProperties,
+    component_id: u32,
+    maximum_id: u32,
+) -> Result<proto::ComponentExpansion> {
+    let mut current_id = maximum_id.clone();
+    let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
+    let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
+
+    // always overwrite sensitivity. This is not something a user may configure
+    let data_property = properties.get("data")
+        .ok_or("data: missing")?.get_arraynd()
+        .map_err(prepend("data:"))?.clone();
+
+    let aggregator = data_property.aggregator.clone()
+        .ok_or::<Error>("aggregator: missing".into())?;
+
+    let sensitivity = Value::ArrayND(ArrayND::F64(Array::from(aggregator.component
+        .compute_sensitivity(privacy_definition,
+                             &aggregator.properties,
+                             &sensitivity_type)?).into_dyn()));
+
+    current_id += 1;
+    let id_sensitivity = current_id.clone();
+    let (patch_node, release) = get_literal(&sensitivity, &component.batch)?;
+    computation_graph.insert(id_sensitivity.clone(), patch_node);
+    releases.insert(id_sensitivity.clone(), release);
+
+    // noising
+    let mut noise_component = component.clone();
+    noise_component.arguments.insert("sensitivity".to_string(), id_sensitivity);
+    computation_graph.insert(component_id, noise_component);
+
+    Ok(proto::ComponentExpansion {
+        computation_graph,
+        properties: HashMap::new(),
+        releases,
+        traversal: Vec::new()
+    })
 }
