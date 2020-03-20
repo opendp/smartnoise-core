@@ -29,10 +29,13 @@ impl Component for proto::Cast {
         let _prior_datatype = data_property.data_type.clone();
 
         data_property.data_type = match datatype.to_lowercase().as_str() {
-            "float" => DataType::Str,
+            "float" => DataType::F64,
+            "real" => DataType::F64,
             "int" => DataType::I64,
+            "integer" => DataType::I64,
             "bool" => DataType::Bool,
             "string" => DataType::Str,
+            "str" => DataType::Str,
             _ => bail!("data type is not recognized. Must be one of \"float\", \"int\", \"bool\" or \"string\"")
         };
 

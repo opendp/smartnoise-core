@@ -318,8 +318,14 @@ pub fn infer_nature(value: &Value) -> Result<Option<Nature>> {
     })
 }
 
-pub fn infer_nullity(_value: &Value) -> Result<bool> {
-    Ok(true)
+pub fn infer_nullity(value: &Value) -> Result<bool> {
+    match value {
+        Value::ArrayND(value) => match value {
+            ArrayND::F64(value) => Ok(value.iter().any(|v| v.is_nan())),
+            _ => Ok(false)
+        },
+        _ => Ok(false)
+    }
 }
 
 pub fn infer_c_stability(value: &Value) -> Result<Vec<f64>> {
