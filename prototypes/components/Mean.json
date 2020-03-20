@@ -22,5 +22,5 @@
     "type": "Array",
     "description": "Arithmetic mean for each column of the data in question."
   },
-  "docstring": "Calculates the arithmetic mean of each column in the provided data."
+  "description": "Calculates the arithmetic mean of each column in the provided data."
 }
