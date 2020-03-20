@@ -93,10 +93,14 @@ impl Evaluable for proto::Modulo {
                 (ArrayND::F64(x), ArrayND::F64(y)) =>
                     Ok(broadcast_map(&x, &y, &|l: &f64, r: &f64| l.rem_euclid(*r))?.into()),
                 (ArrayND::I64(x), ArrayND::I64(y)) => {
-                    let min = get_argument(arguments, "min")?.get_first_i64()?;
-                    let max = get_argument(arguments, "max")?.get_first_i64()?;
+                    let min = get_argument(arguments, "min")
+                        .chain_err(|| "min must be known in case of imputation")?.get_first_i64()?;
+                    let max = get_argument(arguments, "max")
+                        .chain_err(|| "max must be known in case of imputation")?.get_first_i64()?;
+
+                    if min > max {return Err("Modulo: min cannot be less than max".into());}
                     Ok(broadcast_map(&x, &y, &|l: &i64, r: &i64| match l.checked_rem_euclid(*r) {
-                        Some(v) => v, None => sample_uniform_int(&min, &max)
+                        Some(v) => v, None => sample_uniform_int(&min, &max).unwrap()
                     })?.into())
                 },
                 _ => Err("Modulo: Either the argument types are mismatched or non-numeric.".into())

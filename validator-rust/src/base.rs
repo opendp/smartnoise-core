@@ -13,7 +13,7 @@ use ndarray::prelude::Ix1;
 
 use std::collections::{HashMap, HashSet};
 
-use crate::utilities::serial::{serialize_value, parse_release};
+use crate::utilities::serial::{serialize_value, parse_release, parse_value_properties, parse_value};
 use crate::utilities::json::{JSONRelease};
 
 use std::ops::Deref;
@@ -178,9 +178,24 @@ impl ArrayND {
     }
     pub fn get_first_f64(&self) -> Result<f64> {
         match self {
-            ArrayND::Bool(x) => Ok(if *x.first().unwrap() { 1. } else { 0. }),
-            ArrayND::I64(x) => Ok(f64::from(*x.first().unwrap() as i32)),
-            ArrayND::F64(x) => Ok(x.first().unwrap().to_owned()),
+            ArrayND::Bool(x) => {
+                if x.len() != 1 {
+                    return Err("non-singleton array passed for an argument that must be scalar".into())
+                }
+                Ok(if *x.first().unwrap() { 1. } else { 0. })
+            },
+            ArrayND::I64(x) => {
+                if x.len() != 1 {
+                    return Err("non-singleton array passed for an argument that must be scalar".into())
+                }
+                Ok(f64::from(*x.first().unwrap() as i32))
+            },
+            ArrayND::F64(x) => {
+                if x.len() != 1 {
+                    return Err("non-singleton array passed for an argument that must be scalar".into())
+                }
+                Ok(x.first().unwrap().to_owned())
+            },
             _ => Err("value must be numeric".into())
         }
     }
@@ -205,8 +220,18 @@ impl ArrayND {
     }
     pub fn get_first_i64(&self) -> Result<i64> {
         match self {
-            ArrayND::Bool(x) => Ok(if *x.first().unwrap() { 1 } else { 0 }),
-            ArrayND::I64(x) => Ok(x.first().unwrap().to_owned()),
+            ArrayND::Bool(x) => {
+                if x.len() != 1 {
+                    return Err("non-singleton array passed for an argument that must be scalar".into())
+                }
+                Ok(if *x.first().unwrap() { 1 } else { 0 })
+            },
+            ArrayND::I64(x) => {
+                if x.len() != 1 {
+                    return Err("non-singleton array passed for an argument that must be scalar".into())
+                }
+                Ok(x.first().unwrap().to_owned())
+            },
             _ => Err("value must be numeric".into())
         }
     }
@@ -231,7 +256,12 @@ impl ArrayND {
     }
     pub fn get_first_str(&self) -> Result<String> {
         match self {
-            ArrayND::Str(x) => Ok(x.first().unwrap().to_owned()),
+            ArrayND::Str(x) => {
+                if x.len() != 1 {
+                    return Err("non-singleton array passed for an argument that must be scalar".into())
+                }
+                Ok(x.first().unwrap().to_owned())
+            },
             _ => Err("value must be a string".into())
         }
     }
@@ -244,7 +274,12 @@ impl ArrayND {
     }
     pub fn get_first_bool(&self) -> Result<bool> {
         match self {
-            ArrayND::Bool(x) => Ok(x.first().unwrap().to_owned()),
+            ArrayND::Bool(x) => {
+                if x.len() != 1 {
+                    return Err("non-singleton array passed for an argument that must be scalar".into())
+                }
+                Ok(x.first().unwrap().to_owned())
+            },
             _ => Err("value must be a bool".into())
         }
     }
@@ -648,11 +683,14 @@ pub fn propagate_properties(
     let privacy_definition = analysis.privacy_definition.to_owned().unwrap();
     let mut graph: HashMap<u32, proto::Component> = analysis.computation_graph.to_owned().unwrap().value.to_owned();
     let mut traversal: Vec<u32> = get_traversal(&graph)?;
+    // extend and pop from the end of the traversal
     traversal.reverse();
 
-    let graph_evaluation: Release = parse_release(&release)?;
-//    println!("GRAPH EVALUATION: {:?}", graph_evaluation);
-    let mut graph_properties = HashMap::<u32, ValueProperties>::new();
+    let mut graph_evaluation: Release = parse_release(&release)?;
+
+    let mut graph_properties = graph_evaluation.iter()
+        .map(|(node_id, value)| Ok((node_id.clone(), infer_property(value)?)))
+        .collect::<Result<HashMap<u32, ValueProperties>>>()?;
 
     let mut maximum_id = graph.keys().cloned()
         .fold(0, std::cmp::max);
@@ -661,50 +699,49 @@ pub fn propagate_properties(
         let node_id = traversal.last().unwrap().clone();
 
         let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
-//        println!("Propagating properties at node_id {:?} {:?}", node_id, component);
+        let input_properties = get_input_properties(&component, &graph_properties)?;
+        let public_arguments = get_input_arguments(&component, &graph_evaluation)?;
 
-        let properties = match graph_evaluation.get(&node_id) {
+        let mut expansion = component.clone().variant.unwrap().expand_component(
+            &privacy_definition,
+            &component,
+            &input_properties,
+            node_id.clone(),
+            maximum_id.clone(),
+        )?;
+
+        // patch the computation graph
+        graph.extend(expansion.computation_graph.clone());
+        graph_properties.extend(expansion.properties.iter()
+            .map(|(node_id, props)| (node_id.clone(), parse_value_properties(props)))
+            .collect::<HashMap<u32, ValueProperties>>());
+        graph_evaluation.extend(expansion.releases.iter()
+            .map(|(node_id, release)| Ok((node_id.clone(), parse_value(&release.value.clone().unwrap())?)))
+            .collect::<Result<HashMap<u32, Value>>>()?);
+
+        maximum_id = *expansion.computation_graph.keys().max()
+            .map(|v| v.max(&maximum_id)).unwrap_or(&maximum_id);
+
+        // if patch added nodes, extend the traversal
+        if !expansion.traversal.is_empty() {
+            expansion.traversal.reverse();
+            traversal.extend(expansion.traversal);
+            continue;
+        }
+        traversal.pop();
+
+        graph_properties.insert(node_id.clone(), match graph_evaluation.get(&node_id) {
             // if node has already been evaluated, infer properties directly from the public data
-            Some(value) => {
-                traversal.pop();
-                infer_property(&value)?
-            },
+            Some(value) => infer_property(&value),
 
             // if node has not been evaluated, propagate properties over it
             None => {
                 let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
-                let input_properties = get_input_properties(&component, &graph_properties)?;
-                let public_arguments = get_input_arguments(&component, &graph_evaluation)?;
-
-                let result = component.clone().variant.unwrap().expand_component(
-                    &privacy_definition,
-                    &component,
-                    &input_properties,
-                    node_id.clone(),
-                    maximum_id.clone(),
-                )?;
-
-                // patch the computation graph
-                graph.extend(result.computation_graph);
-
-//                println!("maximum id {:?}", maximum_id);
-                // if patch added nodes, extend the traversal
-                if !result.traversal.is_empty() {
-                    let mut new_nodes = result.traversal;
-                    new_nodes.reverse();
-                    maximum_id = *new_nodes.iter().max()
-                        .map(|v| v.max(&maximum_id)).unwrap_or(&maximum_id);
-                    traversal.extend(new_nodes);
-                    continue;
-                }
-                traversal.pop();
-
                 component.clone().variant.unwrap().propagate_property(
                     &privacy_definition, &public_arguments, &input_properties)
-                    .chain_err(|| format!("at node_id {:?}", node_id))?
+                    .chain_err(|| format!("at node_id {:?}", node_id))
             }
-        };
-        graph_properties.insert(node_id.clone(), properties);
+        }?);
     }
     Ok((graph_properties, graph))
 }
@@ -796,8 +833,6 @@ pub fn uniform_density(length: usize) -> Vec<f64> {
 
 
 /// Convert weights to probabilities
-///
-/// TODO: add more checks
 #[doc(hidden)]
 pub fn normalize_probabilities(weights: &Vec<f64>) -> Vec<f64> {
     let sum: f64 = weights.iter().sum();
