@@ -6,7 +6,7 @@
         "categorical"
       ],
       "type": "Array"
-    }, 
+    },
     "count_min": {
       "type": "Array"
     },
@@ -38,6 +38,5 @@
       "continuous"
     ],
     "type": "Array"
-  },
-  "docstring": "dp_count step"
+  }
 }

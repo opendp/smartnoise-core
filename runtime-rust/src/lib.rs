@@ -1,10 +1,10 @@
 /// The Whitenoise rust runtime is an execution engine for evaluating differentially private analyses.
 
 extern crate whitenoise_validator;
-use whitenoise_validator::{ERR_STDERR};
+
 pub use whitenoise_validator::proto;
 
-use std::io::Write; // trait which holds `display_chain`
+ // trait which holds `display_chain`
 use error_chain::ChainedError;
 pub mod base;
 pub mod utilities;

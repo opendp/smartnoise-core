@@ -26,6 +26,5 @@
       "continuous"
     ],
     "type": "Array"
-  },
-  "docstring": "dp_moment_raw step"
+  }
 }

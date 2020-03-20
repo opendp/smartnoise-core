@@ -8,9 +8,9 @@ import "value.proto";
 
 // REQUESTS
 // VALIDATOR API
+
 message RequestValidateAnalysis {
 	Analysis analysis = 1;
-	// optional
 	Release release = 2;
 }
 message RequestComputePrivacyUsage {
@@ -43,6 +43,7 @@ message RequestExpandComponent {
 
 // REQUESTS
 // RUNTIME API
+
 message RequestRelease {
 	Analysis analysis = 1;
 	Release release = 2;
@@ -51,6 +52,7 @@ message RequestRelease {
 
 // RESPONSES
 // VALIDATOR API
+
 message ResponseValidateAnalysis {
 	message Validated {
 	    bool value = 1;
@@ -94,6 +96,7 @@ message ResponseExpandComponent {
 
 // RESPONSES
 // RUNTIME API
+
 message ResponseRelease {
 	oneof value {
 		Release data = 1;

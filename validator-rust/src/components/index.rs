@@ -19,7 +19,7 @@ impl Component for proto::Index {
         public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
-        let mut data_property = properties.get("data")
+        let data_property = properties.get("data")
             .ok_or("data: missing")?.get_hashmap()
             .map_err(prepend("data:"))?.clone();
 

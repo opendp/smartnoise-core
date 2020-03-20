@@ -258,7 +258,7 @@ pub fn parse_arraynd_properties(value: &proto::ArrayNdProperties) -> ArrayNDProp
     }
 }
 
-pub fn parse_array2d_jagged_properties(value: &proto::Vector2DJaggedProperties) -> Vector2DJaggedProperties {
+pub fn parse_array2d_jagged_properties(_value: &proto::Vector2DJaggedProperties) -> Vector2DJaggedProperties {
     Vector2DJaggedProperties {}
 }
 
@@ -560,7 +560,7 @@ pub fn serialize_arraynd_properties(value: &ArrayNDProperties) -> proto::ArrayNd
     }
 }
 
-pub fn serialize_vector2d_jagged_properties(value: &Vector2DJaggedProperties) -> proto::Vector2DJaggedProperties {
+pub fn serialize_vector2d_jagged_properties(_value: &Vector2DJaggedProperties) -> proto::Vector2DJaggedProperties {
     proto::Vector2DJaggedProperties {}
 }
 

@@ -13,7 +13,7 @@ pub mod errors {
 #[doc(hidden)]
 pub use errors::*;
 use error_chain::ChainedError;
-use std::io::Write; // trait which holds `display_chain`
+ // trait which holds `display_chain`
 
 #[doc(hidden)]
 pub static ERR_STDERR: &'static str = "Error writing to stderr";
