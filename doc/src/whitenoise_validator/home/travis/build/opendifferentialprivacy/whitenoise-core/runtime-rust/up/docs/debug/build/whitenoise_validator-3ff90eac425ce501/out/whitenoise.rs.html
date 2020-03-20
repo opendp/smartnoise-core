@@ -1510,6 +1510,16 @@
 <span id="1510">1510</span>
 <span id="1511">1511</span>
 <span id="1512">1512</span>
+<span id="1513">1513</span>
+<span id="1514">1514</span>
+<span id="1515">1515</span>
+<span id="1516">1516</span>
+<span id="1517">1517</span>
+<span id="1518">1518</span>
+<span id="1519">1519</span>
+<span id="1520">1520</span>
+<span id="1521">1521</span>
+<span id="1522">1522</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BoolNull</span> {
@@ -2092,13 +2102,15 @@
 }
 <span class="doccomment">/// Maximum Component</span>
 <span class="doccomment">/// </span>
+<span class="doccomment">/// Find the maximum value of each column in the data.</span>
+<span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the maximum on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data` - Array</span>
+<span class="doccomment">/// * `data` - Array - Data for which you want the maximum value in each column.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// * `Value` - Array</span>
+<span class="doccomment">/// * `Value` - Array - Maximum of each column in the data.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Maximum</span> {
 }
@@ -2156,16 +2168,18 @@
 }
 <span class="doccomment">/// KthRawSampleMoment Component</span>
 <span class="doccomment">/// </span>
+<span class="doccomment">/// Accepts data and returns sample estimate of kth raw moment for each column.</span>
+<span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the kth_raw_sample_moment on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `by` - Array</span>
-<span class="doccomment">/// * `data` - Array</span>
+<span class="doccomment">/// * `data` - Array - Data for which you would like the kth raw moments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// * `Value` - Array</span>
+<span class="doccomment">/// * `Value` - Array - kth sample moment for each column.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">KthRawSampleMoment</span> {
+    <span class="doccomment">/// Number representing the moment you want.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">uint32</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">k</span>: <span class="ident">u32</span>,
 }
@@ -2283,12 +2297,16 @@
 }
 <span class="doccomment">/// Covariance Component</span>
 <span class="doccomment">/// </span>
+<span class="doccomment">/// Calculate sample covariance.</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">///  If `data` argument is provided as a 2D array, calculate covariance matrix. Otherwise, `left` and `right` 1D arrays are used to calculate a single covariance.</span>
+<span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the covariance on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data` - Array</span>
-<span class="doccomment">/// * `left` - Array</span>
-<span class="doccomment">/// * `right` - Array</span>
+<span class="doccomment">/// * `data` - Array - 2D data array used to construct covariance matrix.</span>
+<span class="doccomment">/// * `left` - Array - Left 1D data array used to calculate scalar covariance. Used only if `data` not provided.</span>
+<span class="doccomment">/// * `right` - Array - Right 1D data array used to calculate scalar covariance. Used only if `data` not provided.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array</span>
@@ -2625,13 +2643,15 @@
 }
 <span class="doccomment">/// Minimum Component</span>
 <span class="doccomment">/// </span>
+<span class="doccomment">/// Find the minimum value of each column in the data.</span>
+<span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the minimum on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data` - Array</span>
+<span class="doccomment">/// * `data` - Array - Data for which you want the maximum value in each column.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// * `Value` - Array</span>
+<span class="doccomment">/// * `Value` - Array - Maximum of each column in the data.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Minimum</span> {
 }

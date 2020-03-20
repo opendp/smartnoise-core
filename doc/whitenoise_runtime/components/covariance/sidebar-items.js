@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["covariance","Get sample covariance between two arrays."],["matrix_covariance",""],["matrix_cross_covariance",""]]});
+initSidebarItems({"fn":[["covariance","Get sample covariance between two 1D-arrays."],["matrix_covariance","Construct upper triangular of sample covariance matrix from data matrix."],["matrix_cross_covariance","Construct sample cross-covariance matrix from pair of data matrices."]]});
