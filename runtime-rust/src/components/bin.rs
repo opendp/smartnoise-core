@@ -222,7 +222,7 @@ pub fn bin<T: std::cmp::PartialOrd + Clone + Div<T, Output=T> + Add<T, Output=T>
 /////                      The leftmost and rightmost bins are automatically closed on the left/right (respectively),
 /////                      regardless of the value of `inclusive_left`.
 /////
-///// Return
+///// # Return
 ///// Array of bin names.
 /////
 ///// Example
