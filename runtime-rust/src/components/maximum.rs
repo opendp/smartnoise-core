@@ -19,17 +19,32 @@ impl Evaluable for proto::Maximum {
     }
 }
 
-
+/// Finds maximum value in each column of data.
+///
+/// # Arguments
+/// * `data` - Data for which you want the maximum of each column.
+///
+/// Return
+/// The maximum value in each column.
+///
+/// # Example
+/// ```
+/// use ndarray::{ArrayD, arr1, arr2};
+/// use whitenoise_runtime::components::maximum::maximum;
+/// let data = arr2(&[ [1., 4., 5.], [10., 40., 50.] ]).into_dyn();
+/// let maxes = maximum(&data).unwrap();
+/// assert!(maxes == arr2(&[ [10., 40., 50.] ]).into_dyn());
+/// ```
 pub fn maximum(data: &ArrayD<f64>) -> Result<ArrayD<f64>> {
     let data = data.clone();
 
     // iterate over the generalized columns
-    let means = data.gencolumns().into_iter()
-        .map(|column| column.iter().fold(std::f64::INFINITY, |a, &b| a.min(b))).collect::<Vec<f64>>();
+    let maxes = data.gencolumns().into_iter()
+        .map(|column| column.iter().fold(std::f64::NEG_INFINITY, |a, &b| a.max(b))).collect::<Vec<f64>>();
 
     let array = match data.ndim() {
-        1 => Array::from_shape_vec(vec![], means),
-        2 => Array::from_shape_vec(vec![1 as usize, get_num_columns(&data)? as usize], means),
+        1 => Array::from_shape_vec(vec![], maxes),
+        2 => Array::from_shape_vec(vec![1 as usize, get_num_columns(&data)? as usize], maxes),
         _ => return Err("invalid data shape for Maximum".into())
     };
 
