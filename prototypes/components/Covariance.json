@@ -27,12 +27,14 @@
   },
   "id": "Covariance",
   "name": "covariance",
-  "options": {},
+  "options": {
+  },
   "return": {
     "nature": [
       "continuous"
     ],
-    "type": "Array"
+    "type": "Array",
+    "description": "Covariance of data."
   },
   "description": "Calculate sample covariance.\n\n If `data` argument is provided as a 2D array, calculate covariance matrix. Otherwise, `left` and `right` 1D arrays are used to calculate a single covariance."
 }
