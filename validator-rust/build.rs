@@ -159,11 +159,11 @@ message Component {
         .collect::<Vec<String>>().join("\n\n");
 
     let proto_text = format!("{}\n{}\n    }}\n}}\n\n{}", proto_text_header, proto_text_variants, proto_text_messages);
-    println!("{}", proto_text);
+//    println!("{}", proto_text);
 
     // overwrite/remove the components.proto file
     {
-        fs::remove_file(components_proto_path).unwrap();
+        fs::remove_file(components_proto_path).ok();
         let mut file = File::create(components_proto_path).unwrap();
         file.write(proto_text.as_bytes())
             .expect("Unable to write components.proto file.");
