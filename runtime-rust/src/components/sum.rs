@@ -19,7 +19,22 @@ impl Evaluable for proto::Sum {
     }
 }
 
-
+/// Calculates sum for each column of the data.
+///
+/// # Arguments
+/// * `data` - Data for which you would like the sum of each column.
+///
+/// # Return
+/// Sum of each column of the data.
+///
+/// # Example
+/// ```
+/// use ndarray::prelude::*;
+/// use whitenoise_runtime::components::sum::sum;
+/// let data = arr2(&[ [1.,10.], [2., 20.], [3., 30.] ]).into_dyn();
+/// let sums = sum(&data).unwrap();
+/// assert!(sums == arr2(&[[6., 60.]]).into_dyn());
+/// ```
 pub fn sum<T: Add<T, Output=T> + Zero + Copy>(data: &ArrayD<T>) -> Result<ArrayD<T>> {
     let data = data.clone();
 

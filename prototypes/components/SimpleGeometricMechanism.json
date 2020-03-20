@@ -5,7 +5,8 @@
       "nature": [
         "continuous"
       ],
-      "type": "Array"
+      "type": "Array",
+      "data": "Result to be released privately via the Geometric mechanism."
     },
     "count_min": {
       "type": "Array"
@@ -18,7 +19,8 @@
   "name": "simple_geometric_mechanism",
   "options": {
     "privacy_usage": {
-      "type": "repeated PrivacyUsage"
+      "type": "repeated PrivacyUsage",
+      "description": "Object describing the type and amount of privacy to be used for the mechanism release."
     },
     "enforce_constant_time": {
       "type": "bool",
@@ -29,6 +31,7 @@
     "nature": [
       "continuous"
     ],
-    "type": "Array"
-  }
-}
+    "type": "Array",
+    "description": "Original data perturbed with Geometric noise."
+  },
+  "description": "Privatizes a result by returning it perturbed with Geometric noise."}

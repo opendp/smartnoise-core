@@ -29,7 +29,7 @@ impl Evaluable for proto::Covariance {
     }
 }
 
-/// Construct upper triangular of sample covariance matrix from data matrix.
+/// Construct upper triangular of covariance matrix from data matrix.
 ///
 /// # Arguments
 /// * `data` - Data for which you want covariance matrix.
@@ -68,7 +68,7 @@ pub fn matrix_covariance(data: &ArrayD<f64>) -> Result<Vec<Vec<f64>>> {
     Ok(covariances)
 }
 
-/// Construct sample cross-covariance matrix from pair of data matrices.
+/// Construct cross-covariance matrix from pair of data matrices.
 ///
 /// Element (i,j) of the cross-covariance matrix will be the covariance of the
 /// column i of `left` and column `j` of `right`
@@ -116,7 +116,7 @@ pub fn matrix_cross_covariance(left: &ArrayD<f64>, right: &ArrayD<f64>) -> Resul
     }
 }
 
-/// Get sample covariance between two 1D-arrays.
+/// Get covariance between two 1D-arrays.
 ///
 /// # Arguments
 /// * `left` - One of the two arrays for which you want the covariance.

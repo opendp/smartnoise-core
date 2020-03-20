@@ -5,20 +5,24 @@
       "nature": [
         "continuous"
       ],
-      "type": "Array"
+      "type": "Array",
+      "description": "Set from which Exponential mechanism will return an element."
     }
   },
   "id": "ExponentialMechanism",
   "name": "exponential_mechanism",
   "options": {
     "privacy_usage": {
-      "type": "repeated PrivacyUsage"
+      "type": "repeated PrivacyUsage",
+      "description": "Object describing the type and amount of privacy to be used for the mechanism release."
     }
   },
   "return": {
     "nature": [
       "continuous"
     ],
-    "type": "Array"
-  }
+    "type": "Array",
+    "description": "Element from the data selected via the Exponential mechanism."
+  },
+  "description": "Returns an element from a finite set with probability relative to its utility."
 }
