@@ -13,7 +13,7 @@ use std::vec::Vec;
 
 use itertools::Itertools;
 
-use whitenoise_validator::base::{get_input_properties, Value, ValueProperties};
+use whitenoise_validator::base::{get_input_properties, Value};
 use whitenoise_validator::utilities::inference::infer_property;
 use whitenoise_validator::utilities::serial::{serialize_value_properties, parse_release};
 

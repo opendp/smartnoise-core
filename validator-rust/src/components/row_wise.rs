@@ -2,12 +2,13 @@ use crate::errors::*;
 
 
 use std::collections::HashMap;
-use crate::base::{NodeProperties, Value, prepend, ValueProperties};
+use crate::base::{NodeProperties, Value, prepend, ValueProperties, Nature};
 
 
 use crate::proto;
 
 use crate::components::Component;
+use crate::components::transforms::propagate_binary_shape;
 
 
 impl Component for proto::RowMin {
@@ -24,6 +25,9 @@ impl Component for proto::RowMin {
         let mut right_property = properties.get("right")
             .ok_or("right: missing")?.get_arraynd()
             .map_err(prepend("right:"))?.clone();
+
+        let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
+
         Ok(left_property.into())
     }
 

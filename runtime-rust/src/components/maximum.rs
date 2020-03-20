@@ -5,9 +5,9 @@ use whitenoise_validator::base::{Value, get_argument, ArrayND};
 use crate::components::Evaluable;
 use whitenoise_validator::proto;
 use ndarray::{ArrayD, Array};
-use std::ops::Add;
+
 use crate::utilities::utilities::get_num_columns;
-use num::Zero;
+
 
 impl Evaluable for proto::Maximum {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {

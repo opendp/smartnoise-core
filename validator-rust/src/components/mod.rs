@@ -41,7 +41,7 @@ mod mechanism_gaussian;
 mod mechanism_laplace;
 mod mechanism_simple_geometric;
 mod resize;
-mod row_wise_min;
+//mod row_wise;
 mod sum;
 mod variance;
 

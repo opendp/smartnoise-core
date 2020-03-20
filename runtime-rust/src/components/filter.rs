@@ -4,10 +4,10 @@ use ndarray::prelude::*;
 use crate::base::NodeArguments;
 use whitenoise_validator::base::{Value, ArrayND, get_argument};
 use crate::components::Evaluable;
-use ndarray::{ArrayD, Array, Axis, Array1, arr1};
-use crate::utilities::utilities::get_num_columns;
+use ndarray::{ArrayD, Axis, Array1};
+
 use whitenoise_validator::proto;
-use crate::components::resize::create_sampling_indices;
+
 use crate::utilities::array::select;
 
 
@@ -48,7 +48,7 @@ pub fn filter<T: Clone>(data: &ArrayD<T>, mask: &ArrayD<bool>) -> Result<ArrayD<
     let columnar_mask: Array1<bool> = mask.clone().into_dimensionality::<Ix1>().unwrap();
 
     let mask_indices: Vec<usize> = columnar_mask.iter().enumerate()
-        .filter(|(index, &v)| v)
+        .filter(|(_index, &v)| v)
         .map(|(index, _)| index)
         .collect();
     Ok(select(&data, Axis(0), &mask_indices))

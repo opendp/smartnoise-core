@@ -2,7 +2,7 @@ use whitenoise_validator::errors::*;
 
 use ndarray::prelude::*;
 use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value, ArrayND, Hashmap};
+use whitenoise_validator::base::{Value, Hashmap};
 use crate::components::Evaluable;
 use std::collections::HashMap;
 use whitenoise_validator::utilities::serial::parse_value;

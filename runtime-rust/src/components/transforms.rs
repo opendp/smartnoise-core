@@ -4,8 +4,8 @@ use crate::components::Evaluable;
 use crate::base::NodeArguments;
 use whitenoise_validator::base::{Value, ArrayND, get_argument};
 use whitenoise_validator::proto;
-use std::ops::Rem;
-use crate::components::row_max::broadcast_map;
+
+use crate::components::broadcast_map;
 use crate::utilities::noise::sample_uniform_int;
 
 

@@ -1,7 +1,7 @@
 use whitenoise_validator::errors::*;
 
 use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value, ArrayND, get_argument, Vector2DJagged};
+use whitenoise_validator::base::{Value, get_argument, Vector2DJagged};
 use crate::components::Evaluable;
 use crate::utilities;
 use whitenoise_validator::proto;
@@ -47,7 +47,7 @@ impl Evaluable for proto::LaplaceMechanism {
 
                 data.iter_mut()
                     .zip(sensitivity.iter())
-                    .map(|(mut col, sens_col)|
+                    .map(|(col, sens_col)|
                         col.iter_mut().zip(sens_col)
                             .map(|(v, sens)| {
                                 *v += utilities::mechanisms::laplace_mechanism(&epsilon, &sens)?;
