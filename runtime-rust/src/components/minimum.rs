@@ -24,7 +24,7 @@ impl Evaluable for proto::Minimum {
 /// # Arguments
 /// * `data` - Data for which you want the minimum of each column.
 ///
-/// Return
+/// # Return
 /// The minimum value in each column.
 ///
 /// # Example

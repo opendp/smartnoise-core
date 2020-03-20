@@ -24,7 +24,7 @@ impl Evaluable for proto::Maximum {
 /// # Arguments
 /// * `data` - Data for which you want the maximum of each column.
 ///
-/// Return
+/// # Return
 /// The maximum value in each column.
 ///
 /// # Example
