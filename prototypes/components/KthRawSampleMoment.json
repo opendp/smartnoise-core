@@ -4,25 +4,24 @@
       "nature": [
         "continuous"
       ],
-      "type": "Array"
-    },
-    "by": {
       "type": "Array",
-      "default": "None"
+      "description": "Data for which you would like the kth raw moments."
     }
   },
   "id": "KthRawSampleMoment",
   "name": "kth_raw_sample_moment",
   "options": {
     "k": {
-      "type": "uint32"
+      "type": "uint32",
+      "description": "Number representing the moment you want."
     }
   },
   "return": {
     "nature": [
       "continuous"
     ],
-    "type": "Array"
+    "type": "Array",
+    "description": "kth sample moment for each column."
   },
-  "docstring": "kth_raw_sample_moment step"
+  "description": "Accepts data and returns sample estimate of kth raw moment for each column."
 }

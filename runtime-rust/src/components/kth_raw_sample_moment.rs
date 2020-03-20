@@ -16,25 +16,25 @@ impl Evaluable for proto::KthRawSampleMoment {
 }
 
 
-/// Accepts data and returns sample estimate of kth raw moment
+/// Accepts data and returns sample estimate of kth raw moment for each column.
 ///
 /// # Arguments
-/// * `data` - Array of data for which you would like the kth raw moment
-/// * `k` - integer representing moment you want
+/// * `data` - Data for which you would like the kth raw moments.
+/// * `k` - Number representing the moment you want.
 ///
 /// # Return
-/// kth sample moment
+/// kth sample moment for each column.
 ///
 /// # Example
 /// ```
-/// use ndarray::prelude::*;
-/// use whitenoise_runtime::utilities::aggregations::kth_raw_sample_moment;
-/// let data: ArrayD<f64> = arr1(&[0., 1., 2., 3., 4., 5., 12., 19., 24., 90., 98., 100.]).into_dyn();
-/// let third_moment: ArrayD<f64> = kth_raw_sample_moment(&data, &3);
-/// println!("{}", third_moment);
+/// use ndarray::{ArrayD, arr2};
+/// use whitenoise_runtime::components::kth_raw_sample_moment::kth_raw_sample_moment;
+/// let data: ArrayD<f64> = arr2(&[ [1., 1., 1.], [2., 4., 6.] ]).into_dyn();
+/// let second_moments = kth_raw_sample_moment(&data, &2).unwrap();
+/// assert!(second_moments == arr1(&[5., 17., 37.]).into_dyn());
 /// ```
 pub fn kth_raw_sample_moment(data: &ArrayD<f64>, k: &i64) -> Result<ArrayD<f64>> {
-    
+
     let mut data = data.clone();
 
     let num_columns = get_num_columns(&data)?;
