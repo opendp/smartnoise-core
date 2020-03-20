@@ -76,10 +76,10 @@
 <span class="doccomment">/// The Whitenoise rust runtime is an execution engine for evaluating differentially private analyses.</span>
 
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">whitenoise_validator</span>;
-<span class="kw">use</span> <span class="ident">whitenoise_validator</span>::{<span class="ident">ERR_STDERR</span>};
+
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">whitenoise_validator</span>::<span class="ident">proto</span>;
 
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>::<span class="ident">Write</span>; <span class="comment">// trait which holds `display_chain`</span>
+ <span class="comment">// trait which holds `display_chain`</span>
 <span class="kw">use</span> <span class="ident">error_chain</span>::<span class="ident">ChainedError</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">base</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">utilities</span>;

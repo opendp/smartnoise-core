@@ -190,7 +190,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">_privacy_definition</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">PrivacyDefinition</span>,
         <span class="ident">_public_arguments</span>: <span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Value</span><span class="op">&gt;</span>,
-        <span class="ident">properties</span>: <span class="kw-2">&amp;</span><span class="ident">base</span>::<span class="ident">NodeProperties</span>,
+        <span class="ident">_properties</span>: <span class="kw-2">&amp;</span><span class="ident">base</span>::<span class="ident">NodeProperties</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ValueProperties</span><span class="op">&gt;</span> {
         <span class="prelude-val">Err</span>(<span class="string">&quot;DPCount is abstract, and has no property propagation&quot;</span>.<span class="ident">into</span>())
     }
@@ -294,11 +294,11 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">node_id</span>: <span class="kw-2">&amp;</span><span class="ident">u32</span>,
         <span class="ident">component</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">Component</span>,
-        <span class="ident">public_arguments</span>: <span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Value</span><span class="op">&gt;</span>,
+        <span class="ident">_public_arguments</span>: <span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Value</span><span class="op">&gt;</span>,
         <span class="ident">properties</span>: <span class="kw-2">&amp;</span><span class="ident">NodeProperties</span>,
         <span class="ident">release</span>: <span class="kw-2">&amp;</span><span class="ident">Value</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">JSONRelease</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">data_property</span> <span class="op">=</span> <span class="ident">properties</span>.<span class="ident">get</span>(<span class="string">&quot;data&quot;</span>)
+        <span class="kw">let</span> <span class="ident">data_property</span> <span class="op">=</span> <span class="ident">properties</span>.<span class="ident">get</span>(<span class="string">&quot;data&quot;</span>)
             .<span class="ident">ok_or</span>(<span class="string">&quot;data: missing&quot;</span>)<span class="question-mark">?</span>.<span class="ident">get_arraynd</span>()
             .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;data:&quot;</span>))<span class="question-mark">?</span>.<span class="ident">clone</span>();
 
@@ -309,21 +309,21 @@
         <span class="kw">let</span> <span class="ident">num_records</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">get_num_records</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">for</span> <span class="ident">column_number</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">data_property</span>.<span class="ident">num_columns</span>.<span class="ident">unwrap</span>() {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">releaseInfo</span> <span class="op">=</span> <span class="ident">HashMap</span>::<span class="ident">new</span>();
-            <span class="ident">releaseInfo</span>.<span class="ident">insert</span>(<span class="string">&quot;mechanism&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">serde_json</span>::<span class="macro">json</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">implementation</span>.<span class="ident">clone</span>()));
-            <span class="ident">releaseInfo</span>.<span class="ident">insert</span>(<span class="string">&quot;releaseValue&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">value_to_json</span>(<span class="kw-2">&amp;</span><span class="ident">release</span>).<span class="ident">unwrap</span>());
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">release_info</span> <span class="op">=</span> <span class="ident">HashMap</span>::<span class="ident">new</span>();
+            <span class="ident">release_info</span>.<span class="ident">insert</span>(<span class="string">&quot;mechanism&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">serde_json</span>::<span class="macro">json</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">implementation</span>.<span class="ident">clone</span>()));
+            <span class="ident">release_info</span>.<span class="ident">insert</span>(<span class="string">&quot;releaseValue&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">value_to_json</span>(<span class="kw-2">&amp;</span><span class="ident">release</span>).<span class="ident">unwrap</span>());
 
             <span class="kw">let</span> <span class="ident">release</span> <span class="op">=</span> <span class="ident">JSONRelease</span> {
                 <span class="ident">description</span>: <span class="string">&quot;DP release information&quot;</span>.<span class="ident">to_string</span>(),
                 <span class="ident">statistic</span>: <span class="string">&quot;DPHistogram&quot;</span>.<span class="ident">to_string</span>(),
                 <span class="ident">variables</span>: <span class="macro">vec</span><span class="macro">!</span>[],
-                <span class="ident">releaseInfo</span>,
-                <span class="ident">privacyLoss</span>: <span class="ident">privacy_usage_to_json</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">privacy_usage</span>[<span class="ident">column_number</span> <span class="kw">as</span> <span class="ident">usize</span>].<span class="ident">clone</span>()),
+                <span class="ident">release_info</span>,
+                <span class="ident">privacy_loss</span>: <span class="ident">privacy_usage_to_json</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">privacy_usage</span>[<span class="ident">column_number</span> <span class="kw">as</span> <span class="ident">usize</span>].<span class="ident">clone</span>()),
                 <span class="ident">accuracy</span>: <span class="prelude-val">None</span>,
                 <span class="ident">batch</span>: <span class="ident">component</span>.<span class="ident">batch</span> <span class="kw">as</span> <span class="ident">u64</span>,
-                <span class="ident">nodeID</span>: <span class="ident">node_id</span>.<span class="ident">clone</span>() <span class="kw">as</span> <span class="ident">u64</span>,
+                <span class="ident">node_id</span>: <span class="ident">node_id</span>.<span class="ident">clone</span>() <span class="kw">as</span> <span class="ident">u64</span>,
                 <span class="ident">postprocess</span>: <span class="bool-val">false</span>,
-                <span class="ident">algorithmInfo</span>: <span class="ident">AlgorithmInfo</span> {
+                <span class="ident">algorithm_info</span>: <span class="ident">AlgorithmInfo</span> {
                     <span class="ident">name</span>: <span class="string">&quot;&quot;</span>.<span class="ident">to_string</span>(),
                     <span class="ident">cite</span>: <span class="string">&quot;&quot;</span>.<span class="ident">to_string</span>(),
                     <span class="ident">argument</span>: <span class="ident">serde_json</span>::<span class="macro">json</span><span class="macro">!</span>({

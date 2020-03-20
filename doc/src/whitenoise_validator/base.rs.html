@@ -1054,6 +1054,58 @@
 <span id="1054">1054</span>
 <span id="1055">1055</span>
 <span id="1056">1056</span>
+<span id="1057">1057</span>
+<span id="1058">1058</span>
+<span id="1059">1059</span>
+<span id="1060">1060</span>
+<span id="1061">1061</span>
+<span id="1062">1062</span>
+<span id="1063">1063</span>
+<span id="1064">1064</span>
+<span id="1065">1065</span>
+<span id="1066">1066</span>
+<span id="1067">1067</span>
+<span id="1068">1068</span>
+<span id="1069">1069</span>
+<span id="1070">1070</span>
+<span id="1071">1071</span>
+<span id="1072">1072</span>
+<span id="1073">1073</span>
+<span id="1074">1074</span>
+<span id="1075">1075</span>
+<span id="1076">1076</span>
+<span id="1077">1077</span>
+<span id="1078">1078</span>
+<span id="1079">1079</span>
+<span id="1080">1080</span>
+<span id="1081">1081</span>
+<span id="1082">1082</span>
+<span id="1083">1083</span>
+<span id="1084">1084</span>
+<span id="1085">1085</span>
+<span id="1086">1086</span>
+<span id="1087">1087</span>
+<span id="1088">1088</span>
+<span id="1089">1089</span>
+<span id="1090">1090</span>
+<span id="1091">1091</span>
+<span id="1092">1092</span>
+<span id="1093">1093</span>
+<span id="1094">1094</span>
+<span id="1095">1095</span>
+<span id="1096">1096</span>
+<span id="1097">1097</span>
+<span id="1098">1098</span>
+<span id="1099">1099</span>
+<span id="1100">1100</span>
+<span id="1101">1101</span>
+<span id="1102">1102</span>
+<span id="1103">1103</span>
+<span id="1104">1104</span>
+<span id="1105">1105</span>
+<span id="1106">1106</span>
+<span id="1107">1107</span>
+<span id="1108">1108</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Core logic and data structures</span>
 
@@ -1070,10 +1122,10 @@
 
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::{<span class="ident">HashMap</span>, <span class="ident">HashSet</span>};
 
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">utilities</span>::<span class="ident">serial</span>::{<span class="ident">serialize_value</span>, <span class="ident">parse_release</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">utilities</span>::<span class="ident">serial</span>::{<span class="ident">serialize_value</span>, <span class="ident">parse_release</span>, <span class="ident">parse_value_properties</span>, <span class="ident">parse_value</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">utilities</span>::<span class="ident">json</span>::{<span class="ident">JSONRelease</span>};
 
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ops</span>::<span class="ident">Deref</span>;
+
 <span class="kw">use</span> <span class="ident">ndarray</span>::{<span class="ident">ArrayD</span>, <span class="ident">Array</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">utilities</span>::<span class="ident">inference</span>::<span class="ident">infer_property</span>;
 
@@ -1235,9 +1287,24 @@
     }
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_first_f64</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">ArrayND</span>::<span class="ident">Bool</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="kw">if</span> <span class="kw-2">*</span><span class="ident">x</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>() { <span class="number">1.</span> } <span class="kw">else</span> { <span class="number">0.</span> }),
-            <span class="ident">ArrayND</span>::<span class="ident">I64</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">f64</span>::<span class="ident">from</span>(<span class="kw-2">*</span><span class="ident">x</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>() <span class="kw">as</span> <span class="ident">i32</span>)),
-            <span class="ident">ArrayND</span>::<span class="ident">F64</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">x</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>().<span class="ident">to_owned</span>()),
+            <span class="ident">ArrayND</span>::<span class="ident">Bool</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="kw">if</span> <span class="ident">x</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="number">1</span> {
+                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;non-singleton array passed for an argument that must be scalar&quot;</span>.<span class="ident">into</span>())
+                }
+                <span class="prelude-val">Ok</span>(<span class="kw">if</span> <span class="kw-2">*</span><span class="ident">x</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>() { <span class="number">1.</span> } <span class="kw">else</span> { <span class="number">0.</span> })
+            },
+            <span class="ident">ArrayND</span>::<span class="ident">I64</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="kw">if</span> <span class="ident">x</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="number">1</span> {
+                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;non-singleton array passed for an argument that must be scalar&quot;</span>.<span class="ident">into</span>())
+                }
+                <span class="prelude-val">Ok</span>(<span class="ident">f64</span>::<span class="ident">from</span>(<span class="kw-2">*</span><span class="ident">x</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>() <span class="kw">as</span> <span class="ident">i32</span>))
+            },
+            <span class="ident">ArrayND</span>::<span class="ident">F64</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="kw">if</span> <span class="ident">x</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="number">1</span> {
+                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;non-singleton array passed for an argument that must be scalar&quot;</span>.<span class="ident">into</span>())
+                }
+                <span class="prelude-val">Ok</span>(<span class="ident">x</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>().<span class="ident">to_owned</span>())
+            },
             <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;value must be numeric&quot;</span>.<span class="ident">into</span>())
         }
     }
@@ -1262,8 +1329,18 @@
     }
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_first_i64</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">ArrayND</span>::<span class="ident">Bool</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="kw">if</span> <span class="kw-2">*</span><span class="ident">x</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>() { <span class="number">1</span> } <span class="kw">else</span> { <span class="number">0</span> }),
-            <span class="ident">ArrayND</span>::<span class="ident">I64</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">x</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>().<span class="ident">to_owned</span>()),
+            <span class="ident">ArrayND</span>::<span class="ident">Bool</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="kw">if</span> <span class="ident">x</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="number">1</span> {
+                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;non-singleton array passed for an argument that must be scalar&quot;</span>.<span class="ident">into</span>())
+                }
+                <span class="prelude-val">Ok</span>(<span class="kw">if</span> <span class="kw-2">*</span><span class="ident">x</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>() { <span class="number">1</span> } <span class="kw">else</span> { <span class="number">0</span> })
+            },
+            <span class="ident">ArrayND</span>::<span class="ident">I64</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="kw">if</span> <span class="ident">x</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="number">1</span> {
+                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;non-singleton array passed for an argument that must be scalar&quot;</span>.<span class="ident">into</span>())
+                }
+                <span class="prelude-val">Ok</span>(<span class="ident">x</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>().<span class="ident">to_owned</span>())
+            },
             <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;value must be numeric&quot;</span>.<span class="ident">into</span>())
         }
     }
@@ -1288,7 +1365,12 @@
     }
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_first_str</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">ArrayND</span>::<span class="ident">Str</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">x</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>().<span class="ident">to_owned</span>()),
+            <span class="ident">ArrayND</span>::<span class="ident">Str</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="kw">if</span> <span class="ident">x</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="number">1</span> {
+                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;non-singleton array passed for an argument that must be scalar&quot;</span>.<span class="ident">into</span>())
+                }
+                <span class="prelude-val">Ok</span>(<span class="ident">x</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>().<span class="ident">to_owned</span>())
+            },
             <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;value must be a string&quot;</span>.<span class="ident">into</span>())
         }
     }
@@ -1301,7 +1383,12 @@
     }
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_first_bool</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">ArrayND</span>::<span class="ident">Bool</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">x</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>().<span class="ident">to_owned</span>()),
+            <span class="ident">ArrayND</span>::<span class="ident">Bool</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="kw">if</span> <span class="ident">x</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="number">1</span> {
+                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;non-singleton array passed for an argument that must be scalar&quot;</span>.<span class="ident">into</span>())
+                }
+                <span class="prelude-val">Ok</span>(<span class="ident">x</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>().<span class="ident">to_owned</span>())
+            },
             <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;value must be a bool&quot;</span>.<span class="ident">into</span>())
         }
     }
@@ -1551,14 +1638,14 @@
     }
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">assert_is_not_aggregated</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">aggregator</span>.<span class="ident">to_owned</span>() {
-            <span class="prelude-val">Some</span>(<span class="ident">aggregator</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;aggregated data may not be manipulated&quot;</span>.<span class="ident">into</span>()),
+            <span class="prelude-val">Some</span>(<span class="ident">_aggregator</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;aggregated data may not be manipulated&quot;</span>.<span class="ident">into</span>()),
             <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(())
         }
     }
 }
 
 <span class="doccomment">/// Fundamental data types for ArrayNDs and Vector2DJagged Values.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">DataType</span> {
     <span class="ident">Bool</span>, <span class="ident">Str</span>, <span class="ident">F64</span>, <span class="ident">I64</span>
 }
@@ -1600,6 +1687,23 @@
     <span class="ident">I64</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span><span class="op">&gt;</span>),
     <span class="ident">F64</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span><span class="op">&gt;</span>),
     <span class="ident">Str</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>),
+}
+
+<span class="kw">impl</span> <span class="ident">Vector1DNull</span> {
+    <span class="doccomment">/// Retrieve the f64 vec, assuming the data type of the ArrayND is f64</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_f64</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="kw">match</span> <span class="self">self</span> {
+            <span class="ident">Vector1DNull</span>::<span class="ident">F64</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">x</span>),
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;expected a float on a non-float Vector1DNull&quot;</span>.<span class="ident">into</span>())
+        }
+    }
+    <span class="doccomment">/// Retrieve the i64 vec, assuming the data type of the ArrayND is i64</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_i64</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="kw">match</span> <span class="self">self</span> {
+            <span class="ident">Vector1DNull</span>::<span class="ident">I64</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">x</span>),
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;expected an integer on a non-integer Vector1DNull&quot;</span>.<span class="ident">into</span>())
+        }
+    }
 }
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
@@ -1688,11 +1792,14 @@
     <span class="kw">let</span> <span class="ident">privacy_definition</span> <span class="op">=</span> <span class="ident">analysis</span>.<span class="ident">privacy_definition</span>.<span class="ident">to_owned</span>().<span class="ident">unwrap</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">graph</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">proto</span>::<span class="ident">Component</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">analysis</span>.<span class="ident">computation_graph</span>.<span class="ident">to_owned</span>().<span class="ident">unwrap</span>().<span class="ident">value</span>.<span class="ident">to_owned</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">traversal</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">get_traversal</span>(<span class="kw-2">&amp;</span><span class="ident">graph</span>)<span class="question-mark">?</span>;
+    <span class="comment">// extend and pop from the end of the traversal</span>
     <span class="ident">traversal</span>.<span class="ident">reverse</span>();
 
-    <span class="kw">let</span> <span class="ident">graph_evaluation</span>: <span class="ident">Release</span> <span class="op">=</span> <span class="ident">parse_release</span>(<span class="kw-2">&amp;</span><span class="ident">release</span>)<span class="question-mark">?</span>;
-<span class="comment">//    println!(&quot;GRAPH EVALUATION: {:?}&quot;, graph_evaluation);</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">graph_properties</span> <span class="op">=</span> <span class="ident">HashMap</span>::<span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">ValueProperties</span><span class="op">&gt;</span>::<span class="ident">new</span>();
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">graph_evaluation</span>: <span class="ident">Release</span> <span class="op">=</span> <span class="ident">parse_release</span>(<span class="kw-2">&amp;</span><span class="ident">release</span>)<span class="question-mark">?</span>;
+
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">graph_properties</span> <span class="op">=</span> <span class="ident">graph_evaluation</span>.<span class="ident">iter</span>()
+        .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">node_id</span>, <span class="ident">value</span>)<span class="op">|</span> <span class="prelude-val">Ok</span>((<span class="ident">node_id</span>.<span class="ident">clone</span>(), <span class="ident">infer_property</span>(<span class="ident">value</span>)<span class="question-mark">?</span>)))
+        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">ValueProperties</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">maximum_id</span> <span class="op">=</span> <span class="ident">graph</span>.<span class="ident">keys</span>().<span class="ident">cloned</span>()
         .<span class="ident">fold</span>(<span class="number">0</span>, <span class="ident">std</span>::<span class="ident">cmp</span>::<span class="ident">max</span>);
@@ -1701,50 +1808,49 @@
         <span class="kw">let</span> <span class="ident">node_id</span> <span class="op">=</span> <span class="ident">traversal</span>.<span class="ident">last</span>().<span class="ident">unwrap</span>().<span class="ident">clone</span>();
 
         <span class="kw">let</span> <span class="ident">component</span>: <span class="ident">proto</span>::<span class="ident">Component</span> <span class="op">=</span> <span class="ident">graph</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">node_id</span>).<span class="ident">unwrap</span>().<span class="ident">to_owned</span>();
-<span class="comment">//        println!(&quot;Propagating properties at node_id {:?} {:?}&quot;, node_id, component);</span>
+        <span class="kw">let</span> <span class="ident">input_properties</span> <span class="op">=</span> <span class="ident">get_input_properties</span>(<span class="kw-2">&amp;</span><span class="ident">component</span>, <span class="kw-2">&amp;</span><span class="ident">graph_properties</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">public_arguments</span> <span class="op">=</span> <span class="ident">get_input_arguments</span>(<span class="kw-2">&amp;</span><span class="ident">component</span>, <span class="kw-2">&amp;</span><span class="ident">graph_evaluation</span>)<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="ident">properties</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">graph_evaluation</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">node_id</span>) {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">expansion</span> <span class="op">=</span> <span class="ident">component</span>.<span class="ident">clone</span>().<span class="ident">variant</span>.<span class="ident">unwrap</span>().<span class="ident">expand_component</span>(
+            <span class="kw-2">&amp;</span><span class="ident">privacy_definition</span>,
+            <span class="kw-2">&amp;</span><span class="ident">component</span>,
+            <span class="kw-2">&amp;</span><span class="ident">input_properties</span>,
+            <span class="ident">node_id</span>.<span class="ident">clone</span>(),
+            <span class="ident">maximum_id</span>.<span class="ident">clone</span>(),
+        )<span class="question-mark">?</span>;
+
+        <span class="comment">// patch the computation graph</span>
+        <span class="ident">graph</span>.<span class="ident">extend</span>(<span class="ident">expansion</span>.<span class="ident">computation_graph</span>.<span class="ident">clone</span>());
+        <span class="ident">graph_properties</span>.<span class="ident">extend</span>(<span class="ident">expansion</span>.<span class="ident">properties</span>.<span class="ident">iter</span>()
+            .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">node_id</span>, <span class="ident">props</span>)<span class="op">|</span> (<span class="ident">node_id</span>.<span class="ident">clone</span>(), <span class="ident">parse_value_properties</span>(<span class="ident">props</span>)))
+            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">ValueProperties</span><span class="op">&gt;</span><span class="op">&gt;</span>());
+        <span class="ident">graph_evaluation</span>.<span class="ident">extend</span>(<span class="ident">expansion</span>.<span class="ident">releases</span>.<span class="ident">iter</span>()
+            .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">node_id</span>, <span class="ident">release</span>)<span class="op">|</span> <span class="prelude-val">Ok</span>((<span class="ident">node_id</span>.<span class="ident">clone</span>(), <span class="ident">parse_value</span>(<span class="kw-2">&amp;</span><span class="ident">release</span>.<span class="ident">value</span>.<span class="ident">clone</span>().<span class="ident">unwrap</span>())<span class="question-mark">?</span>)))
+            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">Value</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>);
+
+        <span class="ident">maximum_id</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">expansion</span>.<span class="ident">computation_graph</span>.<span class="ident">keys</span>().<span class="ident">max</span>()
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">max</span>(<span class="kw-2">&amp;</span><span class="ident">maximum_id</span>)).<span class="ident">unwrap_or</span>(<span class="kw-2">&amp;</span><span class="ident">maximum_id</span>);
+
+        <span class="comment">// if patch added nodes, extend the traversal</span>
+        <span class="kw">if</span> <span class="op">!</span><span class="ident">expansion</span>.<span class="ident">traversal</span>.<span class="ident">is_empty</span>() {
+            <span class="ident">expansion</span>.<span class="ident">traversal</span>.<span class="ident">reverse</span>();
+            <span class="ident">traversal</span>.<span class="ident">extend</span>(<span class="ident">expansion</span>.<span class="ident">traversal</span>);
+            <span class="kw">continue</span>;
+        }
+        <span class="ident">traversal</span>.<span class="ident">pop</span>();
+
+        <span class="ident">graph_properties</span>.<span class="ident">insert</span>(<span class="ident">node_id</span>.<span class="ident">clone</span>(), <span class="kw">match</span> <span class="ident">graph_evaluation</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">node_id</span>) {
             <span class="comment">// if node has already been evaluated, infer properties directly from the public data</span>
-            <span class="prelude-val">Some</span>(<span class="ident">value</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="ident">traversal</span>.<span class="ident">pop</span>();
-                <span class="ident">infer_property</span>(<span class="kw-2">&amp;</span><span class="ident">value</span>)<span class="question-mark">?</span>
-            },
+            <span class="prelude-val">Some</span>(<span class="ident">value</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">infer_property</span>(<span class="kw-2">&amp;</span><span class="ident">value</span>),
 
             <span class="comment">// if node has not been evaluated, propagate properties over it</span>
             <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">component</span>: <span class="ident">proto</span>::<span class="ident">Component</span> <span class="op">=</span> <span class="ident">graph</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">node_id</span>).<span class="ident">unwrap</span>().<span class="ident">to_owned</span>();
-                <span class="kw">let</span> <span class="ident">input_properties</span> <span class="op">=</span> <span class="ident">get_input_properties</span>(<span class="kw-2">&amp;</span><span class="ident">component</span>, <span class="kw-2">&amp;</span><span class="ident">graph_properties</span>)<span class="question-mark">?</span>;
-                <span class="kw">let</span> <span class="ident">public_arguments</span> <span class="op">=</span> <span class="ident">get_input_arguments</span>(<span class="kw-2">&amp;</span><span class="ident">component</span>, <span class="kw-2">&amp;</span><span class="ident">graph_evaluation</span>)<span class="question-mark">?</span>;
-
-                <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">component</span>.<span class="ident">clone</span>().<span class="ident">variant</span>.<span class="ident">unwrap</span>().<span class="ident">expand_component</span>(
-                    <span class="kw-2">&amp;</span><span class="ident">privacy_definition</span>,
-                    <span class="kw-2">&amp;</span><span class="ident">component</span>,
-                    <span class="kw-2">&amp;</span><span class="ident">input_properties</span>,
-                    <span class="ident">node_id</span>.<span class="ident">clone</span>(),
-                    <span class="ident">maximum_id</span>.<span class="ident">clone</span>(),
-                )<span class="question-mark">?</span>;
-
-                <span class="comment">// patch the computation graph</span>
-                <span class="ident">graph</span>.<span class="ident">extend</span>(<span class="ident">result</span>.<span class="ident">computation_graph</span>);
-
-<span class="comment">//                println!(&quot;maximum id {:?}&quot;, maximum_id);</span>
-                <span class="comment">// if patch added nodes, extend the traversal</span>
-                <span class="kw">if</span> <span class="op">!</span><span class="ident">result</span>.<span class="ident">traversal</span>.<span class="ident">is_empty</span>() {
-                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">new_nodes</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">traversal</span>;
-                    <span class="ident">new_nodes</span>.<span class="ident">reverse</span>();
-                    <span class="ident">maximum_id</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">new_nodes</span>.<span class="ident">iter</span>().<span class="ident">max</span>()
-                        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">max</span>(<span class="kw-2">&amp;</span><span class="ident">maximum_id</span>)).<span class="ident">unwrap_or</span>(<span class="kw-2">&amp;</span><span class="ident">maximum_id</span>);
-                    <span class="ident">traversal</span>.<span class="ident">extend</span>(<span class="ident">new_nodes</span>);
-                    <span class="kw">continue</span>;
-                }
-                <span class="ident">traversal</span>.<span class="ident">pop</span>();
-
                 <span class="ident">component</span>.<span class="ident">clone</span>().<span class="ident">variant</span>.<span class="ident">unwrap</span>().<span class="ident">propagate_property</span>(
                     <span class="kw-2">&amp;</span><span class="ident">privacy_definition</span>, <span class="kw-2">&amp;</span><span class="ident">public_arguments</span>, <span class="kw-2">&amp;</span><span class="ident">input_properties</span>)
-                    .<span class="ident">chain_err</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;at node_id {:?}&quot;</span>, <span class="ident">node_id</span>))<span class="question-mark">?</span>
+                    .<span class="ident">chain_err</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;at node_id {:?}&quot;</span>, <span class="ident">node_id</span>))
             }
-        };
-        <span class="ident">graph_properties</span>.<span class="ident">insert</span>(<span class="ident">node_id</span>.<span class="ident">clone</span>(), <span class="ident">properties</span>);
+        }<span class="question-mark">?</span>);
     }
     <span class="prelude-val">Ok</span>((<span class="ident">graph_properties</span>, <span class="ident">graph</span>))
 }
@@ -1836,8 +1942,6 @@
 
 
 <span class="doccomment">/// Convert weights to probabilities</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// TODO: add more checks</span>
 <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">normalize_probabilities</span>(<span class="ident">weights</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">sum</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="ident">weights</span>.<span class="ident">iter</span>().<span class="ident">sum</span>();
@@ -1964,7 +2068,7 @@
     <span class="ident">analysis</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">Analysis</span>, <span class="ident">release</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">Release</span>,
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;</span> {
 
-    <span class="kw">let</span> (<span class="ident">graph_properties</span>, <span class="ident">graph</span>) <span class="op">=</span> <span class="ident">propagate_properties</span>(<span class="kw-2">&amp;</span><span class="ident">analysis</span>, <span class="kw-2">&amp;</span><span class="ident">release</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> (<span class="ident">_graph_properties</span>, <span class="ident">graph</span>) <span class="op">=</span> <span class="ident">propagate_properties</span>(<span class="kw-2">&amp;</span><span class="ident">analysis</span>, <span class="kw-2">&amp;</span><span class="ident">release</span>)<span class="question-mark">?</span>;
 
     <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;graph: {:?}&quot;</span>, <span class="ident">graph</span>);
     <span class="kw">let</span> <span class="ident">usage_option</span> <span class="op">=</span> <span class="ident">graph</span>.<span class="ident">iter</span>()
@@ -2088,7 +2192,7 @@
         .<span class="ident">ok_or</span>(<span class="string">&quot;the computation graph must be defined in an analysis&quot;</span>)<span class="question-mark">?</span>
         .<span class="ident">value</span>;
 
-    <span class="kw">let</span> (<span class="ident">graph_properties</span>, <span class="ident">graph_expanded</span>) <span class="op">=</span> <span class="ident">propagate_properties</span>(<span class="kw-2">&amp;</span><span class="ident">analysis</span>, <span class="kw-2">&amp;</span><span class="ident">release</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> (<span class="ident">graph_properties</span>, <span class="ident">_graph_expanded</span>) <span class="op">=</span> <span class="ident">propagate_properties</span>(<span class="kw-2">&amp;</span><span class="ident">analysis</span>, <span class="kw-2">&amp;</span><span class="ident">release</span>)<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="ident">release</span> <span class="op">=</span> <span class="ident">parse_release</span>(<span class="kw-2">&amp;</span><span class="ident">release</span>)<span class="question-mark">?</span>;
 
     <span class="kw">let</span> <span class="ident">release_schemas</span> <span class="op">=</span> <span class="ident">graph</span>.<span class="ident">iter</span>()

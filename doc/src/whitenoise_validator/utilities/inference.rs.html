@@ -367,6 +367,12 @@
 <span id="367">367</span>
 <span id="368">368</span>
 <span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
+<span id="373">373</span>
+<span id="374">374</span>
+<span id="375">375</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Infer ValueProperties from a public Value</span>
 <span class="doccomment">//!</span>
@@ -383,7 +389,7 @@
 <span class="kw">use</span> <span class="ident">itertools</span>::<span class="ident">Itertools</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cmp</span>::<span class="ident">Ordering</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">base</span>::{<span class="ident">ArrayND</span>, <span class="ident">Value</span>, <span class="ident">Vector2DJagged</span>, <span class="ident">Nature</span>, <span class="ident">Vector1DNull</span>, <span class="ident">NatureContinuous</span>, <span class="ident">NatureCategorical</span>, <span class="ident">ValueProperties</span>, <span class="ident">ArrayNDProperties</span>, <span class="ident">DataType</span>, <span class="ident">HashmapProperties</span>, <span class="ident">Vector2DJaggedProperties</span>, <span class="ident">Hashmap</span>};
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">utilities</span>::<span class="ident">serial</span>::<span class="ident">parse_data_type</span>;
+
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashMap</span>;
 
 
@@ -407,7 +413,7 @@
                 <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;arrays may have max dimensionality of 2&quot;</span>.<span class="ident">into</span>())
             }
         },
-        <span class="ident">Value</span>::<span class="ident">Hashmap</span>(<span class="ident">hashmap</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;cannot infer number of columns on a hashmap&quot;</span>),
+        <span class="ident">Value</span>::<span class="ident">Hashmap</span>(<span class="ident">_hashmap</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;cannot infer number of columns on a hashmap&quot;</span>),
         <span class="ident">Value</span>::<span class="ident">Vector2DJagged</span>(<span class="ident">vector</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="kw">match</span> <span class="ident">vector</span> {
             <span class="ident">Vector2DJagged</span>::<span class="ident">Bool</span>(<span class="ident">vector</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">vector</span>.<span class="ident">len</span>(),
             <span class="ident">Vector2DJagged</span>::<span class="ident">F64</span>(<span class="ident">vector</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">vector</span>.<span class="ident">len</span>(),
@@ -494,8 +500,8 @@
                 <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;arrays may have max dimensionality of 2&quot;</span>.<span class="ident">into</span>())
             }
         },
-        <span class="ident">Value</span>::<span class="ident">Hashmap</span>(<span class="ident">hashmap</span>) <span class="op">=</span><span class="op">&gt;</span> {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">bound</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
+        <span class="ident">Value</span>::<span class="ident">Hashmap</span>(<span class="ident">_hashmap</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="kw">let</span> <span class="ident">bound</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
 <span class="comment">//            hashmap.values()</span>
 <span class="comment">//                .map(infer_min)</span>
 <span class="comment">//                .for_each(|next| bound.extend(next));</span>
@@ -545,7 +551,7 @@
                 <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;arrays may have max dimensionality of 2&quot;</span>.<span class="ident">into</span>())
             }
         },
-        <span class="ident">Value</span>::<span class="ident">Hashmap</span>(<span class="ident">hashmap</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;max inference is not compatible with a hashmap&quot;</span>.<span class="ident">into</span>()),
+        <span class="ident">Value</span>::<span class="ident">Hashmap</span>(<span class="ident">_hashmap</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;max inference is not compatible with a hashmap&quot;</span>.<span class="ident">into</span>()),
         <span class="ident">Value</span>::<span class="ident">Vector2DJagged</span>(<span class="ident">jagged</span>) <span class="op">=</span><span class="op">&gt;</span> {
             <span class="kw">match</span> <span class="ident">jagged</span> {
                 <span class="ident">Vector2DJagged</span>::<span class="ident">F64</span>(<span class="ident">jagged</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">jagged</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">col</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">col</span> {
@@ -568,7 +574,7 @@
         <span class="ident">Value</span>::<span class="ident">ArrayND</span>(<span class="ident">array</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">array</span> {
             <span class="ident">ArrayND</span>::<span class="ident">Bool</span>(<span class="ident">array</span>) <span class="op">=</span><span class="op">&gt;</span>
                 <span class="ident">Vector2DJagged</span>::<span class="ident">Bool</span>(<span class="ident">array</span>.<span class="ident">gencolumns</span>().<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">col</span><span class="op">|</span> {
-                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">column_categories</span> <span class="op">=</span> <span class="ident">col</span>.<span class="ident">into_dyn</span>().
+                    <span class="kw">let</span> <span class="ident">column_categories</span> <span class="op">=</span> <span class="ident">col</span>.<span class="ident">into_dyn</span>().
                         <span class="ident">into_dimensionality</span>::<span class="op">&lt;</span><span class="ident">Ix1</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>().<span class="ident">to_vec</span>();
 <span class="comment">//                    column_categories.sort();</span>
 <span class="comment">//                    column_categories.dedup();</span>
@@ -576,7 +582,7 @@
                 }).<span class="ident">collect</span>()),
             <span class="ident">ArrayND</span>::<span class="ident">F64</span>(<span class="ident">array</span>) <span class="op">=</span><span class="op">&gt;</span>
                 <span class="ident">Vector2DJagged</span>::<span class="ident">F64</span>(<span class="ident">array</span>.<span class="ident">gencolumns</span>().<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">col</span><span class="op">|</span> {
-                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">column_categories</span> <span class="op">=</span> <span class="ident">col</span>.<span class="ident">into_dyn</span>().
+                    <span class="kw">let</span> <span class="ident">column_categories</span> <span class="op">=</span> <span class="ident">col</span>.<span class="ident">into_dyn</span>().
                         <span class="ident">into_dimensionality</span>::<span class="op">&lt;</span><span class="ident">Ix1</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>().<span class="ident">to_vec</span>();
 <span class="comment">//                    column_categories.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal));</span>
 <span class="comment">//                    column_categories.dedup();</span>
@@ -584,7 +590,7 @@
                 }).<span class="ident">collect</span>()),
             <span class="ident">ArrayND</span>::<span class="ident">I64</span>(<span class="ident">array</span>) <span class="op">=</span><span class="op">&gt;</span>
                 <span class="ident">Vector2DJagged</span>::<span class="ident">I64</span>(<span class="ident">array</span>.<span class="ident">gencolumns</span>().<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">col</span><span class="op">|</span> {
-                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">column_categories</span> <span class="op">=</span> <span class="ident">col</span>.<span class="ident">into_dyn</span>().
+                    <span class="kw">let</span> <span class="ident">column_categories</span> <span class="op">=</span> <span class="ident">col</span>.<span class="ident">into_dyn</span>().
                         <span class="ident">into_dimensionality</span>::<span class="op">&lt;</span><span class="ident">Ix1</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>().<span class="ident">to_vec</span>();
 <span class="comment">//                    column_categories.sort();</span>
 <span class="comment">//                    column_categories.dedup();</span>
@@ -594,7 +600,7 @@
 
 <span class="comment">//                println!(&quot;array in inference {:?}&quot;, array);</span>
                 <span class="ident">Vector2DJagged</span>::<span class="ident">Str</span>(<span class="ident">array</span>.<span class="ident">gencolumns</span>().<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">col</span><span class="op">|</span> {
-                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">column_categories</span> <span class="op">=</span> <span class="ident">col</span>.<span class="ident">into_dyn</span>().
+                    <span class="kw">let</span> <span class="ident">column_categories</span> <span class="op">=</span> <span class="ident">col</span>.<span class="ident">into_dyn</span>().
                         <span class="ident">into_dimensionality</span>::<span class="op">&lt;</span><span class="ident">Ix1</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>().<span class="ident">to_vec</span>();
 <span class="comment">//                    column_categories.sort();</span>
 <span class="comment">//                    column_categories.dedup();</span>
@@ -688,8 +694,14 @@
     })
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">infer_nullity</span>(<span class="ident">_value</span>: <span class="kw-2">&amp;</span><span class="ident">Value</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> {
-    <span class="prelude-val">Ok</span>(<span class="bool-val">true</span>)
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">infer_nullity</span>(<span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">Value</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> {
+    <span class="kw">match</span> <span class="ident">value</span> {
+        <span class="ident">Value</span>::<span class="ident">ArrayND</span>(<span class="ident">value</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">value</span> {
+            <span class="ident">ArrayND</span>::<span class="ident">F64</span>(<span class="ident">value</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">value</span>.<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">is_nan</span>())),
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="bool-val">false</span>)
+        },
+        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="bool-val">false</span>)
+    }
 }
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">infer_c_stability</span>(<span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">Value</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span><span class="op">&gt;</span> {
@@ -734,7 +746,7 @@
                     .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">bool</span>, <span class="ident">ValueProperties</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>.<span class="ident">into</span>(),
             }
         }.<span class="ident">into</span>(),
-        <span class="ident">Value</span>::<span class="ident">Vector2DJagged</span>(<span class="ident">jagged</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Vector2DJaggedProperties</span> {}.<span class="ident">into</span>()
+        <span class="ident">Value</span>::<span class="ident">Vector2DJagged</span>(<span class="ident">_jagged</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Vector2DJaggedProperties</span> {}.<span class="ident">into</span>()
     })
 }</pre></div>
 </section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../";window.currentCrate = "whitenoise_validator";</script><script src="../../../aliases.js"></script><script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script><script defer src="../../../search-index.js"></script></body></html>

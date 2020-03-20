@@ -65,15 +65,14 @@
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashMap</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">base</span>::{<span class="ident">Nature</span>, <span class="ident">Vector1DNull</span>, <span class="ident">NodeProperties</span>, <span class="ident">ArrayND</span>, <span class="ident">NatureCategorical</span>, <span class="ident">standardize_categorical_argument</span>, <span class="ident">Vector2DJagged</span>, <span class="ident">ValueProperties</span>, <span class="ident">prepend</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">base</span>::{<span class="ident">Nature</span>, <span class="ident">NodeProperties</span>, <span class="ident">NatureCategorical</span>, <span class="ident">standardize_categorical_argument</span>, <span class="ident">Vector2DJagged</span>, <span class="ident">ValueProperties</span>, <span class="ident">prepend</span>, <span class="ident">DataType</span>};
 
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">proto</span>, <span class="ident">base</span>};
 
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">components</span>::{<span class="ident">Component</span>, <span class="ident">Expandable</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">components</span>::{<span class="ident">Component</span>};
 
-<span class="kw">use</span> <span class="ident">ndarray</span>::<span class="ident">Array</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">base</span>::{<span class="ident">Value</span>, <span class="ident">NatureContinuous</span>};
-<span class="kw">use</span> <span class="ident">itertools</span>::<span class="ident">Itertools</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">base</span>::{<span class="ident">Value</span>};
+
 
 <span class="kw">impl</span> <span class="ident">Component</span> <span class="kw">for</span> <span class="ident">proto</span>::<span class="ident">Bin</span> {
     <span class="kw">fn</span> <span class="ident">propagate_property</span>(
@@ -114,6 +113,7 @@
         <span class="ident">data_property</span>.<span class="ident">nature</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">Nature</span>::<span class="ident">Categorical</span>(<span class="ident">NatureCategorical</span> {
             <span class="ident">categories</span>: <span class="ident">Vector2DJagged</span>::<span class="ident">F64</span>(<span class="ident">edges</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">col</span><span class="op">|</span> <span class="prelude-val">Some</span>(<span class="ident">col</span>.<span class="ident">clone</span>())).<span class="ident">collect</span>()),
         }));
+        <span class="ident">data_property</span>.<span class="ident">data_type</span> <span class="op">=</span> <span class="ident">DataType</span>::<span class="ident">F64</span>;
 
         <span class="prelude-val">Ok</span>(<span class="ident">data_property</span>.<span class="ident">into</span>())
     }

@@ -1477,49 +1477,6 @@
 <span id="1477">1477</span>
 <span id="1478">1478</span>
 <span id="1479">1479</span>
-<span id="1480">1480</span>
-<span id="1481">1481</span>
-<span id="1482">1482</span>
-<span id="1483">1483</span>
-<span id="1484">1484</span>
-<span id="1485">1485</span>
-<span id="1486">1486</span>
-<span id="1487">1487</span>
-<span id="1488">1488</span>
-<span id="1489">1489</span>
-<span id="1490">1490</span>
-<span id="1491">1491</span>
-<span id="1492">1492</span>
-<span id="1493">1493</span>
-<span id="1494">1494</span>
-<span id="1495">1495</span>
-<span id="1496">1496</span>
-<span id="1497">1497</span>
-<span id="1498">1498</span>
-<span id="1499">1499</span>
-<span id="1500">1500</span>
-<span id="1501">1501</span>
-<span id="1502">1502</span>
-<span id="1503">1503</span>
-<span id="1504">1504</span>
-<span id="1505">1505</span>
-<span id="1506">1506</span>
-<span id="1507">1507</span>
-<span id="1508">1508</span>
-<span id="1509">1509</span>
-<span id="1510">1510</span>
-<span id="1511">1511</span>
-<span id="1512">1512</span>
-<span id="1513">1513</span>
-<span id="1514">1514</span>
-<span id="1515">1515</span>
-<span id="1516">1516</span>
-<span id="1517">1517</span>
-<span id="1518">1518</span>
-<span id="1519">1519</span>
-<span id="1520">1520</span>
-<span id="1521">1521</span>
-<span id="1522">1522</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BoolNull</span> {
@@ -1786,7 +1743,7 @@
     <span class="doccomment">/// for interactive analyses</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">uint32</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;3&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">batch</span>: <span class="ident">u32</span>,
-    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">oneof</span><span class="op">=</span><span class="string">&quot;component::Variant&quot;</span>, <span class="ident">tags</span><span class="op">=</span><span class="string">&quot;100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">oneof</span><span class="op">=</span><span class="string">&quot;component::Variant&quot;</span>, <span class="ident">tags</span><span class="op">=</span><span class="string">&quot;100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">variant</span>: ::<span class="ident">std</span>::<span class="ident">option</span>::<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">component</span>::<span class="ident">Variant</span><span class="op">&gt;</span>,
 }
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">component</span> {
@@ -1798,103 +1755,97 @@
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;101&quot;</span>)]</span>
         <span class="ident">Multiply</span>(<span class="kw">super</span>::<span class="ident">Multiply</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;102&quot;</span>)]</span>
-        <span class="ident">RowWiseMin</span>(<span class="kw">super</span>::<span class="ident">RowMin</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;103&quot;</span>)]</span>
         <span class="ident">DpMedian</span>(<span class="kw">super</span>::<span class="ident">DpMedian</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;104&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;103&quot;</span>)]</span>
         <span class="ident">Literal</span>(<span class="kw">super</span>::<span class="ident">Literal</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;105&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;104&quot;</span>)]</span>
         <span class="ident">DpVariance</span>(<span class="kw">super</span>::<span class="ident">DpVariance</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;106&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;105&quot;</span>)]</span>
         <span class="ident">LogicalAnd</span>(<span class="kw">super</span>::<span class="ident">And</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;107&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;106&quot;</span>)]</span>
         <span class="ident">Index</span>(<span class="kw">super</span>::<span class="ident">Index</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;108&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;107&quot;</span>)]</span>
         <span class="ident">LogicalOr</span>(<span class="kw">super</span>::<span class="ident">Or</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;109&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;108&quot;</span>)]</span>
         <span class="ident">LessThan</span>(<span class="kw">super</span>::<span class="ident">LessThan</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;110&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;109&quot;</span>)]</span>
         <span class="ident">Subtract</span>(<span class="kw">super</span>::<span class="ident">Subtract</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;111&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;110&quot;</span>)]</span>
         <span class="ident">Negative</span>(<span class="kw">super</span>::<span class="ident">Negative</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;112&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;111&quot;</span>)]</span>
         <span class="ident">Divide</span>(<span class="kw">super</span>::<span class="ident">Divide</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;113&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;112&quot;</span>)]</span>
         <span class="ident">Modulo</span>(<span class="kw">super</span>::<span class="ident">Modulo</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;114&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;113&quot;</span>)]</span>
         <span class="ident">GaussianMechanism</span>(<span class="kw">super</span>::<span class="ident">GaussianMechanism</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;115&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;114&quot;</span>)]</span>
         <span class="ident">Maximum</span>(<span class="kw">super</span>::<span class="ident">Maximum</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;116&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;115&quot;</span>)]</span>
         <span class="ident">DpCount</span>(<span class="kw">super</span>::<span class="ident">DpCount</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;117&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;116&quot;</span>)]</span>
         <span class="ident">DpCovariance</span>(<span class="kw">super</span>::<span class="ident">DpCovariance</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;118&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;117&quot;</span>)]</span>
         <span class="ident">Filter</span>(<span class="kw">super</span>::<span class="ident">Filter</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;119&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;118&quot;</span>)]</span>
         <span class="ident">KthRawSampleMoment</span>(<span class="kw">super</span>::<span class="ident">KthRawSampleMoment</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;120&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;119&quot;</span>)]</span>
         <span class="ident">Bin</span>(<span class="kw">super</span>::<span class="ident">Bin</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;121&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;120&quot;</span>)]</span>
         <span class="ident">Resize</span>(<span class="kw">super</span>::<span class="ident">Resize</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;122&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;121&quot;</span>)]</span>
         <span class="ident">Log</span>(<span class="kw">super</span>::<span class="ident">Log</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;123&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;122&quot;</span>)]</span>
         <span class="ident">DpHistogram</span>(<span class="kw">super</span>::<span class="ident">DpHistogram</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;124&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;123&quot;</span>)]</span>
         <span class="ident">Mean</span>(<span class="kw">super</span>::<span class="ident">Mean</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;125&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;124&quot;</span>)]</span>
         <span class="ident">LaplaceMechanism</span>(<span class="kw">super</span>::<span class="ident">LaplaceMechanism</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;126&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;125&quot;</span>)]</span>
         <span class="ident">Covariance</span>(<span class="kw">super</span>::<span class="ident">Covariance</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;127&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;126&quot;</span>)]</span>
         <span class="ident">Power</span>(<span class="kw">super</span>::<span class="ident">Power</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;128&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;127&quot;</span>)]</span>
         <span class="ident">DpMinimum</span>(<span class="kw">super</span>::<span class="ident">DpMinimum</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;129&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;128&quot;</span>)]</span>
         <span class="ident">Negate</span>(<span class="kw">super</span>::<span class="ident">Negate</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;130&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;129&quot;</span>)]</span>
         <span class="ident">DpSum</span>(<span class="kw">super</span>::<span class="ident">DpSum</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;131&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;130&quot;</span>)]</span>
         <span class="ident">Count</span>(<span class="kw">super</span>::<span class="ident">Count</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;132&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;131&quot;</span>)]</span>
         <span class="ident">DpMomentRaw</span>(<span class="kw">super</span>::<span class="ident">DpMomentRaw</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;133&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;132&quot;</span>)]</span>
         <span class="ident">DpMean</span>(<span class="kw">super</span>::<span class="ident">DpMean</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;134&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;133&quot;</span>)]</span>
         <span class="ident">SimpleGeometricMechanism</span>(<span class="kw">super</span>::<span class="ident">SimpleGeometricMechanism</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;135&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;134&quot;</span>)]</span>
         <span class="ident">Clamp</span>(<span class="kw">super</span>::<span class="ident">Clamp</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;136&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;135&quot;</span>)]</span>
         <span class="ident">Materialize</span>(<span class="kw">super</span>::<span class="ident">Materialize</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;137&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;136&quot;</span>)]</span>
         <span class="ident">Partition</span>(<span class="kw">super</span>::<span class="ident">Partition</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;138&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;137&quot;</span>)]</span>
         <span class="ident">ExponentialMechanism</span>(<span class="kw">super</span>::<span class="ident">ExponentialMechanism</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;139&quot;</span>)]</span>
-        <span class="ident">RowWiseMax</span>(<span class="kw">super</span>::<span class="ident">RowMax</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;140&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;138&quot;</span>)]</span>
         <span class="ident">Equal</span>(<span class="kw">super</span>::<span class="ident">Equal</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;141&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;139&quot;</span>)]</span>
         <span class="ident">Variance</span>(<span class="kw">super</span>::<span class="ident">Variance</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;142&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;140&quot;</span>)]</span>
         <span class="ident">GreaterThan</span>(<span class="kw">super</span>::<span class="ident">GreaterThan</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;143&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;141&quot;</span>)]</span>
         <span class="ident">Impute</span>(<span class="kw">super</span>::<span class="ident">Impute</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;144&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;142&quot;</span>)]</span>
         <span class="ident">Quantile</span>(<span class="kw">super</span>::<span class="ident">Quantile</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;145&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;143&quot;</span>)]</span>
         <span class="ident">Cast</span>(<span class="kw">super</span>::<span class="ident">Cast</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;146&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;144&quot;</span>)]</span>
         <span class="ident">DpMaximum</span>(<span class="kw">super</span>::<span class="ident">DpMaximum</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;147&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;145&quot;</span>)]</span>
         <span class="ident">Stack</span>(<span class="kw">super</span>::<span class="ident">Stack</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;148&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;146&quot;</span>)]</span>
         <span class="ident">Minimum</span>(<span class="kw">super</span>::<span class="ident">Minimum</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;149&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;147&quot;</span>)]</span>
         <span class="ident">Add</span>(<span class="kw">super</span>::<span class="ident">Add</span>),
-        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;150&quot;</span>)]</span>
-        <span class="ident">Remainder</span>(<span class="kw">super</span>::<span class="ident">Remainder</span>),
     }
 }
 <span class="doccomment">/// Sum Component</span>
@@ -1922,19 +1873,6 @@
 <span class="doccomment">/// * `Value` - Array</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Multiply</span> {
-}
-<span class="doccomment">/// RowMin Component</span>
-<span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the row_wise_min on the arguments.</span>
-<span class="doccomment">/// </span>
-<span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `left` - Array</span>
-<span class="doccomment">/// * `right` - Array</span>
-<span class="doccomment">/// </span>
-<span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// * `Value` - Array</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">RowMin</span> {
 }
 <span class="doccomment">/// DPMedian Component</span>
 <span class="doccomment">/// </span>
@@ -2079,6 +2017,8 @@
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `left` - Array</span>
+<span class="doccomment">/// * `max` - Array</span>
+<span class="doccomment">/// * `min` - Array</span>
 <span class="doccomment">/// * `right` - Array</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
@@ -2503,19 +2443,6 @@
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">privacy_usage</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PrivacyUsage</span><span class="op">&gt;</span>,
 }
-<span class="doccomment">/// RowMax Component</span>
-<span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the row_wise_max on the arguments.</span>
-<span class="doccomment">/// </span>
-<span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `left` - Array</span>
-<span class="doccomment">/// * `right` - Array</span>
-<span class="doccomment">/// </span>
-<span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// * `Value` - Array</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">RowMax</span> {
-}
 <span class="doccomment">/// Equal Component</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the equal on the arguments.</span>
@@ -2668,19 +2595,6 @@
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Add</span> {
 }
-<span class="doccomment">/// Remainder Component</span>
-<span class="doccomment">/// </span>
-<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the remainder on the arguments.</span>
-<span class="doccomment">/// </span>
-<span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `left` - Array</span>
-<span class="doccomment">/// * `right` - Array</span>
-<span class="doccomment">/// </span>
-<span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// * `Value` - Array</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Remainder</span> {
-}
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Error</span> {
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
@@ -2693,13 +2607,16 @@
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">optional</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">computation_graph</span>: ::<span class="ident">std</span>::<span class="ident">option</span>::<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ComputationGraph</span><span class="op">&gt;</span>,
 }
+<span class="doccomment">/// The definition of privacy determines parameters for sensitivity derivations and the set of available algorithms.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PrivacyDefinition</span> {
-    <span class="doccomment">/// upper bound</span>
+    <span class="doccomment">/// Privacy leakage with respect `group_size` number of rows. This is typically one.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">uint32</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;4&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">group_size</span>: <span class="ident">u32</span>,
+    <span class="doccomment">/// Define how to measure distance between probability distributions.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">enumeration</span><span class="op">=</span><span class="string">&quot;privacy_definition::Distance&quot;</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;5&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">distance</span>: <span class="ident">i32</span>,
+    <span class="doccomment">/// Define what kind of perturbation may be applied to a dataset to create a neighboring dataset.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">enumeration</span><span class="op">=</span><span class="string">&quot;privacy_definition::Neighboring&quot;</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;6&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">neighboring</span>: <span class="ident">i32</span>,
 }
@@ -2711,12 +2628,6 @@
         <span class="ident">Pure</span> <span class="op">=</span> <span class="number">0</span>,
         <span class="doccomment">/// (e, d)-differential privacy</span>
         <span class="ident">Approximate</span> <span class="op">=</span> <span class="number">1</span>,
-        <span class="doccomment">/// https://arxiv.org/pdf/1702.07476.pdf</span>
-        <span class="ident">Renyi</span> <span class="op">=</span> <span class="number">2</span>,
-        <span class="doccomment">/// https://arxiv.org/pdf/1603.01887.pdf</span>
-        <span class="ident">Concentrated</span> <span class="op">=</span> <span class="number">3</span>,
-        <span class="doccomment">/// https://arxiv.org/pdf/1905.02383.pdf</span>
-        <span class="ident">F</span> <span class="op">=</span> <span class="number">4</span>,
     }
     <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Hash</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>, ::<span class="ident">prost</span>::<span class="ident">Enumeration</span>)]</span>
     <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">i32</span>)]</span>
@@ -2864,13 +2775,13 @@
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">uint32</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;4&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">traversal</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
 }
-<span class="doccomment">/// REQUESTS</span>
-<span class="doccomment">/// VALIDATOR API</span>
+<span class="comment">// REQUESTS</span>
+<span class="comment">// VALIDATOR API</span>
+
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">RequestValidateAnalysis</span> {
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">optional</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">analysis</span>: ::<span class="ident">std</span>::<span class="ident">option</span>::<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Analysis</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// optional</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">optional</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">release</span>: ::<span class="ident">std</span>::<span class="ident">option</span>::<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Release</span><span class="op">&gt;</span>,
 }
@@ -2923,8 +2834,9 @@
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">uint32</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;6&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">maximum_id</span>: <span class="ident">u32</span>,
 }
-<span class="doccomment">/// REQUESTS</span>
-<span class="doccomment">/// RUNTIME API</span>
+<span class="comment">// REQUESTS</span>
+<span class="comment">// RUNTIME API</span>
+
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">RequestRelease</span> {
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">optional</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
@@ -2934,8 +2846,9 @@
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">bool</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;10&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">stack_trace</span>: <span class="ident">bool</span>,
 }
-<span class="doccomment">/// RESPONSES</span>
-<span class="doccomment">/// VALIDATOR API</span>
+<span class="comment">// RESPONSES</span>
+<span class="comment">// VALIDATOR API</span>
+
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ResponseValidateAnalysis</span> {
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">oneof</span><span class="op">=</span><span class="string">&quot;response_validate_analysis::Value&quot;</span>, <span class="ident">tags</span><span class="op">=</span><span class="string">&quot;1, 2&quot;</span>)]</span>
@@ -3027,8 +2940,9 @@
         <span class="ident">Error</span>(<span class="kw">super</span>::<span class="ident">Error</span>),
     }
 }
-<span class="doccomment">/// RESPONSES</span>
-<span class="doccomment">/// RUNTIME API</span>
+<span class="comment">// RESPONSES</span>
+<span class="comment">// RUNTIME API</span>
+
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ResponseRelease</span> {
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">oneof</span><span class="op">=</span><span class="string">&quot;response_release::Value&quot;</span>, <span class="ident">tags</span><span class="op">=</span><span class="string">&quot;1, 2&quot;</span>)]</span>

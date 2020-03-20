@@ -874,7 +874,7 @@
     <span class="comment">// ensure that prob is a valid probability</span>
     <span class="kw">if</span> <span class="ident">prob</span> <span class="op">&lt;</span> <span class="kw-2">&amp;</span><span class="number">0.0</span> <span class="op">|</span><span class="op">|</span> <span class="ident">prob</span> <span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="number">1.0</span> {<span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;probability is not within [0, 1]&quot;</span>.<span class="ident">into</span>())}
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">bit</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="number">0</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">bit</span>: <span class="ident">i64</span>;
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">n_trials</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="number">1</span>;
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">geom_return</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="number">0</span>;
 

@@ -65,7 +65,6 @@
 <span id="65">65</span>
 <span id="66">66</span>
 <span id="67">67</span>
-<span id="68">68</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
@@ -73,13 +72,12 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashMap</span>;
 
 
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">components</span>::<span class="ident">Aggregator</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">components</span>::{<span class="ident">Aggregator</span>, <span class="ident">expand_mechanism</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">proto</span>, <span class="ident">base</span>};
 
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">components</span>::{<span class="ident">Component</span>, <span class="ident">Expandable</span>};
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">base</span>::{<span class="ident">Value</span>, <span class="ident">NodeProperties</span>, <span class="ident">ArrayND</span>, <span class="ident">get_literal</span>, <span class="ident">Sensitivity</span>, <span class="ident">prepend</span>, <span class="ident">ValueProperties</span>};
-<span class="kw">use</span> <span class="ident">ndarray</span>::<span class="ident">Array</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">components</span>::<span class="ident">mechanism_exponential</span>::<span class="ident">expand_mechanism</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">base</span>::{<span class="ident">Value</span>, <span class="ident">NodeProperties</span>, <span class="ident">Sensitivity</span>, <span class="ident">prepend</span>, <span class="ident">ValueProperties</span>};
+
 
 <span class="kw">impl</span> <span class="ident">Component</span> <span class="kw">for</span> <span class="ident">proto</span>::<span class="ident">LaplaceMechanism</span> {
     <span class="kw">fn</span> <span class="ident">propagate_property</span>(
