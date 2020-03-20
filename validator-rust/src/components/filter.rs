@@ -2,7 +2,7 @@ use crate::errors::*;
 
 use crate::components::Component;
 use std::collections::HashMap;
-use crate::base::{Value, AggregatorProperties, prepend, ValueProperties, DataType};
+use crate::base::{Value, prepend, ValueProperties, DataType};
 use crate::base;
 use crate::proto;
 use crate::components::transforms::propagate_binary_shape;
@@ -19,7 +19,7 @@ impl Component for proto::Filter {
             .ok_or("data: missing")?.get_arraynd()
             .map_err(prepend("data:"))?.clone();
 
-        let mut mask_property = properties.get("mask")
+        let mask_property = properties.get("mask")
             .ok_or("mask: missing")?.get_arraynd()
             .map_err(prepend("mask:"))?.clone();
 

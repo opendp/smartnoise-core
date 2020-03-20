@@ -101,10 +101,10 @@ impl Evaluable for proto::component::Variant {
 /// # Example
 /// ```
 /// use whitenoise_validator::errors::*;
-/// use ndarray::{Array1, arr1, ArrayD};
+/// use ndarray::prelude::*;
 /// use whitenoise_runtime::components::broadcast_map;
-/// let left: ArrayD<f64> = arr1!([1., -2., 3., 5.]).into_dyn();
-/// let right: ArrayD<f64> = arr1!([2.]).into_dyn();
+/// let left: ArrayD<f64> = arr1(&[1., -2., 3., 5.]).into_dyn();
+/// let right: ArrayD<f64> = arr1(&[2.]).into_dyn();
 /// let mapped: Result<ArrayD<f64>> = broadcast_map(&left, &right, &|l, r| l.max(r.clone()));
 /// println!("{:?}", mapped); // [2., 2., 3., 5.]
 /// ```

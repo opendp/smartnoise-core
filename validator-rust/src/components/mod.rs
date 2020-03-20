@@ -50,7 +50,7 @@ use std::collections::HashMap;
 use crate::base::{Value, NodeProperties, Sensitivity, ValueProperties, prepend, get_literal, ArrayND};
 use crate::proto;
 use crate::utilities::json::{JSONRelease};
-use crate::hashmap;
+
 use ndarray::Array;
 
 
@@ -222,7 +222,7 @@ impl Component for proto::component::Variant {
 
     fn get_names(
         &self,
-        properties: &NodeProperties,
+        _properties: &NodeProperties,
     ) -> Result<Vec<String>> {
 
         macro_rules! get_names{
@@ -331,9 +331,9 @@ impl Accuracy for proto::component::Variant {
     /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn accuracy_to_privacy_usage(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
-        properties: &NodeProperties,
-        accuracy: &proto::Accuracy,
+        _privacy_definition: &proto::PrivacyDefinition,
+        _properties: &NodeProperties,
+        _accuracy: &proto::Accuracy,
     ) -> Option<proto::PrivacyUsage> {
         macro_rules! accuracy_to_privacy_usage {
             ($( $variant:ident ),*) => {
@@ -361,8 +361,8 @@ impl Accuracy for proto::component::Variant {
     /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn privacy_usage_to_accuracy(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
-        properties: &NodeProperties,
+        _privacy_definition: &proto::PrivacyDefinition,
+        _properties: &NodeProperties,
     ) -> Option<f64> {
         macro_rules! privacy_usage_to_accuracy {
             ($( $variant:ident ),*) => {
@@ -437,7 +437,7 @@ pub fn expand_mechanism(
     let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
 
     // always overwrite sensitivity. This is not something a user may configure
-    let mut data_property = properties.get("data")
+    let data_property = properties.get("data")
         .ok_or("data: missing")?.get_arraynd()
         .map_err(prepend("data:"))?.clone();
 

@@ -48,7 +48,7 @@ impl Aggregator for proto::Maximum {
         properties: &NodeProperties,
         sensitivity_type: &Sensitivity
     ) -> Result<Vec<f64>> {
-        let mut data_property = properties.get("data")
+        let data_property = properties.get("data")
             .ok_or("data: missing")?.get_arraynd()
             .map_err(prepend("data:"))?.clone();
 

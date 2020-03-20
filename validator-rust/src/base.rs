@@ -16,7 +16,7 @@ use std::collections::{HashMap, HashSet};
 use crate::utilities::serial::{serialize_value, parse_release, parse_value_properties, parse_value};
 use crate::utilities::json::{JSONRelease};
 
-use std::ops::Deref;
+
 use ndarray::{ArrayD, Array};
 use crate::utilities::inference::infer_property;
 
@@ -529,7 +529,7 @@ impl ArrayNDProperties {
     }
     pub fn assert_is_not_aggregated(&self) -> Result<()> {
         match self.aggregator.to_owned() {
-            Some(aggregator) => Err("aggregated data may not be manipulated".into()),
+            Some(_aggregator) => Err("aggregated data may not be manipulated".into()),
             None => Ok(())
         }
     }
@@ -959,7 +959,7 @@ pub fn compute_privacy_usage(
     analysis: &proto::Analysis, release: &proto::Release,
 ) -> Result<proto::PrivacyUsage> {
 
-    let (graph_properties, graph) = propagate_properties(&analysis, &release)?;
+    let (_graph_properties, graph) = propagate_properties(&analysis, &release)?;
 
     println!("graph: {:?}", graph);
     let usage_option = graph.iter()
@@ -1083,7 +1083,7 @@ pub fn generate_report(
         .ok_or("the computation graph must be defined in an analysis")?
         .value;
 
-    let (graph_properties, graph_expanded) = propagate_properties(&analysis, &release)?;
+    let (graph_properties, _graph_expanded) = propagate_properties(&analysis, &release)?;
     let release = parse_release(&release)?;
 
     let release_schemas = graph.iter()

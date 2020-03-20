@@ -13,7 +13,7 @@ use ndarray_stats::QuantileExt;
 use itertools::Itertools;
 use std::cmp::Ordering;
 use crate::base::{ArrayND, Value, Vector2DJagged, Nature, Vector1DNull, NatureContinuous, NatureCategorical, ValueProperties, ArrayNDProperties, DataType, HashmapProperties, Vector2DJaggedProperties, Hashmap};
-use crate::utilities::serial::parse_data_type;
+
 use std::collections::HashMap;
 
 
@@ -37,7 +37,7 @@ pub fn infer_num_columns(value: &Value) -> Result<Option<i64>> {
                 _ => Err("arrays may have max dimensionality of 2".into())
             }
         },
-        Value::Hashmap(hashmap) => bail!("cannot infer number of columns on a hashmap"),
+        Value::Hashmap(_hashmap) => bail!("cannot infer number of columns on a hashmap"),
         Value::Vector2DJagged(vector) => Ok(Some(match vector {
             Vector2DJagged::Bool(vector) => vector.len(),
             Vector2DJagged::F64(vector) => vector.len(),
@@ -124,8 +124,8 @@ pub fn infer_min(value: &Value) -> Result<Vec<Option<f64>>> {
                 _ => return Err("arrays may have max dimensionality of 2".into())
             }
         },
-        Value::Hashmap(hashmap) => {
-            let mut bound: Vec<Option<f64>> = vec![];
+        Value::Hashmap(_hashmap) => {
+            let bound: Vec<Option<f64>> = vec![];
 //            hashmap.values()
 //                .map(infer_min)
 //                .for_each(|next| bound.extend(next));
@@ -175,7 +175,7 @@ pub fn infer_max(value: &Value) -> Result<Vec<Option<f64>>> {
                 _ => return Err("arrays may have max dimensionality of 2".into())
             }
         },
-        Value::Hashmap(hashmap) => return Err("max inference is not compatible with a hashmap".into()),
+        Value::Hashmap(_hashmap) => return Err("max inference is not compatible with a hashmap".into()),
         Value::Vector2DJagged(jagged) => {
             match jagged {
                 Vector2DJagged::F64(jagged) => jagged.iter().map(|col| match col {
@@ -198,7 +198,7 @@ pub fn infer_categories(value: &Value) -> Result<Vector2DJagged> {
         Value::ArrayND(array) => match array {
             ArrayND::Bool(array) =>
                 Vector2DJagged::Bool(array.gencolumns().into_iter().map(|col| {
-                    let mut column_categories = col.into_dyn().
+                    let column_categories = col.into_dyn().
                         into_dimensionality::<Ix1>().unwrap().to_vec();
 //                    column_categories.sort();
 //                    column_categories.dedup();
@@ -206,7 +206,7 @@ pub fn infer_categories(value: &Value) -> Result<Vector2DJagged> {
                 }).collect()),
             ArrayND::F64(array) =>
                 Vector2DJagged::F64(array.gencolumns().into_iter().map(|col| {
-                    let mut column_categories = col.into_dyn().
+                    let column_categories = col.into_dyn().
                         into_dimensionality::<Ix1>().unwrap().to_vec();
 //                    column_categories.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal));
 //                    column_categories.dedup();
@@ -214,7 +214,7 @@ pub fn infer_categories(value: &Value) -> Result<Vector2DJagged> {
                 }).collect()),
             ArrayND::I64(array) =>
                 Vector2DJagged::I64(array.gencolumns().into_iter().map(|col| {
-                    let mut column_categories = col.into_dyn().
+                    let column_categories = col.into_dyn().
                         into_dimensionality::<Ix1>().unwrap().to_vec();
 //                    column_categories.sort();
 //                    column_categories.dedup();
@@ -224,7 +224,7 @@ pub fn infer_categories(value: &Value) -> Result<Vector2DJagged> {
 
 //                println!("array in inference {:?}", array);
                 Vector2DJagged::Str(array.gencolumns().into_iter().map(|col| {
-                    let mut column_categories = col.into_dyn().
+                    let column_categories = col.into_dyn().
                         into_dimensionality::<Ix1>().unwrap().to_vec();
 //                    column_categories.sort();
 //                    column_categories.dedup();
@@ -364,6 +364,6 @@ pub fn infer_property(value: &Value) -> Result<ValueProperties> {
                     .collect::<Result<HashMap<bool, ValueProperties>>>()?.into(),
             }
         }.into(),
-        Value::Vector2DJagged(jagged) => Vector2DJaggedProperties {}.into()
+        Value::Vector2DJagged(_jagged) => Vector2DJaggedProperties {}.into()
     })
 }

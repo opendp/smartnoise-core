@@ -122,9 +122,9 @@ fn get_epsilon(usage: &proto::PrivacyUsage) -> Result<f64> {
     }
 }
 
-fn get_delta(usage: &proto::PrivacyUsage) -> Result<f64> {
-    match usage.distance.clone().ok_or::<Error>("distance must be defined on a PrivacyUsage".into())? {
-        proto::privacy_usage::Distance::DistanceApproximate(distance) => Ok(distance.delta),
-        _ => Err("delta is not defined".into())
-    }
-}
+//fn get_delta(usage: &proto::PrivacyUsage) -> Result<f64> {
+//    match usage.distance.clone().ok_or::<Error>("distance must be defined on a PrivacyUsage".into())? {
+//        proto::privacy_usage::Distance::DistanceApproximate(distance) => Ok(distance.delta),
+//        _ => Err("delta is not defined".into())
+//    }
+//}

@@ -1,15 +1,14 @@
 use crate::errors::*;
 
 use std::collections::HashMap;
-use crate::base::{Nature, Vector1DNull, NodeProperties, ArrayND, NatureCategorical, standardize_categorical_argument, Vector2DJagged, ValueProperties, prepend, DataType};
+use crate::base::{Nature, NodeProperties, NatureCategorical, standardize_categorical_argument, Vector2DJagged, ValueProperties, prepend, DataType};
 
 use crate::{proto, base};
 
-use crate::components::{Component, Expandable};
+use crate::components::{Component};
 
-use ndarray::Array;
-use crate::base::{Value, NatureContinuous};
-use itertools::Itertools;
+use crate::base::{Value};
+
 
 impl Component for proto::Bin {
     fn propagate_property(

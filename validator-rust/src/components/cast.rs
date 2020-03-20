@@ -2,7 +2,7 @@ use crate::errors::*;
 
 use std::collections::HashMap;
 
-use crate::{base};
+
 use crate::proto;
 
 use crate::components::{Component};
@@ -26,7 +26,7 @@ impl Component for proto::Cast {
             .ok_or::<Error>("type: missing, must be public".into())?.get_first_str()
             .map_err(prepend("type:"))?;
 
-        let prior_datatype = data_property.data_type.clone();
+        let _prior_datatype = data_property.data_type.clone();
 
         data_property.data_type = match datatype.to_lowercase().as_str() {
             "float" => DataType::Str,

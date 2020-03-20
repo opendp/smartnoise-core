@@ -7,7 +7,6 @@ use ndarray::{ArrayD, Array};
 use crate::utilities::utilities::get_num_columns;
 use whitenoise_validator::proto;
 use crate::components::mean::mean;
-use ndarray::prelude::*;
 
 impl Evaluable for proto::Variance {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {

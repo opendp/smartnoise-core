@@ -1,7 +1,7 @@
 use crate::errors::*;
 
 use std::collections::HashMap;
-use crate::base::{Nature, Vector1DNull, NodeProperties, ArrayND, NatureCategorical, standardize_categorical_argument, Vector2DJagged, standardize_numeric_argument, Vector1D, ArrayNDProperties, ValueProperties, prepend, DataType, get_literal};
+use crate::base::{Nature, NodeProperties, NatureCategorical, Vector1DNull, Vector2DJagged, ArrayNDProperties, ValueProperties, prepend, DataType, get_literal, ArrayND};
 
 use crate::{proto, base};
 
@@ -9,20 +9,20 @@ use crate::components::{Component, Expandable};
 
 use ndarray::Array;
 use crate::base::{Value, NatureContinuous};
-use itertools::Itertools;
-use std::ops::{Add, Div};
+
+
 
 impl Component for proto::Add {
     fn propagate_property(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
-        public_arguments: &HashMap<String, Value>,
+        _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
-        let mut left_property = properties.get("left")
+        let left_property = properties.get("left")
             .ok_or("left: missing")?.get_arraynd()
             .map_err(prepend("left:"))?.clone();
-        let mut right_property = properties.get("right")
+        let right_property = properties.get("right")
             .ok_or("right: missing")?.get_arraynd()
             .map_err(prepend("right:"))?.clone();
 
@@ -59,13 +59,13 @@ impl Component for proto::Subtract {
     fn propagate_property(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
-        public_arguments: &HashMap<String, Value>,
+        _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
-        let mut left_property = properties.get("left")
+        let left_property = properties.get("left")
             .ok_or("left: missing")?.get_arraynd()
             .map_err(prepend("left:"))?.clone();
-        let mut right_property = properties.get("right")
+        let right_property = properties.get("right")
             .ok_or("right: missing")?.get_arraynd()
             .map_err(prepend("right:"))?.clone();
 
@@ -102,13 +102,13 @@ impl Component for proto::Divide {
     fn propagate_property(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
-        public_arguments: &HashMap<String, Value>,
+        _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
-        let mut left_property = properties.get("left")
+        let left_property = properties.get("left")
             .ok_or("left: missing")?.get_arraynd()
             .map_err(prepend("left:"))?.clone();
-        let mut right_property = properties.get("right")
+        let right_property = properties.get("right")
             .ok_or("right: missing")?.get_arraynd()
             .map_err(prepend("right:"))?.clone();
 
@@ -172,13 +172,13 @@ impl Component for proto::Multiply {
     fn propagate_property(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
-        public_arguments: &HashMap<String, Value>,
+        _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
-        let mut left_property = properties.get("left")
+        let left_property = properties.get("left")
             .ok_or("left: missing")?.get_arraynd()
             .map_err(prepend("left:"))?.clone();
-        let mut right_property = properties.get("right")
+        let right_property = properties.get("right")
             .ok_or("right: missing")?.get_arraynd()
             .map_err(prepend("right:"))?.clone();
 
@@ -214,13 +214,13 @@ impl Component for proto::Power {
     fn propagate_property(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
-        public_arguments: &HashMap<String, Value>,
+        _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
-        let mut left_property = properties.get("left")
+        let left_property = properties.get("left")
             .ok_or("left: missing")?.get_arraynd()
             .map_err(prepend("left:"))?.clone();
-        let mut right_property = properties.get("right")
+        let right_property = properties.get("right")
             .ok_or("right: missing")?.get_arraynd()
             .map_err(prepend("right:"))?.clone();
 
@@ -254,13 +254,13 @@ impl Component for proto::Log {
     fn propagate_property(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
-        public_arguments: &HashMap<String, Value>,
+        _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
-        let mut left_property = properties.get("left")
+        let left_property = properties.get("left")
             .ok_or("left: missing")?.get_arraynd()
             .map_err(prepend("left:"))?.clone();
-        let mut right_property = properties.get("right")
+        let right_property = properties.get("right")
             .ok_or("right: missing")?.get_arraynd()
             .map_err(prepend("right:"))?.clone();
 
@@ -299,7 +299,7 @@ impl Component for proto::Negative {
     fn propagate_property(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
-        public_arguments: &HashMap<String, Value>,
+        _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
@@ -338,13 +338,13 @@ impl Component for proto::Modulo {
     fn propagate_property(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
-        public_arguments: &HashMap<String, Value>,
+        _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
-        let mut left_property = properties.get("left")
+        let left_property = properties.get("left")
             .ok_or("left: missing")?.get_arraynd()
             .map_err(prepend("left:"))?.clone();
-        let mut right_property = properties.get("right")
+        let right_property = properties.get("right")
             .ok_or("right: missing")?.get_arraynd()
             .map_err(prepend("right:"))?.clone();
 
@@ -387,7 +387,7 @@ impl Expandable for proto::Modulo {
     /// If min and max are not supplied, but are known statically, then add them automatically
     fn expand_component(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
         properties: &base::NodeProperties,
         component_id: u32,
@@ -437,13 +437,13 @@ impl Component for proto::And {
     fn propagate_property(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
-        public_arguments: &HashMap<String, Value>,
+        _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
-        let mut left_property = properties.get("left")
+        let left_property = properties.get("left")
             .ok_or("left: missing")?.get_arraynd()
             .map_err(prepend("left:"))?.clone();
-        let mut right_property = properties.get("right")
+        let right_property = properties.get("right")
             .ok_or("right: missing")?.get_arraynd()
             .map_err(prepend("right:"))?.clone();
 
@@ -478,13 +478,13 @@ impl Component for proto::Or {
     fn propagate_property(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
-        public_arguments: &HashMap<String, Value>,
+        _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
-        let mut left_property = properties.get("left")
+        let left_property = properties.get("left")
             .ok_or("left: missing")?.get_arraynd()
             .map_err(prepend("left:"))?.clone();
-        let mut right_property = properties.get("right")
+        let right_property = properties.get("right")
             .ok_or("right: missing")?.get_arraynd()
             .map_err(prepend("right:"))?.clone();
 
@@ -519,13 +519,13 @@ impl Component for proto::Negate {
     fn propagate_property(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
-        public_arguments: &HashMap<String, Value>,
+        _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
-        let mut left_property = properties.get("left")
+        let left_property = properties.get("left")
             .ok_or("left: missing")?.get_arraynd()
             .map_err(prepend("left:"))?.clone();
-        let mut right_property = properties.get("right")
+        let right_property = properties.get("right")
             .ok_or("right: missing")?.get_arraynd()
             .map_err(prepend("right:"))?.clone();
 
@@ -560,13 +560,13 @@ impl Component for proto::Equal {
     fn propagate_property(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
-        public_arguments: &HashMap<String, Value>,
+        _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
-        let mut left_property = properties.get("left")
+        let left_property = properties.get("left")
             .ok_or("left: missing")?.get_arraynd()
             .map_err(prepend("left:"))?.clone();
-        let mut right_property = properties.get("right")
+        let right_property = properties.get("right")
             .ok_or("right: missing")?.get_arraynd()
             .map_err(prepend("right:"))?.clone();
 
@@ -601,13 +601,13 @@ impl Component for proto::LessThan {
     fn propagate_property(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
-        public_arguments: &HashMap<String, Value>,
+        _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
-        let mut left_property = properties.get("left")
+        let left_property = properties.get("left")
             .ok_or("left: missing")?.get_arraynd()
             .map_err(prepend("left:"))?.clone();
-        let mut right_property = properties.get("right")
+        let right_property = properties.get("right")
             .ok_or("right: missing")?.get_arraynd()
             .map_err(prepend("right:"))?.clone();
 
@@ -642,13 +642,13 @@ impl Component for proto::GreaterThan {
     fn propagate_property(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
-        public_arguments: &HashMap<String, Value>,
+        _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
-        let mut left_property = properties.get("left")
+        let left_property = properties.get("left")
             .ok_or("left: missing")?.get_arraynd()
             .map_err(prepend("left:"))?.clone();
-        let mut right_property = properties.get("right")
+        let right_property = properties.get("right")
             .ok_or("right: missing")?.get_arraynd()
             .map_err(prepend("right:"))?.clone();
 
@@ -700,8 +700,8 @@ pub fn propagate_binary_shape(left_property: &ArrayNDProperties, right_property:
     let output_num_columns = left_num_columns.max(right_num_columns);
 
     // n must be known to prevent conformability attacks
-    let mut left_num_records = left_property.get_num_records()?;
-    let mut right_num_records = right_property.get_num_records()?;
+    let left_num_records = left_property.get_num_records()?;
+    let right_num_records = right_property.get_num_records()?;
 
     let left_is_row_broadcastable = left_property.releasable && left_num_records == 1;
     let right_is_row_broadcastable = right_property.releasable && right_num_records == 1;
@@ -802,11 +802,11 @@ fn broadcast<T: Clone>(data: &Vec<T>, length: &i64) -> Result<Vec<T>> {
 /// Used for monotonic functions that may be either increasing or decreasing
 ///
 /// A monotonically decreasing function may reverse the bounds. In this case, the min/max just needs to be sorted
-fn sort_bounds(mut nature: Option<Nature>, datatype: &DataType) -> Result<Option<Nature>> {
+fn sort_bounds(nature: Option<Nature>, datatype: &DataType) -> Result<Option<Nature>> {
     let nature = match &nature {
         Some(value) => match value {
             Nature::Continuous(continuous) => continuous,
-            Nature::Categorical(categorical) => return Ok(nature)
+            Nature::Categorical(_categorical) => return Ok(nature)
         },
         None => return Ok(nature)
     };

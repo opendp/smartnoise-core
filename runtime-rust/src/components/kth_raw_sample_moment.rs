@@ -1,11 +1,10 @@
 use whitenoise_validator::errors::*;
 
 use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value, get_argument, ArrayND};
+use whitenoise_validator::base::{Value, get_argument};
 use crate::components::Evaluable;
 use whitenoise_validator::proto;
-use ndarray::{ArrayD, Array};
-use crate::utilities::utilities::get_num_columns;
+use ndarray::{ArrayD};
 use crate::components::mean::mean;
 
 use std::convert::TryFrom;
@@ -34,13 +33,12 @@ impl Evaluable for proto::KthRawSampleMoment {
 /// use whitenoise_runtime::components::kth_raw_sample_moment::kth_raw_sample_moment;
 /// let data: ArrayD<f64> = arr2(&[ [1., 1., 1.], [2., 4., 6.] ]).into_dyn();
 /// let second_moments = kth_raw_sample_moment(&data, &2).unwrap();
-/// assert!(second_moments == arr1(&[5., 17., 37.]).into_dyn());
+/// assert!(second_moments == arr2(&[[2.5, 8.5, 18.5]]).into_dyn());
 /// ```
 pub fn kth_raw_sample_moment(data: &ArrayD<f64>, k: &i64) -> Result<ArrayD<f64>> {
 
     let mut data = data.clone();
 
-    let num_columns = get_num_columns(&data)?;
     let k = match i32::try_from(*k) {
         Ok(v) => v, Err(_) => return Err("k: invalid size".into())
     };

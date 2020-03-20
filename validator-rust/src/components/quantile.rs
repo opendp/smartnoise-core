@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use crate::{proto, base};
 
 use crate::components::{Component, Aggregator};
-use crate::base::{Value, NodeProperties, AggregatorProperties, Sensitivity, prepend, ArrayNDProperties, ValueProperties};
+use crate::base::{Value, NodeProperties, AggregatorProperties, Sensitivity, prepend, ValueProperties};
 
 
 impl Component for proto::Quantile {
@@ -47,7 +47,7 @@ impl Aggregator for proto::Quantile {
         properties: &NodeProperties,
         sensitivity_type: &Sensitivity,
     ) -> Result<Vec<f64>> {
-        let mut data_property = properties.get("data")
+        let data_property = properties.get("data")
             .ok_or("data: missing")?.get_arraynd()
             .map_err(prepend("data:"))?.clone();
 

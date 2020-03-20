@@ -8,8 +8,8 @@ use crate::components::{Aggregator, expand_mechanism};
 use crate::{proto, base};
 
 use crate::components::{Component, Expandable};
-use crate::base::{Value, NodeProperties, ArrayND, get_literal, Sensitivity, prepend, ValueProperties};
-use ndarray::Array;
+use crate::base::{Value, NodeProperties, Sensitivity, prepend, ValueProperties};
+
 
 impl Component for proto::LaplaceMechanism {
     fn propagate_property(
