@@ -67,6 +67,9 @@ fn main() {
     build_deps::rerun_if_changed_paths( "../prototypes/components/*" ).unwrap();
     // Adding the parent directory "data" to the watch-list will capture new-files being added
     build_deps::rerun_if_changed_paths( "../prototypes/components" ).unwrap();
+    build_deps::rerun_if_changed_paths( "../prototypes/base.proto" ).unwrap();
+    build_deps::rerun_if_changed_paths( "../prototypes/api.proto" ).unwrap();
+    build_deps::rerun_if_changed_paths( "../prototypes/value.proto" ).unwrap();
 
     let components_dir = "../prototypes/components/";
     let components_proto_path = "../prototypes/components.proto";
