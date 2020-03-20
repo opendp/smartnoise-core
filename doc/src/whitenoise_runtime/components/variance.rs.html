@@ -35,6 +35,22 @@
 <span id="35">35</span>
 <span id="36">36</span>
 <span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">whitenoise_validator</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
@@ -52,6 +68,22 @@
     }
 }
 
+<span class="doccomment">/// Calculate estimate of variance for each column in data.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Arguments</span>
+<span class="doccomment">/// * `data` - Data for which you would like the variance for each column.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Return</span>
+<span class="doccomment">/// Variance for each column in the data.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Example</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">/// use ndarray::prelude::*;</span>
+<span class="doccomment">/// use whitenoise_runtime::components::variance::variance;</span>
+<span class="doccomment">/// let data = arr2(&amp;[ [1.,10.], [2., 20.], [3., 30.] ]).into_dyn();</span>
+<span class="doccomment">/// let variances = variance(&amp;data).unwrap();</span>
+<span class="doccomment">/// assert!(variances == arr2(&amp;[[1., 100.]]).into_dyn());</span>
+<span class="doccomment">/// ```</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">variance</span>(<span class="ident">data</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayD</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ArrayD</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span><span class="op">&gt;</span> {
 
     <span class="kw">let</span> <span class="ident">means</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">mean</span>(<span class="kw-2">&amp;</span><span class="ident">data</span>)<span class="question-mark">?</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">clone</span>()).<span class="ident">collect</span>();

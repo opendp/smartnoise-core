@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["variance",""]]});
+initSidebarItems({"fn":[["variance","Calculate estimate of variance for each column in data."]]});
