@@ -25,199 +25,266 @@
 
 \maketitle
 
+\section{Preliminaries}
+
 \begin{lemma}
-\label{lemma:covarmatrix}
-The covariance matrix of $X$ may be written as 
-$$\frac{1}{n-1}\sum_{i=1}^n (X_i - \mu)(X_i-\mu)^T.$$
+\label{lemma:cancel}
+$\forall i,$
+$$ \sum_{j=1}^n (x_{ji} - \bar{X}_i) = 0.$$
 \end{lemma}
 
 \begin{proof}
 \begin{align*}
-\frac{1}{n-1} \sum_{i=1}^n (X_i - \mu)&(X_i-\mu)^T = \frac{1}{n-1} \sum_{i=1}^n
-\begin{bmatrix}
-x_{1i} - \mu_1 \\
-x_{2i} - \mu_2 \\
-\vdots\\
-x_{mi} - \mu_m
-\end{bmatrix} 
-\begin{bmatrix}
-x_{1i} - \mu_1 & 
-x_{2i} - \mu_2 &
-\cdots &
-x_{mi} - \mu_m
-\end{bmatrix}\\
-&= \frac{1}{n-1} \sum_{i=1}^n 
-\begin{bmatrix}
-(x_{1i}-\mu_1)(x_{1i}-\mu_1) & (x_{1i}-\mu_1)(x_{2i}-\mu_2) & \cdots & (x_{1i}-\mu_1)(x_{mi}-\mu_m)\\
-(x_{2i}-\mu_1)(x_{1i}-\mu_1) & (x_{2i}-\mu_1)(x_{2i}-\mu_2) & \cdots & (x_{2i}-\mu_1)(x_{mi}-\mu_m)\\
-\vdots & \vdots & \ddots & \vdots \\
-(x_{mi}-\mu_1)(x_{1i}-\mu_1) & (x_{mi}-\mu_1)(x_{2i}-\mu_2) & \cdots & (x_{mi}-\mu_1)(x_{mi}-\mu_m)\\
-\end{bmatrix}\\
+\sum_{i=1}^n (x_{ji} - \bar{X}_i) &= \sum_{i=1}^n x_{ji} - n \bar{X}_i\\
+	&= \sum_{i=1}^n x_{ji} - n\left( \frac{1}{n}\sum_{i=1}^n x_{ji}\right) \\
+	&= 0.
 \end{align*}
-$$
-=
-\begin{bmatrix}
- \frac{1}{n-1} \sum_{i=1}^n (x_{1i}-\mu_1)(x_{1i}-\mu_1) &  \frac{1}{n-1} \sum_{i=1}^n (x_{1i}-\mu_1)(x_{2i}-\mu_2) & \cdots &  \frac{1}{n-1} \sum_{i=1}^n (x_{1i}-\mu_1)(x_{mi}-\mu_m)\\[6pt]
- \frac{1}{n-1} \sum_{i=1}^n (x_{2i}-\mu_1)(x_{1i}-\mu_1) &  \frac{1}{n-1} \sum_{i=1}^n (x_{2i}-\mu_1)(x_{2i}-\mu_2) & \cdots &  \frac{1}{n-1} \sum_{i=1}^n (x_{2i}-\mu_1)(x_{mi}-\mu_m)\\[6pt]
-\vdots & \vdots & \ddots & \vdots \\
- \frac{1}{n-1} \sum_{i=1}^n (x_{mi}-\mu_1)(x_{1i}-\mu_1) &  \frac{1}{n-1} \sum_{i=1}^n (x_{mi}-\mu_1)(x_{2i}-\mu_2) & \cdots &  \frac{1}{n-1} \sum_{i=1}^n (x_{mi}-\mu_1)(x_{mi}-\mu_m)\\[6pt]
-\end{bmatrix}
-$$
-which is the covariance matrix of $X$.
 \end{proof}
 
 \begin{lemma}
-\label{lemma:sum0}
-$$\sum_{i=1}^n (X_i - \mu) = 0.$$
+\label{cov:rewrite}
+Let 
+$$ f_{ij} = \sum_{k=1}^n (x_{ki} - \bar{X}_i)(x_{kj} - \bar{X}_j),$$
+and let $X_i' = X_i \cup \{y_i\}$, and say $X_i$ has size $n$. Let $\bar{X}_i'$ and $\bar{X}_j'$ be the sample means of $X_i'$ and $X_j'$ respectively. Then,
+$$ f_{ij}(X') = f_{ij}(X) + n(\bar{X}_i - \bar{X}_i')(\bar{X}_j - \bar{X}_j') + (y_i - \bar{X}_i)(y_j - \bar{X}_j).$$
 \end{lemma}
 
 \begin{proof}
+Note that
 \begin{align*}
-\sum(X_i - \mu) &= \sum_{i=1}^n \left(
-\begin{bmatrix}
-x_{1i}\\
-x_{2i}\\
-\vdots \\
-x_{mi}
-\end{bmatrix}
--
-\begin{bmatrix}
-\mu_1\\
-\mu_2\\
-\vdots \\
-\mu_m
-\end{bmatrix}
-\right)\\
-&= \sum_{i=1}^n
-\begin{bmatrix}
-x_{1i} - \mu_1 \\
-x_{2i} - \mu_2 \\
-\vdots\\
-x_{mi} - \mu_m
-\end{bmatrix}\\
-&= 
-\begin{bmatrix}
-\sum_{i=1}^n (x_{1i} - \mu_1) \\
-\sum_{i=1}^n (x_{2i} - \mu_2) \\
-\vdots\\
-\sum_{i=1}^n (x_{mi} - \mu_m)
-\end{bmatrix} \\
-&= 
-\begin{bmatrix}
-n\mu_1 - n\mu_1\\
-n\mu_2 - n\mu_2 \\
-\vdots\\
-n\mu_m - n\mu_m \\
-\end{bmatrix}\\
-&= 0
+f_{ij}(X') &= \sum_{k=1}^{n+1} (x_{ki}' - \bar{X}_i')(x_{kj}' - \bar{X}_j'),\\
+	&= \sum_{k=1}^{n} (x_{ki} - \bar{X}_i')(x_{kj} - \bar{X}_j') + (y_i - \bar{X}_i')(y_j - \bar{X}_j'),\\
+	&= \sum_{k=1}^{n} \left( (x_{ki} - \bar{X}_i )+ (\bar{X}_i - \bar{X}_i' )\right) \left( (x_{kj} - \bar{X}_j )+ (\bar{X}_j - \bar{X}_j') \right) + (y_i - \bar{X}_i')(y_j - \bar{X}_j'),\\
+	&= \sum_{k=1}^{n} (x_{ki} - \bar{X}_i)(x_{kj} - \bar{X}_j) + (\bar{X}_j - \bar{X}_j')\sum_{k=1}^{n} (x_{ki}-\bar{X}_i) + (\bar{X}_i - \bar{X}_i') \sum_{k=1}^{n} (x_{kj} - \bar{X}_j),\\
+	& \hspace{1cm} + \sum_{k=1}^{n} (\bar{X}_i - \bar{X}_i')(\bar{X}_j - \bar{X}_j') + (y_i - \bar{X}_i')(y_j - \bar{X}_j'),\\
+	&= f_{ij}(X) + n(\bar{X}_i - \bar{X}_i')(\bar{X}_j - \bar{X}_j') + (y_i - \bar{X}_i')(y_j - \bar{X}_j'),
 \end{align*}
+where the cancellation of the second and third terms in the second-to-last line is due to Lemma \ref{lemma:cancel}.
 \end{proof}
 
-\begin{corollary}
-\label{corollary:sum0}
-$$\sum_{i=1}^n (X_i - \mu)^T = 0.$$ by identical proof construction.
-\end{corollary}
+\begin{lemma}
+Let  $X_i$ have size $n$ and say $X_i' = X_i \cup \{y_i\}$ where $y_i \in \mathcal{X}_i.$ Say that the space of datapoints $\mathcal{X}_i$ is bounded above by $M_i$ and bounded below by $m_i$, and let $y_i \in \mathcal{X}_i.$ Let  $\bar{X}_i$, $\bar{X}_j$, $\bar{X}_i'$, and $\bar{X}_j'$ be the sample means of $X_i, X_j, X_i'$ and $X_j'$ respectively. Then,
+$$ n \left\vert (\bar{X}_i - \bar{X}_i')(\bar{X}_j - \bar{X}_j') \right\vert \le \frac{n}{(n+1)^2}(M_i - m_i)(M_j - m_j).$$
+\end{lemma}
 
+\begin{proof}
+Note that
+\begin{align*}
+ n \left\vert (\bar{X}_i - \bar{X}_i')(\bar{X}_j - \bar{X}_j') \right\vert &= n\left\vert \left( \frac{1}{n} \sum_{k=1}^n x_{ki} - \frac{1}{n+1} \sum_{k=1}^{n+1} x_{ki}' \right) \left( \frac{1}{n} \sum_{k=1}^n x_{kj} - \frac{1}{n+1} \sum_{k=1}^{n+1} x_{kj}' \right)\right\vert, \\
+ 	&= n \left\vert \left( \left(\frac{1}{n} - \frac{1}{n+1}\right) \sum_{k=1}^n x_{ki} - \frac{y_i}{n+1} \right)\left( \left(\frac{1}{n} - \frac{1}{n+1}\right) \sum_{k=1}^n x_{kj} - \frac{y_j}{n+1} \right) \right\vert, \\
+	&= n  \left\vert \left(\frac{1}{n(n+1)} \sum_{k=1}^n x_{ki} - \frac{y_i}{n+1} \right)\left( \frac{1}{n(n+1)} \sum_{k=1}^n x_{kj} - \frac{y_j}{n+1} \right) \right\vert, \\
+	&= \frac{n}{(n+1)^2} \left\vert \left( \frac{1}{n} \sum_{k=1}^n x_{ki} - \frac{y_i}{n+1} \right)\left( \frac{1}{n} \sum_{k=1}^n x_{kj} - \frac{y_j}{n+1} \right) \right\vert,\\
+	&\le \frac{n}{(n+1)^2} (M_i - m_i)(M_j - m_j).
+ \end{align*}
+\end{proof}
+
+\begin{lemma}
+Let  $X_i$ have size $n$ and say $X_i' = X_i \cup \{y_i\}$ where $y_i \in \mathcal{X}_i.$ Say that the space of datapoints $\mathcal{X}_i$ is bounded above by $M_i$ and bounded below by $m_i$, and let $y_i \in \mathcal{X}_i.$ Let  $\bar{X}_i$, $\bar{X}_j$, $\bar{X}_i'$, and $\bar{X}_j'$ be the sample means of $X_i, X_j, X_i'$ and $X_j'$ respectively. Then,
+$$ \left\vert (y_i - \bar{X}_i')(y_j - \bar{X}_j' \right\vert \le \frac{n^2}{(n+1)^2}(M_i - m_i)(M_j-m_j).$$
+\end{lemma}
+
+\begin{proof}
+Note that
+\begin{align*}
+ \left\vert (y_i - \bar{X}_i')(y_j - \bar{X}_j' \right\vert &= \left\vert \left( y_i - \frac{y_i + n \bar{X}_i}{n+1}\right) \left( y_j - \frac{y_j + n \bar{X}_j}{n+1}\right) \right\vert, \\
+ 	&= \frac{1}{(n+1)^2} \left\vert \left((n+1)y_i - y_i - n\bar{X}_i \right)\left((n+1)y_j - y_j - n\bar{X}_j \right) \right\vert, \\
+	&= \frac{n^2}{(n+1)^2} \left\vert (y_i - \bar{X}_i)(y_j - \bar{X}_j)\right\vert, \\
+	&\le \frac{n^2}{(n+1)^2} (M_i - m_i)(M_j - m_j).
+\end{align*}
+\end{proof}
+%\begin{lemma}
+%\label{lemma:covarmatrix}
+%The covariance matrix of $X$ may be written as 
+%$$\frac{1}{n-1}\sum_{i=1}^n (X_i - \mu)(X_i-\mu)^T.$$
+%\end{lemma}
+%
+%\begin{proof}
+%\begin{align*}
+%\frac{1}{n-1} \sum_{i=1}^n (X_i - \mu)&(X_i-\mu)^T = \frac{1}{n-1} \sum_{i=1}^n
+%\begin{bmatrix}
+%x_{1i} - \mu_1 \\
+%x_{2i} - \mu_2 \\
+%\vdots\\
+%x_{mi} - \mu_m
+%\end{bmatrix} 
+%\begin{bmatrix}
+%x_{1i} - \mu_1 & 
+%x_{2i} - \mu_2 &
+%\cdots &
+%x_{mi} - \mu_m
+%\end{bmatrix}\\
+%&= \frac{1}{n-1} \sum_{i=1}^n 
+%\begin{bmatrix}
+%(x_{1i}-\mu_1)(x_{1i}-\mu_1) & (x_{1i}-\mu_1)(x_{2i}-\mu_2) & \cdots & (x_{1i}-\mu_1)(x_{mi}-\mu_m)\\
+%(x_{2i}-\mu_1)(x_{1i}-\mu_1) & (x_{2i}-\mu_1)(x_{2i}-\mu_2) & \cdots & (x_{2i}-\mu_1)(x_{mi}-\mu_m)\\
+%\vdots & \vdots & \ddots & \vdots \\
+%(x_{mi}-\mu_1)(x_{1i}-\mu_1) & (x_{mi}-\mu_1)(x_{2i}-\mu_2) & \cdots & (x_{mi}-\mu_1)(x_{mi}-\mu_m)\\
+%\end{bmatrix}\\
+%\end{align*}
+%$$
+%=
+%\begin{bmatrix}
+% \frac{1}{n-1} \sum_{i=1}^n (x_{1i}-\mu_1)(x_{1i}-\mu_1) &  \frac{1}{n-1} \sum_{i=1}^n (x_{1i}-\mu_1)(x_{2i}-\mu_2) & \cdots &  \frac{1}{n-1} \sum_{i=1}^n (x_{1i}-\mu_1)(x_{mi}-\mu_m)\\[6pt]
+% \frac{1}{n-1} \sum_{i=1}^n (x_{2i}-\mu_1)(x_{1i}-\mu_1) &  \frac{1}{n-1} \sum_{i=1}^n (x_{2i}-\mu_1)(x_{2i}-\mu_2) & \cdots &  \frac{1}{n-1} \sum_{i=1}^n (x_{2i}-\mu_1)(x_{mi}-\mu_m)\\[6pt]
+%\vdots & \vdots & \ddots & \vdots \\
+% \frac{1}{n-1} \sum_{i=1}^n (x_{mi}-\mu_1)(x_{1i}-\mu_1) &  \frac{1}{n-1} \sum_{i=1}^n (x_{mi}-\mu_1)(x_{2i}-\mu_2) & \cdots &  \frac{1}{n-1} \sum_{i=1}^n (x_{mi}-\mu_1)(x_{mi}-\mu_m)\\[6pt]
+%\end{bmatrix}
+%$$
+%which is the covariance matrix of $X$.
+%\end{proof}
+%
+%\begin{lemma}
+%\label{lemma:sum0}
+%$$\sum_{i=1}^n (X_i - \mu) = 0.$$
+%\end{lemma}
+%
+%\begin{proof}
+%\begin{align*}
+%\sum(X_i - \mu) &= \sum_{i=1}^n \left(
+%\begin{bmatrix}
+%x_{1i}\\
+%x_{2i}\\
+%\vdots \\
+%x_{mi}
+%\end{bmatrix}
+%-
+%\begin{bmatrix}
+%\mu_1\\
+%\mu_2\\
+%\vdots \\
+%\mu_m
+%\end{bmatrix}
+%\right)\\
+%&= \sum_{i=1}^n
+%\begin{bmatrix}
+%x_{1i} - \mu_1 \\
+%x_{2i} - \mu_2 \\
+%\vdots\\
+%x_{mi} - \mu_m
+%\end{bmatrix}\\
+%&= 
+%\begin{bmatrix}
+%\sum_{i=1}^n (x_{1i} - \mu_1) \\
+%\sum_{i=1}^n (x_{2i} - \mu_2) \\
+%\vdots\\
+%\sum_{i=1}^n (x_{mi} - \mu_m)
+%\end{bmatrix} \\
+%&= 
+%\begin{bmatrix}
+%n\mu_1 - n\mu_1\\
+%n\mu_2 - n\mu_2 \\
+%\vdots\\
+%n\mu_m - n\mu_m \\
+%\end{bmatrix}\\
+%&= 0
+%\end{align*}
+%\end{proof}
+%
+%\begin{corollary}
+%\label{corollary:sum0}
+%$$\sum_{i=1}^n (X_i - \mu)^T = 0.$$ by identical proof construction.
+%\end{corollary}
+%
 \section{Neighboring Definition: Change One}
 \subsection{$\ell_1$-sensitivity}
-
-\begin{theorem}
-Let $F(X)$ be the covariance matrix of $X$ without the normalization factor of $n-1$. Let $M_i$ be a maximum bound on $x_i \in X_i$, and let $m_i$ be a minimum bound on $x_i \in X_i$. Then each entry $f_{ij}$ of this matrix has sensitivity bounded above by
-$$\frac{2(n-1)}{n}(M_i - m_i)(M_j - m_j)$$
-\end{theorem}
-
-\begin{proof}
-Let $X'$ be defined as 
-$$ X' = 
-\begin{bmatrix}
-X_1' & \cdots & X_m' 
-\end{bmatrix}^T
-$$
-where
-$$ X_i' = X_i \cup \{y_i\}.$$
-I.e., each row $i$ has a single additional observation $y_i$ in $X'$ that it does not have in $X$.
-
-Let $X''$ be defined in the same way as $X'$, except with a different point $\{y_i'\}$ added to each row of X. This proof, which is essentially an extension of the proof of variance sensitivity, will use the definition of ``neighboring databases" in which databases are neighboring if they have a single point changed. I.e., $X'$ and $X''$ are neighboring databases. 
-
-It is first useful to determine how $f(X')$ compares to $f(X)$. Let $Y$ be the vector of all the $\{y_i\}$ observations in $X'$. Then,
-$$ F(X') =\sum (X_i - \mu')(X_i - \mu')^T + (Y-\mu')(Y-\mu')^T.$$
-
-The first of the sums inside this expression may be expanded to give
-\begin{align*}
-\sum (x_i - \mu')&(x_i - \mu')^T = \sum ((x_i-\mu)+(\mu-\mu'))((x_i-\mu)+(\mu-\mu'))^T\\
-	&= \sum (x_i - \mu)(x_i-\mu)^T + (\mu - \mu')\sum (x_i-\mu)^T + \sum (x_i-\mu)(\mu-\mu')^T \\
-	&  \hspace{1cm} + \sum (\mu-\mu')(\mu-\mu')^T\\
-	&= \sum (x_i - \mu)(x_i-\mu)^T + (\mu - \mu')\sum (x_i-\mu)^T + \sum (x_i-\mu)(\mu-\mu')^T \\
-	&  \hspace{1cm} +n (\mu-\mu')(\mu-\mu')^T\\
-	&= \sum (x_i - \mu)(x_i-\mu)^T + n (\mu-\mu')(\mu-\mu')^T \\
-	&= F(X) + n (\mu-\mu')(\mu-\mu')^T,
-\end{align*}
-where the second-to-last line is due to cancellations of the middle two terms by Lemma \ref{lemma:sum0} and Corollary \ref{corollary:sum0}. So,
-
-\begin{equation}
-\label{eq:senseq}
-F(X') =  F(X) + n(\mu-\mu')(\mu-\mu')^T + (Y-\mu')(Y-\mu')^T.
-\end{equation}
-
-Looking at the two expressions inside the parentheses of Eq.~\ref{eq:senseq}, note first that
-
-$$ n(\mu-\mu')(\mu-\mu')^T $$
-
-is an $m \times m$ matrix with $ij$th entry
-\begin{align}
-x_{ij} &= n(\mu_i - \mu_i')(\mu_j - \mu_j') \nonumber \\
-	&\le n\left(\frac{M_i - m_i}{n+1}\right)\left(\frac{M_j - m_j}{n+1}\right) \nonumber \\
-	&= \frac{n}{(n+1)^2} (M_i-m_i)(M_j-m_j).
-\label{eq:firstterm}
-\end{align}
-
-The second term, 
-
-$$ (Y-\mu')(Y-\mu')^T, $$
-
-is also an $m \times m$ matrix, with $ij$th entry
-\begin{align}
-x_{ij} &= (y_i - \mu_i') (y_j - \mu_j') \nonumber\\
-	&= \left( y_i - \frac{n\mu_i + y_i}{n+1} \right)\left( y_j - \frac{n\mu_j + y_j}{n+1} \right) \nonumber\\
-	&= \frac{n^2}{(n+1)^2}(y_i - \mu_i)(y_j - \mu_j) \nonumber\\
-	&\le \frac{n^2}{(n+1)^2}(M_i - m_i)(M_j - m_j).
-\label{eq:secondterm}
-\end{align}
-
-Let $f_{ij}$ be the $ij$th entry of the $m\times m$ matrix output by $F$. Then plugging the bounds in Eq.~\ref{eq:firstterm} and Eq.~\ref{eq:secondterm} back into Eq.~\ref{eq:senseq} gives
-
-\begin{align}
-f_{ij}(X') &\le f_{ij}(X) + \frac{n}{(n+1)^2} (M_i-m_i)(M_j-m_j) + \frac{n^2}{(n+1)^2}(M_i - m_i)(M_j - m_j) \nonumber \\
-&= f_{ij}(X) +\frac{n}{(n+1)^2}(M_i - m_i)(M_j - m_j)(n+1) \nonumber\\
-&= f_{ij}(X) + \frac{n}{n+1}(M_i - m_i)(M_j - m_j).
-\end{align}
-
-Since we'd really like to consider the sensitivity of $f(X')$, it makes sense to redefine $n$ based on the size of $X'$ rather than of $X$, i.e. redefine $n$ to be $n+1$. Then,
-
-\begin{equation}
-f_{ij}(X') = f_{ij}(X) + \frac{n-1}{n}(M_i - m_i)(M_j - m_j).
-\label{eq:singlebound}
-\end{equation}
-
-Now, consider two neighboring databases $X'$ and $X''$. Say $X'$ may still be written as $X \cup \{y\}$, and $X''$ may be similarly written as $X \cup \{z\}.$ It then follows from Eq.~\ref{eq:singlebound}, using the triangle inequality, that
-
-\begin{align*}
-\left\vert f_{ij}(X')-f_{ij}(X'') \right\vert &\le \frac{2(n-1)}{n}(M_i - m_i)(M_j - m_j).
-\end{align*}
-
+%
+%\begin{theorem}
+%Let $F(X)$ be the covariance matrix of $X$ without the normalization factor of $n-1$. Let $M_i$ be a maximum bound on $x_i \in X_i$, and let $m_i$ be a minimum bound on $x_i \in X_i$. Then each entry $f_{ij}$ of this matrix has sensitivity bounded above by
+%$$\frac{2(n-1)}{n}(M_i - m_i)(M_j - m_j)$$
+%\end{theorem}
+%
+%\begin{proof}
+%Let $X'$ be defined as 
+%$$ X' = 
+%\begin{bmatrix}
+%X_1' & \cdots & X_m' 
+%\end{bmatrix}^T
+%$$
+%where
+%$$ X_i' = X_i \cup \{y_i\}.$$
+%I.e., each row $i$ has a single additional observation $y_i$ in $X'$ that it does not have in $X$.
+%
+%Let $X''$ be defined in the same way as $X'$, except with a different point $\{y_i'\}$ added to each row of X. This proof, which is essentially an extension of the proof of variance sensitivity, will use the definition of ``neighboring databases" in which databases are neighboring if they have a single point changed. I.e., $X'$ and $X''$ are neighboring databases. 
+%
+%It is first useful to determine how $f(X')$ compares to $f(X)$. Let $Y$ be the vector of all the $\{y_i\}$ observations in $X'$. Then,
+%$$ F(X') =\sum (X_i - \mu')(X_i - \mu')^T + (Y-\mu')(Y-\mu')^T.$$
+%
+%The first of the sums inside this expression may be expanded to give
+%\begin{align*}
+%\sum (x_i - \mu')&(x_i - \mu')^T = \sum ((x_i-\mu)+(\mu-\mu'))((x_i-\mu)+(\mu-\mu'))^T\\
+%	&= \sum (x_i - \mu)(x_i-\mu)^T + (\mu - \mu')\sum (x_i-\mu)^T + \sum (x_i-\mu)(\mu-\mu')^T \\
+%	&  \hspace{1cm} + \sum (\mu-\mu')(\mu-\mu')^T\\
+%	&= \sum (x_i - \mu)(x_i-\mu)^T + (\mu - \mu')\sum (x_i-\mu)^T + \sum (x_i-\mu)(\mu-\mu')^T \\
+%	&  \hspace{1cm} +n (\mu-\mu')(\mu-\mu')^T\\
+%	&= \sum (x_i - \mu)(x_i-\mu)^T + n (\mu-\mu')(\mu-\mu')^T \\
+%	&= F(X) + n (\mu-\mu')(\mu-\mu')^T,
+%\end{align*}
+%where the second-to-last line is due to cancellations of the middle two terms by Lemma \ref{lemma:sum0} and Corollary \ref{corollary:sum0}. So,
+%
+%\begin{equation}
+%\label{eq:senseq}
+%F(X') =  F(X) + n(\mu-\mu')(\mu-\mu')^T + (Y-\mu')(Y-\mu')^T.
+%\end{equation}
+%
+%Looking at the two expressions inside the parentheses of Eq.~\ref{eq:senseq}, note first that
+%
+%$$ n(\mu-\mu')(\mu-\mu')^T $$
+%
+%is an $m \times m$ matrix with $ij$th entry
+%\begin{align}
+%x_{ij} &= n(\mu_i - \mu_i')(\mu_j - \mu_j') \nonumber \\
+%	&\le n\left(\frac{M_i - m_i}{n+1}\right)\left(\frac{M_j - m_j}{n+1}\right) \nonumber \\
+%	&= \frac{n}{(n+1)^2} (M_i-m_i)(M_j-m_j).
+%\label{eq:firstterm}
+%\end{align}
+%
+%The second term, 
+%
+%$$ (Y-\mu')(Y-\mu')^T, $$
+%
+%is also an $m \times m$ matrix, with $ij$th entry
+%\begin{align}
+%x_{ij} &= (y_i - \mu_i') (y_j - \mu_j') \nonumber\\
+%	&= \left( y_i - \frac{n\mu_i + y_i}{n+1} \right)\left( y_j - \frac{n\mu_j + y_j}{n+1} \right) \nonumber\\
+%	&= \frac{n^2}{(n+1)^2}(y_i - \mu_i)(y_j - \mu_j) \nonumber\\
+%	&\le \frac{n^2}{(n+1)^2}(M_i - m_i)(M_j - m_j).
+%\label{eq:secondterm}
+%\end{align}
+%
+%Let $f_{ij}$ be the $ij$th entry of the $m\times m$ matrix output by $F$. Then plugging the bounds in Eq.~\ref{eq:firstterm} and Eq.~\ref{eq:secondterm} back into Eq.~\ref{eq:senseq} gives
+%
+%\begin{align}
+%f_{ij}(X') &\le f_{ij}(X) + \frac{n}{(n+1)^2} (M_i-m_i)(M_j-m_j) + \frac{n^2}{(n+1)^2}(M_i - m_i)(M_j - m_j) \nonumber \\
+%&= f_{ij}(X) +\frac{n}{(n+1)^2}(M_i - m_i)(M_j - m_j)(n+1) \nonumber\\
+%&= f_{ij}(X) + \frac{n}{n+1}(M_i - m_i)(M_j - m_j).
+%\end{align}
+%
+%Since we'd really like to consider the sensitivity of $f(X')$, it makes sense to redefine $n$ based on the size of $X'$ rather than of $X$, i.e. redefine $n$ to be $n+1$. Then,
+%
+%\begin{equation}
+%f_{ij}(X') = f_{ij}(X) + \frac{n-1}{n}(M_i - m_i)(M_j - m_j).
+%\label{eq:singlebound}
+%\end{equation}
+%
+%Now, consider two neighboring databases $X'$ and $X''$. Say $X'$ may still be written as $X \cup \{y\}$, and $X''$ may be similarly written as $X \cup \{z\}.$ It then follows from Eq.~\ref{eq:singlebound}, using the triangle inequality, that
+%
+%\begin{align*}
+%\left\vert f_{ij}(X')-f_{ij}(X'') \right\vert &\le \frac{2(n-1)}{n}(M_i - m_i)(M_j - m_j).
+%\end{align*}
+%
 %Can get tighter maybe? (Get rid of the 2?) Try redoing analysis of Eq. \ref{eq:firstterm} with $y$ and $z$ maybe?
+%
+%\end{proof}
+%
+%\begin{corollary}
+%The sample covariance has sensitivity 
+%$$  \frac{2}{n}(M_i - m_i)(M_j - m_j).
+% $$
+%\end{corollary}
 
-\end{proof}
-
-\begin{corollary}
-The sample covariance has sensitivity 
-$$  \frac{2}{n}(M_i - m_i)(M_j - m_j).
- $$
-\end{corollary}
-
-\begin{proof}
-This follows directly from the above theorem, re-inserting the normalization factor of $n-1$.
-\end{proof}
+%\begin{proof}
+%This follows directly from the above theorem, re-inserting the normalization factor of $n-1$.
+%\end{proof}
 
 \subsection{$\ell_2$-sensitivity}
 
