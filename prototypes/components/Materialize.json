@@ -1,19 +1,17 @@
 {
-  "arguments": {},
+  "arguments": {
+    "column_names": {
+      "nature": [
+        "categorical"
+      ],
+      "type": "Array"
+    }
+  },
   "id": "Materialize",
   "name": "materialize",
   "options": {
-    "file_path": {
-      "type": "string",
-      "default": "None"
-    },
-    "url_path": {
-      "type": "string",
-      "default": "None"
-    },
-    "literal": {
-      "type": "Value",
-      "default": "None"
+    "data_source": {
+      "type": "DataSource"
     },
     "private": {
       "type": "bool",
@@ -23,6 +21,5 @@
   "return": {
     "nature": null,
     "type": "Hashmap"
-  },
-  "docstring": "materialize step"
+  }
 }

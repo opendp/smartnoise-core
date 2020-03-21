@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use crate::{proto, base};
 
 use crate::components::{Component, Aggregator};
-use crate::base::{Value, Properties, NodeProperties, AggregatorProperties, Vector2DJagged, standardize_categorical_argument, Sensitivity};
+use crate::base::{Value, NodeProperties, AggregatorProperties, Vector2DJagged, Sensitivity, ValueProperties, prepend, DataType};
 
 impl Component for proto::Count {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
@@ -15,11 +15,10 @@ impl Component for proto::Count {
         _privacy_definition: &proto::PrivacyDefinition,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
-    ) -> Result<Properties> {
+    ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
-            .ok_or("data must be passed to Count")?.clone();
-
-        data_property.assert_is_not_aggregated()?;
+            .ok_or("data: missing")?.get_arraynd()
+            .map_err(prepend("data:"))?.clone();
 
         // save a snapshot of the state when aggregating
         data_property.aggregator = Some(AggregatorProperties {
@@ -27,10 +26,11 @@ impl Component for proto::Count {
             properties: properties.clone()
         });
 
-        data_property.num_records = data_property.get_categories_lengths()?;
+        data_property.num_records = Some(1);
         data_property.nature = None;
+        data_property.data_type = DataType::I64;
 
-        Ok(data_property)
+        Ok(data_property.into())
     }
 
     fn get_names(
@@ -49,7 +49,8 @@ impl Aggregator for proto::Count {
         sensitivity_type: &Sensitivity
     ) -> Result<Vec<f64>> {
         let data_property = properties.get("data")
-            .ok_or::<Error>("data must be passed to compute sensitivity".into())?;
+            .ok_or("data: missing")?.get_arraynd()
+            .map_err(prepend("data:"))?.clone();
 
         data_property.assert_is_not_aggregated()?;
 
@@ -63,7 +64,7 @@ impl Aggregator for proto::Count {
                 }
                 // if n is set, and the number of categories is 2, then sensitivity is 1.
                 // Otherwise, sensitivity is 2 (changing one person can alter two bins)
-                Ok(match data_property.get_n() {
+                Ok(match data_property.get_num_records() {
                     // known n
                     Ok(_num_records) => match data_property.get_categories() {
                         // by known categories

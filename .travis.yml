@@ -1,0 +1,65 @@
+dist: bionic
+
+.branches:
+  # all branches
+  only:
+  - gh-pages
+  - /.*/
+
+language: rust
+
+rust:
+  - stable
+
+before_install:
+  # Update to install python 3.6
+  #   > Commented out for now.  It works but takes a while to run...
+  #- sudo apt update
+  #- sudo apt install -y software-properties-common
+  #- sudo apt install -y python3-pip
+  #- python3 --version
+
+script:
+  # (1) Rust Validator -> Test & Build
+  - cd validator-rust; cargo build --verbose --workspace;
+  - cargo test --verbose --workspace;
+  - cd ..
+  # (2) Rust Runtime -> Test & Build
+  - cd runtime-rust; cargo build --verbose --workspace;
+  - cargo test --verbose --workspace;
+  - cd ..;
+  # (3) Build python bindings and run tests
+  #   > Commented out for now.  It works but takes a while to run...
+  #- cd bindings-python; python3 -m pip install -r requirements.txt;
+  #- export RUST_BACKTRACE=1; python3 -m pip install -e . -v;
+  #- python3 -m pytest -x -v; cd ..;
+
+after_success:
+  #
+  # Build the documentation for gh-pages
+  #
+  - echo $TRAVIS_BRANCH;
+  # switch to master after initial version
+  - if [ "$TRAVIS_BRANCH" == "develop" ]; then
+    cd runtime-rust;
+    cargo doc --verbose --target-dir=../docs;
+    cd ..; rm -rf docs/debug;
+    fi
+
+# -------------------------------------------
+# Deploy the Rust documentation to
+# GitHub pages
+# - Triggered when the branch is "master"
+# -------------------------------------------
+deploy:
+  provider: pages
+  skip_cleanup: true
+  local_dir: docs
+  # Set in the settings page of your repository, as a secure variable
+  github_token: $GITHUB_TOKEN
+  keep_history: true
+  target_branch: gh-pages
+  on:
+    # branch: 62-rp-pages
+    branch: develop # switch to master after initial version
+  #verbose: true

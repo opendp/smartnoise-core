@@ -20,6 +20,10 @@
     },
     "privacy_usage": {
       "type": "repeated PrivacyUsage"
+    },
+    "finite_sample_correction": {
+      "type": "bool",
+      "default": "True"
     }
   },
   "return": {
@@ -27,6 +31,5 @@
       "continuous"
     ],
     "type": "Array"
-  },
-  "docstring": "dp_variance step"
+  }
 }

@@ -1,7 +1,9 @@
-from yarrow._native_validator import ffi as ffi_validator, lib as lib_validator
-from yarrow._native_runtime import ffi as ffi_runtime, lib as lib_runtime
+from whitenoise._native_validator import ffi as ffi_validator, lib as lib_validator
+from whitenoise._native_runtime import ffi as ffi_runtime, lib as lib_runtime
 
 from . import api_pb2
+import re
+import platform
 
 
 class LibraryWrapper(object):
@@ -82,5 +84,20 @@ def _communicate(function, argument, response_type, ffi):
 
     # Errors from here are propagated up from either the rust validator or runtime
     if response.HasField("error"):
-        raise RuntimeError(response.error.message)
+
+        library_traceback = response.error.message
+
+        # noinspection PyBroadException
+        try:
+            # on Linux, stack traces are more descriptive
+            if platform.system() == "Linux":
+                message, *frames = re.split("\n +[0-9]+: ", library_traceback)
+                library_traceback = '\n'.join(reversed(["  " + frame.replace("         at", "at") for frame in frames
+                                                        if ("at src/" in frame or "whitenoise_validator" in frame)
+                                                        and "whitenoise_validator::errors::Error" not in frame])) \
+                                    + "\n  " + message
+        except Exception:
+            pass
+
+        raise RuntimeError(library_traceback)
     return response.data

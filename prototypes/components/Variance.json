@@ -4,21 +4,25 @@
       "nature": [
         "continuous"
       ],
-      "type": "Array"
-    },
-    "by": {
       "type": "Array",
-      "default": "None"
+      "description": "Data for which you want the sample variance for each column."
     }
   },
   "id": "Variance",
   "name": "variance",
-  "options": {},
+  "options": {
+    "finite_sample_correction": {
+      "type": "bool",
+      "default": "True",
+      "description": "Whether or not to use the finite sample correction (Bessel's correction)."
+    }
+  },
   "return": {
     "nature": [
       "continuous"
     ],
-    "type": "Array"
+    "type": "Array",
+    "description": "Sample variance for each column of the data."
   },
-  "docstring": "variance step"
+  "description": "Calculates the sample variance for each column of the data."
 }

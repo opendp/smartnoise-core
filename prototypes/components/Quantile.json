@@ -4,21 +4,24 @@
       "nature": [
         "continuous"
       ],
-      "type": "Array"
+      "type": "Array",
+      "description": "Data for which you want the quantiles."
     }
   },
   "id": "Quantile",
   "name": "quantile",
   "options": {
     "quantile": {
-      "type": "double"
+      "type": "double",
+      "description": "Desired quantiles, defined on `[0,1]`."
     }
   },
   "return": {
     "nature": [
       "continuous"
     ],
-    "type": "Array"
+    "type": "Array",
+    "description": "Quantile values for each column."
   },
-  "docstring": "quantile step"
+  "description": "Get values corresponding to specified quantiles for each column of the data."
 }

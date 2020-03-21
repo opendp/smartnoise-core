@@ -13,14 +13,13 @@
       "type": "Array"
     }
   },
-  "id": "Div",
-  "name": "div",
+  "id": "RowMax",
+  "name": "row_wise_max",
   "options": {},
   "return": {
     "nature": [
       "continuous"
     ],
     "type": "Array"
-  },
-  "docstring": "div step"
+  }
 }

@@ -4,11 +4,8 @@
       "nature": [
         "continuous"
       ],
-      "type": "Array"
-    },
-    "by": {
       "type": "Array",
-      "default": "None"
+      "description": "Data for which you want the sum of each column."
     }
   },
   "id": "Sum",
@@ -18,7 +15,8 @@
     "nature": [
       "continuous"
     ],
-    "type": "Array"
+    "type": "Array",
+    "description": "Sum of each column of the data."
   },
-  "docstring": "sum step"
+  "description": "Calculates the sum of each column of the data."
 }

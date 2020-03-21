@@ -1,35 +1,40 @@
 use crate::errors::*;
 
 use std::collections::HashMap;
-use crate::base::{Nature, Vector1DNull, NodeProperties, ArrayND, get_constant, NatureCategorical, standardize_categorical_argument, Vector2DJagged};
+use crate::base::{Nature, NodeProperties, NatureCategorical, standardize_categorical_argument, Vector2DJagged, ValueProperties, prepend, DataType};
 
 use crate::{proto, base};
 
-use crate::components::{Component, Expandable};
+use crate::components::{Component};
 
-use ndarray::Array;
-use crate::base::{Value, Properties, NatureContinuous};
-use itertools::Itertools;
+use crate::base::{Value};
 
 
 impl Component for proto::Bin {
-    // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
-    ) -> Result<Properties> {
-        let mut data_property = properties.get("data").ok_or("data missing from Bin")?.clone();
+    ) -> Result<ValueProperties> {
+        let mut data_property = properties.get("data")
+            .ok_or::<Error>("data: missing".into())?.clone().get_arraynd()
+            .map_err(prepend("data:"))?.clone();
 
-        let num_columns = data_property.num_columns
-            .ok_or("number of data columns must be known to check imputation")?;
+        let num_columns = data_property.get_num_columns()
+            .map_err(prepend("data:"))?;
 
         public_arguments.get("null")
-            .ok_or::<Error>("null must be passed into the binning function".into())?;
+            .ok_or::<Error>("null: missing, must be public".into())?;
+
         let edges = public_arguments.get("edges")
-            .ok_or::<Error>("edges must be passed into the binning function".into())?.get_jagged()?.get_f64_option()?;
-        let mut edges = standardize_categorical_argument(edges, &num_columns)?;
+            .ok_or::<Error>("edges missing, must be public".into())
+            .and_then(|v| v.get_jagged())
+            .and_then(|v| v.get_f64_option())
+            .map_err(prepend("edges:"))?;
+
+        let mut edges = standardize_categorical_argument(edges, &num_columns)
+            .map_err(prepend("edges:"))?;
 
         let edges: Vec<Vec<f64>> = match self.side.as_str() {
             "left" => edges.iter_mut().map(|col| {col.pop(); col.clone()}).collect(),
@@ -37,15 +42,16 @@ impl Component for proto::Bin {
                 col.windows(2).map(|slice| slice.iter().sum::<f64>() / 2.).collect())
                 .collect(),
             "right" => edges.iter_mut().map(|col| {col.remove(0); col.clone()}).collect(),
-            _ => return Err("bin side must be left, center or right".into())
+            _ => bail!("side: must be left, center or right")
         };
 
         // save revised bounds
         data_property.nature = Some(Nature::Categorical(NatureCategorical {
             categories: Vector2DJagged::F64(edges.iter().map(|col| Some(col.clone())).collect()),
         }));
+        data_property.data_type = DataType::F64;
 
-        Ok(data_property)
+        Ok(data_property.into())
     }
 
     fn get_names(

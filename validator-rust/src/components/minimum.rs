@@ -1,24 +1,23 @@
 use crate::errors::*;
 
-
 use std::collections::HashMap;
 
 use crate::{proto, base};
 
 use crate::components::{Component, Aggregator};
-use crate::base::{Value, Properties, NodeProperties, AggregatorProperties, Sensitivity};
+use crate::base::{Value, NodeProperties, AggregatorProperties, Sensitivity, prepend, ValueProperties};
 
 
 impl Component for proto::Minimum {
-    // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
-    ) -> Result<Properties> {
+    ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
-            .ok_or("data must be passed to Minimum")?.clone();
+            .ok_or("data: missing")?.get_arraynd()
+            .map_err(prepend("data:"))?.clone();
 
         data_property.assert_is_not_aggregated()?;
 
@@ -28,9 +27,9 @@ impl Component for proto::Minimum {
             properties: properties.clone(),
         });
 
-        data_property.num_records = data_property.get_categories_lengths()?;
+        data_property.num_records = Some(1);
 
-        Ok(data_property)
+        Ok(data_property.into())
     }
 
     fn get_names(
@@ -49,11 +48,10 @@ impl Aggregator for proto::Minimum {
         sensitivity_type: &Sensitivity,
     ) -> Result<Vec<f64>> {
         let data_property = properties.get("data")
-            .ok_or::<Error>("data must be passed to compute sensitivity".into())?;
+            .ok_or("data: missing")?.get_arraynd()
+            .map_err(prepend("data:"))?.clone();
 
-        data_property.assert_is_not_aggregated()?;
         data_property.assert_non_null()?;
-
 
         match sensitivity_type {
             Sensitivity::KNorm(k) => {

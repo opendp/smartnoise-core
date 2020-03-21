@@ -1,13 +1,14 @@
-use yarrow_validator::errors::*;
+use whitenoise_validator::errors::*;
 
 use crate::base::NodeArguments;
-use yarrow_validator::base::{Value, ArrayND, get_argument, Vector2DJagged};
+use whitenoise_validator::base::{Value, get_argument, Vector2DJagged};
 use crate::components::Evaluable;
 use crate::utilities;
-use yarrow_validator::proto;
+use whitenoise_validator::proto;
 
 impl Evaluable for proto::LaplaceMechanism {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
+        // read function arguments
         let epsilon: Vec<f64> = self.privacy_usage.iter()
             .map(|usage| get_epsilon(&usage))
             .collect::<Result<Vec<f64>>>()?;
@@ -28,7 +29,7 @@ impl Evaluable for proto::LaplaceMechanism {
                         Ok(())
                     })
                     .collect::<Result<()>>()?;
-                Ok(Value::ArrayND(ArrayND::F64(data)))
+                Ok(data.into())
             },
 
             (Value::Vector2DJagged(data), Value::Vector2DJagged(sensitivity)) => {
@@ -46,7 +47,7 @@ impl Evaluable for proto::LaplaceMechanism {
 
                 data.iter_mut()
                     .zip(sensitivity.iter())
-                    .map(|(mut col, sens_col)|
+                    .map(|(col, sens_col)|
                         col.iter_mut().zip(sens_col)
                             .map(|(v, sens)| {
                                 *v += utilities::mechanisms::laplace_mechanism(&epsilon, &sens)?;
@@ -59,7 +60,6 @@ impl Evaluable for proto::LaplaceMechanism {
         }
     }
 }
-
 
 impl Evaluable for proto::GaussianMechanism {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
@@ -80,7 +80,7 @@ impl Evaluable for proto::GaussianMechanism {
             })
             .collect::<Result<()>>()?;
 
-        Ok(Value::ArrayND(ArrayND::F64(data)))
+        Ok(data.into())
     }
 }
 
@@ -109,7 +109,7 @@ impl Evaluable for proto::SimpleGeometricMechanism {
             })
             .collect::<Result<()>>()?;
 
-        Ok(Value::ArrayND(ArrayND::I64(data)))
+        Ok(data.into())
     }
 }
 
@@ -122,9 +122,9 @@ fn get_epsilon(usage: &proto::PrivacyUsage) -> Result<f64> {
     }
 }
 
-fn get_delta(usage: &proto::PrivacyUsage) -> Result<f64> {
-    match usage.distance.clone().ok_or::<Error>("distance must be defined on a PrivacyUsage".into())? {
-        proto::privacy_usage::Distance::DistanceApproximate(distance) => Ok(distance.delta),
-        _ => Err("delta is not defined".into())
-    }
-}
+//fn get_delta(usage: &proto::PrivacyUsage) -> Result<f64> {
+//    match usage.distance.clone().ok_or::<Error>("distance must be defined on a PrivacyUsage".into())? {
+//        proto::privacy_usage::Distance::DistanceApproximate(distance) => Ok(distance.delta),
+//        _ => Err("delta is not defined".into())
+//    }
+//}

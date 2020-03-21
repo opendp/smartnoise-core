@@ -1,9 +1,9 @@
-use yarrow_validator::errors::*;
+use whitenoise_validator::errors::*;
 
 use crate::base::NodeArguments;
-use yarrow_validator::base::{Value, ArrayND, get_argument};
+use whitenoise_validator::base::{Value, ArrayND, get_argument, Hashmap};
 use crate::components::Evaluable;
-use yarrow_validator::proto;
+use whitenoise_validator::proto;
 
 
 
@@ -13,9 +13,9 @@ impl Evaluable for proto::Index {
         let columns = get_argument(&arguments, "columns")?;
 
         match data {
-            Value::HashmapString(dataframe) => match columns {
-                Value::ArrayND(array) => match array {
-                    ArrayND::Str(column_names) => match column_names.ndim() {
+            Value::Hashmap(dataframe) => match columns {
+                Value::ArrayND(array) => match (dataframe, array) {
+                    (Hashmap::Str(dataframe), ArrayND::Str(column_names)) => match column_names.ndim() {
                         0 => Ok(dataframe.get(column_names.first().unwrap()).unwrap().to_owned()),
 //                1 => match column_names.into_dimensionality::<Ix1>() {
 //                    Ok(column_names) =>

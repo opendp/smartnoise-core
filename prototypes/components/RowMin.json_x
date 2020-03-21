@@ -10,13 +10,7 @@
       "nature": [
         "continuous"
       ],
-      "type": {
-        "of": [
-          "int",
-          "double"
-        ],
-        "type": "Array"
-      }
+      "type": "Array"
     }
   },
   "id": "RowMin",
@@ -27,6 +21,5 @@
       "continuous"
     ],
     "type": "Array"
-  },
-  "docstring": "row_wise_min step"
+  }
 }

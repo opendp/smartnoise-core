@@ -15,6 +15,5 @@
   "return": {
     "nature": [],
     "type": "Array"
-  },
-  "docstring": "logical_or step"
+  }
 }

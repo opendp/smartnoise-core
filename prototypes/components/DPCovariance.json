@@ -35,6 +35,5 @@
   },
   "return": {
     "type": "Array"
-  },
-  "docstring": "dp_covariance step"
+  }
 }

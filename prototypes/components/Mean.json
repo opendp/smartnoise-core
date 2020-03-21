@@ -8,7 +8,8 @@
     },
     "by": {
       "type": "Array",
-      "default": "None"
+      "default": "None",
+      "description": "Data for which you want the arithmetic mean."
     }
   },
   "id": "Mean",
@@ -18,7 +19,8 @@
     "nature": [
       "continuous"
     ],
-    "type": "Array"
+    "type": "Array",
+    "description": "Arithmetic mean for each column of the data in question."
   },
-  "docstring": "mean step"
+  "description": "Calculates the arithmetic mean of each column in the provided data."
 }

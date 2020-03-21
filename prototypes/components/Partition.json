@@ -1,0 +1,26 @@
+{
+  "arguments": {
+    "data": {
+      "nature": [
+        "continuous",
+        "categorical"
+      ],
+      "type": "Array"
+    },
+    "by": {
+      "nature": [
+        "categorical"
+      ],
+      "type": "Array"
+    }
+  },
+  "id": "Partition",
+  "name": "partition",
+  "options": {},
+  "return": {
+    "nature": [
+      "continuous"
+    ],
+    "type": "Hashmap"
+  }
+}

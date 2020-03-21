@@ -1,18 +1,13 @@
 use crate::errors::*;
 
-
 use std::collections::HashMap;
 
-use crate::{base};
+
 use crate::proto;
 
 use crate::components::{Component};
 
-
-
-
-use crate::base::{Properties, Value, NodeProperties};
-use std::ops::Deref;
+use crate::base::{Value, NodeProperties, prepend, ValueProperties, DataType, Nature, NatureCategorical, Vector2DJagged};
 
 
 impl Component for proto::Cast {
@@ -21,32 +16,66 @@ impl Component for proto::Cast {
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         public_arguments: &HashMap<String, Value>,
-        properties: &base::NodeProperties,
-    ) -> Result<Properties> {
+        properties: &NodeProperties,
+    ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
-            .ok_or::<Error>("data is a required argument for Cast".into())?.clone();
+            .ok_or::<Error>("data: missing".into())?.get_arraynd()
+            .map_err(prepend("data:"))?.clone();
 
-        let _datatype = public_arguments.get("type")
-            .ok_or::<Error>("data type is a required argument for Cast".into())?.deref().to_owned().get_first_str()?;
+        let datatype = public_arguments.get("type")
+            .ok_or::<Error>("type: missing, must be public".into())?.get_first_str()
+            .map_err(prepend("type:"))?;
 
-        // clear continuous properties if casting to categorical-only raw type
-//        match &datatype {
-//            dt if dt == &"STRING".to_string() => {
-//                if let Nature::Continuous(nature) = data_property.nature.clone() {
-//                    data_property.nature = None
-//                }
-//            },
-//            dt if dt == &"BOOL".to_string() => {
-//                if let Nature::Continuous(nature) = data_property.nature.clone() {
-//                    data_property.nature = None
-//                }
-//            },
-//        }
+        let _prior_datatype = data_property.data_type.clone();
 
-        data_property.nature = None;
-        data_property.nullity = true;
+        data_property.data_type = match datatype.to_lowercase().as_str() {
+            "float" => DataType::F64,
+            "real" => DataType::F64,
+            "int" => DataType::I64,
+            "integer" => DataType::I64,
+            "bool" => DataType::Bool,
+            "string" => DataType::Str,
+            "str" => DataType::Str,
+            _ => bail!("data type is not recognized. Must be one of \"float\", \"int\", \"bool\" or \"string\"")
+        };
 
-        Ok(data_property)
+        let num_columns = data_property.get_num_columns()?;
+
+        // TODO: It is possible to preserve significantly more properties here
+        match data_property.data_type {
+            DataType::Bool => {
+                // true label must be defined
+                public_arguments.get("true_label")
+                    .ok_or::<Error>("true_label: missing, must be public".into())?.get_arraynd()?;
+
+                data_property.nature = Some(Nature::Categorical(NatureCategorical {
+                    categories: Vector2DJagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
+                }));
+                data_property.nullity = false;
+            },
+            DataType::I64 => {
+                // min must be defined, for imputation of values that won't cast
+                public_arguments.get("min")
+                    .ok_or::<Error>("min: missing, must be public".into())?.get_first_str()
+                    .map_err(prepend("type:"))?;
+                // max must be defined
+                public_arguments.get("max")
+                    .ok_or::<Error>("max: missing, must be public".into())?.get_first_str()
+                    .map_err(prepend("type:"))?;
+                data_property.nature = None;
+                data_property.nullity = false;
+            },
+            DataType::Str => {
+                data_property.nature = None;
+                data_property.nullity = false;
+            },
+            DataType::F64 => {
+                data_property.nature = None;
+                data_property.nullity = true;
+            }
+        };
+
+        Ok(data_property.into())
     }
 
     fn get_names(

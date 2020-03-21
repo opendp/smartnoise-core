@@ -1,40 +1,35 @@
-use yarrow_validator::errors::*;
+use whitenoise_validator::errors::*;
 
 use crate::base::NodeArguments;
-use yarrow_validator::base::{Value, ArrayND, get_argument};
+use whitenoise_validator::base::{Value, get_argument};
 use crate::components::Evaluable;
 use ndarray::{ArrayD, Array};
 use crate::utilities::utilities::get_num_columns;
-use yarrow_validator::proto;
+use whitenoise_validator::proto;
 use crate::components::mean::mean;
-use ndarray::prelude::*;
 
 impl Evaluable for proto::Variance {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        let data = get_argument(&arguments, "data")?.get_arraynd()?.get_f64()?;
-
-        match (arguments.get("by"), arguments.get("categories")) {
-            (Some(by), Some(categories)) => match (by, categories) {
-//                (Value::ArrayND(by), Value::Vector2DJagged(categories)) => match (by, categories) {
-//                    (ArrayND::Bool(by), Vector2DJagged::Bool(categories)) =>
-//                        Ok(Value::Vector2DJagged(Vector2DJagged::F64(variance_grouped(&data, &by, &categories)?))),
-//                    (ArrayND::F64(by), Vector2DJagged::F64(categories)) =>
-//                        Ok(Value::Vector2DJagged(Vector2DJagged::F64(variance_grouped(&data, &by, &categories)?))),
-//                    (ArrayND::I64(by), Vector2DJagged::I64(categories)) =>
-//                        Ok(Value::Vector2DJagged(Vector2DJagged::F64(variance_grouped(&data, by, categories)?))),
-//                    (ArrayND::Str(by), Vector2DJagged::Str(categories)) =>
-//                        Ok(Value::Vector2DJagged(Vector2DJagged::F64(variance_grouped(&data, by, categories)?))),
-//                    _ => return Err("data and by must be ArrayND and categories must be Vector2dJagged".into())
-//                }
-                _ => Err("by must be ArrayND and categories must be Vector2DJagged".into())
-            }
-            (None, None) => Ok(Value::ArrayND(ArrayND::F64(variance(&data)?))),
-            (Some(_by), None) => Err("aggregation's 'by' must be categorically clamped".into()),
-            _ => Err("both by and categories must be defined, or neither".into())
-        }
+        Ok(variance(&get_argument(&arguments, "data")?.get_arraynd()?.get_f64()?.clone())?.into())
     }
 }
 
+/// Calculate estimate of variance for each column in data.
+///
+/// # Arguments
+/// * `data` - Data for which you would like the variance for each column.
+///
+/// # Return
+/// Variance for each column in the data.
+///
+/// # Example
+/// ```
+/// use ndarray::prelude::*;
+/// use whitenoise_runtime::components::variance::variance;
+/// let data = arr2(&[ [1.,10.], [2., 20.], [3., 30.] ]).into_dyn();
+/// let variances = variance(&data).unwrap();
+/// assert!(variances == arr2(&[[1., 100.]]).into_dyn());
+/// ```
 pub fn variance(data: &ArrayD<f64>) -> Result<ArrayD<f64>> {
 
     let means: Vec<f64> = mean(&data)?.iter().map(|v| v.clone()).collect();
@@ -42,7 +37,7 @@ pub fn variance(data: &ArrayD<f64>) -> Result<ArrayD<f64>> {
     // iterate over the generalized columns
     let variances = data.gencolumns().into_iter().zip(means)
         .map(|(column, mean)| column.iter()
-                .fold(0., |sum, v| sum + (v - mean).powi(2)) / column.len() as f64)
+                .fold(0., |sum, v| sum + (v - mean).powi(2)) / (column.len() - 1) as f64)
         .collect::<Vec<f64>>();
 
     let array = match data.ndim() {

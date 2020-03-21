@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package yarrow;
+package whitenoise;
 
 
 message BoolNull {oneof data {bool option = 1;}}
@@ -60,21 +60,35 @@ message ArrayNd {
     repeated uint64 order = 3;
 }
 
-message HashmapString {
+message HashmapStr {
     map<string, Value> data = 1;
+}
+message HashmapBool {
+    map<bool, Value> data = 1;
+}
+message HashmapI64 {
+    map<int64, Value> data = 1;
+}
+
+message Hashmap {
+    oneof variant {
+        HashmapStr string = 1;
+        HashmapBool bool = 2;
+        HashmapI64 i64 = 4;
+    }
 }
 
 // for categorical constraint vectors, categorical releases
 message Array1dOption {
     oneof data {Array1d option = 1;}
 }
+enum DataType {
+    BOOL = 0;
+    I64 = 1;
+    F64 = 2;
+    STRING = 3; 
+}
 message Array2dJagged {
-    enum DataType {
-        BOOL = 0;
-        I64 = 1;
-        F64 = 2;
-        STRING = 3;
-    }
     repeated Array1dOption data = 1;
     DataType data_type = 2;
 }
@@ -84,7 +98,7 @@ message Value {
     oneof data {
         // bytes bytes = 1;
         ArrayNd array_nd = 2;
-        HashmapString hashmap_string = 3;
+        Hashmap hashmap = 3;
         Array2dJagged array_2d_jagged = 4;
     }
 }
@@ -104,7 +118,7 @@ message PrivacyUsage {
     }
 }
 
-message Table {
+message DataSource {
     oneof value {
         string file_path = 1;
         string url_path = 2;

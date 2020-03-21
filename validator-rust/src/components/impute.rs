@@ -11,30 +11,29 @@ use crate::components::{Component, Expandable};
 
 
 use ndarray::Array;
-use crate::base::{Properties, Vector1DNull, Nature, NatureContinuous, Value, NodeProperties, ArrayND, get_constant};
+use crate::base::{Vector1DNull, Nature, NatureContinuous, Value, NodeProperties, ArrayND, get_literal, prepend, ValueProperties};
 
 
 impl Component for proto::Impute {
-    // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
-    ) -> Result<Properties> {
+    ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
-            .ok_or::<Error>("data is a required argument for Impute".into())?.clone();
+            .ok_or("data: missing")?.get_arraynd()
+            .map_err(prepend("data:"))?.clone();
 
         let num_columns = data_property.num_columns
-            .ok_or("number of data columns must be known to check imputation")?;
-
+            .ok_or("data: number of columns missing")?;
         // 1. check public arguments (constant n)
         let impute_minimum = match public_arguments.get("min") {
             Some(min) => min.get_arraynd()?.clone().get_vec_f64(Some(num_columns))?,
 
             // 2. then private arguments (for example from another clamped column)
             None => match properties.get("min") {
-                Some(min) => min.get_min_f64()?,
+                Some(min) => min.get_arraynd()?.get_min_f64()?,
 
                 // 3. then data properties (propagated from prior clamping/min/max)
                 None => data_property
@@ -48,7 +47,7 @@ impl Component for proto::Impute {
 
             // 2. then private arguments (for example from another clamped column)
             None => match properties.get("max") {
-                Some(min) => min.get_max_f64()?,
+                Some(min) => min.get_arraynd()?.get_max_f64()?,
 
                 // 3. then data properties (propagated from prior clamping/min/max)
                 None => data_property
@@ -89,7 +88,7 @@ impl Component for proto::Impute {
             max: Vector1DNull::F64(impute_maximum),
         }));
 
-        Ok(data_property)
+        Ok(data_property.into())
     }
 
     fn get_names(
@@ -101,16 +100,17 @@ impl Component for proto::Impute {
 }
 
 impl Expandable for proto::Impute {
-    fn expand_graph(
+    fn expand_component(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
         properties: &base::NodeProperties,
         component_id: u32,
         maximum_id: u32,
-    ) -> Result<(u32, HashMap<u32, proto::Component>)> {
+    ) -> Result<proto::ComponentExpansion> {
         let mut current_id = maximum_id;
-        let mut graph_expansion: HashMap<u32, proto::Component> = HashMap::new();
+        let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
+        let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
 
         let mut component = component.clone();
 
@@ -118,8 +118,10 @@ impl Expandable for proto::Impute {
             current_id += 1;
             let id_min = current_id.clone();
             let value = Value::ArrayND(ArrayND::F64(
-                Array::from(properties.get("data").unwrap().to_owned().get_min_f64()?).into_dyn()));
-            graph_expansion.insert(id_min.clone(), get_constant(&value, &component.batch));
+                Array::from(properties.get("data").unwrap().to_owned().get_arraynd()?.get_min_f64()?).into_dyn()));
+            let (patch_node, release) = get_literal(&value, &component.batch)?;
+            computation_graph.insert(id_min.clone(), patch_node);
+            releases.insert(id_min.clone(), release);
             component.arguments.insert("min".to_string(), id_min);
         }
 
@@ -127,12 +129,20 @@ impl Expandable for proto::Impute {
             current_id += 1;
             let id_max = current_id.clone();
             let value = Value::ArrayND(ArrayND::F64(
-                Array::from(properties.get("data").unwrap().to_owned().get_max_f64()?).into_dyn()));
-            graph_expansion.insert(id_max, get_constant(&value, &component.batch));
+                Array::from(properties.get("data").unwrap().to_owned().get_arraynd()?.get_max_f64()?).into_dyn()));
+            let (patch_node, release) = get_literal(&value, &component.batch)?;
+            computation_graph.insert(id_max.clone(), patch_node);
+            releases.insert(id_max.clone(), release);
             component.arguments.insert("max".to_string(), id_max);
         }
 
-        graph_expansion.insert(component_id, component);
-        Ok((current_id, graph_expansion))
+        computation_graph.insert(component_id, component);
+
+        Ok(proto::ComponentExpansion {
+            computation_graph,
+            properties: HashMap::new(),
+            releases,
+            traversal: Vec::new()
+        })
     }
 }

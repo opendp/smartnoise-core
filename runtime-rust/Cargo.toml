@@ -1,5 +1,5 @@
 [package]
-name = "yarrow_runtime"
+name = "whitenoise_runtime"
 version = "0.1.0"
 authors = ["Shoeboxam <shoeboxam@gmail.com>"]
 edition = "2018"
@@ -17,20 +17,18 @@ ndarray = "0.13.0"
 ndarray-stats = "0.3.0"
 ffi-support = "0.3.5"
 ieee754 = "0.2"
-rug = "0.6.0"
+rug = "1.7.0"
 rand = "0.7.3"
-yarrow_validator = {path = "../validator-rust"}
+whitenoise_validator = {path = "../validator-rust"}
 itertools = "0.8.2"
 error-chain = "0.12.2"
 noisy_float = "0.1.12"
+
 
 [build-dependencies]
 prost-build = "0.5.0"
 cbindgen = "0.9.1"
 
 [lib]
-name = "yarrow_runtime"
+name = "whitenoise_runtime"
 crate-type = ["rlib","cdylib"]
-
-[profile.release]
-debug = true

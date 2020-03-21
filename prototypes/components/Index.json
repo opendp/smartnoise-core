@@ -3,18 +3,16 @@
     "data": {
       "nature": null,
       "type": "Hashmap"
+    },
+    "columns": {
+      "type": "Array"
     }
   },
   "id": "Index",
   "name": "index",
-  "options": {
-    "path": {
-      "type": "repeated string"
-    }
-  },
+  "options": {},
   "return": {
     "nature": null,
     "type": "Array"
-  },
-  "docstring": "index step"
+  }
 }

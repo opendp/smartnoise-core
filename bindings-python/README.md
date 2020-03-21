@@ -4,7 +4,7 @@
     
     python3 -m pip install -r requirements.txt
 
-2. install yarrow (rerun when binaries or proto are updated)
+2. install WhiteNoise Core (rerun when binaries or proto are updated)
 
 
     pip install -e .

@@ -1,12 +1,12 @@
-use yarrow_validator::errors::*;
+use whitenoise_validator::errors::*;
 
 use crate::components::Evaluable;
-use yarrow_validator::base::{Value, ArrayND, Vector2DJagged, standardize_numeric_argument, standardize_categorical_argument, standardize_weight_argument, standardize_null_argument, get_argument};
+use whitenoise_validator::base::{Value, ArrayND, Vector2DJagged, standardize_numeric_argument, standardize_categorical_argument, standardize_weight_argument, standardize_null_argument, get_argument};
 use crate::base::NodeArguments;
 use crate::utilities::{noise, utilities};
 use ndarray::{ArrayD};
 use crate::utilities::utilities::get_num_columns;
-use yarrow_validator::proto;
+use whitenoise_validator::proto;
 
 
 impl Evaluable for proto::Impute {
@@ -14,41 +14,49 @@ impl Evaluable for proto::Impute {
         let uniform: String = "Uniform".to_string(); // Distributions
         let gaussian: String = "Gaussian".to_string();
 
+        // if categories argument is not None, treat data as categorical (regardless of atomic type)
         if arguments.contains_key("categories") {
             match (get_argument(&arguments, "data")?, get_argument(&arguments, "categories")?, get_argument(&arguments, "probabilities")?, get_argument(&arguments, "null")?) {
                 (Value::ArrayND(data), Value::Vector2DJagged(categories), Value::Vector2DJagged(probabilities), Value::Vector2DJagged(nulls)) => Ok(match (data, categories, probabilities, nulls) {
                     (ArrayND::Bool(data), Vector2DJagged::Bool(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::Bool(nulls)) =>
-                        Value::ArrayND(ArrayND::Bool(impute_categorical(&data, &categories, &probabilities, &nulls)?)),
+                        impute_categorical(&data, &categories, &probabilities, &nulls)?.into(),
                     (ArrayND::F64(data), Vector2DJagged::F64(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::F64(nulls)) =>
-                        Value::ArrayND(ArrayND::F64(impute_categorical(&data, &categories, &probabilities, &nulls)?)),
+                        impute_categorical(&data, &categories, &probabilities, &nulls)?.into(),
                     (ArrayND::I64(data), Vector2DJagged::I64(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::I64(nulls)) =>
-                        Value::ArrayND(ArrayND::I64(impute_categorical(&data, &categories, &probabilities, &nulls)?)),
+                        impute_categorical(&data, &categories, &probabilities, &nulls)?.into(),
                     (ArrayND::Str(data), Vector2DJagged::Str(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::Str(nulls)) =>
-                        Value::ArrayND(ArrayND::Str(impute_categorical(&data, &categories, &probabilities, &nulls)?)),
+                        impute_categorical(&data, &categories, &probabilities, &nulls)?.into(),
                     _ => return Err("types of data, categories, and null must be consistent and probabilities must be f64".into())
                 }),
                 _ => return Err("data and null must be ArrayND, categories and probabilities must be Vector2DJagged".into())
             }
-        } else {
+        }
+        // if categories argument is None, treat data as continuous
+        else {
+            // get specified data distribution for imputation -- default to Uniform if no valid distribution is provided
             let distribution = match get_argument(&arguments, "distribution") {
                 Ok(distribution) => distribution.get_first_str()?,
                 Err(_) => "Uniform".to_string()
             };
 
             match &distribution.clone() {
+                // if specified distribution is uniform, identify whether underlying data are of atomic type f64 or i64
+                // if f64, impute uniform values
+                // if i64, no need to impute (numeric imputation replaces only f64::NAN values, which are not defined for the i64 type)
                 x if x == &uniform => {
                     return Ok(match (get_argument(&arguments, "data")?, get_argument(&arguments, "min")?, get_argument(&arguments, "max")?) {
                         (Value::ArrayND(data), Value::ArrayND(min), Value::ArrayND(max)) => match (data, min, max) {
                             (ArrayND::F64(data), ArrayND::F64(min), ArrayND::F64(max)) =>
-                                Value::ArrayND(ArrayND::F64(impute_float_uniform(&data, &min, &max)?)),
+                                impute_float_uniform(&data, &min, &max)?.into(),
                             (ArrayND::I64(data), ArrayND::I64(_min), ArrayND::I64(_max)) =>
                                 // continuous integers are already non-null
-                                Value::ArrayND(ArrayND::I64(data.clone())),
+                                data.clone().into(),
                             _ => return Err("data, min, and max must all be the same type".into())
                         },
                         _ => return Err("data, min, max, shift, and scale must be ArrayND".into())
                     })
                 },
+                // if specified distribution is Gaussian, get necessary arguments and impute
                 x if x == &gaussian => {
                     let data = get_argument(&arguments, "data")?.get_arraynd()?.get_f64()?;
                     let min = get_argument(&arguments, "min")?.get_arraynd()?.get_f64()?;
@@ -56,7 +64,7 @@ impl Evaluable for proto::Impute {
                     let scale = get_argument(&arguments, "scale")?.get_arraynd()?.get_f64()?;
                     let shift = get_argument(&arguments, "shift")?.get_arraynd()?.get_f64()?;
 
-                    return Ok(Value::ArrayND(ArrayND::F64(impute_float_gaussian(&data, &min, &max, &shift, &scale)?)));
+                    return Ok(impute_float_gaussian(&data, &min, &max, &shift, &scale)?.into());
 
                 },
                 _ => return Err("Distribution not supported".into())
@@ -65,30 +73,28 @@ impl Evaluable for proto::Impute {
     }
 }
 
-
-
-/// Given data and min/max values, returns data with imputed values in place of NaN.
-/// For now, imputed values are generated uniformly at random between the min and max values provided,
+/// Returns data with imputed values in place of `f64::NAN`.
+/// Values are imputed from a uniform distribution.
 ///
 /// # Arguments
-/// * `data` - data for which you would like to impute the NaN values
-/// * `min` - lower bound on imputation range
-/// * `max` - upper bound on imputation range
+/// * `data` - Data for which you would like to impute the `NAN` values.
+/// * `min` - Lower bound on imputation range for each column.
+/// * `max` - Upper bound on imputation range for each column.
 ///
 /// # Return
-/// array of data with imputed values
+/// Data with `NAN` values replaced with imputed values.
 ///
 /// # Example
 /// ```
 /// use ndarray::prelude::*;
-/// use yarrow_runtime::utilities::transformations::impute_float_uniform;
+/// use whitenoise_runtime::components::impute::impute_float_uniform;
 /// use core::f64::NAN;
 ///
-/// let data: ArrayD<f64> = arr1(&[1., NAN, 3., NAN]).into_dyn();
-/// let min: f64 = 0.;
-/// let max: f64 = 10.;
-/// let imputed: ArrayD<f64> = impute_float_uniform(&data, &min, &max)?;
-/// println!("{:?}", imputed);
+/// let data: ArrayD<f64> = arr2(&[ [1., NAN, 3., NAN], [2., 2., NAN, NAN] ]).into_dyn();
+/// let min: ArrayD<f64> = arr1(&[0., 2., 3., 4.]).into_dyn();
+/// let max: ArrayD<f64> = arr1(&[10., 2., 5., 5.]).into_dyn();
+/// let imputed = impute_float_uniform(&data, &min, &max);
+/// # imputed.unwrap();
 /// ```
 
 pub fn impute_float_uniform(data: &ArrayD<f64>, min: &ArrayD<f64>, max: &ArrayD<f64>) -> Result<ArrayD<f64>> {
@@ -117,31 +123,31 @@ pub fn impute_float_uniform(data: &ArrayD<f64>, min: &ArrayD<f64>, max: &ArrayD<
     Ok(data)
 }
 
-/// Given data and min/max values, returns data with imputed values in place of NaN.
-/// For now, imputed values are generated uniformly at random between the min and max values provided,
+/// Returns data with imputed values in place of `f64::NAN`.
+/// Values are imputed from a truncated Gaussian distribution.
 ///
 /// # Arguments
-/// * `data` - data for which you would like to impute the NaN values
-/// * `shift` - the mean of the untruncated gaussian noise distribution
-/// * `scale` - the standard deviation of the untruncated gaussian noise distribution
-/// * `min` - lower bound on imputation range
-/// * `max` - upper bound on imputation range
+/// * `data` - Data for which you would like to impute the `NAN` values.
+/// * `shift` - The mean of the untruncated Gaussian noise distribution for each column.
+/// * `scale` - The standard deviation of the untruncated Gaussian noise distribution for each column.
+/// * `min` - Lower bound on imputation range for each column.
+/// * `max` - Upper bound on imputation range for each column.
 ///
 /// # Return
-/// array of data with imputed values
+/// Data with `NAN` values replaced with imputed values.
 ///
 /// # Example
 /// ```
 /// use ndarray::prelude::*;
-/// use yarrow_runtime::utilities::transformations::impute_float_gaussian;
+/// use whitenoise_runtime::components::impute::impute_float_gaussian;
 /// use core::f64::NAN;
 /// let data: ArrayD<f64> = arr1(&[1., NAN, 3., NAN]).into_dyn();
-/// let shift: f64 = 5.0;
-/// let scale: f64 = 7.0;
-/// let min: f64 = 0.0;
-/// let max: f64 = 10.0;
-/// let imputed: ArrayD<f64> = impute_float_gaussian(&data, &shift, &scale, &min, &max)?;
-/// println!("{:?}", imputed);
+/// let min: ArrayD<f64> = arr1(&[0.0]).into_dyn();
+/// let max: ArrayD<f64> = arr1(&[10.0]).into_dyn();
+/// let shift: ArrayD<f64> = arr1(&[5.0]).into_dyn();
+/// let scale: ArrayD<f64> = arr1(&[7.0]).into_dyn();
+/// let imputed = impute_float_gaussian(&data, &min, &max, &shift, &scale);
+/// # imputed.unwrap();
 /// ```
 pub fn impute_float_gaussian(data: &ArrayD<f64>, min: &ArrayD<f64>, max: &ArrayD<f64>, shift: &ArrayD<f64>, scale: &ArrayD<f64>) -> Result<ArrayD<f64>> {
 
@@ -171,6 +177,36 @@ pub fn impute_float_gaussian(data: &ArrayD<f64>, min: &ArrayD<f64>, max: &ArrayD
     Ok(data)
 }
 
+/// Returns data with imputed values in place on `null_value`.
+///
+/// # Arguments
+/// * `data` - The data to be resized.
+/// * `categories` - For each data column, the set of possible values for elements in the column.
+/// * `weights` - For each data column, weights for each category to be used when imputing null values.
+/// * `null_value` - For each data column, the value of the data to be considered NULL.
+///
+/// # Return
+/// Data with `null_value` values replaced with imputed values.
+///
+/// # Example
+/// ```
+/// use ndarray::prelude::*;
+/// use whitenoise_runtime::components::impute::impute_categorical;
+/// let data: ArrayD<String> = arr2(&[["a".to_string(), "b".to_string(), "null_3".to_string()],
+///                                   ["c".to_string(), "null_2".to_string(), "a".to_string()]]).into_dyn();
+/// let categories: Vec<Option<Vec<String>>> = vec![Some(vec!["a".to_string(), "c".to_string()]),
+///                                                 Some(vec!["b".to_string(), "d".to_string()]),
+///                                                 Some(vec!["f".to_string()])];
+/// let weights: Vec<Option<Vec<f64>>> = vec![Some(vec![1., 1.]),
+///                                           Some(vec![1., 2.]),
+///                                           Some(vec![1.])];
+/// let null_value: Vec<Option<Vec<String>>> = vec![Some(vec!["null_1".to_string()]),
+///                                                 Some(vec!["null_2".to_string()]),
+///                                                 Some(vec!["null_3".to_string()])];
+///
+/// let imputed = impute_categorical(&data, &categories, &weights, &null_value);
+/// # imputed.unwrap();
+/// ```
 pub fn impute_categorical<T>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>,
                              weights: &Vec<Option<Vec<f64>>>, null_value: &Vec<Option<Vec<T>>>)
                              -> Result<ArrayD<T>> where T:Clone, T:PartialEq, T:Default {

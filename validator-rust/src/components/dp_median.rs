@@ -8,8 +8,8 @@ use crate::hashmap;
 use crate::components::{Component, Accuracy, Expandable, Report};
 
 
-use crate::base::{Properties, NodeProperties, Value};
-use crate::utilities::json::{JSONRelease};
+use crate::base::{NodeProperties, Value, ValueProperties, prepend};
+use crate::utilities::json::{JSONRelease, value_to_json, privacy_usage_to_json, AlgorithmInfo};
 
 
 
@@ -17,10 +17,10 @@ impl Component for proto::DpMedian {
     fn propagate_property(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
-        public_arguments: &HashMap<String, Value>,
-        properties: &base::NodeProperties,
-    ) -> Result<Properties> {
-        Err("DPMedian is ethereal, and has no property propagation".into())
+        _public_arguments: &HashMap<String, Value>,
+        _properties: &base::NodeProperties,
+    ) -> Result<ValueProperties> {
+        Err("DPMedian is abstract, and has no property propagation".into())
     }
 
     fn get_names(
@@ -32,21 +32,21 @@ impl Component for proto::DpMedian {
 }
 
 impl Expandable for proto::DpMedian {
-    fn expand_graph(
+    fn expand_component(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
         _properties: &base::NodeProperties,
         component_id: u32,
         maximum_id: u32,
-    ) -> Result<(u32, HashMap<u32, proto::Component>)> {
+    ) -> Result<proto::ComponentExpansion> {
         let mut current_id = maximum_id.clone();
-        let mut graph_expansion: HashMap<u32, proto::Component> = HashMap::new();
+        let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
 
         // median
         current_id += 1;
         let id_median = current_id.clone();
-        graph_expansion.insert(id_median, proto::Component {
+        computation_graph.insert(id_median, proto::Component {
             arguments: hashmap!["data".to_owned() => *component.arguments.get("data").unwrap()],
             variant: Some(proto::component::Variant::from(proto::Quantile {
                 quantile: 0.5
@@ -58,7 +58,7 @@ impl Expandable for proto::DpMedian {
         let id_candidates = component.arguments.get("candidates").unwrap().clone();
 
         // sanitizing
-        graph_expansion.insert(component_id, proto::Component {
+        computation_graph.insert(component_id, proto::Component {
             arguments: hashmap!["data".to_owned() => id_median, "candidates".to_owned() => id_candidates],
             variant: Some(proto::component::Variant::from(proto::ExponentialMechanism {
                 privacy_usage: self.privacy_usage.clone()
@@ -67,7 +67,12 @@ impl Expandable for proto::DpMedian {
             batch: component.batch,
         });
 
-        Ok((current_id, graph_expansion))
+        Ok(proto::ComponentExpansion {
+            computation_graph,
+            properties: HashMap::new(),
+            releases: HashMap::new(),
+            traversal: vec![id_median]
+        })
     }
 }
 
@@ -90,14 +95,54 @@ impl Accuracy for proto::DpMedian {
     }
 }
 
+
 impl Report for proto::DpMedian {
     fn summarize(
         &self,
-        _node_id: &u32,
-        _component: &proto::Component,
-        _properties: &NodeProperties,
-        _release: &Value
-    ) -> Option<Vec<JSONRelease>> {
-        None
+        node_id: &u32,
+        component: &proto::Component,
+        _public_arguments: &HashMap<String, Value>,
+        properties: &NodeProperties,
+        release: &Value,
+    ) -> Result<Option<Vec<JSONRelease>>> {
+        let data_property = properties.get("data")
+            .ok_or("data: missing")?.get_arraynd()
+            .map_err(prepend("data:"))?.clone();
+
+        let mut releases = Vec::new();
+
+        let minimums = data_property.get_min_f64().unwrap();
+        let maximums = data_property.get_max_f64().unwrap();
+
+        for column_number in 0..data_property.num_columns.unwrap() {
+            let mut release_info = HashMap::new();
+            release_info.insert("mechanism".to_string(), serde_json::json!(self.implementation.clone()));
+            release_info.insert("releaseValue".to_string(), value_to_json(&release).unwrap());
+
+            let release = JSONRelease {
+                description: "DP release information".to_string(),
+                statistic: "DPMedian".to_string(),
+                variables: vec![],
+                release_info,
+                privacy_loss: privacy_usage_to_json(&self.privacy_usage[column_number as usize].clone()),
+                accuracy: None,
+                batch: component.batch as u64,
+                node_id: node_id.clone() as u64,
+                postprocess: false,
+                algorithm_info: AlgorithmInfo {
+                    name: "".to_string(),
+                    cite: "".to_string(),
+                    argument: serde_json::json!({
+                        "constraint": {
+                            "lowerbound": minimums[column_number as usize],
+                            "upperbound": maximums[column_number as usize]
+                        }
+                    }),
+                },
+            };
+
+            releases.push(release);
+        }
+        Ok(Some(releases))
     }
 }

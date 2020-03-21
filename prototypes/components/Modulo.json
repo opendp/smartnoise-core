@@ -11,16 +11,29 @@
         "continuous"
       ],
       "type": "Array"
+    },
+    "min": {
+      "nature": [
+        "continuous"
+      ],
+      "type": "Array",
+      "default": "None"
+    },
+    "max": {
+      "nature": [
+        "continuous"
+      ],
+      "type": "Array",
+      "default": "None"
     }
   },
-  "id": "Modulus",
-  "name": "modulus",
+  "id": "Modulo",
+  "name": "modulo",
   "options": {},
   "return": {
     "nature": [
       "continuous"
     ],
     "type": "Array"
-  },
-  "docstring": "modulus step"
+  }
 }

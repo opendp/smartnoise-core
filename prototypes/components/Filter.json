@@ -1,0 +1,27 @@
+{
+  "arguments": {
+    "data": {
+      "nature": [
+        "continuous"
+      ],
+      "type": "Array",
+      "description": "Data to be filtered."
+    },
+    "mask": {
+      "nature": [],
+      "type": "Array",
+      "description": "Boolean mask giving whether or not each row should be kept."
+    }
+  },
+  "id": "Filter",
+  "name": "filter",
+  "options": {},
+  "return": {
+    "nature": [
+      "continuous"
+    ],
+    "type": "Array",
+    "description": "Data with only the desired rows."
+  },
+  "description": "Filters data down into only the desired rows."
+}
