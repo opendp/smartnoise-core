@@ -27,7 +27,7 @@
 
 \begin{definition}
 Let sample variance be defined as
-$$ s^2 = \frac{1}{n-1} \sum_{i=1}^n (x_i - \mean)^2,$$
+$$ s^2(x) = \frac{1}{n-1} \sum_{i=1}^n (x_i - \mean)^2,$$
 where $\mean$ refers to the sample mean of $x$.
 \end{definition}
 
@@ -54,7 +54,7 @@ $$ \sum_{i=1}^n (x_i - a)^2 = \sum_{i=1}^n (x_i - \bar{x})^2 + n(a-\bar{x})^2.$$
 \begin{theorem}
 Let
 $$ f(\x) = \sum_{i=1}^n (x_i - \bar{x})^2.$$
-Then for $\x$ bounded between $m$ and $M,$ $f$ has sensitivity bounded above by
+Then for $\x$ bounded between $m$ and $M,$ $f(\cdot)$ has $\ell_1$-sensitivity in the change-one model bounded above by
 $$\frac{n-1}{n} (M-m)^2.$$
 \end{theorem}
 
@@ -91,29 +91,27 @@ Now, to bound the sensitivity of $f$, note that
 \end{align}
 The bound in the final line follows from the case where $x_{n+1} = M$ (resp. $m$) and $\bar{x} = x'_{n+1} = m$ (resp. $M$). \newline
 
-So we have a bound on the sensitivity of $f$ for a data set of size $n+1$, but traditionally we consider sensitivities
-on a data set of size $n$.
+So we have a bound on the sensitivity of $f(\cdot)$ for a data set of size $n+1$. Traditionally we consider sensitivities on a data set of size $n$.
 Redefining $n+1$ as $n$ in the above equation gives
 $$ (M-m)^2 \frac{n-1}{n}. $$
 \end{proof}
 
 \begin{corollary}
-Sample variance has sensitivity bounded above by
+Sample variance has $\ell_1$-sensitivity in the change-one model bounded above by
 $$ \frac{(M-m)^2 }{n}. $$
 \end{corollary}
 
 \subsection{$\ell_2$-sensitivity}
 \begin{theorem}
-	Let $X$ be a data set with $n$ elements, $x_1, \hdots, x_n$ and
+	Let $X$ be a data set with $n$ elements, $x_1, \hdots, x_n$ and let
 	\[ f(X) = \sum_{i=1}^n (x_i - \bar{x})^2 \]
 	be the sample variance.
-	For $X$ bounded between $m$ and $M,$ $f$ has a global sensitivity of
+	For $X$ bounded between $m$ and $M,$ $f(\cdot)$ has a global sensitivity of
 	\[ \left( \frac{n-1}{n} (M-m)^2 \right)^2 \]
 \end{theorem}
 
 \begin{proof}
-	We can pick up from statement~\ref{eq:l1_np1_bound}, switching from $\ell_1$ to $\ell_2$ norm and interpreting
-	the data sets in question to be of size $n$ rather than $n+1$.
+	We can pick up from statement~\ref{eq:l1_np1_bound}, switching from an $\ell_1$ to an $\ell_2$ norm and interpreting the data sets in question to be of size $n$ rather than $n+1$.
 	\begin{align*}
 		(f(x') - f(x''))^2
 			&= \left( (x_{n}-\bar{x})^2 \frac{n-1}{n} - (x_{n}'-\bar{x})^2 \frac{n-1}{n} \right)^2 \\
@@ -124,13 +122,18 @@ $$ \frac{(M-m)^2 }{n}. $$
 	\end{align*}
 \end{proof}
 
+\begin{corollary}
+Sample variance has $\ell_2$-sensitivity in the change-one model bounded above by
+$$ \left(\frac{1}{n} (M-m)^2\right)^2.$$ 
+\end{corollary}
+
 \section{Neighboring Definition: Add/Drop One}
 \subsection{$\ell_1$-sensitivity}
  \begin{theorem}
  \label{thm:l1addsub}
  	Let $X$ be a data set with $n$ elements, $x_1, \hdots, x_n$ and
  	\[ f(X) = \sum_{i=1}^n (x_i - \bar{X})^2. \]
- 	For $X$ bounded between $m$ and $M,$ $f$ has a global sensitivity of
+ 	For $X$ bounded between $m$ and $M,$ $f(\cdot)$ has a global $\ell_1$-sensitivity in the add/drop one model of
  	\[ \frac{n}{n+1} (M-m)^2 \]
  \end{theorem}
 
@@ -180,7 +183,7 @@ $$ \frac{(M-m)^2 }{n}. $$
 
  \begin{corollary}
  \label{cor:l1addsub}
-	Sample variance has $\ell_1$ sensitivity bounded above by
+	Sample variance has $\ell_1$-sensitivity in the add/drop one model bounded above by
 	$$\left( M-m \right)^2 \frac{n}{n^2 - 1}. $$
  \end{corollary}
  
@@ -193,7 +196,7 @@ $$ \frac{(M-m)^2 }{n}. $$
 \subsection{$\ell_2$-sensitivity}
 
 \begin{theorem}
-Sample variance has $\ell_2$ sensitivity bounded above by
+Sample variance has $\ell_2$-sensitivity in the add/drop one model bounded above by
 	$$ \left( \left( M-m \right)^2 \frac{n}{n^2 - 1} \right)^2.$$
 \end{theorem}
 \begin{proof}
