@@ -49,12 +49,10 @@ $\tilde{X} = (\tilde{x}_1, \hdots, \tilde{x}_n)$ is the sorted version of $X$.
 \end{theorem}
 
 \begin{proof}
-	First consider the case where $n$ is such that $n \equiv 0 \pmod{2}$. Then our worst-case scenario is that exactly
-	half of the data elements in $X$ are $m$ and the other half are $M$. In this case,
+	First consider the case where $n$ is such that $n \equiv 0 \pmod{2}$. Then our worst-case scenario is that exactly half of the data elements in $X$ are $m$ and the other half are $M$. In this case,
 	$f(X) = \frac{m + M}{2}$. \newline
 
-	Now consider an $X'$ which is identical to $X$ but with one element switched from
-	$m$ to $M$ WLOG.\footnote{The result holds if it is switched from $M$ to $m$.}
+	Now consider an $X'$ which is identical to $X$ but with one additional element with value $M$.\footnote{The result holds if it is switched from $M$ to $m$.}
 	Then we have that $f(X') = M$. Because we are looking at our worst-case pairing of $X,X'$,
 	we know that
 	\[ \Delta f(\cdot) = \max_{X,X'} |f(X') - f(X)| = \big\vert M - \frac{m+M}{2} \big\vert = \frac{M-m}{2}. \]
@@ -92,7 +90,38 @@ $\tilde{X} = (\tilde{x}_1, \hdots, \tilde{x}_n)$ is the sorted version of $X$.
 % l1 sensitivity
 \subsection{$\ell_1$-sensitivity}
 
+\begin{theorem}
+Let the database $X$ have elements bounded above by $M$ and below by $m$. Then the global $\ell_1$-sensitivity in the add/drop-one model of the median is
+$$ \Delta f(\cdot) = \frac{M-m}{2}.$$
+\end{theorem}
+
+\begin{proof}
+
+First consider the case where $n$ is such that $n \equiv 0 \pmod{2}$. Then our worst-case scenario is that exactly half of the data elements in $X$ are $m$ and the other half are $M$. In this case, $f(X) = \frac{m + M}{2}$. \\
+
+Now consider an $X'$ which is identical to $X$ but with a single additional element $M$.Then $f(X') = M$. Note that if instead $X'$ was identical to $X$ with a single element \textit{removed}, the worst case is that a single $m$ is removed and again $f(X') = M$.\footnote{The results holds if the point added/removed is switched from $M$ to $m$.}  In either case,
+$$ \left\vert f(X') - f(X) \right\vert = \left\vert M - \frac{M-m}{2} \right\vert = \frac{M-m}{2}.$$
+
+Now consider the case where $n$ is such that $n \equiv 1 \pmod{2}$.
+Then our worst-case scenario is that $\frac{n-1}{2}$ of the elements of $X$ are $m$, and $\frac{n+1}{2}$ of the elements of $X$ are $M$ (WLOG). In this setting, $f(X) = M$. Let $X'$ be identical to $x$ but with one element $m$ added. Then $f(X') = \frac{M-m}{2}$. Note that if instead $X'$ was identical to $X$ with a single element removed, the worst case is that a single $M$ is removed and again $f(X') = \frac{M-m}{2}$ (WLOG). In either case, 
+
+$$ \left\vert f(X) - f(X') \right\vert = \left\vert M - \frac{M-m}{2} \right\vert = \frac{M-m}{2}.$$ 
+
+So, in general, 
+
+$$ \Delta f(\cdot) = \max_{X,X'} \left\vert f(X') - f(X) \right\vert = \frac{M-m}{2}. $$
+\end{proof}
+
 % l2 sensitivity
 \subsection{$\ell_2$-sensitivity}
 
+\begin{theorem}
+Let the database $X$ have elements bounded above by $M$ and below by $m$. Then the global $\ell_2$-sensitivity in the add/drop-one model of the median is
+$$ \Delta f(\cdot) = \left(\frac{M-m}{2}\right)^2.$$
+\end{theorem}
+
+\begin{proof}
+The logic follows exactly from the proof of the $\ell_1$ sensitivity, just with the norm switched from 1 to 2.
+
+\end{proof}
 \end{document}
