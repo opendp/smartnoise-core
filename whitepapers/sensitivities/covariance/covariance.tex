@@ -110,7 +110,7 @@ The $\ell_1$-sensitivity of $f(\cdot)$ is bounded by
 
 Adding a point:
 \begin{align}
-\label{eq:l1boundabove}
+\label{eq:addone}
 \left\vert f_{ij}(X') - f_{ij}(X) \right\vert &= \left\vert n(\bar{X}_i - \bar{X}_i')(\bar{X}_j - \bar{X}_j') + (y_i - \bar{X}_i)(y_j - \bar{X}_j) \right\vert \hspace{1cm} \text{(By Lemma \ref{cov:rewrite})} \nonumber\\
 	&\le  n \left\vert (\bar{X}_i - \bar{X}_i')(\bar{X}_j - \bar{X}_j') \right\vert + \left\vert (y_i - \bar{X}_i)(y_j - \bar{X}_j) \right\vert \nonumber\\
 	&\le \frac{n}{(n+1)^2} (M_i - m_i)(M_j - m_j) + \frac{n^2}{(n+1)^2} (M_i - m_i)(M_j - m_j) \nonumber	\\
@@ -130,7 +130,7 @@ and
 $$ \left\vert (y_i - \bar{X}_i')(y_j - \bar{X}_j') \right\vert \le \frac{(n-1)^2}{n^2}(M_i - m_i)(M_j - m_j).$$
 Then,
 \begin{align}
-\label{eq:l1boundbelow}
+\label{eq:subone}
 \left\vert f_{ij}(X) - f_{ij}(X') \right\vert &= \left\vert (n-1)(\bar{X}_i' - \bar{X}_i)(\bar{X}_j' - \bar{X}_j) + (y_i - \bar{X}_i')(y_j - \bar{X}_j') \right\vert, \nonumber\\
 	&\le  \left\vert (n-1)(\bar{X}_i' - \bar{X}_i)(\bar{X}_j' - \bar{X}_j) \right\vert + \left\vert(y_i - \bar{X}_i')(y_j - \bar{X}_j') \right\vert, \nonumber\\
 	&\le \frac{n-1}{n^2} (M_i - m_i)(M_j - m_j) + \frac{(n-1)^2}{n^2}(M_i - m_i)(M_j - m_j), \nonumber\\
@@ -155,12 +155,13 @@ $$ \frac{n}{(n^2-1)}(M_i - m_i)(M_j - m_j).$$
 \subsection{$\ell_2$-sensitivity}
 
 \begin{theorem}
-Sample covariance has $\ell_2$ sensitivity bounded above by 
+$f(\cdot)$ has $\ell_2$ sensitivity bounded above by 
 $$\left(\frac{n}{(n^2-1)}(M_i - m_i)(M_j - m_j)\right)^2.$$
 \end{theorem}
 
 \begin{proof}
-% I think I maybe have to be a bit more careful about this? too tired to think through it right now. 
+% note you can also do this directly by squaring the bounds and bounding the central term. I can add that in but it's just a lot of cluttered arithmetic. 
+This follows from the bounds in Equations \ref{eq:addone} and \ref{eq:subone} and the inequality in Equation \ref{ineq}.
 \end{proof}
 
 \section{Neighboring Definition: Change One}
