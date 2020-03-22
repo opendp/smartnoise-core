@@ -147,7 +147,7 @@ $$ \frac{(M-m)^2 }{n}. $$
 
 	\begin{align}
 	\label{eq:L1add}
-	\left\vert f(x') - f(x) \right\vert &= \left\vert f(x) + (x_{n+1} - \bar{x})^2 \frac{n}{n+1} - f(x) \right\vert \nonumber\\
+	\left\vert f(x') - f(x) \right\vert &= \left\vert (x_{n+1} - \bar{x})^2 \frac{n}{n+1} \right\vert \nonumber\\
 		&= \left\vert (x_{n+1} - \bar{x})^2 \frac{n}{n+1} \right\vert \nonumber \\
 		&\le \left( M-m \right)^2 \frac{n}{n+1} 
 	\end{align}
@@ -159,7 +159,7 @@ $$ \frac{(M-m)^2 }{n}. $$
 	Then,
 	\begin{align}
 	\label{eq:L1sub}
-	\left\vert f(x) - f(x') \right\vert &= \left\vert f(x') + (x_n - \bar{x}')^2 \frac{n-1}{n} - f(x') \right\vert \nonumber\\
+	\left\vert f(x) - f(x') \right\vert &= \left\vert (x_n - \bar{x}')^2 \frac{n-1}{n} \right\vert \nonumber\\
 		&\le (M-m)^2 \frac{n-1}{n},\\
 	\end{align}
 
@@ -186,7 +186,7 @@ $$ \frac{(M-m)^2 }{n}. $$
  
  \begin{proof}
  Define $f$ as in the statement of Theorem \ref{thm:l1addsub}. Note that sample variance is equal to 
- $$ \frac{f(x)}{n-1} $$. Then, from the bound in Equation \ref{eq:fBoundaddsub} it follows that the sensitivity of the sample variance is bounded from above by 
+ $f(x)/(n-1)$. Then, from the bound in Equation \ref{eq:fBoundaddsub} it follows that the sensitivity of the sample variance is bounded from above by 
  $$ \left( M-m \right)^2 \frac{n}{(n-1)(n + 1)} = \left( M-m \right)^2 \frac{n}{n^2 - 1}. $$
  \end{proof}
 
@@ -197,7 +197,7 @@ Sample variance has $\ell_2$ sensitivity bounded above by
 	$$ \left( \left( M-m \right)^2 \frac{n}{n^2 - 1} \right)^2.$$
 \end{theorem}
 \begin{proof}
-From the bounds in Equations \ref{eq:L1add} and \ref{eq:L1sub} and the inequality for $n \ge 1$ in Equation \ref{ineq}, because the bounds in Equations \ref{eq:L1add} and \ref{eq:L1sub} are positive it follows that the $\ell_2$ sensitivity of the variance is bounded by 
+Because the bounds in Equations \ref{eq:L1add} and \ref{eq:L1sub} are positive, they hold for their square. Then, by the inequality for $n \ge 1$ in Equation \ref{ineq} it follows that the $\ell_2$ sensitivity of the variance is bounded by 
 $$
 \left( \left( M-m \right)^2 \frac{n}{n^2 - 1} \right)^2,
 $$
