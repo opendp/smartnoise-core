@@ -106,7 +106,7 @@ Note that
 \begin{theorem}
 Let $X$ be a matrix of values and let $X_i$ indicate the $i^{\text{th}}$ column of the matrix. Let
 $$ f_{ij} (X)= \sum_{k=1}^n (x_{ki} - \bar{X}_i)(x_{kj} - \bar{X}_j).$$
-Say that the space of datapoints $\mathcal{X}_i$ that $X_i$ is drawn from is bounded above by $M_i$ and bounded below by $m_i$. Then the $\ell_1$-sensitivity of $f(\cdot)$ is bounded above by
+Say that the space of datapoints $\mathcal{X}_i$ that $X_i$ is drawn from is bounded above by $M_i$ and bounded below by $m_i$. Then the $\ell_1$-sensitivity in the add/drop-one model of $f(\cdot)$ is bounded above by
  $$ \frac{n}{(n+1)}  (M_i - m_i)(M_j - m_j).$$ 
 \end{theorem}
 
@@ -154,7 +154,7 @@ So, the worst-case bound always occurs in the ``add-one'' case, and in general t
 \end{proof}
 
 \begin{corollary}
-Let $X \leftarrow \mathcal{X}$ where $\mathcal{X}_i$ is bounded above by $M_i$ and bounded below by $m_i$. Then the $\ell_1$-sensitivity of the $ij^{\text{th}}$ element of a sample covariance matrix for $X$ is bounded above by 
+Let $X \leftarrow \mathcal{X}$ where $\mathcal{X}_i$ is bounded above by $M_i$ and bounded below by $m_i$. Then the $\ell_1$-sensitivity in the add/drop-one model of the $ij^{\text{th}}$ element of a sample covariance matrix for $X$ is bounded above by 
 $$ \frac{n}{n^2-1}(M_i - m_i)(M_j - m_j).$$
 \end{corollary}
 
@@ -165,7 +165,7 @@ Note that the sample covariance of $X$ is equal to $f(x)/(n-1)$, and that $(n-1)
 \subsection{$\ell_2$-sensitivity}
 
 \begin{theorem}
-Let $X \leftarrow \mathcal{X}$ where $\mathcal{X}_i$ is bounded above by $M_i$ and bounded below by $m_i$. Then the $\ell_2$-sensitivity of the $ij^{\text{th}}$ element of a sample covariance matrix for $X$ is bounded above by
+Let $X \leftarrow \mathcal{X}$ where $\mathcal{X}_i$ is bounded above by $M_i$ and bounded below by $m_i$. Then the $\ell_2$-sensitivity in the add/drop-one model of the $ij^{\text{th}}$ element of a sample covariance matrix for $X$ is bounded above by
 $$\left(\frac{n}{n^2-1}(M_i - m_i)(M_j - m_j)\right)^2.$$
 \end{theorem}
 
@@ -181,7 +181,7 @@ This follows from the bounds in Equations \ref{eq:addone} and \ref{eq:subone} an
 \label{thm:l1change1}
 Let $X$ be a matrix of values and let $X_i$ indicate the $i^{\text{th}}$ column of the matrix. Let
 $$ f_{ij} (X)= \sum_{k=1}^n (x_{ki} - \bar{X}_i)(x_{kj} - \bar{X}_j).$$
-Say that the space of datapoints $\mathcal{X}_i$ that $X_i$ is drawn from is bounded above by $M_i$ and bounded below by $m_i$. Then the $\ell_1$-sensitivity of $f(\cdot)$ is bounded above by
+Say that the space of datapoints $\mathcal{X}_i$ that $X_i$ is drawn from is bounded above by $M_i$ and bounded below by $m_i$. Then the $\ell_1$-sensitivity in the change-one model of $f(\cdot)$ is bounded above by
 $$ \frac{2(n-1)}{n}  (M_i - m_i)(M_j - m_j).$$
 \end{theorem}
 
@@ -200,7 +200,7 @@ $$ \left\vert f_{ij}(X') - f_{ij}(X'') \right\vert \le \frac{2(n-1)}{n}  (M_i - 
 \end{proof}
 
 \begin{corollary}
-The $\ell_1$-sensitivity of sample covariance is bounded above by
+The $\ell_1$-sensitivity in the change-one model of sample covariance is bounded above by
 $$\frac{2}{n}  (M_i - m_i)(M_j - m_j).$$
 \end{corollary}
 
@@ -211,7 +211,7 @@ Note that the sample covariance of $X$ is equal to $f(x)/(n-1)$.
 \subsection{$\ell_2$-sensitivity}
 
 \begin{theorem}
-The $\ell_2$-sensitivity of sample covariance is bounded above by 
+The $\ell_2$-sensitivity in the change-one model of sample covariance is bounded above by 
 $$\left(\frac{2}{n}  (M_i - m_i)(M_j - m_j)\right)^2.$$
 \end{theorem}
 

@@ -35,7 +35,7 @@ $$s(x) = \sum_{i=1}^n x_i.$$
 % l1 sensitivity
 \subsection{$\ell_1$-sensitivity}
 \begin{theorem}
-Say the space of datapoints $\mathcal{X}$ is bounded above by $M$ and bounded below by $m$. Then $s$ over $\mathcal{X}^n$ has $\ell_1$-sensitivity bounded above by $M-m.$
+Say the space of datapoints $\mathcal{X}$ is bounded above by $M$ and bounded below by $m$. Then $s$ over $\mathcal{X}^n$ has $\ell_1$-sensitivity in the change-one model bounded above by $M-m.$
 \end{theorem}
 
 \begin{proof}
@@ -52,7 +52,7 @@ Say $X$ and $X'$ are neighboring databases which differ at data-point $x_j$. The
 \subsection{$\ell_2$-sensitivity}
 \begin{theorem}
 	Say the space of datapoints $\mathcal{X}$ is bounded above by $M$ and bounded below by $m$.
-	Then $s$ over $\mathcal{X}^n$ has $\ell_1$-sensitivity bounded above by $(M-m)^2.$
+	Then $s$ over $\mathcal{X}^n$ has $\ell_1$-sensitivity in the change-one model bounded above by $(M-m)^2.$
 \end{theorem}
 
 \begin{proof}
@@ -72,7 +72,7 @@ Say $X$ and $X'$ are neighboring databases which differ at data-point $x_j$. The
 \subsection{$\ell_1$-sensitivity}
 
 \begin{theorem}
-Say the space of datapoints $\mathcal{X}$ is bounded above by $M$ and bounded below by $m$. Then $s$ has $\ell_1$-sensitivity bounded above by $\max(\vert m \vert,\vert M \vert).$
+Say the space of datapoints $\mathcal{X}$ is bounded above by $M$ and bounded below by $m$. Then $s$ has $\ell_1$-sensitivity in the add/drop-one model bounded above by $\max(\vert m \vert,\vert M \vert).$
 \end{theorem}
 
 % TODO: CC is a little confused by the notation here (calling it x_n and then x), particularly because x_n is not the
@@ -103,7 +103,7 @@ Let $X' = X\textbackslash\{x\}$. Without loss of generality assume that the poin
 \subsection{$\ell_2$-sensitivity}
 
 \begin{theorem}
-Say the space of datapoints $\mathcal{X}$ is bounded above by $M$ and bounded below by $m$. Then $s$ has $\ell_2$-sensitivity bounded above by $\max(m^2, M^2).$
+Say the space of datapoints $\mathcal{X}$ is bounded above by $M$ and bounded below by $m$. Then $s$ has $\ell_2$-sensitivity in the add/drop-one model bounded above by $\max(m^2, M^2).$
 \end{theorem}
 
 \begin{proof}
