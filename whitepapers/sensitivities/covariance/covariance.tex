@@ -27,9 +27,13 @@
 
 \section{Preliminaries}
 
+\begin{definition}
+Let $X$ be a matrix of values and $X_i$ indicate the $i^{\text{th}}$ column of the matrix. Denote the sample mean of column $X_i$ as $\bar{X}_i$, and let $n$ be the size of $X_i$. Then the covariance matrix of $X$ has $ij^{\text{th}}$ element 
+$$ \frac{1}{n-1} \sum_{k=1}^n (x_{ki} - \bar{X}_i)(x_{kj} - \bar{X}_j).$$
+\end{definition}
 \begin{lemma}
 \label{lemma:cancel}
-Let $X$ be a matrix of values and $X_i$ indicate the $i^{\text{th}}$ column of the matrix. Then,
+Let $X$ be a matrix of values and $X_i$ indicate the $i^{\text{th}}$ column of the matrix. Denote the sample mean of column $X_i$ as $\bar{X}_i$, and let $n$ be the size of $X_i$. Then,
 $\forall i,$
 $$ \sum_{j=1}^n (x_{ji} - \bar{X}_i) = 0.$$
 \end{lemma}

@@ -31,7 +31,7 @@ $$ q(x) = \sum_{i=1}^n I(x_i).$$
 \end{definition}
 
 \begin{definition}
-Let $q_1, \ldots, q_k$ be a series of counts with predicates $I_1, \ldots, I_k$. These counts are disjoint for every row in the database, only one of them evaluates to 1. In other words, they are disjoint if $\forall x_i \in \mathcal{X},$ 
+Let $q_1, \ldots, q_k$ be a series of counts with predicates $I_1, \ldots, I_k$. These counts are disjoint for every row in the database if only one of them evaluates to 1. In other words, they are disjoint if $\forall x_i \in \mathcal{X},$ 
 $$ \sum_{j=1}^k I_j(x_i) = 1.$$
 \end{definition}
 
@@ -50,7 +50,7 @@ Let $q$ be a count query with predicate $I$, and let $x'$ be equal to $x$ with p
 
 \begin{align*}
 \left\vert q(x') - q(x) \right\vert &= \left\vert \sum_{j=1}^n I(x_j') - \sum_{j=1}^n I(x_j) \right\vert \\
-	&= \left\vert \sum_{\{ i \in [n] \vert i \ne j\}}^n I(x_j) + I(x_i') - \sum_{\{ i \in [n] \vert i \ne j\}}^n I(x_j) - I(x_i) \right\vert \\
+	&= \left\vert \sum_{\{ i \in [n] \vert i \ne j\}} I(x_j) + I(x_i') - \sum_{\{ i \in [n] \vert i \ne j\}} I(x_j) - I(x_i) \right\vert \\
 	&= \left\vert I(x_i') - I(x_i) \right\vert \\
 	& \le 1.
 \end{align*}
@@ -91,12 +91,13 @@ A single count query has sensitivity 1. A series of $k$ disjoint counts also has
 \begin{proof}
 Let $q$ be a count query with predicate $I$, and let $x'$ be equal to database $x$ with point $x_i$ removed. Then 
 \begin{align*}
-\left \vert q(x) - q(x') \right\vert &= \left\vert \sum_{j=1}^n I(x_j) - \sum_{\{ i \in [n] \vert i \ne j\}}^n I(x_j) \right\vert\\
+\left \vert q(x) - q(x') \right\vert &= \left\vert \sum_{j=1}^n I(x_j) - \sum_{\{ i \in [n] \vert i \ne j\}} I(x_j) \right\vert\\
 	&= \left\vert \sum_{\{ i \in [n] \vert i \ne j\}} I(x_j) + I(x_i) - \sum_{\{ i \in [n] \vert i \ne j\}} I(x_j) \right\vert\\
 	&\le 1.
 \end{align*}
 
 A nearly identical argument holds for adding a point. \\
+
 Consider a series of $k$ disjoint count queries $\mathbf{q} = \{q_1, \ldots, q_k\}$ and consider database $x'$ equal to database $x$ with point $x_i$ removed. Note that only a single one of the $k$ queries will be affected by the change from $x$ to $x'$, so
 \begin{align*}
 \left\vert \mathbf{q}(x) - \mathbf{q}(x') \right\vert &= \left\vert \left(q_1(x) - q_1(x')\right) + \ldots + \left(q_k(x) - q_k(x')\right) \right\vert \\
