@@ -29,23 +29,24 @@
 
 \begin{lemma}
 \label{lemma:cancel}
+Let $X$ be a matrix of values and $X_i$ indicate the $i^{\text{th}}$ column of the matrix. Then,
 $\forall i,$
 $$ \sum_{j=1}^n (x_{ji} - \bar{X}_i) = 0.$$
 \end{lemma}
 
 \begin{proof}
 \begin{align*}
-\sum_{i=1}^n (x_{ji} - \bar{X}_i) &= \sum_{i=1}^n x_{ji} - n \bar{X}_i\\
-	&= \sum_{i=1}^n x_{ji} - n\left( \frac{1}{n}\sum_{i=1}^n x_{ji}\right) \\
+\sum_{j=1}^n (x_{ji} - \bar{X}_i) &= \sum_{j=1}^n x_{ji} - n \bar{X}_i,\\
+	&= \sum_{j=1}^n x_{ji} - n\left( \frac{1}{n}\sum_{j=1}^n x_{ji}\right), \\
 	&= 0.
 \end{align*}
 \end{proof}
 
 \begin{lemma}
 \label{cov:rewrite}
-Let 
-$$ f_{ij} = \sum_{k=1}^n (x_{ki} - \bar{X}_i)(x_{kj} - \bar{X}_j),$$
-and let $X_i' = X_i \cup \{y_i\}$, and say $X_i$ has size $n$. Let $\bar{X}_i'$ and $\bar{X}_j'$ be the sample means of $X_i'$ and $X_j'$ respectively. Then,
+Let $X$ be a matrix and let
+$$ f_{ij}(X) = \sum_{k=1}^n (x_{ki} - \bar{X}_i)(x_{kj} - \bar{X}_j).$$
+Note that this is equivalent to the $ij^{\text{th}}$ element of the sample covariance matrix for $X$, without the normalization by $n-1$. Consider the matrix $X'$ equal to $X$ with a single row $Y$ added, so that $X_i' = X_i \cup \{y_i\}$. Say $X_i$ has size $n$. Let  $\bar{X}_i$, $\bar{X}_j$, $\bar{X}_i'$, and $\bar{X}_j'$ be the sample means of $X_i, X_j, X_i'$ and $X_j'$ respectively. Then,
 $$ f_{ij}(X') = f_{ij}(X) + n(\bar{X}_i - \bar{X}_i')(\bar{X}_j - \bar{X}_j') + (y_i - \bar{X}_i)(y_j - \bar{X}_j).$$
 \end{lemma}
 
@@ -64,7 +65,7 @@ where the cancellation of the second and third terms in the second-to-last line 
 
 \begin{lemma}
 \label{lemma:term1bound}
-Let  $X_i$ have size $n$ and say $X_i' = X_i \cup \{y_i\}$ where $y_i \in \mathcal{X}_i.$ Say that the space of datapoints $\mathcal{X}_i$ is bounded above by $M_i$ and bounded below by $m_i$, and let $y_i \in \mathcal{X}_i.$ Let  $\bar{X}_i$, $\bar{X}_j$, $\bar{X}_i'$, and $\bar{X}_j'$ be the sample means of $X_i, X_j, X_i'$ and $X_j'$ respectively. Then,
+Let $X$ be a matrix of values and $X_i$ indicate the $i^{\text{th}}$ column of the matrix. Let  $X_i$ have size $n$ and consider the matrix $X'$ equal to $X$ with a single row $Y$ added, so that $X_i' = X_i \cup \{y_i\}$. Say that the space of datapoints $\mathcal{X}_i$ that the elements of $X_i'$ are drawn from is bounded above by $M_i$ and bounded below by $m_i$. Let  $\bar{X}_i$, $\bar{X}_j$, $\bar{X}_i'$, and $\bar{X}_j'$ be the sample means of $X_i, X_j, X_i'$ and $X_j'$ respectively. Then,
 $$ n \left\vert (\bar{X}_i - \bar{X}_i')(\bar{X}_j - \bar{X}_j') \right\vert \le \frac{n}{(n+1)^2}(M_i - m_i)(M_j - m_j).$$
 \end{lemma}
 
@@ -81,7 +82,7 @@ Note that
 
 \begin{lemma}
 \label{lemma:term2bound}
-Let  $X_i$ have size $n$ and say $X_i' = X_i \cup \{y_i\}$ where $y_i \in \mathcal{X}_i.$ Say that the space of datapoints $\mathcal{X}_i$ is bounded above by $M_i$ and bounded below by $m_i$, and let $y_i \in \mathcal{X}_i.$ Let  $\bar{X}_i$, $\bar{X}_j$, $\bar{X}_i'$, and $\bar{X}_j'$ be the sample means of $X_i, X_j, X_i'$ and $X_j'$ respectively. Then,
+Let $X$ be a matrix of values and $X_i$ indicate the $i^{\text{th}}$ column of the matrix. Let  $X_i$ have size $n$ and consider the matrix $X'$ equal to $X$ with a single row $Y$ added, so that $X_i' = X_i \cup \{y_i\}$. Say that the space of datapoints $\mathcal{X}_i$ that the elements of $X_i'$ are drawn from is bounded above by $M_i$ and bounded below by $m_i$. Let  $\bar{X}_i$, $\bar{X}_j$, $\bar{X}_i'$, and $\bar{X}_j'$ be the sample means of $X_i, X_j, X_i'$ and $X_j'$ respectively. Then,
 $$ \left\vert (y_i - \bar{X}_i')(y_j - \bar{X}_j') \right\vert \le \frac{n^2}{(n+1)^2}(M_i - m_i)(M_j-m_j).$$
 \end{lemma}
 
@@ -99,32 +100,33 @@ Note that
 \subsection{$\ell_1$-sensitivity}
 
 \begin{theorem}
-Let 
+Let $X$ be a matrix of values and let $X_i$ indicate the $i^{\text{th}}$ column of the matrix. Let
 $$ f_{ij} (X)= \sum_{k=1}^n (x_{ki} - \bar{X}_i)(x_{kj} - \bar{X}_j).$$
-Say that the space of datapoints $\mathcal{X}_i$ is bounded above by $M_i$ and bounded below by $m_i$. Then the
-The $\ell_1$-sensitivity of $f(\cdot)$ is bounded by
+Say that the space of datapoints $\mathcal{X}_i$ that $X_i$ is drawn from is bounded above by $M_i$ and bounded below by $m_i$. Then the $\ell_1$-sensitivity of $f(\cdot)$ is bounded above by
  $$ \frac{n}{(n+1)}  (M_i - m_i)(M_j - m_j).$$ 
 \end{theorem}
 
 \begin{proof}
 
-Adding a point:
+We must consider both adding and removing a row from $X$.
+
+Adding a row:\\
+Let $X'_i = X_i \cup \{y_i\}$. Then, from Lemma \ref{cov:rewrite}, 
 \begin{align}
 \label{eq:addone}
-\left\vert f_{ij}(X') - f_{ij}(X) \right\vert &= \left\vert n(\bar{X}_i - \bar{X}_i')(\bar{X}_j - \bar{X}_j') + (y_i - \bar{X}_i)(y_j - \bar{X}_j) \right\vert \hspace{1cm} \text{(By Lemma \ref{cov:rewrite})} \nonumber\\
+\left\vert f_{ij}(X') - f_{ij}(X) \right\vert &= \left\vert n(\bar{X}_i - \bar{X}_i')(\bar{X}_j - \bar{X}_j') + (y_i - \bar{X}_i)(y_j - \bar{X}_j) \right\vert \hspace{1cm} \nonumber\\
 	&\le  n \left\vert (\bar{X}_i - \bar{X}_i')(\bar{X}_j - \bar{X}_j') \right\vert + \left\vert (y_i - \bar{X}_i)(y_j - \bar{X}_j) \right\vert \nonumber\\
 	&\le \frac{n}{(n+1)^2} (M_i - m_i)(M_j - m_j) + \frac{n^2}{(n+1)^2} (M_i - m_i)(M_j - m_j) \nonumber	\\
 	& \hspace{8cm} \text{(By Lemmas \ref{lemma:term1bound} and \ref{lemma:term2bound})} \nonumber\\
-	&= \frac{n}{(n+1)}  (M_i - m_i)(M_j - m_j).
+	&= \frac{n}{n+1}  (M_i - m_i)(M_j - m_j).
 \end{align}
 
-Removing a point:
-
-Note that Lemma \ref{cov:rewrite} can be rewritten to this setting by parametrizing $n$ as $n-1$ and swapping X and X' in its expression:
+Removing a row:\\
+Let $Y$ be the last row of $X$, and let $X_i'  = X_i \setminus \{y_i\}$. Note that Lemma \ref{cov:rewrite} can be rewritten in this setting by parametrizing $n$ as $n-1$ and swapping X and X' in its expression:
 
 $$ f_{ij}(X) = f_{ij}(X') + (n-1)(\bar{X}_i' - \bar{X}_i)(\bar{X}_j' - \bar{X}_j) + (y_i - \bar{X}_i')(y_j - \bar{X}_j'). $$
 
-Note that Lemmas \ref{lemma:term1bound} and \ref{lemma:term2bound} may be rewritten with the same reparametrization:
+Lemmas \ref{lemma:term1bound} and \ref{lemma:term2bound} may be rewritten with the same reparametrization:
 $$ (n-1)\left\vert (\bar{X}_i' - \bar{X}_i)(\bar{X}_j' - \bar{X}_j) \right\vert \le \frac{n-1}{n^2} (M_i - m_i)(M_j - m_j),$$
 and 
 $$ \left\vert (y_i - \bar{X}_i')(y_j - \bar{X}_j') \right\vert \le \frac{(n-1)^2}{n^2}(M_i - m_i)(M_j - m_j).$$
@@ -144,19 +146,23 @@ Note that for any $n \ge 1$,
 	\end{equation}
 
 So, the worst-case bound always occurs in the ``add-one'' case, and in general the  $\ell_1$ sensitivity of $f(\cdot)$ is bounded by
- $$ \frac{n}{(n+1)}  (M_i - m_i)(M_j - m_j).$$ 
+ $$ \frac{n}{n+1}  (M_i - m_i)(M_j - m_j).$$ 
 \end{proof}
 
 \begin{corollary}
-The $\ell_1$-sensitivity of sample covariance is bounded by 
-$$ \frac{n}{(n^2-1)}(M_i - m_i)(M_j - m_j).$$
+Let $X \leftarrow \mathcal{X}$ where $\mathcal{X}_i$ is bounded above by $M_i$ and bounded below by $m_i$. Then the $\ell_1$-sensitivity of the $ij^{\text{th}}$ element of a sample covariance matrix for $X$ is bounded above by 
+$$ \frac{n}{n^2-1}(M_i - m_i)(M_j - m_j).$$
 \end{corollary}
+
+\begin{proof}
+Note that the sample covariance of $X$ is equal to $f(x)/(n-1)$, and that $(n-1)(n+1) = n^2 -1$.
+\end{proof}
 
 \subsection{$\ell_2$-sensitivity}
 
 \begin{theorem}
-$f(\cdot)$ has $\ell_2$ sensitivity bounded above by 
-$$\left(\frac{n}{(n^2-1)}(M_i - m_i)(M_j - m_j)\right)^2.$$
+Let $X \leftarrow \mathcal{X}$ where $\mathcal{X}_i$ is bounded above by $M_i$ and bounded below by $m_i$. Then the $\ell_2$-sensitivity of the $ij^{\text{th}}$ element of a sample covariance matrix for $X$ is bounded above by
+$$\left(\frac{n}{n^2-1}(M_i - m_i)(M_j - m_j)\right)^2.$$
 \end{theorem}
 
 \begin{proof}
@@ -167,7 +173,47 @@ This follows from the bounds in Equations \ref{eq:addone} and \ref{eq:subone} an
 \section{Neighboring Definition: Change One}
 \subsection{$\ell_1$-sensitivity}
 
+\begin{theorem}
+\label{thm:l1change1}
+Let $X$ be a matrix of values and let $X_i$ indicate the $i^{\text{th}}$ column of the matrix. Let
+$$ f_{ij} (X)= \sum_{k=1}^n (x_{ki} - \bar{X}_i)(x_{kj} - \bar{X}_j).$$
+Say that the space of datapoints $\mathcal{X}_i$ that $X_i$ is drawn from is bounded above by $M_i$ and bounded below by $m_i$. Then the $\ell_1$-sensitivity of $f(\cdot)$ is bounded above by
+$$ \frac{2(n-1)}{n}  (M_i - m_i)(M_j - m_j).$$
+\end{theorem}
+
+\begin{proof}
+Recall from Equation \ref{eq:addone} that 
+$$ \left\vert f_{ij}(X) - f_{ij}(X') \right\vert \le \frac{n}{(n+1)}  (M_i - m_i)(M_j - m_j).$$
+and
+$$ \left\vert f_{ij}(X) - f_{ij}(X'') \right\vert \le \frac{n}{(n+1)}  (M_i - m_i)(M_j - m_j).$$
+Reparametrizing these equations so that $n$ is the size of $X'$ and $X''$ gives that 
+$$ \left\vert f_{ij}(X) - f_{ij}(X') \right\vert \le \frac{n-1}{n}  (M_i - m_i)(M_j - m_j).$$
+and
+$$ \left\vert f_{ij}(X) - f_{ij}(X'') \right\vert \le \frac{n-1}{n}  (M_i - m_i)(M_j - m_j).$$
+It then follows from the triangle inequality that 
+$$ \left\vert f_{ij}(X') - f_{ij}(X'') \right\vert \le \frac{2(n-1)}{n}  (M_i - m_i)(M_j - m_j).$$
 \subsection{$\ell_2$-sensitivity}
+\end{proof}
+
+\begin{corollary}
+The $\ell_1$-sensitivity of sample covariance is bounded above by
+$$\frac{2}{n}  (M_i - m_i)(M_j - m_j).$$
+\end{corollary}
+
+\begin{proof}
+Note that the sample covariance of $X$ is equal to $f(x)/(n-1)$.
+\end{proof}
+
+\subsection{$\ell_2$-sensitivity}
+
+\begin{theorem}
+The $\ell_2$-sensitivity of sample covariance is bounded above by 
+$$\left(\frac{2}{n}  (M_i - m_i)(M_j - m_j)\right)^2.$$
+\end{theorem}
+
+\begin{proof}
+This follows from the bounds in the proof of Theorem \ref{thm:l1change1}.
+\end{proof}
 
 \bibliographystyle{alpha}
 \bibliography{mean}
