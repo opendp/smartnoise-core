@@ -26,8 +26,8 @@
 \maketitle
 
 \begin{definition}
-The sample mean of database $X$ of size $n$ is
-$$f(X) = \frac{1}{n} \sum_{i=1}^n x_i $$
+The sample mean of database $X$ of size $n$ is defined as 
+$$f(X) = \frac{1}{n} \sum_{i=1}^n x_i.$$
 \end{definition}
 
 \section{Neighboring Definition: Change One}
@@ -35,12 +35,12 @@ $$f(X) = \frac{1}{n} \sum_{i=1}^n x_i $$
 % l1 sensitivity
 \subsection{$\ell_1$-sensitivity}
 \begin{theorem}
-Say the space of datapoints $\mathcal{X}$ is bounded above by $M$ and bounded below by $m$. Then $f$ has $\ell_1$-sensitivity bounded above by
+Say the space of datapoints $\mathcal{X}$ is bounded above by $M$ and bounded below by $m$. Then $f(\cdot)$ has $\ell_1$-sensitivity bounded above by
 $$ \frac{M-m}{n}.$$
 \end{theorem}
 
 \begin{proof}
-Say $X$ and $X'$ are neighboring databases which differ at data-point $x_j$. Then
+Say $X$ and $X'$ are neighboring databases which differ at data-point $x_j$, and let $\Delta{f}$ indicate the $\ell_1$-sensitivity of $f(\cdot)$. Then
 \begin{align*}
 \Delta{f} &= \max_{X,X'} \left\vert f(X) - f(X)' \right\vert \\
 	&=  \max_{X,X'} \frac{1}{n} \left\vert \left(\sum_{\{ i \in [n] \vert i \ne j\}} x_i\right) + x_j  - \left(\sum_{\{ i \in [n] \vert i \ne j\}} x_i'\right) + x_j'  \right\vert \\
@@ -53,12 +53,12 @@ Say $X$ and $X'$ are neighboring databases which differ at data-point $x_j$. The
 \subsection{$\ell_2$-sensitivity}
 \begin{theorem}
 	Say the space of datapoints $\mathcal{X}$ is bounded above by $M$ and bounded below by $m$.
-	Then $f$ has $\ell_2$-sensitivity bounded above by
+	Then $f(\cdot)$ has $\ell_2$-sensitivity bounded above by
 	 $$ \left(\frac{M-m}{n}\right)^2. $$
 \end{theorem}
 
 \begin{proof}
-	Say $X$ and $X'$ are neighboring databases which differ only at index $j$. Then
+	Say $X$ and $X'$ are neighboring databases which differ only at index $j$, and let $\Delta{f}$ indicate the $\ell_2$-sensitivity of $f(\cdot)$. Then
 	\begin{align*}
 		\Delta{f} &= \max_{X,X'} (f(X) - f(X)')^2 \\
 						&= \max_{X,X'} \frac{1}{n^2} \left(
@@ -76,7 +76,7 @@ Say $X$ and $X'$ are neighboring databases which differ at data-point $x_j$. The
 
 \begin{theorem}
 Say the space of datapoints $\mathcal{X}$ is bounded above by $M$ and bounded below by $m$.
-Then $f$ has $\ell_1$-sensitivity bounded above by
+Then $f(\cdot)$ has $\ell_1$-sensitivity bounded above by
 $$ \frac{M-m}{n}. $$
 \end{theorem}
 
