@@ -155,24 +155,44 @@ So, the worst-case bound always occurs in the ``add-one'' case, and in general t
 
 \begin{corollary}
 \label{cor:renorm}
+Let $X \leftarrow \mathcal{X}$ where $\mathcal{X}_i$ is bounded above by $M_i$ and bounded below by $m_i$. Then the $\ell_1$-sensitivity in the add/drop-one model of the $ij^{\text{th}}$ element of the covariance matrix for $X$ is bounded above by 
+$$ \frac{1}{n+1}(M_i - m_i)(M_j - m_j).$$
+\end{corollary}
+
+\begin{proof}
+Note that the $ij^{\text{th}}$ element of the covariance matrix for $X$ is equal to $f(x)/n$.
+\end{proof}
+
+\begin{corollary}
+\label{cor:renorm}
 Let $X \leftarrow \mathcal{X}$ where $\mathcal{X}_i$ is bounded above by $M_i$ and bounded below by $m_i$. Then the $\ell_1$-sensitivity in the add/drop-one model of the $ij^{\text{th}}$ element of a sample covariance matrix for $X$ is bounded above by 
 $$ \frac{n}{n^2-1}(M_i - m_i)(M_j - m_j).$$
 \end{corollary}
 
 \begin{proof}
-Note that the sample covariance of $X$ is equal to $f(x)/(n-1)$, and that $(n-1)(n+1) = n^2 -1$.
+Note that the $ij^{\text{th}}$ element of the sample covariance of $X$ is equal to $f(x)/(n-1)$, and that $(n-1)(n+1) = n^2 -1$.
 \end{proof}
 
 \subsection{$\ell_2$-sensitivity}
 
 \begin{theorem}
-Let $X \leftarrow \mathcal{X}$ where $\mathcal{X}_i$ is bounded above by $M_i$ and bounded below by $m_i$. Then the $\ell_2$-sensitivity in the add/drop-one model of the $ij^{\text{th}}$ element of a sample covariance matrix for $X$ is bounded above by
-$$\left(\frac{n}{n^2-1}(M_i - m_i)(M_j - m_j)\right)^2.$$
+Let $X \leftarrow \mathcal{X}$ where $\mathcal{X}_i$ is bounded above by $M_i$ and bounded below by $m_i$. Then the $\ell_2$-sensitivity in the add/drop-one model of the $ij^{\text{th}}$ element of the covariance matrix for $X$ is bounded above by
+$$\left(\frac{1}{n+1}(M_i - m_i)(M_j - m_j)\right)^2.$$
 \end{theorem}
 
 \begin{proof}
 % note you can also do this directly by squaring the bounds and bounding the central term. I can add that in but it's just a lot of cluttered arithmetic. 
-This follows from the bounds in Equations \ref{eq:addone} and \ref{eq:subone} and the inequality in Equation \ref{ineq}, and a renormalization by $n-1$ from the definition of covariance as in the proof of Corollary \ref{cor:renorm}.
+This follows from the bounds in Equations \ref{eq:addone} and \ref{eq:subone} and the inequality in Equation \ref{ineq}, and a renormalization by $n$ from the definition of covariance.
+\end{proof}
+
+\begin{corollary}
+\label{thm:l2addsub}
+Let $X \leftarrow \mathcal{X}$ where $\mathcal{X}_i$ is bounded above by $M_i$ and bounded below by $m_i$. Then the $\ell_2$-sensitivity in the add/drop-one model of the $ij^{\text{th}}$ element of a sample covariance matrix for $X$ is bounded above by
+$$\left(\frac{n}{n^2-1}(M_i - m_i)(M_j - m_j)\right)^2.$$
+\end{corollary}
+
+\begin{proof}
+The logic here is identical to the proof of Theorem \ref{thm:l2addsub}, with a renormalization by $n$ rather than by $n-1$.
 \end{proof}
 
 \section{Neighboring Definition: Change One}
@@ -200,24 +220,43 @@ $$ \left\vert f_{ij}(X') - f_{ij}(X'') \right\vert \le \frac{2(n-1)}{n}  (M_i - 
 \end{proof}
 
 \begin{corollary}
+The $\ell_1$-sensitivity in the change-one model of covariance is bounded above by
+$$\frac{2(n-1)}{n^2}  (M_i - m_i)(M_j - m_j).$$
+\end{corollary}
+
+\begin{proof}
+Note that the $ij^{\text{th}}$ element of the covariance of $X$ is equal to $f(x)/n$.
+\end{proof}
+
+\begin{corollary}
 \label{cor:renorm2}
 The $\ell_1$-sensitivity in the change-one model of sample covariance is bounded above by
 $$\frac{2}{n}  (M_i - m_i)(M_j - m_j).$$
 \end{corollary}
 
 \begin{proof}
-Note that the sample covariance of $X$ is equal to $f(x)/(n-1)$.
+Note that the $ij^{\text{th}}$ element of the sample covariance of $X$ is equal to $f(x)/(n-1)$.
 \end{proof}
 
 \subsection{$\ell_2$-sensitivity}
 
 \begin{theorem}
-The $\ell_2$-sensitivity in the change-one model of sample covariance is bounded above by 
-$$\left(\frac{2}{n}  (M_i - m_i)(M_j - m_j)\right)^2.$$
+\label{thm:l2change}
+The $\ell_2$-sensitivity in the change-one model of covariance is bounded above by 
+$$\left(\frac{2(n-1)}{n^2}  (M_i - m_i)(M_j - m_j)\right)^2.$$
 \end{theorem}
 
 \begin{proof}
-This follows from the bounds in the proof of Theorem \ref{thm:l1change1} and a renormalization by $n-1$ by the definition of covariance (as in the proof of Corollary \ref{cor:renorm2}).
+This follows from the bounds in the proof of Theorem \ref{thm:l1change1} and a renormalization by $n$.
+\end{proof}
+
+\begin{corollary}
+The $\ell_2$-sensitivity in the change-one model of sample covariance is bounded above by 
+$$\left(\frac{2}{n}  (M_i - m_i)(M_j - m_j)\right)^2.$$
+\end{corollary}
+
+\begin{proof}
+The logic here is identical to the proof of Theorem \ref{thm:l2change}, with a renormalization by $n-1$ rather than by $n$.
 \end{proof}
 
 \bibliographystyle{alpha}

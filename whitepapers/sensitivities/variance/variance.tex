@@ -52,6 +52,7 @@ $$ \sum_{i=1}^n (x_i - a)^2 = \sum_{i=1}^n (x_i - \bar{x})^2 + n(a-\bar{x})^2.$$
 \end{proof}
 
 \begin{theorem}
+\label{thm:l1change}
 Let
 $$ f(\x) = \sum_{i=1}^n (x_i - \bar{x})^2.$$
 Then for $\x$ bounded between $m$ and $M,$ $f(\cdot)$ has $\ell_1$-sensitivity in the change-one model bounded above by
@@ -97,12 +98,26 @@ $$ (M-m)^2 \frac{n-1}{n}. $$
 \end{proof}
 
 \begin{corollary}
+Variance has $\ell_1$-sensitivity in the change-one model bounded above by
+$$ (M-m)^2 \frac{n-1}{n^2}. $$
+\end{corollary}
+
+\begin{proof}
+This follows from Theorem \ref{thm:l1change} with a renormalization by $n$.
+\end{proof}
+
+\begin{corollary}
 Sample variance has $\ell_1$-sensitivity in the change-one model bounded above by
 $$ \frac{(M-m)^2 }{n}. $$
 \end{corollary}
 
+\begin{proof}
+This follows from Theorem \ref{thm:l1change} with a renormalization by $n-1$.
+\end{proof}
+
 \subsection{$\ell_2$-sensitivity}
 \begin{theorem}
+\label{thm:l2change}
 	Let $X$ be a data set with $n$ elements, $x_1, \hdots, x_n$ and let
 	\[ f(X) = \sum_{i=1}^n (x_i - \bar{x})^2 \]
 	be the sample variance.
@@ -123,9 +138,22 @@ $$ \frac{(M-m)^2 }{n}. $$
 \end{proof}
 
 \begin{corollary}
+Variance has $\ell_2$-sensitivity in the change-one model bounded above by
+$$ \left(\frac{n-1}{n^2} (M-m)^2\right)^2.$$ 
+\end{corollary}
+
+\begin{proof}
+This follows from Theorem \ref{thm:l2change} with a renormalization by $n$.
+\end{proof}
+
+\begin{corollary}
 Sample variance has $\ell_2$-sensitivity in the change-one model bounded above by
 $$ \left(\frac{1}{n} (M-m)^2\right)^2.$$ 
 \end{corollary}
+
+\begin{proof}
+This follows from Theorem \ref{thm:l2change} with a renormalization by $n-1$.
+\end{proof}
 
 \section{Neighboring Definition: Add/Drop One}
 \subsection{$\ell_1$-sensitivity}
@@ -183,28 +211,47 @@ $$ \left(\frac{1}{n} (M-m)^2\right)^2.$$
 
  \begin{corollary}
  \label{cor:l1addsub}
+	Variance has $\ell_1$-sensitivity in the add/drop one model bounded above by
+	$$\left( M-m \right)^2 \frac{1}{n+1}. $$
+ \end{corollary}
+ 
+ \begin{proof}
+This follows from Theorem \ref{thm:l1addsub} with a renormalization by $n$.
+\end{proof}
+
+ \begin{corollary}
+ \label{cor:l1addsub}
 	Sample variance has $\ell_1$-sensitivity in the add/drop one model bounded above by
 	$$\left( M-m \right)^2 \frac{n}{n^2 - 1}. $$
  \end{corollary}
  
  \begin{proof}
- Define $f$ as in the statement of Theorem \ref{thm:l1addsub}. Note that sample variance is equal to 
- $f(x)/(n-1)$. Then, from the bound in Equation \ref{eq:fBoundaddsub} it follows that the sensitivity of the sample variance is bounded from above by 
- $$ \left( M-m \right)^2 \frac{n}{(n-1)(n + 1)} = \left( M-m \right)^2 \frac{n}{n^2 - 1}. $$
- \end{proof}
+This follows from Theorem \ref{thm:l1addsub} with a renormalization by $n-1$.
+\end{proof}
 
 \subsection{$\ell_2$-sensitivity}
 
 \begin{theorem}
-Sample variance has $\ell_2$-sensitivity in the add/drop one model bounded above by
-	$$ \left( \left( M-m \right)^2 \frac{n}{n^2 - 1} \right)^2.$$
+\label{thm:l2addsub}
+Variance has $\ell_2$-sensitivity in the add/drop one model bounded above by
+	$$ \left( \left( M-m \right)^2 \frac{1}{n+1} \right)^2.$$
 \end{theorem}
+
 \begin{proof}
 Because the bounds in Equations \ref{eq:L1add} and \ref{eq:L1sub} are positive, they hold for their square. Then, by the inequality for $n \ge 1$ in Equation \ref{ineq} it follows that the $\ell_2$ sensitivity of the variance is bounded by 
 $$
-\left( \left( M-m \right)^2 \frac{n}{n^2 - 1} \right)^2,
+\left( \left( M-m \right)^2 \frac{1}{n+1} \right)^2,
 $$
-where the change in constant from Equations \ref{eq:L1add} to $n/(n^2 - 1)$ comes from the $1/(n-1)$ in the definition of sample variance, as in the proof of Corollary \ref{cor:l1addsub}.
+where the change in constant from Equations \ref{eq:L1add} to $1/(n+1)$ comes from the $1/n$ in the definition of variance.
+\end{proof}
+
+\begin{corollary}
+Sample variance has $\ell_2$-sensitivity in the add/drop one model bounded above by
+	$$ \left( \left( M-m \right)^2 \frac{n}{n^2 - 1} \right)^2.$$
+\end{corollary}
+
+\begin{proof}
+The logic here is the same as for \ref{thm:l2addsub} with a renormalization by $n-1$ rather than by $n$.
 \end{proof}
 
 \bibliographystyle{alpha}
