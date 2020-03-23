@@ -52,7 +52,8 @@ use crate::base::{Value, NodeProperties, Sensitivity, ValueProperties, prepend, 
 use crate::proto;
 use crate::utilities::json::{JSONRelease};
 
-use ndarray::Array;
+use ndarray::{Array, ArrayD, Axis};
+use crate::utilities::array::slow_select;
 
 
 /// Universal Component trait
@@ -467,4 +468,23 @@ pub fn expand_mechanism(
         releases,
         traversal: Vec::new()
     })
+}
+
+pub fn get_ith_release<T: Clone + Default>(value: &ArrayD<T>, i: &usize) -> Result<ArrayD<T>> {
+    match value.ndim() {
+        0 => if i == &0 {Ok(value.clone())} else {Err("ith release does not exist".into())},
+        1 => Err("releases may not currently be vectors".into()),
+        2 => {
+            let release = slow_select(value, Axis(1), &[i.clone()]);
+            if release.len() == 1 {
+                // flatten singleton matrices to zero dimensions
+                Ok(Array::from_shape_vec(Vec::new(), vec![release.first()
+                    .ok_or::<Error>("release must contain at least one value".into())?])?
+                    .mapv(|v| v.clone()))
+            } else {
+                Ok(release)
+            }
+        },
+        _ => Err("releases must be 2-dimensional or less".into())
+    }
 }

@@ -63,7 +63,7 @@ impl Aggregator for proto::Maximum {
                 let max = data_property.get_max_f64()?;
 
                 Ok(min.iter()
-                    .zip(max)
+                    .zip(max.iter())
                     .map(|(min, max)| (max - min))
                     .collect())
             },

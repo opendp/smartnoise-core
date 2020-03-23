@@ -5,7 +5,7 @@ use std::collections::HashMap;
 
 use crate::{proto, base};
 use crate::hashmap;
-use crate::components::{Component, Accuracy, Expandable, Report};
+use crate::components::{Component, Accuracy, Expandable, Report, get_ith_release};
 
 
 use crate::base::{NodeProperties, Value, ValueProperties, prepend, broadcast_privacy_usage};
@@ -148,19 +148,19 @@ impl Report for proto::DpMean {
         let minimums = data_property.get_min_f64()?;
         let maximums = data_property.get_max_f64()?;
         let num_records = data_property.get_num_records()?;
-        let privacy_usages = broadcast_privacy_usage(&self.privacy_usage, num_records as usize)?;
 
-        for column_number in 0..data_property.get_num_columns()? {
+        let num_columns = data_property.get_num_columns()?;
+        let privacy_usages = broadcast_privacy_usage(&self.privacy_usage, num_columns as usize)?;
 
-            let mut release_info = HashMap::new();
-            release_info.insert("mechanism".to_string(), serde_json::json!(self.implementation.clone()));
-            release_info.insert("releaseValue".to_string(), value_to_json(&release)?);
-
-            let release = JSONRelease {
+        for column_number in 0..num_columns {
+            releases.push(JSONRelease {
                 description: "DP release information".to_string(),
                 statistic: "DPMean".to_string(),
-                variables: vec![],
-                release_info,
+                variables: serde_json::json!(Vec::<String>::new()),
+                release_info: value_to_json(&get_ith_release(
+                    release.get_arraynd()?.get_f64()?,
+                    &(column_number as usize)
+                )?.into())?,
                 privacy_loss: privacy_usage_to_json(&privacy_usages[column_number as usize].clone()),
                 accuracy: None,
                 batch: component.batch as u64,
@@ -169,6 +169,7 @@ impl Report for proto::DpMean {
                 algorithm_info: AlgorithmInfo {
                     name: "".to_string(),
                     cite: "".to_string(),
+                    mechanism: self.implementation.clone(),
                     argument: serde_json::json!({
                         "n": num_records,
                         "constraint": {
@@ -177,9 +178,7 @@ impl Report for proto::DpMean {
                         }
                     })
                 }
-            };
-
-            releases.push(release);
+            });
         }
         Ok(Some(releases))
     }

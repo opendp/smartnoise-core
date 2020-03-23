@@ -4,9 +4,9 @@ use std::collections::HashMap;
 
 use crate::{proto, base};
 use crate::hashmap;
-use crate::components::{Component, Accuracy, Expandable, Report};
+use crate::components::{Component, Accuracy, Expandable, Report, get_ith_release};
 
-use crate::base::{NodeProperties, Value, ValueProperties, prepend, broadcast_privacy_usage};
+use crate::base::{NodeProperties, Value, ValueProperties, prepend, broadcast_privacy_usage, ArrayND};
 use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, value_to_json};
 
 impl Component for proto::DpSum {
@@ -109,17 +109,16 @@ impl Report for proto::DpSum {
         let num_columns = data_property.get_num_columns()?;
         let privacy_usages = broadcast_privacy_usage(&self.privacy_usage, num_columns as usize)?;
 
-
         for column_number in 0..num_columns {
-            let mut release_info = HashMap::new();
-            release_info.insert("mechanism".to_string(), serde_json::json!(self.implementation.clone()));
-            release_info.insert("releaseValue".to_string(), value_to_json(&release)?);
-
-            let release = JSONRelease {
+            releases.push(JSONRelease {
                 description: "DP release information".to_string(),
                 statistic: "DPSum".to_string(),
-                variables: vec![],
-                release_info,
+                variables: serde_json::json!(Vec::<String>::new()),
+                release_info: match release.get_arraynd()? {
+                    ArrayND::F64(v) => value_to_json(&get_ith_release(v, &(column_number as usize))?.into())?,
+                    ArrayND::I64(v) => value_to_json(&get_ith_release(v, &(column_number as usize))?.into())?,
+                    _ => return Err("maximum must be numeric".into())
+                },
                 privacy_loss: privacy_usage_to_json(&privacy_usages[column_number as usize].clone()),
                 accuracy: None,
                 batch: component.batch as u64,
@@ -128,6 +127,7 @@ impl Report for proto::DpSum {
                 algorithm_info: AlgorithmInfo {
                     name: "".to_string(),
                     cite: "".to_string(),
+                    mechanism: self.implementation.clone(),
                     argument: serde_json::json!({
                             "constraint": {
                                 "lowerbound": minimums[column_number as usize],
@@ -135,9 +135,7 @@ impl Report for proto::DpSum {
                             }
                         }),
                 },
-            };
-
-            releases.push(release);
+            });
         }
 
         Ok(Some(releases))
