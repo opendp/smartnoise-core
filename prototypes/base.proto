@@ -99,6 +99,7 @@ message ArrayNDProperties {
         NatureContinuous continuous = 10;
         NatureCategorical categorical = 11;
     }
+    I64Null dataset_id = 8;
 }
 message NatureContinuous {
     Array1dNull minimum = 1;

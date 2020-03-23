@@ -8,7 +8,7 @@ use crate::hashmap;
 use crate::components::{Component, Accuracy, Expandable, Report};
 
 
-use crate::base::{NodeProperties, Value, ValueProperties, prepend};
+use crate::base::{NodeProperties, Value, ValueProperties};
 use crate::utilities::json::{JSONRelease, privacy_usage_to_json, AlgorithmInfo, value_to_json};
 
 
@@ -48,7 +48,7 @@ impl Expandable for proto::DpCount {
         maximum_id += 1;
         let id_count = maximum_id.clone();
         computation_graph.insert(id_count.clone(), proto::Component {
-            arguments: hashmap!["data".to_owned() => *component.arguments.get("data").unwrap()],
+            arguments: hashmap!["data".to_owned() => *component.arguments.get("data").ok_or::<Error>("data must be provided as an argument".into())?],
             variant: Some(proto::component::Variant::Count(proto::Count {})),
             omit: true,
             batch: component.batch,
@@ -58,8 +58,8 @@ impl Expandable for proto::DpCount {
         computation_graph.insert(component_id, proto::Component {
             arguments: hashmap![
                 "data".to_owned() => id_count,
-                "count_min".to_owned() => *component.arguments.get("count_min").unwrap(),
-                "count_max".to_owned() => *component.arguments.get("count_max").unwrap()
+                "count_min".to_owned() => *component.arguments.get("count_min").ok_or::<Error>("count_min must be provided as an argument".into())?,
+                "count_max".to_owned() => *component.arguments.get("count_max").ok_or::<Error>("count_max must be provided as an argument".into())?
             ],
             variant: Some(proto::component::Variant::from(proto::SimpleGeometricMechanism {
                 privacy_usage: self.privacy_usage.clone(),
@@ -104,40 +104,28 @@ impl Report for proto::DpCount {
         node_id: &u32,
         component: &proto::Component,
         _public_arguments: &HashMap<String, Value>,
-        properties: &NodeProperties,
+        _properties: &NodeProperties,
         release: &Value
     ) -> Result<Option<Vec<JSONRelease>>> {
-        let data_property = properties.get("data")
-            .ok_or("data: missing")?.get_arraynd()
-            .map_err(prepend("data:"))?.clone();
+        let mut release_info = HashMap::new();
+        release_info.insert("mechanism".to_string(), serde_json::json!(self.implementation.clone()));
+        release_info.insert("releaseValue".to_string(), value_to_json(&release)?);
 
-        let mut releases = Vec::new();
-
-        for column_number in 0..data_property.num_columns.unwrap() {
-
-            let mut release_info = HashMap::new();
-            release_info.insert("mechanism".to_string(), serde_json::json!(self.implementation.clone()));
-            release_info.insert("releaseValue".to_string(), value_to_json(&release).unwrap());
-
-            let release = JSONRelease {
-                description: "DP release information".to_string(),
-                statistic: "DPCount".to_string(),
-                variables: vec![],
-                release_info,
-                privacy_loss: privacy_usage_to_json(&self.privacy_usage[column_number as usize].clone()),
-                accuracy: None,
-                batch: component.batch as u64,
-                node_id: node_id.clone() as u64,
-                postprocess: false,
-                algorithm_info: AlgorithmInfo {
-                    name: "".to_string(),
-                    cite: "".to_string(),
-                    argument: serde_json::json!({})
-                }
-            };
-
-            releases.push(release);
-        }
-        Ok(Some(releases))
+        Ok(Some(vec![JSONRelease {
+            description: "DP release information".to_string(),
+            statistic: "DPCount".to_string(),
+            variables: vec![],
+            release_info,
+            privacy_loss: privacy_usage_to_json(&self.privacy_usage[0].clone()),
+            accuracy: None,
+            batch: component.batch as u64,
+            node_id: node_id.clone() as u64,
+            postprocess: false,
+            algorithm_info: AlgorithmInfo {
+                name: "".to_string(),
+                cite: "".to_string(),
+                argument: serde_json::json!({})
+            }
+        }]))
     }
 }

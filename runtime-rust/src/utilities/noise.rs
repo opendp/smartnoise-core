@@ -279,11 +279,11 @@ pub fn sample_gaussian_mpfr(shift: f64, scale: f64) -> Result<rug::Float> {
 /// ```
 /// use whitenoise_runtime::utilities::noise::sample_laplace;
 /// let n = sample_laplace(0.0, 2.0);
-/// # n.unwrap();
 /// ```
-pub fn sample_laplace(shift: f64, scale: f64) -> Result<f64> {
-    let probability: f64 = sample_uniform(&0., &1.)?;
-    Ok(Laplace::new(shift, scale).inverse(probability))
+pub fn sample_laplace(shift: f64, scale: f64) -> f64 {
+    // nothing in sample_uniform can throw an error
+    let probability: f64 = sample_uniform(&0., &1.).unwrap();
+    Laplace::new(shift, scale).inverse(probability)
 }
 
 /// Sample from Gaussian distribution.
@@ -300,11 +300,10 @@ pub fn sample_laplace(shift: f64, scale: f64) -> Result<f64> {
 /// ```
 /// use whitenoise_runtime::utilities::noise::sample_gaussian;
 /// let n = sample_gaussian(&0.0, &2.0);
-/// # n.unwrap();
 /// ```
-pub fn sample_gaussian(shift: &f64, scale: &f64) -> Result<f64> {
-    let probability: f64 = sample_uniform(&0., &1.)?;
-    Ok(Gaussian::new(shift.clone(), scale.clone()).inverse(probability))
+pub fn sample_gaussian(shift: &f64, scale: &f64) -> f64 {
+    let probability: f64 = sample_uniform(&0., &1.).unwrap();
+    Gaussian::new(shift.clone(), scale.clone()).inverse(probability)
 }
 
 /// Sample from truncated Gaussian distribution.
@@ -451,22 +450,21 @@ pub fn sample_geometric_censored(prob: &f64, max_trials: &i64, enforce_constant_
 /// use ndarray::prelude::*;
 /// use whitenoise_runtime::utilities::noise::sample_simple_geometric_mechanism;
 /// let geom_noise = sample_simple_geometric_mechanism(&1., &0, &100, &false);
-/// # geom_noise.unwrap();
 /// ```
-pub fn sample_simple_geometric_mechanism(scale: &f64, min: &i64, max: &i64, enforce_constant_time: &bool) -> Result<i64> {
+pub fn sample_simple_geometric_mechanism(scale: &f64, min: &i64, max: &i64, enforce_constant_time: &bool) -> i64 {
 
     let alpha: f64 = consts::E.powf(-1. / *scale);
     let max_trials: i64 = max - min;
 
     // return 0 noise with probability (1-alpha) / (1+alpha), otherwise sample from geometric
-    let unif: f64 = sample_uniform(&0., &1.)?;
+    let unif: f64 = sample_uniform(&0., &1.).unwrap();
     if unif < (1. - alpha) / (1. + alpha) {
-        return Ok(0);
+        return 0;
     } else {
         // get random sign
-        let sign: i64 = 2 * sample_bit(&0.5)? - 1;
-        // sample from censored geometric
-        let geom: i64 = sample_geometric_censored(&(1. - alpha), &max_trials, enforce_constant_time)?;
-        return Ok(sign * geom);
+        let sign: i64 = 2 * sample_bit(&0.5).unwrap() - 1;
+        // sample from censored geometric. Unwrap is safe because (1. - alpha) is bounded by 1.
+        let geom: i64 = sample_geometric_censored(&(1. - alpha), &max_trials, enforce_constant_time).unwrap();
+        return sign * geom;
     }
 }

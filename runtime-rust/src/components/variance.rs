@@ -10,7 +10,8 @@ use crate::components::mean::mean;
 
 impl Evaluable for proto::Variance {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        Ok(variance(&get_argument(&arguments, "data")?.get_arraynd()?.get_f64()?.clone())?.into())
+        let delta_degrees_of_freedom = if self.finite_sample_correction { 1 } else { 0 } as usize;
+        Ok(variance(&get_argument(&arguments, "data")?.get_arraynd()?.get_f64()?.clone(), &delta_degrees_of_freedom)?.into())
     }
 }
 
@@ -18,6 +19,7 @@ impl Evaluable for proto::Variance {
 ///
 /// # Arguments
 /// * `data` - Data for which you would like the variance for each column.
+/// * `delta_degrees_of_freedom` - 0 for population, 1 for finite sample correction
 ///
 /// # Return
 /// Variance for each column in the data.
@@ -27,17 +29,17 @@ impl Evaluable for proto::Variance {
 /// use ndarray::prelude::*;
 /// use whitenoise_runtime::components::variance::variance;
 /// let data = arr2(&[ [1.,10.], [2., 20.], [3., 30.] ]).into_dyn();
-/// let variances = variance(&data).unwrap();
+/// let variances = variance(&data, &1).unwrap();
 /// assert!(variances == arr2(&[[1., 100.]]).into_dyn());
 /// ```
-pub fn variance(data: &ArrayD<f64>) -> Result<ArrayD<f64>> {
+pub fn variance(data: &ArrayD<f64>, delta_degrees_of_freedom: &usize) -> Result<ArrayD<f64>> {
 
     let means: Vec<f64> = mean(&data)?.iter().map(|v| v.clone()).collect();
 
     // iterate over the generalized columns
     let variances = data.gencolumns().into_iter().zip(means)
         .map(|(column, mean)| column.iter()
-                .fold(0., |sum, v| sum + (v - mean).powi(2)) / (column.len() - 1) as f64)
+                .fold(0., |sum, v| sum + (v - mean).powi(2)) / (column.len() - delta_degrees_of_freedom.clone()) as f64)
         .collect::<Vec<f64>>();
 
     let array = match data.ndim() {

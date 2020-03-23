@@ -29,6 +29,7 @@ pub mod materialize;
 pub mod mean;
 pub mod minimum;
 pub mod quantile;
+pub mod reshape;
 pub mod mechanisms;
 pub mod resize;
 //pub mod row_max;
@@ -75,7 +76,7 @@ impl Evaluable for proto::component::Variant {
         evaluate!(
             // INSERT COMPONENT LIST
             Bin, Cast, Clamp, Count, Covariance, Filter, Impute, Index, KthRawSampleMoment, Maximum,
-            Materialize, Mean, Minimum, Quantile, LaplaceMechanism, GaussianMechanism,
+            Materialize, Mean, Minimum, Quantile, Reshape, LaplaceMechanism, GaussianMechanism,
             SimpleGeometricMechanism, Resize, Sum, Variance,
 
             Add, Subtract, Divide, Multiply, Power, Log, Modulo, LogicalAnd, LogicalOr, Negate,

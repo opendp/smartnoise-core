@@ -83,10 +83,9 @@ pub fn arraynd_to_json<T: Serialize + Clone>(array: &ArrayD<T>) -> Result<serde_
     match array.ndim() {
         0 => Ok(serde_json::json!(array.first().unwrap())),
         1 => Ok(serde_json::json!(array.clone().into_dimensionality::<Ix1>().unwrap().to_vec())),
-//        2 => {
-//            serde_json::json!(array.into_dimensionality::<Ix2>().clone().unwrap().to_vec())
-//        },
-        _ => Err("converting a matrix to json is not implemented".into())
+        // TODO: preserve shape
+        2 => Ok(serde_json::json!(array.iter().cloned().collect::<Vec<T>>())),
+        _ => Err("array must have dimensionality less than 2".into())
     }
 }
 

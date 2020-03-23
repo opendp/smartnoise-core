@@ -153,6 +153,12 @@ impl From<Vector2DJaggedProperties> for ValueProperties {
     }
 }
 
+impl From<ndarray::ShapeError> for Error {
+    fn from(_: ndarray::ShapeError) -> Self {
+        "ndarray: invalid shape provided".into()
+    }
+}
+
 
 /// The universal n-dimensional array representation.
 ///
@@ -420,7 +426,10 @@ pub struct ArrayNDProperties {
     /// either min/max or categories
     pub nature: Option<Nature>,
     /// f64, i64, bool, String
-    pub data_type: DataType
+    pub data_type: DataType,
+    /// index of last Materialize or Filter node, where dataset was created
+    /// used to determine if arrays are conformable even when N is not known
+    pub dataset_id: Option<i64>
 }
 
 
@@ -536,7 +545,7 @@ impl ArrayNDProperties {
 }
 
 /// Fundamental data types for ArrayNDs and Vector2DJagged Values.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum DataType {
     Bool, Str, F64, I64
 }
@@ -1023,6 +1032,36 @@ pub fn privacy_usage_reducer(
             _ => None
         }
     }
+}
+
+pub fn broadcast_privacy_usage(usages: &Vec<proto::PrivacyUsage>, length: usize) -> Result<Vec<proto::PrivacyUsage>> {
+    if usages.len() == length {
+        return Ok(usages.clone())
+    }
+
+    if usages.len() != 1 {
+        bail!("{} privacy parameters passed when {} were required", usages.len(), length);
+    }
+
+    if usages.len() == 0 {
+        bail!("privacy parameters are required");
+    }
+
+    Ok(match usages[0].distance.clone().ok_or("distance must be defined on a privacy usage")? {
+        proto::privacy_usage::Distance::DistancePure(pure) => (0..length)
+            .map(|_| proto::PrivacyUsage {
+                distance: Some(proto::privacy_usage::Distance::DistancePure(proto::privacy_usage::DistancePure {
+                    epsilon: pure.epsilon / length as f64
+                }))
+            }).collect(),
+        proto::privacy_usage::Distance::DistanceApproximate(approx) => (0..length)
+            .map(|_| proto::PrivacyUsage {
+                distance: Some(proto::privacy_usage::Distance::DistanceApproximate(proto::privacy_usage::DistanceApproximate {
+                    epsilon: approx.epsilon / length as f64,
+                    delta: approx.delta / length as f64
+                }))
+            }).collect()
+    })
 }
 
 pub fn expand_component(

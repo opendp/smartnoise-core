@@ -6,6 +6,7 @@ use crate::{proto, base};
 
 use crate::components::{Component};
 use crate::base::{Hashmap, Value, NodeProperties, ValueProperties, HashmapProperties, ArrayNDProperties, DataType};
+use crate::utilities::serial::parse_i64_null;
 
 impl Component for proto::Materialize {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
@@ -35,6 +36,7 @@ impl Component for proto::Materialize {
                         aggregator: None,
                         nature: None,
                         data_type: DataType::Str,
+                        dataset_id: self.dataset_id.as_ref().and_then(parse_i64_null)
                     }))).collect()),
                 (None, Some(num_columns)) => Hashmap::<ValueProperties>::I64((0..num_columns)
                     .map(|name| (name.clone(), ValueProperties::ArrayND(ArrayNDProperties {
@@ -46,6 +48,7 @@ impl Component for proto::Materialize {
                         aggregator: None,
                         nature: None,
                         data_type: DataType::Str,
+                        dataset_id: self.dataset_id.as_ref().and_then(parse_i64_null)
                     }))).collect()),
                 _ => return Err("either column_names or num_columns must be specified".into())
             }

@@ -7,7 +7,7 @@ use crate::{proto, base};
 use crate::hashmap;
 use crate::components::{Component, Accuracy, Expandable, Report};
 
-use crate::base::{NodeProperties, Value, ValueProperties, prepend};
+use crate::base::{NodeProperties, Value, ValueProperties, prepend, broadcast_privacy_usage};
 use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, value_to_json};
 
 impl Component for proto::DpMaximum {
@@ -50,12 +50,12 @@ impl Expandable for proto::DpMaximum {
             batch: component.batch,
         });
 
-        let id_candidates = component.arguments.get("candidates").unwrap().clone();
+//        let id_candidates = component.arguments.get("candidates").unwrap().clone();
 
         // sanitizing
         computation_graph.insert(component_id, proto::Component {
-            arguments: hashmap!["data".to_owned() => id_maximum, "candidates".to_owned() => id_candidates.clone()],
-            variant: Some(proto::component::Variant::from(proto::ExponentialMechanism {
+            arguments: hashmap!["data".to_owned() => id_maximum],
+            variant: Some(proto::component::Variant::from(proto::LaplaceMechanism {
                 privacy_usage: self.privacy_usage.clone()
             })),
             omit: false,
@@ -105,20 +105,23 @@ impl Report for proto::DpMaximum {
 
         let mut releases = Vec::new();
 
-        let minimums = data_property.get_min_f64().unwrap();
-        let maximums = data_property.get_max_f64().unwrap();
+        let minimums = data_property.get_min_f64()?;
+        let maximums = data_property.get_max_f64()?;
 
-        for column_number in 0..data_property.num_columns.unwrap() {
+        let num_columns = data_property.get_num_columns()?;
+        let privacy_usages = broadcast_privacy_usage(&self.privacy_usage, num_columns as usize)?;
+
+        for column_number in 0..num_columns {
             let mut release_info = HashMap::new();
             release_info.insert("mechanism".to_string(), serde_json::json!(self.implementation.clone()));
-            release_info.insert("releaseValue".to_string(), value_to_json(&release).unwrap());
+            release_info.insert("releaseValue".to_string(), value_to_json(&release)?);
 
             let release = JSONRelease {
                 description: "DP release information".to_string(),
                 statistic: "DPMaximum".to_string(),
                 variables: vec![],
                 release_info,
-                privacy_loss: privacy_usage_to_json(&self.privacy_usage[column_number as usize].clone()),
+                privacy_loss: privacy_usage_to_json(&privacy_usages[column_number as usize].clone()),
                 accuracy: None,
                 batch: component.batch as u64,
                 node_id: node_id.clone() as u64,

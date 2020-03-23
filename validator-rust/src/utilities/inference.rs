@@ -350,7 +350,8 @@ pub fn infer_property(value: &Value) -> Result<ValueProperties> {
                 ArrayND::F64(_) => DataType::F64,
                 ArrayND::I64(_) => DataType::I64,
                 ArrayND::Str(_) => DataType::Str,
-            }
+            },
+            dataset_id: None
         }.into(),
         Value::Hashmap(hashmap) => HashmapProperties {
             num_records: None,

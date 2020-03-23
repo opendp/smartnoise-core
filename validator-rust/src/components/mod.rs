@@ -28,13 +28,14 @@ mod dp_moment_raw;
 mod dp_sum;
 mod filter;
 mod impute;
-mod index;
+pub mod index;
 mod kth_raw_sample_moment;
 mod maximum;
 mod materialize;
 mod minimum;
 mod partition;
 mod quantile;
+mod reshape;
 mod mean;
 mod mechanism_exponential;
 mod mechanism_gaussian;
@@ -211,7 +212,7 @@ impl Component for proto::component::Variant {
 
             ExponentialMechanism, GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism,
 
-            Minimum, Quantile, Resize, Sum, Variance,
+            Minimum, Quantile, Reshape, Resize, Sum, Variance,
 
             Add, Subtract, Divide, Multiply, Power, Log, Modulo, LogicalAnd, LogicalOr, Negate,
             Equal, LessThan, GreaterThan, Negative

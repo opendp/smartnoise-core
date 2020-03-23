@@ -40,9 +40,10 @@ impl Component for proto::Add {
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
                 .map(|(l, r)| l.max(r)).collect(),
             num_columns: Some(num_columns),
-            num_records: Some(num_records),
+            num_records,
             aggregator: None,
-            data_type: left_property.data_type
+            data_type: left_property.data_type,
+            dataset_id: left_property.dataset_id
         }.into())
     }
 
@@ -83,9 +84,10 @@ impl Component for proto::Subtract {
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
                 .map(|(l, r)| l.max(r)).collect(),
             num_columns: Some(num_columns),
-            num_records: Some(num_records),
+            num_records,
             aggregator: None,
-            data_type: left_property.data_type
+            data_type: left_property.data_type,
+            dataset_id: left_property.dataset_id
         }.into())
     }
 
@@ -153,9 +155,10 @@ impl Component for proto::Divide {
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
                 .map(|(l, r)| l.max(r)).collect(),
             num_columns: Some(num_columns),
-            num_records: Some(num_records),
+            num_records,
             aggregator: None,
-           data_type: left_property.data_type
+           data_type: left_property.data_type,
+            dataset_id: left_property.dataset_id
         }.into())
     }
 
@@ -197,8 +200,9 @@ impl Component for proto::Multiply {
                 .map(|(l, r)| l.max(r)).collect(),
             num_columns: Some(num_columns),
             data_type: left_property.data_type,
-           num_records: Some(num_records),
-            aggregator: None
+           num_records,
+            aggregator: None,
+            dataset_id: left_property.dataset_id
         }.into())
     }
 
@@ -236,9 +240,10 @@ impl Component for proto::Power {
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
                 .map(|(l, r)| l.max(r)).collect(),
             num_columns: Some(num_columns),
-            num_records: Some(num_records),
+            num_records,
             data_type: left_property.data_type,
-            aggregator: None
+            aggregator: None,
+            dataset_id: left_property.dataset_id
         }.into())
     }
 
@@ -279,9 +284,10 @@ impl Component for proto::Log {
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
                 .map(|(l, r)| l.max(r)).collect(),
             num_columns: Some(num_columns),
-            num_records: Some(num_records),
+            num_records,
             data_type: left_property.data_type,
             aggregator: None,
+            dataset_id: left_property.dataset_id
         }.into())
     }
 
@@ -370,9 +376,10 @@ impl Component for proto::Modulo {
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
                 .map(|(l, r)| l.max(r)).collect(),
             num_columns: Some(num_columns),
-            num_records: Some(num_records),
+            num_records,
             data_type: left_property.data_type,
-            aggregator: None
+            aggregator: None,
+            dataset_id: left_property.dataset_id
         }.into())
     }
     fn get_names(
@@ -459,9 +466,10 @@ impl Component for proto::And {
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
                 .map(|(l, r)| l.max(r)).collect(),
             num_columns: Some(num_columns),
-            num_records: Some(num_records),
+            num_records,
             aggregator: None,
-            data_type: left_property.data_type
+            data_type: left_property.data_type,
+            dataset_id: left_property.dataset_id
         }.into())
     }
 
@@ -500,9 +508,10 @@ impl Component for proto::Or {
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
                 .map(|(l, r)| l.max(r)).collect(),
             num_columns: Some(num_columns),
-            num_records: Some(num_records),
+            num_records,
             aggregator: None,
-            data_type: left_property.data_type
+            data_type: left_property.data_type,
+            dataset_id: left_property.dataset_id
         }.into())
     }
 
@@ -541,9 +550,10 @@ impl Component for proto::Negate {
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
                 .map(|(l, r)| l.max(r)).collect(),
             num_columns: Some(num_columns),
-            num_records: Some(num_records),
+            num_records,
             aggregator: None,
-            data_type: left_property.data_type
+            data_type: left_property.data_type,
+            dataset_id: left_property.dataset_id
         }.into())
     }
 
@@ -582,9 +592,10 @@ impl Component for proto::Equal {
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
                 .map(|(l, r)| l.max(r)).collect(),
             num_columns: Some(num_columns),
-            num_records: Some(num_records),
+            num_records,
             aggregator: None,
-            data_type: left_property.data_type
+            data_type: left_property.data_type,
+            dataset_id: left_property.dataset_id
         }.into())
     }
 
@@ -623,9 +634,10 @@ impl Component for proto::LessThan {
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
                 .map(|(l, r)| l.max(r)).collect(),
             num_columns: Some(num_columns),
-            num_records: Some(num_records),
+            num_records,
             aggregator: None,
-            data_type: left_property.data_type
+            data_type: left_property.data_type,
+            dataset_id: left_property.dataset_id
         }.into())
     }
 
@@ -664,9 +676,10 @@ impl Component for proto::GreaterThan {
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
                 .map(|(l, r)| l.max(r)).collect(),
             num_columns: Some(num_columns),
-            num_records: Some(num_records),
+            num_records,
             aggregator: None,
-            data_type: left_property.data_type
+            data_type: left_property.data_type,
+            dataset_id: left_property.dataset_id
         }.into())
     }
 
@@ -685,7 +698,7 @@ pub struct Operators {
     pub bool: Option<Box<dyn Fn(&bool, &bool) -> bool>>,
 }
 
-pub fn propagate_binary_shape(left_property: &ArrayNDProperties, right_property: &ArrayNDProperties) -> Result<(i64, i64)> {
+pub fn propagate_binary_shape(left_property: &ArrayNDProperties, right_property: &ArrayNDProperties) -> Result<(i64, Option<i64>)> {
 
     let left_num_columns = left_property.get_num_columns()?;
     let right_num_columns = right_property.get_num_columns()?;
@@ -707,13 +720,16 @@ pub fn propagate_binary_shape(left_property: &ArrayNDProperties, right_property:
     let right_is_row_broadcastable = right_property.releasable && right_num_records == 1;
 
     if !(left_is_row_broadcastable || right_is_row_broadcastable) && !(left_num_records == right_num_records) {
+        if left_property.dataset_id == right_property.dataset_id {
+            return Ok((output_num_columns, None))
+        }
         return Err("number of rows must be the same for left and right arguments".into());
     }
 
     // either left, right or both are broadcastable, so take the largest
     let output_num_records = left_num_records.max(right_num_records);
 
-    Ok((output_num_columns, output_num_records))
+    Ok((output_num_columns, Some(output_num_records)))
 }
 
 pub fn propagate_binary_nature(left_property: &ArrayNDProperties, right_property: &ArrayNDProperties, operator: &Operators, &output_num_columns: &i64) -> Result<Option<Nature>> {
