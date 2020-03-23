@@ -8,7 +8,7 @@ use ndarray::{ArrayD, Axis, Array1};
 
 use whitenoise_validator::proto;
 
-use crate::utilities::array::slow_select;
+use whitenoise_validator::utilities::array::slow_select;
 
 
 impl Evaluable for proto::Filter {

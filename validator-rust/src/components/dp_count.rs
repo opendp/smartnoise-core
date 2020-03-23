@@ -107,15 +107,11 @@ impl Report for proto::DpCount {
         _properties: &NodeProperties,
         release: &Value
     ) -> Result<Option<Vec<JSONRelease>>> {
-        let mut release_info = HashMap::new();
-        release_info.insert("mechanism".to_string(), serde_json::json!(self.implementation.clone()));
-        release_info.insert("releaseValue".to_string(), value_to_json(&release)?);
-
         Ok(Some(vec![JSONRelease {
             description: "DP release information".to_string(),
             statistic: "DPCount".to_string(),
-            variables: vec![],
-            release_info,
+            variables: serde_json::json!(Vec::<String>::new()),
+            release_info: value_to_json(&release)?,
             privacy_loss: privacy_usage_to_json(&self.privacy_usage[0].clone()),
             accuracy: None,
             batch: component.batch as u64,
@@ -124,6 +120,7 @@ impl Report for proto::DpCount {
             algorithm_info: AlgorithmInfo {
                 name: "".to_string(),
                 cite: "".to_string(),
+                mechanism: self.implementation.clone(),
                 argument: serde_json::json!({})
             }
         }]))

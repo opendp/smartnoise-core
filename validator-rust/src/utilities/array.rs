@@ -1,4 +1,4 @@
-use whitenoise_validator::errors::*;
+use crate::errors::*;
 
 
 // TODO: open an issue on the rust ndarray package
