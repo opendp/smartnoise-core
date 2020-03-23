@@ -1,0 +1,260 @@
+\documentclass[11pt]{scrartcl} % Font size
+\input{../structure.tex} % Include the file specifying the document structure and custom commands
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\title{
+	\normalfont\normalsize
+	\textsc{Harvard Privacy Tools Project}\\ % Your university, school and/or department name(s)
+	\vspace{25pt} % Whitespace
+	\rule{\linewidth}{0.5pt}\\ % Thin top horizontal rule
+	\vspace{20pt} % Whitespace
+	{\huge Variance Sensitivity Proofs}\\ % The assignment title
+	\vspace{12pt} % Whitespace
+	\rule{\linewidth}{2pt}\\ % Thick bottom horizontal rule
+	\vspace{12pt} % Whitespace
+}
+
+% \author{\LARGE} % Your name
+
+\date{\normalsize\today} % Today's date (\today) or a custom date
+
+\begin{document}
+
+\maketitle
+
+\begin{definition}
+Let sample variance be defined as
+$$ s^2(x) = \frac{1}{n-1} \sum_{i=1}^n (x_i - \mean)^2,$$
+where $\mean$ refers to the sample mean of $x$.
+\end{definition}
+
+\section{Neighboring Definition: Change One}
+\subsection{$\ell_1$-sensitivity}
+\begin{lemma}
+\label{lemma:meansum}
+For arbitrary $a$,
+$$ \sum_{i=1}^n (x_i - a)^2 = \sum_{i=1}^n (x_i - \bar{x})^2 + n(a-\bar{x})^2.$$
+\end{lemma}
+
+\begin{proof}
+\begin{align*}
+\sum_{i=1}^n (x_i - a)^2 &= \sum_{i=1}^n \left( (x_i - \bar{x}) - (a-\bar{x}) \right)^2\\
+	&= \sum_{i=1}^n \left( (x_i - \bar{x})^2 -2(x_i - \bar{x})(a-\bar{x}) + (a-\bar{x})^2\right)\\
+	&= \sum_{i=1}^n (x_i - \bar{x})^2 - 2\sum_{i=1}^n \left(x_ia-x_i\bar{x} -\bar{x}a + \bar{x}^2\right) + \sum_{i=1}^n \left( a^2 -2a\bar{x} + \bar{x}^2\right)\\
+	&=  \sum_{i=1}^n (x_i - \bar{x})^2 -2a\sum_{i=1}^n x_i + 2\bar{x}\sum_{i=1}^n x_i + 2\bar{x}an - 2\bar{x}^2n + a^2n-2a\bar{x}n+\bar{x}^2n\\
+	&=  \sum_{i=1}^n (x_i - \bar{x})^2 + a^2n-2a\bar{x}n+\bar{x}^2n\\
+	&=  \sum_{i=1}^n (x_i - \bar{x})^2 + n(a-\bar{x})^2
+\end{align*}
+
+\end{proof}
+
+\begin{theorem}
+\label{thm:l1change}
+Let
+$$ f(\x) = \sum_{i=1}^n (x_i - \bar{x})^2.$$
+Then for $\x$ bounded between $m$ and $M,$ $f(\cdot)$ has $\ell_1$-sensitivity in the change-one model bounded above by
+$$\frac{n-1}{n} (M-m)^2.$$
+\end{theorem}
+
+\begin{proof}
+Consider databases $\xprime$ and $\xprimeprime$ which differ in a single point. For notational ease, call $\x$ the part of $\xprime$ and $\xprimeprime$
+that is the same, and say that $\x$ contains $n$ points. WLOG say that the last data point in the database is the one that differs. I.e.,
+$\xprime = \x \cup \{x_{n+1}\},$ and $\xprimeprime = \x \cup \{x'_{n+1}\}$. This proof assumes that a ``neighboring database" is one that differs in a single
+data-point, so we will ultimately be comparing $f(\xprime)$ and $f(\xprimeprime)$. However, it is useful to first write $f(\xprime)$ in terms of $f(\x)$.
+Note that
+
+\begin{align}
+\label{eqn:meanprime}
+\bar{x}' &= \frac{1}{n+1} \sum_{i=1}^{n+1} x_i \nonumber \\
+	&= \frac{n\bar{x} + x_{n+1}}{n+1}.
+\end{align}
+
+Then,
+\begin{align}
+\label{eq:varAddOnePoint}
+f(\xprime) &= \sum_{i=1}^n (x_i - \bar{x}')^2 + (x_{n+1} - \bar{x}')^2 \notag\\
+	&= \sum_{i=1}^n (x_i - \bar{x})^2 + n(\bar{x}'-\bar{x})^2 + (x_{n+1} - \bar{x}')^2 &&\text{(By Lemma \ref{lemma:meansum})} \notag\\
+	&= f(\x) + n\left( \frac{n\bar{x} + x_{n+1}}{n+1}-\bar{x}\right)^2 + \left(x_{n+1} - \frac{n\bar{x} + x_{n+1}}{n+1} \right)^2 &&\text{(By Equation \ref{eqn:meanprime})} \notag\\
+	&= f(\x) + n\left(\frac{x_{n+1}-\bar{x}}{n+1}\right)^2 + \left( \frac{nx_{n+1}-n\bar{x}}{n+1}\right)^2 \notag\\
+	&= f(\x) + (x_{n+1}-\bar{x})^2 \frac{n+n^2}{(n+1)^2} \notag\\
+	&= f(\x) + (x_{n+1}-\bar{x})^2 \frac{n}{n+1} \notag\\
+\end{align}
+
+Now, to bound the sensitivity of $f$, note that
+
+\begin{align}
+	\label{eq:l1_np1_bound}
+\left\vert f(\xprime) - f(\xprimeprime) \right\vert &= \left\vert (x_{n+1}-\bar{x})^2 \frac{n}{n+1} - (x_{n+1}'-\bar{x})^2 \frac{n}{n+1} \right\vert \\
+	&\le (M-m)^2 \frac{n}{n+1}. \nonumber
+\end{align}
+The bound in the final line follows from the case where $x_{n+1} = M$ (resp. $m$) and $\bar{x} = x'_{n+1} = m$ (resp. $M$). \newline
+
+So we have a bound on the sensitivity of $f(\cdot)$ for a data set of size $n+1$. Traditionally we consider sensitivities on a data set of size $n$.
+Redefining $n+1$ as $n$ in the above equation gives
+$$ (M-m)^2 \frac{n-1}{n}. $$
+\end{proof}
+
+\begin{corollary}
+Variance has $\ell_1$-sensitivity in the change-one model bounded above by
+$$ (M-m)^2 \frac{n-1}{n^2}. $$
+\end{corollary}
+
+\begin{proof}
+This follows from Theorem \ref{thm:l1change} with a renormalization by $n$.
+\end{proof}
+
+\begin{corollary}
+Sample variance has $\ell_1$-sensitivity in the change-one model bounded above by
+$$ \frac{(M-m)^2 }{n}. $$
+\end{corollary}
+
+\begin{proof}
+This follows from Theorem \ref{thm:l1change} with a renormalization by $n-1$.
+\end{proof}
+
+\subsection{$\ell_2$-sensitivity}
+\begin{theorem}
+\label{thm:l2change}
+	Let $X$ be a data set with $n$ elements, $x_1, \hdots, x_n$ and let
+	\[ f(X) = \sum_{i=1}^n (x_i - \bar{x})^2 \]
+	be the sample variance.
+	For $X$ bounded between $m$ and $M,$ $f(\cdot)$ has an $\ell_2$-sensitivity in the change-one model of
+	\[ \left( \frac{n-1}{n} (M-m)^2 \right)^2 \]
+\end{theorem}
+
+\begin{proof}
+	We can pick up from statement~\ref{eq:l1_np1_bound}, switching from an $\ell_1$ to an $\ell_2$ norm and interpreting the data sets in question to be of size $n$ rather than $n+1$.
+	\begin{align*}
+		(f(x') - f(x''))^2
+			&= \left( (x_{n}-\bar{x})^2 \frac{n-1}{n} - (x_{n}'-\bar{x})^2 \frac{n-1}{n} \right)^2 \\
+			&= \left( \frac{n-1}{n} \right)^2 \left( (x_n - \bar{x})^2 - (x'_n - \bar{x})^2 \right)^2 \\
+			&\leq \left( \frac{n-1}{n} \right)^2 \left( (M-m)^2 \right)^2 \\
+			&= \left( \frac{n-1}{n} \right)^2 (M - m)^4 \\
+			&= \left( \frac{n-1}{n} (M - m)^2 \right)^2.
+	\end{align*}
+\end{proof}
+
+\begin{corollary}
+Variance has $\ell_2$-sensitivity in the change-one model bounded above by
+$$ \left(\frac{n-1}{n^2} (M-m)^2\right)^2.$$ 
+\end{corollary}
+
+\begin{proof}
+This follows from Theorem \ref{thm:l2change} with a renormalization by $n$.
+\end{proof}
+
+\begin{corollary}
+Sample variance has $\ell_2$-sensitivity in the change-one model bounded above by
+$$ \left(\frac{1}{n} (M-m)^2\right)^2.$$ 
+\end{corollary}
+
+\begin{proof}
+This follows from Theorem \ref{thm:l2change} with a renormalization by $n-1$.
+\end{proof}
+
+\section{Neighboring Definition: Add/Drop One}
+\subsection{$\ell_1$-sensitivity}
+ \begin{theorem}
+ \label{thm:l1addsub}
+ 	Let $X$ be a data set with $n$ elements, $x_1, \hdots, x_n$ and
+ 	\[ f(X) = \sum_{i=1}^n (x_i - \bar{X})^2. \]
+ 	For $X$ bounded between $m$ and $M,$ $f(\cdot)$ has a global $\ell_1$-sensitivity in the add/drop one model of
+ 	\[ \frac{n}{n+1} (M-m)^2 \]
+ \end{theorem}
+
+ \begin{proof}
+ 	We must consider both adding and removing an element from $X$. \newline
+
+ 	Adding an element: \newline
+ 	Let $X' = X \cup x'_{n+1}$. Recall from Eq.~\ref{eq:varAddOnePoint} that for
+
+	$$ f(x) = \sum_{i=1}^n (x_i - \bar{x})^2, $$
+	$$ f(x') = f(x) + (x_{n+1} - \bar{x})^2 \frac{n}{n+1}.$$
+
+	So,
+
+	\begin{align}
+	\label{eq:L1add}
+	\left\vert f(x') - f(x) \right\vert &= \left\vert (x_{n+1} - \bar{x})^2 \frac{n}{n+1} \right\vert \nonumber\\
+		&= \left\vert (x_{n+1} - \bar{x})^2 \frac{n}{n+1} \right\vert \nonumber \\
+		&\le \left( M-m \right)^2 \frac{n}{n+1} 
+	\end{align}
+
+	Removing an element: \\
+	Let $X' = X \setminus \{x_n\}$. Then, rewriting Eq.~\ref{eq:varAddOnePoint} with $n$ set to $n+1$ since ``$x$'' in this case is the greater set,
+	$$ f(x) = f(x') + (x_n - \bar{x}')^2 \frac{n-1}{n}.$$
+
+	Then,
+	\begin{align}
+	\label{eq:L1sub}
+	\left\vert f(x) - f(x') \right\vert &= \left\vert (x_n - \bar{x}')^2 \frac{n-1}{n} \right\vert \nonumber\\
+		&\le (M-m)^2 \frac{n-1}{n},\\
+	\end{align}
+
+	Note that for any $n \ge 1$,
+	\begin{equation}
+	\label{ineq}
+	 \frac{n}{n + 1} > \frac{n-1}{n}.
+	\end{equation}
+
+	So, the worst-case bound always occurs in the ``add-one'' case, and the $\ell_1$-sensitivity of $f(\cdot)$ is in general bounded by
+
+\begin{equation}
+\label{eq:fBoundaddsub}
+\left( M-m \right)^2 \frac{n}{n + 1}.
+\end{equation}
+
+ \end{proof}
+
+ \begin{corollary}
+ \label{cor:l1addsub}
+	Variance has $\ell_1$-sensitivity in the add/drop one model bounded above by
+	$$\left( M-m \right)^2 \frac{1}{n+1}. $$
+ \end{corollary}
+ 
+ \begin{proof}
+This follows from Theorem \ref{thm:l1addsub} with a renormalization by $n$.
+\end{proof}
+
+ \begin{corollary}
+ \label{cor:l1addsub}
+	Sample variance has $\ell_1$-sensitivity in the add/drop one model bounded above by
+	$$\left( M-m \right)^2 \frac{n}{n^2 - 1}. $$
+ \end{corollary}
+ 
+ \begin{proof}
+This follows from Theorem \ref{thm:l1addsub} with a renormalization by $n-1$.
+\end{proof}
+
+\subsection{$\ell_2$-sensitivity}
+
+\begin{theorem}
+\label{thm:l2addsub}
+Variance has $\ell_2$-sensitivity in the add/drop one model bounded above by
+	$$ \left( \left( M-m \right)^2 \frac{1}{n+1} \right)^2.$$
+\end{theorem}
+
+\begin{proof}
+Because the bounds in Equations \ref{eq:L1add} and \ref{eq:L1sub} are positive, they hold for their square. Then, by the inequality for $n \ge 1$ in Equation \ref{ineq} it follows that the $\ell_2$ sensitivity of the variance is bounded by 
+$$
+\left( \left( M-m \right)^2 \frac{1}{n+1} \right)^2,
+$$
+where the change in constant from Equations \ref{eq:L1add} to $1/(n+1)$ comes from the $1/n$ in the definition of variance.
+\end{proof}
+
+\begin{corollary}
+Sample variance has $\ell_2$-sensitivity in the add/drop one model bounded above by
+	$$ \left( \left( M-m \right)^2 \frac{n}{n^2 - 1} \right)^2.$$
+\end{corollary}
+
+\begin{proof}
+The logic here is the same as for \ref{thm:l2addsub} with a renormalization by $n-1$ rather than by $n$.
+\end{proof}
+
+\bibliographystyle{alpha}
+\bibliography{mean}
+
+\end{document}
