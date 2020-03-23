@@ -64,6 +64,9 @@ class Dataset(object):
         if num_columns is None and column_names is None:
             raise ValueError("either num_columns or column_names must be set")
 
+        self.dataset_id = context.dataset_count
+        context.dataset_count += 1
+
         data_source = {}
         if path is not None:
             data_source['file_path'] = path
@@ -77,7 +80,8 @@ class Dataset(object):
                                    },
                                    options={
                                        "data_source": value_pb2.DataSource(**data_source),
-                                       "private": private
+                                       "private": private,
+                                       "dataset_id": value_pb2.I64Null(option=self.dataset_id)
                                    })
 
     def __getitem__(self, identifier):
@@ -201,6 +205,9 @@ class Component(object):
     def __abs__(self):
         return Component('Abs', arguments={'data': self})
 
+    def __getitem__(self, identifier):
+        return Component('Index', arguments={'columns': Component.of(identifier), 'data': self})
+
     def __hash__(self):
         return id(self)
 
@@ -286,6 +293,9 @@ class Analysis(object):
         self.component_count = 0
         for component in components:
             self.add_component(component)
+
+        # track the number of datasets in use
+        self.dataset_count = 0
 
         # nested analyses
         self._context_cache = None

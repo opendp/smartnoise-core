@@ -14,20 +14,20 @@ impl Evaluable for proto::Cast {
         let output_type = get_argument(&arguments, "type")?.get_first_str()?;
 
         let data = get_argument(&arguments, "data")?.get_arraynd()?;
-        match &output_type {
+        match output_type.to_lowercase().as_str() {
             // if casting to bool, identify what value should map to true, then cast
-            x if x == &"BOOL".to_string() => {
+            "bool" => {
                 let true_label = get_argument(&arguments, "true_label")?.get_arraynd()?;
                 Ok(cast_bool(&data, &true_label)?.into())
             },
-            x if x == &"FLOAT".to_string() => Ok(Value::ArrayND(ArrayND::F64(cast_f64(&data)?))),
-            x if x == &"INT".to_string() => {
+            "float" | "real" => Ok(Value::ArrayND(ArrayND::F64(cast_f64(&data)?))),
+            "int" | "integer" => {
                 // TODO: handle different bounds on each column
                 let min = get_argument(&arguments, "min")?.get_first_i64()?;
                 let max = get_argument(&arguments, "max")?.get_first_i64()?;
                 Ok(cast_i64(&data, &min, &max)?.into())
             },
-            x if x == &"STRING".to_string() =>
+            "string" | "str" =>
                 Ok(cast_str(&data)?.into()),
             _ => Err("type is not recognized, must be BOOL, FLOAT, INT or STRING".into())
         }

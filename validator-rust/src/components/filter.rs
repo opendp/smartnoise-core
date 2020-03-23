@@ -38,6 +38,9 @@ impl Component for proto::Filter {
         // the number of records is not known after filtering rows
         data_property.num_records = None;
 
+        // This exists to prevent binary ops on non-conformable arrays from being approved
+        data_property.dataset_id = None;
+
         Ok(data_property.into())
     }
 

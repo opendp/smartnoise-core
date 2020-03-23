@@ -8,7 +8,7 @@ use ndarray::{ArrayD, Axis, Array1};
 
 use whitenoise_validator::proto;
 
-use crate::utilities::array::select;
+use crate::utilities::array::slow_select;
 
 
 impl Evaluable for proto::Filter {
@@ -43,7 +43,7 @@ impl Evaluable for proto::Filter {
 /// let filtered = filter(&data, &mask).unwrap();
 /// assert!(filtered == arr2(&[ [1, 2, 3], [7, 8, 9] ]).into_dyn());
 /// ```
-pub fn filter<T: Clone>(data: &ArrayD<T>, mask: &ArrayD<bool>) -> Result<ArrayD<T>> {
+pub fn filter<T: Clone + Default>(data: &ArrayD<T>, mask: &ArrayD<bool>) -> Result<ArrayD<T>> {
 
     let columnar_mask: Array1<bool> = mask.clone().into_dimensionality::<Ix1>().unwrap();
 
@@ -51,5 +51,5 @@ pub fn filter<T: Clone>(data: &ArrayD<T>, mask: &ArrayD<bool>) -> Result<ArrayD<
         .filter(|(_index, &v)| v)
         .map(|(index, _)| index)
         .collect();
-    Ok(select(&data, Axis(0), &mask_indices))
+    Ok(slow_select(&data, Axis(0), &mask_indices))
 }

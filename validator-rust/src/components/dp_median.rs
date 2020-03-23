@@ -8,7 +8,7 @@ use crate::hashmap;
 use crate::components::{Component, Accuracy, Expandable, Report};
 
 
-use crate::base::{NodeProperties, Value, ValueProperties, prepend};
+use crate::base::{NodeProperties, Value, ValueProperties, prepend, broadcast_privacy_usage};
 use crate::utilities::json::{JSONRelease, value_to_json, privacy_usage_to_json, AlgorithmInfo};
 
 
@@ -55,12 +55,14 @@ impl Expandable for proto::DpMedian {
             batch: component.batch,
         });
 
-        let id_candidates = component.arguments.get("candidates").unwrap().clone();
+//        let id_candidates = component.arguments.get("candidates").unwrap().clone();
 
         // sanitizing
         computation_graph.insert(component_id, proto::Component {
-            arguments: hashmap!["data".to_owned() => id_median, "candidates".to_owned() => id_candidates],
-            variant: Some(proto::component::Variant::from(proto::ExponentialMechanism {
+            arguments: hashmap![
+                "data".to_owned() => id_median
+            ],
+            variant: Some(proto::component::Variant::from(proto::LaplaceMechanism {
                 privacy_usage: self.privacy_usage.clone()
             })),
             omit: false,
@@ -114,7 +116,11 @@ impl Report for proto::DpMedian {
         let minimums = data_property.get_min_f64().unwrap();
         let maximums = data_property.get_max_f64().unwrap();
 
-        for column_number in 0..data_property.num_columns.unwrap() {
+        let num_columns = data_property.get_num_columns()?;
+        let privacy_usages = broadcast_privacy_usage(&self.privacy_usage, num_columns as usize)?;
+
+
+        for column_number in 0..num_columns {
             let mut release_info = HashMap::new();
             release_info.insert("mechanism".to_string(), serde_json::json!(self.implementation.clone()));
             release_info.insert("releaseValue".to_string(), value_to_json(&release).unwrap());
@@ -124,7 +130,7 @@ impl Report for proto::DpMedian {
                 statistic: "DPMedian".to_string(),
                 variables: vec![],
                 release_info,
-                privacy_loss: privacy_usage_to_json(&self.privacy_usage[column_number as usize].clone()),
+                privacy_loss: privacy_usage_to_json(&privacy_usages[column_number as usize].clone()),
                 accuracy: None,
                 batch: component.batch as u64,
                 node_id: node_id.clone() as u64,
