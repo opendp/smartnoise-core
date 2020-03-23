@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["array",""],["mechanisms",""],["noise",""],["utilities",""]]});
+initSidebarItems({"mod":[["mechanisms",""],["noise",""],["utilities",""]]});

@@ -287,7 +287,7 @@
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">utilities</span>::<span class="ident">noise</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">components</span>::<span class="ident">impute</span>::{<span class="ident">impute_float_gaussian</span>, <span class="ident">impute_float_uniform</span>, <span class="ident">impute_categorical</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">utilities</span>::<span class="ident">utilities</span>::<span class="ident">get_num_columns</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">utilities</span>::<span class="ident">array</span>::{<span class="ident">slow_select</span>, <span class="ident">slow_stack</span>};
+<span class="kw">use</span> <span class="ident">whitenoise_validator</span>::<span class="ident">utilities</span>::<span class="ident">array</span>::{<span class="ident">slow_select</span>, <span class="ident">slow_stack</span>};
 
 <span class="kw">impl</span> <span class="ident">Evaluable</span> <span class="kw">for</span> <span class="ident">proto</span>::<span class="ident">Resize</span> {
     <span class="kw">fn</span> <span class="ident">evaluate</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">arguments</span>: <span class="kw-2">&amp;</span><span class="ident">NodeArguments</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&gt;</span> {

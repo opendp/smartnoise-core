@@ -104,7 +104,6 @@
 <span class="doccomment">//! Representation for report/json summaries</span>
 
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::{<span class="ident">HashMap</span>};
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">serde_json</span>;
 
@@ -121,12 +120,12 @@
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">JSONRelease</span> {
     <span class="kw">pub</span> <span class="ident">description</span>: <span class="ident">String</span>,
     <span class="doccomment">/// array of string that is column/s in the dataset</span>
-    <span class="kw">pub</span> <span class="ident">variables</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">variables</span>: <span class="ident">Value</span>,
     <span class="doccomment">/// User provide a value for either epsilon (epsilon&gt;0), delta (0&lt;delta&lt;1&gt;), or rho depending on the type of dp definitions (i.e. pure, approximated and concerted).</span>
     <span class="kw">pub</span> <span class="ident">statistic</span>: <span class="ident">String</span>,
     <span class="doccomment">/// The value released by the system</span>
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename</span>(<span class="ident">serialize</span> <span class="op">=</span> <span class="string">&quot;releaseInfo&quot;</span>, <span class="ident">deserialize</span> <span class="op">=</span> <span class="string">&quot;releaseInfo&quot;</span>))]</span>
-    <span class="kw">pub</span> <span class="ident">release_info</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Value</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">release_info</span>: <span class="ident">Value</span>,
     <span class="doccomment">/// The amount of privacy used to compute the release value</span>
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename</span>(<span class="ident">serialize</span> <span class="op">=</span> <span class="string">&quot;privacyLoss&quot;</span>, <span class="ident">deserialize</span> <span class="op">=</span> <span class="string">&quot;privacyLoss&quot;</span>))]</span>
     <span class="kw">pub</span> <span class="ident">privacy_loss</span>: <span class="ident">Value</span>,
@@ -161,6 +160,8 @@
 <span class="doccomment">/// Metadata about the algorithm used to compute the release value.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">AlgorithmInfo</span> {
+    <span class="comment">// mechanism used to generate the release values, typically `Laplace`, `Exponential`, etc.</span>
+    <span class="kw">pub</span> <span class="ident">mechanism</span>: <span class="ident">String</span>,
     <span class="kw">pub</span> <span class="ident">name</span>: <span class="ident">String</span>,
     <span class="doccomment">/// Citation to originating paper</span>
     <span class="kw">pub</span> <span class="ident">cite</span>: <span class="ident">String</span>,
@@ -186,8 +187,7 @@
     <span class="kw">match</span> <span class="ident">array</span>.<span class="ident">ndim</span>() {
         <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">serde_json</span>::<span class="macro">json</span><span class="macro">!</span>(<span class="ident">array</span>.<span class="ident">first</span>().<span class="ident">unwrap</span>())),
         <span class="number">1</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">serde_json</span>::<span class="macro">json</span><span class="macro">!</span>(<span class="ident">array</span>.<span class="ident">clone</span>().<span class="ident">into_dimensionality</span>::<span class="op">&lt;</span><span class="ident">Ix1</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>().<span class="ident">to_vec</span>())),
-        <span class="comment">// TODO: preserve shape</span>
-        <span class="number">2</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">serde_json</span>::<span class="macro">json</span><span class="macro">!</span>(<span class="ident">array</span>.<span class="ident">iter</span>().<span class="ident">cloned</span>().<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>())),
+        <span class="number">2</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">serde_json</span>::<span class="macro">json</span><span class="macro">!</span>(<span class="ident">array</span>.<span class="ident">genrows</span>().<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">row</span><span class="op">|</span> <span class="ident">row</span>.<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">clone</span>()).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>()).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>())),
         <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;array must have dimensionality less than 2&quot;</span>.<span class="ident">into</span>())
     }
 }
