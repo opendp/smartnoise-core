@@ -304,14 +304,14 @@
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">releases</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
 
-        <span class="kw">let</span> <span class="ident">minimums</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">get_min_f64</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">maximums</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">get_max_f64</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">num_records</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">get_num_records</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">minimums</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">get_min_f64</span>()<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">maximums</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">get_max_f64</span>()<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">num_records</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">get_num_records</span>()<span class="question-mark">?</span>;
 
-        <span class="kw">for</span> <span class="ident">column_number</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">data_property</span>.<span class="ident">num_columns</span>.<span class="ident">unwrap</span>() {
+        <span class="kw">for</span> <span class="ident">column_number</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">data_property</span>.<span class="ident">get_num_columns</span>()<span class="question-mark">?</span> {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">release_info</span> <span class="op">=</span> <span class="ident">HashMap</span>::<span class="ident">new</span>();
             <span class="ident">release_info</span>.<span class="ident">insert</span>(<span class="string">&quot;mechanism&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">serde_json</span>::<span class="macro">json</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">implementation</span>.<span class="ident">clone</span>()));
-            <span class="ident">release_info</span>.<span class="ident">insert</span>(<span class="string">&quot;releaseValue&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">value_to_json</span>(<span class="kw-2">&amp;</span><span class="ident">release</span>).<span class="ident">unwrap</span>());
+            <span class="ident">release_info</span>.<span class="ident">insert</span>(<span class="string">&quot;releaseValue&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">value_to_json</span>(<span class="kw-2">&amp;</span><span class="ident">release</span>)<span class="question-mark">?</span>);
 
             <span class="kw">let</span> <span class="ident">release</span> <span class="op">=</span> <span class="ident">JSONRelease</span> {
                 <span class="ident">description</span>: <span class="string">&quot;DP release information&quot;</span>.<span class="ident">to_string</span>(),

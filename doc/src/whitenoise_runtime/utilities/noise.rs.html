@@ -468,8 +468,6 @@
 <span id="468">468</span>
 <span id="469">469</span>
 <span id="470">470</span>
-<span id="471">471</span>
-<span id="472">472</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">whitenoise_validator</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">probability</span>::<span class="ident">distribution</span>::{<span class="ident">Gaussian</span>, <span class="ident">Laplace</span>, <span class="ident">Inverse</span>, <span class="ident">Distribution</span>};
@@ -752,11 +750,11 @@
 <span class="doccomment">/// ```</span>
 <span class="doccomment">/// use whitenoise_runtime::utilities::noise::sample_laplace;</span>
 <span class="doccomment">/// let n = sample_laplace(0.0, 2.0);</span>
-<span class="doccomment">/// # n.unwrap();</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_laplace</span>(<span class="ident">shift</span>: <span class="ident">f64</span>, <span class="ident">scale</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">probability</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="ident">sample_uniform</span>(<span class="kw-2">&amp;</span><span class="number">0.</span>, <span class="kw-2">&amp;</span><span class="number">1.</span>)<span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(<span class="ident">Laplace</span>::<span class="ident">new</span>(<span class="ident">shift</span>, <span class="ident">scale</span>).<span class="ident">inverse</span>(<span class="ident">probability</span>))
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_laplace</span>(<span class="ident">shift</span>: <span class="ident">f64</span>, <span class="ident">scale</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
+    <span class="comment">// nothing in sample_uniform can throw an error</span>
+    <span class="kw">let</span> <span class="ident">probability</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="ident">sample_uniform</span>(<span class="kw-2">&amp;</span><span class="number">0.</span>, <span class="kw-2">&amp;</span><span class="number">1.</span>).<span class="ident">unwrap</span>();
+    <span class="ident">Laplace</span>::<span class="ident">new</span>(<span class="ident">shift</span>, <span class="ident">scale</span>).<span class="ident">inverse</span>(<span class="ident">probability</span>)
 }
 
 <span class="doccomment">/// Sample from Gaussian distribution.</span>
@@ -773,11 +771,10 @@
 <span class="doccomment">/// ```</span>
 <span class="doccomment">/// use whitenoise_runtime::utilities::noise::sample_gaussian;</span>
 <span class="doccomment">/// let n = sample_gaussian(&amp;0.0, &amp;2.0);</span>
-<span class="doccomment">/// # n.unwrap();</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_gaussian</span>(<span class="ident">shift</span>: <span class="kw-2">&amp;</span><span class="ident">f64</span>, <span class="ident">scale</span>: <span class="kw-2">&amp;</span><span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">probability</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="ident">sample_uniform</span>(<span class="kw-2">&amp;</span><span class="number">0.</span>, <span class="kw-2">&amp;</span><span class="number">1.</span>)<span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(<span class="ident">Gaussian</span>::<span class="ident">new</span>(<span class="ident">shift</span>.<span class="ident">clone</span>(), <span class="ident">scale</span>.<span class="ident">clone</span>()).<span class="ident">inverse</span>(<span class="ident">probability</span>))
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_gaussian</span>(<span class="ident">shift</span>: <span class="kw-2">&amp;</span><span class="ident">f64</span>, <span class="ident">scale</span>: <span class="kw-2">&amp;</span><span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">let</span> <span class="ident">probability</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="ident">sample_uniform</span>(<span class="kw-2">&amp;</span><span class="number">0.</span>, <span class="kw-2">&amp;</span><span class="number">1.</span>).<span class="ident">unwrap</span>();
+    <span class="ident">Gaussian</span>::<span class="ident">new</span>(<span class="ident">shift</span>.<span class="ident">clone</span>(), <span class="ident">scale</span>.<span class="ident">clone</span>()).<span class="ident">inverse</span>(<span class="ident">probability</span>)
 }
 
 <span class="doccomment">/// Sample from truncated Gaussian distribution.</span>
@@ -924,23 +921,22 @@
 <span class="doccomment">/// use ndarray::prelude::*;</span>
 <span class="doccomment">/// use whitenoise_runtime::utilities::noise::sample_simple_geometric_mechanism;</span>
 <span class="doccomment">/// let geom_noise = sample_simple_geometric_mechanism(&amp;1., &amp;0, &amp;100, &amp;false);</span>
-<span class="doccomment">/// # geom_noise.unwrap();</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_simple_geometric_mechanism</span>(<span class="ident">scale</span>: <span class="kw-2">&amp;</span><span class="ident">f64</span>, <span class="ident">min</span>: <span class="kw-2">&amp;</span><span class="ident">i64</span>, <span class="ident">max</span>: <span class="kw-2">&amp;</span><span class="ident">i64</span>, <span class="ident">enforce_constant_time</span>: <span class="kw-2">&amp;</span><span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_simple_geometric_mechanism</span>(<span class="ident">scale</span>: <span class="kw-2">&amp;</span><span class="ident">f64</span>, <span class="ident">min</span>: <span class="kw-2">&amp;</span><span class="ident">i64</span>, <span class="ident">max</span>: <span class="kw-2">&amp;</span><span class="ident">i64</span>, <span class="ident">enforce_constant_time</span>: <span class="kw-2">&amp;</span><span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">i64</span> {
 
     <span class="kw">let</span> <span class="ident">alpha</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="ident">consts</span>::<span class="ident">E</span>.<span class="ident">powf</span>(<span class="op">-</span><span class="number">1.</span> <span class="op">/</span> <span class="kw-2">*</span><span class="ident">scale</span>);
     <span class="kw">let</span> <span class="ident">max_trials</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="ident">max</span> <span class="op">-</span> <span class="ident">min</span>;
 
     <span class="comment">// return 0 noise with probability (1-alpha) / (1+alpha), otherwise sample from geometric</span>
-    <span class="kw">let</span> <span class="ident">unif</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="ident">sample_uniform</span>(<span class="kw-2">&amp;</span><span class="number">0.</span>, <span class="kw-2">&amp;</span><span class="number">1.</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">unif</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="ident">sample_uniform</span>(<span class="kw-2">&amp;</span><span class="number">0.</span>, <span class="kw-2">&amp;</span><span class="number">1.</span>).<span class="ident">unwrap</span>();
     <span class="kw">if</span> <span class="ident">unif</span> <span class="op">&lt;</span> (<span class="number">1.</span> <span class="op">-</span> <span class="ident">alpha</span>) <span class="op">/</span> (<span class="number">1.</span> <span class="op">+</span> <span class="ident">alpha</span>) {
-        <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="number">0</span>);
+        <span class="kw">return</span> <span class="number">0</span>;
     } <span class="kw">else</span> {
         <span class="comment">// get random sign</span>
-        <span class="kw">let</span> <span class="ident">sign</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="number">2</span> <span class="op">*</span> <span class="ident">sample_bit</span>(<span class="kw-2">&amp;</span><span class="number">0.5</span>)<span class="question-mark">?</span> <span class="op">-</span> <span class="number">1</span>;
-        <span class="comment">// sample from censored geometric</span>
-        <span class="kw">let</span> <span class="ident">geom</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="ident">sample_geometric_censored</span>(<span class="kw-2">&amp;</span>(<span class="number">1.</span> <span class="op">-</span> <span class="ident">alpha</span>), <span class="kw-2">&amp;</span><span class="ident">max_trials</span>, <span class="ident">enforce_constant_time</span>)<span class="question-mark">?</span>;
-        <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">sign</span> <span class="op">*</span> <span class="ident">geom</span>);
+        <span class="kw">let</span> <span class="ident">sign</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="number">2</span> <span class="op">*</span> <span class="ident">sample_bit</span>(<span class="kw-2">&amp;</span><span class="number">0.5</span>).<span class="ident">unwrap</span>() <span class="op">-</span> <span class="number">1</span>;
+        <span class="comment">// sample from censored geometric. Unwrap is safe because (1. - alpha) is bounded by 1.</span>
+        <span class="kw">let</span> <span class="ident">geom</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="ident">sample_geometric_censored</span>(<span class="kw-2">&amp;</span>(<span class="number">1.</span> <span class="op">-</span> <span class="ident">alpha</span>), <span class="kw-2">&amp;</span><span class="ident">max_trials</span>, <span class="ident">enforce_constant_time</span>).<span class="ident">unwrap</span>();
+        <span class="kw">return</span> <span class="ident">sign</span> <span class="op">*</span> <span class="ident">geom</span>;
     }
 }</pre></div>
 </section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../";window.currentCrate = "whitenoise_runtime";</script><script src="../../../aliases.js"></script><script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script><script defer src="../../../search-index.js"></script></body></html>

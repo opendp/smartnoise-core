@@ -373,6 +373,7 @@
 <span id="373">373</span>
 <span id="374">374</span>
 <span id="375">375</span>
+<span id="376">376</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Infer ValueProperties from a public Value</span>
 <span class="doccomment">//!</span>
@@ -726,7 +727,8 @@
                 <span class="ident">ArrayND</span>::<span class="ident">F64</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">DataType</span>::<span class="ident">F64</span>,
                 <span class="ident">ArrayND</span>::<span class="ident">I64</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">DataType</span>::<span class="ident">I64</span>,
                 <span class="ident">ArrayND</span>::<span class="ident">Str</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">DataType</span>::<span class="ident">Str</span>,
-            }
+            },
+            <span class="ident">dataset_id</span>: <span class="prelude-val">None</span>
         }.<span class="ident">into</span>(),
         <span class="ident">Value</span>::<span class="ident">Hashmap</span>(<span class="ident">hashmap</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">HashmapProperties</span> {
             <span class="ident">num_records</span>: <span class="prelude-val">None</span>,

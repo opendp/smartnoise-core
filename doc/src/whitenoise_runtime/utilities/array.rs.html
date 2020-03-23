@@ -73,26 +73,25 @@
 <span id="73">73</span>
 <span id="74">74</span>
 <span id="75">75</span>
-<span id="76">76</span>
-<span id="77">77</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">whitenoise_validator</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
 
 <span class="comment">// TODO: open an issue on the rust ndarray package</span>
-<span class="comment">//  Requiring the Copy trait on stack makes this (necessary) part of ndarray unusable</span>
+<span class="comment">//  Requiring the Copy trait on stack makes strings un-stackable/un-selectable</span>
 <span class="comment">//  Pulled from the ndarray library, and tweaked to remove the Copy trait requirement</span>
 
 <span class="kw">use</span> <span class="ident">ndarray</span>::{<span class="ident">RemoveAxis</span>, <span class="ident">Axis</span>, <span class="ident">Ix</span>, <span class="ident">Array</span>, <span class="ident">ArrayView</span>};
 
 <span class="kw">use</span> <span class="ident">itertools</span>::<span class="ident">zip</span>;
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">stack</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>(
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">slow_stack</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>(
     <span class="ident">axis</span>: <span class="ident">Axis</span>,
     <span class="ident">arrays</span>: <span class="kw-2">&amp;</span>[<span class="ident">ArrayView</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>],
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Array</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span><span class="op">&gt;</span>
     <span class="kw">where</span>
         <span class="ident">A</span>: <span class="ident">Clone</span>,
+        <span class="ident">A</span>: <span class="ident">Default</span>,
         <span class="ident">D</span>: <span class="ident">RemoveAxis</span>,
 {
     <span class="kw">if</span> <span class="ident">arrays</span>.<span class="ident">is_empty</span>() {
@@ -113,13 +112,9 @@
     <span class="kw">let</span> <span class="ident">stacked_dim</span> <span class="op">=</span> <span class="ident">arrays</span>.<span class="ident">iter</span>().<span class="ident">fold</span>(<span class="number">0</span>, <span class="op">|</span><span class="ident">acc</span>, <span class="ident">a</span><span class="op">|</span> <span class="ident">acc</span> <span class="op">+</span> <span class="ident">a</span>.<span class="ident">len_of</span>(<span class="ident">axis</span>));
     <span class="ident">res_dim</span>[<span class="ident">axis</span>.<span class="ident">index</span>()] <span class="op">=</span> <span class="ident">stacked_dim</span>;
 
-    <span class="comment">// we can safely use uninitialized values here because they are Copy</span>
-    <span class="comment">// and we will only ever write to them</span>
     <span class="kw">let</span> <span class="ident">size</span> <span class="op">=</span> <span class="ident">res_dim</span>.<span class="ident">size</span>();
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">v</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">with_capacity</span>(<span class="ident">size</span>);
-    <span class="kw">unsafe</span> {
-        <span class="ident">v</span>.<span class="ident">set_len</span>(<span class="ident">size</span>);
-    }
+    <span class="kw">let</span> <span class="ident">v</span> <span class="op">=</span> (<span class="number">0</span>..<span class="ident">size</span>).<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">A</span>::<span class="ident">default</span>()).<span class="ident">collect</span>();
+
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">res</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">Array</span>::<span class="ident">from_shape_vec</span>(<span class="ident">res_dim</span>, <span class="ident">v</span>) {
         <span class="prelude-val">Ok</span>(<span class="ident">v</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">v</span>, <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;shape error when stacking, could not create array from shape vec&quot;</span>.<span class="ident">into</span>())
     };
@@ -136,8 +131,9 @@
     <span class="prelude-val">Ok</span>(<span class="ident">res</span>)
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">select</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>(<span class="ident">data</span>: <span class="kw-2">&amp;</span><span class="ident">Array</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>, <span class="ident">axis</span>: <span class="ident">Axis</span>, <span class="ident">indices</span>: <span class="kw-2">&amp;</span>[<span class="ident">Ix</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Array</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">slow_select</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>(<span class="ident">data</span>: <span class="kw-2">&amp;</span><span class="ident">Array</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>, <span class="ident">axis</span>: <span class="ident">Axis</span>, <span class="ident">indices</span>: <span class="kw-2">&amp;</span>[<span class="ident">Ix</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Array</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>
     <span class="kw">where</span>
+        <span class="ident">A</span>: <span class="ident">Default</span>,
         <span class="ident">A</span>: <span class="ident">Clone</span>,
         <span class="ident">D</span>: <span class="ident">RemoveAxis</span>,
 {
@@ -148,9 +144,9 @@
     <span class="kw">if</span> <span class="ident">subs</span>.<span class="ident">is_empty</span>() {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dim</span> <span class="op">=</span> <span class="ident">data</span>.<span class="ident">raw_dim</span>();
         <span class="ident">dim</span>[<span class="ident">axis</span>.<span class="ident">index</span>()] <span class="op">=</span> <span class="number">0</span>;
-        <span class="kw">unsafe</span> { <span class="ident">Array</span>::<span class="ident">from_shape_vec_unchecked</span>(<span class="ident">dim</span>, <span class="macro">vec</span><span class="macro">!</span>[]) }
+        <span class="ident">Array</span>::<span class="ident">from_shape_vec</span>(<span class="ident">dim</span>, <span class="macro">vec</span><span class="macro">!</span>[]).<span class="ident">unwrap</span>()
     } <span class="kw">else</span> {
-        <span class="ident">stack</span>(<span class="ident">axis</span>, <span class="kw-2">&amp;</span><span class="ident">subs</span>).<span class="ident">unwrap</span>()
+        <span class="ident">slow_stack</span>(<span class="ident">axis</span>, <span class="kw-2">&amp;</span><span class="ident">subs</span>).<span class="ident">unwrap</span>()
     }
 }</pre></div>
 </section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../";window.currentCrate = "whitenoise_runtime";</script><script src="../../../aliases.js"></script><script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script><script defer src="../../../search-index.js"></script></body></html>

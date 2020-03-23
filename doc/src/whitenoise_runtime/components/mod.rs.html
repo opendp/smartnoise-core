@@ -141,6 +141,7 @@
 <span id="141">141</span>
 <span id="142">142</span>
 <span id="143">143</span>
+<span id="144">144</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Component trait implementations</span>
 <span class="doccomment">//!</span>
@@ -173,6 +174,7 @@
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">mean</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">minimum</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">quantile</span>;
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">reshape</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">mechanisms</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">resize</span>;
 <span class="comment">//pub mod row_max;</span>
@@ -219,7 +221,7 @@
         <span class="macro">evaluate</span><span class="macro">!</span>(
             <span class="comment">// INSERT COMPONENT LIST</span>
             <span class="ident">Bin</span>, <span class="ident">Cast</span>, <span class="ident">Clamp</span>, <span class="ident">Count</span>, <span class="ident">Covariance</span>, <span class="ident">Filter</span>, <span class="ident">Impute</span>, <span class="ident">Index</span>, <span class="ident">KthRawSampleMoment</span>, <span class="ident">Maximum</span>,
-            <span class="ident">Materialize</span>, <span class="ident">Mean</span>, <span class="ident">Minimum</span>, <span class="ident">Quantile</span>, <span class="ident">LaplaceMechanism</span>, <span class="ident">GaussianMechanism</span>,
+            <span class="ident">Materialize</span>, <span class="ident">Mean</span>, <span class="ident">Minimum</span>, <span class="ident">Quantile</span>, <span class="ident">Reshape</span>, <span class="ident">LaplaceMechanism</span>, <span class="ident">GaussianMechanism</span>,
             <span class="ident">SimpleGeometricMechanism</span>, <span class="ident">Resize</span>, <span class="ident">Sum</span>, <span class="ident">Variance</span>,
 
             <span class="ident">Add</span>, <span class="ident">Subtract</span>, <span class="ident">Divide</span>, <span class="ident">Multiply</span>, <span class="ident">Power</span>, <span class="ident">Log</span>, <span class="ident">Modulo</span>, <span class="ident">LogicalAnd</span>, <span class="ident">LogicalOr</span>, <span class="ident">Negate</span>,

@@ -847,6 +847,22 @@
 <span id="847">847</span>
 <span id="848">848</span>
 <span id="849">849</span>
+<span id="850">850</span>
+<span id="851">851</span>
+<span id="852">852</span>
+<span id="853">853</span>
+<span id="854">854</span>
+<span id="855">855</span>
+<span id="856">856</span>
+<span id="857">857</span>
+<span id="858">858</span>
+<span id="859">859</span>
+<span id="860">860</span>
+<span id="861">861</span>
+<span id="862">862</span>
+<span id="863">863</span>
+<span id="864">864</span>
+<span id="865">865</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
@@ -890,9 +906,10 @@
                 .<span class="ident">zip</span>(<span class="ident">broadcast</span>(<span class="kw-2">&amp;</span><span class="ident">right_property</span>.<span class="ident">c_stability</span>, <span class="kw-2">&amp;</span><span class="ident">num_columns</span>)<span class="question-mark">?</span>)
                 .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">l</span>, <span class="ident">r</span>)<span class="op">|</span> <span class="ident">l</span>.<span class="ident">max</span>(<span class="ident">r</span>)).<span class="ident">collect</span>(),
             <span class="ident">num_columns</span>: <span class="prelude-val">Some</span>(<span class="ident">num_columns</span>),
-            <span class="ident">num_records</span>: <span class="prelude-val">Some</span>(<span class="ident">num_records</span>),
+            <span class="ident">num_records</span>,
             <span class="ident">aggregator</span>: <span class="prelude-val">None</span>,
-            <span class="ident">data_type</span>: <span class="ident">left_property</span>.<span class="ident">data_type</span>
+            <span class="ident">data_type</span>: <span class="ident">left_property</span>.<span class="ident">data_type</span>,
+            <span class="ident">dataset_id</span>: <span class="ident">left_property</span>.<span class="ident">dataset_id</span>
         }.<span class="ident">into</span>())
     }
 
@@ -933,9 +950,10 @@
                 .<span class="ident">zip</span>(<span class="ident">broadcast</span>(<span class="kw-2">&amp;</span><span class="ident">right_property</span>.<span class="ident">c_stability</span>, <span class="kw-2">&amp;</span><span class="ident">num_columns</span>)<span class="question-mark">?</span>)
                 .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">l</span>, <span class="ident">r</span>)<span class="op">|</span> <span class="ident">l</span>.<span class="ident">max</span>(<span class="ident">r</span>)).<span class="ident">collect</span>(),
             <span class="ident">num_columns</span>: <span class="prelude-val">Some</span>(<span class="ident">num_columns</span>),
-            <span class="ident">num_records</span>: <span class="prelude-val">Some</span>(<span class="ident">num_records</span>),
+            <span class="ident">num_records</span>,
             <span class="ident">aggregator</span>: <span class="prelude-val">None</span>,
-            <span class="ident">data_type</span>: <span class="ident">left_property</span>.<span class="ident">data_type</span>
+            <span class="ident">data_type</span>: <span class="ident">left_property</span>.<span class="ident">data_type</span>,
+            <span class="ident">dataset_id</span>: <span class="ident">left_property</span>.<span class="ident">dataset_id</span>
         }.<span class="ident">into</span>())
     }
 
@@ -1003,9 +1021,10 @@
                 .<span class="ident">zip</span>(<span class="ident">broadcast</span>(<span class="kw-2">&amp;</span><span class="ident">right_property</span>.<span class="ident">c_stability</span>, <span class="kw-2">&amp;</span><span class="ident">num_columns</span>)<span class="question-mark">?</span>)
                 .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">l</span>, <span class="ident">r</span>)<span class="op">|</span> <span class="ident">l</span>.<span class="ident">max</span>(<span class="ident">r</span>)).<span class="ident">collect</span>(),
             <span class="ident">num_columns</span>: <span class="prelude-val">Some</span>(<span class="ident">num_columns</span>),
-            <span class="ident">num_records</span>: <span class="prelude-val">Some</span>(<span class="ident">num_records</span>),
+            <span class="ident">num_records</span>,
             <span class="ident">aggregator</span>: <span class="prelude-val">None</span>,
-           <span class="ident">data_type</span>: <span class="ident">left_property</span>.<span class="ident">data_type</span>
+           <span class="ident">data_type</span>: <span class="ident">left_property</span>.<span class="ident">data_type</span>,
+            <span class="ident">dataset_id</span>: <span class="ident">left_property</span>.<span class="ident">dataset_id</span>
         }.<span class="ident">into</span>())
     }
 
@@ -1047,8 +1066,9 @@
                 .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">l</span>, <span class="ident">r</span>)<span class="op">|</span> <span class="ident">l</span>.<span class="ident">max</span>(<span class="ident">r</span>)).<span class="ident">collect</span>(),
             <span class="ident">num_columns</span>: <span class="prelude-val">Some</span>(<span class="ident">num_columns</span>),
             <span class="ident">data_type</span>: <span class="ident">left_property</span>.<span class="ident">data_type</span>,
-           <span class="ident">num_records</span>: <span class="prelude-val">Some</span>(<span class="ident">num_records</span>),
-            <span class="ident">aggregator</span>: <span class="prelude-val">None</span>
+           <span class="ident">num_records</span>,
+            <span class="ident">aggregator</span>: <span class="prelude-val">None</span>,
+            <span class="ident">dataset_id</span>: <span class="ident">left_property</span>.<span class="ident">dataset_id</span>
         }.<span class="ident">into</span>())
     }
 
@@ -1086,9 +1106,10 @@
                 .<span class="ident">zip</span>(<span class="ident">broadcast</span>(<span class="kw-2">&amp;</span><span class="ident">right_property</span>.<span class="ident">c_stability</span>, <span class="kw-2">&amp;</span><span class="ident">num_columns</span>)<span class="question-mark">?</span>)
                 .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">l</span>, <span class="ident">r</span>)<span class="op">|</span> <span class="ident">l</span>.<span class="ident">max</span>(<span class="ident">r</span>)).<span class="ident">collect</span>(),
             <span class="ident">num_columns</span>: <span class="prelude-val">Some</span>(<span class="ident">num_columns</span>),
-            <span class="ident">num_records</span>: <span class="prelude-val">Some</span>(<span class="ident">num_records</span>),
+            <span class="ident">num_records</span>,
             <span class="ident">data_type</span>: <span class="ident">left_property</span>.<span class="ident">data_type</span>,
-            <span class="ident">aggregator</span>: <span class="prelude-val">None</span>
+            <span class="ident">aggregator</span>: <span class="prelude-val">None</span>,
+            <span class="ident">dataset_id</span>: <span class="ident">left_property</span>.<span class="ident">dataset_id</span>
         }.<span class="ident">into</span>())
     }
 
@@ -1129,9 +1150,10 @@
                 .<span class="ident">zip</span>(<span class="ident">broadcast</span>(<span class="kw-2">&amp;</span><span class="ident">right_property</span>.<span class="ident">c_stability</span>, <span class="kw-2">&amp;</span><span class="ident">num_columns</span>)<span class="question-mark">?</span>)
                 .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">l</span>, <span class="ident">r</span>)<span class="op">|</span> <span class="ident">l</span>.<span class="ident">max</span>(<span class="ident">r</span>)).<span class="ident">collect</span>(),
             <span class="ident">num_columns</span>: <span class="prelude-val">Some</span>(<span class="ident">num_columns</span>),
-            <span class="ident">num_records</span>: <span class="prelude-val">Some</span>(<span class="ident">num_records</span>),
+            <span class="ident">num_records</span>,
             <span class="ident">data_type</span>: <span class="ident">left_property</span>.<span class="ident">data_type</span>,
             <span class="ident">aggregator</span>: <span class="prelude-val">None</span>,
+            <span class="ident">dataset_id</span>: <span class="ident">left_property</span>.<span class="ident">dataset_id</span>
         }.<span class="ident">into</span>())
     }
 
@@ -1220,9 +1242,10 @@
                 .<span class="ident">zip</span>(<span class="ident">broadcast</span>(<span class="kw-2">&amp;</span><span class="ident">right_property</span>.<span class="ident">c_stability</span>, <span class="kw-2">&amp;</span><span class="ident">num_columns</span>)<span class="question-mark">?</span>)
                 .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">l</span>, <span class="ident">r</span>)<span class="op">|</span> <span class="ident">l</span>.<span class="ident">max</span>(<span class="ident">r</span>)).<span class="ident">collect</span>(),
             <span class="ident">num_columns</span>: <span class="prelude-val">Some</span>(<span class="ident">num_columns</span>),
-            <span class="ident">num_records</span>: <span class="prelude-val">Some</span>(<span class="ident">num_records</span>),
+            <span class="ident">num_records</span>,
             <span class="ident">data_type</span>: <span class="ident">left_property</span>.<span class="ident">data_type</span>,
-            <span class="ident">aggregator</span>: <span class="prelude-val">None</span>
+            <span class="ident">aggregator</span>: <span class="prelude-val">None</span>,
+            <span class="ident">dataset_id</span>: <span class="ident">left_property</span>.<span class="ident">dataset_id</span>
         }.<span class="ident">into</span>())
     }
     <span class="kw">fn</span> <span class="ident">get_names</span>(
@@ -1309,9 +1332,10 @@
                 .<span class="ident">zip</span>(<span class="ident">broadcast</span>(<span class="kw-2">&amp;</span><span class="ident">right_property</span>.<span class="ident">c_stability</span>, <span class="kw-2">&amp;</span><span class="ident">num_columns</span>)<span class="question-mark">?</span>)
                 .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">l</span>, <span class="ident">r</span>)<span class="op">|</span> <span class="ident">l</span>.<span class="ident">max</span>(<span class="ident">r</span>)).<span class="ident">collect</span>(),
             <span class="ident">num_columns</span>: <span class="prelude-val">Some</span>(<span class="ident">num_columns</span>),
-            <span class="ident">num_records</span>: <span class="prelude-val">Some</span>(<span class="ident">num_records</span>),
+            <span class="ident">num_records</span>,
             <span class="ident">aggregator</span>: <span class="prelude-val">None</span>,
-            <span class="ident">data_type</span>: <span class="ident">left_property</span>.<span class="ident">data_type</span>
+            <span class="ident">data_type</span>: <span class="ident">left_property</span>.<span class="ident">data_type</span>,
+            <span class="ident">dataset_id</span>: <span class="ident">left_property</span>.<span class="ident">dataset_id</span>
         }.<span class="ident">into</span>())
     }
 
@@ -1350,9 +1374,10 @@
                 .<span class="ident">zip</span>(<span class="ident">broadcast</span>(<span class="kw-2">&amp;</span><span class="ident">right_property</span>.<span class="ident">c_stability</span>, <span class="kw-2">&amp;</span><span class="ident">num_columns</span>)<span class="question-mark">?</span>)
                 .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">l</span>, <span class="ident">r</span>)<span class="op">|</span> <span class="ident">l</span>.<span class="ident">max</span>(<span class="ident">r</span>)).<span class="ident">collect</span>(),
             <span class="ident">num_columns</span>: <span class="prelude-val">Some</span>(<span class="ident">num_columns</span>),
-            <span class="ident">num_records</span>: <span class="prelude-val">Some</span>(<span class="ident">num_records</span>),
+            <span class="ident">num_records</span>,
             <span class="ident">aggregator</span>: <span class="prelude-val">None</span>,
-            <span class="ident">data_type</span>: <span class="ident">left_property</span>.<span class="ident">data_type</span>
+            <span class="ident">data_type</span>: <span class="ident">left_property</span>.<span class="ident">data_type</span>,
+            <span class="ident">dataset_id</span>: <span class="ident">left_property</span>.<span class="ident">dataset_id</span>
         }.<span class="ident">into</span>())
     }
 
@@ -1391,9 +1416,10 @@
                 .<span class="ident">zip</span>(<span class="ident">broadcast</span>(<span class="kw-2">&amp;</span><span class="ident">right_property</span>.<span class="ident">c_stability</span>, <span class="kw-2">&amp;</span><span class="ident">num_columns</span>)<span class="question-mark">?</span>)
                 .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">l</span>, <span class="ident">r</span>)<span class="op">|</span> <span class="ident">l</span>.<span class="ident">max</span>(<span class="ident">r</span>)).<span class="ident">collect</span>(),
             <span class="ident">num_columns</span>: <span class="prelude-val">Some</span>(<span class="ident">num_columns</span>),
-            <span class="ident">num_records</span>: <span class="prelude-val">Some</span>(<span class="ident">num_records</span>),
+            <span class="ident">num_records</span>,
             <span class="ident">aggregator</span>: <span class="prelude-val">None</span>,
-            <span class="ident">data_type</span>: <span class="ident">left_property</span>.<span class="ident">data_type</span>
+            <span class="ident">data_type</span>: <span class="ident">left_property</span>.<span class="ident">data_type</span>,
+            <span class="ident">dataset_id</span>: <span class="ident">left_property</span>.<span class="ident">dataset_id</span>
         }.<span class="ident">into</span>())
     }
 
@@ -1432,9 +1458,10 @@
                 .<span class="ident">zip</span>(<span class="ident">broadcast</span>(<span class="kw-2">&amp;</span><span class="ident">right_property</span>.<span class="ident">c_stability</span>, <span class="kw-2">&amp;</span><span class="ident">num_columns</span>)<span class="question-mark">?</span>)
                 .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">l</span>, <span class="ident">r</span>)<span class="op">|</span> <span class="ident">l</span>.<span class="ident">max</span>(<span class="ident">r</span>)).<span class="ident">collect</span>(),
             <span class="ident">num_columns</span>: <span class="prelude-val">Some</span>(<span class="ident">num_columns</span>),
-            <span class="ident">num_records</span>: <span class="prelude-val">Some</span>(<span class="ident">num_records</span>),
+            <span class="ident">num_records</span>,
             <span class="ident">aggregator</span>: <span class="prelude-val">None</span>,
-            <span class="ident">data_type</span>: <span class="ident">left_property</span>.<span class="ident">data_type</span>
+            <span class="ident">data_type</span>: <span class="ident">left_property</span>.<span class="ident">data_type</span>,
+            <span class="ident">dataset_id</span>: <span class="ident">left_property</span>.<span class="ident">dataset_id</span>
         }.<span class="ident">into</span>())
     }
 
@@ -1473,9 +1500,10 @@
                 .<span class="ident">zip</span>(<span class="ident">broadcast</span>(<span class="kw-2">&amp;</span><span class="ident">right_property</span>.<span class="ident">c_stability</span>, <span class="kw-2">&amp;</span><span class="ident">num_columns</span>)<span class="question-mark">?</span>)
                 .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">l</span>, <span class="ident">r</span>)<span class="op">|</span> <span class="ident">l</span>.<span class="ident">max</span>(<span class="ident">r</span>)).<span class="ident">collect</span>(),
             <span class="ident">num_columns</span>: <span class="prelude-val">Some</span>(<span class="ident">num_columns</span>),
-            <span class="ident">num_records</span>: <span class="prelude-val">Some</span>(<span class="ident">num_records</span>),
+            <span class="ident">num_records</span>,
             <span class="ident">aggregator</span>: <span class="prelude-val">None</span>,
-            <span class="ident">data_type</span>: <span class="ident">left_property</span>.<span class="ident">data_type</span>
+            <span class="ident">data_type</span>: <span class="ident">left_property</span>.<span class="ident">data_type</span>,
+            <span class="ident">dataset_id</span>: <span class="ident">left_property</span>.<span class="ident">dataset_id</span>
         }.<span class="ident">into</span>())
     }
 
@@ -1514,9 +1542,10 @@
                 .<span class="ident">zip</span>(<span class="ident">broadcast</span>(<span class="kw-2">&amp;</span><span class="ident">right_property</span>.<span class="ident">c_stability</span>, <span class="kw-2">&amp;</span><span class="ident">num_columns</span>)<span class="question-mark">?</span>)
                 .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">l</span>, <span class="ident">r</span>)<span class="op">|</span> <span class="ident">l</span>.<span class="ident">max</span>(<span class="ident">r</span>)).<span class="ident">collect</span>(),
             <span class="ident">num_columns</span>: <span class="prelude-val">Some</span>(<span class="ident">num_columns</span>),
-            <span class="ident">num_records</span>: <span class="prelude-val">Some</span>(<span class="ident">num_records</span>),
+            <span class="ident">num_records</span>,
             <span class="ident">aggregator</span>: <span class="prelude-val">None</span>,
-            <span class="ident">data_type</span>: <span class="ident">left_property</span>.<span class="ident">data_type</span>
+            <span class="ident">data_type</span>: <span class="ident">left_property</span>.<span class="ident">data_type</span>,
+            <span class="ident">dataset_id</span>: <span class="ident">left_property</span>.<span class="ident">dataset_id</span>
         }.<span class="ident">into</span>())
     }
 
@@ -1535,7 +1564,7 @@
     <span class="kw">pub</span> <span class="ident">bool</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">bool</span>, <span class="kw-2">&amp;</span><span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">propagate_binary_shape</span>(<span class="ident">left_property</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayNDProperties</span>, <span class="ident">right_property</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayNDProperties</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">i64</span>, <span class="ident">i64</span>)<span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">propagate_binary_shape</span>(<span class="ident">left_property</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayNDProperties</span>, <span class="ident">right_property</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayNDProperties</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">i64</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span>)<span class="op">&gt;</span> {
 
     <span class="kw">let</span> <span class="ident">left_num_columns</span> <span class="op">=</span> <span class="ident">left_property</span>.<span class="ident">get_num_columns</span>()<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="ident">right_num_columns</span> <span class="op">=</span> <span class="ident">right_property</span>.<span class="ident">get_num_columns</span>()<span class="question-mark">?</span>;
@@ -1557,13 +1586,16 @@
     <span class="kw">let</span> <span class="ident">right_is_row_broadcastable</span> <span class="op">=</span> <span class="ident">right_property</span>.<span class="ident">releasable</span> <span class="kw-2">&amp;</span><span class="op">&amp;</span> <span class="ident">right_num_records</span> <span class="op">=</span><span class="op">=</span> <span class="number">1</span>;
 
     <span class="kw">if</span> <span class="op">!</span>(<span class="ident">left_is_row_broadcastable</span> <span class="op">|</span><span class="op">|</span> <span class="ident">right_is_row_broadcastable</span>) <span class="kw-2">&amp;</span><span class="op">&amp;</span> <span class="op">!</span>(<span class="ident">left_num_records</span> <span class="op">=</span><span class="op">=</span> <span class="ident">right_num_records</span>) {
+        <span class="kw">if</span> <span class="ident">left_property</span>.<span class="ident">dataset_id</span> <span class="op">=</span><span class="op">=</span> <span class="ident">right_property</span>.<span class="ident">dataset_id</span> {
+            <span class="kw">return</span> <span class="prelude-val">Ok</span>((<span class="ident">output_num_columns</span>, <span class="prelude-val">None</span>))
+        }
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;number of rows must be the same for left and right arguments&quot;</span>.<span class="ident">into</span>());
     }
 
     <span class="comment">// either left, right or both are broadcastable, so take the largest</span>
     <span class="kw">let</span> <span class="ident">output_num_records</span> <span class="op">=</span> <span class="ident">left_num_records</span>.<span class="ident">max</span>(<span class="ident">right_num_records</span>);
 
-    <span class="prelude-val">Ok</span>((<span class="ident">output_num_columns</span>, <span class="ident">output_num_records</span>))
+    <span class="prelude-val">Ok</span>((<span class="ident">output_num_columns</span>, <span class="prelude-val">Some</span>(<span class="ident">output_num_records</span>)))
 }
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">propagate_binary_nature</span>(<span class="ident">left_property</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayNDProperties</span>, <span class="ident">right_property</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayNDProperties</span>, <span class="ident">operator</span>: <span class="kw-2">&amp;</span><span class="ident">Operators</span>, <span class="kw-2">&amp;</span><span class="ident">output_num_columns</span>: <span class="kw-2">&amp;</span><span class="ident">i64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Nature</span><span class="op">&gt;</span><span class="op">&gt;</span> {

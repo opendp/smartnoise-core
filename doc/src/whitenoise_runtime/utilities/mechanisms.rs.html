@@ -149,9 +149,6 @@
 <span id="149">149</span>
 <span id="150">150</span>
 <span id="151">151</span>
-<span id="152">152</span>
-<span id="153">153</span>
-<span id="154">154</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">whitenoise_validator</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
@@ -185,13 +182,12 @@
 <span class="doccomment">/// ```</span>
 <span class="doccomment">/// use whitenoise_runtime::utilities::mechanisms::laplace_mechanism;</span>
 <span class="doccomment">/// let n = laplace_mechanism(&amp;0.1, &amp;2.0);</span>
-<span class="doccomment">/// # n.unwrap();</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">laplace_mechanism</span>(<span class="ident">epsilon</span>: <span class="kw-2">&amp;</span><span class="ident">f64</span>, <span class="ident">sensitivity</span>: <span class="kw-2">&amp;</span><span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">laplace_mechanism</span>(<span class="ident">epsilon</span>: <span class="kw-2">&amp;</span><span class="ident">f64</span>, <span class="ident">sensitivity</span>: <span class="kw-2">&amp;</span><span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
     <span class="kw">let</span> <span class="ident">scale</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="ident">sensitivity</span> <span class="op">/</span> <span class="ident">epsilon</span>;
-    <span class="kw">let</span> <span class="ident">noise</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="ident">noise</span>::<span class="ident">sample_laplace</span>(<span class="number">0.</span>, <span class="ident">scale</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">noise</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="ident">noise</span>::<span class="ident">sample_laplace</span>(<span class="number">0.</span>, <span class="ident">scale</span>);
 
-    <span class="prelude-val">Ok</span>(<span class="ident">noise</span>)
+    <span class="ident">noise</span>
 }
 
 <span class="doccomment">/// Returns noise drawn according to the Gaussian mechanism.</span>
@@ -219,12 +215,11 @@
 <span class="doccomment">/// ```</span>
 <span class="doccomment">/// use whitenoise_runtime::utilities::mechanisms::gaussian_mechanism;</span>
 <span class="doccomment">/// let n = gaussian_mechanism(&amp;0.1, &amp;0.0001, &amp;2.0);</span>
-<span class="doccomment">/// # n.unwrap();</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">gaussian_mechanism</span>(<span class="ident">epsilon</span>: <span class="kw-2">&amp;</span><span class="ident">f64</span>, <span class="ident">delta</span>: <span class="kw-2">&amp;</span><span class="ident">f64</span>, <span class="ident">sensitivity</span>: <span class="kw-2">&amp;</span><span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">gaussian_mechanism</span>(<span class="ident">epsilon</span>: <span class="kw-2">&amp;</span><span class="ident">f64</span>, <span class="ident">delta</span>: <span class="kw-2">&amp;</span><span class="ident">f64</span>, <span class="ident">sensitivity</span>: <span class="kw-2">&amp;</span><span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
     <span class="kw">let</span> <span class="ident">scale</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="ident">sensitivity</span> <span class="op">*</span> (<span class="number">2.</span> <span class="op">*</span> (<span class="number">1.25</span> <span class="op">/</span> <span class="ident">delta</span>).<span class="ident">ln</span>()).<span class="ident">sqrt</span>() <span class="op">/</span> <span class="ident">epsilon</span>;
-    <span class="kw">let</span> <span class="ident">noise</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="ident">noise</span>::<span class="ident">sample_gaussian</span>(<span class="kw-2">&amp;</span><span class="number">0.</span>, <span class="kw-2">&amp;</span><span class="ident">scale</span>)<span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(<span class="ident">noise</span>)
+    <span class="kw">let</span> <span class="ident">noise</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="ident">noise</span>::<span class="ident">sample_gaussian</span>(<span class="kw-2">&amp;</span><span class="number">0.</span>, <span class="kw-2">&amp;</span><span class="ident">scale</span>);
+    <span class="ident">noise</span>
 }
 
 <span class="doccomment">/// Returns noise drawn according to the Geometric mechanism.</span>
@@ -249,12 +244,11 @@
 <span class="doccomment">/// ```</span>
 <span class="doccomment">/// use whitenoise_runtime::utilities::mechanisms::simple_geometric_mechanism;</span>
 <span class="doccomment">/// let n = simple_geometric_mechanism(&amp;0.1, &amp;1., &amp;0, &amp;10, &amp;true);</span>
-<span class="doccomment">/// # n.unwrap();</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">simple_geometric_mechanism</span>(<span class="ident">epsilon</span>: <span class="kw-2">&amp;</span><span class="ident">f64</span>, <span class="ident">sensitivity</span>: <span class="kw-2">&amp;</span><span class="ident">f64</span>, <span class="ident">count_min</span>: <span class="kw-2">&amp;</span><span class="ident">i64</span>, <span class="ident">count_max</span>: <span class="kw-2">&amp;</span><span class="ident">i64</span>, <span class="ident">enforce_constant_time</span>: <span class="kw-2">&amp;</span><span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">simple_geometric_mechanism</span>(<span class="ident">epsilon</span>: <span class="kw-2">&amp;</span><span class="ident">f64</span>, <span class="ident">sensitivity</span>: <span class="kw-2">&amp;</span><span class="ident">f64</span>, <span class="ident">count_min</span>: <span class="kw-2">&amp;</span><span class="ident">i64</span>, <span class="ident">count_max</span>: <span class="kw-2">&amp;</span><span class="ident">i64</span>, <span class="ident">enforce_constant_time</span>: <span class="kw-2">&amp;</span><span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">i64</span> {
     <span class="kw">let</span> <span class="ident">scale</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="ident">sensitivity</span> <span class="op">/</span> <span class="ident">epsilon</span>;
-    <span class="kw">let</span> <span class="ident">noise</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="ident">noise</span>::<span class="ident">sample_simple_geometric_mechanism</span>(<span class="kw-2">&amp;</span><span class="ident">scale</span>, <span class="kw-2">&amp;</span><span class="ident">count_min</span>, <span class="kw-2">&amp;</span><span class="ident">count_max</span>, <span class="kw-2">&amp;</span><span class="ident">enforce_constant_time</span>)<span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(<span class="ident">noise</span>)
+    <span class="kw">let</span> <span class="ident">noise</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="ident">noise</span>::<span class="ident">sample_simple_geometric_mechanism</span>(<span class="kw-2">&amp;</span><span class="ident">scale</span>, <span class="kw-2">&amp;</span><span class="ident">count_min</span>, <span class="kw-2">&amp;</span><span class="ident">count_max</span>, <span class="kw-2">&amp;</span><span class="ident">enforce_constant_time</span>);
+    <span class="ident">noise</span>
 }
 
 <span class="doccomment">/// Returns data element according to the Exponential mechanism.</span>
