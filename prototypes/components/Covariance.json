@@ -5,31 +5,41 @@
       "nature": [
         "continuous"
       ],
-      "type": "Array"
+      "type": "Array",
+      "description": "Left 1D data array used to calculate scalar covariance. Used only if `data` not provided."
     },
     "right": {
       "default": "None",
       "nature": [
         "continuous"
       ],
-      "type": "Array"
+      "type": "Array",
+      "description": "Right 1D data array used to calculate scalar covariance. Used only if `data` not provided."
     },
     "data": {
       "default": "None",
       "nature": [
         "continuous"
       ],
-      "type": "Array"
+      "type": "Array",
+      "description": "2D data array used to construct covariance matrix."
     }
   },
   "id": "Covariance",
   "name": "covariance",
-  "options": {},
+  "options": {
+    "finite_sample_correction": {
+      "type": "bool",
+      "default": "True",
+      "description": "Whether or not to use the finite sample correction (Bessel's correction)."
+    }
+  },
   "return": {
     "nature": [
       "continuous"
     ],
-    "type": "Array"
+    "type": "Array",
+    "description": "Flattened covariance or cross-covariance matrix."
   },
-  "docstring": "covariance step"
+  "description": "Calculate sample covariance.\n\n If `data` argument is provided as a 2D array, calculate covariance matrix. Otherwise, `left` and `right` 1D arrays are used to calculate a single covariance."
 }

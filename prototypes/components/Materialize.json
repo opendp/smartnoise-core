@@ -10,26 +10,21 @@
   "id": "Materialize",
   "name": "materialize",
   "options": {
-    "file_path": {
-      "type": "string",
-      "default": "None"
-    },
-    "url_path": {
-      "type": "string",
-      "default": "None"
-    },
-    "literal": {
-      "type": "Value",
-      "default": "None"
+    "data_source": {
+      "type": "DataSource"
     },
     "private": {
       "type": "bool",
       "default": "True"
+    },
+    "dataset_id": {
+      "type": "I64Null",
+      "default": "None",
+      "description": "when set, data with unknown number of records may still conform to data with the same dataset_id"
     }
   },
   "return": {
     "nature": null,
     "type": "Hashmap"
-  },
-  "docstring": "materialize step"
+  }
 }

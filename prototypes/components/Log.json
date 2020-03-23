@@ -4,25 +4,13 @@
       "nature": [
         "continuous"
       ],
-      "type": {
-        "of": [
-          "int",
-          "double"
-        ],
-        "type": "Array"
-      }
+      "type": "Array"
     },
     "data": {
       "nature": [
         "continuous"
       ],
-      "type": {
-        "of": [
-          "int",
-          "double"
-        ],
-        "type": "Array"
-      }
+      "type": "Array"
     }
   },
   "id": "Log",
@@ -33,6 +21,5 @@
       "continuous"
     ],
     "type": "Array"
-  },
-  "docstring": "log step"
+  }
 }

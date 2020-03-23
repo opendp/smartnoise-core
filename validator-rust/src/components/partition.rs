@@ -5,12 +5,11 @@ use std::collections::HashMap;
 
 use crate::{proto, base};
 
-use crate::components::{Component, Aggregator};
-use crate::base::{Value, Vector2DJagged, NodeProperties, AggregatorProperties, Sensitivity, prepend, ValueProperties, HashmapProperties, ArrayNDProperties};
+use crate::components::{Component};
+use crate::base::{Value, Vector2DJagged, NodeProperties, prepend, ValueProperties, HashmapProperties, ArrayNDProperties};
 
 
 impl Component for proto::Partition {
-    // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,

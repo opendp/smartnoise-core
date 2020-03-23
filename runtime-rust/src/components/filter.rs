@@ -1,14 +1,14 @@
-use yarrow_validator::errors::*;
+use whitenoise_validator::errors::*;
 
 use ndarray::prelude::*;
 use crate::base::NodeArguments;
-use yarrow_validator::base::{Value, ArrayND, get_argument};
+use whitenoise_validator::base::{Value, ArrayND, get_argument};
 use crate::components::Evaluable;
-use ndarray::{ArrayD, Array, Axis, Array1, arr1};
-use crate::utilities::utilities::get_num_columns;
-use yarrow_validator::proto;
-use crate::components::resize::create_sampling_indices;
-use crate::utilities::array::select;
+use ndarray::{ArrayD, Axis, Array1};
+
+use whitenoise_validator::proto;
+
+use crate::utilities::array::slow_select;
 
 
 impl Evaluable for proto::Filter {
@@ -24,14 +24,32 @@ impl Evaluable for proto::Filter {
     }
 }
 
-
-fn filter<T: Clone>(data: &ArrayD<T>, mask: &ArrayD<bool>) -> Result<ArrayD<T>> {
+/// Filters data down into only the desired rows.
+///
+/// # Arguments
+/// * `data` - Data to be filtered.
+/// * `mask` - Boolean mask giving whether or not each row should be kept.
+///
+/// # Return
+/// Data with only the desired rows.
+///
+/// # Example
+/// ```
+/// use ndarray::{ArrayD, arr1, arr2};
+/// use whitenoise_runtime::components::filter::filter;
+///
+/// let data = arr2(&[ [1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12] ]).into_dyn();
+/// let mask = arr1(&[true, false, true, false]).into_dyn();
+/// let filtered = filter(&data, &mask).unwrap();
+/// assert!(filtered == arr2(&[ [1, 2, 3], [7, 8, 9] ]).into_dyn());
+/// ```
+pub fn filter<T: Clone + Default>(data: &ArrayD<T>, mask: &ArrayD<bool>) -> Result<ArrayD<T>> {
 
     let columnar_mask: Array1<bool> = mask.clone().into_dimensionality::<Ix1>().unwrap();
 
     let mask_indices: Vec<usize> = columnar_mask.iter().enumerate()
-        .filter(|(index, &v)| v)
+        .filter(|(_index, &v)| v)
         .map(|(index, _)| index)
         .collect();
-    Ok(select(&data, Axis(0), &mask_indices))
+    Ok(slow_select(&data, Axis(0), &mask_indices))
 }

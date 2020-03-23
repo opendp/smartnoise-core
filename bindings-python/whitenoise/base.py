@@ -1,16 +1,22 @@
 import json
 import numpy as np
 
-from yarrow.wrapper import LibraryWrapper
+from whitenoise.wrapper import LibraryWrapper
 
 # these modules are generated via the subprocess call
-from yarrow import base_pb2
-from yarrow import components_pb2
-from yarrow import value_pb2
+from whitenoise import base_pb2
+from whitenoise import components_pb2
+from whitenoise import value_pb2
+import os
 
 core_wrapper = LibraryWrapper()
 
 ALL_CONSTRAINTS = ["n", "min", "max", "categories"]
+
+variant_message_map_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'variant_message_map.json')
+
+with open(variant_message_map_path, 'r') as variant_message_map_file:
+    variant_message_map = json.load(variant_message_map_file)
 
 
 def privacy_usage(epsilon=None, delta=None):
@@ -50,7 +56,7 @@ class Dataset(object):
 
         global context
         if not context:
-            raise ValueError("all Yarrow components must be created within the context of an analysis")
+            raise ValueError("all whitenoise components must be created within the context of an analysis")
 
         if sum(int(i is not None) for i in [path, value]) != 1:
             raise ValueError("either path or value must be set")
@@ -58,18 +64,25 @@ class Dataset(object):
         if num_columns is None and column_names is None:
             raise ValueError("either num_columns or column_names must be set")
 
-        materialize_options = {'private': private}
+        self.dataset_id = context.dataset_count
+        context.dataset_count += 1
+
+        data_source = {}
         if path is not None:
-            materialize_options['file_path'] = path
+            data_source['file_path'] = path
         if value is not None:
-            materialize_options['literal'] = Analysis._serialize_value_proto(value, value_format)
+            data_source['literal'] = Analysis._serialize_value_proto(value, value_format)
 
         self.component = Component('Materialize',
                                    arguments={
                                        "column_names": Component.of(column_names),
                                        "num_columns": Component.of(num_columns),
                                    },
-                                   options=materialize_options)
+                                   options={
+                                       "data_source": value_pb2.DataSource(**data_source),
+                                       "private": private,
+                                       "dataset_id": value_pb2.I64Null(option=self.dataset_id)
+                                   })
 
     def __getitem__(self, identifier):
         return Component('Index', arguments={'columns': Component.of(identifier), 'data': self.component})
@@ -93,7 +106,7 @@ class Component(object):
         if context:
             context.add_component(self, value=value, value_format=value_format)
         else:
-            raise ValueError("all Yarrow components must be created within the context of an analysis")
+            raise ValueError("all whitenoise components must be created within the context of an analysis")
 
     # pull the released values out from the analysis' release protobuf
     @property
@@ -192,6 +205,9 @@ class Component(object):
     def __abs__(self):
         return Component('Abs', arguments={'data': self})
 
+    def __getitem__(self, identifier):
+        return Component('Index', arguments={'columns': Component.of(identifier), 'data': self})
+
     def __hash__(self):
         return id(self)
 
@@ -203,7 +219,7 @@ class Component(object):
         if type(value) == Component:
             return value
 
-        return Component('Constant', value=value, value_format=value_format)
+        return Component('Literal', value=value, value_format=value_format)
 
     @staticmethod
     def _expand_constraints(arguments, constraints):
@@ -259,10 +275,10 @@ class Component(object):
 
 
 class Analysis(object):
-    def __init__(self, *components, validate=True, datasets=None, distance='APPROXIMATE', neighboring='SUBSTITUTE'):
+    def __init__(self, *components, dynamic=False, datasets=None, distance='APPROXIMATE', neighboring='SUBSTITUTE'):
 
-        # validate the analysis before running it
-        self.must_validate = validate
+        # if false, validate the analysis before running it (enforces static validation)
+        self.dynamic = dynamic
 
         # privacy definition
         self.distance: str = distance
@@ -277,6 +293,9 @@ class Analysis(object):
         self.component_count = 0
         for component in components:
             self.add_component(component)
+
+        # track the number of datasets in use
+        self.dataset_count = 0
 
         # nested analyses
         self._context_cache = None
@@ -309,7 +328,7 @@ class Analysis(object):
                     for name, component_child in component.arguments.items()
                     if component_child is not None
                 },
-                component.name.lower():
+                variant_message_map[component.name]:
                     getattr(components_pb2, component.name)(**(component.options or {}))
             })
 
@@ -449,7 +468,7 @@ class Analysis(object):
             self._serialize_release_proto())
 
     def release(self):
-        if self.must_validate:
+        if not self.dynamic:
             assert self.validate(), "cannot release, analysis is not valid"
 
         release_proto: base_pb2.Release = core_wrapper.compute_release(

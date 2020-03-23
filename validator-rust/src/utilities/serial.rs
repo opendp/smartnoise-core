@@ -1,3 +1,5 @@
+//! Serialization and deserialization between prost protobuf structs and internal representations
+
 use crate::errors::*;
 
 
@@ -252,11 +254,12 @@ pub fn parse_arraynd_properties(value: &proto::ArrayNdProperties) -> ArrayNDProp
             },
             None => None,
         },
-        data_type: parse_data_type(&proto::DataType::from_i32(value.data_type).unwrap())
+        data_type: parse_data_type(&proto::DataType::from_i32(value.data_type).unwrap()),
+        dataset_id: value.dataset_id.as_ref().and_then(parse_i64_null)
     }
 }
 
-pub fn parse_array2d_jagged_properties(value: &proto::Vector2DJaggedProperties) -> Vector2DJaggedProperties {
+pub fn parse_array2d_jagged_properties(_value: &proto::Vector2DJaggedProperties) -> Vector2DJaggedProperties {
     Vector2DJaggedProperties {}
 }
 
@@ -554,11 +557,12 @@ pub fn serialize_arraynd_properties(value: &ArrayNDProperties) -> proto::ArrayNd
             }),
             None => None
         },
-        data_type: serialize_data_type(&value.data_type) as i32
+        data_type: serialize_data_type(&value.data_type) as i32,
+        dataset_id: Some(serialize_i64_null(&value.dataset_id))
     }
 }
 
-pub fn serialize_vector2d_jagged_properties(value: &Vector2DJaggedProperties) -> proto::Vector2DJaggedProperties {
+pub fn serialize_vector2d_jagged_properties(_value: &Vector2DJaggedProperties) -> proto::Vector2DJaggedProperties {
     proto::Vector2DJaggedProperties {}
 }
 

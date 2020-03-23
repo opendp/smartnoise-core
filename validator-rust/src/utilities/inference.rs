@@ -1,3 +1,8 @@
+//! Infer ValueProperties from a public Value
+//!
+//! When public arguments are provided, the properties about those public arguments are not known.
+//! These utility functions provide a conversion from Value to ValueProperties.
+
 use crate::errors::*;
 
 
@@ -8,7 +13,7 @@ use ndarray_stats::QuantileExt;
 use itertools::Itertools;
 use std::cmp::Ordering;
 use crate::base::{ArrayND, Value, Vector2DJagged, Nature, Vector1DNull, NatureContinuous, NatureCategorical, ValueProperties, ArrayNDProperties, DataType, HashmapProperties, Vector2DJaggedProperties, Hashmap};
-use crate::utilities::serial::parse_data_type;
+
 use std::collections::HashMap;
 
 
@@ -32,7 +37,7 @@ pub fn infer_num_columns(value: &Value) -> Result<Option<i64>> {
                 _ => Err("arrays may have max dimensionality of 2".into())
             }
         },
-        Value::Hashmap(hashmap) => bail!("cannot infer number of columns on a hashmap"),
+        Value::Hashmap(_hashmap) => bail!("cannot infer number of columns on a hashmap"),
         Value::Vector2DJagged(vector) => Ok(Some(match vector {
             Vector2DJagged::Bool(vector) => vector.len(),
             Vector2DJagged::F64(vector) => vector.len(),
@@ -41,11 +46,11 @@ pub fn infer_num_columns(value: &Value) -> Result<Option<i64>> {
         } as i64))
     }
 }
-pub fn infer_num_rows(value: &ArrayND) -> Result<Option<i64>> {
+pub fn infer_num_rows(value: &ArrayND) -> Result<i64> {
     let shape = get_shape(value.into());
     match shape.len() {
-        0 => Ok(Some(1)),
-        1 | 2 => Ok(Some(shape[0])),
+        0 => Ok(1),
+        1 | 2 => Ok(shape[0]),
         _ => Err("arrays may have max dimensionality of 2".into())
     }
 //
@@ -90,8 +95,8 @@ pub fn infer_num_rows(value: &ArrayND) -> Result<Option<i64>> {
 //    }
 }
 
-pub fn infer_min(value: &Value) -> Vec<Option<f64>> {
-    match value {
+pub fn infer_min(value: &Value) -> Result<Vec<Option<f64>>> {
+    Ok(match value {
         Value::ArrayND(array) => {
 
             match get_shape(&array).len() as i64 {
@@ -100,27 +105,27 @@ pub fn infer_min(value: &Value) -> Vec<Option<f64>> {
                         array.first().unwrap().to_owned(),
                     ArrayND::I64(array) =>
                         array.first().unwrap().to_owned() as f64,
-                    _ => panic!("Cannot infer numeric min on a non-numeric vector".to_string())
+                    _ => return Err("Cannot infer numeric min on a non-numeric vector".into())
                 })],
                 1 => match array {
                     ArrayND::F64(array) =>
                         array.iter().map(|v| Some(*v)).collect(),
                     ArrayND::I64(array) =>
                         array.iter().map(|v| Some(*v as f64)).collect(),
-                    _ => panic!("Cannot infer numeric min on a non-numeric vector".to_string())
+                    _ => return Err("Cannot infer numeric min on a non-numeric vector".into())
                 },
                 2 => match array {
                     ArrayND::F64(array) =>
                         array.lanes(Axis(0)).into_iter().map(|col| Some(col.max().unwrap().clone())).collect(),
                     ArrayND::I64(array) =>
                         array.lanes(Axis(0)).into_iter().map(|col| Some(*col.max().unwrap() as f64)).collect(),
-                    _ => panic!("Cannot infer numeric min on a non-numeric vector".to_string())
+                    _ => return Err("Cannot infer numeric min on a non-numeric vector".into())
                 },
-                _ => panic!("arrays may have max dimensionality of 2")
+                _ => return Err("arrays may have max dimensionality of 2".into())
             }
         },
-        Value::Hashmap(hashmap) => {
-            let mut bound: Vec<Option<f64>> = vec![];
+        Value::Hashmap(_hashmap) => {
+            let bound: Vec<Option<f64>> = vec![];
 //            hashmap.values()
 //                .map(infer_min)
 //                .for_each(|next| bound.extend(next));
@@ -136,13 +141,13 @@ pub fn infer_min(value: &Value) -> Vec<Option<f64>> {
                     Some(col) => Some(*col.iter().fold1(std::cmp::min).unwrap() as f64),
                     None => None
                 }).collect(),
-                _ => panic!("Cannot infer numeric min on a non-numeric vector")
+                _ => return Err("Cannot infer numeric min on a non-numeric vector".into())
             }
         }
-    }
+    })
 }
-pub fn infer_max(value: &Value) -> Vec<Option<f64>> {
-    match value {
+pub fn infer_max(value: &Value) -> Result<Vec<Option<f64>>> {
+    Ok(match value {
         Value::ArrayND(array) => {
 
             match get_shape(&array).len() as i64 {
@@ -151,26 +156,26 @@ pub fn infer_max(value: &Value) -> Vec<Option<f64>> {
                         array.first().unwrap().to_owned(),
                     ArrayND::I64(array) =>
                         array.first().unwrap().to_owned() as f64,
-                    _ => panic!("Cannot infer numeric max on a non-numeric vector")
+                    _ => return Err("Cannot infer numeric max on a non-numeric vector".into())
                 })],
                 1 => match array {
                     ArrayND::F64(array) =>
                         array.iter().map(|v| Some(*v)).collect(),
                     ArrayND::I64(array) =>
                         array.iter().map(|v| Some(*v as f64)).collect(),
-                    _ => panic!("Cannot infer numeric max on a non-numeric vector")
+                    _ => return Err("Cannot infer numeric max on a non-numeric vector".into())
                 },
                 2 => match array {
                     ArrayND::F64(array) =>
                         array.lanes(Axis(0)).into_iter().map(|col| Some(col.max().unwrap().clone())).collect(),
                     ArrayND::I64(array) =>
                         array.lanes(Axis(0)).into_iter().map(|col| Some(*col.max().unwrap() as f64)).collect(),
-                    _ => panic!("Cannot infer numeric max on a non-numeric vector")
+                    _ => return Err("Cannot infer numeric max on a non-numeric vector".into())
                 },
-                _ => panic!("arrays may have max dimensionality of 2")
+                _ => return Err("arrays may have max dimensionality of 2".into())
             }
         },
-        Value::Hashmap(hashmap) => panic!("max inference is not compatible with a hashmap"),
+        Value::Hashmap(_hashmap) => return Err("max inference is not compatible with a hashmap".into()),
         Value::Vector2DJagged(jagged) => {
             match jagged {
                 Vector2DJagged::F64(jagged) => jagged.iter().map(|col| match col {
@@ -181,19 +186,19 @@ pub fn infer_max(value: &Value) -> Vec<Option<f64>> {
                     Some(col) => Some(*col.iter().fold1(std::cmp::max).unwrap() as f64),
                     None => None
                 }).collect(),
-                _ => panic!("Cannot infer numeric max on a non-numeric vector")
+                _ => return Err("Cannot infer numeric max on a non-numeric vector".into())
             }
         }
-    }
+    })
 }
 
 
-pub fn infer_categories(value: &Value) -> Vector2DJagged {
-    match value {
+pub fn infer_categories(value: &Value) -> Result<Vector2DJagged> {
+    Ok(match value {
         Value::ArrayND(array) => match array {
             ArrayND::Bool(array) =>
                 Vector2DJagged::Bool(array.gencolumns().into_iter().map(|col| {
-                    let mut column_categories = col.into_dyn().
+                    let column_categories = col.into_dyn().
                         into_dimensionality::<Ix1>().unwrap().to_vec();
 //                    column_categories.sort();
 //                    column_categories.dedup();
@@ -201,7 +206,7 @@ pub fn infer_categories(value: &Value) -> Vector2DJagged {
                 }).collect()),
             ArrayND::F64(array) =>
                 Vector2DJagged::F64(array.gencolumns().into_iter().map(|col| {
-                    let mut column_categories = col.into_dyn().
+                    let column_categories = col.into_dyn().
                         into_dimensionality::<Ix1>().unwrap().to_vec();
 //                    column_categories.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal));
 //                    column_categories.dedup();
@@ -209,7 +214,7 @@ pub fn infer_categories(value: &Value) -> Vector2DJagged {
                 }).collect()),
             ArrayND::I64(array) =>
                 Vector2DJagged::I64(array.gencolumns().into_iter().map(|col| {
-                    let mut column_categories = col.into_dyn().
+                    let column_categories = col.into_dyn().
                         into_dimensionality::<Ix1>().unwrap().to_vec();
 //                    column_categories.sort();
 //                    column_categories.dedup();
@@ -219,7 +224,7 @@ pub fn infer_categories(value: &Value) -> Vector2DJagged {
 
 //                println!("array in inference {:?}", array);
                 Vector2DJagged::Str(array.gencolumns().into_iter().map(|col| {
-                    let mut column_categories = col.into_dyn().
+                    let column_categories = col.into_dyn().
                         into_dimensionality::<Ix1>().unwrap().to_vec();
 //                    column_categories.sort();
 //                    column_categories.dedup();
@@ -227,7 +232,7 @@ pub fn infer_categories(value: &Value) -> Vector2DJagged {
                 }).collect())
             }
         },
-        Value::Hashmap(_hashmap) => panic!("category inference is not implemented for hashmaps"),
+        Value::Hashmap(_hashmap) => return Err("category inference is not implemented for hashmaps".into()),
         Value::Vector2DJagged(jagged) => match jagged {
             Vector2DJagged::Bool(array) =>
                 Vector2DJagged::Bool(array.iter().map(|column_categories| match column_categories {
@@ -270,22 +275,22 @@ pub fn infer_categories(value: &Value) -> Vector2DJagged {
                     None => None
                 }).collect()),
         }
-    }
+    })
 }
 
-pub fn infer_nature(value: &Value) -> Option<Nature> {
-    match value {
+pub fn infer_nature(value: &Value) -> Result<Option<Nature>> {
+    Ok(match value {
         Value::ArrayND(array) => match array {
             ArrayND::F64(array) => Some(Nature::Continuous(NatureContinuous {
-                min: Vector1DNull::F64(infer_min(&Value::ArrayND(ArrayND::F64(array.clone())))),
-                max: Vector1DNull::F64(infer_max(&Value::ArrayND(ArrayND::F64(array.clone())))),
+                min: Vector1DNull::F64(infer_min(&array.clone().into())?),
+                max: Vector1DNull::F64(infer_max(&array.clone().into())?),
             })),
             ArrayND::I64(array) => Some(Nature::Continuous(NatureContinuous {
-                min: Vector1DNull::F64(infer_min(&Value::ArrayND(ArrayND::I64(array.clone())))),
-                max: Vector1DNull::F64(infer_max(&Value::ArrayND(ArrayND::I64(array.clone())))),
+                min: Vector1DNull::F64(infer_min(&array.clone().into())?),
+                max: Vector1DNull::F64(infer_max(&array.clone().into())?),
             })),
             ArrayND::Bool(array) => Some(Nature::Categorical(NatureCategorical {
-                categories: infer_categories(&Value::ArrayND(ArrayND::Bool(array.clone()))),
+                categories: infer_categories(&array.clone().into())?,
             })),
             // This has a nasty side-effect of duplicating columns within the properties
 //            ArrayND::Str(array) => Nature::Categorical(NatureCategorical {
@@ -296,25 +301,31 @@ pub fn infer_nature(value: &Value) -> Option<Nature> {
         Value::Hashmap(_hashmap) => None,
         Value::Vector2DJagged(jagged) => match jagged {
             Vector2DJagged::F64(jagged) => Some(Nature::Continuous(NatureContinuous {
-                min: Vector1DNull::F64(infer_min(&Value::Vector2DJagged(Vector2DJagged::F64(jagged.clone())))),
-                max: Vector1DNull::F64(infer_max(&Value::Vector2DJagged(Vector2DJagged::F64(jagged.clone())))),
+                min: Vector1DNull::F64(infer_min(&Value::Vector2DJagged(Vector2DJagged::F64(jagged.clone())))?),
+                max: Vector1DNull::F64(infer_max(&Value::Vector2DJagged(Vector2DJagged::F64(jagged.clone())))?),
             })),
             Vector2DJagged::I64(jagged) => Some(Nature::Continuous(NatureContinuous {
-                min: Vector1DNull::F64(infer_min(&Value::Vector2DJagged(Vector2DJagged::I64(jagged.clone())))),
-                max: Vector1DNull::F64(infer_max(&Value::Vector2DJagged(Vector2DJagged::I64(jagged.clone())))),
+                min: Vector1DNull::F64(infer_min(&Value::Vector2DJagged(Vector2DJagged::I64(jagged.clone())))?),
+                max: Vector1DNull::F64(infer_max(&Value::Vector2DJagged(Vector2DJagged::I64(jagged.clone())))?),
             })),
             Vector2DJagged::Bool(jagged) => Some(Nature::Categorical(NatureCategorical {
-                categories: infer_categories(&Value::Vector2DJagged(Vector2DJagged::Bool(jagged.clone()))),
+                categories: infer_categories(&Value::Vector2DJagged(Vector2DJagged::Bool(jagged.clone())))?,
             })),
             Vector2DJagged::Str(jagged) => Some(Nature::Categorical(NatureCategorical {
-                categories: infer_categories(&Value::Vector2DJagged(Vector2DJagged::Str(jagged.clone()))),
+                categories: infer_categories(&Value::Vector2DJagged(Vector2DJagged::Str(jagged.clone())))?,
             })),
         }
-    }
+    })
 }
 
-pub fn infer_nullity(_value: &Value) -> Result<bool> {
-    Ok(true)
+pub fn infer_nullity(value: &Value) -> Result<bool> {
+    match value {
+        Value::ArrayND(value) => match value {
+            ArrayND::F64(value) => Ok(value.iter().any(|v| v.is_nan())),
+            _ => Ok(false)
+        },
+        _ => Ok(false)
+    }
 }
 
 pub fn infer_c_stability(value: &Value) -> Result<Vec<f64>> {
@@ -329,17 +340,18 @@ pub fn infer_property(value: &Value) -> Result<ValueProperties> {
         Value::ArrayND(array) => ArrayNDProperties {
             nullity: infer_nullity(&value)?,
             releasable: true,
-            nature: infer_nature(&value),
+            nature: infer_nature(&value)?,
             c_stability: infer_c_stability(&value)?,
             num_columns: infer_num_columns(&value)?,
-            num_records: infer_num_rows(array)?,
+            num_records: Some(infer_num_rows(array)?),
             aggregator: None,
             data_type: match array {
                 ArrayND::Bool(_) => DataType::Bool,
                 ArrayND::F64(_) => DataType::F64,
                 ArrayND::I64(_) => DataType::I64,
                 ArrayND::Str(_) => DataType::Str,
-            }
+            },
+            dataset_id: None
         }.into(),
         Value::Hashmap(hashmap) => HashmapProperties {
             num_records: None,
@@ -359,6 +371,6 @@ pub fn infer_property(value: &Value) -> Result<ValueProperties> {
                     .collect::<Result<HashMap<bool, ValueProperties>>>()?.into(),
             }
         }.into(),
-        Value::Vector2DJagged(jagged) => Vector2DJaggedProperties {}.into()
+        Value::Vector2DJagged(_jagged) => Vector2DJaggedProperties {}.into()
     })
 }

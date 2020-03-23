@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package yarrow;
+package whitenoise;
 
 import "base.proto";
 import "components.proto";
@@ -8,9 +8,9 @@ import "value.proto";
 
 // REQUESTS
 // VALIDATOR API
+
 message RequestValidateAnalysis {
 	Analysis analysis = 1;
-	// optional
 	Release release = 2;
 }
 message RequestComputePrivacyUsage {
@@ -43,6 +43,7 @@ message RequestExpandComponent {
 
 // REQUESTS
 // RUNTIME API
+
 message RequestRelease {
 	Analysis analysis = 1;
 	Release release = 2;
@@ -51,6 +52,7 @@ message RequestRelease {
 
 // RESPONSES
 // VALIDATOR API
+
 message ResponseValidateAnalysis {
 	message Validated {
 	    bool value = 1;
@@ -86,19 +88,15 @@ message ResponsePrivacyUsageToAccuracy {
 	}
 }
 message ResponseExpandComponent {
-	message ExpandedComponent {
-		ComputationGraph computation_graph = 1;
-		ValueProperties properties = 2;
-		uint32 maximum_id = 3;
-	}
 	oneof value {
-		ExpandedComponent data = 1;
+		ComponentExpansion data = 1;
 		Error error = 2;
 	}
 }
 
 // RESPONSES
 // RUNTIME API
+
 message ResponseRelease {
 	oneof value {
 		Release data = 1;

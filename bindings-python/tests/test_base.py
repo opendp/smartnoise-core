@@ -1,14 +1,21 @@
-import yarrow
+from os.path import abspath, dirname, isfile, join
+import pytest
+import whitenoise
+import whitenoise.components as op
 
-import yarrow.components as op
+# Path to the test csv file
+#
+TEST_CSV_PATH = join(dirname(abspath(__file__)), '..', 'data',
+                     'PUMS_california_demographics_1000', 'data.csv')
+assert isfile(TEST_CSV_PATH), f'Error: file not found: {TEST_CSV_PATH}'
 
-test_csv_path = '/home/shoe/PSI/datasets/data/PUMS_california_demographics_1000/data.csv'
 test_csv_names = ["age", "sex", "educ", "race", "income", "married"]
+
 
 def test_multilayer_analysis(run=True):
 
-    with yarrow.Analysis() as analysis:
-        PUMS = yarrow.Dataset(path=test_csv_path, column_names=test_csv_names)
+    with whitenoise.Analysis() as analysis:
+        PUMS = whitenoise.Dataset(path=TEST_CSV_PATH, column_names=test_csv_names)
 
         age = op.cast(PUMS['age'], type="FLOAT")
         sex = op.cast(PUMS['sex'], type="BOOL", true_label="TRUE")
@@ -74,10 +81,11 @@ def test_multilayer_analysis(run=True):
 
 
 def test_dp_linear_stats(run=True):
-    with yarrow.Analysis() as analysis:
-        dataset_pums = yarrow.Dataset(path=test_csv_path, column_names=test_csv_names)
+    with whitenoise.Analysis() as analysis:
+        dataset_pums = whitenoise.Dataset(path=TEST_CSV_PATH, column_names=test_csv_names)
 
         age = dataset_pums['age']
+        analysis.release()
 
         num_records = op.dp_count(
             age,
@@ -87,6 +95,18 @@ def test_dp_linear_stats(run=True):
         )
         analysis.release()
         print("number of records:", num_records.value)
+
+        vars = op.cast(dataset_pums[["age", "income"]], type="float")
+
+        covariance = op.dp_covariance(
+            data=vars,
+            privacy_usage={'epsilon': .5},
+            data_min=[0., 0.],
+            data_max=[150., 150000.],
+            data_n=num_records)
+
+        analysis.release()
+        print("covariance:\n", covariance.value)
 
         age = op.cast(age, type="FLOAT")
 
@@ -170,10 +190,11 @@ def test_dp_linear_stats(run=True):
 
     return analysis
 
-
+@pytest.mark.skip(reason="requires count_min and count_max")
 def test_dp_count(run=True):
-    with yarrow.Analysis() as analysis:
-        dataset_pums = yarrow.Dataset(path=test_csv_path, column_names=test_csv_names)
+    with whitenoise.Analysis() as analysis:
+        dataset_pums = whitenoise.Dataset(path=TEST_CSV_PATH, column_names=test_csv_names)
+
         count = op.dp_count(
             dataset_pums['sex'] == '1',
             privacy_usage={'epsilon': 0.5})
@@ -185,14 +206,15 @@ def test_dp_count(run=True):
     return analysis
 
 
+@pytest.mark.skip(reason="Needs num_columns or column_names")
 def test_raw_dataset(run=True):
-    with yarrow.Analysis() as analysis:
+    with whitenoise.Analysis() as analysis:
         op.dp_mean(
-            data=yarrow.Dataset(value=[1., 2., 3., 4., 5.])[0],
+            data=whitenoise.Dataset(value=[1., 2., 3., 4., 5.])[0],
             privacy_usage={'epsilon': 1},
             data_min=0.,
             data_max=10.,
-            data_n=10
+            data_n=10,
         )
 
     if run:

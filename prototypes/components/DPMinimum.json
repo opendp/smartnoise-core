@@ -10,7 +10,7 @@
       "type": "Jagged"
     }
   },
-  "id": "DPMedian",
+  "id": "DPMinimum",
   "name": "dp_minimum",
   "options": {
     "implementation": {
@@ -23,6 +23,5 @@
   },
   "return": {
     "type": "Array"
-  },
-  "docstring": "dp_minimum step"
+  }
 }

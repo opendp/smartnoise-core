@@ -8,8 +8,8 @@ use crate::hashmap;
 use crate::components::{Component, Accuracy, Expandable, Report};
 
 
-use crate::base::{NodeProperties, Value, standardize_categorical_argument, Vector2DJagged, ValueProperties};
-use crate::utilities::json::{JSONRelease};
+use crate::base::{NodeProperties, Value, ValueProperties};
+use crate::utilities::json::{JSONRelease, privacy_usage_to_json, AlgorithmInfo, value_to_json};
 
 
 impl Component for proto::DpCount {
@@ -18,9 +18,9 @@ impl Component for proto::DpCount {
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         _public_arguments: &HashMap<String, Value>,
-        properties: &base::NodeProperties,
+        _properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
-        Err("DPCount is ethereal, and has no property propagation".into())
+        Err("DPCount is abstract, and has no property propagation".into())
     }
 
     fn get_names(
@@ -40,26 +40,26 @@ impl Expandable for proto::DpCount {
         _properties: &base::NodeProperties,
         component_id: u32,
         maximum_id: u32,
-    ) -> Result<(u32, HashMap<u32, proto::Component>)> {
+    ) -> Result<proto::ComponentExpansion> {
         let mut maximum_id = maximum_id.clone();
-        let mut graph_expansion: HashMap<u32, proto::Component> = HashMap::new();
+        let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
 
         // count
         maximum_id += 1;
         let id_count = maximum_id.clone();
-        graph_expansion.insert(id_count, proto::Component {
-            arguments: hashmap!["data".to_owned() => *component.arguments.get("data").unwrap()],
+        computation_graph.insert(id_count.clone(), proto::Component {
+            arguments: hashmap!["data".to_owned() => *component.arguments.get("data").ok_or::<Error>("data must be provided as an argument".into())?],
             variant: Some(proto::component::Variant::Count(proto::Count {})),
             omit: true,
             batch: component.batch,
         });
 
         // noising
-        graph_expansion.insert(component_id, proto::Component {
+        computation_graph.insert(component_id, proto::Component {
             arguments: hashmap![
                 "data".to_owned() => id_count,
-                "count_min".to_owned() => *component.arguments.get("count_min").unwrap(),
-                "count_max".to_owned() => *component.arguments.get("count_max").unwrap()
+                "count_min".to_owned() => *component.arguments.get("count_min").ok_or::<Error>("count_min must be provided as an argument".into())?,
+                "count_max".to_owned() => *component.arguments.get("count_max").ok_or::<Error>("count_max must be provided as an argument".into())?
             ],
             variant: Some(proto::component::Variant::from(proto::SimpleGeometricMechanism {
                 privacy_usage: self.privacy_usage.clone(),
@@ -69,7 +69,13 @@ impl Expandable for proto::DpCount {
             batch: component.batch,
         });
 
-        Ok((maximum_id, graph_expansion))
+
+        Ok(proto::ComponentExpansion {
+            computation_graph,
+            properties: HashMap::new(),
+            releases: HashMap::new(),
+            traversal: vec![id_count]
+        })
     }
 }
 
@@ -95,12 +101,31 @@ impl Accuracy for proto::DpCount {
 impl Report for proto::DpCount {
     fn summarize(
         &self,
-        _node_id: &u32,
-        _component: &proto::Component,
+        node_id: &u32,
+        component: &proto::Component,
         _public_arguments: &HashMap<String, Value>,
         _properties: &NodeProperties,
-        _release: &Value
+        release: &Value
     ) -> Result<Option<Vec<JSONRelease>>> {
-        Ok(None)
+        let mut release_info = HashMap::new();
+        release_info.insert("mechanism".to_string(), serde_json::json!(self.implementation.clone()));
+        release_info.insert("releaseValue".to_string(), value_to_json(&release)?);
+
+        Ok(Some(vec![JSONRelease {
+            description: "DP release information".to_string(),
+            statistic: "DPCount".to_string(),
+            variables: vec![],
+            release_info,
+            privacy_loss: privacy_usage_to_json(&self.privacy_usage[0].clone()),
+            accuracy: None,
+            batch: component.batch as u64,
+            node_id: node_id.clone() as u64,
+            postprocess: false,
+            algorithm_info: AlgorithmInfo {
+                name: "".to_string(),
+                cite: "".to_string(),
+                argument: serde_json::json!({})
+            }
+        }]))
     }
 }

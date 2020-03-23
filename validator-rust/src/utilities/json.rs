@@ -1,44 +1,71 @@
+//! Representation for report/json summaries
+
 use crate::errors::*;
 use std::collections::{HashMap};
 use serde::{Deserialize, Serialize};
-
-//use schemars::{schema_for, JsonSchema};
-//extern crate json_typegen;
 extern crate serde_json;
+
 use crate::proto;
 use crate::base;
 
-//use json_typegen::json_typegen;
 use serde_json::Value;
 use ndarray::prelude::*;
 
+
+/// JSONRelease represents JSON objects in the differential privacy release schema.
+/// TODO: link to schema
 #[derive(Serialize, Deserialize)]
 pub struct JSONRelease {
     pub description: String,
+    /// array of string that is column/s in the dataset
     pub variables: Vec<String>,
+    /// User provide a value for either epsilon (epsilon>0), delta (0<delta<1>), or rho depending on the type of dp definitions (i.e. pure, approximated and concerted).
     pub statistic: String,
-    pub releaseInfo: HashMap<String, Value>,
-    pub privacyLoss: Value,
+    /// The value released by the system
+    #[serde(rename(serialize = "releaseInfo", deserialize = "releaseInfo"))]
+    pub release_info: HashMap<String, Value>,
+    /// The amount of privacy used to compute the release value
+    #[serde(rename(serialize = "privacyLoss", deserialize = "privacyLoss"))]
+    pub privacy_loss: Value,
+    /// optional parameter. It is a combination of the accuracy and alpha value
     pub accuracy: Option<Accuracy>,
+    /// which release the implemented statistic is originating from. This provides a tool to keep track of overall privacyLoss.
     pub batch: u64,
-    pub nodeID: u64,
+    /// For advanced users. Corresponds to the node of the graph this release originated from
+    #[serde(rename(serialize = "nodeID", deserialize = "nodeID"))]
+    pub node_id: u64,
+    /// true when the released value is derived from public/released data
     pub postprocess: bool,
-    pub algorithmInfo: AlgorithmInfo,
+    /// the name of the algorithm which is implemented for computation of the given statistic and the arguments of the algorithm such as n(number of observations),  range (upper and lower bound, etc.)
+    #[serde(rename(serialize = "algorithmInfo", deserialize = "algorithmInfo"))]
+    pub algorithm_info: AlgorithmInfo,
 }
 
+/// Statistical accuracy summary
+///
+/// The actual value refers to the non-privatized statistic on sample data, not the non-privatized statistic of the population
 #[derive(Serialize, Deserialize)]
 pub struct Accuracy {
-    pub accuracyValue: f64,
+    /// Upper bound on the distance between the estimated value and actual value.
+    #[serde(rename(serialize = "accuracyValue", deserialize = "accuracyValue"))]
+    pub accuracy_value: f64,
+    /// 100(1 - alpha)% confidence that the actual value is within the interval spanned by the accuracyValue.
     pub alpha: f64,
 }
 
+/// Algorithm summary
+///
+/// Metadata about the algorithm used to compute the release value.
 #[derive(Serialize, Deserialize)]
 pub struct AlgorithmInfo {
     pub name: String,
+    /// Citation to originating paper
     pub cite: String,
+    /// The arguments of the algorithm such as n (number of observations),  range (upper and lower bound, etc.).
     pub argument: Value,
 }
 
+/// converts an ArrayND (which can take any of types (float, integer, string, and Boolean) to JSON
 pub fn value_to_json(value: &base::Value) -> Result<serde_json::Value> {
     match value {
         base::Value::ArrayND(array) => match array {
@@ -51,17 +78,20 @@ pub fn value_to_json(value: &base::Value) -> Result<serde_json::Value> {
     }
 }
 
+/// Converts n dimensional array to json arrays
 pub fn arraynd_to_json<T: Serialize + Clone>(array: &ArrayD<T>) -> Result<serde_json::Value> {
     match array.ndim() {
         0 => Ok(serde_json::json!(array.first().unwrap())),
         1 => Ok(serde_json::json!(array.clone().into_dimensionality::<Ix1>().unwrap().to_vec())),
-//        2 => {
-//            serde_json::json!(array.into_dimensionality::<Ix2>().clone().unwrap().to_vec())
-//        },
-        _ => Err("converting a matrix to json is not implemented".into())
+        // TODO: preserve shape
+        2 => Ok(serde_json::json!(array.iter().cloned().collect::<Vec<T>>())),
+        _ => Err("array must have dimensionality less than 2".into())
     }
 }
 
+/// Converts the prost Protobuf PrivacyLoss into a json representation.
+///
+/// User provide a value for either epsilon, delta, or rho depending on the type of dp definitions (i.e. pure, approximated and concentrated).
 pub fn privacy_usage_to_json(privacy_usage: &proto::PrivacyUsage) -> serde_json::Value {
     match privacy_usage.distance.clone().unwrap() {
         proto::privacy_usage::Distance::DistancePure(distance) =>

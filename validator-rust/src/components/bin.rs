@@ -1,18 +1,16 @@
 use crate::errors::*;
 
 use std::collections::HashMap;
-use crate::base::{Nature, Vector1DNull, NodeProperties, ArrayND, get_constant, NatureCategorical, standardize_categorical_argument, Vector2DJagged, ValueProperties, prepend};
+use crate::base::{Nature, NodeProperties, NatureCategorical, standardize_categorical_argument, Vector2DJagged, ValueProperties, prepend, DataType};
 
 use crate::{proto, base};
 
-use crate::components::{Component, Expandable};
+use crate::components::{Component};
 
-use ndarray::Array;
-use crate::base::{Value, NatureContinuous};
-use itertools::Itertools;
+use crate::base::{Value};
+
 
 impl Component for proto::Bin {
-    // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
@@ -51,6 +49,7 @@ impl Component for proto::Bin {
         data_property.nature = Some(Nature::Categorical(NatureCategorical {
             categories: Vector2DJagged::F64(edges.iter().map(|col| Some(col.clone())).collect()),
         }));
+        data_property.data_type = DataType::F64;
 
         Ok(data_property.into())
     }

@@ -1,51 +1,81 @@
+//! Component trait implementations
+//!
+//! Each component represents an abstract computation.
+//! Example components are Materialize for loading a dataframe, Index for retrieving specific columns from the dataframe, Mean for aggregating data, LaplaceMechanism for privatizing data, etc.
+//!
+//! There are a set of possible behaviours each component may implement. Each behavior corresponds to a trait. A listing of traits is at the bottom of the page.
+//!
+//! Implementations of the traits are distributed among the module files.
+
 use crate::errors::*;
 
 
-pub mod transforms;
-pub mod bin;
-pub mod cast;
-pub mod clamp;
-pub mod constant;
-pub mod count;
-pub mod covariance;
-pub mod dp_count;
-pub mod dp_variance;
-pub mod dp_covariance;
-pub mod dp_histogram;
-pub mod dp_maximum;
-pub mod dp_median;
-pub mod dp_minimum;
-pub mod dp_mean;
-pub mod dp_moment_raw;
-pub mod dp_sum;
-pub mod filter;
-pub mod impute;
+mod transforms;
+mod bin;
+mod cast;
+mod clamp;
+mod count;
+mod covariance;
+mod dp_count;
+mod dp_variance;
+mod dp_covariance;
+mod dp_histogram;
+mod dp_maximum;
+mod dp_median;
+mod dp_minimum;
+mod dp_mean;
+mod dp_moment_raw;
+mod dp_sum;
+mod filter;
+mod impute;
 pub mod index;
-pub mod kth_raw_sample_moment;
-pub mod maximum;
-pub mod materialize;
-pub mod minimum;
-pub mod partition;
-pub mod quantile;
-pub mod mean;
-pub mod mechanism_exponential;
-pub mod mechanism_gaussian;
-pub mod mechanism_laplace;
-pub mod mechanism_simple_geometric;
-pub mod resize;
-pub mod row_wise_min;
-pub mod sum;
-pub mod variance;
+mod kth_raw_sample_moment;
+mod maximum;
+mod materialize;
+mod minimum;
+mod partition;
+mod quantile;
+mod reshape;
+mod mean;
+mod mechanism_exponential;
+mod mechanism_gaussian;
+mod mechanism_laplace;
+mod mechanism_simple_geometric;
+mod resize;
+//mod row_wise;
+mod sum;
+mod variance;
 
 use std::collections::HashMap;
 
-use crate::base::{Value, NodeProperties, Sensitivity, ValueProperties};
+use crate::base::{Value, NodeProperties, Sensitivity, ValueProperties, prepend, get_literal, ArrayND};
 use crate::proto;
 use crate::utilities::json::{JSONRelease};
-use crate::hashmap;
 
+use ndarray::Array;
+
+
+/// Universal Component trait
+///
+/// To be a component, a struct must represent an abstract computation, for which properties can be derived about the resulting data.
 pub trait Component {
-    // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
+    /// Given properties known about private arguments, and public arguments, derive properties about the resulting data.
+    ///
+    /// A component must fail to propagate properties if requirements on the input properties are not met.
+    /// For example, if a Component represents an abstract computation that requires prior knowledge of the number of records to be safe or function properly,
+    /// the propagate_property implementation is expected to return an error state if the prior knowledge is not known.
+    ///
+    /// For example, if a definition of privacy is used that is incompatible with the abstract computation,
+    /// the propagate_property implementation is expected to return an error state.
+    ///
+    /// # Arguments
+    /// * `self` - the protobuf object corresponding to the prost protobuf struct
+    /// * `privacy_definition` - the definition of privacy under which the computation takes place
+    /// * `public_arguments` - actual data values of arguments, typically either supplied literals or released values.
+    /// * `properties` - derived properties of private input arguments
+    ///
+    /// # Returns
+    /// Derived properties on the data resulting from the abstract computation
     fn propagate_property(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
@@ -53,14 +83,32 @@ pub trait Component {
         properties: &NodeProperties,
     ) -> Result<ValueProperties>;
 
+    /// Utility function for a recursive algorithm to derive human readable names on the columns in the output data.
     fn get_names(
         &self,
         properties: &NodeProperties,
     ) -> Result<Vec<String>>;
 }
 
+/// Expandable Component trait
+///
+/// When a component is expandable, it represents a higher order computation that may be expressed in multiple components that are more granular.
+/// Oftentimes Expandable components correspond to differentially private algorithms,
+/// that are represented in terms of an aggregation and a mechanism.
 pub trait Expandable {
-    // return a hashmap of an expanded subgraph
+    /// Concrete implementation for an Expandable component that returns a patch that may be applied to a computation graph.
+    ///
+    /// # Arguments
+    /// * `self` - the protobuf object corresponding to the prost protobuf struct
+    /// * `privacy_definition` - definition of privacy to use when expanding. Some expansions are not valid under some privacy definitions
+    /// * `component` - contains additional metadata about the argument node ids
+    /// * `properties` - properties on the data supplied as arguments
+    /// * `component_id` - the id of the node to expand. The final node in the returned patch must use this id.
+    /// * `maximum_id` - the starting id for which additional nodes may be added to the graph without overwriting existing nodes
+    ///
+    /// # Returns
+    /// Sufficient information to patch the runtime with more granular steps.
+    /// More documentation at [ComponentExpansion](proto::ComponentExpansion).
     fn expand_component(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
@@ -68,10 +116,27 @@ pub trait Expandable {
         properties: &NodeProperties,
         component_id: u32,
         maximum_id: u32,
-    ) -> Result<(u32, HashMap<u32, proto::Component>)>;
+    ) -> Result<proto::ComponentExpansion>;
 }
 
+/// Aggregator Component trait
+///
+/// When a component is an aggregator, the abstract computation the component represents combines multiple rows together into a single value.
+/// For example, a mean, minimum, or scoring function on a dataset.
 pub trait Aggregator {
+    /// Derivation for the sensitivity of an aggregator based on available local metadata.
+    ///
+    /// The sensitivity is the maximum amount that a perturbation of input data may have on the resulting value.
+    /// The type of perturbation is described in the privacy_definition.
+    ///
+    /// # Arguments
+    /// * `self` - the protobuf object corresponding to the prost protobuf struct
+    /// * `privacy_definition` - the definition of privacy under which the sensitivity is to be computed
+    /// * `properties` - derived properties for the input data
+    /// * `sensitivity_type` - space for which the sensitivity is computed within
+    ///
+    /// # Returns
+    /// Sensitivities for each of the values in the resulting computation
     fn compute_sensitivity(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
@@ -80,6 +145,7 @@ pub trait Aggregator {
     ) -> Result<Vec<f64>>;
 }
 
+/// Accuracy component trait (not yet implemented)
 pub trait Accuracy {
     fn accuracy_to_privacy_usage(
         &self,
@@ -95,8 +161,11 @@ pub trait Accuracy {
     ) -> Option<f64>;
 }
 
+/// Report component trait
+///
+/// Reportable components correspond to a computation that a researcher may want a JSON summary for
 pub trait Report {
-    // for json construction. Return type should be a generic serializable struct, not a String
+    /// Summarize the relevant metadata around a computation in a readable, JSON-serializable format.
     fn summarize(
         &self,
         node_id: &u32,
@@ -110,7 +179,9 @@ pub trait Report {
 
 
 impl Component for proto::component::Variant {
-    // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
+    /// Utility implementation on the enum containing all variants of a component.
+    ///
+    /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn propagate_property(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
@@ -132,19 +203,19 @@ impl Component for proto::component::Variant {
 
         propagate_property!(
             // INSERT COMPONENT LIST
-            Bin, Cast, Clamp, Constant, Count, Covariance,
+            Bin, Cast, Clamp, Count, Covariance,
 
-            Dpcount, Dpcovariance, Dphistogram, Dpmaximum, Dpmean, Dpmedian, Dpminimum,
-            Dpmomentraw, Dpsum, Dpvariance,
+            DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMedian, DpMinimum,
+            DpMomentRaw, DpSum, DpVariance,
 
-            Filter, Impute, Index, Kthrawsamplemoment, Materialize, Maximum, Mean,
+            Filter, Impute, Index, KthRawSampleMoment, Materialize, Maximum, Mean,
 
-            Exponentialmechanism, Gaussianmechanism, Laplacemechanism, Simplegeometricmechanism,
+            ExponentialMechanism, GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism,
 
-            Minimum, Quantile, Resize, Rowmin, Sum, Variance,
+            Minimum, Quantile, Reshape, Resize, Sum, Variance,
 
-            Add, Subtract, Divide, Multiply, Power, Log, Modulo, Remainder, And, Or, Negate,
-            Equal, Lessthan, Greaterthan, Negative
+            Add, Subtract, Divide, Multiply, Power, Log, Modulo, LogicalAnd, LogicalOr, Negate,
+            Equal, LessThan, GreaterThan, Negative
         );
 
         return Err(format!("proto component {:?} is missing its Component trait", self).into())
@@ -152,7 +223,7 @@ impl Component for proto::component::Variant {
 
     fn get_names(
         &self,
-        properties: &NodeProperties,
+        _properties: &NodeProperties,
     ) -> Result<Vec<String>> {
 
         macro_rules! get_names{
@@ -179,7 +250,9 @@ impl Component for proto::component::Variant {
 }
 
 impl Expandable for proto::component::Variant {
-    // return a hashmap of an expanded subgraph
+    /// Utility implementation on the enum containing all variants of a component.
+    ///
+    /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn expand_component(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
@@ -187,7 +260,7 @@ impl Expandable for proto::component::Variant {
         properties: &NodeProperties,
         component_id: u32,
         maximum_id: u32,
-    ) -> Result<(u32, HashMap<u32, proto::Component>)> {
+    ) -> Result<proto::ComponentExpansion> {
         macro_rules! expand_component {
             ($( $variant:ident ),*) => {
                 {
@@ -203,17 +276,28 @@ impl Expandable for proto::component::Variant {
 
         expand_component!(
             // INSERT COMPONENT LIST
-            Clamp, Dpcount, Dpcovariance, Dphistogram, Dpmaximum, Dpmean, Dpmedian, Dpminimum,
-            Dpmomentraw, Dpsum, Dpvariance, Impute, Exponentialmechanism, Gaussianmechanism,
-            Laplacemechanism, Simplegeometricmechanism, Resize
+            Clamp, DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMedian, DpMinimum,
+            DpMomentRaw, DpSum, DpVariance, Impute, ExponentialMechanism, GaussianMechanism,
+            LaplaceMechanism, SimpleGeometricMechanism, Resize,
+
+            Modulo
         );
 
         // no expansion
-        return Ok((maximum_id, hashmap!()))
+
+        Ok(proto::ComponentExpansion {
+            computation_graph: HashMap::new(),
+            properties: HashMap::new(),
+            releases: HashMap::new(),
+            traversal: Vec::new()
+        })
     }
 }
 
 impl Aggregator for proto::component::Variant {
+    /// Utility implementation on the enum containing all variants of a component.
+    ///
+    /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn compute_sensitivity(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
@@ -235,7 +319,7 @@ impl Aggregator for proto::component::Variant {
 
         compute_sensitivity!(
             // INSERT COMPONENT LIST
-            Count, Covariance, Kthrawsamplemoment, Maximum, Mean, Minimum, Quantile, Sum, Variance
+            Count, Covariance, KthRawSampleMoment, Maximum, Mean, Minimum, Quantile, Sum, Variance
         );
 
         Err("sensitivity is not implemented".into())
@@ -243,11 +327,14 @@ impl Aggregator for proto::component::Variant {
 }
 
 impl Accuracy for proto::component::Variant {
+    /// Utility implementation on the enum containing all variants of a component.
+    ///
+    /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn accuracy_to_privacy_usage(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
-        properties: &NodeProperties,
-        accuracy: &proto::Accuracy,
+        _privacy_definition: &proto::PrivacyDefinition,
+        _properties: &NodeProperties,
+        _accuracy: &proto::Accuracy,
     ) -> Option<proto::PrivacyUsage> {
         macro_rules! accuracy_to_privacy_usage {
             ($( $variant:ident ),*) => {
@@ -270,10 +357,13 @@ impl Accuracy for proto::component::Variant {
         None
     }
 
+    /// Utility implementation on the enum containing all variants of a component.
+    ///
+    /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn privacy_usage_to_accuracy(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
-        properties: &NodeProperties,
+        _privacy_definition: &proto::PrivacyDefinition,
+        _properties: &NodeProperties,
     ) -> Option<f64> {
         macro_rules! privacy_usage_to_accuracy {
             ($( $variant:ident ),*) => {
@@ -298,7 +388,9 @@ impl Accuracy for proto::component::Variant {
 }
 
 impl Report for proto::component::Variant {
-    // for json construction. Return type should be a generic serializable struct, not a String
+    /// Utility implementation on the enum containing all variants of a component.
+    ///
+    /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn summarize(
         &self,
         node_id: &u32,
@@ -323,9 +415,56 @@ impl Report for proto::component::Variant {
 
         summarize!(
             // INSERT COMPONENT LIST
-            Dpmean
+            DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMinimum, DpMomentRaw,
+            DpSum, DpVariance
         );
 
         Ok(None)
     }
+}
+
+
+/// Utility function for building component expansions for dp mechanisms
+pub fn expand_mechanism(
+    sensitivity_type: &Sensitivity,
+    privacy_definition: &proto::PrivacyDefinition,
+    component: &proto::Component,
+    properties: &NodeProperties,
+    component_id: u32,
+    maximum_id: u32,
+) -> Result<proto::ComponentExpansion> {
+    let mut current_id = maximum_id.clone();
+    let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
+    let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
+
+    // always overwrite sensitivity. This is not something a user may configure
+    let data_property = properties.get("data")
+        .ok_or("data: missing")?.get_arraynd()
+        .map_err(prepend("data:"))?.clone();
+
+    let aggregator = data_property.aggregator.clone()
+        .ok_or::<Error>("aggregator: missing".into())?;
+
+    let sensitivity = Value::ArrayND(ArrayND::F64(Array::from(aggregator.component
+        .compute_sensitivity(privacy_definition,
+                             &aggregator.properties,
+                             &sensitivity_type)?).into_dyn()));
+
+    current_id += 1;
+    let id_sensitivity = current_id.clone();
+    let (patch_node, release) = get_literal(&sensitivity, &component.batch)?;
+    computation_graph.insert(id_sensitivity.clone(), patch_node);
+    releases.insert(id_sensitivity.clone(), release);
+
+    // noising
+    let mut noise_component = component.clone();
+    noise_component.arguments.insert("sensitivity".to_string(), id_sensitivity);
+    computation_graph.insert(component_id, noise_component);
+
+    Ok(proto::ComponentExpansion {
+        computation_graph,
+        properties: HashMap::new(),
+        releases,
+        traversal: Vec::new()
+    })
 }

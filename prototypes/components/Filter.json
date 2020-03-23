@@ -4,12 +4,13 @@
       "nature": [
         "continuous"
       ],
-      "type": "Array"
+      "type": "Array",
+      "description": "Data to be filtered."
     },
     "mask": {
-      "nature": [
-      ],
-      "type": "Array"
+      "nature": [],
+      "type": "Array",
+      "description": "Boolean mask giving whether or not each row should be kept."
     }
   },
   "id": "Filter",
@@ -19,7 +20,8 @@
     "nature": [
       "continuous"
     ],
-    "type": "Array"
+    "type": "Array",
+    "description": "Data with only the desired rows."
   },
-  "docstring": "filter step"
+  "description": "Filters data down into only the desired rows."
 }

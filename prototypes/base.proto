@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package yarrow;
+package whitenoise;
 
 import "value.proto";
 import "components.proto";
@@ -13,8 +13,10 @@ message Analysis {
     PrivacyDefinition privacy_definition = 1;
     ComputationGraph computation_graph = 2;
 }
+
+// The definition of privacy determines parameters for sensitivity derivations and the set of available algorithms.
 message PrivacyDefinition {
-    // upper bound
+    // Privacy leakage with respect `group_size` number of rows. This is typically one.
     uint32 group_size = 4;
 
     enum Distance {
@@ -23,22 +25,15 @@ message PrivacyDefinition {
 
         // (e, d)-differential privacy
         APPROXIMATE = 1;
-
-        // https://arxiv.org/pdf/1702.07476.pdf
-        RENYI = 2;
-
-        // https://arxiv.org/pdf/1603.01887.pdf
-        CONCENTRATED = 3;
-
-        // https://arxiv.org/pdf/1905.02383.pdf
-        F = 4;
     }
+    // Define how to measure distance between probability distributions.
     Distance distance = 5;
 
     enum Neighboring {
         SUBSTITUTE = 0;
         ADD_REMOVE = 1;
     }
+    // Define what kind of perturbation may be applied to a dataset to create a neighboring dataset.
     Neighboring neighboring = 6;
 }
 message ComputationGraph {
@@ -104,6 +99,7 @@ message ArrayNDProperties {
         NatureContinuous continuous = 10;
         NatureCategorical categorical = 11;
     }
+    I64Null dataset_id = 8;
 }
 message NatureContinuous {
     Array1dNull minimum = 1;
@@ -119,3 +115,9 @@ message Accuracy {
     double value = 1;
 }
 
+message ComponentExpansion {
+    map<uint32, Component> computation_graph = 1;
+    map<uint32, ValueProperties> properties = 2;
+    map<uint32, ReleaseNode> releases = 3;
+    repeated uint32 traversal = 4;
+}

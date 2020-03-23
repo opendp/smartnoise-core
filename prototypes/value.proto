@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package yarrow;
+package whitenoise;
 
 
 message BoolNull {oneof data {bool option = 1;}}
@@ -118,7 +118,7 @@ message PrivacyUsage {
     }
 }
 
-message Table {
+message DataSource {
     oneof value {
         string file_path = 1;
         string url_path = 2;

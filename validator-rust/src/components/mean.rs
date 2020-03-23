@@ -8,8 +8,6 @@ use crate::{proto, base};
 use crate::components::{Component, Aggregator};
 use crate::base::{Value, NodeProperties, AggregatorProperties, Sensitivity, prepend, ValueProperties};
 
-// TODO: more checks needed here
-
 impl Component for proto::Mean {
     fn propagate_property(
         &self,
@@ -47,28 +45,31 @@ impl Aggregator for proto::Mean {
         properties: &NodeProperties,
         sensitivity_type: &Sensitivity
     ) -> Result<Vec<f64>> {
-        let mut data_property = properties.get("data")
-            .ok_or("data: missing")?.get_arraynd()
-            .map_err(prepend("data:"))?.clone();
-
-        data_property.assert_is_not_aggregated()?;
-        data_property.assert_non_null()?;
 
         match sensitivity_type {
             Sensitivity::KNorm(k) => {
-                if k != &1 {
-                    return Err("Mean sensitivity is only implemented for KNorm of 1".into())
-                }
-                let min = data_property.get_min_f64()?;
-                let max = data_property.get_max_f64()?;
-                let num_records = data_property.get_num_records()? as f64;
 
-                Ok(min.iter()
-                    .zip(max)
-                    .map(|(min, max)| (max - min) / num_records)
-                    .collect())
+                let data_property = properties.get("data")
+                    .ok_or("data: missing")?.get_arraynd()
+                    .map_err(prepend("data:"))?.clone();
+
+                data_property.assert_non_null()?;
+                data_property.assert_is_not_aggregated()?;
+                let data_min = data_property.get_min_f64()?;
+                let data_max = data_property.get_max_f64()?;
+                let data_n = data_property.get_num_records()? as f64;
+
+                // AddRemove vs. Substitute share the same bounds
+
+                match k {
+                    1 | 2 => Ok(data_min.iter()
+                        .zip(data_max.iter())
+                        .map(|(min, max)| ((max - min) / data_n).powi(*k as i32))
+                        .collect()),
+                    _ => Err("KNorm sensitivity is only supported in L1 and L2 spaces".into())
+                }
             },
-            _ => return Err("Mean sensitivity is only implemented for KNorm of 1".into())
+            _ => Err("Mean sensitivity is only implemented for KNorm".into())
         }
     }
 }

@@ -13,14 +13,13 @@
       "type": "Array"
     }
   },
-  "id": "Remainder",
-  "name": "remainder",
+  "id": "RowMax",
+  "name": "row_wise_max",
   "options": {},
   "return": {
     "nature": [
       "continuous"
     ],
     "type": "Array"
-  },
-  "docstring": "remainder step"
+  }
 }

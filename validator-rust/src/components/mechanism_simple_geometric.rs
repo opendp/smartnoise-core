@@ -4,12 +4,12 @@ use crate::errors::*;
 use std::collections::HashMap;
 
 
-use crate::components::Aggregator;
+use crate::components::{Aggregator, expand_mechanism};
 use crate::{proto, base};
 
 use crate::components::{Component, Expandable};
-use crate::base::{Value, NodeProperties, ArrayND, get_constant, Sensitivity, prepend, ValueProperties};
-use ndarray::Array;
+use crate::base::{Value, NodeProperties, Sensitivity, prepend, ValueProperties};
+
 
 impl Component for proto::SimpleGeometricMechanism {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
@@ -54,33 +54,14 @@ impl Expandable for proto::SimpleGeometricMechanism {
         properties: &base::NodeProperties,
         component_id: u32,
         maximum_id: u32,
-    ) -> Result<(u32, HashMap<u32, proto::Component>)> {
-        let mut current_id = maximum_id.clone();
-        let mut graph_expansion: HashMap<u32, proto::Component> = HashMap::new();
-
-        // TODO: SECURITY: a user must not be able to define this directly
-        if !properties.contains_key("sensitivity") {
-            // sensitivity literal
-            let mut data_property = properties.get("data")
-                .ok_or("data: missing")?.get_arraynd()
-                .map_err(prepend("data:"))?.clone();
-
-            let aggregator = data_property.aggregator.clone()
-                .ok_or::<Error>("aggregator: missing".into())?;
-
-            let sensitivity: Value = Array::from(aggregator.component
-                .compute_sensitivity(privacy_definition, &aggregator.properties, &Sensitivity::KNorm(1))?).into_dyn().into();
-
-            current_id += 1;
-            let id_sensitivity = current_id.clone();
-            graph_expansion.insert(id_sensitivity, get_constant(&sensitivity, &component.batch));
-
-            // noising
-            let mut noise_component = component.clone();
-            noise_component.arguments.insert("sensitivity".to_string(), id_sensitivity);
-            graph_expansion.insert(component_id, noise_component);
-        }
-
-        Ok((current_id, graph_expansion))
+    ) -> Result<proto::ComponentExpansion> {
+        expand_mechanism(
+            &Sensitivity::KNorm(1),
+            privacy_definition,
+            component,
+            properties,
+            component_id,
+            maximum_id
+        )
     }
 }
