@@ -48,7 +48,7 @@ pub fn quantile<T: FromPrimitive + Ord + Clone>(mut data: ArrayD<T>, q: &f64) ->
     }
 
     match data.quantile_axis_mut(Axis(0), n64(*q), &interpolate::Lower) {
-        Ok(quantiles) => Ok(quantiles.mapv(|v| v.into())),
+        Ok(quantiles) => Ok(quantiles),
         Err(_) => Err("unable to compute quantiles".into())
     }
 }

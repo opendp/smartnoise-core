@@ -1,7 +1,7 @@
 use crate::errors::*;
 
 use std::collections::HashMap;
-use crate::base::{Nature, Vector1DNull, NodeProperties, ArrayND, get_literal, prepend, ValueProperties};
+use crate::base::{Nature, Vector1DNull, NodeProperties, ArrayND, get_literal, prepend, ValueProperties, NatureCategorical};
 
 use crate::{proto, base};
 
@@ -25,6 +25,15 @@ impl Component for proto::Clamp {
 
         let num_columns = data_property.num_columns
             .ok_or("data: number of data columns missing")?;
+
+        // handle categorical clamping
+        if let Some(categories) = public_arguments.get("categories") {
+            data_property.nature = Some(Nature::Categorical(NatureCategorical {
+                categories: categories.get_jagged()?.to_owned()
+            }));
+
+            return Ok(data_property.into());
+        }
 
         // 1. check public arguments (constant n)
         let mut clamp_minimum = match public_arguments.get("min") {
