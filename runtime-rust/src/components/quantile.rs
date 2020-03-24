@@ -9,13 +9,16 @@ use ndarray::{ArrayD, Axis};
 use ndarray_stats::QuantileExt;
 use ndarray_stats::interpolate;
 use noisy_float::types::n64;
+use num::FromPrimitive;
 
 
 impl Evaluable for proto::Quantile {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
         match get_argument(&arguments, "data")?.get_arraynd()? {
-            ArrayND::F64(data) => Ok(quantile(&data, &self.quantile)?.into()),
-//                ArrayND::I64(data) => Ok(quantile(&data)?.into()),
+            ArrayND::F64(data) =>
+                Ok(quantile(data.mapv(n64), &self.quantile)?.mapv(|v| v.raw()).into()),
+            ArrayND::I64(data) =>
+                Ok(quantile(data.clone(), &self.quantile)?.into()),
             _ => return Err("data must be either f64 or i64".into())
         }
     }
@@ -39,13 +42,12 @@ impl Evaluable for proto::Quantile {
 /// let median = quantile(&data, &0.5).unwrap();
 /// assert!(median == arr1(& [1.0, 2.0, 3.0] ).into_dyn());
 /// ```
-pub fn quantile(data: &ArrayD<f64>, q: &f64) -> Result<ArrayD<f64>> {
+pub fn quantile<T: FromPrimitive + Ord + Clone>(mut data: ArrayD<T>, q: &f64) -> Result<ArrayD<T>> {
     if &0. > q || q > &1. {
         return Err("q must be within [0, 1]".into());
     }
-    let mut data = data.mapv(n64);
 
-    match data.quantile_axis_mut(Axis(0), n64(*q), &interpolate::Midpoint) {
+    match data.quantile_axis_mut(Axis(0), n64(*q), &interpolate::Lower) {
         Ok(quantiles) => Ok(quantiles.mapv(|v| v.into())),
         Err(_) => Err("unable to compute quantiles".into())
     }

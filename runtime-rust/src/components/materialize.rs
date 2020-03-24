@@ -12,7 +12,6 @@ use whitenoise_validator::proto;
 impl Evaluable for proto::Materialize {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
 
-        // TODO: decide if column names should be mandatory
         let column_names = arguments.get("column_names")
             .and_then(|column_names| column_names.get_arraynd().ok()?.get_str().ok()).cloned();
 
