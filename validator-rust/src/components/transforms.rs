@@ -148,11 +148,7 @@ impl Component for proto::Divide {
         Ok(ArrayNDProperties {
             nullity: left_property.nullity || right_property.nullity || float_denominator_may_span_zero,
             releasable: left_property.releasable && right_property.releasable,
-            nature: sort_bounds(propagate_binary_nature(&left_property, &right_property, &Operators {
-                f64: Some(Box::new(|l: &f64, r: &f64| l / r)),
-                i64: Some(Box::new(|l: &i64, r: &i64| l / r)),
-                str: None, bool: None
-            }, &num_columns)?, &left_property.data_type)?,
+            nature: None,
             c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
                 .map(|(l, r)| l.max(r)).collect(),
@@ -192,11 +188,7 @@ impl Component for proto::Multiply {
         Ok(ArrayNDProperties {
             nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
-            nature: sort_bounds(propagate_binary_nature(&left_property, &right_property, &Operators {
-                f64: Some(Box::new(|l: &f64, r: &f64| l * r)),
-                i64: Some(Box::new(|l: &i64, r: &i64| l * r)),
-                str: None, bool: None
-            }, &num_columns)?, &left_property.data_type)?,
+            nature: None,
             c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
                 .map(|(l, r)| l.max(r)).collect(),
@@ -236,7 +228,6 @@ impl Component for proto::Power {
             nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
             // raising data to a power is not monotonic
-            // while it is easy to derive conservative bounds (minimize/maximize a single term polynomial on an interval), for now just drop bounds
             nature: None,
             c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
@@ -276,12 +267,7 @@ impl Component for proto::Log {
         Ok(ArrayNDProperties {
             nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
-            nature: propagate_binary_nature(&left_property, &right_property, &Operators {
-                f64: Some(Box::new(|l: &f64, r: &f64| l.log(*r))),
-                i64: None,
-                str: None,
-                bool: None,
-            }, &num_columns)?,
+            nature: None,
             c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
                 .map(|(l, r)| l.max(r)).collect(),
