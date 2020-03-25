@@ -249,6 +249,7 @@ pub extern "C" fn expand_component(
     buffer_to_ptr(response)
 }
 
+#[doc(hidden)]
 pub fn serialize_error(err: super::Error) -> proto::Error {
     proto::Error { message: err.display_chain().to_string() }
 }
