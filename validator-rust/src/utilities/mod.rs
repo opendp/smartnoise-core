@@ -7,7 +7,7 @@ use crate::errors::*;
 
 use crate::proto;
 
-use crate::base::{Release, Value, ValueProperties};
+use crate::base::{Release, Value, ValueProperties, Sensitivity, NodeProperties, ArrayND};
 use std::collections::{HashMap, HashSet};
 use crate::utilities::serial::{parse_release, parse_value_properties, serialize_value, parse_value};
 use crate::utilities::inference::infer_property;
@@ -17,6 +17,7 @@ use ndarray::prelude::*;
 
 // import all trait implementations
 use crate::components::*;
+use crate::utilities::array::slow_select;
 
 /// Retrieve the Values for each of the arguments of a component from the Release.
 pub fn get_input_arguments(
@@ -413,4 +414,69 @@ pub fn broadcast_privacy_usage(usages: &Vec<proto::PrivacyUsage>, length: usize)
 #[doc(hidden)]
 pub fn prepend(text: &str) -> impl Fn(Error) -> Error + '_ {
     move |e| format!("{} {}", text, e).into()
+}
+
+
+/// Utility function for building component expansions for dp mechanisms
+pub fn expand_mechanism(
+    sensitivity_type: &Sensitivity,
+    privacy_definition: &proto::PrivacyDefinition,
+    component: &proto::Component,
+    properties: &NodeProperties,
+    component_id: &u32,
+    maximum_id: &u32,
+) -> Result<proto::ComponentExpansion> {
+    let mut current_id = maximum_id.clone();
+    let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
+    let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
+
+    // always overwrite sensitivity. This is not something a user may configure
+    let data_property = properties.get("data")
+        .ok_or("data: missing")?.get_arraynd()
+        .map_err(prepend("data:"))?.clone();
+
+    let aggregator = data_property.aggregator.clone()
+        .ok_or::<Error>("aggregator: missing".into())?;
+
+    let sensitivity = Value::ArrayND(ArrayND::F64(Array::from(aggregator.component
+        .compute_sensitivity(privacy_definition,
+                             &aggregator.properties,
+                             &sensitivity_type)?).into_dyn()));
+
+    current_id += 1;
+    let id_sensitivity = current_id.clone();
+    let (patch_node, release) = get_literal(&sensitivity, &component.batch)?;
+    computation_graph.insert(id_sensitivity.clone(), patch_node);
+    releases.insert(id_sensitivity.clone(), release);
+
+    // noising
+    let mut noise_component = component.clone();
+    noise_component.arguments.insert("sensitivity".to_string(), id_sensitivity);
+    computation_graph.insert(component_id.clone(), noise_component);
+
+    Ok(proto::ComponentExpansion {
+        computation_graph,
+        properties: HashMap::new(),
+        releases,
+        traversal: Vec::new()
+    })
+}
+
+pub fn get_ith_release<T: Clone + Default>(value: &ArrayD<T>, i: &usize) -> Result<ArrayD<T>> {
+    match value.ndim() {
+        0 => if i == &0 {Ok(value.clone())} else {Err("ith release does not exist".into())},
+        1 => Err("releases may not currently be vectors".into()),
+        2 => {
+            let release = slow_select(value, Axis(1), &[i.clone()]);
+            if release.len() == 1 {
+                // flatten singleton matrices to zero dimensions
+                Ok(Array::from_shape_vec(Vec::new(), vec![release.first()
+                    .ok_or::<Error>("release must contain at least one value".into())?])?
+                    .mapv(|v| v.clone()))
+            } else {
+                Ok(release)
+            }
+        },
+        _ => Err("releases must be 2-dimensional or less".into())
+    }
 }

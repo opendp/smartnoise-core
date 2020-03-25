@@ -5,12 +5,12 @@ use std::collections::HashMap;
 
 use crate::{proto, base};
 use crate::hashmap;
-use crate::components::{Component, Expandable, Report, get_ith_release};
+use crate::components::{Component, Expandable, Report};
 
 
 use crate::base::{NodeProperties, Value, ValueProperties, ArrayND};
 use crate::utilities::json::{JSONRelease, value_to_json, privacy_usage_to_json, AlgorithmInfo};
-use crate::utilities::{prepend, broadcast_privacy_usage};
+use crate::utilities::{prepend, broadcast_privacy_usage, get_ith_release};
 
 
 impl Component for proto::DpMinimum {

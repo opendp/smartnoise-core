@@ -2,21 +2,11 @@
 
 use crate::errors::*;
 
-
 use crate::proto;
-
-
-
-
 
 use ndarray::prelude::Ix1;
 
 use std::collections::{HashMap};
-
-
-
-
-
 use ndarray::{ArrayD};
 
 use crate::utilities::standardize_categorical_argument;

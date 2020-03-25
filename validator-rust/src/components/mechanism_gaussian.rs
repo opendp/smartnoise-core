@@ -4,12 +4,12 @@ use crate::errors::*;
 use std::collections::HashMap;
 
 
-use crate::components::{Aggregator, expand_mechanism};
+use crate::components::{Aggregator};
 use crate::{proto, base};
 
 use crate::components::{Component, Expandable};
 use crate::base::{Value, NodeProperties, Sensitivity, ValueProperties};
-use crate::utilities::prepend;
+use crate::utilities::{prepend, expand_mechanism};
 
 
 impl Component for proto::GaussianMechanism {
