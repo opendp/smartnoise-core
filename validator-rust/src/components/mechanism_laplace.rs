@@ -71,9 +71,9 @@ impl Expandable for proto::LaplaceMechanism {
 impl Accuracy for proto::LaplaceMechanism {
     fn accuracy_to_privacy_usage(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
-        properties: &base::NodeProperties,
-        accuracies: &proto::Accuracies,
+        _privacy_definition: &proto::PrivacyDefinition,
+        _properties: &base::NodeProperties,
+        _accuracies: &proto::Accuracies,
     ) -> Result<Option<Vec<proto::PrivacyUsage>>> {
         Err("not implemented".into())
     }

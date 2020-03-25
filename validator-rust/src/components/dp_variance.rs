@@ -5,7 +5,7 @@ use std::collections::HashMap;
 
 use crate::{proto, base};
 use crate::hashmap;
-use crate::components::{Component, Accuracy, Expandable, Report, get_ith_release};
+use crate::components::{Component, Expandable, Report, get_ith_release};
 use crate::utilities::{prepend, broadcast_privacy_usage};
 
 use crate::base::{NodeProperties, Value, ValueProperties, ArrayND};

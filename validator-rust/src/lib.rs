@@ -12,7 +12,6 @@ pub mod errors {
 
 #[doc(hidden)]
 pub use errors::*;
-use error_chain::ChainedError;
 // trait which holds `display_chain`
 
 pub mod base;

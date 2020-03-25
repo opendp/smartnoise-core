@@ -10,7 +10,7 @@ use crate::components::{Component, Expandable};
 use ndarray::Array;
 
 use crate::base::{Value, ArrayND, NodeProperties, Nature, NatureContinuous, Vector1DNull, ValueProperties};
-use crate::utilities::{prepend, broadcast_privacy_usage, get_literal};
+use crate::utilities::{prepend, get_literal};
 
 
 impl Component for proto::Resize {

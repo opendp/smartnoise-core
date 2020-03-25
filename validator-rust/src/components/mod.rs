@@ -336,9 +336,9 @@ impl Accuracy for proto::component::Variant {
     /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn accuracy_to_privacy_usage(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
-        properties: &NodeProperties,
-        accuracy: &proto::Accuracies,
+        _privacy_definition: &proto::PrivacyDefinition,
+        _properties: &NodeProperties,
+        _accuracy: &proto::Accuracies,
     ) -> Result<Option<Vec<proto::PrivacyUsage>>> {
         macro_rules! accuracy_to_privacy_usage {
             ($( $variant:ident ),*) => {
@@ -366,8 +366,8 @@ impl Accuracy for proto::component::Variant {
     /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn privacy_usage_to_accuracy(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
-        properties: &NodeProperties,
+        _privacy_definition: &proto::PrivacyDefinition,
+        _properties: &NodeProperties,
     ) -> Result<Option<Vec<proto::Accuracy>>> {
         macro_rules! privacy_usage_to_accuracy {
             ($( $variant:ident ),*) => {

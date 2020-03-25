@@ -7,14 +7,14 @@ use crate::errors::*;
 
 use crate::proto;
 
-use crate::base::{Release, Value, ValueProperties, NodeProperties};
+use crate::base::{Release, Value, ValueProperties};
 use std::collections::{HashMap, HashSet};
-use crate::utilities::serial::{parse_release, parse_value_properties, serialize_value, serialize_value_properties, parse_value};
+use crate::utilities::serial::{parse_release, parse_value_properties, serialize_value, parse_value};
 use crate::utilities::inference::infer_property;
 
 use itertools::Itertools;
 use ndarray::prelude::*;
-use crate::utilities::json::JSONRelease;
+
 // import all trait implementations
 use crate::components::*;
 

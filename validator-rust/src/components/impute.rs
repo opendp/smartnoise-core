@@ -12,7 +12,7 @@ use crate::components::{Component, Expandable};
 
 use ndarray::Array;
 use crate::base::{Vector1DNull, Nature, NatureContinuous, Value, NodeProperties, ArrayND, ValueProperties};
-use crate::utilities::{prepend, broadcast_privacy_usage, get_literal};
+use crate::utilities::{prepend, get_literal};
 
 
 impl Component for proto::Impute {
