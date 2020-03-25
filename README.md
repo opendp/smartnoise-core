@@ -2,7 +2,8 @@
 
 <a href="http://opendp.io"><img src="images/WhiteNoise Logo/SVG/Full_grey.svg" align="left" height="80" vspace="8" hspace="18"></a>
 
-## WhiteNoise Core Differential Privacy
+## WhiteNoise Core 
+## Differential Privacy
 The WhiteNoise Core is built around a data representation for a statistical analysis. There are three types of projects:
 - Validator: validates that an analysis is differentially private
 - Runtime: execute analysis
