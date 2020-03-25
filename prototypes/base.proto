@@ -111,8 +111,20 @@ message NatureCategorical {
 
 message Vector2DJaggedProperties {}
 
+
+message GraphProperties {
+    map<uint32, ValueProperties> properties = 1;
+}
+
+message PrivacyUsages {
+    repeated PrivacyUsage values = 1;
+}
+message Accuracies {
+    repeated Accuracy values = 1;
+}
 message Accuracy {
     double value = 1;
+    double alpha = 2;
 }
 
 message ComponentExpansion {

@@ -1,6 +1,7 @@
 use whitenoise_validator::errors::*;
 use whitenoise_validator::proto;
-use whitenoise_validator::base::{Value, ArrayND, Vector2DJagged, get_argument, standardize_null_argument};
+use whitenoise_validator::base::{Value, ArrayND, Vector2DJagged};
+use whitenoise_validator::utilities::{get_argument, standardize_null_argument};
 
 use ndarray::{ArrayD, Axis, Array};
 use rug::{Float, ops::Pow};

@@ -39,7 +39,7 @@ pub extern "C" fn release(
     request_ptr: *const u8, request_length: i32
 ) -> ffi_support::ByteBuffer {
 
-    let request_buffer = unsafe {whitenoise_validator::ptr_to_buffer(request_ptr, request_length)};
+    let request_buffer = unsafe {whitenoise_validator::ffi::ptr_to_buffer(request_ptr, request_length)};
     let request: proto::RequestRelease = prost::Message::decode(request_buffer).unwrap();
 
     let analysis: proto::Analysis = request.analysis.unwrap();
@@ -67,7 +67,7 @@ pub extern "C" fn release(
             }
         }
     };
-    whitenoise_validator::buffer_to_ptr(response)
+    whitenoise_validator::ffi::buffer_to_ptr(response)
 }
 
 //ffi_support::implement_into_ffi_by_protobuf!(proto::Release);

@@ -8,9 +8,10 @@ use crate::hashmap;
 use crate::components::{Component, Accuracy, Expandable, Report};
 
 
-use crate::base::{NodeProperties, Value, ValueProperties, prepend};
+use crate::base::{NodeProperties, Value, ValueProperties};
 use crate::utilities::json::{JSONRelease, value_to_json, AlgorithmInfo, privacy_usage_to_json};
 use std::convert::TryFrom;
+use crate::utilities::prepend;
 
 
 impl Component for proto::DpCovariance {
@@ -38,8 +39,8 @@ impl Expandable for proto::DpCovariance {
         _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
         properties: &base::NodeProperties,
-        component_id: u32,
-        maximum_id: u32,
+        component_id: &u32,
+        maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
         let mut current_id = maximum_id.clone();
         let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
@@ -101,7 +102,7 @@ impl Expandable for proto::DpCovariance {
         });
 
         // reshape into matrix
-        computation_graph.insert(component_id, proto::Component {
+        computation_graph.insert(component_id.clone(), proto::Component {
             arguments: hashmap!["data".to_owned() => id_noise],
             variant: Some(proto::component::Variant::from(proto::Reshape {
                 symmetric,
@@ -118,25 +119,6 @@ impl Expandable for proto::DpCovariance {
             releases: HashMap::new(),
             traversal: vec![id_covariance, id_noise]
         })
-    }
-}
-
-impl Accuracy for proto::DpCovariance {
-    fn accuracy_to_privacy_usage(
-        &self,
-        _privacy_definition: &proto::PrivacyDefinition,
-        _properties: &base::NodeProperties,
-        _accuracy: &proto::Accuracy,
-    ) -> Option<proto::PrivacyUsage> {
-        None
-    }
-
-    fn privacy_usage_to_accuracy(
-        &self,
-        _privacy_definition: &proto::PrivacyDefinition,
-        _property: &base::NodeProperties,
-    ) -> Option<f64> {
-        None
     }
 }
 

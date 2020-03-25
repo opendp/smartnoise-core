@@ -21,11 +21,15 @@ message RequestGenerateReport {
 	Analysis analysis = 1;
 	Release release = 2;
 }
+message RequestGetProperties {
+	Analysis analysis = 1;
+	Release release = 2;
+}
 message RequestAccuracyToPrivacyUsage {
 	PrivacyDefinition privacy_definition = 1;
 	Component component = 2;
 	map<string, ValueProperties> properties = 3;
-	Accuracy accuracy = 4;
+	Accuracies accuracies = 4;
 }
 message RequestPrivacyUsageToAccuracy {
 	PrivacyDefinition privacy_definition = 1;
@@ -75,15 +79,21 @@ message ResponseGenerateReport {
 		Error error = 2;
 	}
 }
+message ResponseGetProperties {
+	oneof value {
+		GraphProperties data = 1;
+		Error error = 2;
+	}
+}
 message ResponseAccuracyToPrivacyUsage {
 	oneof value {
-		PrivacyUsage data = 1;
+		PrivacyUsages data = 1;
 		Error error = 2;
 	}
 }
 message ResponsePrivacyUsageToAccuracy {
 	oneof value {
-		Accuracy data = 1;
+		Accuracies data = 1;
 		Error error = 2;
 	}
 }

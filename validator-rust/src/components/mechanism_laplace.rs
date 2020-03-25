@@ -4,11 +4,12 @@ use crate::errors::*;
 use std::collections::HashMap;
 
 
-use crate::components::{Aggregator, expand_mechanism};
+use crate::components::{Aggregator, expand_mechanism, Accuracy};
 use crate::{proto, base};
 
 use crate::components::{Component, Expandable};
-use crate::base::{Value, NodeProperties, Sensitivity, prepend, ValueProperties};
+use crate::base::{Value, NodeProperties, Sensitivity, ValueProperties};
+use crate::utilities::prepend;
 
 
 impl Component for proto::LaplaceMechanism {
@@ -52,8 +53,8 @@ impl Expandable for proto::LaplaceMechanism {
         privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
         properties: &base::NodeProperties,
-        component_id: u32,
-        maximum_id: u32,
+        component_id: &u32,
+        maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
         expand_mechanism(
             &Sensitivity::KNorm(1),
@@ -63,5 +64,25 @@ impl Expandable for proto::LaplaceMechanism {
             component_id,
             maximum_id
         )
+    }
+}
+
+
+impl Accuracy for proto::LaplaceMechanism {
+    fn accuracy_to_privacy_usage(
+        &self,
+        privacy_definition: &proto::PrivacyDefinition,
+        properties: &base::NodeProperties,
+        accuracies: &proto::Accuracies,
+    ) -> Result<Option<Vec<proto::PrivacyUsage>>> {
+        Err("not implemented".into())
+    }
+
+    fn privacy_usage_to_accuracy(
+        &self,
+        _privacy_definition: &proto::PrivacyDefinition,
+        _property: &base::NodeProperties,
+    ) -> Result<Option<Vec<proto::Accuracy>>> {
+        Err("not implemented".into())
     }
 }

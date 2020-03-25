@@ -6,7 +6,8 @@ use std::collections::HashMap;
 use crate::{proto, base};
 
 use crate::components::{Component};
-use crate::base::{Value, Vector2DJagged, NodeProperties, prepend, ValueProperties, HashmapProperties, ArrayNDProperties};
+use crate::base::{Value, Vector2DJagged, NodeProperties, ValueProperties, HashmapProperties, ArrayNDProperties};
+use crate::utilities::prepend;
 
 
 impl Component for proto::Partition {

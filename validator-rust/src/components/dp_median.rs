@@ -8,9 +8,9 @@ use crate::hashmap;
 use crate::components::{Component, Accuracy, Expandable, Report, get_ith_release};
 
 
-use crate::base::{NodeProperties, Value, ValueProperties, prepend, broadcast_privacy_usage, ArrayND};
+use crate::base::{NodeProperties, Value, ValueProperties, ArrayND};
 use crate::utilities::json::{JSONRelease, value_to_json, privacy_usage_to_json, AlgorithmInfo};
-
+use crate::utilities::{prepend, broadcast_privacy_usage};
 
 
 impl Component for proto::DpMedian {
@@ -37,8 +37,8 @@ impl Expandable for proto::DpMedian {
         _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
         _properties: &base::NodeProperties,
-        component_id: u32,
-        maximum_id: u32,
+        component_id: &u32,
+        maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
         let mut current_id = maximum_id.clone();
         let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
@@ -58,7 +58,7 @@ impl Expandable for proto::DpMedian {
 //        let id_candidates = component.arguments.get("candidates").unwrap().clone();
 
         // sanitizing
-        computation_graph.insert(component_id, proto::Component {
+        computation_graph.insert(component_id.clone(), proto::Component {
             arguments: hashmap![
                 "data".to_owned() => id_median
             ],
@@ -75,25 +75,6 @@ impl Expandable for proto::DpMedian {
             releases: HashMap::new(),
             traversal: vec![id_median]
         })
-    }
-}
-
-impl Accuracy for proto::DpMedian {
-    fn accuracy_to_privacy_usage(
-        &self,
-        _privacy_definition: &proto::PrivacyDefinition,
-        _properties: &base::NodeProperties,
-        _accuracy: &proto::Accuracy,
-    ) -> Option<proto::PrivacyUsage> {
-        None
-    }
-
-    fn privacy_usage_to_accuracy(
-        &self,
-        _privacy_definition: &proto::PrivacyDefinition,
-        _property: &base::NodeProperties,
-    ) -> Option<f64> {
-        None
     }
 }
 

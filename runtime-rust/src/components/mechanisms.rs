@@ -1,7 +1,8 @@
 use whitenoise_validator::errors::*;
 
 use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value, get_argument, broadcast_privacy_usage};
+use whitenoise_validator::base::{Value};
+use whitenoise_validator::utilities::{get_argument, broadcast_privacy_usage};
 use crate::components::Evaluable;
 use crate::utilities;
 use whitenoise_validator::proto;

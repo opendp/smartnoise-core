@@ -1,10 +1,10 @@
 use crate::errors::*;
 
 use std::collections::HashMap;
-use crate::base::{Nature, Vector1DNull, NodeProperties, ArrayND, get_literal, prepend, ValueProperties, NatureCategorical};
+use crate::base::{Nature, Vector1DNull, NodeProperties, ArrayND, ValueProperties, NatureCategorical};
 
 use crate::{proto, base};
-
+use crate::utilities::{prepend, get_literal};
 use crate::components::{Component, Expandable};
 
 use ndarray::Array;
@@ -108,10 +108,10 @@ impl Expandable for proto::Clamp {
         _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
         properties: &base::NodeProperties,
-        component_id: u32,
-        maximum_id: u32,
+        component_id: &u32,
+        maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
-        let mut current_id = maximum_id;
+        let mut current_id = maximum_id.clone();
         let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
         let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
 
@@ -139,7 +139,7 @@ impl Expandable for proto::Clamp {
             component.arguments.insert("max".to_string(), id_max);
         }
 
-        computation_graph.insert(component_id, component);
+        computation_graph.insert(component_id.clone(), component);
 
         Ok(proto::ComponentExpansion {
             computation_graph,

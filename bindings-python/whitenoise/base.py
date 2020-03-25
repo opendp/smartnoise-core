@@ -117,6 +117,23 @@ class Component(object):
     def actual_privacy_usage(self):
         return self.analysis.release_values.get(self.component_id, {"privacy_usage": None})["privacy_usage"]
 
+    def get_accuracy(self, alpha):
+        # TODO: Properties
+        return core_wrapper.privacy_usage_to_accuracy(
+            privacy_definition=self.analysis._serialize_privacy_definition(),
+            component=self.analysis._serialize_component(self),
+            properties=None,
+            alpha=alpha)
+
+    def from_accuracy(self, value, alpha):
+        return core_wrapper.accuracy_to_privacy_usage(
+            privacy_definition=self.analysis._serialize_privacy_definition(),
+            component=self.analysis._serialize_component(self),
+            properties=None,
+            accuracy=base_pb2.Accuracy(
+                value=value,
+                alpha=alpha))
+
     def __pos__(self):
         return self
 
@@ -316,28 +333,32 @@ class Analysis(object):
         self.components[self.component_count] = component
         self.component_count += 1
 
+    def _serialize_privacy_definition(self):
+        return base_pb2.PrivacyDefinition(
+            distance=base_pb2.PrivacyDefinition.Distance.Value(self.distance),
+            neighboring=base_pb2.PrivacyDefinition.Neighboring.Value(self.neighboring)
+        )
+
+    def _serialize_component(self, component):
+        return components_pb2.Component(**{
+            'arguments': {
+                name: component_child.component_id
+                for name, component_child in component.arguments.items()
+                if component_child is not None
+            },
+            variant_message_map[component.name]:
+                getattr(components_pb2, component.name)(**(component.options or {}))
+        })
+
     def _serialize_analysis_proto(self):
 
         vertices = {}
         for component_id in self.components:
-            component = self.components[component_id]
-
-            vertices[component_id] = components_pb2.Component(**{
-                'arguments': {
-                    name: component_child.component_id
-                    for name, component_child in component.arguments.items()
-                    if component_child is not None
-                },
-                variant_message_map[component.name]:
-                    getattr(components_pb2, component.name)(**(component.options or {}))
-            })
+            vertices[component_id] = self._serialize_component(self.components[component_id])
 
         return base_pb2.Analysis(
             computation_graph=base_pb2.ComputationGraph(value=vertices),
-            privacy_definition=base_pb2.PrivacyDefinition(
-                distance=base_pb2.PrivacyDefinition.Distance.Value(self.distance),
-                neighboring=base_pb2.PrivacyDefinition.Neighboring.Value(self.neighboring)
-            )
+            privacy_definition=self._serialize_privacy_definition()
         )
 
     def _serialize_release_proto(self):

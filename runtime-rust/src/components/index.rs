@@ -1,7 +1,7 @@
 use whitenoise_validator::errors::*;
 
 use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value, ArrayND, get_argument, Hashmap, DataType};
+use whitenoise_validator::base::{Value, ArrayND, Hashmap, DataType};
 use crate::components::Evaluable;
 use whitenoise_validator::proto;
 use whitenoise_validator::utilities::array::{slow_stack, slow_select};
@@ -9,6 +9,7 @@ use ndarray::prelude::*;
 use std::collections::HashMap;
 
 use whitenoise_validator::components::index::{to_name_vec, mask_columns};
+use whitenoise_validator::utilities::get_argument;
 
 
 impl Evaluable for proto::Index {

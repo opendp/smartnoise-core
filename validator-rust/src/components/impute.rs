@@ -11,7 +11,8 @@ use crate::components::{Component, Expandable};
 
 
 use ndarray::Array;
-use crate::base::{Vector1DNull, Nature, NatureContinuous, Value, NodeProperties, ArrayND, get_literal, prepend, ValueProperties};
+use crate::base::{Vector1DNull, Nature, NatureContinuous, Value, NodeProperties, ArrayND, ValueProperties};
+use crate::utilities::{prepend, broadcast_privacy_usage, get_literal};
 
 
 impl Component for proto::Impute {
@@ -105,10 +106,10 @@ impl Expandable for proto::Impute {
         _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
         properties: &base::NodeProperties,
-        component_id: u32,
-        maximum_id: u32,
+        component_id: &u32,
+        maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
-        let mut current_id = maximum_id;
+        let mut current_id = maximum_id.clone();
         let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
         let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
 
@@ -136,7 +137,7 @@ impl Expandable for proto::Impute {
             component.arguments.insert("max".to_string(), id_max);
         }
 
-        computation_graph.insert(component_id, component);
+        computation_graph.insert(component_id.clone(), component);
 
         Ok(proto::ComponentExpansion {
             computation_graph,

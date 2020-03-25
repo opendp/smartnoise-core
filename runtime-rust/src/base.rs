@@ -4,7 +4,7 @@ use whitenoise_validator::errors::*;
 extern crate whitenoise_validator;
 
 use whitenoise_validator::proto;
-use whitenoise_validator::utilities::serial;
+use whitenoise_validator::utilities::{serial, get_input_properties};
 
 use crate::components::*;
 
@@ -13,7 +13,7 @@ use std::vec::Vec;
 
 use itertools::Itertools;
 
-use whitenoise_validator::base::{get_input_properties, Value};
+use whitenoise_validator::base::{Value};
 use whitenoise_validator::utilities::inference::infer_property;
 use whitenoise_validator::utilities::serial::{serialize_value_properties, parse_release};
 
@@ -89,7 +89,7 @@ pub fn execute_graph(analysis: &proto::Analysis,
             continue;
         }
 
-        let node_properties: HashMap<String, proto::ValueProperties> =
+        let mut node_properties: HashMap<String, proto::ValueProperties> =
             get_input_properties(&component, &graph_properties)?;
 
         let public_arguments = node_properties.iter()
@@ -106,13 +106,13 @@ pub fn execute_graph(analysis: &proto::Analysis,
 //        println!("node properties {:?}", node_properties);
 
         // all arguments have been computed, attempt to expand the current node
-        let expansion: proto::ComponentExpansion = whitenoise_validator::base::expand_component(
+        let expansion: proto::ComponentExpansion = whitenoise_validator::_expand_component(
             &analysis.privacy_definition.to_owned().unwrap(),
             &component,
-            &node_properties,
+            &mut node_properties,
             &public_arguments,
-            node_id,
-            maximum_id,
+            &node_id,
+            &maximum_id,
         )?;
 
         graph.extend(expansion.computation_graph.clone());

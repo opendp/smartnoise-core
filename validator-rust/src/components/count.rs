@@ -6,7 +6,9 @@ use std::collections::HashMap;
 use crate::{proto, base};
 
 use crate::components::{Component, Aggregator};
-use crate::base::{Value, NodeProperties, AggregatorProperties, Sensitivity, ValueProperties, prepend, DataType};
+use crate::base::{Value, NodeProperties, AggregatorProperties, Sensitivity, ValueProperties, DataType};
+use crate::utilities::prepend;
+
 
 impl Component for proto::Count {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component

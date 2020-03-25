@@ -8,7 +8,9 @@ use crate::components::{Aggregator, expand_mechanism};
 use crate::{proto, base};
 
 use crate::components::{Component, Expandable};
-use crate::base::{Value, NodeProperties, Sensitivity, prepend, ValueProperties};
+use crate::base::{Value, NodeProperties, Sensitivity, ValueProperties};
+use crate::utilities::prepend;
+
 
 impl Component for proto::ExponentialMechanism {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
@@ -50,8 +52,8 @@ impl Expandable for proto::ExponentialMechanism {
         privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
         properties: &base::NodeProperties,
-        component_id: u32,
-        maximum_id: u32,
+        component_id: &u32,
+        maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
         expand_mechanism(
             &Sensitivity::Exponential,

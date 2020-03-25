@@ -7,8 +7,8 @@ use crate::proto;
 
 use crate::components::{Component};
 
-use crate::base::{Value, NodeProperties, prepend, ValueProperties, DataType, Nature, NatureCategorical, Vector2DJagged};
-
+use crate::base::{Value, NodeProperties, ValueProperties, DataType, Nature, NatureCategorical, Vector2DJagged};
+use crate::utilities::prepend;
 
 impl Component for proto::Cast {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component

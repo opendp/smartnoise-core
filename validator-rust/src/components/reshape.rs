@@ -2,9 +2,11 @@ use crate::errors::*;
 
 use crate::components::Component;
 use std::collections::HashMap;
-use crate::base::{Value, prepend, ValueProperties};
+use crate::base::{Value, ValueProperties};
 use crate::base;
 use crate::proto;
+use crate::utilities::prepend;
+
 
 impl Component for proto::Reshape {
     fn propagate_property(

@@ -48,7 +48,8 @@ mod variance;
 
 use std::collections::HashMap;
 
-use crate::base::{Value, NodeProperties, Sensitivity, ValueProperties, prepend, get_literal, ArrayND};
+use crate::base::{Value, NodeProperties, Sensitivity, ValueProperties, ArrayND};
+use crate::utilities::{prepend, get_literal};
 use crate::proto;
 use crate::utilities::json::{JSONRelease};
 
@@ -115,8 +116,8 @@ pub trait Expandable {
         privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
         properties: &NodeProperties,
-        component_id: u32,
-        maximum_id: u32,
+        component_id: &u32,
+        maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion>;
 }
 
@@ -146,20 +147,22 @@ pub trait Aggregator {
     ) -> Result<Vec<f64>>;
 }
 
-/// Accuracy component trait (not yet implemented)
+/// Accuracy component trait
+///
+/// Components with Accuracy implemented may convert between privacy units and accuracy estimates
 pub trait Accuracy {
     fn accuracy_to_privacy_usage(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
-        accuracy: &proto::Accuracy,
-    ) -> Option<proto::PrivacyUsage>;
+        accuracies: &proto::Accuracies,
+    ) -> Result<Option<Vec<proto::PrivacyUsage>>>;
 
     fn privacy_usage_to_accuracy(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
-    ) -> Option<f64>;
+    ) -> Result<Option<Vec<proto::Accuracy>>>;
 }
 
 /// Report component trait
@@ -259,8 +262,8 @@ impl Expandable for proto::component::Variant {
         privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
         properties: &NodeProperties,
-        component_id: u32,
-        maximum_id: u32,
+        component_id: &u32,
+        maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
         macro_rules! expand_component {
             ($( $variant:ident ),*) => {
@@ -333,10 +336,10 @@ impl Accuracy for proto::component::Variant {
     /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn accuracy_to_privacy_usage(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
-        _properties: &NodeProperties,
-        _accuracy: &proto::Accuracy,
-    ) -> Option<proto::PrivacyUsage> {
+        privacy_definition: &proto::PrivacyDefinition,
+        properties: &NodeProperties,
+        accuracy: &proto::Accuracies,
+    ) -> Result<Option<Vec<proto::PrivacyUsage>>> {
         macro_rules! accuracy_to_privacy_usage {
             ($( $variant:ident ),*) => {
                 {
@@ -352,10 +355,10 @@ impl Accuracy for proto::component::Variant {
 
         accuracy_to_privacy_usage!(
             // INSERT COMPONENT LIST
-//            Dpmean
+            // LaplaceMechanism, GeometricMechanism
         );
 
-        None
+        Ok(None)
     }
 
     /// Utility implementation on the enum containing all variants of a component.
@@ -363,9 +366,9 @@ impl Accuracy for proto::component::Variant {
     /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn privacy_usage_to_accuracy(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
-        _properties: &NodeProperties,
-    ) -> Option<f64> {
+        privacy_definition: &proto::PrivacyDefinition,
+        properties: &NodeProperties,
+    ) -> Result<Option<Vec<proto::Accuracy>>> {
         macro_rules! privacy_usage_to_accuracy {
             ($( $variant:ident ),*) => {
                 {
@@ -384,7 +387,7 @@ impl Accuracy for proto::component::Variant {
 //            Dpmean
         );
 
-        None
+        Ok(None)
     }
 }
 
@@ -431,8 +434,8 @@ pub fn expand_mechanism(
     privacy_definition: &proto::PrivacyDefinition,
     component: &proto::Component,
     properties: &NodeProperties,
-    component_id: u32,
-    maximum_id: u32,
+    component_id: &u32,
+    maximum_id: &u32,
 ) -> Result<proto::ComponentExpansion> {
     let mut current_id = maximum_id.clone();
     let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
@@ -460,7 +463,7 @@ pub fn expand_mechanism(
     // noising
     let mut noise_component = component.clone();
     noise_component.arguments.insert("sensitivity".to_string(), id_sensitivity);
-    computation_graph.insert(component_id, noise_component);
+    computation_graph.insert(component_id.clone(), noise_component);
 
     Ok(proto::ComponentExpansion {
         computation_graph,

@@ -8,7 +8,8 @@ use crate::components::{Aggregator, expand_mechanism};
 use crate::{proto, base};
 
 use crate::components::{Component, Expandable};
-use crate::base::{Value, NodeProperties, Sensitivity, prepend, ValueProperties};
+use crate::base::{Value, NodeProperties, Sensitivity, ValueProperties};
+use crate::utilities::prepend;
 
 
 impl Component for proto::GaussianMechanism {
@@ -51,8 +52,8 @@ impl Expandable for proto::GaussianMechanism {
         privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
         properties: &base::NodeProperties,
-        component_id: u32,
-        maximum_id: u32,
+        component_id: &u32,
+        maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
         expand_mechanism(
             &Sensitivity::KNorm(2),

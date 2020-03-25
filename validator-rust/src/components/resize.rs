@@ -9,7 +9,8 @@ use crate::proto;
 use crate::components::{Component, Expandable};
 use ndarray::Array;
 
-use crate::base::{Value, ArrayND, NodeProperties, get_literal, Nature, NatureContinuous, Vector1DNull, prepend, ValueProperties};
+use crate::base::{Value, ArrayND, NodeProperties, Nature, NatureContinuous, Vector1DNull, ValueProperties};
+use crate::utilities::{prepend, broadcast_privacy_usage, get_literal};
 
 
 impl Component for proto::Resize {
@@ -115,10 +116,10 @@ impl Expandable for proto::Resize {
         _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
         properties: &base::NodeProperties,
-        component_id: u32,
-        maximum_id: u32,
+        component_id: &u32,
+        maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
-        let mut current_id = maximum_id;
+        let mut current_id = maximum_id.clone();
         let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
         let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
 
@@ -162,7 +163,7 @@ impl Expandable for proto::Resize {
             component.arguments.insert("n".to_string(), id_n);
         }
 
-        computation_graph.insert(component_id, component);
+        computation_graph.insert(component_id.clone(), component);
 
         Ok(proto::ComponentExpansion {
             computation_graph,

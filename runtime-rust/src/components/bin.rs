@@ -1,12 +1,13 @@
 use whitenoise_validator::errors::*;
 
 use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value, ArrayND, get_argument, Vector2DJagged, standardize_numeric_argument, standardize_categorical_argument};
+use whitenoise_validator::base::{Value, ArrayND, Vector2DJagged};
 use crate::components::Evaluable;
 use ndarray::{ArrayD};
 use whitenoise_validator::proto;
 use crate::utilities::utilities::get_num_columns;
 use std::ops::{Div, Add};
+use whitenoise_validator::utilities::{get_argument, standardize_categorical_argument, standardize_numeric_argument};
 
 impl Evaluable for proto::Bin {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {

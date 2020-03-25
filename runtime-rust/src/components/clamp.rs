@@ -1,7 +1,8 @@
 use whitenoise_validator::errors::*;
 
 use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value, ArrayND, Vector2DJagged, standardize_numeric_argument, standardize_categorical_argument, standardize_null_argument, get_argument};
+use whitenoise_validator::base::{Value, ArrayND, Vector2DJagged};
+use whitenoise_validator::utilities::{standardize_numeric_argument, standardize_categorical_argument, standardize_null_argument, get_argument};
 use crate::components::Evaluable;
 use ndarray::ArrayD;
 use crate::utilities::utilities::get_num_columns;

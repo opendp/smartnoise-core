@@ -2,7 +2,8 @@ use crate::errors::*;
 
 use crate::components::Component;
 use std::collections::HashMap;
-use crate::base::{Value, prepend, ValueProperties, DataType};
+use crate::base::{Value, ValueProperties, DataType};
+use crate::utilities::prepend;
 use crate::base;
 use crate::proto;
 use crate::components::transforms::propagate_binary_shape;

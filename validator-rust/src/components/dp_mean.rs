@@ -8,10 +8,11 @@ use crate::hashmap;
 use crate::components::{Component, Accuracy, Expandable, Report, get_ith_release};
 
 
-use crate::base::{NodeProperties, Value, ValueProperties, prepend, broadcast_privacy_usage};
+use crate::base::{NodeProperties, Value, ValueProperties};
 use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, value_to_json};
-
+use crate::utilities::{prepend, broadcast_privacy_usage};
 use serde_json;
+
 
 impl Component for proto::DpMean {
     /// modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
@@ -55,8 +56,8 @@ impl Expandable for proto::DpMean {
         _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
         _properties: &base::NodeProperties,
-        component_id: u32,
-        maximum_id: u32,
+        component_id: &u32,
+        maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
         let mut current_id = maximum_id.clone();
         let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
@@ -72,7 +73,7 @@ impl Expandable for proto::DpMean {
         });
 
         // noising
-        computation_graph.insert(component_id, proto::Component {
+        computation_graph.insert(component_id.clone(), proto::Component {
             arguments: hashmap!["data".to_owned() => id_mean],
             variant: Some(proto::component::Variant::from(proto::LaplaceMechanism {
                 privacy_usage: self.privacy_usage.clone()
@@ -88,36 +89,6 @@ impl Expandable for proto::DpMean {
             releases: HashMap::new(),
             traversal: vec![id_mean]
         })
-    }
-}
-
-impl Accuracy for proto::DpMean {
-    /// Accuracy to privacy usage
-    /// # Arguments
-    /// * `&self` - this
-    /// * `_privacy_definition` - privacy definition from protocol buffer descriptor
-    /// * `_properties` - NodeProperties
-    /// * `_accuracy` - accuracy
-    fn accuracy_to_privacy_usage(
-        &self,
-        _privacy_definition: &proto::PrivacyDefinition,
-        _properties: &base::NodeProperties,
-        _accuracy: &proto::Accuracy,
-    ) -> Option<proto::PrivacyUsage> {
-        None
-    }
-
-    /// Privacy usage to accuracy
-    /// # Arguments
-    /// * `&self` - this
-    /// * `_privacy_definition` - privacy definition from protocol buffer descriptor
-    /// * `_property` - NodeProperties
-    fn privacy_usage_to_accuracy(
-        &self,
-        _privacy_definition: &proto::PrivacyDefinition,
-        _property: &base::NodeProperties,
-    ) -> Option<f64> {
-        None
     }
 }
 

@@ -6,7 +6,8 @@ use std::collections::HashMap;
 use crate::{proto, base};
 
 use crate::components::{Component, Aggregator};
-use crate::base::{Value, NodeProperties, AggregatorProperties, Sensitivity, ValueProperties, prepend};
+use crate::base::{Value, NodeProperties, AggregatorProperties, Sensitivity, ValueProperties};
+use crate::utilities::prepend;
 
 
 impl Component for proto::Variance {

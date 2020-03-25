@@ -1,10 +1,10 @@
 use crate::errors::*;
 
 use std::collections::HashMap;
-use crate::base::{Nature, NodeProperties, NatureCategorical, standardize_categorical_argument, Vector2DJagged, ValueProperties, prepend, DataType};
+use crate::base::{Nature, NodeProperties, NatureCategorical, Vector2DJagged, ValueProperties, DataType};
 
 use crate::{proto, base};
-
+use crate::utilities::{prepend, standardize_categorical_argument};
 use crate::components::{Component};
 
 use crate::base::{Value};
