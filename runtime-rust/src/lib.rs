@@ -6,7 +6,7 @@ pub use whitenoise_validator::proto;
 use whitenoise_validator::errors::*;
 
 // trait which holds `display_chain`
-use error_chain::ChainedError;
+
 pub mod base;
 pub mod utilities;
 pub mod components;
