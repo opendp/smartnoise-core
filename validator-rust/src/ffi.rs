@@ -1,3 +1,4 @@
+//! Foreign function interfaces
 
 use crate::proto;
 use error_chain::ChainedError;
@@ -43,16 +44,7 @@ pub struct ByteBuffer {
     pub data: *mut u8,
 }
 
-/// Validate if an analysis is well-formed.
-///
-/// Checks that the graph is a DAG.
-/// Checks that static properties are met on all components.
-///
-/// Useful for static validation of an analysis.
-/// Since some components require public arguments, mechanisms that depend on other mechanisms cannot be verified until the components they depend on have been validated.
-///
-/// The system may also be run dynamically- prior to expanding each node, calling the expand_component endpoint will also validate the component being expanded.
-/// NOTE: Evaluating the graph dynamically opens up additional potential timing attacks.
+/// FFI wrapper for [validate_analysis](fn.validate_analysis.html)
 ///
 /// # Arguments
 /// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestValidateAnalysis](proto/struct.RequestValidateAnalysis.html)
@@ -64,26 +56,24 @@ pub struct ByteBuffer {
 pub extern "C" fn validate_analysis(
     request_ptr: *const u8, request_length: i32,
 ) -> ffi_support::ByteBuffer {
-
     let request_buffer = unsafe { ptr_to_buffer(request_ptr, request_length) };
-    let request: proto::RequestValidateAnalysis = prost::Message::decode(request_buffer).unwrap();
 
     let response = proto::ResponseValidateAnalysis {
-        value: match super::validate_analysis(&request) {
-            Ok(x) => Some(proto::response_validate_analysis::Value::Data(x)),
-            Err(err) => Some(proto::response_validate_analysis::Value::Error(
-                proto::Error { message: err.display_chain().to_string() }
-            ))
+        value: match proto::RequestValidateAnalysis::decode(request_buffer) {
+            Ok(request) => match super::validate_analysis(&request) {
+                Ok(x) =>
+                    Some(proto::response_validate_analysis::Value::Data(x)),
+                Err(err) =>
+                    Some(proto::response_validate_analysis::Value::Error(serialize_error(err))),
+            }
+            Err(_) =>
+                Some(proto::response_validate_analysis::Value::Error(serialize_error("unable to parse protobuf".into())))
         }
     };
     buffer_to_ptr(response)
 }
 
-
-/// Compute overall privacy usage of an analysis.
-///
-/// The privacy usage is sum of the privacy usages for each node.
-/// The Release's actual privacy usage, if defined, takes priority over the maximum allowable privacy usage defined in the Analysis.
+/// FFI wrapper for [compute_privacy_usage](fn.compute_privacy_usage.html)
 ///
 /// # Arguments
 /// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestComputePrivacyUsage](proto/struct.RequestComputePrivacyUsage.html)
@@ -96,21 +86,23 @@ pub extern "C" fn compute_privacy_usage(
     request_ptr: *const u8, request_length: i32,
 ) -> ffi_support::ByteBuffer {
     let request_buffer = unsafe { ptr_to_buffer(request_ptr, request_length) };
-    let request: proto::RequestComputePrivacyUsage = prost::Message::decode(request_buffer).unwrap();
 
     let response = proto::ResponseComputePrivacyUsage {
-        value: match super::compute_privacy_usage(&request) {
-            Ok(x) => Some(proto::response_compute_privacy_usage::Value::Data(x)),
-            Err(err) => Some(proto::response_compute_privacy_usage::Value::Error(
-                proto::Error { message: err.display_chain().to_string() }
-            ))
+        value: match proto::RequestComputePrivacyUsage::decode(request_buffer) {
+            Ok(request) => match super::compute_privacy_usage(&request) {
+                Ok(x) =>
+                    Some(proto::response_compute_privacy_usage::Value::Data(x)),
+                Err(err) =>
+                    Some(proto::response_compute_privacy_usage::Value::Error(serialize_error(err))),
+            }
+            Err(_) =>
+                Some(proto::response_compute_privacy_usage::Value::Error(serialize_error("unable to parse protobuf".into())))
         }
     };
     buffer_to_ptr(response)
 }
 
-
-/// Generate a json string with a summary/report of the Analysis and Release
+/// FFI wrapper for [generate_report](fn.generate_report.html)
 ///
 /// # Arguments
 /// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestGenerateReport](proto/struct.RequestGenerateReport.html)
@@ -123,23 +115,23 @@ pub extern "C" fn generate_report(
     request_ptr: *const u8, request_length: i32,
 ) -> ffi_support::ByteBuffer {
     let request_buffer = unsafe { ptr_to_buffer(request_ptr, request_length) };
-    let request: proto::RequestGenerateReport = prost::Message::decode(request_buffer).unwrap();
 
     let response = proto::ResponseGenerateReport {
-        value: match super::generate_report(&request) {
-            Ok(x) => Some(proto::response_generate_report::Value::Data(x)),
-            Err(err) => Some(proto::response_generate_report::Value::Error(
-                proto::Error { message: err.display_chain().to_string() }
-            ))
+        value: match proto::RequestGenerateReport::decode(request_buffer) {
+            Ok(request) => match super::generate_report(&request) {
+                Ok(x) =>
+                    Some(proto::response_generate_report::Value::Data(x)),
+                Err(err) =>
+                    Some(proto::response_generate_report::Value::Error(serialize_error(err))),
+            }
+            Err(_) =>
+                Some(proto::response_generate_report::Value::Error(serialize_error("unable to parse protobuf".into())))
         }
     };
     buffer_to_ptr(response)
 }
 
-
-/// Estimate the privacy usage necessary to bound accuracy to a given value.
-///
-/// No context about the analysis is necessary, just the privacy definition and properties of the arguments of the component.
+/// FFI wrapper for [accuracy_to_privacy_usage](fn.accuracy_to_privacy_usage.html)
 ///
 /// # Arguments
 /// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestAccuracyToPrivacyUsage](proto/struct.RequestAccuracyToPrivacyUsage.html)
@@ -152,23 +144,24 @@ pub extern "C" fn accuracy_to_privacy_usage(
     request_ptr: *const u8, request_length: i32,
 ) -> ffi_support::ByteBuffer {
     let request_buffer = unsafe { ptr_to_buffer(request_ptr, request_length) };
-    let request: proto::RequestAccuracyToPrivacyUsage = prost::Message::decode(request_buffer).unwrap();
 
     let response = proto::ResponseAccuracyToPrivacyUsage {
-        value: match super::accuracy_to_privacy_usage(&request) {
-            Ok(x) => Some(proto::response_accuracy_to_privacy_usage::Value::Data(x)),
-            Err(err) => Some(proto::response_accuracy_to_privacy_usage::Value::Error(
-                proto::Error { message: err.display_chain().to_string() }
-            ))
+        value: match proto::RequestAccuracyToPrivacyUsage::decode(request_buffer) {
+            Ok(request) => match super::accuracy_to_privacy_usage(&request) {
+                Ok(x) =>
+                    Some(proto::response_accuracy_to_privacy_usage::Value::Data(x)),
+                Err(err) =>
+                    Some(proto::response_accuracy_to_privacy_usage::Value::Error(serialize_error(err))),
+            }
+            Err(_) =>
+                Some(proto::response_accuracy_to_privacy_usage::Value::Error(serialize_error("unable to parse protobuf".into())))
         }
     };
+
     buffer_to_ptr(response)
 }
 
-
-/// Estimate the accuracy of the release of a component, based on a privacy usage.
-///
-/// No context about the analysis is necessary, just the properties of the arguments of the component.
+/// FFI wrapper for [privacy_usage_to_accuracy](fn.privacy_usage_to_accuracy.html)
 ///
 /// # Arguments
 /// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestPrivacyUsageToAccuracy](proto/struct.RequestPrivacyUsageToAccuracy.html)
@@ -181,19 +174,30 @@ pub extern "C" fn privacy_usage_to_accuracy(
     request_ptr: *const u8, request_length: i32,
 ) -> ffi_support::ByteBuffer {
     let request_buffer = unsafe { ptr_to_buffer(request_ptr, request_length) };
-    let request: proto::RequestPrivacyUsageToAccuracy = prost::Message::decode(request_buffer).unwrap();
 
     let response = proto::ResponsePrivacyUsageToAccuracy {
-        value: match super::privacy_usage_to_accuracy(&request) {
-            Ok(x) => Some(proto::response_privacy_usage_to_accuracy::Value::Data(x)),
-            Err(err) => Some(proto::response_privacy_usage_to_accuracy::Value::Error(
-                proto::Error { message: err.display_chain().to_string() }
-            ))
+        value: match proto::RequestPrivacyUsageToAccuracy::decode(request_buffer) {
+            Ok(request) => match super::privacy_usage_to_accuracy(&request) {
+                Ok(x) =>
+                    Some(proto::response_privacy_usage_to_accuracy::Value::Data(x)),
+                Err(err) =>
+                    Some(proto::response_privacy_usage_to_accuracy::Value::Error(serialize_error(err))),
+            }
+            Err(_) =>
+                Some(proto::response_privacy_usage_to_accuracy::Value::Error(serialize_error("unable to parse protobuf".into())))
         }
     };
     buffer_to_ptr(response)
 }
 
+/// FFI wrapper for [get_properties](fn.get_properties.html)
+///
+/// # Arguments
+/// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestGetProperties](proto/struct.RequestGetProperties.html)
+/// - `request_length` - the length of the array
+///
+/// # Returns
+/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseGetProperties](proto/struct.ResponseGetProperties.html)
 #[no_mangle]
 pub extern "C" fn get_properties(
     request_ptr: *const u8, request_length: i32,
@@ -202,21 +206,21 @@ pub extern "C" fn get_properties(
     let request: proto::RequestGetProperties = prost::Message::decode(request_buffer).unwrap();
 
     let response = proto::ResponseGetProperties {
-        value: match super::get_properties(&request) {
-            Ok(x) => Some(proto::response_get_properties::Value::Data(x)),
-            Err(err) => Some(proto::response_get_properties::Value::Error(
-                proto::Error { message: err.display_chain().to_string() }
-            ))
+        value: match proto::RequestGetProperties::decode(request_buffer) {
+            Ok(request) => match super::get_properties(&request) {
+                Ok(x) =>
+                    Some(proto::response_get_properties::Value::Data(x)),
+                Err(err) =>
+                    Some(proto::response_get_properties::Value::Error(serialize_error(err))),
+            }
+            Err(_) =>
+                Some(proto::response_get_properties::Value::Error(serialize_error("unable to parse protobuf".into())))
         }
     };
     buffer_to_ptr(response)
 }
 
-
-/// Expand a component that may be representable as smaller components, and propagate its properties.
-///
-/// This is function may be called interactively from the runtime as the runtime executes the computational graph, to allow for dynamic graph validation.
-/// This is opposed to statically validating a graph, where the nodes in the graph that are dependent on the releases of mechanisms cannot be known and validated until the first release is made.
+/// FFI wrapper for [expand_component](fn.expand_component.html)
 ///
 /// # Arguments
 /// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestExpandComponent](proto/struct.RequestExpandComponent.html)
@@ -229,15 +233,22 @@ pub extern "C" fn expand_component(
     request_ptr: *const u8, request_length: i32,
 ) -> ffi_support::ByteBuffer {
     let request_buffer = unsafe { ptr_to_buffer(request_ptr, request_length) };
-    let request: proto::RequestExpandComponent = prost::Message::decode(request_buffer).unwrap();
 
     let response = proto::ResponseExpandComponent {
-        value: match super::expand_component(&request) {
-            Ok(x) => Some(proto::response_expand_component::Value::Data(x)),
-            Err(err) => Some(proto::response_expand_component::Value::Error(
-                proto::Error { message: err.display_chain().to_string() }
-            ))
+        value: match proto::RequestExpandComponent::decode(request_buffer) {
+            Ok(request) => match super::expand_component(&request) {
+                Ok(x) =>
+                    Some(proto::response_expand_component::Value::Data(x)),
+                Err(err) =>
+                    Some(proto::response_expand_component::Value::Error(serialize_error(err))),
+            }
+            Err(_) =>
+                Some(proto::response_expand_component::Value::Error(serialize_error("unable to parse protobuf".into())))
         }
     };
     buffer_to_ptr(response)
+}
+
+pub fn serialize_error(err: super::Error) -> proto::Error {
+    proto::Error { message: err.display_chain().to_string() }
 }

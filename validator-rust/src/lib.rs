@@ -42,7 +42,17 @@ macro_rules! hashmap {
     }}
 }
 
-#[doc(hidden)]
+
+/// Validate if an analysis is well-formed.
+///
+/// Checks that the graph is a DAG.
+/// Checks that static properties are met on all components.
+///
+/// Useful for static validation of an analysis.
+/// Since some components require public arguments, mechanisms that depend on other mechanisms cannot be verified until the components they depend on have been validated.
+///
+/// The system may also be run dynamically- prior to expanding each node, calling the expand_component endpoint will also validate the component being expanded.
+/// NOTE: Evaluating the graph dynamically opens up additional potential timing attacks.
 pub fn validate_analysis(
     request: &proto::RequestValidateAnalysis
 ) -> Result<proto::response_validate_analysis::Validated> {
@@ -59,7 +69,11 @@ pub fn validate_analysis(
     });
 }
 
-#[doc(hidden)]
+
+/// Compute overall privacy usage of an analysis.
+///
+/// The privacy usage is sum of the privacy usages for each node.
+/// The Release's actual privacy usage, if defined, takes priority over the maximum allowable privacy usage defined in the Analysis.
 pub fn compute_privacy_usage(
     request: &proto::RequestComputePrivacyUsage
 ) -> Result<proto::PrivacyUsage> {
@@ -82,7 +96,8 @@ pub fn compute_privacy_usage(
         .ok_or::<Error>("no information is released; privacy usage is none".into())
 }
 
-#[doc(hidden)]
+
+/// Generate a json string with a summary/report of the Analysis and Release
 pub fn generate_report(
     request: &proto::RequestGenerateReport
 ) -> Result<String> {
@@ -126,7 +141,10 @@ pub fn generate_report(
     }
 }
 
-#[doc(hidden)]
+
+/// Estimate the privacy usage necessary to bound accuracy to a given value.
+///
+/// No context about the analysis is necessary, just the privacy definition and properties of the arguments of the component.
 pub fn accuracy_to_privacy_usage(
     request: &proto::RequestAccuracyToPrivacyUsage
 ) -> Result<proto::PrivacyUsages> {
@@ -148,7 +166,10 @@ pub fn accuracy_to_privacy_usage(
     })
 }
 
-#[doc(hidden)]
+
+/// Estimate the accuracy of the release of a component, based on a privacy usage.
+///
+/// No context about the analysis is necessary, just the properties of the arguments of the component.
 pub fn privacy_usage_to_accuracy(
     request: &proto::RequestPrivacyUsageToAccuracy
 ) -> Result<proto::Accuracies> {
@@ -167,7 +188,6 @@ pub fn privacy_usage_to_accuracy(
     })
 }
 
-#[doc(hidden)]
 pub fn get_properties(
     request: &proto::RequestGetProperties
 ) -> Result<proto::GraphProperties> {
@@ -183,7 +203,11 @@ pub fn get_properties(
     })
 }
 
-#[doc(hidden)]
+
+/// Expand a component that may be representable as smaller components, and propagate its properties.
+///
+/// This is function may be called interactively from the runtime as the runtime executes the computational graph, to allow for dynamic graph validation.
+/// This is opposed to statically validating a graph, where the nodes in the graph that are dependent on the releases of mechanisms cannot be known and validated until the first release is made.
 pub fn expand_component(
     request: &proto::RequestExpandComponent
 ) -> Result<proto::ComponentExpansion> {
@@ -200,6 +224,7 @@ pub fn expand_component(
         &request.maximum_id)
 }
 
+#[doc(hidden)]
 pub fn _expand_component(
     privacy_definition: &proto::PrivacyDefinition,
     component: &proto::Component,
