@@ -94,6 +94,9 @@ def test_dp_linear_stats(run=True):
             count_max=10000
         )
         analysis.release()
+        # print(num_records.properties)
+        print(num_records.get_accuracy(alpha=.05))
+        raise ValueError("test")
         print("number of records:", num_records.value)
 
         vars = op.cast(dataset_pums[["age", "income"]], type="float")

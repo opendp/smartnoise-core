@@ -81,7 +81,8 @@ impl Accuracy for proto::LaplaceMechanism {
     fn privacy_usage_to_accuracy(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
-        _property: &base::NodeProperties,
+        _properties: &base::NodeProperties,
+        _alpha: &f64
     ) -> Result<Option<Vec<proto::Accuracy>>> {
         Err("not implemented".into())
     }

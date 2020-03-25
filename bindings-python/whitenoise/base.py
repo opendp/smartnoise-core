@@ -118,21 +118,34 @@ class Component(object):
         return self.analysis.release_values.get(self.component_id, {"privacy_usage": None})["privacy_usage"]
 
     def get_accuracy(self, alpha):
-        # TODO: Properties
+        self.analysis.properties = core_wrapper.get_properties(
+            self.analysis._serialize_analysis_proto(),
+            self.analysis._serialize_release_proto()).properties
+
         return core_wrapper.privacy_usage_to_accuracy(
             privacy_definition=self.analysis._serialize_privacy_definition(),
             component=self.analysis._serialize_component(self),
-            properties=None,
+            properties={name: self.analysis.properties.get(arg.component_id) for name, arg in self.arguments.items() if arg},
             alpha=alpha)
 
     def from_accuracy(self, value, alpha):
         return core_wrapper.accuracy_to_privacy_usage(
             privacy_definition=self.analysis._serialize_privacy_definition(),
             component=self.analysis._serialize_component(self),
-            properties=None,
+            properties={name: self.analysis.properties.get(arg.component_id) for name, arg in self.arguments.items() if arg},
             accuracy=base_pb2.Accuracy(
                 value=value,
                 alpha=alpha))
+
+    @property
+    def properties(self):
+        # TODO: this doesn't have to be recomputed every time
+        self.analysis.properties = core_wrapper.get_properties(
+            self.analysis._serialize_analysis_proto(),
+            self.analysis._serialize_release_proto()).properties
+
+        # TODO: parse into something human readable. Serialization is not necessary
+        return self.analysis.properties.get(self.component_id)
 
     def __pos__(self):
         return self

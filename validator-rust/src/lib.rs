@@ -183,7 +183,7 @@ pub fn privacy_usage_to_accuracy(
     Ok(proto::Accuracies {
         values: component.variant.as_ref()
             .ok_or::<Error>("component variant must be defined".into())?
-            .privacy_usage_to_accuracy(privacy_definition, &properties)?.unwrap()
+            .privacy_usage_to_accuracy(privacy_definition, &properties, &request.alpha)?.unwrap()
     })
 }
 
