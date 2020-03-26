@@ -4,7 +4,7 @@ use crate::base::NodeArguments;
 use whitenoise_validator::base::{Value, ArrayND, get_argument, Hashmap, DataType};
 use crate::components::Evaluable;
 use whitenoise_validator::proto;
-use crate::utilities::array::{slow_stack, slow_select};
+use whitenoise_validator::utilities::array::{slow_stack, slow_select};
 use ndarray::prelude::*;
 use std::collections::HashMap;
 

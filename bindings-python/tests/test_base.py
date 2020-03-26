@@ -105,8 +105,16 @@ def test_dp_linear_stats(run=True):
             data_max=[150., 150000.],
             data_n=num_records)
 
+        num_means = op.dp_mean(
+            data=vars,
+            privacy_usage={'epsilon': .5},
+            data_min=[0., 0.],
+            data_max=[150., 150000.],
+            data_n=num_records)
+
         analysis.release()
         print("covariance:\n", covariance.value)
+        print("means:\n", num_means.value)
 
         age = op.cast(age, type="FLOAT")
 

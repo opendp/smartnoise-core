@@ -14,7 +14,7 @@ use ndarray::prelude::Ix1;
 use std::collections::{HashMap, HashSet};
 
 use crate::utilities::serial::{serialize_value, parse_release, parse_value_properties, parse_value};
-use crate::utilities::json::{JSONRelease};
+use crate::utilities::json::JSONRelease;
 
 
 use ndarray::{ArrayD, Array};
@@ -92,61 +92,73 @@ impl From<ArrayD<bool>> for Value {
         Value::ArrayND(ArrayND::Bool(value))
     }
 }
+
 impl From<ArrayD<f64>> for Value {
     fn from(value: ArrayD<f64>) -> Self {
         Value::ArrayND(ArrayND::F64(value))
     }
 }
+
 impl From<ArrayD<i64>> for Value {
     fn from(value: ArrayD<i64>) -> Self {
         Value::ArrayND(ArrayND::I64(value))
     }
 }
+
 impl From<ArrayD<String>> for Value {
     fn from(value: ArrayD<String>) -> Self {
         Value::ArrayND(ArrayND::Str(value))
     }
 }
+
 impl From<HashMap<bool, Value>> for Value {
     fn from(value: HashMap<bool, Value>) -> Self {
         Value::Hashmap(Hashmap::<Value>::Bool(value))
     }
 }
+
 impl From<HashMap<i64, Value>> for Value {
     fn from(value: HashMap<i64, Value>) -> Self {
         Value::Hashmap(Hashmap::<Value>::I64(value))
     }
 }
+
 impl From<HashMap<String, Value>> for Value {
     fn from(value: HashMap<String, Value>) -> Self {
         Value::Hashmap(Hashmap::<Value>::Str(value))
     }
 }
+
 impl From<HashMap<bool, ValueProperties>> for Hashmap<ValueProperties> {
     fn from(value: HashMap<bool, ValueProperties>) -> Self {
         Hashmap::<ValueProperties>::Bool(value)
     }
 }
+
 impl From<HashMap<i64, ValueProperties>> for Hashmap<ValueProperties> {
     fn from(value: HashMap<i64, ValueProperties>) -> Self {
         Hashmap::<ValueProperties>::I64(value)
     }
 }
+
 impl From<HashMap<String, ValueProperties>> for Hashmap<ValueProperties> {
     fn from(value: HashMap<String, ValueProperties>) -> Self {
         Hashmap::<ValueProperties>::Str(value)
     }
 }
+
 impl From<ArrayNDProperties> for ValueProperties {
     fn from(value: ArrayNDProperties) -> Self {
         ValueProperties::ArrayND(value)
     }
 }
+
 impl From<HashmapProperties> for ValueProperties {
     fn from(value: HashmapProperties) -> Self {
         ValueProperties::Hashmap(value)
     }
 }
+
 impl From<Vector2DJaggedProperties> for ValueProperties {
     fn from(value: Vector2DJaggedProperties) -> Self {
         ValueProperties::Vector2DJagged(value)
@@ -186,22 +198,22 @@ impl ArrayND {
         match self {
             ArrayND::Bool(x) => {
                 if x.len() != 1 {
-                    return Err("non-singleton array passed for an argument that must be scalar".into())
+                    return Err("non-singleton array passed for an argument that must be scalar".into());
                 }
                 Ok(if *x.first().unwrap() { 1. } else { 0. })
-            },
+            }
             ArrayND::I64(x) => {
                 if x.len() != 1 {
-                    return Err("non-singleton array passed for an argument that must be scalar".into())
+                    return Err("non-singleton array passed for an argument that must be scalar".into());
                 }
                 Ok(f64::from(*x.first().unwrap() as i32))
-            },
+            }
             ArrayND::F64(x) => {
                 if x.len() != 1 {
-                    return Err("non-singleton array passed for an argument that must be scalar".into())
+                    return Err("non-singleton array passed for an argument that must be scalar".into());
                 }
                 Ok(x.first().unwrap().to_owned())
-            },
+            }
             _ => Err("value must be numeric".into())
         }
     }
@@ -228,16 +240,16 @@ impl ArrayND {
         match self {
             ArrayND::Bool(x) => {
                 if x.len() != 1 {
-                    return Err("non-singleton array passed for an argument that must be scalar".into())
+                    return Err("non-singleton array passed for an argument that must be scalar".into());
                 }
                 Ok(if *x.first().unwrap() { 1 } else { 0 })
-            },
+            }
             ArrayND::I64(x) => {
                 if x.len() != 1 {
-                    return Err("non-singleton array passed for an argument that must be scalar".into())
+                    return Err("non-singleton array passed for an argument that must be scalar".into());
                 }
                 Ok(x.first().unwrap().to_owned())
-            },
+            }
             _ => Err("value must be numeric".into())
         }
     }
@@ -264,10 +276,10 @@ impl ArrayND {
         match self {
             ArrayND::Str(x) => {
                 if x.len() != 1 {
-                    return Err("non-singleton array passed for an argument that must be scalar".into())
+                    return Err("non-singleton array passed for an argument that must be scalar".into());
                 }
                 Ok(x.first().unwrap().to_owned())
-            },
+            }
             _ => Err("value must be a string".into())
         }
     }
@@ -282,10 +294,10 @@ impl ArrayND {
         match self {
             ArrayND::Bool(x) => {
                 if x.len() != 1 {
-                    return Err("non-singleton array passed for an argument that must be scalar".into())
+                    return Err("non-singleton array passed for an argument that must be scalar".into());
                 }
                 Ok(x.first().unwrap().to_owned())
-            },
+            }
             _ => Err("value must be a bool".into())
         }
     }
@@ -364,7 +376,7 @@ pub enum Hashmap<T> {
 pub enum ValueProperties {
     Hashmap(HashmapProperties),
     ArrayND(ArrayNDProperties),
-    Vector2DJagged(Vector2DJaggedProperties)
+    Vector2DJagged(Vector2DJaggedProperties),
 }
 
 
@@ -429,7 +441,7 @@ pub struct ArrayNDProperties {
     pub data_type: DataType,
     /// index of last Materialize or Filter node, where dataset was created
     /// used to determine if arrays are conformable even when N is not known
-    pub dataset_id: Option<i64>
+    pub dataset_id: Option<i64>,
 }
 
 
@@ -547,7 +559,10 @@ impl ArrayNDProperties {
 /// Fundamental data types for ArrayNDs and Vector2DJagged Values.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum DataType {
-    Bool, Str, F64, I64
+    Bool,
+    Str,
+    F64,
+    I64,
 }
 
 
@@ -561,7 +576,7 @@ pub enum DataType {
 #[derive(Clone, Debug)]
 pub struct AggregatorProperties {
     pub component: proto::component::Variant,
-    pub properties: HashMap<String, ValueProperties>
+    pub properties: HashMap<String, ValueProperties>,
 }
 
 #[derive(Clone, Debug)]
@@ -620,7 +635,7 @@ pub enum Sensitivity {
     KNorm(u32),
     /// Infinity norm.
     InfNorm,
-    Exponential
+    Exponential,
 }
 
 #[doc(hidden)]
@@ -637,7 +652,7 @@ pub type NodeProperties = HashMap<String, ValueProperties>;
 /// Retrieve the Values for each of the arguments of a component from the Release.
 pub fn get_input_arguments(
     component: &proto::Component,
-    graph_evaluation: &Release
+    graph_evaluation: &Release,
 ) -> Result<HashMap<String, Value>> {
     let mut arguments = HashMap::<String, Value>::new();
     for (field_id, field) in component.arguments.clone() {
@@ -651,7 +666,7 @@ pub fn get_input_arguments(
 /// Retrieve the specified Value from the arguments to a component.
 pub fn get_argument<'a>(
     arguments: &HashMap<String, &'a Value>,
-    name: &str
+    name: &str,
 ) -> Result<&'a Value> {
     match arguments.get(name) {
         Some(argument) => Ok(argument),
@@ -810,9 +825,8 @@ pub fn get_traversal(
         });
 
         if is_cyclic {
-            return Err("Graph is cyclic.".into())
+            return Err("Graph is cyclic.".into());
         }
-
     }
     return Ok(traversal);
 }
@@ -852,7 +866,7 @@ pub fn normalize_probabilities(weights: &Vec<f64>) -> Vec<f64> {
 #[doc(hidden)]
 pub fn standardize_categorical_argument<T: Clone>(
     categories: &Vec<Option<Vec<T>>>,
-    length: &i64
+    length: &i64,
 ) -> Result<Vec<Vec<T>>> {
     // check that no categories are explicitly None
     let mut categories = categories.iter()
@@ -876,7 +890,7 @@ pub fn standardize_categorical_argument<T: Clone>(
 #[doc(hidden)]
 pub fn standardize_null_argument<T: Clone>(
     value: &Vec<Option<Vec<T>>>,
-    length: &i64
+    length: &i64,
 ) -> Result<Vec<T>> {
     let value = value.iter()
         .map(|v| v.clone())
@@ -903,7 +917,7 @@ pub fn standardize_null_argument<T: Clone>(
 #[doc(hidden)]
 pub fn standardize_weight_argument<T>(
     categories: &Vec<Vec<T>>,
-    weights: &Vec<Option<Vec<f64>>>
+    weights: &Vec<Option<Vec<f64>>>,
 ) -> Result<Vec<Vec<f64>>> {
     match weights.len() {
         0 => Ok(categories.iter()
@@ -919,7 +933,7 @@ pub fn standardize_weight_argument<T>(
                 true => Ok(weights.clone()),
                 false => Err("length of weights does not match number of categories".into())
             }).collect::<Result<Vec<Vec<f64>>>>()
-        },
+        }
         _ => match categories.len() == weights.len() {
             true => categories.iter().zip(weights.iter()).map(|(_cats, weights)| match weights {
                 Some(weights) => Ok(normalize_probabilities(weights)),
@@ -939,18 +953,18 @@ pub fn get_literal(value: &Value, batch: &u32) -> Result<(proto::Component, prot
             private: false
         })),
         omit: true,
-        batch: batch.clone()
+        batch: batch.clone(),
     },
-    proto::ReleaseNode {
-        value: Some(serialize_value(value)?),
-        privacy_usage: Vec::new()
-    }))
+        proto::ReleaseNode {
+            value: Some(serialize_value(value)?),
+            privacy_usage: Vec::new(),
+        }))
 }
 
 #[doc(hidden)]
 pub fn validate_analysis(
     analysis: &proto::Analysis,
-    release: &proto::Release
+    release: &proto::Release,
 ) -> Result<proto::response_validate_analysis::Validated> {
     let _graph = analysis.computation_graph.to_owned()
         .ok_or("the computation graph must be defined in an analysis")?
@@ -960,14 +974,13 @@ pub fn validate_analysis(
 
     return Ok(proto::response_validate_analysis::Validated {
         value: true,
-        message: "The analysis is valid.".to_string()
+        message: "The analysis is valid.".to_string(),
     });
 }
 
 pub fn compute_privacy_usage(
     analysis: &proto::Analysis, release: &proto::Release,
 ) -> Result<proto::PrivacyUsage> {
-
     let (_graph_properties, graph) = propagate_properties(&analysis, &release)?;
 
     println!("graph: {:?}", graph);
@@ -1036,7 +1049,7 @@ pub fn privacy_usage_reducer(
 
 pub fn broadcast_privacy_usage(usages: &Vec<proto::PrivacyUsage>, length: usize) -> Result<Vec<proto::PrivacyUsage>> {
     if usages.len() == length {
-        return Ok(usages.clone())
+        return Ok(usages.clone());
     }
 
     if usages.len() != 1 {
@@ -1051,14 +1064,14 @@ pub fn broadcast_privacy_usage(usages: &Vec<proto::PrivacyUsage>, length: usize)
         proto::privacy_usage::Distance::DistancePure(pure) => (0..length)
             .map(|_| proto::PrivacyUsage {
                 distance: Some(proto::privacy_usage::Distance::DistancePure(proto::privacy_usage::DistancePure {
-                    epsilon: pure.epsilon / length as f64
+                    epsilon: pure.epsilon / (length as f64)
                 }))
             }).collect(),
         proto::privacy_usage::Distance::DistanceApproximate(approx) => (0..length)
             .map(|_| proto::PrivacyUsage {
                 distance: Some(proto::privacy_usage::Distance::DistanceApproximate(proto::privacy_usage::DistanceApproximate {
-                    epsilon: approx.epsilon / length as f64,
-                    delta: approx.delta / length as f64
+                    epsilon: approx.epsilon / (length as f64),
+                    delta: approx.delta / (length as f64),
                 }))
             }).collect()
     })
@@ -1070,7 +1083,7 @@ pub fn expand_component(
     properties: &HashMap<String, proto::ValueProperties>,
     arguments: &HashMap<String, Value>,
     node_id_output: u32,
-    node_id_maximum: u32
+    node_id_maximum: u32,
 ) -> Result<proto::ComponentExpansion> {
 
 //    println!("expanding node id: {}", node_id_output);
@@ -1107,7 +1120,7 @@ pub fn expand_component(
         computation_graph: result.computation_graph,
         properties: patch_properties,
         releases: result.releases,
-        traversal: result.traversal
+        traversal: result.traversal,
     })
 }
 
@@ -1115,9 +1128,7 @@ pub fn expand_component(
 pub fn generate_report(
     analysis: &proto::Analysis,
     release: &proto::Release,
-
-) -> Result<String>  {
-
+) -> Result<String> {
     let graph = analysis.computation_graph.to_owned()
         .ok_or("the computation graph must be defined in an analysis")?
         .value;
@@ -1126,18 +1137,23 @@ pub fn generate_report(
     let release = parse_release(&release)?;
 
     let release_schemas = graph.iter()
-        .filter_map(|(node_id, component)| {
-            let public_arguments = get_input_arguments(&component, &release).ok()?;
-            let input_properties = get_input_properties(&component, &graph_properties).ok()?;
-            let node_release = release.get(node_id)?;
+        .map(|(node_id, component)| {
+            let public_arguments = get_input_arguments(&component, &release)?;
+            let input_properties = get_input_properties(&component, &graph_properties)?;
+            // ignore nodes without released values
+            let node_release = match release.get(node_id) {
+                Some(node_release) => node_release,
+                None => return Ok(None)
+            };
             component.variant.clone().unwrap().summarize(
                 &node_id,
                 &component,
                 &public_arguments,
                 &input_properties,
-                &node_release).ok()?
+                &node_release)
         })
-        .flat_map(|v| v)
+        .collect::<Result<Vec<Option<Vec<JSONRelease>>>>>()?.into_iter()
+        .filter_map(|v| v).flat_map(|v| v)
         .collect::<Vec<JSONRelease>>();
 
     match serde_json::to_string(&release_schemas) {
