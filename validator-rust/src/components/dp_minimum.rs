@@ -5,10 +5,10 @@ use std::collections::HashMap;
 
 use crate::{proto, base};
 use crate::hashmap;
-use crate::components::{Component, Accuracy, Expandable, Report};
+use crate::components::{Component, Accuracy, Expandable, Report, get_ith_release};
 
 
-use crate::base::{NodeProperties, Value, ValueProperties, prepend};
+use crate::base::{NodeProperties, Value, ValueProperties, prepend, broadcast_privacy_usage, ArrayND};
 use crate::utilities::json::{JSONRelease, value_to_json, privacy_usage_to_json, AlgorithmInfo};
 
 
@@ -47,18 +47,18 @@ impl Expandable for proto::DpMinimum {
         current_id += 1;
         let id_minimum = current_id.clone();
         computation_graph.insert(id_minimum, proto::Component {
-            arguments: hashmap!["data".to_owned() => *component.arguments.get("data").unwrap()],
+            arguments: hashmap!["data".to_owned() => *component.arguments.get("data").ok_or::<Error>("data must be provided as an argument".into())?],
             variant: Some(proto::component::Variant::from(proto::Minimum {})),
             omit: true,
             batch: component.batch,
         });
 
-        let id_candidates = component.arguments.get("candidates").unwrap().clone();
+//        let id_candidates = component.arguments.get("candidates").unwrap().clone();
 
         // sanitizing
         computation_graph.insert(component_id, proto::Component {
-            arguments: hashmap!["data".to_owned() => id_minimum, "candidates".to_owned() => id_candidates],
-            variant: Some(proto::component::Variant::from(proto::ExponentialMechanism {
+            arguments: hashmap!["data".to_owned() => id_minimum],
+            variant: Some(proto::component::Variant::from(proto::LaplaceMechanism {
                 privacy_usage: self.privacy_usage.clone()
             })),
             omit: false,
@@ -109,20 +109,23 @@ impl Report for proto::DpMinimum {
 
         let mut releases = Vec::new();
 
-        let minimums = data_property.get_min_f64().unwrap();
-        let maximums = data_property.get_max_f64().unwrap();
+        let minimums = data_property.get_min_f64()?;
+        let maximums = data_property.get_max_f64()?;
+        let num_columns = data_property.get_num_columns()?;
 
-        for column_number in 0..data_property.num_columns.unwrap() {
-            let mut release_info = HashMap::new();
-            release_info.insert("mechanism".to_string(), serde_json::json!(self.implementation.clone()));
-            release_info.insert("releaseValue".to_string(), value_to_json(&release).unwrap());
+        let privacy_usages = broadcast_privacy_usage(&self.privacy_usage, num_columns as usize)?;
 
-            let release = JSONRelease {
+        for column_number in 0..num_columns {
+            releases.push(JSONRelease {
                 description: "DP release information".to_string(),
                 statistic: "DPMinimum".to_string(),
-                variables: vec![],
-                release_info,
-                privacy_loss: privacy_usage_to_json(&self.privacy_usage[column_number as usize].clone()),
+                variables: serde_json::json!(Vec::<String>::new()),
+                release_info: match release.get_arraynd()? {
+                    ArrayND::F64(v) => value_to_json(&get_ith_release(v, &(column_number as usize))?.into())?,
+                    ArrayND::I64(v) => value_to_json(&get_ith_release(v, &(column_number as usize))?.into())?,
+                    _ => return Err("maximum must be numeric".into())
+                },
+                privacy_loss: privacy_usage_to_json(&privacy_usages[column_number as usize].clone()),
                 accuracy: None,
                 batch: component.batch as u64,
                 node_id: node_id.clone() as u64,
@@ -130,16 +133,15 @@ impl Report for proto::DpMinimum {
                 algorithm_info: AlgorithmInfo {
                     name: "".to_string(),
                     cite: "".to_string(),
+                    mechanism: self.implementation.clone(),
                     argument: serde_json::json!({
                         "constraint": {
                             "lowerbound": minimums[column_number as usize],
                             "upperbound": maximums[column_number as usize]
                         }
                     }),
-                },
-            };
-
-            releases.push(release);
+                }
+            });
         }
         Ok(Some(releases))
     }

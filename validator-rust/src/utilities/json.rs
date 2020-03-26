@@ -1,7 +1,6 @@
 //! Representation for report/json summaries
 
 use crate::errors::*;
-use std::collections::{HashMap};
 use serde::{Deserialize, Serialize};
 extern crate serde_json;
 
@@ -18,12 +17,12 @@ use ndarray::prelude::*;
 pub struct JSONRelease {
     pub description: String,
     /// array of string that is column/s in the dataset
-    pub variables: Vec<String>,
+    pub variables: Value,
     /// User provide a value for either epsilon (epsilon>0), delta (0<delta<1>), or rho depending on the type of dp definitions (i.e. pure, approximated and concerted).
     pub statistic: String,
     /// The value released by the system
     #[serde(rename(serialize = "releaseInfo", deserialize = "releaseInfo"))]
-    pub release_info: HashMap<String, Value>,
+    pub release_info: Value,
     /// The amount of privacy used to compute the release value
     #[serde(rename(serialize = "privacyLoss", deserialize = "privacyLoss"))]
     pub privacy_loss: Value,
@@ -58,6 +57,8 @@ pub struct Accuracy {
 /// Metadata about the algorithm used to compute the release value.
 #[derive(Serialize, Deserialize)]
 pub struct AlgorithmInfo {
+    // mechanism used to generate the release values, typically `Laplace`, `Exponential`, etc.
+    pub mechanism: String,
     pub name: String,
     /// Citation to originating paper
     pub cite: String,
@@ -83,10 +84,8 @@ pub fn arraynd_to_json<T: Serialize + Clone>(array: &ArrayD<T>) -> Result<serde_
     match array.ndim() {
         0 => Ok(serde_json::json!(array.first().unwrap())),
         1 => Ok(serde_json::json!(array.clone().into_dimensionality::<Ix1>().unwrap().to_vec())),
-//        2 => {
-//            serde_json::json!(array.into_dimensionality::<Ix2>().clone().unwrap().to_vec())
-//        },
-        _ => Err("converting a matrix to json is not implemented".into())
+        2 => Ok(serde_json::json!(array.genrows().into_iter().map(|row| row.into_iter().map(|v| v.clone()).collect::<Vec<T>>()).collect::<Vec<Vec<T>>>())),
+        _ => Err("array must have dimensionality less than 2".into())
     }
 }
 

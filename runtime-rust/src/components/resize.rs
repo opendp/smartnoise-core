@@ -10,7 +10,7 @@ use crate::components::Evaluable;
 use crate::utilities::noise;
 use crate::components::impute::{impute_float_gaussian, impute_float_uniform, impute_categorical};
 use crate::utilities::utilities::get_num_columns;
-use crate::utilities::array::{select, stack};
+use whitenoise_validator::utilities::array::{slow_select, slow_stack};
 
 impl Evaluable for proto::Resize {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
@@ -113,14 +113,14 @@ pub fn resize_float(data: &ArrayD<f64>, n: &i64, distribution: &String,
             }?;
 
             // combine real and synthetic data
-            match stack(Axis(0), &[data.view(), synthetic.view()]) {
+            match ndarray::stack(Axis(0), &[data.view(), synthetic.view()]) {
                 Ok(value) => value,
                 Err(_) => return Err("failed to stack real and synthetic data".into())
             }
         },
         // if estimated n is smaller than real n, return a subset of the real data
         real_n if real_n > n =>
-            select(&data, Axis(0), &create_sampling_indices(&n, &real_n)?),
+            slow_select(&data, Axis(0), &create_sampling_indices(&n, &real_n)?),
 //            data.select(Axis(0), &create_sampling_indices(&n, &real_n)?).to_owned(),
         _ => return Err("invalid configuration for n when resizing".into())
     })
@@ -137,9 +137,12 @@ pub fn resize_float(data: &ArrayD<f64>, n: &i64, distribution: &String,
 ///
 /// # Return
 /// A resized version of data consistent with the provided `n`
-pub fn resize_categorical<T>(data: &ArrayD<T>, n: &i64,
-                             categories: &Vec<Option<Vec<T>>>, weights: &Vec<Option<Vec<f64>>>, null_value: &Vec<Option<Vec<T>>>,)
-                             -> Result<ArrayD<T>> where T: Clone, T: PartialEq, T: Default {
+pub fn resize_categorical<T>(
+    data: &ArrayD<T>, n: &i64,
+    categories: &Vec<Option<Vec<T>>>,
+    weights: &Vec<Option<Vec<f64>>>,
+    null_value: &Vec<Option<Vec<T>>>
+) -> Result<ArrayD<T>> where T: Clone, T: PartialEq, T: Default {
     // get number of observations in actual data
     let real_n: i64 = data.len_of(Axis(0)) as i64;
 
@@ -167,14 +170,14 @@ pub fn resize_categorical<T>(data: &ArrayD<T>, n: &i64,
                 &synthetic, &categories, &weights, &null_value)?;
 
             // combine real and synthetic data
-            match stack(Axis(0), &[data.view(), synthetic.view()]) {
+            match slow_stack(Axis(0), &[data.view(), synthetic.view()]) {
                 Ok(value) => value,
                 Err(_) => return Err("failed to stack real and synthetic data".into())
             }
         },
         // if estimated n is smaller than real n, return a subset of the real data
         real_n if real_n > n =>
-            select(data, Axis(0), &create_sampling_indices(&n, &real_n)?).to_owned(),
+            slow_select(data, Axis(0), &create_sampling_indices(&n, &real_n)?).to_owned(),
         _ => return Err("invalid configuration for n when resizing".into())
     })
 }

@@ -101,7 +101,7 @@ pub fn execute_graph(analysis: &proto::Analysis,
                 .get(component.arguments.get(k).unwrap()).unwrap().clone()))
             .collect::<HashMap<String, Value>>();
 
-//        println!("expanding component {:?}", component);
+//        println!("expanding {:?}", component);
 //        println!("public arguments {:?}", public_arguments);
 //        println!("node properties {:?}", node_properties);
 

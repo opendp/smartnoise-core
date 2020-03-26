@@ -11,6 +11,7 @@ assert isfile(TEST_CSV_PATH), f'Error: file not found: {TEST_CSV_PATH}'
 
 test_csv_names = ["age", "sex", "educ", "race", "income", "married"]
 
+
 def test_multilayer_analysis(run=True):
 
     with whitenoise.Analysis() as analysis:
@@ -94,6 +95,26 @@ def test_dp_linear_stats(run=True):
         )
         analysis.release()
         print("number of records:", num_records.value)
+
+        vars = op.cast(dataset_pums[["age", "income"]], type="float")
+
+        covariance = op.dp_covariance(
+            data=vars,
+            privacy_usage={'epsilon': .5},
+            data_min=[0., 0.],
+            data_max=[150., 150000.],
+            data_n=num_records)
+
+        num_means = op.dp_mean(
+            data=vars,
+            privacy_usage={'epsilon': .5},
+            data_min=[0., 0.],
+            data_max=[150., 150000.],
+            data_n=num_records)
+
+        analysis.release()
+        print("covariance:\n", covariance.value)
+        print("means:\n", num_means.value)
 
         age = op.cast(age, type="FLOAT")
 

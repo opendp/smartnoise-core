@@ -1,84 +1,54 @@
 use whitenoise_validator::errors::*;
 
 use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value, get_argument, Vector2DJagged};
+use whitenoise_validator::base::{Value, get_argument, broadcast_privacy_usage};
 use crate::components::Evaluable;
 use crate::utilities;
 use whitenoise_validator::proto;
+use ndarray::Array;
 
 impl Evaluable for proto::LaplaceMechanism {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        // read function arguments
-        let epsilon: Vec<f64> = self.privacy_usage.iter()
-            .map(|usage| get_epsilon(&usage))
-            .collect::<Result<Vec<f64>>>()?;
+        let mut data = get_argument(&arguments, "data")?.get_arraynd()?.get_f64()?.clone();
+        let sensitivity = get_argument(&arguments, "sensitivity")?.get_arraynd()?.get_f64()?;
 
-        let sensitivity = get_argument(&arguments, "sensitivity")?;
-        let data = get_argument(&arguments, "data")?;
+        let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivity.len())?;
 
-        match (data, sensitivity) {
-            (Value::ArrayND(data), Value::ArrayND(sensitivity)) => {
-                let mut data = data.get_f64()?.clone();
-                let sensitivity = sensitivity.get_f64()?;
+        let epsilon = Array::from_shape_vec(
+            data.shape(), usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?)?;
 
-                data.iter_mut()
-                    .zip(epsilon.iter())
-                    .zip(sensitivity.iter())
-                    .map(|((v, eps), sens)| {
-                        *v += utilities::mechanisms::laplace_mechanism(&eps, &sens)?;
-                        Ok(())
-                    })
-                    .collect::<Result<()>>()?;
-                Ok(data.into())
-            },
+        data.gencolumns_mut().into_iter()
+            .zip(sensitivity.gencolumns().into_iter().zip(epsilon.gencolumns().into_iter()))
+            .for_each(|(mut data_column, (sensitivity, epsilon))| data_column.iter_mut()
+                .zip(sensitivity.iter().zip(epsilon.iter()))
+                .for_each(|(v, (sens, eps))|
+                    *v += utilities::mechanisms::laplace_mechanism(&eps, &sens)));
 
-            (Value::Vector2DJagged(data), Value::Vector2DJagged(sensitivity)) => {
-                let mut data = data.get_f64()?;
-                if epsilon.len() != 1 {
-                    return Err("non-uniform epsilon is not implemented for Vector2DJagged".into())
-                }
-                let epsilon = epsilon.first().unwrap();
-                // scale down epsilon to be evenly distributed among each
-                let epsilon = epsilon / data.iter().fold(0, |sum, e| sum + e.len()) as f64;
-                let sensitivity = sensitivity.get_f64()?;
-                if sensitivity.len() != data.len() {
-                    return Err("sensitivity must be same length as data".into())
-                }
-
-                data.iter_mut()
-                    .zip(sensitivity.iter())
-                    .map(|(col, sens_col)|
-                        col.iter_mut().zip(sens_col)
-                            .map(|(v, sens)| {
-                                *v += utilities::mechanisms::laplace_mechanism(&epsilon, &sens)?;
-                                Ok(())
-                            }).collect::<Result<()>>()
-                    ).collect::<Result<()>>()?;
-                Ok(Value::Vector2DJagged(Vector2DJagged::F64(data.iter().map(|v| Some(v.clone())).collect())))
-            },
-            _ => Err("data and sensitivity must both be ArrayND or Vector2DJagged".into())
-        }
+        Ok(data.into())
     }
 }
 
 impl Evaluable for proto::GaussianMechanism {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        let epsilon: Vec<f64> = self.privacy_usage.iter().map(|usage| get_epsilon(&usage)).collect::<Result<Vec<f64>>>()?;
-        let delta = get_argument(&arguments, "delta")?.get_arraynd()?.get_f64()?;
+        let mut data = get_argument(&arguments, "data")?.get_arraynd()?.get_f64()?.clone();
         let sensitivity = get_argument(&arguments, "sensitivity")?.get_arraynd()?.get_f64()?;
 
-        let data = get_argument(&arguments, "data")?.get_arraynd()?.get_f64()?;
+        let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivity.len())?;
 
-        let mut data = data.clone();
-        data.iter_mut()
-            .zip(epsilon.iter())
-            .zip(delta.iter())
-            .zip(sensitivity.iter())
-            .map(|(((v, eps), delta), sens)| {
-                *v += utilities::mechanisms::gaussian_mechanism(&eps, &delta, &sens)?;
-                Ok(())
-            })
-            .collect::<Result<()>>()?;
+        let epsilon = Array::from_shape_vec(
+            data.shape(), usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?)?;
+
+        let delta = Array::from_shape_vec(
+            data.shape(), usages.iter().map(get_delta).collect::<Result<Vec<f64>>>()?)?;
+
+        data.gencolumns_mut().into_iter()
+            .zip(sensitivity.gencolumns().into_iter())
+            .zip(epsilon.gencolumns().into_iter().zip(delta.gencolumns().into_iter()))
+            .for_each(|((mut data_column, sensitivity), (epsilon, delta))| data_column.iter_mut()
+                .zip(sensitivity.iter())
+                .zip(epsilon.iter().zip(delta.iter()))
+                .for_each(|((v, sens), (eps, del))|
+                    *v += utilities::mechanisms::gaussian_mechanism(&eps, &del, &sens)));
 
         Ok(data.into())
     }
@@ -86,28 +56,26 @@ impl Evaluable for proto::GaussianMechanism {
 
 impl Evaluable for proto::SimpleGeometricMechanism {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        println!("arguments geometric {:?}", arguments);
-        let epsilon: Vec<f64> = self.privacy_usage.iter().map(|usage| get_epsilon(&usage)).collect::<Result<Vec<f64>>>()?;
-
+        let mut data = get_argument(&arguments, "data")?.get_arraynd()?.get_i64()?.clone();
         let sensitivity = get_argument(&arguments, "sensitivity")?.get_arraynd()?.get_f64()?;
+
+        let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivity.len())?;
+
+        let epsilon = Array::from_shape_vec(
+            data.shape(), usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?)?;
+
         let count_min = get_argument(&arguments, "count_min")?.get_arraynd()?.get_i64()?;
         let count_max = get_argument(&arguments, "count_max")?.get_arraynd()?.get_i64()?;
 
-        let enforce_constant_time = self.enforce_constant_time.clone();
-
-        let data = get_argument(&arguments, "data")?.get_arraynd()?.get_i64()?;
-
-        let mut data = data.clone();
-        data.iter_mut()
-            .zip(epsilon.iter())
-            .zip(count_min.iter().zip(count_max.iter()))
-            .zip(sensitivity.iter())
-            .map(|(((v, eps), (c_min, c_max)), sens)| {
-                *v += utilities::mechanisms::simple_geometric_mechanism(
-                    &eps, &sens, &c_min, &c_max, &enforce_constant_time)?;
-                Ok(())
-            })
-            .collect::<Result<()>>()?;
+        data.gencolumns_mut().into_iter()
+            .zip(sensitivity.gencolumns().into_iter().zip(epsilon.gencolumns().into_iter()))
+            .zip(count_min.gencolumns().into_iter().zip(count_max.gencolumns().into_iter()))
+            .for_each(|((mut data_column, (sensitivity, epsilon)), (count_min, count_max))| data_column.iter_mut()
+                .zip(sensitivity.iter().zip(epsilon.iter()))
+                .zip(count_min.iter().zip(count_max.iter()))
+                .for_each(|((v, (sens, eps)), (c_min, c_max))|
+                    *v += utilities::mechanisms::simple_geometric_mechanism(
+                        &eps, &sens, &c_min, &c_max, &self.enforce_constant_time)));
 
         Ok(data.into())
     }
@@ -122,9 +90,9 @@ fn get_epsilon(usage: &proto::PrivacyUsage) -> Result<f64> {
     }
 }
 
-//fn get_delta(usage: &proto::PrivacyUsage) -> Result<f64> {
-//    match usage.distance.clone().ok_or::<Error>("distance must be defined on a PrivacyUsage".into())? {
-//        proto::privacy_usage::Distance::DistanceApproximate(distance) => Ok(distance.delta),
-//        _ => Err("delta is not defined".into())
-//    }
-//}
+fn get_delta(usage: &proto::PrivacyUsage) -> Result<f64> {
+    match usage.distance.clone().ok_or::<Error>("distance must be defined on a PrivacyUsage".into())? {
+        proto::privacy_usage::Distance::DistanceApproximate(distance) => Ok(distance.delta),
+        _ => Err("delta is not defined".into())
+    }
+}
