@@ -28,7 +28,7 @@ impl Component for proto::Index {
             ValueProperties::Hashmap(data_property) => {
                 // TODO: check that hashmap is columnar. The columnar property is in another branch.
                 //       when partition is added, should we allow column stacking of partitions?
-                match data_property.value_properties {
+                match data_property.properties {
                     Hashmap::Str(value_properties) => match column_names {
                         // String column names on string hashmap
                         ArrayND::Str(column_names) => to_name_vec(&column_names)?.into_iter()

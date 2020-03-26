@@ -38,47 +38,84 @@ impl Expandable for proto::DpHistogram {
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
-        _properties: &base::NodeProperties,
+        properties: &base::NodeProperties,
         component_id: &u32,
         maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
         let mut current_id = maximum_id.clone();
         let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
 
-        let data_id = component.arguments.get("data")
-            .ok_or::<Error>("data is a required argument to DPHistogram".into())?;
-        let edges_id = component.arguments.get("edges")
-            .ok_or::<Error>("edges is a required argument to DPHistogram".into())?;
+        let mut data_id = component.arguments.get("data")
+            .ok_or::<Error>("data is a required argument to DPHistogram".into())?.clone();
         let null_id = component.arguments.get("null")
             .ok_or::<Error>("null is a required argument to DPHistogram".into())?;
-        let inclusive_left_id = component.arguments.get("inclusive_left")
-            .ok_or::<Error>("inclusive_left is a required argument to DPHistogram".into())?;
         let count_min_id = component.arguments.get("count_min")
             .ok_or::<Error>("count_min is a required argument to DPHistogram".into())?;
         let count_max_id = component.arguments.get("count_max")
             .ok_or::<Error>("count_max is a required argument to DPHistogram".into())?;
-        // TODO: also handle categorical case, which doesn't require binning
-        // bin
-        current_id += 1;
-        let id_bin = current_id.clone();
-        computation_graph.insert(id_bin, proto::Component {
-            arguments: hashmap![
-                "data".to_owned() => *data_id,
-                "edges".to_owned() => *edges_id,
-                "null".to_owned() => *null_id,
-                "inclusive_left".to_owned() => *inclusive_left_id
-            ],
-            variant: Some(proto::component::Variant::from(proto::Bin {
-                side: self.side.clone()
-            })),
-            omit: true,
-            batch: component.batch,
-        });
+
+        let traversal;
+        match (component.arguments.get("edges"), component.arguments.get("categories")) {
+
+            (Some(edges_id), None) => {
+                // bin
+                let inclusive_left_id = component.arguments.get("inclusive_left")
+                    .ok_or::<Error>("inclusive_left is a required argument to DPHistogram".into())?;
+                current_id += 1;
+                let id_bin = current_id.clone();
+                computation_graph.insert(id_bin, proto::Component {
+                    arguments: hashmap![
+                        "data".to_owned() => data_id,
+                        "edges".to_owned() => *edges_id,
+                        "null".to_owned() => *null_id,
+                        "inclusive_left".to_owned() => *inclusive_left_id
+                    ],
+                    variant: Some(proto::component::Variant::from(proto::Bin {
+                        side: self.side.clone()
+                    })),
+                    omit: true,
+                    batch: component.batch,
+                });
+                data_id = id_bin.clone();
+                traversal = vec![id_bin.clone()];
+            }
+
+            (None, Some(categories_id)) => {
+                // clamp
+                current_id += 1;
+                let id_clamp = current_id.clone();
+                computation_graph.insert(id_clamp, proto::Component {
+                    arguments: hashmap![
+                        "data".to_owned() => data_id,
+                        "categories".to_owned() => *categories_id,
+                        "null".to_owned() => *null_id
+                    ],
+                    variant: Some(proto::component::Variant::from(proto::Clamp {})),
+                    omit: true,
+                    batch: component.batch,
+                });
+                data_id = id_clamp.clone();
+                traversal = vec![id_clamp.clone()];
+            }
+
+            (None, None) => {
+                let data_property = properties.get("data")
+                    .ok_or("data: missing")?.get_arraynd()
+                    .map_err(prepend("data:"))?.clone();
+
+                if data_property.get_categories().is_err() {
+                    return Err("either edges or categories must be supplied".into())
+                }
+
+                traversal = Vec::<u32>::new();
+            }
+            _ => return Err("either edges or categories must be supplied".into())
+        }
 
         // dp_count
         computation_graph.insert(component_id.clone(), proto::Component {
             arguments: hashmap![
-                "data".to_owned() => id_bin,
+                "data".to_owned() => data_id,
                 "count_min".to_owned() => *count_min_id,
                 "count_max".to_owned() => *count_max_id
             ],
@@ -94,7 +131,7 @@ impl Expandable for proto::DpHistogram {
             computation_graph,
             properties: HashMap::new(),
             releases: HashMap::new(),
-            traversal: vec![id_bin]
+            traversal
         })
     }
 }

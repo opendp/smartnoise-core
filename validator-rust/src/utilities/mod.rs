@@ -7,7 +7,7 @@ use crate::errors::*;
 
 use crate::proto;
 
-use crate::base::{Release, Value, ValueProperties, Sensitivity, NodeProperties, ArrayND};
+use crate::base::{Release, Value, ValueProperties, SensitivitySpace, NodeProperties};
 use std::collections::{HashMap, HashSet};
 use crate::utilities::serial::{parse_release, parse_value_properties, serialize_value, parse_value};
 use crate::utilities::inference::infer_property;
@@ -390,10 +390,6 @@ pub fn broadcast_privacy_usage(usages: &Vec<proto::PrivacyUsage>, length: usize)
         bail!("{} privacy parameters passed when {} were required", usages.len(), length);
     }
 
-    if usages.len() == 0 {
-        bail!("privacy parameters are required");
-    }
-
     Ok(match usages[0].distance.clone().ok_or("distance must be defined on a privacy usage")? {
         proto::privacy_usage::Distance::DistancePure(pure) => (0..length)
             .map(|_| proto::PrivacyUsage {
@@ -411,6 +407,21 @@ pub fn broadcast_privacy_usage(usages: &Vec<proto::PrivacyUsage>, length: usize)
     })
 }
 
+pub fn broadcast_ndarray<T: Clone>(value: &ArrayD<T>, shape: &[usize]) -> Result<ArrayD<T>> {
+    if value.shape() == shape {
+        return Ok(value.clone())
+    }
+
+    if value.len() != 1 {
+        let length = shape.iter().cloned().fold1(|a, b| a * b).unwrap_or(0);
+        bail!("{} values passed when {} were required", value.len(), length);
+    }
+
+    let value = value.first().unwrap();
+
+    Ok(Array::from_shape_fn(shape, |_| value.clone()))
+}
+
 #[doc(hidden)]
 pub fn prepend(text: &str) -> impl Fn(Error) -> Error + '_ {
     move |e| format!("{} {}", text, e).into()
@@ -419,7 +430,7 @@ pub fn prepend(text: &str) -> impl Fn(Error) -> Error + '_ {
 
 /// Utility function for building component expansions for dp mechanisms
 pub fn expand_mechanism(
-    sensitivity_type: &Sensitivity,
+    sensitivity_type: &SensitivitySpace,
     privacy_definition: &proto::PrivacyDefinition,
     component: &proto::Component,
     properties: &NodeProperties,
@@ -438,10 +449,10 @@ pub fn expand_mechanism(
     let aggregator = data_property.aggregator.clone()
         .ok_or::<Error>("aggregator: missing".into())?;
 
-    let sensitivity = Value::ArrayND(ArrayND::F64(Array::from(aggregator.component
-        .compute_sensitivity(privacy_definition,
-                             &aggregator.properties,
-                             &sensitivity_type)?).into_dyn()));
+    let sensitivity = aggregator.component.compute_sensitivity(
+        privacy_definition,
+        &aggregator.properties,
+        &sensitivity_type)?;
 
     current_id += 1;
     let id_sensitivity = current_id.clone();

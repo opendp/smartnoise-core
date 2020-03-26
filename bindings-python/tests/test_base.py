@@ -94,10 +94,9 @@ def test_dp_linear_stats(run=True):
             count_max=10000
         )
         analysis.release()
-        # print(num_records.properties)
-        print(num_records.get_accuracy(alpha=.05))
-        raise ValueError("test")
+
         print("number of records:", num_records.value)
+        # print(num_records.properties)
 
         vars = op.cast(dataset_pums[["age", "income"]], type="float")
 
@@ -190,6 +189,18 @@ def test_dp_linear_stats(run=True):
 
         analysis.release()
         print("laplace quantile:", custom_quantile.value)
+
+        age_histogram = op.dp_histogram(
+            op.cast(age, type='int', min=0, max=100),
+            edges=list(range(0, 150, 10)),
+            count_max=300,
+            count_min=0,
+            null=150,
+            privacy_usage={'epsilon': 2.}
+        )
+
+        analysis.release()
+        print("age histogram: ", age_histogram.value)
 
 
     if run:

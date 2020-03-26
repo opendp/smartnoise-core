@@ -60,6 +60,7 @@ message HashmapProperties {
     I64Null num_records = 1;
     bool disjoint = 2;
     HashmapValueProperties value_properties = 3;
+    bool columnar = 4;
 }
 
 message HashmapValueProperties {
@@ -109,7 +110,9 @@ message NatureCategorical {
     Array2dJagged categories = 1;
 }
 
-message Vector2DJaggedProperties {}
+message Vector2DJaggedProperties {
+    bool releasable = 1;
+}
 
 
 message GraphProperties {

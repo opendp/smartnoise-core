@@ -56,11 +56,11 @@ impl Component for proto::Cast {
             DataType::I64 => {
                 // min must be defined, for imputation of values that won't cast
                 public_arguments.get("min")
-                    .ok_or::<Error>("min: missing, must be public".into())?.get_first_str()
+                    .ok_or::<Error>("min: missing, must be public".into())?.get_first_i64()
                     .map_err(prepend("type:"))?;
                 // max must be defined
                 public_arguments.get("max")
-                    .ok_or::<Error>("max: missing, must be public".into())?.get_first_str()
+                    .ok_or::<Error>("max: missing, must be public".into())?.get_first_i64()
                     .map_err(prepend("type:"))?;
                 data_property.nature = None;
                 data_property.nullity = false;

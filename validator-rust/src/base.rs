@@ -120,41 +120,7 @@ impl From<HashMap<String, Value>> for Value {
     }
 }
 
-impl From<HashMap<bool, ValueProperties>> for Hashmap<ValueProperties> {
-    fn from(value: HashMap<bool, ValueProperties>) -> Self {
-        Hashmap::<ValueProperties>::Bool(value)
-    }
-}
 
-impl From<HashMap<i64, ValueProperties>> for Hashmap<ValueProperties> {
-    fn from(value: HashMap<i64, ValueProperties>) -> Self {
-        Hashmap::<ValueProperties>::I64(value)
-    }
-}
-
-impl From<HashMap<String, ValueProperties>> for Hashmap<ValueProperties> {
-    fn from(value: HashMap<String, ValueProperties>) -> Self {
-        Hashmap::<ValueProperties>::Str(value)
-    }
-}
-
-impl From<ArrayNDProperties> for ValueProperties {
-    fn from(value: ArrayNDProperties) -> Self {
-        ValueProperties::ArrayND(value)
-    }
-}
-
-impl From<HashmapProperties> for ValueProperties {
-    fn from(value: HashmapProperties) -> Self {
-        ValueProperties::Hashmap(value)
-    }
-}
-
-impl From<Vector2DJaggedProperties> for ValueProperties {
-    fn from(value: Vector2DJaggedProperties) -> Self {
-        ValueProperties::Vector2DJagged(value)
-    }
-}
 
 impl From<ndarray::ShapeError> for Error {
     fn from(_: ndarray::ShapeError) -> Self {
@@ -292,6 +258,32 @@ impl ArrayND {
             _ => Err("value must be a bool".into())
         }
     }
+
+    pub fn get_shape(&self) -> Vec<i64> {
+        match self {
+            ArrayND::Bool(array) => array.shape().to_owned(),
+            ArrayND::F64(array) => array.shape().to_owned(),
+            ArrayND::I64(array) => array.shape().to_owned(),
+            ArrayND::Str(array) => array.shape().to_owned()
+        }.iter().map(|arr| arr.clone() as i64).collect()
+    }
+    pub fn get_num_records(&self) -> Result<i64> {
+        let shape = self.get_shape();
+        match shape.len() {
+            0 => Ok(1),
+            1 | 2 => Ok(shape[0]),
+            _ => Err("arrays may have max dimensionality of 2".into())
+        }
+    }
+    pub fn get_num_columns(&self) -> Result<i64> {
+        let shape = self.get_shape();
+        match shape.len() {
+            0 => Ok(1),
+            1 => Ok(1),
+            2 => Ok(shape[1]),
+            _ => Err("arrays may have max dimensionality of 2".into())
+        }
+    }
 }
 
 /// The universal jagged array representation.
@@ -345,6 +337,30 @@ impl Vector2DJagged {
             _ => Err("expected bool type on a non-bool Vector2DJagged".into())
         }
     }
+    pub fn get_num_columns(&self) -> i64 {
+        match self {
+            Vector2DJagged::Bool(vector) => vector.len() as i64,
+            Vector2DJagged::F64(vector) => vector.len() as i64,
+            Vector2DJagged::I64(vector) => vector.len() as i64,
+            Vector2DJagged::Str(vector) => vector.len() as i64,
+        }
+    }
+    pub fn get_lengths_option(&self) -> Vec<Option<i64>> {
+        match self {
+            Vector2DJagged::Bool(value) => value.iter()
+                .map(|column| column.as_ref().map(|col| col.len() as i64)).collect(),
+            Vector2DJagged::F64(value) => value.iter()
+                .map(|column| column.as_ref().map(|col| col.len() as i64)).collect(),
+            Vector2DJagged::I64(value) => value.iter()
+                .map(|column| column.as_ref().map(|col| col.len() as i64)).collect(),
+            Vector2DJagged::Str(value) => value.iter()
+                .map(|column| column.as_ref().map(|col| col.len() as i64)).collect()
+        }
+    }
+    pub fn get_lengths(&self) -> Result<Vec<i64>> {
+        self.get_lengths_option().iter().cloned().collect::<Option<Vec<i64>>>()
+            .ok_or("length is not defined for every column".into())
+    }
 }
 
 /// The universal hash-map representation.
@@ -358,6 +374,49 @@ pub enum Hashmap<T> {
     Bool(HashMap<bool, T>),
     I64(HashMap<i64, T>),
     Str(HashMap<String, T>),
+}
+
+impl<T> Hashmap<T> {
+    pub fn get_num_keys(&self) -> i64 {
+        match self {
+            Hashmap::Bool(value) => value.keys().len() as i64,
+            Hashmap::I64(value) => value.keys().len() as i64,
+            Hashmap::Str(value) => value.keys().len() as i64,
+        }
+    }
+    pub fn get_values(&self) -> Vec<&T> {
+        match self {
+            Hashmap::Bool(value) => value.values().collect(),
+            Hashmap::I64(value) => value.values().collect(),
+            Hashmap::Str(value) => value.values().collect(),
+        }
+    }
+    pub fn from_values(&self, values: Vec<T>) -> Hashmap<T> where T: Clone {
+        match self {
+            Hashmap::Bool(value) => value.keys().into_iter().cloned()
+                .zip(values).collect::<HashMap<bool, T>>().into(),
+            Hashmap::I64(value) => value.keys().into_iter().cloned()
+                .zip(values).collect::<HashMap<i64, T>>().into(),
+            Hashmap::Str(value) => value.keys().into_iter().cloned()
+                .zip(values).collect::<HashMap<String, T>>().into(),
+        }
+    }
+}
+
+impl<T> From<HashMap<i64, T>> for Hashmap<T> {
+    fn from(value: HashMap<i64, T>) -> Self {
+        Hashmap::<T>::I64(value)
+    }
+}
+impl<T> From<HashMap<bool, T>> for Hashmap<T> {
+    fn from(value: HashMap<bool, T>) -> Self {
+        Hashmap::<T>::Bool(value)
+    }
+}
+impl<T> From<HashMap<String, T>> for Hashmap<T> {
+    fn from(value: HashMap<String, T>) -> Self {
+        Hashmap::<T>::Str(value)
+    }
 }
 
 /// Derived properties for the universal value.
@@ -396,6 +455,25 @@ impl ValueProperties {
 }
 
 
+impl From<ArrayNDProperties> for ValueProperties {
+    fn from(value: ArrayNDProperties) -> Self {
+        ValueProperties::ArrayND(value)
+    }
+}
+
+impl From<HashmapProperties> for ValueProperties {
+    fn from(value: HashmapProperties) -> Self {
+        ValueProperties::Hashmap(value)
+    }
+}
+
+impl From<Vector2DJaggedProperties> for ValueProperties {
+    fn from(value: Vector2DJaggedProperties) -> Self {
+        ValueProperties::Vector2DJagged(value)
+    }
+}
+
+
 /// Derived properties for the universal Hashmap.
 ///
 /// The HashmapProperties has a one-to-one mapping to a protobuf HashmapProperties.
@@ -406,7 +484,26 @@ pub struct HashmapProperties {
     /// records within the values of the hashmap come from a partition of the rows
     pub disjoint: bool,
     /// properties for each of the values in the hashmap
-    pub value_properties: Hashmap<ValueProperties>,
+    pub properties: Hashmap<ValueProperties>,
+    pub columnar: bool,
+}
+
+impl HashmapProperties {
+    pub fn assert_is_disjoint(&self) -> Result<()> {
+        match self.disjoint {
+            false => Err("partitions must be disjoint".into()),
+            true => Ok(())
+        }
+    }
+    pub fn assert_is_not_columnar(&self) -> Result<()> {
+        match self.columnar {
+            true => Err("partitions must not be columnar".into()),
+            false => Ok(())
+        }
+    }
+    pub fn get_num_records(&self) -> Result<i64> {
+        self.num_records.ok_or::<Error>("number of rows is not defined".into())
+    }
 }
 
 
@@ -440,7 +537,9 @@ pub struct ArrayNDProperties {
 ///
 /// The Vector2DJagged has a one-to-one mapping to a protobuf Vector2DJagged.
 #[derive(Clone, Debug)]
-pub struct Vector2DJaggedProperties {}
+pub struct Vector2DJaggedProperties {
+    pub releasable: bool
+}
 
 impl ArrayNDProperties {
     pub fn get_min_f64_option(&self) -> Result<Vec<Option<f64>>> {
@@ -621,7 +720,7 @@ pub enum Vector1D {
 }
 
 /// Accepted spaces for sensitivity to be computed within.
-pub enum Sensitivity {
+pub enum SensitivitySpace {
     /// KNorm(1) is L1, KNorm(2) is L2.
     KNorm(u32),
     /// Infinity norm.

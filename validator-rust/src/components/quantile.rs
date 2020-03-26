@@ -6,9 +6,10 @@ use std::collections::HashMap;
 use crate::{proto, base};
 
 use crate::components::{Component, Aggregator};
-use crate::base::{Value, NodeProperties, AggregatorProperties, Sensitivity, ValueProperties};
+use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties};
 
 use crate::utilities::prepend;
+use ndarray::prelude::*;
 
 
 impl Component for proto::Quantile {
@@ -47,8 +48,8 @@ impl Aggregator for proto::Quantile {
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
-        sensitivity_type: &Sensitivity,
-    ) -> Result<Vec<f64>> {
+        sensitivity_type: &SensitivitySpace,
+    ) -> Result<Value> {
         let data_property = properties.get("data")
             .ok_or("data: missing")?.get_arraynd()
             .map_err(prepend("data:"))?.clone();
@@ -58,21 +59,24 @@ impl Aggregator for proto::Quantile {
 
 
         match sensitivity_type {
-            Sensitivity::KNorm(k) => {
+            SensitivitySpace::KNorm(k) => {
                 if k != &1 {
                     return Err("Quantile sensitivity is only implemented for KNorm of 1".into());
                 }
                 let min = data_property.get_min_f64()?;
                 let max = data_property.get_max_f64()?;
 
-                Ok(min.iter()
-                    .zip(max)
+                let row_sensitivity = min.iter().zip(max.iter())
                     .map(|(min, max)| (max - min))
-                    .collect())
+                    .collect::<Vec<f64>>();
+
+                Ok(Array::from(row_sensitivity).into_dyn().into())
             }
-            Sensitivity::Exponential => {
+            SensitivitySpace::Exponential => {
                 let num_columns = data_property.get_num_columns()?;
-                Ok((0..num_columns).map(|_| 1.).collect())
+                let row_sensitivity = (0..num_columns).map(|_| 1.).collect::<Vec<f64>>();
+
+                Ok(Array::from(row_sensitivity).into_dyn().into())
             },
             _ => return Err("Quantile sensitivity is not implemented for the specified sensitivity type".into())
         }

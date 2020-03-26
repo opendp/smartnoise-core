@@ -8,7 +8,7 @@ use crate::components::{Aggregator};
 use crate::{proto, base};
 
 use crate::components::{Component, Expandable};
-use crate::base::{Value, NodeProperties, Sensitivity, ValueProperties};
+use crate::base::{Value, NodeProperties, SensitivitySpace, ValueProperties};
 use crate::utilities::{prepend, expand_mechanism};
 
 
@@ -31,7 +31,7 @@ impl Component for proto::SimpleGeometricMechanism {
         aggregator.component.compute_sensitivity(
             &privacy_definition,
             &aggregator.properties,
-            &Sensitivity::KNorm(1))?;
+            &SensitivitySpace::KNorm(1))?;
 
         data_property.aggregator = None;
         data_property.releasable = true;
@@ -57,7 +57,7 @@ impl Expandable for proto::SimpleGeometricMechanism {
         maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
         expand_mechanism(
-            &Sensitivity::KNorm(1),
+            &SensitivitySpace::KNorm(1),
             privacy_definition,
             component,
             properties,

@@ -216,11 +216,12 @@ pub fn parse_hashmap_properties(value: &proto::HashmapProperties) -> HashmapProp
     HashmapProperties {
         num_records: parse_i64_null(&value.num_records.clone().unwrap()),
         disjoint: false,
-        value_properties: match value.value_properties.clone().unwrap().variant.unwrap() {
+        properties: match value.value_properties.clone().unwrap().variant.unwrap() {
             proto::hashmap_value_properties::Variant::String(value) => parse_hashmap_properties_str(&value),
             proto::hashmap_value_properties::Variant::Bool(value) => parse_hashmap_properties_bool(&value),
             proto::hashmap_value_properties::Variant::I64(value) => parse_hashmap_properties_i64(&value),
-        }
+        },
+        columnar: value.columnar
     }
 }
 
@@ -259,8 +260,10 @@ pub fn parse_arraynd_properties(value: &proto::ArrayNdProperties) -> ArrayNDProp
     }
 }
 
-pub fn parse_array2d_jagged_properties(_value: &proto::Vector2DJaggedProperties) -> Vector2DJaggedProperties {
-    Vector2DJaggedProperties {}
+pub fn parse_array2d_jagged_properties(value: &proto::Vector2DJaggedProperties) -> Vector2DJaggedProperties {
+    Vector2DJaggedProperties {
+        releasable: value.releasable
+    }
 }
 
 
@@ -517,12 +520,13 @@ pub fn serialize_hashmap_properties(value: &HashmapProperties) -> proto::Hashmap
         num_records: Some(serialize_i64_null(&value.num_records)),
         disjoint: value.disjoint,
         value_properties: Some(proto::HashmapValueProperties {
-            variant: Some(match value.value_properties.clone() {
+            variant: Some(match value.properties.clone() {
                 Hashmap::Str(value) => proto::hashmap_value_properties::Variant::String(serialize_hashmap_properties_str(&value)),
                 Hashmap::I64(value) => proto::hashmap_value_properties::Variant::I64(serialize_hashmap_properties_i64(&value)),
                 Hashmap::Bool(value) => proto::hashmap_value_properties::Variant::Bool(serialize_hashmap_properties_bool(&value)),
             })
-        })
+        }),
+        columnar: value.columnar
     }
 }
 
@@ -562,8 +566,10 @@ pub fn serialize_arraynd_properties(value: &ArrayNDProperties) -> proto::ArrayNd
     }
 }
 
-pub fn serialize_vector2d_jagged_properties(_value: &Vector2DJaggedProperties) -> proto::Vector2DJaggedProperties {
-    proto::Vector2DJaggedProperties {}
+pub fn serialize_vector2d_jagged_properties(value: &Vector2DJaggedProperties) -> proto::Vector2DJaggedProperties {
+    proto::Vector2DJaggedProperties {
+        releasable: value.releasable
+    }
 }
 
 pub fn serialize_value_properties(value: &ValueProperties) -> proto::ValueProperties {

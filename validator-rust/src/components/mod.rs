@@ -48,7 +48,7 @@ mod variance;
 
 use std::collections::HashMap;
 
-use crate::base::{Value, NodeProperties, Sensitivity, ValueProperties};
+use crate::base::{Value, NodeProperties, SensitivitySpace, ValueProperties};
 use crate::proto;
 use crate::utilities::json::{JSONRelease};
 
@@ -138,8 +138,8 @@ pub trait Aggregator {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
-        sensitivity_type: &Sensitivity
-    ) -> Result<Vec<f64>>;
+        sensitivity_type: &SensitivitySpace
+    ) -> Result<Value>;
 }
 
 /// Accuracy component trait
@@ -276,7 +276,7 @@ impl Expandable for proto::component::Variant {
 
         expand_component!(
             // INSERT COMPONENT LIST
-            Clamp, DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMedian, DpMinimum,
+            Clamp, Count, DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMedian, DpMinimum,
             DpMomentRaw, DpSum, DpVariance, Impute, ExponentialMechanism, GaussianMechanism,
             LaplaceMechanism, SimpleGeometricMechanism, Resize,
 
@@ -302,8 +302,8 @@ impl Aggregator for proto::component::Variant {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
-        sensitivity_type: &Sensitivity
-    ) -> Result<Vec<f64>> {
+        sensitivity_type: &SensitivitySpace
+    ) -> Result<Value> {
         macro_rules! compute_sensitivity {
             ($( $variant:ident ),*) => {
                 {

@@ -6,9 +6,9 @@ use std::collections::HashMap;
 use crate::{proto, base};
 
 use crate::components::{Component, Aggregator};
-use crate::base::{Value, NodeProperties, AggregatorProperties, Sensitivity, ValueProperties};
+use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties};
 use crate::utilities::prepend;
-
+use ndarray::prelude::*;
 
 impl Component for proto::Variance {
     fn propagate_property(
@@ -47,11 +47,11 @@ impl Aggregator for proto::Variance {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
-        sensitivity_type: &Sensitivity
-    ) -> Result<Vec<f64>> {
+        sensitivity_type: &SensitivitySpace
+    ) -> Result<Value> {
 
         match sensitivity_type {
-            Sensitivity::KNorm(k) => {
+            SensitivitySpace::KNorm(k) => {
 
                 let data_property = properties.get("data")
                     .ok_or("data: missing")?.get_arraynd()
@@ -78,9 +78,11 @@ impl Aggregator for proto::Variance {
                     _ => return Err("KNorm sensitivity is only supported in L1 and L2 spaces".into())
                 };
 
-                Ok(data_min.iter().zip(data_max.iter())
+                let row_sensitivity = data_min.iter().zip(data_max.iter())
                     .map(|(min, max)| ((max - min).powi(2) * scaling_constant).powi(*k as i32))
-                    .collect())
+                    .collect::<Vec<f64>>();
+
+                Ok(Array::from(row_sensitivity).into_dyn().into())
             },
             _ => Err("Variance sensitivity is only implemented for KNorm of 1".into())
         }

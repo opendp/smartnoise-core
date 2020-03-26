@@ -440,7 +440,7 @@ class Analysis(object):
             return value_pb2.Value(array_2d_jagged=value_pb2.Array2dJagged(
                 data=[value_pb2.Array1dOption(option=None if column is None else make_array1d(np.array(column))) for
                       column in value],
-                data_type=value_pb2.Array2dJagged.DataType
+                data_type=value_pb2.DataType
                     .Value({
                                np.bool: "BOOL",
                                np.int64: "I64",
@@ -482,7 +482,7 @@ class Analysis(object):
                     return np.array(data).reshape(value.array_nd.shape)
                 return data[0]
 
-        if value.HasField("hashmap_string"):
+        if value.HasField("hashmap"):
             return {k: Analysis._parse_value_proto(v) for k, v in value.hashmap_string.data.items()}
 
         if value.HasField("array_2d_jagged"):

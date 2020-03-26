@@ -6,9 +6,9 @@ use std::collections::HashMap;
 use crate::{proto, base};
 
 use crate::components::{Component, Aggregator};
-use crate::base::{Value, NodeProperties, AggregatorProperties, Sensitivity, ValueProperties};
+use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties};
 use crate::utilities::prepend;
-
+use ndarray::prelude::*;
 
 impl Component for proto::Mean {
     fn propagate_property(
@@ -24,7 +24,7 @@ impl Component for proto::Mean {
         // save a snapshot of the state when aggregating
         data_property.aggregator = Some(AggregatorProperties {
             component: proto::component::Variant::from(self.clone()),
-            properties: properties.clone()
+            properties: properties.clone(),
         });
 
         data_property.num_records = Some(1);
@@ -45,12 +45,10 @@ impl Aggregator for proto::Mean {
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
-        sensitivity_type: &Sensitivity
-    ) -> Result<Vec<f64>> {
-
+        sensitivity_type: &SensitivitySpace,
+    ) -> Result<Value> {
         match sensitivity_type {
-            Sensitivity::KNorm(k) => {
-
+            SensitivitySpace::KNorm(k) => {
                 let data_property = properties.get("data")
                     .ok_or("data: missing")?.get_arraynd()
                     .map_err(prepend("data:"))?.clone();
@@ -63,14 +61,15 @@ impl Aggregator for proto::Mean {
 
                 // AddRemove vs. Substitute share the same bounds
 
-                match k {
-                    1 | 2 => Ok(data_min.iter()
-                        .zip(data_max.iter())
+                let row_sensitivity = match k {
+                    1 | 2 => data_min.iter().zip(data_max.iter())
                         .map(|(min, max)| ((max - min) / data_n).powi(*k as i32))
-                        .collect()),
-                    _ => Err("KNorm sensitivity is only supported in L1 and L2 spaces".into())
-                }
-            },
+                        .collect::<Vec<f64>>(),
+                    _ => return Err("KNorm sensitivity is only supported in L1 and L2 spaces".into())
+                };
+
+                Ok(Array::from(row_sensitivity).into_dyn().into())
+            }
             _ => Err("Mean sensitivity is only implemented for KNorm".into())
         }
     }

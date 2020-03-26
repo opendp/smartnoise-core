@@ -37,12 +37,13 @@ impl Component for proto::Partition {
                 HashmapProperties {
                     num_records: data_property.num_records,
                     disjoint: true,
-                    value_properties: match categories {
+                    properties: match categories {
                         Vector2DJagged::Bool(categories) => broadcast_partitions(&categories, &data_property)?.into(),
                         Vector2DJagged::Str(categories) => broadcast_partitions(&categories, &data_property)?.into(),
                         Vector2DJagged::I64(categories) => broadcast_partitions(&categories, &data_property)?.into(),
                         _ => return Err("partitioning based on floats is not supported".into())
-                    }
+                    },
+                    columnar: false
                 }
             },
             None => {
@@ -62,11 +63,12 @@ impl Component for proto::Partition {
                 HashmapProperties {
                     num_records: data_property.num_records,
                     disjoint: false,
-                    value_properties: lengths.iter().enumerate().map(|(index, partition_num_records)| {
+                    properties: lengths.iter().enumerate().map(|(index, partition_num_records)| {
                         let mut partition_property = data_property.clone();
                         partition_property.num_records = partition_num_records.clone();
                         (index as i64, ValueProperties::ArrayND(partition_property))
-                    }).collect::<HashMap<i64, ValueProperties>>().into()
+                    }).collect::<HashMap<i64, ValueProperties>>().into(),
+                    columnar: false
                 }
             }
         }.into())

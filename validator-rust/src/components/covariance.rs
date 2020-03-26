@@ -6,8 +6,9 @@ use std::collections::HashMap;
 use crate::{proto, base};
 
 use crate::components::{Component, Aggregator};
-use crate::base::{Value, NodeProperties, AggregatorProperties, Sensitivity, ValueProperties};
+use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties};
 use crate::utilities::prepend;
+use ndarray::prelude::*;
 
 impl Component for proto::Covariance {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
@@ -82,11 +83,11 @@ impl Aggregator for proto::Covariance {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
-        sensitivity_type: &Sensitivity,
-    ) -> Result<Vec<f64>> {
+        sensitivity_type: &SensitivitySpace,
+    ) -> Result<Value> {
 
         match sensitivity_type {
-            Sensitivity::KNorm(k) => {
+            SensitivitySpace::KNorm(k) => {
 
                 let data_n;
                 let differences = match (properties.get("data"), properties.get("left"), properties.get("right")) {
@@ -161,9 +162,11 @@ impl Aggregator for proto::Covariance {
                     _ => return Err("KNorm sensitivity is only supported in L1 and L2 spaces".into())
                 };
 
-                Ok(differences.iter()
+                let row_sensitivity = differences.iter()
                     .map(|difference| (difference * scaling_constant).powi(*k as i32))
-                    .collect())
+                    .collect::<Vec<f64>>();
+
+                Ok(Array::from(row_sensitivity).into_dyn().into())
             },
             _ => Err("Covariance sensitivity is only implemented for KNorm".into())
         }

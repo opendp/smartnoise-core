@@ -33,9 +33,9 @@ pub extern "C" fn release(
             Ok(request) => match super::release(&request) {
                 Ok(release) => Some(proto::response_release::Value::Data(release)),
                 Err(err) => match request.stack_trace {
-                    false =>
-                        Some(proto::response_release::Value::Error(serialize_error(err))),
                     true =>
+                        Some(proto::response_release::Value::Error(serialize_error(err))),
+                    false =>
                         Some(proto::response_release::Value::Error(serialize_error("unspecified error while executing analysis".into())))
                 }
             }

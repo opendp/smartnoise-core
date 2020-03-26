@@ -95,6 +95,7 @@ pub fn execute_graph(analysis: &proto::Analysis,
         let public_arguments = node_properties.iter()
             .filter(|(_k, v)| match v.variant.clone().unwrap() {
                 proto::value_properties::Variant::Arraynd(v) => v.releasable,
+                proto::value_properties::Variant::Vector2djagged(v) => v.releasable,
                 _ => false
             })
             .map(|(k, _v)| (k.clone(), release
@@ -153,6 +154,7 @@ pub fn execute_graph(analysis: &proto::Analysis,
                     let releasable = match graph_properties.get(argument_node_id) {
                         Some(properties) => match properties.variant.clone().unwrap() {
                             proto::value_properties::Variant::Arraynd(v) => v.releasable,
+                            proto::value_properties::Variant::Vector2djagged(v) => v.releasable,
                             _=> false
                         },
                         None => false
@@ -172,6 +174,7 @@ pub fn execute_graph(analysis: &proto::Analysis,
         let releasable = match graph_properties.get(node_id) {
             Some(properties) => match properties.variant.clone().unwrap() {
                 proto::value_properties::Variant::Arraynd(v) => v.releasable,
+                proto::value_properties::Variant::Vector2djagged(v) => v.releasable,
                 _ => false
             },
             None => false

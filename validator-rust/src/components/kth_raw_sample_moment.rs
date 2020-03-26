@@ -6,9 +6,9 @@ use std::collections::HashMap;
 use crate::{proto, base};
 
 use crate::components::{Component, Aggregator};
-use crate::base::{Value, NodeProperties, AggregatorProperties, Sensitivity, ValueProperties};
+use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties};
 use crate::utilities::prepend;
-
+use ndarray::prelude::*;
 
 impl Component for proto::KthRawSampleMoment {
     fn propagate_property(
@@ -43,14 +43,14 @@ impl Aggregator for proto::KthRawSampleMoment {
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
-        sensitivity_type: &Sensitivity
-    ) -> Result<Vec<f64>> {
+        sensitivity_type: &SensitivitySpace
+    ) -> Result<Value> {
         let data_property = properties.get("data")
             .ok_or("data: missing")?.get_arraynd()
             .map_err(prepend("data:"))?.clone();
 
         match sensitivity_type {
-            Sensitivity::KNorm(k) => {
+            SensitivitySpace::KNorm(k) => {
                 if k != &1 {
                     return Err("KthRawSampleMoment sensitivity is only implemented for KNorm of 1".into())
                 }
@@ -58,10 +58,11 @@ impl Aggregator for proto::KthRawSampleMoment {
                 let max = data_property.get_max_f64()?;
                 let num_records = data_property.get_num_records()?;
 
-                Ok(min.iter()
-                    .zip(max)
+                let row_sensitivity = min.iter().zip(max.iter())
                     .map(|(min, max)| (max - min).powi(self.k as i32) / (num_records as f64))
-                    .collect())
+                    .collect::<Vec<f64>>();
+
+                Ok(Array::from(row_sensitivity).into_dyn().into())
             },
             _ => return Err("KthRawSampleMoment sensitivity is only implemented for KNorm of 1".into())
         }

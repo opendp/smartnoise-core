@@ -10,10 +10,6 @@
     "categories": {
       "type": "Jagged",
       "default": "None"
-    },
-    "by": {
-      "type": "Array",
-      "default": "None"
     }
   },
   "id": "Count",
