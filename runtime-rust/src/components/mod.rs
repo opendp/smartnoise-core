@@ -20,6 +20,7 @@ pub mod cast;
 pub mod clamp;
 pub mod count;
 pub mod covariance;
+pub mod digitize;
 pub mod filter;
 pub mod histogram;
 pub mod impute;
@@ -76,7 +77,7 @@ impl Evaluable for proto::component::Variant {
 
         evaluate!(
             // INSERT COMPONENT LIST
-            Bin, Cast, Clamp, Count, Covariance, Filter, Histogram, Impute, Index, KthRawSampleMoment, Maximum,
+            Bin, Cast, Clamp, Count, Covariance, Digitize, Filter, Histogram, Impute, Index, KthRawSampleMoment, Maximum,
             Materialize, Mean, Minimum, Quantile, Reshape, LaplaceMechanism, GaussianMechanism,
             SimpleGeometricMechanism, Resize, Sum, Variance,
 

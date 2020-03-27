@@ -26,14 +26,6 @@
     "count_max": {
       "type": "Array"
     },
-    "by": {
-      "nature": [
-        "continuous",
-        "categorical"
-      ],
-      "type": "Array",
-      "default": "None"
-    },
     "inclusive_left": {
       "nature": [
         "categorical"
@@ -51,10 +43,6 @@
     },
     "privacy_usage": {
       "type": "repeated PrivacyUsage"
-    },
-    "side": {
-      "type": "string",
-      "default": "'lower'"
     }
   },
   "return": {

@@ -52,29 +52,26 @@ impl Expandable for proto::DpHistogram {
         match (component.arguments.get("edges"), component.arguments.get("categories")) {
 
             (Some(edges_id), None) => {
-                // bin
+                // digitize
                 let null_id = component.arguments.get("null")
                     .ok_or::<Error>("null is a required argument to DPHistogram".into())?;
                 let inclusive_left_id = component.arguments.get("inclusive_left")
                     .ok_or::<Error>("inclusive_left is a required argument to DPHistogram when categories are not known".into())?;
                 current_id += 1;
-                let id_bin = current_id.clone();
-                computation_graph.insert(id_bin, proto::Component {
+                let id_digitize = current_id.clone();
+                computation_graph.insert(id_digitize, proto::Component {
                     arguments: hashmap![
                         "data".to_owned() => data_id,
                         "edges".to_owned() => *edges_id,
                         "null".to_owned() => *null_id,
                         "inclusive_left".to_owned() => *inclusive_left_id
                     ],
-                    variant: Some(proto::component::Variant::from(proto::Bin {
-                        digitize: true,
-                        side: self.side.clone()
-                    })),
+                    variant: Some(proto::component::Variant::from(proto::Digitize {})),
                     omit: true,
                     batch: component.batch,
                 });
-                data_id = id_bin.clone();
-                traversal.push(id_bin.clone());
+                data_id = id_digitize.clone();
+                traversal.push(id_digitize.clone());
             }
 
             (None, Some(categories_id)) => {

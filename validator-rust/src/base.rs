@@ -600,32 +600,29 @@ impl ArrayProperties {
             None => Err("categorical nature is not defined".into())
         }
     }
-    pub fn categories_lengths(&self) -> Result<Vec<Option<i64>>> {
+    pub fn categories_lengths(&self) -> Result<Vec<i64>> {
         let num_columns = self.num_columns()?;
 
         match self.categories() {
             Ok(categories) => Ok(match categories {
                 Jagged::Str(categories) =>
                     standardize_categorical_argument(&categories, &num_columns)?.iter()
-                        .map(|cats| Some(cats.len() as i64)).collect(),
+                        .map(|cats| cats.len() as i64).collect(),
                 Jagged::Bool(categories) =>
                     standardize_categorical_argument(&categories, &num_columns)?.iter()
-                        .map(|cats| Some(cats.len() as i64)).collect(),
+                        .map(|cats| cats.len() as i64).collect(),
                 Jagged::I64(categories) =>
                     standardize_categorical_argument(&categories, &num_columns)?.iter()
-                        .map(|cats| Some(cats.len() as i64)).collect(),
+                        .map(|cats| cats.len() as i64).collect(),
                 Jagged::F64(categories) =>
                     standardize_categorical_argument(&categories, &num_columns)?.iter()
-                        .map(|cats| Some(cats.len() as i64)).collect(),
+                        .map(|cats| cats.len() as i64).collect(),
             }),
-            Err(_) => Ok((0..num_columns).map(|_| Some(1)).collect())
+            Err(_) => Ok((0..num_columns).map(|_| 1).collect())
         }
     }
     pub fn assert_categorical(&self) -> Result<()> {
-        self.categories_lengths()?
-            .iter().cloned().collect::<Option<Vec<i64>>>()
-            .ok_or::<Error>("categories on all columns must be defined".into())?;
-
+        self.categories_lengths()?;
         Ok(())
     }
     pub fn assert_non_null(&self) -> Result<()> {

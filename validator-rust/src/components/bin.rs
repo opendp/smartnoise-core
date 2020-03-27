@@ -1,7 +1,7 @@
 use crate::errors::*;
 
 use std::collections::HashMap;
-use crate::base::{Nature, NodeProperties, NatureCategorical, Jagged, ValueProperties, DataType, Array};
+use crate::base::{Nature, NodeProperties, NatureCategorical, Jagged, ValueProperties, Array};
 
 use crate::proto;
 use crate::utilities::{prepend, standardize_categorical_argument, standardize_null_target_argument};
@@ -60,19 +60,6 @@ impl Component for proto::Bin {
                 }
                 _ => Err("edges: must be numeric".into())
             })?;
-
-//        if self.digitize {
-//            data_property.nature = Some(Nature::Categorical(NatureCategorical {
-//                categories: match data_property.nature.unwrap().get_categorical()?.categories {
-//                    Jagged::I64(edges.into_iter().map(|column|
-//                        Some(column.unwrap().into_iter().enumerate()
-//                            .map(|(idx, _)| idx as i64).collect()))
-//                        .collect())
-//                }
-//            }))
-//        }
-
-        data_property.data_type = DataType::F64;
 
         Ok(data_property.into())
     }

@@ -16,6 +16,7 @@ mod cast;
 mod clamp;
 mod count;
 mod covariance;
+mod digitize;
 mod dp_count;
 mod dp_variance;
 mod dp_covariance;
@@ -204,7 +205,7 @@ impl Component for proto::component::Variant {
 
         propagate_property!(
             // INSERT COMPONENT LIST
-            Bin, Cast, Clamp, Count, Covariance,
+            Bin, Cast, Clamp, Count, Covariance, Digitize,
 
             DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMedian, DpMinimum,
             DpMomentRaw, DpSum, DpVariance,
