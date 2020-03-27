@@ -113,9 +113,9 @@ pub fn clamp_numeric_float(
 /// let categories: Vec<Option<Vec<String>>> = vec![Some(vec!["a".to_string(), "b".to_string()]),
 ///                                                 Some(vec!["a".to_string(), "b".to_string()]),
 ///                                                 Some(vec!["a".to_string(), "b".to_string()])];
-/// let null_value: Vec<Option<Vec<String>>> = vec![Some(vec!["not_a_letter".to_string()]),
-///                                                 Some(vec!["not_a_letter".to_string()]),
-///                                                 Some(vec!["not_a_letter".to_string()])];
+/// let null_value: ArrayD<String> = arr1(&["not_a_letter".to_string(),
+///                                         "not_a_letter".to_string(),
+///                                         "not_a_letter".to_string()]).into_dyn();
 ///
 /// let clamped_data = clamp_categorical(&data, &categories, &null_value).unwrap();
 /// assert!(clamped_data == arr2(&[["a".to_string(), "b".to_string(), "not_a_letter".to_string()],

@@ -49,7 +49,8 @@ impl Expandable for proto::DpMedian {
         computation_graph.insert(id_median, proto::Component {
             arguments: hashmap!["data".to_owned() => *component.arguments.get("data").unwrap()],
             variant: Some(proto::component::Variant::from(proto::Quantile {
-                quantile: 0.5
+                quantile: 0.5,
+                interpolation: self.interpolation.clone()
             })),
             omit: true,
             batch: component.batch,

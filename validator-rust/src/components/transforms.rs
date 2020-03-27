@@ -1,7 +1,7 @@
 use crate::errors::*;
 
 use std::collections::HashMap;
-use crate::base::{Nature, NodeProperties, NatureCategorical, Vector1DNull, Vector2DJagged, ArrayNDProperties, ValueProperties, DataType, ArrayND};
+use crate::base::{Nature, NodeProperties, NatureCategorical, Vector1DNull, Vector2DJagged, ArrayNDProperties, ValueProperties, ArrayND};
 
 use crate::{proto, base};
 
@@ -803,51 +803,51 @@ fn broadcast<T: Clone>(data: &Vec<T>, length: &i64) -> Result<Vec<T>> {
     Ok((0..length.clone()).map(|_| data[0].clone()).collect())
 }
 
-/// Used for monotonic functions that may be either increasing or decreasing
-///
-/// A monotonically decreasing function may reverse the bounds. In this case, the min/max just needs to be sorted
-fn sort_bounds(nature: Option<Nature>, datatype: &DataType) -> Result<Option<Nature>> {
-    let nature = match &nature {
-        Some(value) => match value {
-            Nature::Continuous(continuous) => continuous,
-            Nature::Categorical(_categorical) => return Ok(nature)
-        },
-        None => return Ok(nature)
-    };
-
-    let min = match datatype {
-        DataType::F64 => Vector1DNull::F64(nature.min.get_f64()?
-            .into_iter().zip(nature.max.get_f64()?)
-            .map(|(min, max)| match (min, max) {
-                    (Some(min), Some(max)) => Some(min.min(*max)),
-                    _ => *min
-                }).collect()),
-        DataType::I64 => Vector1DNull::I64(nature.min.get_i64()?
-            .into_iter().zip(nature.max.get_i64()?)
-            .map(|(min, max)| match (min, max) {
-                (Some(min), Some(max)) => Some(*min.min(max)),
-                _ => *min
-            }).collect()),
-        _ => return Err("bounds sorting requires numeric data".into())
-    };
-
-    let max = match datatype {
-        DataType::F64 => Vector1DNull::F64(nature.min.get_f64()?
-            .into_iter().zip(nature.max.get_f64()?)
-            .map(|(min, max)| match (min, max) {
-                (Some(min), Some(max)) => Some(min.max(*max)),
-                _ => *min
-            }).collect()),
-        DataType::I64 => Vector1DNull::I64(nature.min.get_i64()?
-            .into_iter().zip(nature.max.get_i64()?)
-            .map(|(min, max)| match (min, max) {
-                (Some(min), Some(max)) => Some(*min.max(max)),
-                _ => *min
-            }).collect()),
-        _ => return Err("bounds sorting requires numeric data".into())
-    };
-
-    Ok(Some(Nature::Continuous(NatureContinuous {
-        min, max
-    })))
-}
+///// Used for monotonic functions that may be either increasing or decreasing
+/////
+///// A monotonically decreasing function may reverse the bounds. In this case, the min/max just needs to be sorted
+//fn sort_bounds(nature: Option<Nature>, datatype: &DataType) -> Result<Option<Nature>> {
+//    let nature = match &nature {
+//        Some(value) => match value {
+//            Nature::Continuous(continuous) => continuous,
+//            Nature::Categorical(_categorical) => return Ok(nature)
+//        },
+//        None => return Ok(nature)
+//    };
+//
+//    let min = match datatype {
+//        DataType::F64 => Vector1DNull::F64(nature.min.get_f64()?
+//            .into_iter().zip(nature.max.get_f64()?)
+//            .map(|(min, max)| match (min, max) {
+//                    (Some(min), Some(max)) => Some(min.min(*max)),
+//                    _ => *min
+//                }).collect()),
+//        DataType::I64 => Vector1DNull::I64(nature.min.get_i64()?
+//            .into_iter().zip(nature.max.get_i64()?)
+//            .map(|(min, max)| match (min, max) {
+//                (Some(min), Some(max)) => Some(*min.min(max)),
+//                _ => *min
+//            }).collect()),
+//        _ => return Err("bounds sorting requires numeric data".into())
+//    };
+//
+//    let max = match datatype {
+//        DataType::F64 => Vector1DNull::F64(nature.min.get_f64()?
+//            .into_iter().zip(nature.max.get_f64()?)
+//            .map(|(min, max)| match (min, max) {
+//                (Some(min), Some(max)) => Some(min.max(*max)),
+//                _ => *min
+//            }).collect()),
+//        DataType::I64 => Vector1DNull::I64(nature.min.get_i64()?
+//            .into_iter().zip(nature.max.get_i64()?)
+//            .map(|(min, max)| match (min, max) {
+//                (Some(min), Some(max)) => Some(*min.max(max)),
+//                _ => *min
+//            }).collect()),
+//        _ => return Err("bounds sorting requires numeric data".into())
+//    };
+//
+//    Ok(Some(Nature::Continuous(NatureContinuous {
+//        min, max
+//    })))
+//}
