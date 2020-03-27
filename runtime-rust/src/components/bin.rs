@@ -85,11 +85,10 @@ pub fn bin<T: std::fmt::Debug + Display + std::cmp::PartialOrd + Clone + Div<T, 
     // iterate over the generalized columns
     data.gencolumns_mut().into_iter()
         // pair generalized columns with arguments
-        .zip(edges.iter().zip(null.iter()))
+        .zip(edges.into_iter().zip(null.into_iter()))
         .zip(inclusive_left.iter())
         // for each pairing, iterate over the cells
-        .for_each(|((mut column, (edges, null)), inclusive_left)| {
-            let mut edges = edges.clone();
+        .for_each(|((mut column, (mut edges, null)), inclusive_left)| {
             edges.sort_by(|a, b| a.partial_cmp(b).unwrap());
             column.iter_mut()
                 // mutate the cell via the operator

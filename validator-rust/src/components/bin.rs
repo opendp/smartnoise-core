@@ -37,9 +37,8 @@ impl Component for proto::Bin {
                     let mut edges = standardize_categorical_argument(jagged, &num_columns)?;
                     let edges = nature_from_edges(&self.side, &mut edges)?;
                     data_property.nature = Some(Nature::Categorical(NatureCategorical {
-                        categories: Vector2DJagged::F64(edges.iter().zip(null.into_iter())
-                            .map(|(col, null)| {
-                                let mut col = col.clone();
+                        categories: Vector2DJagged::F64(edges.into_iter().zip(null.into_iter())
+                            .map(|(mut col, null)| {
                                 col.push(null);
                                 Some(col)
                             }).collect()),
@@ -51,9 +50,8 @@ impl Component for proto::Bin {
                     let mut edges = standardize_categorical_argument(jagged, &num_columns)?;
                     let edges = nature_from_edges(&self.side, &mut edges)?;
                     data_property.nature = Some(Nature::Categorical(NatureCategorical {
-                        categories: Vector2DJagged::I64(edges.iter().zip(null.into_iter())
-                            .map(|(col, null)| {
-                                let mut col = col.clone();
+                        categories: Vector2DJagged::I64(edges.into_iter().zip(null.into_iter())
+                            .map(|(mut col, null)| {
                                 col.push(null);
                                 Some(col)
                             }).collect()),
