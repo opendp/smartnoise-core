@@ -120,11 +120,19 @@ impl From<HashMap<String, Value>> for Value {
     }
 }
 
-
-
+impl From<std::num::TryFromIntError> for Error {
+    fn from(value: std::num::TryFromIntError) -> Self {
+        format!("{}", value).into()
+    }
+}
+impl From<ndarray_stats::errors::MinMaxError> for Error {
+    fn from(value: ndarray_stats::errors::MinMaxError) -> Self {
+        format!("min-max error: {}", value).into()
+    }
+}
 impl From<ndarray::ShapeError> for Error {
-    fn from(_: ndarray::ShapeError) -> Self {
-        "ndarray: invalid shape provided".into()
+    fn from(value: ndarray::ShapeError) -> Self {
+        format!("shape error: {:?}", value).into()
     }
 }
 
@@ -134,7 +142,7 @@ impl From<ndarray::ShapeError> for Error {
 /// ndarray ArrayD's are artificially allowed to be 0, 1 or 2-dimensional.
 /// The first axis denotes the number rows/observations. The second axis the number of columns.
 ///
-/// The ArrayND has a one-to-one mapping to a protobuf ArrayND.
+/// The Array has a one-to-one mapping to a protobuf ArrayND.
 #[derive(Clone, Debug)]
 pub enum Array {
     Bool(ArrayD<bool>),
@@ -182,7 +190,7 @@ impl Array {
                 (Some(length), Some(v)) => Ok((0..length).map(|_| v.clone()).collect()),
                 _ => Err(err_msg)
             },
-            1 => Ok(data.clone().into_dimensionality::<Ix1>().unwrap().to_vec()),
+            1 => Ok(data.clone().into_dimensionality::<Ix1>()?.to_vec()),
             _ => Err(err_msg)
         }
     }
@@ -218,7 +226,7 @@ impl Array {
                 (Some(length), Some(v)) => Ok((0..length).map(|_| v.clone()).collect()),
                 _ => Err(err_msg)
             },
-            1 => Ok(data.clone().into_dimensionality::<Ix1>().unwrap().to_vec()),
+            1 => Ok(data.clone().into_dimensionality::<Ix1>()?.to_vec()),
             _ => Err(err_msg)
         }
     }

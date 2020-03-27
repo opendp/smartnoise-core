@@ -164,8 +164,8 @@ pub fn bin<T: std::fmt::Debug + Display + std::cmp::PartialOrd + Clone + Div<T, 
 //
 //    for k in 0..n_cols {
 //        // create vector versions of data and edges
-//        let data_vec: Vec<T> = data.slice(s![k as usize, ..]).clone().into_dimensionality::<Ix1>().unwrap().to_vec();
-//        let mut sorted_edges: Vec<T> = edges.slice(s![k as usize, ..]).clone().into_dimensionality::<Ix1>().unwrap().to_vec();
+//        let data_vec: Vec<T> = data.slice(s![k as usize, ..]).clone().into_dimensionality::<Ix1>()?.to_vec();
+//        let mut sorted_edges: Vec<T> = edges.slice(s![k as usize, ..]).clone().into_dimensionality::<Ix1>()?.to_vec();
 //
 //        //  ensure edges are sorted in ascending order
 //        sorted_edges.sort_by(|a, b| a.partial_cmp(b).unwrap());

@@ -46,7 +46,7 @@ impl Evaluable for proto::Filter {
 /// ```
 pub fn filter<T: Clone + Default>(data: &ArrayD<T>, mask: &ArrayD<bool>) -> Result<ArrayD<T>> {
 
-    let columnar_mask: Array1<bool> = mask.clone().into_dimensionality::<Ix1>().unwrap();
+    let columnar_mask: Array1<bool> = mask.clone().into_dimensionality::<Ix1>()?;
 
     let mask_indices: Vec<usize> = columnar_mask.iter().enumerate()
         .filter(|(_index, &v)| v)

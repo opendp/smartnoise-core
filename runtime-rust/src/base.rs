@@ -39,7 +39,9 @@ pub fn execute_graph(analysis: &proto::Analysis,
 ) -> Result<proto::Release> {
 
     // stack for storing which nodes to evaluate next
-    let computation_graph = analysis.computation_graph.to_owned().unwrap();
+    let computation_graph = analysis.computation_graph.to_owned()
+        .ok_or::<Error>("computation_graph must be defined to execute an analysis".into())?;
+
     let mut traversal: Vec<u32> = get_sinks(&computation_graph).into_iter().collect();
 
     let mut release = serial::parse_release(release)?;
@@ -72,7 +74,8 @@ pub fn execute_graph(analysis: &proto::Analysis,
             continue;
         }
 
-        let component: proto::Component = graph.get(&node_id).unwrap().clone();
+        let component: proto::Component = graph.get(&node_id)
+            .ok_or::<Error>("attempted to retrieve a non-existent component id".into())?.clone();
         let arguments = component.to_owned().arguments;
 
         // discover if any dependencies remain uncomputed
@@ -98,8 +101,8 @@ pub fn execute_graph(analysis: &proto::Analysis,
                 proto::value_properties::Variant::Jagged(v) => v.releasable,
                 _ => false
             })
-            .map(|(k, _v)| (k.clone(), release
-                .get(component.arguments.get(k).unwrap()).unwrap().clone()))
+            .map(|(k, _v)|
+                (k.clone(), release.get(component.arguments.get(k).unwrap()).unwrap().clone()))
             .collect::<HashMap<String, Value>>();
 
 //        println!("expanding {:?}", component);
@@ -108,7 +111,7 @@ pub fn execute_graph(analysis: &proto::Analysis,
 
         // all arguments have been computed, attempt to expand the current node
         let expansion: proto::ComponentExpansion = whitenoise_validator::_expand_component(
-            &analysis.privacy_definition.to_owned().unwrap(),
+            &analysis.privacy_definition.to_owned().ok_or::<Error>("privacy_definition must be defined".into())?,
             &component,
             &mut node_properties,
             &public_arguments,

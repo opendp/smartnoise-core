@@ -8,7 +8,8 @@ use crate::errors::*;
 use crate::proto;
 
 use crate::base::{Release, Value, ValueProperties, SensitivitySpace, NodeProperties};
-use std::collections::{HashMap, HashSet};
+use std::collections::{HashMap, HashSet, BTreeSet};
+use std::hash::Hash;
 use crate::utilities::serial::{parse_release, parse_value_properties, serialize_value, parse_value};
 use crate::utilities::inference::infer_property;
 
@@ -18,6 +19,7 @@ use ndarray::prelude::*;
 // import all trait implementations
 use crate::components::*;
 use crate::utilities::array::slow_select;
+use std::iter::FromIterator;
 
 /// Retrieve the Values for each of the arguments of a component from the Release.
 pub fn get_input_arguments(
@@ -509,4 +511,8 @@ pub fn get_ith_release<T: Clone + Default>(value: &ArrayD<T>, i: &usize) -> Resu
         },
         _ => Err("releases must be 2-dimensional or less".into())
     }
+}
+
+pub fn deduplicate<T: Eq + Hash + Ord>(values: Vec<T>) -> Vec<T> {
+    BTreeSet::from_iter(values.into_iter()).into_iter().collect()
 }

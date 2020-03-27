@@ -144,7 +144,7 @@ pub fn exponential_mechanism<T>(
     let probability_vec: Vec<f64> = e_util_vec.iter().map(|x| (x / sum_e_util_vec.clone()).to_f64()).collect();
 
     // sample element relative to probability
-    let candidate_vec: Vec<T> = candidate_set.clone().into_dimensionality::<Ix1>().unwrap().to_vec();
+    let candidate_vec: Vec<T> = candidate_set.clone().into_dimensionality::<Ix1>()?.to_vec();
     let elem: T = utilities::sample_from_set(&candidate_vec, &probability_vec)?;
 
     Ok(elem)

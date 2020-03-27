@@ -54,7 +54,7 @@ impl Expandable for proto::DpCovariance {
                     .map_err(prepend("data:"))?.clone();
 
                 let num_columns = data_property.num_columns()?;
-                shape = vec![u32::try_from(num_columns).unwrap(), u32::try_from(num_columns).unwrap()];
+                shape = vec![u32::try_from(num_columns)?, u32::try_from(num_columns)?];
                 arguments = hashmap![
                     "data".to_owned() => *component.arguments.get("data").ok_or::<Error>("data must be provided as an argument".into())?
                 ];
@@ -68,7 +68,7 @@ impl Expandable for proto::DpCovariance {
                     .ok_or("data: missing")?.array()
                     .map_err(prepend("data:"))?.clone();
 
-                shape = vec![u32::try_from(left_property.num_columns()?).unwrap(), u32::try_from(right_property.num_columns()?).unwrap()];
+                shape = vec![u32::try_from(left_property.num_columns()?)?, u32::try_from(right_property.num_columns()?)?];
                 arguments = hashmap![
                     "left".to_owned() => *component.arguments.get("left").ok_or::<Error>("left must be provided as an argument".into())?,
                     "right".to_owned() => *component.arguments.get("right").ok_or::<Error>("right must be provided as an argument".into())?

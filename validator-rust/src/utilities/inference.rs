@@ -11,187 +11,157 @@ use ndarray::prelude::*;
 use ndarray_stats::QuantileExt;
 
 use itertools::Itertools;
-use std::cmp::Ordering;
 use crate::base::{Array, Value, Jagged, Nature, Vector1DNull, NatureContinuous, NatureCategorical, ValueProperties, ArrayProperties, DataType, HashmapProperties, JaggedProperties, Hashmap};
 
-use std::collections::HashMap;
+use std::collections::{HashMap};
+use crate::utilities::deduplicate;
 
-pub fn infer_min(value: &Value) -> Result<Vec<Option<f64>>> {
+pub fn infer_min(value: &Value) -> Result<Vector1DNull> {
     Ok(match value {
         Value::Array(array) => {
             match array.shape().len() as i64 {
-                0 => vec![Some(match array {
+                0 => match array {
                     Array::F64(array) =>
-                        array.first().unwrap().to_owned(),
+                        Vector1DNull::F64(vec![Some(array.first().ok_or::<Error>("min may not have length zero".into())?.to_owned())]),
                     Array::I64(array) =>
-                        array.first().unwrap().to_owned() as f64,
+                        Vector1DNull::I64(vec![Some(array.first().ok_or::<Error>("min may not have length zero".into())?.to_owned())]),
                     _ => return Err("Cannot infer numeric min on a non-numeric vector".into())
-                })],
+                },
                 1 => match array {
                     Array::F64(array) =>
-                        array.iter().map(|v| Some(*v)).collect(),
+                        Vector1DNull::F64(array.iter().map(|v| Some(*v)).collect()),
                     Array::I64(array) =>
-                        array.iter().map(|v| Some(*v as f64)).collect(),
+                        Vector1DNull::I64(array.iter().map(|v| Some(*v)).collect()),
                     _ => return Err("Cannot infer numeric min on a non-numeric vector".into())
                 },
                 2 => match array {
                     Array::F64(array) =>
-                        array.lanes(Axis(0)).into_iter().map(|col| Some(col.max().unwrap().clone())).collect(),
+                        Vector1DNull::F64(array.lanes(Axis(0)).into_iter()
+                            .map(|col| col.min().map(|v| v.clone()).map_err(|e| e.into()))
+                            .collect::<Result<Vec<f64>>>()?
+                            .into_iter().map(|v| Some(v)).collect()),
                     Array::I64(array) =>
-                        array.lanes(Axis(0)).into_iter().map(|col| Some(*col.max().unwrap() as f64)).collect(),
+                        Vector1DNull::I64(array.lanes(Axis(0)).into_iter()
+                            .map(|col| col.min().map(|v| v.clone()).map_err(|e| e.into()))
+                            .collect::<Result<Vec<i64>>>()?
+                            .into_iter().map(|v| Some(v)).collect()),
                     _ => return Err("Cannot infer numeric min on a non-numeric vector".into())
                 },
                 _ => return Err("arrays may have max dimensionality of 2".into())
             }
         },
-        Value::Hashmap(_hashmap) => {
-            let bound: Vec<Option<f64>> = vec![];
-//            hashmap.values()
-//                .map(infer_min)
-//                .for_each(|next| bound.extend(next));
-            bound
-        }
+        Value::Hashmap(_hashmap) => return Err("constraint inference is not implemented for hashmaps".into()),
         Value::Jagged(jagged) => {
             match jagged {
-                Jagged::F64(jagged) => jagged.iter().map(|col| match col {
-                    Some(col) => Some(col.iter().map(|v| v.clone()).fold1(|l, r| l.min(r)).unwrap().clone()),
+                Jagged::F64(jagged) => Vector1DNull::F64(jagged.iter().map(|col| Ok(match col {
+                    Some(col) => Some(col.iter().map(|v| v.clone()).fold1(|l, r| l.min(r))
+                        .ok_or::<Error>("attempted to infer min on an empty value".into())?.clone()),
                     None => None
-                }).collect(),
-                Jagged::I64(jagged) => jagged.iter().map(|col| match col {
-                    Some(col) => Some(*col.iter().fold1(std::cmp::min).unwrap() as f64),
+                })).collect::<Result<_>>()?),
+                Jagged::I64(jagged) => Vector1DNull::I64(jagged.iter().map(|col| Ok(match col {
+                    Some(col) => Some(*col.iter().fold1(std::cmp::min)
+                        .ok_or::<Error>("attempted to infer min on an empty value".into())?),
                     None => None
-                }).collect(),
+                })).collect::<Result<_>>()?),
                 _ => return Err("Cannot infer numeric min on a non-numeric vector".into())
             }
         }
     })
 }
-pub fn infer_max(value: &Value) -> Result<Vec<Option<f64>>> {
+pub fn infer_max(value: &Value) -> Result<Vector1DNull> {
     Ok(match value {
         Value::Array(array) => {
 
             match array.shape().len() as i64 {
-                0 => vec![Some(match array {
+                0 => match array {
                     Array::F64(array) =>
-                        array.first().unwrap().to_owned(),
+                        Vector1DNull::F64(vec![Some(array.first()
+                            .ok_or::<Error>("min may not have length zero".into())?.to_owned())]),
                     Array::I64(array) =>
-                        array.first().unwrap().to_owned() as f64,
+                        Vector1DNull::I64(vec![Some(array.first()
+                            .ok_or::<Error>("min may not have length zero".into())?.to_owned())]),
                     _ => return Err("Cannot infer numeric max on a non-numeric vector".into())
-                })],
+                },
                 1 => match array {
                     Array::F64(array) =>
-                        array.iter().map(|v| Some(*v)).collect(),
+                        Vector1DNull::F64(array.iter().map(|v| Some(*v)).collect()),
                     Array::I64(array) =>
-                        array.iter().map(|v| Some(*v as f64)).collect(),
+                        Vector1DNull::I64(array.iter().map(|v| Some(*v)).collect()),
                     _ => return Err("Cannot infer numeric max on a non-numeric vector".into())
                 },
                 2 => match array {
                     Array::F64(array) =>
-                        array.lanes(Axis(0)).into_iter().map(|col| Some(col.max().unwrap().clone())).collect(),
+                        Vector1DNull::F64(array.lanes(Axis(0)).into_iter()
+                            .map(|col| col.max().map(|v| v.clone()).map_err(|e| e.into()))
+                            .collect::<Result<Vec<f64>>>()?
+                            .into_iter().map(|v| Some(v)).collect()),
                     Array::I64(array) =>
-                        array.lanes(Axis(0)).into_iter().map(|col| Some(*col.max().unwrap() as f64)).collect(),
+                        Vector1DNull::I64(array.lanes(Axis(0)).into_iter()
+                            .map(|col| col.max().map(|v| v.clone()).map_err(|e| e.into()))
+                            .collect::<Result<Vec<i64>>>()?
+                            .into_iter().map(|v| Some(v)).collect()),
                     _ => return Err("Cannot infer numeric max on a non-numeric vector".into())
                 },
                 _ => return Err("arrays may have max dimensionality of 2".into())
             }
         },
-        Value::Hashmap(_hashmap) => return Err("max inference is not compatible with a hashmap".into()),
+        Value::Hashmap(_hashmap) => return Err("constraint inference is not implemented for hashmaps".into()),
         Value::Jagged(jagged) => {
             match jagged {
-                Jagged::F64(jagged) => jagged.iter().map(|col| match col {
-                    Some(col) => Some(col.iter().map(|x| x.clone()).fold1(|l, r| l.max(r).clone()).unwrap()),
+                Jagged::F64(jagged) => Vector1DNull::F64(jagged.iter().map(|col| Ok(match col {
+                    Some(col) => Some(col.iter().map(|x| x.clone()).fold1(|l, r| l.max(r).clone())
+                        .ok_or::<Error>("attempted to infer max on an empty value".into())?),
                     None => None
-                }).collect(),
-                Jagged::I64(jagged) => jagged.iter().map(|col| match col {
-                    Some(col) => Some(*col.iter().fold1(std::cmp::max).unwrap() as f64),
+                })).collect::<Result<_>>()?),
+                Jagged::I64(jagged) => Vector1DNull::I64(jagged.iter().map(|col| Ok(match col {
+                    Some(col) => Some(*col.iter().fold1(std::cmp::max)
+                        .ok_or::<Error>("attempted to infer max on an empty value".into())?),
                     None => None
-                }).collect(),
+                })).collect::<Result<_>>()?),
                 _ => return Err("Cannot infer numeric max on a non-numeric vector".into())
             }
         }
     })
 }
 
-
 pub fn infer_categories(value: &Value) -> Result<Jagged> {
     Ok(match value {
         Value::Array(array) => match array {
             Array::Bool(array) =>
-                Jagged::Bool(array.gencolumns().into_iter().map(|col| {
-                    let column_categories = col.into_dyn().
-                        into_dimensionality::<Ix1>().unwrap().to_vec();
-//                    column_categories.sort();
-//                    column_categories.dedup();
-                    Some(column_categories)
-                }).collect()),
+                Jagged::Bool(array.gencolumns().into_iter().map(|col|
+                    Ok(Some(col.into_dyn().into_dimensionality::<Ix1>()?.to_vec())))
+                    .collect::<Result<Vec<_>>>()?),
             Array::F64(array) =>
-                Jagged::F64(array.gencolumns().into_iter().map(|col| {
-                    let column_categories = col.into_dyn().
-                        into_dimensionality::<Ix1>().unwrap().to_vec();
-//                    column_categories.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal));
-//                    column_categories.dedup();
-                    Some(column_categories)
-                }).collect()),
+                Jagged::F64(array.gencolumns().into_iter().map(|col|
+                    Ok(Some(col.into_dyn().into_dimensionality::<Ix1>()?.to_vec())))
+                    .collect::<Result<Vec<_>>>()?),
             Array::I64(array) =>
-                Jagged::I64(array.gencolumns().into_iter().map(|col| {
-                    let column_categories = col.into_dyn().
-                        into_dimensionality::<Ix1>().unwrap().to_vec();
-//                    column_categories.sort();
-//                    column_categories.dedup();
-                    Some(column_categories)
-                }).collect()),
-            Array::Str(array) =>{
-
-//                println!("array in inference {:?}", array);
-                Jagged::Str(array.gencolumns().into_iter().map(|col| {
-                    let column_categories = col.into_dyn().
-                        into_dimensionality::<Ix1>().unwrap().to_vec();
-//                    column_categories.sort();
-//                    column_categories.dedup();
-                    Some(column_categories)
-                }).collect())
-            }
+                Jagged::I64(array.gencolumns().into_iter().map(|col|
+                    Ok(Some(col.into_dyn().into_dimensionality::<Ix1>()?.to_vec())))
+                    .collect::<Result<Vec<_>>>()?),
+            Array::Str(array) =>
+                Jagged::Str(array.gencolumns().into_iter().map(|col|
+                    Ok(Some(col.into_dyn().into_dimensionality::<Ix1>()?.to_vec())))
+                    .collect::<Result<Vec<_>>>()?),
         },
-        Value::Hashmap(_hashmap) => return Err("category inference is not implemented for hashmaps".into()),
+        Value::Hashmap(_) => return Err("category inference is not implemented for hashmaps".into()),
         Value::Jagged(jagged) => match jagged {
             Jagged::Bool(array) =>
                 Jagged::Bool(array.iter().map(|column_categories| match column_categories {
-                    Some(column_categories) => {
-                        let mut column_categories = column_categories.to_owned();
-                        column_categories.sort();
-                        column_categories.dedup();
-                        Some(column_categories)
-                    },
+                    Some(column_categories) => Some(deduplicate(column_categories.to_owned())),
                     None => None
                 }).collect()),
+            // TODO: consider removing support for float categories
             Jagged::F64(array) =>
-                Jagged::F64(array.iter().map(|column_categories| match column_categories {
-                    Some(column_categories) => {
-                        let mut column_categories = column_categories.to_owned();
-                        column_categories.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal));
-                        column_categories.dedup();
-                        Some(column_categories)
-                    },
-                    None => None
-                }).collect()),
+                Jagged::F64(array.iter().map(|_| None).collect()),
             Jagged::I64(array) =>
                 Jagged::I64(array.iter().map(|column_categories| match column_categories {
-                    Some(column_categories) => {
-                        let mut column_categories = column_categories.to_owned();
-                        column_categories.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal));
-                        column_categories.dedup();
-                        Some(column_categories)
-                    },
+                    Some(column_categories) => Some(deduplicate(column_categories.to_owned())),
                     None => None
                 }).collect()),
             Jagged::Str(array) =>
                 Jagged::Str(array.iter().map(|column_categories| match column_categories {
-                    Some(column_categories) => {
-                        let mut column_categories = column_categories.to_owned();
-                        column_categories.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal));
-                        column_categories.dedup();
-                        Some(column_categories)
-                    },
+                    Some(column_categories) => Some(deduplicate(column_categories.to_owned())),
                     None => None
                 }).collect()),
         }
@@ -202,12 +172,12 @@ pub fn infer_nature(value: &Value) -> Result<Option<Nature>> {
     Ok(match value {
         Value::Array(array) => match array {
             Array::F64(array) => Some(Nature::Continuous(NatureContinuous {
-                min: Vector1DNull::F64(infer_min(&array.clone().into())?),
-                max: Vector1DNull::F64(infer_max(&array.clone().into())?),
+                min: infer_min(&array.clone().into())?,
+                max: infer_max(&array.clone().into())?,
             })),
             Array::I64(array) => Some(Nature::Continuous(NatureContinuous {
-                min: Vector1DNull::F64(infer_min(&array.clone().into())?),
-                max: Vector1DNull::F64(infer_max(&array.clone().into())?),
+                min: infer_min(&array.clone().into())?,
+                max: infer_max(&array.clone().into())?,
             })),
             Array::Bool(array) => Some(Nature::Categorical(NatureCategorical {
                 categories: infer_categories(&array.clone().into())?,
@@ -218,22 +188,12 @@ pub fn infer_nature(value: &Value) -> Result<Option<Nature>> {
 //            }),
             _ => None
         },
-        Value::Hashmap(_hashmap) => None,
+        Value::Hashmap(_) => None,
         Value::Jagged(jagged) => match jagged {
-            Jagged::F64(jagged) => Some(Nature::Continuous(NatureContinuous {
-                min: Vector1DNull::F64(infer_min(&Value::Jagged(Jagged::F64(jagged.clone())))?),
-                max: Vector1DNull::F64(infer_max(&Value::Jagged(Jagged::F64(jagged.clone())))?),
-            })),
-            Jagged::I64(jagged) => Some(Nature::Continuous(NatureContinuous {
-                min: Vector1DNull::F64(infer_min(&Value::Jagged(Jagged::I64(jagged.clone())))?),
-                max: Vector1DNull::F64(infer_max(&Value::Jagged(Jagged::I64(jagged.clone())))?),
-            })),
-            Jagged::Bool(jagged) => Some(Nature::Categorical(NatureCategorical {
-                categories: infer_categories(&Value::Jagged(Jagged::Bool(jagged.clone())))?,
-            })),
-            Jagged::Str(jagged) => Some(Nature::Categorical(NatureCategorical {
-                categories: infer_categories(&Value::Jagged(Jagged::Str(jagged.clone())))?,
-            })),
+            Jagged::F64(_) => None,
+            _ => Some(Nature::Categorical(NatureCategorical {
+                categories: infer_categories(value)?,
+            }))
         }
     })
 }
