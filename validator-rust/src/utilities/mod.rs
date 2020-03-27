@@ -258,11 +258,11 @@ pub fn standardize_categorical_argument<T: Clone>(
 
 /// Given a jagged null values array, conduct well-formedness checks, broadcast along columns, and flatten along rows.
 #[doc(hidden)]
-pub fn standardize_null_argument<T: Clone>(
+pub fn standardize_null_candidates_argument<T: Clone>(
     value: &Vec<Option<Vec<T>>>,
     length: &i64,
-) -> Result<Vec<T>> {
-    let value = value.iter()
+) -> Result<Vec<Vec<T>>> {
+    let mut value = value.iter()
         .map(|v| v.clone())
         .collect::<Option<Vec<Vec<T>>>>()
         .ok_or::<Error>("null must be defined for all columns".into())?;
@@ -271,16 +271,35 @@ pub fn standardize_null_argument<T: Clone>(
         return Err("null values cannot be an empty vector".into());
     }
 
-    let mut value: Vec<T> = value.iter().map(|v| match v.len() {
-        1 => Ok(v.clone().first().unwrap().clone()),
-        _ => Err("only one null value may be defined".into())
-    }).collect::<Result<Vec<T>>>()?;
-
     // broadcast nulls across all columns, if only one null set is defined
     if value.len() == 1 {
-        value = (0..*length).map(|_| value.clone().first().unwrap().clone()).collect();
+        let first_set = value.first().unwrap();
+        value = (0..*length).map(|_| first_set.clone()).collect();
     }
     Ok(value)
+}
+
+/// Given a jagged null values array, conduct well-formedness checks, broadcast along columns, and flatten along rows.
+#[doc(hidden)]
+pub fn standardize_null_target_argument<T: Clone>(
+    value: &ArrayD<T>,
+    length: &i64,
+) -> Result<Vec<T>> {
+    if value.len() == 0 {
+        return Err("null values cannot be empty".into());
+    }
+
+    if value.len() == *length as usize {
+        return Ok(value.iter().cloned().collect())
+    }
+
+    // broadcast nulls across all columns, if only one null is defined
+    if value.len() == 1 {
+        let value = value.first().unwrap();
+        return Ok((0..*length).map(|_| value.clone()).collect())
+    }
+
+    bail!("length of null must be one, or {}", length)
 }
 
 /// Given categories and a jagged categories weights array, conduct well-formedness checks and return a standardized set of probabilities.
@@ -476,7 +495,7 @@ pub fn expand_mechanism(
 pub fn get_ith_release<T: Clone + Default>(value: &ArrayD<T>, i: &usize) -> Result<ArrayD<T>> {
     match value.ndim() {
         0 => if i == &0 {Ok(value.clone())} else {Err("ith release does not exist".into())},
-        1 => Err("releases may not currently be vectors".into()),
+        1 => Ok(value.clone()),
         2 => {
             let release = slow_select(value, Axis(1), &[i.clone()]);
             if release.len() == 1 {

@@ -8,10 +8,17 @@
       "type": "Array"
     },
     "edges": {
-      "type": "Jagged"
+      "type": "Jagged",
+      "default": "None",
+      "description": "set of edges to bin continuous-valued data"
+    },
+    "categories": {
+      "type": "Jagged",
+      "default": "None"
     },
     "null": {
-      "type": "Array"
+      "type": "Array",
+      "default": "None"
     },
     "count_min": {
       "type": "Array"

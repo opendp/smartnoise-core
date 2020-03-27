@@ -96,7 +96,7 @@ def test_dp_linear_stats(run=True):
         analysis.release()
 
         print("number of records:", num_records.value)
-        # print(num_records.properties)
+        print(num_records.properties)
 
         vars = op.cast(dataset_pums[["age", "income"]], type="float")
 
@@ -128,6 +128,7 @@ def test_dp_linear_stats(run=True):
             data_n=num_records)
 
         analysis.release()
+
         print("age variance:", age_variance.value)
 
         # If I clamp, impute, resize, then I can reuse their properties for multiple statistics
@@ -192,16 +193,34 @@ def test_dp_linear_stats(run=True):
 
         age_histogram = op.dp_histogram(
             op.cast(age, type='int', min=0, max=100),
-            edges=list(range(0, 150, 10)),
+            edges=list(range(0, 100, 25)),
             count_max=300,
             count_min=0,
             null=150,
             privacy_usage={'epsilon': 2.}
         )
 
-        analysis.release()
-        print("age histogram: ", age_histogram.value)
+        sex_histogram = op.dp_histogram(
+            op.cast(dataset_pums['married'], type='bool', true_label="1"),
+            count_max=1000,
+            count_min=0,
+            privacy_usage={'epsilon': 2.}
+        )
 
+        education_histogram = op.dp_histogram(
+            dataset_pums['educ'],
+            categories=["5", "7", "10"],
+            null="-1",
+            count_max=1000,
+            count_min=0,
+            privacy_usage={'epsilon': 2.}
+        )
+
+        analysis.release()
+
+        print("age histogram: ", age_histogram.value)
+        print("sex histogram: ", sex_histogram.value)
+        print("education histogram: ", education_histogram.value)
 
     if run:
         analysis.release()

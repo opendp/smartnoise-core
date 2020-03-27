@@ -47,8 +47,6 @@ impl Expandable for proto::DpHistogram {
 
         let mut data_id = component.arguments.get("data")
             .ok_or::<Error>("data is a required argument to DPHistogram".into())?.clone();
-        let null_id = component.arguments.get("null")
-            .ok_or::<Error>("null is a required argument to DPHistogram".into())?;
         let count_min_id = component.arguments.get("count_min")
             .ok_or::<Error>("count_min is a required argument to DPHistogram".into())?;
         let count_max_id = component.arguments.get("count_max")
@@ -59,8 +57,10 @@ impl Expandable for proto::DpHistogram {
 
             (Some(edges_id), None) => {
                 // bin
+                let null_id = component.arguments.get("null")
+                    .ok_or::<Error>("null is a required argument to DPHistogram".into())?;
                 let inclusive_left_id = component.arguments.get("inclusive_left")
-                    .ok_or::<Error>("inclusive_left is a required argument to DPHistogram".into())?;
+                    .ok_or::<Error>("inclusive_left is a required argument to DPHistogram when categories are not known".into())?;
                 current_id += 1;
                 let id_bin = current_id.clone();
                 computation_graph.insert(id_bin, proto::Component {
@@ -82,6 +82,8 @@ impl Expandable for proto::DpHistogram {
 
             (None, Some(categories_id)) => {
                 // clamp
+                let null_id = component.arguments.get("null")
+                    .ok_or::<Error>("null is a required argument to DPHistogram when categories are not known".into())?;
                 current_id += 1;
                 let id_clamp = current_id.clone();
                 computation_graph.insert(id_clamp, proto::Component {
@@ -107,7 +109,7 @@ impl Expandable for proto::DpHistogram {
                     return Err("either edges or categories must be supplied".into())
                 }
 
-                traversal = Vec::<u32>::new();
+                traversal = vec![component_id.clone()];
             }
             _ => return Err("either edges or categories must be supplied".into())
         }
@@ -151,10 +153,6 @@ impl Report for proto::DpHistogram {
 
         let mut releases = Vec::new();
 
-        let minimums = data_property.get_min_f64()?;
-        let maximums = data_property.get_max_f64()?;
-        let num_records = data_property.get_num_records()?;
-
         let num_columns = data_property.get_num_columns()?;
         let privacy_usages = broadcast_privacy_usage(&self.privacy_usage, num_columns as usize)?;
 
@@ -177,13 +175,7 @@ impl Report for proto::DpHistogram {
                     name: "".to_string(),
                     cite: "".to_string(),
                     mechanism: self.implementation.clone(),
-                    argument: serde_json::json!({
-                            "n": num_records,
-                            "constraint": {
-                                "lowerbound": minimums[column_number as usize],
-                                "upperbound": maximums[column_number as usize]
-                            }
-                        }),
+                    argument: serde_json::json!({}),
                 },
             };
 

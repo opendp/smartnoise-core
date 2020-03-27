@@ -1,10 +1,10 @@
 use crate::errors::*;
 
 use std::collections::HashMap;
-use crate::base::{Nature, Vector1DNull, NodeProperties, ArrayND, ValueProperties, NatureCategorical};
+use crate::base::{Nature, Vector1DNull, NodeProperties, ArrayND, ValueProperties, NatureCategorical, Vector2DJagged};
 
 use crate::{proto, base};
-use crate::utilities::{prepend, get_literal};
+use crate::utilities::{prepend, get_literal, standardize_null_target_argument};
 use crate::components::{Component, Expandable};
 
 use ndarray::Array;
@@ -28,9 +28,40 @@ impl Component for proto::Clamp {
 
         // handle categorical clamping
         if let Some(categories) = public_arguments.get("categories") {
-            data_property.nature = Some(Nature::Categorical(NatureCategorical {
-                categories: categories.get_jagged()?.to_owned()
-            }));
+            let null = public_arguments.get("null")
+                .ok_or::<Error>("null value must be defined when clamping by categories".into())?
+                .get_arraynd()?;
+
+            let mut categories = categories.get_jagged()?.clone();
+            match (&mut categories, null) {
+                (Vector2DJagged::F64(jagged), ArrayND::F64(null)) => {
+                    let null_target = standardize_null_target_argument(&null, &num_columns)?;
+                    jagged.iter_mut().zip(null_target.into_iter())
+                        .for_each(|(cats, null)| cats.into_iter()
+                            .for_each(|cats| cats.push(null)))
+                },
+                (Vector2DJagged::I64(jagged), ArrayND::I64(null)) => {
+                    let null_target = standardize_null_target_argument(&null, &num_columns)?;
+                    jagged.iter_mut().zip(null_target.into_iter())
+                        .for_each(|(cats, null)| cats.into_iter()
+                            .for_each(|cats| cats.push(null)))
+                },
+                (Vector2DJagged::Str(jagged), ArrayND::Str(null)) => {
+                    let null_target = standardize_null_target_argument(&null, &num_columns)?;
+                    jagged.iter_mut().zip(null_target.into_iter())
+                        .for_each(|(cats, null)| cats.into_iter()
+                            .for_each(|cats| cats.push(null.clone())))
+                },
+                (Vector2DJagged::Bool(jagged), ArrayND::Bool(null)) => {
+                    let null_target = standardize_null_target_argument(&null, &num_columns)?;
+                    jagged.iter_mut().zip(null_target.into_iter())
+                        .for_each(|(cats, null)| cats.into_iter()
+                            .for_each(|cats| cats.push(null)))
+                },
+                _ => return Err("categories and null must be homogeneously typed".into())
+            }
+
+            data_property.nature = Some(Nature::Categorical(NatureCategorical { categories }));
 
             return Ok(data_property.into());
         }
@@ -116,8 +147,9 @@ impl Expandable for proto::Clamp {
         let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
 
         let mut component = component.clone();
+        let has_categorical = properties.contains_key("categories");
 
-        if !properties.contains_key("min") {
+        if !has_categorical && !properties.contains_key("min") {
             current_id += 1;
             let id_min = current_id.clone();
             let value = Value::ArrayND(ArrayND::F64(
@@ -128,7 +160,7 @@ impl Expandable for proto::Clamp {
             component.arguments.insert("min".to_string(), id_min);
         }
 
-        if !properties.contains_key("max") {
+        if !has_categorical && !properties.contains_key("max") {
             current_id += 1;
             let id_max = current_id.clone();
             let value = Value::ArrayND(ArrayND::F64(

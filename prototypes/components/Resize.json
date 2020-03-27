@@ -10,10 +10,10 @@
       "type": "Array",
       "description": "An estimate of the number of rows in the data.\n\nThis could be the guess of the user, or the result of a DP release."
     },
-    "distribution": {
-      "type": "String",
+    "categories": {
       "default": "None",
-      "description": "The distribution to be used when imputing records."
+      "type": "Jagged",
+      "description": "The set of categories you want to be represented for each column of the data, if the data is categorical."
     },
     "min": {
       "type": "Array",
@@ -24,6 +24,11 @@
       "type": "Array",
       "default": "None",
       "description": "An upper bound on data elements for each column."
+    },
+    "distribution": {
+      "type": "String",
+      "default": "None",
+      "description": "The distribution to be used when imputing records."
     },
     "shift": {
       "type": "Array",

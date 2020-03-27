@@ -8,6 +8,7 @@ use whitenoise_validator::proto;
 use crate::utilities::utilities::get_num_columns;
 use std::ops::{Div, Add};
 use whitenoise_validator::utilities::{get_argument, standardize_categorical_argument, standardize_numeric_argument};
+use std::fmt::Display;
 
 impl Evaluable for proto::Bin {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
@@ -66,7 +67,7 @@ pub enum BinSide {
 /// let binned = bin(&data, &edges, &inclusive_left, &null, &side).unwrap();
 /// assert!(binned == arr1(&[1.5, 2.5, 2.5, 4.5, -1.]).into_dyn());
 /// ```
-pub fn bin<T: std::cmp::PartialOrd + Clone + Div<T, Output=T> + Add<T, Output=T> + From<i32> + Copy>(
+pub fn bin<T: std::fmt::Debug + Display + std::cmp::PartialOrd + Clone + Div<T, Output=T> + Add<T, Output=T> + From<i32> + Copy>(
     data: &ArrayD<T>,
     edges: &Vec<Option<Vec<T>>>,
     inclusive_left: &ArrayD<bool>,
@@ -87,20 +88,20 @@ pub fn bin<T: std::cmp::PartialOrd + Clone + Div<T, Output=T> + Add<T, Output=T>
         .zip(edges.iter().zip(null.iter()))
         .zip(inclusive_left.iter())
         // for each pairing, iterate over the cells
-        .map(|((mut column, (edges, null)), inclusive_left)| {
+        .for_each(|((mut column, (edges, null)), inclusive_left)| {
             let mut edges = edges.clone();
             edges.sort_by(|a, b| a.partial_cmp(b).unwrap());
             column.iter_mut()
                 // mutate the cell via the operator
-                .map(|v| {
+                .for_each(|v| {
                     // checks for nullity
                     if edges.len() == 0 || *v < edges[0] || *v > edges[edges.len() - 1] {
                         *v = null.clone();
-                        return Ok(())
+                        return;
                     }
 
                     // assign to edge
-                    for idx in 0..edges.len() {
+                    for idx in 0..(edges.len() - 1) {
                         // check whether left or right side of bin should be considered inclusive
                         if match inclusive_left {
                             true => edges[idx] <= *v && *v < edges[idx + 1],
@@ -112,15 +113,12 @@ pub fn bin<T: std::cmp::PartialOrd + Clone + Div<T, Output=T> + Add<T, Output=T>
                                 BinSide::Right => edges[idx + 1],
                                 BinSide::Center => (edges[idx] / T::from(2)) + (edges[idx + 1] / T::from(2))
                             };
-                            return Ok(())
+                            return;
                         }
                     }
-
-                    return Err("arguments to binning are not well-formed".into())
+                    *v = edges[edges.len() - 1];
                 })
-                .collect::<Result<()>>()
-        })
-        .collect::<Result<()>>()?;
+        });
 
     Ok(data)
 }

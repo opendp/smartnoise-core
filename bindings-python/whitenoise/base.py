@@ -117,6 +117,13 @@ class Component(object):
     def actual_privacy_usage(self):
         return self.analysis.release_values.get(self.component_id, {"privacy_usage": None})["privacy_usage"]
 
+    def get_usages(self):
+        parents = [component for component in self.analysis.components.values()
+                   if id(self) in list(id(i) for i in component.arguments.values())]
+
+        return {parent: next(k for k, v in parent.arguments.items()
+                             if id(self) == id(v)) for parent in parents}
+
     def get_accuracy(self, alpha):
         self.analysis.properties = core_wrapper.get_properties(
             self.analysis._serialize_analysis_proto(),
@@ -240,6 +247,28 @@ class Component(object):
 
     def __hash__(self):
         return id(self)
+
+    def __str__(self, depth=0):
+        if self.value is not None and depth != 0:
+            return str(self.value).replace("\n", "")
+
+        inner = []
+        if self.arguments:
+            inner.append(",\n".join([f'{("  " * (depth + 1))}{name}={value.__str__(depth + 1)}' for name, value in self.arguments.items() if value is not None]))
+        if self.options:
+            inner.append(",\n".join([f'{("  " * (depth + 1))}{name}={str(value).replace(chr(10), "")}' for name, value in self.options.items() if value is not None]))
+
+        if self.name == "Literal":
+            inner = "released value: " + str(self.value).replace("\n", "")
+        elif inner:
+            inner = f'\n{("," + chr(10)).join(inner)}\n{("  " * depth)}'
+        else:
+            inner = ""
+
+        return f'{self.name}({inner})'
+
+    def __repr__(self):
+        return f'<{self.component_id}: {self.name} Component>'
 
     @staticmethod
     def of(value, value_format=None):
@@ -390,7 +419,10 @@ class Analysis(object):
     @staticmethod
     def _parse_release_proto(release):
         def parse_release_node(release_node):
-            parsed = {"value": Analysis._parse_value_proto(release_node.value)}
+            parsed = {
+                "value": Analysis._parse_value_proto(release_node.value),
+                "value_format": release_node.value.WhichOneof("data")
+            }
             if release_node.privacy_usage:
                 parsed['privacy_usage'] = release_node.privacy_usage
             return parsed
@@ -437,7 +469,7 @@ class Analysis(object):
                 value = [value]
             value = [elem if issubclass(type(elem), list) else [elem] for elem in value]
 
-            return value_pb2.Value(array_2d_jagged=value_pb2.Array2dJagged(
+            return value_pb2.Value(jagged=value_pb2.Array2dJagged(
                 data=[value_pb2.Array1dOption(option=None if column is None else make_array1d(np.array(column))) for
                       column in value],
                 data_type=value_pb2.DataType
@@ -457,7 +489,7 @@ class Analysis(object):
         array = np.array(value)
 
         return value_pb2.Value(
-            array_nd=value_pb2.ArrayNd(
+            array=value_pb2.ArrayNd(
                 shape=list(array.shape),
                 order=list(range(array.ndim)),
                 flattened=make_array1d(array.flatten())
@@ -469,25 +501,25 @@ class Analysis(object):
         def parse_array1d(array):
             data_type = array.WhichOneof("data")
             if data_type:
-                return getattr(array, data_type).data
+                return list(getattr(array, data_type).data)
 
         def parse_array1d_option(array):
             if array.HasField("option"):
-                parse_array1d(array.option)
+                return parse_array1d(array.option)
 
-        if value.HasField("array_nd"):
-            data = parse_array1d(value.array_nd.flattened)
+        if value.HasField("array"):
+            data = parse_array1d(value.array.flattened)
             if data:
-                if value.array_nd.shape:
-                    return np.array(data).reshape(value.array_nd.shape)
+                if value.array.shape:
+                    return np.array(data).reshape(value.array.shape)
                 return data[0]
 
         if value.HasField("hashmap"):
             return {k: Analysis._parse_value_proto(v) for k, v in value.hashmap_string.data.items()}
 
-        if value.HasField("array_2d_jagged"):
+        if value.HasField("jagged"):
             return [
-                parse_array1d_option(column) for column in value.array_2d_jagged.data
+                parse_array1d_option(column) for column in value.jagged.data
             ]
 
     def validate(self):

@@ -51,8 +51,8 @@ message ReleaseNode {
 message ValueProperties {
     oneof variant {
         HashmapProperties hashmap = 1;
-        ArrayNDProperties arraynd = 2;
-        Vector2DJaggedProperties vector2djagged = 3;
+        ArrayNDProperties array = 2;
+        Vector2DJaggedProperties jagged = 3;
     }
 }
 

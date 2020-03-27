@@ -2,7 +2,7 @@ use whitenoise_validator::errors::*;
 
 use crate::components::Evaluable;
 use whitenoise_validator::base::{Value, ArrayND, Vector2DJagged};
-use whitenoise_validator::utilities::{standardize_numeric_argument, standardize_categorical_argument, standardize_weight_argument, standardize_null_argument, get_argument};
+use whitenoise_validator::utilities::{standardize_numeric_argument, standardize_categorical_argument, standardize_weight_argument, get_argument, standardize_null_candidates_argument};
 use crate::base::NodeArguments;
 use crate::utilities::{noise, utilities};
 use ndarray::{ArrayD};
@@ -218,7 +218,8 @@ pub fn impute_categorical<T>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>,
 
     let categories = standardize_categorical_argument(&categories, &num_columns)?;
     let probabilities = standardize_weight_argument(&categories, &weights)?;
-    let null_value = standardize_null_argument(&null_value, &num_columns)?;
+    let null_value = standardize_null_candidates_argument(&null_value, &num_columns)?;
+//        .iter().map(|candidates| HashSet::from_iter(candidates.iter())).collect::<Vec<HashSet<T>>>();
 
     // iterate over the generalized columns
     data.gencolumns_mut().into_iter()
@@ -229,7 +230,7 @@ pub fn impute_categorical<T>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>,
         // for each pairing, iterate over the cells
         .map(|(((mut column, cats), probs), null)| column.iter_mut()
             // ignore non null values
-            .filter(|v| v == &null)
+            .filter(|v| null.contains(v))
             // mutate the cell via the operator
             .map(|v| {
                 *v = utilities::sample_from_set(&cats, &probs)?;

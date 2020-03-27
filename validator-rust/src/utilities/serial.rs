@@ -168,11 +168,11 @@ pub fn parse_array2d_jagged(value: &proto::Array2dJagged) -> Vector2DJagged {
 
 pub fn parse_value(value: &proto::Value) -> Result<Value> {
     Ok(match value.data.to_owned().unwrap() {
-        proto::value::Data::ArrayNd(data) =>
+        proto::value::Data::Array(data) =>
             Value::ArrayND(parse_arraynd(&data)),
         proto::value::Data::Hashmap(data) =>
             Value::Hashmap(parse_hashmap(&data)),
-        proto::value::Data::Array2dJagged(data) =>
+        proto::value::Data::Jagged(data) =>
             Value::Vector2DJagged(parse_array2d_jagged(&data))
     })
 }
@@ -189,9 +189,9 @@ pub fn parse_value_properties(value: &proto::ValueProperties) -> ValueProperties
     match value.variant.clone().unwrap() {
         proto::value_properties::Variant::Hashmap(value) =>
             ValueProperties::Hashmap(parse_hashmap_properties(&value)),
-        proto::value_properties::Variant::Arraynd(value) =>
+        proto::value_properties::Variant::Array(value) =>
             ValueProperties::ArrayND(parse_arraynd_properties(&value)),
-        proto::value_properties::Variant::Vector2djagged(value) =>
+        proto::value_properties::Variant::Jagged(value) =>
             ValueProperties::Vector2DJagged(parse_array2d_jagged_properties(&value)),
     }
 }
@@ -468,11 +468,11 @@ pub fn serialize_value(value: &Value) -> Result<proto::Value> {
     Ok(proto::Value {
         data: Some(match value {
             Value::ArrayND(data) =>
-                proto::value::Data::ArrayNd(serialize_arraynd(data)),
+                proto::value::Data::Array(serialize_arraynd(data)),
             Value::Hashmap(data) =>
                 proto::value::Data::Hashmap(serialize_hashmap(data)),
             Value::Vector2DJagged(data) =>
-                proto::value::Data::Array2dJagged(serialize_array2d_jagged(data))
+                proto::value::Data::Jagged(serialize_array2d_jagged(data))
         })
     })
 }
@@ -578,9 +578,9 @@ pub fn serialize_value_properties(value: &ValueProperties) -> proto::ValueProper
             ValueProperties::Hashmap(value) =>
                 proto::value_properties::Variant::Hashmap(serialize_hashmap_properties(value)),
             ValueProperties::ArrayND(value) =>
-                proto::value_properties::Variant::Arraynd(serialize_arraynd_properties(value)),
+                proto::value_properties::Variant::Array(serialize_arraynd_properties(value)),
             ValueProperties::Vector2DJagged(value) =>
-                proto::value_properties::Variant::Vector2djagged(serialize_vector2d_jagged_properties(value))
+                proto::value_properties::Variant::Jagged(serialize_vector2d_jagged_properties(value))
         })
     }
 }

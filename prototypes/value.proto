@@ -97,9 +97,9 @@ message Array2dJagged {
 message Value {
     oneof data {
         // bytes bytes = 1;
-        ArrayNd array_nd = 2;
+        ArrayNd array = 2;
         Hashmap hashmap = 3;
-        Array2dJagged array_2d_jagged = 4;
+        Array2dJagged jagged = 4;
     }
 }
 

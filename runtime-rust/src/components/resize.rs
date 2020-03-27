@@ -1,7 +1,7 @@
 use whitenoise_validator::errors::*;
 use whitenoise_validator::proto;
 use whitenoise_validator::base::{Value, ArrayND, Vector2DJagged};
-use whitenoise_validator::utilities::{get_argument, standardize_null_argument};
+use whitenoise_validator::utilities::get_argument;
 
 use ndarray::{ArrayD, Axis, Array};
 use rug::{Float, ops::Pow};
@@ -21,19 +21,19 @@ impl Evaluable for proto::Resize {
         // and imputation (if necessary) is done by sampling from "categories" using the "probabilities" as sampling probabilities for each element.
         if arguments.contains_key("categories") {
             match (get_argument(&arguments, "data")?, get_argument(&arguments, "categories")?,
-                   get_argument(&arguments, "probabilities")?, get_argument(&arguments, "null")?) {
+                   get_argument(&arguments, "probabilities")?) {
                 // match on types of various arguments and ensure they are consistent with each other
-                (Value::ArrayND(data), Value::Vector2DJagged(categories), Value::Vector2DJagged(probabilities), Value::Vector2DJagged(nulls)) =>
-                    Ok(match (data, categories, probabilities, nulls) {
-                        (ArrayND::F64(data), Vector2DJagged::F64(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::F64(nulls)) =>
-                            resize_categorical(&data, &n, &categories, &probabilities, &nulls)?.into(),
-                        (ArrayND::I64(data), Vector2DJagged::I64(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::I64(nulls)) =>
-                            resize_categorical(&data, &n, &categories, &probabilities, &nulls)?.into(),
-                        (ArrayND::Bool(data), Vector2DJagged::Bool(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::Bool(nulls)) =>
-                            resize_categorical(&data, &n, &categories, &probabilities, &nulls)?.into(),
-                        (ArrayND::Str(data), Vector2DJagged::Str(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::Str(nulls)) =>
-                            resize_categorical(&data, &n, &categories, &probabilities, &nulls)?.into(),
-                        _ => return Err("types of data, categories, and nulls must be homogenous, probabilities must be f64".into())
+                (Value::ArrayND(data), Value::Vector2DJagged(categories), Value::Vector2DJagged(probabilities)) =>
+                    Ok(match (data, categories, probabilities) {
+                        (ArrayND::F64(data), Vector2DJagged::F64(categories), Vector2DJagged::F64(probabilities)) =>
+                            resize_categorical(&data, &n, &categories, &probabilities)?.into(),
+                        (ArrayND::I64(data), Vector2DJagged::I64(categories), Vector2DJagged::F64(probabilities)) =>
+                            resize_categorical(&data, &n, &categories, &probabilities)?.into(),
+                        (ArrayND::Bool(data), Vector2DJagged::Bool(categories), Vector2DJagged::F64(probabilities)) =>
+                            resize_categorical(&data, &n, &categories, &probabilities)?.into(),
+                        (ArrayND::Str(data), Vector2DJagged::Str(categories), Vector2DJagged::F64(probabilities)) =>
+                            resize_categorical(&data, &n, &categories, &probabilities)?.into(),
+                        _ => return Err("types of data, categories, and nulls must be homogeneous, probabilities must be f64".into())
                     }),
                 _ => return Err("data and nulls must be arrays, categories must be a jagged matrix".into())
             }
@@ -107,9 +107,9 @@ pub fn resize_float(data: &ArrayD<f64>, n: &i64, distribution: &String,
             let synthetic = match distribution.as_str() {
                 "Uniform" => impute_float_uniform(&synthetic_base, &min, &max),
                 "Gaussian" => impute_float_gaussian(
-                        &synthetic_base, &min, &max,
-                        &shift.cloned().ok_or::<Error>("shift must be defined for gaussian imputation".into())?,
-                        &scale.cloned().ok_or::<Error>("scale must be defined for gaussian imputation".into())?),
+                    &synthetic_base, &min, &max,
+                    &shift.cloned().ok_or::<Error>("shift must be defined for gaussian imputation".into())?,
+                    &scale.cloned().ok_or::<Error>("scale must be defined for gaussian imputation".into())?),
                 _ => Err("unrecognized distribution".into())
             }?;
 
@@ -118,7 +118,7 @@ pub fn resize_float(data: &ArrayD<f64>, n: &i64, distribution: &String,
                 Ok(value) => value,
                 Err(_) => return Err("failed to stack real and synthetic data".into())
             }
-        },
+        }
         // if estimated n is smaller than real n, return a subset of the real data
         real_n if real_n > n =>
             slow_select(&data, Axis(0), &create_sampling_indices(&n, &real_n)?),
@@ -142,7 +142,6 @@ pub fn resize_categorical<T>(
     data: &ArrayD<T>, n: &i64,
     categories: &Vec<Option<Vec<T>>>,
     weights: &Vec<Option<Vec<f64>>>,
-    null_value: &Vec<Option<Vec<T>>>
 ) -> Result<ArrayD<T>> where T: Clone, T: PartialEq, T: Default {
     // get number of observations in actual data
     let real_n: i64 = data.len_of(Axis(0)) as i64;
@@ -162,9 +161,10 @@ pub fn resize_categorical<T>(
 
             // iterate over initialized synthetic data and fill with correct null values
             synthetic.gencolumns_mut().into_iter()
-                .zip(standardize_null_argument(&null_value, &num_columns)?.iter())
-                .for_each(|(mut col, null)| col.iter_mut()
-                    .for_each(|v| *v = null.clone()));
+                .for_each(|mut col| col.iter_mut()
+                    .for_each(|v| *v = T::default()));
+
+            let null_value = (0..num_columns).map(|_| Some(vec![T::default()])).collect();
 
             // impute categorical data for each column of nulls to create synthetic data
             synthetic = impute_categorical(
@@ -175,7 +175,7 @@ pub fn resize_categorical<T>(
                 Ok(value) => value,
                 Err(_) => return Err("failed to stack real and synthetic data".into())
             }
-        },
+        }
         // if estimated n is smaller than real n, return a subset of the real data
         real_n if real_n > n =>
             slow_select(data, Axis(0), &create_sampling_indices(&n, &real_n)?).to_owned(),
@@ -206,8 +206,7 @@ pub fn resize_categorical<T>(
 /// # subset.unwrap();
 /// ```
 pub fn create_subset<T>(set: &Vec<T>, weights: &Vec<f64>, k: &i64) -> Result<Vec<T>> where T: Clone {
-
-    if *k as usize > set.len() {return Err("k must be less than the set length".into())}
+    if *k as usize > set.len() { return Err("k must be less than the set length".into()); }
 
     // generate sum of weights
     let weights_rug: Vec<rug::Float> = weights.into_iter().map(|w| Float::with_val(53, w)).collect();

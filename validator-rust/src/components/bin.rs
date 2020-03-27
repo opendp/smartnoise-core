@@ -1,10 +1,10 @@
 use crate::errors::*;
 
 use std::collections::HashMap;
-use crate::base::{Nature, NodeProperties, NatureCategorical, Vector2DJagged, ValueProperties, DataType};
+use crate::base::{Nature, NodeProperties, NatureCategorical, Vector2DJagged, ValueProperties, DataType, ArrayND};
 
-use crate::{proto};
-use crate::utilities::{prepend, standardize_categorical_argument};
+use crate::proto;
+use crate::utilities::{prepend, standardize_categorical_argument, standardize_null_target_argument};
 use crate::components::Component;
 
 use crate::base::Value;
@@ -25,31 +25,43 @@ impl Component for proto::Bin {
         let num_columns = data_property.get_num_columns()
             .map_err(prepend("data:"))?;
 
-        public_arguments.get("null")
-            .ok_or::<Error>("null: missing, must be public".into())?;
+        let null_values = public_arguments.get("null")
+            .ok_or::<Error>("null: missing, must be public".into())?.get_arraynd()?;
 
         public_arguments.get("edges")
             .ok_or::<Error>("edges: missing, must be public".into())
             .and_then(|v| v.get_jagged())
-            .and_then(|v| match v {
-                    Vector2DJagged::F64(jagged) => {
-                        let mut edges = standardize_categorical_argument(jagged, &num_columns)?;
-                        let edges = nature_from_edges(&self.side, &mut edges)?;
-                        data_property.nature = Some(Nature::Categorical(NatureCategorical {
-                            categories: Vector2DJagged::F64(edges.iter().map(|col| Some(col.clone())).collect()),
-                        }));
-                        Ok(())
-                    }
-                    Vector2DJagged::I64(jagged) => {
-                        let mut edges = standardize_categorical_argument(jagged, &num_columns)?;
-                        let edges = nature_from_edges(&self.side, &mut edges)?;
-                        data_property.nature = Some(Nature::Categorical(NatureCategorical {
-                            categories: Vector2DJagged::I64(edges.iter().map(|col| Some(col.clone())).collect()),
-                        }));
-                        Ok(())
-                    }
-                    _ => Err("edges: must be numeric".into())
-                })?;
+            .and_then(|v| match (v, null_values) {
+                (Vector2DJagged::F64(jagged), ArrayND::F64(null)) => {
+                    let null = standardize_null_target_argument(null, &num_columns)?;
+                    let mut edges = standardize_categorical_argument(jagged, &num_columns)?;
+                    let edges = nature_from_edges(&self.side, &mut edges)?;
+                    data_property.nature = Some(Nature::Categorical(NatureCategorical {
+                        categories: Vector2DJagged::F64(edges.iter().zip(null.into_iter())
+                            .map(|(col, null)| {
+                                let mut col = col.clone();
+                                col.push(null);
+                                Some(col)
+                            }).collect()),
+                    }));
+                    Ok(())
+                }
+                (Vector2DJagged::I64(jagged), ArrayND::I64(null)) => {
+                    let null = standardize_null_target_argument(null, &num_columns)?;
+                    let mut edges = standardize_categorical_argument(jagged, &num_columns)?;
+                    let edges = nature_from_edges(&self.side, &mut edges)?;
+                    data_property.nature = Some(Nature::Categorical(NatureCategorical {
+                        categories: Vector2DJagged::I64(edges.iter().zip(null.into_iter())
+                            .map(|(col, null)| {
+                                let mut col = col.clone();
+                                col.push(null);
+                                Some(col)
+                            }).collect()),
+                    }));
+                    Ok(())
+                }
+                _ => Err("edges: must be numeric".into())
+            })?;
 
         data_property.data_type = DataType::F64;
 
