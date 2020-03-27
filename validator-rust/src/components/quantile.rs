@@ -20,7 +20,7 @@ impl Component for proto::Quantile {
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
-            .ok_or("data: missing")?.get_arraynd()
+            .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
         // save a snapshot of the state when aggregating
@@ -51,7 +51,7 @@ impl Aggregator for proto::Quantile {
         sensitivity_type: &SensitivitySpace,
     ) -> Result<Value> {
         let data_property = properties.get("data")
-            .ok_or("data: missing")?.get_arraynd()
+            .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
         data_property.assert_is_not_aggregated()?;
@@ -63,8 +63,8 @@ impl Aggregator for proto::Quantile {
                 if k != &1 {
                     return Err("Quantile sensitivity is only implemented for KNorm of 1".into());
                 }
-                let min = data_property.get_min_f64()?;
-                let max = data_property.get_max_f64()?;
+                let min = data_property.min_f64()?;
+                let max = data_property.max_f64()?;
 
                 let row_sensitivity = min.iter().zip(max.iter())
                     .map(|(min, max)| (max - min))
@@ -73,7 +73,7 @@ impl Aggregator for proto::Quantile {
                 Ok(Array::from(row_sensitivity).into_dyn().into())
             }
             SensitivitySpace::Exponential => {
-                let num_columns = data_property.get_num_columns()?;
+                let num_columns = data_property.num_columns()?;
                 let row_sensitivity = (0..num_columns).map(|_| 1.).collect::<Vec<f64>>();
 
                 Ok(Array::from(row_sensitivity).into_dyn().into())

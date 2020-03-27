@@ -18,7 +18,7 @@ impl Component for proto::Mean {
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
-            .ok_or("data: missing")?.get_arraynd()
+            .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
         // save a snapshot of the state when aggregating
@@ -50,14 +50,14 @@ impl Aggregator for proto::Mean {
         match sensitivity_type {
             SensitivitySpace::KNorm(k) => {
                 let data_property = properties.get("data")
-                    .ok_or("data: missing")?.get_arraynd()
+                    .ok_or("data: missing")?.array()
                     .map_err(prepend("data:"))?.clone();
 
                 data_property.assert_non_null()?;
                 data_property.assert_is_not_aggregated()?;
-                let data_min = data_property.get_min_f64()?;
-                let data_max = data_property.get_max_f64()?;
-                let data_n = data_property.get_num_records()? as f64;
+                let data_min = data_property.min_f64()?;
+                let data_max = data_property.max_f64()?;
+                let data_n = data_property.num_records()? as f64;
 
                 // AddRemove vs. Substitute share the same bounds
 

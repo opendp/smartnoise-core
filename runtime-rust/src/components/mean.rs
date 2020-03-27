@@ -10,7 +10,7 @@ use whitenoise_validator::proto;
 
 impl Evaluable for proto::Mean {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        Ok(mean(get_argument(&arguments, "data")?.get_arraynd()?.get_f64()?)?.into())
+        Ok(mean(get_argument(&arguments, "data")?.array()?.f64()?)?.into())
     }
 }
 

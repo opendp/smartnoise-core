@@ -20,7 +20,7 @@ impl Component for proto::Covariance {
     ) -> Result<ValueProperties> {
         if properties.contains_key("data") {
             let mut data_property = properties.get("data")
-                .ok_or("data: missing")?.get_arraynd()
+                .ok_or("data: missing")?.array()
                 .map_err(prepend("data:"))?.clone();
 
             // save a snapshot of the state when aggregating
@@ -29,7 +29,7 @@ impl Component for proto::Covariance {
                 properties: properties.clone(),
             });
 
-            let num_columns = data_property.get_num_columns()?;
+            let num_columns = data_property.num_columns()?;
             data_property.num_records = Some(1);
             data_property.num_columns = Some(num_columns * (num_columns + 1) / 2);
 
@@ -38,11 +38,11 @@ impl Component for proto::Covariance {
             return Ok(data_property.into());
         } else if properties.contains_key("left") && properties.contains_key("right") {
             let mut left_property = properties.get("left")
-                .ok_or("left: missing")?.get_arraynd()
+                .ok_or("left: missing")?.array()
                 .map_err(prepend("left:"))?.clone();
 
             let right_property = properties.get("right")
-                .ok_or("right: missing")?.get_arraynd()
+                .ok_or("right: missing")?.array()
                 .map_err(prepend("right:"))?.clone();
 
             // save a snapshot of the state when aggregating
@@ -51,8 +51,8 @@ impl Component for proto::Covariance {
                 properties: properties.clone(),
             });
 
-            let left_n = left_property.get_num_records()?;
-            let right_n = right_property.get_num_records()?;
+            let left_n = left_property.num_records()?;
+            let right_n = right_property.num_records()?;
 
             if left_n != right_n {
                 return Err("n for left and right must be equivalent".into());
@@ -62,7 +62,7 @@ impl Component for proto::Covariance {
             left_property.releasable = left_property.releasable && right_property.releasable;
 
             left_property.num_records = Some(1);
-            left_property.num_columns = Some(left_property.get_num_columns()? * right_property.get_num_columns()?);
+            left_property.num_columns = Some(left_property.num_columns()? * right_property.num_columns()?);
 
             return Ok(left_property.into());
         } else {
@@ -94,13 +94,13 @@ impl Aggregator for proto::Covariance {
                     (Some(data_property), None, None) => {
 
                         // data: perform checks and prepare parameters
-                        let data_property = data_property.get_arraynd()
+                        let data_property = data_property.array()
                             .map_err(prepend("data:"))?.clone();
                         data_property.assert_is_not_aggregated()?;
                         data_property.assert_non_null()?;
-                        let data_min = data_property.get_min_f64()?;
-                        let data_max = data_property.get_max_f64()?;
-                        data_n = data_property.get_num_records()? as f64;
+                        let data_min = data_property.min_f64()?;
+                        let data_max = data_property.max_f64()?;
+                        data_n = data_property.num_records()? as f64;
 
                         // collect bound differences for upper triangle of matrix
                         data_min.iter().zip(data_max.iter()).enumerate()
@@ -113,22 +113,22 @@ impl Aggregator for proto::Covariance {
                     (None, Some(left_property), Some(right_property)) => {
 
                         // left side: perform checks and prepare parameters
-                        let left_property = left_property.get_arraynd()
+                        let left_property = left_property.array()
                             .map_err(prepend("left:"))?.clone();
                         left_property.assert_is_not_aggregated()?;
                         left_property.assert_non_null()?;
-                        let left_n = left_property.get_num_records()?;
-                        let left_min = left_property.get_min_f64()?;
-                        let left_max = left_property.get_max_f64()?;
+                        let left_n = left_property.num_records()?;
+                        let left_min = left_property.min_f64()?;
+                        let left_max = left_property.max_f64()?;
 
                         // right side: perform checks and prepare parameters
-                        let right_property = right_property.get_arraynd()
+                        let right_property = right_property.array()
                             .map_err(prepend("right:"))?.clone();
                         right_property.assert_is_not_aggregated()?;
                         right_property.assert_non_null()?;
-                        let right_n = right_property.get_num_records()?;
-                        let right_min = right_property.get_min_f64()?;
-                        let right_max = right_property.get_max_f64()?;
+                        let right_n = right_property.num_records()?;
+                        let right_min = right_property.min_f64()?;
+                        let right_max = right_property.max_f64()?;
 
                         // ensure conformability
                         if left_n != right_n {

@@ -36,10 +36,15 @@
   "id": "Bin",
   "name": "bin",
   "options": {
+    "digitize": {
+      "type": "bool",
+      "default": "true",
+      "description": "set to false to output bin sides"
+    },
     "side": {
       "type": "string",
       "default": "'left'",
-      "description": "How to refer to each bin. Will be either the `left` edge, the `right` edge, or the `center` (the arithmetic mean of the two)."
+      "description": "How to refer to each bin. Will be either the `lower` edge, the `upper` edge, or the `midpoint` (the arithmetic mean of the two)."
     }
   },
   "return": {

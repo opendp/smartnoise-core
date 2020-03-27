@@ -1,7 +1,7 @@
 use crate::errors::*;
 
 use std::collections::HashMap;
-use crate::base::{Nature, NodeProperties, NatureCategorical, Vector1DNull, Vector2DJagged, ArrayNDProperties, ValueProperties, ArrayND};
+use crate::base::{Nature, NodeProperties, NatureCategorical, Vector1DNull, Jagged, ArrayProperties, ValueProperties, Array};
 
 use crate::{proto, base};
 
@@ -9,9 +9,8 @@ use crate::utilities::{prepend, get_literal};
 
 use crate::components::{Component, Expandable};
 
-use ndarray::Array;
 use crate::base::{Value, NatureContinuous};
-
+use ndarray;
 
 
 impl Component for proto::Add {
@@ -22,15 +21,15 @@ impl Component for proto::Add {
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
         let left_property = properties.get("left")
-            .ok_or("left: missing")?.get_arraynd()
+            .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
         let right_property = properties.get("right")
-            .ok_or("right: missing")?.get_arraynd()
+            .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
-        Ok(ArrayNDProperties {
+        Ok(ArrayProperties {
             nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
             nature: propagate_binary_nature(&left_property, &right_property, &Operators {
@@ -66,15 +65,15 @@ impl Component for proto::Subtract {
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
         let left_property = properties.get("left")
-            .ok_or("left: missing")?.get_arraynd()
+            .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
         let right_property = properties.get("right")
-            .ok_or("right: missing")?.get_arraynd()
+            .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
-        Ok(ArrayNDProperties {
+        Ok(ArrayProperties {
             nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
             nature: propagate_binary_nature(&left_property, &right_property, &Operators {
@@ -110,17 +109,17 @@ impl Component for proto::Divide {
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
         let left_property = properties.get("left")
-            .ok_or("left: missing")?.get_arraynd()
+            .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
         let right_property = properties.get("right")
-            .ok_or("right: missing")?.get_arraynd()
+            .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
         let float_denominator_may_span_zero = match right_property.clone().nature {
             Some(nature) => match nature {
-                Nature::Continuous(nature) => nature.min.get_f64()
-                    .map(|min| nature.max.get_f64()
+                Nature::Continuous(nature) => nature.min.f64()
+                    .map(|min| nature.max.f64()
                         .map(|max| min.iter().zip(max.iter())
                             .any(|(min, max)| min
                                 .map(|min| max
@@ -134,7 +133,7 @@ impl Component for proto::Divide {
                         .unwrap_or(false))
                     // if min is not float
                     .unwrap_or(false),
-                Nature::Categorical(nature) => nature.categories.get_f64()
+                Nature::Categorical(nature) => nature.categories.f64()
                     .map(|categories| categories.iter()
                         .any(|column| column.iter()
                             .any(|category| category.is_nan() || category == &0.)))
@@ -145,7 +144,7 @@ impl Component for proto::Divide {
             _ => true
         };
 
-        Ok(ArrayNDProperties {
+        Ok(ArrayProperties {
             nullity: left_property.nullity || right_property.nullity || float_denominator_may_span_zero,
             releasable: left_property.releasable && right_property.releasable,
             nature: None,
@@ -177,15 +176,15 @@ impl Component for proto::Multiply {
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
         let left_property = properties.get("left")
-            .ok_or("left: missing")?.get_arraynd()
+            .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
         let right_property = properties.get("right")
-            .ok_or("right: missing")?.get_arraynd()
+            .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
-        Ok(ArrayNDProperties {
+        Ok(ArrayProperties {
             nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
             nature: None,
@@ -216,15 +215,15 @@ impl Component for proto::Power {
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
         let left_property = properties.get("left")
-            .ok_or("left: missing")?.get_arraynd()
+            .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
         let right_property = properties.get("right")
-            .ok_or("right: missing")?.get_arraynd()
+            .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
-        Ok(ArrayNDProperties {
+        Ok(ArrayProperties {
             nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
             // raising data to a power is not monotonic
@@ -256,15 +255,15 @@ impl Component for proto::Log {
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
         let left_property = properties.get("left")
-            .ok_or("left: missing")?.get_arraynd()
+            .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
         let right_property = properties.get("right")
-            .ok_or("right: missing")?.get_arraynd()
+            .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
-        Ok(ArrayNDProperties {
+        Ok(ArrayProperties {
             nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
             nature: None,
@@ -297,7 +296,7 @@ impl Component for proto::Negative {
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
-            .ok_or("data: missing")?.get_arraynd()
+            .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
         if let Some(nature) = data_property.nature.clone() {
@@ -336,10 +335,10 @@ impl Component for proto::Modulo {
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
         let left_property = properties.get("left")
-            .ok_or("left: missing")?.get_arraynd()
+            .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
         let right_property = properties.get("right")
-            .ok_or("right: missing")?.get_arraynd()
+            .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
@@ -349,7 +348,7 @@ impl Component for proto::Modulo {
             _ => None
         });
 
-        Ok(ArrayNDProperties {
+        Ok(ArrayProperties {
             nullity: true,
             releasable: left_property.releasable && right_property.releasable,
             nature: maximum.and_then(|maximum| Some(Nature::Continuous(NatureContinuous {
@@ -397,8 +396,8 @@ impl Expandable for proto::Modulo {
         if !properties.contains_key("min") {
             current_id += 1;
             let id_min = current_id.clone();
-            let value = Value::ArrayND(ArrayND::F64(
-                Array::from(properties.get("data").unwrap().to_owned().get_arraynd()?.get_min_f64()?).into_dyn()));
+            let value = Value::Array(Array::F64(
+                ndarray::Array::from(properties.get("data").unwrap().to_owned().array()?.min_f64()?).into_dyn()));
             let (patch_node, release) = get_literal(&value, &component.batch)?;
             computation_graph.insert(id_min.clone(), patch_node);
             releases.insert(id_min.clone(), release);
@@ -408,8 +407,8 @@ impl Expandable for proto::Modulo {
         if !properties.contains_key("max") {
             current_id += 1;
             let id_max = current_id.clone();
-            let value = Value::ArrayND(ArrayND::F64(
-                Array::from(properties.get("data").unwrap().to_owned().get_arraynd()?.get_max_f64()?).into_dyn()));
+            let value = Value::Array(Array::F64(
+                ndarray::Array::from(properties.get("data").unwrap().to_owned().array()?.max_f64()?).into_dyn()));
             let (patch_node, release) = get_literal(&value, &component.batch)?;
             computation_graph.insert(id_max.clone(), patch_node);
             releases.insert(id_max.clone(), release);
@@ -436,19 +435,19 @@ impl Component for proto::And {
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
         let left_property = properties.get("left")
-            .ok_or("left: missing")?.get_arraynd()
+            .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
         let right_property = properties.get("right")
-            .ok_or("right: missing")?.get_arraynd()
+            .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
-        Ok(ArrayNDProperties {
+        Ok(ArrayProperties {
             nullity: false,
             releasable: left_property.releasable && right_property.releasable,
             nature: Some(Nature::Categorical(NatureCategorical {
-                categories: Vector2DJagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
+                categories: Jagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
             })),
             c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
@@ -478,19 +477,19 @@ impl Component for proto::Or {
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
         let left_property = properties.get("left")
-            .ok_or("left: missing")?.get_arraynd()
+            .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
         let right_property = properties.get("right")
-            .ok_or("right: missing")?.get_arraynd()
+            .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
-        Ok(ArrayNDProperties {
+        Ok(ArrayProperties {
             nullity: false,
             releasable: left_property.releasable && right_property.releasable,
             nature: Some(Nature::Categorical(NatureCategorical {
-                categories: Vector2DJagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
+                categories: Jagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
             })),
             c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
@@ -520,19 +519,19 @@ impl Component for proto::Negate {
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
         let left_property = properties.get("left")
-            .ok_or("left: missing")?.get_arraynd()
+            .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
         let right_property = properties.get("right")
-            .ok_or("right: missing")?.get_arraynd()
+            .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
-        Ok(ArrayNDProperties {
+        Ok(ArrayProperties {
             nullity: false,
             releasable: left_property.releasable && right_property.releasable,
             nature: Some(Nature::Categorical(NatureCategorical {
-                categories: Vector2DJagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
+                categories: Jagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
             })),
             c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
@@ -562,19 +561,19 @@ impl Component for proto::Equal {
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
         let left_property = properties.get("left")
-            .ok_or("left: missing")?.get_arraynd()
+            .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
         let right_property = properties.get("right")
-            .ok_or("right: missing")?.get_arraynd()
+            .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
-        Ok(ArrayNDProperties {
+        Ok(ArrayProperties {
             nullity: false,
             releasable: left_property.releasable && right_property.releasable,
             nature: Some(Nature::Categorical(NatureCategorical {
-                categories: Vector2DJagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
+                categories: Jagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
             })),
             c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
@@ -604,19 +603,19 @@ impl Component for proto::LessThan {
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
         let left_property = properties.get("left")
-            .ok_or("left: missing")?.get_arraynd()
+            .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
         let right_property = properties.get("right")
-            .ok_or("right: missing")?.get_arraynd()
+            .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
-        Ok(ArrayNDProperties {
+        Ok(ArrayProperties {
             nullity: false,
             releasable: left_property.releasable && right_property.releasable,
             nature: Some(Nature::Categorical(NatureCategorical {
-                categories: Vector2DJagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
+                categories: Jagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
             })),
             c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
@@ -646,19 +645,19 @@ impl Component for proto::GreaterThan {
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
         let left_property = properties.get("left")
-            .ok_or("left: missing")?.get_arraynd()
+            .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
         let right_property = properties.get("right")
-            .ok_or("right: missing")?.get_arraynd()
+            .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
-        Ok(ArrayNDProperties {
+        Ok(ArrayProperties {
             nullity: false,
             releasable: left_property.releasable && right_property.releasable,
             nature: Some(Nature::Categorical(NatureCategorical {
-                categories: Vector2DJagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
+                categories: Jagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
             })),
             c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
@@ -686,10 +685,10 @@ pub struct Operators {
     pub bool: Option<Box<dyn Fn(&bool, &bool) -> bool>>,
 }
 
-pub fn propagate_binary_shape(left_property: &ArrayNDProperties, right_property: &ArrayNDProperties) -> Result<(i64, Option<i64>)> {
+pub fn propagate_binary_shape(left_property: &ArrayProperties, right_property: &ArrayProperties) -> Result<(i64, Option<i64>)> {
 
-    let left_num_columns = left_property.get_num_columns()?;
-    let right_num_columns = right_property.get_num_columns()?;
+    let left_num_columns = left_property.num_columns()?;
+    let right_num_columns = right_property.num_columns()?;
 
     let left_is_column_broadcastable = left_property.releasable && left_num_columns == 1;
     let right_is_column_broadcastable = right_property.releasable && right_num_columns == 1;
@@ -701,8 +700,8 @@ pub fn propagate_binary_shape(left_property: &ArrayNDProperties, right_property:
     let output_num_columns = left_num_columns.max(right_num_columns);
 
     // n must be known to prevent conformability attacks
-    let left_num_records = left_property.get_num_records()?;
-    let right_num_records = right_property.get_num_records()?;
+    let left_num_records = left_property.num_records()?;
+    let right_num_records = right_property.num_records()?;
 
     let left_is_row_broadcastable = left_property.releasable && left_num_records == 1;
     let right_is_row_broadcastable = right_property.releasable && right_num_records == 1;
@@ -720,7 +719,7 @@ pub fn propagate_binary_shape(left_property: &ArrayNDProperties, right_property:
     Ok((output_num_columns, Some(output_num_records)))
 }
 
-pub fn propagate_binary_nature(left_property: &ArrayNDProperties, right_property: &ArrayNDProperties, operator: &Operators, &output_num_columns: &i64) -> Result<Option<Nature>> {
+pub fn propagate_binary_nature(left_property: &ArrayProperties, right_property: &ArrayProperties, operator: &Operators, &output_num_columns: &i64) -> Result<Option<Nature>> {
     Ok(match (left_property.nature.clone(), right_property.nature.clone()) {
         (Some(left_nature), Some(right_nature)) => match (left_nature, right_nature) {
             (Nature::Continuous(left_nature), Nature::Continuous(right_nature)) => {

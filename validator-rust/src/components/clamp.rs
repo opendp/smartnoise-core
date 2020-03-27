@@ -1,13 +1,13 @@
 use crate::errors::*;
 
 use std::collections::HashMap;
-use crate::base::{Nature, Vector1DNull, NodeProperties, ArrayND, ValueProperties, NatureCategorical, Vector2DJagged};
+use crate::base::{Nature, Vector1DNull, NodeProperties, Array, ValueProperties, NatureCategorical, Jagged};
 
 use crate::{proto, base};
 use crate::utilities::{prepend, get_literal, standardize_null_target_argument};
 use crate::components::{Component, Expandable};
 
-use ndarray::Array;
+use ndarray;
 use crate::base::{Value, NatureContinuous};
 
 
@@ -20,7 +20,7 @@ impl Component for proto::Clamp {
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
-            .ok_or("data: missing")?.get_arraynd()
+            .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
         let num_columns = data_property.num_columns
@@ -30,29 +30,29 @@ impl Component for proto::Clamp {
         if let Some(categories) = public_arguments.get("categories") {
             let null = public_arguments.get("null")
                 .ok_or::<Error>("null value must be defined when clamping by categories".into())?
-                .get_arraynd()?;
+                .array()?;
 
-            let mut categories = categories.get_jagged()?.clone();
+            let mut categories = categories.jagged()?.clone();
             match (&mut categories, null) {
-                (Vector2DJagged::F64(jagged), ArrayND::F64(null)) => {
+                (Jagged::F64(jagged), Array::F64(null)) => {
                     let null_target = standardize_null_target_argument(&null, &num_columns)?;
                     jagged.iter_mut().zip(null_target.into_iter())
                         .for_each(|(cats, null)| cats.into_iter()
                             .for_each(|cats| cats.push(null)))
                 },
-                (Vector2DJagged::I64(jagged), ArrayND::I64(null)) => {
+                (Jagged::I64(jagged), Array::I64(null)) => {
                     let null_target = standardize_null_target_argument(&null, &num_columns)?;
                     jagged.iter_mut().zip(null_target.into_iter())
                         .for_each(|(cats, null)| cats.into_iter()
                             .for_each(|cats| cats.push(null)))
                 },
-                (Vector2DJagged::Str(jagged), ArrayND::Str(null)) => {
+                (Jagged::Str(jagged), Array::Str(null)) => {
                     let null_target = standardize_null_target_argument(&null, &num_columns)?;
                     jagged.iter_mut().zip(null_target.into_iter())
                         .for_each(|(cats, null)| cats.into_iter()
                             .for_each(|cats| cats.push(null.clone())))
                 },
-                (Vector2DJagged::Bool(jagged), ArrayND::Bool(null)) => {
+                (Jagged::Bool(jagged), Array::Bool(null)) => {
                     let null_target = standardize_null_target_argument(&null, &num_columns)?;
                     jagged.iter_mut().zip(null_target.into_iter())
                         .for_each(|(cats, null)| cats.into_iter()
@@ -68,29 +68,29 @@ impl Component for proto::Clamp {
 
         // 1. check public arguments (constant n)
         let mut clamp_minimum = match public_arguments.get("min") {
-            Some(min) => min.clone().get_arraynd()?.clone().get_vec_f64(Some(num_columns))?,
+            Some(min) => min.clone().array()?.clone().vec_f64(Some(num_columns))?,
 
             // 2. then private arguments (for example from another clamped column)
             None => match properties.get("min") {
-                Some(min) => min.get_arraynd()?.get_min_f64()?,
+                Some(min) => min.array()?.min_f64()?,
 
                 // 3. then data properties (propagated from prior clamping/min/max)
                 None => data_property
-                    .get_min_f64()?
+                    .min_f64()?
             }
         };
 
         // 1. check public arguments (constant n)
         let mut clamp_maximum = match public_arguments.get("max") {
-            Some(max) => max.get_arraynd()?.clone().get_vec_f64(Some(num_columns))?,
+            Some(max) => max.array()?.clone().vec_f64(Some(num_columns))?,
 
             // 2. then private arguments (for example from another clamped column)
             None => match properties.get("max") {
-                Some(min) => min.get_arraynd()?.get_max_f64()?,
+                Some(min) => min.array()?.max_f64()?,
 
                 // 3. then data properties (propagated from prior clamping/min/max)
                 None => data_property
-                    .get_max_f64()?
+                    .max_f64()?
             }
         };
 
@@ -99,7 +99,7 @@ impl Component for proto::Clamp {
         }
 
         // the actual data bound (if it exists) may be tighter than the clamping parameters
-        if let Ok(data_minimum) = data_property.get_min_f64_option() {
+        if let Ok(data_minimum) = data_property.min_f64_option() {
             clamp_minimum = clamp_minimum.iter().zip(data_minimum)
                 // match on if the actual bound exists for each column, and remain conservative if not
                 .map(|(clamp_min, optional_data_min)| match optional_data_min {
@@ -107,7 +107,7 @@ impl Component for proto::Clamp {
                     None => clamp_min.clone()
                 }).collect()
         }
-        if let Ok(data_maximum) = data_property.get_max_f64_option() {
+        if let Ok(data_maximum) = data_property.max_f64_option() {
             clamp_maximum = clamp_maximum.iter().zip(data_maximum)
                 .map(|(clamp_max, optional_data_max)| match optional_data_max {
                     Some(data_max) => clamp_max.min(data_max),
@@ -152,8 +152,8 @@ impl Expandable for proto::Clamp {
         if !has_categorical && !properties.contains_key("min") {
             current_id += 1;
             let id_min = current_id.clone();
-            let value = Value::ArrayND(ArrayND::F64(
-                Array::from(properties.get("data").unwrap().to_owned().get_arraynd()?.get_min_f64()?).into_dyn()));
+            let value = Value::Array(Array::F64(
+                ndarray::Array::from(properties.get("data").unwrap().to_owned().array()?.min_f64()?).into_dyn()));
             let (patch_node, release) = get_literal(&value, &component.batch)?;
             computation_graph.insert(id_min.clone(), patch_node);
             releases.insert(id_min.clone(), release);
@@ -163,8 +163,8 @@ impl Expandable for proto::Clamp {
         if !has_categorical && !properties.contains_key("max") {
             current_id += 1;
             let id_max = current_id.clone();
-            let value = Value::ArrayND(ArrayND::F64(
-                Array::from(properties.get("data").unwrap().to_owned().get_arraynd()?.get_max_f64()?).into_dyn()));
+            let value = Value::Array(Array::F64(
+                ndarray::Array::from(properties.get("data").unwrap().to_owned().array()?.max_f64()?).into_dyn()));
             let (patch_node, release) = get_literal(&value, &component.batch)?;
             computation_graph.insert(id_max.clone(), patch_node);
             releases.insert(id_max.clone(), release);

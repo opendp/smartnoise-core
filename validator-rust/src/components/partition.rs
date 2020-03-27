@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use crate::{proto, base};
 
 use crate::components::{Component};
-use crate::base::{Value, Vector2DJagged, NodeProperties, ValueProperties, HashmapProperties, ArrayNDProperties};
+use crate::base::{Value, Jagged, NodeProperties, ValueProperties, HashmapProperties, ArrayProperties};
 use crate::utilities::prepend;
 
 
@@ -18,19 +18,19 @@ impl Component for proto::Partition {
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
-            .ok_or("data: missing")?.get_arraynd()
+            .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
         Ok(match properties.get("by") {
             Some(by_property) => {
-                let by_property = by_property.get_arraynd()
+                let by_property = by_property.array()
                     .map_err(prepend("by:"))?.clone();
                 let by_num_columns= by_property.num_columns
                     .ok_or::<Error>("number of columns must be known on by".into())?;
                 if by_num_columns != 1 {
                     return Err("Partition's by argument must contain a single column".into());
                 }
-                let categories = by_property.get_categories()
+                let categories = by_property.categories()
                     .map_err(prepend("by:"))?;
                 data_property.num_records = None;
 
@@ -38,9 +38,9 @@ impl Component for proto::Partition {
                     num_records: data_property.num_records,
                     disjoint: true,
                     properties: match categories {
-                        Vector2DJagged::Bool(categories) => broadcast_partitions(&categories, &data_property)?.into(),
-                        Vector2DJagged::Str(categories) => broadcast_partitions(&categories, &data_property)?.into(),
-                        Vector2DJagged::I64(categories) => broadcast_partitions(&categories, &data_property)?.into(),
+                        Jagged::Bool(categories) => broadcast_partitions(&categories, &data_property)?.into(),
+                        Jagged::Str(categories) => broadcast_partitions(&categories, &data_property)?.into(),
+                        Jagged::I64(categories) => broadcast_partitions(&categories, &data_property)?.into(),
                         _ => return Err("partitioning based on floats is not supported".into())
                     },
                     columnar: false
@@ -49,7 +49,7 @@ impl Component for proto::Partition {
             None => {
 
                 let num_partitions = public_arguments.get("num_partitions")
-                    .ok_or("num_partitions or by must be passed to Partition")?.get_arraynd()?.get_first_i64()?;
+                    .ok_or("num_partitions or by must be passed to Partition")?.array()?.first_i64()?;
 
                 let lengths = match data_property.num_records {
                     Some(num_records) => (0..num_partitions)
@@ -66,7 +66,7 @@ impl Component for proto::Partition {
                     properties: lengths.iter().enumerate().map(|(index, partition_num_records)| {
                         let mut partition_property = data_property.clone();
                         partition_property.num_records = partition_num_records.clone();
-                        (index as i64, ValueProperties::ArrayND(partition_property))
+                        (index as i64, ValueProperties::Array(partition_property))
                     }).collect::<HashMap<i64, ValueProperties>>().into(),
                     columnar: false
                 }
@@ -83,7 +83,7 @@ impl Component for proto::Partition {
 }
 
 pub fn broadcast_partitions<T: Clone + Eq + std::hash::Hash>(
-    categories: &Vec<Option<Vec<T>>>, properties: &ArrayNDProperties
+    categories: &Vec<Option<Vec<T>>>, properties: &ArrayProperties
 ) -> Result<HashMap<T, ValueProperties>> {
 
     if categories.len() != 1 {
@@ -92,6 +92,6 @@ pub fn broadcast_partitions<T: Clone + Eq + std::hash::Hash>(
     let partitions = categories[0].clone()
         .ok_or::<Error>("categories: must be defined".into())?;
     Ok(partitions.iter()
-        .map(|v| (v.clone(), ValueProperties::ArrayND(properties.clone())))
+        .map(|v| (v.clone(), ValueProperties::Array(properties.clone())))
         .collect())
 }

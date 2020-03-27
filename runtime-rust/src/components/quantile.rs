@@ -1,7 +1,7 @@
 use whitenoise_validator::errors::*;
 
 use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value, ArrayND};
+use whitenoise_validator::base::{Value, Array};
 use whitenoise_validator::utilities::get_argument;
 use crate::components::Evaluable;
 use whitenoise_validator::proto;
@@ -16,10 +16,10 @@ use std::ops::{Sub, Div, Add, Mul, Rem};
 
 impl Evaluable for proto::Quantile {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        match get_argument(&arguments, "data")?.get_arraynd()? {
-            ArrayND::F64(data) =>
+        match get_argument(&arguments, "data")?.array()? {
+            Array::F64(data) =>
                 Ok(quantile(data.mapv(n64), &self.quantile, &self.interpolation)?.mapv(|v| v.raw()).into()),
-            ArrayND::I64(data) =>
+            Array::I64(data) =>
                 Ok(quantile(data.clone(), &self.quantile, &self.interpolation)?.into()),
             _ => return Err("data must be either f64 or i64".into())
         }

@@ -50,10 +50,10 @@ impl Expandable for proto::DpCovariance {
         let symmetric;
         match properties.get("data") {
             Some(data_property) => {
-                let data_property = data_property.get_arraynd()
+                let data_property = data_property.array()
                     .map_err(prepend("data:"))?.clone();
 
-                let num_columns = data_property.get_num_columns()?;
+                let num_columns = data_property.num_columns()?;
                 shape = vec![u32::try_from(num_columns).unwrap(), u32::try_from(num_columns).unwrap()];
                 arguments = hashmap![
                     "data".to_owned() => *component.arguments.get("data").ok_or::<Error>("data must be provided as an argument".into())?
@@ -62,13 +62,13 @@ impl Expandable for proto::DpCovariance {
             },
             None => {
                 let left_property = properties.get("left")
-                    .ok_or("data: missing")?.get_arraynd()
+                    .ok_or("data: missing")?.array()
                     .map_err(prepend("data:"))?.clone();
                 let right_property = properties.get("right")
-                    .ok_or("data: missing")?.get_arraynd()
+                    .ok_or("data: missing")?.array()
                     .map_err(prepend("data:"))?.clone();
 
-                shape = vec![u32::try_from(left_property.get_num_columns()?).unwrap(), u32::try_from(right_property.get_num_columns()?).unwrap()];
+                shape = vec![u32::try_from(left_property.num_columns()?).unwrap(), u32::try_from(right_property.num_columns()?).unwrap()];
                 arguments = hashmap![
                     "left".to_owned() => *component.arguments.get("left").ok_or::<Error>("left must be provided as an argument".into())?,
                     "right".to_owned() => *component.arguments.get("right").ok_or::<Error>("right must be provided as an argument".into())?
@@ -137,34 +137,34 @@ impl Report for proto::DpCovariance {
 
         if properties.contains_key("data") {
             let data_property = properties.get("data")
-                .ok_or("data: missing")?.get_arraynd()
+                .ok_or("data: missing")?.array()
                 .map_err(prepend("data:"))?.clone();
 
             statistic = "DPCovariance".to_string();
             argument = serde_json::json!({
-                "n": data_property.get_num_records()?,
+                "n": data_property.num_records()?,
                 "constraint": {
-                    "lowerbound": data_property.get_min_f64()?,
-                    "upperbound": data_property.get_max_f64()?
+                    "lowerbound": data_property.min_f64()?,
+                    "upperbound": data_property.max_f64()?
                 }
             });
         }
         else {
             let left_property = properties.get("left")
-                .ok_or("data: missing")?.get_arraynd()
+                .ok_or("data: missing")?.array()
                 .map_err(prepend("data:"))?.clone();
             let right_property = properties.get("right")
-                .ok_or("data: missing")?.get_arraynd()
+                .ok_or("data: missing")?.array()
                 .map_err(prepend("data:"))?.clone();
 
             statistic = "DPCrossCovariance".to_string();
             argument = serde_json::json!({
-                "n": left_property.get_num_records()?,
+                "n": left_property.num_records()?,
                 "constraint": {
-                    "lowerbound_left": left_property.get_min_f64()?,
-                    "upperbound_left": left_property.get_max_f64()?,
-                    "lowerbound_right": right_property.get_min_f64()?,
-                    "upperbound_right": right_property.get_max_f64()?
+                    "lowerbound_left": left_property.min_f64()?,
+                    "upperbound_left": left_property.max_f64()?,
+                    "lowerbound_right": right_property.min_f64()?,
+                    "upperbound_right": right_property.max_f64()?
                 }
             });
         }

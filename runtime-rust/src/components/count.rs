@@ -1,9 +1,10 @@
 use whitenoise_validator::errors::*;
 
 use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value, ArrayND};
+use whitenoise_validator::base::{Value, Array};
 use crate::components::Evaluable;
-use ndarray::{ArrayD, Array, Axis};
+use ndarray::{ArrayD, Axis};
+use ndarray;
 use whitenoise_validator::proto;
 use whitenoise_validator::utilities::get_argument;
 use std::collections::BTreeMap;
@@ -14,22 +15,22 @@ use noisy_float::types::n64;
 impl Evaluable for proto::Count {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
         Ok(match (get_argument(&arguments, "data"), get_argument(&arguments, "categories")) {
-            (Ok(data), Ok(categories)) => match (data.get_arraynd()?, categories.get_arraynd()?) {
-                (ArrayND::Bool(data), ArrayND::Bool(categories)) =>
+            (Ok(data), Ok(categories)) => match (data.array()?, categories.array()?) {
+                (Array::Bool(data), Array::Bool(categories)) =>
                     count_by(data, categories)?.into(),
-                (ArrayND::F64(data), ArrayND::F64(categories)) =>
+                (Array::F64(data), Array::F64(categories)) =>
                     count_by(&data.mapv(n64), &categories.mapv(n64))?.into(),
-                (ArrayND::I64(data), ArrayND::I64(categories)) =>
+                (Array::I64(data), Array::I64(categories)) =>
                     count_by(data, categories)?.into(),
-                (ArrayND::Str(data), ArrayND::Str(categories)) =>
+                (Array::Str(data), Array::Str(categories)) =>
                     count_by(data, categories)?.into(),
                 _ => return Err("data and categories must be homogeneously typed".into())
             },
-            (Ok(data), ..) => match data.get_arraynd()? {
-                ArrayND::Bool(data) => count(data)?.into(),
-                ArrayND::F64(data) => count(data)?.into(),
-                ArrayND::I64(data) => count(data)?.into(),
-                ArrayND::Str(data) => count(data)?.into()
+            (Ok(data), ..) => match data.array()? {
+                Array::Bool(data) => count(data)?.into(),
+                Array::F64(data) => count(data)?.into(),
+                Array::I64(data) => count(data)?.into(),
+                Array::Str(data) => count(data)?.into()
             }
             _ => return Err("data and optionally categories must be passed".into())
         })
@@ -53,7 +54,7 @@ impl Evaluable for proto::Count {
 /// assert!(n.first().unwrap() == &2);
 /// ```
 pub fn count<T>(data: &ArrayD<T>) -> Result<ArrayD<i64>> {
-    Ok(Array::from_shape_vec(vec![], vec![data.len_of(Axis(0)) as i64])?)
+    Ok(ndarray::Array::from_shape_vec(vec![], vec![data.len_of(Axis(0)) as i64])?)
 }
 
 pub fn count_by<T: Clone + Eq + Ord + std::hash::Hash>(data: &ArrayD<T>, categories: &ArrayD<T>) -> Result<ArrayD<i64>> {
@@ -72,8 +73,8 @@ pub fn count_by<T: Clone + Eq + Ord + std::hash::Hash>(data: &ArrayD<T>, categor
 
     // ensure means are of correct dimension
     Ok(match data.ndim() {
-        1 => Array::from_shape_vec(vec![zeros.len()], counts),
-        2 => Array::from_shape_vec(vec![zeros.len(), get_num_columns(&data)? as usize], counts),
+        1 => ndarray::Array::from_shape_vec(vec![zeros.len()], counts),
+        2 => ndarray::Array::from_shape_vec(vec![zeros.len(), get_num_columns(&data)? as usize], counts),
         _ => return Err("invalid data shape for Count".into())
     }?.into())
 }

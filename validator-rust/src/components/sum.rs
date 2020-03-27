@@ -20,7 +20,7 @@ impl Component for proto::Sum {
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
-            .ok_or("data: missing")?.get_arraynd()
+            .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
         // save a snapshot of the state when aggregating
@@ -56,13 +56,13 @@ impl Aggregator for proto::Sum {
             SensitivitySpace::KNorm(k) => {
 
                 let data_property = properties.get("data")
-                    .ok_or("data: missing")?.get_arraynd()
+                    .ok_or("data: missing")?.array()
                     .map_err(prepend("data:"))?.clone();
 
                 data_property.assert_is_not_aggregated()?;
                 data_property.assert_non_null()?;
-                let data_min = data_property.get_min_f64()?;
-                let data_max = data_property.get_max_f64()?;
+                let data_min = data_property.min_f64()?;
+                let data_max = data_property.max_f64()?;
 
                 use proto::privacy_definition::Neighboring;
                 let neighboring_type = Neighboring::from_i32(privacy_definition.neighboring)

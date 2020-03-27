@@ -12,7 +12,7 @@ use crate::components::mean::mean;
 impl Evaluable for proto::Variance {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
         let delta_degrees_of_freedom = if self.finite_sample_correction { 1 } else { 0 } as usize;
-        Ok(variance(&get_argument(&arguments, "data")?.get_arraynd()?.get_f64()?.clone(), &delta_degrees_of_freedom)?.into())
+        Ok(variance(&get_argument(&arguments, "data")?.array()?.f64()?.clone(), &delta_degrees_of_freedom)?.into())
     }
 }
 

@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use crate::{proto};
 
 use crate::components::{Component, Aggregator, Expandable};
-use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType, NatureContinuous, Nature, Vector1DNull, Vector2DJagged};
+use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType, NatureContinuous, Nature, Vector1DNull, Jagged};
 use crate::utilities::{prepend, get_literal};
 use ndarray::{arr1, Array};
 
@@ -19,15 +19,15 @@ impl Component for proto::Count {
         properties: &NodeProperties,
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
-            .ok_or("data: missing")?.get_arraynd()
+            .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
-        match data_property.get_categories() {
+        match data_property.categories() {
             Ok(categories) => {
-                if categories.get_num_columns() != 1 {
+                if categories.num_columns() != 1 {
                     return Err("categories must contain only one column".into())
                 }
-                data_property.num_records = Some(categories.get_lengths()?[0] as i64);
+                data_property.num_records = Some(categories.lengths()?[0] as i64);
             }
             Err(_) => {
                 data_property.num_records = Some(1);
@@ -41,7 +41,7 @@ impl Component for proto::Count {
             properties: properties.clone()
         });
 
-        let data_num_columns = data_property.get_num_columns()?;
+        let data_num_columns = data_property.num_columns()?;
         data_property.nature = Some(Nature::Continuous(NatureContinuous {
             min: Vector1DNull::I64((0..data_num_columns).map(|_| Some(0)).collect()),
             max: Vector1DNull::I64((0..data_num_columns).map(|_| None).collect()),
@@ -78,12 +78,12 @@ impl Expandable for proto::Count {
 
         current_id += 1;
         let id_categories = current_id.clone();
-        let value = match properties.get("data").ok_or("data: missing")?.get_arraynd()?.get_categories() {
+        let value = match properties.get("data").ok_or("data: missing")?.array()?.categories() {
             Ok(categories) => match categories {
-                Vector2DJagged::I64(jagged) => arr1(jagged[0].as_ref().unwrap()).into_dyn().into(),
-                Vector2DJagged::F64(jagged) => arr1(jagged[0].as_ref().unwrap()).into_dyn().into(),
-                Vector2DJagged::Bool(jagged) => arr1(jagged[0].as_ref().unwrap()).into_dyn().into(),
-                Vector2DJagged::Str(jagged) => arr1(jagged[0].as_ref().unwrap()).into_dyn().into(),
+                Jagged::I64(jagged) => arr1(jagged[0].as_ref().unwrap()).into_dyn().into(),
+                Jagged::F64(jagged) => arr1(jagged[0].as_ref().unwrap()).into_dyn().into(),
+                Jagged::Bool(jagged) => arr1(jagged[0].as_ref().unwrap()).into_dyn().into(),
+                Jagged::Str(jagged) => arr1(jagged[0].as_ref().unwrap()).into_dyn().into(),
             },
             Err(_) => return Ok(proto::ComponentExpansion {
                 computation_graph,
@@ -117,7 +117,7 @@ impl Aggregator for proto::Count {
         sensitivity_type: &SensitivitySpace
     ) -> Result<Value> {
         let data_property = properties.get("data")
-            .ok_or("data: missing")?.get_arraynd()
+            .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
         data_property.assert_is_not_aggregated()?;
@@ -132,8 +132,8 @@ impl Aggregator for proto::Count {
                     .ok_or::<Error>("neighboring definition must be either \"AddRemove\" or \"Substitute\"".into())?;
 
                 // when categories are defined, a disjoint group by query is performed
-                let categories_length = data_property.get_categories().ok()
-                    .and_then(|cats| cats.get_lengths_option().get(0).cloned()?);
+                let categories_length = data_property.categories().ok()
+                    .and_then(|cats| cats.lengths_option().get(0).cloned()?);
 
                 let num_records = data_property.num_records;
 
@@ -166,7 +166,7 @@ impl Aggregator for proto::Count {
 
                 Ok(match categories_length {
                     Some(num_records) => {
-                        let num_columns = data_property.get_num_columns()?;
+                        let num_columns = data_property.num_columns()?;
                         Array::from_shape_vec(
                             vec![num_records as usize, num_columns as usize],
                             (0..(num_records * num_columns)).map(|_| sensitivity.clone()).collect())?

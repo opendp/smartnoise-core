@@ -1,7 +1,7 @@
 use crate::errors::*;
 
 use std::collections::HashMap;
-use crate::base::{Nature, NodeProperties, NatureCategorical, Vector2DJagged, ValueProperties, DataType, ArrayND};
+use crate::base::{Nature, NodeProperties, NatureCategorical, Jagged, ValueProperties, DataType, Array};
 
 use crate::proto;
 use crate::utilities::{prepend, standardize_categorical_argument, standardize_null_target_argument};
@@ -19,25 +19,25 @@ impl Component for proto::Bin {
         properties: &NodeProperties,
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
-            .ok_or::<Error>("data: missing".into())?.clone().get_arraynd()
+            .ok_or::<Error>("data: missing".into())?.clone().array()
             .map_err(prepend("data:"))?.clone();
 
-        let num_columns = data_property.get_num_columns()
+        let num_columns = data_property.num_columns()
             .map_err(prepend("data:"))?;
 
         let null_values = public_arguments.get("null")
-            .ok_or::<Error>("null: missing, must be public".into())?.get_arraynd()?;
+            .ok_or::<Error>("null: missing, must be public".into())?.array()?;
 
         public_arguments.get("edges")
             .ok_or::<Error>("edges: missing, must be public".into())
-            .and_then(|v| v.get_jagged())
+            .and_then(|v| v.jagged())
             .and_then(|v| match (v, null_values) {
-                (Vector2DJagged::F64(jagged), ArrayND::F64(null)) => {
+                (Jagged::F64(jagged), Array::F64(null)) => {
                     let null = standardize_null_target_argument(null, &num_columns)?;
                     let mut edges = standardize_categorical_argument(jagged, &num_columns)?;
                     let edges = nature_from_edges(&self.side, &mut edges)?;
                     data_property.nature = Some(Nature::Categorical(NatureCategorical {
-                        categories: Vector2DJagged::F64(edges.into_iter().zip(null.into_iter())
+                        categories: Jagged::F64(edges.into_iter().zip(null.into_iter())
                             .map(|(mut col, null)| {
                                 col.push(null);
                                 Some(col)
@@ -45,12 +45,12 @@ impl Component for proto::Bin {
                     }));
                     Ok(())
                 }
-                (Vector2DJagged::I64(jagged), ArrayND::I64(null)) => {
+                (Jagged::I64(jagged), Array::I64(null)) => {
                     let null = standardize_null_target_argument(null, &num_columns)?;
                     let mut edges = standardize_categorical_argument(jagged, &num_columns)?;
                     let edges = nature_from_edges(&self.side, &mut edges)?;
                     data_property.nature = Some(Nature::Categorical(NatureCategorical {
-                        categories: Vector2DJagged::I64(edges.into_iter().zip(null.into_iter())
+                        categories: Jagged::I64(edges.into_iter().zip(null.into_iter())
                             .map(|(mut col, null)| {
                                 col.push(null);
                                 Some(col)
@@ -60,6 +60,17 @@ impl Component for proto::Bin {
                 }
                 _ => Err("edges: must be numeric".into())
             })?;
+
+//        if self.digitize {
+//            data_property.nature = Some(Nature::Categorical(NatureCategorical {
+//                categories: match data_property.nature.unwrap().get_categorical()?.categories {
+//                    Jagged::I64(edges.into_iter().map(|column|
+//                        Some(column.unwrap().into_iter().enumerate()
+//                            .map(|(idx, _)| idx as i64).collect()))
+//                        .collect())
+//                }
+//            }))
+//        }
 
         data_property.data_type = DataType::F64;
 
@@ -77,17 +88,17 @@ impl Component for proto::Bin {
 
 fn nature_from_edges<T: Clone + Sum + Div<Output=T> + From<i32>>(side: &String, edges: &mut Vec<Vec<T>>) -> Result<Vec<Vec<T>>> {
     Ok(match side.as_str() {
-        "left" => edges.iter_mut().map(|col| {
+        "lower" => edges.iter_mut().map(|col| {
             col.pop();
             col.clone()
         }).collect(),
-        "center" => edges.iter().map(|col|
+        "midpoint" => edges.iter().map(|col|
             col.windows(2).map(|slice| slice.iter().cloned().sum::<T>() / T::from(2)).collect())
             .collect(),
-        "right" => edges.iter_mut().map(|col| {
+        "upper" => edges.iter_mut().map(|col| {
             col.remove(0);
             col.clone()
         }).collect(),
-        _ => bail!("side: must be left, center or right")
+        _ => bail!("side: must be lower, midpoint or upper")
     })
 }

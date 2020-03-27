@@ -71,6 +71,7 @@ impl Expandable for proto::DpHistogram {
                         "inclusive_left".to_owned() => *inclusive_left_id
                     ],
                     variant: Some(proto::component::Variant::from(proto::Bin {
+                        digitize: true,
                         side: self.side.clone()
                     })),
                     omit: true,
@@ -102,10 +103,10 @@ impl Expandable for proto::DpHistogram {
 
             (None, None) => {
                 let data_property = properties.get("data")
-                    .ok_or("data: missing")?.get_arraynd()
+                    .ok_or("data: missing")?.array()
                     .map_err(prepend("data:"))?.clone();
 
-                if data_property.get_categories().is_err() {
+                if data_property.categories().is_err() {
                     return Err("either edges or categories must be supplied".into())
                 }
 
@@ -148,12 +149,12 @@ impl Report for proto::DpHistogram {
         release: &Value,
     ) -> Result<Option<Vec<JSONRelease>>> {
         let data_property = properties.get("data")
-            .ok_or("data: missing")?.get_arraynd()
+            .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
         let mut releases = Vec::new();
 
-        let num_columns = data_property.get_num_columns()?;
+        let num_columns = data_property.num_columns()?;
         let privacy_usages = broadcast_privacy_usage(&self.privacy_usage, num_columns as usize)?;
 
         for column_number in 0..num_columns {
@@ -163,7 +164,7 @@ impl Report for proto::DpHistogram {
                 variables: serde_json::json!(Vec::<String>::new()),
                 // extract ith column of release
                 release_info: value_to_json(&get_ith_release(
-                    release.get_arraynd()?.get_i64()?,
+                    release.array()?.i64()?,
                     &(column_number as usize)
                 )?.into())?,
                 privacy_loss: privacy_usage_to_json(&privacy_usages[column_number as usize].clone()),

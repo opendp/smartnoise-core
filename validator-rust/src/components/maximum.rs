@@ -18,7 +18,7 @@ impl Component for proto::Maximum {
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
-            .ok_or("data: missing")?.get_arraynd()
+            .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
         data_property.assert_is_not_aggregated()?;
@@ -50,7 +50,7 @@ impl Aggregator for proto::Maximum {
         sensitivity_type: &SensitivitySpace
     ) -> Result<Value> {
         let data_property = properties.get("data")
-            .ok_or("data: missing")?.get_arraynd()
+            .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
         data_property.assert_non_null()?;
@@ -60,8 +60,8 @@ impl Aggregator for proto::Maximum {
                 if k != &1 {
                     return Err("Maximum sensitivity is only implemented for KNorm of 1".into())
                 }
-                let min = data_property.get_min_f64()?;
-                let max = data_property.get_max_f64()?;
+                let min = data_property.min_f64()?;
+                let max = data_property.max_f64()?;
 
                 let row_sensitivity = min.iter().zip(max.iter())
                     .map(|(min, max)| (max - min))

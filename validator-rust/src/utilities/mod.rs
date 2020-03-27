@@ -462,7 +462,7 @@ pub fn expand_mechanism(
 
     // always overwrite sensitivity. This is not something a user may configure
     let data_property = properties.get("data")
-        .ok_or("data: missing")?.get_arraynd()
+        .ok_or("data: missing")?.array()
         .map_err(prepend("data:"))?.clone();
 
     let aggregator = data_property.aggregator.clone()

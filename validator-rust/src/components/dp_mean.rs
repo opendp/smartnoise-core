@@ -111,16 +111,16 @@ impl Report for proto::DpMean {
     ) -> Result<Option<Vec<JSONRelease>>> {
 
         let data_property = properties.get("data")
-            .ok_or("data: missing")?.get_arraynd()
+            .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
         let mut releases = Vec::new();
 
-        let minimums = data_property.get_min_f64()?;
-        let maximums = data_property.get_max_f64()?;
-        let num_records = data_property.get_num_records()?;
+        let minimums = data_property.min_f64()?;
+        let maximums = data_property.max_f64()?;
+        let num_records = data_property.num_records()?;
 
-        let num_columns = data_property.get_num_columns()?;
+        let num_columns = data_property.num_columns()?;
         let privacy_usages = broadcast_privacy_usage(&self.privacy_usage, num_columns as usize)?;
 
         for column_number in 0..num_columns {
@@ -129,7 +129,7 @@ impl Report for proto::DpMean {
                 statistic: "DPMean".to_string(),
                 variables: serde_json::json!(Vec::<String>::new()),
                 release_info: value_to_json(&get_ith_release(
-                    release.get_arraynd()?.get_f64()?,
+                    release.array()?.f64()?,
                     &(column_number as usize)
                 )?.into())?,
                 privacy_loss: privacy_usage_to_json(&privacy_usages[column_number as usize].clone()),

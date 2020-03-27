@@ -23,54 +23,54 @@ use crate::utilities::standardize_categorical_argument;
 #[derive(Clone, Debug)]
 pub enum Value {
     /// An arbitrary-dimensional homogeneously typed array
-    ArrayND(ArrayND),
+    Array(Array),
     /// A hash-map, where the keys are enum-typed and the values are of type Value
     Hashmap(Hashmap<Value>),
     /// A 2D homogeneously typed matrix, where the columns may be unknown and the column lengths may be inconsistent
-    Vector2DJagged(Vector2DJagged),
+    Jagged(Jagged),
 }
 
 impl Value {
-    /// Retrieve an ArrayND from a Value, assuming the Value contains an ArrayND
-    pub fn get_arraynd<'a>(&'a self) -> Result<&'a ArrayND> {
+    /// Retrieve an Array from a Value, assuming the Value contains an Array
+    pub fn array<'a>(&'a self) -> Result<&'a Array> {
         match self {
-            Value::ArrayND(array) => Ok(array),
-            _ => Err("value must be wrapped in an ArrayND".into())
+            Value::Array(array) => Ok(array),
+            _ => Err("value must be an Array".into())
         }
     }
-    /// Retrieve a Vector2DJagged from a Value, assuming the Value contains a Vector2DJagged
-    pub fn get_jagged<'a>(&'a self) -> Result<&'a Vector2DJagged> {
+    /// Retrieve Jagged from a Value, assuming the Value contains Jagged
+    pub fn jagged<'a>(&'a self) -> Result<&'a Jagged> {
         match self {
-            Value::Vector2DJagged(jagged) => Ok(jagged),
-            _ => Err("value must be wrapped in a Vector2DJagged".into())
+            Value::Jagged(jagged) => Ok(jagged),
+            _ => Err("value must be Jagged".into())
         }
     }
 
     /// Retrieve the first f64 from a Value, assuming a Value contains an ArrayND of type f64
-    pub fn get_first_f64(&self) -> Result<f64> {
+    pub fn first_f64(&self) -> Result<f64> {
         match self {
-            Value::ArrayND(array) => array.get_first_f64(),
+            Value::Array(array) => array.first_f64(),
             _ => Err("cannot retrieve first float".into())
         }
     }
     /// Retrieve the first i64 from a Value, assuming a Value contains an ArrayND of type i64
-    pub fn get_first_i64(&self) -> Result<i64> {
+    pub fn first_i64(&self) -> Result<i64> {
         match self {
-            Value::ArrayND(array) => array.get_first_i64(),
+            Value::Array(array) => array.first_i64(),
             _ => Err("cannot retrieve integer".into())
         }
     }
     /// Retrieve the first String from a Value, assuming a Value contains an ArrayND of type String
-    pub fn get_first_str(&self) -> Result<String> {
+    pub fn first_string(&self) -> Result<String> {
         match self {
-            Value::ArrayND(array) => array.get_first_str(),
+            Value::Array(array) => array.first_string(),
             _ => Err("cannot retrieve string".into())
         }
     }
     /// Retrieve the first bool from a Value, assuming a Value contains an ArrayND of type bool
-    pub fn get_first_bool(&self) -> Result<bool> {
+    pub fn first_bool(&self) -> Result<bool> {
         match self {
-            Value::ArrayND(array) => array.get_first_bool(),
+            Value::Array(array) => array.first_bool(),
             _ => Err("cannot retrieve bool".into())
         }
     }
@@ -80,25 +80,25 @@ impl Value {
 // build Value from other types with .into()
 impl From<ArrayD<bool>> for Value {
     fn from(value: ArrayD<bool>) -> Self {
-        Value::ArrayND(ArrayND::Bool(value))
+        Value::Array(Array::Bool(value))
     }
 }
 
 impl From<ArrayD<f64>> for Value {
     fn from(value: ArrayD<f64>) -> Self {
-        Value::ArrayND(ArrayND::F64(value))
+        Value::Array(Array::F64(value))
     }
 }
 
 impl From<ArrayD<i64>> for Value {
     fn from(value: ArrayD<i64>) -> Self {
-        Value::ArrayND(ArrayND::I64(value))
+        Value::Array(Array::I64(value))
     }
 }
 
 impl From<ArrayD<String>> for Value {
     fn from(value: ArrayD<String>) -> Self {
-        Value::ArrayND(ArrayND::Str(value))
+        Value::Array(Array::Str(value))
     }
 }
 
@@ -136,36 +136,36 @@ impl From<ndarray::ShapeError> for Error {
 ///
 /// The ArrayND has a one-to-one mapping to a protobuf ArrayND.
 #[derive(Clone, Debug)]
-pub enum ArrayND {
+pub enum Array {
     Bool(ArrayD<bool>),
     I64(ArrayD<i64>),
     F64(ArrayD<f64>),
     Str(ArrayD<String>),
 }
 
-impl ArrayND {
+impl Array {
     /// Retrieve the f64 ndarray, assuming the data type of the ArrayND is f64
-    pub fn get_f64(&self) -> Result<&ArrayD<f64>> {
+    pub fn f64(&self) -> Result<&ArrayD<f64>> {
         match self {
-            ArrayND::F64(x) => Ok(x),
+            Array::F64(x) => Ok(x),
             _ => Err("expected a float on a non-float ArrayND".into())
         }
     }
-    pub fn get_first_f64(&self) -> Result<f64> {
+    pub fn first_f64(&self) -> Result<f64> {
         match self {
-            ArrayND::Bool(x) => {
+            Array::Bool(x) => {
                 if x.len() != 1 {
                     return Err("non-singleton array passed for an argument that must be scalar".into());
                 }
                 Ok(if *x.first().unwrap() { 1. } else { 0. })
             }
-            ArrayND::I64(x) => {
+            Array::I64(x) => {
                 if x.len() != 1 {
                     return Err("non-singleton array passed for an argument that must be scalar".into());
                 }
                 Ok(f64::from(*x.first().unwrap() as i32))
             }
-            ArrayND::F64(x) => {
+            Array::F64(x) => {
                 if x.len() != 1 {
                     return Err("non-singleton array passed for an argument that must be scalar".into());
                 }
@@ -174,8 +174,8 @@ impl ArrayND {
             _ => Err("value must be numeric".into())
         }
     }
-    pub fn get_vec_f64(&self, optional_length: Option<i64>) -> Result<Vec<f64>> {
-        let data = self.get_f64()?;
+    pub fn vec_f64(&self, optional_length: Option<i64>) -> Result<Vec<f64>> {
+        let data = self.f64()?;
         let err_msg = "failed attempt to cast f64 ArrayD to vector".into();
         match data.ndim().clone() {
             0 => match (optional_length, data.first()) {
@@ -187,21 +187,21 @@ impl ArrayND {
         }
     }
     /// Retrieve the i64 ndarray, assuming the data type of the ArrayND is i64
-    pub fn get_i64(&self) -> Result<&ArrayD<i64>> {
+    pub fn i64(&self) -> Result<&ArrayD<i64>> {
         match self {
-            ArrayND::I64(x) => Ok(x),
+            Array::I64(x) => Ok(x),
             _ => Err("expected a float on a non-float ArrayND".into())
         }
     }
-    pub fn get_first_i64(&self) -> Result<i64> {
+    pub fn first_i64(&self) -> Result<i64> {
         match self {
-            ArrayND::Bool(x) => {
+            Array::Bool(x) => {
                 if x.len() != 1 {
                     return Err("non-singleton array passed for an argument that must be scalar".into());
                 }
                 Ok(if *x.first().unwrap() { 1 } else { 0 })
             }
-            ArrayND::I64(x) => {
+            Array::I64(x) => {
                 if x.len() != 1 {
                     return Err("non-singleton array passed for an argument that must be scalar".into());
                 }
@@ -210,8 +210,8 @@ impl ArrayND {
             _ => Err("value must be numeric".into())
         }
     }
-    pub fn get_vec_i64(&self, optional_length: Option<i64>) -> Result<Vec<i64>> {
-        let data = self.get_i64()?;
+    pub fn vec_i64(&self, optional_length: Option<i64>) -> Result<Vec<i64>> {
+        let data = self.i64()?;
         let err_msg = "failed attempt to cast i64 ArrayD to vector".into();
         match data.ndim().clone() {
             0 => match (optional_length, data.first()) {
@@ -223,15 +223,15 @@ impl ArrayND {
         }
     }
     /// Retrieve the String ndarray, assuming the data type of the ArrayND is String
-    pub fn get_str(&self) -> Result<&ArrayD<String>> {
+    pub fn string(&self) -> Result<&ArrayD<String>> {
         match self {
-            ArrayND::Str(x) => Ok(x),
+            Array::Str(x) => Ok(x),
             _ => Err("value must be a string".into())
         }
     }
-    pub fn get_first_str(&self) -> Result<String> {
+    pub fn first_string(&self) -> Result<String> {
         match self {
-            ArrayND::Str(x) => {
+            Array::Str(x) => {
                 if x.len() != 1 {
                     return Err("non-singleton array passed for an argument that must be scalar".into());
                 }
@@ -241,15 +241,15 @@ impl ArrayND {
         }
     }
     /// Retrieve the bool ndarray, assuming the data type of the ArrayND is bool
-    pub fn get_bool(&self) -> Result<&ArrayD<bool>> {
+    pub fn bool(&self) -> Result<&ArrayD<bool>> {
         match self {
-            ArrayND::Bool(x) => Ok(x),
+            Array::Bool(x) => Ok(x),
             _ => Err("value must be a bool".into())
         }
     }
-    pub fn get_first_bool(&self) -> Result<bool> {
+    pub fn first_bool(&self) -> Result<bool> {
         match self {
-            ArrayND::Bool(x) => {
+            Array::Bool(x) => {
                 if x.len() != 1 {
                     return Err("non-singleton array passed for an argument that must be scalar".into());
                 }
@@ -259,24 +259,24 @@ impl ArrayND {
         }
     }
 
-    pub fn get_shape(&self) -> Vec<i64> {
+    pub fn shape(&self) -> Vec<i64> {
         match self {
-            ArrayND::Bool(array) => array.shape().to_owned(),
-            ArrayND::F64(array) => array.shape().to_owned(),
-            ArrayND::I64(array) => array.shape().to_owned(),
-            ArrayND::Str(array) => array.shape().to_owned()
+            Array::Bool(array) => array.shape().to_owned(),
+            Array::F64(array) => array.shape().to_owned(),
+            Array::I64(array) => array.shape().to_owned(),
+            Array::Str(array) => array.shape().to_owned()
         }.iter().map(|arr| arr.clone() as i64).collect()
     }
-    pub fn get_num_records(&self) -> Result<i64> {
-        let shape = self.get_shape();
+    pub fn num_records(&self) -> Result<i64> {
+        let shape = self.shape();
         match shape.len() {
             0 => Ok(1),
             1 | 2 => Ok(shape[0]),
             _ => Err("arrays may have max dimensionality of 2".into())
         }
     }
-    pub fn get_num_columns(&self) -> Result<i64> {
-        let shape = self.get_shape();
+    pub fn num_columns(&self) -> Result<i64> {
+        let shape = self.shape();
         match shape.len() {
             0 => Ok(1),
             1 => Ok(1),
@@ -291,74 +291,74 @@ impl ArrayND {
 /// Typically used to store categorically clamped values.
 /// In practice, use is limited to public categories over multiple columns, and the upper triangular covariance matrix
 ///
-/// The Vector2DJagged has a one-to-one mapping to a protobuf Vector2DJagged.
+/// Jagged has a one-to-one mapping to a protobuf Vector2DJagged.
 #[derive(Clone, Debug)]
-pub enum Vector2DJagged {
+pub enum Jagged {
     Bool(Vec<Option<Vec<bool>>>),
     I64(Vec<Option<Vec<i64>>>),
     F64(Vec<Option<Vec<f64>>>),
     Str(Vec<Option<Vec<String>>>),
 }
 
-impl Vector2DJagged {
+impl Jagged {
     /// Retrieve the f64 jagged matrix, assuming the data type of the jagged matrix is f64, and assuming all columns are defined
-    pub fn get_f64(&self) -> Result<Vec<Vec<f64>>> {
-        self.get_f64_option()?.iter().cloned().collect::<Option<Vec<Vec<f64>>>>()
-            .ok_or::<Error>("not all columns are known in float Vector2DJagged".into())
+    pub fn f64(&self) -> Result<Vec<Vec<f64>>> {
+        self.f64_option()?.iter().cloned().collect::<Option<Vec<Vec<f64>>>>()
+            .ok_or::<Error>("not all columns are known in float Jagged matrix".into())
     }
     /// Retrieve the f64 jagged matrix, assuming the data type of the jagged matrix is f64
-    pub fn get_f64_option<'a>(&'a self) -> Result<&'a Vec<Option<Vec<f64>>>> {
+    pub fn f64_option<'a>(&'a self) -> Result<&'a Vec<Option<Vec<f64>>>> {
         match self {
-            Vector2DJagged::F64(data) => Ok(data),
-            _ => Err("expected float type on a non-float Vector2DJagged".into())
+            Jagged::F64(data) => Ok(data),
+            _ => Err("expected float type on a non-float Jagged matrix".into())
         }
     }
     /// Retrieve the i64 jagged matrix, assuming the data type of the jagged matrix is i64
-    pub fn get_i64(&self) -> Result<Vec<Vec<i64>>> {
+    pub fn i64(&self) -> Result<Vec<Vec<i64>>> {
         match self {
-            Vector2DJagged::I64(data) => data.iter().cloned().collect::<Option<Vec<Vec<i64>>>>()
-                .ok_or::<Error>("not all columns are known in int Vector2DJagged".into()),
-            _ => Err("expected int type on a non-int Vector2DJagged".into())
+            Jagged::I64(data) => data.iter().cloned().collect::<Option<Vec<Vec<i64>>>>()
+                .ok_or::<Error>("not all columns are known in int Jagged matrix".into()),
+            _ => Err("expected int type on a non-int Jagged matrix".into())
         }
     }
     /// Retrieve the String jagged matrix, assuming the data type of the jagged matrix is String
-    pub fn get_str(&self) -> Result<Vec<Vec<String>>> {
+    pub fn string(&self) -> Result<Vec<Vec<String>>> {
         match self {
-            Vector2DJagged::Str(data) => data.iter().cloned().collect::<Option<Vec<Vec<String>>>>()
-                .ok_or::<Error>("not all columns are known in string Vector2DJagged".into()),
-            _ => Err("expected string type on a non-string Vector2DJagged".into())
+            Jagged::Str(data) => data.iter().cloned().collect::<Option<Vec<Vec<String>>>>()
+                .ok_or::<Error>("not all columns are known in string Jagged matrix".into()),
+            _ => Err("expected string type on a non-string Jagged matrix".into())
         }
     }
     /// Retrieve the bool jagged matrix, assuming the data type of the jagged matrix is bool
-    pub fn get_bool(&self) -> Result<Vec<Vec<bool>>> {
+    pub fn bool(&self) -> Result<Vec<Vec<bool>>> {
         match self {
-            Vector2DJagged::Bool(data) => data.iter().cloned().collect::<Option<Vec<Vec<bool>>>>()
-                .ok_or::<Error>("not all columns are known in bool Vector2DJagged".into()),
-            _ => Err("expected bool type on a non-bool Vector2DJagged".into())
+            Jagged::Bool(data) => data.iter().cloned().collect::<Option<Vec<Vec<bool>>>>()
+                .ok_or::<Error>("not all columns are known in bool Jagged matrix".into()),
+            _ => Err("expected bool type on a non-bool Jagged matrix".into())
         }
     }
-    pub fn get_num_columns(&self) -> i64 {
+    pub fn num_columns(&self) -> i64 {
         match self {
-            Vector2DJagged::Bool(vector) => vector.len() as i64,
-            Vector2DJagged::F64(vector) => vector.len() as i64,
-            Vector2DJagged::I64(vector) => vector.len() as i64,
-            Vector2DJagged::Str(vector) => vector.len() as i64,
+            Jagged::Bool(vector) => vector.len() as i64,
+            Jagged::F64(vector) => vector.len() as i64,
+            Jagged::I64(vector) => vector.len() as i64,
+            Jagged::Str(vector) => vector.len() as i64,
         }
     }
-    pub fn get_lengths_option(&self) -> Vec<Option<i64>> {
+    pub fn lengths_option(&self) -> Vec<Option<i64>> {
         match self {
-            Vector2DJagged::Bool(value) => value.iter()
+            Jagged::Bool(value) => value.iter()
                 .map(|column| column.as_ref().map(|col| col.len() as i64)).collect(),
-            Vector2DJagged::F64(value) => value.iter()
+            Jagged::F64(value) => value.iter()
                 .map(|column| column.as_ref().map(|col| col.len() as i64)).collect(),
-            Vector2DJagged::I64(value) => value.iter()
+            Jagged::I64(value) => value.iter()
                 .map(|column| column.as_ref().map(|col| col.len() as i64)).collect(),
-            Vector2DJagged::Str(value) => value.iter()
+            Jagged::Str(value) => value.iter()
                 .map(|column| column.as_ref().map(|col| col.len() as i64)).collect()
         }
     }
-    pub fn get_lengths(&self) -> Result<Vec<i64>> {
-        self.get_lengths_option().iter().cloned().collect::<Option<Vec<i64>>>()
+    pub fn lengths(&self) -> Result<Vec<i64>> {
+        self.lengths_option().iter().cloned().collect::<Option<Vec<i64>>>()
             .ok_or("length is not defined for every column".into())
     }
 }
@@ -377,14 +377,14 @@ pub enum Hashmap<T> {
 }
 
 impl<T> Hashmap<T> {
-    pub fn get_num_keys(&self) -> i64 {
+    pub fn keys_length(&self) -> i64 {
         match self {
             Hashmap::Bool(value) => value.keys().len() as i64,
             Hashmap::I64(value) => value.keys().len() as i64,
             Hashmap::Str(value) => value.keys().len() as i64,
         }
     }
-    pub fn get_values(&self) -> Vec<&T> {
+    pub fn values(&self) -> Vec<&T> {
         match self {
             Hashmap::Bool(value) => value.values().collect(),
             Hashmap::I64(value) => value.values().collect(),
@@ -425,39 +425,39 @@ impl<T> From<HashMap<String, T>> for Hashmap<T> {
 #[derive(Clone, Debug)]
 pub enum ValueProperties {
     Hashmap(HashmapProperties),
-    ArrayND(ArrayNDProperties),
-    Vector2DJagged(Vector2DJaggedProperties),
+    Array(ArrayProperties),
+    Jagged(JaggedProperties),
 }
 
 
 impl ValueProperties {
     /// Retrieve properties corresponding to an ArrayND, assuming the corresponding data value is actually the ArrayND variant
-    pub fn get_arraynd(&self) -> Result<&ArrayNDProperties> {
+    pub fn array(&self) -> Result<&ArrayProperties> {
         match self {
-            ValueProperties::ArrayND(array) => Ok(array),
+            ValueProperties::Array(array) => Ok(array),
             _ => Err("value must be an array".into())
         }
     }
     /// Retrieve properties corresponding to an Hashmap, assuming the corresponding data value is actually the Hashmap variant
-    pub fn get_hashmap(&self) -> Result<&HashmapProperties> {
+    pub fn hashmap(&self) -> Result<&HashmapProperties> {
         match self {
             ValueProperties::Hashmap(value) => Ok(value),
             _ => Err("value must be a hashmap".into())
         }
     }
     /// Retrieve properties corresponding to an Vector2DJagged, assuming the corresponding data value is actually the Vector2DJagged variant
-    pub fn get_jagged(&self) -> Result<&Vector2DJaggedProperties> {
+    pub fn jagged(&self) -> Result<&JaggedProperties> {
         match self {
-            ValueProperties::Vector2DJagged(value) => Ok(value),
+            ValueProperties::Jagged(value) => Ok(value),
             _ => Err("value must be a ragged matrix".into())
         }
     }
 }
 
 
-impl From<ArrayNDProperties> for ValueProperties {
-    fn from(value: ArrayNDProperties) -> Self {
-        ValueProperties::ArrayND(value)
+impl From<ArrayProperties> for ValueProperties {
+    fn from(value: ArrayProperties) -> Self {
+        ValueProperties::Array(value)
     }
 }
 
@@ -467,9 +467,9 @@ impl From<HashmapProperties> for ValueProperties {
     }
 }
 
-impl From<Vector2DJaggedProperties> for ValueProperties {
-    fn from(value: Vector2DJaggedProperties) -> Self {
-        ValueProperties::Vector2DJagged(value)
+impl From<JaggedProperties> for ValueProperties {
+    fn from(value: JaggedProperties) -> Self {
+        ValueProperties::Jagged(value)
     }
 }
 
@@ -501,7 +501,7 @@ impl HashmapProperties {
             false => Ok(())
         }
     }
-    pub fn get_num_records(&self) -> Result<i64> {
+    pub fn num_records(&self) -> Result<i64> {
         self.num_records.ok_or::<Error>("number of rows is not defined".into())
     }
 }
@@ -511,7 +511,7 @@ impl HashmapProperties {
 ///
 /// The ArrayNDProperties has a one-to-one mapping to a protobuf ArrayNDProperties.
 #[derive(Clone, Debug)]
-pub struct ArrayNDProperties {
+pub struct ArrayProperties {
     /// Defined if the number of records is known statically (set by the resize component)
     pub num_records: Option<i64>,
     pub num_columns: Option<i64>,
@@ -537,12 +537,12 @@ pub struct ArrayNDProperties {
 ///
 /// The Vector2DJagged has a one-to-one mapping to a protobuf Vector2DJagged.
 #[derive(Clone, Debug)]
-pub struct Vector2DJaggedProperties {
+pub struct JaggedProperties {
     pub releasable: bool
 }
 
-impl ArrayNDProperties {
-    pub fn get_min_f64_option(&self) -> Result<Vec<Option<f64>>> {
+impl ArrayProperties {
+    pub fn min_f64_option(&self) -> Result<Vec<Option<f64>>> {
         match self.nature.to_owned() {
             Some(value) => match value {
                 Nature::Continuous(continuous) => match continuous.min {
@@ -554,15 +554,15 @@ impl ArrayNDProperties {
             None => Err("continuous nature for min is not defined".into())
         }
     }
-    pub fn get_min_f64(&self) -> Result<Vec<f64>> {
-        let bound = self.get_min_f64_option()?;
+    pub fn min_f64(&self) -> Result<Vec<f64>> {
+        let bound = self.min_f64_option()?;
         let value = bound.iter().filter_map(|v| v.to_owned()).collect::<Vec<f64>>();
         match bound.len() == value.len() {
             true => Ok(value),
             false => Err("not all min are known".into())
         }
     }
-    pub fn get_max_f64_option(&self) -> Result<Vec<Option<f64>>> {
+    pub fn max_f64_option(&self) -> Result<Vec<Option<f64>>> {
         match self.nature.to_owned() {
             Some(value) => match value {
                 Nature::Continuous(continuous) => match continuous.max {
@@ -574,8 +574,8 @@ impl ArrayNDProperties {
             None => Err("continuous nature for max is not defined".into())
         }
     }
-    pub fn get_max_f64(&self) -> Result<Vec<f64>> {
-        let bound = self.get_max_f64_option()?;
+    pub fn max_f64(&self) -> Result<Vec<f64>> {
+        let bound = self.max_f64_option()?;
         let value = bound.iter().filter_map(|v| v.to_owned()).collect::<Vec<f64>>();
         match bound.len() == value.len() {
             true => Ok(value),
@@ -583,7 +583,7 @@ impl ArrayNDProperties {
         }
     }
 
-    pub fn get_categories(&self) -> Result<Vector2DJagged> {
+    pub fn categories(&self) -> Result<Jagged> {
         match self.nature.to_owned() {
             Some(nature) => match nature {
                 Nature::Categorical(nature) => Ok(nature.categories),
@@ -592,21 +592,21 @@ impl ArrayNDProperties {
             None => Err("categorical nature is not defined".into())
         }
     }
-    pub fn get_categories_lengths(&self) -> Result<Vec<Option<i64>>> {
-        let num_columns = self.get_num_columns()?;
+    pub fn categories_lengths(&self) -> Result<Vec<Option<i64>>> {
+        let num_columns = self.num_columns()?;
 
-        match self.get_categories() {
+        match self.categories() {
             Ok(categories) => Ok(match categories {
-                Vector2DJagged::Str(categories) =>
+                Jagged::Str(categories) =>
                     standardize_categorical_argument(&categories, &num_columns)?.iter()
                         .map(|cats| Some(cats.len() as i64)).collect(),
-                Vector2DJagged::Bool(categories) =>
+                Jagged::Bool(categories) =>
                     standardize_categorical_argument(&categories, &num_columns)?.iter()
                         .map(|cats| Some(cats.len() as i64)).collect(),
-                Vector2DJagged::I64(categories) =>
+                Jagged::I64(categories) =>
                     standardize_categorical_argument(&categories, &num_columns)?.iter()
                         .map(|cats| Some(cats.len() as i64)).collect(),
-                Vector2DJagged::F64(categories) =>
+                Jagged::F64(categories) =>
                     standardize_categorical_argument(&categories, &num_columns)?.iter()
                         .map(|cats| Some(cats.len() as i64)).collect(),
             }),
@@ -614,7 +614,7 @@ impl ArrayNDProperties {
         }
     }
     pub fn assert_categorical(&self) -> Result<()> {
-        self.get_categories_lengths()?
+        self.categories_lengths()?
             .iter().cloned().collect::<Option<Vec<i64>>>()
             .ok_or::<Error>("categories on all columns must be defined".into())?;
 
@@ -632,10 +632,10 @@ impl ArrayNDProperties {
             true => Err("data is not releasable when releasability is required".into())
         }
     }
-    pub fn get_num_columns(&self) -> Result<i64> {
+    pub fn num_columns(&self) -> Result<i64> {
         self.num_columns.ok_or::<Error>("number of columns is not defined".into())
     }
-    pub fn get_num_records(&self) -> Result<i64> {
+    pub fn num_records(&self) -> Result<i64> {
         self.num_records.ok_or::<Error>("number of rows is not defined".into())
     }
     pub fn assert_is_not_aggregated(&self) -> Result<()> {
@@ -675,9 +675,24 @@ pub enum Nature {
     Categorical(NatureCategorical),
 }
 
+impl Nature {
+    pub fn continuous(&self) -> Result<&NatureContinuous> {
+        match self {
+            Nature::Continuous(continuous) => Ok(continuous),
+            _ => Err("nature is categorical when expecting continuous".into())
+        }
+    }
+    pub fn categorical(&self) -> Result<&NatureCategorical> {
+        match self {
+            Nature::Categorical(categorical) => Ok(categorical),
+            _ => Err("nature is continuous when expecting categorical".into())
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct NatureCategorical {
-    pub categories: Vector2DJagged
+    pub categories: Jagged
 }
 
 #[derive(Clone, Debug)]
@@ -696,14 +711,14 @@ pub enum Vector1DNull {
 
 impl Vector1DNull {
     /// Retrieve the f64 vec, assuming the data type of the ArrayND is f64
-    pub fn get_f64(&self) -> Result<&Vec<Option<f64>>> {
+    pub fn f64(&self) -> Result<&Vec<Option<f64>>> {
         match self {
             Vector1DNull::F64(x) => Ok(x),
             _ => Err("expected a float on a non-float Vector1DNull".into())
         }
     }
     /// Retrieve the i64 vec, assuming the data type of the ArrayND is i64
-    pub fn get_i64(&self) -> Result<&Vec<Option<i64>>> {
+    pub fn i64(&self) -> Result<&Vec<Option<i64>>> {
         match self {
             Vector1DNull::I64(x) => Ok(x),
             _ => Err("expected an integer on a non-integer Vector1DNull".into())

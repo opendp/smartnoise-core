@@ -1,9 +1,9 @@
 use whitenoise_validator::errors::*;
 use whitenoise_validator::proto;
-use whitenoise_validator::base::{Value, ArrayND, Vector2DJagged};
+use whitenoise_validator::base::{Value, Array, Jagged};
 use whitenoise_validator::utilities::get_argument;
 
-use ndarray::{ArrayD, Axis, Array};
+use ndarray::{ArrayD, Axis};
 use rug::{Float, ops::Pow};
 
 use crate::base::NodeArguments;
@@ -15,7 +15,7 @@ use whitenoise_validator::utilities::array::{slow_select, slow_stack};
 
 impl Evaluable for proto::Resize {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        let n = get_argument(&arguments, "n")?.get_first_i64()?;
+        let n = get_argument(&arguments, "n")?.first_i64()?;
 
         // If "categories" constraint has been propagated, data are treated as categorical (regardless of atomic type)
         // and imputation (if necessary) is done by sampling from "categories" using the "probabilities" as sampling probabilities for each element.
@@ -23,15 +23,15 @@ impl Evaluable for proto::Resize {
             match (get_argument(&arguments, "data")?, get_argument(&arguments, "categories")?,
                    get_argument(&arguments, "probabilities")?) {
                 // match on types of various arguments and ensure they are consistent with each other
-                (Value::ArrayND(data), Value::Vector2DJagged(categories), Value::Vector2DJagged(probabilities)) =>
+                (Value::Array(data), Value::Jagged(categories), Value::Jagged(probabilities)) =>
                     Ok(match (data, categories, probabilities) {
-                        (ArrayND::F64(data), Vector2DJagged::F64(categories), Vector2DJagged::F64(probabilities)) =>
+                        (Array::F64(data), Jagged::F64(categories), Jagged::F64(probabilities)) =>
                             resize_categorical(&data, &n, &categories, &probabilities)?.into(),
-                        (ArrayND::I64(data), Vector2DJagged::I64(categories), Vector2DJagged::F64(probabilities)) =>
+                        (Array::I64(data), Jagged::I64(categories), Jagged::F64(probabilities)) =>
                             resize_categorical(&data, &n, &categories, &probabilities)?.into(),
-                        (ArrayND::Bool(data), Vector2DJagged::Bool(categories), Vector2DJagged::F64(probabilities)) =>
+                        (Array::Bool(data), Jagged::Bool(categories), Jagged::F64(probabilities)) =>
                             resize_categorical(&data, &n, &categories, &probabilities)?.into(),
-                        (ArrayND::Str(data), Vector2DJagged::Str(categories), Vector2DJagged::F64(probabilities)) =>
+                        (Array::Str(data), Jagged::Str(categories), Jagged::F64(probabilities)) =>
                             resize_categorical(&data, &n, &categories, &probabilities)?.into(),
                         _ => return Err("types of data, categories, and nulls must be homogeneous, probabilities must be f64".into())
                     }),
@@ -43,22 +43,22 @@ impl Evaluable for proto::Resize {
         else {
             // If there is no valid distribution argument provided, generate uniform by default
             let distribution = match get_argument(&arguments, "type") {
-                Ok(distribution) => distribution.get_first_str()?,
+                Ok(distribution) => distribution.first_string()?,
                 Err(_) => "Uniform".to_string()
             };
             let shift = match get_argument(&arguments, "shift") {
-                Ok(shift) => Some(shift.get_arraynd()?.get_f64()?),
+                Ok(shift) => Some(shift.array()?.f64()?),
                 Err(_) => None
             };
             let scale = match get_argument(&arguments, "scale") {
-                Ok(scale) => Some(scale.get_arraynd()?.get_f64()?),
+                Ok(scale) => Some(scale.array()?.f64()?),
                 Err(_) => None
             };
             match (get_argument(&arguments, "data")?, get_argument(&arguments, "min")?, get_argument(&arguments, "max")?) {
                 // TODO: add support for resizing ints
-                (Value::ArrayND(data), Value::ArrayND(min), Value::ArrayND(max)) => match (data, min, max) {
-                    (ArrayND::F64(data), ArrayND::F64(min), ArrayND::F64(max)) =>
-                        Ok(Value::ArrayND(ArrayND::F64(resize_float(&data, &n, &distribution, &min, &max, &shift, &scale)?))),
+                (Value::Array(data), Value::Array(min), Value::Array(max)) => match (data, min, max) {
+                    (Array::F64(data), Array::F64(min), Array::F64(max)) =>
+                        Ok(Value::Array(Array::F64(resize_float(&data, &n, &distribution, &min, &max, &shift, &scale)?))),
                     _ => Err("data, min, and max must all be of float type".into())
                 },
                 _ => Err("data, min, and max must all be arrays".into())
@@ -100,7 +100,7 @@ pub fn resize_float(data: &ArrayD<f64>, n: &i64, distribution: &String,
             // initialize synthetic data with correct shape
             let mut synthetic_shape = data.shape().to_vec();
             synthetic_shape[0] = (n - real_n) as usize;
-            let synthetic_base = Array::from_elem(synthetic_shape, std::f64::NAN).into_dyn();
+            let synthetic_base = ndarray::ArrayD::from_elem(synthetic_shape, std::f64::NAN).into_dyn();
 
             // generate synthetic data
             // NOTE: only uniform and gaussian supported at this time
@@ -157,7 +157,7 @@ pub fn resize_categorical<T>(
             synthetic_shape[0] = (n - real_n) as usize;
 
             let num_columns = get_num_columns(&data)?;
-            let mut synthetic = Array::default(synthetic_shape).into_dyn();
+            let mut synthetic = ndarray::Array::default(synthetic_shape).into_dyn();
 
             // iterate over initialized synthetic data and fill with correct null values
             synthetic.gencolumns_mut().into_iter()

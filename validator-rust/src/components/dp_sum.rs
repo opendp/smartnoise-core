@@ -6,7 +6,7 @@ use crate::{proto, base};
 use crate::hashmap;
 use crate::components::{Component, Expandable, Report};
 
-use crate::base::{NodeProperties, Value, ValueProperties, ArrayND};
+use crate::base::{NodeProperties, Value, ValueProperties, Array};
 use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, value_to_json};
 use crate::utilities::{prepend, broadcast_privacy_usage, get_ith_release};
 
@@ -81,15 +81,15 @@ impl Report for proto::DpSum {
         release: &Value,
     ) -> Result<Option<Vec<JSONRelease>>> {
         let data_property = properties.get("data")
-            .ok_or("data: missing")?.get_arraynd()
+            .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
         let mut releases = Vec::new();
 
-        let minimums = data_property.get_min_f64()?;
-        let maximums = data_property.get_max_f64()?;
+        let minimums = data_property.min_f64()?;
+        let maximums = data_property.max_f64()?;
 
-        let num_columns = data_property.get_num_columns()?;
+        let num_columns = data_property.num_columns()?;
         let privacy_usages = broadcast_privacy_usage(&self.privacy_usage, num_columns as usize)?;
 
         for column_number in 0..num_columns {
@@ -97,9 +97,9 @@ impl Report for proto::DpSum {
                 description: "DP release information".to_string(),
                 statistic: "DPSum".to_string(),
                 variables: serde_json::json!(Vec::<String>::new()),
-                release_info: match release.get_arraynd()? {
-                    ArrayND::F64(v) => value_to_json(&get_ith_release(v, &(column_number as usize))?.into())?,
-                    ArrayND::I64(v) => value_to_json(&get_ith_release(v, &(column_number as usize))?.into())?,
+                release_info: match release.array()? {
+                    Array::F64(v) => value_to_json(&get_ith_release(v, &(column_number as usize))?.into())?,
+                    Array::I64(v) => value_to_json(&get_ith_release(v, &(column_number as usize))?.into())?,
                     _ => return Err("maximum must be numeric".into())
                 },
                 privacy_loss: privacy_usage_to_json(&privacy_usages[column_number as usize].clone()),

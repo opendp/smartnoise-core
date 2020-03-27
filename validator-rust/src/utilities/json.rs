@@ -69,11 +69,11 @@ pub struct AlgorithmInfo {
 /// converts an ArrayND (which can take any of types (float, integer, string, and Boolean) to JSON
 pub fn value_to_json(value: &base::Value) -> Result<serde_json::Value> {
     match value {
-        base::Value::ArrayND(array) => match array {
-            base::ArrayND::F64(value) => arraynd_to_json(value),
-            base::ArrayND::I64(value) => arraynd_to_json(value),
-            base::ArrayND::Str(value) => arraynd_to_json(value),
-            base::ArrayND::Bool(value) => arraynd_to_json(value)
+        base::Value::Array(array) => match array {
+            base::Array::F64(value) => arraynd_to_json(value),
+            base::Array::I64(value) => arraynd_to_json(value),
+            base::Array::Str(value) => arraynd_to_json(value),
+            base::Array::Bool(value) => arraynd_to_json(value)
         },
         _ => Err("only arrayND to json is implemented".into())
     }
