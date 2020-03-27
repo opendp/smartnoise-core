@@ -6,7 +6,7 @@ use ndarray::prelude::*;
 use rug::{float::Constant, Float, ops::Pow};
 
 use crate::utilities::noise;
-use crate::utilities::utilities;
+use crate::utilities;
 
 /// Returns noise drawn according to the Laplace mechanism
 ///

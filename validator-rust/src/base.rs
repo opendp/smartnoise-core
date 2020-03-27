@@ -644,7 +644,7 @@ impl ArrayProperties {
         self.num_columns.ok_or::<Error>("number of columns is not defined".into())
     }
     pub fn num_records(&self) -> Result<i64> {
-        self.num_records.ok_or::<Error>("number of rows is not defined".into())
+        self.num_records.ok_or::<Error>("number of records is not defined".into())
     }
     pub fn assert_is_not_aggregated(&self) -> Result<()> {
         match self.aggregator.to_owned() {

@@ -5,7 +5,7 @@ use whitenoise_validator::base::{Value, Array, Jagged};
 use crate::components::Evaluable;
 use ndarray::{ArrayD};
 use whitenoise_validator::proto;
-use crate::utilities::utilities::get_num_columns;
+use crate::utilities::get_num_columns;
 use std::ops::{Div, Add};
 use whitenoise_validator::utilities::{get_argument, standardize_categorical_argument, standardize_numeric_argument};
 use std::fmt::Display;

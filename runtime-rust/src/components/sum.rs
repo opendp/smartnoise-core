@@ -7,7 +7,7 @@ use crate::components::Evaluable;
 use whitenoise_validator::proto;
 use ndarray::{ArrayD};
 use std::ops::Add;
-use crate::utilities::utilities::get_num_columns;
+use crate::utilities::get_num_columns;
 use num::Zero;
 
 impl Evaluable for proto::Sum {

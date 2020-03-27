@@ -5,7 +5,7 @@ use whitenoise_validator::base::{Value};
 use whitenoise_validator::utilities::get_argument;
 use crate::components::Evaluable;
 use ndarray::{ArrayD, Array};
-use crate::utilities::utilities::get_num_columns;
+use crate::utilities::get_num_columns;
 use whitenoise_validator::proto;
 use crate::components::mean::mean;
 

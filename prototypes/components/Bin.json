@@ -38,7 +38,7 @@
   "options": {
     "digitize": {
       "type": "bool",
-      "default": "true",
+      "default": "True",
       "description": "set to false to output bin sides"
     },
     "side": {

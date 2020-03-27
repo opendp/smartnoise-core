@@ -10,7 +10,7 @@ use crate::base::NodeArguments;
 use crate::components::Evaluable;
 use crate::utilities::noise;
 use crate::components::impute::{impute_float_gaussian, impute_float_uniform, impute_categorical};
-use crate::utilities::utilities::get_num_columns;
+use crate::utilities::get_num_columns;
 use whitenoise_validator::utilities::array::{slow_select, slow_stack};
 
 impl Evaluable for proto::Resize {

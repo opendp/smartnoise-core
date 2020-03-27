@@ -4,9 +4,10 @@ use crate::components::Evaluable;
 use whitenoise_validator::base::{Value, Array, Jagged};
 use whitenoise_validator::utilities::{standardize_numeric_argument, standardize_categorical_argument, standardize_weight_argument, get_argument, standardize_null_candidates_argument};
 use crate::base::NodeArguments;
-use crate::utilities::{noise, utilities};
+use crate::utilities::{noise};
+use crate::utilities;
 use ndarray::{ArrayD};
-use crate::utilities::utilities::get_num_columns;
+use crate::utilities::get_num_columns;
 use whitenoise_validator::proto;
 
 

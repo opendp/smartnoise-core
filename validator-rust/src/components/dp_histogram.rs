@@ -21,7 +21,7 @@ impl Component for proto::DpHistogram {
         _public_arguments: &HashMap<String, Value>,
         _properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
-        Err("DPCount is abstract, and has no property propagation".into())
+        Err("DPHistogram is abstract, and has no property propagation".into())
     }
 
     fn get_names(
@@ -47,12 +47,8 @@ impl Expandable for proto::DpHistogram {
 
         let mut data_id = component.arguments.get("data")
             .ok_or::<Error>("data is a required argument to DPHistogram".into())?.clone();
-        let count_min_id = component.arguments.get("count_min")
-            .ok_or::<Error>("count_min is a required argument to DPHistogram".into())?;
-        let count_max_id = component.arguments.get("count_max")
-            .ok_or::<Error>("count_max is a required argument to DPHistogram".into())?;
 
-        let traversal;
+        let mut traversal = Vec::<u32>::new();
         match (component.arguments.get("edges"), component.arguments.get("categories")) {
 
             (Some(edges_id), None) => {
@@ -78,7 +74,7 @@ impl Expandable for proto::DpHistogram {
                     batch: component.batch,
                 });
                 data_id = id_bin.clone();
-                traversal = vec![id_bin.clone()];
+                traversal.push(id_bin.clone());
             }
 
             (None, Some(categories_id)) => {
@@ -98,7 +94,7 @@ impl Expandable for proto::DpHistogram {
                     batch: component.batch,
                 });
                 data_id = id_clamp.clone();
-                traversal = vec![id_clamp.clone()];
+                traversal.push(id_clamp.clone());
             }
 
             (None, None) => {
@@ -109,22 +105,31 @@ impl Expandable for proto::DpHistogram {
                 if data_property.categories().is_err() {
                     return Err("either edges or categories must be supplied".into())
                 }
-
-                traversal = vec![component_id.clone()];
             }
             _ => return Err("either edges or categories must be supplied".into())
         }
 
-        // dp_count
+        // histogram
+        current_id += 1;
+        let id_histogram = current_id.clone();
+        computation_graph.insert(id_histogram.clone(), proto::Component {
+            arguments: hashmap!["data".to_owned() => data_id],
+            variant: Some(proto::component::Variant::from(proto::Histogram {})),
+            omit: true,
+            batch: component.batch,
+        });
+        traversal.push(id_histogram);
+
+        // noising
         computation_graph.insert(component_id.clone(), proto::Component {
             arguments: hashmap![
-                "data".to_owned() => data_id,
-                "count_min".to_owned() => *count_min_id,
-                "count_max".to_owned() => *count_max_id
+                "data".to_owned() => id_histogram,
+                "count_min".to_owned() => *component.arguments.get("count_min").ok_or::<Error>("count_min must be provided as an argument".into())?,
+                "count_max".to_owned() => *component.arguments.get("count_max").ok_or::<Error>("count_max must be provided as an argument".into())?
             ],
-            variant: Some(proto::component::Variant::from(proto::DpCount {
+            variant: Some(proto::component::Variant::from(proto::SimpleGeometricMechanism {
                 privacy_usage: self.privacy_usage.clone(),
-                implementation: self.implementation.clone(),
+                enforce_constant_time: false
             })),
             omit: false,
             batch: component.batch,

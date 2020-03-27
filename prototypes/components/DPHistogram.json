@@ -54,7 +54,7 @@
     },
     "side": {
       "type": "string",
-      "default": "'left'"
+      "default": "'lower'"
     }
   },
   "return": {

@@ -27,6 +27,7 @@ mod dp_mean;
 mod dp_moment_raw;
 mod dp_sum;
 mod filter;
+mod histogram;
 mod impute;
 pub mod index;
 mod kth_raw_sample_moment;
@@ -208,7 +209,7 @@ impl Component for proto::component::Variant {
             DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMedian, DpMinimum,
             DpMomentRaw, DpSum, DpVariance,
 
-            Filter, Impute, Index, KthRawSampleMoment, Materialize, Maximum, Mean,
+            Filter, Histogram, Impute, Index, KthRawSampleMoment, Materialize, Maximum, Mean,
 
             ExponentialMechanism, GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism,
 
@@ -276,8 +277,8 @@ impl Expandable for proto::component::Variant {
 
         expand_component!(
             // INSERT COMPONENT LIST
-            Clamp, Count, DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMedian, DpMinimum,
-            DpMomentRaw, DpSum, DpVariance, Impute, ExponentialMechanism, GaussianMechanism,
+            Clamp, DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMedian, DpMinimum,
+            DpMomentRaw, DpSum, DpVariance, Histogram, Impute, ExponentialMechanism, GaussianMechanism,
             LaplaceMechanism, SimpleGeometricMechanism, Resize,
 
             Modulo
@@ -319,10 +320,10 @@ impl Aggregator for proto::component::Variant {
 
         compute_sensitivity!(
             // INSERT COMPONENT LIST
-            Count, Covariance, KthRawSampleMoment, Maximum, Mean, Minimum, Quantile, Sum, Variance
+            Count, Covariance, Histogram, KthRawSampleMoment, Maximum, Mean, Minimum, Quantile, Sum, Variance
         );
 
-        Err("sensitivity is not implemented".into())
+        Err(format!("sensitivity is not implemented for proto component {:?}", self).into())
     }
 }
 

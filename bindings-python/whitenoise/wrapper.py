@@ -106,5 +106,6 @@ def _communicate(function, argument, response_type, ffi):
         except Exception:
             pass
 
+        # stack traces beyond this point come from the internal rust libraries
         raise RuntimeError(library_traceback)
     return response.data
