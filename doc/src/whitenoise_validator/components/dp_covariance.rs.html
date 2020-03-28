@@ -192,24 +192,6 @@
 <span id="192">192</span>
 <span id="193">193</span>
 <span id="194">194</span>
-<span id="195">195</span>
-<span id="196">196</span>
-<span id="197">197</span>
-<span id="198">198</span>
-<span id="199">199</span>
-<span id="200">200</span>
-<span id="201">201</span>
-<span id="202">202</span>
-<span id="203">203</span>
-<span id="204">204</span>
-<span id="205">205</span>
-<span id="206">206</span>
-<span id="207">207</span>
-<span id="208">208</span>
-<span id="209">209</span>
-<span id="210">210</span>
-<span id="211">211</span>
-<span id="212">212</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
@@ -218,12 +200,13 @@
 
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">proto</span>, <span class="ident">base</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">hashmap</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">components</span>::{<span class="ident">Component</span>, <span class="ident">Accuracy</span>, <span class="ident">Expandable</span>, <span class="ident">Report</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">components</span>::{<span class="ident">Component</span>, <span class="ident">Expandable</span>, <span class="ident">Report</span>};
 
 
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">base</span>::{<span class="ident">NodeProperties</span>, <span class="ident">Value</span>, <span class="ident">ValueProperties</span>, <span class="ident">prepend</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">base</span>::{<span class="ident">NodeProperties</span>, <span class="ident">Value</span>, <span class="ident">ValueProperties</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">utilities</span>::<span class="ident">json</span>::{<span class="ident">JSONRelease</span>, <span class="ident">value_to_json</span>, <span class="ident">AlgorithmInfo</span>, <span class="ident">privacy_usage_to_json</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">convert</span>::<span class="ident">TryFrom</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">utilities</span>::<span class="ident">prepend</span>;
 
 
 <span class="kw">impl</span> <span class="ident">Component</span> <span class="kw">for</span> <span class="ident">proto</span>::<span class="ident">DpCovariance</span> {
@@ -251,8 +234,8 @@
         <span class="ident">_privacy_definition</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">PrivacyDefinition</span>,
         <span class="ident">component</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">Component</span>,
         <span class="ident">properties</span>: <span class="kw-2">&amp;</span><span class="ident">base</span>::<span class="ident">NodeProperties</span>,
-        <span class="ident">component_id</span>: <span class="ident">u32</span>,
-        <span class="ident">maximum_id</span>: <span class="ident">u32</span>,
+        <span class="ident">component_id</span>: <span class="kw-2">&amp;</span><span class="ident">u32</span>,
+        <span class="ident">maximum_id</span>: <span class="kw-2">&amp;</span><span class="ident">u32</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">ComponentExpansion</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">current_id</span> <span class="op">=</span> <span class="ident">maximum_id</span>.<span class="ident">clone</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">computation_graph</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">proto</span>::<span class="ident">Component</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">HashMap</span>::<span class="ident">new</span>();
@@ -262,11 +245,11 @@
         <span class="kw">let</span> <span class="ident">symmetric</span>;
         <span class="kw">match</span> <span class="ident">properties</span>.<span class="ident">get</span>(<span class="string">&quot;data&quot;</span>) {
             <span class="prelude-val">Some</span>(<span class="ident">data_property</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="kw">let</span> <span class="ident">data_property</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">get_arraynd</span>()
+                <span class="kw">let</span> <span class="ident">data_property</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">array</span>()
                     .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;data:&quot;</span>))<span class="question-mark">?</span>.<span class="ident">clone</span>();
 
-                <span class="kw">let</span> <span class="ident">num_columns</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">get_num_columns</span>()<span class="question-mark">?</span>;
-                <span class="ident">shape</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">u32</span>::<span class="ident">try_from</span>(<span class="ident">num_columns</span>).<span class="ident">unwrap</span>(), <span class="ident">u32</span>::<span class="ident">try_from</span>(<span class="ident">num_columns</span>).<span class="ident">unwrap</span>()];
+                <span class="kw">let</span> <span class="ident">num_columns</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">num_columns</span>()<span class="question-mark">?</span>;
+                <span class="ident">shape</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">u32</span>::<span class="ident">try_from</span>(<span class="ident">num_columns</span>)<span class="question-mark">?</span>, <span class="ident">u32</span>::<span class="ident">try_from</span>(<span class="ident">num_columns</span>)<span class="question-mark">?</span>];
                 <span class="ident">arguments</span> <span class="op">=</span> <span class="macro">hashmap</span><span class="macro">!</span>[
                     <span class="string">&quot;data&quot;</span>.<span class="ident">to_owned</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">get</span>(<span class="string">&quot;data&quot;</span>).<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;data must be provided as an argument&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>
                 ];
@@ -274,13 +257,13 @@
             },
             <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">left_property</span> <span class="op">=</span> <span class="ident">properties</span>.<span class="ident">get</span>(<span class="string">&quot;left&quot;</span>)
-                    .<span class="ident">ok_or</span>(<span class="string">&quot;data: missing&quot;</span>)<span class="question-mark">?</span>.<span class="ident">get_arraynd</span>()
+                    .<span class="ident">ok_or</span>(<span class="string">&quot;data: missing&quot;</span>)<span class="question-mark">?</span>.<span class="ident">array</span>()
                     .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;data:&quot;</span>))<span class="question-mark">?</span>.<span class="ident">clone</span>();
                 <span class="kw">let</span> <span class="ident">right_property</span> <span class="op">=</span> <span class="ident">properties</span>.<span class="ident">get</span>(<span class="string">&quot;right&quot;</span>)
-                    .<span class="ident">ok_or</span>(<span class="string">&quot;data: missing&quot;</span>)<span class="question-mark">?</span>.<span class="ident">get_arraynd</span>()
+                    .<span class="ident">ok_or</span>(<span class="string">&quot;data: missing&quot;</span>)<span class="question-mark">?</span>.<span class="ident">array</span>()
                     .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;data:&quot;</span>))<span class="question-mark">?</span>.<span class="ident">clone</span>();
 
-                <span class="ident">shape</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">u32</span>::<span class="ident">try_from</span>(<span class="ident">left_property</span>.<span class="ident">get_num_columns</span>()<span class="question-mark">?</span>).<span class="ident">unwrap</span>(), <span class="ident">u32</span>::<span class="ident">try_from</span>(<span class="ident">right_property</span>.<span class="ident">get_num_columns</span>()<span class="question-mark">?</span>).<span class="ident">unwrap</span>()];
+                <span class="ident">shape</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">u32</span>::<span class="ident">try_from</span>(<span class="ident">left_property</span>.<span class="ident">num_columns</span>()<span class="question-mark">?</span>)<span class="question-mark">?</span>, <span class="ident">u32</span>::<span class="ident">try_from</span>(<span class="ident">right_property</span>.<span class="ident">num_columns</span>()<span class="question-mark">?</span>)<span class="question-mark">?</span>];
                 <span class="ident">arguments</span> <span class="op">=</span> <span class="macro">hashmap</span><span class="macro">!</span>[
                     <span class="string">&quot;left&quot;</span>.<span class="ident">to_owned</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">get</span>(<span class="string">&quot;left&quot;</span>).<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;left must be provided as an argument&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>,
                     <span class="string">&quot;right&quot;</span>.<span class="ident">to_owned</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">get</span>(<span class="string">&quot;right&quot;</span>).<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;right must be provided as an argument&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>
@@ -314,7 +297,7 @@
         });
 
         <span class="comment">// reshape into matrix</span>
-        <span class="ident">computation_graph</span>.<span class="ident">insert</span>(<span class="ident">component_id</span>, <span class="ident">proto</span>::<span class="ident">Component</span> {
+        <span class="ident">computation_graph</span>.<span class="ident">insert</span>(<span class="ident">component_id</span>.<span class="ident">clone</span>(), <span class="ident">proto</span>::<span class="ident">Component</span> {
             <span class="ident">arguments</span>: <span class="macro">hashmap</span><span class="macro">!</span>[<span class="string">&quot;data&quot;</span>.<span class="ident">to_owned</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">id_noise</span>],
             <span class="ident">variant</span>: <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">from</span>(<span class="ident">proto</span>::<span class="ident">Reshape</span> {
                 <span class="ident">symmetric</span>,
@@ -334,25 +317,6 @@
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Accuracy</span> <span class="kw">for</span> <span class="ident">proto</span>::<span class="ident">DpCovariance</span> {
-    <span class="kw">fn</span> <span class="ident">accuracy_to_privacy_usage</span>(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">_privacy_definition</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">PrivacyDefinition</span>,
-        <span class="ident">_properties</span>: <span class="kw-2">&amp;</span><span class="ident">base</span>::<span class="ident">NodeProperties</span>,
-        <span class="ident">_accuracy</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">Accuracy</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;</span> {
-        <span class="prelude-val">None</span>
-    }
-
-    <span class="kw">fn</span> <span class="ident">privacy_usage_to_accuracy</span>(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">_privacy_definition</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">PrivacyDefinition</span>,
-        <span class="ident">_property</span>: <span class="kw-2">&amp;</span><span class="ident">base</span>::<span class="ident">NodeProperties</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
-        <span class="prelude-val">None</span>
-    }
-}
-
 <span class="kw">impl</span> <span class="ident">Report</span> <span class="kw">for</span> <span class="ident">proto</span>::<span class="ident">DpCovariance</span> {
     <span class="kw">fn</span> <span class="ident">summarize</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
@@ -368,34 +332,34 @@
 
         <span class="kw">if</span> <span class="ident">properties</span>.<span class="ident">contains_key</span>(<span class="string">&quot;data&quot;</span>) {
             <span class="kw">let</span> <span class="ident">data_property</span> <span class="op">=</span> <span class="ident">properties</span>.<span class="ident">get</span>(<span class="string">&quot;data&quot;</span>)
-                .<span class="ident">ok_or</span>(<span class="string">&quot;data: missing&quot;</span>)<span class="question-mark">?</span>.<span class="ident">get_arraynd</span>()
+                .<span class="ident">ok_or</span>(<span class="string">&quot;data: missing&quot;</span>)<span class="question-mark">?</span>.<span class="ident">array</span>()
                 .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;data:&quot;</span>))<span class="question-mark">?</span>.<span class="ident">clone</span>();
 
             <span class="ident">statistic</span> <span class="op">=</span> <span class="string">&quot;DPCovariance&quot;</span>.<span class="ident">to_string</span>();
             <span class="ident">argument</span> <span class="op">=</span> <span class="ident">serde_json</span>::<span class="macro">json</span><span class="macro">!</span>({
-                <span class="string">&quot;n&quot;</span>: <span class="ident">data_property</span>.<span class="ident">get_num_records</span>()<span class="question-mark">?</span>,
+                <span class="string">&quot;n&quot;</span>: <span class="ident">data_property</span>.<span class="ident">num_records</span>()<span class="question-mark">?</span>,
                 <span class="string">&quot;constraint&quot;</span>: {
-                    <span class="string">&quot;lowerbound&quot;</span>: <span class="ident">data_property</span>.<span class="ident">get_min_f64</span>()<span class="question-mark">?</span>,
-                    <span class="string">&quot;upperbound&quot;</span>: <span class="ident">data_property</span>.<span class="ident">get_max_f64</span>()<span class="question-mark">?</span>
+                    <span class="string">&quot;lowerbound&quot;</span>: <span class="ident">data_property</span>.<span class="ident">min_f64</span>()<span class="question-mark">?</span>,
+                    <span class="string">&quot;upperbound&quot;</span>: <span class="ident">data_property</span>.<span class="ident">max_f64</span>()<span class="question-mark">?</span>
                 }
             });
         }
         <span class="kw">else</span> {
             <span class="kw">let</span> <span class="ident">left_property</span> <span class="op">=</span> <span class="ident">properties</span>.<span class="ident">get</span>(<span class="string">&quot;left&quot;</span>)
-                .<span class="ident">ok_or</span>(<span class="string">&quot;data: missing&quot;</span>)<span class="question-mark">?</span>.<span class="ident">get_arraynd</span>()
+                .<span class="ident">ok_or</span>(<span class="string">&quot;data: missing&quot;</span>)<span class="question-mark">?</span>.<span class="ident">array</span>()
                 .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;data:&quot;</span>))<span class="question-mark">?</span>.<span class="ident">clone</span>();
             <span class="kw">let</span> <span class="ident">right_property</span> <span class="op">=</span> <span class="ident">properties</span>.<span class="ident">get</span>(<span class="string">&quot;right&quot;</span>)
-                .<span class="ident">ok_or</span>(<span class="string">&quot;data: missing&quot;</span>)<span class="question-mark">?</span>.<span class="ident">get_arraynd</span>()
+                .<span class="ident">ok_or</span>(<span class="string">&quot;data: missing&quot;</span>)<span class="question-mark">?</span>.<span class="ident">array</span>()
                 .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;data:&quot;</span>))<span class="question-mark">?</span>.<span class="ident">clone</span>();
 
             <span class="ident">statistic</span> <span class="op">=</span> <span class="string">&quot;DPCrossCovariance&quot;</span>.<span class="ident">to_string</span>();
             <span class="ident">argument</span> <span class="op">=</span> <span class="ident">serde_json</span>::<span class="macro">json</span><span class="macro">!</span>({
-                <span class="string">&quot;n&quot;</span>: <span class="ident">left_property</span>.<span class="ident">get_num_records</span>()<span class="question-mark">?</span>,
+                <span class="string">&quot;n&quot;</span>: <span class="ident">left_property</span>.<span class="ident">num_records</span>()<span class="question-mark">?</span>,
                 <span class="string">&quot;constraint&quot;</span>: {
-                    <span class="string">&quot;lowerbound_left&quot;</span>: <span class="ident">left_property</span>.<span class="ident">get_min_f64</span>()<span class="question-mark">?</span>,
-                    <span class="string">&quot;upperbound_left&quot;</span>: <span class="ident">left_property</span>.<span class="ident">get_max_f64</span>()<span class="question-mark">?</span>,
-                    <span class="string">&quot;lowerbound_right&quot;</span>: <span class="ident">right_property</span>.<span class="ident">get_min_f64</span>()<span class="question-mark">?</span>,
-                    <span class="string">&quot;upperbound_right&quot;</span>: <span class="ident">right_property</span>.<span class="ident">get_max_f64</span>()<span class="question-mark">?</span>
+                    <span class="string">&quot;lowerbound_left&quot;</span>: <span class="ident">left_property</span>.<span class="ident">min_f64</span>()<span class="question-mark">?</span>,
+                    <span class="string">&quot;upperbound_left&quot;</span>: <span class="ident">left_property</span>.<span class="ident">max_f64</span>()<span class="question-mark">?</span>,
+                    <span class="string">&quot;lowerbound_right&quot;</span>: <span class="ident">right_property</span>.<span class="ident">min_f64</span>()<span class="question-mark">?</span>,
+                    <span class="string">&quot;upperbound_right&quot;</span>: <span class="ident">right_property</span>.<span class="ident">max_f64</span>()<span class="question-mark">?</span>
                 }
             });
         }

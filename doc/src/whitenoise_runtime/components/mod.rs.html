@@ -142,6 +142,8 @@
 <span id="142">142</span>
 <span id="143">143</span>
 <span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Component trait implementations</span>
 <span class="doccomment">//!</span>
@@ -165,7 +167,9 @@
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">clamp</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">count</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">covariance</span>;
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">digitize</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">filter</span>;
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">histogram</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">impute</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">index</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">kth_raw_sample_moment</span>;
@@ -220,7 +224,7 @@
 
         <span class="macro">evaluate</span><span class="macro">!</span>(
             <span class="comment">// INSERT COMPONENT LIST</span>
-            <span class="ident">Bin</span>, <span class="ident">Cast</span>, <span class="ident">Clamp</span>, <span class="ident">Count</span>, <span class="ident">Covariance</span>, <span class="ident">Filter</span>, <span class="ident">Impute</span>, <span class="ident">Index</span>, <span class="ident">KthRawSampleMoment</span>, <span class="ident">Maximum</span>,
+            <span class="ident">Bin</span>, <span class="ident">Cast</span>, <span class="ident">Clamp</span>, <span class="ident">Count</span>, <span class="ident">Covariance</span>, <span class="ident">Digitize</span>, <span class="ident">Filter</span>, <span class="ident">Histogram</span>, <span class="ident">Impute</span>, <span class="ident">Index</span>, <span class="ident">KthRawSampleMoment</span>, <span class="ident">Maximum</span>,
             <span class="ident">Materialize</span>, <span class="ident">Mean</span>, <span class="ident">Minimum</span>, <span class="ident">Quantile</span>, <span class="ident">Reshape</span>, <span class="ident">LaplaceMechanism</span>, <span class="ident">GaussianMechanism</span>,
             <span class="ident">SimpleGeometricMechanism</span>, <span class="ident">Resize</span>, <span class="ident">Sum</span>, <span class="ident">Variance</span>,
 

@@ -265,32 +265,34 @@
 <span class="kw">use</span> <span class="ident">whitenoise_validator</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">base</span>::<span class="ident">NodeArguments</span>;
-<span class="kw">use</span> <span class="ident">whitenoise_validator</span>::<span class="ident">base</span>::{<span class="ident">Value</span>, <span class="ident">ArrayND</span>, <span class="ident">get_argument</span>, <span class="ident">Vector2DJagged</span>, <span class="ident">standardize_numeric_argument</span>, <span class="ident">standardize_categorical_argument</span>};
+<span class="kw">use</span> <span class="ident">whitenoise_validator</span>::<span class="ident">base</span>::{<span class="ident">Value</span>, <span class="ident">Array</span>, <span class="ident">Jagged</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">components</span>::<span class="ident">Evaluable</span>;
 <span class="kw">use</span> <span class="ident">ndarray</span>::{<span class="ident">ArrayD</span>};
 <span class="kw">use</span> <span class="ident">whitenoise_validator</span>::<span class="ident">proto</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">utilities</span>::<span class="ident">utilities</span>::<span class="ident">get_num_columns</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">utilities</span>::<span class="ident">get_num_columns</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ops</span>::{<span class="ident">Div</span>, <span class="ident">Add</span>};
+<span class="kw">use</span> <span class="ident">whitenoise_validator</span>::<span class="ident">utilities</span>::{<span class="ident">get_argument</span>, <span class="ident">standardize_categorical_argument</span>, <span class="ident">standardize_numeric_argument</span>};
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>::<span class="ident">Display</span>;
 
 <span class="kw">impl</span> <span class="ident">Evaluable</span> <span class="kw">for</span> <span class="ident">proto</span>::<span class="ident">Bin</span> {
     <span class="kw">fn</span> <span class="ident">evaluate</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">arguments</span>: <span class="kw-2">&amp;</span><span class="ident">NodeArguments</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">inclusive_left</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayD</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">get_argument</span>(<span class="kw-2">&amp;</span><span class="ident">arguments</span>, <span class="string">&quot;inclusive_left&quot;</span>)<span class="question-mark">?</span>.<span class="ident">get_arraynd</span>()<span class="question-mark">?</span>.<span class="ident">get_bool</span>()<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">inclusive_left</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayD</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">get_argument</span>(<span class="kw-2">&amp;</span><span class="ident">arguments</span>, <span class="string">&quot;inclusive_left&quot;</span>)<span class="question-mark">?</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">bool</span>()<span class="question-mark">?</span>;
 
         <span class="kw">let</span> <span class="ident">side</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">side</span>.<span class="ident">as_str</span>() {
-            <span class="string">&quot;left&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">BinSide</span>::<span class="ident">Left</span>,
-            <span class="string">&quot;center&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">BinSide</span>::<span class="ident">Center</span>,
-            <span class="string">&quot;right&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">BinSide</span>::<span class="ident">Right</span>,
+            <span class="string">&quot;lower&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">BinSide</span>::<span class="ident">Lower</span>,
+            <span class="string">&quot;midpoint&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">BinSide</span>::<span class="ident">Midpoint</span>,
+            <span class="string">&quot;upper&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">BinSide</span>::<span class="ident">Upper</span>,
             <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;bin side must be left, center or right&quot;</span>.<span class="ident">into</span>())
         };
 
-        <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">get_argument</span>(<span class="kw-2">&amp;</span><span class="ident">arguments</span>, <span class="string">&quot;data&quot;</span>)<span class="question-mark">?</span>.<span class="ident">get_arraynd</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">edges</span> <span class="op">=</span> <span class="ident">get_argument</span>(<span class="kw-2">&amp;</span><span class="ident">arguments</span>, <span class="string">&quot;edges&quot;</span>)<span class="question-mark">?</span>.<span class="ident">get_jagged</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">null</span> <span class="op">=</span> <span class="ident">get_argument</span>(<span class="kw-2">&amp;</span><span class="ident">arguments</span>, <span class="string">&quot;null&quot;</span>)<span class="question-mark">?</span>.<span class="ident">get_arraynd</span>()<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">get_argument</span>(<span class="kw-2">&amp;</span><span class="ident">arguments</span>, <span class="string">&quot;data&quot;</span>)<span class="question-mark">?</span>.<span class="ident">array</span>()<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">edges</span> <span class="op">=</span> <span class="ident">get_argument</span>(<span class="kw-2">&amp;</span><span class="ident">arguments</span>, <span class="string">&quot;edges&quot;</span>)<span class="question-mark">?</span>.<span class="ident">jagged</span>()<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">null</span> <span class="op">=</span> <span class="ident">get_argument</span>(<span class="kw-2">&amp;</span><span class="ident">arguments</span>, <span class="string">&quot;null&quot;</span>)<span class="question-mark">?</span>.<span class="ident">array</span>()<span class="question-mark">?</span>;
 
         <span class="kw">match</span> (<span class="ident">data</span>, <span class="ident">edges</span>, <span class="ident">null</span>) {
-            (<span class="ident">ArrayND</span>::<span class="ident">F64</span>(<span class="ident">data</span>), <span class="ident">Vector2DJagged</span>::<span class="ident">F64</span>(<span class="ident">edges</span>), <span class="ident">ArrayND</span>::<span class="ident">F64</span>(<span class="ident">null</span>)) <span class="op">=</span><span class="op">&gt;</span>
+            (<span class="ident">Array</span>::<span class="ident">F64</span>(<span class="ident">data</span>), <span class="ident">Jagged</span>::<span class="ident">F64</span>(<span class="ident">edges</span>), <span class="ident">Array</span>::<span class="ident">F64</span>(<span class="ident">null</span>)) <span class="op">=</span><span class="op">&gt;</span>
                 <span class="prelude-val">Ok</span>(<span class="ident">bin</span>(<span class="kw-2">&amp;</span><span class="ident">data</span>, <span class="kw-2">&amp;</span><span class="ident">edges</span>, <span class="kw-2">&amp;</span><span class="ident">inclusive_left</span>, <span class="kw-2">&amp;</span><span class="ident">null</span>, <span class="kw-2">&amp;</span><span class="ident">side</span>)<span class="question-mark">?</span>.<span class="ident">into</span>()),
-            (<span class="ident">ArrayND</span>::<span class="ident">I64</span>(<span class="ident">data</span>), <span class="ident">Vector2DJagged</span>::<span class="ident">I64</span>(<span class="ident">edges</span>), <span class="ident">ArrayND</span>::<span class="ident">I64</span>(<span class="ident">null</span>)) <span class="op">=</span><span class="op">&gt;</span>
+            (<span class="ident">Array</span>::<span class="ident">I64</span>(<span class="ident">data</span>), <span class="ident">Jagged</span>::<span class="ident">I64</span>(<span class="ident">edges</span>), <span class="ident">Array</span>::<span class="ident">I64</span>(<span class="ident">null</span>)) <span class="op">=</span><span class="op">&gt;</span>
                 <span class="prelude-val">Ok</span>(<span class="ident">bin</span>(<span class="kw-2">&amp;</span><span class="ident">data</span>, <span class="kw-2">&amp;</span><span class="ident">edges</span>, <span class="kw-2">&amp;</span><span class="ident">inclusive_left</span>, <span class="kw-2">&amp;</span><span class="ident">null</span>, <span class="kw-2">&amp;</span><span class="ident">side</span>)<span class="question-mark">?</span>.<span class="ident">into</span>()),
             <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;data and edges must both be f64 or i64&quot;</span>.<span class="ident">into</span>())
         }
@@ -298,7 +300,9 @@
 }
 
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">BinSide</span> {
-    <span class="ident">Left</span>, <span class="ident">Right</span>, <span class="ident">Center</span>
+    <span class="ident">Lower</span>,
+    <span class="ident">Midpoint</span>,
+    <span class="ident">Upper</span>,
 }
 
 <span class="doccomment">/// Maps data to bins.</span>
@@ -324,12 +328,12 @@
 <span class="doccomment">/// let edges = vec![Some(vec![0., 1., 2., 3., 4., 5.])];</span>
 <span class="doccomment">/// let inclusive_left = arr1(&amp;[true]).into_dyn();</span>
 <span class="doccomment">/// let null = arr1(&amp;[-1.]).into_dyn();</span>
-<span class="doccomment">/// let side = BinSide::Center;</span>
+<span class="doccomment">/// let side = BinSide::Midpoint;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// let binned = bin(&amp;data, &amp;edges, &amp;inclusive_left, &amp;null, &amp;side).unwrap();</span>
 <span class="doccomment">/// assert!(binned == arr1(&amp;[1.5, 2.5, 2.5, 4.5, -1.]).into_dyn());</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">bin</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">std</span>::<span class="ident">cmp</span>::<span class="ident">PartialOrd</span> <span class="op">+</span> <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">Div</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Output</span><span class="op">=</span><span class="ident">T</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Add</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Output</span><span class="op">=</span><span class="ident">T</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Copy</span><span class="op">&gt;</span>(
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">bin</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">std</span>::<span class="ident">fmt</span>::<span class="ident">Debug</span> <span class="op">+</span> <span class="ident">Display</span> <span class="op">+</span> <span class="ident">std</span>::<span class="ident">cmp</span>::<span class="ident">PartialOrd</span> <span class="op">+</span> <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">Div</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Output</span><span class="op">=</span><span class="ident">T</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Add</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Output</span><span class="op">=</span><span class="ident">T</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Copy</span><span class="op">&gt;</span>(
     <span class="ident">data</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayD</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
     <span class="ident">edges</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     <span class="ident">inclusive_left</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayD</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>,
@@ -347,23 +351,22 @@
     <span class="comment">// iterate over the generalized columns</span>
     <span class="ident">data</span>.<span class="ident">gencolumns_mut</span>().<span class="ident">into_iter</span>()
         <span class="comment">// pair generalized columns with arguments</span>
-        .<span class="ident">zip</span>(<span class="ident">edges</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">null</span>.<span class="ident">iter</span>()))
+        .<span class="ident">zip</span>(<span class="ident">edges</span>.<span class="ident">into_iter</span>().<span class="ident">zip</span>(<span class="ident">null</span>.<span class="ident">into_iter</span>()))
         .<span class="ident">zip</span>(<span class="ident">inclusive_left</span>.<span class="ident">iter</span>())
         <span class="comment">// for each pairing, iterate over the cells</span>
-        .<span class="ident">map</span>(<span class="op">|</span>((<span class="kw-2">mut</span> <span class="ident">column</span>, (<span class="ident">edges</span>, <span class="ident">null</span>)), <span class="ident">inclusive_left</span>)<span class="op">|</span> {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">edges</span> <span class="op">=</span> <span class="ident">edges</span>.<span class="ident">clone</span>();
+        .<span class="ident">for_each</span>(<span class="op">|</span>((<span class="kw-2">mut</span> <span class="ident">column</span>, (<span class="kw-2">mut</span> <span class="ident">edges</span>, <span class="ident">null</span>)), <span class="ident">inclusive_left</span>)<span class="op">|</span> {
             <span class="ident">edges</span>.<span class="ident">sort_by</span>(<span class="op">|</span><span class="ident">a</span>, <span class="ident">b</span><span class="op">|</span> <span class="ident">a</span>.<span class="ident">partial_cmp</span>(<span class="ident">b</span>).<span class="ident">unwrap</span>());
             <span class="ident">column</span>.<span class="ident">iter_mut</span>()
                 <span class="comment">// mutate the cell via the operator</span>
-                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> {
+                .<span class="ident">for_each</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> {
                     <span class="comment">// checks for nullity</span>
                     <span class="kw">if</span> <span class="ident">edges</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">0</span> <span class="op">|</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">v</span> <span class="op">&lt;</span> <span class="ident">edges</span>[<span class="number">0</span>] <span class="op">|</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">v</span> <span class="op">&gt;</span> <span class="ident">edges</span>[<span class="ident">edges</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">1</span>] {
                         <span class="kw-2">*</span><span class="ident">v</span> <span class="op">=</span> <span class="ident">null</span>.<span class="ident">clone</span>();
-                        <span class="kw">return</span> <span class="prelude-val">Ok</span>(())
+                        <span class="kw">return</span>;
                     }
 
                     <span class="comment">// assign to edge</span>
-                    <span class="kw">for</span> <span class="ident">idx</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">edges</span>.<span class="ident">len</span>() {
+                    <span class="kw">for</span> <span class="ident">idx</span> <span class="kw">in</span> <span class="number">0</span>..(<span class="ident">edges</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">1</span>) {
                         <span class="comment">// check whether left or right side of bin should be considered inclusive</span>
                         <span class="kw">if</span> <span class="kw">match</span> <span class="ident">inclusive_left</span> {
                             <span class="bool-val">true</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">edges</span>[<span class="ident">idx</span>] <span class="op">&lt;</span><span class="op">=</span> <span class="kw-2">*</span><span class="ident">v</span> <span class="kw-2">&amp;</span><span class="op">&amp;</span> <span class="kw-2">*</span><span class="ident">v</span> <span class="op">&lt;</span> <span class="ident">edges</span>[<span class="ident">idx</span> <span class="op">+</span> <span class="number">1</span>],
@@ -371,19 +374,16 @@
                         } {
                             <span class="comment">// assign element a new name based on bin naming rule</span>
                             <span class="kw-2">*</span><span class="ident">v</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">side</span> {
-                                <span class="ident">BinSide</span>::<span class="ident">Left</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">edges</span>[<span class="ident">idx</span>],
-                                <span class="ident">BinSide</span>::<span class="ident">Right</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">edges</span>[<span class="ident">idx</span> <span class="op">+</span> <span class="number">1</span>],
-                                <span class="ident">BinSide</span>::<span class="ident">Center</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">edges</span>[<span class="ident">idx</span>] <span class="op">/</span> <span class="ident">T</span>::<span class="ident">from</span>(<span class="number">2</span>)) <span class="op">+</span> (<span class="ident">edges</span>[<span class="ident">idx</span> <span class="op">+</span> <span class="number">1</span>] <span class="op">/</span> <span class="ident">T</span>::<span class="ident">from</span>(<span class="number">2</span>))
+                                <span class="ident">BinSide</span>::<span class="ident">Lower</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">edges</span>[<span class="ident">idx</span>],
+                                <span class="ident">BinSide</span>::<span class="ident">Upper</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">edges</span>[<span class="ident">idx</span> <span class="op">+</span> <span class="number">1</span>],
+                                <span class="ident">BinSide</span>::<span class="ident">Midpoint</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">edges</span>[<span class="ident">idx</span>] <span class="op">/</span> <span class="ident">T</span>::<span class="ident">from</span>(<span class="number">2</span>)) <span class="op">+</span> (<span class="ident">edges</span>[<span class="ident">idx</span> <span class="op">+</span> <span class="number">1</span>] <span class="op">/</span> <span class="ident">T</span>::<span class="ident">from</span>(<span class="number">2</span>))
                             };
-                            <span class="kw">return</span> <span class="prelude-val">Ok</span>(())
+                            <span class="kw">return</span>;
                         }
                     }
-
-                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;arguments to binning are not well-formed&quot;</span>.<span class="ident">into</span>())
+                    <span class="kw-2">*</span><span class="ident">v</span> <span class="op">=</span> <span class="ident">edges</span>[<span class="ident">edges</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">1</span>];
                 })
-                .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span><span class="op">&gt;</span>()
-        })
-        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
+        });
 
     <span class="prelude-val">Ok</span>(<span class="ident">data</span>)
 }
@@ -428,8 +428,8 @@
 <span class="comment">//</span>
 <span class="comment">//    for k in 0..n_cols {</span>
 <span class="comment">//        // create vector versions of data and edges</span>
-<span class="comment">//        let data_vec: Vec&lt;T&gt; = data.slice(s![k as usize, ..]).clone().into_dimensionality::&lt;Ix1&gt;().unwrap().to_vec();</span>
-<span class="comment">//        let mut sorted_edges: Vec&lt;T&gt; = edges.slice(s![k as usize, ..]).clone().into_dimensionality::&lt;Ix1&gt;().unwrap().to_vec();</span>
+<span class="comment">//        let data_vec: Vec&lt;T&gt; = data.slice(s![k as usize, ..]).clone().into_dimensionality::&lt;Ix1&gt;()?.to_vec();</span>
+<span class="comment">//        let mut sorted_edges: Vec&lt;T&gt; = edges.slice(s![k as usize, ..]).clone().into_dimensionality::&lt;Ix1&gt;()?.to_vec();</span>
 <span class="comment">//</span>
 <span class="comment">//        //  ensure edges are sorted in ascending order</span>
 <span class="comment">//        sorted_edges.sort_by(|a, b| a.partial_cmp(b).unwrap());</span>

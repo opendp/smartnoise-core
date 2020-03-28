@@ -154,35 +154,6 @@
 <span id="154">154</span>
 <span id="155">155</span>
 <span id="156">156</span>
-<span id="157">157</span>
-<span id="158">158</span>
-<span id="159">159</span>
-<span id="160">160</span>
-<span id="161">161</span>
-<span id="162">162</span>
-<span id="163">163</span>
-<span id="164">164</span>
-<span id="165">165</span>
-<span id="166">166</span>
-<span id="167">167</span>
-<span id="168">168</span>
-<span id="169">169</span>
-<span id="170">170</span>
-<span id="171">171</span>
-<span id="172">172</span>
-<span id="173">173</span>
-<span id="174">174</span>
-<span id="175">175</span>
-<span id="176">176</span>
-<span id="177">177</span>
-<span id="178">178</span>
-<span id="179">179</span>
-<span id="180">180</span>
-<span id="181">181</span>
-<span id="182">182</span>
-<span id="183">183</span>
-<span id="184">184</span>
-<span id="185">185</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
@@ -191,13 +162,14 @@
 
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">proto</span>, <span class="ident">base</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">hashmap</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">components</span>::{<span class="ident">Component</span>, <span class="ident">Accuracy</span>, <span class="ident">Expandable</span>, <span class="ident">Report</span>, <span class="ident">get_ith_release</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">components</span>::{<span class="ident">Component</span>, <span class="ident">Expandable</span>, <span class="ident">Report</span>};
 
 
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">base</span>::{<span class="ident">NodeProperties</span>, <span class="ident">Value</span>, <span class="ident">ValueProperties</span>, <span class="ident">prepend</span>, <span class="ident">broadcast_privacy_usage</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">base</span>::{<span class="ident">NodeProperties</span>, <span class="ident">Value</span>, <span class="ident">ValueProperties</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">utilities</span>::<span class="ident">json</span>::{<span class="ident">JSONRelease</span>, <span class="ident">AlgorithmInfo</span>, <span class="ident">privacy_usage_to_json</span>, <span class="ident">value_to_json</span>};
-
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">utilities</span>::{<span class="ident">prepend</span>, <span class="ident">broadcast_privacy_usage</span>, <span class="ident">get_ith_release</span>};
 <span class="kw">use</span> <span class="ident">serde_json</span>;
+
 
 <span class="kw">impl</span> <span class="ident">Component</span> <span class="kw">for</span> <span class="ident">proto</span>::<span class="ident">DpMean</span> {
     <span class="doccomment">/// modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component</span>
@@ -241,8 +213,8 @@
         <span class="ident">_privacy_definition</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">PrivacyDefinition</span>,
         <span class="ident">component</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">Component</span>,
         <span class="ident">_properties</span>: <span class="kw-2">&amp;</span><span class="ident">base</span>::<span class="ident">NodeProperties</span>,
-        <span class="ident">component_id</span>: <span class="ident">u32</span>,
-        <span class="ident">maximum_id</span>: <span class="ident">u32</span>,
+        <span class="ident">component_id</span>: <span class="kw-2">&amp;</span><span class="ident">u32</span>,
+        <span class="ident">maximum_id</span>: <span class="kw-2">&amp;</span><span class="ident">u32</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">ComponentExpansion</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">current_id</span> <span class="op">=</span> <span class="ident">maximum_id</span>.<span class="ident">clone</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">computation_graph</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">proto</span>::<span class="ident">Component</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">HashMap</span>::<span class="ident">new</span>();
@@ -258,7 +230,7 @@
         });
 
         <span class="comment">// noising</span>
-        <span class="ident">computation_graph</span>.<span class="ident">insert</span>(<span class="ident">component_id</span>, <span class="ident">proto</span>::<span class="ident">Component</span> {
+        <span class="ident">computation_graph</span>.<span class="ident">insert</span>(<span class="ident">component_id</span>.<span class="ident">clone</span>(), <span class="ident">proto</span>::<span class="ident">Component</span> {
             <span class="ident">arguments</span>: <span class="macro">hashmap</span><span class="macro">!</span>[<span class="string">&quot;data&quot;</span>.<span class="ident">to_owned</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">id_mean</span>],
             <span class="ident">variant</span>: <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">from</span>(<span class="ident">proto</span>::<span class="ident">LaplaceMechanism</span> {
                 <span class="ident">privacy_usage</span>: <span class="self">self</span>.<span class="ident">privacy_usage</span>.<span class="ident">clone</span>()
@@ -274,36 +246,6 @@
             <span class="ident">releases</span>: <span class="ident">HashMap</span>::<span class="ident">new</span>(),
             <span class="ident">traversal</span>: <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">id_mean</span>]
         })
-    }
-}
-
-<span class="kw">impl</span> <span class="ident">Accuracy</span> <span class="kw">for</span> <span class="ident">proto</span>::<span class="ident">DpMean</span> {
-    <span class="doccomment">/// Accuracy to privacy usage</span>
-    <span class="doccomment">/// # Arguments</span>
-    <span class="doccomment">/// * `&amp;self` - this</span>
-    <span class="doccomment">/// * `_privacy_definition` - privacy definition from protocol buffer descriptor</span>
-    <span class="doccomment">/// * `_properties` - NodeProperties</span>
-    <span class="doccomment">/// * `_accuracy` - accuracy</span>
-    <span class="kw">fn</span> <span class="ident">accuracy_to_privacy_usage</span>(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">_privacy_definition</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">PrivacyDefinition</span>,
-        <span class="ident">_properties</span>: <span class="kw-2">&amp;</span><span class="ident">base</span>::<span class="ident">NodeProperties</span>,
-        <span class="ident">_accuracy</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">Accuracy</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;</span> {
-        <span class="prelude-val">None</span>
-    }
-
-    <span class="doccomment">/// Privacy usage to accuracy</span>
-    <span class="doccomment">/// # Arguments</span>
-    <span class="doccomment">/// * `&amp;self` - this</span>
-    <span class="doccomment">/// * `_privacy_definition` - privacy definition from protocol buffer descriptor</span>
-    <span class="doccomment">/// * `_property` - NodeProperties</span>
-    <span class="kw">fn</span> <span class="ident">privacy_usage_to_accuracy</span>(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">_privacy_definition</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">PrivacyDefinition</span>,
-        <span class="ident">_property</span>: <span class="kw-2">&amp;</span><span class="ident">base</span>::<span class="ident">NodeProperties</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
-        <span class="prelude-val">None</span>
     }
 }
 
@@ -326,16 +268,16 @@
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">JSONRelease</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
 
         <span class="kw">let</span> <span class="ident">data_property</span> <span class="op">=</span> <span class="ident">properties</span>.<span class="ident">get</span>(<span class="string">&quot;data&quot;</span>)
-            .<span class="ident">ok_or</span>(<span class="string">&quot;data: missing&quot;</span>)<span class="question-mark">?</span>.<span class="ident">get_arraynd</span>()
+            .<span class="ident">ok_or</span>(<span class="string">&quot;data: missing&quot;</span>)<span class="question-mark">?</span>.<span class="ident">array</span>()
             .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;data:&quot;</span>))<span class="question-mark">?</span>.<span class="ident">clone</span>();
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">releases</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
 
-        <span class="kw">let</span> <span class="ident">minimums</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">get_min_f64</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">maximums</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">get_max_f64</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">num_records</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">get_num_records</span>()<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">minimums</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">min_f64</span>()<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">maximums</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">max_f64</span>()<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">num_records</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">num_records</span>()<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="ident">num_columns</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">get_num_columns</span>()<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">num_columns</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">num_columns</span>()<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">privacy_usages</span> <span class="op">=</span> <span class="ident">broadcast_privacy_usage</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">privacy_usage</span>, <span class="ident">num_columns</span> <span class="kw">as</span> <span class="ident">usize</span>)<span class="question-mark">?</span>;
 
         <span class="kw">for</span> <span class="ident">column_number</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">num_columns</span> {
@@ -344,7 +286,7 @@
                 <span class="ident">statistic</span>: <span class="string">&quot;DPMean&quot;</span>.<span class="ident">to_string</span>(),
                 <span class="ident">variables</span>: <span class="ident">serde_json</span>::<span class="macro">json</span><span class="macro">!</span>(<span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>::<span class="ident">new</span>()),
                 <span class="ident">release_info</span>: <span class="ident">value_to_json</span>(<span class="kw-2">&amp;</span><span class="ident">get_ith_release</span>(
-                    <span class="ident">release</span>.<span class="ident">get_arraynd</span>()<span class="question-mark">?</span>.<span class="ident">get_f64</span>()<span class="question-mark">?</span>,
+                    <span class="ident">release</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">f64</span>()<span class="question-mark">?</span>,
                     <span class="kw-2">&amp;</span>(<span class="ident">column_number</span> <span class="kw">as</span> <span class="ident">usize</span>)
                 )<span class="question-mark">?</span>.<span class="ident">into</span>())<span class="question-mark">?</span>,
                 <span class="ident">privacy_loss</span>: <span class="ident">privacy_usage_to_json</span>(<span class="kw-2">&amp;</span><span class="ident">privacy_usages</span>[<span class="ident">column_number</span> <span class="kw">as</span> <span class="ident">usize</span>].<span class="ident">clone</span>()),

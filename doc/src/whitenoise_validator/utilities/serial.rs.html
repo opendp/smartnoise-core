@@ -578,16 +578,18 @@
 <span id="578">578</span>
 <span id="579">579</span>
 <span id="580">580</span>
+<span id="581">581</span>
+<span id="582">582</span>
+<span id="583">583</span>
+<span id="584">584</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Serialization and deserialization between prost protobuf structs and internal representations</span>
 
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
-
-<span class="kw">use</span> <span class="ident">ndarray</span>::<span class="ident">prelude</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">proto</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::{<span class="ident">HashMap</span>};
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">base</span>::{<span class="ident">Release</span>, <span class="ident">Nature</span>, <span class="ident">Vector2DJagged</span>, <span class="ident">Vector1D</span>, <span class="ident">Value</span>, <span class="ident">ArrayND</span>, <span class="ident">Vector1DNull</span>, <span class="ident">NatureCategorical</span>, <span class="ident">NatureContinuous</span>, <span class="ident">AggregatorProperties</span>, <span class="ident">ValueProperties</span>, <span class="ident">HashmapProperties</span>, <span class="ident">Vector2DJaggedProperties</span>, <span class="ident">DataType</span>, <span class="ident">Hashmap</span>, <span class="ident">ArrayNDProperties</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">base</span>::{<span class="ident">Release</span>, <span class="ident">Nature</span>, <span class="ident">Jagged</span>, <span class="ident">Vector1D</span>, <span class="ident">Value</span>, <span class="ident">Array</span>, <span class="ident">Vector1DNull</span>, <span class="ident">NatureCategorical</span>, <span class="ident">NatureContinuous</span>, <span class="ident">AggregatorProperties</span>, <span class="ident">ValueProperties</span>, <span class="ident">HashmapProperties</span>, <span class="ident">JaggedProperties</span>, <span class="ident">DataType</span>, <span class="ident">Hashmap</span>, <span class="ident">ArrayProperties</span>};
 
 <span class="comment">// PARSERS</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_bool_null</span>(<span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">BoolNull</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> {
@@ -664,13 +666,13 @@
 }
 
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_arraynd</span>(<span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">ArrayNd</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ArrayND</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_arraynd</span>(<span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">ArrayNd</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Array</span> {
     <span class="kw">let</span> <span class="ident">shape</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">value</span>.<span class="ident">shape</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">x</span> <span class="kw">as</span> <span class="ident">usize</span>).<span class="ident">collect</span>();
     <span class="kw">match</span> <span class="ident">parse_array1d</span>(<span class="kw-2">&amp;</span><span class="ident">value</span>.<span class="ident">flattened</span>.<span class="ident">to_owned</span>().<span class="ident">unwrap</span>()) {
-        <span class="ident">Vector1D</span>::<span class="ident">Bool</span>(<span class="ident">vector</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">ArrayND</span>::<span class="ident">Bool</span>(<span class="ident">Array</span>::<span class="ident">from_shape_vec</span>(<span class="ident">shape</span>, <span class="ident">vector</span>).<span class="ident">unwrap</span>().<span class="ident">into_dyn</span>()),
-        <span class="ident">Vector1D</span>::<span class="ident">I64</span>(<span class="ident">vector</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">ArrayND</span>::<span class="ident">I64</span>(<span class="ident">Array</span>::<span class="ident">from_shape_vec</span>(<span class="ident">shape</span>, <span class="ident">vector</span>).<span class="ident">unwrap</span>().<span class="ident">into_dyn</span>()),
-        <span class="ident">Vector1D</span>::<span class="ident">F64</span>(<span class="ident">vector</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">ArrayND</span>::<span class="ident">F64</span>(<span class="ident">Array</span>::<span class="ident">from_shape_vec</span>(<span class="ident">shape</span>, <span class="ident">vector</span>).<span class="ident">unwrap</span>().<span class="ident">into_dyn</span>()),
-        <span class="ident">Vector1D</span>::<span class="ident">Str</span>(<span class="ident">vector</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">ArrayND</span>::<span class="ident">Str</span>(<span class="ident">Array</span>::<span class="ident">from_shape_vec</span>(<span class="ident">shape</span>, <span class="ident">vector</span>).<span class="ident">unwrap</span>().<span class="ident">into_dyn</span>()),
+        <span class="ident">Vector1D</span>::<span class="ident">Bool</span>(<span class="ident">vector</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Array</span>::<span class="ident">Bool</span>(<span class="ident">ndarray</span>::<span class="ident">Array</span>::<span class="ident">from_shape_vec</span>(<span class="ident">shape</span>, <span class="ident">vector</span>).<span class="ident">unwrap</span>().<span class="ident">into_dyn</span>()),
+        <span class="ident">Vector1D</span>::<span class="ident">I64</span>(<span class="ident">vector</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Array</span>::<span class="ident">I64</span>(<span class="ident">ndarray</span>::<span class="ident">Array</span>::<span class="ident">from_shape_vec</span>(<span class="ident">shape</span>, <span class="ident">vector</span>).<span class="ident">unwrap</span>().<span class="ident">into_dyn</span>()),
+        <span class="ident">Vector1D</span>::<span class="ident">F64</span>(<span class="ident">vector</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Array</span>::<span class="ident">F64</span>(<span class="ident">ndarray</span>::<span class="ident">Array</span>::<span class="ident">from_shape_vec</span>(<span class="ident">shape</span>, <span class="ident">vector</span>).<span class="ident">unwrap</span>().<span class="ident">into_dyn</span>()),
+        <span class="ident">Vector1D</span>::<span class="ident">Str</span>(<span class="ident">vector</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Array</span>::<span class="ident">Str</span>(<span class="ident">ndarray</span>::<span class="ident">Array</span>::<span class="ident">from_shape_vec</span>(<span class="ident">shape</span>, <span class="ident">vector</span>).<span class="ident">unwrap</span>().<span class="ident">into_dyn</span>()),
     }
 }
 
@@ -710,9 +712,9 @@
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_array2d_jagged</span>(<span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">Array2dJagged</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vector2DJagged</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_array2d_jagged</span>(<span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">Array2dJagged</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Jagged</span> {
     <span class="kw">match</span> <span class="ident">proto</span>::<span class="ident">DataType</span>::<span class="ident">from_i32</span>(<span class="ident">value</span>.<span class="ident">data_type</span>).<span class="ident">unwrap</span>() {
-        <span class="ident">proto</span>::<span class="ident">DataType</span>::<span class="ident">Bool</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Vector2DJagged</span>::<span class="ident">Bool</span>(<span class="ident">value</span>.<span class="ident">data</span>.<span class="ident">iter</span>()
+        <span class="ident">proto</span>::<span class="ident">DataType</span>::<span class="ident">Bool</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Jagged</span>::<span class="ident">Bool</span>(<span class="ident">value</span>.<span class="ident">data</span>.<span class="ident">iter</span>()
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">column</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">parse_array1d_option</span>(<span class="ident">column</span>) {
                 <span class="prelude-val">Some</span>(<span class="ident">vector</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="kw">match</span> <span class="ident">vector</span> {
                     <span class="ident">Vector1D</span>::<span class="ident">Bool</span>(<span class="ident">vector</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">vector</span>,
@@ -720,7 +722,7 @@
                 }),
                 <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>
             }).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()),
-        <span class="ident">proto</span>::<span class="ident">DataType</span>::<span class="ident">F64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Vector2DJagged</span>::<span class="ident">F64</span>(<span class="ident">value</span>.<span class="ident">data</span>.<span class="ident">iter</span>()
+        <span class="ident">proto</span>::<span class="ident">DataType</span>::<span class="ident">F64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Jagged</span>::<span class="ident">F64</span>(<span class="ident">value</span>.<span class="ident">data</span>.<span class="ident">iter</span>()
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">column</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">parse_array1d_option</span>(<span class="ident">column</span>) {
                 <span class="prelude-val">Some</span>(<span class="ident">vector</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="kw">match</span> <span class="ident">vector</span> {
                     <span class="ident">Vector1D</span>::<span class="ident">F64</span>(<span class="ident">vector</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">vector</span>,
@@ -728,7 +730,7 @@
                 }),
                 <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>
             }).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()),
-        <span class="ident">proto</span>::<span class="ident">DataType</span>::<span class="ident">I64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Vector2DJagged</span>::<span class="ident">I64</span>(<span class="ident">value</span>.<span class="ident">data</span>.<span class="ident">iter</span>()
+        <span class="ident">proto</span>::<span class="ident">DataType</span>::<span class="ident">I64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Jagged</span>::<span class="ident">I64</span>(<span class="ident">value</span>.<span class="ident">data</span>.<span class="ident">iter</span>()
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">column</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">parse_array1d_option</span>(<span class="ident">column</span>) {
                 <span class="prelude-val">Some</span>(<span class="ident">vector</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="kw">match</span> <span class="ident">vector</span> {
                     <span class="ident">Vector1D</span>::<span class="ident">I64</span>(<span class="ident">vector</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">vector</span>,
@@ -736,7 +738,7 @@
                 }),
                 <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>
             }).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()),
-        <span class="ident">proto</span>::<span class="ident">DataType</span>::<span class="ident">String</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Vector2DJagged</span>::<span class="ident">Str</span>(<span class="ident">value</span>.<span class="ident">data</span>.<span class="ident">iter</span>()
+        <span class="ident">proto</span>::<span class="ident">DataType</span>::<span class="ident">String</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Jagged</span>::<span class="ident">Str</span>(<span class="ident">value</span>.<span class="ident">data</span>.<span class="ident">iter</span>()
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">column</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">parse_array1d_option</span>(<span class="ident">column</span>) {
                 <span class="prelude-val">Some</span>(<span class="ident">vector</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="kw">match</span> <span class="ident">vector</span> {
                     <span class="ident">Vector1D</span>::<span class="ident">Str</span>(<span class="ident">vector</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">vector</span>,
@@ -749,12 +751,12 @@
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_value</span>(<span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">Value</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&gt;</span> {
     <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">value</span>.<span class="ident">data</span>.<span class="ident">to_owned</span>().<span class="ident">unwrap</span>() {
-        <span class="ident">proto</span>::<span class="ident">value</span>::<span class="ident">Data</span>::<span class="ident">ArrayNd</span>(<span class="ident">data</span>) <span class="op">=</span><span class="op">&gt;</span>
-            <span class="ident">Value</span>::<span class="ident">ArrayND</span>(<span class="ident">parse_arraynd</span>(<span class="kw-2">&amp;</span><span class="ident">data</span>)),
+        <span class="ident">proto</span>::<span class="ident">value</span>::<span class="ident">Data</span>::<span class="ident">Array</span>(<span class="ident">data</span>) <span class="op">=</span><span class="op">&gt;</span>
+            <span class="ident">Value</span>::<span class="ident">Array</span>(<span class="ident">parse_arraynd</span>(<span class="kw-2">&amp;</span><span class="ident">data</span>)),
         <span class="ident">proto</span>::<span class="ident">value</span>::<span class="ident">Data</span>::<span class="ident">Hashmap</span>(<span class="ident">data</span>) <span class="op">=</span><span class="op">&gt;</span>
             <span class="ident">Value</span>::<span class="ident">Hashmap</span>(<span class="ident">parse_hashmap</span>(<span class="kw-2">&amp;</span><span class="ident">data</span>)),
-        <span class="ident">proto</span>::<span class="ident">value</span>::<span class="ident">Data</span>::<span class="ident">Array2dJagged</span>(<span class="ident">data</span>) <span class="op">=</span><span class="op">&gt;</span>
-            <span class="ident">Value</span>::<span class="ident">Vector2DJagged</span>(<span class="ident">parse_array2d_jagged</span>(<span class="kw-2">&amp;</span><span class="ident">data</span>))
+        <span class="ident">proto</span>::<span class="ident">value</span>::<span class="ident">Data</span>::<span class="ident">Jagged</span>(<span class="ident">data</span>) <span class="op">=</span><span class="op">&gt;</span>
+            <span class="ident">Value</span>::<span class="ident">Jagged</span>(<span class="ident">parse_array2d_jagged</span>(<span class="kw-2">&amp;</span><span class="ident">data</span>))
     })
 }
 
@@ -770,10 +772,10 @@
     <span class="kw">match</span> <span class="ident">value</span>.<span class="ident">variant</span>.<span class="ident">clone</span>().<span class="ident">unwrap</span>() {
         <span class="ident">proto</span>::<span class="ident">value_properties</span>::<span class="ident">Variant</span>::<span class="ident">Hashmap</span>(<span class="ident">value</span>) <span class="op">=</span><span class="op">&gt;</span>
             <span class="ident">ValueProperties</span>::<span class="ident">Hashmap</span>(<span class="ident">parse_hashmap_properties</span>(<span class="kw-2">&amp;</span><span class="ident">value</span>)),
-        <span class="ident">proto</span>::<span class="ident">value_properties</span>::<span class="ident">Variant</span>::<span class="ident">Arraynd</span>(<span class="ident">value</span>) <span class="op">=</span><span class="op">&gt;</span>
-            <span class="ident">ValueProperties</span>::<span class="ident">ArrayND</span>(<span class="ident">parse_arraynd_properties</span>(<span class="kw-2">&amp;</span><span class="ident">value</span>)),
-        <span class="ident">proto</span>::<span class="ident">value_properties</span>::<span class="ident">Variant</span>::<span class="ident">Vector2djagged</span>(<span class="ident">value</span>) <span class="op">=</span><span class="op">&gt;</span>
-            <span class="ident">ValueProperties</span>::<span class="ident">Vector2DJagged</span>(<span class="ident">parse_array2d_jagged_properties</span>(<span class="kw-2">&amp;</span><span class="ident">value</span>)),
+        <span class="ident">proto</span>::<span class="ident">value_properties</span>::<span class="ident">Variant</span>::<span class="ident">Array</span>(<span class="ident">value</span>) <span class="op">=</span><span class="op">&gt;</span>
+            <span class="ident">ValueProperties</span>::<span class="ident">Array</span>(<span class="ident">parse_arraynd_properties</span>(<span class="kw-2">&amp;</span><span class="ident">value</span>)),
+        <span class="ident">proto</span>::<span class="ident">value_properties</span>::<span class="ident">Variant</span>::<span class="ident">Jagged</span>(<span class="ident">value</span>) <span class="op">=</span><span class="op">&gt;</span>
+            <span class="ident">ValueProperties</span>::<span class="ident">Jagged</span>(<span class="ident">parse_array2d_jagged_properties</span>(<span class="kw-2">&amp;</span><span class="ident">value</span>)),
     }
 }
 
@@ -797,16 +799,17 @@
     <span class="ident">HashmapProperties</span> {
         <span class="ident">num_records</span>: <span class="ident">parse_i64_null</span>(<span class="kw-2">&amp;</span><span class="ident">value</span>.<span class="ident">num_records</span>.<span class="ident">clone</span>().<span class="ident">unwrap</span>()),
         <span class="ident">disjoint</span>: <span class="bool-val">false</span>,
-        <span class="ident">value_properties</span>: <span class="kw">match</span> <span class="ident">value</span>.<span class="ident">value_properties</span>.<span class="ident">clone</span>().<span class="ident">unwrap</span>().<span class="ident">variant</span>.<span class="ident">unwrap</span>() {
+        <span class="ident">properties</span>: <span class="kw">match</span> <span class="ident">value</span>.<span class="ident">value_properties</span>.<span class="ident">clone</span>().<span class="ident">unwrap</span>().<span class="ident">variant</span>.<span class="ident">unwrap</span>() {
             <span class="ident">proto</span>::<span class="ident">hashmap_value_properties</span>::<span class="ident">Variant</span>::<span class="ident">String</span>(<span class="ident">value</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">parse_hashmap_properties_str</span>(<span class="kw-2">&amp;</span><span class="ident">value</span>),
             <span class="ident">proto</span>::<span class="ident">hashmap_value_properties</span>::<span class="ident">Variant</span>::<span class="ident">Bool</span>(<span class="ident">value</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">parse_hashmap_properties_bool</span>(<span class="kw-2">&amp;</span><span class="ident">value</span>),
             <span class="ident">proto</span>::<span class="ident">hashmap_value_properties</span>::<span class="ident">Variant</span>::<span class="ident">I64</span>(<span class="ident">value</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">parse_hashmap_properties_i64</span>(<span class="kw-2">&amp;</span><span class="ident">value</span>),
-        }
+        },
+        <span class="ident">columnar</span>: <span class="ident">value</span>.<span class="ident">columnar</span>
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_arraynd_properties</span>(<span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">ArrayNdProperties</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ArrayNDProperties</span> {
-    <span class="ident">ArrayNDProperties</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_arraynd_properties</span>(<span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">ArrayNdProperties</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ArrayProperties</span> {
+    <span class="ident">ArrayProperties</span> {
         <span class="ident">num_records</span>: <span class="ident">parse_i64_null</span>(<span class="kw-2">&amp;</span><span class="ident">value</span>.<span class="ident">num_records</span>.<span class="ident">to_owned</span>().<span class="ident">unwrap</span>()),
         <span class="ident">num_columns</span>: <span class="ident">parse_i64_null</span>(<span class="kw-2">&amp;</span><span class="ident">value</span>.<span class="ident">num_columns</span>.<span class="ident">to_owned</span>().<span class="ident">unwrap</span>()),
         <span class="ident">nullity</span>: <span class="ident">value</span>.<span class="ident">nullity</span>,
@@ -840,8 +843,10 @@
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_array2d_jagged_properties</span>(<span class="ident">_value</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">Vector2DJaggedProperties</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vector2DJaggedProperties</span> {
-    <span class="ident">Vector2DJaggedProperties</span> {}
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_array2d_jagged_properties</span>(<span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">Vector2DJaggedProperties</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">JaggedProperties</span> {
+    <span class="ident">JaggedProperties</span> {
+        <span class="ident">releasable</span>: <span class="ident">value</span>.<span class="ident">releasable</span>
+    }
 }
 
 
@@ -940,24 +945,24 @@
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">serialize_arraynd</span>(<span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayND</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">ArrayNd</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">serialize_arraynd</span>(<span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">Array</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">ArrayNd</span> {
     <span class="kw">match</span> <span class="ident">value</span> {
-        <span class="ident">ArrayND</span>::<span class="ident">Bool</span>(<span class="ident">array</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">ArrayNd</span> {
+        <span class="ident">Array</span>::<span class="ident">Bool</span>(<span class="ident">array</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">ArrayNd</span> {
             <span class="ident">flattened</span>: <span class="prelude-val">Some</span>(<span class="ident">serialize_array1d</span>(<span class="kw-2">&amp;</span><span class="ident">Vector1D</span>::<span class="ident">Bool</span>(<span class="ident">array</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">to_owned</span>()).<span class="ident">collect</span>()))),
             <span class="ident">order</span>: (<span class="number">1</span>..<span class="ident">array</span>.<span class="ident">ndim</span>()).<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> { <span class="ident">x</span> <span class="kw">as</span> <span class="ident">u64</span> }).<span class="ident">collect</span>(),
             <span class="ident">shape</span>: <span class="ident">array</span>.<span class="ident">shape</span>().<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">y</span><span class="op">|</span> { <span class="kw-2">*</span><span class="ident">y</span> <span class="kw">as</span> <span class="ident">u64</span> }).<span class="ident">collect</span>(),
         },
-        <span class="ident">ArrayND</span>::<span class="ident">F64</span>(<span class="ident">array</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">ArrayNd</span> {
+        <span class="ident">Array</span>::<span class="ident">F64</span>(<span class="ident">array</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">ArrayNd</span> {
             <span class="ident">flattened</span>: <span class="prelude-val">Some</span>(<span class="ident">serialize_array1d</span>(<span class="kw-2">&amp;</span><span class="ident">Vector1D</span>::<span class="ident">F64</span>(<span class="ident">array</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">to_owned</span>()).<span class="ident">collect</span>()))),
             <span class="ident">order</span>: (<span class="number">1</span>..<span class="ident">array</span>.<span class="ident">ndim</span>()).<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> { <span class="ident">x</span> <span class="kw">as</span> <span class="ident">u64</span> }).<span class="ident">collect</span>(),
             <span class="ident">shape</span>: <span class="ident">array</span>.<span class="ident">shape</span>().<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">y</span><span class="op">|</span> { <span class="kw-2">*</span><span class="ident">y</span> <span class="kw">as</span> <span class="ident">u64</span> }).<span class="ident">collect</span>(),
         },
-        <span class="ident">ArrayND</span>::<span class="ident">I64</span>(<span class="ident">array</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">ArrayNd</span> {
+        <span class="ident">Array</span>::<span class="ident">I64</span>(<span class="ident">array</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">ArrayNd</span> {
             <span class="ident">flattened</span>: <span class="prelude-val">Some</span>(<span class="ident">serialize_array1d</span>(<span class="kw-2">&amp;</span><span class="ident">Vector1D</span>::<span class="ident">I64</span>(<span class="ident">array</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">to_owned</span>()).<span class="ident">collect</span>()))),
             <span class="ident">order</span>: (<span class="number">1</span>..<span class="ident">array</span>.<span class="ident">ndim</span>()).<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> { <span class="ident">x</span> <span class="kw">as</span> <span class="ident">u64</span> }).<span class="ident">collect</span>(),
             <span class="ident">shape</span>: <span class="ident">array</span>.<span class="ident">shape</span>().<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">y</span><span class="op">|</span> { <span class="kw-2">*</span><span class="ident">y</span> <span class="kw">as</span> <span class="ident">u64</span> }).<span class="ident">collect</span>(),
         },
-        <span class="ident">ArrayND</span>::<span class="ident">Str</span>(<span class="ident">array</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">ArrayNd</span> {
+        <span class="ident">Array</span>::<span class="ident">Str</span>(<span class="ident">array</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">ArrayNd</span> {
             <span class="ident">flattened</span>: <span class="prelude-val">Some</span>(<span class="ident">serialize_array1d</span>(<span class="kw-2">&amp;</span><span class="ident">Vector1D</span>::<span class="ident">Str</span>(<span class="ident">array</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">to_owned</span>()).<span class="ident">collect</span>()))),
             <span class="ident">order</span>: (<span class="number">1</span>..<span class="ident">array</span>.<span class="ident">ndim</span>()).<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> { <span class="ident">x</span> <span class="kw">as</span> <span class="ident">u64</span> }).<span class="ident">collect</span>(),
             <span class="ident">shape</span>: <span class="ident">array</span>.<span class="ident">shape</span>().<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">y</span><span class="op">|</span> { <span class="kw-2">*</span><span class="ident">y</span> <span class="kw">as</span> <span class="ident">u64</span> }).<span class="ident">collect</span>(),
@@ -1013,28 +1018,28 @@
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">serialize_array2d_jagged</span>(<span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">Vector2DJagged</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">Array2dJagged</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">serialize_array2d_jagged</span>(<span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">Jagged</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">Array2dJagged</span> {
     <span class="ident">proto</span>::<span class="ident">Array2dJagged</span> {
         <span class="ident">data_type</span>: <span class="kw">match</span> <span class="ident">value</span> {
-            <span class="ident">Vector2DJagged</span>::<span class="ident">Bool</span>(<span class="ident">_x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">DataType</span>::<span class="ident">Bool</span> <span class="kw">as</span> <span class="ident">i32</span>,
-            <span class="ident">Vector2DJagged</span>::<span class="ident">F64</span>(<span class="ident">_x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">DataType</span>::<span class="ident">F64</span> <span class="kw">as</span> <span class="ident">i32</span>,
-            <span class="ident">Vector2DJagged</span>::<span class="ident">I64</span>(<span class="ident">_x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">DataType</span>::<span class="ident">I64</span> <span class="kw">as</span> <span class="ident">i32</span>,
-            <span class="ident">Vector2DJagged</span>::<span class="ident">Str</span>(<span class="ident">_x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">DataType</span>::<span class="ident">String</span> <span class="kw">as</span> <span class="ident">i32</span>,
+            <span class="ident">Jagged</span>::<span class="ident">Bool</span>(<span class="ident">_x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">DataType</span>::<span class="ident">Bool</span> <span class="kw">as</span> <span class="ident">i32</span>,
+            <span class="ident">Jagged</span>::<span class="ident">F64</span>(<span class="ident">_x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">DataType</span>::<span class="ident">F64</span> <span class="kw">as</span> <span class="ident">i32</span>,
+            <span class="ident">Jagged</span>::<span class="ident">I64</span>(<span class="ident">_x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">DataType</span>::<span class="ident">I64</span> <span class="kw">as</span> <span class="ident">i32</span>,
+            <span class="ident">Jagged</span>::<span class="ident">Str</span>(<span class="ident">_x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">DataType</span>::<span class="ident">String</span> <span class="kw">as</span> <span class="ident">i32</span>,
         },
         <span class="ident">data</span>: <span class="kw">match</span> <span class="ident">value</span> {
-            <span class="ident">Vector2DJagged</span>::<span class="ident">Bool</span>(<span class="ident">data</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">data</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">column</span><span class="op">|</span> <span class="ident">serialize_array1d_option</span>(<span class="kw-2">&amp;</span><span class="kw">match</span> <span class="ident">column</span> {
+            <span class="ident">Jagged</span>::<span class="ident">Bool</span>(<span class="ident">data</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">data</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">column</span><span class="op">|</span> <span class="ident">serialize_array1d_option</span>(<span class="kw-2">&amp;</span><span class="kw">match</span> <span class="ident">column</span> {
                 <span class="prelude-val">Some</span>(<span class="ident">column</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Vector1D</span>::<span class="ident">Bool</span>(<span class="ident">column</span>.<span class="ident">to_owned</span>())),
                 <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>
             })).<span class="ident">collect</span>(),
-            <span class="ident">Vector2DJagged</span>::<span class="ident">F64</span>(<span class="ident">data</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">data</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">column</span><span class="op">|</span> <span class="ident">serialize_array1d_option</span>(<span class="kw-2">&amp;</span><span class="kw">match</span> <span class="ident">column</span> {
+            <span class="ident">Jagged</span>::<span class="ident">F64</span>(<span class="ident">data</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">data</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">column</span><span class="op">|</span> <span class="ident">serialize_array1d_option</span>(<span class="kw-2">&amp;</span><span class="kw">match</span> <span class="ident">column</span> {
                 <span class="prelude-val">Some</span>(<span class="ident">column</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Vector1D</span>::<span class="ident">F64</span>(<span class="ident">column</span>.<span class="ident">to_owned</span>())),
                 <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>
             })).<span class="ident">collect</span>(),
-            <span class="ident">Vector2DJagged</span>::<span class="ident">I64</span>(<span class="ident">data</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">data</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">column</span><span class="op">|</span> <span class="ident">serialize_array1d_option</span>(<span class="kw-2">&amp;</span><span class="kw">match</span> <span class="ident">column</span> {
+            <span class="ident">Jagged</span>::<span class="ident">I64</span>(<span class="ident">data</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">data</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">column</span><span class="op">|</span> <span class="ident">serialize_array1d_option</span>(<span class="kw-2">&amp;</span><span class="kw">match</span> <span class="ident">column</span> {
                 <span class="prelude-val">Some</span>(<span class="ident">column</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Vector1D</span>::<span class="ident">I64</span>(<span class="ident">column</span>.<span class="ident">to_owned</span>())),
                 <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>
             })).<span class="ident">collect</span>(),
-            <span class="ident">Vector2DJagged</span>::<span class="ident">Str</span>(<span class="ident">data</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">data</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">column</span><span class="op">|</span> <span class="ident">serialize_array1d_option</span>(<span class="kw-2">&amp;</span><span class="kw">match</span> <span class="ident">column</span> {
+            <span class="ident">Jagged</span>::<span class="ident">Str</span>(<span class="ident">data</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">data</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">column</span><span class="op">|</span> <span class="ident">serialize_array1d_option</span>(<span class="kw-2">&amp;</span><span class="kw">match</span> <span class="ident">column</span> {
                 <span class="prelude-val">Some</span>(<span class="ident">column</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Vector1D</span>::<span class="ident">Str</span>(<span class="ident">column</span>.<span class="ident">to_owned</span>())),
                 <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>
             })).<span class="ident">collect</span>(),
@@ -1045,12 +1050,12 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">serialize_value</span>(<span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">Value</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">Value</span><span class="op">&gt;</span> {
     <span class="prelude-val">Ok</span>(<span class="ident">proto</span>::<span class="ident">Value</span> {
         <span class="ident">data</span>: <span class="prelude-val">Some</span>(<span class="kw">match</span> <span class="ident">value</span> {
-            <span class="ident">Value</span>::<span class="ident">ArrayND</span>(<span class="ident">data</span>) <span class="op">=</span><span class="op">&gt;</span>
-                <span class="ident">proto</span>::<span class="ident">value</span>::<span class="ident">Data</span>::<span class="ident">ArrayNd</span>(<span class="ident">serialize_arraynd</span>(<span class="ident">data</span>)),
+            <span class="ident">Value</span>::<span class="ident">Array</span>(<span class="ident">data</span>) <span class="op">=</span><span class="op">&gt;</span>
+                <span class="ident">proto</span>::<span class="ident">value</span>::<span class="ident">Data</span>::<span class="ident">Array</span>(<span class="ident">serialize_arraynd</span>(<span class="ident">data</span>)),
             <span class="ident">Value</span>::<span class="ident">Hashmap</span>(<span class="ident">data</span>) <span class="op">=</span><span class="op">&gt;</span>
                 <span class="ident">proto</span>::<span class="ident">value</span>::<span class="ident">Data</span>::<span class="ident">Hashmap</span>(<span class="ident">serialize_hashmap</span>(<span class="ident">data</span>)),
-            <span class="ident">Value</span>::<span class="ident">Vector2DJagged</span>(<span class="ident">data</span>) <span class="op">=</span><span class="op">&gt;</span>
-                <span class="ident">proto</span>::<span class="ident">value</span>::<span class="ident">Data</span>::<span class="ident">Array2dJagged</span>(<span class="ident">serialize_array2d_jagged</span>(<span class="ident">data</span>))
+            <span class="ident">Value</span>::<span class="ident">Jagged</span>(<span class="ident">data</span>) <span class="op">=</span><span class="op">&gt;</span>
+                <span class="ident">proto</span>::<span class="ident">value</span>::<span class="ident">Data</span>::<span class="ident">Jagged</span>(<span class="ident">serialize_array2d_jagged</span>(<span class="ident">data</span>))
         })
     })
 }
@@ -1098,16 +1103,17 @@
         <span class="ident">num_records</span>: <span class="prelude-val">Some</span>(<span class="ident">serialize_i64_null</span>(<span class="kw-2">&amp;</span><span class="ident">value</span>.<span class="ident">num_records</span>)),
         <span class="ident">disjoint</span>: <span class="ident">value</span>.<span class="ident">disjoint</span>,
         <span class="ident">value_properties</span>: <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">HashmapValueProperties</span> {
-            <span class="ident">variant</span>: <span class="prelude-val">Some</span>(<span class="kw">match</span> <span class="ident">value</span>.<span class="ident">value_properties</span>.<span class="ident">clone</span>() {
+            <span class="ident">variant</span>: <span class="prelude-val">Some</span>(<span class="kw">match</span> <span class="ident">value</span>.<span class="ident">properties</span>.<span class="ident">clone</span>() {
                 <span class="ident">Hashmap</span>::<span class="ident">Str</span>(<span class="ident">value</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">hashmap_value_properties</span>::<span class="ident">Variant</span>::<span class="ident">String</span>(<span class="ident">serialize_hashmap_properties_str</span>(<span class="kw-2">&amp;</span><span class="ident">value</span>)),
                 <span class="ident">Hashmap</span>::<span class="ident">I64</span>(<span class="ident">value</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">hashmap_value_properties</span>::<span class="ident">Variant</span>::<span class="ident">I64</span>(<span class="ident">serialize_hashmap_properties_i64</span>(<span class="kw-2">&amp;</span><span class="ident">value</span>)),
                 <span class="ident">Hashmap</span>::<span class="ident">Bool</span>(<span class="ident">value</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">hashmap_value_properties</span>::<span class="ident">Variant</span>::<span class="ident">Bool</span>(<span class="ident">serialize_hashmap_properties_bool</span>(<span class="kw-2">&amp;</span><span class="ident">value</span>)),
             })
-        })
+        }),
+        <span class="ident">columnar</span>: <span class="ident">value</span>.<span class="ident">columnar</span>
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">serialize_arraynd_properties</span>(<span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayNDProperties</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">ArrayNdProperties</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">serialize_arraynd_properties</span>(<span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayProperties</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">ArrayNdProperties</span> {
     <span class="ident">proto</span>::<span class="ident">ArrayNdProperties</span> {
         <span class="ident">num_records</span>: <span class="prelude-val">Some</span>(<span class="ident">serialize_i64_null</span>(<span class="kw-2">&amp;</span><span class="ident">value</span>.<span class="ident">num_records</span>)),
         <span class="ident">num_columns</span>: <span class="prelude-val">Some</span>(<span class="ident">serialize_i64_null</span>(<span class="kw-2">&amp;</span><span class="ident">value</span>.<span class="ident">num_columns</span>)),
@@ -1143,8 +1149,10 @@
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">serialize_vector2d_jagged_properties</span>(<span class="ident">_value</span>: <span class="kw-2">&amp;</span><span class="ident">Vector2DJaggedProperties</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">Vector2DJaggedProperties</span> {
-    <span class="ident">proto</span>::<span class="ident">Vector2DJaggedProperties</span> {}
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">serialize_vector2d_jagged_properties</span>(<span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">JaggedProperties</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">Vector2DJaggedProperties</span> {
+    <span class="ident">proto</span>::<span class="ident">Vector2DJaggedProperties</span> {
+        <span class="ident">releasable</span>: <span class="ident">value</span>.<span class="ident">releasable</span>
+    }
 }
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">serialize_value_properties</span>(<span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">ValueProperties</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">ValueProperties</span> {
@@ -1152,10 +1160,10 @@
         <span class="ident">variant</span>: <span class="prelude-val">Some</span>(<span class="kw">match</span> <span class="ident">value</span> {
             <span class="ident">ValueProperties</span>::<span class="ident">Hashmap</span>(<span class="ident">value</span>) <span class="op">=</span><span class="op">&gt;</span>
                 <span class="ident">proto</span>::<span class="ident">value_properties</span>::<span class="ident">Variant</span>::<span class="ident">Hashmap</span>(<span class="ident">serialize_hashmap_properties</span>(<span class="ident">value</span>)),
-            <span class="ident">ValueProperties</span>::<span class="ident">ArrayND</span>(<span class="ident">value</span>) <span class="op">=</span><span class="op">&gt;</span>
-                <span class="ident">proto</span>::<span class="ident">value_properties</span>::<span class="ident">Variant</span>::<span class="ident">Arraynd</span>(<span class="ident">serialize_arraynd_properties</span>(<span class="ident">value</span>)),
-            <span class="ident">ValueProperties</span>::<span class="ident">Vector2DJagged</span>(<span class="ident">value</span>) <span class="op">=</span><span class="op">&gt;</span>
-                <span class="ident">proto</span>::<span class="ident">value_properties</span>::<span class="ident">Variant</span>::<span class="ident">Vector2djagged</span>(<span class="ident">serialize_vector2d_jagged_properties</span>(<span class="ident">value</span>))
+            <span class="ident">ValueProperties</span>::<span class="ident">Array</span>(<span class="ident">value</span>) <span class="op">=</span><span class="op">&gt;</span>
+                <span class="ident">proto</span>::<span class="ident">value_properties</span>::<span class="ident">Variant</span>::<span class="ident">Array</span>(<span class="ident">serialize_arraynd_properties</span>(<span class="ident">value</span>)),
+            <span class="ident">ValueProperties</span>::<span class="ident">Jagged</span>(<span class="ident">value</span>) <span class="op">=</span><span class="op">&gt;</span>
+                <span class="ident">proto</span>::<span class="ident">value_properties</span>::<span class="ident">Variant</span>::<span class="ident">Jagged</span>(<span class="ident">serialize_vector2d_jagged_properties</span>(<span class="ident">value</span>))
         })
     }
 }

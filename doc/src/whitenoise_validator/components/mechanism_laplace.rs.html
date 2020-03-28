@@ -65,6 +65,28 @@
 <span id="65">65</span>
 <span id="66">66</span>
 <span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
@@ -72,11 +94,12 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashMap</span>;
 
 
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">components</span>::{<span class="ident">Aggregator</span>, <span class="ident">expand_mechanism</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">components</span>::{<span class="ident">Aggregator</span>, <span class="ident">Accuracy</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">proto</span>, <span class="ident">base</span>};
 
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">components</span>::{<span class="ident">Component</span>, <span class="ident">Expandable</span>};
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">base</span>::{<span class="ident">Value</span>, <span class="ident">NodeProperties</span>, <span class="ident">Sensitivity</span>, <span class="ident">prepend</span>, <span class="ident">ValueProperties</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">base</span>::{<span class="ident">Value</span>, <span class="ident">NodeProperties</span>, <span class="ident">SensitivitySpace</span>, <span class="ident">ValueProperties</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">utilities</span>::{<span class="ident">prepend</span>, <span class="ident">expand_mechanism</span>};
 
 
 <span class="kw">impl</span> <span class="ident">Component</span> <span class="kw">for</span> <span class="ident">proto</span>::<span class="ident">LaplaceMechanism</span> {
@@ -87,7 +110,7 @@
         <span class="ident">properties</span>: <span class="kw-2">&amp;</span><span class="ident">base</span>::<span class="ident">NodeProperties</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ValueProperties</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">data_property</span> <span class="op">=</span> <span class="ident">properties</span>.<span class="ident">get</span>(<span class="string">&quot;data&quot;</span>)
-            .<span class="ident">ok_or</span>(<span class="string">&quot;data: missing&quot;</span>)<span class="question-mark">?</span>.<span class="ident">get_arraynd</span>()
+            .<span class="ident">ok_or</span>(<span class="string">&quot;data: missing&quot;</span>)<span class="question-mark">?</span>.<span class="ident">array</span>()
             .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;data:&quot;</span>))<span class="question-mark">?</span>.<span class="ident">clone</span>();
 
         <span class="kw">let</span> <span class="ident">aggregator</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">aggregator</span>.<span class="ident">clone</span>()
@@ -97,7 +120,7 @@
         <span class="ident">aggregator</span>.<span class="ident">component</span>.<span class="ident">compute_sensitivity</span>(
             <span class="kw-2">&amp;</span><span class="ident">privacy_definition</span>,
             <span class="kw-2">&amp;</span><span class="ident">aggregator</span>.<span class="ident">properties</span>,
-            <span class="kw-2">&amp;</span><span class="ident">Sensitivity</span>::<span class="ident">KNorm</span>(<span class="number">1</span>))<span class="question-mark">?</span>;
+            <span class="kw-2">&amp;</span><span class="ident">SensitivitySpace</span>::<span class="ident">KNorm</span>(<span class="number">1</span>))<span class="question-mark">?</span>;
 
         <span class="ident">data_property</span>.<span class="ident">aggregator</span> <span class="op">=</span> <span class="prelude-val">None</span>;
 
@@ -120,11 +143,11 @@
         <span class="ident">privacy_definition</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">PrivacyDefinition</span>,
         <span class="ident">component</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">Component</span>,
         <span class="ident">properties</span>: <span class="kw-2">&amp;</span><span class="ident">base</span>::<span class="ident">NodeProperties</span>,
-        <span class="ident">component_id</span>: <span class="ident">u32</span>,
-        <span class="ident">maximum_id</span>: <span class="ident">u32</span>,
+        <span class="ident">component_id</span>: <span class="kw-2">&amp;</span><span class="ident">u32</span>,
+        <span class="ident">maximum_id</span>: <span class="kw-2">&amp;</span><span class="ident">u32</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">ComponentExpansion</span><span class="op">&gt;</span> {
         <span class="ident">expand_mechanism</span>(
-            <span class="kw-2">&amp;</span><span class="ident">Sensitivity</span>::<span class="ident">KNorm</span>(<span class="number">1</span>),
+            <span class="kw-2">&amp;</span><span class="ident">SensitivitySpace</span>::<span class="ident">KNorm</span>(<span class="number">1</span>),
             <span class="ident">privacy_definition</span>,
             <span class="ident">component</span>,
             <span class="ident">properties</span>,
@@ -133,5 +156,25 @@
         )
     }
 }
-</pre></div>
+
+
+<span class="kw">impl</span> <span class="ident">Accuracy</span> <span class="kw">for</span> <span class="ident">proto</span>::<span class="ident">LaplaceMechanism</span> {
+    <span class="kw">fn</span> <span class="ident">accuracy_to_privacy_usage</span>(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="ident">_privacy_definition</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">PrivacyDefinition</span>,
+        <span class="ident">_properties</span>: <span class="kw-2">&amp;</span><span class="ident">base</span>::<span class="ident">NodeProperties</span>,
+        <span class="ident">_accuracies</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">Accuracies</span>,
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="prelude-val">Err</span>(<span class="string">&quot;not implemented&quot;</span>.<span class="ident">into</span>())
+    }
+
+    <span class="kw">fn</span> <span class="ident">privacy_usage_to_accuracy</span>(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="ident">_privacy_definition</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">PrivacyDefinition</span>,
+        <span class="ident">_properties</span>: <span class="kw-2">&amp;</span><span class="ident">base</span>::<span class="ident">NodeProperties</span>,
+        <span class="ident">_alpha</span>: <span class="kw-2">&amp;</span><span class="ident">f64</span>
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">Accuracy</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="prelude-val">Err</span>(<span class="string">&quot;not implemented&quot;</span>.<span class="ident">into</span>())
+    }
+}</pre></div>
 </section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../";window.currentCrate = "whitenoise_validator";</script><script src="../../../aliases.js"></script><script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script><script defer src="../../../search-index.js"></script></body></html>

@@ -266,93 +266,6 @@
 <span id="266">266</span>
 <span id="267">267</span>
 <span id="268">268</span>
-<span id="269">269</span>
-<span id="270">270</span>
-<span id="271">271</span>
-<span id="272">272</span>
-<span id="273">273</span>
-<span id="274">274</span>
-<span id="275">275</span>
-<span id="276">276</span>
-<span id="277">277</span>
-<span id="278">278</span>
-<span id="279">279</span>
-<span id="280">280</span>
-<span id="281">281</span>
-<span id="282">282</span>
-<span id="283">283</span>
-<span id="284">284</span>
-<span id="285">285</span>
-<span id="286">286</span>
-<span id="287">287</span>
-<span id="288">288</span>
-<span id="289">289</span>
-<span id="290">290</span>
-<span id="291">291</span>
-<span id="292">292</span>
-<span id="293">293</span>
-<span id="294">294</span>
-<span id="295">295</span>
-<span id="296">296</span>
-<span id="297">297</span>
-<span id="298">298</span>
-<span id="299">299</span>
-<span id="300">300</span>
-<span id="301">301</span>
-<span id="302">302</span>
-<span id="303">303</span>
-<span id="304">304</span>
-<span id="305">305</span>
-<span id="306">306</span>
-<span id="307">307</span>
-<span id="308">308</span>
-<span id="309">309</span>
-<span id="310">310</span>
-<span id="311">311</span>
-<span id="312">312</span>
-<span id="313">313</span>
-<span id="314">314</span>
-<span id="315">315</span>
-<span id="316">316</span>
-<span id="317">317</span>
-<span id="318">318</span>
-<span id="319">319</span>
-<span id="320">320</span>
-<span id="321">321</span>
-<span id="322">322</span>
-<span id="323">323</span>
-<span id="324">324</span>
-<span id="325">325</span>
-<span id="326">326</span>
-<span id="327">327</span>
-<span id="328">328</span>
-<span id="329">329</span>
-<span id="330">330</span>
-<span id="331">331</span>
-<span id="332">332</span>
-<span id="333">333</span>
-<span id="334">334</span>
-<span id="335">335</span>
-<span id="336">336</span>
-<span id="337">337</span>
-<span id="338">338</span>
-<span id="339">339</span>
-<span id="340">340</span>
-<span id="341">341</span>
-<span id="342">342</span>
-<span id="343">343</span>
-<span id="344">344</span>
-<span id="345">345</span>
-<span id="346">346</span>
-<span id="347">347</span>
-<span id="348">348</span>
-<span id="349">349</span>
-<span id="350">350</span>
-<span id="351">351</span>
-<span id="352">352</span>
-<span id="353">353</span>
-<span id="354">354</span>
-<span id="355">355</span>
 </pre><div class="example-wrap"><pre class="rust ">
 
 <span class="comment">// `error_chain!` can recurse deeply</span>
@@ -368,16 +281,17 @@
 
 <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">errors</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident">error_chain</span>::<span class="ident">ChainedError</span>;
- <span class="comment">// trait which holds `display_chain`</span>
-
-<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-<span class="kw">pub</span> <span class="kw">static</span> <span class="ident">ERR_STDERR</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Error writing to stderr&quot;</span>;
+<span class="comment">// trait which holds `display_chain`</span>
 
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">base</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">utilities</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">components</span>;
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">ffi</span>;
+<span class="comment">// import all trait implementations</span>
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">components</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="ident">itertools</span>::<span class="ident">Itertools</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashMap</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">utilities</span>::<span class="ident">serial</span>::<span class="ident">serialize_value_properties</span>;
 
 <span class="comment">// include protobuf-generated traits</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">proto</span> {
@@ -396,51 +310,6 @@
     }}
 }
 
-<span class="kw">use</span> <span class="ident">prost</span>::<span class="ident">Message</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashMap</span>;
-
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">base</span>::<span class="ident">Value</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">utilities</span>::<span class="ident">serial</span>::<span class="ident">parse_value</span>;
-
-<span class="comment">// useful tutorial for proto over ffi here:</span>
-<span class="comment">// https://github.com/mozilla/application-services/blob/master/docs/howtos/passing-protobuf-data-over-ffi.md</span>
-<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">ptr_to_buffer</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">data</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">u8</span>, <span class="ident">len</span>: <span class="ident">i32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>] {
-    <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">len</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0</span>, <span class="string">&quot;Bad buffer len: {}&quot;</span>, <span class="ident">len</span>);
-    <span class="kw">if</span> <span class="ident">len</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
-        <span class="comment">// This will still fail, but as a bad protobuf format.</span>
-        <span class="kw-2">&amp;</span>[]
-    } <span class="kw">else</span> {
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">data</span>.<span class="ident">is_null</span>(), <span class="string">&quot;Unexpected null data pointer&quot;</span>);
-        <span class="ident">std</span>::<span class="ident">slice</span>::<span class="ident">from_raw_parts</span>(<span class="ident">data</span>, <span class="ident">len</span> <span class="kw">as</span> <span class="ident">usize</span>)
-    }
-}
-
-<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">buffer_to_ptr</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">buffer</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ffi_support</span>::<span class="ident">ByteBuffer</span>
-    <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">Message</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">out_buffer</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
-    <span class="kw">match</span> <span class="ident">prost</span>::<span class="ident">Message</span>::<span class="ident">encode</span>(<span class="kw-2">&amp;</span><span class="ident">buffer</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">out_buffer</span>) {
-        <span class="prelude-val">Ok</span>(<span class="ident">_t</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">ffi_support</span>::<span class="ident">ByteBuffer</span>::<span class="ident">from_vec</span>(<span class="ident">out_buffer</span>),
-        <span class="prelude-val">Err</span>(<span class="ident">error</span>) <span class="op">=</span><span class="op">&gt;</span> {
-            <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;Error encoding response protobuf.&quot;</span>);
-            <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">error</span>);
-            <span class="ident">ffi_support</span>::<span class="ident">ByteBuffer</span>::<span class="ident">new_with_size</span>(<span class="number">0</span>)
-        }
-    }
-}
-
-<span class="doccomment">/// Container for responses over FFI.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The array referenced by this struct contains the serialized value of one protobuf message.</span>
-<span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
-<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ByteBuffer</span> {
-    <span class="doccomment">/// The length of the array containing serialized protobuf data</span>
-    <span class="kw">pub</span> <span class="ident">len</span>: <span class="ident">i64</span>,
-    <span class="doccomment">/// Pointer to start of array containing serialized protobuf data</span>
-    <span class="kw">pub</span> <span class="ident">data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">u8</span>,
-}
 
 <span class="doccomment">/// Validate if an analysis is well-formed.</span>
 <span class="doccomment">///</span>
@@ -452,42 +321,20 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// The system may also be run dynamically- prior to expanding each node, calling the expand_component endpoint will also validate the component being expanded.</span>
 <span class="doccomment">/// NOTE: Evaluating the graph dynamically opens up additional potential timing attacks.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestValidateAnalysis](proto/struct.RequestValidateAnalysis.html)</span>
-<span class="doccomment">/// - `request_length` - the length of the array</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseValidateAnalysis](proto/struct.ResponseValidateAnalysis.html)</span>
-<span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">validate_analysis</span>(
-    <span class="ident">request_ptr</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">u8</span>, <span class="ident">request_length</span>: <span class="ident">i32</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ffi_support</span>::<span class="ident">ByteBuffer</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">validate_analysis</span>(
+    <span class="ident">request</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">RequestValidateAnalysis</span>
+) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">response_validate_analysis</span>::<span class="ident">Validated</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">analysis</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">analysis</span>.<span class="ident">clone</span>()
+        .<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;analysis must be defined&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">release</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">release</span>.<span class="ident">clone</span>()
+        .<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;release must be defined&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="ident">request_buffer</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">ptr_to_buffer</span>(<span class="ident">request_ptr</span>, <span class="ident">request_length</span>) };
-    <span class="kw">let</span> <span class="ident">request</span>: <span class="ident">proto</span>::<span class="ident">RequestValidateAnalysis</span> <span class="op">=</span> <span class="ident">prost</span>::<span class="ident">Message</span>::<span class="ident">decode</span>(<span class="ident">request_buffer</span>).<span class="ident">unwrap</span>();
+    <span class="ident">utilities</span>::<span class="ident">propagate_properties</span>(<span class="kw-2">&amp;</span><span class="ident">analysis</span>, <span class="kw-2">&amp;</span><span class="ident">release</span>)<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="ident">analysis</span>: <span class="ident">proto</span>::<span class="ident">Analysis</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">analysis</span>.<span class="ident">unwrap</span>();
-    <span class="kw">let</span> <span class="ident">release</span>: <span class="ident">proto</span>::<span class="ident">Release</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">request</span>.<span class="ident">release</span> {
-        <span class="prelude-val">Some</span>(<span class="ident">value</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">value</span>, <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">Release</span> {<span class="ident">values</span>: <span class="ident">HashMap</span>::<span class="ident">new</span>()}
-    };
-
-    <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">proto</span>::<span class="ident">ResponseValidateAnalysis</span> {
-        <span class="ident">value</span>: <span class="kw">match</span> <span class="ident">base</span>::<span class="ident">validate_analysis</span>(<span class="kw-2">&amp;</span><span class="ident">analysis</span>, <span class="kw-2">&amp;</span><span class="ident">release</span>) {
-            <span class="prelude-val">Ok</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_validate_analysis</span>::<span class="ident">Value</span>::<span class="ident">Data</span>(<span class="ident">x</span>)),
-            <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span> {
-<span class="comment">//</span>
-<span class="comment">//                let stderr = &amp;mut ::std::io::stderr();</span>
-<span class="comment">//                writeln!(stderr, &quot;{}&quot;, err.display_chain()).expect(ERR_STDERR);</span>
-<span class="comment">//                ::std::process::exit(1);</span>
-
-                <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_validate_analysis</span>::<span class="ident">Value</span>::<span class="ident">Error</span>(
-                    <span class="ident">proto</span>::<span class="ident">Error</span> { <span class="ident">message</span>: <span class="ident">err</span>.<span class="ident">display_chain</span>().<span class="ident">to_string</span>() }
-                ))
-            }
-        }
-    };
-    <span class="ident">buffer_to_ptr</span>(<span class="ident">response</span>)
+    <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">proto</span>::<span class="ident">response_validate_analysis</span>::<span class="ident">Validated</span> {
+        <span class="ident">value</span>: <span class="bool-val">true</span>,
+        <span class="ident">message</span>: <span class="string">&quot;The analysis is valid.&quot;</span>.<span class="ident">to_string</span>(),
+    });
 }
 
 
@@ -495,169 +342,133 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// The privacy usage is sum of the privacy usages for each node.</span>
 <span class="doccomment">/// The Release&#39;s actual privacy usage, if defined, takes priority over the maximum allowable privacy usage defined in the Analysis.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestComputePrivacyUsage](proto/struct.RequestComputePrivacyUsage.html)</span>
-<span class="doccomment">/// - `request_length` - the length of the array</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseComputePrivacyUsage](proto/struct.ResponseComputePrivacyUsage.html)</span>
-<span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">compute_privacy_usage</span>(
-    <span class="ident">request_ptr</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">u8</span>, <span class="ident">request_length</span>: <span class="ident">i32</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ffi_support</span>::<span class="ident">ByteBuffer</span> {
-    <span class="kw">let</span> <span class="ident">request_buffer</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">ptr_to_buffer</span>(<span class="ident">request_ptr</span>, <span class="ident">request_length</span>) };
-    <span class="kw">let</span> <span class="ident">request</span>: <span class="ident">proto</span>::<span class="ident">RequestComputePrivacyUsage</span> <span class="op">=</span> <span class="ident">prost</span>::<span class="ident">Message</span>::<span class="ident">decode</span>(<span class="ident">request_buffer</span>).<span class="ident">unwrap</span>();
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">compute_privacy_usage</span>(
+    <span class="ident">request</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">RequestComputePrivacyUsage</span>
+) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">analysis</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">analysis</span>.<span class="ident">as_ref</span>()
+        .<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;analysis must be defined&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">release</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">release</span>.<span class="ident">as_ref</span>()
+        .<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;release must be defined&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="ident">analysis</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">analysis</span>.<span class="ident">unwrap</span>();
-    <span class="kw">let</span> <span class="ident">release</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">release</span>.<span class="ident">unwrap</span>();
+    <span class="kw">let</span> (<span class="ident">_graph_properties</span>, <span class="ident">graph</span>) <span class="op">=</span> <span class="ident">utilities</span>::<span class="ident">propagate_properties</span>(<span class="ident">analysis</span>, <span class="ident">release</span>)<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">proto</span>::<span class="ident">ResponseComputePrivacyUsage</span> {
-        <span class="ident">value</span>: <span class="kw">match</span> <span class="ident">base</span>::<span class="ident">compute_privacy_usage</span>(<span class="kw-2">&amp;</span><span class="ident">analysis</span>, <span class="kw-2">&amp;</span><span class="ident">release</span>) {
-            <span class="prelude-val">Ok</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_compute_privacy_usage</span>::<span class="ident">Value</span>::<span class="ident">Data</span>(<span class="ident">x</span>)),
-            <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">usage_option</span> <span class="op">=</span> <span class="ident">graph</span>.<span class="ident">iter</span>()
+        <span class="comment">// return the privacy usage from the release, else from the analysis</span>
+        .<span class="ident">filter_map</span>(<span class="op">|</span>(<span class="ident">node_id</span>, <span class="ident">component</span>)<span class="op">|</span> <span class="ident">utilities</span>::<span class="ident">get_component_privacy_usage</span>(<span class="ident">component</span>, <span class="ident">release</span>.<span class="ident">values</span>.<span class="ident">get</span>(<span class="ident">node_id</span>)))
+        <span class="comment">// linear sum</span>
+        .<span class="ident">fold1</span>(<span class="op">|</span><span class="ident">usage_1</span>, <span class="ident">usage_2</span><span class="op">|</span> <span class="ident">utilities</span>::<span class="ident">privacy_usage_reducer</span>(
+            <span class="kw-2">&amp;</span><span class="ident">usage_1</span>, <span class="kw-2">&amp;</span><span class="ident">usage_2</span>, <span class="kw-2">&amp;</span><span class="op">|</span><span class="ident">l</span>, <span class="ident">r</span><span class="op">|</span> <span class="ident">l</span> <span class="op">+</span> <span class="ident">r</span>));
 
-<span class="comment">//                let stderr = &amp;mut ::std::io::stderr();</span>
-<span class="comment">//                writeln!(stderr, &quot;{}&quot;, err.display_chain()).expect(ERR_STDERR);</span>
-<span class="comment">//                ::std::process::exit(1);</span>
-
-                <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_compute_privacy_usage</span>::<span class="ident">Value</span>::<span class="ident">Error</span>(
-                    <span class="ident">proto</span>::<span class="ident">Error</span> { <span class="ident">message</span>: <span class="ident">err</span>.<span class="ident">display_chain</span>().<span class="ident">to_string</span>() }
-                ))
-            }
-        }
-    };
-    <span class="ident">buffer_to_ptr</span>(<span class="ident">response</span>)
+    <span class="comment">// TODO: this should probably return a proto::PrivacyUsage with zero based on the privacy definition</span>
+    <span class="ident">usage_option</span>
+        .<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;no information is released; privacy usage is none&quot;</span>.<span class="ident">into</span>())
 }
 
 
 <span class="doccomment">/// Generate a json string with a summary/report of the Analysis and Release</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestGenerateReport](proto/struct.RequestGenerateReport.html)</span>
-<span class="doccomment">/// - `request_length` - the length of the array</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseGenerateReport](proto/struct.ResponseGenerateReport.html)</span>
-<span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">generate_report</span>(
-    <span class="ident">request_ptr</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">u8</span>, <span class="ident">request_length</span>: <span class="ident">i32</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ffi_support</span>::<span class="ident">ByteBuffer</span> {
-    <span class="kw">let</span> <span class="ident">request_buffer</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">ptr_to_buffer</span>(<span class="ident">request_ptr</span>, <span class="ident">request_length</span>) };
-    <span class="kw">let</span> <span class="ident">request</span>: <span class="ident">proto</span>::<span class="ident">RequestGenerateReport</span> <span class="op">=</span> <span class="ident">prost</span>::<span class="ident">Message</span>::<span class="ident">decode</span>(<span class="ident">request_buffer</span>).<span class="ident">unwrap</span>();
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_report</span>(
+    <span class="ident">request</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">RequestGenerateReport</span>
+) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">analysis</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">analysis</span>.<span class="ident">as_ref</span>()
+        .<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;analysis must be defined&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">release</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">release</span>.<span class="ident">as_ref</span>()
+        .<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;release must be defined&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="ident">analysis</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">analysis</span>.<span class="ident">unwrap</span>();
-    <span class="kw">let</span> <span class="ident">release</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">release</span>.<span class="ident">unwrap</span>();
+    <span class="kw">let</span> <span class="ident">graph</span> <span class="op">=</span> <span class="ident">analysis</span>.<span class="ident">computation_graph</span>.<span class="ident">to_owned</span>()
+        .<span class="ident">ok_or</span>(<span class="string">&quot;the computation graph must be defined in an analysis&quot;</span>)<span class="question-mark">?</span>
+        .<span class="ident">value</span>;
 
-    <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">proto</span>::<span class="ident">ResponseGenerateReport</span> {
-        <span class="ident">value</span>: <span class="kw">match</span> <span class="ident">base</span>::<span class="ident">generate_report</span>(<span class="kw-2">&amp;</span><span class="ident">analysis</span>, <span class="kw-2">&amp;</span><span class="ident">release</span>) {
-            <span class="prelude-val">Ok</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_generate_report</span>::<span class="ident">Value</span>::<span class="ident">Data</span>(<span class="ident">x</span>)),
-            <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> (<span class="ident">graph_properties</span>, <span class="ident">_graph_expanded</span>) <span class="op">=</span> <span class="ident">utilities</span>::<span class="ident">propagate_properties</span>(<span class="ident">analysis</span>, <span class="ident">release</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">release</span> <span class="op">=</span> <span class="ident">utilities</span>::<span class="ident">serial</span>::<span class="ident">parse_release</span>(<span class="kw-2">&amp;</span><span class="ident">release</span>)<span class="question-mark">?</span>;
 
-<span class="comment">//                let stderr = &amp;mut ::std::io::stderr();</span>
-<span class="comment">//                writeln!(stderr, &quot;{}&quot;, err.display_chain()).expect(ERR_STDERR);</span>
-<span class="comment">//                ::std::process::exit(1);</span>
+    <span class="kw">let</span> <span class="ident">release_schemas</span> <span class="op">=</span> <span class="ident">graph</span>.<span class="ident">iter</span>()
+        .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">node_id</span>, <span class="ident">component</span>)<span class="op">|</span> {
+            <span class="kw">let</span> <span class="ident">public_arguments</span> <span class="op">=</span> <span class="ident">utilities</span>::<span class="ident">get_input_arguments</span>(<span class="kw-2">&amp;</span><span class="ident">component</span>, <span class="kw-2">&amp;</span><span class="ident">release</span>)<span class="question-mark">?</span>;
+            <span class="kw">let</span> <span class="ident">input_properties</span> <span class="op">=</span> <span class="ident">utilities</span>::<span class="ident">get_input_properties</span>(<span class="kw-2">&amp;</span><span class="ident">component</span>, <span class="kw-2">&amp;</span><span class="ident">graph_properties</span>)<span class="question-mark">?</span>;
+            <span class="comment">// ignore nodes without released values</span>
+            <span class="kw">let</span> <span class="ident">node_release</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">release</span>.<span class="ident">get</span>(<span class="ident">node_id</span>) {
+                <span class="prelude-val">Some</span>(<span class="ident">node_release</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">node_release</span>,
+                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>)
+            };
+            <span class="ident">component</span>.<span class="ident">variant</span>.<span class="ident">as_ref</span>()
+                .<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;component variant must be defined&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>
+                .<span class="ident">summarize</span>(
+                <span class="kw-2">&amp;</span><span class="ident">node_id</span>,
+                <span class="kw-2">&amp;</span><span class="ident">component</span>,
+                <span class="kw-2">&amp;</span><span class="ident">public_arguments</span>,
+                <span class="kw-2">&amp;</span><span class="ident">input_properties</span>,
+                <span class="kw-2">&amp;</span><span class="ident">node_release</span>)
+        })
+        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">utilities</span>::<span class="ident">json</span>::<span class="ident">JSONRelease</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>.<span class="ident">into_iter</span>()
+        .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>).<span class="ident">flat_map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>)
+        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">utilities</span>::<span class="ident">json</span>::<span class="ident">JSONRelease</span><span class="op">&gt;</span><span class="op">&gt;</span>();
 
-                <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_generate_report</span>::<span class="ident">Value</span>::<span class="ident">Error</span>(
-                    <span class="ident">proto</span>::<span class="ident">Error</span> { <span class="ident">message</span>: <span class="ident">err</span>.<span class="ident">display_chain</span>().<span class="ident">to_string</span>() }
-                ))
-            }
-        }
-    };
-    <span class="ident">buffer_to_ptr</span>(<span class="ident">response</span>)
+    <span class="kw">match</span> <span class="ident">serde_json</span>::<span class="ident">to_string</span>(<span class="kw-2">&amp;</span><span class="ident">release_schemas</span>) {
+        <span class="prelude-val">Ok</span>(<span class="ident">serialized</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">serialized</span>),
+        <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;unable to parse report into json&quot;</span>.<span class="ident">into</span>())
+    }
 }
 
 
-<span class="doccomment">/// TODO: Estimate the privacy usage necessary to bound accuracy to a given value.</span>
+<span class="doccomment">/// Estimate the privacy usage necessary to bound accuracy to a given value.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// No context about the analysis is necessary, just the privacy definition and properties of the arguments of the component.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestAccuracyToPrivacyUsage](proto/struct.RequestAccuracyToPrivacyUsage.html)</span>
-<span class="doccomment">/// - `request_length` - the length of the array</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseAccuracyToPrivacyUsage](proto/struct.ResponseAccuracyToPrivacyUsage.html)</span>
-<span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">accuracy_to_privacy_usage</span>(
-    <span class="ident">request_ptr</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">u8</span>, <span class="ident">request_length</span>: <span class="ident">i32</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ffi_support</span>::<span class="ident">ByteBuffer</span> {
-    <span class="kw">let</span> <span class="ident">request_buffer</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">ptr_to_buffer</span>(<span class="ident">request_ptr</span>, <span class="ident">request_length</span>) };
-    <span class="kw">let</span> <span class="ident">request</span>: <span class="ident">proto</span>::<span class="ident">RequestAccuracyToPrivacyUsage</span> <span class="op">=</span> <span class="ident">prost</span>::<span class="ident">Message</span>::<span class="ident">decode</span>(<span class="ident">request_buffer</span>).<span class="ident">unwrap</span>();
-
-    <span class="kw">let</span> <span class="ident">privacy_definition</span>: <span class="ident">proto</span>::<span class="ident">PrivacyDefinition</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">privacy_definition</span>.<span class="ident">unwrap</span>();
-    <span class="kw">let</span> <span class="ident">component</span>: <span class="ident">proto</span>::<span class="ident">Component</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">component</span>.<span class="ident">unwrap</span>();
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">accuracy_to_privacy_usage</span>(
+    <span class="ident">request</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">RequestAccuracyToPrivacyUsage</span>
+) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsages</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">component</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">Component</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">component</span>.<span class="ident">as_ref</span>()
+        .<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;component must be defined&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">privacy_definition</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">PrivacyDefinition</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">privacy_definition</span>.<span class="ident">as_ref</span>()
+        .<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;privacy definition must be defined&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="ident">properties</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">base</span>::<span class="ident">ValueProperties</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">properties</span>.<span class="ident">iter</span>()
         .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">k</span>, <span class="ident">v</span>)<span class="op">|</span> (<span class="ident">k</span>.<span class="ident">to_owned</span>(), <span class="ident">utilities</span>::<span class="ident">serial</span>::<span class="ident">parse_value_properties</span>(<span class="kw-2">&amp;</span><span class="ident">v</span>)))
         .<span class="ident">collect</span>();
-    <span class="kw">let</span> <span class="ident">accuracy</span>: <span class="ident">proto</span>::<span class="ident">Accuracy</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">accuracy</span>.<span class="ident">unwrap</span>();
+    <span class="kw">let</span> <span class="ident">accuracies</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">Accuracies</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">accuracies</span>.<span class="ident">as_ref</span>()
+        .<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;accuracies must be defined&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="ident">privacy_usage</span>: <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-val">Ok</span>(<span class="ident">component</span>.<span class="ident">variant</span>.<span class="ident">to_owned</span>().<span class="ident">unwrap</span>()
-        .<span class="ident">accuracy_to_privacy_usage</span>(<span class="kw-2">&amp;</span><span class="ident">privacy_definition</span>, <span class="kw-2">&amp;</span><span class="ident">properties</span>, <span class="kw-2">&amp;</span><span class="ident">accuracy</span>).<span class="ident">unwrap</span>());
-
-    <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">proto</span>::<span class="ident">ResponseAccuracyToPrivacyUsage</span> {
-        <span class="ident">value</span>: <span class="kw">match</span> <span class="ident">privacy_usage</span> {
-            <span class="prelude-val">Ok</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_accuracy_to_privacy_usage</span>::<span class="ident">Value</span>::<span class="ident">Data</span>(<span class="ident">x</span>)),
-            <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span> {
-
-<span class="comment">//                let stderr = &amp;mut ::std::io::stderr();</span>
-<span class="comment">//                writeln!(stderr, &quot;{}&quot;, err.display_chain()).expect(ERR_STDERR);</span>
-<span class="comment">//                ::std::process::exit(1);</span>
-
-                <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_accuracy_to_privacy_usage</span>::<span class="ident">Value</span>::<span class="ident">Error</span>(
-                    <span class="ident">proto</span>::<span class="ident">Error</span> { <span class="ident">message</span>: <span class="ident">err</span>.<span class="ident">display_chain</span>().<span class="ident">to_string</span>() }
-                ))
-            }
-        }
-    };
-    <span class="ident">buffer_to_ptr</span>(<span class="ident">response</span>)
+    <span class="comment">// TODO: expand component and prop accuracy</span>
+    <span class="prelude-val">Ok</span>(<span class="ident">proto</span>::<span class="ident">PrivacyUsages</span> {
+        <span class="ident">values</span>: <span class="ident">component</span>.<span class="ident">variant</span>.<span class="ident">as_ref</span>()
+            .<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;component variant must be defined&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>
+            .<span class="ident">accuracy_to_privacy_usage</span>(<span class="ident">privacy_definition</span>, <span class="kw-2">&amp;</span><span class="ident">properties</span>, <span class="ident">accuracies</span>)<span class="question-mark">?</span>.<span class="ident">unwrap</span>()
+    })
 }
 
 
-<span class="doccomment">/// TODO: Estimate the accuracy of the release of a component, based on a privacy usage.</span>
+<span class="doccomment">/// Estimate the accuracy of the release of a component, based on a privacy usage.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// No context about the analysis is necessary, just the properties of the arguments of the component.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestPrivacyUsageToAccuracy](proto/struct.RequestPrivacyUsageToAccuracy.html)</span>
-<span class="doccomment">/// - `request_length` - the length of the array</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponsePrivacyUsageToAccuracy](proto/struct.ResponsePrivacyUsageToAccuracy.html)</span>
-<span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">privacy_usage_to_accuracy</span>(
-    <span class="ident">request_ptr</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">u8</span>, <span class="ident">request_length</span>: <span class="ident">i32</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ffi_support</span>::<span class="ident">ByteBuffer</span> {
-    <span class="kw">let</span> <span class="ident">request_buffer</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">ptr_to_buffer</span>(<span class="ident">request_ptr</span>, <span class="ident">request_length</span>) };
-    <span class="kw">let</span> <span class="ident">request</span>: <span class="ident">proto</span>::<span class="ident">RequestPrivacyUsageToAccuracy</span> <span class="op">=</span> <span class="ident">prost</span>::<span class="ident">Message</span>::<span class="ident">decode</span>(<span class="ident">request_buffer</span>).<span class="ident">unwrap</span>();
-
-    <span class="kw">let</span> <span class="ident">privacy_definition</span>: <span class="ident">proto</span>::<span class="ident">PrivacyDefinition</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">privacy_definition</span>.<span class="ident">unwrap</span>();
-    <span class="kw">let</span> <span class="ident">component</span>: <span class="ident">proto</span>::<span class="ident">Component</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">component</span>.<span class="ident">unwrap</span>();
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">privacy_usage_to_accuracy</span>(
+    <span class="ident">request</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">RequestPrivacyUsageToAccuracy</span>
+) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">Accuracies</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">component</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">Component</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">component</span>.<span class="ident">as_ref</span>()
+        .<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;component must be defined&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">privacy_definition</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">PrivacyDefinition</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">privacy_definition</span>.<span class="ident">as_ref</span>()
+        .<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;privacy definition must be defined&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="ident">properties</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">base</span>::<span class="ident">ValueProperties</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">properties</span>.<span class="ident">iter</span>()
         .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">k</span>, <span class="ident">v</span>)<span class="op">|</span> (<span class="ident">k</span>.<span class="ident">to_owned</span>(), <span class="ident">utilities</span>::<span class="ident">serial</span>::<span class="ident">parse_value_properties</span>(<span class="kw-2">&amp;</span><span class="ident">v</span>)))
         .<span class="ident">collect</span>();
 
-    <span class="kw">let</span> <span class="ident">accuracy</span>: <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">Accuracy</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-val">Ok</span>(<span class="ident">proto</span>::<span class="ident">Accuracy</span> {
-        <span class="ident">value</span>: <span class="ident">component</span>.<span class="ident">variant</span>.<span class="ident">to_owned</span>().<span class="ident">unwrap</span>()
-            .<span class="ident">privacy_usage_to_accuracy</span>(<span class="kw-2">&amp;</span><span class="ident">privacy_definition</span>, <span class="kw-2">&amp;</span><span class="ident">properties</span>).<span class="ident">unwrap</span>()
-    });
+    <span class="prelude-val">Ok</span>(<span class="ident">proto</span>::<span class="ident">Accuracies</span> {
+        <span class="ident">values</span>: <span class="ident">component</span>.<span class="ident">variant</span>.<span class="ident">as_ref</span>()
+            .<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;component variant must be defined&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>
+            .<span class="ident">privacy_usage_to_accuracy</span>(<span class="ident">privacy_definition</span>, <span class="kw-2">&amp;</span><span class="ident">properties</span>, <span class="kw-2">&amp;</span><span class="ident">request</span>.<span class="ident">alpha</span>)<span class="question-mark">?</span>.<span class="ident">unwrap</span>()
+    })
+}
 
-    <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">proto</span>::<span class="ident">ResponsePrivacyUsageToAccuracy</span> {
-        <span class="ident">value</span>: <span class="kw">match</span> <span class="ident">accuracy</span> {
-            <span class="prelude-val">Ok</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_privacy_usage_to_accuracy</span>::<span class="ident">Value</span>::<span class="ident">Data</span>(<span class="ident">x</span>)),
-            <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_properties</span>(
+    <span class="ident">request</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">RequestGetProperties</span>
+) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">GraphProperties</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> (<span class="ident">properties</span>, <span class="ident">_graph</span>) <span class="op">=</span> <span class="ident">utilities</span>::<span class="ident">propagate_properties</span>(
+        <span class="ident">request</span>.<span class="ident">analysis</span>.<span class="ident">as_ref</span>().<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;analysis must be defined&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>,
+        <span class="ident">request</span>.<span class="ident">release</span>.<span class="ident">as_ref</span>().<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;release must be defined&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>,
+    )<span class="question-mark">?</span>;
 
-<span class="comment">//                let stderr = &amp;mut ::std::io::stderr();</span>
-<span class="comment">//                writeln!(stderr, &quot;{}&quot;, err.display_chain()).expect(ERR_STDERR);</span>
-<span class="comment">//                ::std::process::exit(1);</span>
-
-                <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_privacy_usage_to_accuracy</span>::<span class="ident">Value</span>::<span class="ident">Error</span>(
-                    <span class="ident">proto</span>::<span class="ident">Error</span> { <span class="ident">message</span>: <span class="ident">err</span>.<span class="ident">display_chain</span>().<span class="ident">to_string</span>() }
-                ))
-            }
-        }
-    };
-    <span class="ident">buffer_to_ptr</span>(<span class="ident">response</span>)
+    <span class="prelude-val">Ok</span>(<span class="ident">proto</span>::<span class="ident">GraphProperties</span> {
+        <span class="ident">properties</span>: <span class="ident">properties</span>.<span class="ident">iter</span>()
+            .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">node_id</span>, <span class="ident">properties</span>)<span class="op">|</span> (<span class="ident">node_id</span>.<span class="ident">clone</span>(), <span class="ident">serialize_value_properties</span>(<span class="ident">properties</span>)))
+            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">proto</span>::<span class="ident">ValueProperties</span><span class="op">&gt;</span><span class="op">&gt;</span>()
+    })
 }
 
 
@@ -665,49 +476,63 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// This is function may be called interactively from the runtime as the runtime executes the computational graph, to allow for dynamic graph validation.</span>
 <span class="doccomment">/// This is opposed to statically validating a graph, where the nodes in the graph that are dependent on the releases of mechanisms cannot be known and validated until the first release is made.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestExpandComponent](proto/struct.RequestExpandComponent.html)</span>
-<span class="doccomment">/// - `request_length` - the length of the array</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseExpandComponent](proto/struct.ResponseExpandComponent.html)</span>
-<span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">expand_component</span>(
-    <span class="ident">request_ptr</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">u8</span>, <span class="ident">request_length</span>: <span class="ident">i32</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ffi_support</span>::<span class="ident">ByteBuffer</span> {
-    <span class="kw">let</span> <span class="ident">request_buffer</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">ptr_to_buffer</span>(<span class="ident">request_ptr</span>, <span class="ident">request_length</span>) };
-    <span class="kw">let</span> <span class="ident">request</span>: <span class="ident">proto</span>::<span class="ident">RequestExpandComponent</span> <span class="op">=</span> <span class="ident">prost</span>::<span class="ident">Message</span>::<span class="ident">decode</span>(<span class="ident">request_buffer</span>).<span class="ident">unwrap</span>();
-
-    <span class="kw">let</span> <span class="ident">component</span>: <span class="ident">proto</span>::<span class="ident">Component</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">component</span>.<span class="ident">unwrap</span>();
-    <span class="kw">let</span> <span class="ident">arguments</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Value</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">arguments</span>.<span class="ident">iter</span>()
-        .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">k</span>, <span class="ident">v</span>)<span class="op">|</span> (<span class="ident">k</span>.<span class="ident">to_owned</span>(), <span class="ident">parse_value</span>(<span class="kw-2">&amp;</span><span class="ident">v</span>).<span class="ident">unwrap</span>()))
-        .<span class="ident">collect</span>();
-    <span class="kw">let</span> <span class="ident">privacy_definition</span>: <span class="ident">proto</span>::<span class="ident">PrivacyDefinition</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">privacy_definition</span>.<span class="ident">unwrap</span>();
-
-    <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">proto</span>::<span class="ident">ResponseExpandComponent</span> {
-        <span class="ident">value</span>: <span class="kw">match</span> <span class="ident">base</span>::<span class="ident">expand_component</span>(
-            <span class="kw-2">&amp;</span><span class="ident">privacy_definition</span>,
-            <span class="kw-2">&amp;</span><span class="ident">component</span>,
-            <span class="kw-2">&amp;</span><span class="ident">request</span>.<span class="ident">properties</span>,
-            <span class="kw-2">&amp;</span><span class="ident">arguments</span>,
-            <span class="ident">request</span>.<span class="ident">component_id</span>,
-            <span class="ident">request</span>.<span class="ident">maximum_id</span>
-        ) {
-            <span class="prelude-val">Ok</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_expand_component</span>::<span class="ident">Value</span>::<span class="ident">Data</span>(<span class="ident">x</span>)),
-            <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span> {
-
-<span class="comment">//                let stderr = &amp;mut ::std::io::stderr();</span>
-<span class="comment">//                writeln!(stderr, &quot;{}&quot;, err.display_chain()).expect(ERR_STDERR);</span>
-<span class="comment">//                ::std::process::exit(1);</span>
-
-                <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_expand_component</span>::<span class="ident">Value</span>::<span class="ident">Error</span>(
-                    <span class="ident">proto</span>::<span class="ident">Error</span> { <span class="ident">message</span>: <span class="ident">err</span>.<span class="ident">display_chain</span>().<span class="ident">to_string</span>() }
-                ))
-            }
-        }
-    };
-    <span class="ident">buffer_to_ptr</span>(<span class="ident">response</span>)
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">expand_component</span>(
+    <span class="ident">request</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">RequestExpandComponent</span>
+) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">ComponentExpansion</span><span class="op">&gt;</span> {
+    <span class="ident">_expand_component</span>(
+        <span class="ident">request</span>.<span class="ident">privacy_definition</span>.<span class="ident">as_ref</span>()
+            .<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;privacy definition must be defined&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>,
+        <span class="ident">request</span>.<span class="ident">component</span>.<span class="ident">as_ref</span>()
+            .<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;component must be defined&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>,
+        <span class="kw-2">&amp;</span><span class="ident">request</span>.<span class="ident">properties</span>.<span class="ident">clone</span>(),
+        <span class="kw-2">&amp;</span><span class="ident">request</span>.<span class="ident">arguments</span>.<span class="ident">iter</span>()
+            .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">k</span>, <span class="ident">v</span>)<span class="op">|</span> <span class="prelude-val">Ok</span>((<span class="ident">k</span>.<span class="ident">to_owned</span>(), <span class="ident">utilities</span>::<span class="ident">serial</span>::<span class="ident">parse_value</span>(<span class="kw-2">&amp;</span><span class="ident">v</span>)<span class="question-mark">?</span>)))
+            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>,
+        <span class="kw-2">&amp;</span><span class="ident">request</span>.<span class="ident">component_id</span>,
+        <span class="kw-2">&amp;</span><span class="ident">request</span>.<span class="ident">maximum_id</span>)
 }
-</pre></div>
+
+<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">_expand_component</span>(
+    <span class="ident">privacy_definition</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">PrivacyDefinition</span>,
+    <span class="ident">component</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">Component</span>,
+    <span class="ident">properties</span>: <span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">proto</span>::<span class="ident">ValueProperties</span><span class="op">&gt;</span>,
+    <span class="ident">arguments</span>: <span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">base</span>::<span class="ident">Value</span><span class="op">&gt;</span>,
+    <span class="ident">component_id</span>: <span class="kw-2">&amp;</span><span class="ident">u32</span>,
+    <span class="ident">maximum_id</span>: <span class="kw-2">&amp;</span><span class="ident">u32</span>,
+) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">ComponentExpansion</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">properties</span>: <span class="ident">base</span>::<span class="ident">NodeProperties</span> <span class="op">=</span> <span class="ident">properties</span>.<span class="ident">iter</span>()
+        .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">k</span>, <span class="ident">v</span>)<span class="op">|</span> (<span class="ident">k</span>.<span class="ident">to_owned</span>(), <span class="ident">utilities</span>::<span class="ident">serial</span>::<span class="ident">parse_value_properties</span>(<span class="kw-2">&amp;</span><span class="ident">v</span>)))
+        .<span class="ident">collect</span>();
+
+    <span class="kw">for</span> (<span class="ident">k</span>, <span class="ident">v</span>) <span class="kw">in</span> <span class="ident">arguments</span> {
+        <span class="ident">properties</span>.<span class="ident">insert</span>(<span class="ident">k</span>.<span class="ident">clone</span>(), <span class="ident">utilities</span>::<span class="ident">inference</span>::<span class="ident">infer_property</span>(<span class="ident">v</span>)<span class="question-mark">?</span>);
+    }
+
+    <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">component</span>.<span class="ident">variant</span>.<span class="ident">as_ref</span>()
+        .<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;component variant must be defined&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>.<span class="ident">expand_component</span>(
+        <span class="ident">privacy_definition</span>,
+        <span class="ident">component</span>,
+        <span class="kw-2">&amp;</span><span class="ident">properties</span>,
+        <span class="ident">component_id</span>,
+        <span class="ident">maximum_id</span>,
+    ).<span class="ident">chain_err</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;at node_id {:?}&quot;</span>, <span class="ident">component_id</span>))<span class="question-mark">?</span>;
+
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">patch_properties</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">properties</span>;
+    <span class="kw">if</span> <span class="ident">result</span>.<span class="ident">traversal</span>.<span class="ident">is_empty</span>() {
+        <span class="kw">let</span> <span class="ident">propagated_property</span> <span class="op">=</span> <span class="ident">component</span>.<span class="ident">clone</span>().<span class="ident">variant</span>.<span class="ident">as_ref</span>()
+            .<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;component variant must be defined&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>
+            .<span class="ident">propagate_property</span>(<span class="kw-2">&amp;</span><span class="ident">privacy_definition</span>, <span class="kw-2">&amp;</span><span class="ident">arguments</span>, <span class="kw-2">&amp;</span><span class="ident">properties</span>)
+            .<span class="ident">chain_err</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;at node_id {:?}&quot;</span>, <span class="ident">component_id</span>))<span class="question-mark">?</span>;
+
+        <span class="ident">patch_properties</span>.<span class="ident">insert</span>(<span class="ident">component_id</span>.<span class="ident">to_owned</span>(), <span class="ident">utilities</span>::<span class="ident">serial</span>::<span class="ident">serialize_value_properties</span>(<span class="kw-2">&amp;</span><span class="ident">propagated_property</span>));
+    }
+
+    <span class="prelude-val">Ok</span>(<span class="ident">proto</span>::<span class="ident">ComponentExpansion</span> {
+        <span class="ident">computation_graph</span>: <span class="ident">result</span>.<span class="ident">computation_graph</span>,
+        <span class="ident">properties</span>: <span class="ident">patch_properties</span>,
+        <span class="ident">releases</span>: <span class="ident">result</span>.<span class="ident">releases</span>,
+        <span class="ident">traversal</span>: <span class="ident">result</span>.<span class="ident">traversal</span>,
+    })
+}</pre></div>
 </section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../";window.currentCrate = "whitenoise_validator";</script><script src="../../aliases.js"></script><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script><script defer src="../../search-index.js"></script></body></html>

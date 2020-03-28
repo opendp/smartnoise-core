@@ -50,11 +50,27 @@
 <span id="50">50</span>
 <span id="51">51</span>
 <span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">whitenoise_validator</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">base</span>::<span class="ident">NodeArguments</span>;
-<span class="kw">use</span> <span class="ident">whitenoise_validator</span>::<span class="ident">base</span>::{<span class="ident">Value</span>, <span class="ident">get_argument</span>, <span class="ident">ArrayND</span>};
+<span class="kw">use</span> <span class="ident">whitenoise_validator</span>::<span class="ident">base</span>::{<span class="ident">Value</span>, <span class="ident">Array</span>};
+<span class="kw">use</span> <span class="ident">whitenoise_validator</span>::<span class="ident">utilities</span>::<span class="ident">get_argument</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">components</span>::<span class="ident">Evaluable</span>;
 <span class="kw">use</span> <span class="ident">whitenoise_validator</span>::<span class="ident">proto</span>;
 <span class="kw">use</span> <span class="ident">ndarray</span>::{<span class="ident">ArrayD</span>, <span class="ident">Axis</span>};
@@ -62,13 +78,17 @@
 <span class="kw">use</span> <span class="ident">ndarray_stats</span>::<span class="ident">QuantileExt</span>;
 <span class="kw">use</span> <span class="ident">ndarray_stats</span>::<span class="ident">interpolate</span>;
 <span class="kw">use</span> <span class="ident">noisy_float</span>::<span class="ident">types</span>::<span class="ident">n64</span>;
+<span class="kw">use</span> <span class="ident">num</span>::{<span class="ident">FromPrimitive</span>, <span class="ident">ToPrimitive</span>};
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ops</span>::{<span class="ident">Sub</span>, <span class="ident">Div</span>, <span class="ident">Add</span>, <span class="ident">Mul</span>, <span class="ident">Rem</span>};
 
 
 <span class="kw">impl</span> <span class="ident">Evaluable</span> <span class="kw">for</span> <span class="ident">proto</span>::<span class="ident">Quantile</span> {
     <span class="kw">fn</span> <span class="ident">evaluate</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">arguments</span>: <span class="kw-2">&amp;</span><span class="ident">NodeArguments</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="ident">get_argument</span>(<span class="kw-2">&amp;</span><span class="ident">arguments</span>, <span class="string">&quot;data&quot;</span>)<span class="question-mark">?</span>.<span class="ident">get_arraynd</span>()<span class="question-mark">?</span> {
-            <span class="ident">ArrayND</span>::<span class="ident">F64</span>(<span class="ident">data</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">quantile</span>(<span class="kw-2">&amp;</span><span class="ident">data</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">quantile</span>)<span class="question-mark">?</span>.<span class="ident">into</span>()),
-<span class="comment">//                ArrayND::I64(data) =&gt; Ok(quantile(&amp;data)?.into()),</span>
+        <span class="kw">match</span> <span class="ident">get_argument</span>(<span class="kw-2">&amp;</span><span class="ident">arguments</span>, <span class="string">&quot;data&quot;</span>)<span class="question-mark">?</span>.<span class="ident">array</span>()<span class="question-mark">?</span> {
+            <span class="ident">Array</span>::<span class="ident">F64</span>(<span class="ident">data</span>) <span class="op">=</span><span class="op">&gt;</span>
+                <span class="prelude-val">Ok</span>(<span class="ident">quantile</span>(<span class="ident">data</span>.<span class="ident">mapv</span>(<span class="ident">n64</span>), <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">quantile</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">interpolation</span>)<span class="question-mark">?</span>.<span class="ident">mapv</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">raw</span>()).<span class="ident">into</span>()),
+            <span class="ident">Array</span>::<span class="ident">I64</span>(<span class="ident">data</span>) <span class="op">=</span><span class="op">&gt;</span>
+                <span class="prelude-val">Ok</span>(<span class="ident">quantile</span>(<span class="ident">data</span>.<span class="ident">clone</span>(), <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">quantile</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">interpolation</span>)<span class="question-mark">?</span>.<span class="ident">into</span>()),
             <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;data must be either f64 or i64&quot;</span>.<span class="ident">into</span>())
         }
     }
@@ -88,18 +108,28 @@
 <span class="doccomment">/// ```</span>
 <span class="doccomment">/// use ndarray::prelude::*;</span>
 <span class="doccomment">/// use whitenoise_runtime::components::quantile::quantile;</span>
+<span class="doccomment">/// use noisy_float::types::n64;</span>
 <span class="doccomment">/// let data: ArrayD&lt;f64&gt; = arr2(&amp;[ [0., 1., 2.], [2., 3., 4.] ]).into_dyn();</span>
-<span class="doccomment">/// let median = quantile(&amp;data, &amp;0.5).unwrap();</span>
-<span class="doccomment">/// assert!(median == arr1(&amp; [1.0, 2.0, 3.0] ).into_dyn());</span>
+<span class="doccomment">/// let median = quantile(data.mapv(n64), &amp;0.5, &amp;&quot;midpoint&quot;.to_string()).unwrap();</span>
+<span class="doccomment">/// println!(&quot;{:?}&quot;, median);</span>
+<span class="doccomment">/// assert!(median == arr1(&amp; [1.0, 2.0, 3.0] ).into_dyn().mapv(n64));</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">quantile</span>(<span class="ident">data</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayD</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>, <span class="ident">q</span>: <span class="kw-2">&amp;</span><span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ArrayD</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">quantile</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">FromPrimitive</span> <span class="op">+</span> <span class="ident">Ord</span> <span class="op">+</span> <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">Sub</span><span class="op">&lt;</span><span class="ident">Output</span><span class="op">=</span><span class="ident">T</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Mul</span><span class="op">&lt;</span><span class="ident">Output</span><span class="op">=</span><span class="ident">T</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Div</span><span class="op">&lt;</span><span class="ident">Output</span><span class="op">=</span><span class="ident">T</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Add</span><span class="op">&lt;</span><span class="ident">Output</span><span class="op">=</span><span class="ident">T</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Rem</span><span class="op">&lt;</span><span class="ident">Output</span><span class="op">=</span><span class="ident">T</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">ToPrimitive</span><span class="op">&gt;</span>(
+    <span class="kw-2">mut</span> <span class="ident">data</span>: <span class="ident">ArrayD</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">q</span>: <span class="kw-2">&amp;</span><span class="ident">f64</span>, <span class="ident">interpolation</span>: <span class="kw-2">&amp;</span><span class="ident">String</span>
+) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ArrayD</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> {
     <span class="kw">if</span> <span class="kw-2">&amp;</span><span class="number">0.</span> <span class="op">&gt;</span> <span class="ident">q</span> <span class="op">|</span><span class="op">|</span> <span class="ident">q</span> <span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="number">1.</span> {
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;q must be within [0, 1]&quot;</span>.<span class="ident">into</span>());
     }
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">data</span>.<span class="ident">mapv</span>(<span class="ident">n64</span>);
 
-    <span class="kw">match</span> <span class="ident">data</span>.<span class="ident">quantile_axis_mut</span>(<span class="ident">Axis</span>(<span class="number">0</span>), <span class="ident">n64</span>(<span class="kw-2">*</span><span class="ident">q</span>), <span class="kw-2">&amp;</span><span class="ident">interpolate</span>::<span class="ident">Midpoint</span>) {
-        <span class="prelude-val">Ok</span>(<span class="ident">quantiles</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">quantiles</span>.<span class="ident">mapv</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">into</span>())),
+    <span class="kw">match</span> <span class="kw">match</span> <span class="ident">interpolation</span>.<span class="ident">as_str</span>() {
+        <span class="string">&quot;lower&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">data</span>.<span class="ident">quantile_axis_mut</span>(<span class="ident">Axis</span>(<span class="number">0</span>), <span class="ident">n64</span>(<span class="kw-2">*</span><span class="ident">q</span>), <span class="kw-2">&amp;</span><span class="ident">interpolate</span>::<span class="ident">Lower</span>),
+        <span class="string">&quot;higher&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">data</span>.<span class="ident">quantile_axis_mut</span>(<span class="ident">Axis</span>(<span class="number">0</span>), <span class="ident">n64</span>(<span class="kw-2">*</span><span class="ident">q</span>), <span class="kw-2">&amp;</span><span class="ident">interpolate</span>::<span class="ident">Higher</span>),
+        <span class="string">&quot;midpoint&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">data</span>.<span class="ident">quantile_axis_mut</span>(<span class="ident">Axis</span>(<span class="number">0</span>), <span class="ident">n64</span>(<span class="kw-2">*</span><span class="ident">q</span>), <span class="kw-2">&amp;</span><span class="ident">interpolate</span>::<span class="ident">Midpoint</span>),
+        <span class="string">&quot;nearest&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">data</span>.<span class="ident">quantile_axis_mut</span>(<span class="ident">Axis</span>(<span class="number">0</span>), <span class="ident">n64</span>(<span class="kw-2">*</span><span class="ident">q</span>), <span class="kw-2">&amp;</span><span class="ident">interpolate</span>::<span class="ident">Nearest</span>),
+        <span class="string">&quot;linear&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">data</span>.<span class="ident">quantile_axis_mut</span>(<span class="ident">Axis</span>(<span class="number">0</span>), <span class="ident">n64</span>(<span class="kw-2">*</span><span class="ident">q</span>), <span class="kw-2">&amp;</span><span class="ident">interpolate</span>::<span class="ident">Linear</span>),
+        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;interpolation type unrecognized&quot;</span>.<span class="ident">into</span>())
+    }  {
+        <span class="prelude-val">Ok</span>(<span class="ident">quantiles</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">quantiles</span>),
         <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;unable to compute quantiles&quot;</span>.<span class="ident">into</span>())
     }
 }

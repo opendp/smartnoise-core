@@ -71,15 +71,11 @@
 <span id="71">71</span>
 <span id="72">72</span>
 <span id="73">73</span>
-<span id="74">74</span>
-<span id="75">75</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
-
-<span class="comment">// TODO: open an issue on the rust ndarray package</span>
-<span class="comment">//  Requiring the Copy trait on stack makes strings un-stackable/un-selectable</span>
-<span class="comment">//  Pulled from the ndarray library, and tweaked to remove the Copy trait requirement</span>
+<span class="comment">// Requiring the Copy trait on stack makes strings un-stackable/un-selectable</span>
+<span class="comment">// Pulled from the ndarray library, and tweaked to remove the Copy trait requirement</span>
 
 <span class="kw">use</span> <span class="ident">ndarray</span>::{<span class="ident">RemoveAxis</span>, <span class="ident">Axis</span>, <span class="ident">Ix</span>, <span class="ident">Array</span>, <span class="ident">ArrayView</span>};
 

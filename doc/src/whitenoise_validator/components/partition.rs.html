@@ -92,6 +92,9 @@
 <span id="92">92</span>
 <span id="93">93</span>
 <span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
+<span id="97">97</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
@@ -101,7 +104,8 @@
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">proto</span>, <span class="ident">base</span>};
 
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">components</span>::{<span class="ident">Component</span>};
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">base</span>::{<span class="ident">Value</span>, <span class="ident">Vector2DJagged</span>, <span class="ident">NodeProperties</span>, <span class="ident">prepend</span>, <span class="ident">ValueProperties</span>, <span class="ident">HashmapProperties</span>, <span class="ident">ArrayNDProperties</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">base</span>::{<span class="ident">Value</span>, <span class="ident">Jagged</span>, <span class="ident">NodeProperties</span>, <span class="ident">ValueProperties</span>, <span class="ident">HashmapProperties</span>, <span class="ident">ArrayProperties</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">utilities</span>::<span class="ident">prepend</span>;
 
 
 <span class="kw">impl</span> <span class="ident">Component</span> <span class="kw">for</span> <span class="ident">proto</span>::<span class="ident">Partition</span> {
@@ -112,37 +116,38 @@
         <span class="ident">properties</span>: <span class="kw-2">&amp;</span><span class="ident">base</span>::<span class="ident">NodeProperties</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ValueProperties</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">data_property</span> <span class="op">=</span> <span class="ident">properties</span>.<span class="ident">get</span>(<span class="string">&quot;data&quot;</span>)
-            .<span class="ident">ok_or</span>(<span class="string">&quot;data: missing&quot;</span>)<span class="question-mark">?</span>.<span class="ident">get_arraynd</span>()
+            .<span class="ident">ok_or</span>(<span class="string">&quot;data: missing&quot;</span>)<span class="question-mark">?</span>.<span class="ident">array</span>()
             .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;data:&quot;</span>))<span class="question-mark">?</span>.<span class="ident">clone</span>();
 
         <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">properties</span>.<span class="ident">get</span>(<span class="string">&quot;by&quot;</span>) {
             <span class="prelude-val">Some</span>(<span class="ident">by_property</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="kw">let</span> <span class="ident">by_property</span> <span class="op">=</span> <span class="ident">by_property</span>.<span class="ident">get_arraynd</span>()
+                <span class="kw">let</span> <span class="ident">by_property</span> <span class="op">=</span> <span class="ident">by_property</span>.<span class="ident">array</span>()
                     .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;by:&quot;</span>))<span class="question-mark">?</span>.<span class="ident">clone</span>();
                 <span class="kw">let</span> <span class="ident">by_num_columns</span><span class="op">=</span> <span class="ident">by_property</span>.<span class="ident">num_columns</span>
                     .<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;number of columns must be known on by&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>;
                 <span class="kw">if</span> <span class="ident">by_num_columns</span> <span class="op">!</span><span class="op">=</span> <span class="number">1</span> {
                     <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;Partition&#39;s by argument must contain a single column&quot;</span>.<span class="ident">into</span>());
                 }
-                <span class="kw">let</span> <span class="ident">categories</span> <span class="op">=</span> <span class="ident">by_property</span>.<span class="ident">get_categories</span>()
+                <span class="kw">let</span> <span class="ident">categories</span> <span class="op">=</span> <span class="ident">by_property</span>.<span class="ident">categories</span>()
                     .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;by:&quot;</span>))<span class="question-mark">?</span>;
                 <span class="ident">data_property</span>.<span class="ident">num_records</span> <span class="op">=</span> <span class="prelude-val">None</span>;
 
                 <span class="ident">HashmapProperties</span> {
                     <span class="ident">num_records</span>: <span class="ident">data_property</span>.<span class="ident">num_records</span>,
                     <span class="ident">disjoint</span>: <span class="bool-val">true</span>,
-                    <span class="ident">value_properties</span>: <span class="kw">match</span> <span class="ident">categories</span> {
-                        <span class="ident">Vector2DJagged</span>::<span class="ident">Bool</span>(<span class="ident">categories</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">broadcast_partitions</span>(<span class="kw-2">&amp;</span><span class="ident">categories</span>, <span class="kw-2">&amp;</span><span class="ident">data_property</span>)<span class="question-mark">?</span>.<span class="ident">into</span>(),
-                        <span class="ident">Vector2DJagged</span>::<span class="ident">Str</span>(<span class="ident">categories</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">broadcast_partitions</span>(<span class="kw-2">&amp;</span><span class="ident">categories</span>, <span class="kw-2">&amp;</span><span class="ident">data_property</span>)<span class="question-mark">?</span>.<span class="ident">into</span>(),
-                        <span class="ident">Vector2DJagged</span>::<span class="ident">I64</span>(<span class="ident">categories</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">broadcast_partitions</span>(<span class="kw-2">&amp;</span><span class="ident">categories</span>, <span class="kw-2">&amp;</span><span class="ident">data_property</span>)<span class="question-mark">?</span>.<span class="ident">into</span>(),
+                    <span class="ident">properties</span>: <span class="kw">match</span> <span class="ident">categories</span> {
+                        <span class="ident">Jagged</span>::<span class="ident">Bool</span>(<span class="ident">categories</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">broadcast_partitions</span>(<span class="kw-2">&amp;</span><span class="ident">categories</span>, <span class="kw-2">&amp;</span><span class="ident">data_property</span>)<span class="question-mark">?</span>.<span class="ident">into</span>(),
+                        <span class="ident">Jagged</span>::<span class="ident">Str</span>(<span class="ident">categories</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">broadcast_partitions</span>(<span class="kw-2">&amp;</span><span class="ident">categories</span>, <span class="kw-2">&amp;</span><span class="ident">data_property</span>)<span class="question-mark">?</span>.<span class="ident">into</span>(),
+                        <span class="ident">Jagged</span>::<span class="ident">I64</span>(<span class="ident">categories</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">broadcast_partitions</span>(<span class="kw-2">&amp;</span><span class="ident">categories</span>, <span class="kw-2">&amp;</span><span class="ident">data_property</span>)<span class="question-mark">?</span>.<span class="ident">into</span>(),
                         <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;partitioning based on floats is not supported&quot;</span>.<span class="ident">into</span>())
-                    }
+                    },
+                    <span class="ident">columnar</span>: <span class="bool-val">false</span>
                 }
             },
             <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
 
                 <span class="kw">let</span> <span class="ident">num_partitions</span> <span class="op">=</span> <span class="ident">public_arguments</span>.<span class="ident">get</span>(<span class="string">&quot;num_partitions&quot;</span>)
-                    .<span class="ident">ok_or</span>(<span class="string">&quot;num_partitions or by must be passed to Partition&quot;</span>)<span class="question-mark">?</span>.<span class="ident">get_arraynd</span>()<span class="question-mark">?</span>.<span class="ident">get_first_i64</span>()<span class="question-mark">?</span>;
+                    .<span class="ident">ok_or</span>(<span class="string">&quot;num_partitions or by must be passed to Partition&quot;</span>)<span class="question-mark">?</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">first_i64</span>()<span class="question-mark">?</span>;
 
                 <span class="kw">let</span> <span class="ident">lengths</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">data_property</span>.<span class="ident">num_records</span> {
                     <span class="prelude-val">Some</span>(<span class="ident">num_records</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="number">0</span>..<span class="ident">num_partitions</span>)
@@ -156,11 +161,12 @@
                 <span class="ident">HashmapProperties</span> {
                     <span class="ident">num_records</span>: <span class="ident">data_property</span>.<span class="ident">num_records</span>,
                     <span class="ident">disjoint</span>: <span class="bool-val">false</span>,
-                    <span class="ident">value_properties</span>: <span class="ident">lengths</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>().<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">index</span>, <span class="ident">partition_num_records</span>)<span class="op">|</span> {
+                    <span class="ident">properties</span>: <span class="ident">lengths</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>().<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">index</span>, <span class="ident">partition_num_records</span>)<span class="op">|</span> {
                         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">partition_property</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">clone</span>();
                         <span class="ident">partition_property</span>.<span class="ident">num_records</span> <span class="op">=</span> <span class="ident">partition_num_records</span>.<span class="ident">clone</span>();
-                        (<span class="ident">index</span> <span class="kw">as</span> <span class="ident">i64</span>, <span class="ident">ValueProperties</span>::<span class="ident">ArrayND</span>(<span class="ident">partition_property</span>))
-                    }).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">i64</span>, <span class="ident">ValueProperties</span><span class="op">&gt;</span><span class="op">&gt;</span>().<span class="ident">into</span>()
+                        (<span class="ident">index</span> <span class="kw">as</span> <span class="ident">i64</span>, <span class="ident">ValueProperties</span>::<span class="ident">Array</span>(<span class="ident">partition_property</span>))
+                    }).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">i64</span>, <span class="ident">ValueProperties</span><span class="op">&gt;</span><span class="op">&gt;</span>().<span class="ident">into</span>(),
+                    <span class="ident">columnar</span>: <span class="bool-val">false</span>
                 }
             }
         }.<span class="ident">into</span>())
@@ -175,7 +181,7 @@
 }
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">broadcast_partitions</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">Eq</span> <span class="op">+</span> <span class="ident">std</span>::<span class="ident">hash</span>::<span class="ident">Hash</span><span class="op">&gt;</span>(
-    <span class="ident">categories</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">properties</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayNDProperties</span>
+    <span class="ident">categories</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">properties</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayProperties</span>
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">ValueProperties</span><span class="op">&gt;</span><span class="op">&gt;</span> {
 
     <span class="kw">if</span> <span class="ident">categories</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="number">1</span> {
@@ -184,7 +190,7 @@
     <span class="kw">let</span> <span class="ident">partitions</span> <span class="op">=</span> <span class="ident">categories</span>[<span class="number">0</span>].<span class="ident">clone</span>()
         .<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;categories: must be defined&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(<span class="ident">partitions</span>.<span class="ident">iter</span>()
-        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> (<span class="ident">v</span>.<span class="ident">clone</span>(), <span class="ident">ValueProperties</span>::<span class="ident">ArrayND</span>(<span class="ident">properties</span>.<span class="ident">clone</span>())))
+        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> (<span class="ident">v</span>.<span class="ident">clone</span>(), <span class="ident">ValueProperties</span>::<span class="ident">Array</span>(<span class="ident">properties</span>.<span class="ident">clone</span>())))
         .<span class="ident">collect</span>())
 }</pre></div>
 </section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../";window.currentCrate = "whitenoise_validator";</script><script src="../../../aliases.js"></script><script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script><script defer src="../../../search-index.js"></script></body></html>

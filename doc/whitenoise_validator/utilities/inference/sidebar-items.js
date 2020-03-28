@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["get_shape",""],["infer_c_stability",""],["infer_categories",""],["infer_max",""],["infer_min",""],["infer_nature",""],["infer_nullity",""],["infer_num_columns",""],["infer_num_rows",""],["infer_property",""]]});
+initSidebarItems({"fn":[["infer_c_stability",""],["infer_categories",""],["infer_max",""],["infer_min",""],["infer_nature",""],["infer_nullity",""],["infer_property",""]]});
