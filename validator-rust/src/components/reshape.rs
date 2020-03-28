@@ -2,9 +2,11 @@ use crate::errors::*;
 
 use crate::components::Component;
 use std::collections::HashMap;
-use crate::base::{Value, prepend, ValueProperties};
+use crate::base::{Value, ValueProperties};
 use crate::base;
 use crate::proto;
+use crate::utilities::prepend;
+
 
 impl Component for proto::Reshape {
     fn propagate_property(
@@ -14,7 +16,7 @@ impl Component for proto::Reshape {
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
-            .ok_or("data: missing")?.get_arraynd()
+            .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
         if !data_property.releasable {

@@ -22,4 +22,6 @@ ByteBuffer generate_report(const uint8_t *request_ptr, int32_t request_length);
 
 ByteBuffer privacy_usage_to_accuracy(const uint8_t *request_ptr, int32_t request_length);
 
+ByteBuffer get_properties(const uint8_t *request_ptr, int32_t request_length);
+
 ByteBuffer validate_analysis(const uint8_t *request_ptr, int32_t request_length);

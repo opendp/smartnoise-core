@@ -4,11 +4,13 @@ use crate::errors::*;
 use std::collections::HashMap;
 
 
-use crate::components::{Aggregator, expand_mechanism};
+use crate::components::{Aggregator};
 use crate::{proto, base};
 
 use crate::components::{Component, Expandable};
-use crate::base::{Value, NodeProperties, Sensitivity, prepend, ValueProperties};
+use crate::base::{Value, NodeProperties, SensitivitySpace, ValueProperties};
+use crate::utilities::{prepend, expand_mechanism};
+
 
 impl Component for proto::ExponentialMechanism {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
@@ -19,7 +21,7 @@ impl Component for proto::ExponentialMechanism {
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
-            .ok_or("data: missing")?.get_arraynd()
+            .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
         let aggregator = data_property.aggregator.clone()
@@ -29,7 +31,7 @@ impl Component for proto::ExponentialMechanism {
         aggregator.component.compute_sensitivity(
             &privacy_definition,
             &aggregator.properties,
-            &Sensitivity::Exponential)?;
+            &SensitivitySpace::Exponential)?;
 
         data_property.releasable = true;
         Ok(data_property.into())
@@ -50,11 +52,11 @@ impl Expandable for proto::ExponentialMechanism {
         privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
         properties: &base::NodeProperties,
-        component_id: u32,
-        maximum_id: u32,
+        component_id: &u32,
+        maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
         expand_mechanism(
-            &Sensitivity::Exponential,
+            &SensitivitySpace::Exponential,
             privacy_definition,
             component,
             properties,

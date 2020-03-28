@@ -33,15 +33,9 @@
       "description": "Whether or not the left edge of the bin is inclusive, i.e. the bins are of the form [lower, upper)."
     }
   },
-  "id": "Bin",
-  "name": "bin",
-  "options": {
-    "side": {
-      "type": "string",
-      "default": "'left'",
-      "description": "How to refer to each bin. Will be either the `lower` edge, the `upper` edge, or the `midpoint` (the arithmetic mean of the two)."
-    }
-  },
+  "id": "Digitize",
+  "name": "digitize",
+  "options": {},
   "return": {
     "nature": [
       "continuous"

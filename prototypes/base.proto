@@ -51,8 +51,8 @@ message ReleaseNode {
 message ValueProperties {
     oneof variant {
         HashmapProperties hashmap = 1;
-        ArrayNDProperties arraynd = 2;
-        Vector2DJaggedProperties vector2djagged = 3;
+        ArrayNDProperties array = 2;
+        Vector2DJaggedProperties jagged = 3;
     }
 }
 
@@ -60,6 +60,7 @@ message HashmapProperties {
     I64Null num_records = 1;
     bool disjoint = 2;
     HashmapValueProperties value_properties = 3;
+    bool columnar = 4;
 }
 
 message HashmapValueProperties {
@@ -109,10 +110,24 @@ message NatureCategorical {
     Array2dJagged categories = 1;
 }
 
-message Vector2DJaggedProperties {}
+message Vector2DJaggedProperties {
+    bool releasable = 1;
+}
 
+
+message GraphProperties {
+    map<uint32, ValueProperties> properties = 1;
+}
+
+message PrivacyUsages {
+    repeated PrivacyUsage values = 1;
+}
+message Accuracies {
+    repeated Accuracy values = 1;
+}
 message Accuracy {
     double value = 1;
+    double alpha = 2;
 }
 
 message ComponentExpansion {

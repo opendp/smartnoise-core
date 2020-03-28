@@ -6,8 +6,9 @@ use std::collections::HashMap;
 use crate::{proto, base};
 
 use crate::components::{Component, Aggregator};
-use crate::base::{Value, NodeProperties, AggregatorProperties, Sensitivity, ValueProperties, prepend};
-
+use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties};
+use crate::utilities::prepend;
+use ndarray::prelude::*;
 
 impl Component for proto::Variance {
     fn propagate_property(
@@ -17,7 +18,7 @@ impl Component for proto::Variance {
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
-            .ok_or("data: missing")?.get_arraynd()
+            .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
         data_property.assert_is_not_aggregated()?;
 
@@ -46,21 +47,21 @@ impl Aggregator for proto::Variance {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
-        sensitivity_type: &Sensitivity
-    ) -> Result<Vec<f64>> {
+        sensitivity_type: &SensitivitySpace
+    ) -> Result<Value> {
 
         match sensitivity_type {
-            Sensitivity::KNorm(k) => {
+            SensitivitySpace::KNorm(k) => {
 
                 let data_property = properties.get("data")
-                    .ok_or("data: missing")?.get_arraynd()
+                    .ok_or("data: missing")?.array()
                     .map_err(prepend("data:"))?.clone();
 
                 data_property.assert_non_null()?;
                 data_property.assert_is_not_aggregated()?;
-                let data_min = data_property.get_min_f64()?;
-                let data_max = data_property.get_max_f64()?;
-                let data_n = data_property.get_num_records()? as f64;
+                let data_min = data_property.min_f64()?;
+                let data_max = data_property.max_f64()?;
+                let data_n = data_property.num_records()? as f64;
 
                 let delta_degrees_of_freedom = if self.finite_sample_correction { 1 } else { 0 } as f64;
                 let normalization = data_n - delta_degrees_of_freedom;
@@ -77,9 +78,11 @@ impl Aggregator for proto::Variance {
                     _ => return Err("KNorm sensitivity is only supported in L1 and L2 spaces".into())
                 };
 
-                Ok(data_min.iter().zip(data_max.iter())
+                let row_sensitivity = data_min.iter().zip(data_max.iter())
                     .map(|(min, max)| ((max - min).powi(2) * scaling_constant).powi(*k as i32))
-                    .collect())
+                    .collect::<Vec<f64>>();
+
+                Ok(Array::from(row_sensitivity).into_dyn().into())
             },
             _ => Err("Variance sensitivity is only implemented for KNorm of 1".into())
         }

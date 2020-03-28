@@ -1,12 +1,14 @@
 use crate::errors::*;
 
-
 use std::collections::HashMap;
 
-use crate::{proto, base};
+use crate::{proto};
 
 use crate::components::{Component, Aggregator};
-use crate::base::{Value, NodeProperties, AggregatorProperties, Sensitivity, ValueProperties, prepend, DataType};
+use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType, NatureContinuous, Nature, Vector1DNull};
+use crate::utilities::{prepend};
+use ndarray::{arr1};
+
 
 impl Component for proto::Count {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
@@ -14,11 +16,14 @@ impl Component for proto::Count {
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         _public_arguments: &HashMap<String, Value>,
-        properties: &base::NodeProperties,
+        properties: &NodeProperties,
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
-            .ok_or("data: missing")?.get_arraynd()
+            .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
+
+        data_property.num_records = Some(1);
+        data_property.num_columns = Some(1);
 
         // save a snapshot of the state when aggregating
         data_property.aggregator = Some(AggregatorProperties {
@@ -26,9 +31,11 @@ impl Component for proto::Count {
             properties: properties.clone()
         });
 
-        data_property.num_records = Some(1);
-        data_property.num_columns = Some(1);
-        data_property.nature = None;
+        let data_num_records = data_property.num_records;
+        data_property.nature = Some(Nature::Continuous(NatureContinuous {
+            min: Vector1DNull::I64(vec![data_num_records.or(Some(0))]),
+            max: Vector1DNull::I64(vec![data_num_records]),
+        }));
         data_property.data_type = DataType::I64;
 
         Ok(data_property.into())
@@ -47,41 +54,37 @@ impl Aggregator for proto::Count {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
-        sensitivity_type: &Sensitivity
-    ) -> Result<Vec<f64>> {
+        sensitivity_type: &SensitivitySpace
+    ) -> Result<Value> {
+        let data_property = properties.get("data")
+            .ok_or("data: missing")?.array()
+            .map_err(prepend("data:"))?.clone();
+
+        data_property.assert_is_not_aggregated()?;
 
         match sensitivity_type {
+            SensitivitySpace::KNorm(_k) => {
+                // k has no effect on the sensitivity, and is ignored
 
-            Sensitivity::KNorm(k) => {
-                let data_property = properties.get("data")
-                    .ok_or("data: missing")?.get_arraynd()
-                    .map_err(prepend("data:"))?.clone();
+                use proto::privacy_definition::Neighboring;
+                use proto::privacy_definition::Neighboring::{Substitute, AddRemove};
+                let neighboring_type = Neighboring::from_i32(privacy_definition.neighboring)
+                    .ok_or::<Error>("neighboring definition must be either \"AddRemove\" or \"Substitute\"".into())?;
 
-                data_property.assert_is_not_aggregated()?;
-                let sensitivity = if data_property.get_num_records().is_ok() {
-                    // sensitivity is zero, because changing records has no effect on n after data is resized
-                    0.
-                } else {
-                    use proto::privacy_definition::Neighboring;
-                    let neighboring_type = Neighboring::from_i32(privacy_definition.neighboring)
-                        .ok_or::<Error>("neighboring definition must be either \"AddRemove\" or \"Substitute\"".into())?;
+                let num_records = data_property.num_records;
 
-                    // All cases are intentionally enumerated
-                    match neighboring_type {
-                        Neighboring::Substitute => match k {
-                            1 => 1.,
-                            2 => 1.,
-                            _ => return Err("Count sensitivity is only implemented for L1 and L2 spaces".into())
-                        },
-                        Neighboring::AddRemove => match k {
-                            1 => 1.,
-                            2 => 1.,
-                            _ => return Err("Count sensitivity is only implemented for L1 and L2 spaces".into())
-                        }
-                    }
+                // SENSITIVITY DERIVATIONS
+                let sensitivity: f64 = match (neighboring_type, num_records) {
+                    // known N. Applies to any neighboring type.
+                    (_, Some(_)) => 0.,
+
+                    // unknown N. The sensitivity here is really zero-- artificially raised
+                    (Substitute, None) => 1.,
+
+                    // unknown N
+                    (AddRemove, None) => 1.,
                 };
-
-                Ok(vec![sensitivity])
+                Ok(arr1(&[sensitivity]).into_dyn().into())
             },
             _ => return Err("Count sensitivity is only implemented for KNorm".into())
         }

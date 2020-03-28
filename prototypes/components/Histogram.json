@@ -8,8 +8,8 @@
       "type": "Array"
     }
   },
-  "id": "Count",
-  "name": "count",
+  "id": "Histogram",
+  "name": "histogram",
   "options": {},
   "return": {
     "nature": [

@@ -19,6 +19,11 @@
     },
     "privacy_usage": {
       "type": "repeated PrivacyUsage"
+    },
+    "interpolation": {
+      "type": "string",
+      "default": "'midpoint'",
+      "description": "interpolation strategy. Must be one of \"lower\", \"upper\", \"midpoint\", \"nearest\", \"linear\""
     }
   },
   "return": {

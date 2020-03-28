@@ -1,24 +1,15 @@
-//! Core logic and data structures
+//! Core data structures
 
 use crate::errors::*;
 
-
 use crate::proto;
-use itertools::Itertools;
 
-use crate::utilities;
-
-use crate::components::*;
 use ndarray::prelude::Ix1;
 
-use std::collections::{HashMap, HashSet};
+use std::collections::{HashMap};
+use ndarray::{ArrayD};
 
-use crate::utilities::serial::{serialize_value, parse_release, parse_value_properties, parse_value};
-use crate::utilities::json::JSONRelease;
-
-
-use ndarray::{ArrayD, Array};
-use crate::utilities::inference::infer_property;
+use crate::utilities::standardize_categorical_argument;
 
 /// The universal data representation.
 ///
@@ -32,54 +23,54 @@ use crate::utilities::inference::infer_property;
 #[derive(Clone, Debug)]
 pub enum Value {
     /// An arbitrary-dimensional homogeneously typed array
-    ArrayND(ArrayND),
+    Array(Array),
     /// A hash-map, where the keys are enum-typed and the values are of type Value
     Hashmap(Hashmap<Value>),
     /// A 2D homogeneously typed matrix, where the columns may be unknown and the column lengths may be inconsistent
-    Vector2DJagged(Vector2DJagged),
+    Jagged(Jagged),
 }
 
 impl Value {
-    /// Retrieve an ArrayND from a Value, assuming the Value contains an ArrayND
-    pub fn get_arraynd<'a>(&'a self) -> Result<&'a ArrayND> {
+    /// Retrieve an Array from a Value, assuming the Value contains an Array
+    pub fn array<'a>(&'a self) -> Result<&'a Array> {
         match self {
-            Value::ArrayND(array) => Ok(array),
-            _ => Err("value must be wrapped in an ArrayND".into())
+            Value::Array(array) => Ok(array),
+            _ => Err("value must be an Array".into())
         }
     }
-    /// Retrieve a Vector2DJagged from a Value, assuming the Value contains a Vector2DJagged
-    pub fn get_jagged<'a>(&'a self) -> Result<&'a Vector2DJagged> {
+    /// Retrieve Jagged from a Value, assuming the Value contains Jagged
+    pub fn jagged<'a>(&'a self) -> Result<&'a Jagged> {
         match self {
-            Value::Vector2DJagged(jagged) => Ok(jagged),
-            _ => Err("value must be wrapped in a Vector2DJagged".into())
+            Value::Jagged(jagged) => Ok(jagged),
+            _ => Err("value must be Jagged".into())
         }
     }
 
     /// Retrieve the first f64 from a Value, assuming a Value contains an ArrayND of type f64
-    pub fn get_first_f64(&self) -> Result<f64> {
+    pub fn first_f64(&self) -> Result<f64> {
         match self {
-            Value::ArrayND(array) => array.get_first_f64(),
+            Value::Array(array) => array.first_f64(),
             _ => Err("cannot retrieve first float".into())
         }
     }
     /// Retrieve the first i64 from a Value, assuming a Value contains an ArrayND of type i64
-    pub fn get_first_i64(&self) -> Result<i64> {
+    pub fn first_i64(&self) -> Result<i64> {
         match self {
-            Value::ArrayND(array) => array.get_first_i64(),
+            Value::Array(array) => array.first_i64(),
             _ => Err("cannot retrieve integer".into())
         }
     }
     /// Retrieve the first String from a Value, assuming a Value contains an ArrayND of type String
-    pub fn get_first_str(&self) -> Result<String> {
+    pub fn first_string(&self) -> Result<String> {
         match self {
-            Value::ArrayND(array) => array.get_first_str(),
+            Value::Array(array) => array.first_string(),
             _ => Err("cannot retrieve string".into())
         }
     }
     /// Retrieve the first bool from a Value, assuming a Value contains an ArrayND of type bool
-    pub fn get_first_bool(&self) -> Result<bool> {
+    pub fn first_bool(&self) -> Result<bool> {
         match self {
-            Value::ArrayND(array) => array.get_first_bool(),
+            Value::Array(array) => array.first_bool(),
             _ => Err("cannot retrieve bool".into())
         }
     }
@@ -89,25 +80,25 @@ impl Value {
 // build Value from other types with .into()
 impl From<ArrayD<bool>> for Value {
     fn from(value: ArrayD<bool>) -> Self {
-        Value::ArrayND(ArrayND::Bool(value))
+        Value::Array(Array::Bool(value))
     }
 }
 
 impl From<ArrayD<f64>> for Value {
     fn from(value: ArrayD<f64>) -> Self {
-        Value::ArrayND(ArrayND::F64(value))
+        Value::Array(Array::F64(value))
     }
 }
 
 impl From<ArrayD<i64>> for Value {
     fn from(value: ArrayD<i64>) -> Self {
-        Value::ArrayND(ArrayND::I64(value))
+        Value::Array(Array::I64(value))
     }
 }
 
 impl From<ArrayD<String>> for Value {
     fn from(value: ArrayD<String>) -> Self {
-        Value::ArrayND(ArrayND::Str(value))
+        Value::Array(Array::Str(value))
     }
 }
 
@@ -129,45 +120,19 @@ impl From<HashMap<String, Value>> for Value {
     }
 }
 
-impl From<HashMap<bool, ValueProperties>> for Hashmap<ValueProperties> {
-    fn from(value: HashMap<bool, ValueProperties>) -> Self {
-        Hashmap::<ValueProperties>::Bool(value)
+impl From<std::num::TryFromIntError> for Error {
+    fn from(value: std::num::TryFromIntError) -> Self {
+        format!("{}", value).into()
     }
 }
-
-impl From<HashMap<i64, ValueProperties>> for Hashmap<ValueProperties> {
-    fn from(value: HashMap<i64, ValueProperties>) -> Self {
-        Hashmap::<ValueProperties>::I64(value)
+impl From<ndarray_stats::errors::MinMaxError> for Error {
+    fn from(value: ndarray_stats::errors::MinMaxError) -> Self {
+        format!("min-max error: {}", value).into()
     }
 }
-
-impl From<HashMap<String, ValueProperties>> for Hashmap<ValueProperties> {
-    fn from(value: HashMap<String, ValueProperties>) -> Self {
-        Hashmap::<ValueProperties>::Str(value)
-    }
-}
-
-impl From<ArrayNDProperties> for ValueProperties {
-    fn from(value: ArrayNDProperties) -> Self {
-        ValueProperties::ArrayND(value)
-    }
-}
-
-impl From<HashmapProperties> for ValueProperties {
-    fn from(value: HashmapProperties) -> Self {
-        ValueProperties::Hashmap(value)
-    }
-}
-
-impl From<Vector2DJaggedProperties> for ValueProperties {
-    fn from(value: Vector2DJaggedProperties) -> Self {
-        ValueProperties::Vector2DJagged(value)
-    }
-}
-
 impl From<ndarray::ShapeError> for Error {
-    fn from(_: ndarray::ShapeError) -> Self {
-        "ndarray: invalid shape provided".into()
+    fn from(value: ndarray::ShapeError) -> Self {
+        format!("shape error: {:?}", value).into()
     }
 }
 
@@ -177,38 +142,38 @@ impl From<ndarray::ShapeError> for Error {
 /// ndarray ArrayD's are artificially allowed to be 0, 1 or 2-dimensional.
 /// The first axis denotes the number rows/observations. The second axis the number of columns.
 ///
-/// The ArrayND has a one-to-one mapping to a protobuf ArrayND.
+/// The Array has a one-to-one mapping to a protobuf ArrayND.
 #[derive(Clone, Debug)]
-pub enum ArrayND {
+pub enum Array {
     Bool(ArrayD<bool>),
     I64(ArrayD<i64>),
     F64(ArrayD<f64>),
     Str(ArrayD<String>),
 }
 
-impl ArrayND {
+impl Array {
     /// Retrieve the f64 ndarray, assuming the data type of the ArrayND is f64
-    pub fn get_f64(&self) -> Result<&ArrayD<f64>> {
+    pub fn f64(&self) -> Result<&ArrayD<f64>> {
         match self {
-            ArrayND::F64(x) => Ok(x),
+            Array::F64(x) => Ok(x),
             _ => Err("expected a float on a non-float ArrayND".into())
         }
     }
-    pub fn get_first_f64(&self) -> Result<f64> {
+    pub fn first_f64(&self) -> Result<f64> {
         match self {
-            ArrayND::Bool(x) => {
+            Array::Bool(x) => {
                 if x.len() != 1 {
                     return Err("non-singleton array passed for an argument that must be scalar".into());
                 }
                 Ok(if *x.first().unwrap() { 1. } else { 0. })
             }
-            ArrayND::I64(x) => {
+            Array::I64(x) => {
                 if x.len() != 1 {
                     return Err("non-singleton array passed for an argument that must be scalar".into());
                 }
                 Ok(f64::from(*x.first().unwrap() as i32))
             }
-            ArrayND::F64(x) => {
+            Array::F64(x) => {
                 if x.len() != 1 {
                     return Err("non-singleton array passed for an argument that must be scalar".into());
                 }
@@ -217,34 +182,34 @@ impl ArrayND {
             _ => Err("value must be numeric".into())
         }
     }
-    pub fn get_vec_f64(&self, optional_length: Option<i64>) -> Result<Vec<f64>> {
-        let data = self.get_f64()?;
+    pub fn vec_f64(&self, optional_length: Option<i64>) -> Result<Vec<f64>> {
+        let data = self.f64()?;
         let err_msg = "failed attempt to cast f64 ArrayD to vector".into();
         match data.ndim().clone() {
             0 => match (optional_length, data.first()) {
                 (Some(length), Some(v)) => Ok((0..length).map(|_| v.clone()).collect()),
                 _ => Err(err_msg)
             },
-            1 => Ok(data.clone().into_dimensionality::<Ix1>().unwrap().to_vec()),
+            1 => Ok(data.clone().into_dimensionality::<Ix1>()?.to_vec()),
             _ => Err(err_msg)
         }
     }
     /// Retrieve the i64 ndarray, assuming the data type of the ArrayND is i64
-    pub fn get_i64(&self) -> Result<&ArrayD<i64>> {
+    pub fn i64(&self) -> Result<&ArrayD<i64>> {
         match self {
-            ArrayND::I64(x) => Ok(x),
+            Array::I64(x) => Ok(x),
             _ => Err("expected a float on a non-float ArrayND".into())
         }
     }
-    pub fn get_first_i64(&self) -> Result<i64> {
+    pub fn first_i64(&self) -> Result<i64> {
         match self {
-            ArrayND::Bool(x) => {
+            Array::Bool(x) => {
                 if x.len() != 1 {
                     return Err("non-singleton array passed for an argument that must be scalar".into());
                 }
                 Ok(if *x.first().unwrap() { 1 } else { 0 })
             }
-            ArrayND::I64(x) => {
+            Array::I64(x) => {
                 if x.len() != 1 {
                     return Err("non-singleton array passed for an argument that must be scalar".into());
                 }
@@ -253,28 +218,28 @@ impl ArrayND {
             _ => Err("value must be numeric".into())
         }
     }
-    pub fn get_vec_i64(&self, optional_length: Option<i64>) -> Result<Vec<i64>> {
-        let data = self.get_i64()?;
+    pub fn vec_i64(&self, optional_length: Option<i64>) -> Result<Vec<i64>> {
+        let data = self.i64()?;
         let err_msg = "failed attempt to cast i64 ArrayD to vector".into();
         match data.ndim().clone() {
             0 => match (optional_length, data.first()) {
                 (Some(length), Some(v)) => Ok((0..length).map(|_| v.clone()).collect()),
                 _ => Err(err_msg)
             },
-            1 => Ok(data.clone().into_dimensionality::<Ix1>().unwrap().to_vec()),
+            1 => Ok(data.clone().into_dimensionality::<Ix1>()?.to_vec()),
             _ => Err(err_msg)
         }
     }
     /// Retrieve the String ndarray, assuming the data type of the ArrayND is String
-    pub fn get_str(&self) -> Result<&ArrayD<String>> {
+    pub fn string(&self) -> Result<&ArrayD<String>> {
         match self {
-            ArrayND::Str(x) => Ok(x),
+            Array::Str(x) => Ok(x),
             _ => Err("value must be a string".into())
         }
     }
-    pub fn get_first_str(&self) -> Result<String> {
+    pub fn first_string(&self) -> Result<String> {
         match self {
-            ArrayND::Str(x) => {
+            Array::Str(x) => {
                 if x.len() != 1 {
                     return Err("non-singleton array passed for an argument that must be scalar".into());
                 }
@@ -284,21 +249,47 @@ impl ArrayND {
         }
     }
     /// Retrieve the bool ndarray, assuming the data type of the ArrayND is bool
-    pub fn get_bool(&self) -> Result<&ArrayD<bool>> {
+    pub fn bool(&self) -> Result<&ArrayD<bool>> {
         match self {
-            ArrayND::Bool(x) => Ok(x),
+            Array::Bool(x) => Ok(x),
             _ => Err("value must be a bool".into())
         }
     }
-    pub fn get_first_bool(&self) -> Result<bool> {
+    pub fn first_bool(&self) -> Result<bool> {
         match self {
-            ArrayND::Bool(x) => {
+            Array::Bool(x) => {
                 if x.len() != 1 {
                     return Err("non-singleton array passed for an argument that must be scalar".into());
                 }
                 Ok(x.first().unwrap().to_owned())
             }
             _ => Err("value must be a bool".into())
+        }
+    }
+
+    pub fn shape(&self) -> Vec<i64> {
+        match self {
+            Array::Bool(array) => array.shape().to_owned(),
+            Array::F64(array) => array.shape().to_owned(),
+            Array::I64(array) => array.shape().to_owned(),
+            Array::Str(array) => array.shape().to_owned()
+        }.iter().map(|arr| arr.clone() as i64).collect()
+    }
+    pub fn num_records(&self) -> Result<i64> {
+        let shape = self.shape();
+        match shape.len() {
+            0 => Ok(1),
+            1 | 2 => Ok(shape[0]),
+            _ => Err("arrays may have max dimensionality of 2".into())
+        }
+    }
+    pub fn num_columns(&self) -> Result<i64> {
+        let shape = self.shape();
+        match shape.len() {
+            0 => Ok(1),
+            1 => Ok(1),
+            2 => Ok(shape[1]),
+            _ => Err("arrays may have max dimensionality of 2".into())
         }
     }
 }
@@ -308,51 +299,75 @@ impl ArrayND {
 /// Typically used to store categorically clamped values.
 /// In practice, use is limited to public categories over multiple columns, and the upper triangular covariance matrix
 ///
-/// The Vector2DJagged has a one-to-one mapping to a protobuf Vector2DJagged.
+/// Jagged has a one-to-one mapping to a protobuf Vector2DJagged.
 #[derive(Clone, Debug)]
-pub enum Vector2DJagged {
+pub enum Jagged {
     Bool(Vec<Option<Vec<bool>>>),
     I64(Vec<Option<Vec<i64>>>),
     F64(Vec<Option<Vec<f64>>>),
     Str(Vec<Option<Vec<String>>>),
 }
 
-impl Vector2DJagged {
+impl Jagged {
     /// Retrieve the f64 jagged matrix, assuming the data type of the jagged matrix is f64, and assuming all columns are defined
-    pub fn get_f64(&self) -> Result<Vec<Vec<f64>>> {
-        self.get_f64_option()?.iter().cloned().collect::<Option<Vec<Vec<f64>>>>()
-            .ok_or::<Error>("not all columns are known in float Vector2DJagged".into())
+    pub fn f64(&self) -> Result<Vec<Vec<f64>>> {
+        self.f64_option()?.iter().cloned().collect::<Option<Vec<Vec<f64>>>>()
+            .ok_or::<Error>("not all columns are known in float Jagged matrix".into())
     }
     /// Retrieve the f64 jagged matrix, assuming the data type of the jagged matrix is f64
-    pub fn get_f64_option<'a>(&'a self) -> Result<&'a Vec<Option<Vec<f64>>>> {
+    pub fn f64_option<'a>(&'a self) -> Result<&'a Vec<Option<Vec<f64>>>> {
         match self {
-            Vector2DJagged::F64(data) => Ok(data),
-            _ => Err("expected float type on a non-float Vector2DJagged".into())
+            Jagged::F64(data) => Ok(data),
+            _ => Err("expected float type on a non-float Jagged matrix".into())
         }
     }
     /// Retrieve the i64 jagged matrix, assuming the data type of the jagged matrix is i64
-    pub fn get_i64(&self) -> Result<Vec<Vec<i64>>> {
+    pub fn i64(&self) -> Result<Vec<Vec<i64>>> {
         match self {
-            Vector2DJagged::I64(data) => data.iter().cloned().collect::<Option<Vec<Vec<i64>>>>()
-                .ok_or::<Error>("not all columns are known in int Vector2DJagged".into()),
-            _ => Err("expected int type on a non-int Vector2DJagged".into())
+            Jagged::I64(data) => data.iter().cloned().collect::<Option<Vec<Vec<i64>>>>()
+                .ok_or::<Error>("not all columns are known in int Jagged matrix".into()),
+            _ => Err("expected int type on a non-int Jagged matrix".into())
         }
     }
     /// Retrieve the String jagged matrix, assuming the data type of the jagged matrix is String
-    pub fn get_str(&self) -> Result<Vec<Vec<String>>> {
+    pub fn string(&self) -> Result<Vec<Vec<String>>> {
         match self {
-            Vector2DJagged::Str(data) => data.iter().cloned().collect::<Option<Vec<Vec<String>>>>()
-                .ok_or::<Error>("not all columns are known in string Vector2DJagged".into()),
-            _ => Err("expected string type on a non-string Vector2DJagged".into())
+            Jagged::Str(data) => data.iter().cloned().collect::<Option<Vec<Vec<String>>>>()
+                .ok_or::<Error>("not all columns are known in string Jagged matrix".into()),
+            _ => Err("expected string type on a non-string Jagged matrix".into())
         }
     }
     /// Retrieve the bool jagged matrix, assuming the data type of the jagged matrix is bool
-    pub fn get_bool(&self) -> Result<Vec<Vec<bool>>> {
+    pub fn bool(&self) -> Result<Vec<Vec<bool>>> {
         match self {
-            Vector2DJagged::Bool(data) => data.iter().cloned().collect::<Option<Vec<Vec<bool>>>>()
-                .ok_or::<Error>("not all columns are known in bool Vector2DJagged".into()),
-            _ => Err("expected bool type on a non-bool Vector2DJagged".into())
+            Jagged::Bool(data) => data.iter().cloned().collect::<Option<Vec<Vec<bool>>>>()
+                .ok_or::<Error>("not all columns are known in bool Jagged matrix".into()),
+            _ => Err("expected bool type on a non-bool Jagged matrix".into())
         }
+    }
+    pub fn num_columns(&self) -> i64 {
+        match self {
+            Jagged::Bool(vector) => vector.len() as i64,
+            Jagged::F64(vector) => vector.len() as i64,
+            Jagged::I64(vector) => vector.len() as i64,
+            Jagged::Str(vector) => vector.len() as i64,
+        }
+    }
+    pub fn lengths_option(&self) -> Vec<Option<i64>> {
+        match self {
+            Jagged::Bool(value) => value.iter()
+                .map(|column| column.as_ref().map(|col| col.len() as i64)).collect(),
+            Jagged::F64(value) => value.iter()
+                .map(|column| column.as_ref().map(|col| col.len() as i64)).collect(),
+            Jagged::I64(value) => value.iter()
+                .map(|column| column.as_ref().map(|col| col.len() as i64)).collect(),
+            Jagged::Str(value) => value.iter()
+                .map(|column| column.as_ref().map(|col| col.len() as i64)).collect()
+        }
+    }
+    pub fn lengths(&self) -> Result<Vec<i64>> {
+        self.lengths_option().iter().cloned().collect::<Option<Vec<i64>>>()
+            .ok_or("length is not defined for every column".into())
     }
 }
 
@@ -369,38 +384,100 @@ pub enum Hashmap<T> {
     Str(HashMap<String, T>),
 }
 
+impl<T> Hashmap<T> {
+    pub fn keys_length(&self) -> i64 {
+        match self {
+            Hashmap::Bool(value) => value.keys().len() as i64,
+            Hashmap::I64(value) => value.keys().len() as i64,
+            Hashmap::Str(value) => value.keys().len() as i64,
+        }
+    }
+    pub fn values(&self) -> Vec<&T> {
+        match self {
+            Hashmap::Bool(value) => value.values().collect(),
+            Hashmap::I64(value) => value.values().collect(),
+            Hashmap::Str(value) => value.values().collect(),
+        }
+    }
+    pub fn from_values(&self, values: Vec<T>) -> Hashmap<T> where T: Clone {
+        match self {
+            Hashmap::Bool(value) => value.keys().into_iter().cloned()
+                .zip(values).collect::<HashMap<bool, T>>().into(),
+            Hashmap::I64(value) => value.keys().into_iter().cloned()
+                .zip(values).collect::<HashMap<i64, T>>().into(),
+            Hashmap::Str(value) => value.keys().into_iter().cloned()
+                .zip(values).collect::<HashMap<String, T>>().into(),
+        }
+    }
+}
+
+impl<T> From<HashMap<i64, T>> for Hashmap<T> {
+    fn from(value: HashMap<i64, T>) -> Self {
+        Hashmap::<T>::I64(value)
+    }
+}
+impl<T> From<HashMap<bool, T>> for Hashmap<T> {
+    fn from(value: HashMap<bool, T>) -> Self {
+        Hashmap::<T>::Bool(value)
+    }
+}
+impl<T> From<HashMap<String, T>> for Hashmap<T> {
+    fn from(value: HashMap<String, T>) -> Self {
+        Hashmap::<T>::Str(value)
+    }
+}
+
 /// Derived properties for the universal value.
 ///
 /// The ValueProperties has a one-to-one mapping to a protobuf ValueProperties.
 #[derive(Clone, Debug)]
 pub enum ValueProperties {
     Hashmap(HashmapProperties),
-    ArrayND(ArrayNDProperties),
-    Vector2DJagged(Vector2DJaggedProperties),
+    Array(ArrayProperties),
+    Jagged(JaggedProperties),
 }
 
 
 impl ValueProperties {
     /// Retrieve properties corresponding to an ArrayND, assuming the corresponding data value is actually the ArrayND variant
-    pub fn get_arraynd(&self) -> Result<&ArrayNDProperties> {
+    pub fn array(&self) -> Result<&ArrayProperties> {
         match self {
-            ValueProperties::ArrayND(array) => Ok(array),
+            ValueProperties::Array(array) => Ok(array),
             _ => Err("value must be an array".into())
         }
     }
     /// Retrieve properties corresponding to an Hashmap, assuming the corresponding data value is actually the Hashmap variant
-    pub fn get_hashmap(&self) -> Result<&HashmapProperties> {
+    pub fn hashmap(&self) -> Result<&HashmapProperties> {
         match self {
             ValueProperties::Hashmap(value) => Ok(value),
             _ => Err("value must be a hashmap".into())
         }
     }
     /// Retrieve properties corresponding to an Vector2DJagged, assuming the corresponding data value is actually the Vector2DJagged variant
-    pub fn get_jagged(&self) -> Result<&Vector2DJaggedProperties> {
+    pub fn jagged(&self) -> Result<&JaggedProperties> {
         match self {
-            ValueProperties::Vector2DJagged(value) => Ok(value),
+            ValueProperties::Jagged(value) => Ok(value),
             _ => Err("value must be a ragged matrix".into())
         }
+    }
+}
+
+
+impl From<ArrayProperties> for ValueProperties {
+    fn from(value: ArrayProperties) -> Self {
+        ValueProperties::Array(value)
+    }
+}
+
+impl From<HashmapProperties> for ValueProperties {
+    fn from(value: HashmapProperties) -> Self {
+        ValueProperties::Hashmap(value)
+    }
+}
+
+impl From<JaggedProperties> for ValueProperties {
+    fn from(value: JaggedProperties) -> Self {
+        ValueProperties::Jagged(value)
     }
 }
 
@@ -415,7 +492,26 @@ pub struct HashmapProperties {
     /// records within the values of the hashmap come from a partition of the rows
     pub disjoint: bool,
     /// properties for each of the values in the hashmap
-    pub value_properties: Hashmap<ValueProperties>,
+    pub properties: Hashmap<ValueProperties>,
+    pub columnar: bool,
+}
+
+impl HashmapProperties {
+    pub fn assert_is_disjoint(&self) -> Result<()> {
+        match self.disjoint {
+            false => Err("partitions must be disjoint".into()),
+            true => Ok(())
+        }
+    }
+    pub fn assert_is_not_columnar(&self) -> Result<()> {
+        match self.columnar {
+            true => Err("partitions must not be columnar".into()),
+            false => Ok(())
+        }
+    }
+    pub fn num_records(&self) -> Result<i64> {
+        self.num_records.ok_or::<Error>("number of rows is not defined".into())
+    }
 }
 
 
@@ -423,7 +519,7 @@ pub struct HashmapProperties {
 ///
 /// The ArrayNDProperties has a one-to-one mapping to a protobuf ArrayNDProperties.
 #[derive(Clone, Debug)]
-pub struct ArrayNDProperties {
+pub struct ArrayProperties {
     /// Defined if the number of records is known statically (set by the resize component)
     pub num_records: Option<i64>,
     pub num_columns: Option<i64>,
@@ -449,10 +545,12 @@ pub struct ArrayNDProperties {
 ///
 /// The Vector2DJagged has a one-to-one mapping to a protobuf Vector2DJagged.
 #[derive(Clone, Debug)]
-pub struct Vector2DJaggedProperties {}
+pub struct JaggedProperties {
+    pub releasable: bool
+}
 
-impl ArrayNDProperties {
-    pub fn get_min_f64_option(&self) -> Result<Vec<Option<f64>>> {
+impl ArrayProperties {
+    pub fn min_f64_option(&self) -> Result<Vec<Option<f64>>> {
         match self.nature.to_owned() {
             Some(value) => match value {
                 Nature::Continuous(continuous) => match continuous.min {
@@ -464,15 +562,15 @@ impl ArrayNDProperties {
             None => Err("continuous nature for min is not defined".into())
         }
     }
-    pub fn get_min_f64(&self) -> Result<Vec<f64>> {
-        let bound = self.get_min_f64_option()?;
+    pub fn min_f64(&self) -> Result<Vec<f64>> {
+        let bound = self.min_f64_option()?;
         let value = bound.iter().filter_map(|v| v.to_owned()).collect::<Vec<f64>>();
         match bound.len() == value.len() {
             true => Ok(value),
             false => Err("not all min are known".into())
         }
     }
-    pub fn get_max_f64_option(&self) -> Result<Vec<Option<f64>>> {
+    pub fn max_f64_option(&self) -> Result<Vec<Option<f64>>> {
         match self.nature.to_owned() {
             Some(value) => match value {
                 Nature::Continuous(continuous) => match continuous.max {
@@ -484,8 +582,8 @@ impl ArrayNDProperties {
             None => Err("continuous nature for max is not defined".into())
         }
     }
-    pub fn get_max_f64(&self) -> Result<Vec<f64>> {
-        let bound = self.get_max_f64_option()?;
+    pub fn max_f64(&self) -> Result<Vec<f64>> {
+        let bound = self.max_f64_option()?;
         let value = bound.iter().filter_map(|v| v.to_owned()).collect::<Vec<f64>>();
         match bound.len() == value.len() {
             true => Ok(value),
@@ -493,7 +591,7 @@ impl ArrayNDProperties {
         }
     }
 
-    pub fn get_categories(&self) -> Result<Vector2DJagged> {
+    pub fn categories(&self) -> Result<Jagged> {
         match self.nature.to_owned() {
             Some(nature) => match nature {
                 Nature::Categorical(nature) => Ok(nature.categories),
@@ -502,32 +600,29 @@ impl ArrayNDProperties {
             None => Err("categorical nature is not defined".into())
         }
     }
-    pub fn get_categories_lengths(&self) -> Result<Vec<Option<i64>>> {
-        let num_columns = self.get_num_columns()?;
+    pub fn categories_lengths(&self) -> Result<Vec<i64>> {
+        let num_columns = self.num_columns()?;
 
-        match self.get_categories() {
+        match self.categories() {
             Ok(categories) => Ok(match categories {
-                Vector2DJagged::Str(categories) =>
+                Jagged::Str(categories) =>
                     standardize_categorical_argument(&categories, &num_columns)?.iter()
-                        .map(|cats| Some(cats.len() as i64)).collect(),
-                Vector2DJagged::Bool(categories) =>
+                        .map(|cats| cats.len() as i64).collect(),
+                Jagged::Bool(categories) =>
                     standardize_categorical_argument(&categories, &num_columns)?.iter()
-                        .map(|cats| Some(cats.len() as i64)).collect(),
-                Vector2DJagged::I64(categories) =>
+                        .map(|cats| cats.len() as i64).collect(),
+                Jagged::I64(categories) =>
                     standardize_categorical_argument(&categories, &num_columns)?.iter()
-                        .map(|cats| Some(cats.len() as i64)).collect(),
-                Vector2DJagged::F64(categories) =>
+                        .map(|cats| cats.len() as i64).collect(),
+                Jagged::F64(categories) =>
                     standardize_categorical_argument(&categories, &num_columns)?.iter()
-                        .map(|cats| Some(cats.len() as i64)).collect(),
+                        .map(|cats| cats.len() as i64).collect(),
             }),
-            Err(_) => Ok((0..num_columns).map(|_| Some(1)).collect())
+            Err(_) => Ok((0..num_columns).map(|_| 1).collect())
         }
     }
     pub fn assert_categorical(&self) -> Result<()> {
-        self.get_categories_lengths()?
-            .iter().cloned().collect::<Option<Vec<i64>>>()
-            .ok_or::<Error>("categories on all columns must be defined".into())?;
-
+        self.categories_lengths()?;
         Ok(())
     }
     pub fn assert_non_null(&self) -> Result<()> {
@@ -542,11 +637,11 @@ impl ArrayNDProperties {
             true => Err("data is not releasable when releasability is required".into())
         }
     }
-    pub fn get_num_columns(&self) -> Result<i64> {
+    pub fn num_columns(&self) -> Result<i64> {
         self.num_columns.ok_or::<Error>("number of columns is not defined".into())
     }
-    pub fn get_num_records(&self) -> Result<i64> {
-        self.num_records.ok_or::<Error>("number of rows is not defined".into())
+    pub fn num_records(&self) -> Result<i64> {
+        self.num_records.ok_or::<Error>("number of records is not defined".into())
     }
     pub fn assert_is_not_aggregated(&self) -> Result<()> {
         match self.aggregator.to_owned() {
@@ -585,9 +680,24 @@ pub enum Nature {
     Categorical(NatureCategorical),
 }
 
+impl Nature {
+    pub fn continuous(&self) -> Result<&NatureContinuous> {
+        match self {
+            Nature::Continuous(continuous) => Ok(continuous),
+            _ => Err("nature is categorical when expecting continuous".into())
+        }
+    }
+    pub fn categorical(&self) -> Result<&NatureCategorical> {
+        match self {
+            Nature::Categorical(categorical) => Ok(categorical),
+            _ => Err("nature is continuous when expecting categorical".into())
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct NatureCategorical {
-    pub categories: Vector2DJagged
+    pub categories: Jagged
 }
 
 #[derive(Clone, Debug)]
@@ -606,14 +716,14 @@ pub enum Vector1DNull {
 
 impl Vector1DNull {
     /// Retrieve the f64 vec, assuming the data type of the ArrayND is f64
-    pub fn get_f64(&self) -> Result<&Vec<Option<f64>>> {
+    pub fn f64(&self) -> Result<&Vec<Option<f64>>> {
         match self {
             Vector1DNull::F64(x) => Ok(x),
             _ => Err("expected a float on a non-float Vector1DNull".into())
         }
     }
     /// Retrieve the i64 vec, assuming the data type of the ArrayND is i64
-    pub fn get_i64(&self) -> Result<&Vec<Option<i64>>> {
+    pub fn i64(&self) -> Result<&Vec<Option<i64>>> {
         match self {
             Vector1DNull::I64(x) => Ok(x),
             _ => Err("expected an integer on a non-integer Vector1DNull".into())
@@ -630,534 +740,15 @@ pub enum Vector1D {
 }
 
 /// Accepted spaces for sensitivity to be computed within.
-pub enum Sensitivity {
+pub enum SensitivitySpace {
     /// KNorm(1) is L1, KNorm(2) is L2.
     KNorm(u32),
     /// Infinity norm.
     InfNorm,
     Exponential,
 }
-
-#[doc(hidden)]
-pub fn prepend(text: &str) -> impl Fn(Error) -> Error + '_ {
-    move |e| format!("{} {}", text, e).into()
-}
-
 /// A release consists of Values for each node id.
 pub type Release = HashMap<u32, Value>;
 
 // The properties for a node consists of Properties for each of its arguments.
 pub type NodeProperties = HashMap<String, ValueProperties>;
-
-/// Retrieve the Values for each of the arguments of a component from the Release.
-pub fn get_input_arguments(
-    component: &proto::Component,
-    graph_evaluation: &Release,
-) -> Result<HashMap<String, Value>> {
-    let mut arguments = HashMap::<String, Value>::new();
-    for (field_id, field) in component.arguments.clone() {
-        if let Some(evaluation) = graph_evaluation.get(&field) {
-            arguments.insert(field_id.to_owned(), evaluation.to_owned());
-        }
-    }
-    Ok(arguments)
-}
-
-/// Retrieve the specified Value from the arguments to a component.
-pub fn get_argument<'a>(
-    arguments: &HashMap<String, &'a Value>,
-    name: &str,
-) -> Result<&'a Value> {
-    match arguments.get(name) {
-        Some(argument) => Ok(argument),
-        _ => Err((name.to_string() + " is not defined").into())
-    }
-}
-
-/// Retrieve the ValueProperties for each of the arguments of a component from the Release.
-pub fn get_input_properties<T>(
-    component: &proto::Component,
-    graph_properties: &HashMap<u32, T>,
-) -> Result<HashMap<String, T>> where T: std::clone::Clone {
-    let mut properties = HashMap::<String, T>::new();
-    for (field_id, field) in component.arguments.clone() {
-        if let Some(property) = graph_properties.get(&field).clone() {
-            properties.insert(field_id.to_owned(), property.clone());
-        }
-    }
-    Ok(properties)
-}
-
-/// Given an analysis and release, attempt to propagate properties across the entire computation graph.
-///
-/// The graph is traversed, and every node is attempted to be expanded, so that validation occurs at the most granular level.
-/// Each component in the graph implements the Component trait, which contains the propagate_properties function.
-/// While traversing, properties are checked and propagated forward at every point in the graph.
-/// If the requirements for any node are not met, the propagation fails, and the analysis is not valid.
-///
-/// # Returns
-/// * `0` - Properties for every node in the expanded graph
-/// * `1` - The expanded graph
-pub fn propagate_properties(
-    analysis: &proto::Analysis,
-    release: &proto::Release,
-) -> Result<(HashMap<u32, ValueProperties>, HashMap<u32, proto::Component>)> {
-    // compute properties for every node in the graph
-
-    let privacy_definition = analysis.privacy_definition.to_owned().unwrap();
-    let mut graph: HashMap<u32, proto::Component> = analysis.computation_graph.to_owned().unwrap().value.to_owned();
-    let mut traversal: Vec<u32> = get_traversal(&graph)?;
-    // extend and pop from the end of the traversal
-    traversal.reverse();
-
-    let mut graph_evaluation: Release = parse_release(&release)?;
-
-    let mut graph_properties = graph_evaluation.iter()
-        .map(|(node_id, value)| Ok((node_id.clone(), infer_property(value)?)))
-        .collect::<Result<HashMap<u32, ValueProperties>>>()?;
-
-    let mut maximum_id = graph.keys().cloned()
-        .fold(0, std::cmp::max);
-
-    while !traversal.is_empty() {
-        let node_id = traversal.last().unwrap().clone();
-
-        let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
-        let input_properties = get_input_properties(&component, &graph_properties)?;
-        let public_arguments = get_input_arguments(&component, &graph_evaluation)?;
-
-        let mut expansion = component.clone().variant.unwrap().expand_component(
-            &privacy_definition,
-            &component,
-            &input_properties,
-            node_id.clone(),
-            maximum_id.clone(),
-        )?;
-
-        // patch the computation graph
-        graph.extend(expansion.computation_graph.clone());
-        graph_properties.extend(expansion.properties.iter()
-            .map(|(node_id, props)| (node_id.clone(), parse_value_properties(props)))
-            .collect::<HashMap<u32, ValueProperties>>());
-        graph_evaluation.extend(expansion.releases.iter()
-            .map(|(node_id, release)| Ok((node_id.clone(), parse_value(&release.value.clone().unwrap())?)))
-            .collect::<Result<HashMap<u32, Value>>>()?);
-
-        maximum_id = *expansion.computation_graph.keys().max()
-            .map(|v| v.max(&maximum_id)).unwrap_or(&maximum_id);
-
-        // if patch added nodes, extend the traversal
-        if !expansion.traversal.is_empty() {
-            expansion.traversal.reverse();
-            traversal.extend(expansion.traversal);
-            continue;
-        }
-        traversal.pop();
-
-        graph_properties.insert(node_id.clone(), match graph_evaluation.get(&node_id) {
-            // if node has already been evaluated, infer properties directly from the public data
-            Some(value) => infer_property(&value),
-
-            // if node has not been evaluated, propagate properties over it
-            None => {
-                let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
-                component.clone().variant.unwrap().propagate_property(
-                    &privacy_definition, &public_arguments, &input_properties)
-                    .chain_err(|| format!("at node_id {:?}", node_id))
-            }
-        }?);
-    }
-    Ok((graph_properties, graph))
-}
-
-/// Given a computation graph, return an ordering of nodes that ensures all dependencies of any node have been visited
-///
-/// The traversal also fails upon detecting cyclic dependencies,
-/// and attempts to optimize traversal order to minimize caching of intermediate results.
-pub fn get_traversal(
-    graph: &HashMap<u32, proto::Component>
-) -> Result<Vec<u32>> {
-
-    // track node parents
-    let mut parents = HashMap::<u32, HashSet<u32>>::new();
-    graph.iter().for_each(|(node_id, component)| {
-        if !parents.contains_key(node_id) {
-            parents.insert(*node_id, HashSet::<u32>::new());
-        }
-        component.arguments.values().for_each(|argument_node_id| {
-            parents.entry(*argument_node_id)
-                .or_insert_with(HashSet::<u32>::new)
-                .insert(*node_id);
-        })
-    });
-
-    // store the optimal computation order of node ids
-    let mut traversal = Vec::new();
-
-    // collect all sources (nodes with zero arguments)
-    let mut queue: Vec<u32> = graph.iter()
-        .filter(|(_node_id, component)| component.arguments.is_empty())
-        .map(|(node_id, _component)| node_id.to_owned()).collect();
-
-    let mut visited = HashMap::new();
-
-    while !queue.is_empty() {
-        let queue_node_id: u32 = *queue.last().unwrap();
-        queue.pop();
-        traversal.push(queue_node_id);
-
-        let mut is_cyclic = false;
-
-        parents.get(&queue_node_id).unwrap().iter().for_each(|parent_node_id| {
-            let parent_arguments = graph.get(parent_node_id).unwrap().to_owned().arguments;
-
-            // if parent has been reached more times than it has arguments, then it is cyclic
-            let count = visited.entry(*parent_node_id).or_insert(0);
-            *count += 1;
-            if visited.get(parent_node_id).unwrap() > &parent_arguments.len() {
-                is_cyclic = true;
-            }
-
-            // check that all arguments of parent_node have been evaluated before adding to queue
-            if parent_arguments.values().all(|argument_node_id| traversal.contains(argument_node_id)) {
-                queue.push(*parent_node_id);
-            }
-        });
-
-        if is_cyclic {
-            return Err("Graph is cyclic.".into());
-        }
-    }
-    return Ok(traversal);
-}
-
-/// Given an array, conduct well-formedness checks and broadcast
-///
-/// Typically used by functions when standardizing numeric arguments, but generally applicable.
-#[doc(hidden)]
-pub fn standardize_numeric_argument<T: Clone>(value: &ArrayD<T>, length: &i64) -> Result<ArrayD<T>> {
-    match value.ndim() {
-        0 => match value.first() {
-            Some(scalar) => Ok(Array::from((0..*length).map(|_| scalar.clone()).collect::<Vec<T>>()).into_dyn()),
-            None => Err("value must be non-empty".into())
-        },
-        1 => match value.len() as i64 == *length {
-            true => Ok(value.clone()),
-            false => Err("value is of incompatible length".into())
-        },
-        _ => Err("value must be a scalar or vector".into())
-    }
-}
-
-#[doc(hidden)]
-pub fn uniform_density(length: usize) -> Vec<f64> {
-    (0..length).map(|_| 1. / (length as f64)).collect()
-}
-
-
-/// Convert weights to probabilities
-#[doc(hidden)]
-pub fn normalize_probabilities(weights: &Vec<f64>) -> Vec<f64> {
-    let sum: f64 = weights.iter().sum();
-    weights.iter().map(|prob| prob / sum).collect()
-}
-
-/// Given a jagged categories array, conduct well-formedness checks and broadcast
-#[doc(hidden)]
-pub fn standardize_categorical_argument<T: Clone>(
-    categories: &Vec<Option<Vec<T>>>,
-    length: &i64,
-) -> Result<Vec<Vec<T>>> {
-    // check that no categories are explicitly None
-    let mut categories = categories.iter()
-        .map(|v| v.clone())
-        .collect::<Option<Vec<Vec<T>>>>()
-        .ok_or::<Error>("categories must be defined for all columns".into())?;
-
-    if categories.len() == 0 {
-        return Err("no categories are defined".into());
-    }
-    // broadcast categories across all columns, if only one categories set is defined
-    if categories.len() == 1 {
-        categories = (0..*length).map(|_| categories.first().unwrap().clone()).collect();
-    }
-
-    Ok(categories)
-}
-
-
-/// Given a jagged null values array, conduct well-formedness checks, broadcast along columns, and flatten along rows.
-#[doc(hidden)]
-pub fn standardize_null_argument<T: Clone>(
-    value: &Vec<Option<Vec<T>>>,
-    length: &i64,
-) -> Result<Vec<T>> {
-    let value = value.iter()
-        .map(|v| v.clone())
-        .collect::<Option<Vec<Vec<T>>>>()
-        .ok_or::<Error>("null must be defined for all columns".into())?;
-
-    if value.len() == 0 {
-        return Err("null values cannot be an empty vector".into());
-    }
-
-    let mut value: Vec<T> = value.iter().map(|v| match v.len() {
-        1 => Ok(v.clone().first().unwrap().clone()),
-        _ => Err("only one null value may be defined".into())
-    }).collect::<Result<Vec<T>>>()?;
-
-    // broadcast nulls across all columns, if only one null set is defined
-    if value.len() == 1 {
-        value = (0..*length).map(|_| value.clone().first().unwrap().clone()).collect();
-    }
-    Ok(value)
-}
-
-/// Given categories and a jagged categories weights array, conduct well-formedness checks and return a standardized set of probabilities.
-#[doc(hidden)]
-pub fn standardize_weight_argument<T>(
-    categories: &Vec<Vec<T>>,
-    weights: &Vec<Option<Vec<f64>>>,
-) -> Result<Vec<Vec<f64>>> {
-    match weights.len() {
-        0 => Ok(categories.iter()
-            .map(|cats| uniform_density(cats.len()))
-            .collect::<Vec<Vec<f64>>>()),
-        1 => {
-            let weights = match weights[0].clone() {
-                Some(weights) => normalize_probabilities(&weights),
-                None => uniform_density(categories[0].len())
-            };
-
-            categories.iter().map(|cats| match cats.len() == weights.len() {
-                true => Ok(weights.clone()),
-                false => Err("length of weights does not match number of categories".into())
-            }).collect::<Result<Vec<Vec<f64>>>>()
-        }
-        _ => match categories.len() == weights.len() {
-            true => categories.iter().zip(weights.iter()).map(|(_cats, weights)| match weights {
-                Some(weights) => Ok(normalize_probabilities(weights)),
-                None => Err("category weights must be set once, for all categories, or none".into())
-            }).collect::<Result<Vec<Vec<f64>>>>(),
-            false => return Err("category weights must be the same length as categories, or none".into())
-        }
-    }
-}
-
-/// Utility for building extra Components to pass back when conducting expansions.
-#[doc(hidden)]
-pub fn get_literal(value: &Value, batch: &u32) -> Result<(proto::Component, proto::ReleaseNode)> {
-    Ok((proto::Component {
-        arguments: HashMap::new(),
-        variant: Some(proto::component::Variant::Literal(proto::Literal {
-            private: false
-        })),
-        omit: true,
-        batch: batch.clone(),
-    },
-        proto::ReleaseNode {
-            value: Some(serialize_value(value)?),
-            privacy_usage: Vec::new(),
-        }))
-}
-
-#[doc(hidden)]
-pub fn validate_analysis(
-    analysis: &proto::Analysis,
-    release: &proto::Release,
-) -> Result<proto::response_validate_analysis::Validated> {
-    let _graph = analysis.computation_graph.to_owned()
-        .ok_or("the computation graph must be defined in an analysis")?
-        .value;
-
-    propagate_properties(&analysis, &release)?;
-
-    return Ok(proto::response_validate_analysis::Validated {
-        value: true,
-        message: "The analysis is valid.".to_string(),
-    });
-}
-
-pub fn compute_privacy_usage(
-    analysis: &proto::Analysis, release: &proto::Release,
-) -> Result<proto::PrivacyUsage> {
-    let (_graph_properties, graph) = propagate_properties(&analysis, &release)?;
-
-    println!("graph: {:?}", graph);
-    let usage_option = graph.iter()
-        // return the privacy usage from the release, else from the analysis
-        .filter_map(|(node_id, component)| get_component_privacy_usage(component, release.values.get(node_id)))
-        // linear sum
-        .fold1(|usage_1, usage_2| privacy_usage_reducer(
-            &usage_1, &usage_2, &|l, r| l + r));
-
-    // TODO: this should probably return a proto::PrivacyUsage with zero based on the privacy definition
-    match usage_option {
-        Some(x) => Ok(x),
-        None => Err("no information is released; privacy usage is none".into())
-    }
-}
-
-pub fn get_component_privacy_usage(
-    component: &proto::Component,
-    release_node: Option<&proto::ReleaseNode>,
-) -> Option<proto::PrivacyUsage> {
-
-    // get the maximum possible usage allowed to the component
-    let mut privacy_usage: Vec<proto::PrivacyUsage> = match component.to_owned().variant? {
-        proto::component::Variant::LaplaceMechanism(x) => x.privacy_usage,
-        proto::component::Variant::GaussianMechanism(x) => x.privacy_usage,
-        proto::component::Variant::ExponentialMechanism(x) => x.privacy_usage,
-        proto::component::Variant::SimpleGeometricMechanism(x) => x.privacy_usage,
-        _ => return None
-    };
-
-    // if release usage is defined, then use the actual eps, etc. from the release
-    if let Some(release_node) = release_node {
-        let release_privacy_usage = (*release_node.privacy_usage).to_vec();
-        if release_privacy_usage.len() > 0 {
-            privacy_usage = release_privacy_usage
-        }
-    }
-
-    // sum privacy usage within the node
-    privacy_usage.into_iter()
-        .fold1(|usage_a, usage_b|
-            privacy_usage_reducer(&usage_a, &usage_b, &|a, b| a + b))
-}
-
-pub fn privacy_usage_reducer(
-    left: &proto::PrivacyUsage,
-    right: &proto::PrivacyUsage,
-    operator: &dyn Fn(f64, f64) -> f64,
-) -> proto::PrivacyUsage {
-    use proto::privacy_usage::Distance as Distance;
-
-    proto::PrivacyUsage {
-        distance: match (left.distance.to_owned().unwrap(), right.distance.to_owned().unwrap()) {
-            (Distance::DistancePure(x), Distance::DistancePure(y)) => Some(Distance::DistancePure(proto::privacy_usage::DistancePure {
-                epsilon: operator(x.epsilon, y.epsilon)
-            })),
-            (Distance::DistanceApproximate(x), Distance::DistanceApproximate(y)) => Some(Distance::DistanceApproximate(proto::privacy_usage::DistanceApproximate {
-                epsilon: operator(x.epsilon, y.epsilon),
-                delta: operator(x.delta, y.delta),
-            })),
-            _ => None
-        }
-    }
-}
-
-pub fn broadcast_privacy_usage(usages: &Vec<proto::PrivacyUsage>, length: usize) -> Result<Vec<proto::PrivacyUsage>> {
-    if usages.len() == length {
-        return Ok(usages.clone());
-    }
-
-    if usages.len() != 1 {
-        bail!("{} privacy parameters passed when {} were required", usages.len(), length);
-    }
-
-    if usages.len() == 0 {
-        bail!("privacy parameters are required");
-    }
-
-    Ok(match usages[0].distance.clone().ok_or("distance must be defined on a privacy usage")? {
-        proto::privacy_usage::Distance::DistancePure(pure) => (0..length)
-            .map(|_| proto::PrivacyUsage {
-                distance: Some(proto::privacy_usage::Distance::DistancePure(proto::privacy_usage::DistancePure {
-                    epsilon: pure.epsilon / (length as f64)
-                }))
-            }).collect(),
-        proto::privacy_usage::Distance::DistanceApproximate(approx) => (0..length)
-            .map(|_| proto::PrivacyUsage {
-                distance: Some(proto::privacy_usage::Distance::DistanceApproximate(proto::privacy_usage::DistanceApproximate {
-                    epsilon: approx.epsilon / (length as f64),
-                    delta: approx.delta / (length as f64),
-                }))
-            }).collect()
-    })
-}
-
-pub fn expand_component(
-    privacy_definition: &proto::PrivacyDefinition,
-    component: &proto::Component,
-    properties: &HashMap<String, proto::ValueProperties>,
-    arguments: &HashMap<String, Value>,
-    node_id_output: u32,
-    node_id_maximum: u32,
-) -> Result<proto::ComponentExpansion> {
-
-//    println!("expanding node id: {}", node_id_output);
-//    println!("expansion properties before {:?}", properties);
-    let mut properties: NodeProperties = properties.iter()
-        .map(|(k, v)| (k.to_owned(), utilities::serial::parse_value_properties(&v)))
-        .collect();
-
-    for (k, v) in arguments {
-        properties.insert(k.clone(), infer_property(&v)?);
-    }
-
-//    println!("expanding node id: {}", node_id_output);
-//    println!("expansion properties after {:?}", properties);
-//    println!("\n\n");
-    let result = component.clone().variant.unwrap().expand_component(
-        privacy_definition,
-        component,
-        &properties,
-        node_id_output,
-        node_id_maximum,
-    ).chain_err(|| format!("at node_id {:?}", node_id_output))?;
-
-    let mut patch_properties = result.properties;
-    if result.traversal.is_empty() {
-        let propagated_property = component.clone().variant.unwrap()
-            .propagate_property(privacy_definition, arguments, &properties)
-            .chain_err(|| format!("at node_id {:?}", node_id_output))?;
-
-        patch_properties.insert(node_id_output, utilities::serial::serialize_value_properties(&propagated_property));
-    }
-
-    Ok(proto::ComponentExpansion {
-        computation_graph: result.computation_graph,
-        properties: patch_properties,
-        releases: result.releases,
-        traversal: result.traversal,
-    })
-}
-
-// TODO: move this logic into lib
-pub fn generate_report(
-    analysis: &proto::Analysis,
-    release: &proto::Release,
-) -> Result<String> {
-    let graph = analysis.computation_graph.to_owned()
-        .ok_or("the computation graph must be defined in an analysis")?
-        .value;
-
-    let (graph_properties, _graph_expanded) = propagate_properties(&analysis, &release)?;
-    let release = parse_release(&release)?;
-
-    let release_schemas = graph.iter()
-        .map(|(node_id, component)| {
-            let public_arguments = get_input_arguments(&component, &release)?;
-            let input_properties = get_input_properties(&component, &graph_properties)?;
-            // ignore nodes without released values
-            let node_release = match release.get(node_id) {
-                Some(node_release) => node_release,
-                None => return Ok(None)
-            };
-            component.variant.clone().unwrap().summarize(
-                &node_id,
-                &component,
-                &public_arguments,
-                &input_properties,
-                &node_release)
-        })
-        .collect::<Result<Vec<Option<Vec<JSONRelease>>>>>()?.into_iter()
-        .filter_map(|v| v).flat_map(|v| v)
-        .collect::<Vec<JSONRelease>>();
-
-    match serde_json::to_string(&release_schemas) {
-        Ok(serialized) => Ok(serialized),
-        Err(_) => Err("unable to parse report into json".into())
-    }
-}

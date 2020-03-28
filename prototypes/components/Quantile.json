@@ -14,6 +14,11 @@
     "quantile": {
       "type": "double",
       "description": "Desired quantiles, defined on `[0,1]`."
+    },
+    "interpolation": {
+      "type": "string",
+      "default": "'midpoint'",
+      "description": "interpolation strategy. Must be one of \"lower\", \"upper\", \"midpoint\", \"nearest\", \"linear\""
     }
   },
   "return": {

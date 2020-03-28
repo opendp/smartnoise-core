@@ -2,7 +2,8 @@ use crate::errors::*;
 
 use crate::components::Component;
 use std::collections::HashMap;
-use crate::base::{Value, prepend, ValueProperties, DataType};
+use crate::base::{Value, ValueProperties, DataType};
+use crate::utilities::prepend;
 use crate::base;
 use crate::proto;
 use crate::components::transforms::propagate_binary_shape;
@@ -16,18 +17,18 @@ impl Component for proto::Filter {
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
-            .ok_or("data: missing")?.get_arraynd()
+            .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
         let mask_property = properties.get("mask")
-            .ok_or("mask: missing")?.get_arraynd()
+            .ok_or("mask: missing")?.array()
             .map_err(prepend("mask:"))?.clone();
 
         if mask_property.data_type != DataType::Bool {
             return Err("mask: must be boolean".into())
         }
 
-        if mask_property.get_num_columns()? != 1 {
+        if mask_property.num_columns()? != 1 {
             return Err("mask: number of columns must be one".into())
         }
 

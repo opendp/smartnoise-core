@@ -17,6 +17,7 @@ derive_more = "0.99.3"
 error-chain = "0.12.2"
 serde_json = "1.0.48"
 serde = "1.0.104"
+noisy_float = "0.1.12"
 
 [build-dependencies]
 serde_json = "1.0.48"

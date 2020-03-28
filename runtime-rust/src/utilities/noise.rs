@@ -5,7 +5,7 @@ use std::{cmp, f64::consts};
 use rug::rand::{ThreadRandGen, ThreadRandState};
 use rug::Float;
 
-use crate::utilities::utilities;
+use crate::utilities;
 
 // Give MPFR ability to draw randomness from OpenSSL
 struct GeneratorOpenSSL;

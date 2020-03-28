@@ -5,7 +5,7 @@ use std::collections::HashMap;
 
 use crate::{proto, base};
 use crate::hashmap;
-use crate::components::{Component, Accuracy, Expandable, Report};
+use crate::components::{Component, Expandable, Report};
 
 
 use crate::base::{NodeProperties, Value, ValueProperties};
@@ -38,8 +38,8 @@ impl Expandable for proto::DpCount {
         _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
         _properties: &base::NodeProperties,
-        component_id: u32,
-        maximum_id: u32,
+        component_id: &u32,
+        maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
         let mut maximum_id = maximum_id.clone();
         let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
@@ -55,7 +55,7 @@ impl Expandable for proto::DpCount {
         });
 
         // noising
-        computation_graph.insert(component_id, proto::Component {
+        computation_graph.insert(component_id.clone(), proto::Component {
             arguments: hashmap![
                 "data".to_owned() => id_count,
                 "count_min".to_owned() => *component.arguments.get("count_min").ok_or::<Error>("count_min must be provided as an argument".into())?,
@@ -76,25 +76,6 @@ impl Expandable for proto::DpCount {
             releases: HashMap::new(),
             traversal: vec![id_count]
         })
-    }
-}
-
-impl Accuracy for proto::DpCount {
-    fn accuracy_to_privacy_usage(
-        &self,
-        _privacy_definition: &proto::PrivacyDefinition,
-        _properties: &base::NodeProperties,
-        _accuracy: &proto::Accuracy,
-    ) -> Option<proto::PrivacyUsage> {
-        None
-    }
-
-    fn privacy_usage_to_accuracy(
-        &self,
-        _privacy_definition: &proto::PrivacyDefinition,
-        _property: &base::NodeProperties,
-    ) -> Option<f64> {
-        None
     }
 }
 

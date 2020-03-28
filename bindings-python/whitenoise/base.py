@@ -117,6 +117,43 @@ class Component(object):
     def actual_privacy_usage(self):
         return self.analysis.release_values.get(self.component_id, {"privacy_usage": None})["privacy_usage"]
 
+    def get_usages(self):
+        parents = [component for component in self.analysis.components.values()
+                   if id(self) in list(id(i) for i in component.arguments.values())]
+
+        return {parent: next(k for k, v in parent.arguments.items()
+                             if id(self) == id(v)) for parent in parents}
+
+    def get_accuracy(self, alpha):
+        self.analysis.properties = core_wrapper.get_properties(
+            self.analysis._serialize_analysis_proto(),
+            self.analysis._serialize_release_proto()).properties
+
+        return core_wrapper.privacy_usage_to_accuracy(
+            privacy_definition=self.analysis._serialize_privacy_definition(),
+            component=self.analysis._serialize_component(self),
+            properties={name: self.analysis.properties.get(arg.component_id) for name, arg in self.arguments.items() if arg},
+            alpha=alpha)
+
+    def from_accuracy(self, value, alpha):
+        return core_wrapper.accuracy_to_privacy_usage(
+            privacy_definition=self.analysis._serialize_privacy_definition(),
+            component=self.analysis._serialize_component(self),
+            properties={name: self.analysis.properties.get(arg.component_id) for name, arg in self.arguments.items() if arg},
+            accuracy=base_pb2.Accuracy(
+                value=value,
+                alpha=alpha))
+
+    @property
+    def properties(self):
+        # TODO: this doesn't have to be recomputed every time
+        self.analysis.properties = core_wrapper.get_properties(
+            self.analysis._serialize_analysis_proto(),
+            self.analysis._serialize_release_proto()).properties
+
+        # TODO: parse into something human readable. Serialization is not necessary
+        return self.analysis.properties.get(self.component_id)
+
     def __pos__(self):
         return self
 
@@ -210,6 +247,28 @@ class Component(object):
 
     def __hash__(self):
         return id(self)
+
+    def __str__(self, depth=0):
+        if self.value is not None and depth != 0:
+            return str(self.value).replace("\n", "")
+
+        inner = []
+        if self.arguments:
+            inner.append(",\n".join([f'{("  " * (depth + 1))}{name}={value.__str__(depth + 1)}' for name, value in self.arguments.items() if value is not None]))
+        if self.options:
+            inner.append(",\n".join([f'{("  " * (depth + 1))}{name}={str(value).replace(chr(10), "")}' for name, value in self.options.items() if value is not None]))
+
+        if self.name == "Literal":
+            inner = "released value: " + str(self.value).replace("\n", "")
+        elif inner:
+            inner = f'\n{("," + chr(10)).join(inner)}\n{("  " * depth)}'
+        else:
+            inner = ""
+
+        return f'{self.name}({inner})'
+
+    def __repr__(self):
+        return f'<{self.component_id}: {self.name} Component>'
 
     @staticmethod
     def of(value, value_format=None):
@@ -316,28 +375,32 @@ class Analysis(object):
         self.components[self.component_count] = component
         self.component_count += 1
 
+    def _serialize_privacy_definition(self):
+        return base_pb2.PrivacyDefinition(
+            distance=base_pb2.PrivacyDefinition.Distance.Value(self.distance),
+            neighboring=base_pb2.PrivacyDefinition.Neighboring.Value(self.neighboring)
+        )
+
+    def _serialize_component(self, component):
+        return components_pb2.Component(**{
+            'arguments': {
+                name: component_child.component_id
+                for name, component_child in component.arguments.items()
+                if component_child is not None
+            },
+            variant_message_map[component.name]:
+                getattr(components_pb2, component.name)(**(component.options or {}))
+        })
+
     def _serialize_analysis_proto(self):
 
         vertices = {}
         for component_id in self.components:
-            component = self.components[component_id]
-
-            vertices[component_id] = components_pb2.Component(**{
-                'arguments': {
-                    name: component_child.component_id
-                    for name, component_child in component.arguments.items()
-                    if component_child is not None
-                },
-                variant_message_map[component.name]:
-                    getattr(components_pb2, component.name)(**(component.options or {}))
-            })
+            vertices[component_id] = self._serialize_component(self.components[component_id])
 
         return base_pb2.Analysis(
             computation_graph=base_pb2.ComputationGraph(value=vertices),
-            privacy_definition=base_pb2.PrivacyDefinition(
-                distance=base_pb2.PrivacyDefinition.Distance.Value(self.distance),
-                neighboring=base_pb2.PrivacyDefinition.Neighboring.Value(self.neighboring)
-            )
+            privacy_definition=self._serialize_privacy_definition()
         )
 
     def _serialize_release_proto(self):
@@ -356,7 +419,10 @@ class Analysis(object):
     @staticmethod
     def _parse_release_proto(release):
         def parse_release_node(release_node):
-            parsed = {"value": Analysis._parse_value_proto(release_node.value)}
+            parsed = {
+                "value": Analysis._parse_value_proto(release_node.value),
+                "value_format": release_node.value.WhichOneof("data")
+            }
             if release_node.privacy_usage:
                 parsed['privacy_usage'] = release_node.privacy_usage
             return parsed
@@ -403,10 +469,10 @@ class Analysis(object):
                 value = [value]
             value = [elem if issubclass(type(elem), list) else [elem] for elem in value]
 
-            return value_pb2.Value(array_2d_jagged=value_pb2.Array2dJagged(
+            return value_pb2.Value(jagged=value_pb2.Array2dJagged(
                 data=[value_pb2.Array1dOption(option=None if column is None else make_array1d(np.array(column))) for
                       column in value],
-                data_type=value_pb2.Array2dJagged.DataType
+                data_type=value_pb2.DataType
                     .Value({
                                np.bool: "BOOL",
                                np.int64: "I64",
@@ -423,7 +489,7 @@ class Analysis(object):
         array = np.array(value)
 
         return value_pb2.Value(
-            array_nd=value_pb2.ArrayNd(
+            array=value_pb2.ArrayNd(
                 shape=list(array.shape),
                 order=list(range(array.ndim)),
                 flattened=make_array1d(array.flatten())
@@ -435,25 +501,25 @@ class Analysis(object):
         def parse_array1d(array):
             data_type = array.WhichOneof("data")
             if data_type:
-                return getattr(array, data_type).data
+                return list(getattr(array, data_type).data)
 
         def parse_array1d_option(array):
             if array.HasField("option"):
-                parse_array1d(array.option)
+                return parse_array1d(array.option)
 
-        if value.HasField("array_nd"):
-            data = parse_array1d(value.array_nd.flattened)
+        if value.HasField("array"):
+            data = parse_array1d(value.array.flattened)
             if data:
-                if value.array_nd.shape:
-                    return np.array(data).reshape(value.array_nd.shape)
+                if value.array.shape:
+                    return np.array(data).reshape(value.array.shape)
                 return data[0]
 
-        if value.HasField("hashmap_string"):
+        if value.HasField("hashmap"):
             return {k: Analysis._parse_value_proto(v) for k, v in value.hashmap_string.data.items()}
 
-        if value.HasField("array_2d_jagged"):
+        if value.HasField("jagged"):
             return [
-                parse_array1d_option(column) for column in value.array_2d_jagged.data
+                parse_array1d_option(column) for column in value.jagged.data
             ]
 
     def validate(self):

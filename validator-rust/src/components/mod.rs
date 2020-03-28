@@ -16,6 +16,7 @@ mod cast;
 mod clamp;
 mod count;
 mod covariance;
+mod digitize;
 mod dp_count;
 mod dp_variance;
 mod dp_covariance;
@@ -27,6 +28,7 @@ mod dp_mean;
 mod dp_moment_raw;
 mod dp_sum;
 mod filter;
+mod histogram;
 mod impute;
 pub mod index;
 mod kth_raw_sample_moment;
@@ -48,13 +50,9 @@ mod variance;
 
 use std::collections::HashMap;
 
-use crate::base::{Value, NodeProperties, Sensitivity, ValueProperties, prepend, get_literal, ArrayND};
+use crate::base::{Value, NodeProperties, SensitivitySpace, ValueProperties};
 use crate::proto;
 use crate::utilities::json::{JSONRelease};
-
-use ndarray::{Array, ArrayD, Axis};
-use crate::utilities::array::slow_select;
-
 
 /// Universal Component trait
 ///
@@ -115,8 +113,8 @@ pub trait Expandable {
         privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
         properties: &NodeProperties,
-        component_id: u32,
-        maximum_id: u32,
+        component_id: &u32,
+        maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion>;
 }
 
@@ -142,24 +140,27 @@ pub trait Aggregator {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
-        sensitivity_type: &Sensitivity
-    ) -> Result<Vec<f64>>;
+        sensitivity_type: &SensitivitySpace
+    ) -> Result<Value>;
 }
 
-/// Accuracy component trait (not yet implemented)
+/// Accuracy component trait
+///
+/// Components with Accuracy implemented may convert between privacy units and accuracy estimates
 pub trait Accuracy {
     fn accuracy_to_privacy_usage(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
-        accuracy: &proto::Accuracy,
-    ) -> Option<proto::PrivacyUsage>;
+        accuracies: &proto::Accuracies,
+    ) -> Result<Option<Vec<proto::PrivacyUsage>>>;
 
     fn privacy_usage_to_accuracy(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
-    ) -> Option<f64>;
+        alpha: &f64
+    ) -> Result<Option<Vec<proto::Accuracy>>>;
 }
 
 /// Report component trait
@@ -204,12 +205,12 @@ impl Component for proto::component::Variant {
 
         propagate_property!(
             // INSERT COMPONENT LIST
-            Bin, Cast, Clamp, Count, Covariance,
+            Bin, Cast, Clamp, Count, Covariance, Digitize,
 
             DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMedian, DpMinimum,
             DpMomentRaw, DpSum, DpVariance,
 
-            Filter, Impute, Index, KthRawSampleMoment, Materialize, Maximum, Mean,
+            Filter, Histogram, Impute, Index, KthRawSampleMoment, Materialize, Maximum, Mean,
 
             ExponentialMechanism, GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism,
 
@@ -259,8 +260,8 @@ impl Expandable for proto::component::Variant {
         privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
         properties: &NodeProperties,
-        component_id: u32,
-        maximum_id: u32,
+        component_id: &u32,
+        maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
         macro_rules! expand_component {
             ($( $variant:ident ),*) => {
@@ -278,7 +279,7 @@ impl Expandable for proto::component::Variant {
         expand_component!(
             // INSERT COMPONENT LIST
             Clamp, DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMedian, DpMinimum,
-            DpMomentRaw, DpSum, DpVariance, Impute, ExponentialMechanism, GaussianMechanism,
+            DpMomentRaw, DpSum, DpVariance, Histogram, Impute, ExponentialMechanism, GaussianMechanism,
             LaplaceMechanism, SimpleGeometricMechanism, Resize,
 
             Modulo
@@ -303,8 +304,8 @@ impl Aggregator for proto::component::Variant {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
-        sensitivity_type: &Sensitivity
-    ) -> Result<Vec<f64>> {
+        sensitivity_type: &SensitivitySpace
+    ) -> Result<Value> {
         macro_rules! compute_sensitivity {
             ($( $variant:ident ),*) => {
                 {
@@ -320,10 +321,10 @@ impl Aggregator for proto::component::Variant {
 
         compute_sensitivity!(
             // INSERT COMPONENT LIST
-            Count, Covariance, KthRawSampleMoment, Maximum, Mean, Minimum, Quantile, Sum, Variance
+            Count, Covariance, Histogram, KthRawSampleMoment, Maximum, Mean, Minimum, Quantile, Sum, Variance
         );
 
-        Err("sensitivity is not implemented".into())
+        Err(format!("sensitivity is not implemented for proto component {:?}", self).into())
     }
 }
 
@@ -335,8 +336,8 @@ impl Accuracy for proto::component::Variant {
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         _properties: &NodeProperties,
-        _accuracy: &proto::Accuracy,
-    ) -> Option<proto::PrivacyUsage> {
+        _accuracy: &proto::Accuracies,
+    ) -> Result<Option<Vec<proto::PrivacyUsage>>> {
         macro_rules! accuracy_to_privacy_usage {
             ($( $variant:ident ),*) => {
                 {
@@ -352,10 +353,10 @@ impl Accuracy for proto::component::Variant {
 
         accuracy_to_privacy_usage!(
             // INSERT COMPONENT LIST
-//            Dpmean
+            // LaplaceMechanism, GeometricMechanism
         );
 
-        None
+        Ok(None)
     }
 
     /// Utility implementation on the enum containing all variants of a component.
@@ -365,7 +366,8 @@ impl Accuracy for proto::component::Variant {
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         _properties: &NodeProperties,
-    ) -> Option<f64> {
+        _alpha: &f64
+    ) -> Result<Option<Vec<proto::Accuracy>>> {
         macro_rules! privacy_usage_to_accuracy {
             ($( $variant:ident ),*) => {
                 {
@@ -384,7 +386,7 @@ impl Accuracy for proto::component::Variant {
 //            Dpmean
         );
 
-        None
+        Ok(None)
     }
 }
 
@@ -421,70 +423,5 @@ impl Report for proto::component::Variant {
         );
 
         Ok(None)
-    }
-}
-
-
-/// Utility function for building component expansions for dp mechanisms
-pub fn expand_mechanism(
-    sensitivity_type: &Sensitivity,
-    privacy_definition: &proto::PrivacyDefinition,
-    component: &proto::Component,
-    properties: &NodeProperties,
-    component_id: u32,
-    maximum_id: u32,
-) -> Result<proto::ComponentExpansion> {
-    let mut current_id = maximum_id.clone();
-    let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
-    let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
-
-    // always overwrite sensitivity. This is not something a user may configure
-    let data_property = properties.get("data")
-        .ok_or("data: missing")?.get_arraynd()
-        .map_err(prepend("data:"))?.clone();
-
-    let aggregator = data_property.aggregator.clone()
-        .ok_or::<Error>("aggregator: missing".into())?;
-
-    let sensitivity = Value::ArrayND(ArrayND::F64(Array::from(aggregator.component
-        .compute_sensitivity(privacy_definition,
-                             &aggregator.properties,
-                             &sensitivity_type)?).into_dyn()));
-
-    current_id += 1;
-    let id_sensitivity = current_id.clone();
-    let (patch_node, release) = get_literal(&sensitivity, &component.batch)?;
-    computation_graph.insert(id_sensitivity.clone(), patch_node);
-    releases.insert(id_sensitivity.clone(), release);
-
-    // noising
-    let mut noise_component = component.clone();
-    noise_component.arguments.insert("sensitivity".to_string(), id_sensitivity);
-    computation_graph.insert(component_id, noise_component);
-
-    Ok(proto::ComponentExpansion {
-        computation_graph,
-        properties: HashMap::new(),
-        releases,
-        traversal: Vec::new()
-    })
-}
-
-pub fn get_ith_release<T: Clone + Default>(value: &ArrayD<T>, i: &usize) -> Result<ArrayD<T>> {
-    match value.ndim() {
-        0 => if i == &0 {Ok(value.clone())} else {Err("ith release does not exist".into())},
-        1 => Err("releases may not currently be vectors".into()),
-        2 => {
-            let release = slow_select(value, Axis(1), &[i.clone()]);
-            if release.len() == 1 {
-                // flatten singleton matrices to zero dimensions
-                Ok(Array::from_shape_vec(Vec::new(), vec![release.first()
-                    .ok_or::<Error>("release must contain at least one value".into())?])?
-                    .mapv(|v| v.clone()))
-            } else {
-                Ok(release)
-            }
-        },
-        _ => Err("releases must be 2-dimensional or less".into())
     }
 }

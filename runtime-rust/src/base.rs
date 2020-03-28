@@ -4,7 +4,7 @@ use whitenoise_validator::errors::*;
 extern crate whitenoise_validator;
 
 use whitenoise_validator::proto;
-use whitenoise_validator::utilities::serial;
+use whitenoise_validator::utilities::{serial, get_input_properties};
 
 use crate::components::*;
 
@@ -13,7 +13,7 @@ use std::vec::Vec;
 
 use itertools::Itertools;
 
-use whitenoise_validator::base::{get_input_properties, Value};
+use whitenoise_validator::base::{Value};
 use whitenoise_validator::utilities::inference::infer_property;
 use whitenoise_validator::utilities::serial::{serialize_value_properties, parse_release};
 
@@ -39,7 +39,9 @@ pub fn execute_graph(analysis: &proto::Analysis,
 ) -> Result<proto::Release> {
 
     // stack for storing which nodes to evaluate next
-    let computation_graph = analysis.computation_graph.to_owned().unwrap();
+    let computation_graph = analysis.computation_graph.to_owned()
+        .ok_or::<Error>("computation_graph must be defined to execute an analysis".into())?;
+
     let mut traversal: Vec<u32> = get_sinks(&computation_graph).into_iter().collect();
 
     let mut release = serial::parse_release(release)?;
@@ -72,7 +74,8 @@ pub fn execute_graph(analysis: &proto::Analysis,
             continue;
         }
 
-        let component: proto::Component = graph.get(&node_id).unwrap().clone();
+        let component: proto::Component = graph.get(&node_id)
+            .ok_or::<Error>("attempted to retrieve a non-existent component id".into())?.clone();
         let arguments = component.to_owned().arguments;
 
         // discover if any dependencies remain uncomputed
@@ -89,16 +92,17 @@ pub fn execute_graph(analysis: &proto::Analysis,
             continue;
         }
 
-        let node_properties: HashMap<String, proto::ValueProperties> =
+        let mut node_properties: HashMap<String, proto::ValueProperties> =
             get_input_properties(&component, &graph_properties)?;
 
         let public_arguments = node_properties.iter()
             .filter(|(_k, v)| match v.variant.clone().unwrap() {
-                proto::value_properties::Variant::Arraynd(v) => v.releasable,
+                proto::value_properties::Variant::Array(v) => v.releasable,
+                proto::value_properties::Variant::Jagged(v) => v.releasable,
                 _ => false
             })
-            .map(|(k, _v)| (k.clone(), release
-                .get(component.arguments.get(k).unwrap()).unwrap().clone()))
+            .map(|(k, _v)|
+                (k.clone(), release.get(component.arguments.get(k).unwrap()).unwrap().clone()))
             .collect::<HashMap<String, Value>>();
 
 //        println!("expanding {:?}", component);
@@ -106,13 +110,13 @@ pub fn execute_graph(analysis: &proto::Analysis,
 //        println!("node properties {:?}", node_properties);
 
         // all arguments have been computed, attempt to expand the current node
-        let expansion: proto::ComponentExpansion = whitenoise_validator::base::expand_component(
-            &analysis.privacy_definition.to_owned().unwrap(),
+        let expansion: proto::ComponentExpansion = whitenoise_validator::_expand_component(
+            &analysis.privacy_definition.to_owned().ok_or::<Error>("privacy_definition must be defined".into())?,
             &component,
-            &node_properties,
+            &mut node_properties,
             &public_arguments,
-            node_id,
-            maximum_id,
+            &node_id,
+            &maximum_id,
         )?;
 
         graph.extend(expansion.computation_graph.clone());
@@ -152,7 +156,8 @@ pub fn execute_graph(analysis: &proto::Analysis,
                 if parent_node_ids.len() == 0 {
                     let releasable = match graph_properties.get(argument_node_id) {
                         Some(properties) => match properties.variant.clone().unwrap() {
-                            proto::value_properties::Variant::Arraynd(v) => v.releasable,
+                            proto::value_properties::Variant::Array(v) => v.releasable,
+                            proto::value_properties::Variant::Jagged(v) => v.releasable,
                             _=> false
                         },
                         None => false
@@ -171,7 +176,8 @@ pub fn execute_graph(analysis: &proto::Analysis,
     for node_id in release.to_owned().keys() {
         let releasable = match graph_properties.get(node_id) {
             Some(properties) => match properties.variant.clone().unwrap() {
-                proto::value_properties::Variant::Arraynd(v) => v.releasable,
+                proto::value_properties::Variant::Array(v) => v.releasable,
+                proto::value_properties::Variant::Jagged(v) => v.releasable,
                 _ => false
             },
             None => false
