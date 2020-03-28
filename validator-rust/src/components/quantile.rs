@@ -78,7 +78,7 @@ impl Aggregator for proto::Quantile {
 
                 Ok(Array::from(row_sensitivity).into_dyn().into())
             },
-            _ => return Err("Quantile sensitivity is not implemented for the specified sensitivity type".into())
+            _ => Err("Quantile sensitivity is not implemented for the specified sensitivity type".into())
         }
     }
 }

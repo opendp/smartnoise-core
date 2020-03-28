@@ -53,7 +53,7 @@ pub fn get_input_properties<T>(
 ) -> Result<HashMap<String, T>> where T: std::clone::Clone {
     let mut properties = HashMap::<String, T>::new();
     for (field_id, field) in component.arguments.clone() {
-        if let Some(property) = graph_properties.get(&field).clone() {
+        if let Some(property) = graph_properties.get(&field) {
             properties.insert(field_id.to_owned(), property.clone());
         }
     }
@@ -77,7 +77,7 @@ pub fn propagate_properties(
     // compute properties for every node in the graph
 
     let privacy_definition = analysis.privacy_definition.to_owned().unwrap();
-    let mut graph: HashMap<u32, proto::Component> = analysis.computation_graph.to_owned().unwrap().value.to_owned();
+    let mut graph: HashMap<u32, proto::Component> = analysis.computation_graph.to_owned().unwrap().value;
     let mut traversal: Vec<u32> = get_traversal(&graph)?;
     // extend and pop from the end of the traversal
     traversal.reverse();
@@ -85,14 +85,14 @@ pub fn propagate_properties(
     let mut graph_evaluation: Release = parse_release(&release)?;
 
     let mut graph_properties = graph_evaluation.iter()
-        .map(|(node_id, value)| Ok((node_id.clone(), infer_property(value)?)))
+        .map(|(node_id, value)| Ok((*node_id, infer_property(value)?)))
         .collect::<Result<HashMap<u32, ValueProperties>>>()?;
 
     let mut maximum_id = graph.keys().cloned()
         .fold(0, std::cmp::max);
 
     while !traversal.is_empty() {
-        let node_id = traversal.last().unwrap().clone();
+        let node_id = *traversal.last().unwrap();
 
         let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
         let input_properties = get_input_properties(&component, &graph_properties)?;
@@ -109,10 +109,10 @@ pub fn propagate_properties(
         // patch the computation graph
         graph.extend(expansion.computation_graph.clone());
         graph_properties.extend(expansion.properties.iter()
-            .map(|(node_id, props)| (node_id.clone(), parse_value_properties(props)))
+            .map(|(node_id, props)| (*node_id, parse_value_properties(props)))
             .collect::<HashMap<u32, ValueProperties>>());
         graph_evaluation.extend(expansion.releases.iter()
-            .map(|(node_id, release)| Ok((node_id.clone(), parse_value(&release.value.clone().unwrap())?)))
+            .map(|(node_id, release)| Ok((*node_id, parse_value(&release.value.clone().unwrap())?)))
             .collect::<Result<HashMap<u32, Value>>>()?);
 
         maximum_id = *expansion.computation_graph.keys().max()
@@ -200,7 +200,7 @@ pub fn get_traversal(
             return Err("Graph is cyclic.".into());
         }
     }
-    return Ok(traversal);
+    Ok(traversal)
 }
 
 /// Given an array, conduct well-formedness checks and broadcast
@@ -213,10 +213,9 @@ pub fn standardize_numeric_argument<T: Clone>(value: &ArrayD<T>, length: &i64) -
             Some(scalar) => Ok(Array::from((0..*length).map(|_| scalar.clone()).collect::<Vec<T>>()).into_dyn()),
             None => Err("value must be non-empty".into())
         },
-        1 => match value.len() as i64 == *length {
-            true => Ok(value.clone()),
-            false => Err("value is of incompatible length".into())
-        },
+        1 => if value.len() as i64 == *length {
+            Ok(value.clone())
+        } else { Err("value is of incompatible length".into()) },
         _ => Err("value must be a scalar or vector".into())
     }
 }
@@ -229,7 +228,7 @@ pub fn uniform_density(length: usize) -> Vec<f64> {
 
 /// Convert weights to probabilities
 #[doc(hidden)]
-pub fn normalize_probabilities(weights: &Vec<f64>) -> Vec<f64> {
+pub fn normalize_probabilities(weights: &[f64]) -> Vec<f64> {
     let sum: f64 = weights.iter().sum();
     weights.iter().map(|prob| prob / sum).collect()
 }
@@ -237,16 +236,14 @@ pub fn normalize_probabilities(weights: &Vec<f64>) -> Vec<f64> {
 /// Given a jagged categories array, conduct well-formedness checks and broadcast
 #[doc(hidden)]
 pub fn standardize_categorical_argument<T: Clone>(
-    categories: &Vec<Option<Vec<T>>>,
+    categories: &[Option<Vec<T>>],
     length: &i64,
 ) -> Result<Vec<Vec<T>>> {
     // check that no categories are explicitly None
-    let mut categories = categories.iter()
-        .map(|v| v.clone())
-        .collect::<Option<Vec<Vec<T>>>>()
-        .ok_or::<Error>("categories must be defined for all columns".into())?;
+    let mut categories = categories.iter().cloned().collect::<Option<Vec<Vec<T>>>>()
+        .ok_or_else(|| Error::from("categories must be defined for all columns"))?;
 
-    if categories.len() == 0 {
+    if categories.is_empty() {
         return Err("no categories are defined".into());
     }
     // broadcast categories across all columns, if only one categories set is defined
@@ -261,15 +258,14 @@ pub fn standardize_categorical_argument<T: Clone>(
 /// Given a jagged null values array, conduct well-formedness checks, broadcast along columns, and flatten along rows.
 #[doc(hidden)]
 pub fn standardize_null_candidates_argument<T: Clone>(
-    value: &Vec<Option<Vec<T>>>,
+    value: &[Option<Vec<T>>],
     length: &i64,
 ) -> Result<Vec<Vec<T>>> {
-    let mut value = value.iter()
-        .map(|v| v.clone())
+    let mut value = value.iter().cloned()
         .collect::<Option<Vec<Vec<T>>>>()
-        .ok_or::<Error>("null must be defined for all columns".into())?;
+        .ok_or_else(|| Error::from("null must be defined for all columns"))?;
 
-    if value.len() == 0 {
+    if value.is_empty() {
         return Err("null values cannot be an empty vector".into());
     }
 
@@ -287,7 +283,7 @@ pub fn standardize_null_target_argument<T: Clone>(
     value: &ArrayD<T>,
     length: &i64,
 ) -> Result<Vec<T>> {
-    if value.len() == 0 {
+    if value.is_empty() {
         return Err("null values cannot be empty".into());
     }
 
@@ -307,8 +303,8 @@ pub fn standardize_null_target_argument<T: Clone>(
 /// Given categories and a jagged categories weights array, conduct well-formedness checks and return a standardized set of probabilities.
 #[doc(hidden)]
 pub fn standardize_weight_argument<T>(
-    categories: &Vec<Vec<T>>,
-    weights: &Vec<Option<Vec<f64>>>,
+    categories: &[Vec<T>],
+    weights: &[Option<Vec<f64>>],
 ) -> Result<Vec<Vec<f64>>> {
     match weights.len() {
         0 => Ok(categories.iter()
@@ -320,18 +316,19 @@ pub fn standardize_weight_argument<T>(
                 None => uniform_density(categories[0].len())
             };
 
-            categories.iter().map(|cats| match cats.len() == weights.len() {
-                true => Ok(weights.clone()),
-                false => Err("length of weights does not match number of categories".into())
-            }).collect::<Result<Vec<Vec<f64>>>>()
+            categories.iter()
+                .map(|cats| if cats.len() == weights.len() {
+                    Ok(weights.clone())
+                } else {
+                    Err("length of weights does not match number of categories".into())
+                }).collect::<Result<Vec<Vec<f64>>>>()
         }
-        _ => match categories.len() == weights.len() {
-            true => categories.iter().zip(weights.iter()).map(|(_cats, weights)| match weights {
+        _ => if categories.len() == weights.len() {
+            categories.iter().zip(weights.iter()).map(|(_cats, weights)| match weights {
                 Some(weights) => Ok(normalize_probabilities(weights)),
                 None => Err("category weights must be set once, for all categories, or none".into())
-            }).collect::<Result<Vec<Vec<f64>>>>(),
-            false => return Err("category weights must be the same length as categories, or none".into())
-        }
+            }).collect::<Result<Vec<Vec<f64>>>>()
+        } else { Err("category weights must be the same length as categories, or none".into()) }
     }
 }
 
@@ -344,7 +341,7 @@ pub fn get_literal(value: &Value, batch: &u32) -> Result<(proto::Component, prot
             private: false
         })),
         omit: true,
-        batch: batch.clone(),
+        batch: *batch,
     },
         proto::ReleaseNode {
             value: Some(serialize_value(value)?),
@@ -370,7 +367,7 @@ pub fn get_component_privacy_usage(
     // if release usage is defined, then use the actual eps, etc. from the release
     if let Some(release_node) = release_node {
         let release_privacy_usage = (*release_node.privacy_usage).to_vec();
-        if release_privacy_usage.len() > 0 {
+        if !release_privacy_usage.is_empty() {
             privacy_usage = release_privacy_usage
         }
     }
@@ -402,9 +399,9 @@ pub fn privacy_usage_reducer(
     }
 }
 
-pub fn broadcast_privacy_usage(usages: &Vec<proto::PrivacyUsage>, length: usize) -> Result<Vec<proto::PrivacyUsage>> {
+pub fn broadcast_privacy_usage(usages: &[proto::PrivacyUsage], length: usize) -> Result<Vec<proto::PrivacyUsage>> {
     if usages.len() == length {
-        return Ok(usages.clone());
+        return Ok(usages.to_owned());
     }
 
     if usages.len() != 1 {
@@ -458,7 +455,7 @@ pub fn expand_mechanism(
     component_id: &u32,
     maximum_id: &u32,
 ) -> Result<proto::ComponentExpansion> {
-    let mut current_id = maximum_id.clone();
+    let mut current_id = *maximum_id;
     let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
     let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
 
@@ -467,8 +464,8 @@ pub fn expand_mechanism(
         .ok_or("data: missing")?.array()
         .map_err(prepend("data:"))?.clone();
 
-    let aggregator = data_property.aggregator.clone()
-        .ok_or::<Error>("aggregator: missing".into())?;
+    let aggregator = data_property.aggregator
+        .ok_or_else(|| Error::from("aggregator: missing"))?;
 
     let sensitivity = aggregator.component.compute_sensitivity(
         privacy_definition,
@@ -476,7 +473,7 @@ pub fn expand_mechanism(
         &sensitivity_type)?;
 
     current_id += 1;
-    let id_sensitivity = current_id.clone();
+    let id_sensitivity = current_id;
     let (patch_node, release) = get_literal(&sensitivity, &component.batch)?;
     computation_graph.insert(id_sensitivity.clone(), patch_node);
     releases.insert(id_sensitivity.clone(), release);
@@ -499,11 +496,11 @@ pub fn get_ith_release<T: Clone + Default>(value: &ArrayD<T>, i: &usize) -> Resu
         0 => if i == &0 {Ok(value.clone())} else {Err("ith release does not exist".into())},
         1 => Ok(value.clone()),
         2 => {
-            let release = slow_select(value, Axis(1), &[i.clone()]);
+            let release = slow_select(value, Axis(1), &[*i]);
             if release.len() == 1 {
                 // flatten singleton matrices to zero dimensions
                 Ok(Array::from_shape_vec(Vec::new(), vec![release.first()
-                    .ok_or::<Error>("release must contain at least one value".into())?])?
+                    .ok_or_else(|| Error::from("release must contain at least one value"))?])?
                     .mapv(|v| v.clone()))
             } else {
                 Ok(release)

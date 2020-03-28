@@ -19,6 +19,8 @@ pub fn release(
     request: &proto::RequestRelease
 ) -> Result<proto::Release> {
     base::execute_graph(
-        request.analysis.as_ref().ok_or::<Error>("analysis must be defined".into())?,
-        request.release.as_ref().ok_or::<Error>("release must be defined".into())?)
+        request.analysis.as_ref()
+            .ok_or_else(|| Error::from("analysis must be defined"))?,
+        request.release.as_ref()
+            .ok_or_else(|| Error::from("release must be defined"))?)
 }

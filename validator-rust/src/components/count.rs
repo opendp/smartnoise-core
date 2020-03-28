@@ -69,7 +69,7 @@ impl Aggregator for proto::Count {
                 use proto::privacy_definition::Neighboring;
                 use proto::privacy_definition::Neighboring::{Substitute, AddRemove};
                 let neighboring_type = Neighboring::from_i32(privacy_definition.neighboring)
-                    .ok_or::<Error>("neighboring definition must be either \"AddRemove\" or \"Substitute\"".into())?;
+                    .ok_or_else(|| Error::from("neighboring definition must be either \"AddRemove\" or \"Substitute\""))?;
 
                 let num_records = data_property.num_records;
 
@@ -86,7 +86,7 @@ impl Aggregator for proto::Count {
                 };
                 Ok(arr1(&[sensitivity]).into_dyn().into())
             },
-            _ => return Err("Count sensitivity is only implemented for KNorm".into())
+            _ => Err("Count sensitivity is only implemented for KNorm".into())
         }
     }
 }

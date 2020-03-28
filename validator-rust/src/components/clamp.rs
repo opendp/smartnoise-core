@@ -29,7 +29,7 @@ impl Component for proto::Clamp {
         // handle categorical clamping
         if let Some(categories) = public_arguments.get("categories") {
             let null = public_arguments.get("null")
-                .ok_or::<Error>("null value must be defined when clamping by categories".into())?
+                .ok_or_else(|| Error::from("null value must be defined when clamping by categories"))?
                 .array()?;
 
             let mut categories = categories.jagged()?.clone();
@@ -37,25 +37,25 @@ impl Component for proto::Clamp {
                 (Jagged::F64(jagged), Array::F64(null)) => {
                     let null_target = standardize_null_target_argument(&null, &num_columns)?;
                     jagged.iter_mut().zip(null_target.into_iter())
-                        .for_each(|(cats, null)| cats.into_iter()
+                        .for_each(|(cats, null)| cats.iter_mut()
                             .for_each(|cats| cats.push(null)))
                 },
                 (Jagged::I64(jagged), Array::I64(null)) => {
                     let null_target = standardize_null_target_argument(&null, &num_columns)?;
                     jagged.iter_mut().zip(null_target.into_iter())
-                        .for_each(|(cats, null)| cats.into_iter()
+                        .for_each(|(cats, null)| cats.iter_mut()
                             .for_each(|cats| cats.push(null)))
                 },
                 (Jagged::Str(jagged), Array::Str(null)) => {
                     let null_target = standardize_null_target_argument(&null, &num_columns)?;
                     jagged.iter_mut().zip(null_target.into_iter())
-                        .for_each(|(cats, null)| cats.into_iter()
+                        .for_each(|(cats, null)| cats.iter_mut()
                             .for_each(|cats| cats.push(null.clone())))
                 },
                 (Jagged::Bool(jagged), Array::Bool(null)) => {
                     let null_target = standardize_null_target_argument(&null, &num_columns)?;
                     jagged.iter_mut().zip(null_target.into_iter())
-                        .for_each(|(cats, null)| cats.into_iter()
+                        .for_each(|(cats, null)| cats.iter_mut()
                             .for_each(|cats| cats.push(null)))
                 },
                 _ => return Err("categories and null must be homogeneously typed".into())
@@ -104,21 +104,22 @@ impl Component for proto::Clamp {
                 // match on if the actual bound exists for each column, and remain conservative if not
                 .map(|(clamp_min, optional_data_min)| match optional_data_min {
                     Some(data_min) => clamp_min.max(data_min), // tighter data bound is only applied here
-                    None => clamp_min.clone()
+                    None => *clamp_min
                 }).collect()
         }
         if let Ok(data_maximum) = data_property.max_f64_option() {
             clamp_maximum = clamp_maximum.iter().zip(data_maximum)
                 .map(|(clamp_max, optional_data_max)| match optional_data_max {
                     Some(data_max) => clamp_max.min(data_max),
-                    None => clamp_max.clone()
+                    None => *clamp_max
                 }).collect()
         }
 
+        // TODO: handle integer bounds
         // save revised bounds
         data_property.nature = Some(Nature::Continuous(NatureContinuous {
-            min: Vector1DNull::F64(clamp_minimum.iter().map(|x| Some(x.clone())).collect()),
-            max: Vector1DNull::F64(clamp_maximum.iter().map(|x| Some(x.clone())).collect()),
+            min: Vector1DNull::F64(clamp_minimum.iter().map(|x| Some(*x)).collect()),
+            max: Vector1DNull::F64(clamp_maximum.iter().map(|x| Some(*x)).collect()),
         }));
 
         Ok(data_property.into())
@@ -142,7 +143,7 @@ impl Expandable for proto::Clamp {
         component_id: &u32,
         maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
-        let mut current_id = maximum_id.clone();
+        let mut current_id = *maximum_id;
         let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
         let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
 
@@ -151,7 +152,7 @@ impl Expandable for proto::Clamp {
 
         if !has_categorical && !properties.contains_key("min") {
             current_id += 1;
-            let id_min = current_id.clone();
+            let id_min = current_id.to_owned();
             let value = Value::Array(Array::F64(
                 ndarray::Array::from(properties.get("data").unwrap().to_owned().array()?.min_f64()?).into_dyn()));
             let (patch_node, release) = get_literal(&value, &component.batch)?;
@@ -162,7 +163,7 @@ impl Expandable for proto::Clamp {
 
         if !has_categorical && !properties.contains_key("max") {
             current_id += 1;
-            let id_max = current_id.clone();
+            let id_max = current_id.to_owned();
             let value = Value::Array(Array::F64(
                 ndarray::Array::from(properties.get("data").unwrap().to_owned().array()?.max_f64()?).into_dyn()));
             let (patch_node, release) = get_literal(&value, &component.batch)?;

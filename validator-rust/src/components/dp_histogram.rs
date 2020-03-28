@@ -42,11 +42,11 @@ impl Expandable for proto::DpHistogram {
         component_id: &u32,
         maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
-        let mut current_id = maximum_id.clone();
+        let mut current_id = *maximum_id;
         let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
 
         let mut data_id = component.arguments.get("data")
-            .ok_or::<Error>("data is a required argument to DPHistogram".into())?.clone();
+            .ok_or_else(|| Error::from("data is a required argument to DPHistogram"))?.to_owned();
 
         let mut traversal = Vec::<u32>::new();
         match (component.arguments.get("edges"), component.arguments.get("categories")) {
@@ -54,11 +54,11 @@ impl Expandable for proto::DpHistogram {
             (Some(edges_id), None) => {
                 // digitize
                 let null_id = component.arguments.get("null")
-                    .ok_or::<Error>("null is a required argument to DPHistogram".into())?;
+                    .ok_or_else(|| Error::from("null is a required argument to DPHistogram"))?;
                 let inclusive_left_id = component.arguments.get("inclusive_left")
-                    .ok_or::<Error>("inclusive_left is a required argument to DPHistogram when categories are not known".into())?;
+                    .ok_or_else(|| Error::from("inclusive_left is a required argument to DPHistogram when categories are not known"))?;
                 current_id += 1;
-                let id_digitize = current_id.clone();
+                let id_digitize = current_id;
                 computation_graph.insert(id_digitize, proto::Component {
                     arguments: hashmap![
                         "data".to_owned() => data_id,
@@ -70,16 +70,16 @@ impl Expandable for proto::DpHistogram {
                     omit: true,
                     batch: component.batch,
                 });
-                data_id = id_digitize.clone();
-                traversal.push(id_digitize.clone());
+                data_id = id_digitize;
+                traversal.push(id_digitize);
             }
 
             (None, Some(categories_id)) => {
                 // clamp
                 let null_id = component.arguments.get("null")
-                    .ok_or::<Error>("null is a required argument to DPHistogram when categories are not known".into())?;
+                    .ok_or_else(|| Error::from("null is a required argument to DPHistogram when categories are not known"))?;
                 current_id += 1;
-                let id_clamp = current_id.clone();
+                let id_clamp = current_id;
                 computation_graph.insert(id_clamp, proto::Component {
                     arguments: hashmap![
                         "data".to_owned() => data_id,
@@ -90,8 +90,8 @@ impl Expandable for proto::DpHistogram {
                     omit: true,
                     batch: component.batch,
                 });
-                data_id = id_clamp.clone();
-                traversal.push(id_clamp.clone());
+                data_id = id_clamp;
+                traversal.push(id_clamp);
             }
 
             (None, None) => {
@@ -108,8 +108,8 @@ impl Expandable for proto::DpHistogram {
 
         // histogram
         current_id += 1;
-        let id_histogram = current_id.clone();
-        computation_graph.insert(id_histogram.clone(), proto::Component {
+        let id_histogram = current_id;
+        computation_graph.insert(id_histogram, proto::Component {
             arguments: hashmap!["data".to_owned() => data_id],
             variant: Some(proto::component::Variant::from(proto::Histogram {})),
             omit: true,
@@ -118,11 +118,13 @@ impl Expandable for proto::DpHistogram {
         traversal.push(id_histogram);
 
         // noising
-        computation_graph.insert(component_id.clone(), proto::Component {
+        computation_graph.insert(*component_id, proto::Component {
             arguments: hashmap![
                 "data".to_owned() => id_histogram,
-                "count_min".to_owned() => *component.arguments.get("count_min").ok_or::<Error>("count_min must be provided as an argument".into())?,
-                "count_max".to_owned() => *component.arguments.get("count_max").ok_or::<Error>("count_max must be provided as an argument".into())?
+                "count_min".to_owned() => *component.arguments.get("count_min")
+                    .ok_or_else(|| Error::from("count_min must be provided as an argument"))?,
+                "count_max".to_owned() => *component.arguments.get("count_max")
+                    .ok_or_else(|| Error::from("count_max must be provided as an argument"))?
             ],
             variant: Some(proto::component::Variant::from(proto::SimpleGeometricMechanism {
                 privacy_usage: self.privacy_usage.clone(),
@@ -172,7 +174,7 @@ impl Report for proto::DpHistogram {
                 privacy_loss: privacy_usage_to_json(&privacy_usages[column_number as usize].clone()),
                 accuracy: None,
                 batch: component.batch as u64,
-                node_id: node_id.clone() as u64,
+                node_id: *node_id as u64,
                 postprocess: false,
                 algorithm_info: AlgorithmInfo {
                     name: "".to_string(),

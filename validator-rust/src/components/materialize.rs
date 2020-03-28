@@ -39,7 +39,7 @@ impl Component for proto::Materialize {
                         dataset_id: self.dataset_id.as_ref().and_then(parse_i64_null)
                     }))).collect()),
                 (None, Some(num_columns)) => Hashmap::<ValueProperties>::I64((0..num_columns)
-                    .map(|name| (name.clone(), ValueProperties::Array(ArrayProperties {
+                    .map(|name| (name, ValueProperties::Array(ArrayProperties {
                         num_records: None,
                         num_columns: Some(1),
                         nullity: true,

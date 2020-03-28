@@ -220,7 +220,7 @@ impl Component for proto::component::Variant {
             Equal, LessThan, GreaterThan, Negative
         );
 
-        return Err(format!("proto component {:?} is missing its Component trait", self).into())
+        Err(format!("proto component {:?} is missing its Component trait", self).into())
     }
 
     fn get_names(

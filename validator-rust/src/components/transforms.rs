@@ -127,7 +127,7 @@ impl Component for proto::Divide {
                                     // if max is not known
                                     .unwrap_or(min > 0.))
                                 // if min is not known
-                                .unwrap_or(max.map(|max| max < 0.)
+                                .unwrap_or_else(|| max.map(|max| max < 0.)
                                     .unwrap_or(true))))
                         // if max is not float
                         .unwrap_or(false))
@@ -387,7 +387,7 @@ impl Expandable for proto::Modulo {
         component_id: &u32,
         maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
-        let mut current_id = maximum_id.clone();
+        let mut current_id = *maximum_id;
         let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
         let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
 
@@ -395,7 +395,7 @@ impl Expandable for proto::Modulo {
 
         if !properties.contains_key("min") {
             current_id += 1;
-            let id_min = current_id.clone();
+            let id_min = current_id.to_owned();
             let value = Value::Array(Array::F64(
                 ndarray::Array::from(properties.get("data").unwrap().to_owned().array()?.min_f64()?).into_dyn()));
             let (patch_node, release) = get_literal(&value, &component.batch)?;
@@ -406,7 +406,7 @@ impl Expandable for proto::Modulo {
 
         if !properties.contains_key("max") {
             current_id += 1;
-            let id_max = current_id.clone();
+            let id_max = current_id.to_owned();
             let value = Value::Array(Array::F64(
                 ndarray::Array::from(properties.get("data").unwrap().to_owned().array()?.max_f64()?).into_dyn()));
             let (patch_node, release) = get_literal(&value, &component.batch)?;
@@ -706,7 +706,7 @@ pub fn propagate_binary_shape(left_property: &ArrayProperties, right_property: &
     let left_is_row_broadcastable = left_property.releasable && left_num_records == 1;
     let right_is_row_broadcastable = right_property.releasable && right_num_records == 1;
 
-    if !(left_is_row_broadcastable || right_is_row_broadcastable) && !(left_num_records == right_num_records) {
+    if !(left_is_row_broadcastable || right_is_row_broadcastable || (left_num_records == right_num_records)) {
         if left_property.dataset_id == right_property.dataset_id {
             return Ok((output_num_columns, None))
         }
@@ -732,10 +732,7 @@ pub fn propagate_binary_nature(left_property: &ArrayProperties, right_property: 
                                 .map(|(l, r)| match (l, r) {
                                     (Some(l), Some(r)) => {
                                         let result = operator(l, &r);
-                                        match result.is_finite() {
-                                            true => Some(result),
-                                            false => None
-                                        }
+                                        if result.is_finite() { Some(result) } else { None }
                                     },
                                     _ => None
                                 })
@@ -790,7 +787,7 @@ pub fn propagate_binary_nature(left_property: &ArrayProperties, right_property: 
     })
 }
 
-fn broadcast<T: Clone>(data: &Vec<T>, length: &i64) -> Result<Vec<T>> {
+fn broadcast<T: Clone>(data: &[T], length: &i64) -> Result<Vec<T>> {
     if data.len() as i64 == *length {
         return Ok(data.to_owned());
     }
@@ -799,7 +796,7 @@ fn broadcast<T: Clone>(data: &Vec<T>, length: &i64) -> Result<Vec<T>> {
         return Err("could not broadcast vector".into());
     }
 
-    Ok((0..length.clone()).map(|_| data[0].clone()).collect())
+    Ok((0..*length).map(|_| data[0].clone()).collect())
 }
 
 ///// Used for monotonic functions that may be either increasing or decreasing

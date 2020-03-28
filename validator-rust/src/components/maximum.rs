@@ -69,7 +69,7 @@ impl Aggregator for proto::Maximum {
 
                 Ok(Array::from(row_sensitivity).into_dyn().into())
             },
-            _ => return Err("Maximum sensitivity is only implemented for KNorm of 1".into())
+            _ => Err("Maximum sensitivity is only implemented for KNorm of 1".into())
         }
     }
 }

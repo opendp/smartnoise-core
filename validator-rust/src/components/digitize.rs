@@ -18,17 +18,17 @@ impl Component for proto::Digitize {
         properties: &NodeProperties,
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
-            .ok_or::<Error>("data: missing".into())?.clone().array()
+            .ok_or_else(|| Error::from("data: missing"))?.clone().array()
             .map_err(prepend("data:"))?.clone();
 
         let num_columns = data_property.num_columns()
             .map_err(prepend("data:"))?;
 
         let null_values = public_arguments.get("null")
-            .ok_or::<Error>("null: missing, must be public".into())?.array()?;
+            .ok_or_else(|| Error::from("null: missing, must be public"))?.array()?;
 
         public_arguments.get("edges")
-            .ok_or::<Error>("edges: missing, must be public".into())
+            .ok_or_else(|| Error::from("edges: missing, must be public"))
             .and_then(|v| v.jagged())
             .and_then(|v| match (v, null_values) {
                 (Jagged::F64(jagged), Array::I64(null)) => {

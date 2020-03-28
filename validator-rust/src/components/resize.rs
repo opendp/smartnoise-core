@@ -31,7 +31,7 @@ impl Component for proto::Resize {
             .ok_or("n must be passed to Resize")?.array()?.i64()?;
 
         if num_records.len() as i64 > 1 {
-            Err("n must be a scalar")?;
+            return Err("n must be a scalar".into())
         }
         let num_records: i64 = match num_records.first() {
             Some(first) => first.to_owned(),
@@ -119,7 +119,7 @@ impl Expandable for proto::Resize {
         component_id: &u32,
         maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
-        let mut current_id = maximum_id.clone();
+        let mut current_id = *maximum_id;
         let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
         let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
 
@@ -131,7 +131,7 @@ impl Expandable for proto::Resize {
 
         if !properties.contains_key("min") {
             current_id += 1;
-            let id_min = current_id.clone();
+            let id_min = current_id;
             let value = Value::Array(Array::F64(
                 ndarray::Array::from(data_property.min_f64()?).into_dyn()));
             let (patch_node, release) = get_literal(&value, &component.batch)?;
@@ -142,7 +142,7 @@ impl Expandable for proto::Resize {
 
         if !properties.contains_key("max") {
             current_id += 1;
-            let id_max = current_id.clone();
+            let id_max = current_id;
             let value = Value::Array(Array::F64(
                 ndarray::Array::from(data_property.max_f64()?).into_dyn()));
             let (patch_node, release) = get_literal(&value, &component.batch)?;
@@ -153,7 +153,7 @@ impl Expandable for proto::Resize {
 
         if !properties.contains_key("n") {
             current_id += 1;
-            let id_n = current_id.clone();
+            let id_n = current_id;
             let value = Value::Array(Array::I64(ndarray::Array::from_shape_vec(
                 (), vec![data_property.num_records()?])
                 .unwrap().into_dyn()));
@@ -163,7 +163,7 @@ impl Expandable for proto::Resize {
             component.arguments.insert("n".to_string(), id_n);
         }
 
-        computation_graph.insert(component_id.clone(), component);
+        computation_graph.insert(*component_id, component);
 
         Ok(proto::ComponentExpansion {
             computation_graph,

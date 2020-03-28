@@ -108,8 +108,8 @@ pub fn resize_float(data: &ArrayD<f64>, n: &i64, distribution: &String,
                 "Uniform" => impute_float_uniform(&synthetic_base, &min, &max),
                 "Gaussian" => impute_float_gaussian(
                     &synthetic_base, &min, &max,
-                    &shift.cloned().ok_or::<Error>("shift must be defined for gaussian imputation".into())?,
-                    &scale.cloned().ok_or::<Error>("scale must be defined for gaussian imputation".into())?),
+                    &shift.cloned().ok_or_else(|| Error::from("shift must be defined for gaussian imputation"))?,
+                    &scale.cloned().ok_or_else(|| Error::from("scale must be defined for gaussian imputation"))?),
                 _ => Err("unrecognized distribution".into())
             }?;
 

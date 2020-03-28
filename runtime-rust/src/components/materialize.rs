@@ -16,7 +16,7 @@ impl Evaluable for proto::Materialize {
             .and_then(|column_names| column_names.array().ok()?.string().ok()).cloned();
 
         let data_source = self.data_source.clone()
-            .ok_or::<Error>("data source must be supplied".into())?;
+            .ok_or_else(|| Error::from("data source must be supplied"))?;
         
         match data_source.value.as_ref().unwrap() {
             proto::data_source::Value::Literal(value) => parse_value(value),

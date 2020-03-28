@@ -15,7 +15,7 @@ analysis = test_dp_linear_stats(run=False)
 # analysis = test_raw_dataset(run=False)
 
 
-# analysis.plot()
+analysis.plot()
 print(analysis.release_values)
 print(analysis.components[13].get_usages())
 print('privacy usage:', analysis.privacy_usage)

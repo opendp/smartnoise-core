@@ -92,7 +92,8 @@ impl Evaluable for proto::SimpleGeometricMechanism {
 
 
 fn get_epsilon(usage: &proto::PrivacyUsage) -> Result<f64> {
-    match usage.distance.clone().ok_or::<Error>("distance must be defined on a PrivacyUsage".into())? {
+    match usage.distance.clone()
+        .ok_or_else(|| Error::from("distance must be defined on a PrivacyUsage"))? {
         proto::privacy_usage::Distance::DistancePure(distance) => Ok(distance.epsilon),
         proto::privacy_usage::Distance::DistanceApproximate(distance) => Ok(distance.epsilon),
 //        _ => Err("epsilon is not defined".into())
@@ -100,7 +101,8 @@ fn get_epsilon(usage: &proto::PrivacyUsage) -> Result<f64> {
 }
 
 fn get_delta(usage: &proto::PrivacyUsage) -> Result<f64> {
-    match usage.distance.clone().ok_or::<Error>("distance must be defined on a PrivacyUsage".into())? {
+    match usage.distance.clone()
+        .ok_or_else(|| Error::from("distance must be defined on a PrivacyUsage"))? {
         proto::privacy_usage::Distance::DistanceApproximate(distance) => Ok(distance.delta),
         _ => Err("delta is not defined".into())
     }

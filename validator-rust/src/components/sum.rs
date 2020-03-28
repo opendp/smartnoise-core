@@ -66,7 +66,7 @@ impl Aggregator for proto::Sum {
 
                 use proto::privacy_definition::Neighboring;
                 let neighboring_type = Neighboring::from_i32(privacy_definition.neighboring)
-                    .ok_or::<Error>("neighboring definition must be either \"AddRemove\" or \"Substitute\"".into())?;
+                    .ok_or_else(|| Error::from("neighboring definition must be either \"AddRemove\" or \"Substitute\""))?;
 
                 let row_sensitivity = match k {
                     1 => match neighboring_type {

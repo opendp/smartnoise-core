@@ -40,7 +40,7 @@ pub fn execute_graph(analysis: &proto::Analysis,
 
     // stack for storing which nodes to evaluate next
     let computation_graph = analysis.computation_graph.to_owned()
-        .ok_or::<Error>("computation_graph must be defined to execute an analysis".into())?;
+        .ok_or_else(|| Error::from("computation_graph must be defined to execute an analysis"))?;
 
     let mut traversal: Vec<u32> = get_sinks(&computation_graph).into_iter().collect();
 
@@ -75,7 +75,7 @@ pub fn execute_graph(analysis: &proto::Analysis,
         }
 
         let component: proto::Component = graph.get(&node_id)
-            .ok_or::<Error>("attempted to retrieve a non-existent component id".into())?.clone();
+            .ok_or_else(|| Error::from("attempted to retrieve a non-existent component id"))?.clone();
         let arguments = component.to_owned().arguments;
 
         // discover if any dependencies remain uncomputed
@@ -111,7 +111,8 @@ pub fn execute_graph(analysis: &proto::Analysis,
 
         // all arguments have been computed, attempt to expand the current node
         let expansion: proto::ComponentExpansion = whitenoise_validator::_expand_component(
-            &analysis.privacy_definition.to_owned().ok_or::<Error>("privacy_definition must be defined".into())?,
+            &analysis.privacy_definition.to_owned()
+                .ok_or_else(|| Error::from("privacy_definition must be defined"))?,
             &component,
             &mut node_properties,
             &public_arguments,
