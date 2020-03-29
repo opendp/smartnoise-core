@@ -28,15 +28,11 @@ impl Component for proto::Resize {
         let num_columns = data_property.num_columns()?;
 
         let num_records = public_arguments.get("n")
-            .ok_or("n must be passed to Resize")?.array()?.i64()?;
+            .ok_or("n must be passed to Resize")?.first_i64()?;
 
-        if num_records.len() as i64 > 1 {
-            return Err("n must be a scalar".into())
+        if num_records < 1 {
+            return Err("n must be greater than or equal to one".into())
         }
-        let num_records: i64 = match num_records.first() {
-            Some(first) => first.to_owned(),
-            None => return Err("n cannot be none".into())
-        };
 
         // 1. check public arguments (constant n)
         let impute_minimum = match public_arguments.get("min") {

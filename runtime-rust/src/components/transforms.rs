@@ -5,8 +5,9 @@ use crate::base::NodeArguments;
 use whitenoise_validator::base::{Value, Array};
 use whitenoise_validator::utilities::get_argument;
 use whitenoise_validator::proto;
+use num::{CheckedDiv, CheckedAdd, CheckedMul, CheckedSub};
 
-use crate::components::broadcast_map;
+use crate::utilities::broadcast_map;
 use crate::utilities::noise::sample_uniform_int;
 
 
@@ -45,9 +46,9 @@ impl Evaluable for proto::Divide {
         match (get_argument(&arguments, "left")?, get_argument(&arguments, "right")?) {
             (Value::Array(left), Value::Array(right)) => match (left, right) {
                 (Array::F64(x), Array::F64(y)) =>
-                    Ok((x / y).into()),
+                    Ok(broadcast_map(x, y, &|l, r| l / r)?.into()),
                 (Array::I64(x), Array::I64(y)) =>
-                    Ok((x / y).into()),
+                    Ok(broadcast_map(x, y, &|l, r| l / r)?.into()),
                 _ => Err("Divide: Either the argument types are mismatched or non-numeric.".into())
             },
             _ => Err("Divide: Both arguments must be arrays.".into())

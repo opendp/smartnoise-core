@@ -1,7 +1,7 @@
 use crate::errors::*;
 
 use std::collections::HashMap;
-use crate::base::{Nature, Vector1DNull, NodeProperties, Array, ValueProperties, NatureCategorical, Jagged};
+use crate::base::{Nature, Vector1DNull, NodeProperties, Array, ValueProperties, NatureCategorical, Jagged, DataType};
 
 use crate::{proto, base};
 use crate::utilities::{prepend, get_literal, standardize_null_target_argument};
@@ -66,61 +66,126 @@ impl Component for proto::Clamp {
             return Ok(data_property.into());
         }
 
-        // 1. check public arguments (constant n)
-        let mut clamp_minimum = match public_arguments.get("min") {
-            Some(min) => min.clone().array()?.clone().vec_f64(Some(num_columns))?,
+        // else handle numerical clamping
+        match data_property.data_type {
+            DataType::F64 => {
 
-            // 2. then private arguments (for example from another clamped column)
-            None => match properties.get("min") {
-                Some(min) => min.array()?.min_f64()?,
+                // 1. check public arguments (constant n)
+                let mut clamp_minimum = match public_arguments.get("min") {
+                    Some(min) => min.clone().array()?.clone().vec_f64(Some(num_columns))?,
 
-                // 3. then data properties (propagated from prior clamping/min/max)
-                None => data_property
-                    .min_f64()?
-            }
-        };
+                    // 2. then private arguments (for example from another clamped column)
+                    None => match properties.get("min") {
+                        Some(min) => min.array()?.min_f64()?,
 
-        // 1. check public arguments (constant n)
-        let mut clamp_maximum = match public_arguments.get("max") {
-            Some(max) => max.array()?.clone().vec_f64(Some(num_columns))?,
+                        // 3. then data properties (propagated from prior clamping/min/max)
+                        None => data_property
+                            .min_f64()?
+                    }
+                };
 
-            // 2. then private arguments (for example from another clamped column)
-            None => match properties.get("max") {
-                Some(min) => min.array()?.max_f64()?,
+                // 1. check public arguments (constant n)
+                let mut clamp_maximum = match public_arguments.get("max") {
+                    Some(max) => max.array()?.clone().vec_f64(Some(num_columns))?,
 
-                // 3. then data properties (propagated from prior clamping/min/max)
-                None => data_property
-                    .max_f64()?
-            }
-        };
+                    // 2. then private arguments (for example from another clamped column)
+                    None => match properties.get("max") {
+                        Some(min) => min.array()?.max_f64()?,
 
-        if !clamp_minimum.iter().zip(clamp_maximum.clone()).all(|(min, max)| *min < max) {
-            return Err("minimum is greater than maximum".into());
+                        // 3. then data properties (propagated from prior clamping/min/max)
+                        None => data_property
+                            .max_f64()?
+                    }
+                };
+
+                if !clamp_minimum.iter().zip(clamp_maximum.clone()).all(|(min, max)| *min < max) {
+                    return Err("minimum is greater than maximum".into());
+                }
+
+                // the actual data bound (if it exists) may be tighter than the clamping parameters
+                if let Ok(data_minimum) = data_property.min_f64_option() {
+                    clamp_minimum = clamp_minimum.into_iter().zip(data_minimum)
+                        // match on if the actual bound exists for each column, and remain conservative if not
+                        .map(|(clamp_min, optional_data_min)| match optional_data_min {
+                            Some(data_min) => clamp_min.max(data_min), // tighter data bound is only applied here
+                            None => clamp_min
+                        }).collect()
+                }
+                if let Ok(data_maximum) = data_property.max_f64_option() {
+                    clamp_maximum = clamp_maximum.into_iter().zip(data_maximum)
+                        .map(|(clamp_max, optional_data_max)| match optional_data_max {
+                            Some(data_max) => clamp_max.min(data_max),
+                            None => clamp_max
+                        }).collect()
+                }
+
+                // save revised bounds
+                data_property.nature = Some(Nature::Continuous(NatureContinuous {
+                    min: Vector1DNull::F64(clamp_minimum.into_iter().map(Some).collect()),
+                    max: Vector1DNull::F64(clamp_maximum.into_iter().map(Some).collect()),
+                }));
+
+            },
+
+            DataType::I64 => {
+                // 1. check public arguments (constant n)
+                let mut clamp_minimum = match public_arguments.get("min") {
+                    Some(min) => min.clone().array()?.clone().vec_i64(Some(num_columns))?,
+
+                    // 2. then private arguments (for example from another clamped column)
+                    None => match properties.get("min") {
+                        Some(min) => min.array()?.min_i64()?,
+
+                        // 3. then data properties (propagated from prior clamping/min/max)
+                        None => data_property
+                            .min_i64()?
+                    }
+                };
+
+                // 1. check public arguments (constant n)
+                let mut clamp_maximum = match public_arguments.get("max") {
+                    Some(max) => max.array()?.clone().vec_i64(Some(num_columns))?,
+
+                    // 2. then private arguments (for example from another clamped column)
+                    None => match properties.get("max") {
+                        Some(min) => min.array()?.max_i64()?,
+
+                        // 3. then data properties (propagated from prior clamping/min/max)
+                        None => data_property
+                            .max_i64()?
+                    }
+                };
+
+                if !clamp_minimum.iter().zip(clamp_maximum.clone()).all(|(min, max)| *min < max) {
+                    return Err("minimum is greater than maximum".into());
+                }
+
+                // the actual data bound (if it exists) may be tighter than the clamping parameters
+                if let Ok(data_minimum) = data_property.min_i64_option() {
+                    clamp_minimum = clamp_minimum.into_iter().zip(data_minimum)
+                        // match on if the actual bound exists for each column, and remain conservative if not
+                        .map(|(clamp_min, optional_data_min)| match optional_data_min {
+                            Some(data_min) => clamp_min.max(data_min), // tighter data bound is only applied here
+                            None => clamp_min
+                        }).collect()
+                }
+                if let Ok(data_maximum) = data_property.max_i64_option() {
+                    clamp_maximum = clamp_maximum.into_iter().zip(data_maximum)
+                        .map(|(clamp_max, optional_data_max)| match optional_data_max {
+                            Some(data_max) => clamp_max.min(data_max),
+                            None => clamp_max
+                        }).collect()
+                }
+
+                // save revised bounds
+                data_property.nature = Some(Nature::Continuous(NatureContinuous {
+                    min: Vector1DNull::I64(clamp_minimum.into_iter().map(Some).collect()),
+                    max: Vector1DNull::I64(clamp_maximum.into_iter().map(Some).collect()),
+                }));
+
+            },
+            _ => return Err("numeric clamping requires numeric data".into())
         }
-
-        // the actual data bound (if it exists) may be tighter than the clamping parameters
-        if let Ok(data_minimum) = data_property.min_f64_option() {
-            clamp_minimum = clamp_minimum.iter().zip(data_minimum)
-                // match on if the actual bound exists for each column, and remain conservative if not
-                .map(|(clamp_min, optional_data_min)| match optional_data_min {
-                    Some(data_min) => clamp_min.max(data_min), // tighter data bound is only applied here
-                    None => *clamp_min
-                }).collect()
-        }
-        if let Ok(data_maximum) = data_property.max_f64_option() {
-            clamp_maximum = clamp_maximum.iter().zip(data_maximum)
-                .map(|(clamp_max, optional_data_max)| match optional_data_max {
-                    Some(data_max) => clamp_max.min(data_max),
-                    None => *clamp_max
-                }).collect()
-        }
-
-        // TODO: handle integer bounds
-        // save revised bounds
-        data_property.nature = Some(Nature::Continuous(NatureContinuous {
-            min: Vector1DNull::F64(clamp_minimum.iter().map(|x| Some(*x)).collect()),
-            max: Vector1DNull::F64(clamp_maximum.iter().map(|x| Some(*x)).collect()),
-        }));
 
         Ok(data_property.into())
     }
