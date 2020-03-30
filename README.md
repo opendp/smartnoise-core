@@ -58,7 +58,7 @@ The steps for adding bindings in a new language are essentially:
         sudo snap install protobuf --classic  
 
     Windows:  
-        choco install protoc
+        `choco install protoc`
 * For non-Chocolatey users: download and install the latest build
   + https://github.com/protocolbuffers/protobuf/releases/latest
 
