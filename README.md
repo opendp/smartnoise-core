@@ -12,9 +12,6 @@ The WhiteNoise Core is built around a data representation for a statistical anal
 
 The runtime and bindings may be written in any language. The core data representation is in protobuf, and the validator is written in Rust. All projects implement protobuf code generation, protobuf serialization/deserialization, communication over FFI, handle distributable packaging, and have at some point compiled cross-platform (more testing needed). All projects communicate via proto definitions from the `prototypes` directory.  
 
-Alternative C++ and Haskell runtimes and validator stubs have been moved to the `architecture-exploration` branch.  
-
-
 #### Validator
 The rust validator compiles to binaries that expose C foreign function interfaces and read/automatically generate code for protobuf. A validator C FFI is described in the wiki.  
 
@@ -61,33 +58,11 @@ The steps for adding bindings in a new language are essentially:
         sudo snap install protobuf --classic  
 
     Windows:  
-* download and run installer, accepting defaults, then add /bin directories to PATH
-  + Git
-  + 7z
-  + CMake
-  + Mingw-w64
-  + Visual Studio Code
-* get source for protobuf
-  + `git clone https://github.com/protocolbuffers/protobuf/protobuf.git`
-  + `cd protobuf`
-  + `git submodule update --init --recursive`
-* open the code in integrated developer environment
-  + launch Windows command prompt
-  + `cd path_to_cloned_protobuf_repo`
-  + `code .`
-* OPTIONAL: configure build in Visual Studio Code
-  + https://code.visualstudio.com/docs/cpp/config-mingw#_create-hello-world
-  + follow tutorial to build a C++ Hello World, compiled with Mingw-w64
-  + Terminal > Configure Default Build Task > C/C++: g++.exe build active file
-  + Terminal > Tasks: Run Build Task
-* configure and build protobuf
-  + `cd path_to_cloned_protobuf_repo\cmake`
-  + `mkdir build\release & cd build\release`
-  + invoke CMake to create and build the Makefile artifacts
-  + `cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=..\..\..\install -DCMAKE_C_COMPILER=gcc.exe -DCMAKE_CXX_COMPILER=g++.exe ..\..`
-* compile and test protobuf
-  + `cd path_to_cloned_protobuf_repo\cmake\build\release`
-  + `mingw32-make all`
+
+        choco install protoc  
+
+* For non-Chocolatey users: download and install the latest build
+  + https://github.com/protocolbuffers/protobuf/releases/latest
 
 
 4. Install instructions for the bindings, validator and runtime are located in their respective folders.  
@@ -95,3 +70,4 @@ The steps for adding bindings in a new language are essentially:
 ---
 
 [WhiteNoise Rust Documentation](https://opendifferentialprivacy.github.io/whitenoise-core/)
+ 
