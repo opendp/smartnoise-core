@@ -31,7 +31,7 @@ impl Component for proto::Resize {
             .ok_or("n must be passed to Resize")?.first_i64()?;
 
         if num_records < 1 {
-            return Err("n must be greater than or equal to one".into())
+            return Err("n must be greater than zero".into())
         }
 
         // 1. check public arguments (constant n)
