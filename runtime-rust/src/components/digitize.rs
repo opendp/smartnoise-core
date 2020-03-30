@@ -9,6 +9,7 @@ use crate::utilities::get_num_columns;
 use std::ops::{Div, Add};
 use whitenoise_validator::utilities::{get_argument, standardize_categorical_argument, standardize_numeric_argument};
 use std::fmt::Display;
+use math;
 
 impl Evaluable for proto::Digitize {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
@@ -44,7 +45,7 @@ impl Evaluable for proto::Digitize {
 /// # Example
 /// ```
 /// use ndarray::{ArrayD, arr2, arr1};
-/// use whitenoise_runtime::components::digitize::{digitize};
+/// use whitenoise_runtime::components::digitize::{bin_index, digitize};
 ///
 /// let data = arr1(&[1.1, 2., 2.9, 4.1, 6.4]).into_dyn();
 /// let edges = vec![Some(vec![0., 1., 2., 3., 4., 5.])];
@@ -86,7 +87,33 @@ pub fn digitize<T: std::fmt::Debug + Display + std::cmp::PartialOrd + Clone + Di
     Ok(digitization)
 }
 
-// TODO: switch to binary search, for efficiency when bin set is large
+/// Given datum and bin definition, finds index of appropriate bin.
+///
+/// Bins will be of the form [lower, upper) or (lower, upper] and are constructed
+/// from `edges` and `inclusive_left`.
+///
+/// # Arguments
+/// * `data` - Data to be binned.
+/// * `edges` - Values representing the edges of bins.
+/// * `inclusive_left` - Whether or not the left edge of the bin is inclusive, i.e. the bins are of the form [lower, upper).
+///
+/// # Return
+/// Index of appropriate bin.
+///
+/// # Example
+/// ```
+/// use ndarray::{ArrayD, arr2, arr1};
+/// use whitenoise_runtime::components::digitize::bin_index;
+///
+/// let data = arr1(&[1.1, 2., 2.9, 4.1, 6.4]).into_dyn();
+/// let edges = vec![0., 1., 2., 3., 4., 5.];
+/// let inclusive_left = arr1(&[true]).into_dyn();
+///
+/// let index1 = bin_index(&data[1], &edges, &true).unwrap();
+/// let index2 = bin_index(&data[1], &edges, &false).unwrap();
+/// let index3 = bin_index(&data[4], &edges, &true);
+/// assert!(index1 == 2 && index2 == 1 && index3.is_none());
+/// ```
 pub fn bin_index<T: std::fmt::Debug + Display + std::cmp::PartialOrd + Clone + Div<T, Output=T> + Add<T, Output=T> + From<i32> + Copy>(
     datum: &T,
     edges: &Vec<T>,
@@ -98,15 +125,30 @@ pub fn bin_index<T: std::fmt::Debug + Display + std::cmp::PartialOrd + Clone + D
     }
 
     // assign to edge
-    for idx in 0..(edges.len() - 1) {
-        // check whether left or right side of bin should be considered inclusive
-        if match inclusive_left {
-            true => edges[idx] <= *datum && *datum < edges[idx + 1],
-            false => edges[idx] < *datum && *datum <= edges[idx + 1]
-        } {
-            return Some(idx);
+    let mut l: usize = 0;
+    let mut r: usize = edges.len() - 1;
+    let mut idx: usize = 0;
+    while l <= r {
+        idx = math::round::floor(( (l+r) as f64 ) / 2., 0) as usize;
+        match inclusive_left {
+            true => {
+                if edges[idx + 1] <= *datum {
+                    l = idx + 1;
+                } else if edges[idx] > *datum {
+                    r = idx - 1;
+                } else {
+                    break
+                }
+            },
+            false => 
+                if edges[idx + 1] < *datum {
+                    l = idx + 1;
+                } else if edges[idx] >= *datum {
+                    r = idx - 1;
+                } else {
+                    break
+                }
         }
     }
-
-    Some(edges.len() - 1)
+    return Some(idx);
 }
