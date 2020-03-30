@@ -7,8 +7,8 @@ use crate::proto;
 
 use crate::components::{Component};
 
-use crate::base::{Value, NodeProperties, prepend, ValueProperties, DataType, Nature, NatureCategorical, Vector2DJagged};
-
+use crate::base::{Value, NodeProperties, ValueProperties, DataType, Nature, NatureCategorical, Jagged};
+use crate::utilities::prepend;
 
 impl Component for proto::Cast {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
@@ -19,11 +19,11 @@ impl Component for proto::Cast {
         properties: &NodeProperties,
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
-            .ok_or::<Error>("data: missing".into())?.get_arraynd()
+            .ok_or::<Error>("data: missing".into())?.array()
             .map_err(prepend("data:"))?.clone();
 
         let datatype = public_arguments.get("type")
-            .ok_or::<Error>("type: missing, must be public".into())?.get_first_str()
+            .ok_or::<Error>("type: missing, must be public".into())?.first_string()
             .map_err(prepend("type:"))?;
 
         let _prior_datatype = data_property.data_type.clone();
@@ -39,28 +39,28 @@ impl Component for proto::Cast {
             _ => bail!("data type is not recognized. Must be one of \"float\", \"int\", \"bool\" or \"string\"")
         };
 
-        let num_columns = data_property.get_num_columns()?;
+        let num_columns = data_property.num_columns()?;
 
         // TODO: It is possible to preserve significantly more properties here
         match data_property.data_type {
             DataType::Bool => {
                 // true label must be defined
                 public_arguments.get("true_label")
-                    .ok_or::<Error>("true_label: missing, must be public".into())?.get_arraynd()?;
+                    .ok_or::<Error>("true_label: missing, must be public".into())?.array()?;
 
                 data_property.nature = Some(Nature::Categorical(NatureCategorical {
-                    categories: Vector2DJagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
+                    categories: Jagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
                 }));
                 data_property.nullity = false;
             },
             DataType::I64 => {
                 // min must be defined, for imputation of values that won't cast
                 public_arguments.get("min")
-                    .ok_or::<Error>("min: missing, must be public".into())?.get_first_str()
+                    .ok_or::<Error>("min: missing, must be public".into())?.first_i64()
                     .map_err(prepend("type:"))?;
                 // max must be defined
                 public_arguments.get("max")
-                    .ok_or::<Error>("max: missing, must be public".into())?.get_first_str()
+                    .ok_or::<Error>("max: missing, must be public".into())?.first_i64()
                     .map_err(prepend("type:"))?;
                 data_property.nature = None;
                 data_property.nullity = false;

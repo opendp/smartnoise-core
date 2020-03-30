@@ -1,11 +1,13 @@
 use whitenoise_validator::errors::*;
 
 use crate::components::Evaluable;
-use whitenoise_validator::base::{Value, ArrayND, Vector2DJagged, standardize_numeric_argument, standardize_categorical_argument, standardize_weight_argument, standardize_null_argument, get_argument};
+use whitenoise_validator::base::{Value, Array, Jagged};
+use whitenoise_validator::utilities::{standardize_numeric_argument, standardize_categorical_argument, standardize_weight_argument, get_argument, standardize_null_candidates_argument};
 use crate::base::NodeArguments;
-use crate::utilities::{noise, utilities};
+use crate::utilities::{noise};
+use crate::utilities;
 use ndarray::{ArrayD};
-use crate::utilities::utilities::get_num_columns;
+use crate::utilities::get_num_columns;
 use whitenoise_validator::proto;
 
 
@@ -17,14 +19,14 @@ impl Evaluable for proto::Impute {
         // if categories argument is not None, treat data as categorical (regardless of atomic type)
         if arguments.contains_key("categories") {
             match (get_argument(&arguments, "data")?, get_argument(&arguments, "categories")?, get_argument(&arguments, "probabilities")?, get_argument(&arguments, "null")?) {
-                (Value::ArrayND(data), Value::Vector2DJagged(categories), Value::Vector2DJagged(probabilities), Value::Vector2DJagged(nulls)) => Ok(match (data, categories, probabilities, nulls) {
-                    (ArrayND::Bool(data), Vector2DJagged::Bool(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::Bool(nulls)) =>
+                (Value::Array(data), Value::Jagged(categories), Value::Jagged(probabilities), Value::Jagged(nulls)) => Ok(match (data, categories, probabilities, nulls) {
+                    (Array::Bool(data), Jagged::Bool(categories), Jagged::F64(probabilities), Jagged::Bool(nulls)) =>
                         impute_categorical(&data, &categories, &probabilities, &nulls)?.into(),
-                    (ArrayND::F64(data), Vector2DJagged::F64(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::F64(nulls)) =>
+                    (Array::F64(data), Jagged::F64(categories), Jagged::F64(probabilities), Jagged::F64(nulls)) =>
                         impute_categorical(&data, &categories, &probabilities, &nulls)?.into(),
-                    (ArrayND::I64(data), Vector2DJagged::I64(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::I64(nulls)) =>
+                    (Array::I64(data), Jagged::I64(categories), Jagged::F64(probabilities), Jagged::I64(nulls)) =>
                         impute_categorical(&data, &categories, &probabilities, &nulls)?.into(),
-                    (ArrayND::Str(data), Vector2DJagged::Str(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::Str(nulls)) =>
+                    (Array::Str(data), Jagged::Str(categories), Jagged::F64(probabilities), Jagged::Str(nulls)) =>
                         impute_categorical(&data, &categories, &probabilities, &nulls)?.into(),
                     _ => return Err("types of data, categories, and null must be consistent and probabilities must be f64".into())
                 }),
@@ -35,7 +37,7 @@ impl Evaluable for proto::Impute {
         else {
             // get specified data distribution for imputation -- default to Uniform if no valid distribution is provided
             let distribution = match get_argument(&arguments, "distribution") {
-                Ok(distribution) => distribution.get_first_str()?,
+                Ok(distribution) => distribution.first_string()?,
                 Err(_) => "Uniform".to_string()
             };
 
@@ -45,10 +47,10 @@ impl Evaluable for proto::Impute {
                 // if i64, no need to impute (numeric imputation replaces only f64::NAN values, which are not defined for the i64 type)
                 x if x == &uniform => {
                     return Ok(match (get_argument(&arguments, "data")?, get_argument(&arguments, "min")?, get_argument(&arguments, "max")?) {
-                        (Value::ArrayND(data), Value::ArrayND(min), Value::ArrayND(max)) => match (data, min, max) {
-                            (ArrayND::F64(data), ArrayND::F64(min), ArrayND::F64(max)) =>
+                        (Value::Array(data), Value::Array(min), Value::Array(max)) => match (data, min, max) {
+                            (Array::F64(data), Array::F64(min), Array::F64(max)) =>
                                 impute_float_uniform(&data, &min, &max)?.into(),
-                            (ArrayND::I64(data), ArrayND::I64(_min), ArrayND::I64(_max)) =>
+                            (Array::I64(data), Array::I64(_min), Array::I64(_max)) =>
                                 // continuous integers are already non-null
                                 data.clone().into(),
                             _ => return Err("data, min, and max must all be the same type".into())
@@ -58,11 +60,11 @@ impl Evaluable for proto::Impute {
                 },
                 // if specified distribution is Gaussian, get necessary arguments and impute
                 x if x == &gaussian => {
-                    let data = get_argument(&arguments, "data")?.get_arraynd()?.get_f64()?;
-                    let min = get_argument(&arguments, "min")?.get_arraynd()?.get_f64()?;
-                    let max = get_argument(&arguments, "max")?.get_arraynd()?.get_f64()?;
-                    let scale = get_argument(&arguments, "scale")?.get_arraynd()?.get_f64()?;
-                    let shift = get_argument(&arguments, "shift")?.get_arraynd()?.get_f64()?;
+                    let data = get_argument(&arguments, "data")?.array()?.f64()?;
+                    let min = get_argument(&arguments, "min")?.array()?.f64()?;
+                    let max = get_argument(&arguments, "max")?.array()?.f64()?;
+                    let scale = get_argument(&arguments, "scale")?.array()?.f64()?;
+                    let shift = get_argument(&arguments, "shift")?.array()?.f64()?;
 
                     return Ok(impute_float_gaussian(&data, &min, &max, &shift, &scale)?.into());
 
@@ -217,7 +219,8 @@ pub fn impute_categorical<T>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>,
 
     let categories = standardize_categorical_argument(&categories, &num_columns)?;
     let probabilities = standardize_weight_argument(&categories, &weights)?;
-    let null_value = standardize_null_argument(&null_value, &num_columns)?;
+    let null_value = standardize_null_candidates_argument(&null_value, &num_columns)?;
+//        .iter().map(|candidates| HashSet::from_iter(candidates.iter())).collect::<Vec<HashSet<T>>>();
 
     // iterate over the generalized columns
     data.gencolumns_mut().into_iter()
@@ -228,7 +231,7 @@ pub fn impute_categorical<T>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>,
         // for each pairing, iterate over the cells
         .map(|(((mut column, cats), probs), null)| column.iter_mut()
             // ignore non null values
-            .filter(|v| v == &null)
+            .filter(|v| null.contains(v))
             // mutate the cell via the operator
             .map(|v| {
                 *v = utilities::sample_from_set(&cats, &probs)?;

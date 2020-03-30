@@ -8,24 +8,23 @@
       "type": "Array"
     },
     "edges": {
-      "type": "Jagged"
+      "type": "Jagged",
+      "default": "None",
+      "description": "set of edges to bin continuous-valued data"
+    },
+    "categories": {
+      "type": "Jagged",
+      "default": "None"
     },
     "null": {
-      "type": "Array"
+      "type": "Array",
+      "default": "None"
     },
     "count_min": {
       "type": "Array"
     },
     "count_max": {
       "type": "Array"
-    },
-    "by": {
-      "nature": [
-        "continuous",
-        "categorical"
-      ],
-      "type": "Array",
-      "default": "None"
     },
     "inclusive_left": {
       "nature": [
@@ -44,10 +43,6 @@
     },
     "privacy_usage": {
       "type": "repeated PrivacyUsage"
-    },
-    "side": {
-      "type": "string",
-      "default": "'left'"
     }
   },
   "return": {

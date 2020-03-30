@@ -5,8 +5,9 @@ use std::collections::HashMap;
 use crate::{proto, base};
 
 use crate::components::{Component, Aggregator};
-use crate::base::{Value, NodeProperties, AggregatorProperties, Sensitivity, prepend, ValueProperties};
-
+use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties};
+use crate::utilities::prepend;
+use ndarray::prelude::*;
 
 impl Component for proto::Minimum {
     fn propagate_property(
@@ -16,7 +17,7 @@ impl Component for proto::Minimum {
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
-            .ok_or("data: missing")?.get_arraynd()
+            .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
         data_property.assert_is_not_aggregated()?;
@@ -45,26 +46,27 @@ impl Aggregator for proto::Minimum {
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
-        sensitivity_type: &Sensitivity,
-    ) -> Result<Vec<f64>> {
+        sensitivity_type: &SensitivitySpace,
+    ) -> Result<Value> {
         let data_property = properties.get("data")
-            .ok_or("data: missing")?.get_arraynd()
+            .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
         data_property.assert_non_null()?;
 
         match sensitivity_type {
-            Sensitivity::KNorm(k) => {
+            SensitivitySpace::KNorm(k) => {
                 if k != &1 {
                     return Err("Minimum sensitivity is only implemented for KNorm of 1".into());
                 }
-                let min = data_property.get_min_f64()?;
-                let max = data_property.get_max_f64()?;
+                let min = data_property.min_f64()?;
+                let max = data_property.max_f64()?;
 
-                Ok(min.iter()
-                    .zip(max.iter())
+                let row_sensitivity = min.iter().zip(max.iter())
                     .map(|(min, max)| (max - min))
-                    .collect())
+                    .collect::<Vec<f64>>();
+
+                Ok(Array::from(row_sensitivity).into_dyn().into())
             }
             _ => return Err("Minimum sensitivity is only implemented for KNorm of 1".into())
         }

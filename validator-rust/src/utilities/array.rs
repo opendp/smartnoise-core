@@ -1,9 +1,7 @@
 use crate::errors::*;
 
-
-// TODO: open an issue on the rust ndarray package
-//  Requiring the Copy trait on stack makes strings un-stackable/un-selectable
-//  Pulled from the ndarray library, and tweaked to remove the Copy trait requirement
+// Requiring the Copy trait on stack makes strings un-stackable/un-selectable
+// Pulled from the ndarray library, and tweaked to remove the Copy trait requirement
 
 use ndarray::{RemoveAxis, Axis, Ix, Array, ArrayView};
 

@@ -2,7 +2,8 @@ use whitenoise_validator::errors::*;
 
 use ndarray::prelude::*;
 use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value, ArrayND, get_argument};
+use whitenoise_validator::base::{Value, Array};
+use whitenoise_validator::utilities::get_argument;
 use crate::components::Evaluable;
 use ndarray::{ArrayD, Axis, Array1};
 
@@ -13,13 +14,13 @@ use whitenoise_validator::utilities::array::slow_select;
 
 impl Evaluable for proto::Filter {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        let mask = get_argument(&arguments, "mask")?.get_arraynd()?.get_bool()?;
+        let mask = get_argument(&arguments, "mask")?.array()?.bool()?;
 
-        Ok(match get_argument(&arguments, "data")?.get_arraynd()? {
-            ArrayND::Str(data) => filter(data, mask)?.into(),
-            ArrayND::F64(data) => filter(data, mask)?.into(),
-            ArrayND::I64(data) => filter(data, mask)?.into(),
-            ArrayND::Bool(data) => filter(data, mask)?.into(),
+        Ok(match get_argument(&arguments, "data")?.array()? {
+            Array::Str(data) => filter(data, mask)?.into(),
+            Array::F64(data) => filter(data, mask)?.into(),
+            Array::I64(data) => filter(data, mask)?.into(),
+            Array::Bool(data) => filter(data, mask)?.into(),
         })
     }
 }
@@ -45,7 +46,7 @@ impl Evaluable for proto::Filter {
 /// ```
 pub fn filter<T: Clone + Default>(data: &ArrayD<T>, mask: &ArrayD<bool>) -> Result<ArrayD<T>> {
 
-    let columnar_mask: Array1<bool> = mask.clone().into_dimensionality::<Ix1>().unwrap();
+    let columnar_mask: Array1<bool> = mask.clone().into_dimensionality::<Ix1>()?;
 
     let mask_indices: Vec<usize> = columnar_mask.iter().enumerate()
         .filter(|(_index, &v)| v)

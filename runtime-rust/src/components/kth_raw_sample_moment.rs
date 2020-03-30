@@ -1,7 +1,8 @@
 use whitenoise_validator::errors::*;
 
 use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value, get_argument};
+use whitenoise_validator::base::{Value};
+use whitenoise_validator::utilities::get_argument;
 use crate::components::Evaluable;
 use whitenoise_validator::proto;
 use ndarray::{ArrayD};
@@ -11,8 +12,8 @@ use std::convert::TryFrom;
 
 impl Evaluable for proto::KthRawSampleMoment {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        let data = get_argument(&arguments, "data")?.get_arraynd()?.get_f64()?;
-        let k = get_argument(&arguments, "k")?.get_first_i64()?;
+        let data = get_argument(&arguments, "data")?.array()?.f64()?;
+        let k = get_argument(&arguments, "k")?.first_i64()?;
         Ok(kth_raw_sample_moment(data, &k)?.into())
     }
 }

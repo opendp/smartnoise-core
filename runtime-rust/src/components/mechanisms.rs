@@ -1,7 +1,8 @@
 use whitenoise_validator::errors::*;
 
 use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value, get_argument, broadcast_privacy_usage};
+use whitenoise_validator::base::{Value};
+use whitenoise_validator::utilities::{get_argument, broadcast_privacy_usage, broadcast_ndarray};
 use crate::components::Evaluable;
 use crate::utilities;
 use whitenoise_validator::proto;
@@ -9,8 +10,8 @@ use ndarray::Array;
 
 impl Evaluable for proto::LaplaceMechanism {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        let mut data = get_argument(&arguments, "data")?.get_arraynd()?.get_f64()?.clone();
-        let sensitivity = get_argument(&arguments, "sensitivity")?.get_arraynd()?.get_f64()?;
+        let mut data = get_argument(&arguments, "data")?.array()?.f64()?.clone();
+        let sensitivity = get_argument(&arguments, "sensitivity")?.array()?.f64()?;
 
         let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivity.len())?;
 
@@ -30,8 +31,8 @@ impl Evaluable for proto::LaplaceMechanism {
 
 impl Evaluable for proto::GaussianMechanism {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        let mut data = get_argument(&arguments, "data")?.get_arraynd()?.get_f64()?.clone();
-        let sensitivity = get_argument(&arguments, "sensitivity")?.get_arraynd()?.get_f64()?;
+        let mut data = get_argument(&arguments, "data")?.array()?.f64()?.clone();
+        let sensitivity = get_argument(&arguments, "sensitivity")?.array()?.f64()?;
 
         let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivity.len())?;
 
@@ -56,16 +57,24 @@ impl Evaluable for proto::GaussianMechanism {
 
 impl Evaluable for proto::SimpleGeometricMechanism {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        let mut data = get_argument(&arguments, "data")?.get_arraynd()?.get_i64()?.clone();
-        let sensitivity = get_argument(&arguments, "sensitivity")?.get_arraynd()?.get_f64()?;
+        let mut data = get_argument(&arguments, "data")?.array()?.i64()?.clone();
+//        println!("data: {:?}", data.shape());
+
+        let sensitivity = get_argument(&arguments, "sensitivity")?.array()?.f64()?;
+//        println!("sensitivity: {:?}", sensitivity.shape());
 
         let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivity.len())?;
-
         let epsilon = Array::from_shape_vec(
             data.shape(), usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?)?;
+//        println!("epsilon: {:?}", epsilon.shape());
 
-        let count_min = get_argument(&arguments, "count_min")?.get_arraynd()?.get_i64()?;
-        let count_max = get_argument(&arguments, "count_max")?.get_arraynd()?.get_i64()?;
+        let count_min = broadcast_ndarray(
+            get_argument(&arguments, "count_min")?.array()?.i64()?, data.shape())?;
+//        println!("count_min: {:?}", count_min.shape());
+
+        let count_max = broadcast_ndarray(
+            get_argument(&arguments, "count_max")?.array()?.i64()?, data.shape())?;
+//        println!("count_max: {:?}", count_max.shape());
 
         data.gencolumns_mut().into_iter()
             .zip(sensitivity.gencolumns().into_iter().zip(epsilon.gencolumns().into_iter()))

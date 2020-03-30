@@ -1,19 +1,21 @@
 use whitenoise_validator::errors::*;
 
 use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value, ArrayND, get_argument};
+use whitenoise_validator::base::{Value, Array};
 use crate::components::Evaluable;
-use ndarray::{ArrayD, Array, Axis};
+use ndarray::{ArrayD, Axis};
+use ndarray;
 use whitenoise_validator::proto;
+use whitenoise_validator::utilities::get_argument;
 
 
 impl Evaluable for proto::Count {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        Ok(match get_argument(&arguments, "data")?.get_arraynd()? {
-            ArrayND::Bool(data) => count(&data)?.into(),
-            ArrayND::F64(data) => count(&data)?.into(),
-            ArrayND::I64(data) => count(&data)?.into(),
-            ArrayND::Str(data) => count(&data)?.into()
+        Ok(match get_argument(arguments, "data")?.array()? {
+            Array::Bool(data) => count(data)?.into(),
+            Array::F64(data) => count(data)?.into(),
+            Array::I64(data) => count(data)?.into(),
+            Array::Str(data) => count(data)?.into()
         })
     }
 }
@@ -34,7 +36,6 @@ impl Evaluable for proto::Count {
 /// let n = count(&data).unwrap();
 /// assert!(n.first().unwrap() == &2);
 /// ```
-pub fn count<T: Clone>(data: &ArrayD<T>) -> Result<ArrayD<i64>> {
-
-    Ok(Array::from_shape_vec(vec![], vec![data.len_of(Axis(0)) as i64])?)
+pub fn count<T>(data: &ArrayD<T>) -> Result<ArrayD<i64>> {
+    Ok(ndarray::Array::from_shape_vec(vec![], vec![data.len_of(Axis(0)) as i64])?)
 }

@@ -1,25 +1,27 @@
 use whitenoise_validator::errors::*;
 
 use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value, ArrayND, Vector2DJagged, standardize_numeric_argument, standardize_categorical_argument, standardize_null_argument, get_argument};
+use whitenoise_validator::base::{Value, Array, Jagged};
+use whitenoise_validator::utilities::{standardize_numeric_argument, standardize_categorical_argument, standardize_null_target_argument, get_argument};
 use crate::components::Evaluable;
 use ndarray::ArrayD;
-use crate::utilities::utilities::get_num_columns;
+use crate::utilities::get_num_columns;
 use whitenoise_validator::proto;
 
 impl Evaluable for proto::Clamp {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
         // if categories argument was provided, clamp data as if they are categorical (regardless of atomic type)
         if arguments.contains_key("categories") {
+            println!("arguments {:?}", arguments);
             match (get_argument(&arguments, "data")?, get_argument(&arguments, "categories")?, get_argument(&arguments, "null")?) {
-                (Value::ArrayND(data), Value::Vector2DJagged(categories), Value::Vector2DJagged(nulls)) => Ok(match (data, categories, nulls) {
-                    (ArrayND::Bool(data), Vector2DJagged::Bool(categories), Vector2DJagged::Bool(nulls)) =>
+                (Value::Array(data), Value::Jagged(categories), Value::Array(nulls)) => Ok(match (data, categories, nulls) {
+                    (Array::Bool(data), Jagged::Bool(categories), Array::Bool(nulls)) =>
                         clamp_categorical(&data, &categories, &nulls)?.into(),
-                    (ArrayND::F64(data), Vector2DJagged::F64(categories), Vector2DJagged::F64(nulls)) =>
+                    (Array::F64(data), Jagged::F64(categories), Array::F64(nulls)) =>
                         clamp_categorical(&data, &categories, &nulls)?.into(),
-                    (ArrayND::I64(data), Vector2DJagged::I64(categories), Vector2DJagged::I64(nulls)) =>
+                    (Array::I64(data), Jagged::I64(categories), Array::I64(nulls)) =>
                         clamp_categorical(&data, &categories, &nulls)?.into(),
-                    (ArrayND::Str(data), Vector2DJagged::Str(categories), Vector2DJagged::Str(nulls)) =>
+                    (Array::Str(data), Jagged::Str(categories), Array::Str(nulls)) =>
                         clamp_categorical(&data, &categories, &nulls)?.into(),
                     _ => return Err("types of data, categories, and null must be consistent".into())
                 }),
@@ -29,8 +31,8 @@ impl Evaluable for proto::Clamp {
         // if categories argument was not provided, clamp data as numeric
         else {
             match (get_argument(&arguments, "data")?, get_argument(&arguments, "min")?, get_argument(&arguments, "max")?) {
-                (Value::ArrayND(data), Value::ArrayND(min), Value::ArrayND(max)) => Ok(match (data, min, max) {
-                    (ArrayND::F64(data), ArrayND::F64(min), ArrayND::F64(max)) =>
+                (Value::Array(data), Value::Array(min), Value::Array(max)) => Ok(match (data, min, max) {
+                    (Array::F64(data), Array::F64(min), Array::F64(max)) =>
                         clamp_numeric_float(&data, &min, &max)?.into(),
 //                    (ArrayND::I64(data), ArrayND::I64(min), ArrayND::I64(max)) =>
 //                        clamp_numeric_integer(data, min, max)?.into(),
@@ -111,15 +113,15 @@ pub fn clamp_numeric_float(
 /// let categories: Vec<Option<Vec<String>>> = vec![Some(vec!["a".to_string(), "b".to_string()]),
 ///                                                 Some(vec!["a".to_string(), "b".to_string()]),
 ///                                                 Some(vec!["a".to_string(), "b".to_string()])];
-/// let null_value: Vec<Option<Vec<String>>> = vec![Some(vec!["not_a_letter".to_string()]),
-///                                                 Some(vec!["not_a_letter".to_string()]),
-///                                                 Some(vec!["not_a_letter".to_string()])];
+/// let null_value: ArrayD<String> = arr1(&["not_a_letter".to_string(),
+///                                         "not_a_letter".to_string(),
+///                                         "not_a_letter".to_string()]).into_dyn();
 ///
 /// let clamped_data = clamp_categorical(&data, &categories, &null_value).unwrap();
 /// assert!(clamped_data == arr2(&[["a".to_string(), "b".to_string(), "not_a_letter".to_string()],
 ///                                ["a".to_string(), "not_a_letter".to_string(), "b".to_string()]]).into_dyn();)
 /// ```
-pub fn clamp_categorical<T>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>, null_value: &Vec<Option<Vec<T>>>)
+pub fn clamp_categorical<T>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>, null_value: &ArrayD<T>)
                             -> Result<ArrayD<T>> where T:Clone, T:PartialEq, T:Default {
 
     let mut data = data.clone();
@@ -130,7 +132,7 @@ pub fn clamp_categorical<T>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>, 
     data.gencolumns_mut().into_iter()
         // pair generalized columns with arguments
         .zip(standardize_categorical_argument(&categories, &num_columns)?)
-        .zip(standardize_null_argument(&null_value, &num_columns)?)
+        .zip(standardize_null_target_argument(&null_value, &num_columns)?)
         // for each pairing, iterate over the cells
         .for_each(|((mut column, categories), null)| column.iter_mut()
             // ignore known values

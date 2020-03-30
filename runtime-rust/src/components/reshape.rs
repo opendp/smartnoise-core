@@ -1,9 +1,10 @@
 use whitenoise_validator::errors::*;
 
 use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value, ArrayND, get_argument};
+use whitenoise_validator::base::{Value, Array};
+use whitenoise_validator::utilities::get_argument;
 use crate::components::Evaluable;
-use ndarray::{ArrayD, Array};
+use ndarray::{ArrayD};
 use whitenoise_validator::proto;
 use std::collections::HashMap;
 
@@ -16,8 +17,8 @@ impl Evaluable for proto::Reshape {
             _ => return Err("layout: unrecognized format. Must be either row or column".into())
         };
 
-        match get_argument(&arguments, "data")?.get_arraynd()? {
-            ArrayND::Bool(data) => {
+        match get_argument(&arguments, "data")?.array()? {
+            Array::Bool(data) => {
                 let mut reshaped = reshape(&data, &self.symmetric, &layout, &self.shape)?;
                 match reshaped.len().clone() {
                     0 => Err("at least one record is required to reshape".into()),
@@ -27,7 +28,7 @@ impl Evaluable for proto::Reshape {
                         .collect::<HashMap<i64, Value>>().into())
                 }
             }
-            ArrayND::I64(data) => {
+            Array::I64(data) => {
                 let mut reshaped = reshape(&data, &self.symmetric, &layout, &self.shape)?;
                 match reshaped.len().clone() {
                     0 => Err("at least one record is required to reshape".into()),
@@ -37,7 +38,7 @@ impl Evaluable for proto::Reshape {
                         .collect::<HashMap<i64, Value>>().into())
                 }
             }
-            ArrayND::F64(data) => {
+            Array::F64(data) => {
                 let mut reshaped = reshape(&data, &self.symmetric, &layout, &self.shape)?;
                 match reshaped.len().clone() {
                     0 => Err("at least one record is required to reshape".into()),
@@ -47,7 +48,7 @@ impl Evaluable for proto::Reshape {
                         .collect::<HashMap<i64, Value>>().into())
                 }
             }
-            ArrayND::Str(data) => {
+            Array::Str(data) => {
                 let mut reshaped = reshape(&data, &self.symmetric, &layout, &self.shape)?;
                 match reshaped.len().clone() {
                     0 => Err("at least one record is required to reshape".into()),
@@ -119,13 +120,13 @@ pub fn reshape<T: Clone + std::fmt::Debug>(data: &ArrayD<T>, symmetric: &bool, l
                     Layout::Column => return Err("not implemented".into())
                 };
 
-                Ok(Array::from_shape_vec((num_rows as usize, num_rows as usize), full)?.into_dyn())
+                Ok(ndarray::Array::from_shape_vec((num_rows as usize, num_rows as usize), full)?.into_dyn())
             } else {
                 if &Layout::Column == layout {
                     return Err("reshaping for dense columnar memory layouts is not supported".into());
                 }
                 let shape = shape.iter().map(|v| v.clone() as usize).collect::<Vec<usize>>();
-                match Array::from_shape_vec(shape, row.to_vec()) {
+                match ndarray::ArrayD::from_shape_vec(shape, row.to_vec()) {
                     Ok(arr) => Ok(arr),
                     Err(_) => Err("reshape has incorrect size".into())
                 }

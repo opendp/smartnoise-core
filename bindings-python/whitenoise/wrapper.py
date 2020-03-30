@@ -26,29 +26,36 @@ class LibraryWrapper(object):
 
     @staticmethod
     def generate_report(analysis, release):
-        json_string = _communicate(
+        return _communicate(
             argument=api_pb2.RequestGenerateReport(analysis=analysis, release=release),
             function=lib_validator.generate_report,
             response_type=api_pb2.ResponseGenerateReport,
             ffi=ffi_validator)
-        return json_string
 
     @staticmethod
-    def accuracy_to_privacy_usage(privacy_definition, component, constraint, accuracy):
+    def accuracy_to_privacy_usage(privacy_definition, component, properties, accuracy):
         return _communicate(
             argument=api_pb2.RequestAccuracyToPrivacyUsage(
-                privacy_usage=privacy_definition, component=component, constraint=constraint, accuracy=accuracy),
+                privacy_definition=privacy_definition, component=component, properties=properties, accuracy=accuracy),
             function=lib_validator.accuracy_to_privacy_usage,
             response_type=api_pb2.RequestAccuracyToPrivacyUsage,
             ffi=ffi_validator)
 
     @staticmethod
-    def privacy_usage_to_accuracy(privacy_definition, component, constraint):
+    def privacy_usage_to_accuracy(privacy_definition, component, properties, alpha):
         return _communicate(
             argument=api_pb2.RequestPrivacyUsageToAccuracy(
-                privacy_usage=privacy_definition, component=component, constraint=constraint),
+                privacy_definition=privacy_definition, component=component, properties=properties, alpha=alpha),
             function=lib_validator.privacy_usage_to_accuracy,
             response_type=api_pb2.RequestPrivacyUsageToAccuracy,
+            ffi=ffi_validator)
+
+    @staticmethod
+    def get_properties(analysis, release):
+        return _communicate(
+            argument=api_pb2.RequestGetProperties(analysis=analysis, release=release),
+            function=lib_validator.get_properties,
+            response_type=api_pb2.ResponseGetProperties,
             ffi=ffi_validator)
 
     @staticmethod
@@ -99,5 +106,6 @@ def _communicate(function, argument, response_type, ffi):
         except Exception:
             pass
 
+        # stack traces beyond this point come from the internal rust libraries
         raise RuntimeError(library_traceback)
     return response.data
