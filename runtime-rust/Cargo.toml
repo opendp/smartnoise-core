@@ -23,6 +23,7 @@ whitenoise_validator = {path = "../validator-rust"}
 itertools = "0.8.2"
 error-chain = "0.12.2"
 noisy_float = "0.1.12"
+libmath = "0.2.1"
 
 
 [build-dependencies]
