@@ -27,6 +27,7 @@ ALIASES["itoa"] = {};
 ALIASES["lazy_static"] = {};
 ALIASES["libc"] = {};
 ALIASES["log"] = {};
+ALIASES["math"] = {};
 ALIASES["matrixmultiply"] = {};
 ALIASES["memchr"] = {};
 ALIASES["ndarray"] = {};
