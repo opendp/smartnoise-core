@@ -231,6 +231,17 @@ def test_dp_linear_stats(run=True):
 
     return analysis
 
+def test_integers(run=True):
+    with whitenoise.Analysis(dynamic=True) as analysis:
+        dataset_pums = whitenoise.Dataset(path=TEST_CSV_PATH, column_names=test_csv_names)
+        age = dataset_pums['age']
+        casted = op.cast(age, type='int', min=0, max=100)
+
+        resized = op.resize(casted, min=0, max=100, n=2000)
+
+        analysis.release()
+
+
 @pytest.mark.skip(reason="requires count_min and count_max")
 def test_dp_count(run=True):
     with whitenoise.Analysis() as analysis:

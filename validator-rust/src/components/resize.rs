@@ -9,12 +9,11 @@ use crate::proto;
 use crate::components::{Component, Expandable};
 use ndarray;
 
-use crate::base::{Value, Array, NodeProperties, Nature, NatureContinuous, Vector1DNull, ValueProperties};
+use crate::base::{Value, Array, NodeProperties, Nature, NatureContinuous, Vector1DNull, ValueProperties, DataType, NatureCategorical};
 use crate::utilities::{prepend, get_literal};
 
 
 impl Component for proto::Resize {
-    // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
@@ -34,64 +33,139 @@ impl Component for proto::Resize {
             return Err("n must be greater than zero".into())
         }
 
-        // 1. check public arguments (constant n)
-        let impute_minimum = match public_arguments.get("min") {
-            Some(min) => min.array()?.clone().vec_f64(Some(num_columns))?,
-
-            // 2. then private arguments (for example from another clamped column)
-            None => match properties.get("min") {
-                Some(min) => min.array()?.min_f64()?,
-
-                // 3. then data properties (propagated from prior clamping/min/max)
-                None => data_property
-                    .min_f64()?
-            }
-        };
-
-        // 1. check public arguments (constant n)
-        let impute_maximum = match public_arguments.get("max") {
-            Some(max) => max.array()?.clone().vec_f64(Some(num_columns))?,
-
-            // 2. then private arguments (for example from another clamped column)
-            None => match properties.get("max") {
-                Some(min) => min.array()?.max_f64()?,
-
-                // 3. then data properties (propagated from prior clamping/min/max)
-                None => data_property
-                    .max_f64()?
-            }
-        };
-
-        if !impute_minimum.iter().zip(impute_maximum.clone()).all(|(min, max)| *min < max) {
-            return Err("minimum is greater than maximum".into());
+        if let Some(categories) = public_arguments.get("categories") {
+            data_property.nature = Some(Nature::Categorical(NatureCategorical {
+                categories: categories.jagged()?.deduplicate()?
+            }));
+            return Ok(data_property.into());
         }
 
-        // the actual data bound (if it exists) may be wider than the imputation parameters
-        let impute_minimum = match data_property.min_f64_option() {
-            Ok(data_minimum) => impute_minimum.iter().zip(data_minimum)
-                .map(|(impute_min, optional_data_min)| match optional_data_min {
-                    Some(data_min) => Some(impute_min.min(data_min)),
-                    // since there was no prior bound, nothing is known about the min
-                    None => None
-                }).collect(),
-            Err(_) => (0..num_columns).map(|_| None).collect()
-        };
+        match data_property.data_type {
+            DataType::F64 => {
 
-        let impute_maximum = match data_property.max_f64_option() {
-            Ok(data_maximum) => impute_maximum.iter().zip(data_maximum)
-                .map(|(impute_max, optional_data_max)| match optional_data_max {
-                    Some(data_max) => Some(impute_max.max(data_max)),
-                    // since there was no prior bound, nothing is known about the max
-                    None => None
-                }).collect(),
-            Err(_) => (0..num_columns).map(|_| None).collect()
-        };
+                // 1. check public arguments (constant n)
+                let impute_minimum = match public_arguments.get("min") {
+                    Some(min) => min.array()?.clone().vec_f64(Some(num_columns))?,
 
-        // impute may only ever widen prior existing bounds
-        data_property.nature = Some(Nature::Continuous(NatureContinuous {
-            min: Vector1DNull::F64(impute_minimum),
-            max: Vector1DNull::F64(impute_maximum),
-        }));
+                    // 2. then private arguments (for example from another clamped column)
+                    None => match properties.get("min") {
+                        Some(min) => min.array()?.min_f64()?,
+
+                        // 3. then data properties (propagated from prior clamping/min/max)
+                        None => data_property
+                            .min_f64()?
+                    }
+                };
+
+                // 1. check public arguments (constant n)
+                let impute_maximum = match public_arguments.get("max") {
+                    Some(max) => max.array()?.clone().vec_f64(Some(num_columns))?,
+
+                    // 2. then private arguments (for example from another clamped column)
+                    None => match properties.get("max") {
+                        Some(min) => min.array()?.max_f64()?,
+
+                        // 3. then data properties (propagated from prior clamping/min/max)
+                        None => data_property
+                            .max_f64()?
+                    }
+                };
+
+                if !impute_minimum.iter().zip(impute_maximum.clone()).all(|(min, max)| *min < max) {
+                    return Err("minimum is greater than maximum".into());
+                }
+
+                // the actual data bound (if it exists) may be wider than the imputation parameters
+                let impute_minimum = match data_property.min_f64_option() {
+                    Ok(data_minimum) => impute_minimum.iter().zip(data_minimum)
+                        .map(|(impute_min, optional_data_min)| match optional_data_min {
+                            Some(data_min) => Some(impute_min.min(data_min)),
+                            // since there was no prior bound, nothing is known about the min
+                            None => None
+                        }).collect(),
+                    Err(_) => (0..num_columns).map(|_| None).collect()
+                };
+
+                let impute_maximum = match data_property.max_f64_option() {
+                    Ok(data_maximum) => impute_maximum.iter().zip(data_maximum)
+                        .map(|(impute_max, optional_data_max)| match optional_data_max {
+                            Some(data_max) => Some(impute_max.max(data_max)),
+                            // since there was no prior bound, nothing is known about the max
+                            None => None
+                        }).collect(),
+                    Err(_) => (0..num_columns).map(|_| None).collect()
+                };
+
+                // impute may only ever widen prior existing bounds
+                data_property.nature = Some(Nature::Continuous(NatureContinuous {
+                    min: Vector1DNull::F64(impute_minimum),
+                    max: Vector1DNull::F64(impute_maximum),
+                }));
+            },
+
+            DataType::I64 => {
+
+                // 1. check public arguments (constant n)
+                let impute_minimum = match public_arguments.get("min") {
+                    Some(min) => min.array()?.clone().vec_i64(Some(num_columns))?,
+
+                    // 2. then private arguments (for example from another clamped column)
+                    None => match properties.get("min") {
+                        Some(min) => min.array()?.min_i64()?,
+
+                        // 3. then data properties (propagated from prior clamping/min/max)
+                        None => data_property
+                            .min_i64()?
+                    }
+                };
+
+                // 1. check public arguments (constant n)
+                let impute_maximum = match public_arguments.get("max") {
+                    Some(max) => max.array()?.clone().vec_i64(Some(num_columns))?,
+
+                    // 2. then private arguments (for example from another clamped column)
+                    None => match properties.get("max") {
+                        Some(min) => min.array()?.max_i64()?,
+
+                        // 3. then data properties (propagated from prior clamping/min/max)
+                        None => data_property
+                            .max_i64()?
+                    }
+                };
+
+                if !impute_minimum.iter().zip(impute_maximum.clone()).all(|(min, max)| *min < max) {
+                    return Err("minimum is greater than maximum".into());
+                }
+
+                // the actual data bound (if it exists) may be wider than the imputation parameters
+                let impute_minimum = match data_property.min_i64_option() {
+                    Ok(data_minimum) => impute_minimum.into_iter().zip(data_minimum.into_iter())
+                        .map(|(impute_min, optional_data_min)| match optional_data_min {
+                            Some(data_min) => Some(impute_min.min(data_min)),
+                            // since there was no prior bound, nothing is known about the min
+                            None => None
+                        }).collect(),
+                    Err(_) => (0..num_columns).map(|_| None).collect()
+                };
+
+                let impute_maximum = match data_property.max_i64_option() {
+                    Ok(data_maximum) => impute_maximum.into_iter().zip(data_maximum.into_iter())
+                        .map(|(impute_max, optional_data_max)| match optional_data_max {
+                            Some(data_max) => Some(impute_max.max(data_max)),
+                            // since there was no prior bound, nothing is known about the max
+                            None => None
+                        }).collect(),
+                    Err(_) => (0..num_columns).map(|_| None).collect()
+                };
+
+                // impute may only ever widen prior existing bounds
+                data_property.nature = Some(Nature::Continuous(NatureContinuous {
+                    min: Vector1DNull::I64(impute_minimum),
+                    max: Vector1DNull::I64(impute_maximum),
+                }));
+            }
+            _ => return Err("bounds for imputation must be numeric".into())
+        }
 
         data_property.num_records = Some(num_records);
 

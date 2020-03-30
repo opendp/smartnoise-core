@@ -9,7 +9,7 @@ use ndarray::prelude::Ix1;
 use std::collections::{HashMap};
 use ndarray::{ArrayD};
 
-use crate::utilities::standardize_categorical_argument;
+use crate::utilities::{standardize_categorical_argument, deduplicate};
 
 /// The universal data representation.
 ///
@@ -368,6 +368,44 @@ impl Jagged {
     pub fn lengths(&self) -> Result<Vec<i64>> {
         self.lengths_option().iter().cloned().collect::<Option<Vec<i64>>>()
             .ok_or_else(|| Error::from("length is not defined for every column"))
+    }
+
+    pub fn deduplicate(&self) -> Result<Jagged> {
+        match self.to_owned() {
+            Jagged::F64(_) =>
+                Err("float data may not be categorical".into()),
+            Jagged::I64(categories) => Ok(categories.into_iter()
+                .map(|cats| cats.map(deduplicate))
+                .collect::<Vec<Option<Vec<i64>>>>().into()),
+            Jagged::Bool(categories) => Ok(categories.into_iter()
+                .map(|cats| cats.map(deduplicate))
+                .collect::<Vec<Option<Vec<bool>>>>().into()),
+            Jagged::Str(categories) => Ok(categories.into_iter()
+                .map(|cats| cats.map(deduplicate))
+                .collect::<Vec<Option<Vec<String>>>>().into()),
+        }
+    }
+}
+
+
+impl From<Vec<Option<Vec<f64>>>> for Jagged {
+    fn from(value: Vec<Option<Vec<f64>>>) -> Self {
+        Jagged::F64(value)
+    }
+}
+impl From<Vec<Option<Vec<i64>>>> for Jagged {
+    fn from(value: Vec<Option<Vec<i64>>>) -> Self {
+        Jagged::I64(value)
+    }
+}
+impl From<Vec<Option<Vec<bool>>>> for Jagged {
+    fn from(value: Vec<Option<Vec<bool>>>) -> Self {
+        Jagged::Bool(value)
+    }
+}
+impl From<Vec<Option<Vec<String>>>> for Jagged {
+    fn from(value: Vec<Option<Vec<String>>>) -> Self {
+        Jagged::Str(value)
     }
 }
 
