@@ -27,12 +27,9 @@ pub fn get_bytes(n_bytes: usize) -> String {
     rand_bytes(&mut buffer).unwrap();
 
     // create new buffer of binary representations, rather than u8
-    let mut new_buffer = Vec::new();
-    for i in 0..buffer.len() {
-        new_buffer.push(format!("{:08b}", buffer[i]));
-    }
+    let new_buffer: Vec<String> = buffer.iter().map(|x| format!("{:08b}", x)).collect();
 
-    // combine binary representations into single string and subset mantissa
+    // combine bits into string
     let binary_string = new_buffer.join("");
 
     return binary_string;
