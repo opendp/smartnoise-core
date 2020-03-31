@@ -11,6 +11,7 @@ use crate::components::{Component, Expandable};
 
 use crate::base::{Value, NatureContinuous};
 use ndarray;
+use num::{CheckedAdd, CheckedSub};
 
 
 impl Component for proto::Add {
@@ -33,9 +34,10 @@ impl Component for proto::Add {
             nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
             nature: propagate_binary_nature(&left_property, &right_property, &Operators {
-                f64: Some(Box::new(|l: &f64, r: &f64| l + r)),
-                i64: Some(Box::new(|l: &i64, r: &i64| l + r)),
-                str: None, bool: None
+                f64: Some(Box::new(|l: &f64, r: &f64| Ok(l + r))),
+                i64: Some(Box::new(|l: &i64, r: &i64| l.checked_add(r).ok_or_else(|| Error::from("addition results in underflow or overflow")))),
+                str: None,
+                bool: None,
             }, &num_columns)?,
             c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
@@ -44,7 +46,7 @@ impl Component for proto::Add {
             num_records,
             aggregator: None,
             data_type: left_property.data_type,
-            dataset_id: left_property.dataset_id
+            dataset_id: left_property.dataset_id,
         }.into())
     }
 
@@ -77,9 +79,10 @@ impl Component for proto::Subtract {
             nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
             nature: propagate_binary_nature(&left_property, &right_property, &Operators {
-                f64: Some(Box::new(|l: &f64, r: &f64| l - r)),
-                i64: Some(Box::new(|l: &i64, r: &i64| l - r)),
-                str: None, bool: None
+                f64: Some(Box::new(|l: &f64, r: &f64| Ok(l - r))),
+                i64: Some(Box::new(|l: &i64, r: &i64| l.checked_sub(r).ok_or_else(|| Error::from("subtraction results in underflow or overflow")))),
+                str: None,
+                bool: None,
             }, &num_columns)?,
             c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
@@ -88,7 +91,7 @@ impl Component for proto::Subtract {
             num_records,
             aggregator: None,
             data_type: left_property.data_type,
-            dataset_id: left_property.dataset_id
+            dataset_id: left_property.dataset_id,
         }.into())
     }
 
@@ -154,8 +157,8 @@ impl Component for proto::Divide {
             num_columns: Some(num_columns),
             num_records,
             aggregator: None,
-           data_type: left_property.data_type,
-            dataset_id: left_property.dataset_id
+            data_type: left_property.data_type,
+            dataset_id: left_property.dataset_id,
         }.into())
     }
 
@@ -193,9 +196,9 @@ impl Component for proto::Multiply {
                 .map(|(l, r)| l.max(r)).collect(),
             num_columns: Some(num_columns),
             data_type: left_property.data_type,
-           num_records,
+            num_records,
             aggregator: None,
-            dataset_id: left_property.dataset_id
+            dataset_id: left_property.dataset_id,
         }.into())
     }
 
@@ -235,7 +238,7 @@ impl Component for proto::Power {
             num_records,
             data_type: left_property.data_type,
             aggregator: None,
-            dataset_id: left_property.dataset_id
+            dataset_id: left_property.dataset_id,
         }.into())
     }
 
@@ -274,7 +277,7 @@ impl Component for proto::Log {
             num_records,
             data_type: left_property.data_type,
             aggregator: None,
-            dataset_id: left_property.dataset_id
+            dataset_id: left_property.dataset_id,
         }.into())
     }
 
@@ -285,7 +288,6 @@ impl Component for proto::Log {
         Err("get_names not implemented".into())
     }
 }
-
 
 
 impl Component for proto::Negative {
@@ -303,13 +305,25 @@ impl Component for proto::Negative {
             data_property.nature = match nature {
                 Nature::Continuous(nature) => Some(Nature::Continuous(NatureContinuous {
                     min: match nature.max {
-                        Vector1DNull::F64(max) => Vector1DNull::F64(max.iter().map(|v| match v {Some(v) => Some(-v), None => None}).collect()),
-                        Vector1DNull::I64(max) => Vector1DNull::I64(max.iter().map(|v| match v {Some(v) => Some(-v), None => None}).collect()),
+                        Vector1DNull::F64(max) => Vector1DNull::F64(max.iter().map(|v| match v {
+                            Some(v) => Some(-v),
+                            None => None
+                        }).collect()),
+                        Vector1DNull::I64(max) => Vector1DNull::I64(max.iter().map(|v| match v {
+                            Some(v) => Some(-v),
+                            None => None
+                        }).collect()),
                         _ => return Err("nature min/max bounds must be numeric".into())
                     },
                     max: match nature.min {
-                        Vector1DNull::F64(min) => Vector1DNull::F64(min.iter().map(|v| match v {Some(v) => Some(-v), None => None}).collect()),
-                        Vector1DNull::I64(min) => Vector1DNull::I64(min.iter().map(|v| match v {Some(v) => Some(-v), None => None}).collect()),
+                        Vector1DNull::F64(min) => Vector1DNull::F64(min.iter().map(|v| match v {
+                            Some(v) => Some(-v),
+                            None => None
+                        }).collect()),
+                        Vector1DNull::I64(min) => Vector1DNull::I64(min.iter().map(|v| match v {
+                            Some(v) => Some(-v),
+                            None => None
+                        }).collect()),
                         _ => return Err("nature min/max bounds must be numeric".into())
                     },
                 })),
@@ -357,7 +371,7 @@ impl Component for proto::Modulo {
                     Vector1DNull::I64(_) => Vector1DNull::I64((0..num_columns).map(|_| Some(0)).collect()),
                     _ => return None
                 },
-                max: maximum
+                max: maximum,
             }))),
             c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
@@ -366,7 +380,7 @@ impl Component for proto::Modulo {
             num_records,
             data_type: left_property.data_type,
             aggregator: None,
-            dataset_id: left_property.dataset_id
+            dataset_id: left_property.dataset_id,
         }.into())
     }
     fn get_names(
@@ -421,7 +435,7 @@ impl Expandable for proto::Modulo {
             computation_graph,
             properties: HashMap::new(),
             releases,
-            traversal: Vec::new()
+            traversal: Vec::new(),
         })
     }
 }
@@ -456,7 +470,7 @@ impl Component for proto::And {
             num_records,
             aggregator: None,
             data_type: left_property.data_type,
-            dataset_id: left_property.dataset_id
+            dataset_id: left_property.dataset_id,
         }.into())
     }
 
@@ -498,7 +512,7 @@ impl Component for proto::Or {
             num_records,
             aggregator: None,
             data_type: left_property.data_type,
-            dataset_id: left_property.dataset_id
+            dataset_id: left_property.dataset_id,
         }.into())
     }
 
@@ -540,7 +554,7 @@ impl Component for proto::Negate {
             num_records,
             aggregator: None,
             data_type: left_property.data_type,
-            dataset_id: left_property.dataset_id
+            dataset_id: left_property.dataset_id,
         }.into())
     }
 
@@ -582,7 +596,7 @@ impl Component for proto::Equal {
             num_records,
             aggregator: None,
             data_type: left_property.data_type,
-            dataset_id: left_property.dataset_id
+            dataset_id: left_property.dataset_id,
         }.into())
     }
 
@@ -624,7 +638,7 @@ impl Component for proto::LessThan {
             num_records,
             aggregator: None,
             data_type: left_property.data_type,
-            dataset_id: left_property.dataset_id
+            dataset_id: left_property.dataset_id,
         }.into())
     }
 
@@ -666,7 +680,7 @@ impl Component for proto::GreaterThan {
             num_records,
             aggregator: None,
             data_type: left_property.data_type,
-            dataset_id: left_property.dataset_id
+            dataset_id: left_property.dataset_id,
         }.into())
     }
 
@@ -679,14 +693,13 @@ impl Component for proto::GreaterThan {
 }
 
 pub struct Operators {
-    pub f64: Option<Box<dyn Fn(&f64, &f64) -> f64>>,
-    pub i64: Option<Box<dyn Fn(&i64, &i64) -> i64>>,
-    pub str: Option<Box<dyn Fn(&String, &String) -> String>>,
-    pub bool: Option<Box<dyn Fn(&bool, &bool) -> bool>>,
+    pub f64: Option<Box<dyn Fn(&f64, &f64) -> Result<f64>>>,
+    pub i64: Option<Box<dyn Fn(&i64, &i64) -> Result<i64>>>,
+    pub str: Option<Box<dyn Fn(&String, &String) -> Result<String>>>,
+    pub bool: Option<Box<dyn Fn(&bool, &bool) -> Result<bool>>>,
 }
 
 pub fn propagate_binary_shape(left_property: &ArrayProperties, right_property: &ArrayProperties) -> Result<(i64, Option<i64>)> {
-
     let left_num_columns = left_property.num_columns()?;
     let right_num_columns = right_property.num_columns()?;
 
@@ -708,7 +721,7 @@ pub fn propagate_binary_shape(left_property: &ArrayProperties, right_property: &
 
     if !(left_is_row_broadcastable || right_is_row_broadcastable || (left_num_records == right_num_records)) {
         if left_property.dataset_id == right_property.dataset_id {
-            return Ok((output_num_columns, None))
+            return Ok((output_num_columns, None));
         }
         return Err("number of rows must be the same for left and right arguments".into());
     }
@@ -723,7 +736,6 @@ pub fn propagate_binary_nature(left_property: &ArrayProperties, right_property: 
     Ok(match (left_property.nature.clone(), right_property.nature.clone()) {
         (Some(left_nature), Some(right_nature)) => match (left_nature, right_nature) {
             (Nature::Continuous(left_nature), Nature::Continuous(right_nature)) => {
-
                 let min = match (left_nature.min, right_nature.min) {
                     (Vector1DNull::F64(left_min), Vector1DNull::F64(right_min)) =>
                         match &operator.f64 {
@@ -731,12 +743,12 @@ pub fn propagate_binary_nature(left_property: &ArrayProperties, right_property: 
                                 .zip(broadcast(&right_min, &output_num_columns)?)
                                 .map(|(l, r)| match (l, r) {
                                     (Some(l), Some(r)) => {
-                                        let result = operator(l, &r);
-                                        if result.is_finite() { Some(result) } else { None }
-                                    },
-                                    _ => None
+                                        let result = operator(l, &r)?;
+                                        Ok(if result.is_finite() { Some(result) } else { None })
+                                    }
+                                    _ => None.transpose()
                                 })
-                                .collect()),
+                                .collect::<Result<_>>()?),
                             None => return Err("min cannot be propagated for the current data type".into())
                         },
                     (Vector1DNull::I64(left_min), Vector1DNull::I64(right_min)) =>
@@ -744,10 +756,10 @@ pub fn propagate_binary_nature(left_property: &ArrayProperties, right_property: 
                             Some(operator) => Vector1DNull::I64(broadcast(&left_min, &output_num_columns)?.iter()
                                 .zip(broadcast(&right_min, &output_num_columns)?)
                                 .map(|(l, r)| match (l, r) {
-                                    (Some(l), Some(r)) => Some(operator(l, &r)),
-                                    _ => None
+                                    (Some(l), Some(r)) => Some(operator(l, &r)).transpose(),
+                                    _ => None.transpose()
                                 })
-                                .collect()),
+                                .collect::<Result<_>>()?),
                             None => return Err("min cannot be propagated for the current data type".into())
                         },
                     _ => return Err("cannot propagate continuous bounds of different or non-numeric types".into())
@@ -759,10 +771,10 @@ pub fn propagate_binary_nature(left_property: &ArrayProperties, right_property: 
                             Some(operator) => Vector1DNull::F64(broadcast(&left_max, &output_num_columns)?.iter()
                                 .zip(broadcast(&right_max, &output_num_columns)?)
                                 .map(|(l, r)| match (l, r) {
-                                    (Some(l), Some(r)) => Some(operator(l, &r)),
-                                    _ => None
+                                    (Some(l), Some(r)) => Some(operator(l, &r)).transpose(),
+                                    _ => None.transpose()
                                 })
-                                .collect()),
+                                .collect::<Result<_>>()?),
                             None => return Err("max cannot be propagated for the current data type".into())
                         },
                     (Vector1DNull::I64(left_max), Vector1DNull::I64(right_max)) =>
@@ -770,10 +782,10 @@ pub fn propagate_binary_nature(left_property: &ArrayProperties, right_property: 
                             Some(operator) => Vector1DNull::I64(broadcast(&left_max, &output_num_columns)?.iter()
                                 .zip(broadcast(&right_max, &output_num_columns)?)
                                 .map(|(l, r)| match (l, r) {
-                                    (Some(l), Some(r)) => Some(operator(l, &r)),
-                                    _ => None
+                                    (Some(l), Some(r)) => Some(operator(l, &r)).transpose(),
+                                    _ => None.transpose()
                                 })
-                                .collect()),
+                                .collect::<Result<_>>()?),
                             None => return Err("max cannot be propagated for the current data type".into())
                         },
                     _ => return Err("cannot propagate continuous bounds of different or non-numeric types".into())
@@ -781,6 +793,58 @@ pub fn propagate_binary_nature(left_property: &ArrayProperties, right_property: 
 
                 Some(Nature::Continuous(NatureContinuous { min, max }))
             }
+
+            (Nature::Categorical(left_nature), Nature::Categorical(right_nature)) => Some(Nature::Categorical(NatureCategorical {categories: match (left_nature.categories, right_nature.categories) {
+                (Jagged::F64(left), Jagged::F64(right)) =>
+                    Jagged::F64(left.iter().zip(right.iter()).map(|(left, right)|
+                        match (left, right, &operator.f64) {
+                            (Some(left), Some(right), Some(operator)) => Ok(Some(left.iter()
+                                .map(|left| right.iter()
+                                    .map(|right| operator(left, right))
+                                    .collect::<Result<Vec<_>>>())
+                                .collect::<Result<Vec<Vec<_>>>>()?
+                                .into_iter().flatten().collect::<Vec<_>>())),
+                            (Some(_), Some(_), None) => Err("categories cannot be propagated for floats".into()),
+                            _ => Ok(None)
+                        }).collect::<Result<Vec<Option<Vec<_>>>>>()?),
+                (Jagged::I64(left), Jagged::I64(right)) =>
+                    Jagged::I64(left.iter().zip(right.iter()).map(|(left, right)|
+                        match (left, right, &operator.i64) {
+                            (Some(left), Some(right), Some(operator)) => Ok(Some(left.iter()
+                                .map(|left| right.iter()
+                                    .map(|right| operator(left, right))
+                                    .collect::<Result<Vec<_>>>())
+                                .collect::<Result<Vec<Vec<_>>>>()?
+                                .into_iter().flatten().collect::<Vec<_>>())),
+                            (Some(_), Some(_), None) => Err("categories cannot be propagated for integers".into()),
+                            _ => Ok(None)
+                        }).collect::<Result<Vec<Option<Vec<_>>>>>()?),
+                (Jagged::Bool(left), Jagged::Bool(right)) =>
+                    Jagged::Bool(left.iter().zip(right.iter()).map(|(left, right)|
+                        match (left, right, &operator.bool) {
+                            (Some(left), Some(right), Some(operator)) => Ok(Some(left.iter()
+                                .map(|left| right.iter()
+                                    .map(|right| operator(left, right))
+                                    .collect::<Result<Vec<_>>>())
+                                .collect::<Result<Vec<Vec<_>>>>()?
+                                .into_iter().flatten().collect::<Vec<_>>())),
+                            (Some(_), Some(_), None) => Err("categories cannot be propagated for booleans".into()),
+                            _ => Ok(None)
+                        }).collect::<Result<Vec<Option<Vec<_>>>>>()?),
+                (Jagged::Str(left), Jagged::Str(right)) =>
+                    Jagged::Str(left.iter().zip(right.iter()).map(|(left, right)|
+                        match (left, right, &operator.str) {
+                            (Some(left), Some(right), Some(operator)) => Ok(Some(left.iter()
+                                .map(|left| right.iter()
+                                    .map(|right| operator(left, right))
+                                    .collect::<Result<Vec<_>>>())
+                                .collect::<Result<Vec<Vec<_>>>>()?
+                                .into_iter().flatten().collect::<Vec<_>>())),
+                            (Some(_), Some(_), None) => Err("categories cannot be propagated for strings".into()),
+                            _ => Ok(None)
+                        }).collect::<Result<Vec<Option<Vec<_>>>>>()?),
+                _ => return Err("natures must be homogeneously typed".into())
+            }.deduplicate()?})),
             _ => None
         },
         _ => None
