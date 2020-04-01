@@ -78,7 +78,7 @@ impl Evaluable for proto::Multiply {
 
 impl Evaluable for proto::Power {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        match (get_argument(&arguments, "left")?, get_argument(&arguments, "right")?) {
+        match (get_argument(&arguments, "data")?, get_argument(&arguments, "radical")?) {
             (Value::Array(left), Value::Array(right)) => match (left, right) {
                 (Array::F64(x), Array::F64(y)) =>
                     Ok(broadcast_map(x,  y, &|l, r| l.powf(*r))?.into()),
@@ -94,8 +94,8 @@ impl Evaluable for proto::Power {
 
 impl Evaluable for proto::Log {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        let base = get_argument(&arguments, "right")?.array()?.f64()?;
-        let data = get_argument(&arguments, "right")?.array()?.f64()?;
+        let base = get_argument(&arguments, "base")?.array()?.f64()?;
+        let data = get_argument(&arguments, "data")?.array()?.f64()?;
         Ok(broadcast_map(base, data, &|base, x| x.log(*base))?.into())
     }
 }
@@ -107,14 +107,7 @@ impl Evaluable for proto::Modulo {
                 (Array::F64(x), Array::F64(y)) =>
                     Ok(broadcast_map(&x, &y, &|l: &f64, r: &f64| l.rem_euclid(*r))?.into()),
                 (Array::I64(x), Array::I64(y)) => {
-                    let min = get_argument(arguments, "min")
-                        .chain_err(|| "min must be known in case of imputation")?.first_i64()?;
-                    let max = get_argument(arguments, "max")
-                        .chain_err(|| "max must be known in case of imputation")?.first_i64()?;
-
-                    if min > max {return Err("Modulo: min may not be greater than max".into());}
-                    Ok(broadcast_map(&x, &y, &|l: &i64, r: &i64|
-                        l.checked_rem_euclid(*r).unwrap_or_else(|| sample_uniform_int(&min, &max).unwrap()))?.into())
+                    Ok(broadcast_map(&x, &y, &|l: &i64, r: &i64| l.rem_euclid(*r))?.into())
                 },
                 _ => Err("Modulo: Either the argument types are mismatched or non-numeric.".into())
             },

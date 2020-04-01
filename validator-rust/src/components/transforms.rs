@@ -1,16 +1,15 @@
 use crate::errors::*;
 
 use std::collections::HashMap;
-use crate::base::{Nature, NodeProperties, NatureCategorical, Vector1DNull, Jagged, ArrayProperties, ValueProperties, Array};
+use crate::base::{Nature, NodeProperties, NatureCategorical, Vector1DNull, Jagged, ArrayProperties, ValueProperties, DataType};
 
 use crate::{proto, base};
 
-use crate::utilities::{prepend, get_literal};
+use crate::utilities::{prepend};
 
-use crate::components::{Component, Expandable};
+use crate::components::{Component};
 
 use crate::base::{Value, NatureContinuous};
-use ndarray;
 use num::{CheckedAdd, CheckedSub};
 
 
@@ -27,20 +26,21 @@ impl Component for proto::Add {
         let right_property = properties.get("right")
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
+        left_property.assert_is_not_aggregated()?;
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
         Ok(ArrayProperties {
             nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
-            nature: propagate_binary_nature(&left_property, &right_property, &Operators {
+            nature: propagate_binary_nature(&left_property, &right_property, &BinaryOperators {
                 f64: Some(Box::new(|l: &f64, r: &f64|
                     Ok(l + r))),
                 i64: Some(Box::new(|l: &i64, r: &i64|
                     l.checked_add(r).ok_or_else(|| Error::from("addition may result in underflow or overflow")))),
                 str: None,
                 bool: None,
-            }, &OptimizeOperators {
+            }, &OptimizeBinaryOperators {
                 f64: Some(Box::new(|bounds| Ok((
                     bounds.left_min.and_then(|lmin| bounds.right_min.and_then(|rmin|
                         Some(lmin + rmin))),
@@ -92,20 +92,21 @@ impl Component for proto::Subtract {
         let right_property = properties.get("right")
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
+        left_property.assert_is_not_aggregated()?;
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
         Ok(ArrayProperties {
             nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
-            nature: propagate_binary_nature(&left_property, &right_property, &Operators {
+            nature: propagate_binary_nature(&left_property, &right_property, &BinaryOperators {
                 f64: Some(Box::new(|l: &f64, r: &f64|
                     Ok(l - r))),
                 i64: Some(Box::new(|l: &i64, r: &i64|
                     l.checked_sub(r).ok_or_else(|| Error::from("subtraction may result in underflow or overflow")))),
                 str: None,
                 bool: None,
-            }, &OptimizeOperators {
+            }, &OptimizeBinaryOperators {
                 f64: Some(Box::new(|bounds| Ok((
                     bounds.left_min.and_then(|lmin| bounds.right_min.and_then(|rmin|
                         Some(lmin - rmin))),
@@ -156,13 +157,14 @@ impl Component for proto::Multiply {
         let right_property = properties.get("right")
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
+        left_property.assert_is_not_aggregated()?;
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
         Ok(ArrayProperties {
             nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
-            nature: propagate_binary_nature(&left_property, &right_property, &Operators {
+            nature: propagate_binary_nature(&left_property, &right_property, &BinaryOperators {
                 f64: Some(Box::new(|l: &f64, r: &f64| {
                     let category = l * r;
                     if !category.is_finite() {
@@ -174,7 +176,7 @@ impl Component for proto::Multiply {
                     l.checked_mul(*r).ok_or_else(|| Error::from("multiplication may result in underflow or overflow")))),
                 str: None,
                 bool: None,
-            }, &OptimizeOperators {
+            }, &OptimizeBinaryOperators {
                 f64: Some(Box::new(|bounds| {
                     let a = match bounds.left_min {
                         Some(v) => v,
@@ -275,6 +277,7 @@ impl Component for proto::Divide {
         let right_property = properties.get("right")
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
+        left_property.assert_is_not_aggregated()?;
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
         let float_denominator_may_span_zero = match right_property.clone().nature {
@@ -308,7 +311,7 @@ impl Component for proto::Divide {
         Ok(ArrayProperties {
             nullity: left_property.nullity || right_property.nullity || float_denominator_may_span_zero,
             releasable: left_property.releasable && right_property.releasable,
-            nature: propagate_binary_nature(&left_property, &right_property, &Operators {
+            nature: propagate_binary_nature(&left_property, &right_property, &BinaryOperators {
                 f64: Some(Box::new(|l: &f64, r: &f64| {
                     let category = l / r;
                     if !category.is_finite() {
@@ -320,7 +323,7 @@ impl Component for proto::Divide {
                     l.checked_div(*r).ok_or_else(|| Error::from("either division by zero, or underflow or overflow")))),
                 str: None,
                 bool: None,
-            }, &OptimizeOperators {
+            }, &OptimizeBinaryOperators {
                 f64: Some(Box::new(|bounds| {
                     let a = match bounds.left_min {
                         Some(v) => v,
@@ -332,11 +335,21 @@ impl Component for proto::Divide {
                     }.clone();
                     let d = match bounds.right_min {
                         Some(v) => v,
-                        None => return Ok((None, None))
+                        None => {
+                            if bounds.right_max.map(|v| v >= 0.).unwrap_or(true) {
+                                return Err("potential division by zero".into())
+                            }
+                            return Ok((None, None))
+                        }
                     }.clone();
                     let f = match bounds.right_max {
                         Some(v) => v,
-                        None => return Ok((None, None))
+                        None => {
+                            if bounds.right_min.map(|v| v <= 0.).unwrap_or(true) {
+                                return Err("potential division by zero".into())
+                            }
+                            return Ok((None, None))
+                        }
                     }.clone();
 
                     // maximize {b * d | a <= b <= c && d <= e <= f}
@@ -407,29 +420,54 @@ impl Component for proto::Power {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
-        let left_property = properties.get("left")
-            .ok_or("left: missing")?.array()
-            .map_err(prepend("left:"))?.clone();
-        let right_property = properties.get("right")
-            .ok_or("right: missing")?.array()
-            .map_err(prepend("right:"))?.clone();
+        let mut data_property = properties.get("data")
+            .ok_or("data: missing")?.array()
+            .map_err(prepend("data:"))?.clone();
+        let radical_property = properties.get("radical")
+            .ok_or("radical: missing")?.array()
+            .map_err(prepend("radical:"))?.clone();
+        data_property.assert_is_not_aggregated()?;
 
-        let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
+        match (data_property.data_type.clone(), radical_property.data_type.clone()) {
+            (DataType::F64, DataType::F64) => {
 
-        Ok(ArrayProperties {
-            nullity: left_property.nullity || right_property.nullity,
-            releasable: left_property.releasable && right_property.releasable,
-            // raising data to a power is not monotonic
-            nature: None,
-            c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
-                .zip(broadcast(&right_property.c_stability, &num_columns)?)
-                .map(|(l, r)| l.max(r)).collect(),
-            num_columns: Some(num_columns),
-            num_records,
-            data_type: left_property.data_type,
-            aggregator: None,
-            dataset_id: left_property.dataset_id,
-        }.into())
+                data_property.nature = propagate_binary_nature(
+                    &data_property, &radical_property,
+                    &BinaryOperators {
+                        f64: Some(Box::new(|l, r| Ok(l.powf(*r)))),
+                        i64: None,
+                        bool: None,
+                        str: None,
+                    },
+                    // TODO: derive bounds
+                    &OptimizeBinaryOperators {
+                        f64: Some(Box::new(|_bounds| Ok((None, None)))),
+                        i64: None
+                    }, &data_property.num_columns()?)?;
+            },
+            (DataType::I64, DataType::I64) => {
+                if !radical_property.min_i64()?.iter().all(|min| min >= &0) {
+                    return Err("integer power must not be negative".into())
+                }
+
+                data_property.nature = propagate_binary_nature(
+                    &data_property, &radical_property,
+                    &BinaryOperators {
+                        f64: None,
+                        i64: Some(Box::new(|l, r| l.checked_pow(*r as u32)
+                            .ok_or_else(|| Error::from("power may result in overflow")))),
+                        bool: None,
+                        str: None,
+                    },
+                    // TODO: derive bounds and throw error if potential overflow
+                    &OptimizeBinaryOperators {
+                        f64: None,
+                        i64: Some(Box::new(|_bounds| Ok((None, None)))),
+                    }, &data_property.num_columns()?)?;
+            },
+            _ => return Err("arguments for power must be numeric and homogeneously typed".into())
+        }
+        Ok(data_property.into())
     }
 
     fn get_names(
@@ -447,28 +485,46 @@ impl Component for proto::Log {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
-        let left_property = properties.get("left")
+        let mut data_property = properties.get("data")
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
-        let right_property = properties.get("right")
-            .ok_or("right: missing")?.array()
-            .map_err(prepend("right:"))?.clone();
+        let base_property = properties.get("base")
+            .ok_or("base: missing")?.array()
+            .map_err(prepend("base:"))?.clone();
+        data_property.assert_is_not_aggregated()?;
 
-        let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
+        if data_property.data_type != DataType::F64 || data_property.data_type != DataType::F64 {
+            return Err("arguments for log must be float and homogeneously typed".into());
+        }
 
-        Ok(ArrayProperties {
-            nullity: left_property.nullity || right_property.nullity,
-            releasable: left_property.releasable && right_property.releasable,
-            nature: None,
-            c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
-                .zip(broadcast(&right_property.c_stability, &num_columns)?)
-                .map(|(l, r)| l.max(r)).collect(),
-            num_columns: Some(num_columns),
-            num_records,
-            data_type: left_property.data_type,
-            aggregator: None,
-            dataset_id: left_property.dataset_id,
-        }.into())
+        if !base_property.min_f64()?.iter()
+            .zip(base_property.max_f64()?.iter())
+            .all(|(min, max)| min > &0. && max < &1. || min > &1.) {
+            return Err("base must be in [0, 1) U (1, inf) and not span zero".into())
+        }
+
+        if !data_property.min_f64()?.iter()
+            .all(|min| min > &0.) {
+            return Err("data may potentially be less than zero".into())
+        }
+
+        data_property.nature = propagate_binary_nature(
+            &data_property, &base_property,
+            &BinaryOperators {
+                f64: Some(Box::new(|v, base| Ok(v.log(*base)))),
+                i64: None,
+                bool: None,
+                str: None,
+            },
+            &OptimizeBinaryOperators {
+                f64: Some(Box::new(|_bounds| {
+                    // TODO: derive data bounds for log transform
+                    Ok((None, None))
+                })),
+                i64: None
+            }, &data_property.num_columns()?)?;
+
+        Ok(data_property.into())
     }
 
     fn get_names(
@@ -491,35 +547,19 @@ impl Component for proto::Negative {
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
-        if let Some(nature) = data_property.nature.clone() {
-            data_property.nature = match nature {
-                Nature::Continuous(nature) => Some(Nature::Continuous(NatureContinuous {
-                    min: match nature.max {
-                        Vector1DNull::F64(max) => Vector1DNull::F64(max.iter().map(|v| match v {
-                            Some(v) => Some(-v),
-                            None => None
-                        }).collect()),
-                        Vector1DNull::I64(max) => Vector1DNull::I64(max.iter().map(|v| match v {
-                            Some(v) => Some(-v),
-                            None => None
-                        }).collect()),
-                        _ => return Err("nature min/max bounds must be numeric".into())
-                    },
-                    max: match nature.min {
-                        Vector1DNull::F64(min) => Vector1DNull::F64(min.iter().map(|v| match v {
-                            Some(v) => Some(-v),
-                            None => None
-                        }).collect()),
-                        Vector1DNull::I64(min) => Vector1DNull::I64(min.iter().map(|v| match v {
-                            Some(v) => Some(-v),
-                            None => None
-                        }).collect()),
-                        _ => return Err("nature min/max bounds must be numeric".into())
-                    },
-                })),
-                _ => return Err("negation propagation is not implemented for categorical nature".into())
-            }
-        }
+        data_property.nature = propagate_unary_nature(
+            &data_property,
+            &UnaryOperators {
+                f64: Some(Box::new(|v| Ok(-*v))),
+                i64: Some(Box::new(|v| Ok(-*v))),
+                bool: None,
+                str: None,
+            },
+            &OptimizeUnaryOperators {
+                f64: Some(Box::new(|bounds| Ok((bounds.max.clone(), bounds.min.clone())))),
+                i64: Some(Box::new(|bounds| Ok((bounds.max.clone(), bounds.min.clone())))),
+            }, &data_property.num_columns()?)?;
+
         Ok(data_property.into())
     }
 
@@ -538,40 +578,56 @@ impl Component for proto::Modulo {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
-        let left_property = properties.get("left")
+        let mut left_property = properties.get("left")
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
         let right_property = properties.get("right")
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
+        left_property.assert_is_not_aggregated()?;
 
-        let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
+        match (left_property.data_type.clone(), right_property.data_type.clone()) {
+            (DataType::F64, DataType::F64) => {
 
-        let maximum = right_property.nature.and_then(|nature| match nature {
-            Nature::Continuous(continuous) => Some(continuous.max),
-            _ => None
-        });
+                if !right_property.min_f64()?.iter().all(|v| v > &0.) {
+                    return Err("divisor must be greater than zero".into())
+                }
 
-        Ok(ArrayProperties {
-            nullity: true,
-            releasable: left_property.releasable && right_property.releasable,
-            nature: maximum.and_then(|maximum| Some(Nature::Continuous(NatureContinuous {
-                min: match maximum {
-                    Vector1DNull::F64(_) => Vector1DNull::F64((0..num_columns).map(|_| Some(0.)).collect()),
-                    Vector1DNull::I64(_) => Vector1DNull::I64((0..num_columns).map(|_| Some(0)).collect()),
-                    _ => return None
-                },
-                max: maximum,
-            }))),
-            c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
-                .zip(broadcast(&right_property.c_stability, &num_columns)?)
-                .map(|(l, r)| l.max(r)).collect(),
-            num_columns: Some(num_columns),
-            num_records,
-            data_type: left_property.data_type,
-            aggregator: None,
-            dataset_id: left_property.dataset_id,
-        }.into())
+                left_property.nature = propagate_binary_nature(
+                    &left_property, &right_property,
+                    &BinaryOperators {
+                        f64: Some(Box::new(|l, r| Ok(l.rem_euclid(*r)))),
+                        i64: None,
+                        bool: None,
+                        str: None,
+                    },
+                    &OptimizeBinaryOperators {
+                        // TODO: this could be tighter
+                        f64: Some(Box::new(|bounds| Ok((Some(0.), *bounds.right_max)))),
+                        i64: None
+                    }, &left_property.num_columns()?)?;
+            },
+            (DataType::I64, DataType::I64) => {
+                if !right_property.min_i64()?.iter().all(|v| v > &0) {
+                    return Err("divisor must be greater than zero".into())
+                }
+                left_property.nature = propagate_binary_nature(
+                    &left_property, &right_property,
+                    &BinaryOperators {
+                        f64: None,
+                        i64: Some(Box::new(|l, r| Ok(l.rem_euclid(*r)))),
+                        bool: None,
+                        str: None,
+                    },
+                    &OptimizeBinaryOperators {
+                        f64: None,
+                        i64: Some(Box::new(|bounds| Ok((Some(0), bounds.right_max.map(|v| v - 1).clone())))),
+                    }, &left_property.num_columns()?)?;
+            },
+            _ => return Err("arguments for power must be numeric and homogeneously typed".into())
+        };
+
+        Ok(left_property.into())
     }
     fn get_names(
         &self,
@@ -581,56 +637,6 @@ impl Component for proto::Modulo {
     }
 }
 
-impl Expandable for proto::Modulo {
-    /// If min and max are not supplied, but are known statically, then add them automatically
-    fn expand_component(
-        &self,
-        _privacy_definition: &proto::PrivacyDefinition,
-        component: &proto::Component,
-        properties: &base::NodeProperties,
-        component_id: &u32,
-        maximum_id: &u32,
-    ) -> Result<proto::ComponentExpansion> {
-        let mut current_id = *maximum_id;
-        let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
-        let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
-
-        let mut component = component.clone();
-
-        if !properties.contains_key("min") {
-            current_id += 1;
-            let id_min = current_id.to_owned();
-            let value = Value::Array(Array::F64(
-                ndarray::Array::from(properties.get("data").unwrap().to_owned().array()?.min_f64()?).into_dyn()));
-            let (patch_node, release) = get_literal(&value, &component.batch)?;
-            computation_graph.insert(id_min.clone(), patch_node);
-            releases.insert(id_min.clone(), release);
-            component.arguments.insert("min".to_string(), id_min);
-        }
-
-        if !properties.contains_key("max") {
-            current_id += 1;
-            let id_max = current_id.to_owned();
-            let value = Value::Array(Array::F64(
-                ndarray::Array::from(properties.get("data").unwrap().to_owned().array()?.max_f64()?).into_dyn()));
-            let (patch_node, release) = get_literal(&value, &component.batch)?;
-            computation_graph.insert(id_max.clone(), patch_node);
-            releases.insert(id_max.clone(), release);
-            component.arguments.insert("max".to_string(), id_max);
-        }
-
-        computation_graph.insert(component_id.clone(), component);
-
-        Ok(proto::ComponentExpansion {
-            computation_graph,
-            properties: HashMap::new(),
-            releases,
-            traversal: Vec::new(),
-        })
-    }
-}
-
-
 impl Component for proto::And {
     fn propagate_property(
         &self,
@@ -638,30 +644,33 @@ impl Component for proto::And {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
-        let left_property = properties.get("left")
+        let mut left_property = properties.get("left")
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
         let right_property = properties.get("right")
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
+        left_property.assert_is_not_aggregated()?;
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
-        Ok(ArrayProperties {
-            nullity: false,
-            releasable: left_property.releasable && right_property.releasable,
-            nature: Some(Nature::Categorical(NatureCategorical {
-                categories: Jagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
-            })),
-            c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
-                .zip(broadcast(&right_property.c_stability, &num_columns)?)
-                .map(|(l, r)| l.max(r)).collect(),
-            num_columns: Some(num_columns),
-            num_records,
-            aggregator: None,
-            data_type: left_property.data_type,
-            dataset_id: left_property.dataset_id,
-        }.into())
+        left_property.releasable = left_property.releasable && right_property.releasable;
+        left_property.nature = propagate_binary_nature(
+            &left_property, &right_property,
+            &BinaryOperators {
+                f64: None,
+                i64: None,
+                str: None,
+                bool: Some(Box::new(|l: &bool, r: &bool| Ok(*l && *r))),
+            }, &OptimizeBinaryOperators { f64: None, i64: None },
+            &num_columns)?;
+        left_property.c_stability = broadcast(&left_property.c_stability, &num_columns)?.iter()
+            .zip(broadcast(&right_property.c_stability, &num_columns)?)
+            .map(|(l, r)| l.max(r)).collect();
+        left_property.num_columns = Some(num_columns);
+        left_property.num_records = num_records;
+
+        Ok(left_property.into())
     }
 
     fn get_names(
@@ -680,30 +689,33 @@ impl Component for proto::Or {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
-        let left_property = properties.get("left")
+        let mut left_property = properties.get("left")
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
         let right_property = properties.get("right")
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
+        left_property.assert_is_not_aggregated()?;
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
-        Ok(ArrayProperties {
-            nullity: false,
-            releasable: left_property.releasable && right_property.releasable,
-            nature: Some(Nature::Categorical(NatureCategorical {
-                categories: Jagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
-            })),
-            c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
-                .zip(broadcast(&right_property.c_stability, &num_columns)?)
-                .map(|(l, r)| l.max(r)).collect(),
-            num_columns: Some(num_columns),
-            num_records,
-            aggregator: None,
-            data_type: left_property.data_type,
-            dataset_id: left_property.dataset_id,
-        }.into())
+        left_property.releasable = left_property.releasable && right_property.releasable;
+        left_property.nature = propagate_binary_nature(
+            &left_property, &right_property,
+            &BinaryOperators {
+                f64: None,
+                i64: None,
+                str: None,
+                bool: Some(Box::new(|l: &bool, r: &bool| Ok(*l || *r))),
+            }, &OptimizeBinaryOperators { f64: None, i64: None },
+            &num_columns)?;
+        left_property.c_stability = broadcast(&left_property.c_stability, &num_columns)?.iter()
+            .zip(broadcast(&right_property.c_stability, &num_columns)?)
+            .map(|(l, r)| l.max(r)).collect();
+        left_property.num_columns = Some(num_columns);
+        left_property.num_records = num_records;
+
+        Ok(left_property.into())
     }
 
     fn get_names(
@@ -722,30 +734,22 @@ impl Component for proto::Negate {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
-        let left_property = properties.get("left")
+        let mut data_property = properties.get("left")
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
-        let right_property = properties.get("right")
-            .ok_or("right: missing")?.array()
-            .map_err(prepend("right:"))?.clone();
+        data_property.assert_is_not_aggregated()?;
 
-        let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
+        data_property.nature = propagate_unary_nature(
+            &data_property,
+            &UnaryOperators {
+                f64: None,
+                i64: None,
+                str: None,
+                bool: Some(Box::new(|v| Ok(!*v))),
+            }, &OptimizeUnaryOperators { f64: None, i64: None },
+            &data_property.num_columns()?)?;
 
-        Ok(ArrayProperties {
-            nullity: false,
-            releasable: left_property.releasable && right_property.releasable,
-            nature: Some(Nature::Categorical(NatureCategorical {
-                categories: Jagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
-            })),
-            c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
-                .zip(broadcast(&right_property.c_stability, &num_columns)?)
-                .map(|(l, r)| l.max(r)).collect(),
-            num_columns: Some(num_columns),
-            num_records,
-            aggregator: None,
-            data_type: left_property.data_type,
-            dataset_id: left_property.dataset_id,
-        }.into())
+        Ok(data_property.into())
     }
 
     fn get_names(
@@ -882,22 +886,36 @@ impl Component for proto::GreaterThan {
     }
 }
 
-pub struct Operators {
+pub struct UnaryOperators {
+    pub f64: Option<Box<dyn Fn(&f64) -> Result<f64>>>,
+    pub i64: Option<Box<dyn Fn(&i64) -> Result<i64>>>,
+    pub str: Option<Box<dyn Fn(&String) -> Result<String>>>,
+    pub bool: Option<Box<dyn Fn(&bool) -> Result<bool>>>,
+}
+pub struct UnaryBounds<'a, T> {
+    pub min: &'a Option<T>,
+    pub max: &'a Option<T>,
+}
+pub struct OptimizeUnaryOperators {
+    pub f64: Option<Box<dyn Fn(UnaryBounds<f64>) -> Result<(Option<f64>, Option<f64>)>>>,
+    pub i64: Option<Box<dyn Fn(UnaryBounds<i64>) -> Result<(Option<i64>, Option<i64>)>>>,
+}
+
+pub struct BinaryOperators {
     pub f64: Option<Box<dyn Fn(&f64, &f64) -> Result<f64>>>,
     pub i64: Option<Box<dyn Fn(&i64, &i64) -> Result<i64>>>,
     pub str: Option<Box<dyn Fn(&String, &String) -> Result<String>>>,
     pub bool: Option<Box<dyn Fn(&bool, &bool) -> Result<bool>>>,
 }
-
-pub struct Bounds<'a, T> {
+pub struct BinaryBounds<'a, T> {
     pub left_min: &'a Option<T>,
     pub left_max: &'a Option<T>,
     pub right_min: &'a Option<T>,
     pub right_max: &'a Option<T>,
 }
-pub struct OptimizeOperators {
-    pub f64: Option<Box<dyn Fn(Bounds<f64>) -> Result<(Option<f64>, Option<f64>)>>>,
-    pub i64: Option<Box<dyn Fn(Bounds<i64>) -> Result<(Option<i64>, Option<i64>)>>>,
+pub struct OptimizeBinaryOperators {
+    pub f64: Option<Box<dyn Fn(BinaryBounds<f64>) -> Result<(Option<f64>, Option<f64>)>>>,
+    pub i64: Option<Box<dyn Fn(BinaryBounds<i64>) -> Result<(Option<i64>, Option<i64>)>>>,
 }
 
 pub fn propagate_binary_shape(left_property: &ArrayProperties, right_property: &ArrayProperties) -> Result<(i64, Option<i64>)> {
@@ -913,9 +931,15 @@ pub fn propagate_binary_shape(left_property: &ArrayProperties, right_property: &
 
     let output_num_columns = left_num_columns.max(right_num_columns);
 
-    // n must be known to prevent conformability attacks
-    let left_num_records = left_property.num_records()?;
-    let right_num_records = right_property.num_records()?;
+    let (left_num_records, right_num_records) = match (left_property.num_records(), right_property.num_records()) {
+        (Ok(l), Ok(r)) => (l, r),
+        _ => {
+            if left_property.dataset_id == right_property.dataset_id {
+                return Ok((output_num_columns, None))
+            }
+            return Err("number of rows are not known for the left and right arguments from different datasets, so protection against conformability attacks cannot be guaranteed".into())
+        }
+    };
 
     let left_is_row_broadcastable = left_property.releasable && left_num_records == 1;
     let right_is_row_broadcastable = right_property.releasable && right_num_records == 1;
@@ -933,10 +957,100 @@ pub fn propagate_binary_shape(left_property: &ArrayProperties, right_property: &
     Ok((output_num_columns, Some(output_num_records)))
 }
 
+pub fn propagate_unary_nature(
+    data_property: &ArrayProperties,
+    operator: &UnaryOperators,
+    optimization_operator: &OptimizeUnaryOperators,
+    output_num_columns: &i64
+) -> Result<Option<Nature>> {
+    Ok(match data_property.nature.clone() {
+        Some(nature) => match nature {
+            Nature::Continuous(nature) => match (nature.min, nature.max) {
+                (Vector1DNull::F64(min), Vector1DNull::F64(max)) => {
+                    let mut output_min = Vec::new();
+                    let mut output_max = Vec::new();
+                    broadcast(&min, &output_num_columns)?.iter()
+                        .zip(broadcast(&max, &output_num_columns)?.iter())
+                        .map(|(min, max)| {
+                            match &optimization_operator.f64 {
+                                Some(operator) => {
+                                    let (min, max) = operator(UnaryBounds{min, max})?;
+                                    output_min.push(min);
+                                    output_max.push(max);
+                                },
+                                None => {
+                                    output_min.push(None);
+                                    output_max.push(None);
+                                }
+                            };
+                            Ok(())
+                        })
+                        .collect::<Result<()>>()?;
+                    Some(Nature::Continuous(NatureContinuous {min: Vector1DNull::F64(output_min), max: Vector1DNull::F64(output_max)}))
+                }
+                (Vector1DNull::I64(min), Vector1DNull::I64(max)) => {
+                    let mut output_min = Vec::new();
+                    let mut output_max = Vec::new();
+                    broadcast(&min, &output_num_columns)?.iter()
+                        .zip(broadcast(&max, &output_num_columns)?.iter())
+                        .map(|(min, max)| {
+                            match &optimization_operator.i64 {
+                                Some(operator) => {
+                                    let (min, max) = operator(UnaryBounds{min, max})?;
+                                    output_min.push(min);
+                                    output_max.push(max);
+                                },
+                                None => {
+                                    output_min.push(None);
+                                    output_max.push(None);
+                                }
+                            };
+                            Ok(())
+                        })
+                        .collect::<Result<()>>()?;
+                    Some(Nature::Continuous(NatureContinuous {min: Vector1DNull::I64(output_min), max: Vector1DNull::I64(output_max)}))
+                },
+                _ => return Err("continuous bounds must be numeric and homogeneously typed".into())
+            }
+            Nature::Categorical(nature) => Some(Nature::Categorical(NatureCategorical { categories: match nature.categories.standardize(&output_num_columns)? {
+                Jagged::F64(categories) => Jagged::F64(categories.iter().map(|cats|
+                    match (cats, &operator.f64) {
+                        (Some(cats), Some(operator)) =>
+                            Ok(Some(cats.iter().map(operator).collect::<Result<Vec<_>>>()?)),
+                        (Some(_), None) => Err("categories cannot be propagated for floats".into()),
+                        _ => Ok(None)
+                    }).collect::<Result<Vec<Option<Vec<_>>>>>()?),
+                Jagged::I64(categories) => Jagged::I64(categories.iter().map(|cats|
+                    match (cats, &operator.i64) {
+                        (Some(cats), Some(operator)) =>
+                            Ok(Some(cats.iter().map(operator).collect::<Result<Vec<_>>>()?)),
+                        (Some(_), None) => Err("categories cannot be propagated for integers".into()),
+                        _ => Ok(None)
+                    }).collect::<Result<Vec<Option<Vec<_>>>>>()?),
+                Jagged::Bool(categories) => Jagged::Bool(categories.iter().map(|cats|
+                    match (cats, &operator.bool) {
+                        (Some(cats), Some(operator)) =>
+                            Ok(Some(cats.iter().map(operator).collect::<Result<Vec<_>>>()?)),
+                        (Some(_), None) => Err("categories cannot be propagated for booleans".into()),
+                        _ => Ok(None)
+                    }).collect::<Result<Vec<Option<Vec<_>>>>>()?),
+                Jagged::Str(categories) => Jagged::Str(categories.iter().map(|cats|
+                    match (cats, &operator.str) {
+                        (Some(cats), Some(operator)) =>
+                            Ok(Some(cats.iter().map(operator).collect::<Result<Vec<_>>>()?)),
+                        (Some(_), None) => Err("categories cannot be propagated for strings".into()),
+                        _ => Ok(None)
+                    }).collect::<Result<Vec<Option<Vec<_>>>>>()?),
+            }}))
+        },
+        None => None
+    })
+}
+
 pub fn propagate_binary_nature(
     left_property: &ArrayProperties, right_property: &ArrayProperties,
-    operator: &Operators,
-    optimization_operator: &OptimizeOperators,
+    operator: &BinaryOperators,
+    optimization_operator: &OptimizeBinaryOperators,
     &output_num_columns: &i64
 ) -> Result<Option<Nature>> {
     Ok(match (left_property.nature.clone(), right_property.nature.clone()) {
@@ -955,7 +1069,7 @@ pub fn propagate_binary_nature(
                             .map(|((left_min, left_max), (right_min, right_max))| {
                                 match &optimization_operator.f64 {
                                     Some(operator) => {
-                                        let (col_min, col_max) = operator(Bounds {left_min, left_max, right_min, right_max })?;
+                                        let (col_min, col_max) = operator(BinaryBounds {left_min, left_max, right_min, right_max })?;
                                         min.push(col_min);
                                         max.push(col_max);
                                     },
@@ -981,7 +1095,7 @@ pub fn propagate_binary_nature(
                             .map(|((left_min, left_max), (right_min, right_max))| {
                                 match &optimization_operator.i64 {
                                     Some(operator) => {
-                                        let (col_min, col_max) = operator(Bounds {left_min, left_max, right_min, right_max })?;
+                                        let (col_min, col_max) = operator(BinaryBounds {left_min, left_max, right_min, right_max })?;
                                         min.push(col_min);
                                         max.push(col_max);
                                     },

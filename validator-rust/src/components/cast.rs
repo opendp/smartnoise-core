@@ -26,7 +26,7 @@ impl Component for proto::Cast {
             .ok_or_else(|| Error::from("type: missing, must be public"))?.first_string()
             .map_err(prepend("type:"))?;
 
-        let _prior_datatype = data_property.data_type.clone();
+        let prior_datatype = data_property.data_type.clone();
 
         data_property.data_type = match datatype.to_lowercase().as_str() {
             "float" => DataType::F64,
@@ -66,8 +66,10 @@ impl Component for proto::Cast {
                 data_property.nullity = false;
             },
             DataType::Str => {
-                data_property.nature = None;
                 data_property.nullity = false;
+                if prior_datatype != data_property.data_type {
+                    data_property.nature = None;
+                }
             },
             DataType::F64 => {
                 data_property.nature = None;

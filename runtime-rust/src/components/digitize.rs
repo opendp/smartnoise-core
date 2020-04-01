@@ -9,7 +9,6 @@ use crate::utilities::get_num_columns;
 use std::ops::{Div, Add};
 use whitenoise_validator::utilities::{get_argument, standardize_categorical_argument, standardize_numeric_argument, standardize_float_argument};
 use std::fmt::Display;
-use math;
 
 impl Evaluable for proto::Digitize {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
@@ -123,36 +122,36 @@ pub fn digitize<T: std::fmt::Debug + Display + std::cmp::PartialOrd + Clone + Di
 /// let index3 = bin_index(&data[4], &edges, &true);
 /// assert!(index1 == 2 && index2 == 1 && index3.is_none());
 /// ```
-pub fn bin_index<T: std::fmt::Debug + Display + std::cmp::PartialOrd + Clone + Div<T, Output=T> + Add<T, Output=T> + From<i32> + Copy>(
+pub fn bin_index<T: PartialOrd + Clone>(
     datum: &T,
     edges: &Vec<T>,
     inclusive_left: &bool,
 ) -> Option<usize> {
     // checks for nullity
-    if edges.len() == 0 || *datum < edges[0] || *datum > edges[edges.len() - 1] {
+    if edges.len() == 0 || datum < &edges[0] || datum > &edges[edges.len() - 1] {
         return None;
     }
 
     // assign to edge
     let mut l: usize = 0;
-    let mut r: usize = edges.len() - 1;
+    let mut r: usize = edges.len() - 2;
     let mut idx: usize = 0;
     while l <= r {
-        idx = math::round::floor(( (l+r) as f64 ) / 2., 0) as usize;
+        idx = (l + r) / 2;
         match inclusive_left {
             true => {
-                if edges[idx + 1] <= *datum {
+                if &edges[idx + 1] <= datum {
                     l = idx + 1;
-                } else if edges[idx] > *datum {
+                } else if &edges[idx] > datum {
                     r = idx - 1;
                 } else {
                     break
                 }
             },
-            false => 
-                if edges[idx + 1] < *datum {
+            false =>
+                if &edges[idx + 1] < datum {
                     l = idx + 1;
-                } else if edges[idx] >= *datum {
+                } else if &edges[idx] >= datum {
                     r = idx - 1;
                 } else {
                     break
