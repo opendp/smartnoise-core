@@ -65,12 +65,12 @@ pub enum BinSide {
 /// use whitenoise_runtime::components::bin::{bin, BinSide};
 ///
 /// let data = arr1(&[1.1, 2., 2.9, 4.1, 6.4]).into_dyn();
-/// let edges = vec![Some(vec![0., 1., 2., 3., 4., 5.])];
+/// let edges = vec![vec![0., 1., 2., 3., 4., 5.]];
 /// let inclusive_left = arr1(&[true]).into_dyn();
 /// let null = arr1(&[-1.]).into_dyn();
 /// let side = BinSide::Midpoint;
 ///
-/// let binned = bin(&data, &edges, &inclusive_left, &null, &side).unwrap();
+/// let binned = bin(&data, edges, &inclusive_left, &null, &side).unwrap();
 /// assert!(binned == arr1(&[1.5, 2.5, 2.5, 4.5, -1.]).into_dyn());
 /// ```
 pub fn bin<T: std::fmt::Debug + Display + std::cmp::PartialOrd + Clone + Div<T, Output=T> + Add<T, Output=T> + From<i32> + Copy>(

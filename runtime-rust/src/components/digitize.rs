@@ -59,8 +59,8 @@ impl Evaluable for proto::Digitize {
 /// let null = arr1(&[-1]).into_dyn();
 ///
 ///
-/// let num_columns = get_num_columns(&data)?;
-/// let edges = standardize_float_argument(&edges, &num_columns)?;
+/// let num_columns = get_num_columns(&data).unwrap();
+/// let edges = standardize_float_argument(&edges, &num_columns).unwrap();
 ///
 /// let digitization = digitize(&data, &edges, &inclusive_left, &null).unwrap();
 /// println!("digitize {:?}", digitization);

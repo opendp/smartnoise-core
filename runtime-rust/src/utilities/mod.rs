@@ -25,7 +25,7 @@ use rug::Float;
 /// ```
 /// use whitenoise_validator::errors::*;
 /// use ndarray::prelude::*;
-/// use whitenoise_runtime::components::broadcast_map;
+/// use whitenoise_runtime::utilities::broadcast_map;
 /// let left: ArrayD<f64> = arr1(&[1., -2., 3., 5.]).into_dyn();
 /// let right: ArrayD<f64> = arr1(&[2.]).into_dyn();
 /// let mapped: Result<ArrayD<f64>> = broadcast_map(&left, &right, &|l, r| l.max(r.clone()));
@@ -49,7 +49,7 @@ pub fn broadcast_map<T, U>(
 
 #[cfg(test)]
 mod broadcast_map_tests {
-    use ndarray::{Array, arr0, arr1, arr2};
+    use ndarray::{arr0, arr1, arr2};
     use crate::utilities::broadcast_map;
 
     #[test]
