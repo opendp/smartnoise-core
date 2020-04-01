@@ -12,7 +12,6 @@ use ndarray::prelude::*;
 
 
 impl Component for proto::Sum {
-    // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
@@ -44,6 +43,7 @@ impl Component for proto::Sum {
 }
 
 impl Aggregator for proto::Sum {
+    /// Sum sensitivities [are backed by the the proofs here](https://github.com/opendifferentialprivacy/whitenoise-core/blob/955703e3d80405d175c8f4642597ccdf2c00332a/whitepapers/sensitivities/sums/sums.pdf)
     fn compute_sensitivity(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
