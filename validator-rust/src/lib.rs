@@ -122,16 +122,25 @@ pub fn generate_report(
         let node_id = traversal.last().unwrap().clone();
         let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
 
-        // get node properties (necessary or not?)
-        let mut input_properties = utilities::get_input_properties(&component, &graph_properties)?;
-        // input_properties.insert("argnames".to_string(), )
+        // variable names for argument nodes
+        let mut arguments_vars: HashMap<String, Vec<String>> = HashMap::new();
+
+        // iterate through argument nodes
+        for (field_id, field) in component.arguments.clone() {
+            // get variable names corresponding to that argument
+            if let Some(arg_vars) = varnames.get(&field).clone() {
+                arguments_vars.insert(field_id, arg_vars.to_vec());
+            }
+        }
+
         // get variable names for this node
-        // let node_varnames = component.clone().variant.unwrap().get_names(
-        //     &input_properties
-        // );
+        let node_vars = match component.clone().variant.unwrap().get_names(arguments_vars) {
+            Ok(node_vars) => node_vars,
+            Err(_) => Vec::new()
+        };
 
         // update names in hashmap
-        // varnames.insert(node_id.clone(), node_varnames.clone());
+        varnames.insert(node_id.clone(), node_vars);
     }
 
     let release_schemas = graph.iter()
