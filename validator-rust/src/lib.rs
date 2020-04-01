@@ -112,6 +112,28 @@ pub fn generate_report(
     let (graph_properties, _graph_expanded) = utilities::propagate_properties(analysis, release)?;
     let release = utilities::serial::parse_release(&release)?;
 
+    // variable names
+    let mut varnames: HashMap<u32, Vec<String>> = HashMap::new();
+    // get the traversal (reuse from propagate?)
+    let mut traversal: Vec<u32> = utilities::get_traversal(&graph)?; 
+    traversal.reverse();
+
+    while !traversal.is_empty() {
+        let node_id = traversal.last().unwrap().clone();
+        let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
+
+        // get node properties (necessary or not?)
+        let mut input_properties = utilities::get_input_properties(&component, &graph_properties)?;
+        // input_properties.insert("argnames".to_string(), )
+        // get variable names for this node
+        // let node_varnames = component.clone().variant.unwrap().get_names(
+        //     &input_properties
+        // );
+
+        // update names in hashmap
+        // varnames.insert(node_id.clone(), node_varnames.clone());
+    }
+
     let release_schemas = graph.iter()
         .map(|(node_id, component)| {
             let public_arguments = utilities::get_input_arguments(&component, &release)?;
