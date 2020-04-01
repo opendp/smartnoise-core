@@ -30,16 +30,6 @@ impl Component for proto::DpMean {
         Err("DPMaximum is abstract, and has no property propagation".into())
     }
 
-    /// Accessor method for names
-    /// # Arguments
-    /// * `&self` - this
-    /// * `_properties` - NodeProperties
-    fn get_names(
-        &self,
-        arg_vars: HashMap<String, Vec<String>>,
-    ) -> Result<Vec<String>> {
-        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
-    }
 }
 
 impl Expandable for proto::DpMean {

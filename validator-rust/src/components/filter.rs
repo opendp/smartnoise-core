@@ -45,10 +45,5 @@ impl Component for proto::Filter {
         Ok(data_property.into())
     }
 
-    fn get_names(
-        &self,
-        arg_vars: HashMap<String, Vec<String>>,
-    ) -> Result<Vec<String>> {
-        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
-    }
+
 }

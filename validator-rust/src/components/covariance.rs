@@ -70,12 +70,6 @@ impl Component for proto::Covariance {
         }
     }
 
-    fn get_names(
-        &self,
-        arg_vars: HashMap<String, Vec<String>>,
-    ) -> Result<Vec<String>> {
-        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
-    }
 }
 
 impl Aggregator for proto::Covariance {

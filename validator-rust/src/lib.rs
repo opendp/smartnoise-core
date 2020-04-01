@@ -121,6 +121,7 @@ pub fn generate_report(
     while !traversal.is_empty() {
         let node_id = traversal.last().unwrap().clone();
         let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
+        let public_arguments = utilities::get_input_arguments(&component, &release)?;
 
         // variable names for argument nodes
         let mut arguments_vars: HashMap<String, Vec<String>> = HashMap::new();
@@ -134,7 +135,9 @@ pub fn generate_report(
         }
 
         // get variable names for this node
-        let node_vars = match component.clone().variant.unwrap().get_names(arguments_vars) {
+        let node_vars = match component.clone().variant.unwrap().get_names(
+            &public_arguments, arguments_vars
+        ) {
             Ok(node_vars) => node_vars,
             Err(_) => Vec::new()
         };

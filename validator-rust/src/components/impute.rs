@@ -8,7 +8,7 @@ use crate::proto;
 use crate::components::{Component, Expandable};
 
 use ndarray;
-use crate::base::{Vector1DNull, Nature, NatureContinuous, Value, NodeProperties, Array, ValueProperties};
+use crate::base::{Vector1DNull, Nature, NatureContinuous, Value, Array, ValueProperties};
 use crate::utilities::{prepend, get_literal};
 
 
@@ -89,12 +89,7 @@ impl Component for proto::Impute {
         Ok(data_property.into())
     }
 
-    fn get_names(
-        &self,
-        arg_vars: HashMap<String, Vec<String>>,
-    ) -> Result<Vec<String>> {
-        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
-    }
+
 }
 
 impl Expandable for proto::Impute {

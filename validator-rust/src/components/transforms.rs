@@ -1,7 +1,7 @@
 use crate::errors::*;
 
 use std::collections::HashMap;
-use crate::base::{Nature, NodeProperties, NatureCategorical, Vector1DNull, Jagged, ArrayProperties, ValueProperties, Array};
+use crate::base::{Nature, NatureCategorical, Vector1DNull, Jagged, ArrayProperties, ValueProperties, Array};
 
 use crate::{proto, base};
 
@@ -48,12 +48,7 @@ impl Component for proto::Add {
         }.into())
     }
 
-    fn get_names(
-        &self,
-        arg_vars: HashMap<String, Vec<String>>,
-    ) -> Result<Vec<String>> {
-        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
-    }
+
 }
 
 
@@ -92,12 +87,7 @@ impl Component for proto::Subtract {
         }.into())
     }
 
-    fn get_names(
-        &self,
-        arg_vars: HashMap<String, Vec<String>>,
-    ) -> Result<Vec<String>> {
-        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
-    }
+
 }
 
 
@@ -159,12 +149,7 @@ impl Component for proto::Divide {
         }.into())
     }
 
-    fn get_names(
-        &self,
-        arg_vars: HashMap<String, Vec<String>>,
-    ) -> Result<Vec<String>> {
-        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
-    }
+
 }
 
 
@@ -199,12 +184,7 @@ impl Component for proto::Multiply {
         }.into())
     }
 
-    fn get_names(
-        &self,
-        arg_vars: HashMap<String, Vec<String>>,
-    ) -> Result<Vec<String>> {
-        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
-    }
+
 }
 
 impl Component for proto::Power {
@@ -239,12 +219,7 @@ impl Component for proto::Power {
         }.into())
     }
 
-    fn get_names(
-        &self,
-        arg_vars: HashMap<String, Vec<String>>,
-    ) -> Result<Vec<String>> {
-        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
-    }
+
 }
 
 impl Component for proto::Log {
@@ -278,12 +253,7 @@ impl Component for proto::Log {
         }.into())
     }
 
-    fn get_names(
-        &self,
-        arg_vars: HashMap<String, Vec<String>>,
-    ) -> Result<Vec<String>> {
-        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
-    }
+
 }
 
 
@@ -319,12 +289,7 @@ impl Component for proto::Negative {
         Ok(data_property.into())
     }
 
-    fn get_names(
-        &self,
-        arg_vars: HashMap<String, Vec<String>>,
-    ) -> Result<Vec<String>> {
-        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
-    }
+
 }
 
 impl Component for proto::Modulo {
@@ -369,12 +334,7 @@ impl Component for proto::Modulo {
             dataset_id: left_property.dataset_id
         }.into())
     }
-    fn get_names(
-        &self,
-        arg_vars: HashMap<String, Vec<String>>,
-    ) -> Result<Vec<String>> {
-        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
-    }
+
 }
 
 impl Expandable for proto::Modulo {
@@ -460,12 +420,7 @@ impl Component for proto::And {
         }.into())
     }
 
-    fn get_names(
-        &self,
-        arg_vars: HashMap<String, Vec<String>>,
-    ) -> Result<Vec<String>> {
-        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
-    }
+
 }
 
 
@@ -502,12 +457,7 @@ impl Component for proto::Or {
         }.into())
     }
 
-    fn get_names(
-        &self,
-        arg_vars: HashMap<String, Vec<String>>,
-    ) -> Result<Vec<String>> {
-        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
-    }
+
 }
 
 
@@ -544,12 +494,7 @@ impl Component for proto::Negate {
         }.into())
     }
 
-    fn get_names(
-        &self,
-        arg_vars: HashMap<String, Vec<String>>,
-    ) -> Result<Vec<String>> {
-        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
-    }
+
 }
 
 
@@ -586,12 +531,7 @@ impl Component for proto::Equal {
         }.into())
     }
 
-    fn get_names(
-        &self,
-        arg_vars: HashMap<String, Vec<String>>,
-    ) -> Result<Vec<String>> {
-        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
-    }
+
 }
 
 
@@ -628,12 +568,7 @@ impl Component for proto::LessThan {
         }.into())
     }
 
-    fn get_names(
-        &self,
-        arg_vars: HashMap<String, Vec<String>>,
-    ) -> Result<Vec<String>> {
-        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
-    }
+
 }
 
 
@@ -670,12 +605,7 @@ impl Component for proto::GreaterThan {
         }.into())
     }
 
-    fn get_names(
-        &self,
-        arg_vars: HashMap<String, Vec<String>>,
-    ) -> Result<Vec<String>> {
-        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
-    }
+
 }
 
 pub struct Operators {

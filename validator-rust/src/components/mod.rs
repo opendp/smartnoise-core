@@ -81,12 +81,6 @@ pub trait Component {
         public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
     ) -> Result<ValueProperties>;
-
-    /// Utility function for a recursive algorithm to derive human readable names on the columns in the output data.
-    fn get_names(
-        &self,
-        arg_vars: HashMap<String, Vec<String>>,
-    ) -> Result<Vec<String>>;
 }
 
 /// Expandable Component trait
@@ -178,6 +172,19 @@ pub trait Report {
     ) -> Result<Option<Vec<JSONRelease>>>;
 }
 
+/// Named component trait
+///
+/// Named components involve variables and keep track of the human readable names for these variables
+/// and may modify these variables names.
+pub trait Named {
+    /// Propagate the human readable names of the variables associated with this component
+    fn get_names(
+        &self,
+        public_arguments: &HashMap<String, Value>,
+        argument_variables: HashMap<String, Vec<String>>,
+    ) -> Result<Vec<String>>;
+}
+
 
 
 impl Component for proto::component::Variant {
@@ -221,33 +228,6 @@ impl Component for proto::component::Variant {
         );
 
         return Err(format!("proto component {:?} is missing its Component trait", self).into())
-    }
-
-    fn get_names(
-        &self,
-        arg_vars: HashMap<String, Vec<String>>,
-    ) -> Result<Vec<String>> {
-
-        macro_rules! get_names{
-            ($( $variant:ident ),*) => {
-                {
-                    $(
-                       if let proto::component::Variant::$variant(x) = self {
-                            return x.get_names()
-                                .chain_err(|| format!("node specification {:?}:", self))
-                       }
-                    )*
-                }
-            }
-        }
-
-        get_names!(
-            // INSERT COMPONENT LIST
-//            Rowmin, Dpmean, Impute
-        );
-        // TODO: default implementation
-
-        Err("get_names not implemented".into())
     }
 }
 
@@ -423,5 +403,41 @@ impl Report for proto::component::Variant {
         );
 
         Ok(None)
+    }
+}
+
+impl Named for proto::component::Variant {
+    /// Utility implementation on the enum containing all variants of a component.
+    ///
+    /// This utility delegates evaluation to the concrete implementation of each component variant.
+    fn get_names(
+        &self,
+        public_arguments: &HashMap<String, Value>,
+        arg_vars: HashMap<String, Vec<String>>,
+    ) -> Result<Vec<String>> {
+
+        macro_rules! get_names{
+            ($( $variant:ident ),*) => {
+                {
+                    $(
+                       if let proto::component::Variant::$variant(x) = self {
+                            return x.get_names()
+                                .chain_err(|| format!("node specification {:?}:", self))
+                       }
+                    )*
+                }
+            }
+        }
+
+        get_names!(
+            // INSERT COMPONENT LIST
+//            Rowmin, Dpmean, Impute
+        );
+        // TODO: default implementation
+
+        // Err("get_names not implemented".into())
+        
+        // default implementation
+        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
     }
 }

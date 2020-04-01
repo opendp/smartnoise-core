@@ -1,7 +1,7 @@
 use crate::errors::*;
 
 use std::collections::HashMap;
-use crate::base::{Array, Value, NodeProperties, ValueProperties, Hashmap, ArrayProperties, Nature, NatureContinuous, NatureCategorical, Vector1DNull, Jagged};
+use crate::base::{Array, Value, ValueProperties, Hashmap, ArrayProperties, Nature, NatureContinuous, NatureCategorical, Vector1DNull, Jagged};
 
 use crate::{proto, base};
 use crate::components::Component;
@@ -102,12 +102,6 @@ impl Component for proto::Index {
         stack_properties(&properties)
     }
 
-    fn get_names(
-        &self,
-        arg_vars: HashMap<String, Vec<String>>,
-    ) -> Result<Vec<String>> {
-        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
-    }
 }
 
 

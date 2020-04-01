@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use crate::{proto, base};
 
 use crate::components::{Component};
-use crate::base::{Value, Jagged, NodeProperties, ValueProperties, HashmapProperties, ArrayProperties};
+use crate::base::{Value, Jagged, ValueProperties, HashmapProperties, ArrayProperties};
 use crate::utilities::prepend;
 
 
@@ -74,12 +74,7 @@ impl Component for proto::Partition {
         }.into())
     }
 
-    fn get_names(
-        &self,
-        arg_vars: HashMap<String, Vec<String>>,
-    ) -> Result<Vec<String>> {
-        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
-    }
+
 }
 
 pub fn broadcast_partitions<T: Clone + Eq + std::hash::Hash>(
