@@ -7,6 +7,7 @@ use crate::components::Evaluable;
 use ndarray::ArrayD;
 use crate::utilities::get_num_columns;
 use whitenoise_validator::proto;
+use std::hash::Hash;
 
 impl Evaluable for proto::Clamp {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
@@ -17,8 +18,9 @@ impl Evaluable for proto::Clamp {
                 (Value::Array(data), Value::Jagged(categories), Value::Array(nulls)) => Ok(match (data, categories, nulls) {
                     (Array::Bool(data), Jagged::Bool(categories), Array::Bool(nulls)) =>
                         clamp_categorical(&data, &categories, &nulls)?.into(),
-                    (Array::F64(data), Jagged::F64(categories), Array::F64(nulls)) =>
-                        clamp_categorical(&data, &categories, &nulls)?.into(),
+                    (Array::F64(_), Jagged::F64(_), Array::F64(_)) =>
+                        return Err("float clamping is not supported".into()),
+//                        clamp_categorical(&data, &categories, &nulls)?.into(),
                     (Array::I64(data), Jagged::I64(categories), Array::I64(nulls)) =>
                         clamp_categorical(&data, &categories, &nulls)?.into(),
                     (Array::Str(data), Jagged::Str(categories), Array::Str(nulls)) =>
@@ -163,7 +165,7 @@ pub fn clamp_numeric_integer(
 /// assert!(clamped_data == arr2(&[["a".to_string(), "b".to_string(), "not_a_letter".to_string()],
 ///                                ["a".to_string(), "not_a_letter".to_string(), "b".to_string()]]).into_dyn();)
 /// ```
-pub fn clamp_categorical<T>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>, null_value: &ArrayD<T>)
+pub fn clamp_categorical<T: Ord + Hash>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>, null_value: &ArrayD<T>)
                             -> Result<ArrayD<T>> where T:Clone, T:PartialEq, T:Default {
 
     let mut data = data.clone();

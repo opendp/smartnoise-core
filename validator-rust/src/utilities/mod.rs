@@ -20,6 +20,7 @@ use ndarray::prelude::*;
 use crate::components::*;
 use crate::utilities::array::slow_select;
 use std::iter::FromIterator;
+use noisy_float::prelude::n64;
 
 /// Retrieve the Values for each of the arguments of a component from the Release.
 pub fn get_input_arguments(
@@ -233,15 +234,51 @@ pub fn normalize_probabilities(weights: &[f64]) -> Vec<f64> {
     weights.iter().map(|prob| prob / sum).collect()
 }
 
+pub fn standardize_float_argument(
+    categories: &[Option<Vec<f64>>],
+    length: &i64
+) -> Result<Vec<Vec<f64>>> {
+    // check that no categories are explicitly None
+    let mut categories = categories.iter().cloned().collect::<Option<Vec<Vec<f64>>>>()
+        .ok_or_else(|| Error::from("categories must be defined for all columns"))?;
+
+    if categories.is_empty() {
+        return Err("no categories are defined".into());
+    }
+
+    categories.clone().into_iter().map(|mut col| {
+        if !col.iter().all(|v| v.is_finite()) {
+            return Err("all floats must be finite".into())
+        }
+
+        col.sort_unstable_by(|l, r| l.partial_cmp(r).unwrap());
+
+        let original_length = col.len();
+
+        if deduplicate(col.into_iter().map(n64).collect()).len() < original_length {
+            return Err("floats must not contain duplicates".into())
+        }
+        Ok(())
+    }).collect::<Result<()>>()?;
+
+    // broadcast categories across all columns, if only one categories set is defined
+    if categories.len() == 1 {
+        categories = (0..*length).map(|_| categories.first().unwrap().clone()).collect();
+    }
+
+    Ok(categories)
+}
+
 /// Given a jagged categories array, conduct well-formedness checks and broadcast
 #[doc(hidden)]
-pub fn standardize_categorical_argument<T: Clone>(
+pub fn standardize_categorical_argument<T: Clone + Eq + Hash + Ord>(
     categories: &[Option<Vec<T>>],
     length: &i64,
 ) -> Result<Vec<Vec<T>>> {
     // check that no categories are explicitly None
     let mut categories = categories.iter().cloned().collect::<Option<Vec<Vec<T>>>>()
-        .ok_or_else(|| Error::from("categories must be defined for all columns"))?;
+        .ok_or_else(|| Error::from("categories must be defined for all columns"))?.into_iter()
+        .map(deduplicate).collect::<Vec<Vec<T>>>();
 
     if categories.is_empty() {
         return Err("no categories are defined".into());

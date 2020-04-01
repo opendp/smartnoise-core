@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use crate::base::{Nature, NodeProperties, NatureCategorical, Jagged, ValueProperties, Array};
 
 use crate::proto;
-use crate::utilities::{prepend, standardize_categorical_argument, standardize_null_target_argument};
+use crate::utilities::{prepend, standardize_categorical_argument, standardize_null_target_argument, standardize_float_argument};
 use crate::components::Component;
 
 use crate::base::Value;
@@ -34,7 +34,7 @@ impl Component for proto::Bin {
             .and_then(|v| match (v, null_values) {
                 (Jagged::F64(jagged), Array::F64(null)) => {
                     let null = standardize_null_target_argument(null, &num_columns)?;
-                    let mut edges = standardize_categorical_argument(jagged, &num_columns)?;
+                    let mut edges = standardize_float_argument(jagged, &num_columns)?;
                     let edges = nature_from_edges(&self.side, &mut edges)?;
                     data_property.nature = Some(Nature::Categorical(NatureCategorical {
                         categories: Jagged::F64(edges.into_iter().zip(null.into_iter())

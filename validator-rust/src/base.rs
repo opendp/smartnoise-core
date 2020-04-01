@@ -385,6 +385,22 @@ impl Jagged {
                 .collect::<Vec<Option<Vec<String>>>>().into()),
         }
     }
+
+    pub fn standardize(&self, num_columns: &i64) -> Result<Jagged> {
+        match self {
+            Jagged::F64(_) =>
+                Err("float data may not be categorical".into()),
+            Jagged::I64(categories) =>
+                Ok(standardize_categorical_argument(categories, &num_columns)?
+                    .into_iter().map(Some).collect::<Vec<Option<Vec<i64>>>>().into()),
+            Jagged::Bool(categories) =>
+                Ok(standardize_categorical_argument(categories, &num_columns)?
+                    .into_iter().map(Some).collect::<Vec<Option<Vec<bool>>>>().into()),
+            Jagged::Str(categories) =>
+                Ok(standardize_categorical_argument(categories, &num_columns)?
+                    .into_iter().map(Some).collect::<Vec<Option<Vec<String>>>>().into()),
+        }
+    }
 }
 
 
@@ -661,29 +677,8 @@ impl ArrayProperties {
             None => Err("categorical nature is not defined".into())
         }
     }
-    pub fn categories_lengths(&self) -> Result<Vec<i64>> {
-        let num_columns = self.num_columns()?;
-
-        match self.categories() {
-            Ok(categories) => Ok(match categories {
-                Jagged::Str(categories) =>
-                    standardize_categorical_argument(&categories, &num_columns)?.iter()
-                        .map(|cats| cats.len() as i64).collect(),
-                Jagged::Bool(categories) =>
-                    standardize_categorical_argument(&categories, &num_columns)?.iter()
-                        .map(|cats| cats.len() as i64).collect(),
-                Jagged::I64(categories) =>
-                    standardize_categorical_argument(&categories, &num_columns)?.iter()
-                        .map(|cats| cats.len() as i64).collect(),
-                Jagged::F64(categories) =>
-                    standardize_categorical_argument(&categories, &num_columns)?.iter()
-                        .map(|cats| cats.len() as i64).collect(),
-            }),
-            Err(_) => Ok((0..num_columns).map(|_| 1).collect())
-        }
-    }
     pub fn assert_categorical(&self) -> Result<()> {
-        self.categories_lengths()?;
+        self.categories()?.lengths()?;
         Ok(())
     }
     pub fn assert_non_null(&self) -> Result<()> {

@@ -34,10 +34,30 @@ impl Component for proto::Add {
             nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
             nature: propagate_binary_nature(&left_property, &right_property, &Operators {
-                f64: Some(Box::new(|l: &f64, r: &f64| Ok(l + r))),
-                i64: Some(Box::new(|l: &i64, r: &i64| l.checked_add(r).ok_or_else(|| Error::from("addition results in underflow or overflow")))),
+                f64: Some(Box::new(|l: &f64, r: &f64|
+                    Ok(l + r))),
+                i64: Some(Box::new(|l: &i64, r: &i64|
+                    l.checked_add(r).ok_or_else(|| Error::from("addition may result in underflow or overflow")))),
                 str: None,
                 bool: None,
+            }, &OptimizeOperators {
+                f64: Some(Box::new(|bounds| Ok((
+                    bounds.left_min.and_then(|lmin| bounds.right_min.and_then(|rmin|
+                        Some(lmin + rmin))),
+                    bounds.left_max.and_then(|lmax| bounds.right_max.and_then(|rmax|
+                        Some(lmax + rmax))),
+                )))),
+                i64: Some(Box::new(|bounds| Ok((
+                    match (bounds.left_min, bounds.right_min) {
+                        (Some(lmin), Some(rmin)) => Some(lmin.checked_add(rmin)
+                            .ok_or_else(|| Error::from("addition may result in underflow or overflow"))?),
+                        _ => None
+                    },
+                    match (bounds.left_max, bounds.right_max) {
+                        (Some(lmax), Some(rmax)) => Some(lmax.checked_add(rmax)
+                            .ok_or_else(|| Error::from("addition may result in underflow or overflow"))?),
+                        _ => None
+                    }))))
             }, &num_columns)?,
             c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
@@ -79,10 +99,30 @@ impl Component for proto::Subtract {
             nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
             nature: propagate_binary_nature(&left_property, &right_property, &Operators {
-                f64: Some(Box::new(|l: &f64, r: &f64| Ok(l - r))),
-                i64: Some(Box::new(|l: &i64, r: &i64| l.checked_sub(r).ok_or_else(|| Error::from("subtraction results in underflow or overflow")))),
+                f64: Some(Box::new(|l: &f64, r: &f64|
+                    Ok(l - r))),
+                i64: Some(Box::new(|l: &i64, r: &i64|
+                    l.checked_sub(r).ok_or_else(|| Error::from("subtraction may result in underflow or overflow")))),
                 str: None,
                 bool: None,
+            }, &OptimizeOperators {
+                f64: Some(Box::new(|bounds| Ok((
+                    bounds.left_min.and_then(|lmin| bounds.right_min.and_then(|rmin|
+                        Some(lmin - rmin))),
+                    bounds.left_max.and_then(|lmax| bounds.right_max.and_then(|rmax|
+                        Some(lmax - rmax))),
+                )))),
+                i64: Some(Box::new(|bounds| Ok((
+                    match (bounds.left_min, bounds.right_min) {
+                        (Some(lmin), Some(rmin)) => Some(lmin.checked_sub(rmin)
+                            .ok_or_else(|| Error::from("subtraction may result in underflow or overflow"))?),
+                        _ => None
+                    },
+                    match (bounds.left_max, bounds.right_max) {
+                        (Some(lmax), Some(rmax)) => Some(lmax.checked_sub(rmax)
+                            .ok_or_else(|| Error::from("subtraction may result in underflow or overflow"))?),
+                        _ => None
+                    }))))
             }, &num_columns)?,
             c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
@@ -103,6 +143,124 @@ impl Component for proto::Subtract {
     }
 }
 
+impl Component for proto::Multiply {
+    fn propagate_property(
+        &self,
+        _privacy_definition: &proto::PrivacyDefinition,
+        _public_arguments: &HashMap<String, Value>,
+        properties: &base::NodeProperties,
+    ) -> Result<ValueProperties> {
+        let left_property = properties.get("left")
+            .ok_or("left: missing")?.array()
+            .map_err(prepend("left:"))?.clone();
+        let right_property = properties.get("right")
+            .ok_or("right: missing")?.array()
+            .map_err(prepend("right:"))?.clone();
+
+        let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
+
+        Ok(ArrayProperties {
+            nullity: left_property.nullity || right_property.nullity,
+            releasable: left_property.releasable && right_property.releasable,
+            nature: propagate_binary_nature(&left_property, &right_property, &Operators {
+                f64: Some(Box::new(|l: &f64, r: &f64| {
+                    let category = l * r;
+                    if !category.is_finite() {
+                        return Err("multiplication may result in underflow or overflow".into())
+                    }
+                    Ok(category)
+                })),
+                i64: Some(Box::new(|l: &i64, r: &i64|
+                    l.checked_mul(*r).ok_or_else(|| Error::from("multiplication may result in underflow or overflow")))),
+                str: None,
+                bool: None,
+            }, &OptimizeOperators {
+                f64: Some(Box::new(|bounds| {
+                    let a = match bounds.left_min {
+                        Some(v) => v,
+                        None => return Ok((None, None))
+                    }.clone();
+                    let c = match bounds.left_max {
+                        Some(v) => v,
+                        None => return Ok((None, None))
+                    }.clone();
+                    let d = match bounds.right_min {
+                        Some(v) => v,
+                        None => return Ok((None, None))
+                    }.clone();
+                    let f = match bounds.right_max {
+                        Some(v) => v,
+                        None => return Ok((None, None))
+                    }.clone();
+
+                    // maximize {b * d | a <= b <= c && d <= e <= f}
+                    let max = match (a, c, d, f) {
+
+                        // if either interval is a point
+                        (a, c, d, f) if a == c || d == f =>
+                            Some(c * f),
+
+                        // if both intervals are not points
+                        (a, c, d, f) if (d < 0. && ((c > 0. && ((f == 0. && a < 0.) || (a * d > c * f && f > 0. && d + f >= 0.))) || (a < c && f >= 0. && c <= 0.)))
+                            || (a < c && c <= 0. && ((d < f && f < 0.) || (f > 0. && d + f < 0.)))
+                            || (c > 0. && ((d < f && f < 0. && a <= 0.) || (f > 0. && d + f < 0. && a * d <= c * f))) =>
+                            Some(a * d),
+                        (a, c, d, f) if 0. <= d && d < f && c <= 0. && a < c =>
+                            Some(c * d),
+                        (a, c, d, f) if f < 0. && d < f && 0. < a && a < c =>
+                            Some(a * f),
+                        (a, c, d, f) if c > 0. && f > 0. && a < c
+                            && ((a * d >= c * f && d + f >= 0. && d < 0.) || (d < f && d >= 0.) || (c * f < a * d && d + f < 0.)) =>
+                            Some(c * f),
+
+                        // Prior cases should cover all
+                        _ => None
+                    };
+
+                    // minimize {b * d | a <= b <= c && d <= e <= f}
+                    let min = match (a, c, d, f) {
+                        // if either interval is a point
+                        (a, c, d, f) if a == c || d == f =>
+                            Some(a * d),
+
+                        // if both intervals are not points
+                        (a, c, d, f) if d > 0. && d < f && a > 0. && a < c =>
+                            Some(a * d),
+                        (a, c, d, f) if c > 0. && a < c && ((f > 0. && a * f > c * d && d < 0.)
+                            || (d < f && f <= 0.)) =>
+                            Some(c * d),
+                        (a, c, d, f) if f > 0. && ((c > 0. && ((a < 0. && (d == 0. || (d >= 0. && d < f)
+                            || (d <= 0. && a * f <= c * d))) || (d < 0. && a * f <= c * d)))
+                            || (a < c && c <= 0. && (d < f || d <= 0.))) =>
+                            Some(a * f),
+                        (a, c, d, f) if f <= 0. && d < f && c <= 0. && a < c =>
+                            Some(c * f),
+
+                        // Prior cases should cover all
+                        _ => None
+                    };
+                    Ok((min, max))
+                })),
+                // multiplicative bounds propagation for ints is not implemented
+                i64: None}, &num_columns)?,
+            c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
+                .zip(broadcast(&right_property.c_stability, &num_columns)?)
+                .map(|(l, r)| l.max(r)).collect(),
+            num_columns: Some(num_columns),
+            data_type: left_property.data_type,
+            num_records,
+            aggregator: None,
+            dataset_id: left_property.dataset_id,
+        }.into())
+    }
+
+    fn get_names(
+        &self,
+        _properties: &NodeProperties,
+    ) -> Result<Vec<String>> {
+        Err("get_names not implemented".into())
+    }
+}
 
 impl Component for proto::Divide {
     fn propagate_property(
@@ -150,7 +308,79 @@ impl Component for proto::Divide {
         Ok(ArrayProperties {
             nullity: left_property.nullity || right_property.nullity || float_denominator_may_span_zero,
             releasable: left_property.releasable && right_property.releasable,
-            nature: None,
+            nature: propagate_binary_nature(&left_property, &right_property, &Operators {
+                f64: Some(Box::new(|l: &f64, r: &f64| {
+                    let category = l / r;
+                    if !category.is_finite() {
+                        return Err("either division by zero, underflow or overflow".into())
+                    }
+                    Ok(category)
+                })),
+                i64: Some(Box::new(|l: &i64, r: &i64|
+                    l.checked_div(*r).ok_or_else(|| Error::from("either division by zero, or underflow or overflow")))),
+                str: None,
+                bool: None,
+            }, &OptimizeOperators {
+                f64: Some(Box::new(|bounds| {
+                    let a = match bounds.left_min {
+                        Some(v) => v,
+                        None => return Ok((None, None))
+                    }.clone();
+                    let c = match bounds.left_max {
+                        Some(v) => v,
+                        None => return Ok((None, None))
+                    }.clone();
+                    let d = match bounds.right_min {
+                        Some(v) => v,
+                        None => return Ok((None, None))
+                    }.clone();
+                    let f = match bounds.right_max {
+                        Some(v) => v,
+                        None => return Ok((None, None))
+                    }.clone();
+
+                    // maximize {b * d | a <= b <= c && d <= e <= f}
+                    let max = match (a, c, d, f) {
+
+                        // if either interval is a point
+                        (a, c, d, f) if a == c || d == f =>
+                            Some(c * f),
+
+                        // if both intervals are not points
+                        (a, c, d, f) if a > 0. && a < c && ((f == 0. && d < 0.) && (d < f && f < 0.)) =>
+                            Some(a / d),
+                        (a, c, d, f) if d > 0. && d < f && c > 0. && a < c =>
+                            Some(c / d),
+                        (a, c, d, f) if (a < c || c > 0.) && d < f && f < 0. && (a <= 0. || c <= 0.) =>
+                            Some(a / f),
+                        (a, c, d, f) if f > 0. && a < c && c <= 0. && (d == 0. || (d >= 0. && d < f)) =>
+                            Some(c / f),
+
+                        _ => return Err("potential division by zero".into())
+                    };
+
+                    // minimize {b * d | a <= b <= c && d <= e <= f}
+                    let min = match (a, c, d, f) {
+                        // if either interval is a point
+                        (a, c, d, f) if a == c || d == f =>
+                            Some(a * d),
+
+                        // if both intervals are not points
+                        (a, c, d, f) if 0. < d && d < f && (a < 0. || c <= 0.) && (a < c && c > 0.) =>
+                            Some(a / d),
+                        (a, c, d, f) if a < c && c <= 0. && ((f == 0. && d < 0.) || (d < f && f < 0.)) =>
+                            Some(c / d),
+                        (a, c, d, f) if (d == 0. || (0. < d && d < f)) && 0. < a && a < c && f > 0. =>
+                            Some(a / f),
+                        (a, c, d, f) if f < 0. && d < f && c > 0. && a < c =>
+                            Some(c / f),
+
+                        _ => return Err("potential division by zero".into())
+                    };
+                    Ok((min, max))
+                })),
+                // multiplicative bounds propagation for ints is not implemented
+                i64: None}, &num_columns)?,
             c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
                 .map(|(l, r)| l.max(r)).collect(),
@@ -158,46 +388,6 @@ impl Component for proto::Divide {
             num_records,
             aggregator: None,
             data_type: left_property.data_type,
-            dataset_id: left_property.dataset_id,
-        }.into())
-    }
-
-    fn get_names(
-        &self,
-        _properties: &NodeProperties,
-    ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
-    }
-}
-
-
-impl Component for proto::Multiply {
-    fn propagate_property(
-        &self,
-        _privacy_definition: &proto::PrivacyDefinition,
-        _public_arguments: &HashMap<String, Value>,
-        properties: &base::NodeProperties,
-    ) -> Result<ValueProperties> {
-        let left_property = properties.get("left")
-            .ok_or("left: missing")?.array()
-            .map_err(prepend("left:"))?.clone();
-        let right_property = properties.get("right")
-            .ok_or("right: missing")?.array()
-            .map_err(prepend("right:"))?.clone();
-
-        let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
-
-        Ok(ArrayProperties {
-            nullity: left_property.nullity || right_property.nullity,
-            releasable: left_property.releasable && right_property.releasable,
-            nature: None,
-            c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
-                .zip(broadcast(&right_property.c_stability, &num_columns)?)
-                .map(|(l, r)| l.max(r)).collect(),
-            num_columns: Some(num_columns),
-            data_type: left_property.data_type,
-            num_records,
-            aggregator: None,
             dataset_id: left_property.dataset_id,
         }.into())
     }
@@ -699,6 +889,17 @@ pub struct Operators {
     pub bool: Option<Box<dyn Fn(&bool, &bool) -> Result<bool>>>,
 }
 
+pub struct Bounds<'a, T> {
+    pub left_min: &'a Option<T>,
+    pub left_max: &'a Option<T>,
+    pub right_min: &'a Option<T>,
+    pub right_max: &'a Option<T>,
+}
+pub struct OptimizeOperators {
+    pub f64: Option<Box<dyn Fn(Bounds<f64>) -> Result<(Option<f64>, Option<f64>)>>>,
+    pub i64: Option<Box<dyn Fn(Bounds<i64>) -> Result<(Option<i64>, Option<i64>)>>>,
+}
+
 pub fn propagate_binary_shape(left_property: &ArrayProperties, right_property: &ArrayProperties) -> Result<(i64, Option<i64>)> {
     let left_num_columns = left_property.num_columns()?;
     let right_num_columns = right_property.num_columns()?;
@@ -732,119 +933,125 @@ pub fn propagate_binary_shape(left_property: &ArrayProperties, right_property: &
     Ok((output_num_columns, Some(output_num_records)))
 }
 
-pub fn propagate_binary_nature(left_property: &ArrayProperties, right_property: &ArrayProperties, operator: &Operators, &output_num_columns: &i64) -> Result<Option<Nature>> {
+pub fn propagate_binary_nature(
+    left_property: &ArrayProperties, right_property: &ArrayProperties,
+    operator: &Operators,
+    optimization_operator: &OptimizeOperators,
+    &output_num_columns: &i64
+) -> Result<Option<Nature>> {
     Ok(match (left_property.nature.clone(), right_property.nature.clone()) {
         (Some(left_nature), Some(right_nature)) => match (left_nature, right_nature) {
             (Nature::Continuous(left_nature), Nature::Continuous(right_nature)) => {
-                let min = match (left_nature.min, right_nature.min) {
-                    (Vector1DNull::F64(left_min), Vector1DNull::F64(right_min)) =>
-                        match &operator.f64 {
-                            Some(operator) => Vector1DNull::F64(broadcast(&left_min, &output_num_columns)?.iter()
-                                .zip(broadcast(&right_min, &output_num_columns)?)
-                                .map(|(l, r)| match (l, r) {
-                                    (Some(l), Some(r)) => {
-                                        let result = operator(l, &r)?;
-                                        Ok(if result.is_finite() { Some(result) } else { None })
+                match (left_nature.min, left_nature.max, right_nature.min, right_nature.max) {
+                    (Vector1DNull::F64(lmin), Vector1DNull::F64(lmax), Vector1DNull::F64(rmin), Vector1DNull::F64(rmax)) => {
+                        let lmin = broadcast(&lmin, &output_num_columns)?;
+                        let lmax = broadcast(&lmax, &output_num_columns)?;
+                        let rmin = broadcast(&rmin, &output_num_columns)?;
+                        let rmax = broadcast(&rmax, &output_num_columns)?;
+
+                        let mut min = Vec::new();
+                        let mut max = Vec::new();
+                        lmin.iter().zip(lmax.iter()).zip(rmin.iter().zip(rmax.iter()))
+                            .map(|((left_min, left_max), (right_min, right_max))| {
+                                match &optimization_operator.f64 {
+                                    Some(operator) => {
+                                        let (col_min, col_max) = operator(Bounds {left_min, left_max, right_min, right_max })?;
+                                        min.push(col_min);
+                                        max.push(col_max);
+                                    },
+                                    None => {
+                                        min.push(None);
+                                        max.push(None);
                                     }
-                                    _ => None.transpose()
-                                })
-                                .collect::<Result<_>>()?),
-                            None => return Err("min cannot be propagated for the current data type".into())
-                        },
-                    (Vector1DNull::I64(left_min), Vector1DNull::I64(right_min)) =>
-                        match &operator.i64 {
-                            Some(operator) => Vector1DNull::I64(broadcast(&left_min, &output_num_columns)?.iter()
-                                .zip(broadcast(&right_min, &output_num_columns)?)
-                                .map(|(l, r)| match (l, r) {
-                                    (Some(l), Some(r)) => Some(operator(l, &r)).transpose(),
-                                    _ => None.transpose()
-                                })
-                                .collect::<Result<_>>()?),
-                            None => return Err("min cannot be propagated for the current data type".into())
-                        },
-                    _ => return Err("cannot propagate continuous bounds of different or non-numeric types".into())
-                };
+                                }
+                                Ok(())
+                            })
+                            .collect::<Result<()>>()?;
+                        Some(Nature::Continuous(NatureContinuous {min: Vector1DNull::F64(min), max: Vector1DNull::F64(max)}))
+                    },
+                    (Vector1DNull::I64(lmin), Vector1DNull::I64(lmax), Vector1DNull::I64(rmin), Vector1DNull::I64(rmax)) => {
+                        let lmin = broadcast(&lmin, &output_num_columns)?;
+                        let lmax = broadcast(&lmax, &output_num_columns)?;
+                        let rmin = broadcast(&rmin, &output_num_columns)?;
+                        let rmax = broadcast(&rmax, &output_num_columns)?;
 
-                let max = match (left_nature.max, right_nature.max) {
-                    (Vector1DNull::F64(left_max), Vector1DNull::F64(right_max)) =>
-                        match &operator.f64 {
-                            Some(operator) => Vector1DNull::F64(broadcast(&left_max, &output_num_columns)?.iter()
-                                .zip(broadcast(&right_max, &output_num_columns)?)
-                                .map(|(l, r)| match (l, r) {
-                                    (Some(l), Some(r)) => Some(operator(l, &r)).transpose(),
-                                    _ => None.transpose()
-                                })
-                                .collect::<Result<_>>()?),
-                            None => return Err("max cannot be propagated for the current data type".into())
-                        },
-                    (Vector1DNull::I64(left_max), Vector1DNull::I64(right_max)) =>
-                        match &operator.i64 {
-                            Some(operator) => Vector1DNull::I64(broadcast(&left_max, &output_num_columns)?.iter()
-                                .zip(broadcast(&right_max, &output_num_columns)?)
-                                .map(|(l, r)| match (l, r) {
-                                    (Some(l), Some(r)) => Some(operator(l, &r)).transpose(),
-                                    _ => None.transpose()
-                                })
-                                .collect::<Result<_>>()?),
-                            None => return Err("max cannot be propagated for the current data type".into())
-                        },
-                    _ => return Err("cannot propagate continuous bounds of different or non-numeric types".into())
-                };
-
-                Some(Nature::Continuous(NatureContinuous { min, max }))
+                        let mut min = Vec::new();
+                        let mut max = Vec::new();
+                        lmin.iter().zip(lmax.iter()).zip(rmin.iter().zip(rmax.iter()))
+                            .map(|((left_min, left_max), (right_min, right_max))| {
+                                match &optimization_operator.i64 {
+                                    Some(operator) => {
+                                        let (col_min, col_max) = operator(Bounds {left_min, left_max, right_min, right_max })?;
+                                        min.push(col_min);
+                                        max.push(col_max);
+                                    },
+                                    None => {
+                                        min.push(None);
+                                        max.push(None);
+                                    }
+                                }
+                                Ok(())
+                            })
+                            .collect::<Result<()>>()?;
+                        Some(Nature::Continuous(NatureContinuous {min: Vector1DNull::I64(min), max: Vector1DNull::I64(max)}))
+                    },
+                    _ => return Err("continuous bounds must be numeric and homogeneously typed".into())
+                }
             }
 
-            (Nature::Categorical(left_nature), Nature::Categorical(right_nature)) => Some(Nature::Categorical(NatureCategorical {categories: match (left_nature.categories, right_nature.categories) {
-                (Jagged::F64(left), Jagged::F64(right)) =>
-                    Jagged::F64(left.iter().zip(right.iter()).map(|(left, right)|
-                        match (left, right, &operator.f64) {
-                            (Some(left), Some(right), Some(operator)) => Ok(Some(left.iter()
-                                .map(|left| right.iter()
-                                    .map(|right| operator(left, right))
-                                    .collect::<Result<Vec<_>>>())
-                                .collect::<Result<Vec<Vec<_>>>>()?
-                                .into_iter().flatten().collect::<Vec<_>>())),
-                            (Some(_), Some(_), None) => Err("categories cannot be propagated for floats".into()),
-                            _ => Ok(None)
-                        }).collect::<Result<Vec<Option<Vec<_>>>>>()?),
-                (Jagged::I64(left), Jagged::I64(right)) =>
-                    Jagged::I64(left.iter().zip(right.iter()).map(|(left, right)|
-                        match (left, right, &operator.i64) {
-                            (Some(left), Some(right), Some(operator)) => Ok(Some(left.iter()
-                                .map(|left| right.iter()
-                                    .map(|right| operator(left, right))
-                                    .collect::<Result<Vec<_>>>())
-                                .collect::<Result<Vec<Vec<_>>>>()?
-                                .into_iter().flatten().collect::<Vec<_>>())),
-                            (Some(_), Some(_), None) => Err("categories cannot be propagated for integers".into()),
-                            _ => Ok(None)
-                        }).collect::<Result<Vec<Option<Vec<_>>>>>()?),
-                (Jagged::Bool(left), Jagged::Bool(right)) =>
-                    Jagged::Bool(left.iter().zip(right.iter()).map(|(left, right)|
-                        match (left, right, &operator.bool) {
-                            (Some(left), Some(right), Some(operator)) => Ok(Some(left.iter()
-                                .map(|left| right.iter()
-                                    .map(|right| operator(left, right))
-                                    .collect::<Result<Vec<_>>>())
-                                .collect::<Result<Vec<Vec<_>>>>()?
-                                .into_iter().flatten().collect::<Vec<_>>())),
-                            (Some(_), Some(_), None) => Err("categories cannot be propagated for booleans".into()),
-                            _ => Ok(None)
-                        }).collect::<Result<Vec<Option<Vec<_>>>>>()?),
-                (Jagged::Str(left), Jagged::Str(right)) =>
-                    Jagged::Str(left.iter().zip(right.iter()).map(|(left, right)|
-                        match (left, right, &operator.str) {
-                            (Some(left), Some(right), Some(operator)) => Ok(Some(left.iter()
-                                .map(|left| right.iter()
-                                    .map(|right| operator(left, right))
-                                    .collect::<Result<Vec<_>>>())
-                                .collect::<Result<Vec<Vec<_>>>>()?
-                                .into_iter().flatten().collect::<Vec<_>>())),
-                            (Some(_), Some(_), None) => Err("categories cannot be propagated for strings".into()),
-                            _ => Ok(None)
-                        }).collect::<Result<Vec<Option<Vec<_>>>>>()?),
-                _ => return Err("natures must be homogeneously typed".into())
-            }.deduplicate()?})),
+            (Nature::Categorical(left_nature), Nature::Categorical(right_nature)) => Some(Nature::Categorical(NatureCategorical {
+                categories: match (left_nature.categories.standardize(&output_num_columns)?, right_nature.categories.standardize(&output_num_columns)?) {
+                    (Jagged::F64(left), Jagged::F64(right)) =>
+                        Jagged::F64(left.iter().zip(right.iter()).map(|(left, right)|
+                            match (left, right, &operator.f64) {
+                                (Some(left), Some(right), Some(operator)) => Ok(Some(left.iter()
+                                    .map(|left| right.iter()
+                                        .map(|right| operator(left, right))
+                                        .collect::<Result<Vec<_>>>())
+                                    .collect::<Result<Vec<Vec<_>>>>()?
+                                    .into_iter().flatten().collect::<Vec<_>>())),
+                                (Some(_), Some(_), None) => Err("categories cannot be propagated for floats".into()),
+                                _ => Ok(None)
+                            }).collect::<Result<Vec<Option<Vec<_>>>>>()?),
+                    (Jagged::I64(left), Jagged::I64(right)) =>
+                        Jagged::I64(left.iter().zip(right.iter()).map(|(left, right)|
+                            match (left, right, &operator.i64) {
+                                (Some(left), Some(right), Some(operator)) => Ok(Some(left.iter()
+                                    .map(|left| right.iter()
+                                        .map(|right| operator(left, right))
+                                        .collect::<Result<Vec<_>>>())
+                                    .collect::<Result<Vec<Vec<_>>>>()?
+                                    .into_iter().flatten().collect::<Vec<_>>())),
+                                (Some(_), Some(_), None) => Err("categories cannot be propagated for integers".into()),
+                                _ => Ok(None)
+                            }).collect::<Result<Vec<Option<Vec<_>>>>>()?),
+                    (Jagged::Bool(left), Jagged::Bool(right)) =>
+                        Jagged::Bool(left.iter().zip(right.iter()).map(|(left, right)|
+                            match (left, right, &operator.bool) {
+                                (Some(left), Some(right), Some(operator)) => Ok(Some(left.iter()
+                                    .map(|left| right.iter()
+                                        .map(|right| operator(left, right))
+                                        .collect::<Result<Vec<_>>>())
+                                    .collect::<Result<Vec<Vec<_>>>>()?
+                                    .into_iter().flatten().collect::<Vec<_>>())),
+                                (Some(_), Some(_), None) => Err("categories cannot be propagated for booleans".into()),
+                                _ => Ok(None)
+                            }).collect::<Result<Vec<Option<Vec<_>>>>>()?),
+                    (Jagged::Str(left), Jagged::Str(right)) =>
+                        Jagged::Str(left.iter().zip(right.iter()).map(|(left, right)|
+                            match (left, right, &operator.str) {
+                                (Some(left), Some(right), Some(operator)) => Ok(Some(left.iter()
+                                    .map(|left| right.iter()
+                                        .map(|right| operator(left, right))
+                                        .collect::<Result<Vec<_>>>())
+                                    .collect::<Result<Vec<Vec<_>>>>()?
+                                    .into_iter().flatten().collect::<Vec<_>>())),
+                                (Some(_), Some(_), None) => Err("categories cannot be propagated for strings".into()),
+                                _ => Ok(None)
+                            }).collect::<Result<Vec<Option<Vec<_>>>>>()?),
+                    _ => return Err("natures must be homogeneously typed".into())
+                }.deduplicate()?
+            })),
             _ => None
         },
         _ => None
@@ -862,52 +1069,3 @@ fn broadcast<T: Clone>(data: &[T], length: &i64) -> Result<Vec<T>> {
 
     Ok((0..*length).map(|_| data[0].clone()).collect())
 }
-
-///// Used for monotonic functions that may be either increasing or decreasing
-/////
-///// A monotonically decreasing function may reverse the bounds. In this case, the min/max just needs to be sorted
-//fn sort_bounds(nature: Option<Nature>, datatype: &DataType) -> Result<Option<Nature>> {
-//    let nature = match &nature {
-//        Some(value) => match value {
-//            Nature::Continuous(continuous) => continuous,
-//            Nature::Categorical(_categorical) => return Ok(nature)
-//        },
-//        None => return Ok(nature)
-//    };
-//
-//    let min = match datatype {
-//        DataType::F64 => Vector1DNull::F64(nature.min.get_f64()?
-//            .into_iter().zip(nature.max.get_f64()?)
-//            .map(|(min, max)| match (min, max) {
-//                    (Some(min), Some(max)) => Some(min.min(*max)),
-//                    _ => *min
-//                }).collect()),
-//        DataType::I64 => Vector1DNull::I64(nature.min.get_i64()?
-//            .into_iter().zip(nature.max.get_i64()?)
-//            .map(|(min, max)| match (min, max) {
-//                (Some(min), Some(max)) => Some(*min.min(max)),
-//                _ => *min
-//            }).collect()),
-//        _ => return Err("bounds sorting requires numeric data".into())
-//    };
-//
-//    let max = match datatype {
-//        DataType::F64 => Vector1DNull::F64(nature.min.get_f64()?
-//            .into_iter().zip(nature.max.get_f64()?)
-//            .map(|(min, max)| match (min, max) {
-//                (Some(min), Some(max)) => Some(min.max(*max)),
-//                _ => *min
-//            }).collect()),
-//        DataType::I64 => Vector1DNull::I64(nature.min.get_i64()?
-//            .into_iter().zip(nature.max.get_i64()?)
-//            .map(|(min, max)| match (min, max) {
-//                (Some(min), Some(max)) => Some(*min.max(max)),
-//                _ => *min
-//            }).collect()),
-//        _ => return Err("bounds sorting requires numeric data".into())
-//    };
-//
-//    Ok(Some(Nature::Continuous(NatureContinuous {
-//        min, max
-//    })))
-//}

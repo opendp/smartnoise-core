@@ -15,6 +15,7 @@ use whitenoise_validator::utilities::array::{slow_select, slow_stack};
 use std::cmp::Ordering;
 use crate::utilities::noise::sample_uniform_int;
 use ndarray::prelude::*;
+use std::hash::Hash;
 
 impl Evaluable for proto::Resize {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
@@ -28,8 +29,9 @@ impl Evaluable for proto::Resize {
                 // match on types of various arguments and ensure they are consistent with each other
                 (Value::Array(data), Value::Jagged(categories), Value::Jagged(probabilities)) =>
                     Ok(match (data, categories, probabilities) {
-                        (Array::F64(data), Jagged::F64(categories), Jagged::F64(probabilities)) =>
-                            resize_categorical(&data, &n, &categories, &probabilities)?.into(),
+                        (Array::F64(_), Jagged::F64(_), Jagged::F64(_)) =>
+                            return Err("categorical resizing over floats in not currently supported- try continuous imputation instead".into()),
+//                            resize_categorical(&data, &n, &categories, &probabilities)?.into(),
                         (Array::I64(data), Jagged::I64(categories), Jagged::F64(probabilities)) =>
                             resize_categorical(&data, &n, &categories, &probabilities)?.into(),
                         (Array::Bool(data), Jagged::Bool(categories), Jagged::F64(probabilities)) =>
@@ -203,7 +205,7 @@ pub fn resize_categorical<T>(
     data: &ArrayD<T>, n: &i64,
     categories: &Vec<Option<Vec<T>>>,
     weights: &Vec<Option<Vec<f64>>>,
-) -> Result<ArrayD<T>> where T: Clone, T: PartialEq, T: Default {
+) -> Result<ArrayD<T>> where T: Clone, T: PartialEq, T: Default, T: Ord, T: Hash {
     // get number of observations in actual data
     let real_n: i64 = data.len_of(Axis(0)) as i64;
 

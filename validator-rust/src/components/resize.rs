@@ -35,8 +35,9 @@ impl Component for proto::Resize {
 
         if let Some(categories) = public_arguments.get("categories") {
             data_property.nature = Some(Nature::Categorical(NatureCategorical {
-                categories: categories.jagged()?.deduplicate()?
+                categories: categories.jagged()?.standardize(&num_columns)?
             }));
+            data_property.num_records = Some(num_records);
             return Ok(data_property.into());
         }
 
@@ -168,7 +169,6 @@ impl Component for proto::Resize {
         }
 
         data_property.num_records = Some(num_records);
-
         Ok(data_property.into())
     }
 

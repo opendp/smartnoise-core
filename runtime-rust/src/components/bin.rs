@@ -7,7 +7,7 @@ use ndarray::{ArrayD};
 use whitenoise_validator::proto;
 use crate::utilities::get_num_columns;
 use std::ops::{Div, Add};
-use whitenoise_validator::utilities::{get_argument, standardize_categorical_argument, standardize_numeric_argument};
+use whitenoise_validator::utilities::{get_argument, standardize_categorical_argument, standardize_numeric_argument, standardize_float_argument};
 use std::fmt::Display;
 
 impl Evaluable for proto::Bin {
@@ -25,11 +25,15 @@ impl Evaluable for proto::Bin {
         let edges = get_argument(&arguments, "edges")?.jagged()?;
         let null = get_argument(&arguments, "null")?.array()?;
 
+        let num_columns = data.num_columns()?;
+
         match (data, edges, null) {
             (Array::F64(data), Jagged::F64(edges), Array::F64(null)) =>
-                Ok(bin(&data, &edges, &inclusive_left, &null, &side)?.into()),
+                Ok(bin(&data, standardize_float_argument(edges, &num_columns)?, &inclusive_left, &null, &side)?.into()),
+
             (Array::I64(data), Jagged::I64(edges), Array::I64(null)) =>
-                Ok(bin(&data, &edges, &inclusive_left, &null, &side)?.into()),
+                Ok(bin(&data, standardize_categorical_argument(edges, &num_columns)?, &inclusive_left, &null, &side)?.into()),
+
             _ => return Err("data and edges must both be f64 or i64".into())
         }
     }
@@ -71,7 +75,7 @@ pub enum BinSide {
 /// ```
 pub fn bin<T: std::fmt::Debug + Display + std::cmp::PartialOrd + Clone + Div<T, Output=T> + Add<T, Output=T> + From<i32> + Copy>(
     data: &ArrayD<T>,
-    edges: &Vec<Option<Vec<T>>>,
+    edges: Vec<Vec<T>>,
     inclusive_left: &ArrayD<bool>,
     null: &ArrayD<T>,
     side: &BinSide
@@ -80,7 +84,6 @@ pub fn bin<T: std::fmt::Debug + Display + std::cmp::PartialOrd + Clone + Div<T, 
 
     let num_columns = get_num_columns(&data)?;
 
-    let edges = standardize_categorical_argument(&edges, &num_columns)?;
     let inclusive_left = standardize_numeric_argument(&inclusive_left, &num_columns)?;
     let null = standardize_numeric_argument(&null, &num_columns)?;
 

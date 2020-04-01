@@ -7,7 +7,7 @@ use ndarray::ArrayD;
 use whitenoise_validator::proto;
 use crate::utilities::get_num_columns;
 use std::ops::{Div, Add};
-use whitenoise_validator::utilities::{get_argument, standardize_categorical_argument, standardize_numeric_argument};
+use whitenoise_validator::utilities::{get_argument, standardize_categorical_argument, standardize_numeric_argument, standardize_float_argument};
 use std::fmt::Display;
 use math;
 
@@ -18,14 +18,18 @@ impl Evaluable for proto::Digitize {
         let data = get_argument(&arguments, "data")?.array()?;
         let edges = get_argument(&arguments, "edges")?.jagged()?;
         let null = get_argument(&arguments, "null")?.array()?.i64()?;
+        let num_columns = data.num_columns()?;
 
-        match (data, edges) {
+        Ok(match (data, edges) {
             (Array::F64(data), Jagged::F64(edges)) =>
-                Ok(digitize(&data, &edges, &inclusive_left, &null)?.into()),
+                digitize(&data, &standardize_float_argument(edges, &num_columns)?, &inclusive_left, &null)?.into(),
+
+
             (Array::I64(data), Jagged::I64(edges)) =>
-                Ok(digitize(&data, &edges, &inclusive_left, &null)?.into()),
+                digitize(&data, &standardize_categorical_argument(edges, &num_columns)?, &inclusive_left, &null)?.into(),
+
             _ => return Err("data and edges must both be f64 or i64".into())
-        }
+        })
     }
 }
 
@@ -46,11 +50,17 @@ impl Evaluable for proto::Digitize {
 /// ```
 /// use ndarray::{ArrayD, arr2, arr1};
 /// use whitenoise_runtime::components::digitize::{bin_index, digitize};
+/// use whitenoise_validator::utilities::standardize_float_argument;
+/// use whitenoise_runtime::utilities::get_num_columns;
 ///
 /// let data = arr1(&[1.1, 2., 2.9, 4.1, 6.4]).into_dyn();
 /// let edges = vec![Some(vec![0., 1., 2., 3., 4., 5.])];
 /// let inclusive_left = arr1(&[true]).into_dyn();
 /// let null = arr1(&[-1]).into_dyn();
+///
+///
+/// let num_columns = get_num_columns(&data)?;
+/// let edges = standardize_float_argument(&edges, &num_columns)?;
 ///
 /// let digitization = digitize(&data, &edges, &inclusive_left, &null).unwrap();
 /// println!("digitize {:?}", digitization);
@@ -58,7 +68,7 @@ impl Evaluable for proto::Digitize {
 /// ```
 pub fn digitize<T: std::fmt::Debug + Display + std::cmp::PartialOrd + Clone + Div<T, Output=T> + Add<T, Output=T> + From<i32> + Copy + Default>(
     data: &ArrayD<T>,
-    edges: &Vec<Option<Vec<T>>>,
+    edges: &Vec<Vec<T>>,
     inclusive_left: &ArrayD<bool>,
     null: &ArrayD<i64>,
 ) -> Result<ArrayD<i64>> {
@@ -66,7 +76,6 @@ pub fn digitize<T: std::fmt::Debug + Display + std::cmp::PartialOrd + Clone + Di
 
     let num_columns = get_num_columns(&data)?;
 
-    let edges = standardize_categorical_argument(&edges, &num_columns)?;
     let inclusive_left = standardize_numeric_argument(&inclusive_left, &num_columns)?;
     let null = standardize_numeric_argument(&null, &num_columns)?;
 
