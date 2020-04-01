@@ -180,7 +180,7 @@ pub trait Named {
     /// Propagate the human readable names of the variables associated with this component
     fn get_names(
         &self,
-        public_arguments: &HashMap<String, Value>,
+        _public_arguments: &HashMap<String, Value>,
         argument_variables: HashMap<String, Vec<String>>,
     ) -> Result<Vec<String>>;
 }
@@ -412,7 +412,7 @@ impl Named for proto::component::Variant {
     /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn get_names(
         &self,
-        public_arguments: &HashMap<String, Value>,
+        _public_arguments: &HashMap<String, Value>,
         arg_vars: HashMap<String, Vec<String>>,
     ) -> Result<Vec<String>> {
 

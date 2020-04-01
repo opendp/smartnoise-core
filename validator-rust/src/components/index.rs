@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use crate::base::{Array, Value, ValueProperties, Hashmap, ArrayProperties, Nature, NatureContinuous, NatureCategorical, Vector1DNull, Jagged};
 
 use crate::{proto, base};
-use crate::components::Component;
+use crate::components::{Component, Named};
 
 use std::ops::Deref;
 use ndarray::ArrayD;
@@ -104,6 +104,18 @@ impl Component for proto::Index {
 
 }
 
+impl Named for proto::Index {
+    fn get_names(
+        &self,
+        public_arguments: &HashMap<String, Value>,
+        _argument_variables: HashMap<String, Vec<String>>,
+    ) -> Result<Vec<String>> {
+        let column_names = public_arguments.get("columns")
+            .ok_or_else(|| Error::from("columns: missing"))?.to_owned()
+            .array()?.string()?.iter().cloned().collect::<Vec<String>>();
+        return Ok(column_names);
+    }
+}
 
 pub fn to_name_vec<T: Clone>(columns: &ArrayD<T>) -> Result<Vec<T>> {
     match columns.ndim().clone() {
