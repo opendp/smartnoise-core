@@ -89,8 +89,8 @@ impl Component for proto::Digitize {
 
     fn get_names(
         &self,
-        _properties: &NodeProperties,
+        arg_vars: HashMap<String, Vec<String>>,
     ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
+        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
     }
 }

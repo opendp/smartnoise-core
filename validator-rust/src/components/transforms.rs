@@ -50,9 +50,9 @@ impl Component for proto::Add {
 
     fn get_names(
         &self,
-        _properties: &NodeProperties,
+        arg_vars: HashMap<String, Vec<String>>,
     ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
+        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
     }
 }
 
@@ -94,9 +94,9 @@ impl Component for proto::Subtract {
 
     fn get_names(
         &self,
-        _properties: &NodeProperties,
+        arg_vars: HashMap<String, Vec<String>>,
     ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
+        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
     }
 }
 
@@ -161,9 +161,9 @@ impl Component for proto::Divide {
 
     fn get_names(
         &self,
-        _properties: &NodeProperties,
+        arg_vars: HashMap<String, Vec<String>>,
     ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
+        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
     }
 }
 
@@ -201,9 +201,9 @@ impl Component for proto::Multiply {
 
     fn get_names(
         &self,
-        _properties: &NodeProperties,
+        arg_vars: HashMap<String, Vec<String>>,
     ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
+        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
     }
 }
 
@@ -241,9 +241,9 @@ impl Component for proto::Power {
 
     fn get_names(
         &self,
-        _properties: &NodeProperties,
+        arg_vars: HashMap<String, Vec<String>>,
     ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
+        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
     }
 }
 
@@ -280,9 +280,9 @@ impl Component for proto::Log {
 
     fn get_names(
         &self,
-        _properties: &NodeProperties,
+        arg_vars: HashMap<String, Vec<String>>,
     ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
+        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
     }
 }
 
@@ -321,9 +321,9 @@ impl Component for proto::Negative {
 
     fn get_names(
         &self,
-        _properties: &NodeProperties,
+        arg_vars: HashMap<String, Vec<String>>,
     ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
+        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
     }
 }
 
@@ -371,9 +371,9 @@ impl Component for proto::Modulo {
     }
     fn get_names(
         &self,
-        _properties: &base::NodeProperties,
+        arg_vars: HashMap<String, Vec<String>>,
     ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
+        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
     }
 }
 
@@ -462,9 +462,9 @@ impl Component for proto::And {
 
     fn get_names(
         &self,
-        _properties: &NodeProperties,
+        arg_vars: HashMap<String, Vec<String>>,
     ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
+        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
     }
 }
 
@@ -504,9 +504,9 @@ impl Component for proto::Or {
 
     fn get_names(
         &self,
-        _properties: &NodeProperties,
+        arg_vars: HashMap<String, Vec<String>>,
     ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
+        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
     }
 }
 
@@ -546,9 +546,9 @@ impl Component for proto::Negate {
 
     fn get_names(
         &self,
-        _properties: &NodeProperties,
+        arg_vars: HashMap<String, Vec<String>>,
     ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
+        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
     }
 }
 
@@ -588,9 +588,9 @@ impl Component for proto::Equal {
 
     fn get_names(
         &self,
-        _properties: &NodeProperties,
+        arg_vars: HashMap<String, Vec<String>>,
     ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
+        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
     }
 }
 
@@ -630,9 +630,9 @@ impl Component for proto::LessThan {
 
     fn get_names(
         &self,
-        _properties: &NodeProperties,
+        arg_vars: HashMap<String, Vec<String>>,
     ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
+        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
     }
 }
 
@@ -672,9 +672,9 @@ impl Component for proto::GreaterThan {
 
     fn get_names(
         &self,
-        _properties: &NodeProperties,
+        arg_vars: HashMap<String, Vec<String>>,
     ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
+        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
     }
 }
 

@@ -85,7 +85,7 @@ pub trait Component {
     /// Utility function for a recursive algorithm to derive human readable names on the columns in the output data.
     fn get_names(
         &self,
-        properties: &NodeProperties,
+        arg_vars: HashMap<String, Vec<String>>,
     ) -> Result<Vec<String>>;
 }
 
@@ -225,7 +225,7 @@ impl Component for proto::component::Variant {
 
     fn get_names(
         &self,
-        _properties: &NodeProperties,
+        arg_vars: HashMap<String, Vec<String>>,
     ) -> Result<Vec<String>> {
 
         macro_rules! get_names{
@@ -233,7 +233,7 @@ impl Component for proto::component::Variant {
                 {
                     $(
                        if let proto::component::Variant::$variant(x) = self {
-                            return x.get_names(properties)
+                            return x.get_names()
                                 .chain_err(|| format!("node specification {:?}:", self))
                        }
                     )*
