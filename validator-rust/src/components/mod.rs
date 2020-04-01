@@ -35,7 +35,7 @@ mod kth_raw_sample_moment;
 mod maximum;
 mod materialize;
 mod minimum;
-mod partition;
+//mod partition;
 mod quantile;
 mod reshape;
 mod mean;
