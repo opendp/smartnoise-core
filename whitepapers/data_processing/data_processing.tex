@@ -35,7 +35,7 @@ we would like to use for said operation. For numeric variables, this typically
 takes the form of a closed interval $[min, max] \in \R$ or $\Z$. For categorical
 variables, this is a discrete set of elements.
 In our system, we have slightly different notions of clamping for numeric and categorical variables.
-We consider $f64$ and $i64$ to be allowable numeric types, and $f64, i64, bool,$ and $String$ to be
+We consider $f64$ and $i64$ to be allowable numeric types, and $i64, bool,$ and $String$ to be
 allowable categorical types. \newline
 
 Our method for clamping numeric types should be familiar; it accepts data, a min, and a max,
@@ -50,7 +50,7 @@ Null values are preserved by the categorical clamping. \newline
 \section{Imputation}
 Much like clamping, we have slightly different notions of imputation for numeric and categorical variables.
 In this case, we consider only $f64$ to be an allowable numeric type, while
-$f64, i64, bool,$ and $String$ are allowable categorical types. \newline
+$i64, bool,$ and $String$ are allowable categorical types. \newline
 
 Numeric imputation is parameterized by min, max, and a supported probability distribution (e.g. Gaussian or Uniform)
 with appropriate arguments. $NAN$ values are replaced with a draw from the provided distribution. \newline
