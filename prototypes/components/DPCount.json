@@ -13,7 +13,7 @@
     },
     "count_max": {
       "type": "Array",
-      "default": "9_223_372_036_854_775_807"
+      "default": "None"
     }
   },
   "id": "DPCount",
@@ -25,6 +25,10 @@
     },
     "privacy_usage": {
       "type": "repeated PrivacyUsage"
+    },
+    "enforce_constant_time": {
+      "type": "bool",
+      "default": "False"
     }
   },
   "return": {

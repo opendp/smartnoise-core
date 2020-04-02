@@ -20,11 +20,13 @@
       "type": "Array",
       "default": "None"
     },
-    "count_min": {
-      "type": "Array"
+    "min": {
+      "type": "Array",
+      "default": "0"
     },
-    "count_max": {
-      "type": "Array"
+    "max": {
+      "type": "Array",
+      "default": "None"
     },
     "inclusive_left": {
       "nature": [
@@ -43,6 +45,10 @@
     },
     "privacy_usage": {
       "type": "repeated PrivacyUsage"
+    },
+    "enforce_constant_time": {
+      "type": "bool",
+      "default": "False"
     }
   },
   "return": {
