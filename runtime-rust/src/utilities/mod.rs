@@ -89,7 +89,7 @@ mod broadcast_map_tests {
         let left = arr0(2.).into_dyn();
         let right = arr1(&[2., 3., 5., 6.]).into_dyn();
 
-        left / right;
+        let broadcast = left / right;
     }
 }
 

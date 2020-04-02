@@ -110,17 +110,17 @@ pub fn digitize<T: std::fmt::Debug + Display + std::cmp::PartialOrd + Clone + Di
 ///
 /// # Example
 /// ```
-/// use ndarray::{ArrayD, arr2, arr1};
 /// use whitenoise_runtime::components::digitize::bin_index;
 ///
-/// let data = arr1(&[1.1, 2., 2.9, 4.1, 6.4]).into_dyn();
+/// let data = vec![1.1, 2., 2.9, 4.1, 6.4];
 /// let edges = vec![0., 1., 2., 3., 4., 5.];
-/// let inclusive_left = arr1(&[true]).into_dyn();
 ///
-/// let index1 = bin_index(&data[1], &edges, &true).unwrap();
-/// let index2 = bin_index(&data[1], &edges, &false).unwrap();
+/// let index1 = bin_index(&data[1], &edges, &true);
+/// assert!(index1 == Some(2));
+/// let index2 = bin_index(&data[1], &edges, &false);
+/// assert!(index2 == Some(1));
 /// let index3 = bin_index(&data[4], &edges, &true);
-/// assert!(index1 == 2 && index2 == 1 && index3.is_none());
+/// assert!(index3.is_none());
 /// ```
 pub fn bin_index<T: PartialOrd + Clone>(
     datum: &T,
@@ -132,6 +132,10 @@ pub fn bin_index<T: PartialOrd + Clone>(
         return None;
     }
 
+    match inclusive_left {
+        true => if datum == &edges[edges.len() - 1] {return None},
+        false => if datum == &edges[0] {return None}
+    }
     // assign to edge
     let mut l: usize = 0;
     let mut r: usize = edges.len() - 2;
@@ -159,4 +163,28 @@ pub fn bin_index<T: PartialOrd + Clone>(
         }
     }
     return Some(idx);
+}
+
+#[cfg(test)]
+mod bin_index_tests {
+    use crate::components::digitize::bin_index;
+
+    #[test]
+    fn test_edges() {
+
+        let data = vec![-1., 0., 1.1, 2., 2.9, 4.1, 5., 6.4];
+        let edges = vec![0., 1., 2., 3., 4., 5.];
+
+        data.iter()
+            .zip(vec![None, Some(0), Some(1), Some(2), Some(2), Some(4), None, None].iter())
+            .for_each(|(datum, truth)| {
+//                println!("{}, {:?}", datum, truth);
+                assert!(bin_index(datum, &edges, &true) == *truth);
+            });
+
+        data.iter()
+            .zip(vec![None, None, Some(1), Some(1), Some(2), Some(4), Some(4), None].iter())
+            .for_each(|(datum, truth)|
+                assert!(bin_index(datum, &edges, &false) == *truth));
+    }
 }
