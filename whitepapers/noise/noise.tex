@@ -63,19 +63,6 @@ We will focus only on mechanism output and runtime, as they seem to be by far th
 channels of information leakage.} We will focus mostly on the distribution over mechanism output, as this
 is really the core idea of DP, but will touch on runtime when it seems appropriate.
 
-% \begin{theorem}
-% 	\label{thm:post_processing}
-% 	Post-Processing \newline
-% 	Let $f: \mathcal{Y} \rightarrow \mathcal{Y}'$ be an arbitrary mapping independent
-% 	of the data set $X$ and
-% 	$\mathcal{M}$ be an $(\epsilon, \delta)$-DP mechanism.
-% 	Then $f \circ \mathcal{M}$ is also $(\epsilon, \delta)$-DP.
-
-% 	\begin{proof}
-% 		This is a well-known result -- see Proposition 2.1 on pg. 19 of \cite{DR14} for a proof.
-% 	\end{proof}
-% \end{theorem}
-
 \begin{definition}
 	\label{defn:exact_rounding}
 	Exact Rounding \newline
@@ -86,66 +73,6 @@ is really the core idea of DP, but will touch on runtime when it seems appropria
 	where $round_{S}(\cdot)$ rounds a real number to a member of $S$ according to some rounding rule.
 \end{definition}
 For our purposes, we will care only about the case where $S = \F$, the set of IEEE-754 floating-point numbers.
-% We may occasionally use a different definition of $S$ for ease of reasoning about a proof, or refer to $\F$
-% specifically to more clearly contextualize what we are trying to do.
-% Additionally, our rounding rule will typically be that we want to round our real number $r$ to the $s \in S$ that minimizes
-% $\vert r-s \vert$.
-
-% \begin{corollary}
-% 	\label{cor:exact_rounding_post_processing}
-% 	Exact Rounding as Post-Processing \newline
-% 	Let $\mathcal{M}: \R^n \times \mathcal{Q} \rightarrow \R$ be
-% 	$(\epsilon, \delta)$-DP and $\mathcal{M}': S^n \times \mathcal{Q} \rightarrow S$
-% 	be an implementation over $S$. If $\mathcal{M}'$ respects exact rounding for
-% 	$(\mathcal{M}, S)$, then $\mathcal{M}'$ is $(\epsilon, \delta)$-DP.
-
-% 	\begin{proof}
-% 		$\mathcal{M}'$ can be viewed as a function that takes real-valued outputs
-% 		from $\mathcal{M}$ and rounds them to an element of $S$ according to a rounding rule.
-% 		This is post-processing independent of the data $X$, and so the corollary follows
-% 		directly from Theorem~\ref{thm:post_processing}.
-% 	\end{proof}
-% \end{corollary}
-
-% \begin{theorem}
-% 	\label{thm:non_composability_exact_rounding}
-% 	Non-composability of Exact Rounding \newline
-% 	Let $\phi, \eta$ be functions on $\R$ and $\phi', \eta'$ be versions of $\phi,\eta$
-% 	that respect exact rounding with respect to some $S \subset \R$.
-% 	Then, $\phi' \circ \eta'$ does not necessarily respect exact rounding with respect to $S$.
-
-% 	\begin{proof}
-% 		For ease of proof, we assume WLOG that $S = \Z$. Now, let $\phi: \R \times \R \rightarrow \R$ be such that
-% 		$\phi(a,b) = a+b$ and $\eta: \R \times \R \rightarrow \R$ be such that $\eta(a,b) = a/b$.
-% 		Let's examine the behavior of $\phi \circ \eta$ on a certain set of inputs:
-% 		\begin{align*}
-% 			\phi \left( \eta(3, 2), \eta(6, 5) \right) &= \phi \left( 3/2, 6/5 \right) \\
-% 													   &= 27/10.
-% 		\end{align*}
-% 		Note that, for these inputs, exact rounding of $\phi \circ \eta$ with respect to $\Z$ would yield an output of $3$. \newline
-
-% 		We now consider $\phi' \circ \eta'$, where $\phi': \Z \times \Z \rightarrow \Z$ and
-% 		$\eta': \Z \times \Z \rightarrow \Z$ each respects exact rounding with respect to $\Z$.
-% 		\begin{align*}
-% 			\phi' \left( \eta'(3, 2), \eta'(6, 5) \right) &= \phi' \left( 1, 1 \right) \\
-% 														  &= 2.
-% 		\end{align*}
-% 		$2 \neq 3$, so we have our proof.
-% 	\end{proof}
-% \end{theorem}
-% The non-composability of exact rounding means that translating DP algorithms from $\R$ to $\F$
-% is not as easy as combining individual steps that respect exact rounding, as doing so
-% does not imply that the mechanism as a whole respects exact rounding.
-% In the next section, we will propose a weaker sufficient condition for DP on $\F$.
-
-% \begin{definition}
-% 	\label{def:additive_noise_mechanism}
-% 	Additive Noise Mechanism \newline
-% 	A differentially private mechanism $\mathcal{M}$ is an \emph{additive noise mechanism}
-% 	if it is of the form
-% 	\[ \mathcal{M}(X, \phi) = \phi(X) + n, \]
-% 	where $n$ is a draw from a noise distribution $N$.
-% \end{definition}
 
 \begin{definition}
 	\label{def:truncation_censoring}
@@ -178,38 +105,6 @@ from basic noise distributions. \newline
 \subsubsection{Use in the library}
 We use MPFR to sample from Uniform[0,1] and Gaussian(0,1) with exact rounding. We are currently thinking about what exact rounding can buy us in terms 
 of ensuring differential privacy in practice, but for now are using these only as accurate sampling mechanisms. \newline 
-
-% \subsubsection{$sample\_uniform(min: f64, max: f64)$}
-% In this method, we start by generating a floating-point number in $[0,1)$,
-% where each is generated with probability relative to its unit of least precision (ULP).\footnote{The ULP is the value
-% represented by the least significant bit of the mantissa if that bit is a 1.}
-% That is, we generate $x \in [2^{-i}, 2^{-i+1})$ with probability $\frac{1}{2^i}$
-% for all $i \in \{1,2,\hdots,1022\}$ and $x \in [0, 2^{-1022})$ for $i = 1023$.
-
-% Within each precision band (the set of numbers with the same unit
-% of least precision), numbers are sampled uniformly.
-% We achieve this sample our exponent from a geometric distribution with parameter $p = 0.5$ and a mantissa uniformly from $\{0,1\}^{52}$.
-% Let $e$ be a draw from $Geom(0.5)$ (truncated such that $e \in \{1,2,\hdots,1023\}$) and $m_1, m_2 \hdots, m_{52}$ be the bits of our mantissa.
-% At the end, we will scale our output from $[0,1)$ to be instead in $[min, max)$. Then our function outputs $u$, where
-% \[ u = (1.m_1m_2 \hdots m_{52})_2 * 2^{-e} * (max - min) + min. \]
-
-% This method was proposed in \cite{Mir12} as a component of a larger attempt to create
-% a version of the Laplace mechanism that is not susceptible to floating-point attacks.\footnote{Note that the
-% original method generates values $\in [0,1)$ rather than arbitrary $[min, max)$.}
-% There is no universally agreed upon method for generating uniform random numbers (for privacy
-% applications or otherwise), but this method seems to approximate the real numbers better than many
-% other common methods because of the sampling relative to the ULP. \newline
-
-% \begin{tcolorbox}[colback = {green}, title = {Known Privacy Issues}, colbacktitle = black]
-% 	When $i=1023$ we are sampling from subnormal floating-point numbers. Because processors do not typically support
-% 	subnormals natively, they take much longer to sample and open us up to an easier timing attack, as
-% 	seen in \cite{AKM+15}.
-% 	Protecting against timing attacks is mostly seen as out of scope for now, but I wanted
-% 	to bring this up anyway. \newline
-
-% 	We are incurring some floating-point error when converting from $[0,1)$ to $[min, max)$ which
-% 	could jeopardize privacy guarantees in ways that are difficult to reason about.\cite{Mir12} \cite{Ilv19}
-% \end{tcolorbox}
 
 \subsection{Biased Bit Sampling}
 Recall that we are taking as given that we are able to sample uniform bits from OpenSSL.
@@ -279,88 +174,6 @@ To generate a $Geom(p)$, we can use our $sample\_bit$ function to
 repeatedly sample random bits where $\Pr(bit = 1) = p$. We then return the number of samples
 it takes to get our first $1$. This method is not susceptible to attacks based on floating-point vulnerabilities,
 as it operates only over the integers. \newline
-
-% \section{Sufficient Conditions for DP in Practice}
-% Given the existence of the aforementioned floating-point vulnerabilities in standard mechanism implementations,
-% we would like to explore ways to potentially ensure that implementations actually respect DP in practice.
-% This section is very experimental/preliminary.
-
-
-
-% \subsection{Additive Noise Mechanisms}
-% Let $\phi$ be a function we would like to privatize at the $(\epsilon, \delta)$ level,
-% with sensitivity $\Delta_{\phi}$.\footnote{This is the maximum the output of
-% the function can differ, in terms of some distance metric, when evaluated on neighboring data sets.} \newline
-
-% Let's start by considering the generation of noise according to some distribution $N_{\epsilon, \delta, \Delta_{\phi}}$,
-% which for ease of notation we will call $N$.
-% For our theoretical proofs of many common mechanisms we assume that $supp(N) = \R$,
-% but in practice $supp(N) = \F$. It is well-established that privacy properties
-% of noise distributions defined on $\R$ do not necessarily hold on $\F$.
-% See \cite{Mir12} and \cite{Ilv19} for vulnerabilities of the Laplace and Exponential
-% mechanisms, respectively, and \cite{GMP16} for a more general treatment. \newline
-
-% \begin{theorem}
-% 	\label{thm:valid_noise_on_R}
-% 	Valid Noise for Additive Noise Mechanisms on $\R$ \newline
-% 	A noise distribution $N$ with $supp(N) = \R$ can be used as the noising portion of an additive noise mechanism to privatize $\phi$ if
-% 	$\forall \mathcal{T} \in supp(N)$
-% 	\[ \frac{\Pr(N \in \mathcal{T})}{\Pr(N \in \mathcal{T} - \Delta_{\phi})} \leq \ e^{\epsilon} + \delta \]
-% 	and
-% 	\[ \frac{\Pr(N \in \mathcal{T})}{\Pr(N \in \mathcal{T} + \Delta_{\phi})} \leq \ e^{\epsilon} + \delta, \]
-% 	where $\mathcal{T} \pm \Delta_{\phi} = \{t \pm \Delta_{\phi} | t \in \mathcal{T}\}$.
-
-% 	\begin{proof}
-% 		This follows directly from Theorem~\ref{defn:differential_privacy}.
-% 		$\mathcal{M}(X, \epsilon, \delta, q) = \phi(X) + N$ (and likewise for $X'$),
-% 		and we can just ignore the $\phi(X), \phi(X')$ terms because the relationship between
-% 		$\mathcal{M}(X, \epsilon, \delta, q)$ and $\mathcal{M}(X', \epsilon, \delta, q)$
-% 		does not change if you shift both by the same factor.
-% 		The $\pm \Delta_{\phi}$ terms are standing in for the notion of neighboring data sets.
-% 	\end{proof}
-% \end{theorem}
-
-% \begin{corollary}
-% 	\label{cor:valid_noise_on_F}
-% 	Valid Noise for Additive Noise Mechanisms on $\F$ \newline
-% 	Let $N$ be a valid noise distribution with $supp(N) = \R$ as described in Theorem~\ref{thm:valid_noise_on_R}
-% 	and $N'$ be an implementation of $N$ that respects exact rounding with respect to $\F$.
-% 	Then $N'$ is valid to be used in an additive noise mechanism on $\F$.
-
-% 	\begin{proof}
-% 		First, notice that in Theorem~\ref{thm:valid_noise_on_R}, we have
-% 		effectively made the claim that if some property holds for an additive noise mechanism,
-% 		it holds for the distribution of noise.
-% 		Now, our result follows from Corollary~\ref{cor:exact_rounding_post_processing}.
-% 	\end{proof}
-% \end{corollary}
-
-% \begin{theorem}
-% 	\label{thm:additive_noise_on_F}
-% 	Additive Noise Mechanisms on $\F$ \newline
-% 	Let $\mathcal{M}(X, \epsilon, \delta, q) = \phi(X) + N$ be an $(\epsilon, \delta)$-DP additive noise mechanism
-% 	defined on $\R$.
-% 	Let $\phi'$ be the floating-point implementation of $\phi$,
-% 	$N'$ be a valid (in the sense of Corollary~\ref{cor:valid_noise_on_F})
-% 	implementation of $N$ on $\F$, and $\mathcal{M'}(X, \epsilon, \delta, q) = \phi'(X) + N'$
-% 	respect exact rounding for $(\phi'(X)+N', \F)$.
-% 	Then, $\mathcal{M'}(X, \epsilon, \delta, q)$ respects $(\epsilon, \delta)$-DP.
-
-% 	\begin{proof}
-% 		We know that $N'$ is a valid noise distribution, i.e. that it has the property (bounded distance at
-% 		intervals of $\Delta_{\phi}$) we need for an additive noise mechanism.
-% 		So if we imagine an idealized notion of a function $\phi'(X) + N'$ with outputs in $\R$,
-% 		this function would be $(\epsilon, \delta)$-DP because we know that $\phi(X) + N$ is $(\epsilon, \delta)$-DP.
-% 		Our mechanism $\mathcal{M'}(\cdot)$ respects exact rounding for $(\phi'(X) + N', \F)$, and so
-% 		$\mathcal{M'}(\cdot)$ is $(\epsilon,\delta)$-DP by Corollary~\ref{cor:exact_rounding_post_processing}.
-% 	\end{proof}
-% \end{theorem}
-% The upshot of Theorem~\ref{thm:additive_noise_on_F} is that the floating-point implementation of
-% an additive noise mechanism is DP if both the noise generation and addition steps can be performed
-% with exact rounding relative to $\F$.
-
-% % \subsection{Use in the library}
-% %TODO: do this section
 
 \bibliographystyle{alpha}
 \bibliography{noise}
