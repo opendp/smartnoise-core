@@ -18,6 +18,7 @@
   - [Docker Image](#docker-image)??
 - [Getting Started](#getting-started)
   - [Jupyter Notebook Examples](#jupyter-notebook-examples)
+  - [WhiteNoise Rust Documentation](#whitenoise-rust-documentation)
 - [Communication](#communication)
 - [Releases and Contributing](#releases-and-contributing)
 - [The Team](#the-team)
@@ -27,6 +28,7 @@
 ## More about WhiteNoise Core
 
 - INCLUDE HIGH-LEVEL COMPONENT LIST
+- Needs REWRITE / LEFT EXISTING TEXT FOR NOW
 
 
 ### Architecture
@@ -78,7 +80,7 @@ The steps for adding bindings in a new language are essentially:
 
 3. Install protobuf compiler
     Mac:
-
+      
         brew install protobuf
 
     Ubuntu:
@@ -106,7 +108,9 @@ The steps for adding bindings in a new language are essentially:
 
 Paragraph intro and links to the notebooks
 
-### [WhiteNoise Rust Documentation](https://opendifferentialprivacy.github.io/whitenoise-core/)
+### WhiteNoise Rust Documentation
+
+The [Rust documentation](https://opendifferentialprivacy.github.io/whitenoise-core/) includes component by component descriptions as well as....
 
 
 ## Communication
