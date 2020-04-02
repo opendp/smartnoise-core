@@ -146,9 +146,9 @@ impl Expandable for proto::DpHistogram {
         computation_graph.insert(*component_id, proto::Component {
             arguments: hashmap![
                 "data".to_owned() => id_histogram,
-                "count_min".to_owned() => *component.arguments.get("count_min")
+                "min".to_owned() => *component.arguments.get("count_min")
                     .ok_or_else(|| Error::from("count_min must be provided as an argument"))?,
-                "count_max".to_owned() => count_max_id
+                "max".to_owned() => count_max_id
             ],
             variant: Some(proto::component::Variant::from(proto::SimpleGeometricMechanism {
                 privacy_usage: self.privacy_usage.clone(),
