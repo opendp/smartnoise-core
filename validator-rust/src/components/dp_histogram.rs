@@ -145,7 +145,7 @@ impl Report for proto::DpHistogram {
         _public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
         release: &Value,
-        variable_names: &Vec<String>,
+        variable_names: Option<&Vec<String>>,
     ) -> Result<Option<Vec<JSONRelease>>> {
         let data_property = properties.get("data")
             .ok_or("data: missing")?.array()
@@ -156,17 +156,21 @@ impl Report for proto::DpHistogram {
         let num_columns = data_property.num_columns()?;
         let privacy_usages = broadcast_privacy_usage(&self.privacy_usage, num_columns as usize)?;
 
-        for column_number in 0..num_columns {
+        for column_number in 0..(num_columns as usize) {
+            let variable_name = variable_names
+                .and_then(|names| names.get(column_number)).cloned()
+                .unwrap_or_else(|| "[Unknown]".to_string());
+
             let release = JSONRelease {
                 description: "DP release information".to_string(),
                 statistic: "DPHistogram".to_string(),
-                variables: serde_json::json!(variable_names),
+                variables: serde_json::json!(variable_name),
                 // extract ith column of release
                 release_info: value_to_json(&get_ith_release(
                     release.array()?.i64()?,
-                    &(column_number as usize)
+                    &column_number
                 )?.into())?,
-                privacy_loss: privacy_usage_to_json(&privacy_usages[column_number as usize].clone()),
+                privacy_loss: privacy_usage_to_json(&privacy_usages[column_number].clone()),
                 accuracy: None,
                 batch: component.batch as u64,
                 node_id: *node_id as u64,
