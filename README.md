@@ -8,8 +8,6 @@
 
 (Rewrite)
 
----
-
 - [More about WhiteNoise Core](#more-about-whitenoise-core)
   - [Architecture](#architecture)
 - [Installation](#installation)
@@ -23,7 +21,7 @@
 - [Releases and Contributing](#releases-and-contributing)
 - [The Team](#the-team)
 
-
+---
 
 ## More about WhiteNoise Core
 
@@ -80,7 +78,7 @@ The steps for adding bindings in a new language are essentially:
 
 3. Install protobuf compiler
     Mac:
-      
+
         brew install protobuf
 
     Ubuntu:
