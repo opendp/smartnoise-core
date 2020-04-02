@@ -13,7 +13,7 @@
   "options": {
     "k": {
       "type": "uint32",
-      "description": "Integer statistical moment indicator"
+      "description": "Integer statistical moment indicator."
     }
   },
   "return": {
@@ -21,7 +21,7 @@
       "continuous"
     ],
     "type": "Array",
-    "description": "kth sample moment for each column."
+    "description": "kth raw sample moment for each column."
   },
-  "description": "Accepts data and returns sample estimate of kth raw moment for each column."
+  "description": "Returns sample estimate of kth raw moment for each column of the data."
 }

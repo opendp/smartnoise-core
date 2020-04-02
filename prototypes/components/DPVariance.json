@@ -12,20 +12,25 @@
   "options": {
     "implementation": {
       "type": "string",
-      "default": "'Laplace'"
+      "default": "'Laplace'",
+      "description": "Privatizing mechanism to use."
     },
     "privacy_usage": {
-      "type": "repeated PrivacyUsage"
+      "type": "repeated PrivacyUsage",
+      "description": "Object describing the type and amount of privacy to be used for the mechanism release."
     },
     "finite_sample_correction": {
       "type": "bool",
-      "default": "True"
+      "default": "True",
+      "description": "Whether or not to use the finite sample correction (Bessel's correction)."
     }
   },
   "return": {
     "nature": [
       "continuous"
     ],
-    "type": "Array"
-  }
+    "type": "Array",
+    "description": "Differentially private sample variance for each column of the data."
+  },
+  "description": "Returns a differentially private estimate of the variance for each column of the data."
 }

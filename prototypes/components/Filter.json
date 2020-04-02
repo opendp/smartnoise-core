@@ -4,8 +4,7 @@
       "nature": [
         "continuous"
       ],
-      "type": "Array",
-      "description": "Data to be filtered."
+      "type": "Array"
     },
     "mask": {
       "nature": [],
