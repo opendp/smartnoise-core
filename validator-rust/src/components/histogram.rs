@@ -58,14 +58,14 @@ impl Expandable for proto::Histogram {
         component_id: &u32,
         maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
-        let mut current_id = maximum_id.clone();
+        let mut current_id = *maximum_id;
         let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
         let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
 
         let mut component = component.clone();
 
         current_id += 1;
-        let id_categories = current_id.clone();
+        let id_categories = current_id;
         let categories = properties.get("data").ok_or("data: missing")?.array()?.categories()?;
         let value = match categories {
             Jagged::I64(jagged) => arr1(jagged[0].as_ref().unwrap()).into_dyn().into(),
@@ -91,6 +91,7 @@ impl Expandable for proto::Histogram {
 
 
 impl Aggregator for proto::Histogram {
+    /// Histogram sensitivities [are backed by the the proofs here](https://github.com/opendifferentialprivacy/whitenoise-core/blob/955703e3d80405d175c8f4642597ccdf2c00332a/whitepapers/sensitivities/counts/counts.pdf).
     fn compute_sensitivity(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
@@ -110,7 +111,7 @@ impl Aggregator for proto::Histogram {
                 use proto::privacy_definition::Neighboring;
                 use proto::privacy_definition::Neighboring::{Substitute, AddRemove};
                 let neighboring_type = Neighboring::from_i32(privacy_definition.neighboring)
-                    .ok_or::<Error>("neighboring definition must be either \"AddRemove\" or \"Substitute\"".into())?;
+                    .ok_or_else(|| Error::from("neighboring definition must be either \"AddRemove\" or \"Substitute\""))?;
 
                 // when categories are defined, a disjoint group by query is performed
                 let categories_length = data_property.categories()?.lengths()?[0];
@@ -142,9 +143,9 @@ impl Aggregator for proto::Histogram {
                 let num_records = categories_length;
                 Ok(Array::from_shape_vec(
                     vec![num_records as usize, num_columns as usize],
-                    (0..(num_records * num_columns)).map(|_| sensitivity.clone()).collect())?.into())
+                    (0..(num_records * num_columns)).map(|_| sensitivity).collect())?.into())
             },
-            _ => return Err("Histogram sensitivity is only implemented for KNorm".into())
+            _ => Err("Histogram sensitivity is only implemented for KNorm".into())
         }
     }
 }

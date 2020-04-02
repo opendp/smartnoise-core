@@ -11,7 +11,6 @@ use ndarray::ArrayD;
 use ndarray::prelude::*;
 
 impl Component for proto::Index {
-    // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
@@ -22,7 +21,7 @@ impl Component for proto::Index {
             .ok_or("data: missing")?.clone();
 
         let column_names = public_arguments.get("columns")
-            .ok_or::<Error>("columns: missing".into())?.deref().to_owned().array()?.clone();
+            .ok_or_else(|| Error::from("columns: missing"))?.deref().to_owned().array()?.clone();
 
         let properties = match data_property {
             ValueProperties::Hashmap(data_property) => {
@@ -34,7 +33,7 @@ impl Component for proto::Index {
                         Array::Str(column_names) => to_name_vec(&column_names)?.into_iter()
                             .map(|v| value_properties.get(&v).cloned())
                             .collect::<Option<Vec<ValueProperties>>>()
-                            .ok_or::<Error>("columns: unknown column in index".into()),
+                            .ok_or_else(|| Error::from("columns: unknown column in index")),
                         // Bool mask on string hashmap
                         Array::Bool(column_names) => {
                             let mask = to_name_vec(&column_names)?;
@@ -53,8 +52,8 @@ impl Component for proto::Index {
                             let indices = to_name_vec(&indices)?;
                             let column_names = value_properties.keys().cloned().collect::<Vec<String>>();
                             indices.iter().map(|index| value_properties.get(column_names.get(*index as usize)
-                                .ok_or::<Error>("column index is out of range".into())?).cloned()
-                                .ok_or::<Error>("properties not found".into())).collect::<Result<Vec<ValueProperties>>>()
+                                .ok_or_else(|| Error::from("column index is out of range"))?).cloned()
+                                .ok_or_else(|| Error::from("properties not found"))).collect::<Result<Vec<ValueProperties>>>()
                         },
                         Array::F64(_) => Err("columns may not have float type".into())
                     },
@@ -63,7 +62,7 @@ impl Component for proto::Index {
                         Array::I64(column_names) => to_name_vec(&column_names)?.into_iter()
                             .map(|v| value_properties.get(&v).cloned())
                             .collect::<Option<Vec<ValueProperties>>>()
-                            .ok_or::<Error>("columns: unknown column in index".into()),
+                            .ok_or_else(|| Error::from("columns: unknown column in index")),
                         // Bool mask on I64 hashmap
                         Array::Bool(column_names) => {
                             let mask = to_name_vec(&column_names)?;
@@ -82,7 +81,7 @@ impl Component for proto::Index {
                     Hashmap::Bool(value_properties) =>
                         to_name_vec(column_names.bool()?)?.into_iter()
                             .map(|name| value_properties.get(&name).cloned()
-                                .ok_or::<Error>("columns: unknown column in index".into()))
+                                .ok_or_else(|| Error::from("columns: unknown column in index")))
                             .collect::<Result<Vec<ValueProperties>>>()
                 }
             },
@@ -118,8 +117,9 @@ impl Named for proto::Index {
 }
 
 pub fn to_name_vec<T: Clone>(columns: &ArrayD<T>) -> Result<Vec<T>> {
-    match columns.ndim().clone() {
-        0 => Ok(vec![columns.first().ok_or::<Error>("At least one column name must be supplied".into())?.clone()]),
+    match columns.ndim() {
+        0 => Ok(vec![columns.first()
+            .ok_or_else(|| Error::from("At least one column name must be supplied"))?.clone()]),
         1 => match columns.clone().into_dimensionality::<Ix1>() {
             Ok(columns) => Ok(columns.to_vec()),
             Err(_) => Err("column names must be 1-dimensional".into())
@@ -128,7 +128,7 @@ pub fn to_name_vec<T: Clone>(columns: &ArrayD<T>) -> Result<Vec<T>> {
     }
 }
 
-pub fn mask_columns<T: Clone>(column_names: &Vec<T>, mask: &Vec<bool>) -> Result<Vec<T>> {
+pub fn mask_columns<T: Clone>(column_names: &[T], mask: &[bool]) -> Result<Vec<T>> {
     if mask.len() != column_names.len() {
         return Err("boolean mask must be the same length as the column names".into());
     }
@@ -138,7 +138,7 @@ pub fn mask_columns<T: Clone>(column_names: &Vec<T>, mask: &Vec<bool>) -> Result
         .collect::<Vec<T>>())
 }
 
-fn take<T: Clone>(vector: &Vec<T>, index: &usize) -> Result<T> {
+fn take<T: Clone>(vector: &[T], index: &usize) -> Result<T> {
     match vector.get(*index) {
         Some(value) => Ok(value.clone()),
         None => Err("property column index is out of bounds".into())
@@ -177,9 +177,9 @@ fn select_properties(properties: &ArrayProperties, index: &usize) -> Result<Valu
 }
 
 fn get_common_value<T: Clone + Eq>(values: &Vec<T>) -> Option<T> {
-    match values.windows(2).all(|w| w[0] == w[1]) {
-        true => values.first().cloned(), false => None
-    }
+    if values.windows(2).all(|w| w[0] == w[1]) {
+        values.first().cloned()
+    } else { None }
 }
 
 fn stack_properties(all_properties: &Vec<ValueProperties>) -> Result<ValueProperties> {
@@ -216,7 +216,7 @@ fn stack_properties(all_properties: &Vec<ValueProperties>) -> Result<ValueProper
         aggregator: None,
         nature: None,
         data_type: get_common_value(&all_properties.iter().map(|prop| prop.data_type.clone()).collect())
-            .ok_or::<Error>("dataset must have homogeneous type".into())?,
+            .ok_or_else(|| Error::from("dataset must have homogeneous type"))?,
         dataset_id
     }))
 }

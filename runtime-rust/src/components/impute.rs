@@ -9,6 +9,7 @@ use crate::utilities;
 use ndarray::{ArrayD};
 use crate::utilities::get_num_columns;
 use whitenoise_validator::proto;
+use std::hash::Hash;
 
 
 impl Evaluable for proto::Impute {
@@ -22,8 +23,9 @@ impl Evaluable for proto::Impute {
                 (Value::Array(data), Value::Jagged(categories), Value::Jagged(probabilities), Value::Jagged(nulls)) => Ok(match (data, categories, probabilities, nulls) {
                     (Array::Bool(data), Jagged::Bool(categories), Jagged::F64(probabilities), Jagged::Bool(nulls)) =>
                         impute_categorical(&data, &categories, &probabilities, &nulls)?.into(),
-                    (Array::F64(data), Jagged::F64(categories), Jagged::F64(probabilities), Jagged::F64(nulls)) =>
-                        impute_categorical(&data, &categories, &probabilities, &nulls)?.into(),
+                    (Array::F64(_), Jagged::F64(_), Jagged::F64(_), Jagged::F64(_)) =>
+                        return Err("categorical imputation over floats is not currently supported".into()),
+//                        impute_categorical(&data, &categories, &probabilities, &nulls)?.into(),
                     (Array::I64(data), Jagged::I64(categories), Jagged::F64(probabilities), Jagged::I64(nulls)) =>
                         impute_categorical(&data, &categories, &probabilities, &nulls)?.into(),
                     (Array::Str(data), Jagged::Str(categories), Jagged::F64(probabilities), Jagged::Str(nulls)) =>
@@ -211,7 +213,7 @@ pub fn impute_float_gaussian(data: &ArrayD<f64>, min: &ArrayD<f64>, max: &ArrayD
 /// ```
 pub fn impute_categorical<T>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>,
                              weights: &Vec<Option<Vec<f64>>>, null_value: &Vec<Option<Vec<T>>>)
-                             -> Result<ArrayD<T>> where T:Clone, T:PartialEq, T:Default {
+                             -> Result<ArrayD<T>> where T:Clone, T:PartialEq, T:Default, T: Ord, T: Hash {
 
     let mut data = data.clone();
 

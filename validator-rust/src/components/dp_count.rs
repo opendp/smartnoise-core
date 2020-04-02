@@ -36,14 +36,15 @@ impl Expandable for proto::DpCount {
         component_id: &u32,
         maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
-        let mut maximum_id = maximum_id.clone();
+        let mut maximum_id = *maximum_id;
         let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
 
         // count
         maximum_id += 1;
-        let id_count = maximum_id.clone();
+        let id_count = maximum_id;
         computation_graph.insert(id_count.clone(), proto::Component {
-            arguments: hashmap!["data".to_owned() => *component.arguments.get("data").ok_or::<Error>("data must be provided as an argument".into())?],
+            arguments: hashmap!["data".to_owned() => *component.arguments.get("data")
+                .ok_or_else(|| Error::from("data must be provided as an argument"))?],
             variant: Some(proto::component::Variant::Count(proto::Count {})),
             omit: true,
             batch: component.batch,
@@ -53,8 +54,10 @@ impl Expandable for proto::DpCount {
         computation_graph.insert(component_id.clone(), proto::Component {
             arguments: hashmap![
                 "data".to_owned() => id_count,
-                "count_min".to_owned() => *component.arguments.get("count_min").ok_or::<Error>("count_min must be provided as an argument".into())?,
-                "count_max".to_owned() => *component.arguments.get("count_max").ok_or::<Error>("count_max must be provided as an argument".into())?
+                "count_min".to_owned() => *component.arguments.get("count_min")
+                    .ok_or_else(|| Error::from("count_min must be provided as an argument"))?,
+                "count_max".to_owned() => *component.arguments.get("count_max")
+                    .ok_or_else(|| Error::from("count_max must be provided as an argument"))?
             ],
             variant: Some(proto::component::Variant::from(proto::SimpleGeometricMechanism {
                 privacy_usage: self.privacy_usage.clone(),
@@ -92,7 +95,7 @@ impl Report for proto::DpCount {
             privacy_loss: privacy_usage_to_json(&self.privacy_usage[0].clone()),
             accuracy: None,
             batch: component.batch as u64,
-            node_id: node_id.clone() as u64,
+            node_id: *node_id as u64,
             postprocess: false,
             algorithm_info: AlgorithmInfo {
                 name: "".to_string(),

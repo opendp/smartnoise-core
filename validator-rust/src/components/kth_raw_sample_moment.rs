@@ -59,7 +59,7 @@ impl Aggregator for proto::KthRawSampleMoment {
 
                 Ok(Array::from(row_sensitivity).into_dyn().into())
             },
-            _ => return Err("KthRawSampleMoment sensitivity is only implemented for KNorm of 1".into())
+            _ => Err("KthRawSampleMoment sensitivity is only implemented for KNorm of 1".into())
         }
     }
 }

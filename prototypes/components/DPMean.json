@@ -5,13 +5,6 @@
         "continuous"
       ],
       "type": "Array"
-    },
-    "by": {
-      "nature": [
-        "categorical"
-      ],
-      "type": "Array",
-      "default": "None"
     }
   },
   "id": "DPMean",

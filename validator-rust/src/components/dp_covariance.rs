@@ -36,7 +36,7 @@ impl Expandable for proto::DpCovariance {
         component_id: &u32,
         maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
-        let mut current_id = maximum_id.clone();
+        let mut current_id = *maximum_id;
         let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
 
         let arguments;
@@ -50,7 +50,8 @@ impl Expandable for proto::DpCovariance {
                 let num_columns = data_property.num_columns()?;
                 shape = vec![u32::try_from(num_columns)?, u32::try_from(num_columns)?];
                 arguments = hashmap![
-                    "data".to_owned() => *component.arguments.get("data").ok_or::<Error>("data must be provided as an argument".into())?
+                    "data".to_owned() => *component.arguments.get("data")
+                        .ok_or_else(|| Error::from("data must be provided as an argument"))?
                 ];
                 symmetric = true;
             },
@@ -64,8 +65,10 @@ impl Expandable for proto::DpCovariance {
 
                 shape = vec![u32::try_from(left_property.num_columns()?)?, u32::try_from(right_property.num_columns()?)?];
                 arguments = hashmap![
-                    "left".to_owned() => *component.arguments.get("left").ok_or::<Error>("left must be provided as an argument".into())?,
-                    "right".to_owned() => *component.arguments.get("right").ok_or::<Error>("right must be provided as an argument".into())?
+                    "left".to_owned() => *component.arguments.get("left")
+                        .ok_or_else(|| Error::from("left must be provided as an argument"))?,
+                    "right".to_owned() => *component.arguments.get("right")
+                        .ok_or_else(|| Error::from("right must be provided as an argument"))?
                 ];
                 symmetric = false;
             }
@@ -73,7 +76,7 @@ impl Expandable for proto::DpCovariance {
 
         // covariance
         current_id += 1;
-        let id_covariance = current_id.clone();
+        let id_covariance = current_id;
         computation_graph.insert(id_covariance, proto::Component {
             arguments,
             variant: Some(proto::component::Variant::from(proto::Covariance {
@@ -85,7 +88,7 @@ impl Expandable for proto::DpCovariance {
 
         // noise
         current_id += 1;
-        let id_noise = current_id.clone();
+        let id_noise = current_id;
         computation_graph.insert(id_noise, proto::Component {
             arguments: hashmap!["data".to_owned() => id_covariance],
             variant: Some(proto::component::Variant::from(proto::LaplaceMechanism {
@@ -176,7 +179,7 @@ impl Report for proto::DpCovariance {
             privacy_loss: serde_json::json![privacy_usage],
             accuracy: None,
             batch: component.batch as u64,
-            node_id: node_id.clone() as u64,
+            node_id: *node_id as u64,
             postprocess: false,
             algorithm_info: AlgorithmInfo {
                 name: "".to_string(),

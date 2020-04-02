@@ -9,7 +9,7 @@ use ndarray::prelude::Ix1;
 use std::collections::{HashMap};
 use ndarray::{ArrayD};
 
-use crate::utilities::standardize_categorical_argument;
+use crate::utilities::{standardize_categorical_argument, deduplicate};
 
 /// The universal data representation.
 ///
@@ -185,9 +185,9 @@ impl Array {
     pub fn vec_f64(&self, optional_length: Option<i64>) -> Result<Vec<f64>> {
         let data = self.f64()?;
         let err_msg = "failed attempt to cast f64 ArrayD to vector".into();
-        match data.ndim().clone() {
+        match data.ndim() {
             0 => match (optional_length, data.first()) {
-                (Some(length), Some(v)) => Ok((0..length).map(|_| v.clone()).collect()),
+                (Some(length), Some(v)) => Ok((0..length).map(|_| *v).collect()),
                 _ => Err(err_msg)
             },
             1 => Ok(data.clone().into_dimensionality::<Ix1>()?.to_vec()),
@@ -221,9 +221,9 @@ impl Array {
     pub fn vec_i64(&self, optional_length: Option<i64>) -> Result<Vec<i64>> {
         let data = self.i64()?;
         let err_msg = "failed attempt to cast i64 ArrayD to vector".into();
-        match data.ndim().clone() {
+        match data.ndim() {
             0 => match (optional_length, data.first()) {
-                (Some(length), Some(v)) => Ok((0..length).map(|_| v.clone()).collect()),
+                (Some(length), Some(v)) => Ok((0..length).map(|_| *v).collect()),
                 _ => Err(err_msg)
             },
             1 => Ok(data.clone().into_dimensionality::<Ix1>()?.to_vec()),
@@ -273,7 +273,7 @@ impl Array {
             Array::F64(array) => array.shape().to_owned(),
             Array::I64(array) => array.shape().to_owned(),
             Array::Str(array) => array.shape().to_owned()
-        }.iter().map(|arr| arr.clone() as i64).collect()
+        }.iter().map(|arr| *arr as i64).collect()
     }
     pub fn num_records(&self) -> Result<i64> {
         let shape = self.shape();
@@ -312,7 +312,7 @@ impl Jagged {
     /// Retrieve the f64 jagged matrix, assuming the data type of the jagged matrix is f64, and assuming all columns are defined
     pub fn f64(&self) -> Result<Vec<Vec<f64>>> {
         self.f64_option()?.iter().cloned().collect::<Option<Vec<Vec<f64>>>>()
-            .ok_or::<Error>("not all columns are known in float Jagged matrix".into())
+            .ok_or_else(|| "not all columns are known in float Jagged matrix".into())
     }
     /// Retrieve the f64 jagged matrix, assuming the data type of the jagged matrix is f64
     pub fn f64_option<'a>(&'a self) -> Result<&'a Vec<Option<Vec<f64>>>> {
@@ -325,7 +325,7 @@ impl Jagged {
     pub fn i64(&self) -> Result<Vec<Vec<i64>>> {
         match self {
             Jagged::I64(data) => data.iter().cloned().collect::<Option<Vec<Vec<i64>>>>()
-                .ok_or::<Error>("not all columns are known in int Jagged matrix".into()),
+                .ok_or_else(|| "not all columns are known in int Jagged matrix".into()),
             _ => Err("expected int type on a non-int Jagged matrix".into())
         }
     }
@@ -333,7 +333,7 @@ impl Jagged {
     pub fn string(&self) -> Result<Vec<Vec<String>>> {
         match self {
             Jagged::Str(data) => data.iter().cloned().collect::<Option<Vec<Vec<String>>>>()
-                .ok_or::<Error>("not all columns are known in string Jagged matrix".into()),
+                .ok_or_else(|| "not all columns are known in string Jagged matrix".into()),
             _ => Err("expected string type on a non-string Jagged matrix".into())
         }
     }
@@ -341,7 +341,7 @@ impl Jagged {
     pub fn bool(&self) -> Result<Vec<Vec<bool>>> {
         match self {
             Jagged::Bool(data) => data.iter().cloned().collect::<Option<Vec<Vec<bool>>>>()
-                .ok_or::<Error>("not all columns are known in bool Jagged matrix".into()),
+                .ok_or_else(|| "not all columns are known in bool Jagged matrix".into()),
             _ => Err("expected bool type on a non-bool Jagged matrix".into())
         }
     }
@@ -367,7 +367,61 @@ impl Jagged {
     }
     pub fn lengths(&self) -> Result<Vec<i64>> {
         self.lengths_option().iter().cloned().collect::<Option<Vec<i64>>>()
-            .ok_or("length is not defined for every column".into())
+            .ok_or_else(|| Error::from("length is not defined for every column"))
+    }
+
+    pub fn deduplicate(&self) -> Result<Jagged> {
+        match self.to_owned() {
+            Jagged::F64(_) =>
+                Err("float data may not be categorical".into()),
+            Jagged::I64(categories) => Ok(categories.into_iter()
+                .map(|cats| cats.map(deduplicate))
+                .collect::<Vec<Option<Vec<i64>>>>().into()),
+            Jagged::Bool(categories) => Ok(categories.into_iter()
+                .map(|cats| cats.map(deduplicate))
+                .collect::<Vec<Option<Vec<bool>>>>().into()),
+            Jagged::Str(categories) => Ok(categories.into_iter()
+                .map(|cats| cats.map(deduplicate))
+                .collect::<Vec<Option<Vec<String>>>>().into()),
+        }
+    }
+
+    pub fn standardize(&self, num_columns: &i64) -> Result<Jagged> {
+        match self {
+            Jagged::F64(_) =>
+                Err("float data may not be categorical".into()),
+            Jagged::I64(categories) =>
+                Ok(standardize_categorical_argument(categories, &num_columns)?
+                    .into_iter().map(Some).collect::<Vec<Option<Vec<i64>>>>().into()),
+            Jagged::Bool(categories) =>
+                Ok(standardize_categorical_argument(categories, &num_columns)?
+                    .into_iter().map(Some).collect::<Vec<Option<Vec<bool>>>>().into()),
+            Jagged::Str(categories) =>
+                Ok(standardize_categorical_argument(categories, &num_columns)?
+                    .into_iter().map(Some).collect::<Vec<Option<Vec<String>>>>().into()),
+        }
+    }
+}
+
+
+impl From<Vec<Option<Vec<f64>>>> for Jagged {
+    fn from(value: Vec<Option<Vec<f64>>>) -> Self {
+        Jagged::F64(value)
+    }
+}
+impl From<Vec<Option<Vec<i64>>>> for Jagged {
+    fn from(value: Vec<Option<Vec<i64>>>) -> Self {
+        Jagged::I64(value)
+    }
+}
+impl From<Vec<Option<Vec<bool>>>> for Jagged {
+    fn from(value: Vec<Option<Vec<bool>>>) -> Self {
+        Jagged::Bool(value)
+    }
+}
+impl From<Vec<Option<Vec<String>>>> for Jagged {
+    fn from(value: Vec<Option<Vec<String>>>) -> Self {
+        Jagged::Str(value)
     }
 }
 
@@ -401,11 +455,11 @@ impl<T> Hashmap<T> {
     }
     pub fn from_values(&self, values: Vec<T>) -> Hashmap<T> where T: Clone {
         match self {
-            Hashmap::Bool(value) => value.keys().into_iter().cloned()
+            Hashmap::Bool(value) => value.keys().cloned()
                 .zip(values).collect::<HashMap<bool, T>>().into(),
-            Hashmap::I64(value) => value.keys().into_iter().cloned()
+            Hashmap::I64(value) => value.keys().cloned()
                 .zip(values).collect::<HashMap<i64, T>>().into(),
-            Hashmap::Str(value) => value.keys().into_iter().cloned()
+            Hashmap::Str(value) => value.keys().cloned()
                 .zip(values).collect::<HashMap<String, T>>().into(),
         }
     }
@@ -498,19 +552,13 @@ pub struct HashmapProperties {
 
 impl HashmapProperties {
     pub fn assert_is_disjoint(&self) -> Result<()> {
-        match self.disjoint {
-            false => Err("partitions must be disjoint".into()),
-            true => Ok(())
-        }
+        if self.disjoint { Err("partitions must be disjoint".into()) } else { Ok(()) }
     }
     pub fn assert_is_not_columnar(&self) -> Result<()> {
-        match self.columnar {
-            true => Err("partitions must not be columnar".into()),
-            false => Ok(())
-        }
+        if self.columnar { Err("partitions must not be columnar".into()) } else { Ok(()) }
     }
     pub fn num_records(&self) -> Result<i64> {
-        self.num_records.ok_or::<Error>("number of rows is not defined".into())
+        self.num_records.ok_or_else(|| "number of rows is not defined".into())
     }
 }
 
@@ -565,10 +613,7 @@ impl ArrayProperties {
     pub fn min_f64(&self) -> Result<Vec<f64>> {
         let bound = self.min_f64_option()?;
         let value = bound.iter().filter_map(|v| v.to_owned()).collect::<Vec<f64>>();
-        match bound.len() == value.len() {
-            true => Ok(value),
-            false => Err("not all min are known".into())
-        }
+        if bound.len() == value.len() { Ok(value) } else { Err("not all min are known".into()) }
     }
     pub fn max_f64_option(&self) -> Result<Vec<Option<f64>>> {
         match self.nature.to_owned() {
@@ -585,10 +630,42 @@ impl ArrayProperties {
     pub fn max_f64(&self) -> Result<Vec<f64>> {
         let bound = self.max_f64_option()?;
         let value = bound.iter().filter_map(|v| v.to_owned()).collect::<Vec<f64>>();
-        match bound.len() == value.len() {
-            true => Ok(value),
-            false => Err("not all max are known".into())
+        if bound.len() == value.len() { Ok(value) } else { Err("not all max are known".into()) }
+    }
+
+    pub fn min_i64_option(&self) -> Result<Vec<Option<i64>>> {
+        match self.nature.to_owned() {
+            Some(value) => match value {
+                Nature::Continuous(continuous) => match continuous.min {
+                    Vector1DNull::I64(bound) => Ok(bound),
+                    _ => Err("min must be composed of integers".into())
+                },
+                _ => Err("min must be an array".into())
+            },
+            None => Err("continuous nature for min is not defined".into())
         }
+    }
+    pub fn min_i64(&self) -> Result<Vec<i64>> {
+        let bound = self.min_i64_option()?;
+        let value = bound.iter().filter_map(|v| v.to_owned()).collect::<Vec<i64>>();
+        if bound.len() == value.len() { Ok(value) } else { Err("not all min are known".into()) }
+    }
+    pub fn max_i64_option(&self) -> Result<Vec<Option<i64>>> {
+        match self.nature.to_owned() {
+            Some(value) => match value {
+                Nature::Continuous(continuous) => match continuous.max {
+                    Vector1DNull::I64(bound) => Ok(bound),
+                    _ => Err("max must be composed of integers".into())
+                },
+                _ => Err("max must be an array".into())
+            },
+            None => Err("continuous nature for max is not defined".into())
+        }
+    }
+    pub fn max_i64(&self) -> Result<Vec<i64>> {
+        let bound = self.max_i64_option()?;
+        let value = bound.iter().filter_map(|v| v.to_owned()).collect::<Vec<i64>>();
+        if bound.len() == value.len() { Ok(value) } else { Err("not all max are known".into()) }
     }
 
     pub fn categories(&self) -> Result<Jagged> {
@@ -600,54 +677,25 @@ impl ArrayProperties {
             None => Err("categorical nature is not defined".into())
         }
     }
-    pub fn categories_lengths(&self) -> Result<Vec<i64>> {
-        let num_columns = self.num_columns()?;
-
-        match self.categories() {
-            Ok(categories) => Ok(match categories {
-                Jagged::Str(categories) =>
-                    standardize_categorical_argument(&categories, &num_columns)?.iter()
-                        .map(|cats| cats.len() as i64).collect(),
-                Jagged::Bool(categories) =>
-                    standardize_categorical_argument(&categories, &num_columns)?.iter()
-                        .map(|cats| cats.len() as i64).collect(),
-                Jagged::I64(categories) =>
-                    standardize_categorical_argument(&categories, &num_columns)?.iter()
-                        .map(|cats| cats.len() as i64).collect(),
-                Jagged::F64(categories) =>
-                    standardize_categorical_argument(&categories, &num_columns)?.iter()
-                        .map(|cats| cats.len() as i64).collect(),
-            }),
-            Err(_) => Ok((0..num_columns).map(|_| 1).collect())
-        }
-    }
     pub fn assert_categorical(&self) -> Result<()> {
-        self.categories_lengths()?;
+        self.categories()?.lengths()?;
         Ok(())
     }
     pub fn assert_non_null(&self) -> Result<()> {
-        match self.nullity {
-            false => Ok(()),
-            true => Err("data may contain nullity when non-nullity is required".into())
-        }
+        if self.nullity { Err("data may contain nullity when non-nullity is required".into()) } else { Ok(())}
     }
     pub fn assert_is_releasable(&self) -> Result<()> {
-        match self.releasable {
-            false => Ok(()),
-            true => Err("data is not releasable when releasability is required".into())
-        }
+        if self.releasable { Ok(()) } else { Err("data is not releasable when releasability is required".into()) }
     }
     pub fn num_columns(&self) -> Result<i64> {
-        self.num_columns.ok_or::<Error>("number of columns is not defined".into())
+        self.num_columns.ok_or_else(|| "number of columns is not defined".into())
     }
     pub fn num_records(&self) -> Result<i64> {
-        self.num_records.ok_or::<Error>("number of records is not defined".into())
+        self.num_records.ok_or_else(|| "number of records is not defined".into())
     }
     pub fn assert_is_not_aggregated(&self) -> Result<()> {
-        match self.aggregator.to_owned() {
-            Some(_aggregator) => Err("aggregated data may not be manipulated".into()),
-            None => Ok(())
-        }
+        if self.aggregator.is_some() { Err("aggregated data may not be manipulated".into()) }
+        else { Ok(()) }
     }
 }
 

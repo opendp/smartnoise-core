@@ -27,7 +27,7 @@ impl Evaluable for proto::Index {
                         let column_names = dataframe.keys().cloned().collect::<Vec<String>>();
                         let columns = to_name_vec(columns)?.iter()
                             .map(|index| column_names.get(*index as usize).cloned()
-                                .ok_or::<Error>("column index out of bounds".into())).collect::<Result<Vec<String>>>()?;
+                                .ok_or_else(|| Error::from("column index out of bounds"))).collect::<Result<Vec<String>>>()?;
                         column_stack(dataframe, &columns)
                     },
                     Array::Bool(columns) => column_stack(dataframe, &mask_columns(
@@ -78,13 +78,13 @@ fn column_stack<T: Clone + Eq + std::hash::Hash>(
 ) -> Result<Value> {
     if column_names.len() == 1 {
         return dataframe.get(column_names.first().unwrap()).cloned()
-            .ok_or::<Error>("the provided column name does not exist".into())
+            .ok_or_else(|| Error::from("the provided column name does not exist"))
     }
 
     let values = column_names.iter()
         .map(|column_name| dataframe.get(column_name))
         .collect::<Option<Vec<&Value>>>()
-        .ok_or::<Error>("one of the provided column names does not exist".into())?;
+        .ok_or_else(|| Error::from("one of the provided column names does not exist"))?;
 
     let data_type = match values.first() {
         Some(value) => match value.array()? {
@@ -145,7 +145,8 @@ fn to_nd<T>(mut array: ArrayD<T>, ndim: &usize) -> Result<ArrayD<T>> {
         0 => {},
         // must remove i axes
         i if i < 0 => {
-            (0..-(i as i32)).map(|_| match array.shape().last().ok_or::<Error>("ndim may not be negative".into())? {
+            (0..-(i as i32)).map(|_| match array.shape().last()
+                .ok_or_else(|| Error::from("ndim may not be negative"))? {
                 1 => Ok(array.index_axis_inplace(Axis(array.ndim().clone()), 0)),
                 _ => Err("cannot remove non-singleton trailing axis".into())
             }).collect::<Result<_>>()?

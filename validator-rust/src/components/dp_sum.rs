@@ -34,14 +34,15 @@ impl Expandable for proto::DpSum {
         component_id: &u32,
         maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
-        let mut current_id = maximum_id.clone();
+        let mut current_id = *maximum_id;
         let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
 
         // sum
         current_id += 1;
-        let id_sum = current_id.clone();
+        let id_sum = current_id;
         computation_graph.insert(id_sum, proto::Component {
-            arguments: hashmap!["data".to_owned() => *component.arguments.get("data").ok_or::<Error>("data must be provided as an argument".into())?],
+            arguments: hashmap!["data".to_owned() => *component.arguments.get("data")
+                .ok_or_else(|| Error::from("data must be provided as an argument"))?],
             variant: Some(proto::component::Variant::Sum(proto::Sum {})),
             omit: true,
             batch: component.batch,
@@ -101,7 +102,7 @@ impl Report for proto::DpSum {
                 privacy_loss: privacy_usage_to_json(&privacy_usages[column_number as usize].clone()),
                 accuracy: None,
                 batch: component.batch as u64,
-                node_id: node_id.clone() as u64,
+                node_id: *node_id as u64,
                 postprocess: false,
                 algorithm_info: AlgorithmInfo {
                     name: "".to_string(),

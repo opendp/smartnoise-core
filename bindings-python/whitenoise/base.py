@@ -52,7 +52,9 @@ def privacy_usage(epsilon=None, delta=None):
 
 
 class Dataset(object):
-    def __init__(self, *, path=None, value=None, num_columns=None, column_names=None, value_format=None, private=True):
+    def __init__(self, *, path=None, value=None,
+                 num_columns=None, column_names=None,
+                 value_format=None, skip_row=True, private=True):
 
         global context
         if not context:
@@ -81,7 +83,8 @@ class Dataset(object):
                                    options={
                                        "data_source": value_pb2.DataSource(**data_source),
                                        "private": private,
-                                       "dataset_id": value_pb2.I64Null(option=self.dataset_id)
+                                       "dataset_id": value_pb2.I64Null(option=self.dataset_id),
+                                       "skip_row": skip_row
                                    })
 
     def __getitem__(self, identifier):

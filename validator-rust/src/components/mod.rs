@@ -35,11 +35,11 @@ mod kth_raw_sample_moment;
 mod maximum;
 mod materialize;
 mod minimum;
-mod partition;
+//mod partition;
 mod quantile;
 mod reshape;
 mod mean;
-mod mechanism_exponential;
+//mod mechanism_exponential;
 mod mechanism_gaussian;
 mod mechanism_laplace;
 mod mechanism_simple_geometric;
@@ -220,7 +220,7 @@ impl Component for proto::component::Variant {
 
             Filter, Histogram, Impute, Index, KthRawSampleMoment, Materialize, Maximum, Mean,
 
-            ExponentialMechanism, GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism,
+            GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism,
 
             Minimum, Quantile, Reshape, Resize, Sum, Variance,
 
@@ -228,7 +228,7 @@ impl Component for proto::component::Variant {
             Equal, LessThan, GreaterThan, Negative
         );
 
-        return Err(format!("proto component {:?} is missing its Component trait", self).into())
+        Err(format!("proto component {:?} is missing its Component trait", self).into())
     }
 }
 
@@ -260,10 +260,8 @@ impl Expandable for proto::component::Variant {
         expand_component!(
             // INSERT COMPONENT LIST
             Clamp, DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMedian, DpMinimum,
-            DpMomentRaw, DpSum, DpVariance, Histogram, Impute, ExponentialMechanism, GaussianMechanism,
-            LaplaceMechanism, SimpleGeometricMechanism, Resize,
-
-            Modulo
+            DpMomentRaw, DpSum, DpVariance, Histogram, Impute, GaussianMechanism,
+            LaplaceMechanism, SimpleGeometricMechanism, Resize
         );
 
         // no expansion

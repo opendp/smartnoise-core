@@ -25,7 +25,7 @@ impl Component for proto::GaussianMechanism {
             .map_err(prepend("data:"))?.clone();
 
         let aggregator = data_property.aggregator.clone()
-            .ok_or::<Error>("aggregator: missing".into())?;
+            .ok_or_else(|| Error::from("aggregator: missing"))?;
 
         // sensitivity must be computable
         aggregator.component.compute_sensitivity(

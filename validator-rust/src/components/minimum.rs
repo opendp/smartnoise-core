@@ -63,7 +63,7 @@ impl Aggregator for proto::Minimum {
 
                 Ok(Array::from(row_sensitivity).into_dyn().into())
             }
-            _ => return Err("Minimum sensitivity is only implemented for KNorm of 1".into())
+            _ => Err("Minimum sensitivity is only implemented for KNorm of 1".into())
         }
     }
 }
