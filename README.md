@@ -6,7 +6,7 @@
 
 ## WhiteNoise Core Differential Privacy
 
-(Rewrite)
+INTRO PARAGRAPHS HERE
 
 - [More about WhiteNoise Core](#more-about-whitenoise-core)
   - [Architecture](#architecture)
