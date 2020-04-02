@@ -39,7 +39,7 @@
   "options": {
     "implementation": {
       "type": "string",
-      "default": "'Laplace'"
+      "default": "'SimpleGeometric'"
     },
     "privacy_usage": {
       "type": "repeated PrivacyUsage"

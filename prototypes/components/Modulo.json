@@ -11,20 +11,6 @@
         "continuous"
       ],
       "type": "Array"
-    },
-    "min": {
-      "nature": [
-        "continuous"
-      ],
-      "type": "Array",
-      "default": "None"
-    },
-    "max": {
-      "nature": [
-        "continuous"
-      ],
-      "type": "Array",
-      "default": "None"
     }
   },
   "id": "Modulo",

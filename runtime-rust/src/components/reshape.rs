@@ -152,6 +152,4 @@ mod reshape_tests {
         let n = reshape(&data, &true, &Layout::Row, &vec![4, 4]).unwrap();
         assert!(n[0] == arr2(&[[0, 1, 2, 3], [1, 4, 5, 6], [2, 5, 7, 8], [3, 6, 8, 9]]).into_dyn());
     }
-
-
 }

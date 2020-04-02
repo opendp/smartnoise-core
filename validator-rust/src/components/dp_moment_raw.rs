@@ -39,14 +39,15 @@ impl Expandable for proto::DpMomentRaw {
         component_id: &u32,
         maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
-        let mut current_id = maximum_id.clone();
+        let mut current_id = *maximum_id;
         let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
 
         // kth raw moment
         current_id += 1;
-        let id_moment = current_id.clone();
+        let id_moment = current_id;
         computation_graph.insert(id_moment, proto::Component {
-            arguments: hashmap!["data".to_owned() => *component.arguments.get("data").ok_or::<Error>("data must be provided as an argument".into())?],
+            arguments: hashmap!["data".to_owned() => *component.arguments.get("data")
+                .ok_or_else(|| Error::from("data must be provided as an argument"))?],
             variant: Some(proto::component::Variant::from(proto::KthRawSampleMoment {
                 k: self.order
             })),
@@ -110,7 +111,7 @@ impl Report for proto::DpMomentRaw {
                 privacy_loss: privacy_usage_to_json(&privacy_usages[column_number as usize].clone()),
                 accuracy: None,
                 batch: component.batch as u64,
-                node_id: node_id.clone() as u64,
+                node_id: *node_id as u64,
                 postprocess: false,
                 algorithm_info: AlgorithmInfo {
                     name: "".to_string(),

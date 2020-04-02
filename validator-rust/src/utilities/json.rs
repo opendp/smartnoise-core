@@ -84,7 +84,7 @@ pub fn arraynd_to_json<T: Serialize + Clone>(array: &ArrayD<T>) -> Result<serde_
     match array.ndim() {
         0 => Ok(serde_json::json!(array.first().unwrap())),
         1 => Ok(serde_json::json!(array.clone().into_dimensionality::<Ix1>()?.to_vec())),
-        2 => Ok(serde_json::json!(array.genrows().into_iter().map(|row| row.into_iter().map(|v| v.clone()).collect::<Vec<T>>()).collect::<Vec<Vec<T>>>())),
+        2 => Ok(serde_json::json!(array.genrows().into_iter().map(|row| row.iter().cloned().collect::<Vec<T>>()).collect::<Vec<Vec<T>>>())),
         _ => Err("array must have dimensionality less than 2".into())
     }
 }

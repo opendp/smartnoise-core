@@ -5,11 +5,6 @@
         "continuous"
       ],
       "type": "Array"
-    },
-    "by": {
-      "type": "Array",
-      "default": "None",
-      "description": "Data for which you want the arithmetic mean."
     }
   },
   "id": "Mean",

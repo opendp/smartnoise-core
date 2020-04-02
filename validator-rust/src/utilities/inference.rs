@@ -22,9 +22,11 @@ pub fn infer_min(value: &Value) -> Result<Vector1DNull> {
             match array.shape().len() as i64 {
                 0 => match array {
                     Array::F64(array) =>
-                        Vector1DNull::F64(vec![Some(array.first().ok_or::<Error>("min may not have length zero".into())?.to_owned())]),
+                        Vector1DNull::F64(vec![
+                            Some(array.first().ok_or_else(|| Error::from("min may not have length zero"))?.to_owned())]),
                     Array::I64(array) =>
-                        Vector1DNull::I64(vec![Some(array.first().ok_or::<Error>("min may not have length zero".into())?.to_owned())]),
+                        Vector1DNull::I64(vec![
+                            Some(array.first().ok_or_else(|| Error::from( "min may not have length zero"))?.to_owned())]),
                     _ => return Err("Cannot infer numeric min on a non-numeric vector".into())
                 },
                 1 => match array {
@@ -37,14 +39,14 @@ pub fn infer_min(value: &Value) -> Result<Vector1DNull> {
                 2 => match array {
                     Array::F64(array) =>
                         Vector1DNull::F64(array.lanes(Axis(0)).into_iter()
-                            .map(|col| col.min().map(|v| v.clone()).map_err(|e| e.into()))
+                            .map(|col| col.min().map(|v| *v).map_err(|e| e.into()))
                             .collect::<Result<Vec<f64>>>()?
-                            .into_iter().map(|v| Some(v)).collect()),
+                            .into_iter().map(Some).collect()),
                     Array::I64(array) =>
                         Vector1DNull::I64(array.lanes(Axis(0)).into_iter()
-                            .map(|col| col.min().map(|v| v.clone()).map_err(|e| e.into()))
+                            .map(|col| col.min().map(|v| *v).map_err(|e| e.into()))
                             .collect::<Result<Vec<i64>>>()?
-                            .into_iter().map(|v| Some(v)).collect()),
+                            .into_iter().map(Some).collect()),
                     _ => return Err("Cannot infer numeric min on a non-numeric vector".into())
                 },
                 _ => return Err("arrays may have max dimensionality of 2".into())
@@ -54,13 +56,13 @@ pub fn infer_min(value: &Value) -> Result<Vector1DNull> {
         Value::Jagged(jagged) => {
             match jagged {
                 Jagged::F64(jagged) => Vector1DNull::F64(jagged.iter().map(|col| Ok(match col {
-                    Some(col) => Some(col.iter().map(|v| v.clone()).fold1(|l, r| l.min(r))
-                        .ok_or::<Error>("attempted to infer min on an empty value".into())?.clone()),
+                    Some(col) => Some(col.iter().copied().fold1(|l, r| l.min(r))
+                        .ok_or_else(|| Error::from("attempted to infer min on an empty value"))?),
                     None => None
                 })).collect::<Result<_>>()?),
                 Jagged::I64(jagged) => Vector1DNull::I64(jagged.iter().map(|col| Ok(match col {
                     Some(col) => Some(*col.iter().fold1(std::cmp::min)
-                        .ok_or::<Error>("attempted to infer min on an empty value".into())?),
+                        .ok_or_else(|| Error::from("attempted to infer min on an empty value"))?),
                     None => None
                 })).collect::<Result<_>>()?),
                 _ => return Err("Cannot infer numeric min on a non-numeric vector".into())
@@ -76,10 +78,10 @@ pub fn infer_max(value: &Value) -> Result<Vector1DNull> {
                 0 => match array {
                     Array::F64(array) =>
                         Vector1DNull::F64(vec![Some(array.first()
-                            .ok_or::<Error>("min may not have length zero".into())?.to_owned())]),
+                            .ok_or_else(|| Error::from("min may not have length zero"))?.to_owned())]),
                     Array::I64(array) =>
                         Vector1DNull::I64(vec![Some(array.first()
-                            .ok_or::<Error>("min may not have length zero".into())?.to_owned())]),
+                            .ok_or_else(|| Error::from("min may not have length zero"))?.to_owned())]),
                     _ => return Err("Cannot infer numeric max on a non-numeric vector".into())
                 },
                 1 => match array {
@@ -92,14 +94,14 @@ pub fn infer_max(value: &Value) -> Result<Vector1DNull> {
                 2 => match array {
                     Array::F64(array) =>
                         Vector1DNull::F64(array.lanes(Axis(0)).into_iter()
-                            .map(|col| col.max().map(|v| v.clone()).map_err(|e| e.into()))
+                            .map(|col| col.max().map(|v| *v).map_err(|e| e.into()))
                             .collect::<Result<Vec<f64>>>()?
-                            .into_iter().map(|v| Some(v)).collect()),
+                            .into_iter().map(Some).collect()),
                     Array::I64(array) =>
                         Vector1DNull::I64(array.lanes(Axis(0)).into_iter()
-                            .map(|col| col.max().map(|v| v.clone()).map_err(|e| e.into()))
+                            .map(|col| col.max().map(|v| *v).map_err(|e| e.into()))
                             .collect::<Result<Vec<i64>>>()?
-                            .into_iter().map(|v| Some(v)).collect()),
+                            .into_iter().map(Some).collect()),
                     _ => return Err("Cannot infer numeric max on a non-numeric vector".into())
                 },
                 _ => return Err("arrays may have max dimensionality of 2".into())
@@ -109,13 +111,14 @@ pub fn infer_max(value: &Value) -> Result<Vector1DNull> {
         Value::Jagged(jagged) => {
             match jagged {
                 Jagged::F64(jagged) => Vector1DNull::F64(jagged.iter().map(|col| Ok(match col {
-                    Some(col) => Some(col.iter().map(|x| x.clone()).fold1(|l, r| l.max(r).clone())
-                        .ok_or::<Error>("attempted to infer max on an empty value".into())?),
+                    Some(col) => Some(col.iter().cloned()
+                        .fold1(|l, r| l.max(r))
+                        .ok_or_else(|| Error::from("attempted to infer max on an empty value"))?),
                     None => None
                 })).collect::<Result<_>>()?),
                 Jagged::I64(jagged) => Vector1DNull::I64(jagged.iter().map(|col| Ok(match col {
                     Some(col) => Some(*col.iter().fold1(std::cmp::max)
-                        .ok_or::<Error>("attempted to infer max on an empty value".into())?),
+                        .ok_or_else(|| Error::from("attempted to infer max on an empty value"))?),
                     None => None
                 })).collect::<Result<_>>()?),
                 _ => return Err("Cannot infer numeric max on a non-numeric vector".into())
@@ -125,7 +128,7 @@ pub fn infer_max(value: &Value) -> Result<Vector1DNull> {
 }
 
 pub fn infer_categories(value: &Value) -> Result<Jagged> {
-    Ok(match value {
+    match value {
         Value::Array(array) => match array {
             Array::Bool(array) =>
                 Jagged::Bool(array.gencolumns().into_iter().map(|col|
@@ -151,7 +154,6 @@ pub fn infer_categories(value: &Value) -> Result<Jagged> {
                     Some(column_categories) => Some(deduplicate(column_categories.to_owned())),
                     None => None
                 }).collect()),
-            // TODO: consider removing support for float categories
             Jagged::F64(array) =>
                 Jagged::F64(array.iter().map(|_| None).collect()),
             Jagged::I64(array) =>
@@ -165,7 +167,7 @@ pub fn infer_categories(value: &Value) -> Result<Jagged> {
                     None => None
                 }).collect()),
         }
-    })
+    }.deduplicate()
 }
 
 pub fn infer_nature(value: &Value) -> Result<Option<Nature>> {
@@ -182,11 +184,9 @@ pub fn infer_nature(value: &Value) -> Result<Option<Nature>> {
             Array::Bool(array) => Some(Nature::Categorical(NatureCategorical {
                 categories: infer_categories(&array.clone().into())?,
             })),
-            // This has a nasty side-effect of duplicating columns within the properties
-//            ArrayND::Str(array) => Nature::Categorical(NatureCategorical {
-//                categories: infer_categories(&Value::ArrayND(ArrayND::Str(array.clone()))),
-//            }),
-            _ => None
+            Array::Str(array) => Some(Nature::Categorical(NatureCategorical {
+                categories: infer_categories(&array.clone().into())?,
+            })),
         },
         Value::Hashmap(_) => None,
         Value::Jagged(jagged) => match jagged {
@@ -240,11 +240,11 @@ pub fn infer_property(value: &Value) -> Result<ValueProperties> {
                     .collect::<Result<HashMap<String, ValueProperties>>>()?.into(),
                 Hashmap::I64(hashmap) => hashmap.iter()
                     .map(|(name, value)| infer_property(value)
-                        .map(|v| (name.clone(), v)))
+                        .map(|v| (*name, v)))
                     .collect::<Result<HashMap<i64, ValueProperties>>>()?.into(),
                 Hashmap::Bool(hashmap) => hashmap.iter()
                     .map(|(name, value)| infer_property(value)
-                        .map(|v| (name.clone(), v)))
+                        .map(|v| (*name, v)))
                     .collect::<Result<HashMap<bool, ValueProperties>>>()?.into(),
             },
             columnar: false

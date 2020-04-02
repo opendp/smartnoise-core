@@ -34,7 +34,7 @@ pub fn mean(data: &ArrayD<f64>) -> Result<ArrayD<f64>> {
     // iterate over the generalized columns
     let means = data.gencolumns().into_iter()
         .map(|column| column.mean()).collect::<Option<Vec<f64>>>()
-        .ok_or::<Error>("attempted mean of an empty column".into())?;
+        .ok_or_else(|| Error::from("attempted mean of an empty column"))?;
 
     // ensure means are of correct dimension
     let array = match data.ndim() {

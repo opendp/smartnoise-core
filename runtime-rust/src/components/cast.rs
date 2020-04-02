@@ -47,7 +47,7 @@ impl Evaluable for proto::Cast {
 pub fn cast_bool(data: &Array, positive: &Array) -> Result<ArrayD<bool>> {
     fn compare<T: PartialEq + Clone>(data: &ArrayD<T>, label: &ArrayD<T>) -> Result<ArrayD<bool>> {
         let label = label.first()
-            .ok_or::<Error>("label cannot be empty".into())?;
+            .ok_or_else(|| Error::from("label cannot be empty"))?;
         Ok(data.mapv(|v| v == *label))
     };
 

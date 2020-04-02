@@ -39,12 +39,12 @@ impl Expandable for proto::DpMaximum {
         component_id: &u32,
         maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
-        let mut current_id = maximum_id.clone();
+        let mut current_id = *maximum_id;
         let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
 
         // Maximum
         current_id += 1;
-        let id_maximum = current_id.clone();
+        let id_maximum = current_id;
         computation_graph.insert(id_maximum, proto::Component {
             arguments: hashmap!["data".to_owned() => *component.arguments.get("data").unwrap()],
             variant: Some(proto::component::Variant::from(proto::Maximum {})),
@@ -107,7 +107,7 @@ impl Report for proto::DpMaximum {
                 privacy_loss: privacy_usage_to_json(&privacy_usages[column_number as usize].clone()),
                 accuracy: None,
                 batch: component.batch as u64,
-                node_id: node_id.clone() as u64,
+                node_id: *node_id as u64,
                 postprocess: false,
                 algorithm_info: AlgorithmInfo {
                     name: "".to_string(),

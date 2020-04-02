@@ -21,10 +21,16 @@
       "type": "I64Null",
       "default": "None",
       "description": "when set, data with unknown number of records may still conform to data with the same dataset_id"
+    },
+    "skip_row": {
+      "type": "bool",
+      "default": "True",
+      "description": "when set, skip the first line (header)"
     }
   },
   "return": {
     "nature": null,
     "type": "Hashmap"
-  }
+  },
+  "description": "Load a tabular frame from a data source"
 }

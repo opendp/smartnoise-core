@@ -15,7 +15,7 @@
     },
     "implementation": {
       "type": "string",
-      "default": "'Exponential'"
+      "default": "'Laplace'"
     },
     "privacy_usage": {
       "type": "repeated PrivacyUsage"

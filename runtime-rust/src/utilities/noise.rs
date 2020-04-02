@@ -95,7 +95,7 @@ pub fn sample_bit(prob: &f64) -> Result<i64> {
 /// ```
 pub fn sample_uniform_int(min: &i64, max: &i64) -> Result<i64> {
 
-    if min > max {return Err("min cannot be less than max".into());}
+    if min > max {return Err("min may not be greater than max".into());}
 
     // define number of possible integers we could sample and the maximum
     // number of bits it would take to represent them
