@@ -8,18 +8,12 @@
       "type": "Array"
     },
     "count_min": {
-      "type": "Array"
+      "type": "Array",
+      "default": "0"
     },
     "count_max": {
-      "type": "Array"
-    },
-    "by": {
-      "nature": [
-        "continuous",
-        "categorical"
-      ],
       "type": "Array",
-      "default": "None"
+      "default": "9_223_372_036_854_775_807"
     }
   },
   "id": "DPCount",

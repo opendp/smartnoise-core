@@ -87,10 +87,10 @@ pub fn gaussian_mechanism(epsilon: &f64, delta: &f64, sensitivity: &f64) -> Resu
 ///
 /// * `epsilon` - Multiplicative privacy loss parameter
 /// * `sensitivity` - L1 sensitivity of function you want to privatize. The Geometric is typically used for counting queries, where sensitivity = 1.
-/// * `count_min` - The minimum count you think possible, typically 0.
-/// * `count_max` - The maximum count you think possible, typically the size of your data.
+/// * `min` - The minimum return you think possible.
+/// * `max` - The maximum return you think possible.
 /// * `enforce_constant_time` - Whether or not to run the noise generation algorithm in constant time.
-///                             If true, will run count_max-count_min number of times.
+///                             If true, will run max-min number of times.
 /// # Return
 /// A draw according to the Geometric mechanism.
 ///
@@ -101,14 +101,14 @@ pub fn gaussian_mechanism(epsilon: &f64, delta: &f64, sensitivity: &f64) -> Resu
 /// ```
 pub fn simple_geometric_mechanism(
     epsilon: &f64, sensitivity: &f64,
-    count_min: &i64, count_max: &i64,
+    min: &i64, max: &i64,
     enforce_constant_time: &bool
 ) -> Result<i64> {
     if epsilon < &0. || sensitivity < &0. {
         return Err(format!("epsilon ({}) and sensitivity ({}) must be positive", epsilon, sensitivity).into());
     }
     let scale: f64 = sensitivity / epsilon;
-    let noise: i64 = noise::sample_simple_geometric_mechanism(&scale, &count_min, &count_max, &enforce_constant_time);
+    let noise: i64 = noise::sample_simple_geometric_mechanism(&scale, &min, &max, &enforce_constant_time);
     Ok(noise)
 }
 
