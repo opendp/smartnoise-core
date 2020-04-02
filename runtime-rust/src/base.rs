@@ -14,8 +14,8 @@ use std::vec::Vec;
 use itertools::Itertools;
 
 use whitenoise_validator::base::{Value};
-use whitenoise_validator::utilities::inference::infer_property;
-use whitenoise_validator::utilities::serial::{serialize_value_properties, parse_release};
+use whitenoise_validator::utilities::serial::{parse_release};
+use std::iter::FromIterator;
 
 pub type NodeArguments<'a> = HashMap<String, &'a Value>;
 
@@ -40,23 +40,21 @@ pub fn execute_graph(analysis: &proto::Analysis,
 
     // stack for storing which nodes to evaluate next
     let computation_graph = analysis.computation_graph.to_owned()
-        .ok_or::<Error>("computation_graph must be defined to execute an analysis".into())?;
-
-    let mut traversal: Vec<u32> = get_sinks(&computation_graph).into_iter().collect();
-
-    let mut release = serial::parse_release(release)?;
-
+        .ok_or_else(|| Error::from("computation_graph must be defined to execute an analysis"))?;
     let mut graph: HashMap<u32, proto::Component> = computation_graph.value;
+
+    // core state for the graph execution algorithm
+    let mut traversal: Vec<u32> = get_sinks(&graph).into_iter().collect();
     let mut graph_properties: HashMap<u32, proto::ValueProperties> = HashMap::new();
+    let mut release = serial::parse_release(release)?;
     let mut maximum_id = graph.keys()
         .fold1(std::cmp::max)
         .map(|x| x.clone())
         .unwrap_or(0);
 
-    // TEMP FIX FOR UNEVALUATED PROPERTIES
-    for (node_id, value) in release.clone() {
-        graph_properties.insert(node_id.clone(), serialize_value_properties(&infer_property(&value)?));
-    }
+    // values in the passed release are kept in the release
+    // TODO: consider requesting properties from the validator for nodes that already exist in the release
+    let preserve_ids: HashSet<u32> = HashSet::from_iter(release.keys().cloned());
 
     // track node parents. Each key is a node id, and the value is the set of node ids that use it
     let mut parents = HashMap::<u32, HashSet<u32>>::new();
@@ -66,21 +64,23 @@ pub fn execute_graph(analysis: &proto::Analysis,
         })
     });
 
+    // evaluate components until the traversal is empty
     while !traversal.is_empty() {
+
         let node_id: u32 = *traversal.last().unwrap();
 
+        // skip the node if it has already been evaluated
         if release.contains_key(&node_id) {
             traversal.pop();
             continue;
         }
 
         let component: proto::Component = graph.get(&node_id)
-            .ok_or::<Error>("attempted to retrieve a non-existent component id".into())?.clone();
-        let arguments = component.to_owned().arguments;
+            .ok_or_else(|| Error::from("attempted to retrieve a non-existent component id"))?.clone();
 
-        // discover if any dependencies remain uncomputed
+        // check if any dependencies of the current node remain unevaluated
         let mut evaluable = true;
-        for source_node_id in arguments.values() {
+        for source_node_id in component.arguments.values() {
             if !release.contains_key(&source_node_id) {
                 evaluable = false;
                 traversal.push(*source_node_id);
@@ -92,33 +92,28 @@ pub fn execute_graph(analysis: &proto::Analysis,
             continue;
         }
 
-        let mut node_properties: HashMap<String, proto::ValueProperties> =
-            get_input_properties(&component, &graph_properties)?;
+        // all dependencies are present in the graph. Begin node expansion
 
-        let public_arguments = node_properties.iter()
-            .filter(|(_k, v)| match v.variant.clone().unwrap() {
-                proto::value_properties::Variant::Array(v) => v.releasable,
-                proto::value_properties::Variant::Jagged(v) => v.releasable,
-                _ => false
-            })
-            .map(|(k, _v)|
-                (k.clone(), release.get(component.arguments.get(k).unwrap()).unwrap().clone()))
+        // collect metadata about node inputs
+        let node_properties: HashMap<String, proto::ValueProperties> =
+            get_input_properties(&component, &graph_properties)?;
+        let public_arguments = component.arguments.iter()
+            .filter(|(_, node_id)| preserve_ids.contains(node_id) || is_public(node_id, &graph, &graph_properties, true) && release.contains_key(node_id))
+            .map(|(name, node_id)| (name.clone(), release.get(node_id).unwrap().clone()))
             .collect::<HashMap<String, Value>>();
 
-//        println!("expanding {:?}", component);
-//        println!("public arguments {:?}", public_arguments);
-//        println!("node properties {:?}", node_properties);
-
-        // all arguments have been computed, attempt to expand the current node
+        // expand the current node
         let expansion: proto::ComponentExpansion = whitenoise_validator::_expand_component(
-            &analysis.privacy_definition.to_owned().ok_or::<Error>("privacy_definition must be defined".into())?,
+            &analysis.privacy_definition.to_owned()
+                .ok_or_else(|| Error::from("privacy_definition must be defined"))?,
             &component,
-            &mut node_properties,
+            &node_properties,
             &public_arguments,
             &node_id,
             &maximum_id,
         )?;
 
+        // extend the runtime state with the expansion
         graph.extend(expansion.computation_graph.clone());
         graph_properties.extend(expansion.properties);
         release.extend(parse_release(&proto::Release{values: expansion.releases})?);
@@ -127,96 +122,102 @@ pub fn execute_graph(analysis: &proto::Analysis,
         maximum_id = *expansion.computation_graph.keys()
             .max().map(|v| v.max(&maximum_id)).unwrap_or(&maximum_id);
 
+        // if nodes were added to the traversal, then evaluate the new nodes first
         if !expansion.traversal.is_empty() {
             continue;
         }
 
+        // no nodes were added to the traversal. Begin node execution
         traversal.pop();
 
-        // the patch may have overwritten the current component
+        // the expansion may have overwritten the current component
         let component = graph.get(&node_id).unwrap();
 
-        let mut node_arguments = NodeArguments::new();
-        component.arguments.iter().for_each(|(field_id, field)| {
-            let evaluation = release.get(&field).unwrap();
-            node_arguments.insert(field_id.to_owned(), evaluation);
-        });
+        // collect arguments by string name to the component that will be executed
+        let node_arguments = component.arguments.iter()
+            .map(|(name, node_id)| (name.clone(), release.get(node_id).unwrap()))
+            .collect::<HashMap<String, &Value>>();
 
-//        println!("Evaluating node_id {:?}, {:?}", node_id, component.variant);
-        let evaluation = component.to_owned().variant.unwrap().evaluate(&node_arguments)?;
+        // evaluate the component using the Evaluable trait, which is implemented on the proto::component::Variant enum
+        let evaluation = component.clone().variant
+            .ok_or_else(|| Error::from("variant of component must be known"))?
+            .evaluate(&node_arguments)?;
 
+        // store the evaluated `Value` enum in the release
         release.insert(node_id, evaluation);
 
-        // prune arguments from the release
-        for argument_node_id in arguments.values() {
+        // prune evaluations from the release. Private nodes that have no unevaluated parents do not need be stored anymore
+        for argument_node_id in component.arguments.values() {
             if let Some(parent_node_ids) = parents.get_mut(argument_node_id) {
                 parent_node_ids.remove(&node_id);
 
                 // remove argument node from release if all children evaluated, and is private or omitted
-                if parent_node_ids.len() == 0 {
-                    let releasable = match graph_properties.get(argument_node_id) {
-                        Some(properties) => match properties.variant.clone().unwrap() {
-                            proto::value_properties::Variant::Array(v) => v.releasable,
-                            proto::value_properties::Variant::Jagged(v) => v.releasable,
-                            _=> false
-                        },
-                        None => false
-                    };
-                    let argument_component = graph.get(argument_node_id).clone().unwrap();
-
-                    if argument_component.omit || !releasable {
-                        release.remove(argument_node_id);
-                    }
+                if parent_node_ids.len() == 0 && !(preserve_ids.contains(argument_node_id) || is_public(argument_node_id, &graph, &graph_properties, false)) {
+                    release.remove(argument_node_id);
                 }
             }
         }
     }
 
     // ensure that the only keys remaining in the release are releasable and not omitted
-    for node_id in release.to_owned().keys() {
-        let releasable = match graph_properties.get(node_id) {
-            Some(properties) => match properties.variant.clone().unwrap() {
-                proto::value_properties::Variant::Array(v) => v.releasable,
-                proto::value_properties::Variant::Jagged(v) => v.releasable,
-                _ => false
-            },
-            None => false
-        };
-
-        match graph.get(node_id) {
-            Some(component) => if component.omit || !releasable {
-                release.remove(node_id);
-            },
-            // delete node ids in the release that are not present in the graph
-            None => {
-                release.remove(node_id);
-            }
-        }
-    }
-    serial::serialize_release(&release)
+    serial::serialize_release(&release.into_iter()
+        .filter(|(node_id, _)| preserve_ids.contains(node_id) || is_public(node_id, &graph, &graph_properties, false))
+        .collect::<HashMap<u32, Value>>())
 }
 
-/// Retrieve the set of node ids in a ComputationGraph that have no dependent nodes.
+/// Retrieve the set of node ids in a graph that have no dependent nodes.
 ///
 /// # Arguments
 /// * `computation_graph` - a prost protobuf hashmap representing a computation graph
 ///
 /// # Returns
 /// The set of node ids that have no dependent nodes
-pub fn get_sinks(computation_graph: &proto::ComputationGraph) -> HashSet<u32> {
-    let mut node_ids = HashSet::<u32>::new();
+pub fn get_sinks(computation_graph: &HashMap<u32, proto::Component>) -> HashSet<u32> {
     // start with all nodes
-    for node_id in computation_graph.value.keys() {
-        node_ids.insert(*node_id);
-    }
+    let mut node_ids = HashSet::from_iter(computation_graph.keys().cloned());
 
     // remove nodes that are referenced in arguments
-    for node in computation_graph.value.values() {
-        for source_node_id in node.arguments.values() {
-            node_ids.remove(&source_node_id);
-        }
+    computation_graph.values()
+        .for_each(|component| component.arguments.values()
+            .for_each(|source_node_id| {
+                node_ids.remove(source_node_id);
+            }));
+
+    return node_ids;
+}
+
+
+pub fn is_public(
+    node_id: &u32,
+    graph: &HashMap<u32, proto::Component>,
+    graph_properties: &HashMap<u32, proto::ValueProperties>,
+    allow_omitted: bool
+) -> bool {
+
+    // component must be known
+    let component = match graph.get(node_id) {
+        Some(component) => component,
+        None => return false
+    };
+
+    // component must not be omitted
+    if !allow_omitted && component.omit {
+        return false;
     }
 
-    // move to heap, transfer ownership to caller
-    return node_ids.to_owned();
+
+    // if the component is a literal, it is public if not marked private
+    if let proto::component::Variant::Literal(literal) = component.variant.clone().unwrap() {
+        return !literal.private;
+    }
+
+    // otherwise use the properties to determine if public
+    match graph_properties.get(node_id) {
+        Some(property) => match property.variant.clone().unwrap() {
+            proto::value_properties::Variant::Array(v) => v.releasable,
+            proto::value_properties::Variant::Jagged(v) => v.releasable,
+            proto::value_properties::Variant::Hashmap(_) => false
+        },
+        None => false
+    }
 }

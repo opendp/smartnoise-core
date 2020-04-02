@@ -13,7 +13,7 @@
   "options": {
     "k": {
       "type": "uint32",
-      "description": "Number representing the moment you want."
+      "description": "Integer statistical moment indicator"
     }
   },
   "return": {

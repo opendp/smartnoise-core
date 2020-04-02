@@ -20,10 +20,14 @@ impl Evaluable for proto::LaplaceMechanism {
 
         data.gencolumns_mut().into_iter()
             .zip(sensitivity.gencolumns().into_iter().zip(epsilon.gencolumns().into_iter()))
-            .for_each(|(mut data_column, (sensitivity, epsilon))| data_column.iter_mut()
+            .map(|(mut data_column, (sensitivity, epsilon))| data_column.iter_mut()
                 .zip(sensitivity.iter().zip(epsilon.iter()))
-                .for_each(|(v, (sens, eps))|
-                    *v += utilities::mechanisms::laplace_mechanism(&eps, &sens)));
+                .map(|(v, (sens, eps))| {
+                    *v += utilities::mechanisms::laplace_mechanism(&eps, &sens)?;
+                    Ok(())
+                })
+                .collect::<Result<()>>())
+            .collect::<Result<()>>()?;
 
         Ok(data.into())
     }
@@ -45,11 +49,14 @@ impl Evaluable for proto::GaussianMechanism {
         data.gencolumns_mut().into_iter()
             .zip(sensitivity.gencolumns().into_iter())
             .zip(epsilon.gencolumns().into_iter().zip(delta.gencolumns().into_iter()))
-            .for_each(|((mut data_column, sensitivity), (epsilon, delta))| data_column.iter_mut()
+            .map(|((mut data_column, sensitivity), (epsilon, delta))| data_column.iter_mut()
                 .zip(sensitivity.iter())
                 .zip(epsilon.iter().zip(delta.iter()))
-                .for_each(|((v, sens), (eps, del))|
-                    *v += utilities::mechanisms::gaussian_mechanism(&eps, &del, &sens)));
+                .map(|((v, sens), (eps, del))| {
+                    *v += utilities::mechanisms::gaussian_mechanism(&eps, &del, &sens)?;
+                    Ok(())
+                }).collect::<Result<()>>())
+            .collect::<Result<()>>()?;
 
         Ok(data.into())
     }
@@ -79,12 +86,16 @@ impl Evaluable for proto::SimpleGeometricMechanism {
         data.gencolumns_mut().into_iter()
             .zip(sensitivity.gencolumns().into_iter().zip(epsilon.gencolumns().into_iter()))
             .zip(count_min.gencolumns().into_iter().zip(count_max.gencolumns().into_iter()))
-            .for_each(|((mut data_column, (sensitivity, epsilon)), (count_min, count_max))| data_column.iter_mut()
+            .map(|((mut data_column, (sensitivity, epsilon)), (count_min, count_max))| data_column.iter_mut()
                 .zip(sensitivity.iter().zip(epsilon.iter()))
                 .zip(count_min.iter().zip(count_max.iter()))
-                .for_each(|((v, (sens, eps)), (c_min, c_max))|
+                .map(|((v, (sens, eps)), (c_min, c_max))| {
                     *v += utilities::mechanisms::simple_geometric_mechanism(
-                        &eps, &sens, &c_min, &c_max, &self.enforce_constant_time)));
+                        &eps, &sens, &c_min, &c_max, &self.enforce_constant_time)?;
+                    Ok(())
+                })
+                .collect::<Result<()>>())
+            .collect::<Result<()>>()?;
 
         Ok(data.into())
     }
@@ -92,7 +103,8 @@ impl Evaluable for proto::SimpleGeometricMechanism {
 
 
 fn get_epsilon(usage: &proto::PrivacyUsage) -> Result<f64> {
-    match usage.distance.clone().ok_or::<Error>("distance must be defined on a PrivacyUsage".into())? {
+    match usage.distance.clone()
+        .ok_or_else(|| Error::from("distance must be defined on a PrivacyUsage"))? {
         proto::privacy_usage::Distance::DistancePure(distance) => Ok(distance.epsilon),
         proto::privacy_usage::Distance::DistanceApproximate(distance) => Ok(distance.epsilon),
 //        _ => Err("epsilon is not defined".into())
@@ -100,7 +112,8 @@ fn get_epsilon(usage: &proto::PrivacyUsage) -> Result<f64> {
 }
 
 fn get_delta(usage: &proto::PrivacyUsage) -> Result<f64> {
-    match usage.distance.clone().ok_or::<Error>("distance must be defined on a PrivacyUsage".into())? {
+    match usage.distance.clone()
+        .ok_or_else(|| Error::from("distance must be defined on a PrivacyUsage"))? {
         proto::privacy_usage::Distance::DistanceApproximate(distance) => Ok(distance.delta),
         _ => Err("delta is not defined".into())
     }

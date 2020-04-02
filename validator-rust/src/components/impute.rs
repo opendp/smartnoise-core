@@ -106,7 +106,7 @@ impl Expandable for proto::Impute {
         component_id: &u32,
         maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
-        let mut current_id = maximum_id.clone();
+        let mut current_id = *maximum_id;
         let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
         let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
 
@@ -114,7 +114,7 @@ impl Expandable for proto::Impute {
 
         if !properties.contains_key("min") {
             current_id += 1;
-            let id_min = current_id.clone();
+            let id_min = current_id;
             let value = Value::Array(Array::F64(
                 ndarray::Array::from(properties.get("data").unwrap().to_owned().array()?.min_f64()?).into_dyn()));
             let (patch_node, release) = get_literal(&value, &component.batch)?;
@@ -125,7 +125,7 @@ impl Expandable for proto::Impute {
 
         if !properties.contains_key("max") {
             current_id += 1;
-            let id_max = current_id.clone();
+            let id_max = current_id;
             let value = Value::Array(Array::F64(
                 ndarray::Array::from(properties.get("data").unwrap().to_owned().array()?.max_f64()?).into_dyn()));
             let (patch_node, release) = get_literal(&value, &component.batch)?;

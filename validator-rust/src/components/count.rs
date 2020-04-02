@@ -11,7 +11,6 @@ use ndarray::{arr1};
 
 
 impl Component for proto::Count {
-    // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
@@ -50,6 +49,7 @@ impl Component for proto::Count {
 }
 
 impl Aggregator for proto::Count {
+    /// Count query sensitivities [are backed by the the proofs here](https://github.com/opendifferentialprivacy/whitenoise-core/blob/955703e3d80405d175c8f4642597ccdf2c00332a/whitepapers/sensitivities/counts/counts.pdf).
     fn compute_sensitivity(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
@@ -69,7 +69,7 @@ impl Aggregator for proto::Count {
                 use proto::privacy_definition::Neighboring;
                 use proto::privacy_definition::Neighboring::{Substitute, AddRemove};
                 let neighboring_type = Neighboring::from_i32(privacy_definition.neighboring)
-                    .ok_or::<Error>("neighboring definition must be either \"AddRemove\" or \"Substitute\"".into())?;
+                    .ok_or_else(|| Error::from("neighboring definition must be either \"AddRemove\" or \"Substitute\""))?;
 
                 let num_records = data_property.num_records;
 
@@ -86,7 +86,7 @@ impl Aggregator for proto::Count {
                 };
                 Ok(arr1(&[sensitivity]).into_dyn().into())
             },
-            _ => return Err("Count sensitivity is only implemented for KNorm".into())
+            _ => Err("Count sensitivity is only implemented for KNorm".into())
         }
     }
 }

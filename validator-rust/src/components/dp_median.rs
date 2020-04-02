@@ -40,15 +40,15 @@ impl Expandable for proto::DpMedian {
         component_id: &u32,
         maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
-        let mut current_id = maximum_id.clone();
+        let mut current_id = *maximum_id;
         let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
 
-        let data_id = component.arguments.get("data")
-            .ok_or::<Error>("data is a required argument to DPMedian".into())?.clone();
+        let data_id = *component.arguments.get("data")
+            .ok_or_else(|| Error::from("data is a required argument to DPMedian"))?;
 
         // median
         current_id += 1;
-        let id_median = current_id.clone();
+        let id_median = current_id;
         computation_graph.insert(id_median, proto::Component {
             arguments: hashmap!["data".to_owned() => data_id],
             variant: Some(proto::component::Variant::from(proto::Quantile {
@@ -117,7 +117,7 @@ impl Report for proto::DpMedian {
                 privacy_loss: privacy_usage_to_json(&privacy_usages[column_number as usize].clone()),
                 accuracy: None,
                 batch: component.batch as u64,
-                node_id: node_id.clone() as u64,
+                node_id: *node_id as u64,
                 postprocess: false,
                 algorithm_info: AlgorithmInfo {
                     name: "".to_string(),

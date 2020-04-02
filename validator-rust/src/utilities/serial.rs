@@ -95,10 +95,10 @@ pub fn parse_hashmap_str(value: &proto::HashmapStr) -> HashMap<String, Value> {
     value.data.iter().map(|(name, data)| (name.clone(), parse_value(data).unwrap())).collect()
 }
 pub fn parse_hashmap_i64(value: &proto::HashmapI64) -> HashMap<i64, Value> {
-    value.data.iter().map(|(name, data)| (name.clone(), parse_value(data).unwrap())).collect()
+    value.data.iter().map(|(name, data)| (*name, parse_value(data).unwrap())).collect()
 }
 pub fn parse_hashmap_bool(value: &proto::HashmapBool) -> HashMap<bool, Value> {
-    value.data.iter().map(|(name, data)| (name.clone(), parse_value(data).unwrap())).collect()
+    value.data.iter().map(|(name, data)| (*name, parse_value(data).unwrap())).collect()
 }
 
 pub fn parse_hashmap(value: &proto::Hashmap) -> Hashmap<Value> {
@@ -118,7 +118,7 @@ pub fn parse_array1d_option(value: &proto::Array1dOption) -> Option<Vector1D> {
     }
 }
 
-pub fn parse_data_type(value: &proto::DataType) -> DataType {
+pub fn parse_data_type(value: proto::DataType) -> DataType {
     match value {
         proto::DataType::Bool => DataType::Bool,
         proto::DataType::F64 => DataType::F64,
@@ -201,12 +201,12 @@ pub fn parse_hashmap_properties_str(value: &proto::HashmapValuePropertiesStr) ->
 }
 pub fn parse_hashmap_properties_bool(value: &proto::HashmapValuePropertiesBool) -> Hashmap<ValueProperties> {
     Hashmap::<ValueProperties>::Bool(value.data.iter()
-        .map(|(name, properties)| (name.clone(), parse_value_properties(properties)))
+        .map(|(name, properties)| (*name, parse_value_properties(properties)))
         .collect())
 }
 pub fn parse_hashmap_properties_i64(value: &proto::HashmapValuePropertiesI64) -> Hashmap<ValueProperties> {
     Hashmap::<ValueProperties>::I64(value.data.iter()
-        .map(|(name, properties)| (name.clone(), parse_value_properties(properties)))
+        .map(|(name, properties)| (*name, parse_value_properties(properties)))
         .collect())
 }
 
@@ -253,7 +253,7 @@ pub fn parse_arraynd_properties(value: &proto::ArrayNdProperties) -> ArrayProper
             },
             None => None,
         },
-        data_type: parse_data_type(&proto::DataType::from_i32(value.data_type).unwrap()),
+        data_type: parse_data_type(proto::DataType::from_i32(value.data_type).unwrap()),
         dataset_id: value.dataset_id.as_ref().and_then(parse_i64_null)
     }
 }
@@ -303,25 +303,25 @@ pub fn serialize_str_null(value: &Option<String>) -> proto::StrNull {
 }
 
 
-pub fn serialize_array1d_bool_null(value: &Vec<Option<bool>>) -> proto::Array1dBoolNull {
+pub fn serialize_array1d_bool_null(value: &[Option<bool>]) -> proto::Array1dBoolNull {
     proto::Array1dBoolNull {
         data: value.iter().map(serialize_bool_null).collect()
     }
 }
 
-pub fn serialize_array1d_i64_null(value: &Vec<Option<i64>>) -> proto::Array1dI64Null {
+pub fn serialize_array1d_i64_null(value: &[Option<i64>]) -> proto::Array1dI64Null {
     proto::Array1dI64Null {
         data: value.iter().map(serialize_i64_null).collect()
     }
 }
 
-pub fn serialize_array1d_f64_null(value: &Vec<Option<f64>>) -> proto::Array1dF64Null {
+pub fn serialize_array1d_f64_null(value: &[Option<f64>]) -> proto::Array1dF64Null {
     proto::Array1dF64Null {
         data: value.iter().map(serialize_f64_null).collect()
     }
 }
 
-pub fn serialize_array1d_str_null(value: &Vec<Option<String>>) -> proto::Array1dStrNull {
+pub fn serialize_array1d_str_null(value: &[Option<String>]) -> proto::Array1dStrNull {
     proto::Array1dStrNull {
         data: value.iter().map(serialize_str_null).collect()
     }
@@ -340,13 +340,13 @@ pub fn serialize_array1d_null(value: &Vector1DNull) -> proto::Array1dNull {
 }
 
 
-pub fn serialize_array1d_bool(value: &Vec<bool>) -> proto::Array1dBool { proto::Array1dBool { data: value.to_owned() } }
+pub fn serialize_array1d_bool(value: &[bool]) -> proto::Array1dBool { proto::Array1dBool { data: value.to_owned() } }
 
-pub fn serialize_array1d_i64(value: &Vec<i64>) -> proto::Array1dI64 { proto::Array1dI64 { data: value.to_owned() } }
+pub fn serialize_array1d_i64(value: &[i64]) -> proto::Array1dI64 { proto::Array1dI64 { data: value.to_owned() } }
 
-pub fn serialize_array1d_f64(value: &Vec<f64>) -> proto::Array1dF64 { proto::Array1dF64 { data: value.to_owned() } }
+pub fn serialize_array1d_f64(value: &[f64]) -> proto::Array1dF64 { proto::Array1dF64 { data: value.to_owned() } }
 
-pub fn serialize_array1d_str(value: &Vec<String>) -> proto::Array1dStr { proto::Array1dStr { data: value.to_owned() } }
+pub fn serialize_array1d_str(value: &[String]) -> proto::Array1dStr { proto::Array1dStr { data: value.to_owned() } }
 
 
 pub fn serialize_array1d(value: &Vector1D) -> proto::Array1d {
@@ -395,14 +395,14 @@ pub fn serialize_hashmap_str(value: &HashMap<String, Value>) -> proto::HashmapSt
 pub fn serialize_hashmap_bool(value: &HashMap<bool, Value>) -> proto::HashmapBool {
     proto::HashmapBool {
         data: value.iter()
-            .map(|(name, value)| (name.clone(), serialize_value(value).unwrap()))
+            .map(|(name, value)| (*name, serialize_value(value).unwrap()))
             .collect()
     }
 }
 pub fn serialize_hashmap_i64(value: &HashMap<i64, Value>) -> proto::HashmapI64 {
     proto::HashmapI64 {
         data: value.iter()
-            .map(|(name, value)| (name.clone(), serialize_value(value).unwrap()))
+            .map(|(name, value)| (*name, serialize_value(value).unwrap()))
             .collect()
     }
 }
@@ -501,14 +501,14 @@ pub fn serialize_hashmap_properties_str(value: &HashMap<String, ValueProperties>
 pub fn serialize_hashmap_properties_i64(value: &HashMap<i64, ValueProperties>) -> proto::HashmapValuePropertiesI64 {
     proto::HashmapValuePropertiesI64 {
         data: value.iter()
-            .map(|(name, value)| (name.clone(), serialize_value_properties(value)))
+            .map(|(name, value)| (*name, serialize_value_properties(value)))
             .collect::<HashMap<i64, proto::ValueProperties>>()
     }
 }
 pub fn serialize_hashmap_properties_bool(value: &HashMap<bool, ValueProperties>) -> proto::HashmapValuePropertiesBool {
     proto::HashmapValuePropertiesBool {
         data: value.iter()
-            .map(|(name, value)| (name.clone(), serialize_value_properties(value)))
+            .map(|(name, value)| (*name, serialize_value_properties(value)))
             .collect::<HashMap<bool, proto::ValueProperties>>()
     }
 }
@@ -550,7 +550,7 @@ pub fn serialize_arraynd_properties(value: &ArrayProperties) -> proto::ArrayNdPr
         aggregator: match value.aggregator.clone() {
             Some(aggregator) => Some(proto::array_nd_properties::AggregatorProperties {
                 component: Some(proto::Component {
-                    variant: Some(proto::component::Variant::from(aggregator.component)),
+                    variant: Some(aggregator.component),
                     omit: true, batch: 0, arguments: HashMap::new(),
                 }),
                 properties: aggregator.properties.iter()

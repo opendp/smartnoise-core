@@ -26,7 +26,7 @@ impl Component for proto::Partition {
                 let by_property = by_property.array()
                     .map_err(prepend("by:"))?.clone();
                 let by_num_columns= by_property.num_columns
-                    .ok_or::<Error>("number of columns must be known on by".into())?;
+                    .ok_or_else(|| Error::from("number of columns must be known on by"))?;
                 if by_num_columns != 1 {
                     return Err("Partition's by argument must contain a single column".into());
                 }
@@ -65,7 +65,7 @@ impl Component for proto::Partition {
                     disjoint: false,
                     properties: lengths.iter().enumerate().map(|(index, partition_num_records)| {
                         let mut partition_property = data_property.clone();
-                        partition_property.num_records = partition_num_records.clone();
+                        partition_property.num_records = *partition_num_records;
                         (index as i64, ValueProperties::Array(partition_property))
                     }).collect::<HashMap<i64, ValueProperties>>().into(),
                     columnar: false
@@ -83,14 +83,14 @@ impl Component for proto::Partition {
 }
 
 pub fn broadcast_partitions<T: Clone + Eq + std::hash::Hash>(
-    categories: &Vec<Option<Vec<T>>>, properties: &ArrayProperties
+    categories: &[Option<Vec<T>>], properties: &ArrayProperties
 ) -> Result<HashMap<T, ValueProperties>> {
 
     if categories.len() != 1 {
         return Err("categories: must be defined for one column".into())
     }
     let partitions = categories[0].clone()
-        .ok_or::<Error>("categories: must be defined".into())?;
+        .ok_or_else(|| Error::from("categories: must be defined"))?;
     Ok(partitions.iter()
         .map(|v| (v.clone(), ValueProperties::Array(properties.clone())))
         .collect())
