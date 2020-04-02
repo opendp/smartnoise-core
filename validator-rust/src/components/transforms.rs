@@ -1,7 +1,7 @@
 use crate::errors::*;
 
 use std::collections::HashMap;
-use crate::base::{Nature, NodeProperties, NatureCategorical, Vector1DNull, Jagged, ArrayProperties, ValueProperties, DataType};
+use crate::base::{Nature, NatureCategorical, Vector1DNull, Jagged, ArrayProperties, ValueProperties, DataType};
 
 use crate::{proto, base};
 
@@ -70,12 +70,7 @@ impl Component for proto::Add {
         }.into())
     }
 
-    fn get_names(
-        &self,
-        _properties: &NodeProperties,
-    ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
-    }
+
 }
 
 
@@ -136,12 +131,7 @@ impl Component for proto::Subtract {
         }.into())
     }
 
-    fn get_names(
-        &self,
-        _properties: &NodeProperties,
-    ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
-    }
+
 }
 
 impl Component for proto::Multiply {
@@ -256,12 +246,7 @@ impl Component for proto::Multiply {
         }.into())
     }
 
-    fn get_names(
-        &self,
-        _properties: &NodeProperties,
-    ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
-    }
+
 }
 
 impl Component for proto::Divide {
@@ -405,12 +390,7 @@ impl Component for proto::Divide {
         }.into())
     }
 
-    fn get_names(
-        &self,
-        _properties: &NodeProperties,
-    ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
-    }
+
 }
 
 impl Component for proto::Power {
@@ -470,12 +450,7 @@ impl Component for proto::Power {
         Ok(data_property.into())
     }
 
-    fn get_names(
-        &self,
-        _properties: &NodeProperties,
-    ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
-    }
+
 }
 
 impl Component for proto::Log {
@@ -527,12 +502,7 @@ impl Component for proto::Log {
         Ok(data_property.into())
     }
 
-    fn get_names(
-        &self,
-        _properties: &NodeProperties,
-    ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
-    }
+
 }
 
 
@@ -565,12 +535,7 @@ impl Component for proto::Negative {
         Ok(data_property.into())
     }
 
-    fn get_names(
-        &self,
-        _properties: &NodeProperties,
-    ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
-    }
+
 }
 
 impl Component for proto::Modulo {
@@ -631,12 +596,7 @@ impl Component for proto::Modulo {
 
         Ok(left_property.into())
     }
-    fn get_names(
-        &self,
-        _properties: &base::NodeProperties,
-    ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
-    }
+
 }
 
 impl Component for proto::And {
@@ -675,12 +635,7 @@ impl Component for proto::And {
         Ok(left_property.into())
     }
 
-    fn get_names(
-        &self,
-        _properties: &NodeProperties,
-    ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
-    }
+
 }
 
 
@@ -720,12 +675,7 @@ impl Component for proto::Or {
         Ok(left_property.into())
     }
 
-    fn get_names(
-        &self,
-        _properties: &NodeProperties,
-    ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
-    }
+
 }
 
 
@@ -754,12 +704,7 @@ impl Component for proto::Negate {
         Ok(data_property.into())
     }
 
-    fn get_names(
-        &self,
-        _properties: &NodeProperties,
-    ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
-    }
+
 }
 
 
@@ -796,12 +741,7 @@ impl Component for proto::Equal {
         }.into())
     }
 
-    fn get_names(
-        &self,
-        _properties: &NodeProperties,
-    ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
-    }
+
 }
 
 
@@ -838,12 +778,7 @@ impl Component for proto::LessThan {
         }.into())
     }
 
-    fn get_names(
-        &self,
-        _properties: &NodeProperties,
-    ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
-    }
+
 }
 
 
@@ -880,12 +815,7 @@ impl Component for proto::GreaterThan {
         }.into())
     }
 
-    fn get_names(
-        &self,
-        _properties: &NodeProperties,
-    ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
-    }
+
 }
 
 pub struct UnaryOperators {

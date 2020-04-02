@@ -23,12 +23,6 @@ impl Component for proto::DpMedian {
         Err("DPMedian is abstract, and has no property propagation".into())
     }
 
-    fn get_names(
-        &self,
-        _properties: &NodeProperties,
-    ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
-    }
 }
 
 impl Expandable for proto::DpMedian {
@@ -91,6 +85,7 @@ impl Report for proto::DpMedian {
         _public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
         release: &Value,
+        variable_names: &Vec<String>,
     ) -> Result<Option<Vec<JSONRelease>>> {
         let data_property = properties.get("data")
             .ok_or("data: missing")?.array()
@@ -108,7 +103,7 @@ impl Report for proto::DpMedian {
             releases.push(JSONRelease {
                 description: "DP release information".to_string(),
                 statistic: "DPMedian".to_string(),
-                variables: serde_json::json!(Vec::<String>::new()),
+                variables: serde_json::json!(variable_names),
                 release_info: match release.array()? {
                     Array::F64(v) => value_to_json(&get_ith_release(v, &(column_number as usize))?.into())?,
                     Array::I64(v) => value_to_json(&get_ith_release(v, &(column_number as usize))?.into())?,

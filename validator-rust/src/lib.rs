@@ -112,10 +112,42 @@ pub fn generate_report(
     let (graph_properties, _graph_expanded) = utilities::propagate_properties(analysis, release)?;
     let release = utilities::serial::parse_release(&release)?;
 
+    // variable names
+    let mut nodes_varnames: HashMap<u32, Vec<String>> = HashMap::new();
+    // get the traversal 
+    let mut traversal: Vec<u32> = utilities::get_traversal(&graph)?; 
+    traversal.reverse();
+
+    while !traversal.is_empty() {
+        let node_id = traversal.last().unwrap().clone();
+        let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
+        let public_arguments = utilities::get_input_arguments(&component, &release)?;
+
+        // variable names for argument nodes
+        let mut arguments_vars: HashMap<String, Vec<String>> = HashMap::new();
+
+        // iterate through argument nodes
+        for (field_id, field) in component.arguments.clone() {
+            // get variable names corresponding to that argument
+            if let Some(arg_vars) = nodes_varnames.get(&field).clone() {
+                arguments_vars.insert(field_id.to_owned(), arg_vars.to_vec());
+            }
+        }
+
+        // get variable names for this node
+        let node_vars = component.clone().variant.unwrap().get_names(&public_arguments, &arguments_vars)?;
+
+        // update names in hashmap
+        nodes_varnames.insert(node_id.clone(), node_vars.clone());
+        
+        traversal.pop();
+    }
+
     let release_schemas = graph.iter()
         .map(|(node_id, component)| {
             let public_arguments = utilities::get_input_arguments(&component, &release)?;
             let input_properties = utilities::get_input_properties(&component, &graph_properties)?;
+            let variable_names = nodes_varnames.get(&node_id).ok_or::<Error>("node not found".into())?;
             // ignore nodes without released values
             let node_release = match release.get(node_id) {
                 Some(node_release) => node_release,
@@ -128,7 +160,9 @@ pub fn generate_report(
                 &component,
                 &public_arguments,
                 &input_properties,
-                &node_release)
+                &node_release,
+                &variable_names
+                )
         })
         .collect::<Result<Vec<Option<Vec<utilities::json::JSONRelease>>>>>()?.into_iter()
         .filter_map(|v| v).flat_map(|v| v)

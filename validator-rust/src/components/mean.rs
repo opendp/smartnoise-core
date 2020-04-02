@@ -32,12 +32,7 @@ impl Component for proto::Mean {
         Ok(data_property.into())
     }
 
-    fn get_names(
-        &self,
-        _properties: &NodeProperties,
-    ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
-    }
+
 }
 
 impl Aggregator for proto::Mean {

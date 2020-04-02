@@ -8,7 +8,7 @@ use crate::components::{Aggregator};
 use crate::{proto, base};
 
 use crate::components::{Component, Expandable};
-use crate::base::{Value, NodeProperties, SensitivitySpace, ValueProperties};
+use crate::base::{Value, SensitivitySpace, ValueProperties};
 use crate::utilities::{prepend, expand_mechanism};
 
 
@@ -37,12 +37,7 @@ impl Component for proto::ExponentialMechanism {
         Ok(data_property.into())
     }
 
-    fn get_names(
-        &self,
-        _properties: &NodeProperties,
-    ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
-    }
+
 }
 
 
