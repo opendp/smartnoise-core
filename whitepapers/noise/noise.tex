@@ -299,7 +299,7 @@ mechanisms, respectively, and \cite{GMP16} for a more general treatment. \newlin
 	\label{thm:valid_noise_on_R}
 	Valid Noise for Additive Noise Mechanisms on $\R$ \newline
 	A noise distribution $N$ with $supp(N) = \R$ can be used as the noising portion of an additive noise mechanism to privatize $\phi$ if
-	$\forall \mathcal{T} \in supp(N)$
+	$\forall \mathcal{T} \subseteq supp(N)$
 	\[ \frac{\Pr(N \in \mathcal{T})}{\Pr(N \in \mathcal{T} - \Delta_{\phi})} \leq \ e^{\epsilon} + \delta \]
 	and
 	\[ \frac{\Pr(N \in \mathcal{T})}{\Pr(N \in \mathcal{T} + \Delta_{\phi})} \leq \ e^{\epsilon} + \delta, \]
