@@ -220,6 +220,7 @@
 <span id="220">220</span>
 <span id="221">221</span>
 <span id="222">222</span>
+<span id="223">223</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">whitenoise_validator</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
@@ -237,8 +238,8 @@
 <span class="kw">use</span> <span class="ident">itertools</span>::<span class="ident">Itertools</span>;
 
 <span class="kw">use</span> <span class="ident">whitenoise_validator</span>::<span class="ident">base</span>::{<span class="ident">Value</span>};
-<span class="kw">use</span> <span class="ident">whitenoise_validator</span>::<span class="ident">utilities</span>::<span class="ident">inference</span>::<span class="ident">infer_property</span>;
-<span class="kw">use</span> <span class="ident">whitenoise_validator</span>::<span class="ident">utilities</span>::<span class="ident">serial</span>::{<span class="ident">serialize_value_properties</span>, <span class="ident">parse_release</span>};
+<span class="kw">use</span> <span class="ident">whitenoise_validator</span>::<span class="ident">utilities</span>::<span class="ident">serial</span>::{<span class="ident">parse_release</span>};
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">iter</span>::<span class="ident">FromIterator</span>;
 
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">NodeArguments</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Value</span><span class="op">&gt;</span>;
 
@@ -263,23 +264,21 @@
 
     <span class="comment">// stack for storing which nodes to evaluate next</span>
     <span class="kw">let</span> <span class="ident">computation_graph</span> <span class="op">=</span> <span class="ident">analysis</span>.<span class="ident">computation_graph</span>.<span class="ident">to_owned</span>()
-        .<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;computation_graph must be defined to execute an analysis&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>;
-
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">traversal</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">get_sinks</span>(<span class="kw-2">&amp;</span><span class="ident">computation_graph</span>).<span class="ident">into_iter</span>().<span class="ident">collect</span>();
-
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">release</span> <span class="op">=</span> <span class="ident">serial</span>::<span class="ident">parse_release</span>(<span class="ident">release</span>)<span class="question-mark">?</span>;
-
+        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;computation_graph must be defined to execute an analysis&quot;</span>))<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">graph</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">proto</span>::<span class="ident">Component</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">computation_graph</span>.<span class="ident">value</span>;
+
+    <span class="comment">// core state for the graph execution algorithm</span>
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">traversal</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">get_sinks</span>(<span class="kw-2">&amp;</span><span class="ident">graph</span>).<span class="ident">into_iter</span>().<span class="ident">collect</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">graph_properties</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">proto</span>::<span class="ident">ValueProperties</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">HashMap</span>::<span class="ident">new</span>();
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">release</span> <span class="op">=</span> <span class="ident">serial</span>::<span class="ident">parse_release</span>(<span class="ident">release</span>)<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">maximum_id</span> <span class="op">=</span> <span class="ident">graph</span>.<span class="ident">keys</span>()
         .<span class="ident">fold1</span>(<span class="ident">std</span>::<span class="ident">cmp</span>::<span class="ident">max</span>)
         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>.<span class="ident">clone</span>())
         .<span class="ident">unwrap_or</span>(<span class="number">0</span>);
 
-    <span class="comment">// TEMP FIX FOR UNEVALUATED PROPERTIES</span>
-    <span class="kw">for</span> (<span class="ident">node_id</span>, <span class="ident">value</span>) <span class="kw">in</span> <span class="ident">release</span>.<span class="ident">clone</span>() {
-        <span class="ident">graph_properties</span>.<span class="ident">insert</span>(<span class="ident">node_id</span>.<span class="ident">clone</span>(), <span class="ident">serialize_value_properties</span>(<span class="kw-2">&amp;</span><span class="ident">infer_property</span>(<span class="kw-2">&amp;</span><span class="ident">value</span>)<span class="question-mark">?</span>));
-    }
+    <span class="comment">// values in the passed release are kept in the release</span>
+    <span class="comment">// TODO: consider requesting properties from the validator for nodes that already exist in the release</span>
+    <span class="kw">let</span> <span class="ident">preserve_ids</span>: <span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">HashSet</span>::<span class="ident">from_iter</span>(<span class="ident">release</span>.<span class="ident">keys</span>().<span class="ident">cloned</span>());
 
     <span class="comment">// track node parents. Each key is a node id, and the value is the set of node ids that use it</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">parents</span> <span class="op">=</span> <span class="ident">HashMap</span>::<span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span><span class="op">&gt;</span>::<span class="ident">new</span>();
@@ -289,21 +288,23 @@
         })
     });
 
+    <span class="comment">// evaluate components until the traversal is empty</span>
     <span class="kw">while</span> <span class="op">!</span><span class="ident">traversal</span>.<span class="ident">is_empty</span>() {
+
         <span class="kw">let</span> <span class="ident">node_id</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">traversal</span>.<span class="ident">last</span>().<span class="ident">unwrap</span>();
 
+        <span class="comment">// skip the node if it has already been evaluated</span>
         <span class="kw">if</span> <span class="ident">release</span>.<span class="ident">contains_key</span>(<span class="kw-2">&amp;</span><span class="ident">node_id</span>) {
             <span class="ident">traversal</span>.<span class="ident">pop</span>();
             <span class="kw">continue</span>;
         }
 
         <span class="kw">let</span> <span class="ident">component</span>: <span class="ident">proto</span>::<span class="ident">Component</span> <span class="op">=</span> <span class="ident">graph</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">node_id</span>)
-            .<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;attempted to retrieve a non-existent component id&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>.<span class="ident">clone</span>();
-        <span class="kw">let</span> <span class="ident">arguments</span> <span class="op">=</span> <span class="ident">component</span>.<span class="ident">to_owned</span>().<span class="ident">arguments</span>;
+            .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;attempted to retrieve a non-existent component id&quot;</span>))<span class="question-mark">?</span>.<span class="ident">clone</span>();
 
-        <span class="comment">// discover if any dependencies remain uncomputed</span>
+        <span class="comment">// check if any dependencies of the current node remain unevaluated</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">evaluable</span> <span class="op">=</span> <span class="bool-val">true</span>;
-        <span class="kw">for</span> <span class="ident">source_node_id</span> <span class="kw">in</span> <span class="ident">arguments</span>.<span class="ident">values</span>() {
+        <span class="kw">for</span> <span class="ident">source_node_id</span> <span class="kw">in</span> <span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">values</span>() {
             <span class="kw">if</span> <span class="op">!</span><span class="ident">release</span>.<span class="ident">contains_key</span>(<span class="kw-2">&amp;</span><span class="ident">source_node_id</span>) {
                 <span class="ident">evaluable</span> <span class="op">=</span> <span class="bool-val">false</span>;
                 <span class="ident">traversal</span>.<span class="ident">push</span>(<span class="kw-2">*</span><span class="ident">source_node_id</span>);
@@ -315,33 +316,28 @@
             <span class="kw">continue</span>;
         }
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">node_properties</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">proto</span>::<span class="ident">ValueProperties</span><span class="op">&gt;</span> <span class="op">=</span>
-            <span class="ident">get_input_properties</span>(<span class="kw-2">&amp;</span><span class="ident">component</span>, <span class="kw-2">&amp;</span><span class="ident">graph_properties</span>)<span class="question-mark">?</span>;
+        <span class="comment">// all dependencies are present in the graph. Begin node expansion</span>
 
-        <span class="kw">let</span> <span class="ident">public_arguments</span> <span class="op">=</span> <span class="ident">node_properties</span>.<span class="ident">iter</span>()
-            .<span class="ident">filter</span>(<span class="op">|</span>(<span class="ident">_k</span>, <span class="ident">v</span>)<span class="op">|</span> <span class="kw">match</span> <span class="ident">v</span>.<span class="ident">variant</span>.<span class="ident">clone</span>().<span class="ident">unwrap</span>() {
-                <span class="ident">proto</span>::<span class="ident">value_properties</span>::<span class="ident">Variant</span>::<span class="ident">Array</span>(<span class="ident">v</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">v</span>.<span class="ident">releasable</span>,
-                <span class="ident">proto</span>::<span class="ident">value_properties</span>::<span class="ident">Variant</span>::<span class="ident">Jagged</span>(<span class="ident">v</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">v</span>.<span class="ident">releasable</span>,
-                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>
-            })
-            .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">k</span>, <span class="ident">_v</span>)<span class="op">|</span>
-                (<span class="ident">k</span>.<span class="ident">clone</span>(), <span class="ident">release</span>.<span class="ident">get</span>(<span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">get</span>(<span class="ident">k</span>).<span class="ident">unwrap</span>()).<span class="ident">unwrap</span>().<span class="ident">clone</span>()))
+        <span class="comment">// collect metadata about node inputs</span>
+        <span class="kw">let</span> <span class="ident">node_properties</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">proto</span>::<span class="ident">ValueProperties</span><span class="op">&gt;</span> <span class="op">=</span>
+            <span class="ident">get_input_properties</span>(<span class="kw-2">&amp;</span><span class="ident">component</span>, <span class="kw-2">&amp;</span><span class="ident">graph_properties</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">public_arguments</span> <span class="op">=</span> <span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">iter</span>()
+            .<span class="ident">filter</span>(<span class="op">|</span>(<span class="kw">_</span>, <span class="ident">node_id</span>)<span class="op">|</span> <span class="ident">preserve_ids</span>.<span class="ident">contains</span>(<span class="ident">node_id</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">is_public</span>(<span class="ident">node_id</span>, <span class="kw-2">&amp;</span><span class="ident">graph</span>, <span class="kw-2">&amp;</span><span class="ident">graph_properties</span>, <span class="bool-val">true</span>) <span class="kw-2">&amp;</span><span class="op">&amp;</span> <span class="ident">release</span>.<span class="ident">contains_key</span>(<span class="ident">node_id</span>))
+            .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">name</span>, <span class="ident">node_id</span>)<span class="op">|</span> (<span class="ident">name</span>.<span class="ident">clone</span>(), <span class="ident">release</span>.<span class="ident">get</span>(<span class="ident">node_id</span>).<span class="ident">unwrap</span>().<span class="ident">clone</span>()))
             .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Value</span><span class="op">&gt;</span><span class="op">&gt;</span>();
 
-<span class="comment">//        println!(&quot;expanding {:?}&quot;, component);</span>
-<span class="comment">//        println!(&quot;public arguments {:?}&quot;, public_arguments);</span>
-<span class="comment">//        println!(&quot;node properties {:?}&quot;, node_properties);</span>
-
-        <span class="comment">// all arguments have been computed, attempt to expand the current node</span>
+        <span class="comment">// expand the current node</span>
         <span class="kw">let</span> <span class="ident">expansion</span>: <span class="ident">proto</span>::<span class="ident">ComponentExpansion</span> <span class="op">=</span> <span class="ident">whitenoise_validator</span>::<span class="ident">_expand_component</span>(
-            <span class="kw-2">&amp;</span><span class="ident">analysis</span>.<span class="ident">privacy_definition</span>.<span class="ident">to_owned</span>().<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;privacy_definition must be defined&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>,
+            <span class="kw-2">&amp;</span><span class="ident">analysis</span>.<span class="ident">privacy_definition</span>.<span class="ident">to_owned</span>()
+                .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;privacy_definition must be defined&quot;</span>))<span class="question-mark">?</span>,
             <span class="kw-2">&amp;</span><span class="ident">component</span>,
-            <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">node_properties</span>,
+            <span class="kw-2">&amp;</span><span class="ident">node_properties</span>,
             <span class="kw-2">&amp;</span><span class="ident">public_arguments</span>,
             <span class="kw-2">&amp;</span><span class="ident">node_id</span>,
             <span class="kw-2">&amp;</span><span class="ident">maximum_id</span>,
         )<span class="question-mark">?</span>;
 
+        <span class="comment">// extend the runtime state with the expansion</span>
         <span class="ident">graph</span>.<span class="ident">extend</span>(<span class="ident">expansion</span>.<span class="ident">computation_graph</span>.<span class="ident">clone</span>());
         <span class="ident">graph_properties</span>.<span class="ident">extend</span>(<span class="ident">expansion</span>.<span class="ident">properties</span>);
         <span class="ident">release</span>.<span class="ident">extend</span>(<span class="ident">parse_release</span>(<span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">Release</span>{<span class="ident">values</span>: <span class="ident">expansion</span>.<span class="ident">releases</span>})<span class="question-mark">?</span>);
@@ -350,98 +346,103 @@
         <span class="ident">maximum_id</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">expansion</span>.<span class="ident">computation_graph</span>.<span class="ident">keys</span>()
             .<span class="ident">max</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">max</span>(<span class="kw-2">&amp;</span><span class="ident">maximum_id</span>)).<span class="ident">unwrap_or</span>(<span class="kw-2">&amp;</span><span class="ident">maximum_id</span>);
 
+        <span class="comment">// if nodes were added to the traversal, then evaluate the new nodes first</span>
         <span class="kw">if</span> <span class="op">!</span><span class="ident">expansion</span>.<span class="ident">traversal</span>.<span class="ident">is_empty</span>() {
             <span class="kw">continue</span>;
         }
 
+        <span class="comment">// no nodes were added to the traversal. Begin node execution</span>
         <span class="ident">traversal</span>.<span class="ident">pop</span>();
 
-        <span class="comment">// the patch may have overwritten the current component</span>
+        <span class="comment">// the expansion may have overwritten the current component</span>
         <span class="kw">let</span> <span class="ident">component</span> <span class="op">=</span> <span class="ident">graph</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">node_id</span>).<span class="ident">unwrap</span>();
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">node_arguments</span> <span class="op">=</span> <span class="ident">NodeArguments</span>::<span class="ident">new</span>();
-        <span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">iter</span>().<span class="ident">for_each</span>(<span class="op">|</span>(<span class="ident">field_id</span>, <span class="ident">field</span>)<span class="op">|</span> {
-            <span class="kw">let</span> <span class="ident">evaluation</span> <span class="op">=</span> <span class="ident">release</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">field</span>).<span class="ident">unwrap</span>();
-            <span class="ident">node_arguments</span>.<span class="ident">insert</span>(<span class="ident">field_id</span>.<span class="ident">to_owned</span>(), <span class="ident">evaluation</span>);
-        });
+        <span class="comment">// collect arguments by string name to the component that will be executed</span>
+        <span class="kw">let</span> <span class="ident">node_arguments</span> <span class="op">=</span> <span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">iter</span>()
+            .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">name</span>, <span class="ident">node_id</span>)<span class="op">|</span> (<span class="ident">name</span>.<span class="ident">clone</span>(), <span class="ident">release</span>.<span class="ident">get</span>(<span class="ident">node_id</span>).<span class="ident">unwrap</span>()))
+            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="kw-2">&amp;</span><span class="ident">Value</span><span class="op">&gt;</span><span class="op">&gt;</span>();
 
-<span class="comment">//        println!(&quot;Evaluating node_id {:?}, {:?}&quot;, node_id, component.variant);</span>
-        <span class="kw">let</span> <span class="ident">evaluation</span> <span class="op">=</span> <span class="ident">component</span>.<span class="ident">to_owned</span>().<span class="ident">variant</span>.<span class="ident">unwrap</span>().<span class="ident">evaluate</span>(<span class="kw-2">&amp;</span><span class="ident">node_arguments</span>)<span class="question-mark">?</span>;
+        <span class="comment">// evaluate the component using the Evaluable trait, which is implemented on the proto::component::Variant enum</span>
+        <span class="kw">let</span> <span class="ident">evaluation</span> <span class="op">=</span> <span class="ident">component</span>.<span class="ident">clone</span>().<span class="ident">variant</span>
+            .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;variant of component must be known&quot;</span>))<span class="question-mark">?</span>
+            .<span class="ident">evaluate</span>(<span class="kw-2">&amp;</span><span class="ident">node_arguments</span>)<span class="question-mark">?</span>;
 
+        <span class="comment">// store the evaluated `Value` enum in the release</span>
         <span class="ident">release</span>.<span class="ident">insert</span>(<span class="ident">node_id</span>, <span class="ident">evaluation</span>);
 
-        <span class="comment">// prune arguments from the release</span>
-        <span class="kw">for</span> <span class="ident">argument_node_id</span> <span class="kw">in</span> <span class="ident">arguments</span>.<span class="ident">values</span>() {
+        <span class="comment">// prune evaluations from the release. Private nodes that have no unevaluated parents do not need be stored anymore</span>
+        <span class="kw">for</span> <span class="ident">argument_node_id</span> <span class="kw">in</span> <span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">values</span>() {
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">parent_node_ids</span>) <span class="op">=</span> <span class="ident">parents</span>.<span class="ident">get_mut</span>(<span class="ident">argument_node_id</span>) {
                 <span class="ident">parent_node_ids</span>.<span class="ident">remove</span>(<span class="kw-2">&amp;</span><span class="ident">node_id</span>);
 
                 <span class="comment">// remove argument node from release if all children evaluated, and is private or omitted</span>
-                <span class="kw">if</span> <span class="ident">parent_node_ids</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
-                    <span class="kw">let</span> <span class="ident">releasable</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">graph_properties</span>.<span class="ident">get</span>(<span class="ident">argument_node_id</span>) {
-                        <span class="prelude-val">Some</span>(<span class="ident">properties</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">properties</span>.<span class="ident">variant</span>.<span class="ident">clone</span>().<span class="ident">unwrap</span>() {
-                            <span class="ident">proto</span>::<span class="ident">value_properties</span>::<span class="ident">Variant</span>::<span class="ident">Array</span>(<span class="ident">v</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">v</span>.<span class="ident">releasable</span>,
-                            <span class="ident">proto</span>::<span class="ident">value_properties</span>::<span class="ident">Variant</span>::<span class="ident">Jagged</span>(<span class="ident">v</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">v</span>.<span class="ident">releasable</span>,
-                            <span class="kw">_</span><span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>
-                        },
-                        <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>
-                    };
-                    <span class="kw">let</span> <span class="ident">argument_component</span> <span class="op">=</span> <span class="ident">graph</span>.<span class="ident">get</span>(<span class="ident">argument_node_id</span>).<span class="ident">clone</span>().<span class="ident">unwrap</span>();
-
-                    <span class="kw">if</span> <span class="ident">argument_component</span>.<span class="ident">omit</span> <span class="op">|</span><span class="op">|</span> <span class="op">!</span><span class="ident">releasable</span> {
-                        <span class="ident">release</span>.<span class="ident">remove</span>(<span class="ident">argument_node_id</span>);
-                    }
+                <span class="kw">if</span> <span class="ident">parent_node_ids</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">0</span> <span class="kw-2">&amp;</span><span class="op">&amp;</span> <span class="op">!</span>(<span class="ident">preserve_ids</span>.<span class="ident">contains</span>(<span class="ident">argument_node_id</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">is_public</span>(<span class="ident">argument_node_id</span>, <span class="kw-2">&amp;</span><span class="ident">graph</span>, <span class="kw-2">&amp;</span><span class="ident">graph_properties</span>, <span class="bool-val">false</span>)) {
+                    <span class="ident">release</span>.<span class="ident">remove</span>(<span class="ident">argument_node_id</span>);
                 }
             }
         }
     }
 
     <span class="comment">// ensure that the only keys remaining in the release are releasable and not omitted</span>
-    <span class="kw">for</span> <span class="ident">node_id</span> <span class="kw">in</span> <span class="ident">release</span>.<span class="ident">to_owned</span>().<span class="ident">keys</span>() {
-        <span class="kw">let</span> <span class="ident">releasable</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">graph_properties</span>.<span class="ident">get</span>(<span class="ident">node_id</span>) {
-            <span class="prelude-val">Some</span>(<span class="ident">properties</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">properties</span>.<span class="ident">variant</span>.<span class="ident">clone</span>().<span class="ident">unwrap</span>() {
-                <span class="ident">proto</span>::<span class="ident">value_properties</span>::<span class="ident">Variant</span>::<span class="ident">Array</span>(<span class="ident">v</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">v</span>.<span class="ident">releasable</span>,
-                <span class="ident">proto</span>::<span class="ident">value_properties</span>::<span class="ident">Variant</span>::<span class="ident">Jagged</span>(<span class="ident">v</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">v</span>.<span class="ident">releasable</span>,
-                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>
-            },
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>
-        };
-
-        <span class="kw">match</span> <span class="ident">graph</span>.<span class="ident">get</span>(<span class="ident">node_id</span>) {
-            <span class="prelude-val">Some</span>(<span class="ident">component</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">if</span> <span class="ident">component</span>.<span class="ident">omit</span> <span class="op">|</span><span class="op">|</span> <span class="op">!</span><span class="ident">releasable</span> {
-                <span class="ident">release</span>.<span class="ident">remove</span>(<span class="ident">node_id</span>);
-            },
-            <span class="comment">// delete node ids in the release that are not present in the graph</span>
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="ident">release</span>.<span class="ident">remove</span>(<span class="ident">node_id</span>);
-            }
-        }
-    }
-    <span class="ident">serial</span>::<span class="ident">serialize_release</span>(<span class="kw-2">&amp;</span><span class="ident">release</span>)
+    <span class="ident">serial</span>::<span class="ident">serialize_release</span>(<span class="kw-2">&amp;</span><span class="ident">release</span>.<span class="ident">into_iter</span>()
+        .<span class="ident">filter</span>(<span class="op">|</span>(<span class="ident">node_id</span>, <span class="kw">_</span>)<span class="op">|</span> <span class="ident">preserve_ids</span>.<span class="ident">contains</span>(<span class="ident">node_id</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">is_public</span>(<span class="ident">node_id</span>, <span class="kw-2">&amp;</span><span class="ident">graph</span>, <span class="kw-2">&amp;</span><span class="ident">graph_properties</span>, <span class="bool-val">false</span>))
+        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">Value</span><span class="op">&gt;</span><span class="op">&gt;</span>())
 }
 
-<span class="doccomment">/// Retrieve the set of node ids in a ComputationGraph that have no dependent nodes.</span>
+<span class="doccomment">/// Retrieve the set of node ids in a graph that have no dependent nodes.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `computation_graph` - a prost protobuf hashmap representing a computation graph</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// The set of node ids that have no dependent nodes</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_sinks</span>(<span class="ident">computation_graph</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">ComputationGraph</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">node_ids</span> <span class="op">=</span> <span class="ident">HashSet</span>::<span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>::<span class="ident">new</span>();
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_sinks</span>(<span class="ident">computation_graph</span>: <span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">proto</span>::<span class="ident">Component</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> {
     <span class="comment">// start with all nodes</span>
-    <span class="kw">for</span> <span class="ident">node_id</span> <span class="kw">in</span> <span class="ident">computation_graph</span>.<span class="ident">value</span>.<span class="ident">keys</span>() {
-        <span class="ident">node_ids</span>.<span class="ident">insert</span>(<span class="kw-2">*</span><span class="ident">node_id</span>);
-    }
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">node_ids</span> <span class="op">=</span> <span class="ident">HashSet</span>::<span class="ident">from_iter</span>(<span class="ident">computation_graph</span>.<span class="ident">keys</span>().<span class="ident">cloned</span>());
 
     <span class="comment">// remove nodes that are referenced in arguments</span>
-    <span class="kw">for</span> <span class="ident">node</span> <span class="kw">in</span> <span class="ident">computation_graph</span>.<span class="ident">value</span>.<span class="ident">values</span>() {
-        <span class="kw">for</span> <span class="ident">source_node_id</span> <span class="kw">in</span> <span class="ident">node</span>.<span class="ident">arguments</span>.<span class="ident">values</span>() {
-            <span class="ident">node_ids</span>.<span class="ident">remove</span>(<span class="kw-2">&amp;</span><span class="ident">source_node_id</span>);
-        }
+    <span class="ident">computation_graph</span>.<span class="ident">values</span>()
+        .<span class="ident">for_each</span>(<span class="op">|</span><span class="ident">component</span><span class="op">|</span> <span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">values</span>()
+            .<span class="ident">for_each</span>(<span class="op">|</span><span class="ident">source_node_id</span><span class="op">|</span> {
+                <span class="ident">node_ids</span>.<span class="ident">remove</span>(<span class="ident">source_node_id</span>);
+            }));
+
+    <span class="kw">return</span> <span class="ident">node_ids</span>;
+}
+
+
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_public</span>(
+    <span class="ident">node_id</span>: <span class="kw-2">&amp;</span><span class="ident">u32</span>,
+    <span class="ident">graph</span>: <span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">proto</span>::<span class="ident">Component</span><span class="op">&gt;</span>,
+    <span class="ident">graph_properties</span>: <span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">proto</span>::<span class="ident">ValueProperties</span><span class="op">&gt;</span>,
+    <span class="ident">allow_omitted</span>: <span class="ident">bool</span>
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+
+    <span class="comment">// component must be known</span>
+    <span class="kw">let</span> <span class="ident">component</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">graph</span>.<span class="ident">get</span>(<span class="ident">node_id</span>) {
+        <span class="prelude-val">Some</span>(<span class="ident">component</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">component</span>,
+        <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="bool-val">false</span>
+    };
+
+    <span class="comment">// component must not be omitted</span>
+    <span class="kw">if</span> <span class="op">!</span><span class="ident">allow_omitted</span> <span class="kw-2">&amp;</span><span class="op">&amp;</span> <span class="ident">component</span>.<span class="ident">omit</span> {
+        <span class="kw">return</span> <span class="bool-val">false</span>;
     }
 
-    <span class="comment">// move to heap, transfer ownership to caller</span>
-    <span class="kw">return</span> <span class="ident">node_ids</span>.<span class="ident">to_owned</span>();
-}
-</pre></div>
+
+    <span class="comment">// if the component is a literal, it is public if not marked private</span>
+    <span class="kw">if</span> <span class="kw">let</span> <span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">Literal</span>(<span class="ident">literal</span>) <span class="op">=</span> <span class="ident">component</span>.<span class="ident">variant</span>.<span class="ident">clone</span>().<span class="ident">unwrap</span>() {
+        <span class="kw">return</span> <span class="op">!</span><span class="ident">literal</span>.<span class="ident">private</span>;
+    }
+
+    <span class="comment">// otherwise use the properties to determine if public</span>
+    <span class="kw">match</span> <span class="ident">graph_properties</span>.<span class="ident">get</span>(<span class="ident">node_id</span>) {
+        <span class="prelude-val">Some</span>(<span class="ident">property</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">property</span>.<span class="ident">variant</span>.<span class="ident">clone</span>().<span class="ident">unwrap</span>() {
+            <span class="ident">proto</span>::<span class="ident">value_properties</span>::<span class="ident">Variant</span>::<span class="ident">Array</span>(<span class="ident">v</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">v</span>.<span class="ident">releasable</span>,
+            <span class="ident">proto</span>::<span class="ident">value_properties</span>::<span class="ident">Variant</span>::<span class="ident">Jagged</span>(<span class="ident">v</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">v</span>.<span class="ident">releasable</span>,
+            <span class="ident">proto</span>::<span class="ident">value_properties</span>::<span class="ident">Variant</span>::<span class="ident">Hashmap</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>
+        },
+        <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>
+    }
+}</pre></div>
 </section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../";window.currentCrate = "whitenoise_runtime";</script><script src="../../aliases.js"></script><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script><script defer src="../../search-index.js"></script></body></html>

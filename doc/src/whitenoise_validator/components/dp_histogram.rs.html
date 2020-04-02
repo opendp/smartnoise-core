@@ -187,6 +187,8 @@
 <span id="187">187</span>
 <span id="188">188</span>
 <span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
@@ -232,11 +234,11 @@
         <span class="ident">component_id</span>: <span class="kw-2">&amp;</span><span class="ident">u32</span>,
         <span class="ident">maximum_id</span>: <span class="kw-2">&amp;</span><span class="ident">u32</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">ComponentExpansion</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">current_id</span> <span class="op">=</span> <span class="ident">maximum_id</span>.<span class="ident">clone</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">current_id</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">maximum_id</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">computation_graph</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">proto</span>::<span class="ident">Component</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">HashMap</span>::<span class="ident">new</span>();
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">data_id</span> <span class="op">=</span> <span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">get</span>(<span class="string">&quot;data&quot;</span>)
-            .<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;data is a required argument to DPHistogram&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>.<span class="ident">clone</span>();
+            .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;data is a required argument to DPHistogram&quot;</span>))<span class="question-mark">?</span>.<span class="ident">to_owned</span>();
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">traversal</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>::<span class="ident">new</span>();
         <span class="kw">match</span> (<span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">get</span>(<span class="string">&quot;edges&quot;</span>), <span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">get</span>(<span class="string">&quot;categories&quot;</span>)) {
@@ -244,11 +246,11 @@
             (<span class="prelude-val">Some</span>(<span class="ident">edges_id</span>), <span class="prelude-val">None</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="comment">// digitize</span>
                 <span class="kw">let</span> <span class="ident">null_id</span> <span class="op">=</span> <span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">get</span>(<span class="string">&quot;null&quot;</span>)
-                    .<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;null is a required argument to DPHistogram&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>;
+                    .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;null is a required argument to DPHistogram&quot;</span>))<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">inclusive_left_id</span> <span class="op">=</span> <span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">get</span>(<span class="string">&quot;inclusive_left&quot;</span>)
-                    .<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;inclusive_left is a required argument to DPHistogram when categories are not known&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>;
+                    .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;inclusive_left is a required argument to DPHistogram when categories are not known&quot;</span>))<span class="question-mark">?</span>;
                 <span class="ident">current_id</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-                <span class="kw">let</span> <span class="ident">id_digitize</span> <span class="op">=</span> <span class="ident">current_id</span>.<span class="ident">clone</span>();
+                <span class="kw">let</span> <span class="ident">id_digitize</span> <span class="op">=</span> <span class="ident">current_id</span>;
                 <span class="ident">computation_graph</span>.<span class="ident">insert</span>(<span class="ident">id_digitize</span>, <span class="ident">proto</span>::<span class="ident">Component</span> {
                     <span class="ident">arguments</span>: <span class="macro">hashmap</span><span class="macro">!</span>[
                         <span class="string">&quot;data&quot;</span>.<span class="ident">to_owned</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">data_id</span>,
@@ -260,16 +262,16 @@
                     <span class="ident">omit</span>: <span class="bool-val">true</span>,
                     <span class="ident">batch</span>: <span class="ident">component</span>.<span class="ident">batch</span>,
                 });
-                <span class="ident">data_id</span> <span class="op">=</span> <span class="ident">id_digitize</span>.<span class="ident">clone</span>();
-                <span class="ident">traversal</span>.<span class="ident">push</span>(<span class="ident">id_digitize</span>.<span class="ident">clone</span>());
+                <span class="ident">data_id</span> <span class="op">=</span> <span class="ident">id_digitize</span>;
+                <span class="ident">traversal</span>.<span class="ident">push</span>(<span class="ident">id_digitize</span>);
             }
 
             (<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="ident">categories_id</span>)) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="comment">// clamp</span>
                 <span class="kw">let</span> <span class="ident">null_id</span> <span class="op">=</span> <span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">get</span>(<span class="string">&quot;null&quot;</span>)
-                    .<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;null is a required argument to DPHistogram when categories are not known&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>;
+                    .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;null is a required argument to DPHistogram when categories are not known&quot;</span>))<span class="question-mark">?</span>;
                 <span class="ident">current_id</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-                <span class="kw">let</span> <span class="ident">id_clamp</span> <span class="op">=</span> <span class="ident">current_id</span>.<span class="ident">clone</span>();
+                <span class="kw">let</span> <span class="ident">id_clamp</span> <span class="op">=</span> <span class="ident">current_id</span>;
                 <span class="ident">computation_graph</span>.<span class="ident">insert</span>(<span class="ident">id_clamp</span>, <span class="ident">proto</span>::<span class="ident">Component</span> {
                     <span class="ident">arguments</span>: <span class="macro">hashmap</span><span class="macro">!</span>[
                         <span class="string">&quot;data&quot;</span>.<span class="ident">to_owned</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">data_id</span>,
@@ -280,8 +282,8 @@
                     <span class="ident">omit</span>: <span class="bool-val">true</span>,
                     <span class="ident">batch</span>: <span class="ident">component</span>.<span class="ident">batch</span>,
                 });
-                <span class="ident">data_id</span> <span class="op">=</span> <span class="ident">id_clamp</span>.<span class="ident">clone</span>();
-                <span class="ident">traversal</span>.<span class="ident">push</span>(<span class="ident">id_clamp</span>.<span class="ident">clone</span>());
+                <span class="ident">data_id</span> <span class="op">=</span> <span class="ident">id_clamp</span>;
+                <span class="ident">traversal</span>.<span class="ident">push</span>(<span class="ident">id_clamp</span>);
             }
 
             (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) <span class="op">=</span><span class="op">&gt;</span> {
@@ -298,8 +300,8 @@
 
         <span class="comment">// histogram</span>
         <span class="ident">current_id</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-        <span class="kw">let</span> <span class="ident">id_histogram</span> <span class="op">=</span> <span class="ident">current_id</span>.<span class="ident">clone</span>();
-        <span class="ident">computation_graph</span>.<span class="ident">insert</span>(<span class="ident">id_histogram</span>.<span class="ident">clone</span>(), <span class="ident">proto</span>::<span class="ident">Component</span> {
+        <span class="kw">let</span> <span class="ident">id_histogram</span> <span class="op">=</span> <span class="ident">current_id</span>;
+        <span class="ident">computation_graph</span>.<span class="ident">insert</span>(<span class="ident">id_histogram</span>, <span class="ident">proto</span>::<span class="ident">Component</span> {
             <span class="ident">arguments</span>: <span class="macro">hashmap</span><span class="macro">!</span>[<span class="string">&quot;data&quot;</span>.<span class="ident">to_owned</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">data_id</span>],
             <span class="ident">variant</span>: <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">from</span>(<span class="ident">proto</span>::<span class="ident">Histogram</span> {})),
             <span class="ident">omit</span>: <span class="bool-val">true</span>,
@@ -308,11 +310,13 @@
         <span class="ident">traversal</span>.<span class="ident">push</span>(<span class="ident">id_histogram</span>);
 
         <span class="comment">// noising</span>
-        <span class="ident">computation_graph</span>.<span class="ident">insert</span>(<span class="ident">component_id</span>.<span class="ident">clone</span>(), <span class="ident">proto</span>::<span class="ident">Component</span> {
+        <span class="ident">computation_graph</span>.<span class="ident">insert</span>(<span class="kw-2">*</span><span class="ident">component_id</span>, <span class="ident">proto</span>::<span class="ident">Component</span> {
             <span class="ident">arguments</span>: <span class="macro">hashmap</span><span class="macro">!</span>[
                 <span class="string">&quot;data&quot;</span>.<span class="ident">to_owned</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">id_histogram</span>,
-                <span class="string">&quot;count_min&quot;</span>.<span class="ident">to_owned</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">get</span>(<span class="string">&quot;count_min&quot;</span>).<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;count_min must be provided as an argument&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>,
-                <span class="string">&quot;count_max&quot;</span>.<span class="ident">to_owned</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">get</span>(<span class="string">&quot;count_max&quot;</span>).<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;count_max must be provided as an argument&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>
+                <span class="string">&quot;count_min&quot;</span>.<span class="ident">to_owned</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">get</span>(<span class="string">&quot;count_min&quot;</span>)
+                    .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;count_min must be provided as an argument&quot;</span>))<span class="question-mark">?</span>,
+                <span class="string">&quot;count_max&quot;</span>.<span class="ident">to_owned</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">get</span>(<span class="string">&quot;count_max&quot;</span>)
+                    .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;count_max must be provided as an argument&quot;</span>))<span class="question-mark">?</span>
             ],
             <span class="ident">variant</span>: <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">from</span>(<span class="ident">proto</span>::<span class="ident">SimpleGeometricMechanism</span> {
                 <span class="ident">privacy_usage</span>: <span class="self">self</span>.<span class="ident">privacy_usage</span>.<span class="ident">clone</span>(),
@@ -362,7 +366,7 @@
                 <span class="ident">privacy_loss</span>: <span class="ident">privacy_usage_to_json</span>(<span class="kw-2">&amp;</span><span class="ident">privacy_usages</span>[<span class="ident">column_number</span> <span class="kw">as</span> <span class="ident">usize</span>].<span class="ident">clone</span>()),
                 <span class="ident">accuracy</span>: <span class="prelude-val">None</span>,
                 <span class="ident">batch</span>: <span class="ident">component</span>.<span class="ident">batch</span> <span class="kw">as</span> <span class="ident">u64</span>,
-                <span class="ident">node_id</span>: <span class="ident">node_id</span>.<span class="ident">clone</span>() <span class="kw">as</span> <span class="ident">u64</span>,
+                <span class="ident">node_id</span>: <span class="kw-2">*</span><span class="ident">node_id</span> <span class="kw">as</span> <span class="ident">u64</span>,
                 <span class="ident">postprocess</span>: <span class="bool-val">false</span>,
                 <span class="ident">algorithm_info</span>: <span class="ident">AlgorithmInfo</span> {
                     <span class="ident">name</span>: <span class="string">&quot;&quot;</span>.<span class="ident">to_string</span>(),

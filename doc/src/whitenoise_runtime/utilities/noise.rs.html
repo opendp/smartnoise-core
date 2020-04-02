@@ -566,7 +566,7 @@
 <span class="doccomment">/// ```</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_uniform_int</span>(<span class="ident">min</span>: <span class="kw-2">&amp;</span><span class="ident">i64</span>, <span class="ident">max</span>: <span class="kw-2">&amp;</span><span class="ident">i64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span> {
 
-    <span class="kw">if</span> <span class="ident">min</span> <span class="op">&gt;</span> <span class="ident">max</span> {<span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;min cannot be less than max&quot;</span>.<span class="ident">into</span>());}
+    <span class="kw">if</span> <span class="ident">min</span> <span class="op">&gt;</span> <span class="ident">max</span> {<span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;min may not be greater than max&quot;</span>.<span class="ident">into</span>());}
 
     <span class="comment">// define number of possible integers we could sample and the maximum</span>
     <span class="comment">// number of bits it would take to represent them</span>

@@ -85,6 +85,8 @@
 <span id="85">85</span>
 <span id="86">86</span>
 <span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
@@ -107,14 +109,14 @@
         <span class="ident">properties</span>: <span class="kw-2">&amp;</span><span class="ident">NodeProperties</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ValueProperties</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">data_property</span> <span class="op">=</span> <span class="ident">properties</span>.<span class="ident">get</span>(<span class="string">&quot;data&quot;</span>)
-            .<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;data: missing&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>.<span class="ident">array</span>()
+            .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;data: missing&quot;</span>))<span class="question-mark">?</span>.<span class="ident">array</span>()
             .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;data:&quot;</span>))<span class="question-mark">?</span>.<span class="ident">clone</span>();
 
         <span class="kw">let</span> <span class="ident">datatype</span> <span class="op">=</span> <span class="ident">public_arguments</span>.<span class="ident">get</span>(<span class="string">&quot;type&quot;</span>)
-            .<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;type: missing, must be public&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>.<span class="ident">first_string</span>()
+            .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;type: missing, must be public&quot;</span>))<span class="question-mark">?</span>.<span class="ident">first_string</span>()
             .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;type:&quot;</span>))<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="ident">_prior_datatype</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">data_type</span>.<span class="ident">clone</span>();
+        <span class="kw">let</span> <span class="ident">prior_datatype</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">data_type</span>.<span class="ident">clone</span>();
 
         <span class="ident">data_property</span>.<span class="ident">data_type</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">datatype</span>.<span class="ident">to_lowercase</span>().<span class="ident">as_str</span>() {
             <span class="string">&quot;float&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">DataType</span>::<span class="ident">F64</span>,
@@ -134,7 +136,7 @@
             <span class="ident">DataType</span>::<span class="ident">Bool</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="comment">// true label must be defined</span>
                 <span class="ident">public_arguments</span>.<span class="ident">get</span>(<span class="string">&quot;true_label&quot;</span>)
-                    .<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;true_label: missing, must be public&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>.<span class="ident">array</span>()<span class="question-mark">?</span>;
+                    .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;true_label: missing, must be public&quot;</span>))<span class="question-mark">?</span>.<span class="ident">array</span>()<span class="question-mark">?</span>;
 
                 <span class="ident">data_property</span>.<span class="ident">nature</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">Nature</span>::<span class="ident">Categorical</span>(<span class="ident">NatureCategorical</span> {
                     <span class="ident">categories</span>: <span class="ident">Jagged</span>::<span class="ident">Bool</span>((<span class="number">0</span>..<span class="ident">num_columns</span>).<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="prelude-val">Some</span>(<span class="macro">vec</span><span class="macro">!</span>[<span class="bool-val">true</span>, <span class="bool-val">false</span>])).<span class="ident">collect</span>())
@@ -144,18 +146,20 @@
             <span class="ident">DataType</span>::<span class="ident">I64</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="comment">// min must be defined, for imputation of values that won&#39;t cast</span>
                 <span class="ident">public_arguments</span>.<span class="ident">get</span>(<span class="string">&quot;min&quot;</span>)
-                    .<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;min: missing, must be public&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>.<span class="ident">first_i64</span>()
+                    .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;min: missing, must be public&quot;</span>))<span class="question-mark">?</span>.<span class="ident">first_i64</span>()
                     .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;type:&quot;</span>))<span class="question-mark">?</span>;
                 <span class="comment">// max must be defined</span>
                 <span class="ident">public_arguments</span>.<span class="ident">get</span>(<span class="string">&quot;max&quot;</span>)
-                    .<span class="ident">ok_or</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>(<span class="string">&quot;max: missing, must be public&quot;</span>.<span class="ident">into</span>())<span class="question-mark">?</span>.<span class="ident">first_i64</span>()
+                    .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;max: missing, must be public&quot;</span>))<span class="question-mark">?</span>.<span class="ident">first_i64</span>()
                     .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;type:&quot;</span>))<span class="question-mark">?</span>;
                 <span class="ident">data_property</span>.<span class="ident">nature</span> <span class="op">=</span> <span class="prelude-val">None</span>;
                 <span class="ident">data_property</span>.<span class="ident">nullity</span> <span class="op">=</span> <span class="bool-val">false</span>;
             },
             <span class="ident">DataType</span>::<span class="ident">Str</span> <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="ident">data_property</span>.<span class="ident">nature</span> <span class="op">=</span> <span class="prelude-val">None</span>;
                 <span class="ident">data_property</span>.<span class="ident">nullity</span> <span class="op">=</span> <span class="bool-val">false</span>;
+                <span class="kw">if</span> <span class="ident">prior_datatype</span> <span class="op">!</span><span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">data_type</span> {
+                    <span class="ident">data_property</span>.<span class="ident">nature</span> <span class="op">=</span> <span class="prelude-val">None</span>;
+                }
             },
             <span class="ident">DataType</span>::<span class="ident">F64</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="ident">data_property</span>.<span class="ident">nature</span> <span class="op">=</span> <span class="prelude-val">None</span>;

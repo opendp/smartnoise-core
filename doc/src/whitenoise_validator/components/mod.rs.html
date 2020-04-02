@@ -423,8 +423,6 @@
 <span id="423">423</span>
 <span id="424">424</span>
 <span id="425">425</span>
-<span id="426">426</span>
-<span id="427">427</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Component trait implementations</span>
 <span class="doccomment">//!</span>
@@ -463,11 +461,11 @@
 <span class="kw">mod</span> <span class="ident">maximum</span>;
 <span class="kw">mod</span> <span class="ident">materialize</span>;
 <span class="kw">mod</span> <span class="ident">minimum</span>;
-<span class="kw">mod</span> <span class="ident">partition</span>;
+<span class="comment">//mod partition;</span>
 <span class="kw">mod</span> <span class="ident">quantile</span>;
 <span class="kw">mod</span> <span class="ident">reshape</span>;
 <span class="kw">mod</span> <span class="ident">mean</span>;
-<span class="kw">mod</span> <span class="ident">mechanism_exponential</span>;
+<span class="comment">//mod mechanism_exponential;</span>
 <span class="kw">mod</span> <span class="ident">mechanism_gaussian</span>;
 <span class="kw">mod</span> <span class="ident">mechanism_laplace</span>;
 <span class="kw">mod</span> <span class="ident">mechanism_simple_geometric</span>;
@@ -640,7 +638,7 @@
 
             <span class="ident">Filter</span>, <span class="ident">Histogram</span>, <span class="ident">Impute</span>, <span class="ident">Index</span>, <span class="ident">KthRawSampleMoment</span>, <span class="ident">Materialize</span>, <span class="ident">Maximum</span>, <span class="ident">Mean</span>,
 
-            <span class="ident">ExponentialMechanism</span>, <span class="ident">GaussianMechanism</span>, <span class="ident">LaplaceMechanism</span>, <span class="ident">SimpleGeometricMechanism</span>,
+            <span class="ident">GaussianMechanism</span>, <span class="ident">LaplaceMechanism</span>, <span class="ident">SimpleGeometricMechanism</span>,
 
             <span class="ident">Minimum</span>, <span class="ident">Quantile</span>, <span class="ident">Reshape</span>, <span class="ident">Resize</span>, <span class="ident">Sum</span>, <span class="ident">Variance</span>,
 
@@ -648,7 +646,7 @@
             <span class="ident">Equal</span>, <span class="ident">LessThan</span>, <span class="ident">GreaterThan</span>, <span class="ident">Negative</span>
         );
 
-        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;proto component {:?} is missing its Component trait&quot;</span>, <span class="self">self</span>).<span class="ident">into</span>())
+        <span class="prelude-val">Err</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;proto component {:?} is missing its Component trait&quot;</span>, <span class="self">self</span>).<span class="ident">into</span>())
     }
 
     <span class="kw">fn</span> <span class="ident">get_names</span>(
@@ -707,10 +705,8 @@
         <span class="macro">expand_component</span><span class="macro">!</span>(
             <span class="comment">// INSERT COMPONENT LIST</span>
             <span class="ident">Clamp</span>, <span class="ident">DpCount</span>, <span class="ident">DpCovariance</span>, <span class="ident">DpHistogram</span>, <span class="ident">DpMaximum</span>, <span class="ident">DpMean</span>, <span class="ident">DpMedian</span>, <span class="ident">DpMinimum</span>,
-            <span class="ident">DpMomentRaw</span>, <span class="ident">DpSum</span>, <span class="ident">DpVariance</span>, <span class="ident">Histogram</span>, <span class="ident">Impute</span>, <span class="ident">ExponentialMechanism</span>, <span class="ident">GaussianMechanism</span>,
-            <span class="ident">LaplaceMechanism</span>, <span class="ident">SimpleGeometricMechanism</span>, <span class="ident">Resize</span>,
-
-            <span class="ident">Modulo</span>
+            <span class="ident">DpMomentRaw</span>, <span class="ident">DpSum</span>, <span class="ident">DpVariance</span>, <span class="ident">Histogram</span>, <span class="ident">Impute</span>, <span class="ident">GaussianMechanism</span>,
+            <span class="ident">LaplaceMechanism</span>, <span class="ident">SimpleGeometricMechanism</span>, <span class="ident">Resize</span>
         );
 
         <span class="comment">// no expansion</span>

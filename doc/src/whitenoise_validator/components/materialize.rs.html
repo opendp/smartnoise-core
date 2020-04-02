@@ -105,7 +105,7 @@
                         <span class="ident">dataset_id</span>: <span class="self">self</span>.<span class="ident">dataset_id</span>.<span class="ident">as_ref</span>().<span class="ident">and_then</span>(<span class="ident">parse_i64_null</span>)
                     }))).<span class="ident">collect</span>()),
                 (<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="ident">num_columns</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Hashmap</span>::<span class="op">&lt;</span><span class="ident">ValueProperties</span><span class="op">&gt;</span>::<span class="ident">I64</span>((<span class="number">0</span>..<span class="ident">num_columns</span>)
-                    .<span class="ident">map</span>(<span class="op">|</span><span class="ident">name</span><span class="op">|</span> (<span class="ident">name</span>.<span class="ident">clone</span>(), <span class="ident">ValueProperties</span>::<span class="ident">Array</span>(<span class="ident">ArrayProperties</span> {
+                    .<span class="ident">map</span>(<span class="op">|</span><span class="ident">name</span><span class="op">|</span> (<span class="ident">name</span>, <span class="ident">ValueProperties</span>::<span class="ident">Array</span>(<span class="ident">ArrayProperties</span> {
                         <span class="ident">num_records</span>: <span class="prelude-val">None</span>,
                         <span class="ident">num_columns</span>: <span class="prelude-val">Some</span>(<span class="number">1</span>),
                         <span class="ident">nullity</span>: <span class="bool-val">true</span>,
