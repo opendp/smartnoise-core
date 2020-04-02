@@ -31,11 +31,14 @@ use crate::utilities;
 /// use whitenoise_runtime::utilities::mechanisms::laplace_mechanism;
 /// let n = laplace_mechanism(&0.1, &2.0);
 /// ```
-pub fn laplace_mechanism(epsilon: &f64, sensitivity: &f64) -> f64 {
+pub fn laplace_mechanism(epsilon: &f64, sensitivity: &f64) -> Result<f64> {
+    if epsilon < &0. || sensitivity < &0. {
+        return Err(format!("epsilon ({}) and sensitivity ({}) must be positive", epsilon, sensitivity).into());
+    }
     let scale: f64 = sensitivity / epsilon;
     let noise: f64 = noise::sample_laplace(0., scale);
 
-    noise
+    Ok(noise)
 }
 
 /// Returns noise drawn according to the Gaussian mechanism.
@@ -64,10 +67,13 @@ pub fn laplace_mechanism(epsilon: &f64, sensitivity: &f64) -> f64 {
 /// use whitenoise_runtime::utilities::mechanisms::gaussian_mechanism;
 /// let n = gaussian_mechanism(&0.1, &0.0001, &2.0);
 /// ```
-pub fn gaussian_mechanism(epsilon: &f64, delta: &f64, sensitivity: &f64) -> f64 {
+pub fn gaussian_mechanism(epsilon: &f64, delta: &f64, sensitivity: &f64) -> Result<f64> {
+    if epsilon < &0. || delta < &0. || sensitivity < &0. {
+        return Err(format!("epsilon ({}), delta ({}) and sensitivity ({}) must all be positive", epsilon, delta, sensitivity).into());
+    }
     let scale: f64 = sensitivity * (2. * (1.25 / delta).ln()).sqrt() / epsilon;
     let noise: f64 = noise::sample_gaussian(&0., &scale);
-    noise
+    Ok(noise)
 }
 
 /// Returns noise drawn according to the Geometric mechanism.
@@ -93,10 +99,17 @@ pub fn gaussian_mechanism(epsilon: &f64, delta: &f64, sensitivity: &f64) -> f64 
 /// use whitenoise_runtime::utilities::mechanisms::simple_geometric_mechanism;
 /// let n = simple_geometric_mechanism(&0.1, &1., &0, &10, &true);
 /// ```
-pub fn simple_geometric_mechanism(epsilon: &f64, sensitivity: &f64, count_min: &i64, count_max: &i64, enforce_constant_time: &bool) -> i64 {
+pub fn simple_geometric_mechanism(
+    epsilon: &f64, sensitivity: &f64,
+    count_min: &i64, count_max: &i64,
+    enforce_constant_time: &bool
+) -> Result<i64> {
+    if epsilon < &0. || sensitivity < &0. {
+        return Err(format!("epsilon ({}) and sensitivity ({}) must be positive", epsilon, sensitivity).into());
+    }
     let scale: f64 = sensitivity / epsilon;
     let noise: i64 = noise::sample_simple_geometric_mechanism(&scale, &count_min, &count_max, &enforce_constant_time);
-    noise
+    Ok(noise)
 }
 
 /// Returns data element according to the Exponential mechanism.

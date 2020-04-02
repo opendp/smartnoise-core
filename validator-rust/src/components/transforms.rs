@@ -38,7 +38,7 @@ impl Component for proto::Add {
                     Ok(l + r))),
                 i64: Some(Box::new(|l: &i64, r: &i64|
                     l.checked_add(r).ok_or_else(|| Error::from("addition may result in underflow or overflow")))),
-                str: None,
+                str: Some(Box::new(|l: &String, r: &String| Ok(format!("{}{}", l, r)))),
                 bool: None,
             }, &OptimizeBinaryOperators {
                 f64: Some(Box::new(|bounds| Ok((
@@ -556,8 +556,10 @@ impl Component for proto::Negative {
                 str: None,
             },
             &OptimizeUnaryOperators {
-                f64: Some(Box::new(|bounds| Ok((bounds.max.clone(), bounds.min.clone())))),
-                i64: Some(Box::new(|bounds| Ok((bounds.max.clone(), bounds.min.clone())))),
+                f64: Some(Box::new(|bounds|
+                    Ok((bounds.max.map(|v| -v).clone(), bounds.min.map(|v| -v).clone())))),
+                i64: Some(Box::new(|bounds|
+                    Ok((bounds.max.map(|v| -v).clone(), bounds.min.map(|v| -v).clone())))),
             }, &data_property.num_columns()?)?;
 
         Ok(data_property.into())

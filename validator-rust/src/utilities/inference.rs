@@ -128,7 +128,7 @@ pub fn infer_max(value: &Value) -> Result<Vector1DNull> {
 }
 
 pub fn infer_categories(value: &Value) -> Result<Jagged> {
-    Ok(match value {
+    match value {
         Value::Array(array) => match array {
             Array::Bool(array) =>
                 Jagged::Bool(array.gencolumns().into_iter().map(|col|
@@ -154,7 +154,6 @@ pub fn infer_categories(value: &Value) -> Result<Jagged> {
                     Some(column_categories) => Some(deduplicate(column_categories.to_owned())),
                     None => None
                 }).collect()),
-            // TODO: consider removing support for float categories
             Jagged::F64(array) =>
                 Jagged::F64(array.iter().map(|_| None).collect()),
             Jagged::I64(array) =>
@@ -168,7 +167,7 @@ pub fn infer_categories(value: &Value) -> Result<Jagged> {
                     None => None
                 }).collect()),
         }
-    })
+    }.deduplicate()
 }
 
 pub fn infer_nature(value: &Value) -> Result<Option<Nature>> {
@@ -185,11 +184,9 @@ pub fn infer_nature(value: &Value) -> Result<Option<Nature>> {
             Array::Bool(array) => Some(Nature::Categorical(NatureCategorical {
                 categories: infer_categories(&array.clone().into())?,
             })),
-            // This has a nasty side-effect of duplicating columns within the properties
-//            ArrayND::Str(array) => Nature::Categorical(NatureCategorical {
-//                categories: infer_categories(&Value::ArrayND(ArrayND::Str(array.clone()))),
-//            }),
-            _ => None
+            Array::Str(array) => Some(Nature::Categorical(NatureCategorical {
+                categories: infer_categories(&array.clone().into())?,
+            })),
         },
         Value::Hashmap(_) => None,
         Value::Jagged(jagged) => match jagged {

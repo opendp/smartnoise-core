@@ -19,7 +19,9 @@ impl Evaluable for proto::Add {
                     Ok(broadcast_map(x, y, &|l, r| l + r)?.into()),
                 (Array::I64(x), Array::I64(y)) =>
                     Ok(broadcast_map(x, y, &|l, r| l + r)?.into()),
-                _ => Err("Add: Either the argument types are mismatched or non-numeric.".into())
+                (Array::Str(x), Array::Str(y)) =>
+                    Ok(broadcast_map(x, y, &|l, r| format!("{}{}", l, r))?.into()),
+                _ => Err("Add: Either the argument types are mismatched or boolean.".into())
             },
             _ => Err("Add: Both arguments must be arrays.".into())
         }

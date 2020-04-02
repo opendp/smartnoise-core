@@ -230,7 +230,7 @@ pub fn _expand_component(
     privacy_definition: &proto::PrivacyDefinition,
     component: &proto::Component,
     properties: &HashMap<String, proto::ValueProperties>,
-    arguments: &HashMap<String, base::Value>,
+    public_arguments: &HashMap<String, base::Value>,
     component_id: &u32,
     maximum_id: &u32,
 ) -> Result<proto::ComponentExpansion> {
@@ -238,7 +238,7 @@ pub fn _expand_component(
         .map(|(k, v)| (k.to_owned(), utilities::serial::parse_value_properties(&v)))
         .collect();
 
-    for (k, v) in arguments {
+    for (k, v) in public_arguments {
         properties.insert(k.clone(), utilities::inference::infer_property(v)?);
     }
 
@@ -255,7 +255,7 @@ pub fn _expand_component(
     if result.traversal.is_empty() {
         let propagated_property = component.clone().variant.as_ref()
             .ok_or_else(|| Error::from("component variant must be defined"))?
-            .propagate_property(&privacy_definition, &arguments, &properties)
+            .propagate_property(&privacy_definition, &public_arguments, &properties)
             .chain_err(|| format!("at node_id {:?}", component_id))?;
 
         patch_properties.insert(component_id.to_owned(), utilities::serial::serialize_value_properties(&propagated_property));

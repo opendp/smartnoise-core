@@ -24,7 +24,7 @@ def test_multilayer_analysis(run=True):
         age_resized = op.resize(age_clamped, n=1000)
 
         mean_age = op.dp_mean(
-            data=op.cast(PUMS['married'], type="FLOAT"),
+            data=op.cast(PUMS['race'], type="FLOAT"),
             privacy_usage={'epsilon': .65},
             data_min=0.,
             data_max=100.,
@@ -84,7 +84,7 @@ def test_dp_linear_stats(run=True):
     with whitenoise.Analysis() as analysis:
         dataset_pums = whitenoise.Dataset(path=TEST_CSV_PATH, column_names=test_csv_names)
 
-        age = dataset_pums['age']
+        age = dataset_pums['x']
         analysis.release()
 
         num_records = op.dp_count(
@@ -96,7 +96,6 @@ def test_dp_linear_stats(run=True):
         analysis.release()
 
         print("number of records:", num_records.value)
-        print(num_records.properties)
 
         vars = op.cast(dataset_pums[["age", "income"]], type="float")
 
@@ -106,6 +105,8 @@ def test_dp_linear_stats(run=True):
             data_min=[0., 0.],
             data_max=[150., 150000.],
             data_n=num_records)
+        analysis.release()
+        print("covariance released")
 
         num_means = op.dp_mean(
             data=vars,
@@ -201,7 +202,7 @@ def test_dp_linear_stats(run=True):
         )
 
         sex_histogram = op.dp_histogram(
-            op.cast(dataset_pums['married'], type='bool', true_label="1"),
+            op.cast(dataset_pums['sex'], type='bool', true_label="1"),
             count_max=1000,
             count_min=0,
             privacy_usage={'epsilon': 2.}

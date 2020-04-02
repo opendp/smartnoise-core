@@ -127,6 +127,7 @@ pub fn propagate_properties(
         }
         traversal.pop();
 
+//        println!("graph evaluation in prop {:?}", graph_evaluation);
         graph_properties.insert(node_id.clone(), match graph_evaluation.get(&node_id) {
             // if node has already been evaluated, infer properties directly from the public data
             Some(value) => infer_property(&value),
@@ -396,7 +397,7 @@ pub fn get_component_privacy_usage(
     let mut privacy_usage: Vec<proto::PrivacyUsage> = match component.to_owned().variant? {
         proto::component::Variant::LaplaceMechanism(x) => x.privacy_usage,
         proto::component::Variant::GaussianMechanism(x) => x.privacy_usage,
-        proto::component::Variant::ExponentialMechanism(x) => x.privacy_usage,
+//        proto::component::Variant::ExponentialMechanism(x) => x.privacy_usage,
         proto::component::Variant::SimpleGeometricMechanism(x) => x.privacy_usage,
         _ => return None
     };
