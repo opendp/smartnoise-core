@@ -423,6 +423,25 @@
 <span id="423">423</span>
 <span id="424">424</span>
 <span id="425">425</span>
+<span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Component trait implementations</span>
 <span class="doccomment">//!</span>
@@ -507,12 +526,6 @@
         <span class="ident">public_arguments</span>: <span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Value</span><span class="op">&gt;</span>,
         <span class="ident">properties</span>: <span class="kw-2">&amp;</span><span class="ident">NodeProperties</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ValueProperties</span><span class="op">&gt;</span>;
-
-    <span class="doccomment">/// Utility function for a recursive algorithm to derive human readable names on the columns in the output data.</span>
-    <span class="kw">fn</span> <span class="ident">get_names</span>(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">properties</span>: <span class="kw-2">&amp;</span><span class="ident">NodeProperties</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 }
 
 <span class="doccomment">/// Expandable Component trait</span>
@@ -600,8 +613,22 @@
         <span class="ident">component</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">Component</span>,
         <span class="ident">public_arguments</span>: <span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Value</span><span class="op">&gt;</span>,
         <span class="ident">properties</span>: <span class="kw-2">&amp;</span><span class="ident">NodeProperties</span>,
-        <span class="ident">release</span>: <span class="kw-2">&amp;</span><span class="ident">Value</span>
+        <span class="ident">release</span>: <span class="kw-2">&amp;</span><span class="ident">Value</span>,
+        <span class="ident">variable_names</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">JSONRelease</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+}
+
+<span class="doccomment">/// Named component trait</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Named components involve variables and keep track of the human readable names for these variables</span>
+<span class="doccomment">/// and may modify these variables names.</span>
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Named</span> {
+    <span class="doccomment">/// Propagate the human readable names of the variables associated with this component</span>
+    <span class="kw">fn</span> <span class="ident">get_names</span>(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="ident">public_arguments</span>: <span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Value</span><span class="op">&gt;</span>,
+        <span class="ident">argument_variables</span>: <span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 }
 
 
@@ -647,33 +674,6 @@
         );
 
         <span class="prelude-val">Err</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;proto component {:?} is missing its Component trait&quot;</span>, <span class="self">self</span>).<span class="ident">into</span>())
-    }
-
-    <span class="kw">fn</span> <span class="ident">get_names</span>(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">_properties</span>: <span class="kw-2">&amp;</span><span class="ident">NodeProperties</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-
-        <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">get_names</span>{
-            ($( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>:<span class="ident">ident</span> ),<span class="kw-2">*</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                {
-                    $(
-                       <span class="kw">if</span> <span class="kw">let</span> <span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>(<span class="ident">x</span>) <span class="op">=</span> <span class="self">self</span> {
-                            <span class="kw">return</span> <span class="ident">x</span>.<span class="ident">get_names</span>(<span class="ident">properties</span>)
-                                .<span class="ident">chain_err</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;node specification {:?}:&quot;</span>, <span class="self">self</span>))
-                       }
-                    )<span class="op">*</span>
-                }
-            }
-        }
-
-        <span class="macro">get_names</span><span class="macro">!</span>(
-            <span class="comment">// INSERT COMPONENT LIST</span>
-<span class="comment">//            Rowmin, Dpmean, Impute</span>
-        );
-        <span class="comment">// TODO: default implementation</span>
-
-        <span class="prelude-val">Err</span>(<span class="string">&quot;get_names not implemented&quot;</span>.<span class="ident">into</span>())
     }
 }
 
@@ -824,7 +824,8 @@
         <span class="ident">component</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">Component</span>,
         <span class="ident">public_arguments</span>: <span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Value</span><span class="op">&gt;</span>,
         <span class="ident">properties</span>: <span class="kw-2">&amp;</span><span class="ident">NodeProperties</span>,
-        <span class="ident">release</span>: <span class="kw-2">&amp;</span><span class="ident">Value</span>
+        <span class="ident">release</span>: <span class="kw-2">&amp;</span><span class="ident">Value</span>,
+        <span class="ident">variable_names</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">JSONRelease</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
 
         <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">summarize</span>{
@@ -832,7 +833,8 @@
                 {
                     $(
                        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>(<span class="ident">x</span>) <span class="op">=</span> <span class="self">self</span> {
-                            <span class="kw">return</span> <span class="ident">x</span>.<span class="ident">summarize</span>(<span class="ident">node_id</span>, <span class="ident">component</span>, <span class="ident">public_arguments</span>, <span class="ident">properties</span>, <span class="ident">release</span>)
+                            <span class="kw">return</span> <span class="ident">x</span>.<span class="ident">summarize</span>(<span class="ident">node_id</span>, <span class="ident">component</span>, <span class="ident">public_arguments</span>,
+                                 <span class="ident">properties</span>, <span class="ident">release</span>, <span class="ident">variable_names</span>)
                                 .<span class="ident">chain_err</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;node specification: {:?}:&quot;</span>, <span class="self">self</span>))
                        }
                     )<span class="op">*</span>
@@ -847,6 +849,42 @@
         );
 
         <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>)
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">Named</span> <span class="kw">for</span> <span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span> {
+    <span class="doccomment">/// Utility implementation on the enum containing all variants of a component.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This utility delegates evaluation to the concrete implementation of each component variant.</span>
+    <span class="kw">fn</span> <span class="ident">get_names</span>(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="ident">_public_arguments</span>: <span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Value</span><span class="op">&gt;</span>,
+        <span class="ident">argument_variables</span>: <span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+
+        <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">get_names</span>{
+            ($( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>:<span class="ident">ident</span> ),<span class="kw-2">*</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                {
+                    $(
+                       <span class="kw">if</span> <span class="kw">let</span> <span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>(<span class="ident">x</span>) <span class="op">=</span> <span class="self">self</span> {
+                            <span class="kw">return</span> <span class="ident">x</span>.<span class="ident">get_names</span>(<span class="ident">_public_arguments</span>, <span class="ident">argument_variables</span>)
+                                .<span class="ident">chain_err</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;node specification {:?}:&quot;</span>, <span class="self">self</span>))
+                       }
+                    )<span class="op">*</span>
+                }
+            }
+        }
+
+        <span class="macro">get_names</span><span class="macro">!</span>(
+            <span class="comment">// INSERT COMPONENT LIST</span>
+<span class="comment">//            Rowmin, Dpmean, Impute</span>
+            <span class="ident">Index</span>
+        );
+
+        <span class="comment">// Err(&quot;get_names not implemented&quot;.into())</span>
+        
+        <span class="comment">// default implementation</span>
+        <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">argument_variables</span>.<span class="ident">values</span>().<span class="ident">cloned</span>().<span class="ident">flatten</span>().<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>());
     }
 }
 </pre></div>

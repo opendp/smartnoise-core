@@ -68,11 +68,6 @@
 <span id="68">68</span>
 <span id="69">69</span>
 <span id="70">70</span>
-<span id="71">71</span>
-<span id="72">72</span>
-<span id="73">73</span>
-<span id="74">74</span>
-<span id="75">75</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
@@ -110,12 +105,7 @@
         <span class="prelude-val">Ok</span>(<span class="ident">data_property</span>.<span class="ident">into</span>())
     }
 
-    <span class="kw">fn</span> <span class="ident">get_names</span>(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">_properties</span>: <span class="kw-2">&amp;</span><span class="ident">NodeProperties</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Err</span>(<span class="string">&quot;get_names not implemented&quot;</span>.<span class="ident">into</span>())
-    }
+
 }
 
 <span class="kw">impl</span> <span class="ident">Aggregator</span> <span class="kw">for</span> <span class="ident">proto</span>::<span class="ident">Maximum</span> {

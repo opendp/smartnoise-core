@@ -146,15 +146,6 @@
 <span id="146">146</span>
 <span id="147">147</span>
 <span id="148">148</span>
-<span id="149">149</span>
-<span id="150">150</span>
-<span id="151">151</span>
-<span id="152">152</span>
-<span id="153">153</span>
-<span id="154">154</span>
-<span id="155">155</span>
-<span id="156">156</span>
-<span id="157">157</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
@@ -188,16 +179,6 @@
         <span class="prelude-val">Err</span>(<span class="string">&quot;DPMaximum is abstract, and has no property propagation&quot;</span>.<span class="ident">into</span>())
     }
 
-    <span class="doccomment">/// Accessor method for names</span>
-    <span class="doccomment">/// # Arguments</span>
-    <span class="doccomment">/// * `&amp;self` - this</span>
-    <span class="doccomment">/// * `_properties` - NodeProperties</span>
-    <span class="kw">fn</span> <span class="ident">get_names</span>(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">_properties</span>: <span class="kw-2">&amp;</span><span class="ident">NodeProperties</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Err</span>(<span class="string">&quot;get_names not implemented&quot;</span>.<span class="ident">into</span>())
-    }
 }
 
 <span class="kw">impl</span> <span class="ident">Expandable</span> <span class="kw">for</span> <span class="ident">proto</span>::<span class="ident">DpMean</span> {
@@ -266,7 +247,8 @@
         <span class="ident">component</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">Component</span>,
         <span class="ident">_public_arguments</span>: <span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Value</span><span class="op">&gt;</span>,
         <span class="ident">properties</span>: <span class="kw-2">&amp;</span><span class="ident">NodeProperties</span>,
-        <span class="ident">release</span>: <span class="kw-2">&amp;</span><span class="ident">Value</span>
+        <span class="ident">release</span>: <span class="kw-2">&amp;</span><span class="ident">Value</span>,
+        <span class="ident">variable_names</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">JSONRelease</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
 
         <span class="kw">let</span> <span class="ident">data_property</span> <span class="op">=</span> <span class="ident">properties</span>.<span class="ident">get</span>(<span class="string">&quot;data&quot;</span>)
@@ -286,7 +268,7 @@
             <span class="ident">releases</span>.<span class="ident">push</span>(<span class="ident">JSONRelease</span> {
                 <span class="ident">description</span>: <span class="string">&quot;DP release information&quot;</span>.<span class="ident">to_string</span>(),
                 <span class="ident">statistic</span>: <span class="string">&quot;DPMean&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="ident">variables</span>: <span class="ident">serde_json</span>::<span class="macro">json</span><span class="macro">!</span>(<span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>::<span class="ident">new</span>()),
+                <span class="ident">variables</span>: <span class="ident">serde_json</span>::<span class="macro">json</span><span class="macro">!</span>(<span class="ident">variable_names</span>.<span class="ident">clone</span>()),
                 <span class="ident">release_info</span>: <span class="ident">value_to_json</span>(<span class="kw-2">&amp;</span><span class="ident">get_ith_release</span>(
                     <span class="ident">release</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">f64</span>()<span class="question-mark">?</span>,
                     <span class="kw-2">&amp;</span>(<span class="ident">column_number</span> <span class="kw">as</span> <span class="ident">usize</span>)

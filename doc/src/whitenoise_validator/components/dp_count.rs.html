@@ -106,10 +106,6 @@
 <span id="106">106</span>
 <span id="107">107</span>
 <span id="108">108</span>
-<span id="109">109</span>
-<span id="110">110</span>
-<span id="111">111</span>
-<span id="112">112</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
@@ -136,12 +132,7 @@
         <span class="prelude-val">Err</span>(<span class="string">&quot;DPCount is abstract, and has no property propagation&quot;</span>.<span class="ident">into</span>())
     }
 
-    <span class="kw">fn</span> <span class="ident">get_names</span>(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">_properties</span>: <span class="kw-2">&amp;</span><span class="ident">NodeProperties</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Err</span>(<span class="string">&quot;get_names not implemented&quot;</span>.<span class="ident">into</span>())
-    }
+
 }
 
 
@@ -202,12 +193,13 @@
         <span class="ident">component</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">Component</span>,
         <span class="ident">_public_arguments</span>: <span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Value</span><span class="op">&gt;</span>,
         <span class="ident">_properties</span>: <span class="kw-2">&amp;</span><span class="ident">NodeProperties</span>,
-        <span class="ident">release</span>: <span class="kw-2">&amp;</span><span class="ident">Value</span>
+        <span class="ident">release</span>: <span class="kw-2">&amp;</span><span class="ident">Value</span>,
+        <span class="ident">variable_names</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">JSONRelease</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="macro">vec</span><span class="macro">!</span>[<span class="ident">JSONRelease</span> {
             <span class="ident">description</span>: <span class="string">&quot;DP release information&quot;</span>.<span class="ident">to_string</span>(),
             <span class="ident">statistic</span>: <span class="string">&quot;DPCount&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">variables</span>: <span class="ident">serde_json</span>::<span class="macro">json</span><span class="macro">!</span>(<span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>::<span class="ident">new</span>()),
+            <span class="ident">variables</span>: <span class="ident">serde_json</span>::<span class="macro">json</span><span class="macro">!</span>(<span class="ident">variable_names</span>),
             <span class="ident">release_info</span>: <span class="ident">value_to_json</span>(<span class="kw-2">&amp;</span><span class="ident">release</span>)<span class="question-mark">?</span>,
             <span class="ident">privacy_loss</span>: <span class="ident">privacy_usage_to_json</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">privacy_usage</span>[<span class="number">0</span>].<span class="ident">clone</span>()),
             <span class="ident">accuracy</span>: <span class="prelude-val">None</span>,

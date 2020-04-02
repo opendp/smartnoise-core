@@ -77,11 +77,6 @@
 <span id="77">77</span>
 <span id="78">78</span>
 <span id="79">79</span>
-<span id="80">80</span>
-<span id="81">81</span>
-<span id="82">82</span>
-<span id="83">83</span>
-<span id="84">84</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
@@ -120,12 +115,7 @@
         <span class="prelude-val">Ok</span>(<span class="ident">data_property</span>.<span class="ident">into</span>())
     }
 
-    <span class="kw">fn</span> <span class="ident">get_names</span>(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">_properties</span>: <span class="kw-2">&amp;</span><span class="ident">NodeProperties</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Err</span>(<span class="string">&quot;get_names not implemented&quot;</span>.<span class="ident">into</span>())
-    }
+
 }
 
 <span class="kw">impl</span> <span class="ident">Aggregator</span> <span class="kw">for</span> <span class="ident">proto</span>::<span class="ident">Quantile</span> {
