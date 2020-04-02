@@ -24,12 +24,6 @@ impl Component for proto::DpHistogram {
         Err("DPHistogram is abstract, and has no property propagation".into())
     }
 
-    fn get_names(
-        &self,
-        _properties: &NodeProperties,
-    ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
-    }
 }
 
 
@@ -175,6 +169,7 @@ impl Report for proto::DpHistogram {
         _public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
         release: &Value,
+        variable_names: &Vec<String>,
     ) -> Result<Option<Vec<JSONRelease>>> {
         let data_property = properties.get("data")
             .ok_or("data: missing")?.array()
@@ -189,7 +184,7 @@ impl Report for proto::DpHistogram {
             let release = JSONRelease {
                 description: "DP release information".to_string(),
                 statistic: "DPHistogram".to_string(),
-                variables: serde_json::json!(Vec::<String>::new()),
+                variables: serde_json::json!(variable_names),
                 // extract ith column of release
                 release_info: value_to_json(&get_ith_release(
                     release.array()?.i64()?,

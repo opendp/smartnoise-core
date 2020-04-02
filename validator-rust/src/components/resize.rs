@@ -9,7 +9,7 @@ use crate::proto;
 use crate::components::{Component, Expandable};
 use ndarray;
 
-use crate::base::{Value, Array, NodeProperties, Nature, NatureContinuous, Vector1DNull, ValueProperties, DataType, NatureCategorical};
+use crate::base::{Value, Array, Nature, NatureContinuous, Vector1DNull, ValueProperties, DataType, NatureCategorical};
 use crate::utilities::{prepend, get_literal};
 
 
@@ -172,12 +172,7 @@ impl Component for proto::Resize {
         Ok(data_property.into())
     }
 
-    fn get_names(
-        &self,
-        _properties: &NodeProperties,
-    ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
-    }
+
 }
 
 impl Expandable for proto::Resize {

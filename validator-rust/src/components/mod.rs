@@ -81,12 +81,6 @@ pub trait Component {
         public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
     ) -> Result<ValueProperties>;
-
-    /// Utility function for a recursive algorithm to derive human readable names on the columns in the output data.
-    fn get_names(
-        &self,
-        properties: &NodeProperties,
-    ) -> Result<Vec<String>>;
 }
 
 /// Expandable Component trait
@@ -174,8 +168,22 @@ pub trait Report {
         component: &proto::Component,
         public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
-        release: &Value
+        release: &Value,
+        variable_names: &Vec<String>,
     ) -> Result<Option<Vec<JSONRelease>>>;
+}
+
+/// Named component trait
+///
+/// Named components involve variables and keep track of the human readable names for these variables
+/// and may modify these variables names.
+pub trait Named {
+    /// Propagate the human readable names of the variables associated with this component
+    fn get_names(
+        &self,
+        public_arguments: &HashMap<String, Value>,
+        argument_variables: &HashMap<String, Vec<String>>,
+    ) -> Result<Vec<String>>;
 }
 
 
@@ -221,33 +229,6 @@ impl Component for proto::component::Variant {
         );
 
         Err(format!("proto component {:?} is missing its Component trait", self).into())
-    }
-
-    fn get_names(
-        &self,
-        _properties: &NodeProperties,
-    ) -> Result<Vec<String>> {
-
-        macro_rules! get_names{
-            ($( $variant:ident ),*) => {
-                {
-                    $(
-                       if let proto::component::Variant::$variant(x) = self {
-                            return x.get_names(properties)
-                                .chain_err(|| format!("node specification {:?}:", self))
-                       }
-                    )*
-                }
-            }
-        }
-
-        get_names!(
-            // INSERT COMPONENT LIST
-//            Rowmin, Dpmean, Impute
-        );
-        // TODO: default implementation
-
-        Err("get_names not implemented".into())
     }
 }
 
@@ -398,7 +379,8 @@ impl Report for proto::component::Variant {
         component: &proto::Component,
         public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
-        release: &Value
+        release: &Value,
+        variable_names: &Vec<String>
     ) -> Result<Option<Vec<JSONRelease>>> {
 
         macro_rules! summarize{
@@ -406,7 +388,8 @@ impl Report for proto::component::Variant {
                 {
                     $(
                        if let proto::component::Variant::$variant(x) = self {
-                            return x.summarize(node_id, component, public_arguments, properties, release)
+                            return x.summarize(node_id, component, public_arguments,
+                                 properties, release, variable_names)
                                 .chain_err(|| format!("node specification: {:?}:", self))
                        }
                     )*
@@ -421,5 +404,41 @@ impl Report for proto::component::Variant {
         );
 
         Ok(None)
+    }
+}
+
+impl Named for proto::component::Variant {
+    /// Utility implementation on the enum containing all variants of a component.
+    ///
+    /// This utility delegates evaluation to the concrete implementation of each component variant.
+    fn get_names(
+        &self,
+        _public_arguments: &HashMap<String, Value>,
+        argument_variables: &HashMap<String, Vec<String>>,
+    ) -> Result<Vec<String>> {
+
+        macro_rules! get_names{
+            ($( $variant:ident ),*) => {
+                {
+                    $(
+                       if let proto::component::Variant::$variant(x) = self {
+                            return x.get_names(_public_arguments, argument_variables)
+                                .chain_err(|| format!("node specification {:?}:", self))
+                       }
+                    )*
+                }
+            }
+        }
+
+        get_names!(
+            // INSERT COMPONENT LIST
+//            Rowmin, Dpmean, Impute
+            Index
+        );
+
+        // Err("get_names not implemented".into())
+        
+        // default implementation
+        return Ok(argument_variables.values().cloned().flatten().collect::<Vec<String>>());
     }
 }

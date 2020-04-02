@@ -1,7 +1,7 @@
 use crate::errors::*;
 
 use std::collections::HashMap;
-use crate::base::{Nature, Vector1DNull, NodeProperties, Array, ValueProperties, NatureCategorical, Jagged, DataType};
+use crate::base::{Nature, Vector1DNull, Array, ValueProperties, NatureCategorical, Jagged, DataType};
 
 use crate::{proto, base};
 use crate::utilities::{prepend, get_literal, standardize_null_target_argument};
@@ -189,12 +189,6 @@ impl Component for proto::Clamp {
         Ok(data_property.into())
     }
 
-    fn get_names(
-        &self,
-        _properties: &NodeProperties,
-    ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
-    }
 }
 
 

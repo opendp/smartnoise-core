@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use crate::{proto, base};
 
 use crate::components::{Component};
-use crate::base::{Hashmap, Value, NodeProperties, ValueProperties, HashmapProperties, ArrayProperties, DataType};
+use crate::base::{Hashmap, Value, ValueProperties, HashmapProperties, ArrayProperties, DataType};
 use crate::utilities::serial::parse_i64_null;
 
 impl Component for proto::Materialize {
@@ -56,10 +56,5 @@ impl Component for proto::Materialize {
         }.into())
     }
 
-    fn get_names(
-        &self,
-        _properties: &NodeProperties,
-    ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
-    }
+
 }
