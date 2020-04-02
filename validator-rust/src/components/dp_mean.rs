@@ -97,7 +97,8 @@ impl Report for proto::DpMean {
         component: &proto::Component,
         _public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
-        release: &Value
+        release: &Value,
+        variable_names: &Vec<String>,
     ) -> Result<Option<Vec<JSONRelease>>> {
 
         let data_property = properties.get("data")
@@ -117,7 +118,7 @@ impl Report for proto::DpMean {
             releases.push(JSONRelease {
                 description: "DP release information".to_string(),
                 statistic: "DPMean".to_string(),
-                variables: serde_json::json!(Vec::<String>::new()),
+                variables: serde_json::json!(variable_names.clone()),
                 release_info: value_to_json(&get_ith_release(
                     release.array()?.f64()?,
                     &(column_number as usize)

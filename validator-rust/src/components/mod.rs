@@ -168,7 +168,8 @@ pub trait Report {
         component: &proto::Component,
         public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
-        release: &Value
+        release: &Value,
+        variable_names: &Vec<String>,
     ) -> Result<Option<Vec<JSONRelease>>>;
 }
 
@@ -180,8 +181,8 @@ pub trait Named {
     /// Propagate the human readable names of the variables associated with this component
     fn get_names(
         &self,
-        _public_arguments: &HashMap<String, Value>,
-        argument_variables: HashMap<String, Vec<String>>,
+        public_arguments: &HashMap<String, Value>,
+        argument_variables: &HashMap<String, Vec<String>>,
     ) -> Result<Vec<String>>;
 }
 
@@ -380,7 +381,8 @@ impl Report for proto::component::Variant {
         component: &proto::Component,
         public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
-        release: &Value
+        release: &Value,
+        variable_names: &Vec<String>
     ) -> Result<Option<Vec<JSONRelease>>> {
 
         macro_rules! summarize{
@@ -388,7 +390,8 @@ impl Report for proto::component::Variant {
                 {
                     $(
                        if let proto::component::Variant::$variant(x) = self {
-                            return x.summarize(node_id, component, public_arguments, properties, release)
+                            return x.summarize(node_id, component, public_arguments,
+                                 properties, release, variable_names)
                                 .chain_err(|| format!("node specification: {:?}:", self))
                        }
                     )*
@@ -413,7 +416,7 @@ impl Named for proto::component::Variant {
     fn get_names(
         &self,
         _public_arguments: &HashMap<String, Value>,
-        arg_vars: HashMap<String, Vec<String>>,
+        argument_variables: &HashMap<String, Vec<String>>,
     ) -> Result<Vec<String>> {
 
         macro_rules! get_names{
@@ -421,7 +424,7 @@ impl Named for proto::component::Variant {
                 {
                     $(
                        if let proto::component::Variant::$variant(x) = self {
-                            return x.get_names()
+                            return x.get_names(_public_arguments, argument_variables)
                                 .chain_err(|| format!("node specification {:?}:", self))
                        }
                     )*
@@ -432,12 +435,12 @@ impl Named for proto::component::Variant {
         get_names!(
             // INSERT COMPONENT LIST
 //            Rowmin, Dpmean, Impute
+            Index
         );
-        // TODO: default implementation
 
         // Err("get_names not implemented".into())
         
         // default implementation
-        return Ok(arg_vars.values().cloned().flatten().collect::<Vec<String>>());
+        return Ok(argument_variables.values().cloned().flatten().collect::<Vec<String>>());
     }
 }

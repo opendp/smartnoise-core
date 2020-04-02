@@ -77,6 +77,7 @@ impl Report for proto::DpVariance {
         _public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
         release: &Value,
+        variable_names: &Vec<String>,
     ) -> Result<Option<Vec<JSONRelease>>> {
         let data_property = properties.get("data")
             .ok_or("data: missing")?.array()
@@ -95,7 +96,7 @@ impl Report for proto::DpVariance {
             releases.push(JSONRelease {
                 description: "DP release information".to_string(),
                 statistic: "DPVariance".to_string(),
-                variables: serde_json::json!(Vec::<String>::new()),
+                variables: serde_json::json!(variable_names),
                 release_info: match release.array()? {
                     Array::F64(v) => value_to_json(&get_ith_release(v, &(column_number as usize))?.into())?,
                     Array::I64(v) => value_to_json(&get_ith_release(v, &(column_number as usize))?.into())?,

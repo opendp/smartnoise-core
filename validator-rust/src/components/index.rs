@@ -108,7 +108,7 @@ impl Named for proto::Index {
     fn get_names(
         &self,
         public_arguments: &HashMap<String, Value>,
-        _argument_variables: HashMap<String, Vec<String>>,
+        _argument_variables: &HashMap<String, Vec<String>>,
     ) -> Result<Vec<String>> {
         let column_names = public_arguments.get("columns")
             .ok_or_else(|| Error::from("columns: missing"))?.to_owned()
