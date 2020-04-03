@@ -171,6 +171,9 @@ We have a set of fairly standard procedures for generating draws from various no
 
 
 \subsubsection{$sample\_uniform(min: f64, max: f64)$}
+\begin{tcolorbox}[colback = {green}, title = {Update}, colbacktitle = black]
+	We have moved to uniform sampling from MPFR -- updated notes for this section are on the develop branch.
+\end{tcolorbox}
 In this method, we start by generating a floating-point number in $[0,1)$,
 where each is generated with probability relative to its unit of least precision (ULP).\footnote{The ULP is the value
 represented by the least significant bit of the mantissa if that bit is a 1.}
@@ -275,6 +278,10 @@ as it operates only over the integers. \newline
 Given the existence of the aforementioned floating-point vulnerabilities in standard mechanism implementations,
 we would like to explore ways to potentially ensure that implementations actually respect DP in practice.
 This section is very experimental/preliminary.
+
+\begin{tcolorbox}[colback = {green}, title = {Disclaimer}, colbacktitle = black]
+	I think at least one of the statements below is wrong -- going to think about it more later. 
+\end{tcolorbox}
 
 \subsection{Introduction to MPFR}
 The \href{https://www.mpfr.org/}{GNU MPFR Library}\cite{FHL+07} is a C library with methods for carrying out a number
