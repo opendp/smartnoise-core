@@ -12,13 +12,17 @@
   "options": {
     "implementation": {
       "type": "string",
-      "default": "'Laplace'"
+      "default": "'Laplace'",
+      "description": "Privatizing mechanism to use."
     },
     "privacy_usage": {
-      "type": "repeated PrivacyUsage"
+      "type": "repeated PrivacyUsage",
+      "description": "Object describing the type and amount of privacy to be used for the mechanism release."
     }
   },
   "return": {
-    "type": "Array"
-  }
+    "type": "Array",
+    "description": "Differentially private estimates of the maximum elements of the data."
+  },
+  "description": "Returns differentially private estimates of the maximum elements of each column of the data."
 }

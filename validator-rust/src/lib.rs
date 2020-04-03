@@ -1,3 +1,12 @@
+//! The Whitenoise rust validator contains methods for evaluating and constructing 
+//! differentially private analyses.
+//! 
+//! The validator defines a set of statically checkable properties that are 
+//! necessary for a differentially private analysis, and then checks that the submitted analysis
+//! satisfies the properties.
+//!
+//! The validator also takes simple components from the Whitenoise runtime and combines them 
+//! into more complex mechanisms.
 
 // `error_chain!` can recurse deeply
 #![recursion_limit = "1024"]
