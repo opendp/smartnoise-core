@@ -67,6 +67,8 @@ def test_everything(run=True):
         op.dp_sum(age, privacy_usage={"epsilon": 0.5})
         op.dp_variance(age_n, privacy_usage={"epsilon": 0.5})
 
-        # op.filter(income, mask)
+        op.filter(income, mask)
+        op.histogram(race, categories=["1", "2", "3"], null_value="3")
 
     analysis.release()
+    print("b")
