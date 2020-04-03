@@ -1566,6 +1566,63 @@
 <span id="1566">1566</span>
 <span id="1567">1567</span>
 <span id="1568">1568</span>
+<span id="1569">1569</span>
+<span id="1570">1570</span>
+<span id="1571">1571</span>
+<span id="1572">1572</span>
+<span id="1573">1573</span>
+<span id="1574">1574</span>
+<span id="1575">1575</span>
+<span id="1576">1576</span>
+<span id="1577">1577</span>
+<span id="1578">1578</span>
+<span id="1579">1579</span>
+<span id="1580">1580</span>
+<span id="1581">1581</span>
+<span id="1582">1582</span>
+<span id="1583">1583</span>
+<span id="1584">1584</span>
+<span id="1585">1585</span>
+<span id="1586">1586</span>
+<span id="1587">1587</span>
+<span id="1588">1588</span>
+<span id="1589">1589</span>
+<span id="1590">1590</span>
+<span id="1591">1591</span>
+<span id="1592">1592</span>
+<span id="1593">1593</span>
+<span id="1594">1594</span>
+<span id="1595">1595</span>
+<span id="1596">1596</span>
+<span id="1597">1597</span>
+<span id="1598">1598</span>
+<span id="1599">1599</span>
+<span id="1600">1600</span>
+<span id="1601">1601</span>
+<span id="1602">1602</span>
+<span id="1603">1603</span>
+<span id="1604">1604</span>
+<span id="1605">1605</span>
+<span id="1606">1606</span>
+<span id="1607">1607</span>
+<span id="1608">1608</span>
+<span id="1609">1609</span>
+<span id="1610">1610</span>
+<span id="1611">1611</span>
+<span id="1612">1612</span>
+<span id="1613">1613</span>
+<span id="1614">1614</span>
+<span id="1615">1615</span>
+<span id="1616">1616</span>
+<span id="1617">1617</span>
+<span id="1618">1618</span>
+<span id="1619">1619</span>
+<span id="1620">1620</span>
+<span id="1621">1621</span>
+<span id="1622">1622</span>
+<span id="1623">1623</span>
+<span id="1624">1624</span>
+<span id="1625">1625</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BoolNull</span> {
@@ -1966,20 +2023,24 @@
 }
 <span class="doccomment">/// DPMedian Component</span>
 <span class="doccomment">/// </span>
+<span class="doccomment">/// Returns differentially private estimates of the median of each column of the data.</span>
+<span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the dp_median on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `data` - Array</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// * `Value` - Array</span>
+<span class="doccomment">/// * `Value` - Array - Differentially private estimates of the median of each column of the data.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DpMedian</span> {
+    <span class="doccomment">/// Privatizing mechanism to use.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">implementation</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
-    <span class="doccomment">/// interpolation strategy. Must be one of &quot;lower&quot;, &quot;upper&quot;, &quot;midpoint&quot;, &quot;nearest&quot;, &quot;linear&quot;</span>
+    <span class="doccomment">/// Interpolation strategy. Must be one of &quot;lower&quot;, &quot;upper&quot;, &quot;midpoint&quot;, &quot;nearest&quot;, &quot;linear&quot;.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">interpolation</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
+    <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;3&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">privacy_usage</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PrivacyUsage</span><span class="op">&gt;</span>,
 }
@@ -1996,19 +2057,24 @@
 }
 <span class="doccomment">/// DPVariance Component</span>
 <span class="doccomment">/// </span>
+<span class="doccomment">/// Returns a differentially private estimate of the variance for each column of the data.</span>
+<span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the dp_variance on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `data` - Array</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// * `Value` - Array</span>
+<span class="doccomment">/// * `Value` - Array - Differentially private sample variance for each column of the data.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DpVariance</span> {
+    <span class="doccomment">/// Whether or not to use the finite sample correction (Bessel&#39;s correction).</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">bool</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">finite_sample_correction</span>: <span class="ident">bool</span>,
+    <span class="doccomment">/// Privatizing mechanism to use.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">implementation</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
+    <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;3&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">privacy_usage</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PrivacyUsage</span><span class="op">&gt;</span>,
 }
@@ -2055,7 +2121,7 @@
 }
 <span class="doccomment">/// Reshape Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// Reshape a row vector into a matrix</span>
+<span class="doccomment">/// Reshapes a row vector into a matrix.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the reshape on the arguments.</span>
 <span class="doccomment">/// </span>
@@ -2073,7 +2139,7 @@
     <span class="doccomment">/// The shape of the output matrix.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">uint32</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">shape</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// Set if data is elements from the upper triangle of a symmetric matrix.</span>
+    <span class="doccomment">/// Set if data are elements from the upper triangle of a symmetric matrix.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">bool</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;3&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">symmetric</span>: <span class="ident">bool</span>,
 }
@@ -2174,41 +2240,53 @@
 }
 <span class="doccomment">/// DPCount Component</span>
 <span class="doccomment">/// </span>
+<span class="doccomment">/// Returns a differentially private row count.</span>
+<span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the dp_count on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `by` - Array</span>
-<span class="doccomment">/// * `count_max` - Array</span>
-<span class="doccomment">/// * `count_min` - Array</span>
+<span class="doccomment">/// * `count_max` - Array - Estimated maximum possible size of the data.</span>
+<span class="doccomment">/// * `count_min` - Array - Estimated minimum possible size of the data.</span>
 <span class="doccomment">/// * `data` - Array</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// * `Value` - Array</span>
+<span class="doccomment">/// * `Value` - Array - Differentially private row count.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DpCount</span> {
-    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
+    <span class="doccomment">/// Whether or not to require Geometric mechanism to run in constant time.</span>
+    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">bool</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
+    <span class="kw">pub</span> <span class="ident">enforce_constant_time</span>: <span class="ident">bool</span>,
+    <span class="doccomment">/// Privatizing mechanism to use.</span>
+    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">implementation</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
-    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
+    <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release.</span>
+    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;3&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">privacy_usage</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PrivacyUsage</span><span class="op">&gt;</span>,
 }
 <span class="doccomment">/// DPCovariance Component</span>
 <span class="doccomment">/// </span>
+<span class="doccomment">/// Calculate differentially private covariance.</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">///  If `data` argument is provided as a 2D array, calculate covariance matrix. Otherwise, `left` and `right` 1D arrays are used to calculate a single covariance.</span>
+<span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the dp_covariance on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data` - Array</span>
-<span class="doccomment">/// * `left` - Array</span>
-<span class="doccomment">/// * `right` - Array</span>
+<span class="doccomment">/// * `data` - Array - 2D data array used to construct covariance matrix.</span>
+<span class="doccomment">/// * `left` - Array - Left 1D data array used to calculate scalar covariance. Used only if `data` not provided.</span>
+<span class="doccomment">/// * `right` - Array - Right 1D data array used to calculate scalar covariance. Used only if `data` not provided.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// * `Value` - Array</span>
+<span class="doccomment">/// * `Value` - Array - Flattened covariance or cross-covariance matrix.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DpCovariance</span> {
     <span class="doccomment">/// Whether or not to use the finite sample correction (Bessel&#39;s correction).</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">bool</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">finite_sample_correction</span>: <span class="ident">bool</span>,
+    <span class="doccomment">/// Privatizing mechanism to use.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">implementation</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
+    <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;3&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">privacy_usage</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PrivacyUsage</span><span class="op">&gt;</span>,
 }
@@ -2219,7 +2297,7 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the filter on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data` - Array - Data to be filtered.</span>
+<span class="doccomment">/// * `data` - Array</span>
 <span class="doccomment">/// * `mask` - Array - Boolean mask giving whether or not each row should be kept.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
@@ -2229,7 +2307,7 @@
 }
 <span class="doccomment">/// KthRawSampleMoment Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// Accepts data and returns sample estimate of kth raw moment for each column.</span>
+<span class="doccomment">/// Returns sample estimate of kth raw moment for each column of the data.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the kth_raw_sample_moment on the arguments.</span>
 <span class="doccomment">/// </span>
@@ -2237,10 +2315,10 @@
 <span class="doccomment">/// * `data` - Array - Data for which you would like the kth raw moments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// * `Value` - Array - kth sample moment for each column.</span>
+<span class="doccomment">/// * `Value` - Array - kth raw sample moment for each column.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">KthRawSampleMoment</span> {
-    <span class="doccomment">/// Integer statistical moment indicator</span>
+    <span class="doccomment">/// Integer statistical moment indicator.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">uint32</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">k</span>: <span class="ident">u32</span>,
 }
@@ -2255,7 +2333,7 @@
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `data` - Array - Data to be binned.</span>
 <span class="doccomment">/// * `edges` - Jagged - Values representing the edges of bins.</span>
-<span class="doccomment">/// * `inclusive_left` - Array - Whether or not the left edge of the bin is inclusive, i.e. the bins are of the form [lower, upper).</span>
+<span class="doccomment">/// * `inclusive_left` - Array - Whether or not the left edge of the bin is inclusive. If `true` bins are of the form [lower, upper). Otherwise, bins are of the form (lower, upper].</span>
 <span class="doccomment">/// * `null` - Array - Value to which to map if there is no valid bin (e.g. if the element falls outside the bin range).</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
@@ -2327,24 +2405,31 @@
 }
 <span class="doccomment">/// DPHistogram Component</span>
 <span class="doccomment">/// </span>
+<span class="doccomment">/// Returns a differentially private histogram over user-defined categories.</span>
+<span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the dp_histogram on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `categories` - Jagged</span>
-<span class="doccomment">/// * `count_max` - Array</span>
-<span class="doccomment">/// * `count_min` - Array</span>
+<span class="doccomment">/// * `categories` - Jagged - Set of categories in data. Used only if data are of `categorical` nature.</span>
 <span class="doccomment">/// * `data` - Array</span>
-<span class="doccomment">/// * `edges` - Jagged - set of edges to bin continuous-valued data</span>
-<span class="doccomment">/// * `inclusive_left` - Array</span>
-<span class="doccomment">/// * `null` - Array</span>
+<span class="doccomment">/// * `edges` - Jagged - Set of edges to bin continuous-valued data. Used only if data are of `continuous` nature.</span>
+<span class="doccomment">/// * `inclusive_left` - Array - Whether or not the left edge of the bin is inclusive. If `true` bins are of the form [lower, upper). Otherwise, bins are of the form (lower, upper]. Used only if data are of `continuous` nature.</span>
+<span class="doccomment">/// * `max` - Array - Estimated maximum possible size of bin counts.</span>
+<span class="doccomment">/// * `min` - Array - Estimated minimum possible size of bin counts.</span>
+<span class="doccomment">/// * `null` - Array - The value to which elements not included in `categories` will be mapped for each column of the data. Used only if `categories` is not `None`.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// * `Value` - Array</span>
+<span class="doccomment">/// * `Value` - Array - Differentially private histogram.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DpHistogram</span> {
-    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
+    <span class="doccomment">/// Whether or not to require Geometric mechanism to run in constant time.</span>
+    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">bool</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
+    <span class="kw">pub</span> <span class="ident">enforce_constant_time</span>: <span class="ident">bool</span>,
+    <span class="doccomment">/// Privatizing mechanism to use.</span>
+    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">implementation</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
-    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
+    <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release.</span>
+    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;3&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">privacy_usage</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PrivacyUsage</span><span class="op">&gt;</span>,
 }
 <span class="doccomment">/// Mean Component</span>
@@ -2380,7 +2465,7 @@
 }
 <span class="doccomment">/// Covariance Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// Calculate sample covariance.</span>
+<span class="doccomment">/// Calculate covariance.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">///  If `data` argument is provided as a 2D array, calculate covariance matrix. Otherwise, `left` and `right` 1D arrays are used to calculate a single covariance.</span>
 <span class="doccomment">/// </span>
@@ -2414,17 +2499,21 @@
 }
 <span class="doccomment">/// DPMinimum Component</span>
 <span class="doccomment">/// </span>
+<span class="doccomment">/// Returns differentially private estimates of the minimum elements of each column of the data.</span>
+<span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the dp_minimum on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `data` - Array</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// * `Value` - Array</span>
+<span class="doccomment">/// * `Value` - Array - Differentially private estimates of the minimum elements of the data.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DpMinimum</span> {
+    <span class="doccomment">/// Privatizing mechanism to use.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">implementation</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
+    <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">privacy_usage</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PrivacyUsage</span><span class="op">&gt;</span>,
 }
@@ -2442,21 +2531,27 @@
 }
 <span class="doccomment">/// DPSum Component</span>
 <span class="doccomment">/// </span>
+<span class="doccomment">/// Returns differentially private estimates of the sums of each column of the data.</span>
+<span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the dp_sum on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `data` - Array</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// * `Value` - Array</span>
+<span class="doccomment">/// * `Value` - Array - Differentially private sum over elements for each column of the data.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DpSum</span> {
+    <span class="doccomment">/// Privatizing mechanism to use.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">implementation</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
+    <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">privacy_usage</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PrivacyUsage</span><span class="op">&gt;</span>,
 }
 <span class="doccomment">/// Count Component</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// Returns the number of rows in the data.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the count on the arguments.</span>
 <span class="doccomment">/// </span>
@@ -2470,23 +2565,30 @@
 }
 <span class="doccomment">/// DPMomentRaw Component</span>
 <span class="doccomment">/// </span>
+<span class="doccomment">/// Returns sample estimate of a raw moment for each column of the data.</span>
+<span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the dp_moment_raw on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `data` - Array</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// * `Value` - Array</span>
+<span class="doccomment">/// * `Value` - Array - Sample estimate of raw moment for each column of the data.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DpMomentRaw</span> {
+    <span class="doccomment">/// Privatizing mechanism to use.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">implementation</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
+    <span class="doccomment">/// Integer statistical moment indicator.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">uint32</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">order</span>: <span class="ident">u32</span>,
+    <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;3&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">privacy_usage</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PrivacyUsage</span><span class="op">&gt;</span>,
 }
 <span class="doccomment">/// DPMean Component</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// Returns differentially private estimates of the means of each column of the data.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the dp_mean on the arguments.</span>
 <span class="doccomment">/// </span>
@@ -2494,11 +2596,13 @@
 <span class="doccomment">/// * `data` - Array</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// * `Value` - Array</span>
+<span class="doccomment">/// * `Value` - Array - Differentially private estimate of the mean of each column of the data.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DpMean</span> {
+    <span class="doccomment">/// Privatizing mechanism to use.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">implementation</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
+    <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">privacy_usage</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PrivacyUsage</span><span class="op">&gt;</span>,
 }
@@ -2509,9 +2613,9 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the simple_geometric_mechanism on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `count_max` - Array</span>
-<span class="doccomment">/// * `count_min` - Array</span>
 <span class="doccomment">/// * `data` - Array</span>
+<span class="doccomment">/// * `max` - Array</span>
+<span class="doccomment">/// * `min` - Array</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array - Original data perturbed with Geometric noise.</span>
@@ -2588,7 +2692,7 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the variance on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data` - Array - Data for which you want the sample variance for each column.</span>
+<span class="doccomment">/// * `data` - Array</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array - Sample variance for each column of the data.</span>
@@ -2639,7 +2743,13 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the histogram on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
+<span class="doccomment">/// * `categories` - Jagged - Set of categories in data. Used only if data are of `categorical` nature.</span>
 <span class="doccomment">/// * `data` - Array</span>
+<span class="doccomment">/// * `edges` - Jagged - Set of edges to bin continuous-valued data. Used only if data are of `continuous` nature.</span>
+<span class="doccomment">/// * `inclusive_left` - Array - Whether or not the left edge of the bin is inclusive. If `true` bins are of the form [lower, upper). Otherwise, bins are of the form (lower, upper]. Used only if data are of `continuous` nature.</span>
+<span class="doccomment">/// * `max` - Array - Estimated maximum possible size of bin counts.</span>
+<span class="doccomment">/// * `min` - Array - Estimated minimum possible size of bin counts.</span>
+<span class="doccomment">/// * `null` - Array - The value to which elements not included in `categories` will be mapped for each column of the data. Used only if `categories` is not `None`.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array</span>
@@ -2653,13 +2763,13 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the quantile on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data` - Array - Data for which you want the quantiles.</span>
+<span class="doccomment">/// * `data` - Array</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array - Quantile values for each column.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Quantile</span> {
-    <span class="doccomment">/// interpolation strategy. Must be one of &quot;lower&quot;, &quot;upper&quot;, &quot;midpoint&quot;, &quot;nearest&quot;, &quot;linear&quot;</span>
+    <span class="doccomment">/// Interpolation strategy. Must be one of &quot;lower&quot;, &quot;upper&quot;, &quot;midpoint&quot;, &quot;nearest&quot;, &quot;linear&quot;.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">interpolation</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
     <span class="doccomment">/// Desired quantiles, defined on `[0,1]`.</span>
@@ -2686,17 +2796,21 @@
 }
 <span class="doccomment">/// DPMaximum Component</span>
 <span class="doccomment">/// </span>
+<span class="doccomment">/// Returns differentially private estimates of the maximum elements of each column of the data.</span>
+<span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the dp_maximum on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `data` - Array</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// * `Value` - Array</span>
+<span class="doccomment">/// * `Value` - Array - Differentially private estimates of the maximum elements of the data.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DpMaximum</span> {
+    <span class="doccomment">/// Privatizing mechanism to use.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">implementation</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
+    <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">privacy_usage</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PrivacyUsage</span><span class="op">&gt;</span>,
 }

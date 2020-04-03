@@ -184,6 +184,30 @@
 <span id="184">184</span>
 <span id="185">185</span>
 <span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
@@ -193,11 +217,11 @@
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">proto</span>, <span class="ident">base</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">hashmap</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">components</span>::{<span class="ident">Component</span>, <span class="ident">Expandable</span>, <span class="ident">Report</span>};
-
+<span class="kw">use</span> <span class="ident">ndarray</span>::{<span class="ident">arr0</span>};
 
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">base</span>::{<span class="ident">NodeProperties</span>, <span class="ident">Value</span>, <span class="ident">ValueProperties</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">utilities</span>::<span class="ident">json</span>::{<span class="ident">JSONRelease</span>, <span class="ident">AlgorithmInfo</span>, <span class="ident">privacy_usage_to_json</span>, <span class="ident">value_to_json</span>};
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">utilities</span>::{<span class="ident">prepend</span>, <span class="ident">broadcast_privacy_usage</span>, <span class="ident">get_ith_release</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">utilities</span>::{<span class="ident">prepend</span>, <span class="ident">broadcast_privacy_usage</span>, <span class="ident">get_ith_release</span>, <span class="ident">get_literal</span>};
 
 
 <span class="kw">impl</span> <span class="ident">Component</span> <span class="kw">for</span> <span class="ident">proto</span>::<span class="ident">DpHistogram</span> {
@@ -223,11 +247,36 @@
         <span class="ident">component_id</span>: <span class="kw-2">&amp;</span><span class="ident">u32</span>,
         <span class="ident">maximum_id</span>: <span class="kw-2">&amp;</span><span class="ident">u32</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">ComponentExpansion</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">current_id</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">maximum_id</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">maximum_id</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">maximum_id</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">computation_graph</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">proto</span>::<span class="ident">Component</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">HashMap</span>::<span class="ident">new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">releases</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">proto</span>::<span class="ident">ReleaseNode</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">HashMap</span>::<span class="ident">new</span>();
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">data_id</span> <span class="op">=</span> <span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">get</span>(<span class="string">&quot;data&quot;</span>)
             .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;data is a required argument to DPHistogram&quot;</span>))<span class="question-mark">?</span>.<span class="ident">to_owned</span>();
+
+        <span class="kw">let</span> <span class="ident">data_property</span> <span class="op">=</span> <span class="ident">properties</span>.<span class="ident">get</span>(<span class="string">&quot;data&quot;</span>)
+                                        .<span class="ident">ok_or</span>(<span class="string">&quot;data: missing&quot;</span>)<span class="question-mark">?</span>.<span class="ident">array</span>()
+                                        .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;data:&quot;</span>))<span class="question-mark">?</span>;
+
+        <span class="kw">let</span> <span class="ident">count_max_id</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">get</span>(<span class="string">&quot;count_max&quot;</span>) {
+            <span class="prelude-val">Some</span>(<span class="ident">id</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">id</span>.<span class="ident">clone</span>(),
+            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="kw">let</span> <span class="ident">count_max</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">data_property</span>.<span class="ident">num_records</span> {
+                    <span class="prelude-val">Some</span>(<span class="ident">num_records</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">arr0</span>(<span class="ident">num_records</span>).<span class="ident">into_dyn</span>(),
+                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">enforce_constant_time</span> {
+                        <span class="bool-val">true</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;count_max must be set when enforcing constant time&quot;</span>.<span class="ident">into</span>()),
+                        <span class="bool-val">false</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">arr0</span>(<span class="ident">std</span>::<span class="ident">i64</span>::<span class="ident">MAX</span>).<span class="ident">into_dyn</span>()
+                    }
+                };
+                <span class="comment">// count_max</span>
+                <span class="ident">maximum_id</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+                <span class="kw">let</span> <span class="ident">id_count_max</span> <span class="op">=</span> <span class="ident">maximum_id</span>;
+                <span class="kw">let</span> (<span class="ident">patch_node</span>, <span class="ident">count_max_release</span>) <span class="op">=</span> <span class="ident">get_literal</span>(<span class="kw-2">&amp;</span><span class="ident">count_max</span>.<span class="ident">into</span>(), <span class="kw-2">&amp;</span><span class="ident">component</span>.<span class="ident">batch</span>)<span class="question-mark">?</span>;
+                <span class="ident">computation_graph</span>.<span class="ident">insert</span>(<span class="ident">id_count_max</span>.<span class="ident">clone</span>(), <span class="ident">patch_node</span>);
+                <span class="ident">releases</span>.<span class="ident">insert</span>(<span class="ident">id_count_max</span>.<span class="ident">clone</span>(), <span class="ident">count_max_release</span>);
+                <span class="ident">id_count_max</span>
+            }
+        };
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">traversal</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>::<span class="ident">new</span>();
         <span class="kw">match</span> (<span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">get</span>(<span class="string">&quot;edges&quot;</span>), <span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">get</span>(<span class="string">&quot;categories&quot;</span>)) {
@@ -238,8 +287,8 @@
                     .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;null is a required argument to DPHistogram&quot;</span>))<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">inclusive_left_id</span> <span class="op">=</span> <span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">get</span>(<span class="string">&quot;inclusive_left&quot;</span>)
                     .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;inclusive_left is a required argument to DPHistogram when categories are not known&quot;</span>))<span class="question-mark">?</span>;
-                <span class="ident">current_id</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-                <span class="kw">let</span> <span class="ident">id_digitize</span> <span class="op">=</span> <span class="ident">current_id</span>;
+                <span class="ident">maximum_id</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+                <span class="kw">let</span> <span class="ident">id_digitize</span> <span class="op">=</span> <span class="ident">maximum_id</span>;
                 <span class="ident">computation_graph</span>.<span class="ident">insert</span>(<span class="ident">id_digitize</span>, <span class="ident">proto</span>::<span class="ident">Component</span> {
                     <span class="ident">arguments</span>: <span class="macro">hashmap</span><span class="macro">!</span>[
                         <span class="string">&quot;data&quot;</span>.<span class="ident">to_owned</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">data_id</span>,
@@ -259,8 +308,8 @@
                 <span class="comment">// clamp</span>
                 <span class="kw">let</span> <span class="ident">null_id</span> <span class="op">=</span> <span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">get</span>(<span class="string">&quot;null&quot;</span>)
                     .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;null is a required argument to DPHistogram when categories are not known&quot;</span>))<span class="question-mark">?</span>;
-                <span class="ident">current_id</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-                <span class="kw">let</span> <span class="ident">id_clamp</span> <span class="op">=</span> <span class="ident">current_id</span>;
+                <span class="ident">maximum_id</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+                <span class="kw">let</span> <span class="ident">id_clamp</span> <span class="op">=</span> <span class="ident">maximum_id</span>;
                 <span class="ident">computation_graph</span>.<span class="ident">insert</span>(<span class="ident">id_clamp</span>, <span class="ident">proto</span>::<span class="ident">Component</span> {
                     <span class="ident">arguments</span>: <span class="macro">hashmap</span><span class="macro">!</span>[
                         <span class="string">&quot;data&quot;</span>.<span class="ident">to_owned</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">data_id</span>,
@@ -288,8 +337,8 @@
         }
 
         <span class="comment">// histogram</span>
-        <span class="ident">current_id</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-        <span class="kw">let</span> <span class="ident">id_histogram</span> <span class="op">=</span> <span class="ident">current_id</span>;
+        <span class="ident">maximum_id</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+        <span class="kw">let</span> <span class="ident">id_histogram</span> <span class="op">=</span> <span class="ident">maximum_id</span>;
         <span class="ident">computation_graph</span>.<span class="ident">insert</span>(<span class="ident">id_histogram</span>, <span class="ident">proto</span>::<span class="ident">Component</span> {
             <span class="ident">arguments</span>: <span class="macro">hashmap</span><span class="macro">!</span>[<span class="string">&quot;data&quot;</span>.<span class="ident">to_owned</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">data_id</span>],
             <span class="ident">variant</span>: <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">from</span>(<span class="ident">proto</span>::<span class="ident">Histogram</span> {})),
@@ -302,10 +351,9 @@
         <span class="ident">computation_graph</span>.<span class="ident">insert</span>(<span class="kw-2">*</span><span class="ident">component_id</span>, <span class="ident">proto</span>::<span class="ident">Component</span> {
             <span class="ident">arguments</span>: <span class="macro">hashmap</span><span class="macro">!</span>[
                 <span class="string">&quot;data&quot;</span>.<span class="ident">to_owned</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">id_histogram</span>,
-                <span class="string">&quot;count_min&quot;</span>.<span class="ident">to_owned</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">get</span>(<span class="string">&quot;count_min&quot;</span>)
+                <span class="string">&quot;min&quot;</span>.<span class="ident">to_owned</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">get</span>(<span class="string">&quot;count_min&quot;</span>)
                     .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;count_min must be provided as an argument&quot;</span>))<span class="question-mark">?</span>,
-                <span class="string">&quot;count_max&quot;</span>.<span class="ident">to_owned</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">get</span>(<span class="string">&quot;count_max&quot;</span>)
-                    .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;count_max must be provided as an argument&quot;</span>))<span class="question-mark">?</span>
+                <span class="string">&quot;max&quot;</span>.<span class="ident">to_owned</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">count_max_id</span>
             ],
             <span class="ident">variant</span>: <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">from</span>(<span class="ident">proto</span>::<span class="ident">SimpleGeometricMechanism</span> {
                 <span class="ident">privacy_usage</span>: <span class="self">self</span>.<span class="ident">privacy_usage</span>.<span class="ident">clone</span>(),
@@ -318,7 +366,7 @@
         <span class="prelude-val">Ok</span>(<span class="ident">proto</span>::<span class="ident">ComponentExpansion</span> {
             <span class="ident">computation_graph</span>,
             <span class="ident">properties</span>: <span class="ident">HashMap</span>::<span class="ident">new</span>(),
-            <span class="ident">releases</span>: <span class="ident">HashMap</span>::<span class="ident">new</span>(),
+            <span class="ident">releases</span>,
             <span class="ident">traversal</span>
         })
     }
