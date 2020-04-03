@@ -29,6 +29,9 @@ impl Component for proto::Add {
         left_property.assert_is_not_aggregated()?;
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
+        if left_property.data_type != right_property.data_type {
+            return Err("left and right arguments must share the same data types".into())
+        }
 
         Ok(ArrayProperties {
             nullity: left_property.nullity || right_property.nullity,
@@ -90,6 +93,9 @@ impl Component for proto::Subtract {
         left_property.assert_is_not_aggregated()?;
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
+        if left_property.data_type != right_property.data_type {
+            return Err("left and right arguments must share the same data types".into())
+        }
 
         Ok(ArrayProperties {
             nullity: left_property.nullity || right_property.nullity,
@@ -150,6 +156,9 @@ impl Component for proto::Multiply {
         left_property.assert_is_not_aggregated()?;
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
+        if left_property.data_type != right_property.data_type {
+            return Err("left and right arguments must share the same data types".into())
+        }
 
         Ok(ArrayProperties {
             nullity: left_property.nullity || right_property.nullity,
@@ -265,6 +274,10 @@ impl Component for proto::Divide {
         left_property.assert_is_not_aggregated()?;
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
+        if left_property.data_type != right_property.data_type {
+            return Err("left and right arguments must share the same data types".into())
+        }
+
         let float_denominator_may_span_zero = match right_property.clone().nature {
             Some(nature) => match nature {
                 Nature::Continuous(nature) => nature.min.f64()
@@ -615,6 +628,9 @@ impl Component for proto::And {
         left_property.assert_is_not_aggregated()?;
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
+        if left_property.data_type != right_property.data_type {
+            return Err("left and right arguments must share the same data types".into())
+        }
 
         left_property.releasable = left_property.releasable && right_property.releasable;
         left_property.nature = propagate_binary_nature(
@@ -655,6 +671,9 @@ impl Component for proto::Or {
         left_property.assert_is_not_aggregated()?;
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
+        if left_property.data_type != right_property.data_type {
+            return Err("left and right arguments must share the same data types".into())
+        }
 
         left_property.releasable = left_property.releasable && right_property.releasable;
         left_property.nature = propagate_binary_nature(
@@ -686,9 +705,9 @@ impl Component for proto::Negate {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
-        let mut data_property = properties.get("left")
-            .ok_or("left: missing")?.array()
-            .map_err(prepend("left:"))?.clone();
+        let mut data_property = properties.get("data")
+            .ok_or("data: missing")?.array()
+            .map_err(prepend("data:"))?.clone();
         data_property.assert_is_not_aggregated()?;
 
         data_property.nature = propagate_unary_nature(
@@ -722,6 +741,10 @@ impl Component for proto::Equal {
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
+        if left_property.data_type != right_property.data_type {
+            return Err("left and right must be homogeneously typed".into())
+        }
+
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
         Ok(ArrayProperties {
@@ -736,7 +759,7 @@ impl Component for proto::Equal {
             num_columns: Some(num_columns),
             num_records,
             aggregator: None,
-            data_type: left_property.data_type,
+            data_type: DataType::Bool,
             dataset_id: left_property.dataset_id,
         }.into())
     }
@@ -759,6 +782,16 @@ impl Component for proto::LessThan {
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
+        if left_property.data_type != right_property.data_type {
+            return Err("left and right must be homogeneously typed".into())
+        }
+        if left_property.data_type != DataType::I64 && left_property.data_type != DataType::F64 {
+            return Err("left must be numeric".into())
+        }
+        if right_property.data_type != DataType::I64 && right_property.data_type != DataType::F64 {
+            return Err("right must be numeric".into())
+        }
+
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
         Ok(ArrayProperties {
@@ -773,7 +806,7 @@ impl Component for proto::LessThan {
             num_columns: Some(num_columns),
             num_records,
             aggregator: None,
-            data_type: left_property.data_type,
+            data_type: DataType::Bool,
             dataset_id: left_property.dataset_id,
         }.into())
     }
@@ -796,6 +829,16 @@ impl Component for proto::GreaterThan {
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
+        if left_property.data_type != right_property.data_type {
+            return Err("left and right must be homogeneously typed".into())
+        }
+        if left_property.data_type != DataType::I64 && left_property.data_type != DataType::F64 {
+            return Err("left must be numeric".into())
+        }
+        if right_property.data_type != DataType::I64 && right_property.data_type != DataType::F64 {
+            return Err("right must be numeric".into())
+        }
+
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
         Ok(ArrayProperties {
@@ -810,7 +853,7 @@ impl Component for proto::GreaterThan {
             num_columns: Some(num_columns),
             num_records,
             aggregator: None,
-            data_type: left_property.data_type,
+            data_type: DataType::Bool,
             dataset_id: left_property.dataset_id,
         }.into())
     }
@@ -851,32 +894,26 @@ pub struct OptimizeBinaryOperators {
 }
 
 pub fn propagate_binary_shape(left_property: &ArrayProperties, right_property: &ArrayProperties) -> Result<(i64, Option<i64>)> {
+
     let left_num_columns = left_property.num_columns()?;
     let right_num_columns = right_property.num_columns()?;
 
-    let left_is_column_broadcastable = left_property.releasable && left_num_columns == 1;
-    let right_is_column_broadcastable = right_property.releasable && right_num_columns == 1;
+    let left_is_column_broadcastable = left_num_columns == 1;
+    let right_is_column_broadcastable = right_num_columns == 1;
 
     if !(left_is_column_broadcastable || right_is_column_broadcastable) && left_num_columns != right_num_columns {
-        return Err("number of columns must be the same for left and right arguments".into());
+        return Err("number of columns must be the same for left and right arguments, or one column must be broadcastable".into());
     }
 
     let output_num_columns = left_num_columns.max(right_num_columns);
 
-    let (left_num_records, right_num_records) = match (left_property.num_records(), right_property.num_records()) {
-        (Ok(l), Ok(r)) => (l, r),
-        _ => {
-            if left_property.dataset_id == right_property.dataset_id {
-                return Ok((output_num_columns, None))
-            }
-            return Err("number of rows are not known for the left and right arguments from different datasets, so protection against conformability attacks cannot be guaranteed".into())
-        }
-    };
+    let l = left_property.num_records;
+    let r = right_property.num_records;
 
-    let left_is_row_broadcastable = left_property.releasable && left_num_records == 1;
-    let right_is_row_broadcastable = right_property.releasable && right_num_records == 1;
+    let left_is_row_broadcastable = left_property.releasable && l == Some(1);
+    let right_is_row_broadcastable = right_property.releasable && r == Some(1);
 
-    if !(left_is_row_broadcastable || right_is_row_broadcastable || (left_num_records == right_num_records)) {
+    if !(left_is_row_broadcastable || right_is_row_broadcastable || (l == r && l.is_some())) {
         if left_property.dataset_id == right_property.dataset_id {
             return Ok((output_num_columns, None));
         }
@@ -884,7 +921,7 @@ pub fn propagate_binary_shape(left_property: &ArrayProperties, right_property: &
     }
 
     // either left, right or both are broadcastable, so take the largest
-    let output_num_records = left_num_records.max(right_num_records);
+    let output_num_records = vec![l, r].iter().filter_map(|v| *v).max().unwrap();
 
     Ok((output_num_columns, Some(output_num_records)))
 }

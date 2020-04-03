@@ -5,32 +5,14 @@ use std::collections::HashMap;
 
 use crate::{proto, base};
 use crate::hashmap;
-use crate::components::{Component, Expandable, Report};
+use crate::components::{Expandable, Report};
 
 
-use crate::base::{NodeProperties, Value, ValueProperties};
+use crate::base::{NodeProperties, Value};
 use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, value_to_json};
 use crate::utilities::{prepend, broadcast_privacy_usage, get_ith_release};
 use serde_json;
 
-
-impl Component for proto::DpMean {
-    /// modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
-    /// # Arguments
-    /// * `&self` - this
-    /// * `_privacy_definition` - privacy definition from protocol buffer descriptor
-    /// * `_public_arguments` - HashMap of String/Value public arguments
-    /// * `properties` - NodeProperties
-    fn propagate_property(
-        &self,
-        _privacy_definition: &proto::PrivacyDefinition,
-        _public_arguments: &HashMap<String, Value>,
-        _properties: &base::NodeProperties,
-    ) -> Result<ValueProperties> {
-        Err("DPMaximum is abstract, and has no property propagation".into())
-    }
-
-}
 
 impl Expandable for proto::DpMean {
     /// Expand component

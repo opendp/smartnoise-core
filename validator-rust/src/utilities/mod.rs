@@ -7,7 +7,7 @@ use crate::errors::*;
 
 use crate::proto;
 
-use crate::base::{Release, Value, ValueProperties, SensitivitySpace, NodeProperties};
+use crate::base::{Release, Value, ValueProperties, SensitivitySpace, NodeProperties, ArrayProperties};
 use std::collections::{HashMap, HashSet, BTreeSet};
 use std::hash::Hash;
 use crate::utilities::serial::{parse_release, parse_value_properties, serialize_value, parse_value};
@@ -550,4 +550,14 @@ pub fn get_ith_release<T: Clone + Default>(value: &ArrayD<T>, i: &usize) -> Resu
 
 pub fn deduplicate<T: Eq + Hash + Ord>(values: Vec<T>) -> Vec<T> {
     BTreeSet::from_iter(values.into_iter()).into_iter().collect()
+}
+
+pub fn is_conformable(left: &ArrayProperties, right: &ArrayProperties) -> bool {
+    match (left.num_columns, right.num_columns) {
+        (Some(l), Some(r)) => l == r,
+        _ => match (left.dataset_id, right.dataset_id) {
+            (Some(l), Some(r)) => l == r,
+            _ => false
+        }
+    }
 }

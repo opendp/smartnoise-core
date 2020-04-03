@@ -9,6 +9,7 @@ use ieee754::Ieee754;
 use ndarray::{ArrayD, Zip};
 
 use rug::Float;
+use crate::components::index::to_nd;
 
 
 /// Broadcast left and right to match each other, and map an operator over the pairs
@@ -35,7 +36,18 @@ pub fn broadcast_map<T, U>(
     left: &ArrayD<T>,
     right: &ArrayD<T>,
     operator: &dyn Fn(&T, &T) -> U) -> Result<ArrayD<U>> where T: std::clone::Clone, U: Default {
-    let shape = if left.len() < right.len() { right.shape() } else { left.shape() };
+    let shape = if left.ndim() < right.ndim() { right.shape() } else { left.shape() };
+
+//    println!("shape {:?}", shape);
+//    println!("left shape {:?}", left.shape());
+//    println!("right shape {:?}", right.shape());
+    // TODO: switch to array views to prevent the clone()
+    let left = to_nd(left.clone(), &shape.len())?;
+    let right = to_nd(right.clone(), &shape.len())?;
+
+//    println!("shape {:?}", shape);
+//    println!("left shape {:?}", left.shape());
+//    println!("right shape {:?}", right.shape());
 
     let mut output: ArrayD<U> = ndarray::Array::default(shape);
     Zip::from(&mut output)
@@ -89,7 +101,7 @@ mod broadcast_map_tests {
         let left = arr0(2.).into_dyn();
         let right = arr1(&[2., 3., 5., 6.]).into_dyn();
 
-        let broadcast = left / right;
+        let _broadcast = left / right;
     }
 }
 

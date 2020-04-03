@@ -186,8 +186,8 @@ class Component(object):
 
     def __truediv__(self, other):
         return Component('Divide', arguments={
-            'left': Component('Cast', arguments={'data': self, "type": Component.of("FLOAT")}),
-            'right': Component('Cast', arguments={'data': Component.of(other), "type": Component.of("FLOAT")})})
+            'left': Component('Cast', arguments={'data': self}, options={"type": "float"}),
+            'right': Component('Cast', arguments={'data': Component.of(other)}, options={"type": "float"})})
 
     def __rtruediv__(self, other):
         return Component('Divide', arguments={'left': Component.of(other), 'right': self})
@@ -277,6 +277,10 @@ class Component(object):
     def of(value, value_format=None):
         if value is None:
             return
+
+        # count can take the entire dataset as an argument
+        if type(value) == Dataset:
+            value = value.component
 
         if type(value) == Component:
             return value

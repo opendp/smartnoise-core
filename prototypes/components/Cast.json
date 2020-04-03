@@ -4,10 +4,6 @@
       "type": "Array",
       "description": "Data to be cast to another type."
     },
-    "type": {
-      "type": "Array",
-      "description": "Type to which data should be cast."
-    },
     "true_label": {
       "type": "Array",
       "default": "None",
@@ -26,9 +22,14 @@
   },
   "id": "Cast",
   "name": "cast",
-  "options": {},
+  "options": {
+    "type": {
+      "type": "string",
+      "description": "Type to which data should be cast. Must be one of `string`, `int`, `bool`, `float`."
+    }
+  },
   "return": {
     "type": "Array"
   },
-  "description": "Cast data to a different atomic type."
+  "description": "Cast data to an atomic type."
 }

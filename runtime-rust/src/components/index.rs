@@ -140,7 +140,7 @@ fn column_stack<T: Clone + Eq + std::hash::Hash>(
     }
 }
 
-fn to_nd<T>(mut array: ArrayD<T>, ndim: &usize) -> Result<ArrayD<T>> {
+pub fn to_nd<T>(mut array: ArrayD<T>, ndim: &usize) -> Result<ArrayD<T>> {
     match (*ndim as i32) - (array.ndim() as i32) {
         0 => {},
         // must remove i axes
@@ -149,10 +149,10 @@ fn to_nd<T>(mut array: ArrayD<T>, ndim: &usize) -> Result<ArrayD<T>> {
                 .ok_or_else(|| Error::from("ndim may not be negative"))? {
                 1 => Ok(array.index_axis_inplace(Axis(array.ndim().clone()), 0)),
                 _ => Err("cannot remove non-singleton trailing axis".into())
-            }).collect::<Result<_>>()?
+            }).collect::<Result<()>>()?
         },
         // must add i axes
-        i if i > 0 => (0..i).for_each(|idx| array.insert_axis_inplace(Axis((idx + 1) as usize))),
+        i if i > 0 => (0..i).for_each(|_| array.insert_axis_inplace(Axis(array.ndim()))),
         _ => return Err("invalid dimensionality".into())
     };
 

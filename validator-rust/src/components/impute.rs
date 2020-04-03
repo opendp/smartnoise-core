@@ -27,29 +27,33 @@ impl Component for proto::Impute {
             .ok_or("data: number of columns missing")?;
         // 1. check public arguments (constant n)
         let impute_minimum = match public_arguments.get("min") {
-            Some(min) => min.array()?.clone().vec_f64(Some(num_columns))?,
+            Some(min) => min.array()?.clone().vec_f64(Some(num_columns))
+                .map_err(prepend("min:"))?,
 
             // 2. then private arguments (for example from another clamped column)
             None => match properties.get("min") {
-                Some(min) => min.array()?.min_f64()?,
+                Some(min) => min.array()?.min_f64()
+                    .map_err(prepend("min:"))?,
 
                 // 3. then data properties (propagated from prior clamping/min/max)
                 None => data_property
-                    .min_f64()?
+                    .min_f64().map_err(prepend("min:"))?
             }
         };
 
         // 1. check public arguments (constant n)
         let impute_maximum = match public_arguments.get("max") {
-            Some(max) => max.array()?.clone().vec_f64(Some(num_columns))?,
+            Some(max) => max.array()?.clone().vec_f64(Some(num_columns))
+                .map_err(prepend("max:"))?,
 
             // 2. then private arguments (for example from another clamped column)
             None => match properties.get("max") {
-                Some(min) => min.array()?.max_f64()?,
+                Some(min) => min.array()?.max_f64()
+                    .map_err(prepend("max:"))?,
 
                 // 3. then data properties (propagated from prior clamping/min/max)
                 None => data_property
-                    .max_f64()?
+                    .max_f64().map_err(prepend("max:"))?
             }
         };
 

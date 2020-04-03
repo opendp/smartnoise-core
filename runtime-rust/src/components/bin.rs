@@ -23,7 +23,7 @@ impl Evaluable for proto::Bin {
 
         let data = get_argument(&arguments, "data")?.array()?;
         let edges = get_argument(&arguments, "edges")?.jagged()?;
-        let null = get_argument(&arguments, "null")?.array()?;
+        let null = get_argument(&arguments, "null_value")?.array()?;
 
         let num_columns = data.num_columns()?;
 

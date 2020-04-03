@@ -3,9 +3,9 @@ use crate::errors::*;
 use std::collections::HashMap;
 
 
-use crate::proto;
-
-use crate::components::{Component};
+use crate::{proto, base};
+use crate::hashmap;
+use crate::components::{Component, Expandable};
 
 use crate::base::{Value, NodeProperties, ValueProperties, DataType, Nature, NatureCategorical, Jagged};
 use crate::utilities::prepend;
@@ -22,13 +22,9 @@ impl Component for proto::Cast {
             .ok_or_else(|| Error::from("data: missing"))?.array()
             .map_err(prepend("data:"))?.clone();
 
-        let datatype = public_arguments.get("type")
-            .ok_or_else(|| Error::from("type: missing, must be public"))?.first_string()
-            .map_err(prepend("type:"))?;
-
         let prior_datatype = data_property.data_type.clone();
 
-        data_property.data_type = match datatype.to_lowercase().as_str() {
+        data_property.data_type = match self.r#type.to_lowercase().as_str() {
             "float" => DataType::F64,
             "real" => DataType::F64,
             "int" => DataType::I64,
@@ -81,3 +77,38 @@ impl Component for proto::Cast {
     }
 
 }
+
+macro_rules! make_expandable {
+    ($variant:ident, $var_type:expr) => {
+        impl Expandable for proto::$variant {
+            fn expand_component(
+                &self,
+                _privacy_definition: &proto::PrivacyDefinition,
+                component: &proto::Component,
+                _properties: &base::NodeProperties,
+                component_id: &u32,
+                _maximum_id: &u32,
+            ) -> Result<proto::ComponentExpansion> {
+                Ok(proto::ComponentExpansion {
+                    computation_graph: hashmap![component_id.clone() => proto::Component {
+                        arguments: component.arguments.clone(),
+                        variant: Some(proto::component::Variant::from(proto::Cast {
+                            r#type: $var_type
+                        })),
+                        omit: false,
+                        batch: component.batch,
+                    }],
+                    properties: HashMap::new(),
+                    releases: HashMap::new(),
+                    // add the component_id, to force the node to be re-evaluated and the Cast to be expanded
+                    traversal: vec![*component_id]
+                })
+            }
+        }
+    }
+}
+
+make_expandable!(ToBool, "bool".to_string());
+make_expandable!(ToFloat, "float".to_string());
+make_expandable!(ToInt, "int".to_string());
+make_expandable!(ToString, "string".to_string());

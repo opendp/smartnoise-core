@@ -5,26 +5,12 @@ use std::collections::HashMap;
 
 use crate::{proto, base};
 use crate::hashmap;
-use crate::components::{Component, Expandable, Report};
+use crate::components::{Expandable, Report};
 use ndarray::{arr0};
 
 use crate::base::{NodeProperties, Value, ValueProperties};
 use crate::utilities::json::{JSONRelease, privacy_usage_to_json, AlgorithmInfo, value_to_json};
-use crate::utilities::{get_literal, prepend};
-
-impl Component for proto::DpCount {
-    // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
-    fn propagate_property(
-        &self,
-        _privacy_definition: &proto::PrivacyDefinition,
-        _public_arguments: &HashMap<String, Value>,
-        _properties: &base::NodeProperties,
-    ) -> Result<ValueProperties> {
-        Err("DPCount is abstract, and has no property propagation".into())
-    }
-
-
-}
+use crate::utilities::{get_literal};
 
 
 impl Expandable for proto::DpCount {
@@ -32,7 +18,7 @@ impl Expandable for proto::DpCount {
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
-        _properties: &base::NodeProperties,
+        properties: &base::NodeProperties,
         component_id: &u32,
         maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
@@ -40,14 +26,18 @@ impl Expandable for proto::DpCount {
         let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
         let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
 
-        let data_property = _properties.get("data")
-                                        .ok_or("data: missing")?.array()
-                                        .map_err(prepend("data:"))?;
-
         let count_max_id = match component.arguments.get("count_max") {
             Some(id) => id.clone(),
             None => {
-                let count_max = match data_property.num_records {
+
+                let num_records = match properties.get("data")
+                    .ok_or("data: missing")? {
+                    ValueProperties::Array(value) => value.num_records,
+                    ValueProperties::Hashmap(value) => value.num_records,
+                    _ => return Err("data: must not be hashmap".into())
+                };
+
+                let count_max = match num_records {
                     Some(num_records) => arr0(num_records).into_dyn(),
                     None => match self.enforce_constant_time {
                         true => return Err("count_max must be set when enforcing constant time".into()),
@@ -79,8 +69,8 @@ impl Expandable for proto::DpCount {
         computation_graph.insert(component_id.clone(), proto::Component {
             arguments: hashmap![
                 "data".to_owned() => id_count,
-                "min".to_owned() => *component.arguments.get("count_min")
-                    .ok_or_else(|| Error::from("count_min must be provided as an argument"))?,
+                "min".to_owned() => *component.arguments.get("min")
+                    .ok_or_else(|| Error::from("min must be provided as an argument"))?,
                 "max".to_owned() => count_max_id
             ],
             variant: Some(proto::component::Variant::from(proto::SimpleGeometricMechanism {

@@ -1,7 +1,7 @@
 use whitenoise_validator::errors::*;
 
 use crate::components::Evaluable;
-use whitenoise_validator::base::{Value, Array, Jagged};
+use whitenoise_validator::base::{Value, Array};
 use whitenoise_validator::utilities::{standardize_numeric_argument, standardize_categorical_argument, standardize_weight_argument, get_argument, standardize_null_candidates_argument};
 use crate::base::NodeArguments;
 use crate::utilities::{noise};
@@ -14,66 +14,64 @@ use std::hash::Hash;
 
 impl Evaluable for proto::Impute {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        let uniform: String = "Uniform".to_string(); // Distributions
-        let gaussian: String = "Gaussian".to_string();
 
         // if categories argument is not None, treat data as categorical (regardless of atomic type)
-        if arguments.contains_key("categories") {
-            match (get_argument(&arguments, "data")?, get_argument(&arguments, "categories")?, get_argument(&arguments, "probabilities")?, get_argument(&arguments, "null")?) {
-                (Value::Array(data), Value::Jagged(categories), Value::Jagged(probabilities), Value::Jagged(nulls)) => Ok(match (data, categories, probabilities, nulls) {
-                    (Array::Bool(data), Jagged::Bool(categories), Jagged::F64(probabilities), Jagged::Bool(nulls)) =>
-                        impute_categorical(&data, &categories, &probabilities, &nulls)?.into(),
-                    (Array::F64(_), Jagged::F64(_), Jagged::F64(_), Jagged::F64(_)) =>
-                        return Err("categorical imputation over floats is not currently supported".into()),
+//        if arguments.contains_key("categories") {
+//            match (get_argument(&arguments, "data")?, get_argument(&arguments, "categories")?, get_argument(&arguments, "probabilities")?, get_argument(&arguments, "null_values")?) {
+//                (Value::Array(data), Value::Jagged(categories), Value::Jagged(probabilities), Value::Jagged(nulls)) => Ok(match (data, categories, probabilities, nulls) {
+//                    (Array::Bool(data), Jagged::Bool(categories), Jagged::F64(probabilities), Jagged::Bool(nulls)) =>
 //                        impute_categorical(&data, &categories, &probabilities, &nulls)?.into(),
-                    (Array::I64(data), Jagged::I64(categories), Jagged::F64(probabilities), Jagged::I64(nulls)) =>
-                        impute_categorical(&data, &categories, &probabilities, &nulls)?.into(),
-                    (Array::Str(data), Jagged::Str(categories), Jagged::F64(probabilities), Jagged::Str(nulls)) =>
-                        impute_categorical(&data, &categories, &probabilities, &nulls)?.into(),
-                    _ => return Err("types of data, categories, and null must be consistent and probabilities must be f64".into())
-                }),
-                _ => return Err("data and null must be ArrayND, categories and probabilities must be Vector2DJagged".into())
-            }
+//                    (Array::F64(_), Jagged::F64(_), Jagged::F64(_), Jagged::F64(_)) =>
+//                        return Err("categorical imputation over floats is not currently supported".into()),
+////                        impute_categorical(&data, &categories, &probabilities, &nulls)?.into(),
+//                    (Array::I64(data), Jagged::I64(categories), Jagged::F64(probabilities), Jagged::I64(nulls)) =>
+//                        impute_categorical(&data, &categories, &probabilities, &nulls)?.into(),
+//                    (Array::Str(data), Jagged::Str(categories), Jagged::F64(probabilities), Jagged::Str(nulls)) =>
+//                        impute_categorical(&data, &categories, &probabilities, &nulls)?.into(),
+//                    _ => return Err("types of data, categories, and null must be consistent and probabilities must be f64".into())
+//                }),
+//                _ => return Err("data and null must be ArrayND, categories and probabilities must be Vector2DJagged".into())
+//            }
+//        }
+//        // if categories argument is None, treat data as continuous
+//        else {
+        // get specified data distribution for imputation -- default to Uniform if no valid distribution is provided
+        let distribution = match get_argument(&arguments, "distribution") {
+            Ok(distribution) => distribution.first_string()?,
+            Err(_) => "Uniform".to_string()
+        };
+
+        match distribution.to_lowercase().as_str() {
+            // if specified distribution is uniform, identify whether underlying data are of atomic type f64 or i64
+            // if f64, impute uniform values
+            // if i64, no need to impute (numeric imputation replaces only f64::NAN values, which are not defined for the i64 type)
+            "uniform" => {
+                return Ok(match (get_argument(&arguments, "data")?, get_argument(&arguments, "min")?, get_argument(&arguments, "max")?) {
+                    (Value::Array(data), Value::Array(min), Value::Array(max)) => match (data, min, max) {
+                        (Array::F64(data), Array::F64(min), Array::F64(max)) =>
+                            impute_float_uniform(&data, &min, &max)?.into(),
+                        (Array::I64(data), Array::I64(_min), Array::I64(_max)) =>
+                            // continuous integers are already non-null
+                            data.clone().into(),
+                        _ => return Err("data, min, and max must all be the same type".into())
+                    },
+                    _ => return Err("data, min, max, shift, and scale must be ArrayND".into())
+                })
+            },
+            // if specified distribution is Gaussian, get necessary arguments and impute
+            "gaussian" => {
+                let data = get_argument(&arguments, "data")?.array()?.f64()?;
+                let min = get_argument(&arguments, "min")?.array()?.f64()?;
+                let max = get_argument(&arguments, "max")?.array()?.f64()?;
+                let scale = get_argument(&arguments, "scale")?.array()?.f64()?;
+                let shift = get_argument(&arguments, "shift")?.array()?.f64()?;
+
+                return Ok(impute_float_gaussian(&data, &min, &max, &shift, &scale)?.into());
+
+            },
+            _ => return Err("Distribution not supported".into())
         }
-        // if categories argument is None, treat data as continuous
-        else {
-            // get specified data distribution for imputation -- default to Uniform if no valid distribution is provided
-            let distribution = match get_argument(&arguments, "distribution") {
-                Ok(distribution) => distribution.first_string()?,
-                Err(_) => "Uniform".to_string()
-            };
-
-            match &distribution.clone() {
-                // if specified distribution is uniform, identify whether underlying data are of atomic type f64 or i64
-                // if f64, impute uniform values
-                // if i64, no need to impute (numeric imputation replaces only f64::NAN values, which are not defined for the i64 type)
-                x if x == &uniform => {
-                    return Ok(match (get_argument(&arguments, "data")?, get_argument(&arguments, "min")?, get_argument(&arguments, "max")?) {
-                        (Value::Array(data), Value::Array(min), Value::Array(max)) => match (data, min, max) {
-                            (Array::F64(data), Array::F64(min), Array::F64(max)) =>
-                                impute_float_uniform(&data, &min, &max)?.into(),
-                            (Array::I64(data), Array::I64(_min), Array::I64(_max)) =>
-                                // continuous integers are already non-null
-                                data.clone().into(),
-                            _ => return Err("data, min, and max must all be the same type".into())
-                        },
-                        _ => return Err("data, min, max, shift, and scale must be ArrayND".into())
-                    })
-                },
-                // if specified distribution is Gaussian, get necessary arguments and impute
-                x if x == &gaussian => {
-                    let data = get_argument(&arguments, "data")?.array()?.f64()?;
-                    let min = get_argument(&arguments, "min")?.array()?.f64()?;
-                    let max = get_argument(&arguments, "max")?.array()?.f64()?;
-                    let scale = get_argument(&arguments, "scale")?.array()?.f64()?;
-                    let shift = get_argument(&arguments, "shift")?.array()?.f64()?;
-
-                    return Ok(impute_float_gaussian(&data, &min, &max, &shift, &scale)?.into());
-
-                },
-                _ => return Err("Distribution not supported".into())
-            }
-        }
+//        }
     }
 }
 

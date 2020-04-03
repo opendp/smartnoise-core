@@ -5,26 +5,12 @@ use std::collections::HashMap;
 
 use crate::{proto, base};
 use crate::hashmap;
-use crate::components::{Component, Expandable, Report};
+use crate::components::{Expandable, Report};
 use ndarray::{arr0};
 
-use crate::base::{NodeProperties, Value, ValueProperties};
+use crate::base::{NodeProperties, Value};
 use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, value_to_json};
 use crate::utilities::{prepend, broadcast_privacy_usage, get_ith_release, get_literal};
-
-
-impl Component for proto::DpHistogram {
-    // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
-    fn propagate_property(
-        &self,
-        _privacy_definition: &proto::PrivacyDefinition,
-        _public_arguments: &HashMap<String, Value>,
-        _properties: &base::NodeProperties,
-    ) -> Result<ValueProperties> {
-        Err("DPHistogram is abstract, and has no property propagation".into())
-    }
-
-}
 
 
 impl Expandable for proto::DpHistogram {
@@ -72,8 +58,8 @@ impl Expandable for proto::DpHistogram {
 
             (Some(edges_id), None) => {
                 // digitize
-                let null_id = component.arguments.get("null")
-                    .ok_or_else(|| Error::from("null is a required argument to DPHistogram"))?;
+                let null_id = component.arguments.get("null_value")
+                    .ok_or_else(|| Error::from("null_value is a required argument to DPHistogram"))?;
                 let inclusive_left_id = component.arguments.get("inclusive_left")
                     .ok_or_else(|| Error::from("inclusive_left is a required argument to DPHistogram when categories are not known"))?;
                 maximum_id += 1;
@@ -82,7 +68,7 @@ impl Expandable for proto::DpHistogram {
                     arguments: hashmap![
                         "data".to_owned() => data_id,
                         "edges".to_owned() => *edges_id,
-                        "null".to_owned() => *null_id,
+                        "null_value".to_owned() => *null_id,
                         "inclusive_left".to_owned() => *inclusive_left_id
                     ],
                     variant: Some(proto::component::Variant::from(proto::Digitize {})),
@@ -95,15 +81,16 @@ impl Expandable for proto::DpHistogram {
 
             (None, Some(categories_id)) => {
                 // clamp
-                let null_id = component.arguments.get("null")
-                    .ok_or_else(|| Error::from("null is a required argument to DPHistogram when categories are not known"))?;
+
+                let null_id = component.arguments.get("null_value")
+                    .ok_or_else(|| Error::from("null_value is a required argument to DPHistogram when categories are not known"))?;
                 maximum_id += 1;
                 let id_clamp = maximum_id;
                 computation_graph.insert(id_clamp, proto::Component {
                     arguments: hashmap![
                         "data".to_owned() => data_id,
                         "categories".to_owned() => *categories_id,
-                        "null".to_owned() => *null_id
+                        "null_value".to_owned() => *null_id
                     ],
                     variant: Some(proto::component::Variant::from(proto::Clamp {})),
                     omit: true,
@@ -140,8 +127,8 @@ impl Expandable for proto::DpHistogram {
         computation_graph.insert(*component_id, proto::Component {
             arguments: hashmap![
                 "data".to_owned() => id_histogram,
-                "min".to_owned() => *component.arguments.get("count_min")
-                    .ok_or_else(|| Error::from("count_min must be provided as an argument"))?,
+                "min".to_owned() => *component.arguments.get("min")
+                    .ok_or_else(|| Error::from("min must be provided as an argument"))?,
                 "max".to_owned() => count_max_id
             ],
             variant: Some(proto::component::Variant::from(proto::SimpleGeometricMechanism {

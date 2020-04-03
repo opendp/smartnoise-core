@@ -5,24 +5,12 @@ use std::collections::HashMap;
 
 use crate::{proto, base};
 use crate::hashmap;
-use crate::components::{Component, Expandable, Report};
+use crate::components::{Expandable, Report};
 
-use crate::base::{NodeProperties, Value, ValueProperties, Array};
+use crate::base::{NodeProperties, Value, Array};
 use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, value_to_json};
 use crate::utilities::{prepend, broadcast_privacy_usage, get_ith_release};
 
-
-impl Component for proto::DpMaximum {
-    fn propagate_property(
-        &self,
-        _privacy_definition: &proto::PrivacyDefinition,
-        _public_arguments: &HashMap<String, Value>,
-        _properties: &base::NodeProperties,
-    ) -> Result<ValueProperties> {
-        Err("DPMaximum is abstract, and has no property propagation".into())
-    }
-
-}
 
 impl Expandable for proto::DpMaximum {
     fn expand_component(

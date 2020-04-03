@@ -6,7 +6,6 @@ use crate::{proto};
 
 use crate::components::{Component, Aggregator};
 use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType, NatureContinuous, Nature, Vector1DNull};
-use crate::utilities::{prepend};
 use ndarray::{arr1};
 
 
@@ -17,9 +16,17 @@ impl Component for proto::Count {
         _public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
     ) -> Result<ValueProperties> {
-        let mut data_property = properties.get("data")
-            .ok_or("data: missing")?.array()
-            .map_err(prepend("data:"))?.clone();
+        let mut data_property = match properties.get("data").ok_or("data: missing")?.clone() {
+            ValueProperties::Array(data_property) => data_property,
+            ValueProperties::Hashmap(data_property) => {
+                if !data_property.columnar {
+                    return Err("Count may only be applied to arrays or columnar hashmaps (dataframes)".into())
+                }
+                data_property.properties.values().first()
+                    .ok_or_else(|| Error::from("dataframe must have at least one column"))?.array()?.to_owned()
+            },
+            ValueProperties::Jagged(_) => return Err("Count is not implemented on jagged arrays".into())
+        };
 
         data_property.num_records = Some(1);
         data_property.num_columns = Some(1);
@@ -49,11 +56,16 @@ impl Aggregator for proto::Count {
         properties: &NodeProperties,
         sensitivity_type: &SensitivitySpace
     ) -> Result<Value> {
-        let data_property = properties.get("data")
-            .ok_or("data: missing")?.array()
-            .map_err(prepend("data:"))?.clone();
 
-        data_property.assert_is_not_aggregated()?;
+        let num_records = match properties.get("data")
+            .ok_or("data: missing")? {
+            ValueProperties::Array(value) => {
+                value.assert_is_not_aggregated()?;
+                value.num_records
+            },
+            ValueProperties::Hashmap(value) => value.num_records,
+            _ => return Err("data: must not be hashmap".into())
+        };
 
         match sensitivity_type {
             SensitivitySpace::KNorm(_k) => {
@@ -63,8 +75,6 @@ impl Aggregator for proto::Count {
                 use proto::privacy_definition::Neighboring::{Substitute, AddRemove};
                 let neighboring_type = Neighboring::from_i32(privacy_definition.neighboring)
                     .ok_or_else(|| Error::from("neighboring definition must be either \"AddRemove\" or \"Substitute\""))?;
-
-                let num_records = data_property.num_records;
 
                 // SENSITIVITY DERIVATIONS
                 let sensitivity: f64 = match (neighboring_type, num_records) {

@@ -16,7 +16,7 @@ impl Evaluable for proto::Digitize {
 
         let data = get_argument(&arguments, "data")?.array()?;
         let edges = get_argument(&arguments, "edges")?.jagged()?;
-        let null = get_argument(&arguments, "null")?.array()?.i64()?;
+        let null = get_argument(&arguments, "null_value")?.array()?.i64()?;
         let num_columns = data.num_columns()?;
 
         Ok(match (data, edges) {

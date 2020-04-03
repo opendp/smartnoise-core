@@ -156,7 +156,9 @@ impl Array {
     pub fn f64(&self) -> Result<&ArrayD<f64>> {
         match self {
             Array::F64(x) => Ok(x),
-            _ => Err("expected a float on a non-float ArrayND".into())
+            Array::I64(_) => Err("atomic type: expected float, got integer".into()),
+            Array::Bool(_) => Err("atomic type: expected float, got bool".into()),
+            Array::Str(_) => Err("atomic type: expected float, got string".into()),
         }
     }
     pub fn first_f64(&self) -> Result<f64> {
@@ -198,7 +200,9 @@ impl Array {
     pub fn i64(&self) -> Result<&ArrayD<i64>> {
         match self {
             Array::I64(x) => Ok(x),
-            _ => Err("expected a float on a non-float ArrayND".into())
+            Array::F64(_) => Err("atomic type: expected integer, got float".into()),
+            Array::Bool(_) => Err("atomic type: expected integer, got bool".into()),
+            Array::Str(_) => Err("atomic type: expected integer, got string".into()),
         }
     }
     pub fn first_i64(&self) -> Result<i64> {
@@ -234,7 +238,9 @@ impl Array {
     pub fn string(&self) -> Result<&ArrayD<String>> {
         match self {
             Array::Str(x) => Ok(x),
-            _ => Err("value must be a string".into())
+            Array::I64(_) => Err("atomic type: expected string, got integer".into()),
+            Array::Bool(_) => Err("atomic type: expected string, got bool".into()),
+            Array::F64(_) => Err("atomic type: expected string, got float".into()),
         }
     }
     pub fn first_string(&self) -> Result<String> {
@@ -252,7 +258,9 @@ impl Array {
     pub fn bool(&self) -> Result<&ArrayD<bool>> {
         match self {
             Array::Bool(x) => Ok(x),
-            _ => Err("value must be a bool".into())
+            Array::I64(_) => Err("atomic type: expected bool, got integer".into()),
+            Array::Str(_) => Err("atomic type: expected bool, got string".into()),
+            Array::F64(_) => Err("atomic type: expected bool, got float".into()),
         }
     }
     pub fn first_bool(&self) -> Result<bool> {

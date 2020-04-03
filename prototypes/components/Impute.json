@@ -7,11 +7,6 @@
       "type": "Array",
       "description": "The data for which null values will be imputed."
     },
-    "distribution": {
-      "type": "String",
-      "default": "None",
-      "description": "The distribution to be used when imputing records. Used only if `categories` is `None`."
-    },
     "min": {
       "type": "Array",
       "default": "None",
@@ -21,6 +16,11 @@
       "type": "Array",
       "default": "None",
       "description": "An upper bound on data elements for each column. Used only if `categories` is `None`."
+    },
+    "distribution": {
+      "type": "String",
+      "default": "None",
+      "description": "The distribution to be used when imputing records. Used only if `categories` is `None`."
     },
     "shift": {
       "type": "Array",

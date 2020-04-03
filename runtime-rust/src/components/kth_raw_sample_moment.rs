@@ -13,8 +13,7 @@ use std::convert::TryFrom;
 impl Evaluable for proto::KthRawSampleMoment {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
         let data = get_argument(&arguments, "data")?.array()?.f64()?;
-        let k = get_argument(&arguments, "k")?.first_i64()?;
-        Ok(kth_raw_sample_moment(data, &k)?.into())
+        Ok(kth_raw_sample_moment(data, &(self.k as i64))?.into())
     }
 }
 
