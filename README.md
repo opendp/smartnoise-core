@@ -36,9 +36,9 @@ For a full listing of the extensive set of components available in the library [
 
 | Statistics    | Mechanisms | Utilities  | 
 | ------------- |------------|------------|
-| Count         | Laplace    | Cast       |
-| Histogram     | Gaussian   | Clamping   |
-| Mean          | Geometric  | Digitize   |
+| Count         | Gaussian   | Cast       |
+| Histogram     | Geometric  | Clamping   |
+| Mean          | Laplace    | Digitize   |
 | Quantiles     | Snapping   | Filter     |
 | Sum           |            | Imputation |
 | Variance/Covariance |      | Transform  |
