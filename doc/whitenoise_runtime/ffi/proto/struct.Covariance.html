@@ -2,13 +2,13 @@
     pub finite_sample_correction: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a>,
 }</pre></div><div class='docblock'><p>Covariance Component</p>
 <p>Calculate covariance.</p>
-<p>If <code>data</code> argument is provided as a 2D array, calculate covariance matrix. Otherwise, <code>left</code> and <code>right</code> 1D arrays are used to calculate a single covariance.</p>
+<p>If <code>data</code> argument is provided as a 2D array, calculate covariance matrix. Otherwise, <code>left</code> and <code>right</code> 1D arrays are used to calculate a cross-covariance matrix between elements of the two arrays.</p>
 <p>This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the covariance on the arguments.</p>
 <h1 id="arguments" class="section-header"><a href="#arguments">Arguments</a></h1>
 <ul>
 <li><code>data</code> - Array - 2D data array used to construct covariance matrix.</li>
-<li><code>left</code> - Array - Left 1D data array used to calculate scalar covariance. Used only if <code>data</code> not provided.</li>
-<li><code>right</code> - Array - Right 1D data array used to calculate scalar covariance. Used only if <code>data</code> not provided.</li>
+<li><code>left</code> - Array - Left data array used to calculate cross-covariance matrix. Used only if <code>data</code> not provided.</li>
+<li><code>right</code> - Array - Right data array used to calculate cross-covariance matrix. Used only if <code>data</code> not provided.</li>
 </ul>
 <h1 id="returns" class="section-header"><a href="#returns">Returns</a></h1>
 <ul>
