@@ -8,18 +8,14 @@
       "type": "Array"
     },
     "count_min": {
-      "type": "Array"
+      "type": "Array",
+      "default": "0",
+      "description": "Estimated minimum possible size of the data."
     },
     "count_max": {
-      "type": "Array"
-    },
-    "by": {
-      "nature": [
-        "continuous",
-        "categorical"
-      ],
       "type": "Array",
-      "default": "None"
+      "default": "None",
+      "description": "Estimated maximum possible size of the data."
     }
   },
   "id": "DPCount",
@@ -27,16 +23,25 @@
   "options": {
     "implementation": {
       "type": "string",
-      "default": "'SimpleGeometric'"
+      "default": "'SimpleGeometric'",
+      "description": "Privatizing mechanism to use."
     },
     "privacy_usage": {
-      "type": "repeated PrivacyUsage"
+      "type": "repeated PrivacyUsage",
+      "description": "Object describing the type and amount of privacy to be used for the mechanism release."
+    },
+    "enforce_constant_time": {
+      "type": "bool",
+      "default": "False",
+      "description": "Whether or not to require Geometric mechanism to run in constant time."
     }
   },
   "return": {
     "nature": [
       "continuous"
     ],
-    "type": "Array"
-  }
+    "type": "Array",
+    "description": "Differentially private row count."
+  },
+  "description": "Returns a differentially private row count."
 }

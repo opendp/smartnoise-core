@@ -12,7 +12,7 @@
     "symmetric": {
       "type": "bool",
       "default": "False",
-      "description": "Set if data is elements from the upper triangle of a symmetric matrix."
+      "description": "Set if data are elements from the upper triangle of a symmetric matrix."
     },
     "layout": {
       "type": "string",
@@ -30,5 +30,5 @@
     "type": "Array",
     "description": "Reshape of data."
   },
-  "description": "Reshape a row vector into a matrix"
+  "description": "Reshapes a row vector into a matrix."
 }

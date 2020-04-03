@@ -6,7 +6,7 @@
         "continuous"
       ],
       "type": "Array",
-      "description": "Left 1D data array used to calculate scalar covariance. Used only if `data` not provided."
+      "description": "Left data array used to calculate cross-covariance matrix. Used only if `data` not provided."
     },
     "right": {
       "default": "None",
@@ -14,7 +14,7 @@
         "continuous"
       ],
       "type": "Array",
-      "description": "Right 1D data array used to calculate scalar covariance. Used only if `data` not provided."
+      "description": "Right data array used to calculate cross-covariance matrix. Used only if `data` not provided."
     },
     "data": {
       "default": "None",
@@ -41,5 +41,5 @@
     "type": "Array",
     "description": "Flattened covariance or cross-covariance matrix."
   },
-  "description": "Calculate sample covariance.\n\n If `data` argument is provided as a 2D array, calculate covariance matrix. Otherwise, `left` and `right` 1D arrays are used to calculate a single covariance."
+  "description": "Calculate covariance.\n\n If `data` argument is provided as a 2D array, calculate covariance matrix. Otherwise, `left` and `right` 1D arrays are used to calculate a cross-covariance matrix between elements of the two arrays."
 }

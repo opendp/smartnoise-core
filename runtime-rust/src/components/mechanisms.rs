@@ -75,20 +75,20 @@ impl Evaluable for proto::SimpleGeometricMechanism {
             data.shape(), usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?)?;
 //        println!("epsilon: {:?}", epsilon.shape());
 
-        let count_min = broadcast_ndarray(
-            get_argument(&arguments, "count_min")?.array()?.i64()?, data.shape())?;
-//        println!("count_min: {:?}", count_min.shape());
+        let min = broadcast_ndarray(
+            get_argument(&arguments, "min")?.array()?.i64()?, data.shape())?;
+//        println!("min: {:?}", min.shape());
 
-        let count_max = broadcast_ndarray(
-            get_argument(&arguments, "count_max")?.array()?.i64()?, data.shape())?;
-//        println!("count_max: {:?}", count_max.shape());
+        let max = broadcast_ndarray(
+            get_argument(&arguments, "max")?.array()?.i64()?, data.shape())?;
+//        println!("max: {:?}", max.shape());
 
         data.gencolumns_mut().into_iter()
             .zip(sensitivity.gencolumns().into_iter().zip(epsilon.gencolumns().into_iter()))
-            .zip(count_min.gencolumns().into_iter().zip(count_max.gencolumns().into_iter()))
-            .map(|((mut data_column, (sensitivity, epsilon)), (count_min, count_max))| data_column.iter_mut()
+            .zip(min.gencolumns().into_iter().zip(max.gencolumns().into_iter()))
+            .map(|((mut data_column, (sensitivity, epsilon)), (min, max))| data_column.iter_mut()
                 .zip(sensitivity.iter().zip(epsilon.iter()))
-                .zip(count_min.iter().zip(count_max.iter()))
+                .zip(min.iter().zip(max.iter()))
                 .map(|((v, (sens, eps)), (c_min, c_max))| {
                     *v += utilities::mechanisms::simple_geometric_mechanism(
                         &eps, &sens, &c_min, &c_max, &self.enforce_constant_time)?;
