@@ -29,8 +29,26 @@ Differentially private computations are specified as an analysis graph that can 
 
 ## More about WhiteNoise Core
 
-- INCLUDE HIGH-LEVEL COMPONENT LIST
-- Needs REWRITE / LEFT EXISTING TEXT FOR NOW
+### Components
+
+The primary releases available in the library, and the mechanisms for generating these releases, are enumerated below.  For a full listing of the extensive set of components available in the library [see this documentation.](https://opendifferentialprivacy.github.io/whitenoise-core/doc/whitenoise_runtime/components/index.html)
+
+| Statistics    | | 
+| ------------- |-|
+| Count         |
+| Histogram     |  
+| Mean          | 
+| Quantiles     |
+| Sum           |
+| Variance/Covariance | 
+
+| Mechanisms    | |
+| ------------- |-|
+| Laplace       | 
+| Gaussian      | 
+| Geometric     | 
+| Snapping      | 
+
 - Links to research/whitepapers here?
 
 ### Architecture
