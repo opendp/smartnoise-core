@@ -84,7 +84,7 @@ def test_dp_linear_stats(run=True):
     with whitenoise.Analysis() as analysis:
         dataset_pums = whitenoise.Dataset(path=TEST_CSV_PATH, column_names=test_csv_names)
 
-        age = dataset_pums['x']
+        age = dataset_pums['age']
         analysis.release()
 
         num_records = op.dp_count(

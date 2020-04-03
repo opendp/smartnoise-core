@@ -50,9 +50,11 @@ mod variance;
 
 use std::collections::HashMap;
 
-use crate::base::{Value, NodeProperties, SensitivitySpace, ValueProperties};
+use crate::base::{Value, NodeProperties, SensitivitySpace, ValueProperties, Array};
 use crate::proto;
 use crate::utilities::json::{JSONRelease};
+use crate::utilities::get_ith_release;
+use ndarray::ArrayD;
 
 /// Universal Component trait
 ///
@@ -169,7 +171,7 @@ pub trait Report {
         public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
         release: &Value,
-        variable_names: &Vec<String>,
+        variable_names: Option<&Vec<String>>,
     ) -> Result<Option<Vec<JSONRelease>>>;
 }
 
@@ -183,6 +185,7 @@ pub trait Named {
         &self,
         public_arguments: &HashMap<String, Value>,
         argument_variables: &HashMap<String, Vec<String>>,
+        release: &Option<&Value>
     ) -> Result<Vec<String>>;
 }
 
@@ -380,7 +383,7 @@ impl Report for proto::component::Variant {
         public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
         release: &Value,
-        variable_names: &Vec<String>
+        variable_names: Option<&Vec<String>>
     ) -> Result<Option<Vec<JSONRelease>>> {
 
         macro_rules! summarize{
@@ -413,8 +416,9 @@ impl Named for proto::component::Variant {
     /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn get_names(
         &self,
-        _public_arguments: &HashMap<String, Value>,
+        public_arguments: &HashMap<String, Value>,
         argument_variables: &HashMap<String, Vec<String>>,
+        release: &Option<&Value>
     ) -> Result<Vec<String>> {
 
         macro_rules! get_names{
@@ -422,7 +426,7 @@ impl Named for proto::component::Variant {
                 {
                     $(
                        if let proto::component::Variant::$variant(x) = self {
-                            return x.get_names(_public_arguments, argument_variables)
+                            return x.get_names(public_arguments, argument_variables, release)
                                 .chain_err(|| format!("node specification {:?}:", self))
                        }
                     )*
@@ -430,15 +434,58 @@ impl Named for proto::component::Variant {
             }
         }
 
+        // TODO: transforms, covariance/cross-covariance, extended indexing
         get_names!(
             // INSERT COMPONENT LIST
-//            Rowmin, Dpmean, Impute
-            Index
+            Index, Literal, Materialize
         );
-
-        // Err("get_names not implemented".into())
         
         // default implementation
-        return Ok(argument_variables.values().cloned().flatten().collect::<Vec<String>>());
+        match argument_variables.get("data") {
+            // by convention, names pass through the "data" argument unchanged
+            Some(variable_names) => Ok(variable_names.clone()),
+            // otherwise if the component is non-standard, throw an error
+            None => Err(format!("names are not implemented for proto component {:?}", self).into())
+        }
+    }
+}
+
+impl Named for proto::Literal {
+    fn get_names(
+        &self,
+        _public_arguments: &HashMap<String, Value>,
+        _argument_variables: &HashMap<String, Vec<String>>,
+        release: &Option<&Value>
+    ) -> Result<Vec<String>> {
+
+        fn array_to_names<T: ToString + Clone + Default>(array: &ArrayD<T>, num_columns: i64) -> Result<Vec<String>> {
+            (0..num_columns as usize)
+                .map(|index| {
+                    let array = get_ith_release(array, &index)?;
+                    match array.ndim() {
+                        0 => match array.first() {
+                            Some(value) => Ok(value.to_string()),
+                            None => Err("array may not be empty".into())
+                        },
+                        1 => Ok("[Literal Column]".into()),
+                        _ => Err("array has too great of a dimension".into())
+                    }
+                })
+                .collect::<Result<Vec<String>>>()
+        }
+
+        match release {
+            Some(release) => match release {
+                Value::Jagged(jagged) => Ok((0..jagged.num_columns()).map(|_| "[Literal vector]".to_string()).collect()),
+                Value::Hashmap(_) => Err("names for hashmap literals are not supported".into()),  // (or necessary)
+                Value::Array(value) => match value {
+                    Array::F64(array) => array_to_names(array, value.num_columns()?),
+                    Array::I64(array) => array_to_names(array, value.num_columns()?),
+                    Array::Str(array) => array_to_names(array, value.num_columns()?),
+                    Array::Bool(array) => array_to_names(array, value.num_columns()?),
+                }
+            },
+            None => Err("Literals must always be accompanied by a release".into())
+        }
     }
 }

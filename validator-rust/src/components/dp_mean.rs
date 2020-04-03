@@ -99,7 +99,7 @@ impl Report for proto::DpMean {
         _public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
         release: &Value,
-        variable_names: &Vec<String>,
+        variable_names: Option<&Vec<String>>,
     ) -> Result<Option<Vec<JSONRelease>>> {
 
         let data_property = properties.get("data")
@@ -115,16 +115,20 @@ impl Report for proto::DpMean {
         let num_columns = data_property.num_columns()?;
         let privacy_usages = broadcast_privacy_usage(&self.privacy_usage, num_columns as usize)?;
 
-        for column_number in 0..num_columns {
+        for column_number in 0..(num_columns as usize) {
+            let variable_name = variable_names
+                .and_then(|names| names.get(column_number)).cloned()
+                .unwrap_or_else(|| "[Unknown]".to_string());
+
             releases.push(JSONRelease {
                 description: "DP release information".to_string(),
                 statistic: "DPMean".to_string(),
-                variables: serde_json::json!(variable_names.clone()),
+                variables: serde_json::json!(variable_name),
                 release_info: value_to_json(&get_ith_release(
                     release.array()?.f64()?,
                     &(column_number as usize)
                 )?.into())?,
-                privacy_loss: privacy_usage_to_json(&privacy_usages[column_number as usize].clone()),
+                privacy_loss: privacy_usage_to_json(&privacy_usages[column_number].clone()),
                 accuracy: None,
                 batch: component.batch as u64,
                 node_id: *node_id as u64,
@@ -136,8 +140,8 @@ impl Report for proto::DpMean {
                     argument: serde_json::json!({
                         "n": num_records,
                         "constraint": {
-                            "lowerbound": minimums[column_number as usize],
-                            "upperbound": maximums[column_number as usize]
+                            "lowerbound": minimums[column_number],
+                            "upperbound": maximums[column_number]
                         }
                     })
                 }

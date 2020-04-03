@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 use crate::{proto, base};
 
-use crate::components::{Component};
+use crate::components::{Component, Named};
 use crate::base::{Hashmap, Value, ValueProperties, HashmapProperties, ArrayProperties, DataType};
 use crate::utilities::serial::parse_i64_null;
 
@@ -55,6 +55,20 @@ impl Component for proto::Materialize {
             columnar: true
         }.into())
     }
+}
 
 
+impl Named for proto::Materialize {
+    fn get_names(
+        &self,
+        public_arguments: &HashMap<String, Value>,
+        _argument_variables: &HashMap<String, Vec<String>>,
+        _release: &Option<&Value>
+    ) -> Result<Vec<String>> {
+        // TODO: also work when num_columns is passed- just return a vec of "0", "1", "2", ...
+        let column_names = public_arguments.get("column_names")
+            .ok_or_else(|| Error::from("column_names: missing"))?.to_owned()
+            .array()?.string()?.iter().cloned().collect::<Vec<String>>();
+        return Ok(column_names);
+    }
 }
