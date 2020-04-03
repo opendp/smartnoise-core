@@ -1,12 +1,13 @@
 {
   "arguments": {
-    "base": {
+    "data": {
       "nature": [
         "continuous"
       ],
       "type": "Array"
     },
-    "data": {
+    "base": {
+      "default": "2.71828",
       "nature": [
         "continuous"
       ],

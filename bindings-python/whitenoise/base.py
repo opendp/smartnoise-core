@@ -199,7 +199,7 @@ class Component(object):
         return Component('Modulo', arguments={'left': Component.of(other), 'right': self})
 
     def __pow__(self, power, modulo=None):
-        return Component('Power', arguments={'left': self, 'right': Component.of(power)})
+        return Component('Power', arguments={'data': self, 'radical': Component.of(power)})
 
     def __rpow__(self, other):
         return Component('Power', arguments={'left': Component.of(other), 'right': self})

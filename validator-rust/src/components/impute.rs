@@ -28,6 +28,12 @@ impl Component for proto::Impute {
             return Ok(data_property.into())
         }
 
+        if let Some(_categories) = public_arguments.get("categories") {
+            // TODO: propagation of categories through imputation and resize
+            data_property.nature = None;
+            return Ok(data_property.into());
+        }
+
         let num_columns = data_property.num_columns
             .ok_or("data: number of columns missing")?;
         // 1. check public arguments (constant n)
@@ -116,26 +122,28 @@ impl Expandable for proto::Impute {
 
         let mut component = component.clone();
 
-        if !properties.contains_key("min") {
-            current_id += 1;
-            let id_min = current_id;
-            let value = Value::Array(Array::F64(
-                ndarray::Array::from(properties.get("data").unwrap().to_owned().array()?.min_f64()?).into_dyn()));
-            let (patch_node, release) = get_literal(&value, &component.batch)?;
-            computation_graph.insert(id_min.clone(), patch_node);
-            releases.insert(id_min.clone(), release);
-            component.arguments.insert("min".to_string(), id_min);
-        }
+        if !properties.contains_key("categories") {
+            if !properties.contains_key("min") {
+                current_id += 1;
+                let id_min = current_id;
+                let value = Value::Array(Array::F64(
+                    ndarray::Array::from(properties.get("data").unwrap().to_owned().array()?.min_f64()?).into_dyn()));
+                let (patch_node, release) = get_literal(&value, &component.batch)?;
+                computation_graph.insert(id_min.clone(), patch_node);
+                releases.insert(id_min.clone(), release);
+                component.arguments.insert("min".to_string(), id_min);
+            }
 
-        if !properties.contains_key("max") {
-            current_id += 1;
-            let id_max = current_id;
-            let value = Value::Array(Array::F64(
-                ndarray::Array::from(properties.get("data").unwrap().to_owned().array()?.max_f64()?).into_dyn()));
-            let (patch_node, release) = get_literal(&value, &component.batch)?;
-            computation_graph.insert(id_max.clone(), patch_node);
-            releases.insert(id_max.clone(), release);
-            component.arguments.insert("max".to_string(), id_max);
+            if !properties.contains_key("max") {
+                current_id += 1;
+                let id_max = current_id;
+                let value = Value::Array(Array::F64(
+                    ndarray::Array::from(properties.get("data").unwrap().to_owned().array()?.max_f64()?).into_dyn()));
+                let (patch_node, release) = get_literal(&value, &component.batch)?;
+                computation_graph.insert(id_max.clone(), patch_node);
+                releases.insert(id_max.clone(), release);
+                component.arguments.insert("max".to_string(), id_max);
+            }
         }
 
         computation_graph.insert(component_id.clone(), component);

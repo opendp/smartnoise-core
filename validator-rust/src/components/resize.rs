@@ -9,7 +9,7 @@ use crate::proto;
 use crate::components::{Component, Expandable};
 use ndarray;
 
-use crate::base::{Value, Array, Nature, NatureContinuous, Vector1DNull, ValueProperties, DataType, NatureCategorical};
+use crate::base::{Value, Array, Nature, NatureContinuous, Vector1DNull, ValueProperties, DataType};
 use crate::utilities::{prepend, get_literal};
 
 
@@ -34,10 +34,9 @@ impl Component for proto::Resize {
             return Err("n must be greater than zero".into())
         }
 
-        if let Some(categories) = public_arguments.get("categories") {
-            data_property.nature = Some(Nature::Categorical(NatureCategorical {
-                categories: categories.jagged()?.standardize(&num_columns)?
-            }));
+        if let Some(_categories) = public_arguments.get("categories") {
+            // TODO: propagation of categories through imputation and resize
+            data_property.nature = None;
             data_property.num_records = Some(num_records);
             return Ok(data_property.into());
         }
@@ -203,38 +202,28 @@ impl Expandable for proto::Resize {
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
-        if !properties.contains_key("min") {
-            current_id += 1;
-            let id_min = current_id;
-            let value = Value::Array(Array::F64(
-                ndarray::Array::from(data_property.min_f64()?).into_dyn()));
-            let (patch_node, release) = get_literal(&value, &component.batch)?;
-            computation_graph.insert(id_min.clone(), patch_node);
-            releases.insert(id_min.clone(), release);
-            component.arguments.insert("min".to_string(), id_min);
-        }
+        if !properties.contains_key("categories") {
+            if !properties.contains_key("min") {
+                current_id += 1;
+                let id_min = current_id;
+                let value = Value::Array(Array::F64(
+                    ndarray::Array::from(data_property.min_f64()?).into_dyn()));
+                let (patch_node, release) = get_literal(&value, &component.batch)?;
+                computation_graph.insert(id_min.clone(), patch_node);
+                releases.insert(id_min.clone(), release);
+                component.arguments.insert("min".to_string(), id_min);
+            }
 
-        if !properties.contains_key("max") {
-            current_id += 1;
-            let id_max = current_id;
-            let value = Value::Array(Array::F64(
-                ndarray::Array::from(data_property.max_f64()?).into_dyn()));
-            let (patch_node, release) = get_literal(&value, &component.batch)?;
-            computation_graph.insert(id_max.clone(), patch_node);
-            releases.insert(id_max.clone(), release);
-            component.arguments.insert("max".to_string(), id_max);
-        }
-
-        if !properties.contains_key("n") {
-            current_id += 1;
-            let id_n = current_id;
-            let value = Value::Array(Array::I64(ndarray::Array::from_shape_vec(
-                (), vec![data_property.num_records()?])
-                .unwrap().into_dyn()));
-            let (patch_node, release) = get_literal(&value, &component.batch)?;
-            computation_graph.insert(id_n.clone(), patch_node);
-            releases.insert(id_n.clone(), release);
-            component.arguments.insert("n".to_string(), id_n);
+            if !properties.contains_key("max") {
+                current_id += 1;
+                let id_max = current_id;
+                let value = Value::Array(Array::F64(
+                    ndarray::Array::from(data_property.max_f64()?).into_dyn()));
+                let (patch_node, release) = get_literal(&value, &component.batch)?;
+                computation_graph.insert(id_max.clone(), patch_node);
+                releases.insert(id_max.clone(), release);
+                component.arguments.insert("max".to_string(), id_max);
+            }
         }
 
         computation_graph.insert(*component_id, component);

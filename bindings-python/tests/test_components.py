@@ -1,5 +1,4 @@
 from os.path import abspath, dirname, isfile, join
-import pytest
 import whitenoise
 import whitenoise.components as op
 
@@ -75,5 +74,22 @@ def test_everything(run=True):
 
         op.gaussian_mechanism(race_histogram, privacy_usage={"epsilon": 0.5, "delta": .000001})
         op.laplace_mechanism(race_histogram, privacy_usage={"epsilon": 0.5, "delta": .000001})
+
+        op.kth_raw_sample_moment(educ, k=3)
+
+        op.log(op.clamp(educ, 0.001, 50.))
+        op.maximum(educ)
+        op.mean(educ)
+        op.minimum(educ)
+
+        educ % 2.
+        educ ** 2.
+
+        op.quantile(educ, .32)
+
+        op.resize(educ, 1200, 0., 50.)
+        op.resize(race, 1200, categories=["1", "2"], weights=[1, 2])
+
+
 
     analysis.release()

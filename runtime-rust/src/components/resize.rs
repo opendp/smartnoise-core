@@ -24,21 +24,23 @@ impl Evaluable for proto::Resize {
         // If "categories" constraint has been propagated, data are treated as categorical (regardless of atomic type)
         // and imputation (if necessary) is done by sampling from "categories" using the "probabilities" as sampling probabilities for each element.
         if arguments.contains_key("categories") {
-            match (get_argument(&arguments, "data")?, get_argument(&arguments, "categories")?,
-                   get_argument(&arguments, "probabilities")?) {
+            let weights = get_argument(&arguments, "weights")
+                .and_then(|v| v.jagged()).and_then(|v| v.f64()).ok();
+
+            match (get_argument(&arguments, "data")?, get_argument(&arguments, "categories")?) {
                 // match on types of various arguments and ensure they are consistent with each other
-                (Value::Array(data), Value::Jagged(categories), Value::Jagged(probabilities)) =>
-                    Ok(match (data, categories, probabilities) {
-                        (Array::F64(_), Jagged::F64(_), Jagged::F64(_)) =>
+                (Value::Array(data), Value::Jagged(categories)) =>
+                    Ok(match (data, categories) {
+                        (Array::F64(_), Jagged::F64(_)) =>
                             return Err("categorical resizing over floats in not currently supported- try continuous imputation instead".into()),
 //                            resize_categorical(&data, &n, &categories, &probabilities)?.into(),
-                        (Array::I64(data), Jagged::I64(categories), Jagged::F64(probabilities)) =>
-                            resize_categorical(&data, &n, &categories, &probabilities)?.into(),
-                        (Array::Bool(data), Jagged::Bool(categories), Jagged::F64(probabilities)) =>
-                            resize_categorical(&data, &n, &categories, &probabilities)?.into(),
-                        (Array::Str(data), Jagged::Str(categories), Jagged::F64(probabilities)) =>
-                            resize_categorical(&data, &n, &categories, &probabilities)?.into(),
-                        _ => return Err("types of data, categories, and nulls must be homogeneous, probabilities must be f64".into())
+                        (Array::I64(data), Jagged::I64(categories)) =>
+                            resize_categorical(&data, &n, &categories, &weights)?.into(),
+                        (Array::Bool(data), Jagged::Bool(categories)) =>
+                            resize_categorical(&data, &n, &categories, &weights)?.into(),
+                        (Array::Str(data), Jagged::Str(categories)) =>
+                            resize_categorical(&data, &n, &categories, &weights)?.into(),
+                        _ => return Err("types of data, categories, and nulls must be homogeneous, weights must be f64".into())
                     }),
                 _ => return Err("data and nulls must be arrays, categories must be a jagged matrix".into())
             }
@@ -55,7 +57,7 @@ impl Evaluable for proto::Resize {
                     // If there is no valid distribution argument provided, generate uniform by default
                     let distribution = match get_argument(&arguments, "type") {
                         Ok(distribution) => distribution.first_string()?,
-                        Err(_) => "Uniform".to_string()
+                        Err(_) => "uniform".to_string()
                     };
                     let shift = match get_argument(&arguments, "shift") {
                         Ok(shift) => Some(shift.array()?.f64()?),
@@ -204,8 +206,9 @@ pub fn resize_integer(
 pub fn resize_categorical<T>(
     data: &ArrayD<T>, n: &i64,
     categories: &Vec<Option<Vec<T>>>,
-    weights: &Vec<Option<Vec<f64>>>,
+    weights: &Option<Vec<Vec<f64>>>,
 ) -> Result<ArrayD<T>> where T: Clone, T: PartialEq, T: Default, T: Ord, T: Hash {
+
     // get number of observations in actual data
     let real_n: i64 = data.len_of(Axis(0)) as i64;
 
@@ -231,7 +234,7 @@ pub fn resize_categorical<T>(
 
             // impute categorical data for each column of nulls to create synthetic data
             synthetic = impute_categorical(
-                &synthetic, &categories, &weights, &null_value)?;
+                &synthetic, &categories, weights, &null_value)?;
 
             // combine real and synthetic data
             match slow_stack(Axis(0), &[data.view(), synthetic.view()]) {
