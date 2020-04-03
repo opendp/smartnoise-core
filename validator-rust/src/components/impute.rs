@@ -8,7 +8,7 @@ use crate::proto;
 use crate::components::{Component, Expandable};
 
 use ndarray;
-use crate::base::{Vector1DNull, Nature, NatureContinuous, Value, Array, ValueProperties};
+use crate::base::{Vector1DNull, Nature, NatureContinuous, Value, Array, ValueProperties, DataType};
 use crate::utilities::{prepend, get_literal};
 
 
@@ -22,6 +22,11 @@ impl Component for proto::Impute {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
+        data_property.assert_is_not_aggregated()?;
+
+        if data_property.data_type == DataType::I64 {
+            return Ok(data_property.into())
+        }
 
         let num_columns = data_property.num_columns
             .ok_or("data: number of columns missing")?;

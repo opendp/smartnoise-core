@@ -23,6 +23,7 @@ impl Component for proto::Resize {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
+        data_property.assert_is_not_aggregated()?;
 
         let num_columns = data_property.num_columns()?;
 

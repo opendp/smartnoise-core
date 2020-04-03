@@ -68,7 +68,12 @@ def test_everything(run=True):
         op.dp_variance(age_n, privacy_usage={"epsilon": 0.5})
 
         op.filter(income, mask)
-        op.histogram(race, categories=["1", "2", "3"], null_value="3")
+        race_histogram = op.histogram(race, categories=["1", "2", "3"], null_value="3")
+        op.histogram(income, edges=[0., 10000., 50000.], null_value=-1)
+
+        op.dp_histogram(married, privacy_usage={"epsilon": 0.5})
+
+        op.gaussian_mechanism(race_histogram, privacy_usage={"epsilon": 0.5, "delta": .000001})
+        op.laplace_mechanism(race_histogram, privacy_usage={"epsilon": 0.5, "delta": .000001})
 
     analysis.release()
-    print("b")

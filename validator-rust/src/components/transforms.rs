@@ -27,6 +27,7 @@ impl Component for proto::Add {
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
         left_property.assert_is_not_aggregated()?;
+        right_property.assert_is_not_aggregated()?;
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
         if left_property.data_type != right_property.data_type {
@@ -91,6 +92,7 @@ impl Component for proto::Subtract {
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
         left_property.assert_is_not_aggregated()?;
+        right_property.assert_is_not_aggregated()?;
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
         if left_property.data_type != right_property.data_type {
@@ -154,6 +156,7 @@ impl Component for proto::Multiply {
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
         left_property.assert_is_not_aggregated()?;
+        right_property.assert_is_not_aggregated()?;
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
         if left_property.data_type != right_property.data_type {
@@ -272,6 +275,7 @@ impl Component for proto::Divide {
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
         left_property.assert_is_not_aggregated()?;
+        right_property.assert_is_not_aggregated()?;
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
         if left_property.data_type != right_property.data_type {
@@ -420,6 +424,7 @@ impl Component for proto::Power {
             .ok_or("radical: missing")?.array()
             .map_err(prepend("radical:"))?.clone();
         data_property.assert_is_not_aggregated()?;
+        radical_property.assert_is_not_aggregated()?;
 
         match (data_property.data_type.clone(), radical_property.data_type.clone()) {
             (DataType::F64, DataType::F64) => {
@@ -480,6 +485,7 @@ impl Component for proto::Log {
             .ok_or("base: missing")?.array()
             .map_err(prepend("base:"))?.clone();
         data_property.assert_is_not_aggregated()?;
+        base_property.assert_is_not_aggregated()?;
 
         if data_property.data_type != DataType::F64 || data_property.data_type != DataType::F64 {
             return Err("arguments for log must be float and homogeneously typed".into());
@@ -529,6 +535,7 @@ impl Component for proto::Negative {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
+        data_property.assert_is_not_aggregated()?;
 
         data_property.nature = propagate_unary_nature(
             &data_property,
@@ -565,6 +572,7 @@ impl Component for proto::Modulo {
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
         left_property.assert_is_not_aggregated()?;
+        right_property.assert_is_not_aggregated()?;
 
         match (left_property.data_type.clone(), right_property.data_type.clone()) {
             (DataType::F64, DataType::F64) => {
@@ -626,6 +634,7 @@ impl Component for proto::And {
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
         left_property.assert_is_not_aggregated()?;
+        right_property.assert_is_not_aggregated()?;
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
         if left_property.data_type != right_property.data_type {
@@ -669,6 +678,7 @@ impl Component for proto::Or {
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
         left_property.assert_is_not_aggregated()?;
+        right_property.assert_is_not_aggregated()?;
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
         if left_property.data_type != right_property.data_type {
@@ -722,8 +732,6 @@ impl Component for proto::Negate {
 
         Ok(data_property.into())
     }
-
-
 }
 
 
@@ -740,6 +748,8 @@ impl Component for proto::Equal {
         let right_property = properties.get("right")
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
+        left_property.assert_is_not_aggregated()?;
+        right_property.assert_is_not_aggregated()?;
 
         if left_property.data_type != right_property.data_type {
             return Err("left and right must be homogeneously typed".into())
@@ -781,6 +791,9 @@ impl Component for proto::LessThan {
         let right_property = properties.get("right")
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
+
+        left_property.assert_is_not_aggregated()?;
+        right_property.assert_is_not_aggregated()?;
 
         if left_property.data_type != right_property.data_type {
             return Err("left and right must be homogeneously typed".into())
@@ -828,6 +841,9 @@ impl Component for proto::GreaterThan {
         let right_property = properties.get("right")
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
+
+        left_property.assert_is_not_aggregated()?;
+        right_property.assert_is_not_aggregated()?;
 
         if left_property.data_type != right_property.data_type {
             return Err("left and right must be homogeneously typed".into())

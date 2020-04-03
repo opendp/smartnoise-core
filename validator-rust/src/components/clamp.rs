@@ -25,6 +25,8 @@ impl Component for proto::Clamp {
         let num_columns = data_property.num_columns
             .ok_or("data: number of data columns missing")?;
 
+        data_property.assert_is_not_aggregated()?;
+
         // handle categorical clamping
         if let Some(categories) = public_arguments.get("categories") {
             let null = public_arguments.get("null_value")
@@ -58,8 +60,8 @@ impl Component for proto::Clamp {
                             .for_each(|cats| cats.push(null)))
                 },
                 _ => return Err("categories and null_value must be homogeneously typed".into())
-            }
-
+            };
+            categories = categories.standardize(&num_columns)?;
             data_property.nature = Some(Nature::Categorical(NatureCategorical { categories }));
 
             return Ok(data_property.into());

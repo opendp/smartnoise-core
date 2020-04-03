@@ -23,7 +23,6 @@ impl Evaluable for proto::Digitize {
             (Array::F64(data), Jagged::F64(edges)) =>
                 digitize(&data, &standardize_float_argument(edges, &num_columns)?, &inclusive_left, &null)?.into(),
 
-
             (Array::I64(data), Jagged::I64(edges)) =>
                 digitize(&data, &standardize_categorical_argument(edges, &num_columns)?, &inclusive_left, &null)?.into(),
 

@@ -308,6 +308,8 @@ class Component(object):
                     "min": min_component,
                     "max": max_component
                 })
+
+                # TODO: imputation on ints is unnecessary
                 arguments[argument] = Component('Impute', arguments={
                     "data": arguments[argument]
                 })

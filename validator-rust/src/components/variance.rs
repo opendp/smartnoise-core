@@ -37,8 +37,6 @@ impl Component for proto::Variance {
 
         Ok(data_property.into())
     }
-
-
 }
 
 impl Aggregator for proto::Variance {

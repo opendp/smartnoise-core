@@ -22,6 +22,7 @@ impl Component for proto::Cast {
             .ok_or_else(|| Error::from("data: missing"))?.array()
             .map_err(prepend("data:"))?.clone();
 
+        data_property.assert_is_not_aggregated()?;
         let prior_datatype = data_property.data_type.clone();
 
         data_property.data_type = match self.r#type.to_lowercase().as_str() {

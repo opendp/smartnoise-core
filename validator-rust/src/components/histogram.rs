@@ -21,11 +21,12 @@ impl Component for proto::Histogram {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
+        data_property.assert_is_not_aggregated()?;
 
         let categories = data_property.categories()?;
 
         if categories.num_columns() != 1 {
-            return Err("categories must contain one column".into())
+            return Err("data must contain one column".into())
         }
         data_property.num_records = Some(categories.lengths()?[0] as i64);
 

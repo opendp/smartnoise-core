@@ -22,6 +22,7 @@ impl Component for proto::Covariance {
                 .ok_or("data: missing")?.array()
                 .map_err(prepend("data:"))?.clone();
 
+            data_property.assert_is_not_aggregated()?;
             // save a snapshot of the state when aggregating
             data_property.aggregator = Some(AggregatorProperties {
                 component: proto::component::Variant::from(self.clone()),
@@ -54,6 +55,8 @@ impl Component for proto::Covariance {
             if right_property.data_type != DataType::F64 {
                 return Err("right: atomic type must be float".into())
             }
+            left_property.assert_is_not_aggregated()?;
+            right_property.assert_is_not_aggregated()?;
 
             // save a snapshot of the state when aggregating
             left_property.aggregator = Some(AggregatorProperties {
