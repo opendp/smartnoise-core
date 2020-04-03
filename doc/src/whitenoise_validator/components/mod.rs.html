@@ -442,6 +442,53 @@
 <span id="442">442</span>
 <span id="443">443</span>
 <span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
+<span id="447">447</span>
+<span id="448">448</span>
+<span id="449">449</span>
+<span id="450">450</span>
+<span id="451">451</span>
+<span id="452">452</span>
+<span id="453">453</span>
+<span id="454">454</span>
+<span id="455">455</span>
+<span id="456">456</span>
+<span id="457">457</span>
+<span id="458">458</span>
+<span id="459">459</span>
+<span id="460">460</span>
+<span id="461">461</span>
+<span id="462">462</span>
+<span id="463">463</span>
+<span id="464">464</span>
+<span id="465">465</span>
+<span id="466">466</span>
+<span id="467">467</span>
+<span id="468">468</span>
+<span id="469">469</span>
+<span id="470">470</span>
+<span id="471">471</span>
+<span id="472">472</span>
+<span id="473">473</span>
+<span id="474">474</span>
+<span id="475">475</span>
+<span id="476">476</span>
+<span id="477">477</span>
+<span id="478">478</span>
+<span id="479">479</span>
+<span id="480">480</span>
+<span id="481">481</span>
+<span id="482">482</span>
+<span id="483">483</span>
+<span id="484">484</span>
+<span id="485">485</span>
+<span id="486">486</span>
+<span id="487">487</span>
+<span id="488">488</span>
+<span id="489">489</span>
+<span id="490">490</span>
+<span id="491">491</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Component trait implementations</span>
 <span class="doccomment">//!</span>
@@ -495,9 +542,11 @@
 
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashMap</span>;
 
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">base</span>::{<span class="ident">Value</span>, <span class="ident">NodeProperties</span>, <span class="ident">SensitivitySpace</span>, <span class="ident">ValueProperties</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">base</span>::{<span class="ident">Value</span>, <span class="ident">NodeProperties</span>, <span class="ident">SensitivitySpace</span>, <span class="ident">ValueProperties</span>, <span class="ident">Array</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">proto</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">utilities</span>::<span class="ident">json</span>::{<span class="ident">JSONRelease</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">utilities</span>::<span class="ident">get_ith_release</span>;
+<span class="kw">use</span> <span class="ident">ndarray</span>::<span class="ident">ArrayD</span>;
 
 <span class="doccomment">/// Universal Component trait</span>
 <span class="doccomment">///</span>
@@ -614,7 +663,7 @@
         <span class="ident">public_arguments</span>: <span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Value</span><span class="op">&gt;</span>,
         <span class="ident">properties</span>: <span class="kw-2">&amp;</span><span class="ident">NodeProperties</span>,
         <span class="ident">release</span>: <span class="kw-2">&amp;</span><span class="ident">Value</span>,
-        <span class="ident">variable_names</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+        <span class="ident">variable_names</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">JSONRelease</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 }
 
@@ -628,6 +677,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">public_arguments</span>: <span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Value</span><span class="op">&gt;</span>,
         <span class="ident">argument_variables</span>: <span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+        <span class="ident">release</span>: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Value</span><span class="op">&gt;</span>
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 }
 
@@ -825,7 +875,7 @@
         <span class="ident">public_arguments</span>: <span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Value</span><span class="op">&gt;</span>,
         <span class="ident">properties</span>: <span class="kw-2">&amp;</span><span class="ident">NodeProperties</span>,
         <span class="ident">release</span>: <span class="kw-2">&amp;</span><span class="ident">Value</span>,
-        <span class="ident">variable_names</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>
+        <span class="ident">variable_names</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">JSONRelease</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
 
         <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">summarize</span>{
@@ -858,8 +908,9 @@
     <span class="doccomment">/// This utility delegates evaluation to the concrete implementation of each component variant.</span>
     <span class="kw">fn</span> <span class="ident">get_names</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">_public_arguments</span>: <span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Value</span><span class="op">&gt;</span>,
+        <span class="ident">public_arguments</span>: <span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Value</span><span class="op">&gt;</span>,
         <span class="ident">argument_variables</span>: <span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+        <span class="ident">release</span>: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Value</span><span class="op">&gt;</span>
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> {
 
         <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">get_names</span>{
@@ -867,7 +918,7 @@
                 {
                     $(
                        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>(<span class="ident">x</span>) <span class="op">=</span> <span class="self">self</span> {
-                            <span class="kw">return</span> <span class="ident">x</span>.<span class="ident">get_names</span>(<span class="ident">_public_arguments</span>, <span class="ident">argument_variables</span>)
+                            <span class="kw">return</span> <span class="ident">x</span>.<span class="ident">get_names</span>(<span class="ident">public_arguments</span>, <span class="ident">argument_variables</span>, <span class="ident">release</span>)
                                 .<span class="ident">chain_err</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;node specification {:?}:&quot;</span>, <span class="self">self</span>))
                        }
                     )<span class="op">*</span>
@@ -875,16 +926,59 @@
             }
         }
 
+        <span class="comment">// TODO: transforms, covariance/cross-covariance, extended indexing</span>
         <span class="macro">get_names</span><span class="macro">!</span>(
             <span class="comment">// INSERT COMPONENT LIST</span>
-<span class="comment">//            Rowmin, Dpmean, Impute</span>
-            <span class="ident">Index</span>
+            <span class="ident">Index</span>, <span class="ident">Literal</span>, <span class="ident">Materialize</span>
         );
-
-        <span class="comment">// Err(&quot;get_names not implemented&quot;.into())</span>
         
         <span class="comment">// default implementation</span>
-        <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">argument_variables</span>.<span class="ident">values</span>().<span class="ident">cloned</span>().<span class="ident">flatten</span>().<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>());
+        <span class="kw">match</span> <span class="ident">argument_variables</span>.<span class="ident">get</span>(<span class="string">&quot;data&quot;</span>) {
+            <span class="comment">// by convention, names pass through the &quot;data&quot; argument unchanged</span>
+            <span class="prelude-val">Some</span>(<span class="ident">variable_names</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">variable_names</span>.<span class="ident">clone</span>()),
+            <span class="comment">// otherwise if the component is non-standard, throw an error</span>
+            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;names are not implemented for proto component {:?}&quot;</span>, <span class="self">self</span>).<span class="ident">into</span>())
+        }
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">Named</span> <span class="kw">for</span> <span class="ident">proto</span>::<span class="ident">Literal</span> {
+    <span class="kw">fn</span> <span class="ident">get_names</span>(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="ident">_public_arguments</span>: <span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Value</span><span class="op">&gt;</span>,
+        <span class="ident">_argument_variables</span>: <span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+        <span class="ident">release</span>: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Value</span><span class="op">&gt;</span>
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+
+        <span class="kw">fn</span> <span class="ident">array_to_names</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">ToString</span> <span class="op">+</span> <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">Default</span><span class="op">&gt;</span>(<span class="ident">array</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayD</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">num_columns</span>: <span class="ident">i64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+            (<span class="number">0</span>..<span class="ident">num_columns</span> <span class="kw">as</span> <span class="ident">usize</span>)
+                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">index</span><span class="op">|</span> {
+                    <span class="kw">let</span> <span class="ident">array</span> <span class="op">=</span> <span class="ident">get_ith_release</span>(<span class="ident">array</span>, <span class="kw-2">&amp;</span><span class="ident">index</span>)<span class="question-mark">?</span>;
+                    <span class="kw">match</span> <span class="ident">array</span>.<span class="ident">ndim</span>() {
+                        <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">array</span>.<span class="ident">first</span>() {
+                            <span class="prelude-val">Some</span>(<span class="ident">value</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">value</span>.<span class="ident">to_string</span>()),
+                            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;array may not be empty&quot;</span>.<span class="ident">into</span>())
+                        },
+                        <span class="number">1</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="string">&quot;[Literal Column]&quot;</span>.<span class="ident">into</span>()),
+                        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;array has too great of a dimension&quot;</span>.<span class="ident">into</span>())
+                    }
+                })
+                .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()
+        }
+
+        <span class="kw">match</span> <span class="ident">release</span> {
+            <span class="prelude-val">Some</span>(<span class="ident">release</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">release</span> {
+                <span class="ident">Value</span>::<span class="ident">Jagged</span>(<span class="ident">jagged</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>((<span class="number">0</span>..<span class="ident">jagged</span>.<span class="ident">num_columns</span>()).<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="string">&quot;[Literal vector]&quot;</span>.<span class="ident">to_string</span>()).<span class="ident">collect</span>()),
+                <span class="ident">Value</span>::<span class="ident">Hashmap</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;names for hashmap literals are not supported&quot;</span>.<span class="ident">into</span>()),  <span class="comment">// (or necessary)</span>
+                <span class="ident">Value</span>::<span class="ident">Array</span>(<span class="ident">value</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">value</span> {
+                    <span class="ident">Array</span>::<span class="ident">F64</span>(<span class="ident">array</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">array_to_names</span>(<span class="ident">array</span>, <span class="ident">value</span>.<span class="ident">num_columns</span>()<span class="question-mark">?</span>),
+                    <span class="ident">Array</span>::<span class="ident">I64</span>(<span class="ident">array</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">array_to_names</span>(<span class="ident">array</span>, <span class="ident">value</span>.<span class="ident">num_columns</span>()<span class="question-mark">?</span>),
+                    <span class="ident">Array</span>::<span class="ident">Str</span>(<span class="ident">array</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">array_to_names</span>(<span class="ident">array</span>, <span class="ident">value</span>.<span class="ident">num_columns</span>()<span class="question-mark">?</span>),
+                    <span class="ident">Array</span>::<span class="ident">Bool</span>(<span class="ident">array</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">array_to_names</span>(<span class="ident">array</span>, <span class="ident">value</span>.<span class="ident">num_columns</span>()<span class="question-mark">?</span>),
+                }
+            },
+            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;Literals must always be accompanied by a release&quot;</span>.<span class="ident">into</span>())
+        }
     }
 }
 </pre></div>

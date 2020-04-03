@@ -208,6 +208,10 @@
 <span id="208">208</span>
 <span id="209">209</span>
 <span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
@@ -380,7 +384,7 @@
         <span class="ident">_public_arguments</span>: <span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Value</span><span class="op">&gt;</span>,
         <span class="ident">properties</span>: <span class="kw-2">&amp;</span><span class="ident">NodeProperties</span>,
         <span class="ident">release</span>: <span class="kw-2">&amp;</span><span class="ident">Value</span>,
-        <span class="ident">variable_names</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+        <span class="ident">variable_names</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">JSONRelease</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">data_property</span> <span class="op">=</span> <span class="ident">properties</span>.<span class="ident">get</span>(<span class="string">&quot;data&quot;</span>)
             .<span class="ident">ok_or</span>(<span class="string">&quot;data: missing&quot;</span>)<span class="question-mark">?</span>.<span class="ident">array</span>()
@@ -391,17 +395,21 @@
         <span class="kw">let</span> <span class="ident">num_columns</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">num_columns</span>()<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">privacy_usages</span> <span class="op">=</span> <span class="ident">broadcast_privacy_usage</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">privacy_usage</span>, <span class="ident">num_columns</span> <span class="kw">as</span> <span class="ident">usize</span>)<span class="question-mark">?</span>;
 
-        <span class="kw">for</span> <span class="ident">column_number</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">num_columns</span> {
+        <span class="kw">for</span> <span class="ident">column_number</span> <span class="kw">in</span> <span class="number">0</span>..(<span class="ident">num_columns</span> <span class="kw">as</span> <span class="ident">usize</span>) {
+            <span class="kw">let</span> <span class="ident">variable_name</span> <span class="op">=</span> <span class="ident">variable_names</span>
+                .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">names</span><span class="op">|</span> <span class="ident">names</span>.<span class="ident">get</span>(<span class="ident">column_number</span>)).<span class="ident">cloned</span>()
+                .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;[Unknown]&quot;</span>.<span class="ident">to_string</span>());
+
             <span class="kw">let</span> <span class="ident">release</span> <span class="op">=</span> <span class="ident">JSONRelease</span> {
                 <span class="ident">description</span>: <span class="string">&quot;DP release information&quot;</span>.<span class="ident">to_string</span>(),
                 <span class="ident">statistic</span>: <span class="string">&quot;DPHistogram&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="ident">variables</span>: <span class="ident">serde_json</span>::<span class="macro">json</span><span class="macro">!</span>(<span class="ident">variable_names</span>),
+                <span class="ident">variables</span>: <span class="ident">serde_json</span>::<span class="macro">json</span><span class="macro">!</span>(<span class="ident">variable_name</span>),
                 <span class="comment">// extract ith column of release</span>
                 <span class="ident">release_info</span>: <span class="ident">value_to_json</span>(<span class="kw-2">&amp;</span><span class="ident">get_ith_release</span>(
                     <span class="ident">release</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">i64</span>()<span class="question-mark">?</span>,
-                    <span class="kw-2">&amp;</span>(<span class="ident">column_number</span> <span class="kw">as</span> <span class="ident">usize</span>)
+                    <span class="kw-2">&amp;</span><span class="ident">column_number</span>
                 )<span class="question-mark">?</span>.<span class="ident">into</span>())<span class="question-mark">?</span>,
-                <span class="ident">privacy_loss</span>: <span class="ident">privacy_usage_to_json</span>(<span class="kw-2">&amp;</span><span class="ident">privacy_usages</span>[<span class="ident">column_number</span> <span class="kw">as</span> <span class="ident">usize</span>].<span class="ident">clone</span>()),
+                <span class="ident">privacy_loss</span>: <span class="ident">privacy_usage_to_json</span>(<span class="kw-2">&amp;</span><span class="ident">privacy_usages</span>[<span class="ident">column_number</span>].<span class="ident">clone</span>()),
                 <span class="ident">accuracy</span>: <span class="prelude-val">None</span>,
                 <span class="ident">batch</span>: <span class="ident">component</span>.<span class="ident">batch</span> <span class="kw">as</span> <span class="ident">u64</span>,
                 <span class="ident">node_id</span>: <span class="kw-2">*</span><span class="ident">node_id</span> <span class="kw">as</span> <span class="ident">u64</span>,
