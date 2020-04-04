@@ -19,7 +19,7 @@ with open(variant_message_map_path, 'r') as variant_message_map_file:
     variant_message_map = json.load(variant_message_map_file)
 
 
-def privacy_usage(epsilon=None, delta=None):
+def privacy_usage(epsilon=None, delta=0):
     # upgrade epsilon/delta to lists if they aren't already
     if epsilon is not None and not issubclass(type(epsilon), list):
         epsilon = [epsilon]

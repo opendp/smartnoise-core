@@ -7,6 +7,7 @@ use crate::components::Evaluable;
 use std::collections::HashMap;
 use ndarray::Array;
 use whitenoise_validator::proto;
+use whitenoise_validator::utilities::serial::parse_value;
 
 impl Evaluable for proto::Materialize {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
@@ -31,8 +32,10 @@ impl Evaluable for proto::Materialize {
             .ok_or_else(|| Error::from("data source must be supplied"))?;
         
         match data_source.value.as_ref().unwrap() {
-            // disabled until soundness checks are added
-//            proto::data_source::Value::Literal(value) => parse_value(value),
+            proto::data_source::Value::Literal(value) =>
+                // force the input to be an array- reject hashmap and jagged
+                Ok(Value::Array(parse_value(value)?.array()?.clone())),
+
             proto::data_source::Value::FilePath(path) => {
                 let mut response = (0..num_columns)
                     .map(|_| Vec::new())
