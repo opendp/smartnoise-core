@@ -18,7 +18,7 @@ impl Component for proto::Materialize {
         _properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
 
-        let column_names = self.get_names(public_arguments, &HashMap::new())?;
+        let column_names = self.get_names(public_arguments, &HashMap::new(), &None)?;
 
         let data_source = self.data_source.clone()
             .ok_or_else(|| Error::from("data source must be supplied"))?;
@@ -81,6 +81,7 @@ impl Named for proto::Materialize {
         &self,
         public_arguments: &HashMap<String, Value>,
         _argument_variables: &HashMap<String, Vec<String>>,
+        _release: &Option<&Value>
     ) -> Result<Vec<String>> {
 
         let column_names = public_arguments.get("column_names")
