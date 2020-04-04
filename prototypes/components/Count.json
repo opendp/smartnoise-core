@@ -16,5 +16,6 @@
       "continuous"
     ],
     "type": "Array"
-  }
+  },
+  "description": "Returns the number of rows in the data."
 }

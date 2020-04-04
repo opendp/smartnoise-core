@@ -49,10 +49,5 @@ impl Component for proto::Reshape {
         Ok(data_property.into())
     }
 
-    fn get_names(
-        &self,
-        _properties: &base::NodeProperties,
-    ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
-    }
+
 }

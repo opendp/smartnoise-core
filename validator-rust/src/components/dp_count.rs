@@ -6,11 +6,11 @@ use std::collections::HashMap;
 use crate::{proto, base};
 use crate::hashmap;
 use crate::components::{Component, Expandable, Report};
-
+use ndarray::{arr0};
 
 use crate::base::{NodeProperties, Value, ValueProperties};
 use crate::utilities::json::{JSONRelease, privacy_usage_to_json, AlgorithmInfo, value_to_json};
-
+use crate::utilities::{get_literal, prepend};
 
 impl Component for proto::DpCount {
     // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
@@ -23,12 +23,7 @@ impl Component for proto::DpCount {
         Err("DPCount is abstract, and has no property propagation".into())
     }
 
-    fn get_names(
-        &self,
-        _properties: &NodeProperties,
-    ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
-    }
+
 }
 
 
@@ -43,6 +38,31 @@ impl Expandable for proto::DpCount {
     ) -> Result<proto::ComponentExpansion> {
         let mut maximum_id = *maximum_id;
         let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
+        let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
+
+        let data_property = _properties.get("data")
+                                        .ok_or("data: missing")?.array()
+                                        .map_err(prepend("data:"))?;
+
+        let count_max_id = match component.arguments.get("count_max") {
+            Some(id) => id.clone(),
+            None => {
+                let count_max = match data_property.num_records {
+                    Some(num_records) => arr0(num_records).into_dyn(),
+                    None => match self.enforce_constant_time {
+                        true => return Err("count_max must be set when enforcing constant time".into()),
+                        false => arr0(std::i64::MAX).into_dyn()
+                    }
+                };
+                // count_max
+                maximum_id += 1;
+                let id_count_max = maximum_id;
+                let (patch_node, count_max_release) = get_literal(&count_max.into(), &component.batch)?;
+                computation_graph.insert(id_count_max.clone(), patch_node);
+                releases.insert(id_count_max.clone(), count_max_release);
+                id_count_max
+            }
+        };
 
         // count
         maximum_id += 1;
@@ -59,10 +79,9 @@ impl Expandable for proto::DpCount {
         computation_graph.insert(component_id.clone(), proto::Component {
             arguments: hashmap![
                 "data".to_owned() => id_count,
-                "count_min".to_owned() => *component.arguments.get("count_min")
+                "min".to_owned() => *component.arguments.get("count_min")
                     .ok_or_else(|| Error::from("count_min must be provided as an argument"))?,
-                "count_max".to_owned() => *component.arguments.get("count_max")
-                    .ok_or_else(|| Error::from("count_max must be provided as an argument"))?
+                "max".to_owned() => count_max_id
             ],
             variant: Some(proto::component::Variant::from(proto::SimpleGeometricMechanism {
                 privacy_usage: self.privacy_usage.clone(),
@@ -76,7 +95,7 @@ impl Expandable for proto::DpCount {
         Ok(proto::ComponentExpansion {
             computation_graph,
             properties: HashMap::new(),
-            releases: HashMap::new(),
+            releases,
             traversal: vec![id_count]
         })
     }
@@ -89,12 +108,13 @@ impl Report for proto::DpCount {
         component: &proto::Component,
         _public_arguments: &HashMap<String, Value>,
         _properties: &NodeProperties,
-        release: &Value
+        release: &Value,
+        variable_names: Option<&Vec<String>>,
     ) -> Result<Option<Vec<JSONRelease>>> {
         Ok(Some(vec![JSONRelease {
             description: "DP release information".to_string(),
             statistic: "DPCount".to_string(),
-            variables: serde_json::json!(Vec::<String>::new()),
+            variables: serde_json::json!(variable_names.cloned().unwrap_or_else(Vec::new).clone()),
             release_info: value_to_json(&release)?,
             privacy_loss: privacy_usage_to_json(&self.privacy_usage[0].clone()),
             accuracy: None,

@@ -4,8 +4,7 @@
       "nature": [
         "continuous"
       ],
-      "type": "Array",
-      "description": "Data for which you want the quantiles."
+      "type": "Array"
     }
   },
   "id": "Quantile",
@@ -18,7 +17,7 @@
     "interpolation": {
       "type": "string",
       "default": "'midpoint'",
-      "description": "interpolation strategy. Must be one of \"lower\", \"upper\", \"midpoint\", \"nearest\", \"linear\""
+      "description": "Interpolation strategy. Must be one of \"lower\", \"upper\", \"midpoint\", \"nearest\", \"linear\"."
     }
   },
   "return": {

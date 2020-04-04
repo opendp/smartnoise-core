@@ -1,3 +1,12 @@
+//! The Whitenoise rust validator contains methods for evaluating and constructing 
+//! differentially private analyses.
+//! 
+//! The validator defines a set of statically checkable properties that are 
+//! necessary for a differentially private analysis, and then checks that the submitted analysis
+//! satisfies the properties.
+//!
+//! The validator also takes simple components from the Whitenoise runtime and combines them 
+//! into more complex mechanisms.
 
 // `error_chain!` can recurse deeply
 #![recursion_limit = "1024"]
@@ -112,10 +121,43 @@ pub fn generate_report(
     let (graph_properties, _graph_expanded) = utilities::propagate_properties(analysis, release)?;
     let release = utilities::serial::parse_release(&release)?;
 
+    // variable names
+    let mut nodes_varnames: HashMap<u32, Vec<String>> = HashMap::new();
+
+    utilities::get_traversal(&graph)?.iter().map(|node_id| {
+
+        let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
+        let public_arguments = utilities::get_input_arguments(&component, &release)?;
+
+        // variable names for argument nodes
+        let mut arguments_vars: HashMap<String, Vec<String>> = HashMap::new();
+
+        // iterate through argument nodes
+        for (field_id, field) in &component.arguments {
+            // get variable names corresponding to that argument
+            if let Some(arg_vars) = nodes_varnames.get(field) {
+                arguments_vars.insert(field_id.clone(), arg_vars.clone());
+            }
+        }
+
+        // get variable names for this node
+        let node_vars = component.variant
+            .ok_or_else(|| Error::from("component variant must be defined"))?
+            .get_names(&public_arguments, &arguments_vars, &release.get(node_id));
+
+        // update names in hashmap
+        node_vars.map(|v| nodes_varnames.insert(node_id.clone(), v)).ok();
+
+        Ok(())
+    }).collect::<Result<()>>()
+        // ignore any error- still generate the report even if node names could not be derived
+        .ok();
+
     let release_schemas = graph.iter()
         .map(|(node_id, component)| {
             let public_arguments = utilities::get_input_arguments(&component, &release)?;
             let input_properties = utilities::get_input_properties(&component, &graph_properties)?;
+            let variable_names = nodes_varnames.get(&node_id);
             // ignore nodes without released values
             let node_release = match release.get(node_id) {
                 Some(node_release) => node_release,
@@ -124,11 +166,13 @@ pub fn generate_report(
             component.variant.as_ref()
                 .ok_or_else(|| Error::from("component variant must be defined"))?
                 .summarize(
-                &node_id,
-                &component,
-                &public_arguments,
-                &input_properties,
-                &node_release)
+                    &node_id,
+                    &component,
+                    &public_arguments,
+                    &input_properties,
+                    &node_release,
+                    variable_names,
+                )
         })
         .collect::<Result<Vec<Option<Vec<utilities::json::JSONRelease>>>>>()?.into_iter()
         .filter_map(|v| v).flat_map(|v| v)

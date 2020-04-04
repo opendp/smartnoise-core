@@ -1,4 +1,8 @@
-/// The Whitenoise rust runtime is an execution engine for evaluating differentially private analyses.
+//! The Whitenoise rust runtime is an execution engine for evaluating differentially private analyses.
+//! 
+//! The runtime contains implementations of basic data transformations and aggregations, 
+//! statistics, and privatizing mechanisms. These functions are combined in the 
+//! Whitenoise validator to create more complex differentially private analyses. 
 
 extern crate whitenoise_validator;
 

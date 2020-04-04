@@ -69,12 +69,6 @@ impl Component for proto::Covariance {
         }
     }
 
-    fn get_names(
-        &self,
-        _properties: &NodeProperties,
-    ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
-    }
 }
 
 impl Aggregator for proto::Covariance {

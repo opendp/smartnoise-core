@@ -5,21 +5,24 @@
         "continuous"
       ],
       "type": "Array",
-      "default": "None"
+      "default": "None",
+      "description": "Left data array used to calculate cross-covariance matrix. Used only if `data` not provided."
     },
     "right": {
       "nature": [
         "continuous"
       ],
       "type": "Array",
-      "default": "None"
+      "default": "None",
+      "description": "Right data array used to calculate cross-covariance matrix. Used only if `data` not provided."
     },
     "data": {
       "nature": [
         "continuous"
       ],
       "type": "Array",
-      "default": "None"
+      "default": "None",
+      "description": "2D data array used to construct covariance matrix."
     }
   },
   "id": "DPCovariance",
@@ -27,10 +30,12 @@
   "options": {
     "implementation": {
       "type": "string",
-      "default": "'Laplace'"
+      "default": "'Laplace'",
+      "description": "Privatizing mechanism to use."
     },
     "privacy_usage": {
-      "type": "repeated PrivacyUsage"
+      "type": "repeated PrivacyUsage",
+      "description": "Object describing the type and amount of privacy to be used for the mechanism release."
     },
     "finite_sample_correction": {
       "type": "bool",
@@ -39,6 +44,8 @@
     }
   },
   "return": {
-    "type": "Array"
-  }
+    "type": "Array",
+    "description": "Flattened covariance or cross-covariance matrix."
+  },
+  "description": "Calculate differentially privatecovariance.\n\n If `data` argument is provided as a 2D array, calculate covariance matrix. Otherwise, `left` and `right` 1D arrays are used to calculate a cross-covariance matrix between elements of the two arrays."
 }

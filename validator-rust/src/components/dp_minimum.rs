@@ -23,12 +23,7 @@ impl Component for proto::DpMinimum {
         Err("DPMinimum is abstract, and has no property propagation".into())
     }
 
-    fn get_names(
-        &self,
-        _properties: &NodeProperties,
-    ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
-    }
+
 }
 
 impl Expandable for proto::DpMinimum {
@@ -84,6 +79,7 @@ impl Report for proto::DpMinimum {
         _public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
         release: &Value,
+        variable_names: Option<&Vec<String>>,
     ) -> Result<Option<Vec<JSONRelease>>> {
         let data_property = properties.get("data")
             .ok_or("data: missing")?.array()
@@ -97,17 +93,20 @@ impl Report for proto::DpMinimum {
 
         let privacy_usages = broadcast_privacy_usage(&self.privacy_usage, num_columns as usize)?;
 
-        for column_number in 0..num_columns {
+        for column_number in 0..(num_columns as usize) {
+            let variable_name = variable_names
+                .and_then(|names| names.get(column_number)).cloned()
+                .unwrap_or_else(|| "[Unknown]".to_string());
             releases.push(JSONRelease {
                 description: "DP release information".to_string(),
                 statistic: "DPMinimum".to_string(),
-                variables: serde_json::json!(Vec::<String>::new()),
+                variables: serde_json::json!(variable_name),
                 release_info: match release.array()? {
-                    Array::F64(v) => value_to_json(&get_ith_release(v, &(column_number as usize))?.into())?,
-                    Array::I64(v) => value_to_json(&get_ith_release(v, &(column_number as usize))?.into())?,
+                    Array::F64(v) => value_to_json(&get_ith_release(v, &column_number)?.into())?,
+                    Array::I64(v) => value_to_json(&get_ith_release(v, &column_number)?.into())?,
                     _ => return Err("maximum must be numeric".into())
                 },
-                privacy_loss: privacy_usage_to_json(&privacy_usages[column_number as usize].clone()),
+                privacy_loss: privacy_usage_to_json(&privacy_usages[column_number].clone()),
                 accuracy: None,
                 batch: component.batch as u64,
                 node_id: *node_id as u64,
@@ -118,8 +117,8 @@ impl Report for proto::DpMinimum {
                     mechanism: self.implementation.clone(),
                     argument: serde_json::json!({
                         "constraint": {
-                            "lowerbound": minimums[column_number as usize],
-                            "upperbound": maximums[column_number as usize]
+                            "lowerbound": minimums[column_number],
+                            "upperbound": maximums[column_number]
                         }
                     }),
                 }

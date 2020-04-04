@@ -30,7 +30,7 @@
       ],
       "type": "Array",
       "default": "True",
-      "description": "Whether or not the left edge of the bin is inclusive, i.e. the bins are of the form [lower, upper)."
+      "description": "Whether or not the left edge of the bin is inclusive. If `true` bins are of the form [lower, upper). Otherwise, bins are of the form (lower, upper]."
     }
   },
   "id": "Bin",

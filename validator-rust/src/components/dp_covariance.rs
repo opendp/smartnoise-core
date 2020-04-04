@@ -24,12 +24,6 @@ impl Component for proto::DpCovariance {
         Err("DPCovariance is abstract, and has no property propagation".into())
     }
 
-    fn get_names(
-        &self,
-        _properties: &NodeProperties,
-    ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
-    }
 }
 
 
@@ -132,7 +126,8 @@ impl Report for proto::DpCovariance {
         component: &proto::Component,
         _public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
-        release: &Value
+        release: &Value,
+        variable_names: Option<&Vec<String>>,
     ) -> Result<Option<Vec<JSONRelease>>> {
 
         let argument;
@@ -179,7 +174,7 @@ impl Report for proto::DpCovariance {
         Ok(Some(vec![JSONRelease {
             description: "DP release information".to_string(),
             statistic,
-            variables: serde_json::json!(Vec::<String>::new()),
+            variables: serde_json::json!(variable_names.cloned().unwrap_or_else(Vec::new).clone()),
             release_info: value_to_json(&release)?,
             privacy_loss: serde_json::json![privacy_usage],
             accuracy: None,
