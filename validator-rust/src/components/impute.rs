@@ -8,7 +8,7 @@ use crate::proto;
 use crate::components::{Component, Expandable};
 
 use ndarray;
-use crate::base::{Vector1DNull, Nature, NatureContinuous, Value, Array, ValueProperties};
+use crate::base::{Vector1DNull, Nature, NatureContinuous, Value, Array, ValueProperties, DataType};
 use crate::utilities::{prepend, get_literal};
 
 
@@ -22,34 +22,49 @@ impl Component for proto::Impute {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
+        data_property.assert_is_not_aggregated()?;
+
+        if data_property.data_type == DataType::I64 {
+            return Ok(data_property.into())
+        }
+
+        if let Some(_categories) = public_arguments.get("categories") {
+            // TODO: propagation of categories through imputation and resize
+            data_property.nature = None;
+            return Ok(data_property.into());
+        }
 
         let num_columns = data_property.num_columns
             .ok_or("data: number of columns missing")?;
         // 1. check public arguments (constant n)
         let impute_minimum = match public_arguments.get("min") {
-            Some(min) => min.array()?.clone().vec_f64(Some(num_columns))?,
+            Some(min) => min.array()?.clone().vec_f64(Some(num_columns))
+                .map_err(prepend("min:"))?,
 
             // 2. then private arguments (for example from another clamped column)
             None => match properties.get("min") {
-                Some(min) => min.array()?.min_f64()?,
+                Some(min) => min.array()?.min_f64()
+                    .map_err(prepend("min:"))?,
 
                 // 3. then data properties (propagated from prior clamping/min/max)
                 None => data_property
-                    .min_f64()?
+                    .min_f64().map_err(prepend("min:"))?
             }
         };
 
         // 1. check public arguments (constant n)
         let impute_maximum = match public_arguments.get("max") {
-            Some(max) => max.array()?.clone().vec_f64(Some(num_columns))?,
+            Some(max) => max.array()?.clone().vec_f64(Some(num_columns))
+                .map_err(prepend("max:"))?,
 
             // 2. then private arguments (for example from another clamped column)
             None => match properties.get("max") {
-                Some(min) => min.array()?.max_f64()?,
+                Some(min) => min.array()?.max_f64()
+                    .map_err(prepend("max:"))?,
 
                 // 3. then data properties (propagated from prior clamping/min/max)
                 None => data_property
-                    .max_f64()?
+                    .max_f64().map_err(prepend("max:"))?
             }
         };
 
@@ -107,26 +122,28 @@ impl Expandable for proto::Impute {
 
         let mut component = component.clone();
 
-        if !properties.contains_key("min") {
-            current_id += 1;
-            let id_min = current_id;
-            let value = Value::Array(Array::F64(
-                ndarray::Array::from(properties.get("data").unwrap().to_owned().array()?.min_f64()?).into_dyn()));
-            let (patch_node, release) = get_literal(&value, &component.batch)?;
-            computation_graph.insert(id_min.clone(), patch_node);
-            releases.insert(id_min.clone(), release);
-            component.arguments.insert("min".to_string(), id_min);
-        }
+        if !properties.contains_key("categories") {
+            if !properties.contains_key("min") {
+                current_id += 1;
+                let id_min = current_id;
+                let value = Value::Array(Array::F64(
+                    ndarray::Array::from(properties.get("data").unwrap().to_owned().array()?.min_f64()?).into_dyn()));
+                let (patch_node, release) = get_literal(&value, &component.batch)?;
+                computation_graph.insert(id_min.clone(), patch_node);
+                releases.insert(id_min.clone(), release);
+                component.arguments.insert("min".to_string(), id_min);
+            }
 
-        if !properties.contains_key("max") {
-            current_id += 1;
-            let id_max = current_id;
-            let value = Value::Array(Array::F64(
-                ndarray::Array::from(properties.get("data").unwrap().to_owned().array()?.max_f64()?).into_dyn()));
-            let (patch_node, release) = get_literal(&value, &component.batch)?;
-            computation_graph.insert(id_max.clone(), patch_node);
-            releases.insert(id_max.clone(), release);
-            component.arguments.insert("max".to_string(), id_max);
+            if !properties.contains_key("max") {
+                current_id += 1;
+                let id_max = current_id;
+                let value = Value::Array(Array::F64(
+                    ndarray::Array::from(properties.get("data").unwrap().to_owned().array()?.max_f64()?).into_dyn()));
+                let (patch_node, release) = get_literal(&value, &component.batch)?;
+                computation_graph.insert(id_max.clone(), patch_node);
+                releases.insert(id_max.clone(), release);
+                component.arguments.insert("max".to_string(), id_max);
+            }
         }
 
         computation_graph.insert(component_id.clone(), component);

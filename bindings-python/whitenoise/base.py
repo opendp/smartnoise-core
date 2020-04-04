@@ -186,8 +186,8 @@ class Component(object):
 
     def __truediv__(self, other):
         return Component('Divide', arguments={
-            'left': Component('Cast', arguments={'data': self, "type": Component.of("FLOAT")}),
-            'right': Component('Cast', arguments={'data': Component.of(other), "type": Component.of("FLOAT")})})
+            'left': Component('Cast', arguments={'data': self}, options={"type": "float"}),
+            'right': Component('Cast', arguments={'data': Component.of(other)}, options={"type": "float"})})
 
     def __rtruediv__(self, other):
         return Component('Divide', arguments={'left': Component.of(other), 'right': self})
@@ -199,7 +199,7 @@ class Component(object):
         return Component('Modulo', arguments={'left': Component.of(other), 'right': self})
 
     def __pow__(self, power, modulo=None):
-        return Component('Power', arguments={'left': self, 'right': Component.of(power)})
+        return Component('Power', arguments={'data': self, 'radical': Component.of(power)})
 
     def __rpow__(self, other):
         return Component('Power', arguments={'left': Component.of(other), 'right': self})
@@ -278,6 +278,10 @@ class Component(object):
         if value is None:
             return
 
+        # count can take the entire dataset as an argument
+        if type(value) == Dataset:
+            value = value.component
+
         if type(value) == Component:
             return value
 
@@ -304,6 +308,8 @@ class Component(object):
                     "min": min_component,
                     "max": max_component
                 })
+
+                # TODO: imputation on ints is unnecessary
                 arguments[argument] = Component('Impute', arguments={
                     "data": arguments[argument]
                 })

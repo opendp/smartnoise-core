@@ -6,8 +6,8 @@ use std::collections::HashMap;
 use crate::{proto, base};
 
 use crate::components::{Component, Aggregator};
-use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties};
-use crate::utilities::prepend;
+use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType};
+use crate::utilities::{prepend, is_conformable};
 use ndarray::prelude::*;
 
 impl Component for proto::Covariance {
@@ -22,6 +22,7 @@ impl Component for proto::Covariance {
                 .ok_or("data: missing")?.array()
                 .map_err(prepend("data:"))?.clone();
 
+            data_property.assert_is_not_aggregated()?;
             // save a snapshot of the state when aggregating
             data_property.aggregator = Some(AggregatorProperties {
                 component: proto::component::Variant::from(self.clone()),
@@ -32,6 +33,9 @@ impl Component for proto::Covariance {
             data_property.num_records = Some(1);
             data_property.num_columns = Some(num_columns * (num_columns + 1) / 2);
 
+            if data_property.data_type != DataType::F64 {
+                return Err("data: atomic type must be float".into())
+            }
             // min/max of data is not known after computing covariance
             data_property.nature = None;
             Ok(data_property.into())
@@ -44,17 +48,24 @@ impl Component for proto::Covariance {
                 .ok_or("right: missing")?.array()
                 .map_err(prepend("right:"))?.clone();
 
+
+            if left_property.data_type != DataType::F64 {
+                return Err("left: atomic type must be float".into())
+            }
+            if right_property.data_type != DataType::F64 {
+                return Err("right: atomic type must be float".into())
+            }
+            left_property.assert_is_not_aggregated()?;
+            right_property.assert_is_not_aggregated()?;
+
             // save a snapshot of the state when aggregating
             left_property.aggregator = Some(AggregatorProperties {
                 component: proto::component::Variant::from(self.clone()),
                 properties: properties.clone(),
             });
 
-            let left_n = left_property.num_records()?;
-            let right_n = right_property.num_records()?;
-
-            if left_n != right_n {
-                return Err("n for left and right must be equivalent".into());
+            if !is_conformable(&left_property, &right_property) {
+                return Err("left and right property must be known to be conformable statically".into())
             }
 
             left_property.nature = None;
@@ -68,7 +79,6 @@ impl Component for proto::Covariance {
             Err("either \"data\" for covariance, or \"left\" and \"right\" for cross-covariance must be supplied".into())
         }
     }
-
 }
 
 impl Aggregator for proto::Covariance {

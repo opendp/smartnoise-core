@@ -17,7 +17,7 @@
       "default": "None",
       "description": "Set of categories in data. Used only if data are of `categorical` nature."
     },
-    "null": {
+    "null_value": {
       "type": "Array",
       "default": "None",
       "description": "The value to which elements not included in `categories` will be mapped for each column of the data. Used only if `categories` is not `None`."

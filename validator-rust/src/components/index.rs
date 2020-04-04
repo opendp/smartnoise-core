@@ -85,15 +85,19 @@ impl Component for proto::Index {
                             .collect::<Result<Vec<ValueProperties>>>()
                 }
             },
-            ValueProperties::Array(data_property) => match column_names {
-                Array::I64(indices) => to_name_vec(&indices)?.into_iter()
-                    .map(|index| select_properties(&data_property, &(index as usize)))
-                    .collect::<Result<Vec<ValueProperties>>>(),
-                Array::Bool(mask) => to_name_vec(&mask)?.into_iter()
-                    .enumerate().filter(|(_, mask)| *mask)
-                    .map(|(idx, _)| select_properties(&data_property, &idx))
-                    .collect::<Result<Vec<ValueProperties>>>(),
-                _ => return Err("the data type of the indices are not supported".into())
+            ValueProperties::Array(data_property) => {
+                data_property.assert_is_not_aggregated()?;
+
+                match column_names {
+                    Array::I64(indices) => to_name_vec(&indices)?.into_iter()
+                        .map(|index| select_properties(&data_property, &(index as usize)))
+                        .collect::<Result<Vec<ValueProperties>>>(),
+                    Array::Bool(mask) => to_name_vec(&mask)?.into_iter()
+                        .enumerate().filter(|(_, mask)| *mask)
+                        .map(|(idx, _)| select_properties(&data_property, &idx))
+                        .collect::<Result<Vec<ValueProperties>>>(),
+                    _ => return Err("the data type of the indices are not supported".into())
+                }
             },
             ValueProperties::Jagged(_) => Err("indexing is not supported on vectors".into())
         }?;

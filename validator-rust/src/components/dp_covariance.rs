@@ -5,26 +5,13 @@ use std::collections::HashMap;
 
 use crate::{proto, base};
 use crate::hashmap;
-use crate::components::{Component, Expandable, Report};
+use crate::components::{Expandable, Report};
 
 
-use crate::base::{NodeProperties, Value, ValueProperties};
+use crate::base::{NodeProperties, Value};
 use crate::utilities::json::{JSONRelease, value_to_json, AlgorithmInfo, privacy_usage_to_json};
 use std::convert::TryFrom;
 use crate::utilities::prepend;
-
-
-impl Component for proto::DpCovariance {
-    fn propagate_property(
-        &self,
-        _privacy_definition: &proto::PrivacyDefinition,
-        _public_arguments: &HashMap<String, Value>,
-        _properties: &base::NodeProperties,
-    ) -> Result<ValueProperties> {
-        Err("DPCovariance is abstract, and has no property propagation".into())
-    }
-
-}
 
 
 impl Expandable for proto::DpCovariance {

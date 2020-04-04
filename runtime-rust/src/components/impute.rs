@@ -14,26 +14,31 @@ use std::hash::Hash;
 
 impl Evaluable for proto::Impute {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        let uniform: String = "Uniform".to_string(); // Distributions
-        let gaussian: String = "Gaussian".to_string();
 
         // if categories argument is not None, treat data as categorical (regardless of atomic type)
         if arguments.contains_key("categories") {
-            match (get_argument(&arguments, "data")?, get_argument(&arguments, "categories")?, get_argument(&arguments, "probabilities")?, get_argument(&arguments, "null")?) {
-                (Value::Array(data), Value::Jagged(categories), Value::Jagged(probabilities), Value::Jagged(nulls)) => Ok(match (data, categories, probabilities, nulls) {
-                    (Array::Bool(data), Jagged::Bool(categories), Jagged::F64(probabilities), Jagged::Bool(nulls)) =>
-                        impute_categorical(&data, &categories, &probabilities, &nulls)?.into(),
-                    (Array::F64(_), Jagged::F64(_), Jagged::F64(_), Jagged::F64(_)) =>
-                        return Err("categorical imputation over floats is not currently supported".into()),
-//                        impute_categorical(&data, &categories, &probabilities, &nulls)?.into(),
-                    (Array::I64(data), Jagged::I64(categories), Jagged::F64(probabilities), Jagged::I64(nulls)) =>
-                        impute_categorical(&data, &categories, &probabilities, &nulls)?.into(),
-                    (Array::Str(data), Jagged::Str(categories), Jagged::F64(probabilities), Jagged::Str(nulls)) =>
-                        impute_categorical(&data, &categories, &probabilities, &nulls)?.into(),
-                    _ => return Err("types of data, categories, and null must be consistent and probabilities must be f64".into())
-                }),
-                _ => return Err("data and null must be ArrayND, categories and probabilities must be Vector2DJagged".into())
-            }
+            let weights = get_argument(&arguments, "weights")
+                .and_then(|v| v.jagged()).and_then(|v| v.f64()).ok();
+
+            Ok(match (
+                get_argument(&arguments, "data")?.array()?,
+                get_argument(&arguments, "categories")?.jagged()?,
+                get_argument(&arguments, "null_values")?.jagged()?) {
+
+                (Array::Bool(data), Jagged::Bool(categories), Jagged::Bool(nulls)) =>
+                    impute_categorical(&data, &categories, &weights, &nulls)?.into(),
+
+                (Array::F64(_), Jagged::F64(_), Jagged::F64(_)) =>
+                    return Err("categorical imputation over floats is not currently supported".into()),
+//                        impute_categorical(&data, &categories, &weights, &nulls)?.into(),
+
+                (Array::I64(data), Jagged::I64(categories), Jagged::I64(nulls)) =>
+                    impute_categorical(&data, &categories, &weights, &nulls)?.into(),
+
+                (Array::Str(data), Jagged::Str(categories), Jagged::Str(nulls)) =>
+                    impute_categorical(&data, &categories, &weights, &nulls)?.into(),
+                _ => return Err("types of data, categories, and null must be consistent and probabilities must be f64".into()),
+            })
         }
         // if categories argument is None, treat data as continuous
         else {
@@ -43,11 +48,11 @@ impl Evaluable for proto::Impute {
                 Err(_) => "Uniform".to_string()
             };
 
-            match &distribution.clone() {
+            match distribution.to_lowercase().as_str() {
                 // if specified distribution is uniform, identify whether underlying data are of atomic type f64 or i64
                 // if f64, impute uniform values
                 // if i64, no need to impute (numeric imputation replaces only f64::NAN values, which are not defined for the i64 type)
-                x if x == &uniform => {
+                "uniform" => {
                     return Ok(match (get_argument(&arguments, "data")?, get_argument(&arguments, "min")?, get_argument(&arguments, "max")?) {
                         (Value::Array(data), Value::Array(min), Value::Array(max)) => match (data, min, max) {
                             (Array::F64(data), Array::F64(min), Array::F64(max)) =>
@@ -61,7 +66,7 @@ impl Evaluable for proto::Impute {
                     })
                 },
                 // if specified distribution is Gaussian, get necessary arguments and impute
-                x if x == &gaussian => {
+                "gaussian" => {
                     let data = get_argument(&arguments, "data")?.array()?.f64()?;
                     let min = get_argument(&arguments, "min")?.array()?.f64()?;
                     let max = get_argument(&arguments, "max")?.array()?.f64()?;
@@ -201,9 +206,9 @@ pub fn impute_float_gaussian(data: &ArrayD<f64>, min: &ArrayD<f64>, max: &ArrayD
 /// let categories: Vec<Option<Vec<String>>> = vec![Some(vec!["a".to_string(), "c".to_string()]),
 ///                                                 Some(vec!["b".to_string(), "d".to_string()]),
 ///                                                 Some(vec!["f".to_string()])];
-/// let weights: Vec<Option<Vec<f64>>> = vec![Some(vec![1., 1.]),
-///                                           Some(vec![1., 2.]),
-///                                           Some(vec![1.])];
+/// let weights = Some(vec![vec![1., 1.],
+///                         vec![1., 2.],
+///                         vec![1.]]);
 /// let null_value: Vec<Option<Vec<String>>> = vec![Some(vec!["null_1".to_string()]),
 ///                                                 Some(vec!["null_2".to_string()]),
 ///                                                 Some(vec!["null_3".to_string()])];
@@ -212,7 +217,7 @@ pub fn impute_float_gaussian(data: &ArrayD<f64>, min: &ArrayD<f64>, max: &ArrayD
 /// # imputed.unwrap();
 /// ```
 pub fn impute_categorical<T>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>,
-                             weights: &Vec<Option<Vec<f64>>>, null_value: &Vec<Option<Vec<T>>>)
+                             weights: &Option<Vec<Vec<f64>>>, null_value: &Vec<Option<Vec<T>>>)
                              -> Result<ArrayD<T>> where T:Clone, T:PartialEq, T:Default, T: Ord, T: Hash {
 
     let mut data = data.clone();
@@ -220,9 +225,9 @@ pub fn impute_categorical<T>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>,
     let num_columns = get_num_columns(&data)?;
 
     let categories = standardize_categorical_argument(&categories, &num_columns)?;
-    let probabilities = standardize_weight_argument(&categories, &weights)?;
+    let lengths = categories.iter().map(|cats| cats.len() as i64).collect::<Vec<i64>>();
+    let probabilities = standardize_weight_argument(&weights, &lengths)?;
     let null_value = standardize_null_candidates_argument(&null_value, &num_columns)?;
-//        .iter().map(|candidates| HashSet::from_iter(candidates.iter())).collect::<Vec<HashSet<T>>>();
 
     // iterate over the generalized columns
     data.gencolumns_mut().into_iter()

@@ -218,9 +218,6 @@ impl Component for proto::component::Variant {
             // INSERT COMPONENT LIST
             Bin, Cast, Clamp, Count, Covariance, Digitize,
 
-            DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMedian, DpMinimum,
-            DpMomentRaw, DpSum, DpVariance,
-
             Filter, Histogram, Impute, Index, KthRawSampleMoment, Materialize, Maximum, Mean,
 
             GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism,
@@ -264,7 +261,9 @@ impl Expandable for proto::component::Variant {
             // INSERT COMPONENT LIST
             Clamp, DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMedian, DpMinimum,
             DpMomentRaw, DpSum, DpVariance, Histogram, Impute, GaussianMechanism,
-            LaplaceMechanism, SimpleGeometricMechanism, Resize
+            LaplaceMechanism, SimpleGeometricMechanism, Resize,
+
+            ToBool, ToFloat, ToInt, ToString
         );
 
         // no expansion

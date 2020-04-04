@@ -8,7 +8,7 @@ use crate::components::{Aggregator, Accuracy};
 use crate::{proto, base};
 
 use crate::components::{Component, Expandable};
-use crate::base::{Value, SensitivitySpace, ValueProperties};
+use crate::base::{Value, SensitivitySpace, ValueProperties, DataType};
 use crate::utilities::{prepend, expand_mechanism};
 
 
@@ -23,6 +23,10 @@ impl Component for proto::LaplaceMechanism {
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
+        if data_property.data_type != DataType::F64 && data_property.data_type != DataType::I64 {
+            return Err("data: atomic type must be numeric".into())
+        }
+
         let aggregator = data_property.aggregator.clone()
             .ok_or_else(|| Error::from("aggregator: missing"))?;
 
@@ -33,8 +37,8 @@ impl Component for proto::LaplaceMechanism {
             &SensitivitySpace::KNorm(1))?;
 
         data_property.aggregator = None;
-
         data_property.releasable = true;
+
         Ok(data_property.into())
     }
 

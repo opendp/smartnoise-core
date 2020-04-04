@@ -7,7 +7,7 @@ use crate::errors::*;
 
 use crate::proto;
 
-use crate::base::{Release, Value, ValueProperties, SensitivitySpace, NodeProperties};
+use crate::base::{Release, Value, ValueProperties, SensitivitySpace, NodeProperties, ArrayProperties};
 use std::collections::{HashMap, HashSet, BTreeSet};
 use std::hash::Hash;
 use crate::utilities::serial::{parse_release, parse_value_properties, serialize_value, parse_value};
@@ -230,9 +230,12 @@ pub fn uniform_density(length: usize) -> Vec<f64> {
 
 /// Convert weights to probabilities
 #[doc(hidden)]
-pub fn normalize_probabilities(weights: &[f64]) -> Vec<f64> {
+pub fn normalize_probabilities(weights: &[f64]) -> Result<Vec<f64>> {
+    if !weights.iter().all(|w| w >= &0.) {
+        return Err("all weights must be greater than zero".into())
+    }
     let sum: f64 = weights.iter().sum();
-    weights.iter().map(|prob| prob / sum).collect()
+    Ok(weights.iter().map(|prob| prob / sum).collect())
 }
 
 pub fn standardize_float_argument(
@@ -340,33 +343,31 @@ pub fn standardize_null_target_argument<T: Clone>(
 
 /// Given categories and a jagged categories weights array, conduct well-formedness checks and return a standardized set of probabilities.
 #[doc(hidden)]
-pub fn standardize_weight_argument<T>(
-    categories: &[Vec<T>],
-    weights: &[Option<Vec<f64>>],
+pub fn standardize_weight_argument(
+    weights: &Option<Vec<Vec<f64>>>,
+    lengths: &[i64],
 ) -> Result<Vec<Vec<f64>>> {
+    let weights = weights.clone().unwrap_or_else(|| vec![]);
+
     match weights.len() {
-        0 => Ok(categories.iter()
-            .map(|cats| uniform_density(cats.len()))
+        0 => Ok(lengths.iter()
+            .map(|length| uniform_density(*length as usize))
             .collect::<Vec<Vec<f64>>>()),
         1 => {
-            let weights = match weights[0].clone() {
-                Some(weights) => normalize_probabilities(&weights),
-                None => uniform_density(categories[0].len())
-            };
+            let probabilities = normalize_probabilities(&weights[0])?;
 
-            categories.iter()
-                .map(|cats| if cats.len() == weights.len() {
-                    Ok(weights.clone())
+            lengths.iter()
+                .map(|length| if *length as usize == weights.len() {
+                    Ok(probabilities.clone())
                 } else {
                     Err("length of weights does not match number of categories".into())
                 }).collect::<Result<Vec<Vec<f64>>>>()
+        },
+        _ => if lengths.len() == weights.len() {
+            weights.iter().map(|v| normalize_probabilities(v)).collect::<Result<Vec<Vec<f64>>>>()
+        } else {
+            Err("category weights must be the same length as categories, or none".into())
         }
-        _ => if categories.len() == weights.len() {
-            categories.iter().zip(weights.iter()).map(|(_cats, weights)| match weights {
-                Some(weights) => Ok(normalize_probabilities(weights)),
-                None => Err("category weights must be set once, for all categories, or none".into())
-            }).collect::<Result<Vec<Vec<f64>>>>()
-        } else { Err("category weights must be the same length as categories, or none".into()) }
     }
 }
 
@@ -550,4 +551,14 @@ pub fn get_ith_release<T: Clone + Default>(value: &ArrayD<T>, i: &usize) -> Resu
 
 pub fn deduplicate<T: Eq + Hash + Ord>(values: Vec<T>) -> Vec<T> {
     BTreeSet::from_iter(values.into_iter()).into_iter().collect()
+}
+
+pub fn is_conformable(left: &ArrayProperties, right: &ArrayProperties) -> bool {
+    match (left.num_columns, right.num_columns) {
+        (Some(l), Some(r)) => l == r,
+        _ => match (left.dataset_id, right.dataset_id) {
+            (Some(l), Some(r)) => l == r,
+            _ => false
+        }
+    }
 }

@@ -1,21 +1,25 @@
 use whitenoise_validator::errors::*;
 
 use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value};
+use whitenoise_validator::base::{Value, Array};
 use whitenoise_validator::utilities::{get_argument, broadcast_privacy_usage, broadcast_ndarray};
 use crate::components::Evaluable;
 use crate::utilities;
 use whitenoise_validator::proto;
-use ndarray::Array;
+use ndarray;
 
 impl Evaluable for proto::LaplaceMechanism {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        let mut data = get_argument(&arguments, "data")?.array()?.f64()?.clone();
+        let mut data = match get_argument(&arguments, "data")?.array()? {
+            Array::F64(data) => data.clone(),
+            Array::I64(data) => data.mapv(|v| v as f64),
+            _ => return Err("data must be numeric".into())
+        };
         let sensitivity = get_argument(&arguments, "sensitivity")?.array()?.f64()?;
 
         let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivity.len())?;
 
-        let epsilon = Array::from_shape_vec(
+        let epsilon = ndarray::Array::from_shape_vec(
             data.shape(), usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?)?;
 
         data.gencolumns_mut().into_iter()
@@ -35,16 +39,25 @@ impl Evaluable for proto::LaplaceMechanism {
 
 impl Evaluable for proto::GaussianMechanism {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        let mut data = get_argument(&arguments, "data")?.array()?.f64()?.clone();
+        let mut data = match get_argument(&arguments, "data")?.array()? {
+            Array::F64(data) => data.clone(),
+            Array::I64(data) => data.mapv(|v| v as f64),
+            _ => return Err("data must be numeric".into())
+        };
+//        println!("data: {:?}", data.shape());
+
         let sensitivity = get_argument(&arguments, "sensitivity")?.array()?.f64()?;
+//        println!("sensitivity: {:?}", sensitivity.shape());
 
         let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivity.len())?;
 
-        let epsilon = Array::from_shape_vec(
+        let epsilon = ndarray::Array::from_shape_vec(
             data.shape(), usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?)?;
+//        println!("epsilon: {:?}", epsilon.shape());
 
-        let delta = Array::from_shape_vec(
+        let delta = ndarray::Array::from_shape_vec(
             data.shape(), usages.iter().map(get_delta).collect::<Result<Vec<f64>>>()?)?;
+//        println!("delta: {:?}", delta.shape());
 
         data.gencolumns_mut().into_iter()
             .zip(sensitivity.gencolumns().into_iter())
@@ -71,7 +84,7 @@ impl Evaluable for proto::SimpleGeometricMechanism {
 //        println!("sensitivity: {:?}", sensitivity.shape());
 
         let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivity.len())?;
-        let epsilon = Array::from_shape_vec(
+        let epsilon = ndarray::Array::from_shape_vec(
             data.shape(), usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?)?;
 //        println!("epsilon: {:?}", epsilon.shape());
 

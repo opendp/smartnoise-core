@@ -18,10 +18,8 @@ impl Component for proto::Reshape {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
-
-        if !data_property.releasable {
-            return Err("data must be public/releasable to reshape".into())
-        }
+        data_property.assert_is_not_aggregated()?;
+        data_property.assert_is_releasable()?;
 
         data_property.num_records = match self.shape.len() {
             0 => Some(1),

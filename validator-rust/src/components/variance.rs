@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use crate::{proto, base};
 
 use crate::components::{Component, Aggregator};
-use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties};
+use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType};
 use crate::utilities::prepend;
 use ndarray::prelude::*;
 
@@ -28,13 +28,15 @@ impl Component for proto::Variance {
             properties: properties.clone()
         });
 
+        if data_property.data_type != DataType::F64 {
+            return Err("data: atomic type must be float".into())
+        }
+
         data_property.num_records = Some(1);
         data_property.nature = None;
 
         Ok(data_property.into())
     }
-
-
 }
 
 impl Aggregator for proto::Variance {

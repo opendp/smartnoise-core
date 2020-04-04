@@ -1,7 +1,7 @@
 use crate::errors::*;
 
 use std::collections::HashMap;
-use crate::base::{Nature, NodeProperties, NatureCategorical, Jagged, ValueProperties, Array};
+use crate::base::{Nature, NodeProperties, NatureCategorical, Jagged, ValueProperties, Array, DataType};
 
 use crate::proto;
 use crate::utilities::{prepend, standardize_categorical_argument, standardize_null_target_argument, standardize_float_argument, deduplicate};
@@ -26,8 +26,13 @@ impl Component for proto::Bin {
         let num_columns = data_property.num_columns()
             .map_err(prepend("data:"))?;
 
-        let null_values = public_arguments.get("null")
+        let null_values = public_arguments.get("null_value")
             .ok_or_else(|| Error::from("null: missing, must be public"))?.array()?;
+
+        data_property.assert_is_not_aggregated()?;
+        if data_property.data_type != DataType::F64 && data_property.data_type != DataType::I64 {
+            return Err("data: atomic type must be numeric".into())
+        }
 
         public_arguments.get("edges")
             .ok_or_else(|| Error::from("edges: missing, must be public"))

@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use crate::{proto, base};
 
 use crate::components::{Component, Aggregator};
-use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties};
+use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType};
 use crate::utilities::prepend;
 use ndarray::prelude::*;
 
@@ -21,12 +21,17 @@ impl Component for proto::Sum {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
+        data_property.assert_is_not_aggregated()?;
 
         // save a snapshot of the state when aggregating
         data_property.aggregator = Some(AggregatorProperties {
             component: proto::component::Variant::from(self.clone()),
             properties: properties.clone(),
         });
+
+        if data_property.data_type != DataType::F64 && data_property.data_type != DataType::I64 {
+            return Err("data: atomic type must be numeric".into())
+        }
 
         data_property.num_records = Some(1);
         data_property.nature = None;

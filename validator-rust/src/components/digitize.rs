@@ -23,8 +23,10 @@ impl Component for proto::Digitize {
         let num_columns = data_property.num_columns()
             .map_err(prepend("data:"))?;
 
-        let null_values = public_arguments.get("null")
+        let null_values = public_arguments.get("null_value")
             .ok_or_else(|| Error::from("null: missing, must be public"))?.array()?;
+
+        data_property.assert_is_not_aggregated()?;
 
         public_arguments.get("edges")
             .ok_or_else(|| Error::from("edges: missing, must be public"))

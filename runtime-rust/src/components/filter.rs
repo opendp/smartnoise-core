@@ -10,6 +10,7 @@ use ndarray::{ArrayD, Axis, Array1};
 use whitenoise_validator::proto;
 
 use whitenoise_validator::utilities::array::slow_select;
+use crate::utilities::to_nd;
 
 
 impl Evaluable for proto::Filter {
@@ -46,7 +47,7 @@ impl Evaluable for proto::Filter {
 /// ```
 pub fn filter<T: Clone + Default>(data: &ArrayD<T>, mask: &ArrayD<bool>) -> Result<ArrayD<T>> {
 
-    let columnar_mask: Array1<bool> = mask.clone().into_dimensionality::<Ix1>()?;
+    let columnar_mask: Array1<bool> = to_nd(mask.clone(), &1)?.into_dimensionality::<Ix1>()?;
 
     let mask_indices: Vec<usize> = columnar_mask.iter().enumerate()
         .filter(|(_index, &v)| v)

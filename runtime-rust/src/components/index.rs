@@ -10,6 +10,7 @@ use std::collections::HashMap;
 
 use whitenoise_validator::components::index::{to_name_vec, mask_columns};
 use whitenoise_validator::utilities::get_argument;
+use crate::utilities::{to_nd};
 
 
 impl Evaluable for proto::Index {
@@ -81,6 +82,10 @@ fn column_stack<T: Clone + Eq + std::hash::Hash>(
             .ok_or_else(|| Error::from("the provided column name does not exist"))
     }
 
+    fn to_2d<T>(array: ArrayD<T>) -> Result<ArrayD<T>> {
+        to_nd(array, &(2 as usize))
+    }
+
     let values = column_names.iter()
         .map(|column_name| dataframe.get(column_name))
         .collect::<Option<Vec<&Value>>>()
@@ -138,27 +143,4 @@ fn column_stack<T: Clone + Eq + std::hash::Hash>(
                 .map(|chunk| chunk.view()).collect::<Vec<ArrayViewD<String>>>())?.into())
         }
     }
-}
-
-fn to_nd<T>(mut array: ArrayD<T>, ndim: &usize) -> Result<ArrayD<T>> {
-    match (*ndim as i32) - (array.ndim() as i32) {
-        0 => {},
-        // must remove i axes
-        i if i < 0 => {
-            (0..-(i as i32)).map(|_| match array.shape().last()
-                .ok_or_else(|| Error::from("ndim may not be negative"))? {
-                1 => Ok(array.index_axis_inplace(Axis(array.ndim().clone()), 0)),
-                _ => Err("cannot remove non-singleton trailing axis".into())
-            }).collect::<Result<_>>()?
-        },
-        // must add i axes
-        i if i > 0 => (0..i).for_each(|idx| array.insert_axis_inplace(Axis((idx + 1) as usize))),
-        _ => return Err("invalid dimensionality".into())
-    };
-
-    Ok(array)
-}
-
-fn to_2d<T>(array: ArrayD<T>) -> Result<ArrayD<T>> {
-    to_nd(array, &(2 as usize))
 }

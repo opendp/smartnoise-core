@@ -1,0 +1,19 @@
+{
+  "arguments": {
+    "data": {
+      "type": "Array",
+      "description": "Data to be cast to another type."
+    },
+    "true_label": {
+      "type": "Array",
+      "description": "Positive class (class to be mapped to `true`) for each column."
+    }
+  },
+  "id": "ToBool",
+  "name": "to_bool",
+  "options": {},
+  "return": {
+    "type": "Array"
+  },
+  "description": "Cast data to a bool atomic type."
+}

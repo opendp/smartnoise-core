@@ -16,7 +16,7 @@
       "type": "Jagged",
       "description": "Values representing the edges of bins."
     },
-    "null": {
+    "null_value": {
       "nature": [
         "continuous",
         "categorical"

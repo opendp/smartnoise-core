@@ -11,10 +11,8 @@ use whitenoise_validator::utilities::get_argument;
 
 impl Evaluable for proto::Cast {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        let output_type = get_argument(&arguments, "type")?.first_string()?;
-
         let data = get_argument(&arguments, "data")?.array()?;
-        match output_type.to_lowercase().as_str() {
+        match self.r#type.to_lowercase().as_str() {
             // if casting to bool, identify what value should map to true, then cast
             "bool" => {
                 let true_label = get_argument(&arguments, "true_label")?.array()?;

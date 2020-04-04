@@ -90,8 +90,8 @@ def test_dp_linear_stats(run=True):
         num_records = op.dp_count(
             age,
             privacy_usage={'epsilon': .5},
-            count_min=0,
-            count_max=10000
+            min=0,
+            max=10000
         )
         analysis.release()
 
@@ -196,24 +196,20 @@ def test_dp_linear_stats(run=True):
             op.cast(age, type='int', min=0, max=100),
             edges=list(range(0, 100, 25)),
             count_max=300,
-            count_min=0,
-            null=150,
+            null_value=150,
             privacy_usage={'epsilon': 2.}
         )
 
         sex_histogram = op.dp_histogram(
             op.cast(dataset_pums['sex'], type='bool', true_label="1"),
             count_max=1000,
-            count_min=0,
             privacy_usage={'epsilon': 2.}
         )
 
         education_histogram = op.dp_histogram(
             dataset_pums['educ'],
             categories=["5", "7", "10"],
-            null="-1",
-            count_max=1000,
-            count_min=0,
+            null_value="-1",
             privacy_usage={'epsilon': 2.}
         )
 
@@ -243,7 +239,6 @@ def test_integers(run=True):
         analysis.release()
 
 
-@pytest.mark.skip(reason="requires count_min and count_max")
 def test_dp_count(run=True):
     with whitenoise.Analysis() as analysis:
         dataset_pums = whitenoise.Dataset(path=TEST_CSV_PATH, column_names=test_csv_names)

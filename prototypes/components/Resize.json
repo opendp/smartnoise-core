@@ -10,11 +10,6 @@
       "type": "Array",
       "description": "An estimate of the number of rows in the data.\n\nThis could be the guess of the user, or the result of a DP release."
     },
-    "categories": {
-      "default": "None",
-      "type": "Jagged",
-      "description": "The set of categories you want to be represented for each column of the data, if the data is categorical."
-    },
     "min": {
       "type": "Array",
       "default": "None",
@@ -24,6 +19,16 @@
       "type": "Array",
       "default": "None",
       "description": "An upper bound on data elements for each column."
+    },
+    "categories": {
+      "default": "None",
+      "type": "Jagged",
+      "description": "The set of categories you want to be represented for each column of the data, if the data is categorical."
+    },
+    "weights": {
+      "default": "None",
+      "type": "Jagged",
+      "description": "Optional. The weight of each category when imputing. Uniform weights are used if not specified."
     },
     "distribution": {
       "type": "String",

@@ -25,9 +25,11 @@ impl Component for proto::Clamp {
         let num_columns = data_property.num_columns
             .ok_or("data: number of data columns missing")?;
 
+        data_property.assert_is_not_aggregated()?;
+
         // handle categorical clamping
         if let Some(categories) = public_arguments.get("categories") {
-            let null = public_arguments.get("null")
+            let null = public_arguments.get("null_value")
                 .ok_or_else(|| Error::from("null value must be defined when clamping by categories"))?
                 .array()?;
 
@@ -57,9 +59,9 @@ impl Component for proto::Clamp {
                         .for_each(|(cats, null)| cats.iter_mut()
                             .for_each(|cats| cats.push(null)))
                 },
-                _ => return Err("categories and null must be homogeneously typed".into())
-            }
-
+                _ => return Err("categories and null_value must be homogeneously typed".into())
+            };
+            categories = categories.standardize(&num_columns)?;
             data_property.nature = Some(Nature::Categorical(NatureCategorical { categories }));
 
             return Ok(data_property.into());
@@ -71,29 +73,33 @@ impl Component for proto::Clamp {
 
                 // 1. check public arguments (constant n)
                 let mut clamp_minimum = match public_arguments.get("min") {
-                    Some(min) => min.clone().array()?.clone().vec_f64(Some(num_columns))?,
+                    Some(min) => min.clone().array()?.clone().vec_f64(Some(num_columns))
+                        .map_err(prepend("min:"))?,
 
                     // 2. then private arguments (for example from another clamped column)
                     None => match properties.get("min") {
-                        Some(min) => min.array()?.min_f64()?,
+                        Some(min) => min.array()?.min_f64()
+                            .map_err(prepend("min:"))?,
 
                         // 3. then data properties (propagated from prior clamping/min/max)
                         None => data_property
-                            .min_f64()?
+                            .min_f64().map_err(prepend("min:"))?
                     }
                 };
 
                 // 1. check public arguments (constant n)
                 let mut clamp_maximum = match public_arguments.get("max") {
-                    Some(max) => max.array()?.clone().vec_f64(Some(num_columns))?,
+                    Some(max) => max.array()?.clone().vec_f64(Some(num_columns))
+                        .map_err(prepend("max:"))?,
 
                     // 2. then private arguments (for example from another clamped column)
                     None => match properties.get("max") {
-                        Some(min) => min.array()?.max_f64()?,
+                        Some(min) => min.array()?.max_f64()
+                            .map_err(prepend("max:"))?,
 
                         // 3. then data properties (propagated from prior clamping/min/max)
                         None => data_property
-                            .max_f64()?
+                            .max_f64().map_err(prepend("max:"))?
                     }
                 };
 
@@ -129,29 +135,33 @@ impl Component for proto::Clamp {
             DataType::I64 => {
                 // 1. check public arguments (constant n)
                 let mut clamp_minimum = match public_arguments.get("min") {
-                    Some(min) => min.clone().array()?.clone().vec_i64(Some(num_columns))?,
+                    Some(min) => min.clone().array()?.clone().vec_i64(Some(num_columns))
+                        .map_err(prepend("min:"))?,
 
                     // 2. then private arguments (for example from another clamped column)
                     None => match properties.get("min") {
-                        Some(min) => min.array()?.min_i64()?,
+                        Some(min) => min.array()?.min_i64()
+                            .map_err(prepend("min:"))?,
 
                         // 3. then data properties (propagated from prior clamping/min/max)
                         None => data_property
-                            .min_i64()?
+                            .min_i64().map_err(prepend("min:"))?
                     }
                 };
 
                 // 1. check public arguments (constant n)
                 let mut clamp_maximum = match public_arguments.get("max") {
-                    Some(max) => max.array()?.clone().vec_i64(Some(num_columns))?,
+                    Some(max) => max.array()?.clone().vec_i64(Some(num_columns))
+                        .map_err(prepend("max:"))?,
 
                     // 2. then private arguments (for example from another clamped column)
                     None => match properties.get("max") {
-                        Some(min) => min.array()?.max_i64()?,
+                        Some(min) => min.array()?.max_i64()
+                            .map_err(prepend("max:"))?,
 
                         // 3. then data properties (propagated from prior clamping/min/max)
                         None => data_property
-                            .max_i64()?
+                            .max_i64().map_err(prepend("max:"))?
                     }
                 };
 
