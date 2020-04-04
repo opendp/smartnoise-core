@@ -114,7 +114,7 @@ impl Report for proto::DpCovariance {
         _public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
         release: &Value,
-        variable_names: &Vec<String>,
+        variable_names: Option<&Vec<String>>,
     ) -> Result<Option<Vec<JSONRelease>>> {
 
         let argument;
@@ -161,7 +161,7 @@ impl Report for proto::DpCovariance {
         Ok(Some(vec![JSONRelease {
             description: "DP release information".to_string(),
             statistic,
-            variables: serde_json::json!(variable_names),
+            variables: serde_json::json!(variable_names.cloned().unwrap_or_else(Vec::new).clone()),
             release_info: value_to_json(&release)?,
             privacy_loss: serde_json::json![privacy_usage],
             accuracy: None,
