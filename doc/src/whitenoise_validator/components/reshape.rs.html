@@ -49,8 +49,6 @@
 <span id="49">49</span>
 <span id="50">50</span>
 <span id="51">51</span>
-<span id="52">52</span>
-<span id="53">53</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
@@ -72,10 +70,8 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">data_property</span> <span class="op">=</span> <span class="ident">properties</span>.<span class="ident">get</span>(<span class="string">&quot;data&quot;</span>)
             .<span class="ident">ok_or</span>(<span class="string">&quot;data: missing&quot;</span>)<span class="question-mark">?</span>.<span class="ident">array</span>()
             .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;data:&quot;</span>))<span class="question-mark">?</span>.<span class="ident">clone</span>();
-
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">data_property</span>.<span class="ident">releasable</span> {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;data must be public/releasable to reshape&quot;</span>.<span class="ident">into</span>())
-        }
+        <span class="ident">data_property</span>.<span class="ident">assert_is_not_aggregated</span>()<span class="question-mark">?</span>;
+        <span class="ident">data_property</span>.<span class="ident">assert_is_releasable</span>()<span class="question-mark">?</span>;
 
         <span class="ident">data_property</span>.<span class="ident">num_records</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">shape</span>.<span class="ident">len</span>() {
             <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="number">1</span>),

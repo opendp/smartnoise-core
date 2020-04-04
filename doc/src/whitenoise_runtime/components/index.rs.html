@@ -144,24 +144,6 @@
 <span id="144">144</span>
 <span id="145">145</span>
 <span id="146">146</span>
-<span id="147">147</span>
-<span id="148">148</span>
-<span id="149">149</span>
-<span id="150">150</span>
-<span id="151">151</span>
-<span id="152">152</span>
-<span id="153">153</span>
-<span id="154">154</span>
-<span id="155">155</span>
-<span id="156">156</span>
-<span id="157">157</span>
-<span id="158">158</span>
-<span id="159">159</span>
-<span id="160">160</span>
-<span id="161">161</span>
-<span id="162">162</span>
-<span id="163">163</span>
-<span id="164">164</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">whitenoise_validator</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
@@ -175,6 +157,7 @@
 
 <span class="kw">use</span> <span class="ident">whitenoise_validator</span>::<span class="ident">components</span>::<span class="ident">index</span>::{<span class="ident">to_name_vec</span>, <span class="ident">mask_columns</span>};
 <span class="kw">use</span> <span class="ident">whitenoise_validator</span>::<span class="ident">utilities</span>::<span class="ident">get_argument</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">utilities</span>::{<span class="ident">to_nd</span>};
 
 
 <span class="kw">impl</span> <span class="ident">Evaluable</span> <span class="kw">for</span> <span class="ident">proto</span>::<span class="ident">Index</span> {
@@ -246,6 +229,10 @@
             .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;the provided column name does not exist&quot;</span>))
     }
 
+    <span class="kw">fn</span> <span class="ident">to_2d</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">array</span>: <span class="ident">ArrayD</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ArrayD</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="ident">to_nd</span>(<span class="ident">array</span>, <span class="kw-2">&amp;</span>(<span class="number">2</span> <span class="kw">as</span> <span class="ident">usize</span>))
+    }
+
     <span class="kw">let</span> <span class="ident">values</span> <span class="op">=</span> <span class="ident">column_names</span>.<span class="ident">iter</span>()
         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">column_name</span><span class="op">|</span> <span class="ident">dataframe</span>.<span class="ident">get</span>(<span class="ident">column_name</span>))
         .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Value</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()
@@ -303,29 +290,6 @@
                 .<span class="ident">map</span>(<span class="op">|</span><span class="ident">chunk</span><span class="op">|</span> <span class="ident">chunk</span>.<span class="ident">view</span>()).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ArrayViewD</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>())<span class="question-mark">?</span>.<span class="ident">into</span>())
         }
     }
-}
-
-<span class="kw">fn</span> <span class="ident">to_nd</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="ident">array</span>: <span class="ident">ArrayD</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">ndim</span>: <span class="kw-2">&amp;</span><span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ArrayD</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="kw">match</span> (<span class="kw-2">*</span><span class="ident">ndim</span> <span class="kw">as</span> <span class="ident">i32</span>) <span class="op">-</span> (<span class="ident">array</span>.<span class="ident">ndim</span>() <span class="kw">as</span> <span class="ident">i32</span>) {
-        <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> {},
-        <span class="comment">// must remove i axes</span>
-        <span class="ident">i</span> <span class="kw">if</span> <span class="ident">i</span> <span class="op">&lt;</span> <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> {
-            (<span class="number">0</span>..<span class="op">-</span>(<span class="ident">i</span> <span class="kw">as</span> <span class="ident">i32</span>)).<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">array</span>.<span class="ident">shape</span>().<span class="ident">last</span>()
-                .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;ndim may not be negative&quot;</span>))<span class="question-mark">?</span> {
-                <span class="number">1</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">array</span>.<span class="ident">index_axis_inplace</span>(<span class="ident">Axis</span>(<span class="ident">array</span>.<span class="ident">ndim</span>().<span class="ident">clone</span>()), <span class="number">0</span>)),
-                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;cannot remove non-singleton trailing axis&quot;</span>.<span class="ident">into</span>())
-            }).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>
-        },
-        <span class="comment">// must add i axes</span>
-        <span class="ident">i</span> <span class="kw">if</span> <span class="ident">i</span> <span class="op">&gt;</span> <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="number">0</span>..<span class="ident">i</span>).<span class="ident">for_each</span>(<span class="op">|</span><span class="ident">idx</span><span class="op">|</span> <span class="ident">array</span>.<span class="ident">insert_axis_inplace</span>(<span class="ident">Axis</span>((<span class="ident">idx</span> <span class="op">+</span> <span class="number">1</span>) <span class="kw">as</span> <span class="ident">usize</span>))),
-        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;invalid dimensionality&quot;</span>.<span class="ident">into</span>())
-    };
-
-    <span class="prelude-val">Ok</span>(<span class="ident">array</span>)
-}
-
-<span class="kw">fn</span> <span class="ident">to_2d</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">array</span>: <span class="ident">ArrayD</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ArrayD</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="ident">to_nd</span>(<span class="ident">array</span>, <span class="kw-2">&amp;</span>(<span class="number">2</span> <span class="kw">as</span> <span class="ident">usize</span>))
 }
 </pre></div>
 </section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../";window.currentCrate = "whitenoise_runtime";</script><script src="../../../aliases.js"></script><script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script><script defer src="../../../search-index.js"></script></body></html>

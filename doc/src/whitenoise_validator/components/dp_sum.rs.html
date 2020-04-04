@@ -112,19 +112,6 @@
 <span id="112">112</span>
 <span id="113">113</span>
 <span id="114">114</span>
-<span id="115">115</span>
-<span id="116">116</span>
-<span id="117">117</span>
-<span id="118">118</span>
-<span id="119">119</span>
-<span id="120">120</span>
-<span id="121">121</span>
-<span id="122">122</span>
-<span id="123">123</span>
-<span id="124">124</span>
-<span id="125">125</span>
-<span id="126">126</span>
-<span id="127">127</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
@@ -132,26 +119,13 @@
 
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">proto</span>, <span class="ident">base</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">hashmap</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">components</span>::{<span class="ident">Component</span>, <span class="ident">Expandable</span>, <span class="ident">Report</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">components</span>::{<span class="ident">Expandable</span>, <span class="ident">Report</span>};
 
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">base</span>::{<span class="ident">NodeProperties</span>, <span class="ident">Value</span>, <span class="ident">ValueProperties</span>, <span class="ident">Array</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">base</span>::{<span class="ident">NodeProperties</span>, <span class="ident">Value</span>, <span class="ident">Array</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">utilities</span>::<span class="ident">json</span>::{<span class="ident">JSONRelease</span>, <span class="ident">AlgorithmInfo</span>, <span class="ident">privacy_usage_to_json</span>, <span class="ident">value_to_json</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">utilities</span>::{<span class="ident">prepend</span>, <span class="ident">broadcast_privacy_usage</span>, <span class="ident">get_ith_release</span>};
 
 
-<span class="kw">impl</span> <span class="ident">Component</span> <span class="kw">for</span> <span class="ident">proto</span>::<span class="ident">DpSum</span> {
-    <span class="comment">// modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component</span>
-    <span class="kw">fn</span> <span class="ident">propagate_property</span>(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">_privacy_definition</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">PrivacyDefinition</span>,
-        <span class="ident">_public_arguments</span>: <span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Value</span><span class="op">&gt;</span>,
-        <span class="ident">_properties</span>: <span class="kw-2">&amp;</span><span class="ident">base</span>::<span class="ident">NodeProperties</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ValueProperties</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Err</span>(<span class="string">&quot;DPSum is abstract, and has no property propagation&quot;</span>.<span class="ident">into</span>())
-    }
-
-
-}
 
 <span class="kw">impl</span> <span class="ident">Expandable</span> <span class="kw">for</span> <span class="ident">proto</span>::<span class="ident">DpSum</span> {
     <span class="kw">fn</span> <span class="ident">expand_component</span>(

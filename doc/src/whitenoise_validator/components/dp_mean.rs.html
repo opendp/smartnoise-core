@@ -132,24 +132,6 @@
 <span id="132">132</span>
 <span id="133">133</span>
 <span id="134">134</span>
-<span id="135">135</span>
-<span id="136">136</span>
-<span id="137">137</span>
-<span id="138">138</span>
-<span id="139">139</span>
-<span id="140">140</span>
-<span id="141">141</span>
-<span id="142">142</span>
-<span id="143">143</span>
-<span id="144">144</span>
-<span id="145">145</span>
-<span id="146">146</span>
-<span id="147">147</span>
-<span id="148">148</span>
-<span id="149">149</span>
-<span id="150">150</span>
-<span id="151">151</span>
-<span id="152">152</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
@@ -158,32 +140,14 @@
 
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">proto</span>, <span class="ident">base</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">hashmap</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">components</span>::{<span class="ident">Component</span>, <span class="ident">Expandable</span>, <span class="ident">Report</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">components</span>::{<span class="ident">Expandable</span>, <span class="ident">Report</span>};
 
 
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">base</span>::{<span class="ident">NodeProperties</span>, <span class="ident">Value</span>, <span class="ident">ValueProperties</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">base</span>::{<span class="ident">NodeProperties</span>, <span class="ident">Value</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">utilities</span>::<span class="ident">json</span>::{<span class="ident">JSONRelease</span>, <span class="ident">AlgorithmInfo</span>, <span class="ident">privacy_usage_to_json</span>, <span class="ident">value_to_json</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">utilities</span>::{<span class="ident">prepend</span>, <span class="ident">broadcast_privacy_usage</span>, <span class="ident">get_ith_release</span>};
 <span class="kw">use</span> <span class="ident">serde_json</span>;
 
-
-<span class="kw">impl</span> <span class="ident">Component</span> <span class="kw">for</span> <span class="ident">proto</span>::<span class="ident">DpMean</span> {
-    <span class="doccomment">/// modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component</span>
-    <span class="doccomment">/// # Arguments</span>
-    <span class="doccomment">/// * `&amp;self` - this</span>
-    <span class="doccomment">/// * `_privacy_definition` - privacy definition from protocol buffer descriptor</span>
-    <span class="doccomment">/// * `_public_arguments` - HashMap of String/Value public arguments</span>
-    <span class="doccomment">/// * `properties` - NodeProperties</span>
-    <span class="kw">fn</span> <span class="ident">propagate_property</span>(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">_privacy_definition</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">PrivacyDefinition</span>,
-        <span class="ident">_public_arguments</span>: <span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Value</span><span class="op">&gt;</span>,
-        <span class="ident">_properties</span>: <span class="kw-2">&amp;</span><span class="ident">base</span>::<span class="ident">NodeProperties</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ValueProperties</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Err</span>(<span class="string">&quot;DPMaximum is abstract, and has no property propagation&quot;</span>.<span class="ident">into</span>())
-    }
-
-}
 
 <span class="kw">impl</span> <span class="ident">Expandable</span> <span class="kw">for</span> <span class="ident">proto</span>::<span class="ident">DpMean</span> {
     <span class="doccomment">/// Expand component</span>

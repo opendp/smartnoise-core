@@ -800,6 +800,14 @@
 <span id="800">800</span>
 <span id="801">801</span>
 <span id="802">802</span>
+<span id="803">803</span>
+<span id="804">804</span>
+<span id="805">805</span>
+<span id="806">806</span>
+<span id="807">807</span>
+<span id="808">808</span>
+<span id="809">809</span>
+<span id="810">810</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Core data structures</span>
 
@@ -959,7 +967,9 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">f64</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">ArrayD</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="ident">Array</span>::<span class="ident">F64</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">x</span>),
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;expected a float on a non-float ArrayND&quot;</span>.<span class="ident">into</span>())
+            <span class="ident">Array</span>::<span class="ident">I64</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;atomic type: expected float, got integer&quot;</span>.<span class="ident">into</span>()),
+            <span class="ident">Array</span>::<span class="ident">Bool</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;atomic type: expected float, got bool&quot;</span>.<span class="ident">into</span>()),
+            <span class="ident">Array</span>::<span class="ident">Str</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;atomic type: expected float, got string&quot;</span>.<span class="ident">into</span>()),
         }
     }
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">first_f64</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
@@ -1001,7 +1011,9 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">i64</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">ArrayD</span><span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="ident">Array</span>::<span class="ident">I64</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">x</span>),
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;expected a float on a non-float ArrayND&quot;</span>.<span class="ident">into</span>())
+            <span class="ident">Array</span>::<span class="ident">F64</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;atomic type: expected integer, got float&quot;</span>.<span class="ident">into</span>()),
+            <span class="ident">Array</span>::<span class="ident">Bool</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;atomic type: expected integer, got bool&quot;</span>.<span class="ident">into</span>()),
+            <span class="ident">Array</span>::<span class="ident">Str</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;atomic type: expected integer, got string&quot;</span>.<span class="ident">into</span>()),
         }
     }
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">first_i64</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span> {
@@ -1037,7 +1049,9 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">string</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">ArrayD</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="ident">Array</span>::<span class="ident">Str</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">x</span>),
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;value must be a string&quot;</span>.<span class="ident">into</span>())
+            <span class="ident">Array</span>::<span class="ident">I64</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;atomic type: expected string, got integer&quot;</span>.<span class="ident">into</span>()),
+            <span class="ident">Array</span>::<span class="ident">Bool</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;atomic type: expected string, got bool&quot;</span>.<span class="ident">into</span>()),
+            <span class="ident">Array</span>::<span class="ident">F64</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;atomic type: expected string, got float&quot;</span>.<span class="ident">into</span>()),
         }
     }
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">first_string</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
@@ -1055,7 +1069,9 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">bool</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">ArrayD</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="ident">Array</span>::<span class="ident">Bool</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">x</span>),
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;value must be a bool&quot;</span>.<span class="ident">into</span>())
+            <span class="ident">Array</span>::<span class="ident">I64</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;atomic type: expected bool, got integer&quot;</span>.<span class="ident">into</span>()),
+            <span class="ident">Array</span>::<span class="ident">Str</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;atomic type: expected bool, got string&quot;</span>.<span class="ident">into</span>()),
+            <span class="ident">Array</span>::<span class="ident">F64</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;atomic type: expected bool, got float&quot;</span>.<span class="ident">into</span>()),
         }
     }
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">first_bool</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> {

@@ -63,6 +63,8 @@
 <span id="63">63</span>
 <span id="64">64</span>
 <span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
@@ -72,7 +74,7 @@
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">proto</span>, <span class="ident">base</span>};
 
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">components</span>::{<span class="ident">Component</span>, <span class="ident">Aggregator</span>};
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">base</span>::{<span class="ident">Value</span>, <span class="ident">NodeProperties</span>, <span class="ident">AggregatorProperties</span>, <span class="ident">SensitivitySpace</span>, <span class="ident">ValueProperties</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">base</span>::{<span class="ident">Value</span>, <span class="ident">NodeProperties</span>, <span class="ident">AggregatorProperties</span>, <span class="ident">SensitivitySpace</span>, <span class="ident">ValueProperties</span>, <span class="ident">DataType</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">utilities</span>::<span class="ident">prepend</span>;
 <span class="kw">use</span> <span class="ident">ndarray</span>::<span class="ident">prelude</span>::<span class="kw-2">*</span>;
 
@@ -86,6 +88,10 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">data_property</span> <span class="op">=</span> <span class="ident">properties</span>.<span class="ident">get</span>(<span class="string">&quot;data&quot;</span>)
             .<span class="ident">ok_or</span>(<span class="string">&quot;data: missing&quot;</span>)<span class="question-mark">?</span>.<span class="ident">array</span>()
             .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;data:&quot;</span>))<span class="question-mark">?</span>.<span class="ident">clone</span>();
+        <span class="kw">if</span> <span class="ident">data_property</span>.<span class="ident">data_type</span> <span class="op">!</span><span class="op">=</span> <span class="ident">DataType</span>::<span class="ident">F64</span> {
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;data: atomic type must be float&quot;</span>.<span class="ident">into</span>())
+        }
+        <span class="ident">data_property</span>.<span class="ident">assert_is_not_aggregated</span>()<span class="question-mark">?</span>;
 
         <span class="comment">// save a snapshot of the state when aggregating</span>
         <span class="ident">data_property</span>.<span class="ident">aggregator</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">AggregatorProperties</span> {
@@ -95,8 +101,6 @@
         <span class="ident">data_property</span>.<span class="ident">num_records</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="number">1</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">data_property</span>.<span class="ident">into</span>())
     }
-
-
 }
 
 <span class="kw">impl</span> <span class="ident">Aggregator</span> <span class="kw">for</span> <span class="ident">proto</span>::<span class="ident">KthRawSampleMoment</span> {

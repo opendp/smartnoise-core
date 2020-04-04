@@ -1623,6 +1623,76 @@
 <span id="1623">1623</span>
 <span id="1624">1624</span>
 <span id="1625">1625</span>
+<span id="1626">1626</span>
+<span id="1627">1627</span>
+<span id="1628">1628</span>
+<span id="1629">1629</span>
+<span id="1630">1630</span>
+<span id="1631">1631</span>
+<span id="1632">1632</span>
+<span id="1633">1633</span>
+<span id="1634">1634</span>
+<span id="1635">1635</span>
+<span id="1636">1636</span>
+<span id="1637">1637</span>
+<span id="1638">1638</span>
+<span id="1639">1639</span>
+<span id="1640">1640</span>
+<span id="1641">1641</span>
+<span id="1642">1642</span>
+<span id="1643">1643</span>
+<span id="1644">1644</span>
+<span id="1645">1645</span>
+<span id="1646">1646</span>
+<span id="1647">1647</span>
+<span id="1648">1648</span>
+<span id="1649">1649</span>
+<span id="1650">1650</span>
+<span id="1651">1651</span>
+<span id="1652">1652</span>
+<span id="1653">1653</span>
+<span id="1654">1654</span>
+<span id="1655">1655</span>
+<span id="1656">1656</span>
+<span id="1657">1657</span>
+<span id="1658">1658</span>
+<span id="1659">1659</span>
+<span id="1660">1660</span>
+<span id="1661">1661</span>
+<span id="1662">1662</span>
+<span id="1663">1663</span>
+<span id="1664">1664</span>
+<span id="1665">1665</span>
+<span id="1666">1666</span>
+<span id="1667">1667</span>
+<span id="1668">1668</span>
+<span id="1669">1669</span>
+<span id="1670">1670</span>
+<span id="1671">1671</span>
+<span id="1672">1672</span>
+<span id="1673">1673</span>
+<span id="1674">1674</span>
+<span id="1675">1675</span>
+<span id="1676">1676</span>
+<span id="1677">1677</span>
+<span id="1678">1678</span>
+<span id="1679">1679</span>
+<span id="1680">1680</span>
+<span id="1681">1681</span>
+<span id="1682">1682</span>
+<span id="1683">1683</span>
+<span id="1684">1684</span>
+<span id="1685">1685</span>
+<span id="1686">1686</span>
+<span id="1687">1687</span>
+<span id="1688">1688</span>
+<span id="1689">1689</span>
+<span id="1690">1690</span>
+<span id="1691">1691</span>
+<span id="1692">1692</span>
+<span id="1693">1693</span>
+<span id="1694">1694</span>
+<span id="1695">1695</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BoolNull</span> {
@@ -1889,7 +1959,7 @@
     <span class="doccomment">/// for interactive analyses</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">uint32</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;3&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">batch</span>: <span class="ident">u32</span>,
-    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">oneof</span><span class="op">=</span><span class="string">&quot;component::Variant&quot;</span>, <span class="ident">tags</span><span class="op">=</span><span class="string">&quot;100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">oneof</span><span class="op">=</span><span class="string">&quot;component::Variant&quot;</span>, <span class="ident">tags</span><span class="op">=</span><span class="string">&quot;100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">variant</span>: ::<span class="ident">std</span>::<span class="ident">option</span>::<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">component</span>::<span class="ident">Variant</span><span class="op">&gt;</span>,
 }
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">component</span> {
@@ -1925,72 +1995,80 @@
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;113&quot;</span>)]</span>
         <span class="ident">Modulo</span>(<span class="kw">super</span>::<span class="ident">Modulo</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;114&quot;</span>)]</span>
-        <span class="ident">GaussianMechanism</span>(<span class="kw">super</span>::<span class="ident">GaussianMechanism</span>),
+        <span class="ident">ToString</span>(<span class="kw">super</span>::<span class="ident">ToString</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;115&quot;</span>)]</span>
-        <span class="ident">Maximum</span>(<span class="kw">super</span>::<span class="ident">Maximum</span>),
+        <span class="ident">GaussianMechanism</span>(<span class="kw">super</span>::<span class="ident">GaussianMechanism</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;116&quot;</span>)]</span>
-        <span class="ident">DpCount</span>(<span class="kw">super</span>::<span class="ident">DpCount</span>),
+        <span class="ident">Maximum</span>(<span class="kw">super</span>::<span class="ident">Maximum</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;117&quot;</span>)]</span>
-        <span class="ident">DpCovariance</span>(<span class="kw">super</span>::<span class="ident">DpCovariance</span>),
+        <span class="ident">DpCount</span>(<span class="kw">super</span>::<span class="ident">DpCount</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;118&quot;</span>)]</span>
-        <span class="ident">Filter</span>(<span class="kw">super</span>::<span class="ident">Filter</span>),
+        <span class="ident">DpCovariance</span>(<span class="kw">super</span>::<span class="ident">DpCovariance</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;119&quot;</span>)]</span>
-        <span class="ident">KthRawSampleMoment</span>(<span class="kw">super</span>::<span class="ident">KthRawSampleMoment</span>),
+        <span class="ident">Filter</span>(<span class="kw">super</span>::<span class="ident">Filter</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;120&quot;</span>)]</span>
-        <span class="ident">Bin</span>(<span class="kw">super</span>::<span class="ident">Bin</span>),
+        <span class="ident">KthRawSampleMoment</span>(<span class="kw">super</span>::<span class="ident">KthRawSampleMoment</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;121&quot;</span>)]</span>
-        <span class="ident">Resize</span>(<span class="kw">super</span>::<span class="ident">Resize</span>),
+        <span class="ident">Bin</span>(<span class="kw">super</span>::<span class="ident">Bin</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;122&quot;</span>)]</span>
-        <span class="ident">Log</span>(<span class="kw">super</span>::<span class="ident">Log</span>),
+        <span class="ident">Resize</span>(<span class="kw">super</span>::<span class="ident">Resize</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;123&quot;</span>)]</span>
-        <span class="ident">Digitize</span>(<span class="kw">super</span>::<span class="ident">Digitize</span>),
+        <span class="ident">Log</span>(<span class="kw">super</span>::<span class="ident">Log</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;124&quot;</span>)]</span>
-        <span class="ident">DpHistogram</span>(<span class="kw">super</span>::<span class="ident">DpHistogram</span>),
+        <span class="ident">ToBool</span>(<span class="kw">super</span>::<span class="ident">ToBool</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;125&quot;</span>)]</span>
-        <span class="ident">Mean</span>(<span class="kw">super</span>::<span class="ident">Mean</span>),
+        <span class="ident">Digitize</span>(<span class="kw">super</span>::<span class="ident">Digitize</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;126&quot;</span>)]</span>
-        <span class="ident">LaplaceMechanism</span>(<span class="kw">super</span>::<span class="ident">LaplaceMechanism</span>),
+        <span class="ident">DpHistogram</span>(<span class="kw">super</span>::<span class="ident">DpHistogram</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;127&quot;</span>)]</span>
-        <span class="ident">Covariance</span>(<span class="kw">super</span>::<span class="ident">Covariance</span>),
+        <span class="ident">Mean</span>(<span class="kw">super</span>::<span class="ident">Mean</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;128&quot;</span>)]</span>
-        <span class="ident">Power</span>(<span class="kw">super</span>::<span class="ident">Power</span>),
+        <span class="ident">LaplaceMechanism</span>(<span class="kw">super</span>::<span class="ident">LaplaceMechanism</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;129&quot;</span>)]</span>
-        <span class="ident">DpMinimum</span>(<span class="kw">super</span>::<span class="ident">DpMinimum</span>),
+        <span class="ident">ToInt</span>(<span class="kw">super</span>::<span class="ident">ToInt</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;130&quot;</span>)]</span>
-        <span class="ident">Negate</span>(<span class="kw">super</span>::<span class="ident">Negate</span>),
+        <span class="ident">Covariance</span>(<span class="kw">super</span>::<span class="ident">Covariance</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;131&quot;</span>)]</span>
-        <span class="ident">DpSum</span>(<span class="kw">super</span>::<span class="ident">DpSum</span>),
+        <span class="ident">Power</span>(<span class="kw">super</span>::<span class="ident">Power</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;132&quot;</span>)]</span>
-        <span class="ident">Count</span>(<span class="kw">super</span>::<span class="ident">Count</span>),
+        <span class="ident">DpMinimum</span>(<span class="kw">super</span>::<span class="ident">DpMinimum</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;133&quot;</span>)]</span>
-        <span class="ident">DpMomentRaw</span>(<span class="kw">super</span>::<span class="ident">DpMomentRaw</span>),
+        <span class="ident">Negate</span>(<span class="kw">super</span>::<span class="ident">Negate</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;134&quot;</span>)]</span>
-        <span class="ident">DpMean</span>(<span class="kw">super</span>::<span class="ident">DpMean</span>),
+        <span class="ident">DpSum</span>(<span class="kw">super</span>::<span class="ident">DpSum</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;135&quot;</span>)]</span>
-        <span class="ident">SimpleGeometricMechanism</span>(<span class="kw">super</span>::<span class="ident">SimpleGeometricMechanism</span>),
+        <span class="ident">Count</span>(<span class="kw">super</span>::<span class="ident">Count</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;136&quot;</span>)]</span>
-        <span class="ident">Clamp</span>(<span class="kw">super</span>::<span class="ident">Clamp</span>),
+        <span class="ident">ToFloat</span>(<span class="kw">super</span>::<span class="ident">ToFloat</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;137&quot;</span>)]</span>
-        <span class="ident">Materialize</span>(<span class="kw">super</span>::<span class="ident">Materialize</span>),
+        <span class="ident">DpMomentRaw</span>(<span class="kw">super</span>::<span class="ident">DpMomentRaw</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;138&quot;</span>)]</span>
-        <span class="ident">Equal</span>(<span class="kw">super</span>::<span class="ident">Equal</span>),
+        <span class="ident">DpMean</span>(<span class="kw">super</span>::<span class="ident">DpMean</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;139&quot;</span>)]</span>
-        <span class="ident">Variance</span>(<span class="kw">super</span>::<span class="ident">Variance</span>),
+        <span class="ident">SimpleGeometricMechanism</span>(<span class="kw">super</span>::<span class="ident">SimpleGeometricMechanism</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;140&quot;</span>)]</span>
-        <span class="ident">GreaterThan</span>(<span class="kw">super</span>::<span class="ident">GreaterThan</span>),
+        <span class="ident">Clamp</span>(<span class="kw">super</span>::<span class="ident">Clamp</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;141&quot;</span>)]</span>
-        <span class="ident">Impute</span>(<span class="kw">super</span>::<span class="ident">Impute</span>),
+        <span class="ident">Materialize</span>(<span class="kw">super</span>::<span class="ident">Materialize</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;142&quot;</span>)]</span>
-        <span class="ident">Histogram</span>(<span class="kw">super</span>::<span class="ident">Histogram</span>),
+        <span class="ident">Equal</span>(<span class="kw">super</span>::<span class="ident">Equal</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;143&quot;</span>)]</span>
-        <span class="ident">Quantile</span>(<span class="kw">super</span>::<span class="ident">Quantile</span>),
+        <span class="ident">Variance</span>(<span class="kw">super</span>::<span class="ident">Variance</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;144&quot;</span>)]</span>
-        <span class="ident">Cast</span>(<span class="kw">super</span>::<span class="ident">Cast</span>),
+        <span class="ident">GreaterThan</span>(<span class="kw">super</span>::<span class="ident">GreaterThan</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;145&quot;</span>)]</span>
-        <span class="ident">DpMaximum</span>(<span class="kw">super</span>::<span class="ident">DpMaximum</span>),
+        <span class="ident">Impute</span>(<span class="kw">super</span>::<span class="ident">Impute</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;146&quot;</span>)]</span>
-        <span class="ident">Minimum</span>(<span class="kw">super</span>::<span class="ident">Minimum</span>),
+        <span class="ident">Histogram</span>(<span class="kw">super</span>::<span class="ident">Histogram</span>),
         <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;147&quot;</span>)]</span>
+        <span class="ident">Quantile</span>(<span class="kw">super</span>::<span class="ident">Quantile</span>),
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;148&quot;</span>)]</span>
+        <span class="ident">Cast</span>(<span class="kw">super</span>::<span class="ident">Cast</span>),
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;149&quot;</span>)]</span>
+        <span class="ident">DpMaximum</span>(<span class="kw">super</span>::<span class="ident">DpMaximum</span>),
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;150&quot;</span>)]</span>
+        <span class="ident">Minimum</span>(<span class="kw">super</span>::<span class="ident">Minimum</span>),
+        <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;151&quot;</span>)]</span>
         <span class="ident">Add</span>(<span class="kw">super</span>::<span class="ident">Add</span>),
     }
 }
@@ -2207,6 +2285,20 @@
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Modulo</span> {
 }
+<span class="doccomment">/// ToString Component</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// Cast data to a string atomic type.</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the to_string on the arguments.</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// # Arguments</span>
+<span class="doccomment">/// * `data` - Array - Data to be cast to another type.</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// # Returns</span>
+<span class="doccomment">/// * `Value` - Array</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ToString</span> {
+}
 <span class="doccomment">/// GaussianMechanism Component</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// Privatizes a result by returning it perturbed with Gaussian noise.</span>
@@ -2245,9 +2337,9 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the dp_count on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `count_max` - Array - Estimated maximum possible size of the data.</span>
-<span class="doccomment">/// * `count_min` - Array - Estimated minimum possible size of the data.</span>
 <span class="doccomment">/// * `data` - Array</span>
+<span class="doccomment">/// * `max` - Array - Estimated maximum possible size of the data.</span>
+<span class="doccomment">/// * `min` - Array - Estimated minimum possible size of the data.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array - Differentially private row count.</span>
@@ -2334,7 +2426,7 @@
 <span class="doccomment">/// * `data` - Array - Data to be binned.</span>
 <span class="doccomment">/// * `edges` - Jagged - Values representing the edges of bins.</span>
 <span class="doccomment">/// * `inclusive_left` - Array - Whether or not the left edge of the bin is inclusive. If `true` bins are of the form [lower, upper). Otherwise, bins are of the form (lower, upper].</span>
-<span class="doccomment">/// * `null` - Array - Value to which to map if there is no valid bin (e.g. if the element falls outside the bin range).</span>
+<span class="doccomment">/// * `null_value` - Array - Value to which to map if there is no valid bin (e.g. if the element falls outside the bin range).</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array</span>
@@ -2365,6 +2457,7 @@
 <span class="doccomment">/// This could be the guess of the user, or the result of a DP release.</span>
 <span class="doccomment">/// * `scale` - Array - The standard deviation of the Gaussian distribution used for imputation (used only if `distribution = Gaussian`).</span>
 <span class="doccomment">/// * `shift` - Array - The expectation of the Gaussian distribution used for imputation (used only if `distribution = Gaussian`).</span>
+<span class="doccomment">/// * `weights` - Jagged - Optional. The weight of each category when imputing. Uniform weights are used if not specified.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array - A resized version of data consistent with the provided `n`</span>
@@ -2384,6 +2477,21 @@
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Log</span> {
 }
+<span class="doccomment">/// ToBool Component</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// Cast data to a bool atomic type.</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the to_bool on the arguments.</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// # Arguments</span>
+<span class="doccomment">/// * `data` - Array - Data to be cast to another type.</span>
+<span class="doccomment">/// * `true_label` - Array - Positive class (class to be mapped to `true`) for each column.</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// # Returns</span>
+<span class="doccomment">/// * `Value` - Array</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ToBool</span> {
+}
 <span class="doccomment">/// Digitize Component</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// Maps data to bins.</span>
@@ -2396,7 +2504,7 @@
 <span class="doccomment">/// * `data` - Array - Data to be binned.</span>
 <span class="doccomment">/// * `edges` - Jagged - Values representing the edges of bins.</span>
 <span class="doccomment">/// * `inclusive_left` - Array - Whether or not the left edge of the bin is inclusive, i.e. the bins are of the form [lower, upper).</span>
-<span class="doccomment">/// * `null` - Array - Value to which to map if there is no valid bin (e.g. if the element falls outside the bin range).</span>
+<span class="doccomment">/// * `null_value` - Array - Value to which to map if there is no valid bin (e.g. if the element falls outside the bin range).</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array</span>
@@ -2416,7 +2524,7 @@
 <span class="doccomment">/// * `inclusive_left` - Array - Whether or not the left edge of the bin is inclusive. If `true` bins are of the form [lower, upper). Otherwise, bins are of the form (lower, upper]. Used only if data are of `continuous` nature.</span>
 <span class="doccomment">/// * `max` - Array - Estimated maximum possible size of bin counts.</span>
 <span class="doccomment">/// * `min` - Array - Estimated minimum possible size of bin counts.</span>
-<span class="doccomment">/// * `null` - Array - The value to which elements not included in `categories` will be mapped for each column of the data. Used only if `categories` is not `None`.</span>
+<span class="doccomment">/// * `null_value` - Array - The value to which elements not included in `categories` will be mapped for each column of the data. Used only if `categories` is not `None`.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array - Differentially private histogram.</span>
@@ -2462,6 +2570,22 @@
     <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">privacy_usage</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PrivacyUsage</span><span class="op">&gt;</span>,
+}
+<span class="doccomment">/// ToInt Component</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// Cast data to a int atomic type.</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the to_int on the arguments.</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// # Arguments</span>
+<span class="doccomment">/// * `data` - Array - Data to be cast to another type.</span>
+<span class="doccomment">/// * `max` - Array - Maximum allowable imputation value.</span>
+<span class="doccomment">/// * `min` - Array - Minimum allowable imputation value. Integers cannot represent null, so values that cannot be parsed are imputed.</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// # Returns</span>
+<span class="doccomment">/// * `Value` - Array</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ToInt</span> {
 }
 <span class="doccomment">/// Covariance Component</span>
 <span class="doccomment">/// </span>
@@ -2562,6 +2686,20 @@
 <span class="doccomment">/// * `Value` - Array</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Count</span> {
+}
+<span class="doccomment">/// ToFloat Component</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// Cast data to a float atomic type.</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the to_float on the arguments.</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// # Arguments</span>
+<span class="doccomment">/// * `data` - Array - Data to be cast to another type.</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// # Returns</span>
+<span class="doccomment">/// * `Value` - Array</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ToFloat</span> {
 }
 <span class="doccomment">/// DPMomentRaw Component</span>
 <span class="doccomment">/// </span>
@@ -2726,12 +2864,14 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the impute on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
+<span class="doccomment">/// * `categories` - Jagged - The set of categories you want to be represented for each column of the data, if the data is categorical.</span>
 <span class="doccomment">/// * `data` - Array - The data for which null values will be imputed.</span>
 <span class="doccomment">/// * `distribution` - String - The distribution to be used when imputing records. Used only if `categories` is `None`.</span>
 <span class="doccomment">/// * `max` - Array - An upper bound on data elements for each column. Used only if `categories` is `None`.</span>
 <span class="doccomment">/// * `min` - Array - A lower bound on data elements for each column. Used only if `categories` is `None`.</span>
 <span class="doccomment">/// * `scale` - Array - The standard deviation of the Gaussian distribution to be used for imputation. Used only if `distribution` is `Gaussian`.</span>
 <span class="doccomment">/// * `shift` - Array - The expectation of the Gaussian distribution to be used for imputation. Used only if `distribution` is `Gaussian`.</span>
+<span class="doccomment">/// * `weights` - Jagged - Optional. The weight of each category when imputing. Uniform weights are used if not specified.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array - Data with null values replaced by imputed values.</span>
@@ -2747,9 +2887,7 @@
 <span class="doccomment">/// * `data` - Array</span>
 <span class="doccomment">/// * `edges` - Jagged - Set of edges to bin continuous-valued data. Used only if data are of `continuous` nature.</span>
 <span class="doccomment">/// * `inclusive_left` - Array - Whether or not the left edge of the bin is inclusive. If `true` bins are of the form [lower, upper). Otherwise, bins are of the form (lower, upper]. Used only if data are of `continuous` nature.</span>
-<span class="doccomment">/// * `max` - Array - Estimated maximum possible size of bin counts.</span>
-<span class="doccomment">/// * `min` - Array - Estimated minimum possible size of bin counts.</span>
-<span class="doccomment">/// * `null` - Array - The value to which elements not included in `categories` will be mapped for each column of the data. Used only if `categories` is not `None`.</span>
+<span class="doccomment">/// * `null_value` - Array - The value to which elements not included in `categories` will be mapped for each column of the data. Used only if `categories` is not `None`.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array</span>
@@ -2778,7 +2916,7 @@
 }
 <span class="doccomment">/// Cast Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// Cast data to a different atomic type.</span>
+<span class="doccomment">/// Cast data to an atomic type.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the cast on the arguments.</span>
 <span class="doccomment">/// </span>
@@ -2787,12 +2925,14 @@
 <span class="doccomment">/// * `max` - Array - Maximum allowable imputation value. Used only if casting to `i64`.</span>
 <span class="doccomment">/// * `min` - Array - Minimum allowable imputation value. Used only if casting to `i64`.</span>
 <span class="doccomment">/// * `true_label` - Array - Positive class (class to be mapped to `true`) for each column. Used only if casting to `bool`.</span>
-<span class="doccomment">/// * `type` - Array - Type to which data should be cast.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Cast</span> {
+    <span class="doccomment">/// Type to which data should be cast. Must be one of `string`, `int`, `bool`, `float`.</span>
+    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
+    <span class="kw">pub</span> <span class="ident">r#type</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
 }
 <span class="doccomment">/// DPMaximum Component</span>
 <span class="doccomment">/// </span>
