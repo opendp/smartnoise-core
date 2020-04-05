@@ -2,6 +2,7 @@
 *.py-E
 bindings-python.iml
 __pycache__/
+dist/
 
 whitenoise/_native*
 whitenoise.egg-info

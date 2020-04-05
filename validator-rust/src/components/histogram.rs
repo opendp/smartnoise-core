@@ -73,19 +73,20 @@ impl Expandable for proto::Histogram {
 
             (Some(edges_id), None) => {
                 // digitize
-                let null_id = component.arguments.get("null_value")
-                    .ok_or_else(|| Error::from("null_value is a required argument to Histogram when categories are not known"))?;
-                let inclusive_left_id = component.arguments.get("inclusive_left")
-                    .ok_or_else(|| Error::from("inclusive_left is a required argument to Histogram when digitizing edges"))?;
+                let mut arguments = hashmap![
+                    "data".to_owned() => data_id,
+                    "edges".to_owned() => *edges_id
+                ];
+
+                component.arguments.get("null_value")
+                    .map(|v| arguments.insert("null_value".to_string(), *v));
+                component.arguments.get("inclusive_left")
+                    .map(|v| arguments.insert("inclusive_left".to_string(), *v));
+
                 current_id += 1;
                 let id_digitize = current_id;
                 computation_graph.insert(id_digitize, proto::Component {
-                    arguments: hashmap![
-                        "data".to_owned() => data_id,
-                        "edges".to_owned() => *edges_id,
-                        "null_value".to_owned() => *null_id,
-                        "inclusive_left".to_owned() => *inclusive_left_id
-                    ],
+                    arguments,
                     variant: Some(proto::component::Variant::from(proto::Digitize {})),
                     omit: true,
                     batch: component.batch,

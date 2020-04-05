@@ -111,13 +111,26 @@ impl Named for proto::Index {
     fn get_names(
         &self,
         public_arguments: &HashMap<String, Value>,
-        _argument_variables: &HashMap<String, Vec<String>>,
+        argument_variables: &HashMap<String, Vec<String>>,
         _release: &Option<&Value>
     ) -> Result<Vec<String>> {
-        let column_names = public_arguments.get("columns")
+        let input_names = argument_variables.get("data").ok_or("data: missing")?;
+        Ok(match public_arguments.get("columns")
             .ok_or_else(|| Error::from("columns: missing"))?.to_owned()
-            .array()?.string()?.iter().cloned().collect::<Vec<String>>();
-        return Ok(column_names);
+            .array()? {
+            Array::Str(names) =>
+                names.iter().cloned().collect::<Vec<String>>(),
+            Array::I64(indices) => indices.iter()
+                .map(|idx| input_names.get(*idx as usize).cloned())
+                .collect::<Option<Vec<String>>>()
+                .ok_or_else(|| "attempted to retrieve an out-of-bounds name")?,
+            Array::Bool(mask) => mask.iter()
+                .zip(input_names.iter())
+                .filter(|(mask, _)| **mask)
+                .map(|(_, name)| name.clone())
+                .collect::<Vec<String>>(),
+            _ => return Err("column names may not be floats".into())
+        })
     }
 }
 
