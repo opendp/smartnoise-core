@@ -43,7 +43,7 @@ For a full listing of the extensive set of components available in the library [
 | Count         | Gaussian   | Cast       |
 | Histogram     | Geometric  | Clamping   |
 | Mean          | Laplace    | Digitize   |
-| Quantiles     | Snapping   | Filter     |
+| Quantiles     |            | Filter     |
 | Sum           |            | Imputation |
 | Variance/Covariance |      | Transform  |
 
