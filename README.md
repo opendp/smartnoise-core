@@ -128,8 +128,7 @@ We have [numerous Jupyter notebooks](https://github.com/opendifferentialprivacy/
 
 ### WhiteNoise Rust Documentation
 
-The [Rust documentation](https://opendifferentialprivacy.github.io/whitenoise-core/) includes component by component descriptions as well as....
-
+The [Rust documentation](https://opendifferentialprivacy.github.io/whitenoise-core/) includes full documentation on all pieces of the library and validator, including extensive [component by component descriptions with examples](https://opendifferentialprivacy.github.io/whitenoise-core/doc/whitenoise_runtime/components/index.html).
 
 ## Communication
 
