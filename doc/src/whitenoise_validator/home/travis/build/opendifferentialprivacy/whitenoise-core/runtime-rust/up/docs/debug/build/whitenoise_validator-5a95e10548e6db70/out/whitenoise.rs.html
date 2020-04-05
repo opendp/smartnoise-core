@@ -2306,7 +2306,7 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the gaussian_mechanism on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data` - Array</span>
+<span class="doccomment">/// * `data` - Array - Result to be released privately via the Gaussian mechanism.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array - Original data perturbed with Gaussian noise.</span>
@@ -2561,7 +2561,7 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the laplace_mechanism on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data` - Array</span>
+<span class="doccomment">/// * `data` - Array - True value to be released privately via the Laplace mechanism.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array - Original data perturbed with Laplace noise.</span>
@@ -2751,7 +2751,7 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the simple_geometric_mechanism on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data` - Array</span>
+<span class="doccomment">/// * `data` - Array - Result to be released privately via the Geometric mechanism.</span>
 <span class="doccomment">/// * `max` - Array</span>
 <span class="doccomment">/// * `min` - Array</span>
 <span class="doccomment">/// </span>

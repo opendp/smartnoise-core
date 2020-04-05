@@ -213,6 +213,7 @@
 <span id="213">213</span>
 <span id="214">214</span>
 <span id="215">215</span>
+<span id="216">216</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
@@ -289,19 +290,20 @@
 
             (<span class="prelude-val">Some</span>(<span class="ident">edges_id</span>), <span class="prelude-val">None</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="comment">// digitize</span>
-                <span class="kw">let</span> <span class="ident">null_id</span> <span class="op">=</span> <span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">get</span>(<span class="string">&quot;null_value&quot;</span>)
-                    .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;null_value is a required argument to Histogram when categories are not known&quot;</span>))<span class="question-mark">?</span>;
-                <span class="kw">let</span> <span class="ident">inclusive_left_id</span> <span class="op">=</span> <span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">get</span>(<span class="string">&quot;inclusive_left&quot;</span>)
-                    .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;inclusive_left is a required argument to Histogram when digitizing edges&quot;</span>))<span class="question-mark">?</span>;
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">arguments</span> <span class="op">=</span> <span class="macro">hashmap</span><span class="macro">!</span>[
+                    <span class="string">&quot;data&quot;</span>.<span class="ident">to_owned</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">data_id</span>,
+                    <span class="string">&quot;edges&quot;</span>.<span class="ident">to_owned</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">edges_id</span>
+                ];
+
+                <span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">get</span>(<span class="string">&quot;null_value&quot;</span>)
+                    .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">arguments</span>.<span class="ident">insert</span>(<span class="string">&quot;null_value&quot;</span>.<span class="ident">to_string</span>(), <span class="kw-2">*</span><span class="ident">v</span>));
+                <span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">get</span>(<span class="string">&quot;inclusive_left&quot;</span>)
+                    .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">arguments</span>.<span class="ident">insert</span>(<span class="string">&quot;inclusive_left&quot;</span>.<span class="ident">to_string</span>(), <span class="kw-2">*</span><span class="ident">v</span>));
+
                 <span class="ident">current_id</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
                 <span class="kw">let</span> <span class="ident">id_digitize</span> <span class="op">=</span> <span class="ident">current_id</span>;
                 <span class="ident">computation_graph</span>.<span class="ident">insert</span>(<span class="ident">id_digitize</span>, <span class="ident">proto</span>::<span class="ident">Component</span> {
-                    <span class="ident">arguments</span>: <span class="macro">hashmap</span><span class="macro">!</span>[
-                        <span class="string">&quot;data&quot;</span>.<span class="ident">to_owned</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">data_id</span>,
-                        <span class="string">&quot;edges&quot;</span>.<span class="ident">to_owned</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">edges_id</span>,
-                        <span class="string">&quot;null_value&quot;</span>.<span class="ident">to_owned</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">null_id</span>,
-                        <span class="string">&quot;inclusive_left&quot;</span>.<span class="ident">to_owned</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">inclusive_left_id</span>
-                    ],
+                    <span class="ident">arguments</span>,
                     <span class="ident">variant</span>: <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">from</span>(<span class="ident">proto</span>::<span class="ident">Digitize</span> {})),
                     <span class="ident">omit</span>: <span class="bool-val">true</span>,
                     <span class="ident">batch</span>: <span class="ident">component</span>.<span class="ident">batch</span>,

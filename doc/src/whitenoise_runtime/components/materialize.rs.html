@@ -91,6 +91,9 @@
 <span id="91">91</span>
 <span id="92">92</span>
 <span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">whitenoise_validator</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
@@ -101,6 +104,7 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashMap</span>;
 <span class="kw">use</span> <span class="ident">ndarray</span>::<span class="ident">Array</span>;
 <span class="kw">use</span> <span class="ident">whitenoise_validator</span>::<span class="ident">proto</span>;
+<span class="kw">use</span> <span class="ident">whitenoise_validator</span>::<span class="ident">utilities</span>::<span class="ident">serial</span>::<span class="ident">parse_value</span>;
 
 <span class="kw">impl</span> <span class="ident">Evaluable</span> <span class="kw">for</span> <span class="ident">proto</span>::<span class="ident">Materialize</span> {
     <span class="kw">fn</span> <span class="ident">evaluate</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">arguments</span>: <span class="kw-2">&amp;</span><span class="ident">NodeArguments</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&gt;</span> {
@@ -125,8 +129,10 @@
             .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;data source must be supplied&quot;</span>))<span class="question-mark">?</span>;
         
         <span class="kw">match</span> <span class="ident">data_source</span>.<span class="ident">value</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>() {
-            <span class="comment">// disabled until soundness checks are added</span>
-<span class="comment">//            proto::data_source::Value::Literal(value) =&gt; parse_value(value),</span>
+            <span class="ident">proto</span>::<span class="ident">data_source</span>::<span class="ident">Value</span>::<span class="ident">Literal</span>(<span class="ident">value</span>) <span class="op">=</span><span class="op">&gt;</span>
+                <span class="comment">// force the input to be an array- reject hashmap and jagged</span>
+                <span class="prelude-val">Ok</span>(<span class="ident">Value</span>::<span class="ident">Array</span>(<span class="ident">parse_value</span>(<span class="ident">value</span>)<span class="question-mark">?</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">clone</span>())),
+
             <span class="ident">proto</span>::<span class="ident">data_source</span>::<span class="ident">Value</span>::<span class="ident">FilePath</span>(<span class="ident">path</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">response</span> <span class="op">=</span> (<span class="number">0</span>..<span class="ident">num_columns</span>)
                     .<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">Vec</span>::<span class="ident">new</span>())
