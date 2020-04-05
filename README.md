@@ -121,10 +121,10 @@ The steps for adding bindings in a new language are essentially:
 
 ### Jupyter Notebook Examples
 
-We have [numerous Jupyter notebooks](https://github.com/opendifferentialprivacy/whitenoise-samples/tree/master/analysis) demonstrating the use of the WhiteNoise library and validator through our Python bindings.  These are in our accompanying [WhiteNoise-Samples repository](https://github.com/opendifferentialprivacy/whitenoise-samples) which has exemplars, notebooks and sample code demonstrating most facets of this this project.
+We have [numerous Jupyter notebooks](https://github.com/opendifferentialprivacy/whitenoise-samples/tree/master/analysis) demonstrating the use of the WhiteNoise library and validator through our Python bindings.  These are in our accompanying [WhiteNoise-Samples repository](https://github.com/opendifferentialprivacy/whitenoise-samples) which has exemplars, notebooks and sample code demonstrating most facets of this project.
 
-![alt text](images/figs/plugin_mean_comparison.pdf "Relative error distributions")
-![alt text](images/figs/utility_mean_comparison.pdf "Utility of mean releases")
+![alt text](images/figs/plugin_mean_comparison.pdf "Relative error distributions" | height=100)
+![alt text](images/figs/utility_mean_comparison.pdf "Utility of mean releases" | height=100)
 
 
 ### WhiteNoise Rust Documentation
