@@ -289,7 +289,7 @@ pub fn create_subset<T>(set: &Vec<T>, weights: &Vec<f64>, k: &i64) -> Result<Vec
 
     // generate key/index tuples
     let mut key_vec = Vec::with_capacity(*k as usize);
-    for i in 0..*k {
+    for i in 0..set.len() {
         key_vec.push((noise::sample_uniform_mpfr(0., 1.)?.pow(1. / probabilities[i as usize].clone()), i));
     }
 
