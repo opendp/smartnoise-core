@@ -114,9 +114,6 @@ The steps for adding bindings in a new language are essentially:
 
 
 ---
-
-[WhiteNoise Rust Documentation](https://opendifferentialprivacy.github.io/whitenoise-core/)
-
 ## Getting Started
 
 ### Jupyter Notebook Examples
@@ -144,7 +141,5 @@ If you plan to contribute new features, utility functions or extensions to the c
   - Sending a PR without discussion might end up resulting in a rejected PR, because we might be taking the core in a different direction than you might be aware of.
 
 ## The Team
-
-
 
 ## License
