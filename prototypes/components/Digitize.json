@@ -22,6 +22,7 @@
         "categorical"
       ],
       "type": "Array",
+      "default": "None",
       "description": "Value to which to map if there is no valid bin (e.g. if the element falls outside the bin range)."
     },
     "inclusive_left": {
