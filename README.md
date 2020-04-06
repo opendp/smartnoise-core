@@ -21,7 +21,6 @@ Differentially private computations are specified as an analysis graph that can 
 - [Installation](#installation)
   - [Binaries](#binaries)
   - [From Source](#from-source)
-  - [Docker Image](#docker-image)??
 - [Getting Started](#getting-started)
   - [Jupyter Notebook Examples](#jupyter-notebook-examples)
   - [WhiteNoise Rust Documentation](#whitenoise-rust-documentation)
@@ -35,10 +34,10 @@ Differentially private computations are specified as an analysis graph that can 
 
 ### Components
 
-The primary releases available in the library, and the mechanisms for generating these releases, are enumerated below.  
+The primary releases available in the library, and the mechanisms for generating these releases, are enumerated below.
 For a full listing of the extensive set of components available in the library [see this documentation.](https://opendifferentialprivacy.github.io/whitenoise-core/doc/whitenoise_validator/docs/components/index.html)
 
-| Statistics    | Mechanisms | Utilities  | 
+| Statistics    | Mechanisms | Utilities  |
 | ------------- |------------|------------|
 | Count         | Gaussian   | Cast       |
 | Histogram     | Geometric  | Clamping   |
@@ -48,8 +47,7 @@ For a full listing of the extensive set of components available in the library [
 | Variance/Covariance |      | Transform  |
 
 
-
-- Links to research/whitepapers here?
+(forthcoming: links to minisite/research papers
 
 ### Architecture
 
@@ -80,7 +78,8 @@ The steps for adding bindings in a new language are essentially:
 ## Installation
 
 ### Binaries
-[TO DO - python with binaries (pypi) via milksnake]
+
+- (forthcoming PyPi binaries via milksnake)
 
 ### From Source
 
@@ -114,8 +113,7 @@ The steps for adding bindings in a new language are essentially:
   + https://github.com/protocolbuffers/protobuf/releases/latest
 
 
-4. Install instructions for the bindings, validator and runtime are located in their respective folders.
-
+4. Continue with the instructions for the [python-bindings](https://github.com/opendifferentialprivacy/whitenoise-core/blob/master/bindings-python/README.md)
 
 ---
 ## Getting Started
@@ -124,8 +122,8 @@ The steps for adding bindings in a new language are essentially:
 
 We have [numerous Jupyter notebooks](https://github.com/opendifferentialprivacy/whitenoise-samples/tree/master/analysis) demonstrating the use of the WhiteNoise library and validator through our Python bindings.  These are in our accompanying [WhiteNoise-Samples repository](https://github.com/opendifferentialprivacy/whitenoise-samples) which has exemplars, notebooks and sample code demonstrating most facets of this project.
 
-<img src="images/figs/plugin_mean_comparison.pdf" alt="Relative error distributions" style="height:100px;">
-<img src="images/figs/utility_mean_comparison.pdf" alt="Utility of mean releases" style="height:100px;">
+[<img src="images/figs/plugin_mean_comparison.png" alt="Relative error distributions" style="height:100px;">](https://github.com/opendifferentialprivacy/whitenoise-samples/tree/master/analysis)
+<!-- img src="images/figs/utility_mean_comparison.pdf" alt="Utility of mean releases" style="height:100px;" -->
 
 ### WhiteNoise Rust Documentation
 
@@ -133,7 +131,7 @@ The [Rust documentation](https://opendifferentialprivacy.github.io/whitenoise-co
 
 ## Communication
 
-TO DO
+(In process.)
 
 ## Releases and Contributing
 
