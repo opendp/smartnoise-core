@@ -119,7 +119,7 @@ message Component {
 
             // code gen for options
             let text_options = component.options.iter().enumerate().map(|(id, (name, spec))| {
-                format!("    {}\n    {} {} = {};",
+                format!("{}\n    {} {} = {};",
                         doc(&spec.description, "    "),
                         spec.arg_type.clone().unwrap(),
                         name,

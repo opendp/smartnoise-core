@@ -131,7 +131,7 @@ pub fn resize_float(data: &ArrayD<f64>, n: &i64, distribution: &String,
         }
         // if real n is greater than estimated n, return a subset of the real data
         Ordering::Greater =>
-            slow_select(&data, Axis(0), &create_sampling_indices(&n, &real_n)?)
+            data.select(Axis(0), &create_sampling_indices(&n, &real_n)?)
     })
 }
 
@@ -188,7 +188,7 @@ pub fn resize_integer(
         }
         // if real n is greater than estimated n, return a subset of the real data
         Ordering::Greater =>
-            slow_select(&data, Axis(0), &create_sampling_indices(&n, &real_n)?)
+            data.select(Axis(0), &create_sampling_indices(&n, &real_n)?)
     })
 }
 
@@ -280,29 +280,25 @@ pub fn create_subset<T>(set: &Vec<T>, weights: &Vec<f64>, k: &i64) -> Result<Vec
     // convert weights to probabilities
     let probabilities: Vec<rug::Float> = weights_rug.iter().map(|w| w / weights_sum.clone()).collect();
 
-    // initialize subsample
-    let _subsample_vec: Vec<T> = Vec::with_capacity(*k as usize);
-
-    //
     // generate keys and identify top k indices
     //
 
     // generate key/index tuples
-    let mut key_vec = Vec::with_capacity(*k as usize);
-    for i in 0..*k {
+    let mut key_vec: Vec<(rug::Float, usize)> = Vec::with_capacity(*k as usize);
+    for i in 0..set.len() {
         key_vec.push((noise::sample_uniform_mpfr(0., 1.)?.pow(1. / probabilities[i as usize].clone()), i));
     }
 
     // sort key/index tuples by key and identify top k indices
-    key_vec.sort_by(|a, b| b.partial_cmp(a).unwrap());
-    let mut top_indices: Vec<i64> = Vec::with_capacity(*k as usize);
-    for i in 0..*k {
-        top_indices.push(key_vec[i as usize].1 as i64);
+    key_vec.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap());
+    let mut top_indices: Vec<usize> = Vec::with_capacity(*k as usize);
+    for i in 0..(*k as usize) {
+        top_indices.push(key_vec[i].1);
     }
 
     // subsample based on top k indices
     let mut subset: Vec<T> = Vec::with_capacity(*k as usize);
-    for value in top_indices.iter().map(|&index| set[index as usize].clone()) {
+    for value in top_indices.iter().map(|&index| set[index].clone()) {
         subset.push(value);
     }
 
@@ -331,7 +327,7 @@ pub fn create_subset<T>(set: &Vec<T>, weights: &Vec<f64>, k: &i64) -> Result<Vec
 /// ```
 pub fn create_sampling_indices(k: &i64, n: &i64) -> Result<Vec<usize>> {
     // create set of all indices
-    let index_vec: Vec<usize> = (0..*n).map(|v| v as usize).collect();
+    let index_vec: Vec<usize> = (0..(*n as usize)).collect();
 
     // create uniform selection weights
     let weight_vec: Vec<f64> = vec![1.; *n as usize];

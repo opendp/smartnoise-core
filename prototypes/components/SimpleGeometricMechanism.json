@@ -6,7 +6,7 @@
         "continuous"
       ],
       "type": "Array",
-      "data": "Result to be released privately via the Geometric mechanism."
+      "description": "Result to be released privately via the Geometric mechanism."
     },
     "min": {
       "type": "Array"
