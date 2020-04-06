@@ -44,14 +44,14 @@ pub struct ByteBuffer {
     pub data: *mut u8,
 }
 
-/// FFI wrapper for [validate_analysis](fn.validate_analysis.html)
+/// FFI wrapper for [validate_analysis](../fn.validate_analysis.html)
 ///
 /// # Arguments
-/// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestValidateAnalysis](proto/struct.RequestValidateAnalysis.html)
+/// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestValidateAnalysis](../proto/struct.RequestValidateAnalysis.html)
 /// - `request_length` - the length of the array
 ///
 /// # Returns
-/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseValidateAnalysis](proto/struct.ResponseValidateAnalysis.html)
+/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseValidateAnalysis](../proto/struct.ResponseValidateAnalysis.html)
 #[no_mangle]
 pub extern "C" fn validate_analysis(
     request_ptr: *const u8, request_length: i32,
@@ -73,14 +73,14 @@ pub extern "C" fn validate_analysis(
     buffer_to_ptr(response)
 }
 
-/// FFI wrapper for [compute_privacy_usage](fn.compute_privacy_usage.html)
+/// FFI wrapper for [compute_privacy_usage](../fn.compute_privacy_usage.html)
 ///
 /// # Arguments
-/// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestComputePrivacyUsage](proto/struct.RequestComputePrivacyUsage.html)
+/// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestComputePrivacyUsage](../proto/struct.RequestComputePrivacyUsage.html)
 /// - `request_length` - the length of the array
 ///
 /// # Returns
-/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseComputePrivacyUsage](proto/struct.ResponseComputePrivacyUsage.html)
+/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseComputePrivacyUsage](../proto/struct.ResponseComputePrivacyUsage.html)
 #[no_mangle]
 pub extern "C" fn compute_privacy_usage(
     request_ptr: *const u8, request_length: i32,
@@ -102,14 +102,14 @@ pub extern "C" fn compute_privacy_usage(
     buffer_to_ptr(response)
 }
 
-/// FFI wrapper for [generate_report](fn.generate_report.html)
+/// FFI wrapper for [generate_report](../fn.generate_report.html)
 ///
 /// # Arguments
-/// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestGenerateReport](proto/struct.RequestGenerateReport.html)
+/// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestGenerateReport](../proto/struct.RequestGenerateReport.html)
 /// - `request_length` - the length of the array
 ///
 /// # Returns
-/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseGenerateReport](proto/struct.ResponseGenerateReport.html)
+/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseGenerateReport](../proto/struct.ResponseGenerateReport.html)
 #[no_mangle]
 pub extern "C" fn generate_report(
     request_ptr: *const u8, request_length: i32,
@@ -131,14 +131,14 @@ pub extern "C" fn generate_report(
     buffer_to_ptr(response)
 }
 
-/// FFI wrapper for [accuracy_to_privacy_usage](fn.accuracy_to_privacy_usage.html)
+/// FFI wrapper for [accuracy_to_privacy_usage](../fn.accuracy_to_privacy_usage.html)
 ///
 /// # Arguments
-/// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestAccuracyToPrivacyUsage](proto/struct.RequestAccuracyToPrivacyUsage.html)
+/// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestAccuracyToPrivacyUsage](../proto/struct.RequestAccuracyToPrivacyUsage.html)
 /// - `request_length` - the length of the array
 ///
 /// # Returns
-/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseAccuracyToPrivacyUsage](proto/struct.ResponseAccuracyToPrivacyUsage.html)
+/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseAccuracyToPrivacyUsage](../proto/struct.ResponseAccuracyToPrivacyUsage.html)
 #[no_mangle]
 pub extern "C" fn accuracy_to_privacy_usage(
     request_ptr: *const u8, request_length: i32,
@@ -161,14 +161,14 @@ pub extern "C" fn accuracy_to_privacy_usage(
     buffer_to_ptr(response)
 }
 
-/// FFI wrapper for [privacy_usage_to_accuracy](fn.privacy_usage_to_accuracy.html)
+/// FFI wrapper for [privacy_usage_to_accuracy](../fn.privacy_usage_to_accuracy.html)
 ///
 /// # Arguments
-/// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestPrivacyUsageToAccuracy](proto/struct.RequestPrivacyUsageToAccuracy.html)
+/// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestPrivacyUsageToAccuracy](../proto/struct.RequestPrivacyUsageToAccuracy.html)
 /// - `request_length` - the length of the array
 ///
 /// # Returns
-/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponsePrivacyUsageToAccuracy](proto/struct.ResponsePrivacyUsageToAccuracy.html)
+/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponsePrivacyUsageToAccuracy](../proto/struct.ResponsePrivacyUsageToAccuracy.html)
 #[no_mangle]
 pub extern "C" fn privacy_usage_to_accuracy(
     request_ptr: *const u8, request_length: i32,
@@ -190,14 +190,14 @@ pub extern "C" fn privacy_usage_to_accuracy(
     buffer_to_ptr(response)
 }
 
-/// FFI wrapper for [get_properties](fn.get_properties.html)
+/// FFI wrapper for [get_properties](../fn.get_properties.html)
 ///
 /// # Arguments
-/// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestGetProperties](proto/struct.RequestGetProperties.html)
+/// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestGetProperties](../proto/struct.RequestGetProperties.html)
 /// - `request_length` - the length of the array
 ///
 /// # Returns
-/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseGetProperties](proto/struct.ResponseGetProperties.html)
+/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseGetProperties](../proto/struct.ResponseGetProperties.html)
 #[no_mangle]
 pub extern "C" fn get_properties(
     request_ptr: *const u8, request_length: i32,
@@ -220,14 +220,14 @@ pub extern "C" fn get_properties(
     buffer_to_ptr(response)
 }
 
-/// FFI wrapper for [expand_component](fn.expand_component.html)
+/// FFI wrapper for [expand_component](../fn.expand_component.html)
 ///
 /// # Arguments
-/// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestExpandComponent](proto/struct.RequestExpandComponent.html)
+/// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestExpandComponent](../proto/struct.RequestExpandComponent.html)
 /// - `request_length` - the length of the array
 ///
 /// # Returns
-/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseExpandComponent](proto/struct.ResponseExpandComponent.html)
+/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseExpandComponent](../proto/struct.ResponseExpandComponent.html)
 #[no_mangle]
 pub extern "C" fn expand_component(
     request_ptr: *const u8, request_length: i32,
