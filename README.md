@@ -47,7 +47,7 @@ For a full listing of the extensive set of components available in the library [
 | Variance/Covariance |      | Transform  |
 
 
-(forthcoming: links to minisite/research papers
+<!-- (forthcoming: links to minisite/research papers) -->
 
 ### Architecture
 
