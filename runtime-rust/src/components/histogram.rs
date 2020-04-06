@@ -28,7 +28,7 @@ impl Evaluable for proto::Histogram {
     }
 }
 
-pub fn histogram<T: Clone + Eq + Ord + std::hash::Hash + std::fmt::Debug>(data: &ArrayD<T>, categories: &ArrayD<T>) -> Result<ArrayD<i64>> {
+pub fn histogram<T: Clone + Eq + Ord + std::hash::Hash>(data: &ArrayD<T>, categories: &ArrayD<T>) -> Result<ArrayD<i64>> {
 
     let zeros = categories.iter()
         .map(|cat| (cat, 0)).collect::<BTreeMap<&T, i64>>();

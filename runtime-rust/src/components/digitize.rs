@@ -8,7 +8,6 @@ use whitenoise_validator::proto;
 use crate::utilities::get_num_columns;
 use std::ops::{Div, Add};
 use whitenoise_validator::utilities::{get_argument, standardize_categorical_argument, standardize_numeric_argument, standardize_float_argument};
-use std::fmt::Display;
 
 impl Evaluable for proto::Digitize {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
@@ -64,7 +63,7 @@ impl Evaluable for proto::Digitize {
 /// println!("digitize {:?}", digitization);
 /// assert!(digitization == arr1(&[1, 2, 2, 4, -1]).into_dyn());
 /// ```
-pub fn digitize<T: std::fmt::Debug + Display + std::cmp::PartialOrd + Clone + Div<T, Output=T> + Add<T, Output=T> + From<i32> + Copy + Default>(
+pub fn digitize<T: std::cmp::PartialOrd + Clone + Div<T, Output=T> + Add<T, Output=T> + From<i32> + Copy + Default>(
     data: &ArrayD<T>,
     edges: &Vec<Vec<T>>,
     inclusive_left: &ArrayD<bool>,
