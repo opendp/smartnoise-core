@@ -54,3 +54,16 @@ pub fn variance(data: &ArrayD<f64>, delta_degrees_of_freedom: &usize) -> Result<
         Err(_) => Err("unable to package Variance result into an array".into())
     }
 }
+
+#[cfg(test)]
+mod variance_test{
+    use ndarray::{arr2};
+    use crate::components::variance::variance;
+
+    #[test]
+    fn test_variance() {
+        let data = arr2(&[ [1.,10.], [2., 20.], [3., 30.] ]).into_dyn();
+        let variances = variance(&data, &1).unwrap();
+        assert!(variances == arr2(&[[1., 100.]]).into_dyn());
+    }
+}

@@ -54,3 +54,16 @@ pub fn sum<T: Add<T, Output=T> + Zero + Copy>(data: &ArrayD<T>) -> Result<ArrayD
         Err(_) => Err("unable to package Sum result into an array".into())
     }
 }
+
+#[cfg(test)]
+mod sum_test{
+    use ndarray::{arr2};
+    use crate::components::sum::sum;
+
+    #[test]
+    fn test_sum() {
+        let data = arr2(&[ [1.,10.], [2., 20.], [3., 30.] ]).into_dyn();
+        let sums = sum(&data).unwrap();
+        assert!(sums == arr2(&[[6., 60.]]).into_dyn());
+    }
+}

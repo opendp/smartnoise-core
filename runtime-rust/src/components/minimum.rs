@@ -54,3 +54,16 @@ pub fn minimum(data: &ArrayD<f64>) -> Result<ArrayD<f64>> {
         Err(_) => Err("unable to package Minimum result into an array".into())
     }
 }
+
+#[cfg(test)]
+mod minimum_test{
+    use ndarray::{arr2};
+    use crate::components::minimum::minimum;
+
+    #[test]
+    fn test_minimum() {
+        let data = arr2(&[ [1., 4., 5.], [10., 40., 50.] ]).into_dyn();
+        let mins = minimum(&data).unwrap();
+        assert!(mins == arr2(&[ [1., 4., 5.] ]).into_dyn());
+    }
+}

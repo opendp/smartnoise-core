@@ -48,3 +48,16 @@ pub fn mean(data: &ArrayD<f64>) -> Result<ArrayD<f64>> {
         Err(_) => Err("unable to package Mean result into an array".into())
     }
 }
+#[cfg(test)]
+mod mean_test {
+    use ndarray::{arr2};
+    use crate::components::mean::mean;
+
+
+    #[test]
+    fn test_mean() {
+        let data = arr2(&[ [1.,10.], [2., 20.], [3., 30.] ]).into_dyn();
+        let means = mean(&data).unwrap();
+        assert!(means == arr2(&[[2., 20.]]).into_dyn());
+    }
+}

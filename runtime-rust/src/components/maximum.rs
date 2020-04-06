@@ -53,3 +53,15 @@ pub fn maximum(data: &ArrayD<f64>) -> Result<ArrayD<f64>> {
         Err(_) => Err("unable to package Maximum result into an array".into())
     }
 }
+#[cfg(test)]
+mod maximum_test{
+    use ndarray::{arr2};
+    use crate::components::maximum::maximum;
+
+    #[test]
+    fn test_maximum() {
+        let data = arr2(&[ [1., 4., 5.], [10., 40., 50.] ]).into_dyn();
+        let maxes = maximum(&data).unwrap();
+        assert!(maxes == arr2(&[ [10., 40., 50.] ]).into_dyn());
+    }
+}
