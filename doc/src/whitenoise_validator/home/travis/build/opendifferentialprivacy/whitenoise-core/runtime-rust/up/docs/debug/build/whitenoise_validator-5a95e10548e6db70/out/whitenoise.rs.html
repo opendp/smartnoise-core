@@ -1693,6 +1693,7 @@
 <span id="1693">1693</span>
 <span id="1694">1694</span>
 <span id="1695">1695</span>
+<span id="1696">1696</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BoolNull</span> {
@@ -2133,6 +2134,7 @@
 <span class="doccomment">/// </span>
 <span class="doccomment">///  If data are numeric, clamping maps elements outside of an interval `[min, max]` to the closer endpoint.</span>
 <span class="doccomment">/// If data are categorical, clamping maps elements outside of the `categories` argument to the associated `null`.</span>
+<span class="doccomment">/// Using clamp sets the `categories` property for the analysis with value `categories` plus `null_value` in the last position.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the clamp on the arguments.</span>
 <span class="doccomment">/// </span>
@@ -2187,7 +2189,7 @@
 <span class="doccomment">/// </span>
 <span class="doccomment">/// Maps data to bins.</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// Bins will be of the form [lower, upper) or (lower, upper].</span>
+<span class="doccomment">/// Bins will be of the form [lower, upper) or (lower, upper]. The null value is the final category.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the digitize on the arguments.</span>
 <span class="doccomment">/// </span>
@@ -2195,7 +2197,7 @@
 <span class="doccomment">/// * `data` - Array - Data to be binned.</span>
 <span class="doccomment">/// * `edges` - Jagged - Values representing the edges of bins.</span>
 <span class="doccomment">/// * `inclusive_left` - Array - Whether or not the left edge of the bin is inclusive, i.e. the bins are of the form [lower, upper).</span>
-<span class="doccomment">/// * `null_value` - Array - Value to which to map if there is no valid bin (e.g. if the element falls outside the bin range).</span>
+<span class="doccomment">/// * `null_value` - Array - Value to which to map if there is no valid bin (e.g. if the element falls outside the bin range). The null value is the final category.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array</span>
@@ -2269,7 +2271,7 @@
 }
 <span class="doccomment">/// DPHistogram Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// Returns a differentially private histogram over user-defined categories.</span>
+<span class="doccomment">/// Returns a differentially private histogram over user-defined categories. The final cell contains the counts for null values (outside the set of categories).</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the dp_histogram on the arguments.</span>
 <span class="doccomment">/// </span>
@@ -2280,7 +2282,7 @@
 <span class="doccomment">/// * `inclusive_left` - Array - Whether or not the left edge of the bin is inclusive. If `true` bins are of the form [lower, upper). Otherwise, bins are of the form (lower, upper]. Used only if data are of `continuous` nature.</span>
 <span class="doccomment">/// * `max` - Array - Estimated maximum possible size of bin counts.</span>
 <span class="doccomment">/// * `min` - Array - Estimated minimum possible size of bin counts.</span>
-<span class="doccomment">/// * `null_value` - Array - The value to which elements not included in `categories` will be mapped for each column of the data. Used only if `categories` is not `None`.</span>
+<span class="doccomment">/// * `null_value` - Array - The value to which elements not included in `categories` will be mapped for each column of the data. Used only if `categories` is not `None`. The null value is the final category- counts for the null category are at the end of the vector of counts.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array - Differentially private histogram.</span>

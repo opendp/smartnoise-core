@@ -214,6 +214,9 @@
 <span id="214">214</span>
 <span id="215">215</span>
 <span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
@@ -421,11 +424,14 @@
                     (<span class="ident">AddRemove</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">1.</span>,
                 };
 
+                <span class="comment">// epsilon is distributed evenly over all cells.</span>
+                <span class="kw">let</span> <span class="ident">epsilon_corrected</span> <span class="op">=</span> <span class="ident">sensitivity</span> <span class="op">/</span> <span class="ident">categories_length</span> <span class="kw">as</span> <span class="ident">f64</span>;
+
                 <span class="kw">let</span> <span class="ident">num_columns</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">num_columns</span>()<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">num_records</span> <span class="op">=</span> <span class="ident">categories_length</span>;
                 <span class="prelude-val">Ok</span>(<span class="ident">Array</span>::<span class="ident">from_shape_vec</span>(
                     <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">num_records</span> <span class="kw">as</span> <span class="ident">usize</span>, <span class="ident">num_columns</span> <span class="kw">as</span> <span class="ident">usize</span>],
-                    (<span class="number">0</span>..(<span class="ident">num_records</span> <span class="op">*</span> <span class="ident">num_columns</span>)).<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">sensitivity</span>).<span class="ident">collect</span>())<span class="question-mark">?</span>.<span class="ident">into</span>())
+                    (<span class="number">0</span>..(<span class="ident">num_records</span> <span class="op">*</span> <span class="ident">num_columns</span>)).<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">epsilon_corrected</span>).<span class="ident">collect</span>())<span class="question-mark">?</span>.<span class="ident">into</span>())
             },
             <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;Histogram sensitivity is only implemented for KNorm&quot;</span>.<span class="ident">into</span>())
         }
