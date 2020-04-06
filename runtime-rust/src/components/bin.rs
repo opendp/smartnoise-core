@@ -8,7 +8,6 @@ use whitenoise_validator::proto;
 use crate::utilities::get_num_columns;
 use std::ops::{Div, Add};
 use whitenoise_validator::utilities::{get_argument, standardize_categorical_argument, standardize_numeric_argument, standardize_float_argument};
-use std::fmt::Display;
 
 impl Evaluable for proto::Bin {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
@@ -73,7 +72,7 @@ pub enum BinSide {
 /// let binned = bin(&data, edges, &inclusive_left, &null, &side).unwrap();
 /// assert!(binned == arr1(&[1.5, 2.5, 2.5, 4.5, -1.]).into_dyn());
 /// ```
-pub fn bin<T: std::fmt::Debug + Display + std::cmp::PartialOrd + Clone + Div<T, Output=T> + Add<T, Output=T> + From<i32> + Copy>(
+pub fn bin<T: std::cmp::PartialOrd + Clone + Div<T, Output=T> + Add<T, Output=T> + From<i32> + Copy>(
     data: &ArrayD<T>,
     edges: Vec<Vec<T>>,
     inclusive_left: &ArrayD<bool>,

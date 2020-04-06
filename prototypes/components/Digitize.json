@@ -23,7 +23,7 @@
       ],
       "type": "Array",
       "default": "None",
-      "description": "Value to which to map if there is no valid bin (e.g. if the element falls outside the bin range)."
+      "description": "Value to which to map if there is no valid bin (e.g. if the element falls outside the bin range). The null value is the final category."
     },
     "inclusive_left": {
       "nature": [
@@ -43,5 +43,5 @@
     ],
     "type": "Array"
   },
-  "description": "Maps data to bins.\n\nBins will be of the form [lower, upper) or (lower, upper]."
+  "description": "Maps data to bins.\n\nBins will be of the form [lower, upper) or (lower, upper]. The null value is the final category."
 }

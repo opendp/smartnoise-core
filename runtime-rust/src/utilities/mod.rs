@@ -32,7 +32,7 @@ use std::cmp::Ordering;
 /// let mapped: Result<ArrayD<f64>> = broadcast_map(&left, &right, &|l, r| l.max(r.clone()));
 /// println!("{:?}", mapped); // [2., 2., 3., 5.]
 /// ```
-pub fn broadcast_map<T: std::fmt::Debug, U>(
+pub fn broadcast_map<T, U>(
     left: &ArrayD<T>,
     right: &ArrayD<T>,
     operator: &dyn Fn(&T, &T) -> U) -> Result<ArrayD<U>> where T: std::clone::Clone, U: Default {

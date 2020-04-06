@@ -8,7 +8,7 @@ use crate::errors::*;
 use crate::proto;
 
 use crate::base::{Release, Value, ValueProperties, SensitivitySpace, NodeProperties, ArrayProperties};
-use std::collections::{HashMap, HashSet, BTreeSet};
+use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 use crate::utilities::serial::{parse_release, parse_value_properties, serialize_value, parse_value};
 use crate::utilities::inference::infer_property;
@@ -19,7 +19,6 @@ use ndarray::prelude::*;
 // import all trait implementations
 use crate::components::*;
 use crate::utilities::array::slow_select;
-use std::iter::FromIterator;
 use noisy_float::prelude::n64;
 
 /// Retrieve the Values for each of the arguments of a component from the Release.
@@ -549,8 +548,8 @@ pub fn get_ith_release<T: Clone + Default>(value: &ArrayD<T>, i: &usize) -> Resu
     }
 }
 
-pub fn deduplicate<T: Eq + Hash + Ord>(values: Vec<T>) -> Vec<T> {
-    BTreeSet::from_iter(values.into_iter()).into_iter().collect()
+pub fn deduplicate<T: Eq + Hash + Ord + Clone>(values: Vec<T>) -> Vec<T> {
+    values.into_iter().unique().collect()
 }
 
 pub fn is_conformable(left: &ArrayProperties, right: &ArrayProperties) -> bool {
@@ -560,5 +559,17 @@ pub fn is_conformable(left: &ArrayProperties, right: &ArrayProperties) -> bool {
             (Some(l), Some(r)) => l == r,
             _ => false
         }
+    }
+}
+
+
+#[cfg(test)]
+mod utilities_tests {
+    use crate::utilities;
+    #[test]
+    fn test_deduplicate() {
+        let values = vec![2, 0, 1, 0];
+        let deduplicated = utilities::deduplicate(values.clone());
+        assert!(deduplicated == vec![2, 0, 1]);
     }
 }

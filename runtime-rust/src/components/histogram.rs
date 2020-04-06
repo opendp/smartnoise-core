@@ -39,7 +39,9 @@ pub fn histogram<T: Clone + Eq + Ord + std::hash::Hash>(data: &ArrayD<T>, catego
             column.into_iter().for_each(|v| {
                 counts.entry(v).and_modify(|v| *v += 1);
             });
-            counts.values().cloned().collect::<Vec<i64>>()
+            categories.iter()
+                .map(|cat| counts.get(cat).unwrap())
+                .cloned().collect::<Vec<i64>>()
         }).flat_map(|v| v).collect::<Vec<i64>>();
 
     // ensure histogram is of correct dimension

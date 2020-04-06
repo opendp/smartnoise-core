@@ -351,3 +351,38 @@ def test_everything(run=True):
         analysis.release()
 
     return analysis
+
+
+def test_histogram():
+    import os
+    import whitenoise
+    import whitenoise.components as op
+    import numpy as np
+    import math
+    import statistics
+    import matplotlib.pyplot as plt
+
+    # establish data information
+
+    data = np.genfromtxt(TEST_CSV_PATH, delimiter=',', names=True)
+    education_categories = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17"]
+
+    income = list(data[:]['income'])
+    income_edges = list(range(0, 100_000, 10_000))
+
+    print('actual', np.histogram(income, bins=income_edges)[0])
+
+    with whitenoise.Analysis() as analysis:
+        data = whitenoise.Dataset(path = TEST_CSV_PATH, column_names = test_csv_names)
+        income = op.to_int(data['income'], min=0, max=0)
+        sex = op.to_bool(data['sex'], true_label="1")
+
+        income_histogram = op.dp_histogram(
+            income,
+            edges = income_edges,
+            privacy_usage = {'epsilon': 1.}
+        )
+
+    analysis.release()
+
+    print("Income histogram Geometric DP release:   " + str(income_histogram.value))
