@@ -127,9 +127,6 @@ We have [numerous Jupyter notebooks](https://github.com/opendifferentialprivacy/
 [<img src="images/figs/example_education.png" alt="Histogram releases" height="100">](https://github.com/opendifferentialprivacy/whitenoise-samples/tree/master/analysis)
 [<img src="images/figs/example_utility.png" alt="Utility simulations" height="100">](https://github.com/opendifferentialprivacy/whitenoise-samples/tree/master/analysis)
 
-
-<!-- img src="images/figs/utility_mean_comparison.pdf" alt="Utility of mean releases" style="height:100px;" -->
-
 ### WhiteNoise Rust Documentation
 
 The [Rust documentation](https://opendifferentialprivacy.github.io/whitenoise-core/) includes full documentation on all pieces of the library and validator, including extensive [component by component descriptions with examples](https://opendifferentialprivacy.github.io/whitenoise-core/doc/whitenoise_runtime/components/index.html).
@@ -147,6 +144,6 @@ We appreciate all contributions. If you are planning to contribute back bug-fixe
 If you plan to contribute new features, utility functions or extensions to the core, please first open an issue and discuss the feature with us.
   - Sending a PR without discussion might end up resulting in a rejected PR, because we might be taking the core in a different direction than you might be aware of.
 
-## The Team
+## Contributing Team
 
-## License
+Joshua Allen, Christian Covington, Eduardo de Leon, Ira Globus-Harris, James Honaker, Jason Huang, Saniya Movahed, Michael Phelan, Raman Prasad, Michael Shoemate, You?
