@@ -300,14 +300,14 @@
     <span class="kw">pub</span> <span class="ident">data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">u8</span>,
 }
 
-<span class="doccomment">/// FFI wrapper for [validate_analysis](fn.validate_analysis.html)</span>
+<span class="doccomment">/// FFI wrapper for [validate_analysis](../fn.validate_analysis.html)</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestValidateAnalysis](proto/struct.RequestValidateAnalysis.html)</span>
+<span class="doccomment">/// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestValidateAnalysis](../proto/struct.RequestValidateAnalysis.html)</span>
 <span class="doccomment">/// - `request_length` - the length of the array</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseValidateAnalysis](proto/struct.ResponseValidateAnalysis.html)</span>
+<span class="doccomment">/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseValidateAnalysis](../proto/struct.ResponseValidateAnalysis.html)</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">validate_analysis</span>(
     <span class="ident">request_ptr</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">u8</span>, <span class="ident">request_length</span>: <span class="ident">i32</span>,
@@ -329,14 +329,14 @@
     <span class="ident">buffer_to_ptr</span>(<span class="ident">response</span>)
 }
 
-<span class="doccomment">/// FFI wrapper for [compute_privacy_usage](fn.compute_privacy_usage.html)</span>
+<span class="doccomment">/// FFI wrapper for [compute_privacy_usage](../fn.compute_privacy_usage.html)</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestComputePrivacyUsage](proto/struct.RequestComputePrivacyUsage.html)</span>
+<span class="doccomment">/// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestComputePrivacyUsage](../proto/struct.RequestComputePrivacyUsage.html)</span>
 <span class="doccomment">/// - `request_length` - the length of the array</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseComputePrivacyUsage](proto/struct.ResponseComputePrivacyUsage.html)</span>
+<span class="doccomment">/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseComputePrivacyUsage](../proto/struct.ResponseComputePrivacyUsage.html)</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">compute_privacy_usage</span>(
     <span class="ident">request_ptr</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">u8</span>, <span class="ident">request_length</span>: <span class="ident">i32</span>,
@@ -358,14 +358,14 @@
     <span class="ident">buffer_to_ptr</span>(<span class="ident">response</span>)
 }
 
-<span class="doccomment">/// FFI wrapper for [generate_report](fn.generate_report.html)</span>
+<span class="doccomment">/// FFI wrapper for [generate_report](../fn.generate_report.html)</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestGenerateReport](proto/struct.RequestGenerateReport.html)</span>
+<span class="doccomment">/// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestGenerateReport](../proto/struct.RequestGenerateReport.html)</span>
 <span class="doccomment">/// - `request_length` - the length of the array</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseGenerateReport](proto/struct.ResponseGenerateReport.html)</span>
+<span class="doccomment">/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseGenerateReport](../proto/struct.ResponseGenerateReport.html)</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">generate_report</span>(
     <span class="ident">request_ptr</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">u8</span>, <span class="ident">request_length</span>: <span class="ident">i32</span>,
@@ -387,14 +387,14 @@
     <span class="ident">buffer_to_ptr</span>(<span class="ident">response</span>)
 }
 
-<span class="doccomment">/// FFI wrapper for [accuracy_to_privacy_usage](fn.accuracy_to_privacy_usage.html)</span>
+<span class="doccomment">/// FFI wrapper for [accuracy_to_privacy_usage](../fn.accuracy_to_privacy_usage.html)</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestAccuracyToPrivacyUsage](proto/struct.RequestAccuracyToPrivacyUsage.html)</span>
+<span class="doccomment">/// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestAccuracyToPrivacyUsage](../proto/struct.RequestAccuracyToPrivacyUsage.html)</span>
 <span class="doccomment">/// - `request_length` - the length of the array</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseAccuracyToPrivacyUsage](proto/struct.ResponseAccuracyToPrivacyUsage.html)</span>
+<span class="doccomment">/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseAccuracyToPrivacyUsage](../proto/struct.ResponseAccuracyToPrivacyUsage.html)</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">accuracy_to_privacy_usage</span>(
     <span class="ident">request_ptr</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">u8</span>, <span class="ident">request_length</span>: <span class="ident">i32</span>,
@@ -417,14 +417,14 @@
     <span class="ident">buffer_to_ptr</span>(<span class="ident">response</span>)
 }
 
-<span class="doccomment">/// FFI wrapper for [privacy_usage_to_accuracy](fn.privacy_usage_to_accuracy.html)</span>
+<span class="doccomment">/// FFI wrapper for [privacy_usage_to_accuracy](../fn.privacy_usage_to_accuracy.html)</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestPrivacyUsageToAccuracy](proto/struct.RequestPrivacyUsageToAccuracy.html)</span>
+<span class="doccomment">/// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestPrivacyUsageToAccuracy](../proto/struct.RequestPrivacyUsageToAccuracy.html)</span>
 <span class="doccomment">/// - `request_length` - the length of the array</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponsePrivacyUsageToAccuracy](proto/struct.ResponsePrivacyUsageToAccuracy.html)</span>
+<span class="doccomment">/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponsePrivacyUsageToAccuracy](../proto/struct.ResponsePrivacyUsageToAccuracy.html)</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">privacy_usage_to_accuracy</span>(
     <span class="ident">request_ptr</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">u8</span>, <span class="ident">request_length</span>: <span class="ident">i32</span>,
@@ -446,14 +446,14 @@
     <span class="ident">buffer_to_ptr</span>(<span class="ident">response</span>)
 }
 
-<span class="doccomment">/// FFI wrapper for [get_properties](fn.get_properties.html)</span>
+<span class="doccomment">/// FFI wrapper for [get_properties](../fn.get_properties.html)</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestGetProperties](proto/struct.RequestGetProperties.html)</span>
+<span class="doccomment">/// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestGetProperties](../proto/struct.RequestGetProperties.html)</span>
 <span class="doccomment">/// - `request_length` - the length of the array</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseGetProperties](proto/struct.ResponseGetProperties.html)</span>
+<span class="doccomment">/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseGetProperties](../proto/struct.ResponseGetProperties.html)</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">get_properties</span>(
     <span class="ident">request_ptr</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">u8</span>, <span class="ident">request_length</span>: <span class="ident">i32</span>,
@@ -476,14 +476,14 @@
     <span class="ident">buffer_to_ptr</span>(<span class="ident">response</span>)
 }
 
-<span class="doccomment">/// FFI wrapper for [expand_component](fn.expand_component.html)</span>
+<span class="doccomment">/// FFI wrapper for [expand_component](../fn.expand_component.html)</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestExpandComponent](proto/struct.RequestExpandComponent.html)</span>
+<span class="doccomment">/// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestExpandComponent](../proto/struct.RequestExpandComponent.html)</span>
 <span class="doccomment">/// - `request_length` - the length of the array</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseExpandComponent](proto/struct.ResponseExpandComponent.html)</span>
+<span class="doccomment">/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseExpandComponent](../proto/struct.ResponseExpandComponent.html)</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">expand_component</span>(
     <span class="ident">request_ptr</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">u8</span>, <span class="ident">request_length</span>: <span class="ident">i32</span>,
