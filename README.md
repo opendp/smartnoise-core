@@ -36,7 +36,7 @@ Differentially private computations are specified as an analysis graph that can 
 ### Components
 
 The primary releases available in the library, and the mechanisms for generating these releases, are enumerated below.  
-For a full listing of the extensive set of components available in the library [see this documentation.](https://opendifferentialprivacy.github.io/whitenoise-core/doc/whitenoise_runtime/components/index.html)
+For a full listing of the extensive set of components available in the library [see this documentation.](https://opendifferentialprivacy.github.io/whitenoise-core/doc/whitenoise_validator/docs/components/index.html)
 
 | Statistics    | Mechanisms | Utilities  | 
 | ------------- |------------|------------|
