@@ -20,7 +20,7 @@
     "null_value": {
       "type": "Array",
       "default": "None",
-      "description": "The value to which elements not included in `categories` will be mapped for each column of the data. Used only if `categories` is not `None`."
+      "description": "The value to which elements not included in `categories` will be mapped for each column of the data. Used only if `categories` is not `None`. The null value is the final category- counts for the null category are at the end of the vector of counts."
     },
     "min": {
       "type": "Array",
@@ -66,5 +66,5 @@
     "type": "Array",
     "description": "Differentially private histogram."
   },
-  "description": "Returns a differentially private histogram over user-defined categories."
+  "description": "Returns a differentially private histogram over user-defined categories. The final cell contains the counts for null values (outside the set of categories)."
 }

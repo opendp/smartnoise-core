@@ -28,7 +28,7 @@ impl Evaluable for proto::Histogram {
     }
 }
 
-pub fn histogram<T: Clone + Eq + Ord + std::hash::Hash>(data: &ArrayD<T>, categories: &ArrayD<T>) -> Result<ArrayD<i64>> {
+pub fn histogram<T: Clone + Eq + Ord + std::hash::Hash + std::fmt::Debug>(data: &ArrayD<T>, categories: &ArrayD<T>) -> Result<ArrayD<i64>> {
 
     let zeros = categories.iter()
         .map(|cat| (cat, 0)).collect::<BTreeMap<&T, i64>>();
@@ -39,7 +39,9 @@ pub fn histogram<T: Clone + Eq + Ord + std::hash::Hash>(data: &ArrayD<T>, catego
             column.into_iter().for_each(|v| {
                 counts.entry(v).and_modify(|v| *v += 1);
             });
-            counts.values().cloned().collect::<Vec<i64>>()
+            categories.iter()
+                .map(|cat| counts.get(cat).unwrap())
+                .cloned().collect::<Vec<i64>>()
         }).flat_map(|v| v).collect::<Vec<i64>>();
 
     // ensure histogram is of correct dimension

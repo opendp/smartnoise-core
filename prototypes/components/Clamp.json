@@ -26,7 +26,7 @@
     "null_value": {
       "default": "None",
       "type": "Array",
-      "description": "The value to which elements not included in `categories` will be mapped for each column of the data. Used only if `categories` is not `None`."
+      "description": "The value to which elements not included in `categories` will be mapped for each column of the data. Used only if `categories` is not `None`. The null value is the final category."
     }
   },
   "id": "Clamp",
@@ -40,5 +40,5 @@
     "type": "Array",
     "description": "Clamped data."
   },
-  "description": "Clamps data to the provided bounds.\n\n If data are numeric, clamping maps elements outside of an interval `[min, max]` to the closer endpoint.\nIf data are categorical, clamping maps elements outside of the `categories` argument to the associated `null`."
+  "description": "Clamps data to the provided bounds.\n\n If data are numeric, clamping maps elements outside of an interval `[min, max]` to the closer endpoint.\nIf data are categorical, clamping maps elements outside of the `categories` argument to the associated `null`. The null value is the final category."
 }

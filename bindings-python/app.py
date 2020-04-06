@@ -4,7 +4,8 @@ from tests.test_base import (
     test_dp_linear_stats,
     test_multilayer_analysis,
     test_raw_dataset,
-    test_everything
+    test_everything,
+    test_histogram
 )
 
 # turn on stack traces
@@ -23,6 +24,9 @@ analysis.release()
 
 analysis = test_everything(run=False)
 analysis.release()
+
+test_histogram()
+
 
 analysis.plot()
 print(analysis.release_values)

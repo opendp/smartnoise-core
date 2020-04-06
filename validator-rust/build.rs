@@ -1,7 +1,7 @@
 extern crate prost_build;
 //extern crate cbindgen;
 
-use std::{io};
+use std::io;
 use std::path::Path;
 use std::fs;
 
@@ -9,7 +9,8 @@ use std::io::prelude::*;
 
 extern crate serde;
 extern crate serde_json;
-use serde::{Deserialize};
+
+use serde::Deserialize;
 
 use std::fs::File;
 use std::io::Read;
@@ -34,7 +35,7 @@ struct ComponentJSON {
     options: BTreeMap<String, ArgumentJSON>,
     #[serde(rename(serialize = "return", deserialize = "return"))]
     arg_return: ArgumentJSON,
-    description: Option<String>
+    description: Option<String>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -43,7 +44,7 @@ struct ArgumentJSON {
     #[serde(rename(serialize = "type", deserialize = "type"))]
     arg_type: Option<String>,
     default: Option<String>,
-    description: Option<String>
+    description: Option<String>,
 }
 
 fn stringify_argument((name, argument): (&String, &ArgumentJSON)) -> String {
@@ -64,12 +65,12 @@ fn doc(text: &Option<String>, prefix: &str) -> String {
 
 fn main() {
     // Enumerate component json files as relevant resources to the compiler
-    build_deps::rerun_if_changed_paths( "../prototypes/components/*" ).unwrap();
+    build_deps::rerun_if_changed_paths("../prototypes/components/*").unwrap();
     // Adding the parent directory "data" to the watch-list will capture new-files being added
-    build_deps::rerun_if_changed_paths( "../prototypes/components" ).unwrap();
-    build_deps::rerun_if_changed_paths( "../prototypes/base.proto" ).unwrap();
-    build_deps::rerun_if_changed_paths( "../prototypes/api.proto" ).unwrap();
-    build_deps::rerun_if_changed_paths( "../prototypes/value.proto" ).unwrap();
+    build_deps::rerun_if_changed_paths("../prototypes/components").unwrap();
+    build_deps::rerun_if_changed_paths("../prototypes/base.proto").unwrap();
+    build_deps::rerun_if_changed_paths("../prototypes/api.proto").unwrap();
+    build_deps::rerun_if_changed_paths("../prototypes/value.proto").unwrap();
 
     let components_dir = "../prototypes/components/";
     let components_proto_path = "../prototypes/components.proto";
@@ -197,7 +198,6 @@ message Component {
 //! |--------------|---------------|--------|  "#.to_string();
     let component_docs_text_table = components.iter()
         .map(|component| {
-
             let mut inputs = BTreeSet::from_iter(&mut component.arguments.keys());
             inputs.append(&mut BTreeSet::from_iter(&mut component.options.keys()));
             let inputs = inputs.iter()
