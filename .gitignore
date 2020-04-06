@@ -71,3 +71,4 @@ docs/.rustc_info.json
 
 # jupyter notebook
 .ipynb_checkpoints
+docs/doc/bstr/utf8/struct.CharIndices.html
