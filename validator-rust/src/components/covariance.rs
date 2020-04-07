@@ -170,7 +170,10 @@ impl Aggregator for proto::Covariance {
                     .map(|difference| (difference * scaling_constant).powi(*k as i32))
                     .collect::<Vec<f64>>();
 
-                Ok(Array::from(row_sensitivity).into_dyn().into())
+                let mut array_sensitivity = Array::from(row_sensitivity).into_dyn();
+                array_sensitivity.insert_axis_inplace(Axis(0));
+
+                Ok(array_sensitivity.into())
             },
             _ => Err("Covariance sensitivity is only implemented for KNorm".into())
         }
