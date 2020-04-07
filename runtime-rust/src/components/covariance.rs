@@ -76,6 +76,7 @@ pub fn matrix_covariance(data: &ArrayD<f64>, delta_degrees_of_freedom: &usize) -
                         delta_degrees_of_freedom)));
             covariances.push(col_covariances);
         });
+
     Ok(covariances)
 }
 
@@ -108,6 +109,7 @@ pub fn matrix_covariance(data: &ArrayD<f64>, delta_degrees_of_freedom: &usize) -
 ///
 /// // cross-covariance of left with itself is equivalent to the standard covariance matrix
 /// assert!(left_covar == arr2(&[ [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5] ]).into_dyn());
+/// ```
 pub fn matrix_cross_covariance(
     left: &ArrayD<f64>, right: &ArrayD<f64>,
     delta_degrees_of_freedom: &usize

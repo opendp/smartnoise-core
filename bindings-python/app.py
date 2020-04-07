@@ -5,7 +5,8 @@ from tests.test_base import (
     test_multilayer_analysis,
     test_raw_dataset,
     test_everything,
-    test_histogram
+    test_histogram,
+    test_covariance
 )
 
 # turn on stack traces
@@ -25,12 +26,12 @@ analysis.release()
 analysis = test_everything(run=False)
 analysis.release()
 
-test_histogram()
-
-
 analysis.plot()
 print(analysis.release_values)
 print('privacy usage:', analysis.privacy_usage)
 
 print('all released values (internal):', analysis.release_values)
 print('release report:', json.dumps(analysis.report(), indent=4))
+
+test_histogram()
+test_covariance()
