@@ -177,6 +177,9 @@
 <span id="177">177</span>
 <span id="178">178</span>
 <span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
@@ -350,7 +353,10 @@
                     .<span class="ident">map</span>(<span class="op">|</span><span class="ident">difference</span><span class="op">|</span> (<span class="ident">difference</span> <span class="op">*</span> <span class="ident">scaling_constant</span>).<span class="ident">powi</span>(<span class="kw-2">*</span><span class="ident">k</span> <span class="kw">as</span> <span class="ident">i32</span>))
                     .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span><span class="op">&gt;</span>();
 
-                <span class="prelude-val">Ok</span>(<span class="ident">Array</span>::<span class="ident">from</span>(<span class="ident">row_sensitivity</span>).<span class="ident">into_dyn</span>().<span class="ident">into</span>())
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">array_sensitivity</span> <span class="op">=</span> <span class="ident">Array</span>::<span class="ident">from</span>(<span class="ident">row_sensitivity</span>).<span class="ident">into_dyn</span>();
+                <span class="ident">array_sensitivity</span>.<span class="ident">insert_axis_inplace</span>(<span class="ident">Axis</span>(<span class="number">0</span>));
+
+                <span class="prelude-val">Ok</span>(<span class="ident">array_sensitivity</span>.<span class="ident">into</span>())
             },
             <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;Covariance sensitivity is only implemented for KNorm&quot;</span>.<span class="ident">into</span>())
         }
