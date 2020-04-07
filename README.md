@@ -47,7 +47,7 @@ For a full listing of the extensive set of components available in the library [
 | Variance/Covariance |      | Transform  |
 
 
-(forthcoming: links to minisite/research papers
+<!-- (forthcoming: links to minisite/research papers) -->
 
 ### Architecture
 
@@ -123,7 +123,9 @@ The steps for adding bindings in a new language are essentially:
 We have [numerous Jupyter notebooks](https://github.com/opendifferentialprivacy/whitenoise-samples/tree/master/analysis) demonstrating the use of the WhiteNoise library and validator through our Python bindings.  These are in our accompanying [WhiteNoise-Samples repository](https://github.com/opendifferentialprivacy/whitenoise-samples) which has exemplars, notebooks and sample code demonstrating most facets of this project.
 
 [<img src="images/figs/plugin_mean_comparison.png" alt="Relative error distributions" height="100">](https://github.com/opendifferentialprivacy/whitenoise-samples/tree/master/analysis)
-<!-- img src="images/figs/utility_mean_comparison.pdf" alt="Utility of mean releases" style="height:100px;" -->
+[<img src="images/figs/example_size.png" alt="Release box plots" height="100">](https://github.com/opendifferentialprivacy/whitenoise-samples/tree/master/analysis)
+[<img src="images/figs/example_education.png" alt="Histogram releases" height="100">](https://github.com/opendifferentialprivacy/whitenoise-samples/tree/master/analysis)
+[<img src="images/figs/example_utility.png" alt="Utility simulations" height="100">](https://github.com/opendifferentialprivacy/whitenoise-samples/tree/master/analysis)
 
 ### WhiteNoise Rust Documentation
 
@@ -142,6 +144,6 @@ We appreciate all contributions. If you are planning to contribute back bug-fixe
 If you plan to contribute new features, utility functions or extensions to the core, please first open an issue and discuss the feature with us.
   - Sending a PR without discussion might end up resulting in a rejected PR, because we might be taking the core in a different direction than you might be aware of.
 
-## The Team
+## Contributing Team
 
-## License
+Joshua Allen, Christian Covington, Eduardo de Leon, Ira Globus-Harris, James Honaker, Jason Huang, Saniya Movahed, Michael Phelan, Raman Prasad, Michael Shoemate, You?
