@@ -26,7 +26,7 @@ Differentially private computations are specified as an analysis graph that can 
   - [WhiteNoise Rust Documentation](#whitenoise-rust-documentation)
 - [Communication](#communication)
 - [Releases and Contributing](#releases-and-contributing)
-- [The Team](#the-team)
+- [Contributing Team](#contributing-team)
 
 ---
 
