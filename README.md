@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/opendifferentialprivacy/whitenoise-core.svg?branch=develop)](https://travis-ci.org/opendifferentialprivacy/whitenoise-core)
 
-<a href="http://opendp.io"><img src="images/WhiteNoise Logo/SVG/Full_grey.svg" align="left" height="70" vspace="8" hspace="18"></a>
+<a href="http://opendp.io"><img src="images/WhiteNoise Logo/SVG/Full_color.svg" align="left" height="70" vspace="8" hspace="18"></a>
 
 ## WhiteNoise Core <br/> Differential Privacy Library <br/>
 
