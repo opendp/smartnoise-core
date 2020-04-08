@@ -51,3 +51,17 @@ pub fn kth_raw_sample_moment(data: &ArrayD<f64>, k: &i64) -> Result<ArrayD<f64>>
 
     mean(&data)
 }
+
+#[cfg(test)]
+mod kth_raw_sample_moment_test {
+    use ndarray::{arr2};
+    use crate::components::kth_raw_sample_moment::kth_raw_sample_moment;
+
+
+    #[test]
+    fn test_th_raw_sample_moment() {
+        let data = arr2(&[ [1., 1., 1.], [2., 4., 6.] ]).into_dyn();
+        let second_moments = kth_raw_sample_moment(&data, &2).unwrap();
+        assert!(second_moments == arr2(&[[2.5, 8.5, 18.5]]).into_dyn());
+    }
+}

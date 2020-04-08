@@ -62,8 +62,8 @@ mod variance_test{
 
     #[test]
     fn test_variance() {
-        let data = arr2(&[ [1.,10.], [2., 20.], [3., 30.] ]).into_dyn();
+        let data = arr2(&[ [2.,20.], [2., 20.], [2., 20.] ]).into_dyn();
         let variances = variance(&data, &1).unwrap();
-        assert!(variances == arr2(&[[1., 100.]]).into_dyn());
+        assert!(variances == arr2(&[[0., 0.]]).into_dyn());
     }
 }

@@ -62,8 +62,8 @@ mod sum_test{
 
     #[test]
     fn test_sum() {
-        let data = arr2(&[ [1.,10.], [2., 20.], [3., 30.] ]).into_dyn();
+        let data = arr2(&[ [2.,10.], [5., 20.], [7., 30.] ]).into_dyn();
         let sums = sum(&data).unwrap();
-        assert!(sums == arr2(&[[6., 60.]]).into_dyn());
+        assert!(sums == arr2(&[[14., 60.]]).into_dyn());
     }
 }

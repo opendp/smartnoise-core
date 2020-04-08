@@ -55,3 +55,16 @@ pub fn filter<T: Clone + Default>(data: &ArrayD<T>, mask: &ArrayD<bool>) -> Resu
         .collect();
     Ok(slow_select(&data, Axis(0), &mask_indices))
 }
+#[cfg(test)]
+mod filter_test{
+    use ndarray::{arr2, arr1};
+    use crate::components::filter::filter;
+
+    #[test]
+    fn test_filter() {
+        let data = arr2(&[ [1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12] ]).into_dyn();
+        let mask = arr1(&[false, true, false, false]).into_dyn();
+        let filtered = filter(&data, &mask).unwrap();
+        assert!(filtered == arr2(&[ [4, 5, 6] ]).into_dyn());
+    }
+}

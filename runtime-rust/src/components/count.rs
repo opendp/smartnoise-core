@@ -46,3 +46,16 @@ impl Evaluable for proto::Count {
 pub fn count<T>(data: &ArrayD<T>) -> Result<ArrayD<i64>> {
     Ok(ndarray::Array::from_shape_vec(vec![], vec![data.len_of(Axis(0)) as i64])?)
 }
+
+#[cfg(test)]
+mod count_test{
+    use ndarray::{arr2};
+    use crate::components::count::count;
+
+    #[test]
+    fn test_count() {
+        let data = arr2(&[ [true, false, true], [false, true, false] ]).into_dyn();
+        let n = count(&data).unwrap();
+        assert!(n.first().unwrap() == &2);
+    }
+}

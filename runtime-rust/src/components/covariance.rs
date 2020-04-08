@@ -164,3 +164,32 @@ pub fn covariance(left: &ArrayView1<f64>, right: &ArrayView1<f64>, mean_left: &f
         .fold(0., |sum, (val_left, val_right)|
             sum + ((val_left - mean_left) * (val_right - mean_right))) / ( (left.len() - delta_degrees_of_freedom.clone()) as f64)
 }
+
+#[cfg(test)]
+mod covariance_test {
+    use ndarray::{ arr2, arr1};
+    use crate::components::covariance::matrix_cross_covariance;
+    use crate::components::covariance::covariance;
+
+    #[test]
+    fn test_covariance() {
+
+    let left = arr1(&[3.,2.,1.]);
+    let right = arr1(&[7.,3.,5.]);
+    let mean_left = 2.;
+    let mean_right = 5.;
+    let cov = covariance(&left.view(), &right.view(), &mean_left, &mean_right, &1);
+     assert!(cov == 1.);
+ }
+    #[test]
+    fn test_covariancecross() {
+        let left = arr2(&[ [2., 4., 6.,], [1., 3., 5.] ]).into_dyn();
+        let right = arr2(&[ [1., 3., 5.], [2., 4., 6.] ]).into_dyn();
+        let cross_covar = matrix_cross_covariance(&left, &right, &(1 as usize)).unwrap();
+        let left_covar = matrix_cross_covariance(&left, &left, &(1 as usize)).unwrap();
+        assert!(cross_covar == arr2(&[ [-0.5, -0.5, -0.5], [-0.5, -0.5, -0.5], [-0.5, -0.5, -0.5] ]).into_dyn());
+
+        assert!(left_covar == arr2(&[ [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5] ]).into_dyn());
+
+    }
+}

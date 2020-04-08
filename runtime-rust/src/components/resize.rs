@@ -335,3 +335,23 @@ pub fn create_sampling_indices(k: &i64, n: &i64) -> Result<Vec<usize>> {
     // create set of sampling indices
     create_subset(&index_vec, &weight_vec, k)
 }
+#[cfg(test)]
+mod resizesampling_test{
+    use crate::components::resize::create_sampling_indices;
+    use crate::components::resize::create_subset;
+
+    #[test]
+    fn test_resizesampl() {
+        let subset_indices = create_sampling_indices(&7, &14);
+        subset_indices.unwrap();
+    }
+
+    #[test]
+    fn test_resizsample() {
+        let set = vec![1, 2, 3, 4, 5, 6];
+        let weights = vec![2., 2., 1., 2., 3., 3.];
+        let k = 5;
+        let subset = create_subset(&set, &weights, &k);
+        subset.unwrap();
+    }
+}

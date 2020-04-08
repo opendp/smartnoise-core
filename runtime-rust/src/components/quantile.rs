@@ -65,3 +65,17 @@ pub fn quantile<T: FromPrimitive + Ord + Clone + Sub<Output=T> + Mul<Output=T> +
         Err(_) => Err("unable to compute quantiles".into())
     }
 }
+#[cfg(test)]
+mod quantile_test{
+    use ndarray::prelude::*;
+    use crate::components::quantile::quantile;
+    use noisy_float::types::n64;
+
+    #[test]
+    fn test_quantile() {
+        let data: ArrayD<f64> = arr2(&[ [1., 2., 3.], [3., 4., 5.] ]).into_dyn();
+        let median = quantile(data.mapv(n64), &0.5, &"midpoint".to_string()).unwrap();
+        println!("{:?}", median);
+        assert!(median == arr1(& [2.0, 3.0, 4.0] ).into_dyn().mapv(n64));
+    }
+}
