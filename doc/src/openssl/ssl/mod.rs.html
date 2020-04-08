@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/openssl-0.10.28/src/ssl/mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../openssl/index.html'><div class='logo-container'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/openssl-0.10.29/src/ssl/mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../openssl/index.html'><div class='logo-container'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -3951,6 +3951,66 @@
 <span id="3951">3951</span>
 <span id="3952">3952</span>
 <span id="3953">3953</span>
+<span id="3954">3954</span>
+<span id="3955">3955</span>
+<span id="3956">3956</span>
+<span id="3957">3957</span>
+<span id="3958">3958</span>
+<span id="3959">3959</span>
+<span id="3960">3960</span>
+<span id="3961">3961</span>
+<span id="3962">3962</span>
+<span id="3963">3963</span>
+<span id="3964">3964</span>
+<span id="3965">3965</span>
+<span id="3966">3966</span>
+<span id="3967">3967</span>
+<span id="3968">3968</span>
+<span id="3969">3969</span>
+<span id="3970">3970</span>
+<span id="3971">3971</span>
+<span id="3972">3972</span>
+<span id="3973">3973</span>
+<span id="3974">3974</span>
+<span id="3975">3975</span>
+<span id="3976">3976</span>
+<span id="3977">3977</span>
+<span id="3978">3978</span>
+<span id="3979">3979</span>
+<span id="3980">3980</span>
+<span id="3981">3981</span>
+<span id="3982">3982</span>
+<span id="3983">3983</span>
+<span id="3984">3984</span>
+<span id="3985">3985</span>
+<span id="3986">3986</span>
+<span id="3987">3987</span>
+<span id="3988">3988</span>
+<span id="3989">3989</span>
+<span id="3990">3990</span>
+<span id="3991">3991</span>
+<span id="3992">3992</span>
+<span id="3993">3993</span>
+<span id="3994">3994</span>
+<span id="3995">3995</span>
+<span id="3996">3996</span>
+<span id="3997">3997</span>
+<span id="3998">3998</span>
+<span id="3999">3999</span>
+<span id="4000">4000</span>
+<span id="4001">4001</span>
+<span id="4002">4002</span>
+<span id="4003">4003</span>
+<span id="4004">4004</span>
+<span id="4005">4005</span>
+<span id="4006">4006</span>
+<span id="4007">4007</span>
+<span id="4008">4008</span>
+<span id="4009">4009</span>
+<span id="4010">4010</span>
+<span id="4011">4011</span>
+<span id="4012">4012</span>
+<span id="4013">4013</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! SSL/TLS support.</span>
 <span class="doccomment">//!</span>
@@ -4047,9 +4107,7 @@
 <span class="kw">use</span> <span class="ident">ssl</span>::<span class="ident">callbacks</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">ssl</span>::<span class="ident">error</span>::<span class="ident">InnerError</span>;
 <span class="kw">use</span> <span class="ident">stack</span>::{<span class="ident">Stack</span>, <span class="ident">StackRef</span>};
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">ossl102</span>)]</span>
-<span class="kw">use</span> <span class="ident">x509</span>::<span class="ident">store</span>::<span class="ident">X509Store</span>;
-<span class="kw">use</span> <span class="ident">x509</span>::<span class="ident">store</span>::{<span class="ident">X509StoreBuilderRef</span>, <span class="ident">X509StoreRef</span>};
+<span class="kw">use</span> <span class="ident">x509</span>::<span class="ident">store</span>::{<span class="ident">X509Store</span>, <span class="ident">X509StoreBuilderRef</span>, <span class="ident">X509StoreRef</span>};
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">ossl102</span>, <span class="ident">libressl261</span>))]</span>
 <span class="kw">use</span> <span class="ident">x509</span>::<span class="ident">verify</span>::<span class="ident">X509VerifyParamRef</span>;
 <span class="kw">use</span> <span class="ident">x509</span>::{<span class="ident">X509Name</span>, <span class="ident">X509Ref</span>, <span class="ident">X509StoreContextRef</span>, <span class="ident">X509VerifyResult</span>, <span class="ident">X509</span>};
@@ -4275,6 +4333,22 @@
     <span class="doccomment">/// on OpenSSL 1.0.x.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dtls</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SslMethod</span> {
         <span class="kw">unsafe</span> { <span class="ident">SslMethod</span>(<span class="ident">DTLS_method</span>()) }
+    }
+
+    <span class="doccomment">/// Support all versions of the TLS protocol, explicitly as a client.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This corresponds to `TLS_client_method` on OpenSSL 1.1.0 and</span>
+    <span class="doccomment">/// `SSLv23_client_method` on OpenSSL 1.0.x.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">tls_client</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SslMethod</span> {
+        <span class="kw">unsafe</span> { <span class="ident">SslMethod</span>(<span class="ident">TLS_client_method</span>()) }
+    }
+
+    <span class="doccomment">/// Support all versions of the TLS protocol, explicitly as a server.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This corresponds to `TLS_server_method` on OpenSSL 1.1.0 and</span>
+    <span class="doccomment">/// `SSLv23_server_method` on OpenSSL 1.0.x.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">tls_server</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SslMethod</span> {
+        <span class="kw">unsafe</span> { <span class="ident">SslMethod</span>(<span class="ident">TLS_server_method</span>()) }
     }
 
     <span class="doccomment">/// Constructs an `SslMethod` from a pointer to the underlying OpenSSL value.</span>
@@ -4697,6 +4771,18 @@
             <span class="ident">mem</span>::<span class="ident">forget</span>(<span class="ident">cert_store</span>);
 
             <span class="prelude-val">Ok</span>(())
+        }
+    }
+
+    <span class="doccomment">/// Replaces the context&#39;s certificate store.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This corresponds to [`SSL_CTX_set_cert_store`].</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [`SSL_CTX_set_cert_store`]: https://www.openssl.org/docs/man1.0.2/man3/SSL_CTX_set_cert_store.html</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_cert_store</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">cert_store</span>: <span class="ident">X509Store</span>) {
+        <span class="kw">unsafe</span> {
+            <span class="ident">ffi</span>::<span class="ident">SSL_CTX_set_cert_store</span>(<span class="self">self</span>.<span class="ident">as_ptr</span>(), <span class="ident">cert_store</span>.<span class="ident">as_ptr</span>());
+            <span class="ident">mem</span>::<span class="ident">forget</span>(<span class="ident">cert_store</span>);
         }
     }
 
@@ -5898,6 +5984,17 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">session_cache_size</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">i64</span> {
         <span class="kw">unsafe</span> { <span class="ident">ffi</span>::<span class="ident">SSL_CTX_sess_get_cache_size</span>(<span class="self">self</span>.<span class="ident">as_ptr</span>()).<span class="ident">into</span>() }
     }
+
+    <span class="doccomment">/// Returns the verify mode that was set on this context from [`SslContextBuilder::set_verify`].</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This corresponds to [`SSL_CTX_get_verify_mode`].</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [`SslContextBuilder::set_verify`]: struct.SslContextBuilder.html#method.set_verify</span>
+    <span class="doccomment">/// [`SSL_CTX_get_verify_mode`]: https://www.openssl.org/docs/man1.1.1/man3/SSL_CTX_get_verify_mode.html</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">verify_mode</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SslVerifyMode</span> {
+        <span class="kw">let</span> <span class="ident">mode</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">ffi</span>::<span class="ident">SSL_CTX_get_verify_mode</span>(<span class="self">self</span>.<span class="ident">as_ptr</span>()) };
+        <span class="ident">SslVerifyMode</span>::<span class="ident">from_bits</span>(<span class="ident">mode</span>).<span class="ident">expect</span>(<span class="string">&quot;SSL_CTX_get_verify_mode returned invalid mode&quot;</span>)
+    }
 }
 
 <span class="doccomment">/// Information about the state of a cipher.</span>
@@ -6346,6 +6443,16 @@
     <span class="doccomment">/// [`SSL_set_verify`]: https://www.openssl.org/docs/man1.0.2/ssl/SSL_set_verify.html</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_verify</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">mode</span>: <span class="ident">SslVerifyMode</span>) {
         <span class="kw">unsafe</span> { <span class="ident">ffi</span>::<span class="ident">SSL_set_verify</span>(<span class="self">self</span>.<span class="ident">as_ptr</span>(), <span class="ident">mode</span>.<span class="ident">bits</span> <span class="kw">as</span> <span class="ident">c_int</span>, <span class="prelude-val">None</span>) }
+    }
+
+    <span class="doccomment">/// Returns the verify mode that was set using `set_verify`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This corresponds to [`SSL_get_verify_mode`].</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [`SSL_get_verify_mode`]: https://www.openssl.org/docs/man1.1.1/man3/SSL_get_verify_mode.html</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">verify_mode</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SslVerifyMode</span> {
+        <span class="kw">let</span> <span class="ident">mode</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">ffi</span>::<span class="ident">SSL_get_verify_mode</span>(<span class="self">self</span>.<span class="ident">as_ptr</span>()) };
+        <span class="ident">SslVerifyMode</span>::<span class="ident">from_bits</span>(<span class="ident">mode</span>).<span class="ident">expect</span>(<span class="string">&quot;SSL_get_verify_mode returned invalid mode&quot;</span>)
     }
 
     <span class="doccomment">/// Like [`SslContextBuilder::set_verify_callback`].</span>
@@ -7126,6 +7233,16 @@
         }
     }
 
+    <span class="doccomment">/// Determines if the initial handshake has been completed.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This corresponds to [`SSL_is_init_finished`].</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [`SSL_is_init_finished`]: https://www.openssl.org/docs/man1.1.1/man3/SSL_is_init_finished.html</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">ossl110</span>)]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_init_finished</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="kw">unsafe</span> { <span class="ident">ffi</span>::<span class="ident">SSL_is_init_finished</span>(<span class="self">self</span>.<span class="ident">as_ptr</span>()) <span class="op">!</span><span class="op">=</span> <span class="number">0</span> }
+    }
+
     <span class="doccomment">/// Determines if the client&#39;s hello message is in the SSLv2 format.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This can only be used inside of the client hello callback. Otherwise, `false` is returned.</span>
@@ -7853,9 +7970,12 @@
 
 <span class="macro">cfg_if</span><span class="macro">!</span> {
     <span class="kw">if</span> <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">ossl110</span>, <span class="ident">libressl291</span>))]</span> {
-        <span class="kw">use</span> <span class="ident">ffi</span>::{<span class="ident">TLS_method</span>, <span class="ident">DTLS_method</span>};
+        <span class="kw">use</span> <span class="ident">ffi</span>::{<span class="ident">TLS_method</span>, <span class="ident">DTLS_method</span>, <span class="ident">TLS_client_method</span>, <span class="ident">TLS_server_method</span>};
     } <span class="kw">else</span> {
-        <span class="kw">use</span> <span class="ident">ffi</span>::{<span class="ident">SSLv23_method</span> <span class="kw">as</span> <span class="ident">TLS_method</span>, <span class="ident">DTLSv1_method</span> <span class="kw">as</span> <span class="ident">DTLS_method</span>};
+        <span class="kw">use</span> <span class="ident">ffi</span>::{
+            <span class="ident">SSLv23_method</span> <span class="kw">as</span> <span class="ident">TLS_method</span>, <span class="ident">DTLSv1_method</span> <span class="kw">as</span> <span class="ident">DTLS_method</span>, <span class="ident">SSLv23_client_method</span> <span class="kw">as</span> <span class="ident">TLS_client_method</span>,
+            <span class="ident">SSLv23_server_method</span> <span class="kw">as</span> <span class="ident">TLS_server_method</span>,
+        };
     }
 }
 <span class="macro">cfg_if</span><span class="macro">!</span> {
@@ -7882,11 +8002,11 @@
             )
         }
     } <span class="kw">else</span> {
-        <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">sync</span>::{<span class="ident">Once</span>, <span class="ident">ONCE_INIT</span>};
+        <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">sync</span>::<span class="ident">Once</span>;
 
         <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">get_new_idx</span>(<span class="ident">f</span>: <span class="ident">ffi</span>::<span class="ident">CRYPTO_EX_free</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">c_int</span> {
             <span class="comment">// hack around https://rt.openssl.org/Ticket/Display.html?id=3710&amp;user=guest&amp;pass=guest</span>
-            <span class="kw">static</span> <span class="ident">ONCE</span>: <span class="ident">Once</span> <span class="op">=</span> <span class="ident">ONCE_INIT</span>;
+            <span class="kw">static</span> <span class="ident">ONCE</span>: <span class="ident">Once</span> <span class="op">=</span> <span class="ident">Once</span>::<span class="ident">new</span>();
             <span class="ident">ONCE</span>.<span class="ident">call_once</span>(<span class="op">|</span><span class="op">|</span> {
                 <span class="ident">ffi</span>::<span class="ident">SSL_CTX_get_ex_new_index</span>(<span class="number">0</span>, <span class="ident">ptr</span>::<span class="ident">null_mut</span>(), <span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>);
             });
@@ -7896,7 +8016,7 @@
 
         <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">get_new_ssl_idx</span>(<span class="ident">f</span>: <span class="ident">ffi</span>::<span class="ident">CRYPTO_EX_free</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">c_int</span> {
             <span class="comment">// hack around https://rt.openssl.org/Ticket/Display.html?id=3710&amp;user=guest&amp;pass=guest</span>
-            <span class="kw">static</span> <span class="ident">ONCE</span>: <span class="ident">Once</span> <span class="op">=</span> <span class="ident">ONCE_INIT</span>;
+            <span class="kw">static</span> <span class="ident">ONCE</span>: <span class="ident">Once</span> <span class="op">=</span> <span class="ident">Once</span>::<span class="ident">new</span>();
             <span class="ident">ONCE</span>.<span class="ident">call_once</span>(<span class="op">|</span><span class="op">|</span> {
                 <span class="ident">ffi</span>::<span class="ident">SSL_get_ex_new_index</span>(<span class="number">0</span>, <span class="ident">ptr</span>::<span class="ident">null_mut</span>(), <span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>);
             });
