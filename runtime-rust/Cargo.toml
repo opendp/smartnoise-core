@@ -24,7 +24,7 @@ ffi-support = "0.3.5"
 ieee754 = "0.2"
 rug = "1.7.0"
 rand = "0.7.3"
-whitenoise_validator = {path = "../validator-rust"}
+whitenoise_validator = "0.1.0"
 itertools = "0.8.2"
 error-chain = "0.12.2"
 noisy_float = "0.1.12"

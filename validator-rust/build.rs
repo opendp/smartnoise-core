@@ -65,15 +65,15 @@ fn doc(text: &Option<String>, prefix: &str) -> String {
 
 fn main() {
     // Enumerate component json files as relevant resources to the compiler
-    build_deps::rerun_if_changed_paths("../prototypes/components/*").unwrap();
+    build_deps::rerun_if_changed_paths("./prototypes/components/*").unwrap();
     // Adding the parent directory "data" to the watch-list will capture new-files being added
-    build_deps::rerun_if_changed_paths("../prototypes/components").unwrap();
-    build_deps::rerun_if_changed_paths("../prototypes/base.proto").unwrap();
-    build_deps::rerun_if_changed_paths("../prototypes/api.proto").unwrap();
-    build_deps::rerun_if_changed_paths("../prototypes/value.proto").unwrap();
+    build_deps::rerun_if_changed_paths("./prototypes/components").unwrap();
+    build_deps::rerun_if_changed_paths("./prototypes/base.proto").unwrap();
+    build_deps::rerun_if_changed_paths("./prototypes/api.proto").unwrap();
+    build_deps::rerun_if_changed_paths("./prototypes/value.proto").unwrap();
 
-    let components_dir = "../prototypes/components/";
-    let components_proto_path = "../prototypes/components.proto";
+    let components_dir = "./prototypes/components/";
+    let components_proto_path = "./prototypes/components.proto";
     let components_doc_path = "src/docs/components.rs";
 
     let paths = fs::read_dir(&Path::new(components_dir))
@@ -181,12 +181,12 @@ message Component {
     config.type_attribute("whitenoise.Component.variant", "#[derive(derive_more::From)]");
     config.compile_protos(
         &[
-            "../prototypes/api.proto",
-            "../prototypes/base.proto",
-            "../prototypes/components.proto",
-            "../prototypes/value.proto"
+            "./prototypes/api.proto",
+            "./prototypes/base.proto",
+            "./prototypes/components.proto",
+            "./prototypes/value.proto"
         ],
-        &["../prototypes/"]).unwrap();
+        &["./prototypes/"]).unwrap();
 
 
     let component_docs_text_header = r#"
