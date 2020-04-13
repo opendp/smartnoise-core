@@ -4,6 +4,8 @@ extern crate prost_build;
 use std::io;
 use std::path::Path;
 use std::fs;
+use std::env;
+use std::path::PathBuf;
 
 use std::io::prelude::*;
 
@@ -47,6 +49,47 @@ struct ArgumentJSON {
     description: Option<String>,
 }
 
+/// Returns the path to the prototypes directory`pointed to by the `PROTODIR` environment variable, if it is set.
+fn env_protodir() -> Option<PathBuf> {
+    let protodir = match env::var_os("PROTODIR") {
+        Some(path) => PathBuf::from(path),
+        None => return None
+    };
+
+    if !protodir.exists() {
+        panic!(
+            "PROTODIR environment variable points to non-existent file ({:?})",
+            protodir
+        );
+    }
+    Some(protodir)
+}
+
+fn components_dir(mut _protodir: PathBuf) -> String {
+    _protodir.push("components");
+    _protodir.to_string_lossy().to_string()
+}
+
+fn components_proto_tgt(mut _protodir: PathBuf) -> String {
+    _protodir.push("components.proto");
+    _protodir.to_string_lossy().to_string()
+}
+
+fn base_proto_tgt(mut _protodir: PathBuf) -> String {
+    _protodir.push("base.proto");
+    _protodir.to_string_lossy().to_string()
+}
+
+fn api_proto_tgt(mut _protodir: PathBuf) -> String {
+    _protodir.push("api.proto");
+    _protodir.to_string_lossy().to_string()
+}
+
+fn value_proto_tgt(mut _protodir: PathBuf) -> String {
+    _protodir.push("value.proto");
+    _protodir.to_string_lossy().to_string()
+}
+
 fn stringify_argument((name, argument): (&String, &ArgumentJSON)) -> String {
     let mut response = format!("* `{}` - {}", name, argument.arg_type.as_ref().unwrap_or(&"".to_string()));
     if let Some(description) = &argument.clone().description {
@@ -64,19 +107,29 @@ fn doc(text: &Option<String>, prefix: &str) -> String {
 }
 
 fn main() {
-    // Enumerate component json files as relevant resources to the compiler
-    build_deps::rerun_if_changed_paths("./prototypes/components/*").unwrap();
-    // Adding the parent directory "data" to the watch-list will capture new-files being added
-    build_deps::rerun_if_changed_paths("./prototypes/components").unwrap();
-    build_deps::rerun_if_changed_paths("./prototypes/base.proto").unwrap();
-    build_deps::rerun_if_changed_paths("./prototypes/api.proto").unwrap();
-    build_deps::rerun_if_changed_paths("./prototypes/value.proto").unwrap();
+    let mut _proto_dir = env_protodir()
+        .expect(
+            "Failed to find the prototypes directory. The PROTODIR environment variable is not set."
+        );
+    let mut _comps_dir = components_dir(env_protodir().unwrap());
+    let mut _comp_proto_tgt = components_proto_tgt(env_protodir().unwrap());
+    let mut _base_proto_tgt = base_proto_tgt(env_protodir().unwrap());
+    let mut _api_proto_tgt = api_proto_tgt(env_protodir().unwrap());
+    let mut _val_proto_tgt = value_proto_tgt(env_protodir().unwrap());
 
-    let components_dir = "./prototypes/components/";
-    let components_proto_path = "./prototypes/components.proto";
+    // Enumerate component json files as relevant resources to the compiler
+    build_deps::rerun_if_changed_paths(&_proto_dir.as_path().display().to_string()).unwrap();
+    // Adding the parent directory "data" to the watch-list will capture new-files being added
+
+    build_deps::rerun_if_changed_paths(&_comp_proto_tgt).unwrap();
+    build_deps::rerun_if_changed_paths(&_base_proto_tgt).unwrap();
+    build_deps::rerun_if_changed_paths(&_api_proto_tgt).unwrap();
+    build_deps::rerun_if_changed_paths(&_val_proto_tgt).unwrap();
+
+    let components_proto_path = _comp_proto_tgt.clone();
     let components_doc_path = "src/docs/components.rs";
 
-    let paths = fs::read_dir(&Path::new(components_dir))
+    let paths = fs::read_dir(&Path::new(&_comps_dir))
         .expect("components directory was not found");
 
     let mut components = paths
@@ -168,8 +221,8 @@ message Component {
 
     // overwrite/remove the components.proto file
     {
-        fs::remove_file(components_proto_path).ok();
-        let mut file = File::create(components_proto_path).unwrap();
+        fs::remove_file(components_proto_path.clone()).ok();
+        let mut file = File::create(components_proto_path.clone()).unwrap();
         file.write(proto_text.as_bytes())
             .expect("Unable to write components.proto file.");
         file.flush().unwrap();
@@ -181,12 +234,12 @@ message Component {
     config.type_attribute("whitenoise.Component.variant", "#[derive(derive_more::From)]");
     config.compile_protos(
         &[
-            "./prototypes/api.proto",
-            "./prototypes/base.proto",
-            "./prototypes/components.proto",
-            "./prototypes/value.proto"
+            _api_proto_tgt,
+            _base_proto_tgt,
+	    _comp_proto_tgt,
+	    _val_proto_tgt
         ],
-        &["./prototypes/"]).unwrap();
+        &[_proto_dir.to_string_lossy().to_string()]).unwrap();
 
 
     let component_docs_text_header = r#"
