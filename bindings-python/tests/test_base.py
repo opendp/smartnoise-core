@@ -13,7 +13,6 @@ test_csv_names = ["age", "sex", "educ", "race", "income", "married"]
 
 
 def test_multilayer_analysis(run=True):
-
     with whitenoise.Analysis() as analysis:
         PUMS = whitenoise.Dataset(path=TEST_CSV_PATH, column_names=test_csv_names)
 
@@ -261,7 +260,6 @@ def test_raw_dataset(run=True):
 
 
 def test_everything(run=True):
-
     with whitenoise.Analysis(dynamic=True) as analysis:
         data = whitenoise.Dataset(path=TEST_CSV_PATH, column_names=test_csv_names)
 
@@ -354,13 +352,9 @@ def test_everything(run=True):
 
 
 def test_histogram():
-    import os
     import whitenoise
     import whitenoise.components as op
     import numpy as np
-    import math
-    import statistics
-    import matplotlib.pyplot as plt
 
     # establish data information
 
@@ -373,16 +367,56 @@ def test_histogram():
     print('actual', np.histogram(income, bins=income_edges)[0])
 
     with whitenoise.Analysis() as analysis:
-        data = whitenoise.Dataset(path = TEST_CSV_PATH, column_names = test_csv_names)
+        data = whitenoise.Dataset(path=TEST_CSV_PATH, column_names=test_csv_names)
         income = op.to_int(data['income'], min=0, max=0)
         sex = op.to_bool(data['sex'], true_label="1")
 
         income_histogram = op.dp_histogram(
             income,
-            edges = income_edges,
-            privacy_usage = {'epsilon': 1.}
+            edges=income_edges,
+            privacy_usage={'epsilon': 1.}
         )
 
     analysis.release()
 
     print("Income histogram Geometric DP release:   " + str(income_histogram.value))
+
+
+def test_covariance():
+    import whitenoise
+    import whitenoise.components as op
+    import numpy as np
+    import pandas as pd
+    import matplotlib.pyplot as plt
+
+    data = np.genfromtxt(TEST_CSV_PATH, delimiter=',', names=True)
+
+    with whitenoise.Analysis() as analysis:
+        wn_data = whitenoise.Dataset(path=TEST_CSV_PATH, column_names=test_csv_names)
+        # get full covariance matrix
+        cov = op.dp_covariance(data=op.to_float(wn_data['age', 'sex', 'educ', 'income', 'married']),
+                               privacy_usage={'epsilon': 10},
+                               data_min=[0., 0., 1., 0., 0.],
+                               data_max=[100., 1., 16., 500_000., 1.],
+                               data_n=1000)
+    analysis.release()
+
+    # store DP covariance and correlation matrix
+    dp_cov = cov.value
+    dp_corr = dp_cov / np.outer(np.sqrt(np.diag(dp_cov)), np.sqrt(np.diag(dp_cov)))
+
+    # get non-DP covariance/correlation matrices
+    age = list(data[:]['age'])
+    sex = list(data[:]['sex'])
+    educ = list(data[:]['educ'])
+    income = list(data[:]['income'])
+    married = list(data[:]['married'])
+    non_dp_cov = np.cov([age, sex, educ, income, married])
+    non_dp_corr = non_dp_cov / np.outer(np.sqrt(np.diag(non_dp_cov)), np.sqrt(np.diag(non_dp_cov)))
+
+    print('Non-DP Covariance Matrix:\n{0}\n\n'.format(pd.DataFrame(non_dp_cov)))
+    print('Non-DP Correlation Matrix:\n{0}\n\n'.format(pd.DataFrame(non_dp_corr)))
+    print('DP Correlation Matrix:\n{0}'.format(pd.DataFrame(dp_corr)))
+    plt.imshow(non_dp_corr - dp_corr, interpolation='nearest')
+    plt.colorbar()
+    plt.show()

@@ -15,12 +15,16 @@ impl Evaluable for proto::LaplaceMechanism {
             Array::I64(data) => data.mapv(|v| v as f64),
             _ => return Err("data must be numeric".into())
         };
+//        println!("data: {:?}", data);
+
         let sensitivity = get_argument(&arguments, "sensitivity")?.array()?.f64()?;
+//        println!("sensitivity: {:?}", sensitivity);
 
         let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivity.len())?;
 
         let epsilon = ndarray::Array::from_shape_vec(
             data.shape(), usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?)?;
+//        println!("epsilon: {:?}", epsilon);
 
         data.gencolumns_mut().into_iter()
             .zip(sensitivity.gencolumns().into_iter().zip(epsilon.gencolumns().into_iter()))
