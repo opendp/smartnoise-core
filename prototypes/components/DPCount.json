@@ -7,12 +7,12 @@
       ],
       "type": "Array"
     },
-    "min": {
+    "lower": {
       "type": "Array",
       "default": "0",
       "description": "Estimated minimum possible size of the data."
     },
-    "max": {
+    "upper": {
       "type": "Array",
       "default": "None",
       "description": "Estimated maximum possible size of the data."

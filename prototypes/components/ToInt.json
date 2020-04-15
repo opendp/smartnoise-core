@@ -4,11 +4,11 @@
       "type": "Array",
       "description": "Data to be cast to another type."
     },
-    "min": {
+    "lower": {
       "type": "Array",
       "description": "Minimum allowable imputation value. Integers cannot represent null, so values that cannot be parsed are imputed."
     },
-    "max": {
+    "upper": {
       "type": "Array",
       "description": "Maximum allowable imputation value."
     }

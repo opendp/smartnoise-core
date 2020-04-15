@@ -7,14 +7,9 @@ See also the accompanying [WhiteNoise-System](https://github.com/opendifferentia
 
 ##
 
-Differential privacy is the gold standard definition of privacy protection.  
-The WhiteNoise project aims to connect theoretical solutions from the academic community with the practical lessons learned from real-world deployments, to make differential privacy broadly accessible to future deployments.  
-Specifically, we provide several basic building blocks that can be used by people involved with sensitive data, with implementations based on vetted and mature differential privacy research.  
-In WhiteNoise Core, we provide a pluggable open source library of differentially private algorithms and mechanisms for releasing privacy preserving queries and statistics, as well as APIs for defining an analysis and a validator for evaluating these analyses and composing the total privacy loss on a dataset. 
+Differential privacy is the gold standard definition of privacy protection. The WhiteNoise project aims to connect theoretical solutions from the academic community with the practical lessons learned from real-world deployments, to make differential privacy broadly accessible to future deployments. Specifically, we provide several basic building blocks that can be used by people involved with sensitive data, with implementations based on vetted and mature differential privacy research. In WhiteNoise Core, we provide a pluggable open source library of differentially private algorithms and mechanisms for releasing privacy preserving queries and statistics, as well as APIs for defining an analysis and a validator for evaluating these analyses and composing the total privacy loss on a dataset. 
 
-This library provides a language-agnostic set of utilities for running differentially private analyses.
-The validator takes in a high-level description of computation, called an Analysis, and checks if the data supplied to each component satisfies requirements necessary to maintain data privacy and derive sensitivities for mechanisms.
-The validator may also be used to compute the necessary noise scaling/sensitivities under a variety of definitions of privacy, as well as converting to/from accuracy estimates, summarizing releases, and dynamically validating individual components. 
+This library provides a language-agnostic set of utilities for running differentially private analyses. The validator takes in a high-level description of computation, called an Analysis, and checks if the data supplied to each component satisfies requirements necessary to maintain data privacy and derive sensitivities for mechanisms. The validator may also be used to compute the necessary noise scaling/sensitivities under a variety of definitions of privacy, as well as converting to/from accuracy estimates, summarizing releases, and dynamically validating individual components. 
 
 - [More about WhiteNoise Core Runtime](#more-about-whitenoise-core-validator)
   - [Component List](#components)
@@ -56,7 +51,7 @@ The [Rust documentation](https://opendifferentialprivacy.github.io/whitenoise-co
 
 Please let us know if you encounter a bug by [creating an issue](https://github.com/opendifferentialprivacy/whitenoise-core/issues).
 
-We appreciate all contributions. If you are planning to contribute back bug-fixes, please do so without any further discussion.
+We appreciate all contributions. We welcome pull requests with bug-fixes without prior discussion.
 
 If you plan to contribute new features, utility functions or extensions to the core, please first open an issue and discuss the feature with us.
   - Sending a PR without discussion might end up resulting in a rejected PR, because we might be taking the core in a different direction than you might be aware of.

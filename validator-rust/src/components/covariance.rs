@@ -102,13 +102,13 @@ impl Aggregator for proto::Covariance {
                             .map_err(prepend("data:"))?.clone();
                         data_property.assert_is_not_aggregated()?;
                         data_property.assert_non_null()?;
-                        let data_min = data_property.min_f64()?;
-                        let data_max = data_property.max_f64()?;
+                        let data_lower = data_property.lower_f64()?;
+                        let data_upper = data_property.upper_f64()?;
                         data_n = data_property.num_records()? as f64;
 
                         // collect bound differences for upper triangle of matrix
-                        data_min.iter().zip(data_max.iter()).enumerate()
-                            .map(|(i, (left_min, left_max))| data_min.iter().zip(data_max.iter()).enumerate()
+                        data_lower.iter().zip(data_upper.iter()).enumerate()
+                            .map(|(i, (left_min, left_max))| data_lower.iter().zip(data_upper.iter()).enumerate()
                                 .filter(|(j, _)| i <= *j)
                                 .map(|(_, (right_min, right_max))|
                                     (*left_max - *left_min) * (*right_max - *right_min))
@@ -122,8 +122,8 @@ impl Aggregator for proto::Covariance {
                         left_property.assert_is_not_aggregated()?;
                         left_property.assert_non_null()?;
                         let left_n = left_property.num_records()?;
-                        let left_min = left_property.min_f64()?;
-                        let left_max = left_property.max_f64()?;
+                        let left_lower = left_property.lower_f64()?;
+                        let left_upper = left_property.upper_f64()?;
 
                         // right side: perform checks and prepare parameters
                         let right_property = right_property.array()
@@ -131,8 +131,8 @@ impl Aggregator for proto::Covariance {
                         right_property.assert_is_not_aggregated()?;
                         right_property.assert_non_null()?;
                         let right_n = right_property.num_records()?;
-                        let right_min = right_property.min_f64()?;
-                        let right_max = right_property.max_f64()?;
+                        let right_lower = right_property.lower_f64()?;
+                        let right_upper = right_property.upper_f64()?;
 
                         // ensure conformability
                         if left_n != right_n {
@@ -141,8 +141,8 @@ impl Aggregator for proto::Covariance {
                         data_n = left_n as f64;
 
                         // collect bound differences for entire matrix
-                        left_min.iter().zip(left_max.iter())
-                            .map(|(left_min, left_max)| right_min.iter().zip(right_max.iter())
+                        left_lower.iter().zip(left_upper.iter())
+                            .map(|(left_min, left_max)| right_lower.iter().zip(right_upper.iter())
                                 .map(|(right_min, right_max)|
                                     (left_max - *left_min) * (right_max - *right_min))
                                 .collect::<Vec<f64>>())

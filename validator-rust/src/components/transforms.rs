@@ -46,18 +46,18 @@ impl Component for proto::Add {
                 bool: None,
             }, &OptimizeBinaryOperators {
                 f64: Some(Box::new(|bounds| Ok((
-                    bounds.left_min.and_then(|lmin| bounds.right_min.and_then(|rmin|
+                    bounds.left_lower.and_then(|lmin| bounds.right_lower.and_then(|rmin|
                         Some(lmin + rmin))),
-                    bounds.left_max.and_then(|lmax| bounds.right_max.and_then(|rmax|
+                    bounds.left_upper.and_then(|lmax| bounds.right_upper.and_then(|rmax|
                         Some(lmax + rmax))),
                 )))),
                 i64: Some(Box::new(|bounds| Ok((
-                    match (bounds.left_min, bounds.right_min) {
+                    match (bounds.left_lower, bounds.right_lower) {
                         (Some(lmin), Some(rmin)) => Some(lmin.checked_add(rmin)
                             .ok_or_else(|| Error::from("addition may result in underflow or overflow"))?),
                         _ => None
                     },
-                    match (bounds.left_max, bounds.right_max) {
+                    match (bounds.left_upper, bounds.right_upper) {
                         (Some(lmax), Some(rmax)) => Some(lmax.checked_add(rmax)
                             .ok_or_else(|| Error::from("addition may result in underflow or overflow"))?),
                         _ => None
@@ -111,18 +111,18 @@ impl Component for proto::Subtract {
                 bool: None,
             }, &OptimizeBinaryOperators {
                 f64: Some(Box::new(|bounds| Ok((
-                    bounds.left_min.and_then(|lmin| bounds.right_min.and_then(|rmin|
+                    bounds.left_lower.and_then(|lmin| bounds.right_lower.and_then(|rmin|
                         Some(lmin - rmin))),
-                    bounds.left_max.and_then(|lmax| bounds.right_max.and_then(|rmax|
+                    bounds.left_upper.and_then(|lmax| bounds.right_upper.and_then(|rmax|
                         Some(lmax - rmax))),
                 )))),
                 i64: Some(Box::new(|bounds| Ok((
-                    match (bounds.left_min, bounds.right_min) {
+                    match (bounds.left_lower, bounds.right_lower) {
                         (Some(lmin), Some(rmin)) => Some(lmin.checked_sub(rmin)
                             .ok_or_else(|| Error::from("subtraction may result in underflow or overflow"))?),
                         _ => None
                     },
-                    match (bounds.left_max, bounds.right_max) {
+                    match (bounds.left_upper, bounds.right_upper) {
                         (Some(lmax), Some(rmax)) => Some(lmax.checked_sub(rmax)
                             .ok_or_else(|| Error::from("subtraction may result in underflow or overflow"))?),
                         _ => None
@@ -163,6 +163,9 @@ impl Component for proto::Multiply {
             return Err("left and right arguments must share the same data types".into())
         }
 
+        println!("left {}", left_property.nullity);
+        println!("right {}", right_property.nullity);
+
         Ok(ArrayProperties {
             nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
@@ -180,19 +183,19 @@ impl Component for proto::Multiply {
                 bool: None,
             }, &OptimizeBinaryOperators {
                 f64: Some(Box::new(|bounds| {
-                    let a = match bounds.left_min {
+                    let a = match bounds.left_lower {
                         Some(v) => v,
                         None => return Ok((None, None))
                     }.clone();
-                    let c = match bounds.left_max {
+                    let c = match bounds.left_upper {
                         Some(v) => v,
                         None => return Ok((None, None))
                     }.clone();
-                    let d = match bounds.right_min {
+                    let d = match bounds.right_lower {
                         Some(v) => v,
                         None => return Ok((None, None))
                     }.clone();
-                    let f = match bounds.right_max {
+                    let f = match bounds.right_upper {
                         Some(v) => v,
                         None => return Ok((None, None))
                     }.clone();
@@ -284,8 +287,8 @@ impl Component for proto::Divide {
 
         let float_denominator_may_span_zero = match right_property.clone().nature {
             Some(nature) => match nature {
-                Nature::Continuous(nature) => nature.min.f64()
-                    .map(|min| nature.max.f64()
+                Nature::Continuous(nature) => nature.lower.f64()
+                    .map(|min| nature.upper.f64()
                         .map(|max| min.iter().zip(max.iter())
                             .any(|(min, max)| min
                                 .map(|min| max
@@ -327,27 +330,27 @@ impl Component for proto::Divide {
                 bool: None,
             }, &OptimizeBinaryOperators {
                 f64: Some(Box::new(|bounds| {
-                    let a = match bounds.left_min {
+                    let a = match bounds.left_lower {
                         Some(v) => v,
                         None => return Ok((None, None))
                     }.clone();
-                    let c = match bounds.left_max {
+                    let c = match bounds.left_upper {
                         Some(v) => v,
                         None => return Ok((None, None))
                     }.clone();
-                    let d = match bounds.right_min {
+                    let d = match bounds.right_lower {
                         Some(v) => v,
                         None => {
-                            if bounds.right_max.map(|v| v >= 0.).unwrap_or(true) {
+                            if bounds.right_upper.map(|v| v >= 0.).unwrap_or(true) {
                                 return Err("potential division by zero".into())
                             }
                             return Ok((None, None))
                         }
                     }.clone();
-                    let f = match bounds.right_max {
+                    let f = match bounds.right_upper {
                         Some(v) => v,
                         None => {
-                            if bounds.right_min.map(|v| v <= 0.).unwrap_or(true) {
+                            if bounds.right_lower.map(|v| v <= 0.).unwrap_or(true) {
                                 return Err("potential division by zero".into())
                             }
                             return Ok((None, None))
@@ -444,7 +447,7 @@ impl Component for proto::Power {
                     }, &data_property.num_columns()?)?;
             },
             (DataType::I64, DataType::I64) => {
-                if !radical_property.min_i64()?.iter().all(|min| min >= &0) {
+                if !radical_property.lower_i64()?.iter().all(|min| min >= &0) {
                     return Err("integer power must not be negative".into())
                 }
 
@@ -491,13 +494,13 @@ impl Component for proto::Log {
             return Err("arguments for log must be float and homogeneously typed".into());
         }
 
-        if !base_property.min_f64()?.iter()
-            .zip(base_property.max_f64()?.iter())
+        if !base_property.lower_f64()?.iter()
+            .zip(base_property.upper_f64()?.iter())
             .all(|(min, max)| min > &0. && max < &1. || min > &1.) {
             return Err("base must be in [0, 1) U (1, inf) and not span zero".into())
         }
 
-        if !data_property.min_f64()?.iter()
+        if !data_property.lower_f64()?.iter()
             .all(|min| min > &0.) {
             return Err("data may potentially be less than zero".into())
         }
@@ -547,9 +550,9 @@ impl Component for proto::Negative {
             },
             &OptimizeUnaryOperators {
                 f64: Some(Box::new(|bounds|
-                    Ok((bounds.max.map(|v| -v).clone(), bounds.min.map(|v| -v).clone())))),
+                    Ok((bounds.upper.map(|v| -v).clone(), bounds.lower.map(|v| -v).clone())))),
                 i64: Some(Box::new(|bounds|
-                    Ok((bounds.max.map(|v| -v).clone(), bounds.min.map(|v| -v).clone())))),
+                    Ok((bounds.upper.map(|v| -v).clone(), bounds.lower.map(|v| -v).clone())))),
             }, &data_property.num_columns()?)?;
 
         Ok(data_property.into())
@@ -577,7 +580,7 @@ impl Component for proto::Modulo {
         match (left_property.data_type.clone(), right_property.data_type.clone()) {
             (DataType::F64, DataType::F64) => {
 
-                if !right_property.min_f64()?.iter().all(|v| v > &0.) {
+                if !right_property.lower_f64()?.iter().all(|v| v > &0.) {
                     return Err("divisor must be greater than zero".into())
                 }
 
@@ -591,12 +594,12 @@ impl Component for proto::Modulo {
                     },
                     &OptimizeBinaryOperators {
                         // TODO: this could be tighter
-                        f64: Some(Box::new(|bounds| Ok((Some(0.), *bounds.right_max)))),
+                        f64: Some(Box::new(|bounds| Ok((Some(0.), *bounds.right_upper)))),
                         i64: None
                     }, &left_property.num_columns()?)?;
             },
             (DataType::I64, DataType::I64) => {
-                if !right_property.min_i64()?.iter().all(|v| v > &0) {
+                if !right_property.lower_i64()?.iter().all(|v| v > &0) {
                     return Err("divisor must be greater than zero".into())
                 }
                 left_property.nature = propagate_binary_nature(
@@ -609,7 +612,7 @@ impl Component for proto::Modulo {
                     },
                     &OptimizeBinaryOperators {
                         f64: None,
-                        i64: Some(Box::new(|bounds| Ok((Some(0), bounds.right_max.map(|v| v - 1).clone())))),
+                        i64: Some(Box::new(|bounds| Ok((Some(0), bounds.right_upper.map(|v| v - 1).clone())))),
                     }, &left_property.num_columns()?)?;
             },
             _ => return Err("arguments for power must be numeric and homogeneously typed".into())
@@ -884,8 +887,8 @@ pub struct UnaryOperators {
     pub bool: Option<Box<dyn Fn(&bool) -> Result<bool>>>,
 }
 pub struct UnaryBounds<'a, T> {
-    pub min: &'a Option<T>,
-    pub max: &'a Option<T>,
+    pub lower: &'a Option<T>,
+    pub upper: &'a Option<T>,
 }
 pub struct OptimizeUnaryOperators {
     pub f64: Option<Box<dyn Fn(UnaryBounds<f64>) -> Result<(Option<f64>, Option<f64>)>>>,
@@ -899,10 +902,10 @@ pub struct BinaryOperators {
     pub bool: Option<Box<dyn Fn(&bool, &bool) -> Result<bool>>>,
 }
 pub struct BinaryBounds<'a, T> {
-    pub left_min: &'a Option<T>,
-    pub left_max: &'a Option<T>,
-    pub right_min: &'a Option<T>,
-    pub right_max: &'a Option<T>,
+    pub left_lower: &'a Option<T>,
+    pub left_upper: &'a Option<T>,
+    pub right_lower: &'a Option<T>,
+    pub right_upper: &'a Option<T>,
 }
 pub struct OptimizeBinaryOperators {
     pub f64: Option<Box<dyn Fn(BinaryBounds<f64>) -> Result<(Option<f64>, Option<f64>)>>>,
@@ -950,7 +953,7 @@ pub fn propagate_unary_nature(
 ) -> Result<Option<Nature>> {
     Ok(match data_property.nature.clone() {
         Some(nature) => match nature {
-            Nature::Continuous(nature) => match (nature.min, nature.max) {
+            Nature::Continuous(nature) => match (nature.lower, nature.upper) {
                 (Vector1DNull::F64(min), Vector1DNull::F64(max)) => {
                     let mut output_min = Vec::new();
                     let mut output_max = Vec::new();
@@ -959,7 +962,7 @@ pub fn propagate_unary_nature(
                         .map(|(min, max)| {
                             match &optimization_operator.f64 {
                                 Some(operator) => {
-                                    let (min, max) = operator(UnaryBounds{min, max})?;
+                                    let (min, max) = operator(UnaryBounds{ lower: min, upper: max })?;
                                     output_min.push(min);
                                     output_max.push(max);
                                 },
@@ -971,7 +974,7 @@ pub fn propagate_unary_nature(
                             Ok(())
                         })
                         .collect::<Result<()>>()?;
-                    Some(Nature::Continuous(NatureContinuous {min: Vector1DNull::F64(output_min), max: Vector1DNull::F64(output_max)}))
+                    Some(Nature::Continuous(NatureContinuous { lower: Vector1DNull::F64(output_min), upper: Vector1DNull::F64(output_max)}))
                 }
                 (Vector1DNull::I64(min), Vector1DNull::I64(max)) => {
                     let mut output_min = Vec::new();
@@ -981,7 +984,7 @@ pub fn propagate_unary_nature(
                         .map(|(min, max)| {
                             match &optimization_operator.i64 {
                                 Some(operator) => {
-                                    let (min, max) = operator(UnaryBounds{min, max})?;
+                                    let (min, max) = operator(UnaryBounds{ lower: min, upper: max })?;
                                     output_min.push(min);
                                     output_max.push(max);
                                 },
@@ -993,7 +996,7 @@ pub fn propagate_unary_nature(
                             Ok(())
                         })
                         .collect::<Result<()>>()?;
-                    Some(Nature::Continuous(NatureContinuous {min: Vector1DNull::I64(output_min), max: Vector1DNull::I64(output_max)}))
+                    Some(Nature::Continuous(NatureContinuous { lower: Vector1DNull::I64(output_min), upper: Vector1DNull::I64(output_max)}))
                 },
                 _ => return Err("continuous bounds must be numeric and homogeneously typed".into())
             }
@@ -1041,7 +1044,7 @@ pub fn propagate_binary_nature(
     Ok(match (left_property.nature.clone(), right_property.nature.clone()) {
         (Some(left_nature), Some(right_nature)) => match (left_nature, right_nature) {
             (Nature::Continuous(left_nature), Nature::Continuous(right_nature)) => {
-                match (left_nature.min, left_nature.max, right_nature.min, right_nature.max) {
+                match (left_nature.lower, left_nature.upper, right_nature.lower, right_nature.upper) {
                     (Vector1DNull::F64(lmin), Vector1DNull::F64(lmax), Vector1DNull::F64(rmin), Vector1DNull::F64(rmax)) => {
                         let lmin = broadcast(&lmin, &output_num_columns)?;
                         let lmax = broadcast(&lmax, &output_num_columns)?;
@@ -1054,7 +1057,7 @@ pub fn propagate_binary_nature(
                             .map(|((left_min, left_max), (right_min, right_max))| {
                                 match &optimization_operator.f64 {
                                     Some(operator) => {
-                                        let (col_min, col_max) = operator(BinaryBounds {left_min, left_max, right_min, right_max })?;
+                                        let (col_min, col_max) = operator(BinaryBounds { left_lower: left_min, left_upper: left_max, right_lower: right_min, right_upper: right_max })?;
                                         min.push(col_min);
                                         max.push(col_max);
                                     },
@@ -1066,7 +1069,7 @@ pub fn propagate_binary_nature(
                                 Ok(())
                             })
                             .collect::<Result<()>>()?;
-                        Some(Nature::Continuous(NatureContinuous {min: Vector1DNull::F64(min), max: Vector1DNull::F64(max)}))
+                        Some(Nature::Continuous(NatureContinuous { lower: Vector1DNull::F64(min), upper: Vector1DNull::F64(max)}))
                     },
                     (Vector1DNull::I64(lmin), Vector1DNull::I64(lmax), Vector1DNull::I64(rmin), Vector1DNull::I64(rmax)) => {
                         let lmin = broadcast(&lmin, &output_num_columns)?;
@@ -1080,7 +1083,7 @@ pub fn propagate_binary_nature(
                             .map(|((left_min, left_max), (right_min, right_max))| {
                                 match &optimization_operator.i64 {
                                     Some(operator) => {
-                                        let (col_min, col_max) = operator(BinaryBounds {left_min, left_max, right_min, right_max })?;
+                                        let (col_min, col_max) = operator(BinaryBounds { left_lower: left_min, left_upper: left_max, right_lower: right_min, right_upper: right_max })?;
                                         min.push(col_min);
                                         max.push(col_max);
                                     },
@@ -1092,7 +1095,7 @@ pub fn propagate_binary_nature(
                                 Ok(())
                             })
                             .collect::<Result<()>>()?;
-                        Some(Nature::Continuous(NatureContinuous {min: Vector1DNull::I64(min), max: Vector1DNull::I64(max)}))
+                        Some(Nature::Continuous(NatureContinuous { lower: Vector1DNull::I64(min), upper: Vector1DNull::I64(max)}))
                     },
                     _ => return Err("continuous bounds must be numeric and homogeneously typed".into())
                 }

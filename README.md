@@ -73,7 +73,8 @@ All projects implement protobuf code generation, protobuf serialization/deserial
 
         git clone $REPOSITORY_URI
 
-3. Install system dependencies (rust, python, gcc for gmp/mpfr, protoc for protocol buffers)
+3. Install system dependencies (rust, python, gcc for gmp/mpfr, protoc for protocol buffers)  
+
     Mac:
 
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
@@ -94,7 +95,7 @@ All projects implement protobuf code generation, protobuf serialization/deserial
         bash -xlc "pacman --noconfirm -S --needed pacman-mirrors"
         bash -xlc "pacman --noconfirm -S --needed diffutils make mingw-w64-%MSYS2_ARCH%-gcc"
         
-      For non-Chocolatey users: download and install the latest build of protobuf
+      For non-Chocolatey users: download and install the latest build of protobuf  
         + https://github.com/protocolbuffers/protobuf/releases/latest
 
     You can test with `cargo build` in a new terminal.
@@ -109,7 +110,8 @@ All projects implement protobuf code generation, protobuf serialization/deserial
     
 #### If `cargo build` fails due to the package `gmp-mpfr-sys`
 
-Install system libs (GMP version 6.2, MPFR version 4.0.2-p1)
+Install system libs (GMP version 6.2, MPFR version 4.0.2-p1)  
+
   Mac:
 
     brew install gmp mpfr
@@ -134,7 +136,7 @@ To individually build the runtime, set the feature flag
 
 #### If `cargo build` fails due to the package `openssl`
 
-Provide an alternative openssl installation, either via directions in the automatic or manual section:
+Provide an alternative openssl installation, either via directions in the automatic or manual section:  
   + https://docs.rs/openssl/0.10.29/openssl/
 
 Otherwise, please open an issue.
@@ -165,10 +167,10 @@ The [Rust documentation](https://opendifferentialprivacy.github.io/whitenoise-co
 
 Please let us know if you encounter a bug by [creating an issue](https://github.com/opendifferentialprivacy/whitenoise-core/issues).
 
-We appreciate all contributions. If you are planning to contribute back bug-fixes, please do so without any further discussion.
+We appreciate all contributions. We welcome pull requests with bug-fixes without prior discussion.
 
 If you plan to contribute new features, utility functions or extensions to the core, please first open an issue and discuss the feature with us.
-  - Sending a PR without discussion might end up resulting in a rejected PR, because we might be taking the core in a different direction than you might be aware of.
+  - Sending a PR without discussion might end up resulting in a rejected PR, because we may be taking the core in a different direction than you might be aware of.
 
 ## Contributing Team
 

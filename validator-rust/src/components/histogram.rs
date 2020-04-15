@@ -38,8 +38,8 @@ impl Component for proto::Histogram {
 
         let data_num_columns = data_property.num_columns()?;
         data_property.nature = Some(Nature::Continuous(NatureContinuous {
-            min: Vector1DNull::I64((0..data_num_columns).map(|_| Some(0)).collect()),
-            max: Vector1DNull::I64((0..data_num_columns).map(|_| None).collect()),
+            lower: Vector1DNull::I64((0..data_num_columns).map(|_| Some(0)).collect()),
+            upper: Vector1DNull::I64((0..data_num_columns).map(|_| None).collect()),
         }));
         data_property.data_type = DataType::I64;
 

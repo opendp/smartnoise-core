@@ -16,25 +16,25 @@ use crate::base::{Array, Value, Jagged, Nature, Vector1DNull, NatureContinuous, 
 use std::collections::{HashMap};
 use crate::utilities::deduplicate;
 
-pub fn infer_min(value: &Value) -> Result<Vector1DNull> {
+pub fn infer_lower(value: &Value) -> Result<Vector1DNull> {
     Ok(match value {
         Value::Array(array) => {
             match array.shape().len() as i64 {
                 0 => match array {
                     Array::F64(array) =>
                         Vector1DNull::F64(vec![
-                            Some(array.first().ok_or_else(|| Error::from("min may not have length zero"))?.to_owned())]),
+                            Some(array.first().ok_or_else(|| Error::from("lower bounds may not be length zero"))?.to_owned())]),
                     Array::I64(array) =>
                         Vector1DNull::I64(vec![
-                            Some(array.first().ok_or_else(|| Error::from( "min may not have length zero"))?.to_owned())]),
-                    _ => return Err("Cannot infer numeric min on a non-numeric vector".into())
+                            Some(array.first().ok_or_else(|| Error::from( "lower bounds may not be length zero"))?.to_owned())]),
+                    _ => return Err("Cannot infer numeric lower bounds on a non-numeric vector".into())
                 },
                 1 => match array {
                     Array::F64(array) =>
                         Vector1DNull::F64(array.iter().map(|v| Some(*v)).collect()),
                     Array::I64(array) =>
                         Vector1DNull::I64(array.iter().map(|v| Some(*v)).collect()),
-                    _ => return Err("Cannot infer numeric min on a non-numeric vector".into())
+                    _ => return Err("Cannot infer numeric lower bounds on a non-numeric vector".into())
                 },
                 2 => match array {
                     Array::F64(array) =>
@@ -47,7 +47,7 @@ pub fn infer_min(value: &Value) -> Result<Vector1DNull> {
                             .map(|col| col.min().map(|v| *v).map_err(|e| e.into()))
                             .collect::<Result<Vec<i64>>>()?
                             .into_iter().map(Some).collect()),
-                    _ => return Err("Cannot infer numeric min on a non-numeric vector".into())
+                    _ => return Err("Cannot infer numeric lower bounds on a non-numeric vector".into())
                 },
                 _ => return Err("arrays may have max dimensionality of 2".into())
             }
@@ -57,20 +57,20 @@ pub fn infer_min(value: &Value) -> Result<Vector1DNull> {
             match jagged {
                 Jagged::F64(jagged) => Vector1DNull::F64(jagged.iter().map(|col| Ok(match col {
                     Some(col) => Some(col.iter().copied().fold1(|l, r| l.min(r))
-                        .ok_or_else(|| Error::from("attempted to infer min on an empty value"))?),
+                        .ok_or_else(|| Error::from("attempted to infer lower bounds on an empty value"))?),
                     None => None
                 })).collect::<Result<_>>()?),
                 Jagged::I64(jagged) => Vector1DNull::I64(jagged.iter().map(|col| Ok(match col {
                     Some(col) => Some(*col.iter().fold1(std::cmp::min)
-                        .ok_or_else(|| Error::from("attempted to infer min on an empty value"))?),
+                        .ok_or_else(|| Error::from("attempted to infer lower bounds on an empty value"))?),
                     None => None
                 })).collect::<Result<_>>()?),
-                _ => return Err("Cannot infer numeric min on a non-numeric vector".into())
+                _ => return Err("Cannot infer numeric lower bounds on a non-numeric vector".into())
             }
         }
     })
 }
-pub fn infer_max(value: &Value) -> Result<Vector1DNull> {
+pub fn infer_upper(value: &Value) -> Result<Vector1DNull> {
     Ok(match value {
         Value::Array(array) => {
 
@@ -78,18 +78,18 @@ pub fn infer_max(value: &Value) -> Result<Vector1DNull> {
                 0 => match array {
                     Array::F64(array) =>
                         Vector1DNull::F64(vec![Some(array.first()
-                            .ok_or_else(|| Error::from("min may not have length zero"))?.to_owned())]),
+                            .ok_or_else(|| Error::from("upper bounds may not be length zero"))?.to_owned())]),
                     Array::I64(array) =>
                         Vector1DNull::I64(vec![Some(array.first()
-                            .ok_or_else(|| Error::from("min may not have length zero"))?.to_owned())]),
-                    _ => return Err("Cannot infer numeric max on a non-numeric vector".into())
+                            .ok_or_else(|| Error::from("upper bounds may not be length zero"))?.to_owned())]),
+                    _ => return Err("Cannot infer numeric upper bounds on a non-numeric vector".into())
                 },
                 1 => match array {
                     Array::F64(array) =>
                         Vector1DNull::F64(array.iter().map(|v| Some(*v)).collect()),
                     Array::I64(array) =>
                         Vector1DNull::I64(array.iter().map(|v| Some(*v)).collect()),
-                    _ => return Err("Cannot infer numeric max on a non-numeric vector".into())
+                    _ => return Err("Cannot infer numeric upper bounds on a non-numeric vector".into())
                 },
                 2 => match array {
                     Array::F64(array) =>
@@ -102,7 +102,7 @@ pub fn infer_max(value: &Value) -> Result<Vector1DNull> {
                             .map(|col| col.max().map(|v| *v).map_err(|e| e.into()))
                             .collect::<Result<Vec<i64>>>()?
                             .into_iter().map(Some).collect()),
-                    _ => return Err("Cannot infer numeric max on a non-numeric vector".into())
+                    _ => return Err("Cannot infer numeric upper bounds on a non-numeric vector".into())
                 },
                 _ => return Err("arrays may have max dimensionality of 2".into())
             }
@@ -113,15 +113,15 @@ pub fn infer_max(value: &Value) -> Result<Vector1DNull> {
                 Jagged::F64(jagged) => Vector1DNull::F64(jagged.iter().map(|col| Ok(match col {
                     Some(col) => Some(col.iter().cloned()
                         .fold1(|l, r| l.max(r))
-                        .ok_or_else(|| Error::from("attempted to infer max on an empty value"))?),
+                        .ok_or_else(|| Error::from("attempted to infer upper bounds on an empty value"))?),
                     None => None
                 })).collect::<Result<_>>()?),
                 Jagged::I64(jagged) => Vector1DNull::I64(jagged.iter().map(|col| Ok(match col {
                     Some(col) => Some(*col.iter().fold1(std::cmp::max)
-                        .ok_or_else(|| Error::from("attempted to infer max on an empty value"))?),
+                        .ok_or_else(|| Error::from("attempted to infer upper bounds on an empty value"))?),
                     None => None
                 })).collect::<Result<_>>()?),
-                _ => return Err("Cannot infer numeric max on a non-numeric vector".into())
+                _ => return Err("Cannot infer numeric upper bounds on a non-numeric vector".into())
             }
         }
     })
@@ -174,12 +174,12 @@ pub fn infer_nature(value: &Value) -> Result<Option<Nature>> {
     Ok(match value {
         Value::Array(array) => match array {
             Array::F64(array) => Some(Nature::Continuous(NatureContinuous {
-                min: infer_min(&array.clone().into())?,
-                max: infer_max(&array.clone().into())?,
+                lower: infer_lower(&array.clone().into())?,
+                upper: infer_upper(&array.clone().into())?,
             })),
             Array::I64(array) => Some(Nature::Continuous(NatureContinuous {
-                min: infer_min(&array.clone().into())?,
-                max: infer_max(&array.clone().into())?,
+                lower: infer_lower(&array.clone().into())?,
+                upper: infer_upper(&array.clone().into())?,
             })),
             Array::Bool(array) => Some(Nature::Categorical(NatureCategorical {
                 categories: infer_categories(&array.clone().into())?,
@@ -201,7 +201,7 @@ pub fn infer_nature(value: &Value) -> Result<Option<Nature>> {
 pub fn infer_nullity(value: &Value) -> Result<bool> {
     match value {
         Value::Array(value) => match value {
-            Array::F64(value) => Ok(value.iter().any(|v| v.is_nan())),
+            Array::F64(value) => Ok(value.iter().any(|v| !v.is_finite())),
             _ => Ok(false)
         },
         _ => Ok(false)

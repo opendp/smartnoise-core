@@ -9,7 +9,6 @@ use crate::proto;
 use crate::components::transforms::propagate_binary_shape;
 
 impl Component for proto::Filter {
-    // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,

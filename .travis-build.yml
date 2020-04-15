@@ -1,0 +1,93 @@
+
+
+branches:
+  # all branches
+  only:
+  - gh-pages
+  - /.*/
+
+# all jobs should enable the release flag for compiler optimizations
+env:
+  global:
+  - WN_RELEASE=True
+
+
+notifications:
+  email: false
+
+jobs:
+  include:
+  - name: Test Rust
+    os: linux
+    language: rust
+    rust: stable
+    script:
+    # (1) Rust Validator -> Test & Build
+    - cd validator-rust; cargo build --verbose --workspace;
+    - cargo test --verbose --workspace;
+    - cd ..
+    # (2) Rust Runtime -> Test & Build
+    - cd runtime-rust; cargo build --verbose --workspace;
+    - cargo test --verbose --workspace;
+    - cd ..;
+    # (3) Build python bindings and run tests
+    #   > Commented out for now.  It works but takes a while to run...
+    #- cd bindings-python; python3 -m pip install -r requirements.txt;
+    #- export RUST_BACKTRACE=1; python3 -m pip install -e . -v;
+    #- python3 -m pytest -x -v; cd ..;
+
+    after_success:
+    #
+    # Build the documentation for gh-pages
+    #
+    - echo $TRAVIS_BRANCH;
+    # switch to master after initial version
+    - if [ "$TRAVIS_BRANCH" == "develop" ]; then
+      cd runtime-rust;
+      cargo doc --verbose --target-dir=../docs;
+      cd ..; rm -rf docs/debug;
+      fi
+
+  - name: Deploy manylinux1_x86_64
+    services:
+    - docker
+    env: DOCKER_IMAGE=quay.io/pypa/manylinux1_x86_64
+         PLAT=manylinux1_x86_64
+    install:
+    - docker pull $DOCKER_IMAGE
+    script:
+    - docker run --rm -e PLAT=$PLAT -v `pwd`:/io $DOCKER_IMAGE $PRE_CMD /io/travis/manylinux-build-wheels.sh
+    - ls wheelhouse/
+
+  - name: Deploy manylinux1_i686
+    services:
+    - docker
+    env: DOCKER_IMAGE=quay.io/pypa/manylinux1_i686
+         PRE_CMD=linux32
+         PLAT=manylinux1_i686
+    install:
+    - docker pull $DOCKER_IMAGE
+    script:
+    - docker run --rm -e PLAT=$PLAT -v `pwd`:/io $DOCKER_IMAGE $PRE_CMD /io/travis/manylinux-build-wheels.sh
+    - ls wheelhouse/
+
+  - name: Deploy manylinux2010_x86_64
+    services:
+    - docker
+    env: DOCKER_IMAGE=quay.io/pypa/manylinux2010_x86_64
+         PLAT=manylinux2010_x86_64
+    install:
+    - docker pull $DOCKER_IMAGE
+    script:
+    - docker run --rm -e PLAT=$PLAT -v `pwd`:/io $DOCKER_IMAGE $PRE_CMD /io/travis/manylinux-build-wheels.sh
+    - ls wheelhouse/
+
+  - name: Deploy osx
+    os: osx
+    language: python
+    install:
+    - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    - export PATH="${HOME}/.cargo/bin:${PATH}"
+    script:
+    - cd bindings-python
+    - python3 -m pip install -e . -v

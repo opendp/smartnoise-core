@@ -3,7 +3,7 @@
     "data": {
       "default": "None",
       "type": "Array",
-      "description": "Vector of data to stack into a matrix.\nA Hashmap of matrices will be emitted if multiple rows are provided."
+      "description": "Vector of data to stack into a matrix. A Hashmap of matrices will be emitted if multiple rows are provided."
     }
   },
   "id": "Reshape",

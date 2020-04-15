@@ -8,14 +8,14 @@
     "n": {
       "nature": [],
       "type": "Array",
-      "description": "An estimate of the number of rows in the data.\n\nThis could be the guess of the user, or the result of a DP release."
+      "description": "An estimate of the number of rows in the data. This could be the guess of the user, or the result of a DP release."
     },
-    "min": {
+    "lower": {
       "type": "Array",
       "default": "None",
       "description": "A lower bound on data elements for each column."
     },
-    "max": {
+    "upper": {
       "type": "Array",
       "default": "None",
       "description": "An upper bound on data elements for each column."

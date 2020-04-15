@@ -33,13 +33,13 @@ impl Expandable for proto::DpHistogram {
                                         .ok_or("data: missing")?.array()
                                         .map_err(prepend("data:"))?;
 
-        let max_id = match component.arguments.get("max") {
+        let id_upper = match component.arguments.get("upper") {
             Some(id) => id.clone(),
             None => {
                 let count_max = match data_property.num_records {
                     Some(num_records) => arr0(num_records).into_dyn(),
                     None => match self.enforce_constant_time {
-                        true => return Err("max must be set when enforcing constant time".into()),
+                        true => return Err("upper must be set when enforcing constant time".into()),
                         false => arr0(std::i64::MAX).into_dyn()
                     }
                 };
@@ -76,9 +76,9 @@ impl Expandable for proto::DpHistogram {
         computation_graph.insert(*component_id, proto::Component {
             arguments: hashmap![
                 "data".to_owned() => id_histogram,
-                "min".to_owned() => *component.arguments.get("min")
-                    .ok_or_else(|| Error::from("min must be provided as an argument"))?,
-                "max".to_owned() => max_id
+                "lower".to_owned() => *component.arguments.get("lower")
+                    .ok_or_else(|| Error::from("lower must be provided as an argument"))?,
+                "upper".to_owned() => id_upper
             ],
             variant: Some(proto::component::Variant::from(proto::SimpleGeometricMechanism {
                 privacy_usage: self.privacy_usage.clone(),

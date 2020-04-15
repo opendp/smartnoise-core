@@ -40,8 +40,8 @@ impl Component for proto::Count {
 
         let data_num_records = data_property.num_records;
         data_property.nature = Some(Nature::Continuous(NatureContinuous {
-            min: Vector1DNull::I64(vec![data_num_records.or(Some(0))]),
-            max: Vector1DNull::I64(vec![data_num_records]),
+            lower: Vector1DNull::I64(vec![data_num_records.or(Some(0))]),
+            upper: Vector1DNull::I64(vec![data_num_records]),
         }));
         data_property.data_type = DataType::I64;
 
