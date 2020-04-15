@@ -18,7 +18,7 @@ before_install:
   #- sudo apt install -y software-properties-common
   #- sudo apt install -y python3-pip
   #- python3 --version
-  - apt-get install -y pkg-config libgmp-dev libmpfr-dev libssl-dev
+  - sudo apt-get install -y pkg-config libgmp-dev libmpfr-dev libssl-dev
 
 script:
   # (1) Rust Validator -> Test & Build
