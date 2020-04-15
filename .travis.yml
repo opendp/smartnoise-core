@@ -14,7 +14,7 @@ rust:
 before_install:
   # Update to install python 3.6
   #   > Commented out for now.  It works but takes a while to run...
-  #- sudo apt update
+  - sudo apt update
   #- sudo apt install -y software-properties-common
   #- sudo apt install -y python3-pip
   #- python3 --version
