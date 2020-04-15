@@ -15,27 +15,22 @@ if release:
 
 
 def build_native(spec):
-    build_validator = spec.add_external_build(
+    build_rust = spec.add_external_build(
         cmd=rust_build_cmd,
-        path='../validator-rust'
+        path='../'
     )
 
     spec.add_cffi_module(
         module_path='whitenoise._native_validator',
-        dylib=lambda: build_validator.find_dylib('whitenoise_validator', in_path=rust_build_path),
-        header_filename=lambda: build_validator.find_header('api.h', in_path='.'),
+        dylib=lambda: build_rust.find_dylib('whitenoise_validator', in_path=rust_build_path),
+        header_filename=lambda: build_rust.find_header('api_validator.h', in_path='.'),
         rtld_flags=['NOW', 'NODELETE']
-    )
-
-    build_runtime = spec.add_external_build(
-        cmd=rust_build_cmd,
-        path='../runtime-rust'
     )
 
     spec.add_cffi_module(
         module_path='whitenoise._native_runtime',
-        dylib=lambda: build_runtime.find_dylib('whitenoise_runtime', in_path=rust_build_path),
-        header_filename=lambda: build_runtime.find_header('api.h', in_path='.'),
+        dylib=lambda: build_rust.find_dylib('whitenoise_runtime', in_path=rust_build_path),
+        header_filename=lambda: build_rust.find_header('api_runtime.h', in_path='.'),
         rtld_flags=['NOW', 'NODELETE']
     )
 
@@ -55,6 +50,15 @@ setup(
     platforms='any',
     setup_requires=['milksnake'],
     install_requires=['milksnake'],
+    extras_require={
+        "plotting": [
+            "networkx",
+            "matplotlib"
+        ],
+        "test": [
+            "pytest>=4.4.2"
+        ]
+    },
     milksnake_tasks=[
         build_native,
         build_python

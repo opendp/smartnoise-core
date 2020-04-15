@@ -50,44 +50,32 @@ struct ArgumentJSON {
 }
 
 /// Returns the path to the prototypes directory`pointed to by the `PROTODIR` environment variable, if it is set.
-fn env_protodir() -> Option<PathBuf> {
-    let protodir = match env::var_os("PROTODIR") {
-        Some(path) => PathBuf::from(path),
-        None => return None
-    };
-
-    if !protodir.exists() {
-        panic!(
-            "PROTODIR environment variable points to non-existent file ({:?})",
-            protodir
-        );
+fn env_protodir() -> PathBuf {
+    match env::var_os("PROTODIR") {
+        Some(path) => {
+            let proto_dir = PathBuf::from(path);
+            if !proto_dir.exists() {
+                panic!(
+                    "PROTODIR environment variable points to non-existent file ({:?})",
+                    proto_dir
+                );
+            }
+            proto_dir
+        },
+        None => {
+            let proto_dir = PathBuf::from("../prototypes/");
+            if !proto_dir.exists() {
+                panic!("Failed to find the prototypes directory. The PROTODIR environment variable is not set.");
+            }
+            proto_dir
+        }
     }
-    Some(protodir)
 }
 
-fn components_dir(mut _protodir: PathBuf) -> String {
-    _protodir.push("components");
-    _protodir.to_string_lossy().to_string()
-}
-
-fn components_proto_tgt(mut _protodir: PathBuf) -> String {
-    _protodir.push("components.proto");
-    _protodir.to_string_lossy().to_string()
-}
-
-fn base_proto_tgt(mut _protodir: PathBuf) -> String {
-    _protodir.push("base.proto");
-    _protodir.to_string_lossy().to_string()
-}
-
-fn api_proto_tgt(mut _protodir: PathBuf) -> String {
-    _protodir.push("api.proto");
-    _protodir.to_string_lossy().to_string()
-}
-
-fn value_proto_tgt(mut _protodir: PathBuf) -> String {
-    _protodir.push("value.proto");
-    _protodir.to_string_lossy().to_string()
+fn proto_tgt(protodir: &PathBuf, path: &str) -> String {
+    let mut protodir = protodir.clone();
+    protodir.push(path);
+    protodir.to_string_lossy().to_string()
 }
 
 fn stringify_argument((name, argument): (&String, &ArgumentJSON)) -> String {
@@ -107,29 +95,26 @@ fn doc(text: &Option<String>, prefix: &str) -> String {
 }
 
 fn main() {
-    let mut _proto_dir = env_protodir()
-        .expect(
-            "Failed to find the prototypes directory. The PROTODIR environment variable is not set."
-        );
-    let mut _comps_dir = components_dir(env_protodir().unwrap());
-    let mut _comp_proto_tgt = components_proto_tgt(env_protodir().unwrap());
-    let mut _base_proto_tgt = base_proto_tgt(env_protodir().unwrap());
-    let mut _api_proto_tgt = api_proto_tgt(env_protodir().unwrap());
-    let mut _val_proto_tgt = value_proto_tgt(env_protodir().unwrap());
+    let proto_dir = env_protodir();
+
+    let comps_dir = proto_tgt(&proto_dir, "components");
+    let comp_proto_tgt = proto_tgt(&proto_dir, "components.proto");
+    let base_proto_tgt = proto_tgt(&proto_dir, "base.proto");
+    let api_proto_tgt = proto_tgt(&proto_dir, "api.proto");
+    let val_proto_tgt = proto_tgt(&proto_dir, "value.proto");
 
     // Enumerate component json files as relevant resources to the compiler
-    build_deps::rerun_if_changed_paths(&_proto_dir.as_path().display().to_string()).unwrap();
-    // Adding the parent directory "data" to the watch-list will capture new-files being added
+    build_deps::rerun_if_changed_paths(&proto_dir.as_path().display().to_string()).unwrap();
+    // Adding the parent directory "components" to the watch-list will capture new-files being added
+    build_deps::rerun_if_changed_paths(&comp_proto_tgt).unwrap();
+    build_deps::rerun_if_changed_paths(&base_proto_tgt).unwrap();
+    build_deps::rerun_if_changed_paths(&api_proto_tgt).unwrap();
+    build_deps::rerun_if_changed_paths(&val_proto_tgt).unwrap();
 
-    build_deps::rerun_if_changed_paths(&_comp_proto_tgt).unwrap();
-    build_deps::rerun_if_changed_paths(&_base_proto_tgt).unwrap();
-    build_deps::rerun_if_changed_paths(&_api_proto_tgt).unwrap();
-    build_deps::rerun_if_changed_paths(&_val_proto_tgt).unwrap();
-
-    let components_proto_path = _comp_proto_tgt.clone();
+    let components_proto_path = comp_proto_tgt.clone();
     let components_doc_path = "src/docs/components.rs";
 
-    let paths = fs::read_dir(&Path::new(&_comps_dir))
+    let paths = fs::read_dir(&Path::new(&comps_dir))
         .expect("components directory was not found");
 
     let mut components = paths
@@ -234,12 +219,12 @@ message Component {
     config.type_attribute("whitenoise.Component.variant", "#[derive(derive_more::From)]");
     config.compile_protos(
         &[
-            _api_proto_tgt,
-            _base_proto_tgt,
-	    _comp_proto_tgt,
-	    _val_proto_tgt
+            api_proto_tgt,
+            base_proto_tgt,
+            comp_proto_tgt,
+            val_proto_tgt
         ],
-        &[_proto_dir.to_string_lossy().to_string()]).unwrap();
+        &[proto_dir.to_string_lossy().to_string()]).unwrap();
 
 
     let component_docs_text_header = r#"
@@ -280,5 +265,5 @@ message Component {
 //        crate_dir,
 //        cbindgen::Config::from_file("cbindgen.toml").unwrap())
 //        .expect("Unable to generate bindings")
-//        .write_to_file("api.h");
+//        .write_to_file("../api_validator.h");
 }

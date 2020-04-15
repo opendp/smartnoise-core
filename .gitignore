@@ -72,3 +72,8 @@ docs/.rustc_info.json
 # jupyter notebook
 .ipynb_checkpoints
 docs/doc/bstr/utf8/struct.CharIndices.html
+
+target/
+Cargo.lock
+validator-rust/src/docs/components.rs
+
