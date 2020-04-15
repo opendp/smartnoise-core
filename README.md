@@ -82,21 +82,30 @@ All projects implement protobuf code generation, protobuf serialization/deserial
     Close terminal and open new terminal to add cargo to path.
     You can test with `rustc --version`
 
-3. Install protobuf compiler
+    Windows: 
+
+        choco install rust
+
+3. Install system dependencies
     Mac:
 
-        brew install protobuf
+        brew install protobuf gmp mpfr openssl@1.1
 
     Ubuntu:
 
         sudo snap install protobuf --classic
+        sudo apt-get install -y pkg-config libgmp-dev libmpfr-dev libssl-dev
 
-    Windows:
+    64x Windows:
+      
+        choco install protoc openssl
+        refreshenv
+        rustup toolchain install stable-x86_64-pc-windows-gnu
+        rustup default stable-x86_64-pc-windows-gnu
 
-        choco install protoc
-
-  * For non-Chocolatey users: download and install the latest build
-    + https://github.com/protocolbuffers/protobuf/releases/latest
+      This is still missing build directions for GMP and MPFR.
+      For non-Chocolatey users: download and install the latest build of protobuf
+        + https://github.com/protocolbuffers/protobuf/releases/latest
 
 
 4. Install the python bindings
