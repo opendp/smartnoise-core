@@ -47,58 +47,56 @@ jobs:
         ./generate_docs.sh
       fi
 
-  # 32-bit
-  - name: Deploy manylinux2010_i686
-    services:
-    - docker
-    addons:
-      apt:
-        update: true
-        packages:
-        - python3-pip
-    env: DOCKER_IMAGE=quay.io/pypa/manylinux2010_i686
-         PROTO_PLAT=linux-x86_32.zip
-         PYTHON_PLAT=manylinux2010_i686
-    install:
-    - docker pull $DOCKER_IMAGE
-    script:
-    - docker run --rm -e PLAT=$PYTHON_PLAT -v `pwd`:/io $DOCKER_IMAGE linux32 /io/travis/manylinux-build-wheels.sh $PROTO_VERSION $PROTO_PLAT
-    - ls wheelhouse/
-    deploy:
-      skip_cleanup: true
-      provider: script
-      script: 
-        python3 -m pip install --upgrade pip && 
-        python3 -m pip install twine && 
-        python3 -m twine upload --verbose --skip-existing wheelhouse/*
-      on:
-        branch: develop
+  # - name: Deploy manylinux2010_i686 32-bit
+  #   services:
+  #   - docker
+  #   addons:
+  #     apt:
+  #       update: true
+  #       packages:
+  #       - python3-pip
+  #   env: DOCKER_IMAGE=quay.io/pypa/manylinux2010_i686
+  #        PROTO_PLAT=linux-x86_32.zip
+  #        PYTHON_PLAT=manylinux2010_i686
+  #   install:
+  #   - docker pull $DOCKER_IMAGE
+  #   script:
+  #   - docker run --rm -e PLAT=$PYTHON_PLAT -v `pwd`:/io $DOCKER_IMAGE linux32 /io/travis/manylinux-build-wheels.sh $PROTO_VERSION $PROTO_PLAT
+  #   - ls wheelhouse/
+  #   deploy:
+  #     skip_cleanup: true
+  #     provider: script
+  #     script: 
+  #       python3 -m pip install --upgrade pip && 
+  #       python3 -m pip install twine && 
+  #       python3 -m twine upload --verbose --skip-existing wheelhouse/*
+  #     on:
+  #       branch: develop
         
-  # 64-bit
-  - name: Deploy manylinux2010_x86_64
-    services:
-    - docker
-    addons:
-      apt:
-        update: true
-        packages:
-        - python3-pip
-    env: DOCKER_IMAGE=quay.io/pypa/manylinux2010_x86_64
-         PROTO_PLAT=linux-x86_64.zip
-         PYTHON_PLAT=manylinux2010_x86_64
-    install:
-    - docker pull $DOCKER_IMAGE
-    - chmod +x travis/manylinux-build-wheels.sh
-    script:
-    - docker run --rm -e PLAT=$PYTHON_PLAT -v `pwd`:/io $DOCKER_IMAGE /io/travis/manylinux-build-wheels.sh $PROTO_VERSION $PROTO_PLAT
-    - ls wheelhouse/
-    deploy:
-      skip_cleanup: true
-      provider: script
-      script: 
-        python3 -m pip install --upgrade pip && python3 -m pip install twine && python3 -m twine upload --verbose --skip-existing wheelhouse/*
-      on:
-        branch: develop
+  # - name: Deploy manylinux2010_x86_64 64-bit
+  #   services:
+  #   - docker
+  #   addons:
+  #     apt:
+  #       update: true
+  #       packages:
+  #       - python3-pip
+  #   env: DOCKER_IMAGE=quay.io/pypa/manylinux2010_x86_64
+  #        PROTO_PLAT=linux-x86_64.zip
+  #        PYTHON_PLAT=manylinux2010_x86_64
+  #   install:
+  #   - docker pull $DOCKER_IMAGE
+  #   - chmod +x travis/manylinux-build-wheels.sh
+  #   script:
+  #   - docker run --rm -e PLAT=$PYTHON_PLAT -v `pwd`:/io $DOCKER_IMAGE /io/travis/manylinux-build-wheels.sh $PROTO_VERSION $PROTO_PLAT
+  #   - ls wheelhouse/
+  #   deploy:
+  #     skip_cleanup: true
+  #     provider: script
+  #     script: 
+  #       python3 -m pip install --upgrade pip && python3 -m pip install twine && python3 -m twine upload --verbose --skip-existing wheelhouse/*
+  #     on:
+  #       branch: develop
         
 
   # RISC
@@ -125,27 +123,27 @@ jobs:
         
 
 
-  - name: Deploy osx
-    # adapted from: https://github.com/cclauss/Travis-CI-Python-on-three-OSes/blob/master/.travis.yml  
-    os: osx
-    osx_image: xcode11 # python3.7 comes installed with xcode11 image
-    language: rust
-    rust: stable  
-    install:
-    - python3 -m pip install delocate
-    script:
-    - cd bindings-python
-    - python3 setup.py sdist bdist_wheel -d /wheelhouse
-    - for whl in /wheelhouse/*.whl; do
-        delocate-wheel -v whl
-      done
-    deploy:
-      skip_cleanup: true
-      provider: script
-      script: 
-        python3 -m pip install --upgrade pip && python3 -m pip install twine && python3 -m twine upload --verbose --skip-existing wheelhouse/*
-      on:
-        branch: develop
+  # - name: Deploy osx
+  #   # adapted from: https://github.com/cclauss/Travis-CI-Python-on-three-OSes/blob/master/.travis.yml  
+  #   os: osx
+  #   osx_image: xcode11 # python3.7 comes installed with xcode11 image
+  #   language: rust
+  #   rust: stable  
+  #   install:
+  #   - python3 -m pip install delocate
+  #   script:
+  #   - cd bindings-python
+  #   - python3 setup.py sdist bdist_wheel -d /wheelhouse
+  #   - for whl in /wheelhouse/*.whl; do
+  #       delocate-wheel -v whl
+  #     done
+  #   deploy:
+  #     skip_cleanup: true
+  #     provider: script
+  #     script: 
+  #       python3 -m pip install --upgrade pip && python3 -m pip install twine && python3 -m twine upload --verbose --skip-existing wheelhouse/*
+  #     on:
+  #       branch: develop
         
 
   # - name: Deploy windows
