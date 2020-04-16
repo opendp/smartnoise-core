@@ -96,17 +96,17 @@ All projects implement protobuf code generation, protobuf serialization/deserial
         choco install rust msys2 protoc python
         
       For non-Chocolatey users: download and install the latest build of rust, msys2, protobuf and python  
-        + https://forge.rust-lang.org/infra/other-installation-methods.html     
-        + https://github.com/protocolbuffers/protobuf/releases/latest    
-        + https://www.msys2.org/  
-        + https://www.python.org/downloads/windows/ 
+      - https://forge.rust-lang.org/infra/other-installation-methods.html     
+      - https://github.com/protocolbuffers/protobuf/releases/latest    
+      - https://www.msys2.org/  
+      - https://www.python.org/downloads/windows/ 
        
       Then install gcc under MSYS2
       
         refreshenv
-        reg Query "HKLM\Hardware\Description\System\CentralProcessor\0" | find /i "x86" > NUL && setx MSYS2_ARCH=i686 || setx MSYS2_ARCH=x86_64
+        reg Query "HKLM\Hardware\Description\System\CentralProcessor\0" | find /i "x86" > NUL && setx WN_SYS_ARCH=i686 || setx WN_SYS_ARCH=x86_64
         bash -xlc "pacman --noconfirm -S --needed pacman-mirrors"
-        bash -xlc "pacman --noconfirm -S --needed diffutils make mingw-w64-%MSYS2_ARCH%-gcc"
+        bash -xlc "pacman --noconfirm -S --needed diffutils make mingw-w64-%WN_SYS_ARCH%-gcc"
               
       You can test with `bash -xc cargo build`. The bash prefix ensures that gmp and mpfr build with the GNU/gcc/mingw toolchain.
 
@@ -126,17 +126,17 @@ First install system libs (GMP version 6.2, MPFR version 4.0.2-p1)
   
     brew install gmp mpfr
 
-  Linux:
-    gmp and mpfr must be built from source. Then set the environment variable:
+  Linux:  
+    Build gmp and mpfr from source. Then set the environment variable:
     
     export DEP_GMP_OUT_DIR=/path/to/folder/containing/lib/and/includes
 
-  Windows:
-    This is not fully tested. gmp and mpfr must be built from source. Then set the environment variable and also switch the rust toolchain:
+  Windows:  
+    This is not fully tested. Build gmp and mpfr from source. Then set the environment variable and also switch the rust toolchain:
    
     setx DEP_GMP_OUT_DIR=/path/to/folder/containing/lib/and/includes
-    rustup toolchain install stable-x86_64-pc-windows-gnu
-    rustup default stable-x86_64-pc-windows-gnu
+    rustup toolchain install stable-%WN_SYS_ARCH%-pc-windows-gnu
+    rustup default stable-%WN_SYS_ARCH%-pc-windows-gnu
 
 To install the python bindings, set the variable
 
