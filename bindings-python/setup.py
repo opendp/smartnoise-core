@@ -7,11 +7,13 @@ os.environ['RUSTFLAGS'] = ""
 
 release = False
 
-rust_build_path = 'target/' + ('release' if release else 'debug')
+rust_build_path = '../target/' + ('release' if release else 'debug')
 rust_build_cmd = ['cargo', 'build']
 
 if release:
     rust_build_cmd.append('--release')
+
+USE_SYSTEM_LIBS = os.environ.get("WN_USE_SYSTEM_LIBS") is not None
 
 
 def build_native(spec):
@@ -28,7 +30,7 @@ def build_native(spec):
     )
 
     build_runtime = spec.add_external_build(
-        cmd=rust_build_cmd,
+        cmd=rust_build_cmd + (['--features', 'use-system-libs'] if USE_SYSTEM_LIBS else []),
         path='../runtime-rust'
     )
 
@@ -55,6 +57,15 @@ setup(
     platforms='any',
     setup_requires=['milksnake'],
     install_requires=['milksnake'],
+    extras_require={
+        "plotting": [
+            "networkx",
+            "matplotlib"
+        ],
+        "test": [
+            "pytest>=4.4.2"
+        ]
+    },
     milksnake_tasks=[
         build_native,
         build_python

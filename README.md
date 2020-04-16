@@ -51,29 +51,15 @@ For a full listing of the extensive set of components available in the library [
 
 ### Architecture
 
-The runtime and bindings may be written in any language. The core data representation is in protobuf, and the validator is written in Rust. All projects implement protobuf code generation, protobuf serialization/deserialization, communication over FFI, handle distributable packaging, and have at some point compiled cross-platform (more testing needed). All projects communicate via proto definitions from the `prototypes` directory.
+There are three sub-projects that address individual architectural concerns. These sub-projects communicate via protobuf messages that encode a graph description of an arbitrary computation, called an `analysis`. 
 
-#### Validator
-The rust validator compiles to binaries that expose C foreign function interfaces and read/automatically generate code for protobuf. A validator C FFI is described in the wiki.
+The core library is the `validator`, which provides a suite of utilities for checking and deriving necessary conditions for an analysis to be differentially private. This includes checking if sufficient properties have been met for each component, deriving sensitivities, noise scales and accuracies for various definitions of privacy, building reports and dynamically validating individual components. This library is written in rust.
 
-#### Runtimes
-The Rust runtime uses a package called ndarray, which feels somewhat like writing numpy in Rust.
+There must also be a medium to execute the analysis, called a `runtime`. There is a reference runtime written in rust, but runtimes may be written using any computation framework- be it SQL, Spark or Dask- to address your individual data needs. 
 
-#### Bindings
-There are two language bindings, one in Python, one in R. Both support building binaries into an installable package.
+Finally, there are helper libraries for building analyses, called `bindings`. Bindings may be written for any language, and are thin wrappers over the validator and/or runtime(s). Language bindings are currently available for Python, with support for at minimum R and SQL forthcoming.
 
-The Python package is more developed, with helper classes, syntax sugar for building analyses, and visualizations.
-
-The R package uses a shim library in C to interface with compiled binaries. There isn't a programmer interface like in Python yet, but there is a pattern for exposing the C FFI in R code, as well as protobuf generation.
-
-The steps for adding bindings in a new language are essentially:
-1. set up package management
-2. set up dependency management
-3. pack binaries with the given language's tools
-4. protobuf code generation
-5. FFI implementation and protobuf encoding/decoding
-6. write programmer interface
-
+All projects implement protobuf code generation, protobuf serialization/deserialization, communication over FFI, handle distributable packaging, and have at some point compiled cross-platform (more testing needed). Communication among projects is handled via proto definitions from the `prototypes` directory. The validator and reference runtime compile to standalone libraries that may be linked into your project, allowing communication over C foreign function interfaces.
 
 ## Installation
 
@@ -85,35 +71,74 @@ The steps for adding bindings in a new language are essentially:
 
 1. Clone the repository
 
-    git clone $REPOSITORY_URI
+        git clone $REPOSITORY_URI
 
-2. Install Rust
-
-    Mac, Linux:
-
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
-    Close terminal and open new terminal to add cargo to path.
-    You can test with `rustc --version`
-
-3. Install protobuf compiler
+3. Install system dependencies (rust, python, gcc for gmp/mpfr, protoc for protocol buffers)
     Mac:
 
-        brew install protobuf
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+        xcode-select --install
+        brew install python protobuf
 
-    Ubuntu:
+    Linux:
 
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+        sudo apt-get install python diffutils gcc make m4
         sudo snap install protobuf --classic
 
     Windows:
+      
+        choco install rust python msys2 protoc
+        refreshenv
+        reg Query "HKLM\Hardware\Description\System\CentralProcessor\0" | find /i "x86" > NUL && setx MSYS2_ARCH=i686 || setx MSYS2_ARCH=x86_64
+        bash -xlc "pacman --noconfirm -S --needed pacman-mirrors"
+        bash -xlc "pacman --noconfirm -S --needed diffutils make mingw-w64-%MSYS2_ARCH%-gcc"
+        
+      For non-Chocolatey users: download and install the latest build of protobuf
+        + https://github.com/protocolbuffers/protobuf/releases/latest
 
-        choco install protoc
+    You can test with `cargo build` in a new terminal.
 
-* For non-Chocolatey users: download and install the latest build
-  + https://github.com/protocolbuffers/protobuf/releases/latest
+4. Install the python bindings
 
+        cd bindings-python
+        pip install -e ".[test,plotting]"
 
-4. Continue with the instructions for the [python-bindings](https://github.com/opendifferentialprivacy/whitenoise-core/blob/master/bindings-python/README.md)
+    If you are doing package development, I recommend using `bindings-python/debug_*.sh` for debugging.
+
+    
+#### If `cargo build` fails due to the package `gmp-mpfr-sys`
+
+Install system libs (GMP version 6.2, MPFR version 4.0.2-p1)
+  Mac:
+
+    brew install gmp mpfr
+
+  Linux, Windows:
+
+    # gmp and mpfr must be built from source, and set the environment variable
+    setx DEP_GMP_OUT_DIR=/path/to/folder/containing/lib/and/includes
+
+  Windows:
+
+    rustup toolchain install stable-x86_64-pc-windows-gnu
+    rustup default stable-x86_64-pc-windows-gnu
+
+To install the python bindings, set the variable
+
+    export WN_USE_SYSTEM_LIBS=True
+
+To individually build the runtime, set the feature flag
+
+    cd runtime-rust; cargo build --feature use-system-libs
+
+#### If `cargo build` fails due to the package `openssl`
+
+Provide an alternative openssl installation, either via directions in the automatic or manual section:
+  + https://docs.rs/openssl/0.10.29/openssl/
+
+Otherwise, please open an issue.
+
 
 ---
 ## Getting Started

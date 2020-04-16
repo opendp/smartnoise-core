@@ -1,8 +1,8 @@
 [![Build Status](https://travis-ci.org/opendifferentialprivacy/whitenoise-core.svg?branch=develop)](https://travis-ci.org/opendifferentialprivacy/whitenoise-core)
 
-## WhiteNoise Core <br/> Differential Privacy Library Python Bindings <br/>
+## WhiteNoise Core <br/> Differential Privacy Library Validator <br/>
 
-The python bindings are a sub-project of [Whitenoise-Core](https://github.com/opendifferentialprivacy/whitenoise-core).
+The validator is a sub-project of [Whitenoise-Core](https://github.com/opendifferentialprivacy/whitenoise-core).
 See also the accompanying [WhiteNoise-System](https://github.com/opendifferentialprivacy/whitenoise-system) and [WhiteNoise-Samples](https://github.com/opendifferentialprivacy/whitenoise-samples) repositories for this system.
 
 ##
@@ -12,12 +12,11 @@ The WhiteNoise project aims to connect theoretical solutions from the academic c
 Specifically, we provide several basic building blocks that can be used by people involved with sensitive data, with implementations based on vetted and mature differential privacy research.  
 In WhiteNoise Core, we provide a pluggable open source library of differentially private algorithms and mechanisms for releasing privacy preserving queries and statistics, as well as APIs for defining an analysis and a validator for evaluating these analyses and composing the total privacy loss on a dataset. 
 
-This library provides a fast, memory-safe native runtime for running differentially private analyses.  
+This library provides a language-agnostic set of utilities for running differentially private analyses.
+The validator takes in a high-level description of computation, called an Analysis, and checks if the data supplied to each component satisfies requirements necessary to maintain data privacy and derive sensitivities for mechanisms.
+The validator may also be used to compute the necessary noise scaling/sensitivities under a variety of definitions of privacy, as well as converting to/from accuracy estimates, summarizing releases, and dynamically validating individual components. 
 
-Differentially private computations are specified as a protobuf analysis graph that can be validated and executed to produce differentially private releases of data.  
-
-
-- [More about WhiteNoise Core Python Bindings](#more-about-whitenoise-core-runtime)
+- [More about WhiteNoise Core Runtime](#more-about-whitenoise-core-validator)
   - [Component List](#components)
   - [Architecture](#architecture)
 - [WhiteNoise Rust Documentation](#whitenoise-rust-documentation)
@@ -26,7 +25,7 @@ Differentially private computations are specified as a protobuf analysis graph t
 
 ---
 
-## More about WhiteNoise Core Runtime
+## More about WhiteNoise Core Validator
 
 ### Components
 
@@ -35,15 +34,18 @@ For a full listing of the extensive set of components available in the library [
 ### Architecture
 
 The Whitenoise-core system architecture [is described in the parent project](https://github.com/opendifferentialprivacy/whitenoise-core#Architecture).
-This package is an instance of the language bindings. The purpose of the language bindings is to provide a straightforward programming interface to Python for building and releasing analyses.
+This package provides language-agnostic utilities to aid in implementing differential privacy within your system.
+While the computational needs for constructing differentially private statistics may vary broadly depending on the data, the vast majority of differential privacy theory may be applied without ever having access to the data.
+The validator is designed such that it never has access to private data, which positions it well as a single library where DP theory may accumulate without concerns about the realities of loading physical databases.
+The validator is also designed to work strictly with descriptions of computation in an intermediate protobuf language.
 
-Logic for determining if a component releases differentially private data, as well as the scaling of noise, property tracking, and accuracy estimates are handled by a native rust library called the Validator.
-The actual execution of the components in the analysis is handled by a native Rust runtime.
+In contrast with the one-and-only validator, there may be many runtimes that can execute an analysis, and there may be many sets of language bindings.
+Language bindings are also utility libraries, but for constructing analyses from the context of specific programming languages.
 
 ---
 
-### WhiteNoise Bindings Documentation
-TODO- link to python docs in a different branch
+### WhiteNoise Rust Documentation
+
 The [Rust documentation](https://opendifferentialprivacy.github.io/whitenoise-core/) includes full documentation on all pieces of the library and validator, including extensive [component by component descriptions with examples](https://opendifferentialprivacy.github.io/whitenoise-core/doc/whitenoise_runtime/components/index.html).
 
 ### Communication

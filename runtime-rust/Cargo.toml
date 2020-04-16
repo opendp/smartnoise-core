@@ -3,7 +3,7 @@ name = "whitenoise_runtime"
 version = "0.1.0"
 authors = ["Shoeboxam <shoeboxam@gmail.com>"]
 description = "A library of algorithms for differentially private data analysis."
-readme = "../../README.md"
+readme = "README.md"
 keywords = ["differential privacy", "data privacy"]
 categories = ["cryptography", "science"] # up to 5 allowed, must match those listed at https://crates.io/category_slugs
 repository = "https://github.com/opendifferentialprivacy/whitenoise-core"
@@ -22,13 +22,19 @@ ndarray = "0.13.0"
 ndarray-stats = "0.3.0"
 ffi-support = "0.3.5"
 ieee754 = "0.2"
-rug = "1.7.0"
+rug = {version = "1.8.0", features = ["integer", "float", "rand"]}
 rand = "0.7.3"
-whitenoise_validator = {path = "../validator-rust"}
+gmp-mpfr-sys = "1.2.2"
+whitenoise_validator = {path = "../validator-rust/", version = "0.1.0"}
 itertools = "0.8.2"
 error-chain = "0.12.2"
 noisy_float = "0.1.12"
 libmath = "0.2.1"
+
+
+[features]
+# re-export use-system-libs from mpfr
+use-system-libs = ["gmp-mpfr-sys/use-system-libs"]
 
 [build-dependencies]
 prost-build = "0.5.0"

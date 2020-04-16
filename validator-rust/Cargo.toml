@@ -3,11 +3,12 @@ name = "whitenoise_validator"
 version = "0.1.0"
 authors = ["Shoeboxam <shoeboxam@gmail.com>"]
 description = "A library for validating whether or not an analysis is differentially private."
-readme = "../../README.md"
+readme = "README.md"
 keywords = ["differential privacy", "data privacy"]
 categories = ["cryptography", "science"] # up to 5 allowed, must match those listed at https://crates.io/category_slugs
 repository = "https://github.com/opendifferentialprivacy/whitenoise-core"
 edition = "2018"
+license = "MIT"
 
 [dependencies]
 prost = "0.5.0"
