@@ -6,9 +6,9 @@ os.environ['RUST_BACKTRACE'] = 'full'  # '1'
 os.environ['RUSTFLAGS'] = ""
 
 # set the environment variable to increase compiler optimization
-WN_RELEASE = os.environ.get("WN_RELEASE") == "True"
+WN_RELEASE = os.environ.get("WN_RELEASE", "false") != "false"
 # set the environment variable to use precompiled external libraries
-WN_USE_SYSTEM_LIBS = os.environ.get("WN_USE_SYSTEM_LIBS") is not None
+WN_USE_SYSTEM_LIBS = os.environ.get("WN_USE_SYSTEM_LIBS", "false") != "false"
 
 rust_build_path = os.path.join('..', 'target', 'release' if WN_RELEASE else 'debug')
 rust_build_cmd = 'cargo build'

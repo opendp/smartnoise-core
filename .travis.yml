@@ -44,8 +44,8 @@ jobs:
     - echo $TRAVIS_BRANCH;
     # switch to master after initial version
     - if [ "$TRAVIS_BRANCH" == "develop" ]; then
-        ./generate_docs.sh
-      fi
+        bash generate_docs.sh;
+      fi;
 
   # - name: Deploy manylinux2010_i686 32-bit
   #   services:
