@@ -73,40 +73,31 @@ All projects implement protobuf code generation, protobuf serialization/deserial
 
         git clone $REPOSITORY_URI
 
-2. Install Rust
-
-    Mac, Linux:
-
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
-    Close terminal and open new terminal to add cargo to path.
-    You can test with `rustc --version`
-
-    Windows: 
-
-        choco install rust
-
-3. Install system dependencies
+3. Install system dependencies (rust, python, gcc for gmp/mpfr, protoc for protocol buffers)
     Mac:
 
-        brew install protobuf gmp mpfr openssl@1.1
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+        xcode-select --install
+        brew install python protobuf
 
-    Ubuntu:
+    Linux:
 
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+        sudo apt-get install python diffutils gcc make m4
         sudo snap install protobuf --classic
-        sudo apt-get install -y pkg-config libgmp-dev libmpfr-dev libssl-dev
 
-    64x Windows:
+    Windows:
       
-        choco install protoc openssl
+        choco install rust python msys2 protoc
         refreshenv
-        rustup toolchain install stable-x86_64-pc-windows-gnu
-        rustup default stable-x86_64-pc-windows-gnu
-
-      This is still missing build directions for GMP and MPFR.
+        reg Query "HKLM\Hardware\Description\System\CentralProcessor\0" | find /i "x86" > NUL && setx MSYS2_ARCH=i686 || setx MSYS2_ARCH=x86_64
+        bash -xlc "pacman --noconfirm -S --needed pacman-mirrors"
+        bash -xlc "pacman --noconfirm -S --needed diffutils make mingw-w64-%MSYS2_ARCH%-gcc"
+        
       For non-Chocolatey users: download and install the latest build of protobuf
         + https://github.com/protocolbuffers/protobuf/releases/latest
 
+    You can test with `cargo build` in a new terminal.
 
 4. Install the python bindings
 
@@ -114,6 +105,40 @@ All projects implement protobuf code generation, protobuf serialization/deserial
         pip install -e ".[test,plotting]"
 
     If you are doing package development, I recommend using `bindings-python/debug_*.sh` for debugging.
+
+    
+#### If `cargo build` fails due to the package `gmp-mpfr-sys`
+
+Install system libs (GMP version 6.2, MPFR version 4.0.2-p1)
+  Mac:
+
+    brew install gmp mpfr
+
+  Linux, Windows:
+
+    # gmp and mpfr must be built from source, and set the environment variable
+    setx DEP_GMP_OUT_DIR=/path/to/folder/containing/lib/and/includes
+
+  Windows:
+
+    rustup toolchain install stable-x86_64-pc-windows-gnu
+    rustup default stable-x86_64-pc-windows-gnu
+
+To install the python bindings, set the variable
+
+    export WN_USE_SYSTEM_LIBS=True
+
+To individually build the runtime, set the feature flag
+
+    cd runtime-rust; cargo build --feature use-system-libs
+
+#### If `cargo build` fails due to the package `openssl`
+
+Provide an alternative openssl installation, either via directions in the automatic or manual section:
+  + https://docs.rs/openssl/0.10.29/openssl/
+
+Otherwise, please open an issue.
+
 
 ---
 ## Getting Started

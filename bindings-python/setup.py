@@ -7,30 +7,37 @@ os.environ['RUSTFLAGS'] = ""
 
 release = False
 
-rust_build_path = 'target/' + ('release' if release else 'debug')
+rust_build_path = '../target/' + ('release' if release else 'debug')
 rust_build_cmd = ['cargo', 'build']
 
 if release:
     rust_build_cmd.append('--release')
 
+USE_SYSTEM_LIBS = os.environ.get("WN_USE_SYSTEM_LIBS") is not None
+
 
 def build_native(spec):
-    build_rust = spec.add_external_build(
+    build_validator = spec.add_external_build(
         cmd=rust_build_cmd,
-        path='../'
+        path='../validator-rust'
     )
 
     spec.add_cffi_module(
         module_path='whitenoise._native_validator',
-        dylib=lambda: build_rust.find_dylib('whitenoise_validator', in_path=rust_build_path),
-        header_filename=lambda: build_rust.find_header('api_validator.h', in_path='.'),
+        dylib=lambda: build_validator.find_dylib('whitenoise_validator', in_path=rust_build_path),
+        header_filename=lambda: build_validator.find_header('api.h', in_path='.'),
         rtld_flags=['NOW', 'NODELETE']
+    )
+
+    build_runtime = spec.add_external_build(
+        cmd=rust_build_cmd + (['--features', 'use-system-libs'] if USE_SYSTEM_LIBS else []),
+        path='../runtime-rust'
     )
 
     spec.add_cffi_module(
         module_path='whitenoise._native_runtime',
-        dylib=lambda: build_rust.find_dylib('whitenoise_runtime', in_path=rust_build_path),
-        header_filename=lambda: build_rust.find_header('api_runtime.h', in_path='.'),
+        dylib=lambda: build_runtime.find_dylib('whitenoise_runtime', in_path=rust_build_path),
+        header_filename=lambda: build_runtime.find_header('api.h', in_path='.'),
         rtld_flags=['NOW', 'NODELETE']
     )
 
