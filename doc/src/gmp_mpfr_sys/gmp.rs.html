@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/gmp-mpfr-sys-1.2.1/src/gmp.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>gmp.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../gmp_mpfr_sys/index.html'><div class='logo-container'><img src='https://tspiteri.gitlab.io/gmp-mpfr-sys/rug.svg' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/gmp-mpfr-sys-1.2.2/src/gmp.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>gmp.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../gmp_mpfr_sys/index.html'><div class='logo-container'><img src='https://tspiteri.gitlab.io/gmp-mpfr-sys/rug.svg' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -1826,6 +1826,115 @@
 <span id="1826">1826</span>
 <span id="1827">1827</span>
 <span id="1828">1828</span>
+<span id="1829">1829</span>
+<span id="1830">1830</span>
+<span id="1831">1831</span>
+<span id="1832">1832</span>
+<span id="1833">1833</span>
+<span id="1834">1834</span>
+<span id="1835">1835</span>
+<span id="1836">1836</span>
+<span id="1837">1837</span>
+<span id="1838">1838</span>
+<span id="1839">1839</span>
+<span id="1840">1840</span>
+<span id="1841">1841</span>
+<span id="1842">1842</span>
+<span id="1843">1843</span>
+<span id="1844">1844</span>
+<span id="1845">1845</span>
+<span id="1846">1846</span>
+<span id="1847">1847</span>
+<span id="1848">1848</span>
+<span id="1849">1849</span>
+<span id="1850">1850</span>
+<span id="1851">1851</span>
+<span id="1852">1852</span>
+<span id="1853">1853</span>
+<span id="1854">1854</span>
+<span id="1855">1855</span>
+<span id="1856">1856</span>
+<span id="1857">1857</span>
+<span id="1858">1858</span>
+<span id="1859">1859</span>
+<span id="1860">1860</span>
+<span id="1861">1861</span>
+<span id="1862">1862</span>
+<span id="1863">1863</span>
+<span id="1864">1864</span>
+<span id="1865">1865</span>
+<span id="1866">1866</span>
+<span id="1867">1867</span>
+<span id="1868">1868</span>
+<span id="1869">1869</span>
+<span id="1870">1870</span>
+<span id="1871">1871</span>
+<span id="1872">1872</span>
+<span id="1873">1873</span>
+<span id="1874">1874</span>
+<span id="1875">1875</span>
+<span id="1876">1876</span>
+<span id="1877">1877</span>
+<span id="1878">1878</span>
+<span id="1879">1879</span>
+<span id="1880">1880</span>
+<span id="1881">1881</span>
+<span id="1882">1882</span>
+<span id="1883">1883</span>
+<span id="1884">1884</span>
+<span id="1885">1885</span>
+<span id="1886">1886</span>
+<span id="1887">1887</span>
+<span id="1888">1888</span>
+<span id="1889">1889</span>
+<span id="1890">1890</span>
+<span id="1891">1891</span>
+<span id="1892">1892</span>
+<span id="1893">1893</span>
+<span id="1894">1894</span>
+<span id="1895">1895</span>
+<span id="1896">1896</span>
+<span id="1897">1897</span>
+<span id="1898">1898</span>
+<span id="1899">1899</span>
+<span id="1900">1900</span>
+<span id="1901">1901</span>
+<span id="1902">1902</span>
+<span id="1903">1903</span>
+<span id="1904">1904</span>
+<span id="1905">1905</span>
+<span id="1906">1906</span>
+<span id="1907">1907</span>
+<span id="1908">1908</span>
+<span id="1909">1909</span>
+<span id="1910">1910</span>
+<span id="1911">1911</span>
+<span id="1912">1912</span>
+<span id="1913">1913</span>
+<span id="1914">1914</span>
+<span id="1915">1915</span>
+<span id="1916">1916</span>
+<span id="1917">1917</span>
+<span id="1918">1918</span>
+<span id="1919">1919</span>
+<span id="1920">1920</span>
+<span id="1921">1921</span>
+<span id="1922">1922</span>
+<span id="1923">1923</span>
+<span id="1924">1924</span>
+<span id="1925">1925</span>
+<span id="1926">1926</span>
+<span id="1927">1927</span>
+<span id="1928">1928</span>
+<span id="1929">1929</span>
+<span id="1930">1930</span>
+<span id="1931">1931</span>
+<span id="1932">1932</span>
+<span id="1933">1933</span>
+<span id="1934">1934</span>
+<span id="1935">1935</span>
+<span id="1936">1936</span>
+<span id="1937">1937</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Copyright © 2017–2020 University of Malta</span>
 
@@ -1864,7 +1973,7 @@ unsafe {
 
 [GMP]: https://gmplib.org/
 */</span>
-<span class="attribute">#![<span class="ident">allow</span>(<span class="ident">non_camel_case_types</span>)]</span>
+<span class="attribute">#![<span class="ident">allow</span>(<span class="ident">non_camel_case_types</span>, <span class="ident">non_snake_case</span>)]</span>
 
 <span class="kw">use</span> <span class="ident">core</span>::{
     <span class="ident">cmp</span>::<span class="ident">Ordering</span>,
@@ -1938,6 +2047,15 @@ unsafe {
     <span class="doccomment">/// See: [Integer Internals](https://tspiteri.gitlab.io/gmp-mpfr-sys/gmp/Internals.html#Integer-Internals)</span>
     <span class="kw">pub</span> <span class="ident">size</span>: <span class="ident">c_int</span>,
     <span class="doccomment">/// See: [Integer Internals](https://tspiteri.gitlab.io/gmp-mpfr-sys/gmp/Internals.html#Integer-Internals)</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Planned change</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// In the next minor version of the crate (version 1.3), the type</span>
+    <span class="doccomment">/// of this field will be changed to</span>
+    <span class="doccomment">/// &lt;code&gt;[NonNull][`NonNull`]&amp;lt;[limb\_t][`limb_t`]&amp;gt;&lt;/code&gt;.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [`NonNull`]: https://doc.rust-lang.org/nightly/core/ptr/struct.NonNull.html</span>
+    <span class="doccomment">/// [`limb_t`]: type.limb_t.html</span>
     <span class="kw">pub</span> <span class="ident">d</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">limb_t</span>,
 }
 
@@ -1985,6 +2103,15 @@ unsafe {
     <span class="doccomment">/// See: [Float Internals](https://tspiteri.gitlab.io/gmp-mpfr-sys/gmp/Internals.html#Float-Internals)</span>
     <span class="kw">pub</span> <span class="ident">exp</span>: <span class="ident">exp_t</span>,
     <span class="doccomment">/// See: [Float Internals](https://tspiteri.gitlab.io/gmp-mpfr-sys/gmp/Internals.html#Float-Internals)</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Planned change</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// In the next minor version of the crate (version 1.3), the type</span>
+    <span class="doccomment">/// of this field will be changed to</span>
+    <span class="doccomment">/// &lt;code&gt;[NonNull][`NonNull`]&amp;lt;[limb\_t][`limb_t`]&amp;gt;&lt;/code&gt;.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [`NonNull`]: https://doc.rust-lang.org/nightly/core/ptr/struct.NonNull.html</span>
+    <span class="doccomment">/// [`limb_t`]: type.limb_t.html</span>
     <span class="kw">pub</span> <span class="ident">d</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">limb_t</span>,
 }
 
@@ -2072,13 +2199,49 @@ unsafe {
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">randfnptr_t</span> {
     <span class="doccomment">/// Internal implementation detail: pointer to function.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Planned change</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// In the next minor version of the crate (version 1.3), the type</span>
+    <span class="doccomment">/// of this field will be changed to</span>
+    <span class="doccomment">/// `unsafe extern &quot;C&quot; fn(rstate: *mut randstate_t, seed: *const mpz_t)`,</span>
+    <span class="doccomment">/// that is it will no longer be an [`Option`].</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [`Option`]: https://doc.rust-lang.org/nightly/std/option/enum.Option.html</span>
     <span class="kw">pub</span> <span class="ident">seed</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span>(<span class="ident">rstate</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">randstate_t</span>, <span class="ident">seed</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">mpz_t</span>)<span class="op">&gt;</span>,
     <span class="doccomment">/// Internal implementation detail: pointer to function.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Planned change</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// In the next minor version of the crate (version 1.3), the type</span>
+    <span class="doccomment">/// of this field will be changed to</span>
+    <span class="doccomment">/// `unsafe extern &quot;C&quot; fn(rstate: *mut randstate_t, dest: *mut limb_t, nbits: c_ulong)`,</span>
+    <span class="doccomment">/// that is it will no longer be an [`Option`].</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [`Option`]: https://doc.rust-lang.org/nightly/std/option/enum.Option.html</span>
     <span class="kw">pub</span> <span class="ident">get</span>:
         <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span>(<span class="ident">rstate</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">randstate_t</span>, <span class="ident">dest</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">limb_t</span>, <span class="ident">nbits</span>: <span class="ident">c_ulong</span>)<span class="op">&gt;</span>,
     <span class="doccomment">/// Internal implementation detail: pointer to function.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Planned change</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// In the next minor version of the crate (version 1.3), the type</span>
+    <span class="doccomment">/// of this field will be changed to</span>
+    <span class="doccomment">/// `unsafe extern &quot;C&quot; fn(rstate: *mut randstate_t)`, that is it</span>
+    <span class="doccomment">/// will no longer be an [`Option`].</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [`Option`]: https://doc.rust-lang.org/nightly/std/option/enum.Option.html</span>
     <span class="kw">pub</span> <span class="ident">clear</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span>(<span class="ident">rstate</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">randstate_t</span>)<span class="op">&gt;</span>,
     <span class="doccomment">/// Internal implementation detail: pointer to function.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Planned change</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// In the next minor version of the crate (version 1.3), the type</span>
+    <span class="doccomment">/// of this field will be changed to</span>
+    <span class="doccomment">/// `unsafe extern &quot;C&quot; fn(dst: *mut randstate_t, src: *const randstate_t)`,</span>
+    <span class="doccomment">/// that is it will no longer be an [`Option`].</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [`Option`]: https://doc.rust-lang.org/nightly/std/option/enum.Option.html</span>
     <span class="kw">pub</span> <span class="ident">iset</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span>(<span class="ident">dst</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">randstate_t</span>, <span class="ident">src</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">randstate_t</span>)<span class="op">&gt;</span>,
 }
 
@@ -2781,6 +2944,20 @@ unsafe {
     <span class="doccomment">/// See: [`mpz_roinit_n`](https://tspiteri.gitlab.io/gmp-mpfr-sys/gmp/Integer-Functions.html#index-mpz_005froinit_005fn)</span>
     <span class="attribute">#[<span class="ident">link_name</span> <span class="op">=</span> <span class="string">&quot;__gmpz_roinit_n&quot;</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">mpz_roinit_n</span>(<span class="ident">x</span>: <span class="ident">mpz_ptr</span>, <span class="ident">xp</span>: <span class="ident">mp_srcptr</span>, <span class="ident">xs</span>: <span class="ident">size_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">mpz_srcptr</span>;
+}
+<span class="doccomment">/// See: [`MPZ_ROINIT_N`](https://tspiteri.gitlab.io/gmp-mpfr-sys/gmp/Integer-Functions.html#index-MPZ_005fROINIT_005fN)</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Note that this function is not currently `extern &quot;C&quot;` because such</span>
+<span class="doccomment">/// functions cannot be const functions, and this function is intended</span>
+<span class="doccomment">/// primarily for constant values. The function will be changed to</span>
+<span class="doccomment">/// `extern &quot;C&quot;` once such functions can be const functions.</span>
+<span class="attribute">#[<span class="ident">inline</span>]</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">MPZ_ROINIT_N</span>(<span class="ident">xp</span>: <span class="ident">mp_ptr</span>, <span class="ident">xs</span>: <span class="ident">size_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">mpz_t</span> {
+    <span class="ident">mpz_t</span> {
+        <span class="ident">alloc</span>: <span class="number">0</span>,
+        <span class="ident">size</span>: <span class="ident">xs</span> <span class="kw">as</span> <span class="ident">c_int</span>,
+        <span class="ident">d</span>: <span class="ident">xp</span>,
+    }
 }
 
 <span class="comment">// Rational numbers</span>
@@ -3580,14 +3757,55 @@ unsafe {
 <span class="comment">// Custom Allocation</span>
 
 <span class="doccomment">/// See: [`allocate_function`](https://tspiteri.gitlab.io/gmp-mpfr-sys/gmp/Custom-Allocation.html#index-allocate_005ffunction)</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Planned change</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// In the next major version of the crate (version 2), this will be</span>
+<span class="doccomment">/// changed to</span>
+<span class="doccomment">/// `unsafe extern &quot;C&quot; fn(alloc_size: usize) -&gt; *mut c_void`, that is</span>
+<span class="doccomment">/// it will no longer be an [`Option`], and the function can also be</span>
+<span class="doccomment">/// unsafe.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// [`Option`]: https://doc.rust-lang.org/nightly/std/option/enum.Option.html</span>
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">allocate_function</span> <span class="op">=</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span>(<span class="ident">alloc_size</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span><span class="op">&gt;</span>;
 <span class="doccomment">/// See: [`reallocate_function`](https://tspiteri.gitlab.io/gmp-mpfr-sys/gmp/Custom-Allocation.html#index-reallocate_005ffunction)</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Planned change</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// In the next major version of the crate (version 2), this will be</span>
+<span class="doccomment">/// changed to</span>
+<span class="doccomment">/// `unsafe extern &quot;C&quot; fn(ptr: *mut c_void, old_size: usize, new_size: usize) -&gt; *mut c_void`,</span>
+<span class="doccomment">/// that is it will no longer be an [`Option`].</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// [`Option`]: https://doc.rust-lang.org/nightly/std/option/enum.Option.html</span>
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">reallocate_function</span> <span class="op">=</span>
     <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span>(<span class="ident">ptr</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>, <span class="ident">old_size</span>: <span class="ident">usize</span>, <span class="ident">new_size</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span><span class="op">&gt;</span>;
 <span class="doccomment">/// See: [`free_function`](https://tspiteri.gitlab.io/gmp-mpfr-sys/gmp/Custom-Allocation.html#index-free_005ffunction)</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Planned change</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// In the next major version of the crate (version 2), this will be</span>
+<span class="doccomment">/// changed to `unsafe extern &quot;C&quot; fn(ptr: *mut c_void, size: usize)`,</span>
+<span class="doccomment">/// that is it will no longer be an [`Option`].</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// [`Option`]: https://doc.rust-lang.org/nightly/std/option/enum.Option.html</span>
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">free_function</span> <span class="op">=</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span>(<span class="ident">ptr</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>, <span class="ident">size</span>: <span class="ident">usize</span>)<span class="op">&gt;</span>;
 <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> {
     <span class="doccomment">/// See: [`mp_set_memory_functions`](https://tspiteri.gitlab.io/gmp-mpfr-sys/gmp/Custom-Allocation.html#index-mp_005fset_005fmemory_005ffunctions)</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Planned change</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// In the next major version of the crate (version 2), the arguments will be of types</span>
+    <span class="doccomment">/// &lt;code&gt;[Option][`Option`]&amp;lt;[allocate\_function][`allocate_function`]&amp;gt;&lt;/code&gt;,</span>
+    <span class="doccomment">/// &lt;code&gt;[Option][`Option`]&amp;lt;[reallocate\_function][`reallocate_function`]&amp;gt;&lt;/code&gt;</span>
+    <span class="doccomment">/// and</span>
+    <span class="doccomment">/// &lt;code&gt;[Option][`Option`]&amp;lt;[free\_function][`free_function`]&amp;gt;&lt;/code&gt;,</span>
+    <span class="doccomment">/// since the function types themselves will no longer be [`Option`].</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [`Option`]: https://doc.rust-lang.org/nightly/std/option/enum.Option.html</span>
+    <span class="doccomment">/// [`allocate_function`]: type.allocate_function.html</span>
+    <span class="doccomment">/// [`free_function`]: type.free_function.html</span>
+    <span class="doccomment">/// [`reallocate_function`]: type.reallocate_function.html</span>
     <span class="attribute">#[<span class="ident">link_name</span> <span class="op">=</span> <span class="string">&quot;__gmp_set_memory_functions&quot;</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_memory_functions</span>(
         <span class="ident">alloc_func_ptr</span>: <span class="ident">allocate_function</span>,

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/rug-1.7.0/src/float/ord.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>ord.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../rug/index.html'><div class='logo-container'><img src='https://tspiteri.gitlab.io/gmp-mpfr-sys/rug.svg' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/rug-1.8.0/src/float/ord.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>ord.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../rug/index.html'><div class='logo-container'><img src='https://tspiteri.gitlab.io/gmp-mpfr-sys/rug.svg' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -243,6 +243,87 @@
 <span id="243">243</span>
 <span id="244">244</span>
 <span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Copyright © 2016–2020 University of Malta</span>
 
@@ -318,6 +399,10 @@ assert_eq!(pos_zero.cmp(&amp;neg_zero), Ordering::Greater);
 <span class="kw">impl</span> <span class="ident">OrdFloat</span> {
     <span class="doccomment">/// Extracts the underlying [`Float`].</span>
     <span class="doccomment">///</span>
+    <span class="doccomment">/// The same result can be obtained using the implementation of</span>
+    <span class="doccomment">/// &lt;code&gt;[AsRef][`AsRef`]&amp;lt;[Float][`Float`]&amp;gt;&lt;/code&gt; which is</span>
+    <span class="doccomment">/// provided for [`OrdFloat`].</span>
+    <span class="doccomment">///</span>
     <span class="doccomment">/// # Examples</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// ```rust</span>
@@ -328,13 +413,19 @@ assert_eq!(pos_zero.cmp(&amp;neg_zero), Ordering::Greater);
     <span class="doccomment">/// assert_eq!(f_ref.to_f64(), 1.5);</span>
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
+    <span class="doccomment">/// [`AsRef`]: https://doc.rust-lang.org/nightly/core/convert/trait.AsRef.html</span>
     <span class="doccomment">/// [`Float`]: ../struct.Float.html</span>
+    <span class="doccomment">/// [`OrdFloat`]: struct.OrdFloat.html</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_float</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">Float</span> {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">inner</span>
     }
 
     <span class="doccomment">/// Extracts the underlying [`Float`].</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The same result can be obtained using the implementation of</span>
+    <span class="doccomment">/// &lt;code&gt;[AsMut][`AsMut`]&amp;lt;[Float][`Float`]&amp;gt;&lt;/code&gt; which is</span>
+    <span class="doccomment">/// provided for [`OrdFloat`].</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// # Examples</span>
     <span class="doccomment">///</span>
@@ -346,7 +437,9 @@ assert_eq!(pos_zero.cmp(&amp;neg_zero), Ordering::Greater);
     <span class="doccomment">/// assert_eq!(ord.as_float().to_f64(), 1.5);</span>
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
+    <span class="doccomment">/// [`AsMut`]: https://doc.rust-lang.org/nightly/core/convert/trait.AsMut.html</span>
     <span class="doccomment">/// [`Float`]: ../struct.Float.html</span>
+    <span class="doccomment">/// [`OrdFloat`]: struct.OrdFloat.html</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_float_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Float</span> {
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">inner</span>
@@ -358,16 +451,15 @@ assert_eq!(pos_zero.cmp(&amp;neg_zero), Ordering::Greater);
         <span class="kw">let</span> <span class="ident">float</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">inner</span>;
         <span class="ident">float</span>.<span class="ident">inner</span>().<span class="ident">sign</span>.<span class="ident">hash</span>(<span class="ident">state</span>);
         <span class="ident">float</span>.<span class="ident">inner</span>().<span class="ident">exp</span>.<span class="ident">hash</span>(<span class="ident">state</span>);
-        <span class="kw">if</span> <span class="ident">float</span>.<span class="ident">is_normal</span>() {
-            <span class="kw">let</span> <span class="ident">slice</span> <span class="op">=</span> <span class="ident">float</span>.<span class="ident">inner_data</span>();
-            <span class="comment">//   * Do not hash the least significant zero limbs, as</span>
-            <span class="comment">//     equal numbers with different precisions must have</span>
-            <span class="comment">//     equal hashes.</span>
-            <span class="comment">//   * MPFR keeps unused bits set to zero, so there is no</span>
-            <span class="comment">//     need to mask least significant limb.</span>
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">first</span>) <span class="op">=</span> <span class="ident">slice</span>.<span class="ident">iter</span>().<span class="ident">position</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">limb</span><span class="op">|</span> <span class="ident">limb</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span>) {
-                <span class="ident">slice</span>[<span class="ident">first</span>..].<span class="ident">hash</span>(<span class="ident">state</span>);
-            }
+
+        <span class="kw">let</span> <span class="ident">slice</span> <span class="op">=</span> <span class="ident">float</span>.<span class="ident">inner_data</span>();
+        <span class="comment">//   * Do not hash the least significant zero limbs, as</span>
+        <span class="comment">//     equal numbers with different precisions must have</span>
+        <span class="comment">//     equal hashes.</span>
+        <span class="comment">//   * MPFR keeps unused bits set to zero, so there is no</span>
+        <span class="comment">//     need to mask least significant limb.</span>
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">first</span>) <span class="op">=</span> <span class="ident">slice</span>.<span class="ident">iter</span>().<span class="ident">position</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">limb</span><span class="op">|</span> <span class="ident">limb</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span>) {
+            <span class="ident">slice</span>[<span class="ident">first</span>..].<span class="ident">hash</span>(<span class="ident">state</span>);
         }
     }
 }
@@ -440,11 +532,26 @@ assert_eq!(pos_zero.cmp(&amp;neg_zero), Ordering::Greater);
     }
 }
 
+<span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">OrdFloat</span> {
+    <span class="attribute">#[<span class="ident">inline</span>]</span>
+    <span class="kw">fn</span> <span class="ident">as_ref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">Float</span> {
+        <span class="self">self</span>.<span class="ident">as_float</span>()
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">AsMut</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">OrdFloat</span> {
+    <span class="attribute">#[<span class="ident">inline</span>]</span>
+    <span class="kw">fn</span> <span class="ident">as_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Float</span> {
+        <span class="self">self</span>.<span class="ident">as_float_mut</span>()
+    }
+}
+
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
     <span class="kw">use</span> <span class="kw">crate</span>::{
-        <span class="ident">float</span>::{<span class="self">self</span>, <span class="ident">FreeCache</span>, <span class="ident">Special</span>},
-        <span class="ident">Float</span>,
+        <span class="ident">float</span>::{<span class="self">self</span>, <span class="ident">FreeCache</span>, <span class="ident">OrdFloat</span>, <span class="ident">Special</span>},
+        <span class="ident">ops</span>::<span class="ident">NegAssign</span>,
+        <span class="ident">Assign</span>, <span class="ident">Float</span>,
     };
     <span class="kw">use</span> <span class="ident">core</span>::<span class="ident">hash</span>::{<span class="ident">Hash</span>, <span class="ident">Hasher</span>};
     <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">hash_map</span>::<span class="ident">DefaultHasher</span>;
@@ -472,21 +579,76 @@ assert_eq!(pos_zero.cmp(&amp;neg_zero), Ordering::Greater);
         <span class="ident">float</span>::<span class="ident">free_cache</span>(<span class="ident">FreeCache</span>::<span class="ident">All</span>);
     }
 
+    <span class="kw">fn</span> <span class="ident">hash</span>(<span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="ident">OrdFloat</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">hasher</span> <span class="op">=</span> <span class="ident">DefaultHasher</span>::<span class="ident">new</span>();
+        <span class="ident">f</span>.<span class="ident">hash</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">hasher</span>);
+        <span class="ident">hasher</span>.<span class="ident">finish</span>()
+    }
+
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">check_hash_different_prec</span>() {
-        <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">Float</span>::<span class="ident">with_val</span>(<span class="number">53</span>, <span class="number">23.5</span>);
-        <span class="kw">let</span> <span class="ident">g</span> <span class="op">=</span> <span class="ident">Float</span>::<span class="ident">with_val</span>(<span class="number">5301</span>, <span class="number">23.5</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">Float</span>::<span class="ident">new</span>(<span class="number">53</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">g</span> <span class="op">=</span> <span class="ident">Float</span>::<span class="ident">new</span>(<span class="number">5301</span>);
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="ident">g</span>);
-        <span class="kw">let</span> <span class="ident">ord_f</span> <span class="op">=</span> <span class="ident">f</span>.<span class="ident">as_ord</span>();
-        <span class="kw">let</span> <span class="ident">ord_g</span> <span class="op">=</span> <span class="ident">g</span>.<span class="ident">as_ord</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">ord_f</span>, <span class="ident">ord_g</span>);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">hasher_f</span> <span class="op">=</span> <span class="ident">DefaultHasher</span>::<span class="ident">new</span>();
-        <span class="ident">ord_f</span>.<span class="ident">hash</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">hasher_f</span>);
-        <span class="kw">let</span> <span class="ident">hash_f</span> <span class="op">=</span> <span class="ident">hasher_f</span>.<span class="ident">finish</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">hasher_g</span> <span class="op">=</span> <span class="ident">DefaultHasher</span>::<span class="ident">new</span>();
-        <span class="ident">ord_g</span>.<span class="ident">hash</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">hasher_g</span>);
-        <span class="kw">let</span> <span class="ident">hash_g</span> <span class="op">=</span> <span class="ident">hasher_g</span>.<span class="ident">finish</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">hash_f</span>, <span class="ident">hash_g</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">f</span>.<span class="ident">as_ord</span>(), <span class="ident">g</span>.<span class="ident">as_ord</span>());
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">hash</span>(<span class="ident">f</span>.<span class="ident">as_ord</span>()), <span class="ident">hash</span>(<span class="ident">g</span>.<span class="ident">as_ord</span>()));
+
+        <span class="ident">g</span>.<span class="ident">neg_assign</span>();
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="ident">g</span>);
+        <span class="macro">assert_ne</span><span class="macro">!</span>(<span class="ident">f</span>.<span class="ident">as_ord</span>(), <span class="ident">g</span>.<span class="ident">as_ord</span>());
+        <span class="macro">assert_ne</span><span class="macro">!</span>(<span class="ident">hash</span>(<span class="ident">f</span>.<span class="ident">as_ord</span>()), <span class="ident">hash</span>(<span class="ident">g</span>.<span class="ident">as_ord</span>()));
+
+        <span class="ident">f</span>.<span class="ident">assign</span>(<span class="number">23.5</span>);
+        <span class="ident">g</span>.<span class="ident">assign</span>(<span class="number">23.5</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="ident">g</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">f</span>.<span class="ident">as_ord</span>(), <span class="ident">g</span>.<span class="ident">as_ord</span>());
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">hash</span>(<span class="ident">f</span>.<span class="ident">as_ord</span>()), <span class="ident">hash</span>(<span class="ident">g</span>.<span class="ident">as_ord</span>()));
+
+        <span class="ident">g</span>.<span class="ident">neg_assign</span>();
+        <span class="macro">assert_ne</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="ident">g</span>);
+        <span class="macro">assert_ne</span><span class="macro">!</span>(<span class="ident">f</span>.<span class="ident">as_ord</span>(), <span class="ident">g</span>.<span class="ident">as_ord</span>());
+        <span class="macro">assert_ne</span><span class="macro">!</span>(<span class="ident">hash</span>(<span class="ident">f</span>.<span class="ident">as_ord</span>()), <span class="ident">hash</span>(<span class="ident">g</span>.<span class="ident">as_ord</span>()));
+
+        <span class="ident">f</span>.<span class="ident">assign</span>(<span class="ident">Special</span>::<span class="ident">Nan</span>);
+        <span class="ident">g</span>.<span class="ident">assign</span>(<span class="ident">Special</span>::<span class="ident">Nan</span>);
+        <span class="macro">assert_ne</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="ident">g</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">f</span>.<span class="ident">as_ord</span>(), <span class="ident">g</span>.<span class="ident">as_ord</span>());
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">hash</span>(<span class="ident">f</span>.<span class="ident">as_ord</span>()), <span class="ident">hash</span>(<span class="ident">g</span>.<span class="ident">as_ord</span>()));
+
+        <span class="ident">g</span>.<span class="ident">neg_assign</span>();
+        <span class="macro">assert_ne</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="ident">g</span>);
+        <span class="macro">assert_ne</span><span class="macro">!</span>(<span class="ident">f</span>.<span class="ident">as_ord</span>(), <span class="ident">g</span>.<span class="ident">as_ord</span>());
+        <span class="macro">assert_ne</span><span class="macro">!</span>(<span class="ident">hash</span>(<span class="ident">f</span>.<span class="ident">as_ord</span>()), <span class="ident">hash</span>(<span class="ident">g</span>.<span class="ident">as_ord</span>()));
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">check_refs</span>() {
+        <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">Float</span>::<span class="ident">with_val</span>(<span class="number">53</span>, <span class="number">23.5</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="kw-2">&amp;</span><span class="ident">f</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">Float</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">OrdFloat</span>,
+            <span class="ident">f</span>.<span class="ident">as_ord</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">OrdFloat</span>
+        );
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="kw-2">&amp;</span><span class="ident">f</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">Float</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">OrdFloat</span>,
+            <span class="ident">AsRef</span>::<span class="op">&lt;</span><span class="ident">OrdFloat</span><span class="op">&gt;</span>::<span class="ident">as_ref</span>(<span class="kw-2">&amp;</span><span class="ident">f</span>) <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">OrdFloat</span>
+        );
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">o</span> <span class="op">=</span> <span class="ident">OrdFloat</span>::<span class="ident">from</span>(<span class="ident">f</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="kw-2">&amp;</span><span class="ident">o</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">OrdFloat</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">Float</span>,
+            <span class="ident">o</span>.<span class="ident">as_float</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">Float</span>
+        );
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="kw-2">&amp;</span><span class="ident">o</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">OrdFloat</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">Float</span>,
+            <span class="ident">AsRef</span>::<span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span>::<span class="ident">as_ref</span>(<span class="kw-2">&amp;</span><span class="ident">o</span>) <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">Float</span>
+        );
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">o</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">OrdFloat</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">Float</span>,
+            <span class="ident">o</span>.<span class="ident">as_float_mut</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">Float</span>
+        );
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">o</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">OrdFloat</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">Float</span>,
+            <span class="ident">AsMut</span>::<span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span>::<span class="ident">as_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">o</span>) <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">Float</span>
+        );
     }
 }
 </pre></div>

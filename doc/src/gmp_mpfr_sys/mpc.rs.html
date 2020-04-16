@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/gmp-mpfr-sys-1.2.1/src/mpc.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mpc.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../gmp_mpfr_sys/index.html'><div class='logo-container'><img src='https://tspiteri.gitlab.io/gmp-mpfr-sys/rug.svg' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/gmp-mpfr-sys-1.2.2/src/mpc.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mpc.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../gmp_mpfr_sys/index.html'><div class='logo-container'><img src='https://tspiteri.gitlab.io/gmp-mpfr-sys/rug.svg' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -595,6 +595,9 @@
 <span id="595">595</span>
 <span id="596">596</span>
 <span id="597">597</span>
+<span id="598">598</span>
+<span id="599">599</span>
+<span id="600">600</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Copyright © 2017–2020 University of Malta</span>
 
@@ -642,7 +645,10 @@ unsafe {
 */</span>
 <span class="attribute">#![<span class="ident">allow</span>(<span class="ident">non_camel_case_types</span>, <span class="ident">non_snake_case</span>)]</span>
 
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">gmp</span>, <span class="ident">mpfr</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::{
+    <span class="ident">gmp</span>::{<span class="ident">mpf_t</span>, <span class="ident">mpq_t</span>, <span class="ident">mpz_t</span>, <span class="ident">randstate_t</span>},
+    <span class="ident">mpfr</span>::{<span class="ident">mpfr_t</span>, <span class="ident">prec_t</span>, <span class="ident">rnd_t</span> <span class="kw">as</span> <span class="ident">mpfr_rnd_t</span>},
+};
 <span class="kw">use</span> <span class="ident">libc</span>::{<span class="ident">c_char</span>, <span class="ident">c_int</span>, <span class="ident">c_long</span>, <span class="ident">c_ulong</span>, <span class="ident">intmax_t</span>, <span class="ident">uintmax_t</span>, <span class="ident">FILE</span>};
 
 <span class="macro">include</span><span class="macro">!</span>(<span class="macro">concat</span><span class="macro">!</span>(<span class="macro">env</span><span class="macro">!</span>(<span class="string">&quot;OUT_DIR&quot;</span>), <span class="string">&quot;/mpc_h.rs&quot;</span>));
@@ -679,10 +685,10 @@ unsafe {
 <span class="doccomment">/// See: [`mpc_rnd_t`](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpc/GNU-MPC-Basics.html#index-mpc_005frnd_005ft)</span>
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">rnd_t</span> <span class="op">=</span> <span class="ident">c_int</span>;
 
-<span class="kw">const</span> <span class="ident">RNDN</span>: <span class="ident">c_int</span> <span class="op">=</span> <span class="ident">mpfr</span>::<span class="ident">rnd_t</span>::<span class="ident">RNDN</span> <span class="kw">as</span> <span class="ident">c_int</span>;
-<span class="kw">const</span> <span class="ident">RNDZ</span>: <span class="ident">c_int</span> <span class="op">=</span> <span class="ident">mpfr</span>::<span class="ident">rnd_t</span>::<span class="ident">RNDZ</span> <span class="kw">as</span> <span class="ident">c_int</span>;
-<span class="kw">const</span> <span class="ident">RNDU</span>: <span class="ident">c_int</span> <span class="op">=</span> <span class="ident">mpfr</span>::<span class="ident">rnd_t</span>::<span class="ident">RNDU</span> <span class="kw">as</span> <span class="ident">c_int</span>;
-<span class="kw">const</span> <span class="ident">RNDD</span>: <span class="ident">c_int</span> <span class="op">=</span> <span class="ident">mpfr</span>::<span class="ident">rnd_t</span>::<span class="ident">RNDD</span> <span class="kw">as</span> <span class="ident">c_int</span>;
+<span class="kw">const</span> <span class="ident">RNDN</span>: <span class="ident">c_int</span> <span class="op">=</span> <span class="ident">mpfr_rnd_t</span>::<span class="ident">RNDN</span> <span class="kw">as</span> <span class="ident">c_int</span>;
+<span class="kw">const</span> <span class="ident">RNDZ</span>: <span class="ident">c_int</span> <span class="op">=</span> <span class="ident">mpfr_rnd_t</span>::<span class="ident">RNDZ</span> <span class="kw">as</span> <span class="ident">c_int</span>;
+<span class="kw">const</span> <span class="ident">RNDU</span>: <span class="ident">c_int</span> <span class="op">=</span> <span class="ident">mpfr_rnd_t</span>::<span class="ident">RNDU</span> <span class="kw">as</span> <span class="ident">c_int</span>;
+<span class="kw">const</span> <span class="ident">RNDD</span>: <span class="ident">c_int</span> <span class="op">=</span> <span class="ident">mpfr_rnd_t</span>::<span class="ident">RNDD</span> <span class="kw">as</span> <span class="ident">c_int</span>;
 
 <span class="doccomment">/// See: [Rounding Modes](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpc/GNU-MPC-Basics.html#Rounding-Modes)</span>
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RNDNN</span>: <span class="ident">c_int</span> <span class="op">=</span> <span class="ident">RNDN</span> <span class="op">+</span> (<span class="ident">RNDN</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">4</span>);
@@ -732,19 +738,19 @@ unsafe {
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">mpc_t</span> {
     <span class="doccomment">/// Internal implementation detail: real part.</span>
-    <span class="kw">pub</span> <span class="ident">re</span>: <span class="ident">mpfr</span>::<span class="ident">mpfr_t</span>,
+    <span class="kw">pub</span> <span class="ident">re</span>: <span class="ident">mpfr_t</span>,
     <span class="doccomment">/// Internal implementation detail: imaginary part.</span>
-    <span class="kw">pub</span> <span class="ident">im</span>: <span class="ident">mpfr</span>::<span class="ident">mpfr_t</span>,
+    <span class="kw">pub</span> <span class="ident">im</span>: <span class="ident">mpfr_t</span>,
 }
 
 <span class="comment">// Types for function declarations in this file.</span>
 
-<span class="kw">type</span> <span class="ident">mpz_srcptr</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">gmp</span>::<span class="ident">mpz_t</span>;
-<span class="kw">type</span> <span class="ident">mpq_srcptr</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">gmp</span>::<span class="ident">mpq_t</span>;
-<span class="kw">type</span> <span class="ident">mpf_srcptr</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">gmp</span>::<span class="ident">mpf_t</span>;
-<span class="kw">type</span> <span class="ident">randstate_ptr</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">gmp</span>::<span class="ident">randstate_t</span>;
-<span class="kw">type</span> <span class="ident">mpfr_srcptr</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">mpfr</span>::<span class="ident">mpfr_t</span>;
-<span class="kw">type</span> <span class="ident">mpfr_ptr</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">mpfr</span>::<span class="ident">mpfr_t</span>;
+<span class="kw">type</span> <span class="ident">mpz_srcptr</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">mpz_t</span>;
+<span class="kw">type</span> <span class="ident">mpq_srcptr</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">mpq_t</span>;
+<span class="kw">type</span> <span class="ident">mpf_srcptr</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">mpf_t</span>;
+<span class="kw">type</span> <span class="ident">randstate_ptr</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">randstate_t</span>;
+<span class="kw">type</span> <span class="ident">mpfr_srcptr</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">mpfr_t</span>;
+<span class="kw">type</span> <span class="ident">mpfr_ptr</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">mpfr_t</span>;
 <span class="kw">type</span> <span class="ident">mpc_ptr</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">mpc_t</span>;
 <span class="kw">type</span> <span class="ident">mpc_srcptr</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">mpc_t</span>;
 
@@ -753,22 +759,22 @@ unsafe {
 
     <span class="doccomment">/// See: [`mpc_init2`](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpc/Complex-Functions.html#index-mpc_005finit2)</span>
     <span class="attribute">#[<span class="ident">link_name</span> <span class="op">=</span> <span class="string">&quot;mpc_init2&quot;</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">init2</span>(<span class="ident">z</span>: <span class="ident">mpc_ptr</span>, <span class="ident">prec</span>: <span class="ident">mpfr</span>::<span class="ident">prec_t</span>);
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">init2</span>(<span class="ident">z</span>: <span class="ident">mpc_ptr</span>, <span class="ident">prec</span>: <span class="ident">prec_t</span>);
     <span class="doccomment">/// See: [`mpc_init3`](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpc/Complex-Functions.html#index-mpc_005finit3)</span>
     <span class="attribute">#[<span class="ident">link_name</span> <span class="op">=</span> <span class="string">&quot;mpc_init3&quot;</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">init3</span>(<span class="ident">z</span>: <span class="ident">mpc_ptr</span>, <span class="ident">prec_r</span>: <span class="ident">mpfr</span>::<span class="ident">prec_t</span>, <span class="ident">prec_i</span>: <span class="ident">mpfr</span>::<span class="ident">prec_t</span>);
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">init3</span>(<span class="ident">z</span>: <span class="ident">mpc_ptr</span>, <span class="ident">prec_r</span>: <span class="ident">prec_t</span>, <span class="ident">prec_i</span>: <span class="ident">prec_t</span>);
     <span class="doccomment">/// See: [`mpc_clear`](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpc/Complex-Functions.html#index-mpc_005fclear)</span>
     <span class="attribute">#[<span class="ident">link_name</span> <span class="op">=</span> <span class="string">&quot;mpc_clear&quot;</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">clear</span>(<span class="ident">z</span>: <span class="ident">mpc_ptr</span>);
     <span class="doccomment">/// See: [`mpc_set_prec`](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpc/Complex-Functions.html#index-mpc_005fset_005fprec)</span>
     <span class="attribute">#[<span class="ident">link_name</span> <span class="op">=</span> <span class="string">&quot;mpc_set_prec&quot;</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_prec</span>(<span class="ident">x</span>: <span class="ident">mpc_ptr</span>, <span class="ident">prec</span>: <span class="ident">mpfr</span>::<span class="ident">prec_t</span>);
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_prec</span>(<span class="ident">x</span>: <span class="ident">mpc_ptr</span>, <span class="ident">prec</span>: <span class="ident">prec_t</span>);
     <span class="doccomment">/// See: [`mpc_get_prec`](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpc/Complex-Functions.html#index-mpc_005fget_005fprec)</span>
     <span class="attribute">#[<span class="ident">link_name</span> <span class="op">=</span> <span class="string">&quot;mpc_get_prec&quot;</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_prec</span>(<span class="ident">x</span>: <span class="ident">mpc_srcptr</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">mpfr</span>::<span class="ident">prec_t</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_prec</span>(<span class="ident">x</span>: <span class="ident">mpc_srcptr</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">prec_t</span>;
     <span class="doccomment">/// See: [`mpc_get_prec2`](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpc/Complex-Functions.html#index-mpc_005fget_005fprec2)</span>
     <span class="attribute">#[<span class="ident">link_name</span> <span class="op">=</span> <span class="string">&quot;mpc_get_prec2&quot;</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_prec2</span>(<span class="ident">pr</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">mpfr</span>::<span class="ident">prec_t</span>, <span class="ident">pi</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">mpfr</span>::<span class="ident">prec_t</span>, <span class="ident">x</span>: <span class="ident">mpc_srcptr</span>);
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_prec2</span>(<span class="ident">pr</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">prec_t</span>, <span class="ident">pi</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">prec_t</span>, <span class="ident">x</span>: <span class="ident">mpc_srcptr</span>);
 
     <span class="comment">// Assignment Functions</span>
 
@@ -897,10 +903,10 @@ unsafe {
     <span class="comment">// Projection and Decomposing Functions</span>
     <span class="doccomment">/// See: [`mpc_real`](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpc/Complex-Functions.html#index-mpc_005freal)</span>
     <span class="attribute">#[<span class="ident">link_name</span> <span class="op">=</span> <span class="string">&quot;mpc_real&quot;</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">real</span>(<span class="ident">rop</span>: <span class="ident">mpfr_ptr</span>, <span class="ident">arg2</span>: <span class="ident">mpc_srcptr</span>, <span class="ident">rnd</span>: <span class="ident">mpfr</span>::<span class="ident">rnd_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">c_int</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">real</span>(<span class="ident">rop</span>: <span class="ident">mpfr_ptr</span>, <span class="ident">arg2</span>: <span class="ident">mpc_srcptr</span>, <span class="ident">rnd</span>: <span class="ident">mpfr_rnd_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">c_int</span>;
     <span class="doccomment">/// See: [`mpc_imag`](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpc/Complex-Functions.html#index-mpc_005fimag)</span>
     <span class="attribute">#[<span class="ident">link_name</span> <span class="op">=</span> <span class="string">&quot;mpc_imag&quot;</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">imag</span>(<span class="ident">rop</span>: <span class="ident">mpfr_ptr</span>, <span class="ident">arg2</span>: <span class="ident">mpc_srcptr</span>, <span class="ident">rnd</span>: <span class="ident">mpfr</span>::<span class="ident">rnd_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">c_int</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">imag</span>(<span class="ident">rop</span>: <span class="ident">mpfr_ptr</span>, <span class="ident">arg2</span>: <span class="ident">mpc_srcptr</span>, <span class="ident">rnd</span>: <span class="ident">mpfr_rnd_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">c_int</span>;
 }
 <span class="doccomment">/// See: [`mpc_realref`](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpc/Complex-Functions.html#index-mpc_005frealref)</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>
@@ -925,7 +931,7 @@ unsafe {
 <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> {
     <span class="doccomment">/// See: [`mpc_arg`](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpc/Complex-Functions.html#index-mpc_005farg)</span>
     <span class="attribute">#[<span class="ident">link_name</span> <span class="op">=</span> <span class="string">&quot;mpc_arg&quot;</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">arg</span>(<span class="ident">rop</span>: <span class="ident">mpfr_ptr</span>, <span class="ident">op</span>: <span class="ident">mpc_srcptr</span>, <span class="ident">rnd</span>: <span class="ident">mpfr</span>::<span class="ident">rnd_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">c_int</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">arg</span>(<span class="ident">rop</span>: <span class="ident">mpfr_ptr</span>, <span class="ident">op</span>: <span class="ident">mpc_srcptr</span>, <span class="ident">rnd</span>: <span class="ident">mpfr_rnd_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">c_int</span>;
     <span class="doccomment">/// See: [`mpc_proj`](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpc/Complex-Functions.html#index-mpc_005fproj)</span>
     <span class="attribute">#[<span class="ident">link_name</span> <span class="op">=</span> <span class="string">&quot;mpc_proj&quot;</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">proj</span>(<span class="ident">rop</span>: <span class="ident">mpc_ptr</span>, <span class="ident">arg2</span>: <span class="ident">mpc_srcptr</span>, <span class="ident">rnd</span>: <span class="ident">rnd_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">c_int</span>;
@@ -1019,10 +1025,10 @@ unsafe {
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">conj</span>(<span class="ident">rop</span>: <span class="ident">mpc_ptr</span>, <span class="ident">op</span>: <span class="ident">mpc_srcptr</span>, <span class="ident">rnd</span>: <span class="ident">rnd_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">c_int</span>;
     <span class="doccomment">/// See: [`mpc_abs`](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpc/Complex-Functions.html#index-mpc_005fabs)</span>
     <span class="attribute">#[<span class="ident">link_name</span> <span class="op">=</span> <span class="string">&quot;mpc_abs&quot;</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">abs</span>(<span class="ident">rop</span>: <span class="ident">mpfr_ptr</span>, <span class="ident">op</span>: <span class="ident">mpc_srcptr</span>, <span class="ident">rnd</span>: <span class="ident">mpfr</span>::<span class="ident">rnd_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">c_int</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">abs</span>(<span class="ident">rop</span>: <span class="ident">mpfr_ptr</span>, <span class="ident">op</span>: <span class="ident">mpc_srcptr</span>, <span class="ident">rnd</span>: <span class="ident">mpfr_rnd_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">c_int</span>;
     <span class="doccomment">/// See: [`mpc_norm`](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpc/Complex-Functions.html#index-mpc_005fnorm)</span>
     <span class="attribute">#[<span class="ident">link_name</span> <span class="op">=</span> <span class="string">&quot;mpc_norm&quot;</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">norm</span>(<span class="ident">rop</span>: <span class="ident">mpfr_ptr</span>, <span class="ident">op</span>: <span class="ident">mpc_srcptr</span>, <span class="ident">rnd</span>: <span class="ident">mpfr</span>::<span class="ident">rnd_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">c_int</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">norm</span>(<span class="ident">rop</span>: <span class="ident">mpfr_ptr</span>, <span class="ident">op</span>: <span class="ident">mpc_srcptr</span>, <span class="ident">rnd</span>: <span class="ident">mpfr_rnd_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">c_int</span>;
     <span class="doccomment">/// See: [`mpc_mul_2ui`](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpc/Complex-Functions.html#index-mpc_005fmul_005f2ui)</span>
     <span class="attribute">#[<span class="ident">link_name</span> <span class="op">=</span> <span class="string">&quot;mpc_mul_2ui&quot;</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">mul_2ui</span>(<span class="ident">rop</span>: <span class="ident">mpc_ptr</span>, <span class="ident">op1</span>: <span class="ident">mpc_srcptr</span>, <span class="ident">op2</span>: <span class="ident">c_ulong</span>, <span class="ident">rnd</span>: <span class="ident">rnd_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">c_int</span>;

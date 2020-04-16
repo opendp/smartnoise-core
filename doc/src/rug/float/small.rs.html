@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/rug-1.7.0/src/float/small.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>small.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../rug/index.html'><div class='logo-container'><img src='https://tspiteri.gitlab.io/gmp-mpfr-sys/rug.svg' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/rug-1.8.0/src/float/small.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>small.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../rug/index.html'><div class='logo-container'><img src='https://tspiteri.gitlab.io/gmp-mpfr-sys/rug.svg' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -441,6 +441,58 @@
 <span id="441">441</span>
 <span id="442">442</span>
 <span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
+<span id="447">447</span>
+<span id="448">448</span>
+<span id="449">449</span>
+<span id="450">450</span>
+<span id="451">451</span>
+<span id="452">452</span>
+<span id="453">453</span>
+<span id="454">454</span>
+<span id="455">455</span>
+<span id="456">456</span>
+<span id="457">457</span>
+<span id="458">458</span>
+<span id="459">459</span>
+<span id="460">460</span>
+<span id="461">461</span>
+<span id="462">462</span>
+<span id="463">463</span>
+<span id="464">464</span>
+<span id="465">465</span>
+<span id="466">466</span>
+<span id="467">467</span>
+<span id="468">468</span>
+<span id="469">469</span>
+<span id="470">470</span>
+<span id="471">471</span>
+<span id="472">472</span>
+<span id="473">473</span>
+<span id="474">474</span>
+<span id="475">475</span>
+<span id="476">476</span>
+<span id="477">477</span>
+<span id="478">478</span>
+<span id="479">479</span>
+<span id="480">480</span>
+<span id="481">481</span>
+<span id="482">482</span>
+<span id="483">483</span>
+<span id="484">484</span>
+<span id="485">485</span>
+<span id="486">486</span>
+<span id="487">487</span>
+<span id="488">488</span>
+<span id="489">489</span>
+<span id="490">490</span>
+<span id="491">491</span>
+<span id="492">492</span>
+<span id="493">493</span>
+<span id="494">494</span>
+<span id="495">495</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Copyright © 2016–2020 University of Malta</span>
 
@@ -460,7 +512,7 @@
 
 <span class="kw">use</span> <span class="kw">crate</span>::{
     <span class="ident">ext</span>::<span class="ident">xmpfr</span>::{<span class="self">self</span>, <span class="ident">raw_round</span>},
-    <span class="ident">float</span>::<span class="ident">Round</span>,
+    <span class="ident">float</span>::{<span class="self">self</span>, <span class="ident">Round</span>, <span class="ident">Special</span>},
     <span class="ident">misc</span>::{<span class="ident">AsOrPanic</span>, <span class="ident">NegAbs</span>},
     <span class="ident">Assign</span>, <span class="ident">Float</span>,
 };
@@ -469,7 +521,7 @@
     <span class="ident">cell</span>::<span class="ident">UnsafeCell</span>,
     <span class="ident">mem</span>::{<span class="self">self</span>, <span class="ident">MaybeUninit</span>},
     <span class="ident">ops</span>::<span class="ident">Deref</span>,
-    <span class="ident">ptr</span>,
+    <span class="ident">ptr</span>::<span class="ident">NonNull</span>,
 };
 <span class="kw">use</span> <span class="ident">gmp_mpfr_sys</span>::{
     <span class="ident">gmp</span>::{<span class="self">self</span>, <span class="ident">limb_t</span>},
@@ -498,6 +550,8 @@ according to the type of the primitive used to set its value.
     precision, depending on the platform.
   * [`f32`]: the `SmallFloat` will have 24 bits of precision.
   * [`f64`]: the `SmallFloat` will have 53 bits of precision.
+  * [`Special`]: the `SmallFloat` will have the
+    [minimum possible precision][`prec_min`].
 
 The `SmallFloat` type can be coerced to a [`Float`], as it implements
 &lt;code&gt;[Deref]&amp;lt;[Target] = [Float][`Float`]&amp;gt;&lt;/code&gt;.
@@ -520,6 +574,7 @@ assert_eq!(a, -15000);
 [Deref]: https://doc.rust-lang.org/nightly/core/ops/trait.Deref.html
 [Target]: https://doc.rust-lang.org/nightly/core/ops/trait.Deref.html#associatedtype.Target
 [`Float`]: ../struct.Float.html
+[`Special`]: enum.Special.html
 [`f32`]: https://doc.rust-lang.org/nightly/std/primitive.f32.html
 [`f64`]: https://doc.rust-lang.org/nightly/std/primitive.f64.html
 [`i128`]: https://doc.rust-lang.org/nightly/std/primitive.i128.html
@@ -528,6 +583,7 @@ assert_eq!(a, -15000);
 [`i64`]: https://doc.rust-lang.org/nightly/std/primitive.i64.html
 [`i8`]: https://doc.rust-lang.org/nightly/std/primitive.i8.html
 [`isize`]: https://doc.rust-lang.org/nightly/std/primitive.isize.html
+[`prec_min`]: fn.prec_min.html
 [`u128`]: https://doc.rust-lang.org/nightly/std/primitive.u128.html
 [`u16`]: https://doc.rust-lang.org/nightly/std/primitive.u16.html
 [`u32`]: https://doc.rust-lang.org/nightly/std/primitive.u32.html
@@ -546,30 +602,60 @@ assert_eq!(a, -15000);
     <span class="kw">pub</span> <span class="ident">prec</span>: <span class="ident">prec_t</span>,
     <span class="kw">pub</span> <span class="ident">sign</span>: <span class="ident">c_int</span>,
     <span class="kw">pub</span> <span class="ident">exp</span>: <span class="ident">exp_t</span>,
-    <span class="kw">pub</span> <span class="ident">d</span>: <span class="ident">UnsafeCell</span><span class="op">&lt;</span><span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">limb_t</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">d</span>: <span class="ident">UnsafeCell</span><span class="op">&lt;</span><span class="ident">NonNull</span><span class="op">&lt;</span><span class="ident">limb_t</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 }
 
-<span class="macro">static_assert</span><span class="macro">!</span>(<span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">Limbs</span><span class="op">&gt;</span>() <span class="op">=</span><span class="op">=</span> <span class="number">16</span>);
-<span class="macro">static_assert_same_layout</span><span class="macro">!</span>(<span class="ident">Mpfr</span>, <span class="ident">mpfr_t</span>);
-
-<span class="comment">// Mpfr is only used inside SmallFloat and SmallComplex. The d field</span>
-<span class="comment">// does not need to be copied from self. SmallComplex::clone is</span>
-<span class="comment">// responsible to keep real and imag parts ordered.</span>
 <span class="kw">impl</span> <span class="ident">Clone</span> <span class="kw">for</span> <span class="ident">Mpfr</span> {
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Mpfr</span> {
         <span class="ident">Mpfr</span> {
             <span class="ident">prec</span>: <span class="self">self</span>.<span class="ident">prec</span>,
             <span class="ident">sign</span>: <span class="self">self</span>.<span class="ident">sign</span>,
             <span class="ident">exp</span>: <span class="self">self</span>.<span class="ident">exp</span>,
-            <span class="ident">d</span>: <span class="ident">UnsafeCell</span>::<span class="ident">new</span>(<span class="ident">ptr</span>::<span class="ident">null_mut</span>()),
+            <span class="ident">d</span>: <span class="ident">UnsafeCell</span>::<span class="ident">new</span>(<span class="kw">unsafe</span> { <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">d</span>.<span class="ident">get</span>() }),
         }
     }
 }
 
+<span class="macro">static_assert</span><span class="macro">!</span>(<span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">Limbs</span><span class="op">&gt;</span>() <span class="op">=</span><span class="op">=</span> <span class="number">16</span>);
+<span class="macro">static_assert_same_layout</span><span class="macro">!</span>(<span class="ident">Mpfr</span>, <span class="ident">mpfr_t</span>);
+
 <span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">Send</span> <span class="kw">for</span> <span class="ident">SmallFloat</span> {}
 
+<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">SmallFloat</span> {
+    <span class="attribute">#[<span class="ident">inline</span>]</span>
+    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+        <span class="ident">SmallFloat</span>::<span class="ident">new</span>()
+    }
+}
+
 <span class="kw">impl</span> <span class="ident">SmallFloat</span> {
+    <span class="doccomment">/// Creates a [`SmallFloat`] with value 0 and the</span>
+    <span class="doccomment">/// [minimum possible precision][`prec_min`].</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Examples</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```rust</span>
+    <span class="doccomment">/// use rug::float::SmallFloat;</span>
+    <span class="doccomment">/// let f = SmallFloat::new();</span>
+    <span class="doccomment">/// // Borrow f as if it were Float.</span>
+    <span class="doccomment">/// assert_eq!(*f, 0);</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [`SmallFloat`]: struct.SmallFloat.html</span>
+    <span class="doccomment">/// [`prec_min`]: fn.prec_min.html</span>
+    <span class="attribute">#[<span class="ident">inline</span>]</span>
+    <span class="kw">pub</span> <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+        <span class="ident">SmallFloat</span> {
+            <span class="ident">inner</span>: <span class="ident">Mpfr</span> {
+                <span class="ident">prec</span>: <span class="ident">float</span>::<span class="ident">prec_min</span>() <span class="kw">as</span> <span class="ident">prec_t</span>,
+                <span class="ident">sign</span>: <span class="number">1</span>,
+                <span class="ident">exp</span>: <span class="ident">xmpfr</span>::<span class="ident">EXP_ZERO</span>,
+                <span class="ident">d</span>: <span class="ident">UnsafeCell</span>::<span class="ident">new</span>(<span class="ident">NonNull</span>::<span class="ident">dangling</span>()),
+            },
+            <span class="ident">limbs</span>: <span class="macro">small_limbs</span><span class="macro">!</span>[],
+        }
+    }
+
     <span class="doccomment">/// Returns a mutable reference to a [`Float`] for simple</span>
     <span class="doccomment">/// operations that do not need to change the precision of the</span>
     <span class="doccomment">/// number.</span>
@@ -604,9 +690,9 @@ assert_eq!(a, -15000);
     <span class="kw">fn</span> <span class="ident">update_d</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) {
         <span class="comment">// Since this is borrowed, the limb won&#39;t move around, and we</span>
         <span class="comment">// can set the d field.</span>
-        <span class="kw">let</span> <span class="ident">d</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">limbs</span>[<span class="number">0</span>].<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">limb_t</span>;
+        <span class="kw">let</span> <span class="ident">d</span> <span class="op">=</span> <span class="ident">NonNull</span>::<span class="op">&lt;</span>[<span class="ident">MaybeUninit</span><span class="op">&lt;</span><span class="ident">limb_t</span><span class="op">&gt;</span>]<span class="op">&gt;</span>::<span class="ident">from</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">limbs</span>[..]);
         <span class="kw">unsafe</span> {
-            <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">d</span>.<span class="ident">get</span>() <span class="op">=</span> <span class="ident">d</span>;
+            <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">d</span>.<span class="ident">get</span>() <span class="op">=</span> <span class="ident">d</span>.<span class="ident">cast</span>();
         }
     }
 }
@@ -677,7 +763,7 @@ assert_eq!(a, -15000);
             <span class="attribute">#[<span class="ident">inline</span>]</span>
             <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">copy</span>(<span class="self">self</span>, <span class="ident">inner</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">Mpfr</span>, <span class="ident">limbs</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Limbs</span>) {
                 <span class="kw">let</span> <span class="ident">ptr</span> <span class="op">=</span> <span class="macro">cast_ptr_mut</span><span class="macro">!</span>(<span class="ident">inner</span>, <span class="ident">mpfr_t</span>);
-                <span class="kw">let</span> <span class="ident">limbs_ptr</span> <span class="op">=</span> <span class="ident">limbs</span>[<span class="number">0</span>].<span class="ident">as_mut_ptr</span>();
+                <span class="kw">let</span> <span class="ident">limbs_ptr</span> <span class="op">=</span> <span class="macro">cast_ptr_mut</span><span class="macro">!</span>(<span class="ident">limbs</span>.<span class="ident">as_mut_ptr</span>(), <span class="ident">limb_t</span>);
                 <span class="kw">if</span> <span class="self">self</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
                     <span class="ident">xmpfr</span>::<span class="ident">custom_zero</span>(<span class="ident">ptr</span>, <span class="ident">limbs_ptr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">bits</span>);
                 } <span class="kw">else</span> {
@@ -703,7 +789,7 @@ assert_eq!(a, -15000);
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">copy</span>(<span class="self">self</span>, <span class="ident">inner</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">Mpfr</span>, <span class="ident">limbs</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Limbs</span>) {
         <span class="kw">let</span> <span class="ident">ptr</span> <span class="op">=</span> <span class="macro">cast_ptr_mut</span><span class="macro">!</span>(<span class="ident">inner</span>, <span class="ident">mpfr_t</span>);
-        <span class="kw">let</span> <span class="ident">limbs_ptr</span> <span class="op">=</span> <span class="ident">limbs</span>[<span class="number">0</span>].<span class="ident">as_mut_ptr</span>();
+        <span class="kw">let</span> <span class="ident">limbs_ptr</span> <span class="op">=</span> <span class="macro">cast_ptr_mut</span><span class="macro">!</span>(<span class="ident">limbs</span>.<span class="ident">as_mut_ptr</span>(), <span class="ident">limb_t</span>);
         <span class="kw">if</span> <span class="self">self</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
             <span class="ident">xmpfr</span>::<span class="ident">custom_zero</span>(<span class="ident">ptr</span>, <span class="ident">limbs_ptr</span>, <span class="number">64</span>);
         } <span class="kw">else</span> {
@@ -728,7 +814,7 @@ assert_eq!(a, -15000);
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">copy</span>(<span class="self">self</span>, <span class="ident">inner</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">Mpfr</span>, <span class="ident">limbs</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Limbs</span>) {
         <span class="kw">let</span> <span class="ident">ptr</span> <span class="op">=</span> <span class="macro">cast_ptr_mut</span><span class="macro">!</span>(<span class="ident">inner</span>, <span class="ident">mpfr_t</span>);
-        <span class="kw">let</span> <span class="ident">limbs_ptr</span> <span class="op">=</span> <span class="ident">limbs</span>[<span class="number">0</span>].<span class="ident">as_mut_ptr</span>();
+        <span class="kw">let</span> <span class="ident">limbs_ptr</span> <span class="op">=</span> <span class="macro">cast_ptr_mut</span><span class="macro">!</span>(<span class="ident">limbs</span>.<span class="ident">as_mut_ptr</span>(), <span class="ident">limb_t</span>);
         <span class="kw">if</span> <span class="self">self</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
             <span class="ident">xmpfr</span>::<span class="ident">custom_zero</span>(<span class="ident">ptr</span>, <span class="ident">limbs_ptr</span>, <span class="number">128</span>);
         } <span class="kw">else</span> {
@@ -771,7 +857,7 @@ assert_eq!(a, -15000);
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">copy</span>(<span class="self">self</span>, <span class="ident">inner</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">Mpfr</span>, <span class="ident">limbs</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Limbs</span>) {
         <span class="kw">let</span> <span class="ident">ptr</span> <span class="op">=</span> <span class="macro">cast_ptr_mut</span><span class="macro">!</span>(<span class="ident">inner</span>, <span class="ident">mpfr_t</span>);
-        <span class="kw">let</span> <span class="ident">limbs_ptr</span> <span class="op">=</span> <span class="ident">limbs</span>[<span class="number">0</span>].<span class="ident">as_mut_ptr</span>();
+        <span class="kw">let</span> <span class="ident">limbs_ptr</span> <span class="op">=</span> <span class="macro">cast_ptr_mut</span><span class="macro">!</span>(<span class="ident">limbs</span>.<span class="ident">as_mut_ptr</span>(), <span class="ident">limb_t</span>);
         <span class="ident">xmpfr</span>::<span class="ident">custom_zero</span>(<span class="ident">ptr</span>, <span class="ident">limbs_ptr</span>, <span class="number">24</span>);
         <span class="ident">mpfr</span>::<span class="ident">set_d</span>(<span class="ident">ptr</span>, <span class="self">self</span>.<span class="ident">into</span>(), <span class="ident">raw_round</span>(<span class="ident">Round</span>::<span class="ident">Nearest</span>));
         <span class="comment">// retain sign in case of NaN</span>
@@ -786,13 +872,23 @@ assert_eq!(a, -15000);
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">copy</span>(<span class="self">self</span>, <span class="ident">inner</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">Mpfr</span>, <span class="ident">limbs</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Limbs</span>) {
         <span class="kw">let</span> <span class="ident">ptr</span> <span class="op">=</span> <span class="macro">cast_ptr_mut</span><span class="macro">!</span>(<span class="ident">inner</span>, <span class="ident">mpfr_t</span>);
-        <span class="kw">let</span> <span class="ident">limbs_ptr</span> <span class="op">=</span> <span class="ident">limbs</span>[<span class="number">0</span>].<span class="ident">as_mut_ptr</span>();
+        <span class="kw">let</span> <span class="ident">limbs_ptr</span> <span class="op">=</span> <span class="macro">cast_ptr_mut</span><span class="macro">!</span>(<span class="ident">limbs</span>.<span class="ident">as_mut_ptr</span>(), <span class="ident">limb_t</span>);
         <span class="ident">xmpfr</span>::<span class="ident">custom_zero</span>(<span class="ident">ptr</span>, <span class="ident">limbs_ptr</span>, <span class="number">53</span>);
         <span class="ident">mpfr</span>::<span class="ident">set_d</span>(<span class="ident">ptr</span>, <span class="self">self</span>, <span class="ident">raw_round</span>(<span class="ident">Round</span>::<span class="ident">Nearest</span>));
         <span class="comment">// retain sign in case of NaN</span>
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_sign_negative</span>() {
             (<span class="kw-2">*</span><span class="ident">inner</span>).<span class="ident">sign</span> <span class="op">=</span> <span class="op">-</span><span class="number">1</span>;
         }
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">ToSmall</span> <span class="kw">for</span> <span class="ident">Special</span> {}
+<span class="kw">impl</span> <span class="ident">SealedToSmall</span> <span class="kw">for</span> <span class="ident">Special</span> {
+    <span class="attribute">#[<span class="ident">inline</span>]</span>
+    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">copy</span>(<span class="self">self</span>, <span class="ident">inner</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">Mpfr</span>, <span class="ident">limbs</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Limbs</span>) {
+        <span class="kw">let</span> <span class="ident">ptr</span> <span class="op">=</span> <span class="macro">cast_ptr_mut</span><span class="macro">!</span>(<span class="ident">inner</span>, <span class="ident">mpfr_t</span>);
+        <span class="kw">let</span> <span class="ident">limbs_ptr</span> <span class="op">=</span> <span class="macro">cast_ptr_mut</span><span class="macro">!</span>(<span class="ident">limbs</span>.<span class="ident">as_mut_ptr</span>(), <span class="ident">limb_t</span>);
+        <span class="ident">xmpfr</span>::<span class="ident">custom_special</span>(<span class="ident">ptr</span>, <span class="ident">limbs_ptr</span>, <span class="self">self</span>, <span class="ident">float</span>::<span class="ident">prec_min</span>().<span class="ident">az</span>());
     }
 }
 
@@ -808,19 +904,17 @@ assert_eq!(a, -15000);
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">ToSmall</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">SmallFloat</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">src</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dst</span> <span class="op">=</span> <span class="ident">SmallFloat</span> {
-            <span class="ident">inner</span>: <span class="ident">Mpfr</span> {
-                <span class="ident">prec</span>: <span class="number">0</span>,
-                <span class="ident">sign</span>: <span class="number">0</span>,
-                <span class="ident">exp</span>: <span class="number">0</span>,
-                <span class="ident">d</span>: <span class="ident">UnsafeCell</span>::<span class="ident">new</span>(<span class="ident">ptr</span>::<span class="ident">null_mut</span>()),
-            },
-            <span class="ident">limbs</span>: <span class="macro">small_limbs</span><span class="macro">!</span>[],
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">inner</span> <span class="op">=</span> <span class="ident">Mpfr</span> {
+            <span class="ident">prec</span>: <span class="number">0</span>,
+            <span class="ident">sign</span>: <span class="number">0</span>,
+            <span class="ident">exp</span>: <span class="number">0</span>,
+            <span class="ident">d</span>: <span class="ident">UnsafeCell</span>::<span class="ident">new</span>(<span class="ident">NonNull</span>::<span class="ident">dangling</span>()),
         };
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">limbs</span> <span class="op">=</span> <span class="macro">small_limbs</span><span class="macro">!</span>[];
         <span class="kw">unsafe</span> {
-            <span class="ident">src</span>.<span class="ident">copy</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">dst</span>.<span class="ident">inner</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">dst</span>.<span class="ident">limbs</span>);
+            <span class="ident">src</span>.<span class="ident">copy</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">inner</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">limbs</span>);
         }
-        <span class="ident">dst</span>
+        <span class="ident">SmallFloat</span> { <span class="ident">inner</span>, <span class="ident">limbs</span> }
     }
 }
 
@@ -842,7 +936,7 @@ assert_eq!(a, -15000);
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy</span>::<span class="ident">float_cmp</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
     <span class="kw">use</span> <span class="kw">crate</span>::{
-        <span class="ident">float</span>::{<span class="self">self</span>, <span class="ident">FreeCache</span>, <span class="ident">SmallFloat</span>},
+        <span class="ident">float</span>::{<span class="self">self</span>, <span class="ident">FreeCache</span>, <span class="ident">SmallFloat</span>, <span class="ident">Special</span>},
         <span class="ident">Assign</span>,
     };
 
@@ -881,6 +975,16 @@ assert_eq!(a, -15000);
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">f</span>, <span class="op">-</span><span class="number">6</span>);
         <span class="ident">f</span>.<span class="ident">assign</span>(<span class="number">0u32</span>);
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">f</span>, <span class="number">0</span>);
+        <span class="ident">f</span>.<span class="ident">assign</span>(<span class="ident">Special</span>::<span class="ident">Infinity</span>);
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">f</span>.<span class="ident">is_infinite</span>() <span class="kw-2">&amp;</span><span class="op">&amp;</span> <span class="ident">f</span>.<span class="ident">is_sign_positive</span>());
+        <span class="ident">f</span>.<span class="ident">assign</span>(<span class="ident">Special</span>::<span class="ident">NegZero</span>);
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">f</span>.<span class="ident">is_zero</span>() <span class="kw-2">&amp;</span><span class="op">&amp;</span> <span class="ident">f</span>.<span class="ident">is_sign_negative</span>());
+        <span class="ident">f</span>.<span class="ident">assign</span>(<span class="ident">Special</span>::<span class="ident">NegInfinity</span>);
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">f</span>.<span class="ident">is_infinite</span>() <span class="kw-2">&amp;</span><span class="op">&amp;</span> <span class="ident">f</span>.<span class="ident">is_sign_negative</span>());
+        <span class="ident">f</span>.<span class="ident">assign</span>(<span class="ident">Special</span>::<span class="ident">Zero</span>);
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">f</span>.<span class="ident">is_zero</span>() <span class="kw-2">&amp;</span><span class="op">&amp;</span> <span class="ident">f</span>.<span class="ident">is_sign_positive</span>());
+        <span class="ident">f</span>.<span class="ident">assign</span>(<span class="ident">Special</span>::<span class="ident">Nan</span>);
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">f</span>.<span class="ident">is_nan</span>());
 
         <span class="ident">float</span>::<span class="ident">free_cache</span>(<span class="ident">FreeCache</span>::<span class="ident">All</span>);
     }

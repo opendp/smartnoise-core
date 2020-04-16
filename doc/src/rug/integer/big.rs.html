@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/rug-1.7.0/src/integer/big.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>big.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../rug/index.html'><div class='logo-container'><img src='https://tspiteri.gitlab.io/gmp-mpfr-sys/rug.svg' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/rug-1.8.0/src/integer/big.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>big.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../rug/index.html'><div class='logo-container'><img src='https://tspiteri.gitlab.io/gmp-mpfr-sys/rug.svg' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -6290,6 +6290,86 @@
 <span id="6290">6290</span>
 <span id="6291">6291</span>
 <span id="6292">6292</span>
+<span id="6293">6293</span>
+<span id="6294">6294</span>
+<span id="6295">6295</span>
+<span id="6296">6296</span>
+<span id="6297">6297</span>
+<span id="6298">6298</span>
+<span id="6299">6299</span>
+<span id="6300">6300</span>
+<span id="6301">6301</span>
+<span id="6302">6302</span>
+<span id="6303">6303</span>
+<span id="6304">6304</span>
+<span id="6305">6305</span>
+<span id="6306">6306</span>
+<span id="6307">6307</span>
+<span id="6308">6308</span>
+<span id="6309">6309</span>
+<span id="6310">6310</span>
+<span id="6311">6311</span>
+<span id="6312">6312</span>
+<span id="6313">6313</span>
+<span id="6314">6314</span>
+<span id="6315">6315</span>
+<span id="6316">6316</span>
+<span id="6317">6317</span>
+<span id="6318">6318</span>
+<span id="6319">6319</span>
+<span id="6320">6320</span>
+<span id="6321">6321</span>
+<span id="6322">6322</span>
+<span id="6323">6323</span>
+<span id="6324">6324</span>
+<span id="6325">6325</span>
+<span id="6326">6326</span>
+<span id="6327">6327</span>
+<span id="6328">6328</span>
+<span id="6329">6329</span>
+<span id="6330">6330</span>
+<span id="6331">6331</span>
+<span id="6332">6332</span>
+<span id="6333">6333</span>
+<span id="6334">6334</span>
+<span id="6335">6335</span>
+<span id="6336">6336</span>
+<span id="6337">6337</span>
+<span id="6338">6338</span>
+<span id="6339">6339</span>
+<span id="6340">6340</span>
+<span id="6341">6341</span>
+<span id="6342">6342</span>
+<span id="6343">6343</span>
+<span id="6344">6344</span>
+<span id="6345">6345</span>
+<span id="6346">6346</span>
+<span id="6347">6347</span>
+<span id="6348">6348</span>
+<span id="6349">6349</span>
+<span id="6350">6350</span>
+<span id="6351">6351</span>
+<span id="6352">6352</span>
+<span id="6353">6353</span>
+<span id="6354">6354</span>
+<span id="6355">6355</span>
+<span id="6356">6356</span>
+<span id="6357">6357</span>
+<span id="6358">6358</span>
+<span id="6359">6359</span>
+<span id="6360">6360</span>
+<span id="6361">6361</span>
+<span id="6362">6362</span>
+<span id="6363">6363</span>
+<span id="6364">6364</span>
+<span id="6365">6365</span>
+<span id="6366">6366</span>
+<span id="6367">6367</span>
+<span id="6368">6368</span>
+<span id="6369">6369</span>
+<span id="6370">6370</span>
+<span id="6371">6371</span>
+<span id="6372">6372</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Copyright © 2016–2020 University of Malta</span>
 
@@ -6328,6 +6408,8 @@
 <span class="kw">use</span> <span class="ident">gmp_mpfr_sys</span>::<span class="ident">gmp</span>::{<span class="self">self</span>, <span class="ident">limb_t</span>, <span class="ident">mpz_t</span>};
 <span class="kw">use</span> <span class="ident">libc</span>::{<span class="ident">c_char</span>, <span class="ident">c_int</span>, <span class="ident">c_long</span>, <span class="ident">c_void</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">error</span>::<span class="ident">Error</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rational&quot;</span>)]</span>
+<span class="kw">use</span> {<span class="kw">crate</span>::<span class="ident">rational</span>::<span class="ident">big</span>::<span class="ident">BorrowRational</span>, <span class="ident">gmp_mpfr_sys</span>::<span class="ident">gmp</span>::<span class="ident">mpq_t</span>};
 
 <span class="doccomment">/**
 An arbitrary-precision integer.
@@ -6520,11 +6602,9 @@ assert_eq!(c, -17);
     <span class="doccomment">///</span>
     <span class="doccomment">/// [`Integer`]: struct.Integer.html</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="kw">unsafe</span> {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dst</span> <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">uninit</span>();
-            <span class="ident">xmpz</span>::<span class="ident">init</span>(<span class="ident">dst</span>.<span class="ident">as_mut_ptr</span>());
-            <span class="ident">dst</span>.<span class="ident">assume_init</span>()
+    <span class="kw">pub</span> <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+        <span class="ident">Integer</span> {
+            <span class="ident">inner</span>: <span class="ident">xmpz</span>::<span class="ident">owned_init</span>(),
         }
     }
 
@@ -6666,6 +6746,12 @@ assert_eq!(c, -17);
     <span class="doccomment">/// [`Integer`]: struct.Integer.html</span>
     <span class="doccomment">/// [`mpz_t`]: https://docs.rs/gmp-mpfr-sys/~1.2/gmp_mpfr_sys/gmp/struct.mpz_t.html</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
+    <span class="comment">// Making from_raw const is dangerous. Let&#39;s say we have a const</span>
+    <span class="comment">// mpz_t which points to limbs stored in static memory. If we use</span>
+    <span class="comment">// a const from_raw, we could have a const Integer which points to</span>
+    <span class="comment">// limbs stored in static memory. This constant can then be</span>
+    <span class="comment">// dropped in safe but not sound code, which is UB as it frees</span>
+    <span class="comment">// static memory.</span>
     <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">from_raw</span>(<span class="ident">raw</span>: <span class="ident">mpz_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">Integer</span> { <span class="ident">inner</span>: <span class="ident">raw</span> }
     }
@@ -6692,9 +6778,9 @@ assert_eq!(c, -17);
     <span class="doccomment">/// [`Integer`]: struct.Integer.html</span>
     <span class="doccomment">/// [`mpz_t`]: https://docs.rs/gmp-mpfr-sys/~1.2/gmp_mpfr_sys/gmp/struct.mpz_t.html</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_raw</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">mpz_t</span> {
+    <span class="kw">pub</span> <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">into_raw</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">mpz_t</span> {
         <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">inner</span>;
-        <span class="ident">mem</span>::<span class="ident">forget</span>(<span class="self">self</span>);
+        <span class="ident">ManuallyDrop</span>::<span class="ident">new</span>(<span class="self">self</span>);
         <span class="ident">ret</span>
     }
 
@@ -6720,7 +6806,7 @@ assert_eq!(c, -17);
     <span class="doccomment">///</span>
     <span class="doccomment">/// [`mpz_t`]: https://docs.rs/gmp-mpfr-sys/~1.2/gmp_mpfr_sys/gmp/struct.mpz_t.html</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_raw</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">mpz_t</span> {
+    <span class="kw">pub</span> <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">as_raw</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">mpz_t</span> {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">inner</span>
     }
 
@@ -6881,6 +6967,19 @@ assert_eq!(c, -17);
     <span class="doccomment">/// `T`, where `T` can be any</span>
     <span class="doccomment">/// [unsigned integer primitive type][upt].</span>
     <span class="doccomment">///</span>
+    <span class="doccomment">/// The [`Integer`] type also implements</span>
+    <span class="doccomment">/// &lt;code&gt;[AsRef][`AsRef`]&amp;lt;[\[][slice][limb_t][`limb_t`][\]][slice]&amp;gt;&lt;/code&gt;,</span>
+    <span class="doccomment">/// which can be used to borrow the digits without copying them.</span>
+    <span class="doccomment">/// This does come with some disadvantages compared to</span>
+    <span class="doccomment">/// `to_digits`:</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">///  1. The digit width is not optional and depends on the</span>
+    <span class="doccomment">///     implementation: [`limb_t`] is typically [`u64`] on 64-bit</span>
+    <span class="doccomment">///     systems and [`u32`] on 32-bit systems.</span>
+    <span class="doccomment">///  2. The order is not optional and is least significant digit</span>
+    <span class="doccomment">///     first, with each digit in the target’s endianness,</span>
+    <span class="doccomment">///     equivalent to &lt;code&gt;[Order][`Order`]::[Lsf][`Lsf`]&lt;/code&gt;.</span>
+    <span class="doccomment">///</span>
     <span class="doccomment">/// # Examples</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// ```rust</span>
@@ -6894,7 +6993,33 @@ assert_eq!(c, -17);
     <span class="doccomment">/// assert!(digits_zero.is_empty());</span>
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
+    <span class="doccomment">/// &lt;code&gt;int.[as_ref][`as_ref`]()&lt;/code&gt; is like a borrowing</span>
+    <span class="doccomment">/// non-copy version of</span>
+    <span class="doccomment">/// &lt;code&gt;int.to_digits::&amp;lt;[limb_t][`limb_t`]&amp;gt;([Order][`Order`]::[Lsf][`Lsf`])&lt;/code&gt;.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```rust</span>
+    <span class="doccomment">/// use gmp_mpfr_sys::gmp::limb_t;</span>
+    <span class="doccomment">/// use rug::{integer::Order, Integer};</span>
+    <span class="doccomment">/// let int = Integer::from(0x1234_5678_9abc_def0u64);</span>
+    <span class="doccomment">/// // no copying for int_slice, which is borrowing int</span>
+    <span class="doccomment">/// let int_slice = int.as_ref();</span>
+    <span class="doccomment">/// // digits is a copy and does not borrow int</span>
+    <span class="doccomment">/// let digits = int.to_digits::&lt;limb_t&gt;(Order::Lsf);</span>
+    <span class="doccomment">/// // no copying for digits_slice, which is borrowing digits</span>
+    <span class="doccomment">/// let digits_slice = &amp;digits[..];</span>
+    <span class="doccomment">/// assert_eq!(int_slice, digits_slice);</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [`AsRef`]: https://doc.rust-lang.org/nightly/core/convert/trait.AsRef.html</span>
+    <span class="doccomment">/// [`Integer`]: struct.Integer.html</span>
+    <span class="doccomment">/// [`Lsf`]: integer/enum.Order.html#variant.Lsf</span>
+    <span class="doccomment">/// [`Order`]: integer/enum.Order.html</span>
     <span class="doccomment">/// [`Vec`]: https://doc.rust-lang.org/nightly/std/vec/struct.Vec.html</span>
+    <span class="doccomment">/// [`as_ref`]: https://doc.rust-lang.org/nightly/core/convert/trait.AsRef.html#tymethod.as_ref</span>
+    <span class="doccomment">/// [`limb_t`]: https://docs.rs/gmp-mpfr-sys/~1.2/gmp_mpfr_sys/gmp/type.limb_t.html</span>
+    <span class="doccomment">/// [`u32`]: https://doc.rust-lang.org/nightly/std/primitive.u32.html</span>
+    <span class="doccomment">/// [`u64`]: https://doc.rust-lang.org/nightly/std/primitive.u64.html</span>
+    <span class="doccomment">/// [slice]: https://doc.rust-lang.org/nightly/std/primitive.slice.html</span>
     <span class="doccomment">/// [upt]: integer/trait.UnsignedPrimitive.html</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_digits</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">UnsignedPrimitive</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">order</span>: <span class="ident">Order</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">digit_count</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">significant_digits</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>();
@@ -8055,6 +8180,41 @@ assert_eq!(c, -17);
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">inner</span>;
         <span class="ident">raw</span>.<span class="ident">size</span> <span class="op">=</span> <span class="ident">raw</span>.<span class="ident">size</span>.<span class="ident">checked_abs</span>().<span class="ident">expect</span>(<span class="string">&quot;overflow&quot;</span>);
         <span class="kw">unsafe</span> { <span class="ident">BorrowInteger</span>::<span class="ident">from_raw</span>(<span class="ident">raw</span>) }
+    }
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rational&quot;</span>)]</span>
+    <span class="doccomment">/// Borrows a copy of the [`Integer`] as a [`Rational`] number.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The returned object implements</span>
+    <span class="doccomment">/// &lt;code&gt;[Deref]&amp;lt;[Target] = [Rational][`Rational`]&amp;gt;&lt;/code&gt;.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Examples</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```rust</span>
+    <span class="doccomment">/// use rug::Integer;</span>
+    <span class="doccomment">/// let i = Integer::from(42);</span>
+    <span class="doccomment">/// let r = i.as_rational();</span>
+    <span class="doccomment">/// assert_eq!(*r, (42, 1));</span>
+    <span class="doccomment">/// // methods taking &amp;self can be used on the returned object</span>
+    <span class="doccomment">/// let recip_r = r.as_recip();</span>
+    <span class="doccomment">/// assert_eq!(*recip_r, (1, 42));</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [Deref]: https://doc.rust-lang.org/nightly/core/ops/trait.Deref.html</span>
+    <span class="doccomment">/// [Target]: https://doc.rust-lang.org/nightly/core/ops/trait.Deref.html#associatedtype.Target</span>
+    <span class="doccomment">/// [`Integer`]: struct.Integer.html</span>
+    <span class="doccomment">/// [`Rational`]: struct.Rational.html</span>
+    <span class="kw">pub</span> <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">as_rational</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">BorrowRational</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
+        <span class="kw">const</span> <span class="ident">ONE</span>: <span class="ident">limb_t</span> <span class="op">=</span> <span class="number">1</span>;
+        <span class="kw">let</span> <span class="ident">raw_rational</span> <span class="op">=</span> <span class="ident">mpq_t</span> {
+            <span class="ident">num</span>: <span class="self">self</span>.<span class="ident">inner</span>,
+            <span class="ident">den</span>: <span class="ident">mpz_t</span> {
+                <span class="ident">alloc</span>: <span class="number">1</span>,
+                <span class="ident">size</span>: <span class="number">1</span>,
+                <span class="ident">d</span>: <span class="kw-2">&amp;</span><span class="ident">ONE</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">limb_t</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">limb_t</span>,
+            },
+        };
+        <span class="kw">unsafe</span> { <span class="ident">BorrowRational</span>::<span class="ident">from_raw</span>(<span class="ident">raw_rational</span>) }
     }
 
     <span class="doccomment">/// Returns [`true`] if the number is even.</span>

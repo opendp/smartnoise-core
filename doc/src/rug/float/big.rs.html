@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/rug-1.7.0/src/float/big.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>big.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../rug/index.html'><div class='logo-container'><img src='https://tspiteri.gitlab.io/gmp-mpfr-sys/rug.svg' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/rug-1.8.0/src/float/big.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>big.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../rug/index.html'><div class='logo-container'><img src='https://tspiteri.gitlab.io/gmp-mpfr-sys/rug.svg' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -9910,6 +9910,59 @@
 <span id="9910">9910</span>
 <span id="9911">9911</span>
 <span id="9912">9912</span>
+<span id="9913">9913</span>
+<span id="9914">9914</span>
+<span id="9915">9915</span>
+<span id="9916">9916</span>
+<span id="9917">9917</span>
+<span id="9918">9918</span>
+<span id="9919">9919</span>
+<span id="9920">9920</span>
+<span id="9921">9921</span>
+<span id="9922">9922</span>
+<span id="9923">9923</span>
+<span id="9924">9924</span>
+<span id="9925">9925</span>
+<span id="9926">9926</span>
+<span id="9927">9927</span>
+<span id="9928">9928</span>
+<span id="9929">9929</span>
+<span id="9930">9930</span>
+<span id="9931">9931</span>
+<span id="9932">9932</span>
+<span id="9933">9933</span>
+<span id="9934">9934</span>
+<span id="9935">9935</span>
+<span id="9936">9936</span>
+<span id="9937">9937</span>
+<span id="9938">9938</span>
+<span id="9939">9939</span>
+<span id="9940">9940</span>
+<span id="9941">9941</span>
+<span id="9942">9942</span>
+<span id="9943">9943</span>
+<span id="9944">9944</span>
+<span id="9945">9945</span>
+<span id="9946">9946</span>
+<span id="9947">9947</span>
+<span id="9948">9948</span>
+<span id="9949">9949</span>
+<span id="9950">9950</span>
+<span id="9951">9951</span>
+<span id="9952">9952</span>
+<span id="9953">9953</span>
+<span id="9954">9954</span>
+<span id="9955">9955</span>
+<span id="9956">9956</span>
+<span id="9957">9957</span>
+<span id="9958">9958</span>
+<span id="9959">9959</span>
+<span id="9960">9960</span>
+<span id="9961">9961</span>
+<span id="9962">9962</span>
+<span id="9963">9963</span>
+<span id="9964">9964</span>
+<span id="9965">9965</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Copyright © 2016–2020 University of Malta</span>
 
@@ -9948,10 +10001,10 @@
     <span class="ident">fmt</span>::{<span class="ident">Display</span>, <span class="ident">Formatter</span>, <span class="prelude-ty">Result</span> <span class="kw">as</span> <span class="ident">FmtResult</span>},
     <span class="ident">i32</span>,
     <span class="ident">marker</span>::<span class="ident">PhantomData</span>,
-    <span class="ident">mem</span>::{<span class="self">self</span>, <span class="ident">ManuallyDrop</span>, <span class="ident">MaybeUninit</span>},
+    <span class="ident">mem</span>::{<span class="ident">ManuallyDrop</span>, <span class="ident">MaybeUninit</span>},
     <span class="ident">num</span>::<span class="ident">FpCategory</span>,
     <span class="ident">ops</span>::{<span class="ident">Add</span>, <span class="ident">AddAssign</span>, <span class="ident">Deref</span>},
-    <span class="ident">ptr</span>, <span class="ident">slice</span>, <span class="ident">str</span>, <span class="ident">u32</span>,
+    <span class="ident">slice</span>, <span class="ident">str</span>, <span class="ident">u32</span>,
 };
 <span class="kw">use</span> <span class="ident">gmp_mpfr_sys</span>::{
     <span class="ident">gmp</span>::{<span class="self">self</span>, <span class="ident">limb_t</span>},
@@ -9962,6 +10015,8 @@
     <span class="ident">error</span>::<span class="ident">Error</span>,
     <span class="ident">ffi</span>::{<span class="ident">CStr</span>, <span class="ident">CString</span>},
 };
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;complex&quot;</span>)]</span>
+<span class="kw">use</span> {<span class="kw">crate</span>::<span class="ident">complex</span>::<span class="ident">big</span>::<span class="ident">BorrowComplex</span>, <span class="ident">gmp_mpfr_sys</span>::<span class="ident">mpc</span>::<span class="ident">mpc_t</span>};
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;integer&quot;</span>)]</span>
 <span class="kw">use</span> {
     <span class="kw">crate</span>::{<span class="ident">integer</span>::<span class="ident">big</span>::<span class="ident">BorrowInteger</span>, <span class="ident">Integer</span>},
@@ -10170,9 +10225,13 @@ float::free_cache(FreeCache::All);
     }
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">inner_data</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">limb_t</span>] {
-        <span class="kw">let</span> <span class="ident">prec</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">prec</span>.<span class="ident">as_or_panic</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>();
-        <span class="kw">let</span> <span class="ident">limbs</span> <span class="op">=</span> <span class="ident">prec</span>.<span class="ident">div_ceil</span>(<span class="ident">gmp</span>::<span class="ident">LIMB_BITS</span>.<span class="ident">az</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>());
-        <span class="kw">unsafe</span> { <span class="ident">slice</span>::<span class="ident">from_raw_parts</span>(<span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">d</span>, <span class="ident">limbs</span>) }
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_normal</span>() {
+            <span class="kw">let</span> <span class="ident">prec</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">prec</span>.<span class="ident">as_or_panic</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>();
+            <span class="kw">let</span> <span class="ident">limbs</span> <span class="op">=</span> <span class="ident">prec</span>.<span class="ident">div_ceil</span>(<span class="ident">gmp</span>::<span class="ident">LIMB_BITS</span>.<span class="ident">az</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>());
+            <span class="kw">unsafe</span> { <span class="ident">slice</span>::<span class="ident">from_raw_parts</span>(<span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">d</span>, <span class="ident">limbs</span>) }
+        } <span class="kw">else</span> {
+            <span class="kw-2">&amp;</span>[]
+        }
     }
 }
 
@@ -10461,9 +10520,8 @@ float::free_cache(FreeCache::All);
     <span class="doccomment">/// [`mpfr_t`]: https://docs.rs/gmp-mpfr-sys/~1.2/gmp_mpfr_sys/mpfr/struct.mpfr_t.html</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_raw</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">mpfr_t</span> {
-        <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">inner</span>;
-        <span class="ident">mem</span>::<span class="ident">forget</span>(<span class="self">self</span>);
-        <span class="ident">ret</span>
+        <span class="kw">let</span> <span class="ident">m</span> <span class="op">=</span> <span class="ident">ManuallyDrop</span>::<span class="ident">new</span>(<span class="self">self</span>);
+        <span class="ident">m</span>.<span class="ident">inner</span>
     }
 
     <span class="doccomment">/// Returns a pointer to the inner</span>
@@ -11254,6 +11312,10 @@ float::free_cache(FreeCache::All);
     <span class="doccomment">/// Borrows the [`Float`] as an ordered floating-point number of</span>
     <span class="doccomment">/// type [`OrdFloat`].</span>
     <span class="doccomment">///</span>
+    <span class="doccomment">/// The same result can be obtained using the implementation of</span>
+    <span class="doccomment">/// &lt;code&gt;[AsRef][`AsRef`]&amp;lt;[OrdFloat][`OrdFloat`]&amp;gt;&lt;/code&gt;</span>
+    <span class="doccomment">/// which is provided for [`Float`].</span>
+    <span class="doccomment">///</span>
     <span class="doccomment">/// # Examples</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// ```rust</span>
@@ -11275,11 +11337,54 @@ float::free_cache(FreeCache::All);
     <span class="doccomment">/// assert_eq!(zero.cmp(neg_zero), Ordering::Greater);</span>
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
+    <span class="doccomment">/// [`AsRef`]: https://doc.rust-lang.org/nightly/core/convert/trait.AsRef.html</span>
     <span class="doccomment">/// [`Float`]: struct.Float.html</span>
     <span class="doccomment">/// [`OrdFloat`]: float/struct.OrdFloat.html</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_ord</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">OrdFloat</span> {
         <span class="kw">unsafe</span> { <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="macro">cast_ptr</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">OrdFloat</span>) }
+    }
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;complex&quot;</span>)]</span>
+    <span class="doccomment">/// Borrows a copy of the [`Float`] as a [`Complex`] number.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The returned object implements</span>
+    <span class="doccomment">/// &lt;code&gt;[Deref]&amp;lt;[Target] = [Complex][`Complex`]&amp;gt;&lt;/code&gt;.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The imaginary part of the return value has the same precision</span>
+    <span class="doccomment">/// as the real part. While this has no effect for the zero value</span>
+    <span class="doccomment">/// of the returned complex number, it could have an effect if the</span>
+    <span class="doccomment">/// return value is cloned.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Examples</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```rust</span>
+    <span class="doccomment">/// use rug::Float;</span>
+    <span class="doccomment">/// let f = Float::with_val(53, 4.2);</span>
+    <span class="doccomment">/// let c = f.as_complex();</span>
+    <span class="doccomment">/// assert_eq!(*c, (4.2, 0.0));</span>
+    <span class="doccomment">/// // methods taking &amp;self can be used on the returned object</span>
+    <span class="doccomment">/// let c_mul_i = c.as_mul_i(false);</span>
+    <span class="doccomment">/// assert_eq!(*c_mul_i, (0.0, 4.2));</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [Deref]: https://doc.rust-lang.org/nightly/core/ops/trait.Deref.html</span>
+    <span class="doccomment">/// [Target]: https://doc.rust-lang.org/nightly/core/ops/trait.Deref.html#associatedtype.Target</span>
+    <span class="doccomment">/// [`Complex`]: struct.Complex.html</span>
+    <span class="doccomment">/// [`Float`]: struct.Float.html</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_complex</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">BorrowComplex</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
+        <span class="comment">// im.d is set to be the same as re.d since the precision is equal;</span>
+        <span class="comment">// though it should not need to be read as the imaginary part is 0.</span>
+        <span class="kw">let</span> <span class="ident">raw_complex</span> <span class="op">=</span> <span class="ident">mpc_t</span> {
+            <span class="ident">re</span>: <span class="self">self</span>.<span class="ident">inner</span>,
+            <span class="ident">im</span>: <span class="ident">mpfr_t</span> {
+                <span class="ident">prec</span>: <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">prec</span>,
+                <span class="ident">sign</span>: <span class="number">1</span>,
+                <span class="ident">exp</span>: <span class="ident">xmpfr</span>::<span class="ident">EXP_ZERO</span>,
+                <span class="ident">d</span>: <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">d</span>,
+            },
+        };
+        <span class="kw">unsafe</span> { <span class="ident">BorrowComplex</span>::<span class="ident">from_raw</span>(<span class="ident">raw_complex</span>) }
     }
 
     <span class="doccomment">/// Returns [`true`] if `self` is an integer.</span>
@@ -19387,6 +19492,7 @@ float::free_cache(FreeCache::All);
             <span class="kw">let</span> <span class="ident">m</span> <span class="op">=</span> (<span class="ident">f64</span>::<span class="ident">from</span>(<span class="ident">p</span>) <span class="op">/</span> <span class="ident">log2_radix</span>).<span class="ident">ceil</span>() <span class="kw">as</span> <span class="ident">u32</span>;
             <span class="ident">m</span>.<span class="ident">as_or_panic</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>().<span class="ident">checked_add</span>(<span class="number">2</span>).<span class="ident">expect</span>(<span class="string">&quot;overflow&quot;</span>)
         };
+        <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy</span>::<span class="ident">approx_constant</span>)]</span>
         <span class="kw">const</span> <span class="ident">LOG10_2</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="number">0.301_029_995_663_981_2f64</span>;
         <span class="kw">let</span> <span class="ident">exp</span> <span class="op">=</span> ((<span class="kw">unsafe</span> { <span class="ident">mpfr</span>::<span class="ident">get_exp</span>(<span class="ident">f</span>.<span class="ident">as_raw</span>()) }).<span class="ident">az</span>::<span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>() <span class="op">/</span> <span class="ident">log2_radix</span> <span class="op">-</span> <span class="number">1.0</span>).<span class="ident">abs</span>();
         <span class="comment">// add 1 for &#39;-&#39; and an extra 1 in case of rounding errors</span>
@@ -19516,18 +19622,18 @@ float::free_cache(FreeCache::All);
                 <span class="kw">return</span> <span class="ident">Ordering</span>::<span class="ident">Equal</span>;
             }
         };
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">c_str_end</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">c_str_end</span> <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">uninit</span>();
         <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="kw">unsafe</span> {
             <span class="ident">mpfr</span>::<span class="ident">strtofr</span>(
                 <span class="self">self</span>.<span class="ident">as_raw_mut</span>(),
                 <span class="ident">c_string</span>.<span class="ident">as_ptr</span>(),
-                <span class="macro">cast_ptr_mut</span><span class="macro">!</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">c_str_end</span>, <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span>),
+                <span class="ident">c_str_end</span>.<span class="ident">as_mut_ptr</span>(),
                 <span class="ident">radix</span>.<span class="ident">as_or_panic</span>(),
                 <span class="ident">raw_round</span>(<span class="ident">round</span>),
             )
         };
         <span class="kw">let</span> <span class="ident">nul</span> <span class="op">=</span> <span class="macro">cast_ptr</span><span class="macro">!</span>(<span class="ident">c_string</span>.<span class="ident">as_bytes_with_nul</span>().<span class="ident">last</span>().<span class="ident">unwrap</span>(), <span class="ident">c_char</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">c_str_end</span>, <span class="ident">nul</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw">unsafe</span> { <span class="ident">c_str_end</span>.<span class="ident">assume_init</span>() } <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>, <span class="ident">nul</span>);
         <span class="ident">ordering1</span>(<span class="ident">ret</span>)
     }
 }

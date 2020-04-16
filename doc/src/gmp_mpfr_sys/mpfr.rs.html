@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/gmp-mpfr-sys-1.2.1/src/mpfr.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mpfr.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../gmp_mpfr_sys/index.html'><div class='logo-container'><img src='https://tspiteri.gitlab.io/gmp-mpfr-sys/rug.svg' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/gmp-mpfr-sys-1.2.2/src/mpfr.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mpfr.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../gmp_mpfr_sys/index.html'><div class='logo-container'><img src='https://tspiteri.gitlab.io/gmp-mpfr-sys/rug.svg' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -1473,6 +1473,120 @@
 <span id="1473">1473</span>
 <span id="1474">1474</span>
 <span id="1475">1475</span>
+<span id="1476">1476</span>
+<span id="1477">1477</span>
+<span id="1478">1478</span>
+<span id="1479">1479</span>
+<span id="1480">1480</span>
+<span id="1481">1481</span>
+<span id="1482">1482</span>
+<span id="1483">1483</span>
+<span id="1484">1484</span>
+<span id="1485">1485</span>
+<span id="1486">1486</span>
+<span id="1487">1487</span>
+<span id="1488">1488</span>
+<span id="1489">1489</span>
+<span id="1490">1490</span>
+<span id="1491">1491</span>
+<span id="1492">1492</span>
+<span id="1493">1493</span>
+<span id="1494">1494</span>
+<span id="1495">1495</span>
+<span id="1496">1496</span>
+<span id="1497">1497</span>
+<span id="1498">1498</span>
+<span id="1499">1499</span>
+<span id="1500">1500</span>
+<span id="1501">1501</span>
+<span id="1502">1502</span>
+<span id="1503">1503</span>
+<span id="1504">1504</span>
+<span id="1505">1505</span>
+<span id="1506">1506</span>
+<span id="1507">1507</span>
+<span id="1508">1508</span>
+<span id="1509">1509</span>
+<span id="1510">1510</span>
+<span id="1511">1511</span>
+<span id="1512">1512</span>
+<span id="1513">1513</span>
+<span id="1514">1514</span>
+<span id="1515">1515</span>
+<span id="1516">1516</span>
+<span id="1517">1517</span>
+<span id="1518">1518</span>
+<span id="1519">1519</span>
+<span id="1520">1520</span>
+<span id="1521">1521</span>
+<span id="1522">1522</span>
+<span id="1523">1523</span>
+<span id="1524">1524</span>
+<span id="1525">1525</span>
+<span id="1526">1526</span>
+<span id="1527">1527</span>
+<span id="1528">1528</span>
+<span id="1529">1529</span>
+<span id="1530">1530</span>
+<span id="1531">1531</span>
+<span id="1532">1532</span>
+<span id="1533">1533</span>
+<span id="1534">1534</span>
+<span id="1535">1535</span>
+<span id="1536">1536</span>
+<span id="1537">1537</span>
+<span id="1538">1538</span>
+<span id="1539">1539</span>
+<span id="1540">1540</span>
+<span id="1541">1541</span>
+<span id="1542">1542</span>
+<span id="1543">1543</span>
+<span id="1544">1544</span>
+<span id="1545">1545</span>
+<span id="1546">1546</span>
+<span id="1547">1547</span>
+<span id="1548">1548</span>
+<span id="1549">1549</span>
+<span id="1550">1550</span>
+<span id="1551">1551</span>
+<span id="1552">1552</span>
+<span id="1553">1553</span>
+<span id="1554">1554</span>
+<span id="1555">1555</span>
+<span id="1556">1556</span>
+<span id="1557">1557</span>
+<span id="1558">1558</span>
+<span id="1559">1559</span>
+<span id="1560">1560</span>
+<span id="1561">1561</span>
+<span id="1562">1562</span>
+<span id="1563">1563</span>
+<span id="1564">1564</span>
+<span id="1565">1565</span>
+<span id="1566">1566</span>
+<span id="1567">1567</span>
+<span id="1568">1568</span>
+<span id="1569">1569</span>
+<span id="1570">1570</span>
+<span id="1571">1571</span>
+<span id="1572">1572</span>
+<span id="1573">1573</span>
+<span id="1574">1574</span>
+<span id="1575">1575</span>
+<span id="1576">1576</span>
+<span id="1577">1577</span>
+<span id="1578">1578</span>
+<span id="1579">1579</span>
+<span id="1580">1580</span>
+<span id="1581">1581</span>
+<span id="1582">1582</span>
+<span id="1583">1583</span>
+<span id="1584">1584</span>
+<span id="1585">1585</span>
+<span id="1586">1586</span>
+<span id="1587">1587</span>
+<span id="1588">1588</span>
+<span id="1589">1589</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Copyright © 2017–2020 University of Malta</span>
 
@@ -1547,19 +1661,24 @@ fn main() {
         }
 
         let stdout = libc::fdopen(STDOUT_FILENO, b&quot;w\0&quot;.as_ptr() as *const c_char);
-#       libc::fclose(stdout);
-#       let stdout = libc::tmpfile();
+#       let real_stdout = stdout;
+#       let tmp_file = libc::tmpfile();
+#       let stdout = if tmp_file.is_null() { real_stdout } else { tmp_file };
         libc::fputs(b&quot;Sum is \0&quot;.as_ptr() as *const c_char, stdout);
         mpfr::out_str(stdout, 10, 0, &amp;s, rnd_t::RNDD);
         libc::fputc(b&#39;\n&#39; as c_int, stdout);
 #       libc::rewind(stdout);
 #       let mut buf = [0u8; 71];
 #       libc::fread(buf.as_mut_ptr() as _, 1, 71, stdout);
-#       libc::fclose(stdout);
-#       assert_eq!(
-#           &amp;buf[..],
-#           &amp;b&quot;Sum is 2.7182818284590452353602874713526624977572470936999595749669131\n&quot;[..]
-#       );
+#       let stdout = real_stdout;
+        libc::fclose(stdout);
+#       if !tmp_file.is_null() {
+#           libc::fclose(tmp_file);
+#           assert_eq!(
+#               &amp;buf[..],
+#               &amp;b&quot;Sum is 2.7182818284590452353602874713526624977572470936999595749669131\n&quot;[..]
+#           );
+#       }
 
         mpfr::clear(&amp;mut s);
         mpfr::clear(&amp;mut t);
@@ -1575,32 +1694,91 @@ fn main() {
 <span class="attribute">#![<span class="ident">allow</span>(<span class="ident">non_camel_case_types</span>, <span class="ident">non_snake_case</span>)]</span>
 <span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy</span>::<span class="ident">needless_doctest_main</span>)]</span>
 
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">gmp</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">gmp</span>::{<span class="ident">limb_t</span>, <span class="ident">mpf_t</span>, <span class="ident">mpq_t</span>, <span class="ident">mpz_t</span>, <span class="ident">randstate_t</span>, <span class="ident">NUMB_BITS</span>};
 <span class="kw">use</span> <span class="ident">core</span>::<span class="ident">mem</span>;
-<span class="kw">use</span> <span class="ident">libc</span>::{<span class="ident">c_char</span>, <span class="ident">c_int</span>, <span class="ident">c_long</span>, <span class="ident">c_uint</span>, <span class="ident">c_ulong</span>, <span class="ident">c_void</span>, <span class="ident">intmax_t</span>, <span class="ident">uintmax_t</span>, <span class="ident">FILE</span>};
+<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
+<span class="comment">// libc::c_int is public for the mpfr_round_nearest_away macro</span>
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">libc</span>::<span class="ident">c_int</span>;
+<span class="kw">use</span> <span class="ident">libc</span>::{<span class="ident">c_char</span>, <span class="ident">c_long</span>, <span class="ident">c_uint</span>, <span class="ident">c_ulong</span>, <span class="ident">c_void</span>, <span class="ident">intmax_t</span>, <span class="ident">uintmax_t</span>, <span class="ident">FILE</span>};
 
 <span class="macro">include</span><span class="macro">!</span>(<span class="macro">concat</span><span class="macro">!</span>(<span class="macro">env</span><span class="macro">!</span>(<span class="string">&quot;OUT_DIR&quot;</span>), <span class="string">&quot;/mpfr_h.rs&quot;</span>));
 
 <span class="doccomment">/// See: [`mpfr_prec_t`](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpfr/MPFR-Basics.html#index-mpfr_005fprec_005ft)</span>
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">prec_t</span> <span class="op">=</span> <span class="ident">c_long</span>;
 
-<span class="comment">// TODO: breaking change: do not use enum</span>
 <span class="doccomment">/// See: [`mpfr_rnd_t`](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpfr/MPFR-Basics.html#index-mpfr_005frnd_005ft)</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Planned change</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// In the next major version of the crate (version 2), this enum will</span>
+<span class="doccomment">/// be replaced by a type alias to [`c_int`]. The variants will be</span>
+<span class="doccomment">/// replaced by constants, for example `rnd_t::RNDN` will be replaced</span>
+<span class="doccomment">/// by a constant `RNDN` of type [`c_int`].</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// [`c_int`]: https://docs.rs/libc/~0.2/libc/type.c_int.html</span>
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">Debug</span>)]</span>
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">deprecated</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">rnd_t</span> {
-    <span class="doccomment">/// See: [`mpfr_rnd_t`](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpfr/MPFR-Basics.html#index-mpfr_005frnd_005ft)</span>
+    <span class="doccomment">/// See: [Rounding Modes](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpfr/MPFR-Basics.html#Rounding-Modes)</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Planned change</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// In the next major version of the crate (version 2), the enum</span>
+    <span class="doccomment">/// will be removed. This variant will be replaced by a constant</span>
+    <span class="doccomment">/// `RNDN` of type [`c_int`].</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [`c_int`]: https://docs.rs/libc/~0.2/libc/type.c_int.html</span>
     <span class="ident">RNDN</span> <span class="op">=</span> <span class="number">0</span>,
-    <span class="doccomment">/// See: [`mpfr_rnd_t`](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpfr/MPFR-Basics.html#index-mpfr_005frnd_005ft)</span>
+    <span class="doccomment">/// See: [Rounding Modes](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpfr/MPFR-Basics.html#Rounding-Modes)</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Planned change</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// In the next major version of the crate (version 2), the enum</span>
+    <span class="doccomment">/// will be removed. This variant will be replaced by a constant</span>
+    <span class="doccomment">/// `RNDZ` of type [`c_int`].</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [`c_int`]: https://docs.rs/libc/~0.2/libc/type.c_int.html</span>
     <span class="ident">RNDZ</span> <span class="op">=</span> <span class="number">1</span>,
-    <span class="doccomment">/// See: [`mpfr_rnd_t`](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpfr/MPFR-Basics.html#index-mpfr_005frnd_005ft)</span>
+    <span class="doccomment">/// See: [Rounding Modes](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpfr/MPFR-Basics.html#Rounding-Modes)</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Planned change</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// In the next major version of the crate (version 2), the enum</span>
+    <span class="doccomment">/// will be removed. This variant will be replaced by a constant</span>
+    <span class="doccomment">/// `RNDU` of type [`c_int`].</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [`c_int`]: https://docs.rs/libc/~0.2/libc/type.c_int.html</span>
     <span class="ident">RNDU</span> <span class="op">=</span> <span class="number">2</span>,
-    <span class="doccomment">/// See: [`mpfr_rnd_t`](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpfr/MPFR-Basics.html#index-mpfr_005frnd_005ft)</span>
+    <span class="doccomment">/// See: [Rounding Modes](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpfr/MPFR-Basics.html#Rounding-Modes)</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Planned change</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// In the next major version of the crate (version 2), the enum</span>
+    <span class="doccomment">/// will be removed. This variant will be replaced by a constant</span>
+    <span class="doccomment">/// `RNDD` of type [`c_int`].</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [`c_int`]: https://docs.rs/libc/~0.2/libc/type.c_int.html</span>
     <span class="ident">RNDD</span> <span class="op">=</span> <span class="number">3</span>,
-    <span class="doccomment">/// See: [`mpfr_rnd_t`](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpfr/MPFR-Basics.html#index-mpfr_005frnd_005ft)</span>
+    <span class="doccomment">/// See: [Rounding Modes](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpfr/MPFR-Basics.html#Rounding-Modes)</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Planned change</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// In the next major version of the crate (version 2), the enum</span>
+    <span class="doccomment">/// will be removed. This variant will be replaced by a constant</span>
+    <span class="doccomment">/// `RNDA` of type [`c_int`].</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [`c_int`]: https://docs.rs/libc/~0.2/libc/type.c_int.html</span>
     <span class="ident">RNDA</span> <span class="op">=</span> <span class="number">4</span>,
-    <span class="doccomment">/// See: [`mpfr_rnd_t`](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpfr/MPFR-Basics.html#index-mpfr_005frnd_005ft)</span>
+    <span class="doccomment">/// See: [Rounding Modes](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpfr/MPFR-Basics.html#Rounding-Modes)</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Planned change</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// In the next major version of the crate (version 2), the enum</span>
+    <span class="doccomment">/// will be removed. This variant will be replaced by a constant</span>
+    <span class="doccomment">/// `RNDF` of type [`c_int`].</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [`c_int`]: https://docs.rs/libc/~0.2/libc/type.c_int.html</span>
     <span class="ident">RNDF</span> <span class="op">=</span> <span class="number">5</span>,
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
     <span class="attribute">#[<span class="ident">deprecated</span>(<span class="ident">since</span> <span class="op">=</span> <span class="string">&quot;1.1.0&quot;</span>, <span class="ident">note</span> <span class="op">=</span> <span class="string">&quot;do not use!&quot;</span>)]</span>
@@ -1613,12 +1791,10 @@ fn main() {
 <span class="doccomment">/// See: [Exception Related Functions](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpfr/MPFR-Interface.html#Exception-Related-Functions)</span>
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">exp_t</span> <span class="op">=</span> <span class="ident">c_long</span>;
 
-<span class="kw">type</span> <span class="ident">uexp_t</span> <span class="op">=</span> <span class="ident">c_ulong</span>;
-
 <span class="doccomment">/// See: [Nomenclature and Types](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpfr/MPFR-Basics.html#Nomenclature-and-Types)</span>
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">PREC_MIN</span>: <span class="ident">prec_t</span> <span class="op">=</span> <span class="number">1</span>;
 <span class="doccomment">/// See: [Nomenclature and Types](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpfr/MPFR-Basics.html#Nomenclature-and-Types)</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">PREC_MAX</span>: <span class="ident">prec_t</span> <span class="op">=</span> ((<span class="op">!</span>(<span class="number">0</span> <span class="kw">as</span> <span class="ident">uprec_t</span>) <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">1</span>) <span class="op">-</span> <span class="number">256</span>) <span class="kw">as</span> <span class="ident">prec_t</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">PREC_MAX</span>: <span class="ident">prec_t</span> <span class="op">=</span> <span class="ident">prec_t</span>::<span class="ident">max_value</span>() <span class="op">-</span> <span class="number">256</span>;
 
 <span class="doccomment">/// See: [`mpfr_t`](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpfr/MPFR-Basics.html#index-mpfr_005ft)</span>
 <span class="doccomment">/// and [Internals](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpfr/MPFR-Interface.html#Internals)</span>
@@ -1642,7 +1818,16 @@ fn main() {
     <span class="doccomment">/// See: [Internals](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpfr/MPFR-Interface.html#Internals)</span>
     <span class="kw">pub</span> <span class="ident">exp</span>: <span class="ident">exp_t</span>,
     <span class="doccomment">/// See: [Internals](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpfr/MPFR-Interface.html#Internals)</span>
-    <span class="kw">pub</span> <span class="ident">d</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">gmp</span>::<span class="ident">limb_t</span>,
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Planned change</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// In the next minor version of the crate (version 1.3), the type</span>
+    <span class="doccomment">/// of this field will be changed to</span>
+    <span class="doccomment">/// &lt;code&gt;[NonNull][`NonNull`]&amp;lt;[limb\_t][`limb_t`]&amp;gt;&lt;/code&gt;.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [`NonNull`]: https://doc.rust-lang.org/nightly/core/ptr/struct.NonNull.html</span>
+    <span class="doccomment">/// [`limb_t`]: ../gmp/type.limb_t.html</span>
+    <span class="kw">pub</span> <span class="ident">d</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">limb_t</span>,
 }
 
 <span class="doccomment">/// See: [`mpfr_custom_init_set`](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpfr/MPFR-Interface.html#index-mpfr_005fcustom_005finit_005fset)</span>
@@ -1661,20 +1846,19 @@ fn main() {
 
 <span class="comment">// Types for function declarations in this file.</span>
 
-<span class="kw">type</span> <span class="ident">uprec_t</span> <span class="op">=</span> <span class="ident">c_ulong</span>;
-<span class="kw">type</span> <span class="ident">mpz_srcptr</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">gmp</span>::<span class="ident">mpz_t</span>;
-<span class="kw">type</span> <span class="ident">mpz_ptr</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">gmp</span>::<span class="ident">mpz_t</span>;
-<span class="kw">type</span> <span class="ident">mpq_srcptr</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">gmp</span>::<span class="ident">mpq_t</span>;
-<span class="kw">type</span> <span class="ident">mpq_ptr</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">gmp</span>::<span class="ident">mpq_t</span>;
-<span class="kw">type</span> <span class="ident">mpf_srcptr</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">gmp</span>::<span class="ident">mpf_t</span>;
-<span class="kw">type</span> <span class="ident">mpf_ptr</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">gmp</span>::<span class="ident">mpf_t</span>;
-<span class="kw">type</span> <span class="ident">randstate_ptr</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">gmp</span>::<span class="ident">randstate_t</span>;
+<span class="kw">type</span> <span class="ident">mpz_srcptr</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">mpz_t</span>;
+<span class="kw">type</span> <span class="ident">mpz_ptr</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">mpz_t</span>;
+<span class="kw">type</span> <span class="ident">mpq_srcptr</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">mpq_t</span>;
+<span class="kw">type</span> <span class="ident">mpq_ptr</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">mpq_t</span>;
+<span class="kw">type</span> <span class="ident">mpf_srcptr</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">mpf_t</span>;
+<span class="kw">type</span> <span class="ident">mpf_ptr</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">mpf_t</span>;
+<span class="kw">type</span> <span class="ident">randstate_ptr</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">randstate_t</span>;
 <span class="kw">type</span> <span class="ident">mpfr_ptr</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">mpfr_t</span>;
 <span class="kw">type</span> <span class="ident">mpfr_srcptr</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">mpfr_t</span>;
 
 <span class="comment">// Private constants.</span>
 
-<span class="kw">const</span> <span class="ident">EXP_MAX</span>: <span class="ident">exp_t</span> <span class="op">=</span> ((<span class="op">!</span><span class="number">0</span> <span class="kw">as</span> <span class="ident">uexp_t</span>) <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">1</span>) <span class="kw">as</span> <span class="ident">exp_t</span>;
+<span class="kw">const</span> <span class="ident">EXP_MAX</span>: <span class="ident">exp_t</span> <span class="op">=</span> <span class="ident">exp_t</span>::<span class="ident">max_value</span>();
 <span class="kw">const</span> <span class="ident">EXP_NAN</span>: <span class="ident">exp_t</span> <span class="op">=</span> <span class="number">1</span> <span class="op">-</span> <span class="ident">EXP_MAX</span>;
 <span class="kw">const</span> <span class="ident">EXP_ZERO</span>: <span class="ident">exp_t</span> <span class="op">=</span> <span class="number">0</span> <span class="op">-</span> <span class="ident">EXP_MAX</span>;
 <span class="kw">const</span> <span class="ident">EXP_INF</span>: <span class="ident">exp_t</span> <span class="op">=</span> <span class="number">2</span> <span class="op">-</span> <span class="ident">EXP_MAX</span>;
@@ -1700,6 +1884,24 @@ fn main() {
     <span class="doccomment">/// See: [`mpfr_inits`](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpfr/MPFR-Interface.html#index-mpfr_005finits)</span>
     <span class="attribute">#[<span class="ident">link_name</span> <span class="op">=</span> <span class="string">&quot;mpfr_inits&quot;</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">inits</span>(<span class="ident">x</span>: <span class="ident">mpfr_ptr</span>, ...);
+}
+<span class="doccomment">/// See: [`MPFR_DECL_INIT`](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpfr/MPFR-Interface.html#index-MPFR_005fDECL_005fINIT)</span>
+<span class="attribute">#[<span class="ident">macro_export</span>]</span>
+<span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">MPFR_DECL_INIT</span> {
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>:<span class="ident">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">prec</span>:<span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> {
+        <span class="comment">// limbs is visible only in one macro instance thanks to macro hygiene</span>
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">limbs</span>: [<span class="ident">core</span>::<span class="ident">mem</span>::<span class="ident">MaybeUninit</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">gmp</span>::<span class="ident">limb_t</span><span class="op">&gt;</span>;
+            (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">prec</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">-</span> <span class="number">1</span>) <span class="op">/</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">gmp</span>::<span class="ident">NUMB_BITS</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">+</span> <span class="number">1</span>] <span class="op">=</span>
+            <span class="kw">unsafe</span> { <span class="ident">core</span>::<span class="ident">mem</span>::<span class="ident">MaybeUninit</span>::<span class="ident">uninit</span>().<span class="ident">assume_init</span>() };
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">mpfr</span>::<span class="ident">mpfr_t</span> {
+            <span class="ident">prec</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">prec</span> <span class="kw">as</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">mpfr</span>::<span class="ident">prec_t</span>,
+            <span class="ident">sign</span>: <span class="number">1</span>,
+            <span class="ident">exp</span>: <span class="number">1</span> <span class="op">-</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">mpfr</span>::<span class="ident">exp_t</span>::<span class="ident">max_value</span>(),
+            <span class="ident">d</span>: <span class="ident">limbs</span>[..].<span class="ident">as_mut_ptr</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">gmp</span>::<span class="ident">limb_t</span>,
+        };
+    };
+}
+<span class="kw">extern</span> <span class="string">&quot;C&quot;</span> {
     <span class="doccomment">/// See: [`mpfr_set_default_prec`](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpfr/MPFR-Interface.html#index-mpfr_005fset_005fdefault_005fprec)</span>
     <span class="attribute">#[<span class="ident">link_name</span> <span class="op">=</span> <span class="string">&quot;mpfr_set_default_prec&quot;</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_default_prec</span>(<span class="ident">prec</span>: <span class="ident">prec_t</span>);
@@ -2558,12 +2760,11 @@ fn main() {
     <span class="attribute">#[<span class="ident">link_name</span> <span class="op">=</span> <span class="string">&quot;mpfr_print_rnd_mode&quot;</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">print_rnd_mode</span>(<span class="ident">rnd</span>: <span class="ident">rnd_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>;
 }
-
 <span class="doccomment">/// See: [`mpfr_round_nearest_away`](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpfr/MPFR-Interface.html#index-mpfr_005fround_005fnearest_005faway)</span>
 <span class="attribute">#[<span class="ident">macro_export</span>]</span>
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">mpfr_round_nearest_away</span> {
     (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">foo</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">rop</span>:<span class="ident">expr</span> $(, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">op</span>:<span class="ident">expr</span>)<span class="kw-2">*</span>) <span class="op">=</span><span class="op">&gt;</span> {{
-        <span class="kw">use</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">libc</span>::<span class="ident">c_int</span>;
+        <span class="kw">use</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">mpfr</span>::<span class="ident">c_int</span>;
         <span class="kw">type</span> <span class="ident">mpfr_ptr</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">mpfr</span>::<span class="ident">mpfr_t</span>;
         <span class="kw">let</span> <span class="ident">rop</span>: <span class="ident">mpfr_ptr</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">rop</span>;
         <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> {
@@ -2577,6 +2778,7 @@ fn main() {
         )
     }};
 }
+
 <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> {
     <span class="comment">// Miscellaneous Functions</span>
 
@@ -2832,12 +3034,14 @@ fn main() {
 <span class="doccomment">/// See: [`mpfr_custom_get_size`](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpfr/MPFR-Interface.html#index-mpfr_005fcustom_005fget_005fsize)</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>
 <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">custom_get_size</span>(<span class="ident">prec</span>: <span class="ident">prec_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
-    <span class="kw">let</span> <span class="ident">bits</span> <span class="op">=</span> <span class="ident">prec_t</span>::<span class="ident">from</span>(<span class="ident">gmp</span>::<span class="ident">NUMB_BITS</span>);
-    ((<span class="ident">prec</span> <span class="op">+</span> <span class="ident">bits</span> <span class="op">-</span> <span class="number">1</span>) <span class="op">/</span> <span class="ident">bits</span>) <span class="kw">as</span> <span class="ident">usize</span> <span class="op">*</span> <span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">gmp</span>::<span class="ident">limb_t</span><span class="op">&gt;</span>()
+    <span class="kw">let</span> <span class="ident">bits</span> <span class="op">=</span> <span class="ident">prec_t</span>::<span class="ident">from</span>(<span class="ident">NUMB_BITS</span>);
+    ((<span class="ident">prec</span> <span class="op">+</span> <span class="ident">bits</span> <span class="op">-</span> <span class="number">1</span>) <span class="op">/</span> <span class="ident">bits</span>) <span class="kw">as</span> <span class="ident">usize</span> <span class="op">*</span> <span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">limb_t</span><span class="op">&gt;</span>()
 }
 <span class="doccomment">/// See: [`mpfr_custom_init`](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpfr/MPFR-Interface.html#index-mpfr_005fcustom_005finit)</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">custom_init</span>(<span class="ident">_significand</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>, <span class="ident">_prec</span>: <span class="ident">prec_t</span>) {}
+<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">custom_init</span>(<span class="ident">significand</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>, <span class="ident">prec</span>: <span class="ident">prec_t</span>) {
+    <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> (<span class="ident">significand</span>, <span class="ident">prec</span>);
+}
 <span class="doccomment">/// See: [`mpfr_custom_init_set`](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpfr/MPFR-Interface.html#index-mpfr_005fcustom_005finit_005fset)</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>
 <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">custom_init_set</span>(
@@ -2857,7 +3061,7 @@ fn main() {
     (<span class="kw-2">*</span><span class="ident">x</span>).<span class="ident">prec</span> <span class="op">=</span> <span class="ident">prec</span>;
     (<span class="kw-2">*</span><span class="ident">x</span>).<span class="ident">sign</span> <span class="op">=</span> <span class="ident">s</span>;
     (<span class="kw-2">*</span><span class="ident">x</span>).<span class="ident">exp</span> <span class="op">=</span> <span class="ident">e</span>;
-    (<span class="kw-2">*</span><span class="ident">x</span>).<span class="ident">d</span> <span class="op">=</span> <span class="ident">significand</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">gmp</span>::<span class="ident">limb_t</span>;
+    (<span class="kw-2">*</span><span class="ident">x</span>).<span class="ident">d</span> <span class="op">=</span> <span class="ident">significand</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">limb_t</span>;
 }
 <span class="doccomment">/// See: [`mpfr_custom_get_kind`](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpfr/MPFR-Interface.html#index-mpfr_005fcustom_005fget_005fkind)</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>
@@ -2885,7 +3089,7 @@ fn main() {
 <span class="doccomment">/// See: [`mpfr_custom_move`](https://tspiteri.gitlab.io/gmp-mpfr-sys/mpfr/MPFR-Interface.html#index-mpfr_005fcustom_005fmove)</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>
 <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">custom_move</span>(<span class="ident">x</span>: <span class="ident">mpfr_ptr</span>, <span class="ident">new_position</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>) {
-    (<span class="kw-2">*</span><span class="ident">x</span>).<span class="ident">d</span> <span class="op">=</span> <span class="ident">new_position</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">gmp</span>::<span class="ident">limb_t</span>
+    (<span class="kw-2">*</span><span class="ident">x</span>).<span class="ident">d</span> <span class="op">=</span> <span class="ident">new_position</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">limb_t</span>
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
@@ -2893,25 +3097,37 @@ fn main() {
     <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">mpfr</span>;
     <span class="kw">use</span> <span class="ident">core</span>::<span class="ident">mem</span>::<span class="ident">MaybeUninit</span>;
 
+    <span class="kw">fn</span> <span class="ident">version_matches_with_optional_p_suffix</span>(<span class="ident">to_test</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">check</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="kw">if</span> <span class="ident">to_test</span> <span class="op">=</span><span class="op">=</span> <span class="ident">check</span> {
+            <span class="bool-val">true</span>
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">to_test</span>.<span class="ident">starts_with</span>(<span class="ident">check</span>) {
+            <span class="bool-val">false</span>
+        } <span class="kw">else</span> {
+            <span class="ident">to_test</span>[<span class="ident">check</span>.<span class="ident">len</span>()..].<span class="ident">starts_with</span>(<span class="string">&quot;-p&quot;</span>)
+        }
+    }
+
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">check_version</span>() {
         <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">tests</span>;
 
         <span class="kw">let</span> (<span class="ident">major</span>, <span class="ident">minor</span>, <span class="ident">patchlevel</span>) <span class="op">=</span> (<span class="number">4</span>, <span class="number">0</span>, <span class="number">2</span>);
-        <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="string">&quot;4.0.2-p1&quot;</span>;
+        <span class="comment">// do not include &quot;-p*&quot; suffix</span>
+        <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="string">&quot;4.0.2&quot;</span>;
 
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">mpfr</span>::<span class="ident">VERSION_MAJOR</span>, <span class="ident">major</span>);
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">mpfr</span>::<span class="ident">VERSION_MINOR</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">minor</span>);
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">mpfr</span>::<span class="ident">VERSION_MINOR</span> <span class="op">&gt;</span> <span class="ident">minor</span> <span class="op">|</span><span class="op">|</span> <span class="ident">mpfr</span>::<span class="ident">VERSION_PATCHLEVEL</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">patchlevel</span>);
         <span class="kw">if</span> <span class="ident">mpfr</span>::<span class="ident">VERSION_MINOR</span> <span class="op">=</span><span class="op">=</span> <span class="ident">minor</span> <span class="kw-2">&amp;</span><span class="op">&amp;</span> <span class="ident">mpfr</span>::<span class="ident">VERSION_PATCHLEVEL</span> <span class="op">=</span><span class="op">=</span> <span class="ident">patchlevel</span> {
-            <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="comment">// tested string can have &quot;-p*&quot; suffix</span>
+            <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">version_matches_with_optional_p_suffix</span>(
                 <span class="kw">unsafe</span> { <span class="ident">tests</span>::<span class="ident">str_from_cstr</span>(<span class="ident">mpfr</span>::<span class="ident">get_version</span>()) },
                 <span class="ident">version</span>
-            );
-            <span class="macro">assert_eq</span><span class="macro">!</span>(
+            ));
+            <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">version_matches_with_optional_p_suffix</span>(
                 <span class="kw">unsafe</span> { <span class="ident">tests</span>::<span class="ident">str_from_cstr</span>(<span class="ident">mpfr</span>::<span class="ident">VERSION_STRING</span>) },
                 <span class="ident">version</span>
-            );
+            ));
         }
     }
 
@@ -2946,6 +3162,18 @@ fn main() {
             <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">tie_away2</span>, <span class="number">40</span>);
 
             <span class="ident">mpfr</span>::<span class="ident">clear</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">f</span>);
+        }
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">check_decl_init</span>() {
+        <span class="macro">MPFR_DECL_INIT</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="number">5</span>);
+        <span class="kw">unsafe</span> {
+            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">mpfr</span>::<span class="ident">get_prec</span>(<span class="kw-2">&amp;</span><span class="ident">f</span>), <span class="number">5</span>);
+            <span class="macro">assert_ne</span><span class="macro">!</span>(<span class="ident">mpfr</span>::<span class="ident">nan_p</span>(<span class="kw-2">&amp;</span><span class="ident">f</span>), <span class="number">0</span>);
+            <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">mpfr</span>::<span class="ident">set_ui</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">f</span>, <span class="number">0xff</span>, <span class="ident">mpfr</span>::<span class="ident">rnd_t</span>::<span class="ident">RNDD</span>) <span class="op">&lt;</span> <span class="number">0</span>);
+            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">mpfr</span>::<span class="ident">nan_p</span>(<span class="kw-2">&amp;</span><span class="ident">f</span>), <span class="number">0</span>);
+            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">mpfr</span>::<span class="ident">get_ui</span>(<span class="kw-2">&amp;</span><span class="ident">f</span>, <span class="ident">mpfr</span>::<span class="ident">rnd_t</span>::<span class="ident">RNDN</span>), <span class="number">0xf8</span>);
         }
     }
 }

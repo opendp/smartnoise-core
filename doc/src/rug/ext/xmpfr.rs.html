@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/rug-1.7.0/src/ext/xmpfr.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>xmpfr.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../rug/index.html'><div class='logo-container'><img src='https://tspiteri.gitlab.io/gmp-mpfr-sys/rug.svg' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/rug-1.8.0/src/ext/xmpfr.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>xmpfr.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../rug/index.html'><div class='logo-container'><img src='https://tspiteri.gitlab.io/gmp-mpfr-sys/rug.svg' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -538,6 +538,22 @@
 <span id="538">538</span>
 <span id="539">539</span>
 <span id="540">540</span>
+<span id="541">541</span>
+<span id="542">542</span>
+<span id="543">543</span>
+<span id="544">544</span>
+<span id="545">545</span>
+<span id="546">546</span>
+<span id="547">547</span>
+<span id="548">548</span>
+<span id="549">549</span>
+<span id="550">550</span>
+<span id="551">551</span>
+<span id="552">552</span>
+<span id="553">553</span>
+<span id="554">554</span>
+<span id="555">555</span>
+<span id="556">556</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Copyright © 2016–2020 University of Malta</span>
 
@@ -556,7 +572,7 @@
 <span class="comment">// this program. If not, see &lt;https://www.gnu.org/licenses/&gt;.</span>
 
 <span class="kw">use</span> <span class="kw">crate</span>::{
-    <span class="ident">float</span>::{<span class="ident">Round</span>, <span class="ident">SmallFloat</span>},
+    <span class="ident">float</span>::{<span class="ident">Round</span>, <span class="ident">SmallFloat</span>, <span class="ident">Special</span>},
     <span class="ident">misc</span>::<span class="ident">NegAbs</span>,
     <span class="ident">ops</span>::<span class="ident">NegAssign</span>,
     <span class="ident">Float</span>,
@@ -1059,6 +1075,22 @@
     <span class="ident">mpfr</span>::<span class="ident">custom_init</span>(<span class="ident">limbs</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>, <span class="ident">prec</span>);
     <span class="ident">mpfr</span>::<span class="ident">custom_init_set</span>(<span class="ident">f</span>, <span class="ident">mpfr</span>::<span class="ident">REGULAR_KIND</span>, <span class="ident">exp</span>, <span class="ident">prec</span>, <span class="ident">limbs</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>);
 }
+
+<span class="attribute">#[<span class="ident">inline</span>]</span>
+<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">custom_special</span>(<span class="ident">f</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">mpfr_t</span>, <span class="ident">limbs</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">limb_t</span>, <span class="ident">special</span>: <span class="ident">Special</span>, <span class="ident">prec</span>: <span class="ident">prec_t</span>) {
+    <span class="ident">mpfr</span>::<span class="ident">custom_init</span>(<span class="ident">limbs</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>, <span class="ident">prec</span>);
+    <span class="kw">let</span> <span class="ident">kind</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">special</span> {
+        <span class="ident">Special</span>::<span class="ident">Zero</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">mpfr</span>::<span class="ident">ZERO_KIND</span>,
+        <span class="ident">Special</span>::<span class="ident">NegZero</span> <span class="op">=</span><span class="op">&gt;</span> <span class="op">-</span><span class="ident">mpfr</span>::<span class="ident">ZERO_KIND</span>,
+        <span class="ident">Special</span>::<span class="ident">Infinity</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">mpfr</span>::<span class="ident">INF_KIND</span>,
+        <span class="ident">Special</span>::<span class="ident">NegInfinity</span> <span class="op">=</span><span class="op">&gt;</span> <span class="op">-</span><span class="ident">mpfr</span>::<span class="ident">INF_KIND</span>,
+        <span class="ident">Special</span>::<span class="ident">Nan</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">mpfr</span>::<span class="ident">NAN_KIND</span>,
+        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">unreachable</span><span class="macro">!</span>(),
+    };
+    <span class="ident">mpfr</span>::<span class="ident">custom_init_set</span>(<span class="ident">f</span>, <span class="ident">kind</span>, <span class="number">0</span>, <span class="ident">prec</span>, <span class="ident">limbs</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>);
+}
+
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">EXP_ZERO</span>: <span class="ident">mpfr</span>::<span class="ident">exp_t</span> <span class="op">=</span> <span class="op">-</span><span class="ident">mpfr</span>::<span class="ident">exp_t</span>::<span class="ident">max_value</span>();
 
 <span class="attribute">#[<span class="ident">inline</span>]</span>
 <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">shl_u32</span>(<span class="ident">rop</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">mpfr_t</span>, <span class="ident">op1</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">mpfr_t</span>, <span class="ident">op2</span>: <span class="ident">u32</span>, <span class="ident">rnd</span>: <span class="ident">rnd_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">c_int</span> {
