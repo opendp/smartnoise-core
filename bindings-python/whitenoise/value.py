@@ -89,7 +89,7 @@ def serialize_release_proto(release_values):
                 value=serialize_value_proto(
                     release_values[component_id]['value'],
                     release_values[component_id].get("value_format")),
-                privacy_usage=whitenoise.privacy_usage(
+                privacy_usage=whitenoise.serialize_privacy_usage(
                     **release_values[component_id].get("privacy_usage", {})))
             for component_id in release_values
         })
