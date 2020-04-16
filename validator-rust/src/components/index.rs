@@ -170,15 +170,15 @@ fn select_properties(properties: &ArrayProperties, index: &usize) -> Result<Valu
     if let Some(nature) = &properties.nature {
         properties.nature = Some(match nature {
             Nature::Continuous(continuous) => Nature::Continuous(NatureContinuous {
-                min: match &continuous.min {
-                    Vector1DNull::F64(min) => Vector1DNull::F64(vec![take(min, index)?]),
-                    Vector1DNull::I64(min) => Vector1DNull::I64(vec![take(min, index)?]),
-                    _ => return Err("min must be numeric".into())
+                lower: match &continuous.lower {
+                    Vector1DNull::F64(lower) => Vector1DNull::F64(vec![take(lower, index)?]),
+                    Vector1DNull::I64(lower) => Vector1DNull::I64(vec![take(lower, index)?]),
+                    _ => return Err("lower must be numeric".into())
                 },
-                max: match &continuous.max {
-                    Vector1DNull::F64(max) => Vector1DNull::F64(vec![take(max, index)?]),
-                    Vector1DNull::I64(max) => Vector1DNull::I64(vec![take(max, index)?]),
-                    _ => return Err("max must be numeric".into())
+                upper: match &continuous.upper {
+                    Vector1DNull::F64(upper) => Vector1DNull::F64(vec![take(upper, index)?]),
+                    Vector1DNull::I64(upper) => Vector1DNull::I64(vec![take(upper, index)?]),
+                    _ => return Err("upper must be numeric".into())
                 },
             }),
             Nature::Categorical(categorical) => Nature::Categorical(NatureCategorical {

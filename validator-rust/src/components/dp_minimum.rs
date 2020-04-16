@@ -74,8 +74,8 @@ impl Report for proto::DpMinimum {
 
         let mut releases = Vec::new();
 
-        let minimums = data_property.min_f64()?;
-        let maximums = data_property.max_f64()?;
+        let lower = data_property.lower_f64()?;
+        let upper = data_property.upper_f64()?;
         let num_columns = data_property.num_columns()?;
 
         let privacy_usages = broadcast_privacy_usage(&self.privacy_usage, num_columns as usize)?;
@@ -91,7 +91,7 @@ impl Report for proto::DpMinimum {
                 release_info: match release.array()? {
                     Array::F64(v) => value_to_json(&get_ith_release(v, &column_number)?.into())?,
                     Array::I64(v) => value_to_json(&get_ith_release(v, &column_number)?.into())?,
-                    _ => return Err("maximum must be numeric".into())
+                    _ => return Err("mean must be numeric".into())
                 },
                 privacy_loss: privacy_usage_to_json(&privacy_usages[column_number].clone()),
                 accuracy: None,
@@ -104,8 +104,8 @@ impl Report for proto::DpMinimum {
                     mechanism: self.implementation.clone(),
                     argument: serde_json::json!({
                         "constraint": {
-                            "lowerbound": minimums[column_number],
-                            "upperbound": maximums[column_number]
+                            "lowerbound": lower[column_number],
+                            "upperbound": upper[column_number]
                         }
                     }),
                 }

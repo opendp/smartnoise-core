@@ -73,8 +73,8 @@ impl Report for proto::DpMomentRaw {
 
         let mut releases = Vec::new();
 
-        let minimums = data_property.min_f64()?;
-        let maximums = data_property.max_f64()?;
+        let minimums = data_property.lower_f64()?;
+        let maximums = data_property.upper_f64()?;
         let num_records = data_property.num_records()?;
 
         let num_columns = data_property.num_columns()?;

@@ -8,10 +8,10 @@
       "type": "Array",
       "description": "Result to be released privately via the Geometric mechanism."
     },
-    "min": {
+    "lower": {
       "type": "Array"
     },
-    "max": {
+    "upper": {
       "type": "Array"
     }
   },

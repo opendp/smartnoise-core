@@ -10,6 +10,14 @@ class LibraryWrapper(object):
 
     @staticmethod
     def validate_analysis(analysis, release):
+        """
+        FFI Helper. Check if an analysis is differentially private, given a set of released values.
+        This function is data agnostic. It calls the validator rust FFI with protobuf objects.
+
+        :param analysis: A description of computation
+        :param release: A collection of public values
+        :return: A success or failure response
+        """
         return _communicate(
             argument=api_pb2.RequestValidateAnalysis(analysis=analysis, release=release),
             function=lib_validator.validate_analysis,
@@ -18,6 +26,14 @@ class LibraryWrapper(object):
 
     @staticmethod
     def compute_privacy_usage(analysis, release):
+        """
+        FFI Helper. Compute the overall privacy usage of an analysis.
+        This function is data agnostic. It calls the validator rust FFI with protobuf objects.
+
+        :param analysis: A description of computation
+        :param release: A collection of public values
+        :return: A privacy usage response
+        """
         return _communicate(
             argument=api_pb2.RequestComputePrivacyUsage(analysis=analysis, release=release),
             function=lib_validator.compute_privacy_usage,
@@ -26,6 +42,15 @@ class LibraryWrapper(object):
 
     @staticmethod
     def generate_report(analysis, release):
+        """
+        FFI Helper. Generate a json string with a summary/report of the Analysis and Release
+        This function is data agnostic. It calls the validator rust FFI with protobuf objects.
+
+        :param analysis: A description of computation
+        :param release: A collection of public values
+        :return: A protobuf response containing a json summary string
+        """
+
         return _communicate(
             argument=api_pb2.RequestGenerateReport(analysis=analysis, release=release),
             function=lib_validator.generate_report,
@@ -34,6 +59,16 @@ class LibraryWrapper(object):
 
     @staticmethod
     def accuracy_to_privacy_usage(privacy_definition, component, properties, accuracy):
+        """
+        FFI Helper. Estimate the privacy usage necessary to bound accuracy to a given value.
+        This function is data agnostic. It calls the validator rust FFI with protobuf objects.
+
+        :param privacy_definition: A descriptive object defining neighboring, distance definitions
+        :param component: The component to compute accuracy for
+        :param properties: Properties about all of the arguments to the component
+        :param accuracy: A value and alpha to convert to privacy usage
+        :return: A privacy usage response
+        """
         return _communicate(
             argument=api_pb2.RequestAccuracyToPrivacyUsage(
                 privacy_definition=privacy_definition, component=component, properties=properties, accuracy=accuracy),
@@ -43,6 +78,16 @@ class LibraryWrapper(object):
 
     @staticmethod
     def privacy_usage_to_accuracy(privacy_definition, component, properties, alpha):
+        """
+        FFI Helper. Estimate the accuracy of the release of a component, based on a privacy usage.
+        This function is data agnostic. It calls the validator rust FFI with protobuf objects.
+
+        :param privacy_definition: A descriptive object defining neighboring, distance definitions
+        :param component: The component to compute accuracy for
+        :param properties: Properties about all of the arguments to the component
+        :param alpha: Used to set the confidence level for the accuracy
+        :return: Accuracy estimates
+        """
         return _communicate(
             argument=api_pb2.RequestPrivacyUsageToAccuracy(
                 privacy_definition=privacy_definition, component=component, properties=properties, alpha=alpha),
@@ -52,6 +97,14 @@ class LibraryWrapper(object):
 
     @staticmethod
     def get_properties(analysis, release):
+        """
+        FFI Helper. Derive static properties for all components in the graph.
+        This function is data agnostic. It calls the validator rust FFI with protobuf objects.
+
+        :param analysis: A description of computation
+        :param release: A collection of public values
+        :return: A dictionary of property sets, one set of properties per component
+        """
         return _communicate(
             argument=api_pb2.RequestGetProperties(analysis=analysis, release=release),
             function=lib_validator.get_properties,
@@ -59,12 +112,21 @@ class LibraryWrapper(object):
             ffi=ffi_validator)
 
     @staticmethod
-    def compute_release(analysis, release):
+    def compute_release(analysis, release, stack_trace):
+        """
+        FFI Helper. Evaluate an analysis and release the differentially private results.
+        This function touches private data. It calls the runtime rust FFI with protobuf objects.
+
+        :param analysis: A description of computation
+        :param release: A collection of public values
+        :param stack_trace: Set to False to suppress stack traces
+        :return: A response containing an updated release
+        """
         return _communicate(
             argument=api_pb2.RequestRelease(
                 analysis=analysis,
                 release=release,
-                stack_trace=True),
+                stack_trace=stack_trace),
             function=lib_runtime.release,
             response_type=api_pb2.ResponseRelease,
             ffi=ffi_runtime)
@@ -73,11 +135,12 @@ class LibraryWrapper(object):
 def _communicate(function, argument, response_type, ffi):
     """
     Call the function with the proto argument, over ffi. Deserialize the response and optionally throw an error.
-    @param function: function from lib_*
-    @param argument: proto object from api.proto
-    @param response_type: proto object from api.proto
-    @param ffi: one of the ffi_* objects
-    @return: the .data field of the protobuf response
+
+    :param function: function from lib_*
+    :param argument: proto object from api.proto
+    :param response_type: proto object from api.proto
+    :param ffi: one of the ffi_* objects
+    :return: the .data field of the protobuf response
     """
     serialized_argument = argument.SerializeToString()
 

@@ -70,8 +70,8 @@ impl Report for proto::DpSum {
 
         let mut releases = Vec::new();
 
-        let minimums = data_property.min_f64()?;
-        let maximums = data_property.max_f64()?;
+        let minimums = data_property.lower_f64()?;
+        let maximums = data_property.upper_f64()?;
 
         let num_columns = data_property.num_columns()?;
         let privacy_usages = broadcast_privacy_usage(&self.privacy_usage, num_columns as usize)?;

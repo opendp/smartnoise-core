@@ -6,9 +6,11 @@ from tests.test_base import (
     test_raw_dataset,
     test_everything,
     test_histogram,
-    test_covariance
+    test_covariance,
+test_properties
 )
 
+test_properties()
 # turn on stack traces
 import os
 

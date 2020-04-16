@@ -72,124 +72,124 @@ impl Component for proto::Clamp {
             DataType::F64 => {
 
                 // 1. check public arguments (constant n)
-                let mut clamp_minimum = match public_arguments.get("min") {
+                let mut clamp_lower = match public_arguments.get("lower") {
                     Some(min) => min.clone().array()?.clone().vec_f64(Some(num_columns))
-                        .map_err(prepend("min:"))?,
+                        .map_err(prepend("lower:"))?,
 
                     // 2. then private arguments (for example from another clamped column)
-                    None => match properties.get("min") {
-                        Some(min) => min.array()?.min_f64()
-                            .map_err(prepend("min:"))?,
+                    None => match properties.get("lower") {
+                        Some(min) => min.array()?.lower_f64()
+                            .map_err(prepend("lower:"))?,
 
                         // 3. then data properties (propagated from prior clamping/min/max)
                         None => data_property
-                            .min_f64().map_err(prepend("min:"))?
+                            .lower_f64().map_err(prepend("lower:"))?
                     }
                 };
 
                 // 1. check public arguments (constant n)
-                let mut clamp_maximum = match public_arguments.get("max") {
-                    Some(max) => max.array()?.clone().vec_f64(Some(num_columns))
-                        .map_err(prepend("max:"))?,
+                let mut clamp_upper = match public_arguments.get("upper") {
+                    Some(upper) => upper.array()?.clone().vec_f64(Some(num_columns))
+                        .map_err(prepend("upper:"))?,
 
                     // 2. then private arguments (for example from another clamped column)
-                    None => match properties.get("max") {
-                        Some(min) => min.array()?.max_f64()
-                            .map_err(prepend("max:"))?,
+                    None => match properties.get("upper") {
+                        Some(upper) => upper.array()?.upper_f64()
+                            .map_err(prepend("upper:"))?,
 
                         // 3. then data properties (propagated from prior clamping/min/max)
                         None => data_property
-                            .max_f64().map_err(prepend("max:"))?
+                            .upper_f64().map_err(prepend("upper:"))?
                     }
                 };
 
-                if !clamp_minimum.iter().zip(clamp_maximum.clone()).all(|(min, max)| *min < max) {
-                    return Err("minimum is greater than maximum".into());
+                if !clamp_lower.iter().zip(clamp_upper.clone()).all(|(low, high)| *low < high) {
+                    return Err("lower is greater than upper".into());
                 }
 
                 // the actual data bound (if it exists) may be tighter than the clamping parameters
-                if let Ok(data_minimum) = data_property.min_f64_option() {
-                    clamp_minimum = clamp_minimum.into_iter().zip(data_minimum)
+                if let Ok(data_minimum) = data_property.lower_f64_option() {
+                    clamp_lower = clamp_lower.into_iter().zip(data_minimum)
                         // match on if the actual bound exists for each column, and remain conservative if not
-                        .map(|(clamp_min, optional_data_min)| match optional_data_min {
-                            Some(data_min) => clamp_min.max(data_min), // tighter data bound is only applied here
-                            None => clamp_min
+                        .map(|(clamp_lower, optional_data_lower)| match optional_data_lower {
+                            Some(data_lower) => clamp_lower.max(data_lower), // tighter data bound is only applied here
+                            None => clamp_lower
                         }).collect()
                 }
-                if let Ok(data_maximum) = data_property.max_f64_option() {
-                    clamp_maximum = clamp_maximum.into_iter().zip(data_maximum)
-                        .map(|(clamp_max, optional_data_max)| match optional_data_max {
-                            Some(data_max) => clamp_max.min(data_max),
-                            None => clamp_max
+                if let Ok(data_upper) = data_property.upper_f64_option() {
+                    clamp_upper = clamp_upper.into_iter().zip(data_upper)
+                        .map(|(clamp_upper, optional_data_upper)| match optional_data_upper {
+                            Some(data_upper) => clamp_upper.min(data_upper),
+                            None => clamp_upper
                         }).collect()
                 }
 
                 // save revised bounds
                 data_property.nature = Some(Nature::Continuous(NatureContinuous {
-                    min: Vector1DNull::F64(clamp_minimum.into_iter().map(Some).collect()),
-                    max: Vector1DNull::F64(clamp_maximum.into_iter().map(Some).collect()),
+                    lower: Vector1DNull::F64(clamp_lower.into_iter().map(Some).collect()),
+                    upper: Vector1DNull::F64(clamp_upper.into_iter().map(Some).collect()),
                 }));
 
             },
 
             DataType::I64 => {
                 // 1. check public arguments (constant n)
-                let mut clamp_minimum = match public_arguments.get("min") {
-                    Some(min) => min.clone().array()?.clone().vec_i64(Some(num_columns))
-                        .map_err(prepend("min:"))?,
+                let mut clamp_lower = match public_arguments.get("lower") {
+                    Some(lower) => lower.clone().array()?.clone().vec_i64(Some(num_columns))
+                        .map_err(prepend("lower:"))?,
 
                     // 2. then private arguments (for example from another clamped column)
-                    None => match properties.get("min") {
-                        Some(min) => min.array()?.min_i64()
-                            .map_err(prepend("min:"))?,
+                    None => match properties.get("lower") {
+                        Some(lower) => lower.array()?.lower_i64()
+                            .map_err(prepend("lower:"))?,
 
-                        // 3. then data properties (propagated from prior clamping/min/max)
+                        // 3. then data properties (propagated from prior clamping/lower/upper)
                         None => data_property
-                            .min_i64().map_err(prepend("min:"))?
+                            .lower_i64().map_err(prepend("lower:"))?
                     }
                 };
 
                 // 1. check public arguments (constant n)
-                let mut clamp_maximum = match public_arguments.get("max") {
-                    Some(max) => max.array()?.clone().vec_i64(Some(num_columns))
-                        .map_err(prepend("max:"))?,
+                let mut clamp_upper = match public_arguments.get("upper") {
+                    Some(upper) => upper.array()?.clone().vec_i64(Some(num_columns))
+                        .map_err(prepend("upper:"))?,
 
                     // 2. then private arguments (for example from another clamped column)
-                    None => match properties.get("max") {
-                        Some(min) => min.array()?.max_i64()
-                            .map_err(prepend("max:"))?,
+                    None => match properties.get("upper") {
+                        Some(upper) => upper.array()?.upper_i64()
+                            .map_err(prepend("upper:"))?,
 
                         // 3. then data properties (propagated from prior clamping/min/max)
                         None => data_property
-                            .max_i64().map_err(prepend("max:"))?
+                            .upper_i64().map_err(prepend("upper:"))?
                     }
                 };
 
-                if !clamp_minimum.iter().zip(clamp_maximum.clone()).all(|(min, max)| *min < max) {
-                    return Err("minimum is greater than maximum".into());
+                if !clamp_lower.iter().zip(clamp_upper.clone()).all(|(low, high)| *low < high) {
+                    return Err("lower is greater than upper".into());
                 }
 
                 // the actual data bound (if it exists) may be tighter than the clamping parameters
-                if let Ok(data_minimum) = data_property.min_i64_option() {
-                    clamp_minimum = clamp_minimum.into_iter().zip(data_minimum)
+                if let Ok(data_lower) = data_property.lower_i64_option() {
+                    clamp_lower = clamp_lower.into_iter().zip(data_lower)
                         // match on if the actual bound exists for each column, and remain conservative if not
-                        .map(|(clamp_min, optional_data_min)| match optional_data_min {
-                            Some(data_min) => clamp_min.max(data_min), // tighter data bound is only applied here
-                            None => clamp_min
+                        .map(|(clamp_lower, optional_data_lower)| match optional_data_lower {
+                            Some(data_lower) => clamp_lower.max(data_lower), // tighter data bound is only applied here
+                            None => clamp_lower
                         }).collect()
                 }
-                if let Ok(data_maximum) = data_property.max_i64_option() {
-                    clamp_maximum = clamp_maximum.into_iter().zip(data_maximum)
-                        .map(|(clamp_max, optional_data_max)| match optional_data_max {
-                            Some(data_max) => clamp_max.min(data_max),
-                            None => clamp_max
+                if let Ok(data_upper) = data_property.upper_i64_option() {
+                    clamp_upper = clamp_upper.into_iter().zip(data_upper)
+                        .map(|(clamp_upper, optional_data_upper)| match optional_data_upper {
+                            Some(data_upper) => clamp_upper.min(data_upper),
+                            None => clamp_upper
                         }).collect()
                 }
 
                 // save revised bounds
                 data_property.nature = Some(Nature::Continuous(NatureContinuous {
-                    min: Vector1DNull::I64(clamp_minimum.into_iter().map(Some).collect()),
-                    max: Vector1DNull::I64(clamp_maximum.into_iter().map(Some).collect()),
+                    lower: Vector1DNull::I64(clamp_lower.into_iter().map(Some).collect()),
+                    upper: Vector1DNull::I64(clamp_upper.into_iter().map(Some).collect()),
                 }));
 
             },
@@ -218,26 +218,26 @@ impl Expandable for proto::Clamp {
         let mut component = component.clone();
         let has_categorical = properties.contains_key("categories");
 
-        if !has_categorical && !properties.contains_key("min") {
+        if !has_categorical && !properties.contains_key("lower") {
             current_id += 1;
-            let id_min = current_id.to_owned();
+            let id_lower = current_id.to_owned();
             let value = Value::Array(Array::F64(
-                ndarray::Array::from(properties.get("data").unwrap().to_owned().array()?.min_f64()?).into_dyn()));
+                ndarray::Array::from(properties.get("data").unwrap().to_owned().array()?.lower_f64()?).into_dyn()));
             let (patch_node, release) = get_literal(&value, &component.batch)?;
-            computation_graph.insert(id_min.clone(), patch_node);
-            releases.insert(id_min.clone(), release);
-            component.arguments.insert("min".to_string(), id_min);
+            computation_graph.insert(id_lower.clone(), patch_node);
+            releases.insert(id_lower.clone(), release);
+            component.arguments.insert("lower".to_string(), id_lower);
         }
 
-        if !has_categorical && !properties.contains_key("max") {
+        if !has_categorical && !properties.contains_key("upper") {
             current_id += 1;
-            let id_max = current_id.to_owned();
+            let id_upper = current_id.to_owned();
             let value = Value::Array(Array::F64(
-                ndarray::Array::from(properties.get("data").unwrap().to_owned().array()?.max_f64()?).into_dyn()));
+                ndarray::Array::from(properties.get("data").unwrap().to_owned().array()?.upper_f64()?).into_dyn()));
             let (patch_node, release) = get_literal(&value, &component.batch)?;
-            computation_graph.insert(id_max.clone(), patch_node);
-            releases.insert(id_max.clone(), release);
-            component.arguments.insert("max".to_string(), id_max);
+            computation_graph.insert(id_upper.clone(), patch_node);
+            releases.insert(id_upper.clone(), release);
+            component.arguments.insert("upper".to_string(), id_upper);
         }
 
         computation_graph.insert(component_id.clone(), component);

@@ -51,11 +51,11 @@ impl Aggregator for proto::KthRawSampleMoment {
                 if k != &1 {
                     return Err("KthRawSampleMoment sensitivity is only implemented for KNorm of 1".into())
                 }
-                let min = data_property.min_f64()?;
-                let max = data_property.max_f64()?;
+                let lower = data_property.lower_f64()?;
+                let upper = data_property.upper_f64()?;
                 let num_records = data_property.num_records()?;
 
-                let row_sensitivity = min.iter().zip(max.iter())
+                let row_sensitivity = lower.iter().zip(upper.iter())
                     .map(|(min, max)| (max - min).powi(self.k as i32) / (num_records as f64))
                     .collect::<Vec<f64>>();
 

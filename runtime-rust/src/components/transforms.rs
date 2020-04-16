@@ -50,11 +50,11 @@ impl Evaluable for proto::Divide {
                 (Array::F64(x), Array::F64(y)) =>
                     Ok(broadcast_map(x, y, &|l, r| l / r)?.into()),
                 (Array::I64(x), Array::I64(y)) => {
-                    let min = get_argument(arguments, "min")?.first_i64()?;
-                    let max = get_argument(arguments, "max")?.first_i64()?;
-                    if min > max {return Err("min may not be greater than max".into());}
+                    let lower = get_argument(arguments, "lower")?.first_i64()?;
+                    let upper = get_argument(arguments, "upper")?.first_i64()?;
+                    if lower > upper {return Err("lower may not be greater than upper".into());}
                     Ok(broadcast_map(x, y, &|l, r|
-                        l.checked_div(r).unwrap_or_else(|| sample_uniform_int(&min, &max).unwrap()))?.into())
+                        l.checked_div(r).unwrap_or_else(|| sample_uniform_int(&lower, &upper).unwrap()))?.into())
                 }
                 _ => Err("Divide: Either the argument types are mismatched or non-numeric.".into())
             },

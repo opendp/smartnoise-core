@@ -7,12 +7,12 @@
       "type": "Array",
       "description": "The data for which null values will be imputed."
     },
-    "min": {
+    "lower": {
       "type": "Array",
       "default": "None",
       "description": "A lower bound on data elements for each column. Used only if `categories` is `None`."
     },
-    "max": {
+    "upper": {
       "type": "Array",
       "default": "None",
       "description": "An upper bound on data elements for each column. Used only if `categories` is `None`."
