@@ -284,56 +284,56 @@
             <span class="ident">DataType</span>::<span class="ident">F64</span> <span class="op">=</span><span class="op">&gt;</span> {
 
                 <span class="comment">// 1. check public arguments (constant n)</span>
-                <span class="kw">let</span> <span class="ident">impute_minimum</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">public_arguments</span>.<span class="ident">get</span>(<span class="string">&quot;min&quot;</span>) {
-                    <span class="prelude-val">Some</span>(<span class="ident">min</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">min</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">clone</span>().<span class="ident">vec_f64</span>(<span class="prelude-val">Some</span>(<span class="ident">num_columns</span>))
-                        .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;min:&quot;</span>))<span class="question-mark">?</span>,
+                <span class="kw">let</span> <span class="ident">impute_lower</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">public_arguments</span>.<span class="ident">get</span>(<span class="string">&quot;lower&quot;</span>) {
+                    <span class="prelude-val">Some</span>(<span class="ident">lower</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">lower</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">clone</span>().<span class="ident">vec_f64</span>(<span class="prelude-val">Some</span>(<span class="ident">num_columns</span>))
+                        .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;lower:&quot;</span>))<span class="question-mark">?</span>,
 
                     <span class="comment">// 2. then private arguments (for example from another clamped column)</span>
-                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">properties</span>.<span class="ident">get</span>(<span class="string">&quot;min&quot;</span>) {
-                        <span class="prelude-val">Some</span>(<span class="ident">min</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">min</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">min_f64</span>()
-                            .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;min:&quot;</span>))<span class="question-mark">?</span>,
+                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">properties</span>.<span class="ident">get</span>(<span class="string">&quot;lower&quot;</span>) {
+                        <span class="prelude-val">Some</span>(<span class="ident">lower</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">lower</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">lower_f64</span>()
+                            .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;lower:&quot;</span>))<span class="question-mark">?</span>,
 
                         <span class="comment">// 3. then data properties (propagated from prior clamping/min/max)</span>
                         <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">data_property</span>
-                            .<span class="ident">min_f64</span>().<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;min:&quot;</span>))<span class="question-mark">?</span>
+                            .<span class="ident">lower_f64</span>().<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;min:&quot;</span>))<span class="question-mark">?</span>
                     }
                 };
 
                 <span class="comment">// 1. check public arguments (constant n)</span>
-                <span class="kw">let</span> <span class="ident">impute_maximum</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">public_arguments</span>.<span class="ident">get</span>(<span class="string">&quot;max&quot;</span>) {
-                    <span class="prelude-val">Some</span>(<span class="ident">max</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">max</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">clone</span>().<span class="ident">vec_f64</span>(<span class="prelude-val">Some</span>(<span class="ident">num_columns</span>))
-                        .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;max:&quot;</span>))<span class="question-mark">?</span>,
+                <span class="kw">let</span> <span class="ident">impute_upper</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">public_arguments</span>.<span class="ident">get</span>(<span class="string">&quot;upper&quot;</span>) {
+                    <span class="prelude-val">Some</span>(<span class="ident">upper</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">upper</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">clone</span>().<span class="ident">vec_f64</span>(<span class="prelude-val">Some</span>(<span class="ident">num_columns</span>))
+                        .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;upper:&quot;</span>))<span class="question-mark">?</span>,
 
                     <span class="comment">// 2. then private arguments (for example from another clamped column)</span>
-                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">properties</span>.<span class="ident">get</span>(<span class="string">&quot;max&quot;</span>) {
-                        <span class="prelude-val">Some</span>(<span class="ident">min</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">min</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">max_f64</span>()
-                            .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;max:&quot;</span>))<span class="question-mark">?</span>,
+                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">properties</span>.<span class="ident">get</span>(<span class="string">&quot;upper&quot;</span>) {
+                        <span class="prelude-val">Some</span>(<span class="ident">upper</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">upper</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">upper_f64</span>()
+                            .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;upper:&quot;</span>))<span class="question-mark">?</span>,
 
                         <span class="comment">// 3. then data properties (propagated from prior clamping/min/max)</span>
                         <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">data_property</span>
-                            .<span class="ident">max_f64</span>().<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;max:&quot;</span>))<span class="question-mark">?</span>
+                            .<span class="ident">upper_f64</span>().<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;upper:&quot;</span>))<span class="question-mark">?</span>
                     }
                 };
 
-                <span class="kw">if</span> <span class="op">!</span><span class="ident">impute_minimum</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">impute_maximum</span>.<span class="ident">clone</span>()).<span class="ident">all</span>(<span class="op">|</span>(<span class="ident">min</span>, <span class="ident">max</span>)<span class="op">|</span> <span class="kw-2">*</span><span class="ident">min</span> <span class="op">&lt;</span> <span class="ident">max</span>) {
-                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;minimum is greater than maximum&quot;</span>.<span class="ident">into</span>());
+                <span class="kw">if</span> <span class="op">!</span><span class="ident">impute_lower</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">impute_upper</span>.<span class="ident">clone</span>()).<span class="ident">all</span>(<span class="op">|</span>(<span class="ident">low</span>, <span class="ident">high</span>)<span class="op">|</span> <span class="kw-2">*</span><span class="ident">low</span> <span class="op">&lt;</span> <span class="ident">high</span>) {
+                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;lower is greater than upper&quot;</span>.<span class="ident">into</span>());
                 }
 
                 <span class="comment">// the actual data bound (if it exists) may be wider than the imputation parameters</span>
-                <span class="kw">let</span> <span class="ident">impute_minimum</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">data_property</span>.<span class="ident">min_f64_option</span>() {
-                    <span class="prelude-val">Ok</span>(<span class="ident">data_minimum</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">impute_minimum</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">data_minimum</span>)
-                        .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">impute_min</span>, <span class="ident">optional_data_min</span>)<span class="op">|</span> <span class="kw">match</span> <span class="ident">optional_data_min</span> {
-                            <span class="prelude-val">Some</span>(<span class="ident">data_min</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">impute_min</span>.<span class="ident">min</span>(<span class="ident">data_min</span>)),
+                <span class="kw">let</span> <span class="ident">impute_lower</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">data_property</span>.<span class="ident">lower_f64_option</span>() {
+                    <span class="prelude-val">Ok</span>(<span class="ident">data_lower</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">impute_lower</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">data_lower</span>)
+                        .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">impute_lower</span>, <span class="ident">optional_data_lower</span>)<span class="op">|</span> <span class="kw">match</span> <span class="ident">optional_data_lower</span> {
+                            <span class="prelude-val">Some</span>(<span class="ident">data_lower</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">impute_lower</span>.<span class="ident">min</span>(<span class="ident">data_lower</span>)),
                             <span class="comment">// since there was no prior bound, nothing is known about the min</span>
                             <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>
                         }).<span class="ident">collect</span>(),
                     <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="number">0</span>..<span class="ident">num_columns</span>).<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="prelude-val">None</span>).<span class="ident">collect</span>()
                 };
 
-                <span class="kw">let</span> <span class="ident">impute_maximum</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">data_property</span>.<span class="ident">max_f64_option</span>() {
-                    <span class="prelude-val">Ok</span>(<span class="ident">data_maximum</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">impute_maximum</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">data_maximum</span>)
-                        .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">impute_max</span>, <span class="ident">optional_data_max</span>)<span class="op">|</span> <span class="kw">match</span> <span class="ident">optional_data_max</span> {
-                            <span class="prelude-val">Some</span>(<span class="ident">data_max</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">impute_max</span>.<span class="ident">max</span>(<span class="ident">data_max</span>)),
+                <span class="kw">let</span> <span class="ident">impute_upper</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">data_property</span>.<span class="ident">upper_f64_option</span>() {
+                    <span class="prelude-val">Ok</span>(<span class="ident">data_upper</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">impute_upper</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">data_upper</span>)
+                        .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">impute_upper</span>, <span class="ident">optional_data_upper</span>)<span class="op">|</span> <span class="kw">match</span> <span class="ident">optional_data_upper</span> {
+                            <span class="prelude-val">Some</span>(<span class="ident">data_upper</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">impute_upper</span>.<span class="ident">max</span>(<span class="ident">data_upper</span>)),
                             <span class="comment">// since there was no prior bound, nothing is known about the max</span>
                             <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>
                         }).<span class="ident">collect</span>(),
@@ -342,64 +342,64 @@
 
                 <span class="comment">// impute may only ever widen prior existing bounds</span>
                 <span class="ident">data_property</span>.<span class="ident">nature</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">Nature</span>::<span class="ident">Continuous</span>(<span class="ident">NatureContinuous</span> {
-                    <span class="ident">min</span>: <span class="ident">Vector1DNull</span>::<span class="ident">F64</span>(<span class="ident">impute_minimum</span>),
-                    <span class="ident">max</span>: <span class="ident">Vector1DNull</span>::<span class="ident">F64</span>(<span class="ident">impute_maximum</span>),
+                    <span class="ident">lower</span>: <span class="ident">Vector1DNull</span>::<span class="ident">F64</span>(<span class="ident">impute_lower</span>),
+                    <span class="ident">upper</span>: <span class="ident">Vector1DNull</span>::<span class="ident">F64</span>(<span class="ident">impute_upper</span>),
                 }));
             },
 
             <span class="ident">DataType</span>::<span class="ident">I64</span> <span class="op">=</span><span class="op">&gt;</span> {
 
                 <span class="comment">// 1. check public arguments (constant n)</span>
-                <span class="kw">let</span> <span class="ident">impute_minimum</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">public_arguments</span>.<span class="ident">get</span>(<span class="string">&quot;min&quot;</span>) {
-                    <span class="prelude-val">Some</span>(<span class="ident">min</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">min</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">clone</span>().<span class="ident">vec_i64</span>(<span class="prelude-val">Some</span>(<span class="ident">num_columns</span>))
-                        .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;min:&quot;</span>))<span class="question-mark">?</span>,
+                <span class="kw">let</span> <span class="ident">impute_lower</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">public_arguments</span>.<span class="ident">get</span>(<span class="string">&quot;lower&quot;</span>) {
+                    <span class="prelude-val">Some</span>(<span class="ident">lower</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">lower</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">clone</span>().<span class="ident">vec_i64</span>(<span class="prelude-val">Some</span>(<span class="ident">num_columns</span>))
+                        .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;lower:&quot;</span>))<span class="question-mark">?</span>,
 
                     <span class="comment">// 2. then private arguments (for example from another clamped column)</span>
-                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">properties</span>.<span class="ident">get</span>(<span class="string">&quot;min&quot;</span>) {
-                        <span class="prelude-val">Some</span>(<span class="ident">min</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">min</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">min_i64</span>()
-                            .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;min:&quot;</span>))<span class="question-mark">?</span>,
+                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">properties</span>.<span class="ident">get</span>(<span class="string">&quot;lower&quot;</span>) {
+                        <span class="prelude-val">Some</span>(<span class="ident">lower</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">lower</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">lower_i64</span>()
+                            .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;lower:&quot;</span>))<span class="question-mark">?</span>,
 
-                        <span class="comment">// 3. then data properties (propagated from prior clamping/min/max)</span>
+                        <span class="comment">// 3. then data properties (propagated from prior clamping/lower/upper)</span>
                         <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">data_property</span>
-                            .<span class="ident">min_i64</span>().<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;min:&quot;</span>))<span class="question-mark">?</span>
+                            .<span class="ident">lower_i64</span>().<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;lower:&quot;</span>))<span class="question-mark">?</span>
                     }
                 };
 
                 <span class="comment">// 1. check public arguments (constant n)</span>
-                <span class="kw">let</span> <span class="ident">impute_maximum</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">public_arguments</span>.<span class="ident">get</span>(<span class="string">&quot;max&quot;</span>) {
-                    <span class="prelude-val">Some</span>(<span class="ident">max</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">max</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">clone</span>().<span class="ident">vec_i64</span>(<span class="prelude-val">Some</span>(<span class="ident">num_columns</span>))
-                        .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;max:&quot;</span>))<span class="question-mark">?</span>,
+                <span class="kw">let</span> <span class="ident">impute_upper</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">public_arguments</span>.<span class="ident">get</span>(<span class="string">&quot;upper&quot;</span>) {
+                    <span class="prelude-val">Some</span>(<span class="ident">upper</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">upper</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">clone</span>().<span class="ident">vec_i64</span>(<span class="prelude-val">Some</span>(<span class="ident">num_columns</span>))
+                        .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;upper:&quot;</span>))<span class="question-mark">?</span>,
 
                     <span class="comment">// 2. then private arguments (for example from another clamped column)</span>
-                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">properties</span>.<span class="ident">get</span>(<span class="string">&quot;max&quot;</span>) {
-                        <span class="prelude-val">Some</span>(<span class="ident">min</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">min</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">max_i64</span>()
-                            .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;max:&quot;</span>))<span class="question-mark">?</span>,
+                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">properties</span>.<span class="ident">get</span>(<span class="string">&quot;upper&quot;</span>) {
+                        <span class="prelude-val">Some</span>(<span class="ident">upper</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">upper</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">upper_i64</span>()
+                            .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;upper:&quot;</span>))<span class="question-mark">?</span>,
 
-                        <span class="comment">// 3. then data properties (propagated from prior clamping/min/max)</span>
+                        <span class="comment">// 3. then data properties (propagated from prior clamping/lower/upper)</span>
                         <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">data_property</span>
-                            .<span class="ident">max_i64</span>().<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;max:&quot;</span>))<span class="question-mark">?</span>
+                            .<span class="ident">upper_i64</span>().<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;upper:&quot;</span>))<span class="question-mark">?</span>
                     }
                 };
 
-                <span class="kw">if</span> <span class="op">!</span><span class="ident">impute_minimum</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">impute_maximum</span>.<span class="ident">clone</span>()).<span class="ident">all</span>(<span class="op">|</span>(<span class="ident">min</span>, <span class="ident">max</span>)<span class="op">|</span> <span class="kw-2">*</span><span class="ident">min</span> <span class="op">&lt;</span> <span class="ident">max</span>) {
-                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;minimum is greater than maximum&quot;</span>.<span class="ident">into</span>());
+                <span class="kw">if</span> <span class="op">!</span><span class="ident">impute_lower</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">impute_upper</span>.<span class="ident">clone</span>()).<span class="ident">all</span>(<span class="op">|</span>(<span class="ident">low</span>, <span class="ident">high</span>)<span class="op">|</span> <span class="kw-2">*</span><span class="ident">low</span> <span class="op">&lt;</span> <span class="ident">high</span>) {
+                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;lower is greater than upper&quot;</span>.<span class="ident">into</span>());
                 }
 
                 <span class="comment">// the actual data bound (if it exists) may be wider than the imputation parameters</span>
-                <span class="kw">let</span> <span class="ident">impute_minimum</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">data_property</span>.<span class="ident">min_i64_option</span>() {
-                    <span class="prelude-val">Ok</span>(<span class="ident">data_minimum</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">impute_minimum</span>.<span class="ident">into_iter</span>().<span class="ident">zip</span>(<span class="ident">data_minimum</span>.<span class="ident">into_iter</span>())
-                        .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">impute_min</span>, <span class="ident">optional_data_min</span>)<span class="op">|</span> <span class="kw">match</span> <span class="ident">optional_data_min</span> {
-                            <span class="prelude-val">Some</span>(<span class="ident">data_min</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">impute_min</span>.<span class="ident">min</span>(<span class="ident">data_min</span>)),
+                <span class="kw">let</span> <span class="ident">impute_lower</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">data_property</span>.<span class="ident">lower_i64_option</span>() {
+                    <span class="prelude-val">Ok</span>(<span class="ident">data_lower</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">impute_lower</span>.<span class="ident">into_iter</span>().<span class="ident">zip</span>(<span class="ident">data_lower</span>.<span class="ident">into_iter</span>())
+                        .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">impute_lower</span>, <span class="ident">optional_data_lower</span>)<span class="op">|</span> <span class="kw">match</span> <span class="ident">optional_data_lower</span> {
+                            <span class="prelude-val">Some</span>(<span class="ident">data_lower</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">impute_lower</span>.<span class="ident">min</span>(<span class="ident">data_lower</span>)),
                             <span class="comment">// since there was no prior bound, nothing is known about the min</span>
                             <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>
                         }).<span class="ident">collect</span>(),
                     <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="number">0</span>..<span class="ident">num_columns</span>).<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="prelude-val">None</span>).<span class="ident">collect</span>()
                 };
 
-                <span class="kw">let</span> <span class="ident">impute_maximum</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">data_property</span>.<span class="ident">max_i64_option</span>() {
-                    <span class="prelude-val">Ok</span>(<span class="ident">data_maximum</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">impute_maximum</span>.<span class="ident">into_iter</span>().<span class="ident">zip</span>(<span class="ident">data_maximum</span>.<span class="ident">into_iter</span>())
-                        .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">impute_max</span>, <span class="ident">optional_data_max</span>)<span class="op">|</span> <span class="kw">match</span> <span class="ident">optional_data_max</span> {
-                            <span class="prelude-val">Some</span>(<span class="ident">data_max</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">impute_max</span>.<span class="ident">max</span>(<span class="ident">data_max</span>)),
+                <span class="kw">let</span> <span class="ident">impute_upper</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">data_property</span>.<span class="ident">upper_i64_option</span>() {
+                    <span class="prelude-val">Ok</span>(<span class="ident">data_upper</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">impute_upper</span>.<span class="ident">into_iter</span>().<span class="ident">zip</span>(<span class="ident">data_upper</span>.<span class="ident">into_iter</span>())
+                        .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">impute_upper</span>, <span class="ident">optional_data_upper</span>)<span class="op">|</span> <span class="kw">match</span> <span class="ident">optional_data_upper</span> {
+                            <span class="prelude-val">Some</span>(<span class="ident">data_upper</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">impute_upper</span>.<span class="ident">max</span>(<span class="ident">data_upper</span>)),
                             <span class="comment">// since there was no prior bound, nothing is known about the max</span>
                             <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>
                         }).<span class="ident">collect</span>(),
@@ -408,8 +408,8 @@
 
                 <span class="comment">// impute may only ever widen prior existing bounds</span>
                 <span class="ident">data_property</span>.<span class="ident">nature</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">Nature</span>::<span class="ident">Continuous</span>(<span class="ident">NatureContinuous</span> {
-                    <span class="ident">min</span>: <span class="ident">Vector1DNull</span>::<span class="ident">I64</span>(<span class="ident">impute_minimum</span>),
-                    <span class="ident">max</span>: <span class="ident">Vector1DNull</span>::<span class="ident">I64</span>(<span class="ident">impute_maximum</span>),
+                    <span class="ident">lower</span>: <span class="ident">Vector1DNull</span>::<span class="ident">I64</span>(<span class="ident">impute_lower</span>),
+                    <span class="ident">upper</span>: <span class="ident">Vector1DNull</span>::<span class="ident">I64</span>(<span class="ident">impute_upper</span>),
                 }));
             }
             <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;bounds for imputation must be numeric&quot;</span>.<span class="ident">into</span>())
@@ -442,26 +442,26 @@
             .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;data:&quot;</span>))<span class="question-mark">?</span>.<span class="ident">clone</span>();
 
         <span class="kw">if</span> <span class="op">!</span><span class="ident">properties</span>.<span class="ident">contains_key</span>(<span class="string">&quot;categories&quot;</span>) {
-            <span class="kw">if</span> <span class="op">!</span><span class="ident">properties</span>.<span class="ident">contains_key</span>(<span class="string">&quot;min&quot;</span>) {
+            <span class="kw">if</span> <span class="op">!</span><span class="ident">properties</span>.<span class="ident">contains_key</span>(<span class="string">&quot;lower&quot;</span>) {
                 <span class="ident">current_id</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-                <span class="kw">let</span> <span class="ident">id_min</span> <span class="op">=</span> <span class="ident">current_id</span>;
+                <span class="kw">let</span> <span class="ident">id_lower</span> <span class="op">=</span> <span class="ident">current_id</span>;
                 <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">Value</span>::<span class="ident">Array</span>(<span class="ident">Array</span>::<span class="ident">F64</span>(
-                    <span class="ident">ndarray</span>::<span class="ident">Array</span>::<span class="ident">from</span>(<span class="ident">data_property</span>.<span class="ident">min_f64</span>()<span class="question-mark">?</span>).<span class="ident">into_dyn</span>()));
+                    <span class="ident">ndarray</span>::<span class="ident">Array</span>::<span class="ident">from</span>(<span class="ident">data_property</span>.<span class="ident">lower_f64</span>()<span class="question-mark">?</span>).<span class="ident">into_dyn</span>()));
                 <span class="kw">let</span> (<span class="ident">patch_node</span>, <span class="ident">release</span>) <span class="op">=</span> <span class="ident">get_literal</span>(<span class="kw-2">&amp;</span><span class="ident">value</span>, <span class="kw-2">&amp;</span><span class="ident">component</span>.<span class="ident">batch</span>)<span class="question-mark">?</span>;
-                <span class="ident">computation_graph</span>.<span class="ident">insert</span>(<span class="ident">id_min</span>.<span class="ident">clone</span>(), <span class="ident">patch_node</span>);
-                <span class="ident">releases</span>.<span class="ident">insert</span>(<span class="ident">id_min</span>.<span class="ident">clone</span>(), <span class="ident">release</span>);
-                <span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">insert</span>(<span class="string">&quot;min&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">id_min</span>);
+                <span class="ident">computation_graph</span>.<span class="ident">insert</span>(<span class="ident">id_lower</span>.<span class="ident">clone</span>(), <span class="ident">patch_node</span>);
+                <span class="ident">releases</span>.<span class="ident">insert</span>(<span class="ident">id_lower</span>.<span class="ident">clone</span>(), <span class="ident">release</span>);
+                <span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">insert</span>(<span class="string">&quot;lower&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">id_lower</span>);
             }
 
-            <span class="kw">if</span> <span class="op">!</span><span class="ident">properties</span>.<span class="ident">contains_key</span>(<span class="string">&quot;max&quot;</span>) {
+            <span class="kw">if</span> <span class="op">!</span><span class="ident">properties</span>.<span class="ident">contains_key</span>(<span class="string">&quot;upper&quot;</span>) {
                 <span class="ident">current_id</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-                <span class="kw">let</span> <span class="ident">id_max</span> <span class="op">=</span> <span class="ident">current_id</span>;
+                <span class="kw">let</span> <span class="ident">id_upper</span> <span class="op">=</span> <span class="ident">current_id</span>;
                 <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">Value</span>::<span class="ident">Array</span>(<span class="ident">Array</span>::<span class="ident">F64</span>(
-                    <span class="ident">ndarray</span>::<span class="ident">Array</span>::<span class="ident">from</span>(<span class="ident">data_property</span>.<span class="ident">max_f64</span>()<span class="question-mark">?</span>).<span class="ident">into_dyn</span>()));
+                    <span class="ident">ndarray</span>::<span class="ident">Array</span>::<span class="ident">from</span>(<span class="ident">data_property</span>.<span class="ident">upper_f64</span>()<span class="question-mark">?</span>).<span class="ident">into_dyn</span>()));
                 <span class="kw">let</span> (<span class="ident">patch_node</span>, <span class="ident">release</span>) <span class="op">=</span> <span class="ident">get_literal</span>(<span class="kw-2">&amp;</span><span class="ident">value</span>, <span class="kw-2">&amp;</span><span class="ident">component</span>.<span class="ident">batch</span>)<span class="question-mark">?</span>;
-                <span class="ident">computation_graph</span>.<span class="ident">insert</span>(<span class="ident">id_max</span>.<span class="ident">clone</span>(), <span class="ident">patch_node</span>);
-                <span class="ident">releases</span>.<span class="ident">insert</span>(<span class="ident">id_max</span>.<span class="ident">clone</span>(), <span class="ident">release</span>);
-                <span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">insert</span>(<span class="string">&quot;max&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">id_max</span>);
+                <span class="ident">computation_graph</span>.<span class="ident">insert</span>(<span class="ident">id_upper</span>.<span class="ident">clone</span>(), <span class="ident">patch_node</span>);
+                <span class="ident">releases</span>.<span class="ident">insert</span>(<span class="ident">id_upper</span>.<span class="ident">clone</span>(), <span class="ident">release</span>);
+                <span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">insert</span>(<span class="string">&quot;upper&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">id_upper</span>);
             }
         }
 

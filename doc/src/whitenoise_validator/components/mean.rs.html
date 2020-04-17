@@ -134,14 +134,14 @@
 
                 <span class="ident">data_property</span>.<span class="ident">assert_non_null</span>()<span class="question-mark">?</span>;
                 <span class="ident">data_property</span>.<span class="ident">assert_is_not_aggregated</span>()<span class="question-mark">?</span>;
-                <span class="kw">let</span> <span class="ident">data_min</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">min_f64</span>()<span class="question-mark">?</span>;
-                <span class="kw">let</span> <span class="ident">data_max</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">max_f64</span>()<span class="question-mark">?</span>;
+                <span class="kw">let</span> <span class="ident">data_lower</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">lower_f64</span>()<span class="question-mark">?</span>;
+                <span class="kw">let</span> <span class="ident">data_upper</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">upper_f64</span>()<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">data_n</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">num_records</span>()<span class="question-mark">?</span> <span class="kw">as</span> <span class="ident">f64</span>;
 
                 <span class="comment">// AddRemove vs. Substitute share the same bounds</span>
 
                 <span class="kw">let</span> <span class="ident">row_sensitivity</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">k</span> {
-                    <span class="number">1</span> <span class="op">|</span> <span class="number">2</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">data_min</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">data_max</span>.<span class="ident">iter</span>())
+                    <span class="number">1</span> <span class="op">|</span> <span class="number">2</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">data_lower</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">data_upper</span>.<span class="ident">iter</span>())
                         .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">min</span>, <span class="ident">max</span>)<span class="op">|</span> ((<span class="ident">max</span> <span class="op">-</span> <span class="ident">min</span>) <span class="op">/</span> <span class="ident">data_n</span>).<span class="ident">powi</span>(<span class="kw-2">*</span><span class="ident">k</span> <span class="kw">as</span> <span class="ident">i32</span>))
                         .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span><span class="op">&gt;</span>(),
                     <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;KNorm sensitivity is only supported in L1 and L2 spaces&quot;</span>.<span class="ident">into</span>())

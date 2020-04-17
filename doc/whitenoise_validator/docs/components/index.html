@@ -3,15 +3,15 @@ The components may be strung together in arbitrary directed graphs (called analy
 <table><thead><tr><th>Component ID</th><th>Bindings Name</th><th>Inputs</th></tr></thead><tbody>
 <tr><td><a href="../../proto/struct.Add.html">Add</a></td><td>add</td><td><code>left</code>, <code>right</code></td></tr>
 <tr><td><a href="../../proto/struct.Bin.html">Bin</a></td><td>bin</td><td><code>data</code>, <code>edges</code>, <code>inclusive_left</code>, <code>null_value</code>, <code>side</code></td></tr>
-<tr><td><a href="../../proto/struct.Cast.html">Cast</a></td><td>cast</td><td><code>data</code>, <code>max</code>, <code>min</code>, <code>true_label</code>, <code>type</code></td></tr>
-<tr><td><a href="../../proto/struct.Clamp.html">Clamp</a></td><td>clamp</td><td><code>categories</code>, <code>data</code>, <code>max</code>, <code>min</code>, <code>null_value</code></td></tr>
+<tr><td><a href="../../proto/struct.Cast.html">Cast</a></td><td>cast</td><td><code>data</code>, <code>lower</code>, <code>true_label</code>, <code>type</code>, <code>upper</code></td></tr>
+<tr><td><a href="../../proto/struct.Clamp.html">Clamp</a></td><td>clamp</td><td><code>categories</code>, <code>data</code>, <code>lower</code>, <code>null_value</code>, <code>upper</code></td></tr>
 <tr><td><a href="../../proto/struct.Count.html">Count</a></td><td>count</td><td><code>data</code></td></tr>
 <tr><td><a href="../../proto/struct.Covariance.html">Covariance</a></td><td>covariance</td><td><code>data</code>, <code>finite_sample_correction</code>, <code>left</code>, <code>right</code></td></tr>
 <tr><td><a href="../../proto/struct.Digitize.html">Digitize</a></td><td>digitize</td><td><code>data</code>, <code>edges</code>, <code>inclusive_left</code>, <code>null_value</code></td></tr>
 <tr><td><a href="../../proto/struct.Divide.html">Divide</a></td><td>divide</td><td><code>left</code>, <code>right</code></td></tr>
-<tr><td><a href="../../proto/struct.DPCount.html">DPCount</a></td><td>dp_count</td><td><code>data</code>, <code>enforce_constant_time</code>, <code>implementation</code>, <code>max</code>, <code>min</code>, <code>privacy_usage</code></td></tr>
+<tr><td><a href="../../proto/struct.DPCount.html">DPCount</a></td><td>dp_count</td><td><code>data</code>, <code>enforce_constant_time</code>, <code>implementation</code>, <code>lower</code>, <code>privacy_usage</code>, <code>upper</code></td></tr>
 <tr><td><a href="../../proto/struct.DPCovariance.html">DPCovariance</a></td><td>dp_covariance</td><td><code>data</code>, <code>finite_sample_correction</code>, <code>implementation</code>, <code>left</code>, <code>privacy_usage</code>, <code>right</code></td></tr>
-<tr><td><a href="../../proto/struct.DPHistogram.html">DPHistogram</a></td><td>dp_histogram</td><td><code>categories</code>, <code>data</code>, <code>edges</code>, <code>enforce_constant_time</code>, <code>implementation</code>, <code>inclusive_left</code>, <code>max</code>, <code>min</code>, <code>null_value</code>, <code>privacy_usage</code></td></tr>
+<tr><td><a href="../../proto/struct.DPHistogram.html">DPHistogram</a></td><td>dp_histogram</td><td><code>categories</code>, <code>data</code>, <code>edges</code>, <code>enforce_constant_time</code>, <code>implementation</code>, <code>inclusive_left</code>, <code>lower</code>, <code>null_value</code>, <code>privacy_usage</code>, <code>upper</code></td></tr>
 <tr><td><a href="../../proto/struct.DPMaximum.html">DPMaximum</a></td><td>dp_maximum</td><td><code>data</code>, <code>implementation</code>, <code>privacy_usage</code></td></tr>
 <tr><td><a href="../../proto/struct.DPMean.html">DPMean</a></td><td>dp_mean</td><td><code>data</code>, <code>implementation</code>, <code>privacy_usage</code></td></tr>
 <tr><td><a href="../../proto/struct.DPMedian.html">DPMedian</a></td><td>dp_median</td><td><code>data</code>, <code>implementation</code>, <code>interpolation</code>, <code>privacy_usage</code></td></tr>
@@ -24,7 +24,7 @@ The components may be strung together in arbitrary directed graphs (called analy
 <tr><td><a href="../../proto/struct.GaussianMechanism.html">GaussianMechanism</a></td><td>gaussian_mechanism</td><td><code>data</code>, <code>privacy_usage</code></td></tr>
 <tr><td><a href="../../proto/struct.GreaterThan.html">GreaterThan</a></td><td>greater_than</td><td><code>left</code>, <code>right</code></td></tr>
 <tr><td><a href="../../proto/struct.Histogram.html">Histogram</a></td><td>histogram</td><td><code>categories</code>, <code>data</code>, <code>edges</code>, <code>inclusive_left</code>, <code>null_value</code></td></tr>
-<tr><td><a href="../../proto/struct.Impute.html">Impute</a></td><td>impute</td><td><code>categories</code>, <code>data</code>, <code>distribution</code>, <code>max</code>, <code>min</code>, <code>scale</code>, <code>shift</code>, <code>weights</code></td></tr>
+<tr><td><a href="../../proto/struct.Impute.html">Impute</a></td><td>impute</td><td><code>categories</code>, <code>data</code>, <code>distribution</code>, <code>lower</code>, <code>scale</code>, <code>shift</code>, <code>upper</code>, <code>weights</code></td></tr>
 <tr><td><a href="../../proto/struct.Index.html">Index</a></td><td>index</td><td><code>columns</code>, <code>data</code></td></tr>
 <tr><td><a href="../../proto/struct.KthRawSampleMoment.html">KthRawSampleMoment</a></td><td>kth_raw_sample_moment</td><td><code>data</code>, <code>k</code></td></tr>
 <tr><td><a href="../../proto/struct.LaplaceMechanism.html">LaplaceMechanism</a></td><td>laplace_mechanism</td><td><code>data</code>, <code>privacy_usage</code></td></tr>
@@ -44,13 +44,13 @@ The components may be strung together in arbitrary directed graphs (called analy
 <tr><td><a href="../../proto/struct.Power.html">Power</a></td><td>power</td><td><code>data</code>, <code>radical</code></td></tr>
 <tr><td><a href="../../proto/struct.Quantile.html">Quantile</a></td><td>quantile</td><td><code>data</code>, <code>interpolation</code>, <code>quantile</code></td></tr>
 <tr><td><a href="../../proto/struct.Reshape.html">Reshape</a></td><td>reshape</td><td><code>data</code>, <code>layout</code>, <code>shape</code>, <code>symmetric</code></td></tr>
-<tr><td><a href="../../proto/struct.Resize.html">Resize</a></td><td>resize</td><td><code>categories</code>, <code>data</code>, <code>distribution</code>, <code>max</code>, <code>min</code>, <code>n</code>, <code>scale</code>, <code>shift</code>, <code>weights</code></td></tr>
-<tr><td><a href="../../proto/struct.SimpleGeometricMechanism.html">SimpleGeometricMechanism</a></td><td>simple_geometric_mechanism</td><td><code>data</code>, <code>enforce_constant_time</code>, <code>max</code>, <code>min</code>, <code>privacy_usage</code></td></tr>
+<tr><td><a href="../../proto/struct.Resize.html">Resize</a></td><td>resize</td><td><code>categories</code>, <code>data</code>, <code>distribution</code>, <code>lower</code>, <code>n</code>, <code>scale</code>, <code>shift</code>, <code>upper</code>, <code>weights</code></td></tr>
+<tr><td><a href="../../proto/struct.SimpleGeometricMechanism.html">SimpleGeometricMechanism</a></td><td>simple_geometric_mechanism</td><td><code>data</code>, <code>enforce_constant_time</code>, <code>lower</code>, <code>privacy_usage</code>, <code>upper</code></td></tr>
 <tr><td><a href="../../proto/struct.Subtract.html">Subtract</a></td><td>subtract</td><td><code>left</code>, <code>right</code></td></tr>
 <tr><td><a href="../../proto/struct.Sum.html">Sum</a></td><td>sum</td><td><code>data</code></td></tr>
 <tr><td><a href="../../proto/struct.ToBool.html">ToBool</a></td><td>to_bool</td><td><code>data</code>, <code>true_label</code></td></tr>
 <tr><td><a href="../../proto/struct.ToFloat.html">ToFloat</a></td><td>to_float</td><td><code>data</code></td></tr>
-<tr><td><a href="../../proto/struct.ToInt.html">ToInt</a></td><td>to_int</td><td><code>data</code>, <code>max</code>, <code>min</code></td></tr>
+<tr><td><a href="../../proto/struct.ToInt.html">ToInt</a></td><td>to_int</td><td><code>data</code>, <code>lower</code>, <code>upper</code></td></tr>
 <tr><td><a href="../../proto/struct.ToString.html">ToString</a></td><td>to_string</td><td><code>data</code></td></tr>
 <tr><td><a href="../../proto/struct.Variance.html">Variance</a></td><td>variance</td><td><code>data</code>, <code>finite_sample_correction</code></td></tr>
 </tbody></table>

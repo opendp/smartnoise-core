@@ -309,8 +309,8 @@
             <span class="ident">argument</span> <span class="op">=</span> <span class="ident">serde_json</span>::<span class="macro">json</span><span class="macro">!</span>({
                 <span class="string">&quot;n&quot;</span>: <span class="ident">data_property</span>.<span class="ident">num_records</span>()<span class="question-mark">?</span>,
                 <span class="string">&quot;constraint&quot;</span>: {
-                    <span class="string">&quot;lowerbound&quot;</span>: <span class="ident">data_property</span>.<span class="ident">min_f64</span>()<span class="question-mark">?</span>,
-                    <span class="string">&quot;upperbound&quot;</span>: <span class="ident">data_property</span>.<span class="ident">max_f64</span>()<span class="question-mark">?</span>
+                    <span class="string">&quot;lowerbound&quot;</span>: <span class="ident">data_property</span>.<span class="ident">lower_f64</span>()<span class="question-mark">?</span>,
+                    <span class="string">&quot;upperbound&quot;</span>: <span class="ident">data_property</span>.<span class="ident">upper_f64</span>()<span class="question-mark">?</span>
                 }
             });
         }
@@ -326,10 +326,10 @@
             <span class="ident">argument</span> <span class="op">=</span> <span class="ident">serde_json</span>::<span class="macro">json</span><span class="macro">!</span>({
                 <span class="string">&quot;n&quot;</span>: <span class="ident">left_property</span>.<span class="ident">num_records</span>()<span class="question-mark">?</span>,
                 <span class="string">&quot;constraint&quot;</span>: {
-                    <span class="string">&quot;lowerbound_left&quot;</span>: <span class="ident">left_property</span>.<span class="ident">min_f64</span>()<span class="question-mark">?</span>,
-                    <span class="string">&quot;upperbound_left&quot;</span>: <span class="ident">left_property</span>.<span class="ident">max_f64</span>()<span class="question-mark">?</span>,
-                    <span class="string">&quot;lowerbound_right&quot;</span>: <span class="ident">right_property</span>.<span class="ident">min_f64</span>()<span class="question-mark">?</span>,
-                    <span class="string">&quot;upperbound_right&quot;</span>: <span class="ident">right_property</span>.<span class="ident">max_f64</span>()<span class="question-mark">?</span>
+                    <span class="string">&quot;lowerbound_left&quot;</span>: <span class="ident">left_property</span>.<span class="ident">lower_f64</span>()<span class="question-mark">?</span>,
+                    <span class="string">&quot;upperbound_left&quot;</span>: <span class="ident">left_property</span>.<span class="ident">upper_f64</span>()<span class="question-mark">?</span>,
+                    <span class="string">&quot;lowerbound_right&quot;</span>: <span class="ident">right_property</span>.<span class="ident">lower_f64</span>()<span class="question-mark">?</span>,
+                    <span class="string">&quot;upperbound_right&quot;</span>: <span class="ident">right_property</span>.<span class="ident">upper_f64</span>()<span class="question-mark">?</span>
                 }
             });
         }

@@ -285,13 +285,13 @@
                             .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;data:&quot;</span>))<span class="question-mark">?</span>.<span class="ident">clone</span>();
                         <span class="ident">data_property</span>.<span class="ident">assert_is_not_aggregated</span>()<span class="question-mark">?</span>;
                         <span class="ident">data_property</span>.<span class="ident">assert_non_null</span>()<span class="question-mark">?</span>;
-                        <span class="kw">let</span> <span class="ident">data_min</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">min_f64</span>()<span class="question-mark">?</span>;
-                        <span class="kw">let</span> <span class="ident">data_max</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">max_f64</span>()<span class="question-mark">?</span>;
+                        <span class="kw">let</span> <span class="ident">data_lower</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">lower_f64</span>()<span class="question-mark">?</span>;
+                        <span class="kw">let</span> <span class="ident">data_upper</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">upper_f64</span>()<span class="question-mark">?</span>;
                         <span class="ident">data_n</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">num_records</span>()<span class="question-mark">?</span> <span class="kw">as</span> <span class="ident">f64</span>;
 
                         <span class="comment">// collect bound differences for upper triangle of matrix</span>
-                        <span class="ident">data_min</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">data_max</span>.<span class="ident">iter</span>()).<span class="ident">enumerate</span>()
-                            .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">i</span>, (<span class="ident">left_min</span>, <span class="ident">left_max</span>))<span class="op">|</span> <span class="ident">data_min</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">data_max</span>.<span class="ident">iter</span>()).<span class="ident">enumerate</span>()
+                        <span class="ident">data_lower</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">data_upper</span>.<span class="ident">iter</span>()).<span class="ident">enumerate</span>()
+                            .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">i</span>, (<span class="ident">left_min</span>, <span class="ident">left_max</span>))<span class="op">|</span> <span class="ident">data_lower</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">data_upper</span>.<span class="ident">iter</span>()).<span class="ident">enumerate</span>()
                                 .<span class="ident">filter</span>(<span class="op">|</span>(<span class="ident">j</span>, <span class="kw">_</span>)<span class="op">|</span> <span class="ident">i</span> <span class="op">&lt;</span><span class="op">=</span> <span class="kw-2">*</span><span class="ident">j</span>)
                                 .<span class="ident">map</span>(<span class="op">|</span>(<span class="kw">_</span>, (<span class="ident">right_min</span>, <span class="ident">right_max</span>))<span class="op">|</span>
                                     (<span class="kw-2">*</span><span class="ident">left_max</span> <span class="op">-</span> <span class="kw-2">*</span><span class="ident">left_min</span>) <span class="op">*</span> (<span class="kw-2">*</span><span class="ident">right_max</span> <span class="op">-</span> <span class="kw-2">*</span><span class="ident">right_min</span>))
@@ -305,8 +305,8 @@
                         <span class="ident">left_property</span>.<span class="ident">assert_is_not_aggregated</span>()<span class="question-mark">?</span>;
                         <span class="ident">left_property</span>.<span class="ident">assert_non_null</span>()<span class="question-mark">?</span>;
                         <span class="kw">let</span> <span class="ident">left_n</span> <span class="op">=</span> <span class="ident">left_property</span>.<span class="ident">num_records</span>()<span class="question-mark">?</span>;
-                        <span class="kw">let</span> <span class="ident">left_min</span> <span class="op">=</span> <span class="ident">left_property</span>.<span class="ident">min_f64</span>()<span class="question-mark">?</span>;
-                        <span class="kw">let</span> <span class="ident">left_max</span> <span class="op">=</span> <span class="ident">left_property</span>.<span class="ident">max_f64</span>()<span class="question-mark">?</span>;
+                        <span class="kw">let</span> <span class="ident">left_lower</span> <span class="op">=</span> <span class="ident">left_property</span>.<span class="ident">lower_f64</span>()<span class="question-mark">?</span>;
+                        <span class="kw">let</span> <span class="ident">left_upper</span> <span class="op">=</span> <span class="ident">left_property</span>.<span class="ident">upper_f64</span>()<span class="question-mark">?</span>;
 
                         <span class="comment">// right side: perform checks and prepare parameters</span>
                         <span class="kw">let</span> <span class="ident">right_property</span> <span class="op">=</span> <span class="ident">right_property</span>.<span class="ident">array</span>()
@@ -314,8 +314,8 @@
                         <span class="ident">right_property</span>.<span class="ident">assert_is_not_aggregated</span>()<span class="question-mark">?</span>;
                         <span class="ident">right_property</span>.<span class="ident">assert_non_null</span>()<span class="question-mark">?</span>;
                         <span class="kw">let</span> <span class="ident">right_n</span> <span class="op">=</span> <span class="ident">right_property</span>.<span class="ident">num_records</span>()<span class="question-mark">?</span>;
-                        <span class="kw">let</span> <span class="ident">right_min</span> <span class="op">=</span> <span class="ident">right_property</span>.<span class="ident">min_f64</span>()<span class="question-mark">?</span>;
-                        <span class="kw">let</span> <span class="ident">right_max</span> <span class="op">=</span> <span class="ident">right_property</span>.<span class="ident">max_f64</span>()<span class="question-mark">?</span>;
+                        <span class="kw">let</span> <span class="ident">right_lower</span> <span class="op">=</span> <span class="ident">right_property</span>.<span class="ident">lower_f64</span>()<span class="question-mark">?</span>;
+                        <span class="kw">let</span> <span class="ident">right_upper</span> <span class="op">=</span> <span class="ident">right_property</span>.<span class="ident">upper_f64</span>()<span class="question-mark">?</span>;
 
                         <span class="comment">// ensure conformability</span>
                         <span class="kw">if</span> <span class="ident">left_n</span> <span class="op">!</span><span class="op">=</span> <span class="ident">right_n</span> {
@@ -324,8 +324,8 @@
                         <span class="ident">data_n</span> <span class="op">=</span> <span class="ident">left_n</span> <span class="kw">as</span> <span class="ident">f64</span>;
 
                         <span class="comment">// collect bound differences for entire matrix</span>
-                        <span class="ident">left_min</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">left_max</span>.<span class="ident">iter</span>())
-                            .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">left_min</span>, <span class="ident">left_max</span>)<span class="op">|</span> <span class="ident">right_min</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">right_max</span>.<span class="ident">iter</span>())
+                        <span class="ident">left_lower</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">left_upper</span>.<span class="ident">iter</span>())
+                            .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">left_min</span>, <span class="ident">left_max</span>)<span class="op">|</span> <span class="ident">right_lower</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">right_upper</span>.<span class="ident">iter</span>())
                                 .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">right_min</span>, <span class="ident">right_max</span>)<span class="op">|</span>
                                     (<span class="ident">left_max</span> <span class="op">-</span> <span class="kw-2">*</span><span class="ident">left_min</span>) <span class="op">*</span> (<span class="ident">right_max</span> <span class="op">-</span> <span class="kw-2">*</span><span class="ident">right_min</span>))
                                 .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span><span class="op">&gt;</span>())

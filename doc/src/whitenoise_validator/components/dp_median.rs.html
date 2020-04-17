@@ -206,8 +206,8 @@
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">releases</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
 
-        <span class="kw">let</span> <span class="ident">minimums</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">min_f64</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">maximums</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">max_f64</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">minimums</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">lower_f64</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">maximums</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">upper_f64</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">num_columns</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">num_columns</span>()<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">privacy_usages</span> <span class="op">=</span> <span class="ident">broadcast_privacy_usage</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">privacy_usage</span>, <span class="ident">num_columns</span> <span class="kw">as</span> <span class="ident">usize</span>)<span class="question-mark">?</span>;
