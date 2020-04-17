@@ -53,7 +53,7 @@ use std::collections::HashMap;
 use crate::base::{Value, NodeProperties, SensitivitySpace, ValueProperties, Array};
 use crate::proto;
 use crate::utilities::json::{JSONRelease};
-use crate::utilities::get_ith_release;
+use crate::utilities::get_ith_column;
 use ndarray::ArrayD;
 
 /// Universal Component trait
@@ -460,7 +460,7 @@ impl Named for proto::Literal {
         fn array_to_names<T: ToString + Clone + Default>(array: &ArrayD<T>, num_columns: i64) -> Result<Vec<String>> {
             (0..num_columns as usize)
                 .map(|index| {
-                    let array = get_ith_release(array, &index)?;
+                    let array = get_ith_column(array, &index)?;
                     match array.ndim() {
                         0 => match array.first() {
                             Some(value) => Ok(value.to_string()),

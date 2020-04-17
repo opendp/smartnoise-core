@@ -202,7 +202,6 @@ message Component {
         .collect::<Vec<String>>().join("\n\n");
 
     let proto_text = format!("{}\n{}\n    }}\n}}\n\n{}", proto_text_header, proto_text_variants, proto_text_messages);
-//    println!("{}", proto_text);
 
     // overwrite/remove the components.proto file
     {
@@ -212,8 +211,6 @@ message Component {
             .expect("Unable to write components.proto file.");
         file.flush().unwrap();
     }
-//    panic to prevent stdout from being masked
-//    panic!("You can't suppress me rustc!");
 
     let mut config = prost_build::Config::new();
     config.type_attribute("whitenoise.Component.variant", "#[derive(derive_more::From)]");
@@ -266,4 +263,7 @@ message Component {
 //        cbindgen::Config::from_file("cbindgen.toml").unwrap())
 //        .expect("Unable to generate bindings")
 //        .write_to_file("../api_validator.h");
+
+    // panic to prevent stdout from being masked
+    // panic!("You can't suppress me rustc!");
 }

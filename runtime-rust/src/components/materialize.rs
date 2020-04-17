@@ -2,12 +2,14 @@ use whitenoise_validator::errors::*;
 
 use ndarray::prelude::*;
 use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value, Hashmap};
+use whitenoise_validator::base::{Value, Array, Hashmap};
 use crate::components::Evaluable;
 use std::collections::HashMap;
-use ndarray::Array;
+use ndarray;
 use whitenoise_validator::proto;
 use whitenoise_validator::utilities::serial::parse_value;
+use whitenoise_validator::utilities::array::{slow_stack, slow_select};
+use std::cmp::Ordering;
 
 impl Evaluable for proto::Materialize {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
@@ -32,10 +34,15 @@ impl Evaluable for proto::Materialize {
             .ok_or_else(|| Error::from("data source must be supplied"))?;
         
         match data_source.value.as_ref().unwrap() {
-            proto::data_source::Value::Literal(value) =>
+            proto::data_source::Value::Literal(value) => {
                 // force the input to be an array- reject hashmap and jagged
-                Ok(Value::Array(parse_value(value)?.array()?.clone())),
-
+                match parse_value(value)?.array()? {
+                    Array::F64(array) => Ok(standardize_columns(array, num_columns)?.into()),
+                    Array::I64(array) => Ok(standardize_columns(array, num_columns)?.into()),
+                    Array::Bool(array) => Ok(standardize_columns(array, num_columns)?.into()),
+                    Array::Str(array) => Ok(standardize_columns(array, num_columns)?.into()),
+                }
+            }
             proto::data_source::Value::FilePath(path) => {
                 let mut response = (0..num_columns)
                     .map(|_| Vec::new())
@@ -76,7 +83,7 @@ impl Evaluable for proto::Materialize {
                         // convert hashmap of vecs into arrays
                         Ok(Value::Hashmap(Hashmap::Str(response.into_iter().enumerate()
                             .map(|(k, v): (usize, Vec<String>)|
-                                (column_names[k].clone(), Array::from(v).into_dyn().into()))
+                                (column_names[k].clone(), ndarray::Array::from(v).into_dyn().into()))
                             .collect::<HashMap<String, Value>>())))
                     },
                     None => {
@@ -84,7 +91,7 @@ impl Evaluable for proto::Materialize {
                         // convert hashmap of vecs into arrays
                         Ok(Value::Hashmap(Hashmap::I64(response.into_iter().enumerate()
                             .map(|(k, v): (usize, Vec<String>)|
-                                (k as i64, Array::from(v).into_dyn().into()))
+                                (k as i64, ndarray::Array::from(v).into_dyn().into()))
                             .collect::<HashMap<i64, Value>>())))
                     }
                 }
@@ -93,4 +100,29 @@ impl Evaluable for proto::Materialize {
             _ => Err("the selected table reference format is not implemented".into())
         }
     }
+}
+
+
+fn standardize_columns<T: Default + Clone>(array: &ArrayD<T>, column_len: usize) -> Result<ArrayD<T>> {
+    Ok(match array.ndim() {
+        0 => return Err("dataset may not be a scalar".into()),
+        1 => match column_len {
+            0 => slow_select(array, Axis(1), &[]),
+            1 => array.clone(),
+            _ => slow_stack(
+                Axis(1),
+                &[array.view(), ndarray::Array::<T, IxDyn>::default(IxDyn(&[array.len(), column_len])).view()])?
+        },
+        2 => match array.len_of(Axis(1)).cmp(&column_len) {
+            Ordering::Less => slow_stack(
+                Axis(1),
+                &[array.view(), ndarray::Array::<T, IxDyn>::default(IxDyn(&[
+                    array.len_of(Axis(0)),
+                    column_len - array.len_of(Axis(1))])).view()]
+            )?,
+            Ordering::Equal => array.clone(),
+            Ordering::Greater => slow_select(array, Axis(1), &(0..column_len).collect::<Vec<_>>())
+        },
+        _ => return Err("array must be 1 or 2-dimensional".into())
+    })
 }

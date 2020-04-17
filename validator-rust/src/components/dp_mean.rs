@@ -10,7 +10,7 @@ use crate::components::{Expandable, Report};
 
 use crate::base::{NodeProperties, Value};
 use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, value_to_json};
-use crate::utilities::{prepend, broadcast_privacy_usage, get_ith_release};
+use crate::utilities::{prepend, broadcast_privacy_usage, get_ith_column};
 use serde_json;
 
 
@@ -106,7 +106,7 @@ impl Report for proto::DpMean {
                 description: "DP release information".to_string(),
                 statistic: "DPMean".to_string(),
                 variables: serde_json::json!(variable_name),
-                release_info: value_to_json(&get_ith_release(
+                release_info: value_to_json(&get_ith_column(
                     release.array()?.f64()?,
                     &(column_number as usize)
                 )?.into())?,
