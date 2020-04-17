@@ -23,9 +23,11 @@ jobs:
     language: rust
     rust: stable
     before_install:
+      # Python + sphinx for generating python documentation 
       - sudo apt-get -y install python3-pip python-dev
       - python3 -V
       - pip3 -V
+      - pip3 install sphinx sphinx_rtd_theme
     script:
     # (1) Rust Validator -> Test & Build
     - cd validator-rust; cargo build --verbose --workspace;

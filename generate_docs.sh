@@ -2,7 +2,6 @@
 
 # Python documentation
 cd bindings-python/
-pip3 install -r requirements.txt
 sphinx-apidoc -fFe -H whitenoise-core -A "Consequences of Data" -V 0.1.0 -o docs/source/ ./whitenoise/ ./whitenoise/*_pb2.py --templatedir templates/
 
 # destroy prior generated documentation and completely rebuild
