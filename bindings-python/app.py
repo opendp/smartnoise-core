@@ -7,14 +7,21 @@ from tests.test_base import (
     test_everything,
     test_histogram,
     test_covariance,
-test_properties
+    test_properties
 )
 
-test_properties()
-# turn on stack traces
-import os
+from tests import test_validator_properties
 
+# turn on stack traces from panics
+import os
 os.environ['RUST_BACKTRACE'] = 'full'
+
+
+test_validator_properties.test_logicals()
+
+
+test_properties()
+
 
 analysis = test_multilayer_analysis(run=False)
 analysis.release()

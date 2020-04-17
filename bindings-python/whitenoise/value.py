@@ -54,8 +54,8 @@ def serialize_privacy_usage(epsilon=None, delta=0):
 
 def serialize_privacy_definition(analysis):
     return base_pb2.PrivacyDefinition(
-        distance=base_pb2.PrivacyDefinition.Distance.Value(analysis.distance),
-        neighboring=base_pb2.PrivacyDefinition.Neighboring.Value(analysis.neighboring)
+        distance=base_pb2.PrivacyDefinition.Distance.Value(analysis.distance.upper()),
+        neighboring=base_pb2.PrivacyDefinition.Neighboring.Value(analysis.neighboring.upper())
     )
 
 
@@ -158,6 +158,10 @@ def serialize_value_proto(value, value_format=None):
             order=list(range(array.ndim)),
             flattened=serialize_array1d(array.flatten())
         ))
+
+
+def serialize_filter_level(filter_level):
+    return base_pb2.FilterLevel.Value(filter_level.upper())
 
 
 def parse_array1d_null(array):

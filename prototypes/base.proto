@@ -48,6 +48,15 @@ message ReleaseNode {
     repeated PrivacyUsage privacy_usage = 2;
 }
 
+enum FilterLevel {
+    // release from runtime should include public data (either literals or sanitized data)
+    PUBLIC = 0;
+    // release from runtime should include public and prior known values
+    PUBLIC_AND_PRIOR = 1;
+    // release from runtime should include evaluations from all nodes
+    ALL = 2;
+}
+
 message ValueProperties {
     oneof variant {
         HashmapProperties hashmap = 1;

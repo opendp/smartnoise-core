@@ -33,7 +33,7 @@ from .value import serialize_privacy_usage
 # This links the variant in the Component proto to the corresponding message
 variant_message_map = {}
 
-for file_name in os.listdir(components_dir):
+for file_name in sorted(os.listdir(components_dir)):
     if not file_name.endswith(".json"):
         continue
 

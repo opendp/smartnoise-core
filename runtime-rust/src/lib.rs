@@ -26,5 +26,7 @@ pub fn release(
         request.analysis.as_ref()
             .ok_or_else(|| Error::from("analysis must be defined"))?,
         request.release.as_ref()
-            .ok_or_else(|| Error::from("release must be defined"))?)
+            .ok_or_else(|| Error::from("release must be defined"))?,
+        &proto::FilterLevel::from_i32(request.filter_level)
+            .ok_or_else(|| Error::from(format!("unrecognized filter level {:?}", request.filter_level)))?)
 }

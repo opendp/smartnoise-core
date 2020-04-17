@@ -112,7 +112,7 @@ class LibraryWrapper(object):
             ffi=ffi_validator)
 
     @staticmethod
-    def compute_release(analysis, release, stack_trace):
+    def compute_release(analysis, release, stack_trace, filter_level):
         """
         FFI Helper. Evaluate an analysis and release the differentially private results.
         This function touches private data. It calls the runtime rust FFI with protobuf objects.
@@ -120,13 +120,15 @@ class LibraryWrapper(object):
         :param analysis: A description of computation
         :param release: A collection of public values
         :param stack_trace: Set to False to suppress stack traces
+        :param filter_level: Configures how much data should be included in the release
         :return: A response containing an updated release
         """
         return _communicate(
             argument=api_pb2.RequestRelease(
                 analysis=analysis,
                 release=release,
-                stack_trace=stack_trace),
+                stack_trace=stack_trace,
+                filter_level=filter_level),
             function=lib_runtime.release,
             response_type=api_pb2.ResponseRelease,
             ffi=ffi_runtime)
