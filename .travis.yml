@@ -43,8 +43,7 @@ jobs:
     #
     - echo $TRAVIS_BRANCH;
     # switch to master after initial version
-    #- if [ "$TRAVIS_BRANCH" == "develop" ]; then
-    - if [ "$TRAVIS_BRANCH" == "ms-docs-fix" ]; then
+    - if [ "$TRAVIS_BRANCH" == "develop" ]; then
         bash generate_docs.sh;
       fi;
     # -------------------------------------------
@@ -61,8 +60,7 @@ jobs:
       keep_history: true
       target_branch: gh-pages
       on:
-        branch: ms-docs-fix
-        #branch: develop # switch to master after initial version
+        branch: develop # switch to master after initial version
   #verbose: true
   # - name: Deploy manylinux2010_i686 32-bit
   #   services:
