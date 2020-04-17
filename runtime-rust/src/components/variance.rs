@@ -1,7 +1,7 @@
 use whitenoise_validator::errors::*;
 
 use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value};
+use whitenoise_validator::base::ReleaseNode;
 use whitenoise_validator::utilities::get_argument;
 use crate::components::Evaluable;
 use ndarray::{ArrayD, Array};
@@ -10,9 +10,12 @@ use whitenoise_validator::proto;
 use crate::components::mean::mean;
 
 impl Evaluable for proto::Variance {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
         let delta_degrees_of_freedom = if self.finite_sample_correction { 1 } else { 0 } as usize;
-        Ok(variance(&get_argument(&arguments, "data")?.array()?.f64()?.clone(), &delta_degrees_of_freedom)?.into())
+        Ok(ReleaseNode::new(variance(
+            &get_argument(&arguments, "data")?.array()?.f64()?.clone(),
+            &delta_degrees_of_freedom
+        )?.into()))
     }
 }
 

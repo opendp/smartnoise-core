@@ -447,7 +447,7 @@ class Analysis(object):
     def __init__(self,
                  dynamic=False, eager=False,
                  distance='approximate', neighboring='substitute',
-                 stack_traces=True, filter_level='public'):
+                 stack_traces=True, filter_level='public_and_prior'):
         """
         Top-level class that contains a definition of privacy and collection of statistics.
         This class tracks cumulative privacy usage for all components within.
@@ -463,9 +463,10 @@ class Analysis(object):
         The library does not take into account epsilon consumed from errors.
 
         The filter level determines what data is included in the release.
-        `public` by default, only public data (literals and sanitized) are present in the release
-        `public_and_prior` will also retain values manually inserted in the release.
+        `public` only newly released public data is included in the release
+        `public_and_prior` will also retain values previously included in the release.
             Useful for noising pre-aggregated aggregated statistics computed on other systems
+            Useful for multiple batches of releases
         `all` for including all evaluations from all nodes.
             Useful for system debugging
 

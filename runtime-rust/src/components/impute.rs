@@ -1,7 +1,7 @@
 use whitenoise_validator::errors::*;
 
 use crate::components::Evaluable;
-use whitenoise_validator::base::{Value, Array, Jagged};
+use whitenoise_validator::base::{Value, Array, Jagged, ReleaseNode};
 use whitenoise_validator::utilities::{standardize_numeric_argument, standardize_categorical_argument, standardize_weight_argument, get_argument, standardize_null_candidates_argument};
 use crate::base::NodeArguments;
 use crate::utilities::{noise};
@@ -13,14 +13,14 @@ use std::hash::Hash;
 
 
 impl Evaluable for proto::Impute {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
 
         // if categories argument is not None, treat data as categorical (regardless of atomic type)
         if arguments.contains_key("categories") {
             let weights = get_argument(&arguments, "weights")
                 .and_then(|v| v.jagged()).and_then(|v| v.f64()).ok();
 
-            Ok(match (
+            Ok(ReleaseNode::new(match (
                 get_argument(&arguments, "data")?.array()?,
                 get_argument(&arguments, "categories")?.jagged()?,
                 get_argument(&arguments, "null_values")?.jagged()?) {
@@ -38,7 +38,7 @@ impl Evaluable for proto::Impute {
                 (Array::Str(data), Jagged::Str(categories), Jagged::Str(nulls)) =>
                     impute_categorical(&data, &categories, &weights, &nulls)?.into(),
                 _ => return Err("types of data, categories, and null must be consistent and probabilities must be f64".into()),
-            })
+            }))
         }
         // if categories argument is None, treat data as continuous
         else {
@@ -53,7 +53,7 @@ impl Evaluable for proto::Impute {
                 // if f64, impute uniform values
                 // if i64, no need to impute (numeric imputation replaces only f64::NAN values, which are not defined for the i64 type)
                 "uniform" => {
-                    return Ok(match (get_argument(&arguments, "data")?, get_argument(&arguments, "lower")?, get_argument(&arguments, "upper")?) {
+                    Ok(match (get_argument(&arguments, "data")?, get_argument(&arguments, "lower")?, get_argument(&arguments, "upper")?) {
                         (Value::Array(data), Value::Array(lower), Value::Array(upper)) => match (data, lower, upper) {
                             (Array::F64(data), Array::F64(lower), Array::F64(upper)) =>
                                 impute_float_uniform(&data, &lower, &upper)?.into(),
@@ -73,11 +73,10 @@ impl Evaluable for proto::Impute {
                     let scale = get_argument(&arguments, "scale")?.array()?.f64()?;
                     let shift = get_argument(&arguments, "shift")?.array()?.f64()?;
 
-                    return Ok(impute_float_gaussian(&data, &lower, &upper, &shift, &scale)?.into());
-
+                    Ok(impute_float_gaussian(&data, &lower, &upper, &shift, &scale)?.into())
                 },
                 _ => return Err("Distribution not supported".into())
-            }
+            }.map(ReleaseNode::new)
         }
     }
 }

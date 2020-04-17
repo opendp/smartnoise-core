@@ -1,7 +1,7 @@
 use whitenoise_validator::errors::*;
 
 use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value, Array};
+use whitenoise_validator::base::{Value, Array, ReleaseNode};
 use crate::components::Evaluable;
 use ndarray::ArrayD;
 use whitenoise_validator::proto;
@@ -10,7 +10,7 @@ use whitenoise_validator::utilities::get_argument;
 
 
 impl Evaluable for proto::Cast {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
         let data = get_argument(&arguments, "data")?.array()?;
         match self.r#type.to_lowercase().as_str() {
             // if casting to bool, identify what value should map to true, then cast
@@ -28,7 +28,7 @@ impl Evaluable for proto::Cast {
             "string" | "str" =>
                 Ok(cast_str(&data)?.into()),
             _ => Err("type is not recognized, must be BOOL, FLOAT, INT or STRING".into())
-        }
+        }.map(ReleaseNode::new)
     }
 }
 

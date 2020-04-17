@@ -4,7 +4,7 @@ use crate::errors::*;
 
 use crate::proto;
 use std::collections::{HashMap};
-use crate::base::{Release, Nature, Jagged, Vector1D, Value, Array, Vector1DNull, NatureCategorical, NatureContinuous, AggregatorProperties, ValueProperties, HashmapProperties, JaggedProperties, DataType, Hashmap, ArrayProperties};
+use crate::base::{Release, Nature, Jagged, Vector1D, Value, Array, Vector1DNull, NatureCategorical, NatureContinuous, AggregatorProperties, ValueProperties, HashmapProperties, JaggedProperties, DataType, Hashmap, ArrayProperties, ReleaseNode};
 
 // PARSERS
 pub fn parse_bool_null(value: &proto::BoolNull) -> Option<bool> {
@@ -176,11 +176,17 @@ pub fn parse_value(value: &proto::Value) -> Result<Value> {
 }
 
 pub fn parse_release(release: &proto::Release) -> Result<Release> {
-    let mut evaluations = Release::new();
-    for (node_id, node_release) in &release.values {
-        evaluations.insert(*node_id, parse_value(&node_release.value.to_owned().unwrap()).unwrap());
-    }
-    Ok(evaluations)
+    release.values.iter().map(|(idx, release_node)| Ok((*idx, parse_release_node(release_node)?)))
+        .collect::<Result<HashMap<u32, ReleaseNode>>>()
+}
+
+pub fn parse_release_node(release_node: &proto::ReleaseNode) -> Result<ReleaseNode> {
+    Ok(ReleaseNode {
+        value: parse_value(release_node.value.as_ref()
+            .ok_or_else(|| Error::from("value must be defined in a release node"))?)?,
+        privacy_usages: release_node.privacy_usages.clone().map(|v| v.values),
+        public: release_node.public
+    })
 }
 
 pub fn parse_value_properties(value: &proto::ValueProperties) -> ValueProperties {
@@ -476,18 +482,18 @@ pub fn serialize_value(value: &Value) -> Result<proto::Value> {
 }
 
 pub fn serialize_release(release: &Release) -> Result<proto::Release> {
-    let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
-    for (node_id, node_eval) in release {
-        if let Ok(array_serialized) = serialize_value(node_eval) {
-            releases.insert(*node_id, proto::ReleaseNode {
-                value: Some(array_serialized),
-                // TODO: store actual usage from algorithm. No algorithms actually use this yet
-                privacy_usage: Vec::new(),
-            });
-        }
-    }
     Ok(proto::Release {
-        values: releases
+        values: release.into_iter()
+            .map(|(idx, release_node)| Ok((*idx, serialize_release_node(release_node)?)))
+            .collect::<Result<HashMap<u32, proto::ReleaseNode>>>()?
+    })
+}
+
+pub fn serialize_release_node(release_node: &ReleaseNode) -> Result<proto::ReleaseNode> {
+    Ok(proto::ReleaseNode {
+        value: Some(serialize_value(&release_node.value)?),
+        privacy_usages: release_node.privacy_usages.as_ref().map(|v| proto::PrivacyUsages {values: v.clone()}),
+        public: release_node.public
     })
 }
 

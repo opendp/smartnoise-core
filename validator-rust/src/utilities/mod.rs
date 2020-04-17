@@ -7,10 +7,10 @@ use crate::errors::*;
 
 use crate::proto;
 
-use crate::base::{Release, Value, ValueProperties, SensitivitySpace, NodeProperties, ArrayProperties};
+use crate::base::{Release, Value, ValueProperties, SensitivitySpace, NodeProperties, ArrayProperties, ReleaseNode};
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
-use crate::utilities::serial::{parse_release, parse_value_properties, serialize_value, parse_value};
+use crate::utilities::serial::{parse_release, parse_value_properties, serialize_value, parse_release_node};
 use crate::utilities::inference::infer_property;
 
 use itertools::Itertools;
@@ -22,14 +22,16 @@ use crate::utilities::array::slow_select;
 use noisy_float::prelude::n64;
 
 /// Retrieve the Values for each of the arguments of a component from the Release.
-pub fn get_input_arguments(
+pub fn get_public_arguments(
     component: &proto::Component,
     graph_evaluation: &Release,
 ) -> Result<HashMap<String, Value>> {
     let mut arguments = HashMap::<String, Value>::new();
     for (field_id, field) in component.arguments.clone() {
         if let Some(evaluation) = graph_evaluation.get(&field) {
-            arguments.insert(field_id.to_owned(), evaluation.to_owned());
+            if evaluation.public {
+                arguments.insert(field_id.to_owned(), evaluation.to_owned().value.clone());
+            }
         }
     }
     Ok(arguments)
@@ -84,8 +86,10 @@ pub fn propagate_properties(
 
     let mut graph_evaluation: Release = parse_release(&release)?;
 
+    // infer properties on public evaluations
     let mut graph_properties = graph_evaluation.iter()
-        .map(|(node_id, value)| Ok((*node_id, infer_property(value)?)))
+        .filter(|(_, release_node)| release_node.public)
+        .map(|(node_id, release_node)| Ok((*node_id, infer_property(&release_node.value)?)))
         .collect::<Result<HashMap<u32, ValueProperties>>>()?;
 
     let mut maximum_id = graph.keys().cloned()
@@ -96,7 +100,7 @@ pub fn propagate_properties(
 
         let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
         let input_properties = get_input_properties(&component, &graph_properties)?;
-        let public_arguments = get_input_arguments(&component, &graph_evaluation)?;
+        let public_arguments = get_public_arguments(&component, &graph_evaluation)?;
 
         let mut expansion = component.clone().variant.unwrap().expand_component(
             &privacy_definition,
@@ -112,8 +116,8 @@ pub fn propagate_properties(
             .map(|(node_id, props)| (*node_id, parse_value_properties(props)))
             .collect::<HashMap<u32, ValueProperties>>());
         graph_evaluation.extend(expansion.releases.iter()
-            .map(|(node_id, release)| Ok((*node_id, parse_value(&release.value.clone().unwrap())?)))
-            .collect::<Result<HashMap<u32, Value>>>()?);
+            .map(|(node_id, release)| Ok((*node_id, parse_release_node(&release)?)))
+            .collect::<Result<HashMap<u32, ReleaseNode>>>()?);
 
         maximum_id = *expansion.computation_graph.keys().max()
             .map(|v| v.max(&maximum_id)).unwrap_or(&maximum_id);
@@ -129,7 +133,7 @@ pub fn propagate_properties(
 //        println!("graph evaluation in prop {:?}", graph_evaluation);
         graph_properties.insert(node_id.clone(), match graph_evaluation.get(&node_id) {
             // if node has already been evaluated, infer properties directly from the public data
-            Some(value) => infer_property(&value),
+            Some(release_node) => infer_property(&release_node.value),
 
             // if node has not been evaluated, propagate properties over it
             None => {
@@ -383,7 +387,8 @@ pub fn get_literal(value: &Value, batch: &u32) -> Result<(proto::Component, prot
     },
         proto::ReleaseNode {
             value: Some(serialize_value(value)?),
-            privacy_usage: Vec::new(),
+            privacy_usages: None,
+            public: true
         }))
 }
 
@@ -403,12 +408,9 @@ pub fn get_component_privacy_usage(
     };
 
     // if release usage is defined, then use the actual eps, etc. from the release
-    if let Some(release_node) = release_node {
-        let release_privacy_usage = (*release_node.privacy_usage).to_vec();
-        if !release_privacy_usage.is_empty() {
-            privacy_usage = release_privacy_usage
-        }
-    }
+    release_node.map(|v| if let Some(release_privacy_usage) = v.privacy_usages.clone() {
+        privacy_usage = release_privacy_usage.values
+    });
 
     // sum privacy usage within the node
     privacy_usage.into_iter()

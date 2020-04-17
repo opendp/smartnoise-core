@@ -79,7 +79,7 @@ def test_multilayer_analysis(run=True):
 
 
 def test_dp_linear_stats(run=True):
-    with whitenoise.Analysis() as analysis:
+    with whitenoise.Analysis(filter_level='public_and_prior') as analysis:
         dataset_pums = whitenoise.Dataset(path=TEST_CSV_PATH, column_names=test_csv_names)
 
         age = dataset_pums['age']

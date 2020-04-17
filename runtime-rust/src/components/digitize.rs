@@ -1,7 +1,7 @@
 use whitenoise_validator::errors::*;
 
 use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value, Array, Jagged};
+use whitenoise_validator::base::{Array, Jagged, ReleaseNode};
 use crate::components::Evaluable;
 use ndarray::ArrayD;
 use whitenoise_validator::proto;
@@ -10,7 +10,7 @@ use std::ops::{Div, Add};
 use whitenoise_validator::utilities::{get_argument, standardize_categorical_argument, standardize_numeric_argument, standardize_float_argument};
 
 impl Evaluable for proto::Digitize {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
         let inclusive_left: &ArrayD<bool> = get_argument(&arguments, "inclusive_left")?.array()?.bool()?;
 
         let data = get_argument(&arguments, "data")?.array()?;
@@ -18,7 +18,7 @@ impl Evaluable for proto::Digitize {
         let null = get_argument(&arguments, "null_value")?.array()?.i64()?;
         let num_columns = data.num_columns()?;
 
-        Ok(match (data, edges) {
+        Ok(ReleaseNode::new(match (data, edges) {
             (Array::F64(data), Jagged::F64(edges)) =>
                 digitize(&data, &standardize_float_argument(edges, &num_columns)?, &inclusive_left, &null)?.into(),
 
@@ -26,7 +26,7 @@ impl Evaluable for proto::Digitize {
                 digitize(&data, &standardize_categorical_argument(edges, &num_columns)?, &inclusive_left, &null)?.into(),
 
             _ => return Err("data and edges must both be f64 or i64".into())
-        })
+        }))
     }
 }
 

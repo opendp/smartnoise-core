@@ -1,7 +1,7 @@
 use whitenoise_validator::errors::*;
 
 use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value, Array};
+use whitenoise_validator::base::{Value, Array, ReleaseNode};
 use whitenoise_validator::utilities::get_argument;
 use crate::components::Evaluable;
 use ndarray::{ArrayD};
@@ -10,7 +10,7 @@ use std::collections::HashMap;
 
 
 impl Evaluable for proto::Reshape {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
         let layout = match self.layout.to_lowercase().as_str() {
             "row" => Layout::Row,
             "column" => Layout::Column,
@@ -58,7 +58,7 @@ impl Evaluable for proto::Reshape {
                         .collect::<HashMap<i64, Value>>().into())
                 }
             }
-        }
+        }.map(ReleaseNode::new)
     }
 }
 

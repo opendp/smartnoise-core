@@ -119,11 +119,20 @@ def serialize_array1d(array):
     })
 
 
+def serialize_hashmap(value):
+    data = {k: serialize_value_proto(v) for k, v in value.items()}
+    return value_pb2.Hashmap(**{
+        str: lambda: {'string': value_pb2.HashmapStr(data=data)},
+        bool: lambda: {'bool': value_pb2.HashmapBool(data=data)},
+        int: lambda: {'i64': value_pb2.HashmapI64(data=data)}
+    }[type(next(iter(value.keys())))]())
+
+
 def serialize_value_proto(value, value_format=None):
 
     if value_format == 'hashmap' or issubclass(type(value), dict):
         return value_pb2.Value(
-            hashmap_string={key: serialize_value_proto(value[key]) for key in value}
+            hashmap=serialize_hashmap(value)
         )
 
     if value_format == 'jagged':
@@ -198,7 +207,10 @@ def parse_array(value):
 
 
 def parse_hashmap(value):
-    return {k: parse_value_proto(v) for k, v in value.hashmap_string.data.items()}
+    data_type = value.hashmap.WhichOneof("variant")
+    if not data_type:
+        return
+    return {k: parse_value_proto(v) for k, v in getattr(value.hashmap, data_type).data.items()}
 
 
 def parse_value_proto(value):

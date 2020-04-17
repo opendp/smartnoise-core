@@ -45,7 +45,8 @@ message Release {
 }
 message ReleaseNode {
     Value value = 1;
-    repeated PrivacyUsage privacy_usage = 2;
+    PrivacyUsages privacy_usages = 2;
+    bool public = 3;
 }
 
 enum FilterLevel {

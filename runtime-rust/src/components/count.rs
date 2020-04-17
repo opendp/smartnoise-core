@@ -1,7 +1,7 @@
 use whitenoise_validator::errors::*;
 
 use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value, Array};
+use whitenoise_validator::base::{Value, Array, ReleaseNode};
 use crate::components::Evaluable;
 use ndarray::{ArrayD, Axis, arr0};
 use ndarray;
@@ -10,8 +10,8 @@ use whitenoise_validator::utilities::get_argument;
 
 
 impl Evaluable for proto::Count {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        Ok(match get_argument(arguments, "data")? {
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+        Ok(ReleaseNode::new(match get_argument(arguments, "data")? {
             Value::Array(array) => match array {
                 Array::Bool(data) => count(data)?.into(),
                 Array::F64(data) => count(data)?.into(),
@@ -23,7 +23,7 @@ impl Evaluable for proto::Count {
                 None => return Err("hashmap may not be empty".into())
             },
             Value::Jagged(_) => return Err("Count is not implemented on Jagged arrays".into())
-        })
+        }))
     }
 }
 

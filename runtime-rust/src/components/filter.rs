@@ -2,7 +2,7 @@ use whitenoise_validator::errors::*;
 
 use ndarray::prelude::*;
 use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value, Array};
+use whitenoise_validator::base::{Array, ReleaseNode};
 use whitenoise_validator::utilities::get_argument;
 use crate::components::Evaluable;
 use ndarray::{ArrayD, Axis, Array1};
@@ -14,15 +14,15 @@ use crate::utilities::to_nd;
 
 
 impl Evaluable for proto::Filter {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
         let mask = get_argument(&arguments, "mask")?.array()?.bool()?;
 
-        Ok(match get_argument(&arguments, "data")?.array()? {
+        Ok(ReleaseNode::new(match get_argument(&arguments, "data")?.array()? {
             Array::Str(data) => filter(data, mask)?.into(),
             Array::F64(data) => filter(data, mask)?.into(),
             Array::I64(data) => filter(data, mask)?.into(),
             Array::Bool(data) => filter(data, mask)?.into(),
-        })
+        }))
     }
 }
 

@@ -1,19 +1,19 @@
 use whitenoise_validator::errors::*;
 
 use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value};
+use whitenoise_validator::base::ReleaseNode;
 use whitenoise_validator::utilities::get_argument;
 use crate::components::Evaluable;
 use whitenoise_validator::proto;
-use ndarray::{ArrayD};
+use ndarray::ArrayD;
 use crate::components::mean::mean;
 
 use std::convert::TryFrom;
 
 impl Evaluable for proto::KthRawSampleMoment {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
         let data = get_argument(&arguments, "data")?.array()?.f64()?;
-        Ok(kth_raw_sample_moment(data, &(self.k as i64))?.into())
+        Ok(ReleaseNode::new(kth_raw_sample_moment(data, &(self.k as i64))?.into()))
     }
 }
 
@@ -36,11 +36,11 @@ impl Evaluable for proto::KthRawSampleMoment {
 /// assert!(second_moments == arr2(&[[2.5, 8.5, 18.5]]).into_dyn());
 /// ```
 pub fn kth_raw_sample_moment(data: &ArrayD<f64>, k: &i64) -> Result<ArrayD<f64>> {
-
     let mut data = data.clone();
 
     let k = match i32::try_from(*k) {
-        Ok(v) => v, Err(_) => return Err("k: invalid size".into())
+        Ok(v) => v,
+        Err(_) => return Err("k: invalid size".into())
     };
     // iterate over the generalized columns
     data.gencolumns_mut().into_iter()

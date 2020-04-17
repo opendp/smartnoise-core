@@ -1,6 +1,6 @@
 use whitenoise_validator::errors::*;
 use whitenoise_validator::proto;
-use whitenoise_validator::base::{Value, Array, Jagged};
+use whitenoise_validator::base::{Value, Array, Jagged, ReleaseNode};
 use whitenoise_validator::utilities::{get_argument, standardize_numeric_argument};
 
 use ndarray::{ArrayD, Axis};
@@ -18,7 +18,7 @@ use ndarray::prelude::*;
 use std::hash::Hash;
 
 impl Evaluable for proto::Resize {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
         let n = get_argument(&arguments, "n")?.first_i64()?;
 
         // If "categories" constraint has been propagated, data are treated as categorical (regardless of atomic type)
@@ -73,7 +73,7 @@ impl Evaluable for proto::Resize {
                     Ok(resize_integer(data, &n, lower, upper)?.into()),
                 _ => Err("data, lower, and upper must be of a homogeneous numeric type".into())
             }
-        }
+        }.map(ReleaseNode::new)
     }
 }
 
