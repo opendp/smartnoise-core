@@ -13,7 +13,7 @@ use std::vec::Vec;
 
 use itertools::Itertools;
 
-use whitenoise_validator::base::{Value};
+use whitenoise_validator::base::{Value, ReleaseNode};
 use whitenoise_validator::utilities::serial::{parse_release};
 use std::iter::FromIterator;
 
@@ -102,7 +102,9 @@ pub fn execute_graph(
             get_input_properties(&component, &graph_properties)?;
         let public_arguments = component.arguments.iter()
             .filter(|(_, node_id)| preserve_ids.contains(node_id) || is_public(node_id, &graph, &graph_properties, true) && release.contains_key(node_id))
-            .map(|(name, node_id)| (name.clone(), release.get(node_id).unwrap().clone()))
+            .map(|(name, node_id)| (name.clone(), release.get(node_id).unwrap()))
+            .filter(|(_, release_node)| release_node.public)
+            .map(|(name, release_node)| (name, release_node.value.clone()))
             .collect::<HashMap<String, Value>>();
 
         // expand the current node
@@ -138,7 +140,7 @@ pub fn execute_graph(
 
         // collect arguments by string name to the component that will be executed
         let node_arguments = component.arguments.iter()
-            .map(|(name, node_id)| (name.clone(), release.get(node_id).unwrap()))
+            .map(|(name, node_id)| (name.clone(), &release.get(node_id).unwrap().value))
             .collect::<HashMap<String, &Value>>();
 
         // evaluate the component using the Evaluable trait, which is implemented on the proto::component::Variant enum
@@ -168,10 +170,10 @@ pub fn execute_graph(
     serial::serialize_release(&match filter_level {
         proto::FilterLevel::Public => release.into_iter()
             .filter(|(node_id, _)| is_public(node_id, &graph, &graph_properties, false))
-            .collect::<HashMap<u32, Value>>(),
+            .collect::<HashMap<u32, ReleaseNode>>(),
         proto::FilterLevel::PublicAndPrior => release.into_iter()
             .filter(|(node_id, _)| preserve_ids.contains(node_id) || is_public(node_id, &graph, &graph_properties, false))
-            .collect::<HashMap<u32, Value>>(),
+            .collect::<HashMap<u32, ReleaseNode>>(),
         proto::FilterLevel::All => release,
     })
 

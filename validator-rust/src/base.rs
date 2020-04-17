@@ -804,7 +804,23 @@ pub enum SensitivitySpace {
     Exponential,
 }
 /// A release consists of Values for each node id.
-pub type Release = HashMap<u32, Value>;
+pub type Release = HashMap<u32, ReleaseNode>;
+
+pub struct ReleaseNode {
+    pub value: Value,
+    pub privacy_usages: Option<Vec<proto::PrivacyUsage>>,
+    pub public: bool
+}
+
+impl ReleaseNode {
+    pub fn new(value: Value) -> ReleaseNode {
+        ReleaseNode {
+            value,
+            privacy_usages: None,
+            public: false
+        }
+    }
+}
 
 // The properties for a node consists of Properties for each of its arguments.
 pub type NodeProperties = HashMap<String, ValueProperties>;

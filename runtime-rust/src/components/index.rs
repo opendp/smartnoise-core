@@ -1,7 +1,7 @@
 use whitenoise_validator::errors::*;
 
 use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value, Array, Hashmap, DataType};
+use whitenoise_validator::base::{Value, Array, Hashmap, DataType, ReleaseNode};
 use crate::components::Evaluable;
 use whitenoise_validator::proto;
 use whitenoise_validator::utilities::array::{slow_stack, slow_select};
@@ -14,7 +14,7 @@ use crate::utilities::{to_nd};
 
 
 impl Evaluable for proto::Index {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
         let data = get_argument(&arguments, "data")?;
         let columns = get_argument(&arguments, "columns")?.array()?;
 
@@ -75,7 +75,7 @@ impl Evaluable for proto::Index {
         // remove trailing singleton axis if a zero-dimensional index set was passed
         match &mut indexed {
             Value::Array(array) => {
-                if columns.shape().len() == 0 {
+                if columns.shape().len() == 0 && array.shape().len() == 2 {
                     match array {
                         Array::F64(array) => array.index_axis_inplace(Axis(1), 0),
                         Array::I64(array) => array.index_axis_inplace(Axis(1), 0),
@@ -87,7 +87,7 @@ impl Evaluable for proto::Index {
             _ => unreachable!()
         };
 
-        Ok(indexed)
+        Ok(ReleaseNode::new(indexed))
     }
 }
 

@@ -10,7 +10,7 @@
 
 use whitenoise_validator::errors::*;
 use crate::base::NodeArguments;
-use whitenoise_validator::base::Value;
+use whitenoise_validator::base::ReleaseNode;
 
 use whitenoise_validator::proto;
 
@@ -50,7 +50,7 @@ pub trait Evaluable {
     ///
     /// # Returns
     /// The concrete value corresponding to the abstract computation that the struct represents
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<Value>;
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode>;
 }
 
 impl Evaluable for proto::component::Variant {
@@ -59,7 +59,7 @@ impl Evaluable for proto::component::Variant {
     /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn evaluate(
         &self, arguments: &NodeArguments,
-    ) -> Result<Value> {
+    ) -> Result<ReleaseNode> {
         macro_rules! evaluate {
             ($( $variant:ident ),*) => {
                 {

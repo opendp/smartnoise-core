@@ -17,7 +17,7 @@ import os
 os.environ['RUST_BACKTRACE'] = 'full'
 
 
-test_validator_properties.test_logicals()
+test_validator_properties.test_equal()
 
 
 test_properties()

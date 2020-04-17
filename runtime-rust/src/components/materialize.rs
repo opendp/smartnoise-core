@@ -2,7 +2,7 @@ use whitenoise_validator::errors::*;
 
 use ndarray::prelude::*;
 use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value, Array, Hashmap};
+use whitenoise_validator::base::{Value, Array, Hashmap, ReleaseNode};
 use crate::components::Evaluable;
 use std::collections::HashMap;
 use ndarray;
@@ -10,9 +10,10 @@ use whitenoise_validator::proto;
 use whitenoise_validator::utilities::serial::parse_value;
 use whitenoise_validator::utilities::array::{slow_stack, slow_select};
 use std::cmp::Ordering;
+use whitenoise_validator::utilities::get_ith_column;
 
 impl Evaluable for proto::Materialize {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
 
         let column_names = arguments.get("column_names")
             .and_then(|column_names| column_names.array().ok()?.string().ok()).cloned();
@@ -36,12 +37,40 @@ impl Evaluable for proto::Materialize {
         match data_source.value.as_ref().unwrap() {
             proto::data_source::Value::Literal(value) => {
                 // force the input to be an array- reject hashmap and jagged
-                match parse_value(value)?.array()? {
-                    Array::F64(array) => Ok(standardize_columns(array, num_columns)?.into()),
-                    Array::I64(array) => Ok(standardize_columns(array, num_columns)?.into()),
-                    Array::Bool(array) => Ok(standardize_columns(array, num_columns)?.into()),
-                    Array::Str(array) => Ok(standardize_columns(array, num_columns)?.into()),
-                }
+                Ok(ReleaseNode::new(match column_names {
+                    Some(column_names) => Value::Hashmap(Hashmap::<Value>::Str(match parse_value(value)?.array()? {
+                        Array::F64(array) => {
+                            let standardized = standardize_columns(array, num_columns)?;
+                            column_names.into_iter().enumerate()
+                                .map(|(idx, name)| Ok((name.clone(), get_ith_column(&standardized, &idx)?.into())))
+                                .collect::<Result<HashMap<String, Value>>>()?
+                        },
+                        Array::I64(array) => {
+                            let standardized = standardize_columns(array, num_columns)?;
+                            column_names.into_iter().enumerate()
+                                .map(|(idx, name)| Ok((name.clone(), get_ith_column(&standardized, &idx)?.into())))
+                                .collect::<Result<HashMap<String, Value>>>()?
+                        },
+                        Array::Bool(array) => {
+                            let standardized = standardize_columns(array, num_columns)?;
+                            column_names.into_iter().enumerate()
+                                .map(|(idx, name)| Ok((name.clone(), get_ith_column(&standardized, &idx)?.into())))
+                                .collect::<Result<HashMap<String, Value>>>()?
+                        },
+                        Array::Str(array) => {
+                            let standardized = standardize_columns(array, num_columns)?;
+                            column_names.into_iter().enumerate()
+                                .map(|(idx, name)| Ok((name.clone(), get_ith_column(&standardized, &idx)?.into())))
+                                .collect::<Result<HashMap<String, Value>>>()?
+                        }
+                    })),
+                    None => match parse_value(value)?.array()? {
+                        Array::F64(array) => standardize_columns(array, num_columns)?.into(),
+                        Array::I64(array) => standardize_columns(array, num_columns)?.into(),
+                        Array::Bool(array) => standardize_columns(array, num_columns)?.into(),
+                        Array::Str(array) => standardize_columns(array, num_columns)?.into(),
+                    }
+                }))
             }
             proto::data_source::Value::FilePath(path) => {
                 let mut response = (0..num_columns)
@@ -81,18 +110,18 @@ impl Evaluable for proto::Materialize {
 
                         let column_names = column_names.into_dimensionality::<Ix1>()?.to_vec();
                         // convert hashmap of vecs into arrays
-                        Ok(Value::Hashmap(Hashmap::Str(response.into_iter().enumerate()
+                        Ok(ReleaseNode::new(Value::Hashmap(Hashmap::Str(response.into_iter().enumerate()
                             .map(|(k, v): (usize, Vec<String>)|
                                 (column_names[k].clone(), ndarray::Array::from(v).into_dyn().into()))
-                            .collect::<HashMap<String, Value>>())))
+                            .collect::<HashMap<String, Value>>()))))
                     },
                     None => {
 
                         // convert hashmap of vecs into arrays
-                        Ok(Value::Hashmap(Hashmap::I64(response.into_iter().enumerate()
+                        Ok(ReleaseNode::new(Value::Hashmap(Hashmap::I64(response.into_iter().enumerate()
                             .map(|(k, v): (usize, Vec<String>)|
                                 (k as i64, ndarray::Array::from(v).into_dyn().into()))
-                            .collect::<HashMap<i64, Value>>())))
+                            .collect::<HashMap<i64, Value>>()))))
                     }
                 }
 

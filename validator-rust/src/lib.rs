@@ -129,7 +129,7 @@ pub fn generate_report(
     utilities::get_traversal(&graph)?.iter().map(|node_id| {
 
         let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
-        let public_arguments = utilities::get_input_arguments(&component, &release)?;
+        let public_arguments = utilities::get_public_arguments(&component, &release)?;
 
         // variable names for argument nodes
         let mut arguments_vars: HashMap<String, Vec<String>> = HashMap::new();
@@ -145,7 +145,7 @@ pub fn generate_report(
         // get variable names for this node
         let node_vars = component.variant
             .ok_or_else(|| Error::from("component variant must be defined"))?
-            .get_names(&public_arguments, &arguments_vars, &release.get(node_id));
+            .get_names(&public_arguments, &arguments_vars, &release.get(node_id).map(|v| v.value.clone()).as_ref());
 
         // update names in hashmap
         node_vars.map(|v| nodes_varnames.insert(node_id.clone(), v)).ok();
@@ -157,12 +157,12 @@ pub fn generate_report(
 
     let release_schemas = graph.iter()
         .map(|(node_id, component)| {
-            let public_arguments = utilities::get_input_arguments(&component, &release)?;
+            let public_arguments = utilities::get_public_arguments(&component, &release)?;
             let input_properties = utilities::get_input_properties(&component, &graph_properties)?;
             let variable_names = nodes_varnames.get(&node_id);
             // ignore nodes without released values
             let node_release = match release.get(node_id) {
-                Some(node_release) => node_release,
+                Some(node_release) => node_release.value.clone(),
                 None => return Ok(None)
             };
             component.variant.as_ref()
