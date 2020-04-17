@@ -529,7 +529,7 @@ pub fn expand_mechanism(
     })
 }
 
-pub fn get_ith_release<T: Clone + Default>(value: &ArrayD<T>, i: &usize) -> Result<ArrayD<T>> {
+pub fn get_ith_column<T: Clone + Default>(value: &ArrayD<T>, i: &usize) -> Result<ArrayD<T>> {
     match value.ndim() {
         0 => if i == &0 {Ok(value.clone())} else {Err("ith release does not exist".into())},
         1 => Ok(value.clone()),

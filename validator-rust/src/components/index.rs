@@ -25,8 +25,10 @@ impl Component for proto::Index {
 
         let properties = match data_property {
             ValueProperties::Hashmap(data_property) => {
-                // TODO: check that hashmap is columnar. The columnar property is in another branch.
-                //       when partition is added, should we allow column stacking of partitions?
+                // TODO: Should columnar stacking of partitions be allowed?
+                if !data_property.columnar {
+                    return Err("data to Index must be columnar".into())
+                }
                 match data_property.properties {
                     Hashmap::Str(value_properties) => match column_names {
                         // String column names on string hashmap
@@ -96,7 +98,7 @@ impl Component for proto::Index {
                         .enumerate().filter(|(_, mask)| *mask)
                         .map(|(idx, _)| select_properties(&data_property, &idx))
                         .collect::<Result<Vec<ValueProperties>>>(),
-                    _ => return Err("the data type of the indices are not supported".into())
+                    _ => return Err("when indexing an array, the data type of the indices must be integer column number(s) or a boolean mask".into())
                 }
             },
             ValueProperties::Jagged(_) => Err("indexing is not supported on vectors".into())

@@ -10,7 +10,7 @@ use ndarray::{arr0};
 
 use crate::base::{NodeProperties, Value};
 use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, value_to_json};
-use crate::utilities::{prepend, broadcast_privacy_usage, get_ith_release, get_literal};
+use crate::utilities::{prepend, broadcast_privacy_usage, get_ith_column, get_literal};
 
 
 impl Expandable for proto::DpHistogram {
@@ -126,7 +126,7 @@ impl Report for proto::DpHistogram {
                 statistic: "DPHistogram".to_string(),
                 variables: serde_json::json!(variable_name),
                 // extract ith column of release
-                release_info: value_to_json(&get_ith_release(
+                release_info: value_to_json(&get_ith_column(
                     release.array()?.i64()?,
                     &column_number
                 )?.into())?,

@@ -23,7 +23,8 @@ impl Component for proto::Materialize {
         let data_source = self.data_source.clone()
             .ok_or_else(|| Error::from("data source must be supplied"))?;
 
-        match data_source.value.as_ref().unwrap() {
+        match data_source.value.as_ref()
+            .ok_or_else(|| Error::from("data_source variant must be defined"))? {
             proto::data_source::Value::Literal(value) => {
                 let array = match value.data.as_ref().ok_or_else(|| Error::from("Value variant must not empty"))? {
                     proto::value::Data::Array(value) => value,
