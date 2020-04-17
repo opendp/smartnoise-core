@@ -18,7 +18,7 @@ impl Evaluable for proto::Index {
         let data = get_argument(&arguments, "data")?;
         let columns = get_argument(&arguments, "columns")?.array()?;
 
-        match data {
+        let mut indexed = match data {
             // if value is a hashmap, we'll be stacking arrays column-wise
             Value::Hashmap(dataframe) => match dataframe {
                 Hashmap::Str(dataframe) => match columns {
@@ -70,7 +70,24 @@ impl Evaluable for proto::Index {
                 })
             }
             Value::Jagged(_) => Err("indexing is not supported for jagged arrays".into())
-        }
+        }?;
+
+        // remove trailing singleton axis if a zero-dimensional index set was passed
+        match &mut indexed {
+            Value::Array(array) => {
+                if columns.shape().len() == 0 {
+                    match array {
+                        Array::F64(array) => array.index_axis_inplace(Axis(1), 0),
+                        Array::I64(array) => array.index_axis_inplace(Axis(1), 0),
+                        Array::Bool(array) => array.index_axis_inplace(Axis(1), 0),
+                        Array::Str(array) => array.index_axis_inplace(Axis(1), 0),
+                    }
+                }
+            },
+            _ => unreachable!()
+        };
+
+        Ok(indexed)
     }
 }
 

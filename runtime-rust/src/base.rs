@@ -31,11 +31,14 @@ pub type NodeArguments<'a> = HashMap<String, &'a Value>;
 /// # Arguments
 /// * `analysis` - a computational graph and definition of privacy, in prost protobuf format
 /// * `release` - a collection of precomputed values for components in the graph
+/// * `filter_level` - configure the amount of information included in the return
 ///
 /// # Return
 /// a collection of computed values for components in the graph
-pub fn execute_graph(analysis: &proto::Analysis,
-                     release: &proto::Release,
+pub fn execute_graph(
+    analysis: &proto::Analysis,
+    release: &proto::Release,
+    filter_level: &proto::FilterLevel
 ) -> Result<proto::Release> {
 
     // stack for storing which nodes to evaluate next
@@ -146,23 +149,32 @@ pub fn execute_graph(analysis: &proto::Analysis,
         // store the evaluated `Value` enum in the release
         release.insert(node_id, evaluation);
 
-        // prune evaluations from the release. Private nodes that have no unevaluated parents do not need be stored anymore
-        for argument_node_id in component.arguments.values() {
-            if let Some(parent_node_ids) = parents.get_mut(argument_node_id) {
-                parent_node_ids.remove(&node_id);
+        if filter_level != &proto::FilterLevel::All {
+            // prune evaluations from the release. Private nodes that have no unevaluated parents do not need be stored anymore
+            for argument_node_id in component.arguments.values() {
+                if let Some(parent_node_ids) = parents.get_mut(argument_node_id) {
+                    parent_node_ids.remove(&node_id);
 
-                // remove argument node from release if all children evaluated, and is private or omitted
-                if parent_node_ids.len() == 0 && !(preserve_ids.contains(argument_node_id) || is_public(argument_node_id, &graph, &graph_properties, false)) {
-                    release.remove(argument_node_id);
+                    // remove argument node from release if all children evaluated, and is private or omitted
+                    if parent_node_ids.len() == 0 && !(preserve_ids.contains(argument_node_id) || is_public(argument_node_id, &graph, &graph_properties, false)) {
+                        release.remove(argument_node_id);
+                    }
                 }
             }
         }
     }
 
-    // ensure that the only keys remaining in the release are releasable and not omitted
-    serial::serialize_release(&release.into_iter()
-        .filter(|(node_id, _)| preserve_ids.contains(node_id) || is_public(node_id, &graph, &graph_properties, false))
-        .collect::<HashMap<u32, Value>>())
+    // apply the filtering level to the final release
+    serial::serialize_release(&match filter_level {
+        proto::FilterLevel::Public => release.into_iter()
+            .filter(|(node_id, _)| is_public(node_id, &graph, &graph_properties, false))
+            .collect::<HashMap<u32, Value>>(),
+        proto::FilterLevel::PublicAndPrior => release.into_iter()
+            .filter(|(node_id, _)| preserve_ids.contains(node_id) || is_public(node_id, &graph, &graph_properties, false))
+            .collect::<HashMap<u32, Value>>(),
+        proto::FilterLevel::All => release,
+    })
+
 }
 
 /// Retrieve the set of node ids in a graph that have no dependent nodes.

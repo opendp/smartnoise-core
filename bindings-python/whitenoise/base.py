@@ -446,8 +446,8 @@ class Component(object):
 class Analysis(object):
     def __init__(self,
                  dynamic=False, eager=False,
-                 distance='APPROXIMATE', neighboring='SUBSTITUTE',
-                 stack_traces=True):
+                 distance='approximate', neighboring='substitute',
+                 stack_traces=True, filter_level='public'):
         """
         Top-level class that contains a definition of privacy and collection of statistics.
         This class tracks cumulative privacy usage for all components within.
@@ -459,11 +459,22 @@ class Analysis(object):
         As a library user, it may be useful to enable eager and find a small, similar public dataset to help shape your analysis.
         Building an analysis with a large dataset and eager enabled is not recommended, because every additional node causes an additional release.
 
+        Stack traces on the runtime may be disabled to help reduce the amount of leaked private information when an error is encountered.
+        The library does not take into account epsilon consumed from errors.
+
+        The filter level determines what data is included in the release.
+        `public` by default, only public data (literals and sanitized) are present in the release
+        `public_and_prior` will also retain values manually inserted in the release.
+            Useful for noising pre-aggregated aggregated statistics computed on other systems
+        `all` for including all evaluations from all nodes.
+            Useful for system debugging
+
         :param dynamic: flag for enabling dynamic validation
         :param eager: release every time a component is added
-        :param distance: currently may be `PURE` or `APPROXIMATE`
-        :param neighboring: may be `SUBSTITUTE` or `ADD_REMOVE`
+        :param distance: currently may be `pure` or `approximate`
+        :param neighboring: may be `substitute` or `add_remove`
         :param stack_traces: set to False to suppress potentially sensitive stack traces
+        :param filter_level: may be `public`, `public_and_prior` or `all`
         """
 
         # if false, validate the analysis before running it (enforces static validation)
@@ -498,6 +509,9 @@ class Analysis(object):
 
         # set to false to suppress potentially private stack traces from releases
         self.stack_traces = stack_traces
+
+        # configure to keep additional values in the release
+        self.filter_level = filter_level
 
         # helper to track if properties are current
         self.properties = {}
@@ -579,7 +593,8 @@ class Analysis(object):
         release_proto: base_pb2.Release = core_wrapper.compute_release(
             serialize_analysis_proto(self),
             serialize_release_proto(self.release_values),
-            self.stack_traces)
+            self.stack_traces,
+            serialize_filter_level(self.filter_level))
 
         self.release_values = parse_release_proto(release_proto)
         self.batch += 1

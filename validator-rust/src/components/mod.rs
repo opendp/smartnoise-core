@@ -11,7 +11,7 @@ use crate::errors::*;
 
 
 mod transforms;
-mod bin;
+//mod bin;
 mod cast;
 mod clamp;
 mod count;
@@ -216,7 +216,7 @@ impl Component for proto::component::Variant {
 
         propagate_property!(
             // INSERT COMPONENT LIST
-            Bin, Cast, Clamp, Count, Covariance, Digitize,
+            Cast, Clamp, Count, Covariance, Digitize,
 
             Filter, Histogram, Impute, Index, KthRawSampleMoment, Materialize, Maximum, Mean,
 

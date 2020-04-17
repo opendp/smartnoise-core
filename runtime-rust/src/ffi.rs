@@ -30,7 +30,8 @@ pub extern "C" fn release(
 
     let response = proto::ResponseRelease {
         value: match proto::RequestRelease::decode(request_buffer) {
-            Ok(request) => match super::release(&request) {
+            Ok(request) => match super::
+            release(&request) {
                 Ok(release) => Some(proto::response_release::Value::Data(release)),
                 Err(err) => match request.stack_trace {
                     true =>

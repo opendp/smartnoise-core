@@ -38,7 +38,7 @@
   "options": {
     "side": {
       "type": "string",
-      "default": "'left'",
+      "default": "'lower'",
       "description": "How to refer to each bin. Will be either the `lower` edge, the `upper` edge, or the `midpoint` (the arithmetic mean of the two)."
     }
   },

@@ -52,7 +52,12 @@ message RequestExpandComponent {
 message RequestRelease {
 	Analysis analysis = 1;
 	Release release = 2;
+
+	// enable to return stack traces in the error response variant
 	bool stack_trace = 10;
+
+	// configure how much data should be returned from runtime
+	FilterLevel filter_level = 11;
 }
 
 // RESPONSES

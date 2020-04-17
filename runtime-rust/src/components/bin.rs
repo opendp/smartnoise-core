@@ -17,7 +17,7 @@ impl Evaluable for proto::Bin {
             "lower" => BinSide::Lower,
             "midpoint" => BinSide::Midpoint,
             "upper" => BinSide::Upper,
-            _ => return Err("bin side must be left, center or right".into())
+            _ => return Err("bin side must be lower, midpoint or upper".into())
         };
 
         let data = get_argument(&arguments, "data")?.array()?;
