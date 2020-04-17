@@ -1,0 +1,7 @@
+whitenoise.value module
+=======================
+
+.. automodule:: whitenoise.value
+   :members:
+   :undoc-members:
+   :show-inheritance:

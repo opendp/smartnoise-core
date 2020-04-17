@@ -1,0 +1,20 @@
+whitenoise package
+==================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   whitenoise.api
+   whitenoise.base
+   whitenoise.value
+
+Module contents
+---------------
+
+.. automodule:: whitenoise
+   :members:
+   :undoc-members:
+   :show-inheritance:
