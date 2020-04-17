@@ -46,7 +46,23 @@ jobs:
     - if [ "$TRAVIS_BRANCH" == "develop" ]; then
         bash generate_docs.sh;
       fi;
-
+    # -------------------------------------------
+    # Deploy the Rust documentation to
+    # GitHub pages
+    # - Triggered when the branch is "master"
+    # -------------------------------------------
+    deploy:
+      provider: pages
+      skip_cleanup: true
+      local_dir: docs
+      # Set in the settings page of your repository, as a secure variable
+      github_token: $GITHUB_TOKEN
+      keep_history: true
+      target_branch: gh-pages
+      on:
+        # branch: 62-rp-pages
+        branch: develop # switch to master after initial version
+  #verbose: true
   # - name: Deploy manylinux2010_i686 32-bit
   #   services:
   #   - docker
@@ -66,13 +82,13 @@ jobs:
   #   deploy:
   #     skip_cleanup: true
   #     provider: script
-  #     script: 
-  #       python3 -m pip install --upgrade pip && 
-  #       python3 -m pip install twine && 
+  #     script:
+  #       python3 -m pip install --upgrade pip &&
+  #       python3 -m pip install twine &&
   #       python3 -m twine upload --verbose --skip-existing wheelhouse/*
   #     on:
   #       branch: develop
-        
+
   # - name: Deploy manylinux2010_x86_64 64-bit
   #   services:
   #   - docker
@@ -93,11 +109,11 @@ jobs:
   #   deploy:
   #     skip_cleanup: true
   #     provider: script
-  #     script: 
+  #     script:
   #       python3 -m pip install --upgrade pip && python3 -m pip install twine && python3 -m twine upload --verbose --skip-existing wheelhouse/*
   #     on:
   #       branch: develop
-        
+
 
   # RISC
   # - name: Deploy manylinux2014_aarch64
@@ -120,15 +136,15 @@ jobs:
   #     script: pip3 install twine && python3 -m twine upload --verbose --skip-existing wheelhouse/*
   #     on:
   #       branch: master
-        
+
 
 
   # - name: Deploy osx
-  #   # adapted from: https://github.com/cclauss/Travis-CI-Python-on-three-OSes/blob/master/.travis.yml  
+  #   # adapted from: https://github.com/cclauss/Travis-CI-Python-on-three-OSes/blob/master/.travis.yml
   #   os: osx
   #   osx_image: xcode11 # python3.7 comes installed with xcode11 image
   #   language: rust
-  #   rust: stable  
+  #   rust: stable
   #   install:
   #   - python3 -m pip install delocate
   #   script:
@@ -140,11 +156,11 @@ jobs:
   #   deploy:
   #     skip_cleanup: true
   #     provider: script
-  #     script: 
+  #     script:
   #       python3 -m pip install --upgrade pip && python3 -m pip install twine && python3 -m twine upload --verbose --skip-existing wheelhouse/*
   #     on:
   #       branch: develop
-        
+
 
   # - name: Deploy windows
   #   language: rust
@@ -166,4 +182,4 @@ jobs:
   #     script: pip3 install twine && python3 -m twine upload --verbose --skip-existing wheelhouse/*
   #     on:
   #       branch: master
-  #       
+  #
