@@ -22,6 +22,10 @@ jobs:
     os: linux
     language: rust
     rust: stable
+    before_install:
+      - sudo apt-get -y install python3-pip python-dev
+      - python3 -V
+      - pip3 -V
     script:
     # (1) Rust Validator -> Test & Build
     - cd validator-rust; cargo build --verbose --workspace;
