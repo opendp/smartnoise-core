@@ -440,6 +440,12 @@ class Component(object):
                     "n": Component.of(constraints[argument + '_n'])
                 })
 
+            for constraint in filtered:
+                del constraints[f'{argument}_{constraint}']
+
+        if constraints:
+            raise ValueError(f"unrecognized constraints: {list(constraints.keys())}")
+
         return arguments
 
 
