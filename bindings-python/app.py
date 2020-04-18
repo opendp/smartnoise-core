@@ -17,30 +17,30 @@ import os
 os.environ['RUST_BACKTRACE'] = 'full'
 
 
-test_validator_properties.test_equal()
-
-
-test_properties()
-
-
-analysis = test_multilayer_analysis(run=False)
-analysis.release()
-
-analysis = test_dp_linear_stats(run=False)
-analysis.release()
-
-analysis = test_raw_dataset(run=False)
-analysis.release()
-
-analysis = test_everything(run=False)
-analysis.release()
-
-analysis.plot()
-print(analysis.release_values)
-print('privacy usage:', analysis.privacy_usage)
-
-print('all released values (internal):', analysis.release_values)
-print('release report:', json.dumps(analysis.report(), indent=4))
-
-test_histogram()
-test_covariance()
+test_validator_properties.test_divide()
+#
+#
+# test_properties()
+#
+#
+# analysis = test_multilayer_analysis(run=False)
+# analysis.release()
+#
+# analysis = test_dp_linear_stats(run=False)
+# analysis.release()
+#
+# analysis = test_raw_dataset(run=False)
+# analysis.release()
+#
+# analysis = test_everything(run=False)
+# analysis.release()
+#
+# analysis.plot()
+# print(analysis.release_values)
+# print('privacy usage:', analysis.privacy_usage)
+#
+# print('all released values (internal):', analysis.release_values)
+# print('release report:', json.dumps(analysis.report(), indent=4))
+#
+# test_histogram()
+# test_covariance()

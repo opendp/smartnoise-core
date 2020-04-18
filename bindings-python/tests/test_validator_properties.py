@@ -58,8 +58,29 @@ def generate_synthetic(var_type, n=10, rand_min=0, rand_max=10, cats_str=None, c
     return {'value': list(zip(*data)), 'column_names': names}
 
 
+def test_divide():
+    with whitenoise.Analysis():
+        data_A = whitenoise.Dataset(**generate_synthetic(float, variants=['Random']))
+
+        f_random = data_A['F_Random']
+        imputed = op.impute(f_random, lower=0., upper=10.)
+        clamped_nonzero = op.clamp(imputed, lower=1., upper=10.)
+        clamped_zero = op.clamp(imputed, lower=0., upper=10.)
+
+        # test properties
+        assert f_random.nullity
+        assert not imputed.nullity
+        assert (2. / imputed).nullity
+        assert (f_random / imputed).nullity
+        assert (2. / clamped_zero).nullity
+
+        # TODO: fix these assertions in the validator- we should be able to get these tighter bounds
+        # assert not (2. / clamped_nonzero).nullity
+        # assert not (imputed / 2.).nullity
+
+
 def test_equal():
-    with whitenoise.Analysis(filter_level='all', eager=True) as analysis:
+    with whitenoise.Analysis(filter_level='all') as analysis:
         data = whitenoise.Dataset(**dataset_bools)
 
         print(data.component.analysis.release_values[data.component.component_id])
