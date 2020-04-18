@@ -230,25 +230,27 @@ pub fn infer_property(value: &Value) -> Result<ValueProperties> {
             },
             dataset_id: None
         }.into(),
-        Value::Hashmap(hashmap) => HashmapProperties {
-            num_records: None,
-            disjoint: false,
-            properties: match hashmap {
-                Hashmap::Str(hashmap) => hashmap.iter()
-                    .map(|(name, value)| infer_property(value)
-                        .map(|v| (name.clone(), v)))
-                    .collect::<Result<HashMap<String, ValueProperties>>>()?.into(),
-                Hashmap::I64(hashmap) => hashmap.iter()
-                    .map(|(name, value)| infer_property(value)
-                        .map(|v| (*name, v)))
-                    .collect::<Result<HashMap<i64, ValueProperties>>>()?.into(),
-                Hashmap::Bool(hashmap) => hashmap.iter()
-                    .map(|(name, value)| infer_property(value)
-                        .map(|v| (*name, v)))
-                    .collect::<Result<HashMap<bool, ValueProperties>>>()?.into(),
-            },
-            columnar: false
-        }.into(),
+        Value::Hashmap(hashmap) => {
+            HashmapProperties {
+                num_records: None,
+                disjoint: false,
+                properties: match hashmap {
+                    Hashmap::Str(hashmap) => hashmap.iter()
+                        .map(|(name, value)| infer_property(value)
+                            .map(|v| (name.clone(), v)))
+                        .collect::<Result<HashMap<String, ValueProperties>>>()?.into(),
+                    Hashmap::I64(hashmap) => hashmap.iter()
+                        .map(|(name, value)| infer_property(value)
+                            .map(|v| (*name, v)))
+                        .collect::<Result<HashMap<i64, ValueProperties>>>()?.into(),
+                    Hashmap::Bool(hashmap) => hashmap.iter()
+                        .map(|(name, value)| infer_property(value)
+                            .map(|v| (*name, v)))
+                        .collect::<Result<HashMap<bool, ValueProperties>>>()?.into(),
+                },
+                columnar: false
+            }.into()
+        },
         Value::Jagged(_jagged) => JaggedProperties {
             releasable: true
         }.into()

@@ -193,14 +193,12 @@ def test_dp_linear_stats(run=True):
         age_histogram = op.dp_histogram(
             op.cast(age, type='int', lower=0, upper=100),
             edges=list(range(0, 100, 25)),
-            count_upper=300,
             null_value=150,
             privacy_usage={'epsilon': 2.}
         )
 
         sex_histogram = op.dp_histogram(
             op.cast(dataset_pums['sex'], type='bool', true_label="1"),
-            count_upper=1000,
             privacy_usage={'epsilon': 2.}
         )
 
@@ -402,6 +400,7 @@ def test_covariance():
 
     # store DP covariance and correlation matrix
     dp_cov = cov.value
+    print(dp_cov)
     dp_corr = dp_cov / np.outer(np.sqrt(np.diag(dp_cov)), np.sqrt(np.diag(dp_cov)))
 
     # get non-DP covariance/correlation matrices

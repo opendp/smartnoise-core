@@ -60,13 +60,14 @@ def generate_synthetic(var_type, n=10, rand_min=0, rand_max=10, cats_str=None, c
 
 def test_equal():
     with whitenoise.Analysis(filter_level='all', eager=True) as analysis:
-        data = whitenoise.Dataset(**generate_synthetic(bool, n=2, variants=['Constant']))
+        data = whitenoise.Dataset(**dataset_bools)
 
-        print(data.component.value)
-        equality = data['B_Constant'] == [False, True]
+        print(data.component.analysis.release_values[data.component.component_id])
+
+        equality = data[0] == data[1]
 
         analysis.release()
-        assert np.array_equal(equality.value, np.array([False, True]))
+        assert np.array_equal(equality.value, np.array([True, False, False, True]))
 
 
 def test_index():

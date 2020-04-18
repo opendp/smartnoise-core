@@ -14,7 +14,7 @@ use std::vec::Vec;
 use itertools::Itertools;
 
 use whitenoise_validator::base::{Value, ReleaseNode};
-use whitenoise_validator::utilities::serial::{parse_release};
+use whitenoise_validator::utilities::serial::{parse_release, serialize_release_node};
 use std::iter::FromIterator;
 
 pub type NodeArguments<'a> = HashMap<String, &'a Value>;
@@ -48,16 +48,23 @@ pub fn execute_graph(
 
     // core state for the graph execution algorithm
     let mut traversal: Vec<u32> = get_sinks(&graph).into_iter().collect();
-    let mut graph_properties: HashMap<u32, proto::ValueProperties> = HashMap::new();
+
+    // derive properties for any private nodes in the release
+    // TODO: reduce clones by removing refs from lib signatures
+    let mut graph_properties = whitenoise_validator::get_properties(&proto::RequestGetProperties {
+        analysis: Some(analysis.clone()),
+        release: Some(release.clone()),
+        node_ids: release.values.keys().cloned().collect()
+    })?.properties;
+
     let mut release = serial::parse_release(release)?;
     let mut maximum_id = graph.keys()
         .fold1(std::cmp::max)
         .map(|x| x.clone())
         .unwrap_or(0);
 
-    // values in the passed release are kept in the release
-    // TODO: consider requesting properties from the validator for nodes that already exist in the release
-    let preserve_ids: HashSet<u32> = HashSet::from_iter(release.keys().cloned());
+    // for if the filtering level is set to retain values
+    let original_ids: HashSet<u32> = HashSet::from_iter(release.keys().cloned());
 
     // track node parents. Each key is a node id, and the value is the set of node ids that use it
     let mut parents = HashMap::<u32, HashSet<u32>>::new();
@@ -70,15 +77,15 @@ pub fn execute_graph(
     // evaluate components until the traversal is empty
     while !traversal.is_empty() {
 
-        let node_id: u32 = *traversal.last().unwrap();
+        let component_id: u32 = *traversal.last().unwrap();
 
         // skip the node if it has already been evaluated
-        if release.contains_key(&node_id) {
+        if release.contains_key(&component_id) {
             traversal.pop();
             continue;
         }
 
-        let component: proto::Component = graph.get(&node_id)
+        let component: proto::Component = graph.get(&component_id)
             .ok_or_else(|| Error::from("attempted to retrieve a non-existent component id"))?.clone();
 
         // check if any dependencies of the current node remain unevaluated
@@ -101,22 +108,20 @@ pub fn execute_graph(
         let node_properties: HashMap<String, proto::ValueProperties> =
             get_input_properties(&component, &graph_properties)?;
         let public_arguments = component.arguments.iter()
-            .filter(|(_, node_id)| preserve_ids.contains(node_id) || is_public(node_id, &graph, &graph_properties, true) && release.contains_key(node_id))
             .map(|(name, node_id)| (name.clone(), release.get(node_id).unwrap()))
             .filter(|(_, release_node)| release_node.public)
-            .map(|(name, release_node)| (name, release_node.value.clone()))
-            .collect::<HashMap<String, Value>>();
+            .map(|(name, release_node)| Ok((name.clone(), serialize_release_node(release_node)?)))
+            .collect::<Result<HashMap<String, proto::ReleaseNode>>>()?;
 
         // expand the current node
-        let expansion: proto::ComponentExpansion = whitenoise_validator::_expand_component(
-            &analysis.privacy_definition.to_owned()
-                .ok_or_else(|| Error::from("privacy_definition must be defined"))?,
-            &component,
-            &node_properties,
-            &public_arguments,
-            &node_id,
-            &maximum_id,
-        )?;
+        let expansion: proto::ComponentExpansion = whitenoise_validator::expand_component(&proto::RequestExpandComponent {
+            privacy_definition: analysis.privacy_definition.as_ref().cloned(),
+            component: Some(component),
+            properties: node_properties,
+            arguments: public_arguments,
+            component_id,
+            maximum_id
+        })?;
 
         // extend the runtime state with the expansion
         graph.extend(expansion.computation_graph.clone());
@@ -136,7 +141,7 @@ pub fn execute_graph(
         traversal.pop();
 
         // the expansion may have overwritten the current component
-        let component = graph.get(&node_id).unwrap();
+        let component = graph.get(&component_id).unwrap();
 
         // collect arguments by string name to the component that will be executed
         let node_arguments = component.arguments.iter()
@@ -144,21 +149,35 @@ pub fn execute_graph(
             .collect::<HashMap<String, &Value>>();
 
         // evaluate the component using the Evaluable trait, which is implemented on the proto::component::Variant enum
-        let evaluation = component.clone().variant
+        let mut evaluation = component.clone().variant
             .ok_or_else(|| Error::from("variant of component must be known"))?
             .evaluate(&node_arguments)?;
 
+        evaluation.public = match graph_properties.get(&component_id) {
+            Some(property) => match property.variant.clone().unwrap() {
+                proto::value_properties::Variant::Array(v) => v.releasable,
+                proto::value_properties::Variant::Jagged(v) => v.releasable,
+                proto::value_properties::Variant::Hashmap(_) => false
+            },
+            None => false
+        };
+
         // store the evaluated `Value` enum in the release
-        release.insert(node_id, evaluation);
+        release.insert(component_id, evaluation);
 
         if filter_level != &proto::FilterLevel::All {
             // prune evaluations from the release. Private nodes that have no unevaluated parents do not need be stored anymore
             for argument_node_id in component.arguments.values() {
                 if let Some(parent_node_ids) = parents.get_mut(argument_node_id) {
-                    parent_node_ids.remove(&node_id);
+                    parent_node_ids.remove(&component_id);
 
-                    // remove argument node from release if all children evaluated, and is private or omitted
-                    if parent_node_ids.len() == 0 && !(preserve_ids.contains(argument_node_id) || is_public(argument_node_id, &graph, &graph_properties, false)) {
+                    let no_parents = parent_node_ids.len() == 0;
+                    let must_include = filter_level == &proto::FilterLevel::PublicAndPrior && original_ids.contains(argument_node_id);
+                    let is_public = release.get(argument_node_id).map(|v| v.public).unwrap_or(false);
+                    let is_omitted = graph.get(argument_node_id).map(|v| v.omit).unwrap_or(true);
+
+                    // remove argument node from release
+                    if no_parents && ((!must_include && !is_public) || is_omitted) {
                         release.remove(argument_node_id);
                     }
                 }
@@ -166,17 +185,28 @@ pub fn execute_graph(
         }
     }
 
+    // remove all omitted nodes (temporarily added to the graph while executing)
+    for node_id in release.keys().cloned().collect::<Vec<u32>>() {
+        if graph.get(&node_id).map(|v| v.omit).unwrap_or(true) {
+            release.remove(&node_id);
+        }
+    }
+
     // apply the filtering level to the final release
     serial::serialize_release(&match filter_level {
+
         proto::FilterLevel::Public => release.into_iter()
-            .filter(|(node_id, _)| is_public(node_id, &graph, &graph_properties, false))
+            .filter(|(_node_id, release_node)|
+                release_node.public)
             .collect::<HashMap<u32, ReleaseNode>>(),
+
         proto::FilterLevel::PublicAndPrior => release.into_iter()
-            .filter(|(node_id, _)| preserve_ids.contains(node_id) || is_public(node_id, &graph, &graph_properties, false))
+            .filter(|(node_id, release_node)|
+                release_node.public || original_ids.contains(node_id))
             .collect::<HashMap<u32, ReleaseNode>>(),
+
         proto::FilterLevel::All => release,
     })
-
 }
 
 /// Retrieve the set of node ids in a graph that have no dependent nodes.
@@ -198,40 +228,4 @@ pub fn get_sinks(computation_graph: &HashMap<u32, proto::Component>) -> HashSet<
             }));
 
     return node_ids;
-}
-
-
-pub fn is_public(
-    node_id: &u32,
-    graph: &HashMap<u32, proto::Component>,
-    graph_properties: &HashMap<u32, proto::ValueProperties>,
-    allow_omitted: bool
-) -> bool {
-
-    // component must be known
-    let component = match graph.get(node_id) {
-        Some(component) => component,
-        None => return false
-    };
-
-    // component must not be omitted
-    if !allow_omitted && component.omit {
-        return false;
-    }
-
-
-    // if the component is a literal, it is public if not marked private
-    if let proto::component::Variant::Literal(literal) = component.variant.clone().unwrap() {
-        return !literal.private;
-    }
-
-    // otherwise use the properties to determine if public
-    match graph_properties.get(node_id) {
-        Some(property) => match property.variant.clone().unwrap() {
-            proto::value_properties::Variant::Array(v) => v.releasable,
-            proto::value_properties::Variant::Jagged(v) => v.releasable,
-            proto::value_properties::Variant::Hashmap(_) => false
-        },
-        None => false
-    }
 }

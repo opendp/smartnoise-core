@@ -133,7 +133,16 @@ pub fn propagate_properties(
 //        println!("graph evaluation in prop {:?}", graph_evaluation);
         graph_properties.insert(node_id.clone(), match graph_evaluation.get(&node_id) {
             // if node has already been evaluated, infer properties directly from the public data
-            Some(release_node) => infer_property(&release_node.value),
+            Some(release_node) => {
+                if release_node.public {
+                    infer_property(&release_node.value)
+                } else {
+                    let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
+                    component.clone().variant.unwrap().propagate_property(
+                        &privacy_definition, &public_arguments, &input_properties)
+                        .chain_err(|| format!("at node_id {:?}", node_id))
+                }
+            },
 
             // if node has not been evaluated, propagate properties over it
             None => {
@@ -379,9 +388,7 @@ pub fn standardize_weight_argument(
 pub fn get_literal(value: &Value, batch: &u32) -> Result<(proto::Component, proto::ReleaseNode)> {
     Ok((proto::Component {
         arguments: HashMap::new(),
-        variant: Some(proto::component::Variant::Literal(proto::Literal {
-            private: false
-        })),
+        variant: Some(proto::component::Variant::Literal(proto::Literal {})),
         omit: true,
         batch: *batch,
     },
