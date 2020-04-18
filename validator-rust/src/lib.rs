@@ -33,7 +33,7 @@ pub mod docs;
 use crate::components::*;
 use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
-use crate::utilities::serial::serialize_value_properties;
+use crate::utilities::serial::{serialize_value_properties, parse_value_properties};
 use crate::base::{ReleaseNode, Value};
 use std::iter::FromIterator;
 
@@ -224,14 +224,60 @@ pub fn privacy_usage_to_accuracy(
         .ok_or_else(|| Error::from("component must be defined"))?;
     let privacy_definition: &proto::PrivacyDefinition = request.privacy_definition.as_ref()
         .ok_or_else(|| Error::from("privacy definition must be defined"))?;
-    let properties: HashMap<String, base::ValueProperties> = request.properties.iter()
-        .map(|(k, v)| (k.to_owned(), utilities::serial::parse_value_properties(&v)))
-        .collect();
 
-    Ok(proto::Accuracies {
-        values: component.variant.as_ref()
+    let proto_properties = component.arguments.iter()
+        .filter_map(|(name, idx)| Some((idx.clone(), request.properties.get(name)?.clone())))
+        .collect::<HashMap<u32, proto::ValueProperties>>();
+
+    let mut base_properties = proto_properties.iter()
+        .map(|(idx, prop)| (*idx, parse_value_properties(prop)))
+        .collect::<HashMap<u32, base::ValueProperties>>();
+
+    let maximum_id: u32 = proto_properties.keys().max().cloned().unwrap() + 1;
+    let mut graph = hashmap![maximum_id => component.clone()];
+
+    let variant = component.variant.as_ref()
+        .ok_or_else(|| Error::from("component variant must be defined"))?;
+
+    if let Ok(expansion) = variant.expand_component(
+        &privacy_definition,
+        &component,
+        &request.properties.iter()
+            .map(|(name, props)| (name.clone(), parse_value_properties(props)))
+            .collect(),
+        &maximum_id, &maximum_id
+    ) {
+        let (properties_expanded, graph_expanded) = utilities::propagate_properties(
+            &proto::Analysis {
+                computation_graph: Some(proto::ComputationGraph { value: expansion.computation_graph }),
+                privacy_definition: Some(privacy_definition.clone())
+            },
+            &proto::Release {values: expansion.releases}
+        )?;
+        graph.extend(graph_expanded);
+        base_properties.extend(properties_expanded);
+    };
+
+    let accuracies = graph.iter().map(|(idx, component)| {
+        let component_properties = component.arguments.iter()
+            .map(|(name, idx)| (name.clone(), base_properties.get(idx).unwrap().clone()))
+            .collect::<HashMap<String, base::ValueProperties>>();
+
+        Ok(match component.variant.as_ref()
             .ok_or_else(|| Error::from("component variant must be defined"))?
-            .privacy_usage_to_accuracy(privacy_definition, &properties, &request.alpha)?.unwrap()
+            .privacy_usage_to_accuracy(privacy_definition, &component_properties, &request.alpha)? {
+            Some(accuracies) => Some((idx.clone(), accuracies)),
+            None => None
+        })
+    })
+        .collect::<Result<Vec<Option<(u32, Vec<proto::Accuracy>)>>>>()?
+        .into_iter().filter_map(|v| v)
+        .collect::<HashMap<u32, Vec<proto::Accuracy>>>();
+
+    // TODO: propagate/combine accuracies
+    Ok(proto::Accuracies {
+        values: accuracies.into_iter().map(|(_, v)| v).collect::<Vec<Vec<proto::Accuracy>>>().first()
+            .ok_or_else(|| Error::from("accuracy is not defined"))?.clone()
     })
 }
 
