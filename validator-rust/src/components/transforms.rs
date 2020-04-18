@@ -163,9 +163,6 @@ impl Component for proto::Multiply {
             return Err("left and right arguments must share the same data types".into())
         }
 
-        println!("left {}", left_property.nullity);
-        println!("right {}", right_property.nullity);
-
         Ok(ArrayProperties {
             nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
