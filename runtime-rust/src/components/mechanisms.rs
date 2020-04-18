@@ -2,7 +2,7 @@ use whitenoise_validator::errors::*;
 
 use crate::base::NodeArguments;
 use whitenoise_validator::base::{Array, ReleaseNode};
-use whitenoise_validator::utilities::{get_argument, broadcast_privacy_usage, broadcast_ndarray};
+use whitenoise_validator::utilities::{get_argument, broadcast_privacy_usage, broadcast_ndarray, get_epsilon, get_delta};
 use crate::components::Evaluable;
 use crate::utilities;
 use whitenoise_validator::proto;
@@ -127,23 +127,5 @@ impl Evaluable for proto::SimpleGeometricMechanism {
             privacy_usages: Some(usages),
             public: true
         })
-    }
-}
-
-
-fn get_epsilon(usage: &proto::PrivacyUsage) -> Result<f64> {
-    match usage.distance.clone()
-        .ok_or_else(|| Error::from("distance must be defined on a PrivacyUsage"))? {
-        proto::privacy_usage::Distance::DistancePure(distance) => Ok(distance.epsilon),
-        proto::privacy_usage::Distance::DistanceApproximate(distance) => Ok(distance.epsilon),
-//        _ => Err("epsilon is not defined".into())
-    }
-}
-
-fn get_delta(usage: &proto::PrivacyUsage) -> Result<f64> {
-    match usage.distance.clone()
-        .ok_or_else(|| Error::from("distance must be defined on a PrivacyUsage"))? {
-        proto::privacy_usage::Distance::DistanceApproximate(distance) => Ok(distance.delta),
-        _ => Err("delta is not defined".into())
     }
 }
