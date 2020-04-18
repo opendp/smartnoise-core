@@ -203,7 +203,6 @@ pub extern "C" fn get_properties(
     request_ptr: *const u8, request_length: i32,
 ) -> ffi_support::ByteBuffer {
     let request_buffer = unsafe { ptr_to_buffer(request_ptr, request_length) };
-    let _request: proto::RequestGetProperties = prost::Message::decode(request_buffer).unwrap();
 
     let response = proto::ResponseGetProperties {
         value: match proto::RequestGetProperties::decode(request_buffer) {

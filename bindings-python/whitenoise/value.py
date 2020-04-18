@@ -89,8 +89,8 @@ def serialize_release_proto(release_values):
                 value=serialize_value_proto(
                     release_values[component_id]['value'],
                     release_values[component_id].get("value_format")),
-                privacy_usage=whitenoise.serialize_privacy_usage(
-                    **release_values[component_id].get("privacy_usage", {})))
+                privacy_usages=release_values[component_id].get("privacy_usages"),
+                public=release_values[component_id]['public'])
             for component_id in release_values
         })
 
@@ -229,10 +229,11 @@ def parse_release_proto(release):
     def parse_release_node(release_node):
         parsed = {
             "value": parse_value_proto(release_node.value),
-            "value_format": release_node.value.WhichOneof("data")
+            "value_format": release_node.value.WhichOneof("data"),
+            "public": release_node.public
         }
-        if release_node.privacy_usage:
-            parsed['privacy_usage'] = release_node.privacy_usage
+        if release_node.privacy_usages:
+            parsed['privacy_usages'] = release_node.privacy_usages
         return parsed
     return {
         node_id: parse_release_node(release_node) for node_id, release_node in release.values.items()

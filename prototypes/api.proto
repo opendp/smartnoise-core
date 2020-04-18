@@ -24,6 +24,8 @@ message RequestGenerateReport {
 message RequestGetProperties {
 	Analysis analysis = 1;
 	Release release = 2;
+	// only compute properties for these nodes. If empty, properties for all nodes are returned
+	repeated uint32 node_ids = 3;
 }
 message RequestAccuracyToPrivacyUsage {
 	PrivacyDefinition privacy_definition = 1;
@@ -40,7 +42,7 @@ message RequestPrivacyUsageToAccuracy {
 message RequestExpandComponent {
 	Component component = 1;
 	map<string, ValueProperties> properties = 2;
-	map<string, Value> arguments = 3;
+	map<string, ReleaseNode> arguments = 3;
 	PrivacyDefinition privacy_definition = 4;
 	uint32 component_id = 5;
 	uint32 maximum_id = 6;

@@ -12,7 +12,7 @@ ALL_CONSTRAINTS = ["n", "lower", "upper", "categories"]
 class Dataset(object):
     def __init__(self, *, path=None, value=None,
                  num_columns=None, column_names=None,
-                 value_format=None, skip_row=True, private=True):
+                 value_format=None, skip_row=True, public=False):
         """
         Datasets represent a single tabular resource. Datasets are assumed to be private, and may be loaded from csv files or as literal arrays.
         :param path: Path to a csv file on the filesystem. It is assumed that the csv file is well-formed.
@@ -21,7 +21,7 @@ class Dataset(object):
         :param column_names: Alternatively, the set of column names in the data resource.
         :param value_format: If ambiguous, the data format of the value (either array, hashmap or jagged)
         :param skip_row: Set to True if the first row is the csv header. The csv header is always ignored.
-        :param private: Whether to flag the data in the dataset as private. This is of course private by default.
+        :param public: Whether to flag the data in the dataset as public. This is of course private by default.
         """
 
         global context
@@ -50,7 +50,7 @@ class Dataset(object):
                                    },
                                    options={
                                        "data_source": value_pb2.DataSource(**data_source),
-                                       "private": private,
+                                       "public": public,
                                        "dataset_id": value_pb2.I64Null(option=self.dataset_id),
                                        "skip_row": skip_row
                                    })
@@ -63,7 +63,7 @@ class Component(object):
     def __init__(self, name: str,
                  arguments: dict = None, options: dict = None,
                  constraints: dict = None,
-                 value=None, value_format=None):
+                 value=None, value_format=None, value_public=False):
         """
         Representation for the most atomic computation. There are helpers to construct these in components.py.
 
@@ -90,7 +90,7 @@ class Component(object):
 
         global context
         if context:
-            context.add_component(self, value=value, value_format=value_format)
+            context.add_component(self, value=value, value_format=value_format, value_public=value_public)
         else:
             raise ValueError("all whitenoise components must be created within the context of an analysis")
 
@@ -114,7 +114,7 @@ class Component(object):
 
         :return: A privacy usage
         """
-        return self.analysis.release_values.get(self.component_id, {"privacy_usage": None})["privacy_usage"]
+        return self.analysis.release_values.get(self.component_id, {"privacy_usages": None})["privacy_usages"]
 
     def get_parents(self):
         """
@@ -357,7 +357,7 @@ class Component(object):
         return f'<{self.component_id}: {self.name} Component>'
 
     @staticmethod
-    def of(value, value_format=None, private=False):
+    def of(value, value_format=None, public=True):
         """
         Given an array, list of lists, or dictionary, attempt to wrap it in a component and place the value in the release.
         Loose literals are by default public.
@@ -365,7 +365,7 @@ class Component(object):
 
         :param value: The value to be wrapped.
         :param value_format: must be one of `array`, `hashmap`, `jagged`
-        :param private: Loose literals are by default public.
+        :param public: Loose literals are by default public.
         :return: A Literal component with the value attached to the parent analysis' release.
         """
         if value is None:
@@ -378,7 +378,7 @@ class Component(object):
         if type(value) == Component:
             return value
 
-        return Component('Literal', options={"private": private}, value=value, value_format=value_format)
+        return Component('Literal', value=value, value_format=value_format, value_public=public)
 
     @staticmethod
     def _expand_constraints(arguments, constraints):
@@ -518,13 +518,14 @@ class Analysis(object):
         self.properties = {}
         self.properties_id = {"count": self.component_count, "batch": self.batch}
 
-    def add_component(self, component, value=None, value_format=None):
+    def add_component(self, component, value=None, value_format=None, value_public=False):
         """
         Every component must be contained in an analysis.
 
         :param component: The description of computation
         :param value: Optionally, the result of the computation.
         :param value_format: Optionally, the format of the result of the computation- `array` `hashmap` `jagged`
+        :param value_public: set to true if the value is considered public
         :return:
         """
         if component.analysis:
@@ -537,7 +538,8 @@ class Analysis(object):
         if value is not None:
             self.release_values[self.component_count] = {
                 'value': value,
-                'value_format': value_format
+                'value_format': value_format,
+                'public': value_public
             }
         self.components[self.component_count] = component
         self.component_count += 1

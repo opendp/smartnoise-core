@@ -13,9 +13,9 @@
     "data_source": {
       "type": "DataSource"
     },
-    "private": {
+    "public": {
       "type": "bool",
-      "default": "True"
+      "default": "False"
     },
     "dataset_id": {
       "type": "I64Null",
@@ -25,7 +25,7 @@
     "skip_row": {
       "type": "bool",
       "default": "True",
-      "description": "when set, skip the first line (header)"
+      "description": "when set, skip the first line (header) in a csv"
     }
   },
   "return": {

@@ -2,12 +2,7 @@
   "arguments": {},
   "id": "Literal",
   "name": "literal",
-  "options": {
-    "private": {
-      "type": "bool",
-      "default": "False"
-    }
-  },
+  "options": {},
   "return": {
     "nature": [
       "continuous",
