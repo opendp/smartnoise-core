@@ -33,7 +33,7 @@ pub mod docs;
 use crate::components::*;
 use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
-use crate::utilities::serial::{serialize_value_properties, parse_value_properties};
+use crate::utilities::serial::serialize_value_properties;
 use crate::base::{ReleaseNode, Value};
 use std::iter::FromIterator;
 
@@ -73,7 +73,7 @@ pub fn validate_analysis(
     let release = request.release.clone()
         .ok_or_else(|| Error::from("release must be defined"))?;
 
-    utilities::propagate_properties(&analysis, &release)?;
+    utilities::propagate_properties(&analysis, &release, None)?;
 
     Ok(proto::response_validate_analysis::Validated {
         value: true,
@@ -94,7 +94,7 @@ pub fn compute_privacy_usage(
     let release = request.release.as_ref()
         .ok_or_else(|| Error::from("release must be defined"))?;
 
-    let (_graph_properties, graph) = utilities::propagate_properties(analysis, release)?;
+    let (_graph_properties, graph) = utilities::propagate_properties(analysis, release, None)?;
 
     let usage_option = graph.iter()
         // return the privacy usage from the release, else from the analysis
@@ -122,14 +122,13 @@ pub fn generate_report(
         .ok_or("the computation graph must be defined in an analysis")?
         .value;
 
-    let (graph_properties, _graph_expanded) = utilities::propagate_properties(analysis, release)?;
+    let (graph_properties, _graph_expanded) = utilities::propagate_properties(analysis, release, None)?;
     let release = utilities::serial::parse_release(&release)?;
 
     // variable names
     let mut nodes_varnames: HashMap<u32, Vec<String>> = HashMap::new();
 
     utilities::get_traversal(&graph)?.iter().map(|node_id| {
-
         let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
         let public_arguments = utilities::get_public_arguments(&component, &release)?;
 
@@ -199,17 +198,44 @@ pub fn accuracy_to_privacy_usage(
         .ok_or_else(|| Error::from("component must be defined"))?;
     let privacy_definition: &proto::PrivacyDefinition = request.privacy_definition.as_ref()
         .ok_or_else(|| Error::from("privacy definition must be defined"))?;
-    let properties: HashMap<String, base::ValueProperties> = request.properties.iter()
-        .map(|(k, v)| (k.to_owned(), utilities::serial::parse_value_properties(&v)))
-        .collect();
     let accuracies: &proto::Accuracies = request.accuracies.as_ref()
         .ok_or_else(|| Error::from("accuracies must be defined"))?;
 
-    // TODO: expand component and prop accuracy
-    Ok(proto::PrivacyUsages {
-        values: component.variant.as_ref()
+    let proto_properties = component.arguments.iter()
+        .filter_map(|(name, idx)| Some((idx.clone(), request.properties.get(name)?.clone())))
+        .collect::<HashMap<u32, proto::ValueProperties>>();
+
+    let (properties, graph) = utilities::propagate_properties(
+        &proto::Analysis {
+            computation_graph: Some(proto::ComputationGraph {
+                value: hashmap![component.arguments.values().max().cloned().unwrap_or(0) + 1 => component.clone()]
+            }),
+            privacy_definition: Some(privacy_definition.clone()),
+        },
+        &proto::Release { values: HashMap::new() },
+        Some(&proto_properties),
+    )?;
+
+    let privacy_usages = graph.iter().map(|(idx, component)| {
+        let component_properties = component.arguments.iter()
+            .filter_map(|(name, idx)| Some((name.clone(), properties.get(idx)?.clone())))
+            .collect::<HashMap<String, base::ValueProperties>>();
+
+        Ok(match component.variant.as_ref()
             .ok_or_else(|| Error::from("component variant must be defined"))?
-            .accuracy_to_privacy_usage(privacy_definition, &properties, accuracies)?.unwrap()
+            .accuracy_to_privacy_usage(privacy_definition, &component_properties, &accuracies)? {
+            Some(accuracies) => Some((idx.clone(), accuracies)),
+            None => None
+        })
+    })
+        .collect::<Result<Vec<Option<(u32, Vec<proto::PrivacyUsage>)>>>>()?
+        .into_iter().filter_map(|v| v)
+        .collect::<HashMap<u32, Vec<proto::PrivacyUsage>>>();
+
+    Ok(proto::PrivacyUsages {
+        values: privacy_usages.into_iter().map(|(_, v)| v).collect::<Vec<Vec<proto::PrivacyUsage>>>()
+            .first()
+            .ok_or_else(|| Error::from("privacy usage is not defined"))?.clone()
     })
 }
 
@@ -220,6 +246,7 @@ pub fn accuracy_to_privacy_usage(
 pub fn privacy_usage_to_accuracy(
     request: &proto::RequestPrivacyUsageToAccuracy
 ) -> Result<proto::Accuracies> {
+
     let component: &proto::Component = request.component.as_ref()
         .ok_or_else(|| Error::from("component must be defined"))?;
     let privacy_definition: &proto::PrivacyDefinition = request.privacy_definition.as_ref()
@@ -229,38 +256,20 @@ pub fn privacy_usage_to_accuracy(
         .filter_map(|(name, idx)| Some((idx.clone(), request.properties.get(name)?.clone())))
         .collect::<HashMap<u32, proto::ValueProperties>>();
 
-    let mut base_properties = proto_properties.iter()
-        .map(|(idx, prop)| (*idx, parse_value_properties(prop)))
-        .collect::<HashMap<u32, base::ValueProperties>>();
-
-    let maximum_id: u32 = proto_properties.keys().max().cloned().unwrap() + 1;
-    let mut graph = hashmap![maximum_id => component.clone()];
-
-    let variant = component.variant.as_ref()
-        .ok_or_else(|| Error::from("component variant must be defined"))?;
-
-    if let Ok(expansion) = variant.expand_component(
-        &privacy_definition,
-        &component,
-        &request.properties.iter()
-            .map(|(name, props)| (name.clone(), parse_value_properties(props)))
-            .collect(),
-        &maximum_id, &maximum_id
-    ) {
-        let (properties_expanded, graph_expanded) = utilities::propagate_properties(
-            &proto::Analysis {
-                computation_graph: Some(proto::ComputationGraph { value: expansion.computation_graph }),
-                privacy_definition: Some(privacy_definition.clone())
-            },
-            &proto::Release {values: expansion.releases}
-        )?;
-        graph.extend(graph_expanded);
-        base_properties.extend(properties_expanded);
-    };
+    let (properties, graph) = utilities::propagate_properties(
+        &proto::Analysis {
+            computation_graph: Some(proto::ComputationGraph {
+                value: hashmap![component.arguments.values().max().cloned().unwrap_or(0) + 1 => component.clone()]
+            }),
+            privacy_definition: Some(privacy_definition.clone()),
+        },
+        &proto::Release { values: HashMap::new() },
+        Some(&proto_properties),
+    )?;
 
     let accuracies = graph.iter().map(|(idx, component)| {
         let component_properties = component.arguments.iter()
-            .map(|(name, idx)| (name.clone(), base_properties.get(idx).unwrap().clone()))
+            .filter_map(|(name, idx)| Some((name.clone(), properties.get(idx)?.clone())))
             .collect::<HashMap<String, base::ValueProperties>>();
 
         Ok(match component.variant.as_ref()
@@ -274,9 +283,10 @@ pub fn privacy_usage_to_accuracy(
         .into_iter().filter_map(|v| v)
         .collect::<HashMap<u32, Vec<proto::Accuracy>>>();
 
-    // TODO: propagate/combine accuracies
     Ok(proto::Accuracies {
-        values: accuracies.into_iter().map(|(_, v)| v).collect::<Vec<Vec<proto::Accuracy>>>().first()
+        values: accuracies.into_iter().map(|(_, v)| v).collect::<Vec<Vec<proto::Accuracy>>>()
+            // TODO: propagate/combine accuracies, don't just take the first
+            .first()
             .ok_or_else(|| Error::from("accuracy is not defined"))?.clone()
     })
 }
@@ -291,14 +301,13 @@ pub fn get_properties(
         .ok_or_else(|| Error::from("release must be defined"))?.clone();
 
     if request.node_ids.len() > 0 {
-
-        let mut ancestors = HashSet::new();
+        let mut ancestors = HashSet::<u32>::new();
         let mut traversal = Vec::from_iter(request.node_ids.iter());
         let computation_graph = &analysis.computation_graph.as_ref().unwrap().value;
         while !traversal.is_empty() {
             let node_id = traversal.pop().unwrap();
             computation_graph.get(&node_id)
-                .map(|component| component.arguments.values().map(|v| traversal.push(v)));
+                .map(|component| component.arguments.values().for_each(|v| traversal.push(v)));
             ancestors.insert(*node_id);
         }
         analysis = proto::Analysis {
@@ -308,7 +317,7 @@ pub fn get_properties(
                     .map(|(idx, component)| (idx.clone(), component.clone()))
                     .collect::<HashMap<u32, proto::Component>>()
             }),
-            privacy_definition: analysis.privacy_definition
+            privacy_definition: analysis.privacy_definition,
         };
         release = proto::Release {
             values: release.values.iter()
@@ -319,7 +328,7 @@ pub fn get_properties(
     }
 
     let (properties, _graph) = utilities::propagate_properties(
-        &analysis, &release
+        &analysis, &release, None,
     )?;
 
     Ok(proto::GraphProperties {
@@ -337,7 +346,6 @@ pub fn get_properties(
 pub fn expand_component(
     request: &proto::RequestExpandComponent
 ) -> Result<proto::ComponentExpansion> {
-
     let public_arguments = request.arguments.iter()
         .map(|(k, v)| Ok((k.to_owned(), utilities::serial::parse_release_node(&v)?)))
         .collect::<Result<HashMap<String, ReleaseNode>>>()?;

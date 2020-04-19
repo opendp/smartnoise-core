@@ -89,7 +89,7 @@ impl Accuracy for proto::LaplaceMechanism {
 
         Ok(Some(sensitivities.into_iter().zip(accuracies.values.iter())
             .map(|(sensitivity, accuracy)| proto::PrivacyUsage {
-                distance: Some(proto::privacy_usage::Distance::DistanceApproximate(proto::privacy_usage::DistanceApproximate {
+                distance: Some(proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
                     epsilon: (1. / accuracy.alpha).ln() * (sensitivity / accuracy.value),
                     delta: 0.,
                 }))

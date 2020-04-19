@@ -75,22 +75,31 @@ pub fn get_input_properties<T>(
 pub fn propagate_properties(
     analysis: &proto::Analysis,
     release: &proto::Release,
+    properties: Option<&HashMap<u32, proto::ValueProperties>>
 ) -> Result<(HashMap<u32, ValueProperties>, HashMap<u32, proto::Component>)> {
     // compute properties for every node in the graph
 
     let privacy_definition = analysis.privacy_definition.to_owned().unwrap();
     let mut graph: HashMap<u32, proto::Component> = analysis.computation_graph.to_owned().unwrap().value;
     let mut traversal: Vec<u32> = get_traversal(&graph)?;
+
     // extend and pop from the end of the traversal
     traversal.reverse();
 
     let mut graph_evaluation: Release = parse_release(&release)?;
 
+    let mut graph_properties = match properties {
+        Some(properties) => properties.iter()
+            .map(|(idx, props)| (idx.clone(), parse_value_properties(props)))
+            .collect::<HashMap<u32, ValueProperties>>(),
+        None => HashMap::new()
+    };
+
     // infer properties on public evaluations
-    let mut graph_properties = graph_evaluation.iter()
+    graph_properties.extend(graph_evaluation.iter()
         .filter(|(_, release_node)| release_node.public)
         .map(|(node_id, release_node)| Ok((*node_id, infer_property(&release_node.value)?)))
-        .collect::<Result<HashMap<u32, ValueProperties>>>()?;
+        .collect::<Result<HashMap<u32, ValueProperties>>>()?);
 
     let mut maximum_id = graph.keys().cloned()
         .fold(0, std::cmp::max);
@@ -167,14 +176,14 @@ pub fn get_traversal(
     // track node parents
     let mut parents = HashMap::<u32, HashSet<u32>>::new();
     graph.iter().for_each(|(node_id, component)| {
-        if !parents.contains_key(node_id) {
-            parents.insert(*node_id, HashSet::<u32>::new());
-        }
+        parents.entry(*node_id)
+            .or_insert_with(HashSet::<u32>::new);
+
         component.arguments.values().for_each(|argument_node_id| {
             parents.entry(*argument_node_id)
                 .or_insert_with(HashSet::<u32>::new)
                 .insert(*node_id);
-        })
+        });
     });
 
     // store the optimal computation order of node ids
@@ -182,7 +191,8 @@ pub fn get_traversal(
 
     // collect all sources (nodes with zero arguments)
     let mut queue: Vec<u32> = graph.iter()
-        .filter(|(_node_id, component)| component.arguments.is_empty())
+        .filter(|(_node_id, component)| component.arguments.is_empty()
+            || component.arguments.values().all(|arg_idx| !graph.contains_key(arg_idx)))
         .map(|(node_id, _component)| node_id.to_owned()).collect();
 
     let mut visited = HashMap::new();
@@ -434,10 +444,10 @@ pub fn privacy_usage_reducer(
 
     proto::PrivacyUsage {
         distance: match (left.distance.to_owned().unwrap(), right.distance.to_owned().unwrap()) {
-            (Distance::DistancePure(x), Distance::DistancePure(y)) => Some(Distance::DistancePure(proto::privacy_usage::DistancePure {
+            (Distance::Pure(x), Distance::Pure(y)) => Some(Distance::Pure(proto::privacy_usage::DistancePure {
                 epsilon: operator(x.epsilon, y.epsilon)
             })),
-            (Distance::DistanceApproximate(x), Distance::DistanceApproximate(y)) => Some(Distance::DistanceApproximate(proto::privacy_usage::DistanceApproximate {
+            (Distance::Approximate(x), Distance::Approximate(y)) => Some(Distance::Approximate(proto::privacy_usage::DistanceApproximate {
                 epsilon: operator(x.epsilon, y.epsilon),
                 delta: operator(x.delta, y.delta),
             })),
@@ -449,8 +459,8 @@ pub fn privacy_usage_reducer(
 pub fn get_epsilon(usage: &proto::PrivacyUsage) -> Result<f64> {
     match usage.distance.clone()
         .ok_or_else(|| Error::from("distance must be defined on a PrivacyUsage"))? {
-        proto::privacy_usage::Distance::DistancePure(distance) => Ok(distance.epsilon),
-        proto::privacy_usage::Distance::DistanceApproximate(distance) => Ok(distance.epsilon),
+        proto::privacy_usage::Distance::Pure(distance) => Ok(distance.epsilon),
+        proto::privacy_usage::Distance::Approximate(distance) => Ok(distance.epsilon),
 //        _ => Err("epsilon is not defined".into())
     }
 }
@@ -458,7 +468,7 @@ pub fn get_epsilon(usage: &proto::PrivacyUsage) -> Result<f64> {
 pub fn get_delta(usage: &proto::PrivacyUsage) -> Result<f64> {
     match usage.distance.clone()
         .ok_or_else(|| Error::from("distance must be defined on a PrivacyUsage"))? {
-        proto::privacy_usage::Distance::DistanceApproximate(distance) => Ok(distance.delta),
+        proto::privacy_usage::Distance::Approximate(distance) => Ok(distance.delta),
         _ => Err("delta is not defined".into())
     }
 }
@@ -473,15 +483,15 @@ pub fn broadcast_privacy_usage(usages: &[proto::PrivacyUsage], length: usize) ->
     }
 
     Ok(match usages[0].distance.clone().ok_or("distance must be defined on a privacy usage")? {
-        proto::privacy_usage::Distance::DistancePure(pure) => (0..length)
+        proto::privacy_usage::Distance::Pure(pure) => (0..length)
             .map(|_| proto::PrivacyUsage {
-                distance: Some(proto::privacy_usage::Distance::DistancePure(proto::privacy_usage::DistancePure {
+                distance: Some(proto::privacy_usage::Distance::Pure(proto::privacy_usage::DistancePure {
                     epsilon: pure.epsilon / (length as f64)
                 }))
             }).collect(),
-        proto::privacy_usage::Distance::DistanceApproximate(approx) => (0..length)
+        proto::privacy_usage::Distance::Approximate(approx) => (0..length)
             .map(|_| proto::PrivacyUsage {
-                distance: Some(proto::privacy_usage::Distance::DistanceApproximate(proto::privacy_usage::DistanceApproximate {
+                distance: Some(proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
                     epsilon: approx.epsilon / (length as f64),
                     delta: approx.delta / (length as f64),
                 }))

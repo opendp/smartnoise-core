@@ -55,7 +55,7 @@ for file_name in sorted(os.listdir(components_dir)):
     def standardize_option(name):
         option_schema = component_schema['options'][name]
         if option_schema['type'] == 'repeated PrivacyUsage':
-            return f'serialize_privacy_usage(**{name})'
+            return f'serialize_privacy_usage({name})'
         return name
 
     def document_argument(prefix, name, argument):
