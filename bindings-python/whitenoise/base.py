@@ -41,7 +41,7 @@ class Dataset(object):
         if path is not None:
             data_source['file_path'] = path
         if value is not None:
-            data_source['literal'] = serialize_value_proto(value, value_format)
+            data_source['literal'] = serialize_value(value, value_format)
 
         self.component = Component('Materialize',
                                    arguments={
@@ -80,6 +80,12 @@ class Component(object):
         :param value_format: The format of the value, one of `array`, `jagged`, `hashmap`
         """
 
+        accuracy = None
+        if constraints:
+            accuracy = constraints.get('accuracy')
+            if 'accuracy' in constraints:
+                del constraints['accuracy']
+
         self.name: str = name
         self.arguments: dict = Component._expand_constraints(arguments or {}, constraints)
         self.options: dict = options
@@ -93,6 +99,11 @@ class Component(object):
             context.add_component(self, value=value, value_format=value_format, value_public=value_public)
         else:
             raise ValueError("all whitenoise components must be created within the context of an analysis")
+
+        if accuracy:
+            privacy_usages = self.from_accuracy(accuracy['value'], accuracy['alpha'])
+            # TODO: this could be written cleaner
+            options['privacy_usage'] = [serialize_privacy_usage(usage)[0] for usage in privacy_usages]
 
         self.batch = self.analysis.batch
 
@@ -134,23 +145,33 @@ class Component(object):
         """
         self.analysis.update_properties()
 
-        return core_wrapper.privacy_usage_to_accuracy(
+        response = core_wrapper.privacy_usage_to_accuracy(
             privacy_definition=serialize_privacy_definition(self.analysis),
             component=serialize_component(self),
             properties={name: self.analysis.properties.get(arg.component_id) for name, arg in self.arguments.items() if arg},
             alpha=alpha)
 
+        return [accuracy.value for accuracy in response.values]
+
     def from_accuracy(self, value, alpha):
         """
         Retrieve the privacy usage necessary such that the true value differs from the estimate by at most "value amount" with (1 - alpha)100% confidence
         """
-        return core_wrapper.accuracy_to_privacy_usage(
+        if not issubclass(type(value), list):
+            value = [value for _ in range(self.num_columns)]
+
+        if not issubclass(type(alpha), list):
+            alpha = [alpha for _ in range(self.num_columns)]
+
+        privacy_usages = core_wrapper.accuracy_to_privacy_usage(
             privacy_definition=serialize_privacy_definition(self.analysis),
             component=serialize_component(self),
             properties={name: self.analysis.properties.get(arg.component_id) for name, arg in self.arguments.items() if arg},
-            accuracy=base_pb2.Accuracy(
-                value=value,
-                alpha=alpha))
+            accuracies=base_pb2.Accuracies(values=[
+                base_pb2.Accuracy(value=value, alpha=alpha) for value, alpha in zip(value, alpha)
+            ]))
+
+        return [parse_privacy_usage(usage) for usage in privacy_usages.values]
 
     @property
     def properties(self):
@@ -490,6 +511,12 @@ class Analysis(object):
         # if true, run the analysis every time a new component is added
         self.eager = eager
 
+        # set to false to suppress potentially private stack traces from releases
+        self.stack_traces = stack_traces
+
+        # configure to keep additional values in the release
+        self.filter_level = filter_level
+
         if eager:
             # when eager is set, the analysis is released every time a new node is added
             warnings.warn("eager graph execution is inefficient, and should only be enabled for debugging")
@@ -513,12 +540,6 @@ class Analysis(object):
 
         # nested analyses
         self._context_cache = None
-
-        # set to false to suppress potentially private stack traces from releases
-        self.stack_traces = stack_traces
-
-        # configure to keep additional values in the release
-        self.filter_level = filter_level
 
         # helper to track if properties are current
         self.properties = {}
@@ -560,8 +581,8 @@ class Analysis(object):
         """
         if not (self.properties_id['count'] == self.component_count and self.properties_id['batch'] == self.batch):
             self.properties = core_wrapper.get_properties(
-                serialize_analysis_proto(self),
-                serialize_release_proto(self.release_values)).properties
+                serialize_analysis(self),
+                serialize_release(self.release_values)).properties
             self.properties_id = {'count': self.component_count, 'batch': self.batch}
 
     def validate(self):
@@ -572,8 +593,8 @@ class Analysis(object):
         :return: A success or failure response
         """
         return core_wrapper.validate_analysis(
-            serialize_analysis_proto(self),
-            serialize_release_proto(self.release_values)).value
+            serialize_analysis(self),
+            serialize_release(self.release_values)).value
 
     @property
     def privacy_usage(self):
@@ -584,8 +605,8 @@ class Analysis(object):
         :return: A privacy usage response
         """
         return core_wrapper.compute_privacy_usage(
-            serialize_analysis_proto(self),
-            serialize_release_proto(self.release_values))
+            serialize_analysis(self),
+            serialize_release(self.release_values))
 
     def release(self):
         """
@@ -600,12 +621,12 @@ class Analysis(object):
             assert self.validate(), "cannot release, analysis is not valid"
 
         release_proto: base_pb2.Release = core_wrapper.compute_release(
-            serialize_analysis_proto(self),
-            serialize_release_proto(self.release_values),
+            serialize_analysis(self),
+            serialize_release(self.release_values),
             self.stack_traces,
             serialize_filter_level(self.filter_level))
 
-        self.release_values = parse_release_proto(release_proto)
+        self.release_values = parse_release(release_proto)
         self.batch += 1
 
     def report(self):
@@ -616,8 +637,8 @@ class Analysis(object):
         :return: parsed JSON array of summaries of releases
         """
         return json.loads(core_wrapper.generate_report(
-            serialize_analysis_proto(self),
-            serialize_release_proto(self.release_values)))
+            serialize_analysis(self),
+            serialize_release(self.release_values)))
 
     def clean(self):
         """
@@ -679,7 +700,7 @@ class Analysis(object):
     def _make_networkx(self):
         import networkx as nx
 
-        analysis = serialize_analysis_proto(self)
+        analysis = serialize_analysis(self)
         graph = nx.DiGraph()
 
         def label(node_id):

@@ -13,11 +13,11 @@ test_csv_names = ["age", "sex", "educ", "race", "income", "married"]
 
 
 def test_multilayer_analysis(run=True):
-    with whitenoise.Analysis(eager=True) as analysis:
+    with whitenoise.Analysis() as analysis:
         PUMS = whitenoise.Dataset(path=TEST_CSV_PATH, column_names=test_csv_names)
 
-        age = op.cast(PUMS['age'], type="FLOAT")
-        sex = op.cast(PUMS['sex'], type="BOOL", true_label="TRUE")
+        age = op.to_float(PUMS['age'])
+        sex = op.to_bool(PUMS['sex'], true_label="TRUE")
 
         age_clamped = op.clamp(age, lower=0., upper=150.)
         age_resized = op.resize(age_clamped, n=1000)
@@ -44,7 +44,7 @@ def test_multilayer_analysis(run=True):
             data_n=500) + 5.
 
         op.dp_variance(
-            op.cast(PUMS['educ'], type="FLOAT"),
+            data=op.cast(PUMS['educ'], type="FLOAT"),
             privacy_usage={'epsilon': .15},
             data_n=1000,
             data_lower=0.,
@@ -79,7 +79,7 @@ def test_multilayer_analysis(run=True):
 
 
 def test_dp_linear_stats(run=True):
-    with whitenoise.Analysis(filter_level='public_and_prior') as analysis:
+    with whitenoise.Analysis() as analysis:
         dataset_pums = whitenoise.Dataset(path=TEST_CSV_PATH, column_names=test_csv_names)
 
         age = dataset_pums['age']
@@ -103,7 +103,6 @@ def test_dp_linear_stats(run=True):
             data_lower=[0., 0.],
             data_upper=[150., 150000.],
             data_n=num_records)
-        analysis.release()
         print("covariance released")
 
         num_means = op.dp_mean(

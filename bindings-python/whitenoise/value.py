@@ -14,14 +14,22 @@ with open(variant_message_map_path, 'r') as variant_message_map_file:
     variant_message_map = json.load(variant_message_map_file)
 
 
-def serialize_privacy_usage(epsilon=None, delta=0):
+def serialize_privacy_usage(usage):
     """
     Construct a protobuf object representing privacy usage
 
-    :param epsilon:
-    :param delta:
-    :return:
+    :param usage: either a dict {'epsilon': float, 'delta': float} or PrivacyUsage. May also be contained in a list.
+    :return: List[PrivacyUsage]
     """
+    if usage is None:
+        return []
+
+    if issubclass(type(usage), value_pb2.PrivacyUsage):
+        return [usage]
+
+    epsilon = usage['epsilon']
+    delta = usage.get('delta', 0)
+
     # upgrade epsilon/delta to lists if they aren't already
     if epsilon is not None and not issubclass(type(epsilon), list):
         epsilon = [epsilon]
@@ -32,7 +40,7 @@ def serialize_privacy_usage(epsilon=None, delta=0):
     if epsilon is not None and delta is not None:
         return [
             value_pb2.PrivacyUsage(
-                distance_approximate=value_pb2.PrivacyUsage.DistanceApproximate(
+                approximate=value_pb2.PrivacyUsage.DistanceApproximate(
                     epsilon=val_epsilon,
                     delta=val_delta
                 )
@@ -43,7 +51,7 @@ def serialize_privacy_usage(epsilon=None, delta=0):
     if epsilon is not None and delta is None:
         return [
             value_pb2.PrivacyUsage(
-                distance_pure=value_pb2.PrivacyUsage.DistancePure(
+                pure=value_pb2.PrivacyUsage.DistancePure(
                     epsilon=val_epsilon
                 )
             )
@@ -71,7 +79,7 @@ def serialize_component(component):
     })
 
 
-def serialize_analysis_proto(analysis):
+def serialize_analysis(analysis):
     vertices = {}
     for component_id in analysis.components:
         vertices[component_id] = serialize_component(analysis.components[component_id])
@@ -82,11 +90,11 @@ def serialize_analysis_proto(analysis):
     )
 
 
-def serialize_release_proto(release_values):
+def serialize_release(release_values):
     return base_pb2.Release(
         values={
             component_id: base_pb2.ReleaseNode(
-                value=serialize_value_proto(
+                value=serialize_value(
                     release_values[component_id]['value'],
                     release_values[component_id].get("value_format")),
                 privacy_usages=release_values[component_id].get("privacy_usages"),
@@ -120,7 +128,7 @@ def serialize_array1d(array):
 
 
 def serialize_hashmap(value):
-    data = {k: serialize_value_proto(v) for k, v in value.items()}
+    data = {k: serialize_value(v) for k, v in value.items()}
     return value_pb2.Hashmap(**{
         str: lambda: {'string': value_pb2.HashmapStr(data=data)},
         bool: lambda: {'bool': value_pb2.HashmapBool(data=data)},
@@ -128,7 +136,7 @@ def serialize_hashmap(value):
     }[type(next(iter(value.keys())))]())
 
 
-def serialize_value_proto(value, value_format=None):
+def serialize_value(value, value_format=None):
 
     if value_format == 'hashmap' or issubclass(type(value), dict):
         return value_pb2.Value(
@@ -173,6 +181,26 @@ def serialize_filter_level(filter_level):
     return base_pb2.FilterLevel.Value(filter_level.upper())
 
 
+def parse_privacy_usage(usage: value_pb2.PrivacyUsage):
+    """
+    Construct a json object representing privacy usage from a proto object
+
+    :param usage: protobuf message
+    :return:
+    """
+
+    if issubclass(type(usage), dict):
+        return usage
+
+    if usage.HasField("pure"):
+        return {"epsilon": usage.pure.epsilon}
+
+    if usage.HasField("approximate"):
+        return {"epsilon": usage.approximate.epsilon, "delta": usage.approximate.delta}
+
+    raise ValueError("unsupported privacy variant")
+
+
 def parse_array1d_null(array):
     data_type = array.WhichOneof("data")
     if not data_type:
@@ -210,10 +238,10 @@ def parse_hashmap(value):
     data_type = value.hashmap.WhichOneof("variant")
     if not data_type:
         return
-    return {k: parse_value_proto(v) for k, v in getattr(value.hashmap, data_type).data.items()}
+    return {k: parse_value(v) for k, v in getattr(value.hashmap, data_type).data.items()}
 
 
-def parse_value_proto(value):
+def parse_value(value):
     if value.HasField("array"):
         return parse_array(value)
 
@@ -224,11 +252,11 @@ def parse_value_proto(value):
         return parse_jagged(value)
 
 
-def parse_release_proto(release):
+def parse_release(release):
 
     def parse_release_node(release_node):
         parsed = {
-            "value": parse_value_proto(release_node.value),
+            "value": parse_value(release_node.value),
             "value_format": release_node.value.WhichOneof("data"),
             "public": release_node.public
         }

@@ -79,6 +79,20 @@ def test_divide():
         # assert not (imputed / 2.).nullity
 
 
+def test_dp_mean():
+    with whitenoise.Analysis():
+        data = whitenoise.Dataset(**generate_synthetic(float, variants=['Random']))
+        mean = op.dp_mean(
+            data[['F_Random', 'F_Random']],
+            accuracy={'value': .2, 'alpha': .05},
+            data_lower=[0., 5.],
+            data_upper=10.,
+            data_n=10)
+
+        print("accuracy", mean.get_accuracy(0.05))
+        print(mean.from_accuracy(2.3, .05))
+
+
 def test_equal():
     with whitenoise.Analysis(filter_level='all') as analysis:
         data = whitenoise.Dataset(**dataset_bools)

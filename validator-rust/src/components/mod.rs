@@ -315,9 +315,9 @@ impl Accuracy for proto::component::Variant {
     /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn accuracy_to_privacy_usage(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
-        _properties: &NodeProperties,
-        _accuracy: &proto::Accuracies,
+        privacy_definition: &proto::PrivacyDefinition,
+        properties: &NodeProperties,
+        accuracy: &proto::Accuracies,
     ) -> Result<Option<Vec<proto::PrivacyUsage>>> {
         macro_rules! accuracy_to_privacy_usage {
             ($( $variant:ident ),*) => {
@@ -334,7 +334,7 @@ impl Accuracy for proto::component::Variant {
 
         accuracy_to_privacy_usage!(
             // INSERT COMPONENT LIST
-            // LaplaceMechanism, GeometricMechanism
+             LaplaceMechanism
         );
 
         Ok(None)

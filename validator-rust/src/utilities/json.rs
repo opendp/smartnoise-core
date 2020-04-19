@@ -94,9 +94,9 @@ pub fn arraynd_to_json<T: Serialize + Clone>(array: &ArrayD<T>) -> Result<serde_
 /// User provide a value for either epsilon, delta, or rho depending on the type of dp definitions (i.e. pure, approximated and concentrated).
 pub fn privacy_usage_to_json(privacy_usage: &proto::PrivacyUsage) -> serde_json::Value {
     match privacy_usage.distance.clone().unwrap() {
-        proto::privacy_usage::Distance::DistancePure(distance) =>
+        proto::privacy_usage::Distance::Pure(distance) =>
             serde_json::json!({"name": "pure", "epsilon": distance.epsilon}),
-        proto::privacy_usage::Distance::DistanceApproximate(distance) =>
+        proto::privacy_usage::Distance::Approximate(distance) =>
             serde_json::json!({"name": "approximate", "epsilon": distance.epsilon, "delta": distance.delta})
     }
 }

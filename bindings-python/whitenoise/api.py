@@ -58,7 +58,7 @@ class LibraryWrapper(object):
             ffi=ffi_validator)
 
     @staticmethod
-    def accuracy_to_privacy_usage(privacy_definition, component, properties, accuracy):
+    def accuracy_to_privacy_usage(privacy_definition, component, properties, accuracies):
         """
         FFI Helper. Estimate the privacy usage necessary to bound accuracy to a given value.
         This function is data agnostic. It calls the validator rust FFI with protobuf objects.
@@ -66,14 +66,17 @@ class LibraryWrapper(object):
         :param privacy_definition: A descriptive object defining neighboring, distance definitions
         :param component: The component to compute accuracy for
         :param properties: Properties about all of the arguments to the component
-        :param accuracy: A value and alpha to convert to privacy usage
+        :param accuracies: A value and alpha to convert to privacy usage for each column
         :return: A privacy usage response
         """
         return _communicate(
             argument=api_pb2.RequestAccuracyToPrivacyUsage(
-                privacy_definition=privacy_definition, component=component, properties=properties, accuracy=accuracy),
+                privacy_definition=privacy_definition,
+                component=component,
+                properties=properties,
+                accuracies=accuracies),
             function=lib_validator.accuracy_to_privacy_usage,
-            response_type=api_pb2.RequestAccuracyToPrivacyUsage,
+            response_type=api_pb2.ResponseAccuracyToPrivacyUsage,
             ffi=ffi_validator)
 
     @staticmethod
@@ -90,9 +93,12 @@ class LibraryWrapper(object):
         """
         return _communicate(
             argument=api_pb2.RequestPrivacyUsageToAccuracy(
-                privacy_definition=privacy_definition, component=component, properties=properties, alpha=alpha),
+                privacy_definition=privacy_definition,
+                component=component,
+                properties=properties,
+                alpha=alpha),
             function=lib_validator.privacy_usage_to_accuracy,
-            response_type=api_pb2.RequestPrivacyUsageToAccuracy,
+            response_type=api_pb2.ResponsePrivacyUsageToAccuracy,
             ffi=ffi_validator)
 
     @staticmethod
