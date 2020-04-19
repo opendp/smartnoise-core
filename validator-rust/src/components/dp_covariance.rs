@@ -76,6 +76,7 @@ impl Expandable for proto::DpCovariance {
         // noise
         current_id += 1;
         let id_noise = current_id;
+	let _component_math_impl_val = properties.clone().entry(String::from("implementation"));
         computation_graph.insert(id_noise, proto::Component {
             arguments: hashmap!["data".to_owned() => id_covariance],
             variant: Some(proto::component::Variant::from(proto::LaplaceMechanism {
