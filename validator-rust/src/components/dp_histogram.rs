@@ -73,6 +73,7 @@ impl Expandable for proto::DpHistogram {
         });
 
         // noising
+	let _component_math_impl_val = properties.clone().entry(String::from("implementation"));
         computation_graph.insert(*component_id, proto::Component {
             arguments: hashmap![
                 "data".to_owned() => id_histogram,

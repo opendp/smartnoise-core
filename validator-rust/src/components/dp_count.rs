@@ -66,6 +66,7 @@ impl Expandable for proto::DpCount {
         });
 
         // noising
+	let _component_math_impl_val = properties.clone().entry(String::from("implementation"));
         computation_graph.insert(component_id.clone(), proto::Component {
             arguments: hashmap![
                 "data".to_owned() => id_count,

@@ -38,6 +38,11 @@ lib
 # Jetbrains
 .idea
 
+# emacs
+*~
+*#
+.projectile
+
 # Cmake
 CMakeLists.txt.user
 CMakeCache.txt
