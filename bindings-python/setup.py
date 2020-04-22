@@ -10,7 +10,7 @@ WN_RELEASE = os.environ.get("WN_RELEASE") == "True"
 # set the environment variable to use precompiled external libraries
 WN_USE_SYSTEM_LIBS = os.environ.get("WN_USE_SYSTEM_LIBS") is not None
 
-rust_build_path = os.path.join('..', 'target', 'release' if WN_RELEASE else 'debug')
+rust_build_path = os.path.join('target', 'release' if WN_RELEASE else 'debug')
 rust_build_cmd = 'cargo build'
 if WN_RELEASE:
     rust_build_cmd += ' --release'

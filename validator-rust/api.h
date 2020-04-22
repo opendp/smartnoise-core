@@ -10,18 +10,18 @@
 typedef struct {
   int64_t len;
   uint8_t *data;
-} ByteBuffer;
+} ByteBufferValidator;
 
-ByteBuffer accuracy_to_privacy_usage(const uint8_t *request_ptr, int32_t request_length);
+ByteBufferValidator accuracy_to_privacy_usage(const uint8_t *request_ptr, int32_t request_length);
 
-ByteBuffer compute_privacy_usage(const uint8_t *request_ptr, int32_t request_length);
+ByteBufferValidator compute_privacy_usage(const uint8_t *request_ptr, int32_t request_length);
 
-ByteBuffer expand_graph(const uint8_t *request_ptr, int32_t request_length);
+ByteBufferValidator expand_graph(const uint8_t *request_ptr, int32_t request_length);
 
-ByteBuffer generate_report(const uint8_t *request_ptr, int32_t request_length);
+ByteBufferValidator generate_report(const uint8_t *request_ptr, int32_t request_length);
 
-ByteBuffer privacy_usage_to_accuracy(const uint8_t *request_ptr, int32_t request_length);
+ByteBufferValidator privacy_usage_to_accuracy(const uint8_t *request_ptr, int32_t request_length);
 
-ByteBuffer get_properties(const uint8_t *request_ptr, int32_t request_length);
+ByteBufferValidator get_properties(const uint8_t *request_ptr, int32_t request_length);
 
-ByteBuffer validate_analysis(const uint8_t *request_ptr, int32_t request_length);
+ByteBufferValidator validate_analysis(const uint8_t *request_ptr, int32_t request_length);

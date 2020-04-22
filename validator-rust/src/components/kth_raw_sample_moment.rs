@@ -24,6 +24,7 @@ impl Component for proto::KthRawSampleMoment {
             return Err("data: atomic type must be float".into())
         }
         data_property.assert_is_not_aggregated()?;
+        data_property.assert_is_not_empty()?;
 
         // save a snapshot of the state when aggregating
         data_property.aggregator = Some(AggregatorProperties {

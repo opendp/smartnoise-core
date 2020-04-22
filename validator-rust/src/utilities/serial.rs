@@ -3,7 +3,7 @@
 use crate::errors::*;
 
 use crate::proto;
-use std::collections::{HashMap};
+use std::collections::{HashMap, BTreeMap};
 use crate::base::{Release, Nature, Jagged, Vector1D, Value, Array, Vector1DNull, NatureCategorical, NatureContinuous, AggregatorProperties, ValueProperties, HashmapProperties, JaggedProperties, DataType, Hashmap, ArrayProperties, ReleaseNode};
 
 // PARSERS
@@ -91,13 +91,13 @@ pub fn parse_arraynd(value: &proto::ArrayNd) -> Array {
     }
 }
 
-pub fn parse_hashmap_str(value: &proto::HashmapStr) -> HashMap<String, Value> {
+pub fn parse_hashmap_str(value: &proto::HashmapStr) -> BTreeMap<String, Value> {
     value.data.iter().map(|(name, data)| (name.clone(), parse_value(data).unwrap())).collect()
 }
-pub fn parse_hashmap_i64(value: &proto::HashmapI64) -> HashMap<i64, Value> {
+pub fn parse_hashmap_i64(value: &proto::HashmapI64) -> BTreeMap<i64, Value> {
     value.data.iter().map(|(name, data)| (*name, parse_value(data).unwrap())).collect()
 }
-pub fn parse_hashmap_bool(value: &proto::HashmapBool) -> HashMap<bool, Value> {
+pub fn parse_hashmap_bool(value: &proto::HashmapBool) -> BTreeMap<bool, Value> {
     value.data.iter().map(|(name, data)| (*name, parse_value(data).unwrap())).collect()
 }
 
@@ -260,7 +260,9 @@ pub fn parse_arraynd_properties(value: &proto::ArrayNdProperties) -> ArrayProper
             None => None,
         },
         data_type: parse_data_type(proto::DataType::from_i32(value.data_type).unwrap()),
-        dataset_id: value.dataset_id.as_ref().and_then(parse_i64_null)
+        dataset_id: value.dataset_id.as_ref().and_then(parse_i64_null),
+        is_not_empty: value.is_not_empty,
+        dimensionality: value.dimensionality
     }
 }
 
@@ -391,21 +393,21 @@ pub fn serialize_arraynd(value: &Array) -> proto::ArrayNd {
     }
 }
 
-pub fn serialize_hashmap_str(value: &HashMap<String, Value>) -> proto::HashmapStr {
+pub fn serialize_hashmap_str(value: &BTreeMap<String, Value>) -> proto::HashmapStr {
     proto::HashmapStr {
         data: value.iter()
             .map(|(name, value)| (name.clone(), serialize_value(value).unwrap()))
             .collect()
     }
 }
-pub fn serialize_hashmap_bool(value: &HashMap<bool, Value>) -> proto::HashmapBool {
+pub fn serialize_hashmap_bool(value: &BTreeMap<bool, Value>) -> proto::HashmapBool {
     proto::HashmapBool {
         data: value.iter()
             .map(|(name, value)| (*name, serialize_value(value).unwrap()))
             .collect()
     }
 }
-pub fn serialize_hashmap_i64(value: &HashMap<i64, Value>) -> proto::HashmapI64 {
+pub fn serialize_hashmap_i64(value: &BTreeMap<i64, Value>) -> proto::HashmapI64 {
     proto::HashmapI64 {
         data: value.iter()
             .map(|(name, value)| (*name, serialize_value(value).unwrap()))
@@ -497,21 +499,21 @@ pub fn serialize_release_node(release_node: &ReleaseNode) -> Result<proto::Relea
     })
 }
 
-pub fn serialize_hashmap_properties_str(value: &HashMap<String, ValueProperties>) -> proto::HashmapValuePropertiesStr {
+pub fn serialize_hashmap_properties_str(value: &BTreeMap<String, ValueProperties>) -> proto::HashmapValuePropertiesStr {
     proto::HashmapValuePropertiesStr {
         data: value.iter()
             .map(|(name, value)| (name.clone(), serialize_value_properties(value)))
             .collect::<HashMap<String, proto::ValueProperties>>()
     }
 }
-pub fn serialize_hashmap_properties_i64(value: &HashMap<i64, ValueProperties>) -> proto::HashmapValuePropertiesI64 {
+pub fn serialize_hashmap_properties_i64(value: &BTreeMap<i64, ValueProperties>) -> proto::HashmapValuePropertiesI64 {
     proto::HashmapValuePropertiesI64 {
         data: value.iter()
             .map(|(name, value)| (*name, serialize_value_properties(value)))
             .collect::<HashMap<i64, proto::ValueProperties>>()
     }
 }
-pub fn serialize_hashmap_properties_bool(value: &HashMap<bool, ValueProperties>) -> proto::HashmapValuePropertiesBool {
+pub fn serialize_hashmap_properties_bool(value: &BTreeMap<bool, ValueProperties>) -> proto::HashmapValuePropertiesBool {
     proto::HashmapValuePropertiesBool {
         data: value.iter()
             .map(|(name, value)| (*name, serialize_value_properties(value)))
@@ -566,7 +568,9 @@ pub fn serialize_arraynd_properties(value: &ArrayProperties) -> proto::ArrayNdPr
             None => None
         },
         data_type: serialize_data_type(&value.data_type) as i32,
-        dataset_id: Some(serialize_i64_null(&value.dataset_id))
+        dataset_id: Some(serialize_i64_null(&value.dataset_id)),
+        is_not_empty: value.is_not_empty,
+        dimensionality: value.dimensionality
     }
 }
 

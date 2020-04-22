@@ -75,12 +75,14 @@ pub fn get_input_properties<T>(
 pub fn propagate_properties(
     analysis: &proto::Analysis,
     release: &proto::Release,
-    properties: Option<&HashMap<u32, proto::ValueProperties>>
+    properties: Option<&HashMap<u32, proto::ValueProperties>>,
+    dynamic: bool
 ) -> Result<(HashMap<u32, ValueProperties>, HashMap<u32, proto::Component>)> {
-    // compute properties for every node in the graph
 
-    let privacy_definition = analysis.privacy_definition.to_owned().unwrap();
-    let mut graph: HashMap<u32, proto::Component> = analysis.computation_graph.to_owned().unwrap().value;
+    let privacy_definition = analysis.privacy_definition.to_owned()
+        .ok_or_else(|| Error::from("privacy definition must be defined"))?;
+    let mut graph: HashMap<u32, proto::Component> = analysis.computation_graph.to_owned()
+        .ok_or_else(|| Error::from("computation graph be defined"))?.value;
     let mut traversal: Vec<u32> = get_traversal(&graph)?;
 
     // extend and pop from the end of the traversal
@@ -104,20 +106,37 @@ pub fn propagate_properties(
     let mut maximum_id = graph.keys().cloned()
         .fold(0, std::cmp::max);
 
+    let mut failed_ids = HashSet::new();
+
     while !traversal.is_empty() {
         let node_id = *traversal.last().unwrap();
 
         let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
+
+        if component.arguments.values().any(|v| failed_ids.contains(v)) {
+            failed_ids.insert(traversal.pop().unwrap());
+            continue
+        }
+
         let input_properties = get_input_properties(&component, &graph_properties)?;
         let public_arguments = get_public_arguments(&component, &graph_evaluation)?;
 
-        let mut expansion = component.clone().variant.unwrap().expand_component(
-            &privacy_definition,
-            &component,
-            &input_properties,
-            &node_id,
-            &maximum_id,
-        )?;
+        let mut expansion = match (dynamic, component.clone().variant
+            .ok_or_else(|| Error::from("component variant must be defined"))?
+            .expand_component(
+                &privacy_definition,
+                &component,
+                &input_properties,
+                &node_id,
+                &maximum_id,
+            )) {
+            (_, Ok(expansion)) => expansion,
+            (true, Err(_)) => {
+                failed_ids.insert(traversal.pop().unwrap());
+                continue
+            },
+            (false, Err(err)) => return Err(err)
+        };
 
         // patch the computation graph
         graph.extend(expansion.computation_graph.clone());
@@ -139,19 +158,20 @@ pub fn propagate_properties(
         }
         traversal.pop();
 
-//        println!("graph evaluation in prop {:?}", graph_evaluation);
-        graph_properties.insert(node_id.clone(), match graph_evaluation.get(&node_id) {
+        let component_properties = match graph_evaluation.get(&node_id) {
             // if node has already been evaluated, infer properties directly from the public data
             Some(release_node) => {
                 if release_node.public {
                     infer_property(&release_node.value)
                 } else {
                     let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
-                    component.clone().variant.unwrap().propagate_property(
-                        &privacy_definition, &public_arguments, &input_properties)
+                    component.clone().variant
+                        .ok_or_else(|| Error::from("privacy definition must be defined"))?
+                        .propagate_property(
+                            &privacy_definition, &public_arguments, &input_properties)
                         .chain_err(|| format!("at node_id {:?}", node_id))
                 }
-            },
+            }
 
             // if node has not been evaluated, propagate properties over it
             None => {
@@ -160,7 +180,19 @@ pub fn propagate_properties(
                     &privacy_definition, &public_arguments, &input_properties)
                     .chain_err(|| format!("at node_id {:?}", node_id))
             }
-        }?);
+        };
+
+        let component_properties = match (dynamic, component_properties) {
+            (_, Ok(properties)) => properties,
+            (true, Err(_)) => {
+                failed_ids.insert(traversal.pop().unwrap());
+                continue
+            },
+            (false, Err(err)) => return Err(err)
+        };
+
+//        println!("graph evaluation in prop {:?}", graph_evaluation);
+        graph_properties.insert(node_id.clone(), component_properties);
     }
     Ok((graph_properties, graph))
 }

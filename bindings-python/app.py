@@ -17,8 +17,7 @@ import os
 os.environ['RUST_BACKTRACE'] = 'full'
 
 
-# test_validator_properties.test_dp_mean()
-
+test_validator_properties.test_partition()
 
 # test_properties()
 
@@ -36,6 +35,7 @@ analysis = test_everything(run=False)
 analysis.release()
 
 analysis.plot()
+analysis.clean()
 print('privacy usage:', analysis.privacy_usage)
 
 # print('all released values (internal):', analysis.release_values)

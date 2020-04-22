@@ -4,9 +4,9 @@ use crate::base::NodeArguments;
 use whitenoise_validator::base::{Value, Array, ReleaseNode};
 use whitenoise_validator::utilities::get_argument;
 use crate::components::Evaluable;
-use ndarray::{ArrayD};
+use ndarray::ArrayD;
 use whitenoise_validator::proto;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 
 impl Evaluable for proto::Reshape {
@@ -25,7 +25,7 @@ impl Evaluable for proto::Reshape {
                     1 => Ok(reshaped.remove(0).into()),
                     _ => Ok(reshaped.into_iter().enumerate()
                         .map(|(idx, data)| (idx as i64, data.into()))
-                        .collect::<HashMap<i64, Value>>().into())
+                        .collect::<BTreeMap<i64, Value>>().into())
                 }
             }
             Array::I64(data) => {
@@ -35,7 +35,7 @@ impl Evaluable for proto::Reshape {
                     1 => Ok(reshaped.remove(0).into()),
                     _ => Ok(reshaped.into_iter().enumerate()
                         .map(|(idx, data)| (idx as i64, data.into()))
-                        .collect::<HashMap<i64, Value>>().into())
+                        .collect::<BTreeMap<i64, Value>>().into())
                 }
             }
             Array::F64(data) => {
@@ -45,7 +45,7 @@ impl Evaluable for proto::Reshape {
                     1 => Ok(reshaped.remove(0).into()),
                     _ => Ok(reshaped.into_iter().enumerate()
                         .map(|(idx, data)| (idx as i64, data.into()))
-                        .collect::<HashMap<i64, Value>>().into())
+                        .collect::<BTreeMap<i64, Value>>().into())
                 }
             }
             Array::Str(data) => {
@@ -55,7 +55,7 @@ impl Evaluable for proto::Reshape {
                     1 => Ok(reshaped.remove(0).into()),
                     _ => Ok(reshaped.into_iter().enumerate()
                         .map(|(idx, data)| (idx as i64, data.into()))
-                        .collect::<HashMap<i64, Value>>().into())
+                        .collect::<BTreeMap<i64, Value>>().into())
                 }
             }
         }.map(ReleaseNode::new)
@@ -136,7 +136,7 @@ pub fn reshape<T: Clone>(data: &ArrayD<T>, symmetric: &bool, layout: &Layout, sh
 
 #[cfg(test)]
 mod reshape_tests {
-    use ndarray::{arr2};
+    use ndarray::arr2;
     use crate::components::reshape::{reshape, Layout};
 
     #[test]

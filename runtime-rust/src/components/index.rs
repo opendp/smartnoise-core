@@ -6,11 +6,11 @@ use crate::components::Evaluable;
 use whitenoise_validator::proto;
 use whitenoise_validator::utilities::array::{slow_stack, slow_select};
 use ndarray::prelude::*;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use whitenoise_validator::components::index::{to_name_vec, mask_columns};
 use whitenoise_validator::utilities::get_argument;
-use crate::utilities::{to_nd};
+use crate::utilities::to_nd;
 
 
 impl Evaluable for proto::Index {
@@ -30,7 +30,7 @@ impl Evaluable for proto::Index {
                             .map(|index| column_names.get(*index as usize).cloned()
                                 .ok_or_else(|| Error::from("column index out of bounds"))).collect::<Result<Vec<String>>>()?;
                         column_stack(dataframe, &columns)
-                    },
+                    }
                     Array::Bool(columns) => column_stack(dataframe, &mask_columns(
                         &dataframe.keys().cloned().collect::<Vec<String>>(),
                         &to_name_vec(columns)?)?),
@@ -44,7 +44,7 @@ impl Evaluable for proto::Index {
                             &to_name_vec(columns)?)?),
                         _ => Err("the data type of the column headers is not supported".into())
                     }
-                },
+                }
                 Hashmap::Bool(dataframe) => {
                     let columns = columns.bool()?;
                     column_stack(dataframe, &to_name_vec(columns)?)
@@ -83,7 +83,7 @@ impl Evaluable for proto::Index {
                         Array::Str(array) => array.index_axis_inplace(Axis(1), 0),
                     }
                 }
-            },
+            }
             _ => unreachable!()
         };
 
@@ -91,12 +91,12 @@ impl Evaluable for proto::Index {
     }
 }
 
-fn column_stack<T: Clone + Eq + std::hash::Hash>(
-    dataframe: &HashMap<T, Value>, column_names: &Vec<T>
+fn column_stack<T: Clone + Eq + std::hash::Hash + Ord>(
+    dataframe: &BTreeMap<T, Value>, column_names: &Vec<T>,
 ) -> Result<Value> {
     if column_names.len() == 1 {
         return dataframe.get(column_names.first().unwrap()).cloned()
-            .ok_or_else(|| Error::from("the provided column name does not exist"))
+            .ok_or_else(|| Error::from("the provided column name does not exist"));
     }
 
     fn to_2d<T>(array: ArrayD<T>) -> Result<ArrayD<T>> {

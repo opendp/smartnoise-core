@@ -268,6 +268,9 @@ def test_everything(run=True):
 
         numerics = op.to_float(data[['age', 'income']])
 
+        # intentionally busted component
+        # print("invalid component id ", (sex + "a").component_id)
+
         # broadcast scalar over 2d, broadcast scalar over 1d, columnar broadcasting, left and right mul
         numerics * 2. + 2. * educ
 
@@ -376,7 +379,6 @@ def test_histogram():
     analysis.release()
 
     print("Income histogram Geometric DP release:   " + str(income_histogram.value))
-
 
 def test_covariance():
     import whitenoise

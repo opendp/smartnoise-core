@@ -107,10 +107,12 @@ message ArrayNDProperties {
     bool releasable = 7;
 
     oneof nature {
-        NatureContinuous continuous = 10;
-        NatureCategorical categorical = 11;
+        NatureContinuous continuous = 100;
+        NatureCategorical categorical = 101;
     }
     I64Null dataset_id = 8;
+    bool is_not_empty = 9;
+    uint32 dimensionality = 10;
 }
 message NatureContinuous {
     Array1dNull minimum = 1;
