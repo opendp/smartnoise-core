@@ -47,11 +47,11 @@ impl Evaluable for proto::Partition {
 /// The first partitions may have one more element than the latter partitions.
 ///
 /// # Arguments
-/// * `data` - Data to be filtered.
+/// * `data` - Data to be partitioned.
 /// * `num_partitions` - Number of keys in the hashmap of arrays returned.
 ///
 /// # Return
-/// Data with only the desired rows.
+/// Hashmap with data splits.
 ///
 /// # Example
 /// ```
@@ -59,10 +59,10 @@ impl Evaluable for proto::Partition {
 /// use whitenoise_runtime::components::partition::partition_evenly;
 ///
 /// let data = arr2(&[ [1, 2], [4, 5], [7, 8], [10, 11] ]).into_dyn();
-/// let partitioned = partition_evenly(&data, 3).unwrap();
-/// assert!(partitioned[0] == arr2(&[ [1, 2], [4, 5] ]).into_dyn());
-/// assert!(partitioned[1] == arr2(&[ [7, 8] ]).into_dyn());
-/// assert!(partitioned[2] == arr2(&[ [10, 11] ]).into_dyn());
+/// let partitioned = partition_evenly(&data, 3);
+/// assert_eq!(partitioned.get(&0).unwrap().clone(), arr2(&[ [1, 2], [4, 5] ]).into_dyn());
+/// assert_eq!(partitioned.get(&1).unwrap().clone(), arr2(&[ [7, 8] ]).into_dyn());
+/// assert_eq!(partitioned.get(&2).unwrap().clone(), arr2(&[ [10, 11] ]).into_dyn());
 /// ```
 pub fn partition_evenly<T: Clone + Default + std::fmt::Debug>(data: &ArrayD<T>, num_partitions: i64) -> BTreeMap<i64, ArrayD<T>> {
     println!("data to part {:?}", data);

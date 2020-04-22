@@ -472,7 +472,7 @@ class Component(object):
 
 class Analysis(object):
     def __init__(self,
-                 dynamic=False, eager=False,
+                 dynamic=True, eager=False,
                  distance='approximate', neighboring='substitute',
                  stack_traces=True, filter_level='public_and_prior'):
         """
@@ -649,23 +649,28 @@ class Analysis(object):
         """
         parents = {}
         for (component_id, component) in self.components.items():
-            for argument_id in component.arguments.values():
-                parents.setdefault(argument_id, set()).add(component_id)
+            parents.setdefault(component_id, set())
+            for argument in component.arguments.values():
+                if argument is None:
+                    continue
+                parents.setdefault(argument.component_id, set()).add(component_id)
         traversal = [ident for ident, pars in parents.items() if not pars]
 
         while traversal:
             component_id = traversal.pop()
             component = self.components[component_id]
 
-            # remove if releasable and not released OR if not releasable and has no parents
-            if (component.releasable and component_id not in self.release_values) \
-                    or (not component.releasable and not parents[component_id]):
+            # remove if properties fail to propagate to this node
+            if component.releasable is None:
+
                 # invalidate the component
                 component.analysis = None
                 del self.components[component_id]
 
                 # remove this node from all children, and add children to traversal
-                for argument in component.arguments:
+                for argument in component.arguments.values():
+                    if argument is None:
+                        continue
                     parents[argument.component_id].remove(component_id)
                     traversal.append(argument.component_id)
 

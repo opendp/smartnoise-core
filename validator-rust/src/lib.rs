@@ -73,7 +73,7 @@ pub fn validate_analysis(
     let release = request.release.clone()
         .ok_or_else(|| Error::from("release must be defined"))?;
 
-    utilities::propagate_properties(&analysis, &release, None)?;
+    utilities::propagate_properties(&analysis, &release, None, false)?;
 
     Ok(proto::response_validate_analysis::Validated {
         value: true,
@@ -94,7 +94,7 @@ pub fn compute_privacy_usage(
     let release = request.release.as_ref()
         .ok_or_else(|| Error::from("release must be defined"))?;
 
-    let (_graph_properties, graph) = utilities::propagate_properties(analysis, release, None)?;
+    let (_graph_properties, graph) = utilities::propagate_properties(analysis, release, None, false)?;
 
     let usage_option = graph.iter()
         // return the privacy usage from the release, else from the analysis
@@ -122,7 +122,7 @@ pub fn generate_report(
         .ok_or("the computation graph must be defined in an analysis")?
         .value;
 
-    let (graph_properties, _graph_expanded) = utilities::propagate_properties(analysis, release, None)?;
+    let (graph_properties, _graph_expanded) = utilities::propagate_properties(analysis, release, None, false)?;
     let release = utilities::serial::parse_release(&release)?;
 
     // variable names
@@ -214,6 +214,7 @@ pub fn accuracy_to_privacy_usage(
         },
         &proto::Release { values: HashMap::new() },
         Some(&proto_properties),
+        false
     )?;
 
     let privacy_usages = graph.iter().map(|(idx, component)| {
@@ -265,6 +266,7 @@ pub fn privacy_usage_to_accuracy(
         },
         &proto::Release { values: HashMap::new() },
         Some(&proto_properties),
+        false,
     )?;
 
     let accuracies = graph.iter().map(|(idx, component)| {
@@ -328,7 +330,7 @@ pub fn get_properties(
     }
 
     let (properties, _graph) = utilities::propagate_properties(
-        &analysis, &release, None,
+        &analysis, &release, None, true
     )?;
 
     Ok(proto::GraphProperties {
