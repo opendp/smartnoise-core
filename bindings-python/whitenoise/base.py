@@ -649,8 +649,8 @@ class Analysis(object):
         """
         parents = {}
         for (component_id, component) in self.components.items():
-            for argument in component.arguments:
-                parents.setdefault(argument.component_id, set()).add(component_id)
+            for argument_id in component.arguments.values():
+                parents.setdefault(argument_id, set()).add(component_id)
         traversal = [ident for ident, pars in parents.items() if not pars]
 
         while traversal:

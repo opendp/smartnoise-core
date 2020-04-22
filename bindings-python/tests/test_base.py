@@ -377,7 +377,6 @@ def test_histogram():
 
     print("Income histogram Geometric DP release:   " + str(income_histogram.value))
 
-
 def test_covariance():
     import whitenoise
     import whitenoise.components as op
