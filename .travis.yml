@@ -26,8 +26,8 @@ jobs:
       # Python + sphinx for generating python documentation
       - sudo apt-get -y install python3-pip python-dev
       - python3 -V
-      - pip3 -V
-      - pip3 install sphinx sphinx_rtd_theme
+      # Install sphinx packages
+      - pip3 -V; cd bindings-python; pip3 install -r requirements-sphinx-only.txt; cd ..;
     script:
     # (1) Rust Validator -> Test & Build
     - cd validator-rust; cargo build --verbose --workspace;
@@ -49,8 +49,8 @@ jobs:
     #
     - echo $TRAVIS_BRANCH;
     # switch to master after initial version
-    #- if [ "$TRAVIS_BRANCH" == "ms-docs-fix" ]; then
-    - if [ "$TRAVIS_BRANCH" == "develop" ]; then
+    #- if [ "$TRAVIS_BRANCH" == "develop" ]; then
+    - if [ "$TRAVIS_BRANCH" == "ms-docs-fix" ]; then
         bash generate_docs.sh;
       fi;
     # -------------------------------------------
@@ -67,8 +67,8 @@ jobs:
       keep_history: true
       target_branch: gh-pages
       on:
-        #branch: ms-docs-fix # Testing on a dev. branch
-        branch: develop # switch to master after initial version
+        branch: ms-docs-fix # Testing on a dev. branch
+        #branch: develop # switch to master after initial version
   #verbose: true
   # - name: Deploy manylinux2010_i686 32-bit
   #   services:
