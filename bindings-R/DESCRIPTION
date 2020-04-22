@@ -1,4 +1,4 @@
-Package: yarrow
+Package: whitenoise
 Type: Package
 Title: Differential Privacy
 Version: 0.1.0

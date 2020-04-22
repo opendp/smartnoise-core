@@ -22,7 +22,7 @@ if exist src\%FILE_RUST_MANIFEST% (
     xcopy /s ..\prototypes\ src\prototypes
 
     rem runtime's default config is to build a dynamic library
-    rem but `ldd src\yarrow.so` (the shim) shows the broken (not found) runtime dependency
+    rem but `ldd src\whitenoise.so` (the shim) shows the broken (not found) runtime dependency
     rem fixed by compiling the runtime statically into the shim
     powershell -Command "(gc src\runtime-rust\Cargo.toml) -replace 'dylib', 'staticlib' | Out-File -encoding ASCII src\runtime-rust\Cargo.toml"
 )

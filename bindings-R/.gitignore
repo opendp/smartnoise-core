@@ -5,6 +5,7 @@
 *.Rproj
 
 src/runtime-rust/
+src/validator-rust/
 src/prototypes/
 *.o
 
@@ -12,3 +13,4 @@ Makevars
 Makevars.win
 man/
 NAMESPACE
+inst/

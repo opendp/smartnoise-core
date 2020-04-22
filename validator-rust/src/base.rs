@@ -32,14 +32,14 @@ pub enum Value {
 
 impl Value {
     /// Retrieve an Array from a Value, assuming the Value contains an Array
-    pub fn array<'a>(&'a self) -> Result<&'a Array> {
+    pub fn array(&self) -> Result<&Array> {
         match self {
             Value::Array(array) => Ok(array),
             _ => Err("value must be an Array".into())
         }
     }
     /// Retrieve Jagged from a Value, assuming the Value contains Jagged
-    pub fn jagged<'a>(&'a self) -> Result<&'a Jagged> {
+    pub fn jagged(&self) -> Result<&Jagged> {
         match self {
             Value::Jagged(jagged) => Ok(jagged),
             _ => Err("value must be Jagged".into())
@@ -323,7 +323,7 @@ impl Jagged {
             .ok_or_else(|| "not all columns are known in float Jagged matrix".into())
     }
     /// Retrieve the f64 jagged matrix, assuming the data type of the jagged matrix is f64
-    pub fn f64_option<'a>(&'a self) -> Result<&'a Vec<Option<Vec<f64>>>> {
+    pub fn f64_option(&self) -> Result<&Vec<Option<Vec<f64>>>> {
         match self {
             Jagged::F64(data) => Ok(data),
             _ => Err("expected float type on a non-float Jagged matrix".into())

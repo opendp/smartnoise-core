@@ -10,6 +10,6 @@
 typedef struct {
   int64_t len;
   uint8_t *data;
-} ByteBuffer;
+} ByteBufferRuntime;
 
-ByteBuffer release(const uint8_t *request_ptr, int32_t request_length);
+ByteBufferRuntime release(const uint8_t *request_ptr, int32_t request_length);
