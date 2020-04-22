@@ -79,8 +79,10 @@ pub fn propagate_properties(
 ) -> Result<(HashMap<u32, ValueProperties>, HashMap<u32, proto::Component>)> {
     // compute properties for every node in the graph
 
-    let privacy_definition = analysis.privacy_definition.to_owned().unwrap();
-    let mut graph: HashMap<u32, proto::Component> = analysis.computation_graph.to_owned().unwrap().value;
+    let privacy_definition = analysis.privacy_definition.to_owned()
+        .ok_or_else(|| Error::from("privacy definition must be defined"))?;
+    let mut graph: HashMap<u32, proto::Component> = analysis.computation_graph.to_owned()
+        .ok_or_else(|| Error::from("computation graph be defined"))?.value;
     let mut traversal: Vec<u32> = get_traversal(&graph)?;
 
     // extend and pop from the end of the traversal
@@ -111,13 +113,15 @@ pub fn propagate_properties(
         let input_properties = get_input_properties(&component, &graph_properties)?;
         let public_arguments = get_public_arguments(&component, &graph_evaluation)?;
 
-        let mut expansion = component.clone().variant.unwrap().expand_component(
-            &privacy_definition,
-            &component,
-            &input_properties,
-            &node_id,
-            &maximum_id,
-        )?;
+        let mut expansion = component.clone().variant
+            .ok_or_else(|| Error::from("component variant must be defined"))?
+            .expand_component(
+                &privacy_definition,
+                &component,
+                &input_properties,
+                &node_id,
+                &maximum_id,
+            )?;
 
         // patch the computation graph
         graph.extend(expansion.computation_graph.clone());
@@ -147,11 +151,13 @@ pub fn propagate_properties(
                     infer_property(&release_node.value)
                 } else {
                     let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
-                    component.clone().variant.unwrap().propagate_property(
-                        &privacy_definition, &public_arguments, &input_properties)
+                    component.clone().variant
+                        .ok_or_else(|| Error::from("privacy definition must be defined"))?
+                        .propagate_property(
+                            &privacy_definition, &public_arguments, &input_properties)
                         .chain_err(|| format!("at node_id {:?}", node_id))
                 }
-            },
+            }
 
             // if node has not been evaluated, propagate properties over it
             None => {

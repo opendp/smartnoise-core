@@ -37,7 +37,7 @@ pub fn buffer_to_ptr<T>(buffer: T) -> ffi_support::ByteBuffer
 /// The array referenced by this struct contains the serialized value of one protobuf message.
 #[repr(C)]
 #[allow(dead_code)]
-pub struct ByteBuffer {
+pub struct ByteBufferValidator {
     /// The length of the array containing serialized protobuf data
     pub len: i64,
     /// Pointer to start of array containing serialized protobuf data
@@ -51,7 +51,7 @@ pub struct ByteBuffer {
 /// - `request_length` - the length of the array
 ///
 /// # Returns
-/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseValidateAnalysis](../proto/struct.ResponseValidateAnalysis.html)
+/// a [ByteBufferValidator struct](struct.ByteBufferValidator.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseValidateAnalysis](../proto/struct.ResponseValidateAnalysis.html)
 #[no_mangle]
 pub extern "C" fn validate_analysis(
     request_ptr: *const u8, request_length: i32,
@@ -80,7 +80,7 @@ pub extern "C" fn validate_analysis(
 /// - `request_length` - the length of the array
 ///
 /// # Returns
-/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseComputePrivacyUsage](../proto/struct.ResponseComputePrivacyUsage.html)
+/// a [ByteBufferValidator struct](struct.ByteBufferValidator.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseComputePrivacyUsage](../proto/struct.ResponseComputePrivacyUsage.html)
 #[no_mangle]
 pub extern "C" fn compute_privacy_usage(
     request_ptr: *const u8, request_length: i32,
@@ -109,7 +109,7 @@ pub extern "C" fn compute_privacy_usage(
 /// - `request_length` - the length of the array
 ///
 /// # Returns
-/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseGenerateReport](../proto/struct.ResponseGenerateReport.html)
+/// a [ByteBufferValidator struct](struct.ByteBufferValidator.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseGenerateReport](../proto/struct.ResponseGenerateReport.html)
 #[no_mangle]
 pub extern "C" fn generate_report(
     request_ptr: *const u8, request_length: i32,
@@ -138,7 +138,7 @@ pub extern "C" fn generate_report(
 /// - `request_length` - the length of the array
 ///
 /// # Returns
-/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseAccuracyToPrivacyUsage](../proto/struct.ResponseAccuracyToPrivacyUsage.html)
+/// a [ByteBufferValidator struct](struct.ByteBufferValidator.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseAccuracyToPrivacyUsage](../proto/struct.ResponseAccuracyToPrivacyUsage.html)
 #[no_mangle]
 pub extern "C" fn accuracy_to_privacy_usage(
     request_ptr: *const u8, request_length: i32,
@@ -168,7 +168,7 @@ pub extern "C" fn accuracy_to_privacy_usage(
 /// - `request_length` - the length of the array
 ///
 /// # Returns
-/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponsePrivacyUsageToAccuracy](../proto/struct.ResponsePrivacyUsageToAccuracy.html)
+/// a [ByteBufferValidator struct](struct.ByteBufferValidator.html) containing a pointer to and length of the serialized protobuf of [proto::ResponsePrivacyUsageToAccuracy](../proto/struct.ResponsePrivacyUsageToAccuracy.html)
 #[no_mangle]
 pub extern "C" fn privacy_usage_to_accuracy(
     request_ptr: *const u8, request_length: i32,
@@ -197,7 +197,7 @@ pub extern "C" fn privacy_usage_to_accuracy(
 /// - `request_length` - the length of the array
 ///
 /// # Returns
-/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseGetProperties](../proto/struct.ResponseGetProperties.html)
+/// a [ByteBufferValidator struct](struct.ByteBufferValidator.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseGetProperties](../proto/struct.ResponseGetProperties.html)
 #[no_mangle]
 pub extern "C" fn get_properties(
     request_ptr: *const u8, request_length: i32,
@@ -226,7 +226,7 @@ pub extern "C" fn get_properties(
 /// - `request_length` - the length of the array
 ///
 /// # Returns
-/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseExpandComponent](../proto/struct.ResponseExpandComponent.html)
+/// a [ByteBufferValidator struct](struct.ByteBufferValidator.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseExpandComponent](../proto/struct.ResponseExpandComponent.html)
 #[no_mangle]
 pub extern "C" fn expand_component(
     request_ptr: *const u8, request_length: i32,
