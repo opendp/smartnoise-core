@@ -7,10 +7,18 @@
       ],
       "type": "Array"
     },
+    "num_partitions": {
+      "nature": [
+        "categorical"
+      ],
+      "default": "None",
+      "type": "Array"
+    },
     "by": {
       "nature": [
         "categorical"
       ],
+      "default": "None",
       "type": "Array"
     }
   },
@@ -22,5 +30,6 @@
       "continuous"
     ],
     "type": "Hashmap"
-  }
+  },
+  "description": "Split the rows of data into either into k equally sized partitions, or by the categories of a vector"
 }

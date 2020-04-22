@@ -35,7 +35,7 @@ mod kth_raw_sample_moment;
 mod maximum;
 mod materialize;
 mod minimum;
-//mod partition;
+pub mod partition;
 mod quantile;
 mod reshape;
 mod mean;
@@ -222,7 +222,7 @@ impl Component for proto::component::Variant {
 
             GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism,
 
-            Minimum, Quantile, Reshape, Resize, Sum, Variance,
+            Minimum, Partition, Quantile, Reshape, Resize, Sum, Variance,
 
             Add, Subtract, Divide, Multiply, Power, Log, Modulo, LogicalAnd, LogicalOr, Negate,
             Equal, LessThan, GreaterThan, Negative

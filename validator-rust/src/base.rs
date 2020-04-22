@@ -6,7 +6,7 @@ use crate::proto;
 
 use ndarray::prelude::Ix1;
 
-use std::collections::{HashMap};
+use std::collections::{HashMap, BTreeMap};
 use ndarray::{ArrayD};
 
 use crate::utilities::{standardize_categorical_argument, deduplicate};
@@ -102,20 +102,20 @@ impl From<ArrayD<String>> for Value {
     }
 }
 
-impl From<HashMap<bool, Value>> for Value {
-    fn from(value: HashMap<bool, Value>) -> Self {
+impl From<BTreeMap<bool, Value>> for Value {
+    fn from(value: BTreeMap<bool, Value>) -> Self {
         Value::Hashmap(Hashmap::<Value>::Bool(value))
     }
 }
 
-impl From<HashMap<i64, Value>> for Value {
-    fn from(value: HashMap<i64, Value>) -> Self {
+impl From<BTreeMap<i64, Value>> for Value {
+    fn from(value: BTreeMap<i64, Value>) -> Self {
         Value::Hashmap(Hashmap::<Value>::I64(value))
     }
 }
 
-impl From<HashMap<String, Value>> for Value {
-    fn from(value: HashMap<String, Value>) -> Self {
+impl From<BTreeMap<String, Value>> for Value {
+    fn from(value: BTreeMap<String, Value>) -> Self {
         Value::Hashmap(Hashmap::<Value>::Str(value))
     }
 }
@@ -441,9 +441,9 @@ impl From<Vec<Option<Vec<String>>>> for Jagged {
 /// The Hashmap has a one-to-one mapping to a protobuf Hashmap.
 #[derive(Clone, Debug)]
 pub enum Hashmap<T> {
-    Bool(HashMap<bool, T>),
-    I64(HashMap<i64, T>),
-    Str(HashMap<String, T>),
+    Bool(BTreeMap<bool, T>),
+    I64(BTreeMap<i64, T>),
+    Str(BTreeMap<String, T>),
 }
 
 impl<T> Hashmap<T> {
@@ -464,27 +464,27 @@ impl<T> Hashmap<T> {
     pub fn from_values(&self, values: Vec<T>) -> Hashmap<T> where T: Clone {
         match self {
             Hashmap::Bool(value) => value.keys().cloned()
-                .zip(values).collect::<HashMap<bool, T>>().into(),
+                .zip(values).collect::<BTreeMap<bool, T>>().into(),
             Hashmap::I64(value) => value.keys().cloned()
-                .zip(values).collect::<HashMap<i64, T>>().into(),
+                .zip(values).collect::<BTreeMap<i64, T>>().into(),
             Hashmap::Str(value) => value.keys().cloned()
-                .zip(values).collect::<HashMap<String, T>>().into(),
+                .zip(values).collect::<BTreeMap<String, T>>().into(),
         }
     }
 }
 
-impl<T> From<HashMap<i64, T>> for Hashmap<T> {
-    fn from(value: HashMap<i64, T>) -> Self {
+impl<T> From<BTreeMap<i64, T>> for Hashmap<T> {
+    fn from(value: BTreeMap<i64, T>) -> Self {
         Hashmap::<T>::I64(value)
     }
 }
-impl<T> From<HashMap<bool, T>> for Hashmap<T> {
-    fn from(value: HashMap<bool, T>) -> Self {
+impl<T> From<BTreeMap<bool, T>> for Hashmap<T> {
+    fn from(value: BTreeMap<bool, T>) -> Self {
         Hashmap::<T>::Bool(value)
     }
 }
-impl<T> From<HashMap<String, T>> for Hashmap<T> {
-    fn from(value: HashMap<String, T>) -> Self {
+impl<T> From<BTreeMap<String, T>> for Hashmap<T> {
+    fn from(value: BTreeMap<String, T>) -> Self {
         Hashmap::<T>::Str(value)
     }
 }
