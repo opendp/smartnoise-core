@@ -114,14 +114,34 @@ pub fn execute_graph(
             .collect::<Result<HashMap<String, proto::ReleaseNode>>>()?;
 
         // expand the current node
-        let expansion: proto::ComponentExpansion = whitenoise_validator::expand_component(&proto::RequestExpandComponent {
+        let expansion: proto::ComponentExpansion = match whitenoise_validator::expand_component(&proto::RequestExpandComponent {
             privacy_definition: analysis.privacy_definition.as_ref().cloned(),
             component: Some(component),
             properties: node_properties,
             arguments: public_arguments,
             component_id,
             maximum_id
-        })?;
+        }) {
+            Ok(expansion) => expansion,
+            // TODO: propagate errors back
+            Err(_) => {
+                // continue without evaluating the faulty component or any parents
+                let mut descendant_traversal = Vec::new();
+                let mut descendants = HashSet::new();
+                descendant_traversal.push(component_id);
+                while !descendant_traversal.is_empty() {
+                    let descendant = descendant_traversal.pop().unwrap();
+                    parents.get(&descendant).map(|parents|
+                        parents.iter().for_each(|parent| {
+                            descendant_traversal.push(*parent);
+                        }));
+                    descendants.insert(descendant);
+                }
+                traversal = traversal.into_iter()
+                    .filter(|v| !descendants.contains(v)).collect();
+                continue
+            }
+        };
 
         // extend the runtime state with the expansion
         graph.extend(expansion.computation_graph.clone());

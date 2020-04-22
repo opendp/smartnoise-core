@@ -35,6 +35,7 @@ analysis = test_everything(run=False)
 analysis.release()
 
 analysis.plot()
+analysis.clean()
 print('privacy usage:', analysis.privacy_usage)
 
 # print('all released values (internal):', analysis.release_values)
