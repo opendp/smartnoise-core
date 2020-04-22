@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/ndarray-0.13.0/src/free_functions.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>free_functions.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../ndarray/index.html'><div class='logo-container'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/ndarray-0.13.1/src/free_functions.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>free_functions.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../ndarray/index.html'><div class='logo-container'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -318,18 +318,6 @@
 <span id="318">318</span>
 <span id="319">319</span>
 <span id="320">320</span>
-<span id="321">321</span>
-<span id="322">322</span>
-<span id="323">323</span>
-<span id="324">324</span>
-<span id="325">325</span>
-<span id="326">326</span>
-<span id="327">327</span>
-<span id="328">328</span>
-<span id="329">329</span>
-<span id="330">330</span>
-<span id="331">331</span>
-<span id="332">332</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Copyright 2014-2016 bluss and ndarray developers.</span>
 <span class="comment">//</span>
@@ -342,30 +330,25 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">mem</span>::{<span class="ident">forget</span>, <span class="ident">size_of</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">slice</span>;
 
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">dimension</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">imp_prelude</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">dimension</span>, <span class="ident">ArcArray1</span>, <span class="ident">ArcArray2</span>};
 
 <span class="doccomment">/// Create an [**`Array`**](type.Array.html) with one, two or</span>
 <span class="doccomment">/// three dimensions.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// ```</span>
-<span class="doccomment">/// extern crate ndarray;</span>
-<span class="doccomment">///</span>
 <span class="doccomment">/// use ndarray::array;</span>
+<span class="doccomment">/// let a1 = array![1, 2, 3, 4];</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// fn main() {</span>
-<span class="doccomment">///     let a1 = array![1, 2, 3, 4];</span>
+<span class="doccomment">/// let a2 = array![[1, 2],</span>
+<span class="doccomment">///                 [3, 4]];</span>
 <span class="doccomment">///</span>
-<span class="doccomment">///     let a2 = array![[1, 2],</span>
-<span class="doccomment">///                     [3, 4]];</span>
+<span class="doccomment">/// let a3 = array![[[1, 2], [3, 4]],</span>
+<span class="doccomment">///                 [[5, 6], [7, 8]]];</span>
 <span class="doccomment">///</span>
-<span class="doccomment">///     let a3 = array![[[1, 2], [3, 4]],</span>
-<span class="doccomment">///                     [[5, 6], [7, 8]]];</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///     assert_eq!(a1.shape(), &amp;[4]);</span>
-<span class="doccomment">///     assert_eq!(a2.shape(), &amp;[2, 2]);</span>
-<span class="doccomment">///     assert_eq!(a3.shape(), &amp;[2, 2, 2]);</span>
-<span class="doccomment">/// }</span>
+<span class="doccomment">/// assert_eq!(a1.shape(), &amp;[4]);</span>
+<span class="doccomment">/// assert_eq!(a2.shape(), &amp;[2, 2]);</span>
+<span class="doccomment">/// assert_eq!(a3.shape(), &amp;[2, 2, 2]);</span>
 <span class="doccomment">/// ```</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// This macro uses `vec![]`, and has the same ownership semantics;</span>
@@ -396,7 +379,7 @@
 }
 
 <span class="doccomment">/// Create a one-dimensional array with elements from `xs`.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">rcarr1</span><span class="op">&lt;</span><span class="ident">A</span>: <span class="ident">Clone</span><span class="op">&gt;</span>(<span class="ident">xs</span>: <span class="kw-2">&amp;</span>[<span class="ident">A</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ArcArray</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">Ix1</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">rcarr1</span><span class="op">&lt;</span><span class="ident">A</span>: <span class="ident">Clone</span><span class="op">&gt;</span>(<span class="ident">xs</span>: <span class="kw-2">&amp;</span>[<span class="ident">A</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ArcArray1</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
     <span class="ident">arr1</span>(<span class="ident">xs</span>).<span class="ident">into_shared</span>()
 }
 
@@ -448,19 +431,14 @@
 <span class="doccomment">/// Create a one-dimensional read-write array view with elements borrowing `xs`.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// ```</span>
-<span class="doccomment">/// extern crate ndarray;</span>
-<span class="doccomment">///</span>
 <span class="doccomment">/// use ndarray::{aview_mut1, s};</span>
-<span class="doccomment">///</span>
 <span class="doccomment">/// // Create an array view over some data, then slice it and modify it.</span>
-<span class="doccomment">/// fn main() {</span>
-<span class="doccomment">///     let mut data = [0; 1024];</span>
-<span class="doccomment">///     {</span>
-<span class="doccomment">///         let mut a = aview_mut1(&amp;mut data).into_shape((32, 32)).unwrap();</span>
-<span class="doccomment">///         a.slice_mut(s![.., ..;3]).fill(5);</span>
-<span class="doccomment">///     }</span>
-<span class="doccomment">///     assert_eq!(&amp;data[..10], [5, 0, 0, 5, 0, 0, 5, 0, 0, 5]);</span>
+<span class="doccomment">/// let mut data = [0; 1024];</span>
+<span class="doccomment">/// {</span>
+<span class="doccomment">///     let mut a = aview_mut1(&amp;mut data).into_shape((32, 32)).unwrap();</span>
+<span class="doccomment">///     a.slice_mut(s![.., ..;3]).fill(5);</span>
 <span class="doccomment">/// }</span>
+<span class="doccomment">/// assert_eq!(&amp;data[..10], [5, 0, 0, 5, 0, 0, 5, 0, 0, 5]);</span>
 <span class="doccomment">/// ```</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">aview_mut1</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>(<span class="ident">xs</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">A</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ArrayViewMut1</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">A</span><span class="op">&gt;</span> {
     <span class="ident">ArrayViewMut</span>::<span class="ident">from</span>(<span class="ident">xs</span>)
@@ -476,20 +454,18 @@
 <span class="doccomment">/// ```</span>
 <span class="doccomment">/// use ndarray::aview_mut2;</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// fn main() {</span>
-<span class="doccomment">///     // The inner (nested) array must be of length 1 to 16, but the outer</span>
-<span class="doccomment">///     // can be of any length.</span>
-<span class="doccomment">///     let mut data = [[0.; 2]; 128];</span>
-<span class="doccomment">///     {</span>
-<span class="doccomment">///         // Make a 128 x 2 mut array view then turn it into 2 x 128</span>
-<span class="doccomment">///         let mut a = aview_mut2(&amp;mut data).reversed_axes();</span>
-<span class="doccomment">///         // Make the first row ones and second row minus ones.</span>
-<span class="doccomment">///         a.row_mut(0).fill(1.);</span>
-<span class="doccomment">///         a.row_mut(1).fill(-1.);</span>
-<span class="doccomment">///     }</span>
-<span class="doccomment">///     // look at the start of the result</span>
-<span class="doccomment">///     assert_eq!(&amp;data[..3], [[1., -1.], [1., -1.], [1., -1.]]);</span>
+<span class="doccomment">/// // The inner (nested) array must be of length 1 to 16, but the outer</span>
+<span class="doccomment">/// // can be of any length.</span>
+<span class="doccomment">/// let mut data = [[0.; 2]; 128];</span>
+<span class="doccomment">/// {</span>
+<span class="doccomment">///     // Make a 128 x 2 mut array view then turn it into 2 x 128</span>
+<span class="doccomment">///     let mut a = aview_mut2(&amp;mut data).reversed_axes();</span>
+<span class="doccomment">///     // Make the first row ones and second row minus ones.</span>
+<span class="doccomment">///     a.row_mut(0).fill(1.);</span>
+<span class="doccomment">///     a.row_mut(1).fill(-1.);</span>
 <span class="doccomment">/// }</span>
+<span class="doccomment">/// // look at the start of the result</span>
+<span class="doccomment">/// assert_eq!(&amp;data[..3], [[1., -1.], [1., -1.], [1., -1.]]);</span>
 <span class="doccomment">/// ```</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">aview_mut2</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">V</span>: <span class="ident">FixedInitializer</span><span class="op">&lt;</span><span class="ident">Elem</span> <span class="op">=</span> <span class="ident">A</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">xs</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">V</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ArrayViewMut2</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">A</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">cols</span> <span class="op">=</span> <span class="ident">V</span>::<span class="ident">len</span>();
@@ -622,7 +598,7 @@
 
 <span class="doccomment">/// Create a two-dimensional array with elements from `xs`.</span>
 <span class="doccomment">///</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">rcarr2</span><span class="op">&lt;</span><span class="ident">A</span>: <span class="ident">Clone</span>, <span class="ident">V</span>: <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">FixedInitializer</span><span class="op">&lt;</span><span class="ident">Elem</span> <span class="op">=</span> <span class="ident">A</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">xs</span>: <span class="kw-2">&amp;</span>[<span class="ident">V</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ArcArray</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">Ix2</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">rcarr2</span><span class="op">&lt;</span><span class="ident">A</span>: <span class="ident">Clone</span>, <span class="ident">V</span>: <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">FixedInitializer</span><span class="op">&lt;</span><span class="ident">Elem</span> <span class="op">=</span> <span class="ident">A</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">xs</span>: <span class="kw-2">&amp;</span>[<span class="ident">V</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ArcArray2</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
     <span class="ident">arr2</span>(<span class="ident">xs</span>).<span class="ident">into_shared</span>()
 }
 

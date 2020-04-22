@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/ndarray-0.13.0/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../ndarray/index.html'><div class='logo-container'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/ndarray-0.13.1/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../ndarray/index.html'><div class='logo-container'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -1611,6 +1611,20 @@
 <span id="1611">1611</span>
 <span id="1612">1612</span>
 <span id="1613">1613</span>
+<span id="1614">1614</span>
+<span id="1615">1615</span>
+<span id="1616">1616</span>
+<span id="1617">1617</span>
+<span id="1618">1618</span>
+<span id="1619">1619</span>
+<span id="1620">1620</span>
+<span id="1621">1621</span>
+<span id="1622">1622</span>
+<span id="1623">1623</span>
+<span id="1624">1624</span>
+<span id="1625">1625</span>
+<span id="1626">1626</span>
+<span id="1627">1627</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Copyright 2014-2016 bluss and ndarray developers.</span>
 <span class="comment">//</span>
@@ -1755,19 +1769,25 @@
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">mod</span> <span class="ident">private</span>;
 <span class="kw">mod</span> <span class="ident">aliases</span>;
+<span class="attribute">#[<span class="ident">macro_use</span>]</span>
+<span class="kw">mod</span> <span class="ident">itertools</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;approx&quot;</span>)]</span>
 <span class="kw">mod</span> <span class="ident">array_approx</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;serde&quot;</span>)]</span>
 <span class="kw">mod</span> <span class="ident">array_serde</span>;
 <span class="kw">mod</span> <span class="ident">arrayformat</span>;
 <span class="kw">mod</span> <span class="ident">arraytraits</span>;
+<span class="kw">mod</span> <span class="ident">argument_traits</span>;
+<span class="kw">pub</span> <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">argument_traits</span>::<span class="ident">AssignElem</span>;
 <span class="kw">mod</span> <span class="ident">data_traits</span>;
+<span class="kw">mod</span> <span class="ident">data_repr</span>;
 
 <span class="kw">pub</span> <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">aliases</span>::<span class="kw-2">*</span>;
 
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">deprecated</span>)]</span>
 <span class="kw">pub</span> <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">data_traits</span>::{
     <span class="ident">Data</span>, <span class="ident">DataClone</span>, <span class="ident">DataMut</span>, <span class="ident">DataOwned</span>, <span class="ident">DataShared</span>, <span class="ident">RawData</span>, <span class="ident">RawDataClone</span>, <span class="ident">RawDataMut</span>,
+    <span class="ident">RawDataSubst</span>,
 };
 
 <span class="kw">mod</span> <span class="ident">free_functions</span>;
@@ -1953,15 +1973,15 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// Important traits and types for dimension and indexing:</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// - A [`Dim`](Dim.t.html) value represents a dimensionality or index.</span>
-<span class="doccomment">/// - Trait [`Dimension`](Dimension.t.html) is implemented by all</span>
+<span class="doccomment">/// - A [`Dim`](struct.Dim.html) value represents a dimensionality or index.</span>
+<span class="doccomment">/// - Trait [`Dimension`](trait.Dimension.html) is implemented by all</span>
 <span class="doccomment">/// dimensionalities. It defines many operations for dimensions and indices.</span>
-<span class="doccomment">/// - Trait [`IntoDimension`](IntoDimension.t.html) is used to convert into a</span>
+<span class="doccomment">/// - Trait [`IntoDimension`](trait.IntoDimension.html) is used to convert into a</span>
 <span class="doccomment">/// `Dim` value.</span>
-<span class="doccomment">/// - Trait [`ShapeBuilder`](ShapeBuilder.t.html) is an extension of</span>
+<span class="doccomment">/// - Trait [`ShapeBuilder`](trait.ShapeBuilder.html) is an extension of</span>
 <span class="doccomment">/// `IntoDimension` and is used when constructing an array. A shape describes</span>
 <span class="doccomment">/// not just the extent of each axis but also their strides.</span>
-<span class="doccomment">/// - Trait [`NdIndex`](NdIndex.t.html) is an extension of `Dimension` and is</span>
+<span class="doccomment">/// - Trait [`NdIndex`](trait.NdIndex.html) is an extension of `Dimension` and is</span>
 <span class="doccomment">/// for values that can be used with indexing syntax.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">///</span>
@@ -2087,12 +2107,16 @@
 <span class="doccomment">/// [`.slice_move()`]: #method.slice_move</span>
 <span class="doccomment">/// [`.slice_collapse()`]: #method.slice_collapse</span>
 <span class="doccomment">///</span>
+<span class="doccomment">/// It&#39;s possible to take multiple simultaneous *mutable* slices with</span>
+<span class="doccomment">/// [`.multi_slice_mut()`] or (for [`ArrayViewMut`] only)</span>
+<span class="doccomment">/// [`.multi_slice_move()`].</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// [`.multi_slice_mut()`]: #method.multi_slice_mut</span>
+<span class="doccomment">/// [`.multi_slice_move()`]: type.ArrayViewMut.html#method.multi_slice_move</span>
+<span class="doccomment">///</span>
 <span class="doccomment">/// ```</span>
-<span class="doccomment">/// extern crate ndarray;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// use ndarray::{arr2, arr3, s};</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// fn main() {</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// // 2 submatrices of 2 rows with 3 elements per row, means a shape of `[2, 2, 3]`.</span>
 <span class="doccomment">///</span>
@@ -2137,7 +2161,20 @@
 <span class="doccomment">///                [12, 11, 10]]);</span>
 <span class="doccomment">/// assert_eq!(f, g);</span>
 <span class="doccomment">/// assert_eq!(f.shape(), &amp;[2, 3]);</span>
-<span class="doccomment">/// }</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// // Let&#39;s take two disjoint, mutable slices of a matrix with</span>
+<span class="doccomment">/// //</span>
+<span class="doccomment">/// // - One containing all the even-index columns in the matrix</span>
+<span class="doccomment">/// // - One containing all the odd-index columns in the matrix</span>
+<span class="doccomment">/// let mut h = arr2(&amp;[[0, 1, 2, 3],</span>
+<span class="doccomment">///                    [4, 5, 6, 7]]);</span>
+<span class="doccomment">/// let (s0, s1) = h.multi_slice_mut((s![.., ..;2], s![.., 1..;2]));</span>
+<span class="doccomment">/// let i = arr2(&amp;[[0, 2],</span>
+<span class="doccomment">///                [4, 6]]);</span>
+<span class="doccomment">/// let j = arr2(&amp;[[1, 3],</span>
+<span class="doccomment">///                [5, 7]]);</span>
+<span class="doccomment">/// assert_eq!(s0, i);</span>
+<span class="doccomment">/// assert_eq!(s1, j);</span>
 <span class="doccomment">/// ```</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// ## Subviews</span>
@@ -2170,11 +2207,9 @@
 <span class="doccomment">/// [`.outer_iter_mut()`]: #method.outer_iter_mut</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// ```</span>
-<span class="doccomment">/// extern crate ndarray;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// use ndarray::{arr3, aview1, aview2, s, Axis};</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// # fn main() {</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// // 2 submatrices of 2 rows with 3 elements per row, means a shape of `[2, 2, 3]`.</span>
 <span class="doccomment">///</span>
@@ -2208,7 +2243,6 @@
 <span class="doccomment">/// // You can take multiple subviews at once (and slice at the same time)</span>
 <span class="doccomment">/// let double_sub = a.slice(s![1, .., 0]);</span>
 <span class="doccomment">/// assert_eq!(double_sub, aview1(&amp;[7, 10]));</span>
-<span class="doccomment">/// # }</span>
 <span class="doccomment">/// ```</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// ## Arithmetic Operations</span>
@@ -2654,7 +2688,6 @@
 <span class="doccomment">/// ```rust</span>
 <span class="doccomment">/// use ndarray::{array, Array2};</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// # fn main() -&gt; Result&lt;(), Box&lt;std::error::Error&gt;&gt; {</span>
 <span class="doccomment">/// let ncols = 3;</span>
 <span class="doccomment">/// let mut data = Vec::new();</span>
 <span class="doccomment">/// let mut nrows = 0;</span>
@@ -2666,8 +2699,7 @@
 <span class="doccomment">/// }</span>
 <span class="doccomment">/// let arr = Array2::from_shape_vec((nrows, ncols), data)?;</span>
 <span class="doccomment">/// assert_eq!(arr, array![[0, 0, 0], [1, 1, 1]]);</span>
-<span class="doccomment">/// # Ok(())</span>
-<span class="doccomment">/// # }</span>
+<span class="doccomment">/// # Ok::&lt;(), ndarray::ShapeError&gt;(())</span>
 <span class="doccomment">/// ```</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// If neither of these options works for you, and you really need to convert</span>
@@ -2680,7 +2712,6 @@
 <span class="doccomment">/// ```rust</span>
 <span class="doccomment">/// use ndarray::{array, Array2, Array3};</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// # fn main() -&gt; Result&lt;(), Box&lt;std::error::Error&gt;&gt; {</span>
 <span class="doccomment">/// let nested: Vec&lt;Array2&lt;i32&gt;&gt; = vec![</span>
 <span class="doccomment">///     array![[1, 2, 3], [4, 5, 6]],</span>
 <span class="doccomment">///     array![[7, 8, 9], [10, 11, 12]],</span>
@@ -2693,8 +2724,7 @@
 <span class="doccomment">///     [[1, 2, 3], [4, 5, 6]],</span>
 <span class="doccomment">///     [[7, 8, 9], [10, 11, 12]],</span>
 <span class="doccomment">/// ]);</span>
-<span class="doccomment">/// # Ok(())</span>
-<span class="doccomment">/// # }</span>
+<span class="doccomment">/// # Ok::&lt;(), ndarray::ShapeError&gt;(())</span>
 <span class="doccomment">/// ```</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// Note that this implementation assumes that the nested `Vec`s are all the</span>
@@ -2718,10 +2748,12 @@
 <span class="comment">//      `dim`, and `strides` must be exclusively borrowed and not aliased by</span>
 <span class="comment">//      multiple indices.</span>
 <span class="comment">//</span>
-<span class="comment">// 2. `ptr` must be non-null and aligned, and it must be safe to [`.offset()`]</span>
-<span class="comment">//    `ptr` by zero.</span>
+<span class="comment">// 2. If the type of `data` implements `Data`, then `ptr` must be aligned.</span>
 <span class="comment">//</span>
-<span class="comment">// 3. It must be safe to [`.offset()`] the pointer repeatedly along all axes</span>
+<span class="comment">// 3. `ptr` must be non-null, and it must be safe to [`.offset()`] `ptr` by</span>
+<span class="comment">//    zero.</span>
+<span class="comment">//</span>
+<span class="comment">// 4. It must be safe to [`.offset()`] the pointer repeatedly along all axes</span>
 <span class="comment">//    and calculate the `count`s for the `.offset()` calls without overflow,</span>
 <span class="comment">//    even if the array is empty or the elements are zero-sized.</span>
 <span class="comment">//</span>
@@ -2789,13 +2821,13 @@
 <span class="comment">//    `.offset()` at all, even by zero bytes, but the implementation of</span>
 <span class="comment">//    `Vec&lt;A&gt;` does this, so we can too. See rust-lang/rust#54857 for details.)</span>
 <span class="comment">//</span>
-<span class="comment">// 4. The product of non-zero axis lengths must not exceed `isize::MAX`. (This</span>
+<span class="comment">// 5. The product of non-zero axis lengths must not exceed `isize::MAX`. (This</span>
 <span class="comment">//    also implies that the length of any individual axis must not exceed</span>
 <span class="comment">//    `isize::MAX`, and an array can contain at most `isize::MAX` elements.)</span>
 <span class="comment">//    This constraint makes various calculations easier because they don&#39;t have</span>
 <span class="comment">//    to worry about overflow and axis lengths can be freely cast to `isize`.</span>
 <span class="comment">//</span>
-<span class="comment">// Constraints 2–4 are carefully designed such that if they&#39;re upheld for the</span>
+<span class="comment">// Constraints 2–5 are carefully designed such that if they&#39;re upheld for the</span>
 <span class="comment">// array, they&#39;re also upheld for any subset of axes of the array as well as</span>
 <span class="comment">// slices/subviews/reshapes of the array. This is important for iterators that</span>
 <span class="comment">// produce subviews (and other similar cases) to be safe without extra (easy to</span>
@@ -2821,8 +2853,8 @@
     <span class="doccomment">/// Data buffer / ownership information. (If owned, contains the data</span>
     <span class="doccomment">/// buffer; if borrowed, contains the lifetime and mutability.)</span>
     <span class="ident">data</span>: <span class="ident">S</span>,
-    <span class="doccomment">/// A non-null and aligned pointer into the buffer held by `data`; may</span>
-    <span class="doccomment">/// point anywhere in its range.</span>
+    <span class="doccomment">/// A non-null pointer into the buffer held by `data`; may point anywhere</span>
+    <span class="doccomment">/// in its range. If `S: Data`, this pointer must be aligned.</span>
     <span class="ident">ptr</span>: <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">NonNull</span><span class="op">&lt;</span><span class="ident">S</span>::<span class="ident">Elem</span><span class="op">&gt;</span>,
     <span class="doccomment">/// The lengths of the axes.</span>
     <span class="ident">dim</span>: <span class="ident">D</span>,
@@ -2878,10 +2910,10 @@
 <span class="doccomment">/// + [Constructor Methods for Owned Arrays](struct.ArrayBase.html#constructor-methods-for-owned-arrays)</span>
 <span class="doccomment">/// + [Methods For All Array Types](struct.ArrayBase.html#methods-for-all-array-types)</span>
 <span class="doccomment">/// + Dimensionality-specific type alises</span>
-<span class="doccomment">/// [`Array1`](Array1.t.html),</span>
-<span class="doccomment">/// [`Array2`](Array2.t.html),</span>
-<span class="doccomment">/// [`Array3`](Array3.t.html), ...,</span>
-<span class="doccomment">/// [`ArrayD`](ArrayD.t.html),</span>
+<span class="doccomment">/// [`Array1`](type.Array1.html),</span>
+<span class="doccomment">/// [`Array2`](type.Array2.html),</span>
+<span class="doccomment">/// [`Array3`](type.Array3.html), ...,</span>
+<span class="doccomment">/// [`ArrayD`](type.ArrayD.html),</span>
 <span class="doccomment">/// and so on.</span>
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">Array</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">OwnedRepr</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>, <span class="ident">D</span><span class="op">&gt;</span>;
 
@@ -2943,7 +2975,7 @@
 <span class="doccomment">/// conversion into an [`ArrayView`]. The relationship between `RawArrayView`</span>
 <span class="doccomment">/// and [`ArrayView`] is somewhat analogous to the relationship between `*const</span>
 <span class="doccomment">/// T` and `&amp;T`, but `RawArrayView` has additional requirements that `*const T`</span>
-<span class="doccomment">/// does not, such as alignment and non-nullness.</span>
+<span class="doccomment">/// does not, such as non-nullness.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// [`ArrayView`]: type.ArrayView.html</span>
 <span class="doccomment">///</span>
@@ -2968,8 +3000,7 @@
 <span class="doccomment">/// unsafe conversion into an [`ArrayViewMut`]. The relationship between</span>
 <span class="doccomment">/// `RawArrayViewMut` and [`ArrayViewMut`] is somewhat analogous to the</span>
 <span class="doccomment">/// relationship between `*mut T` and `&amp;mut T`, but `RawArrayViewMut` has</span>
-<span class="doccomment">/// additional requirements that `*mut T` does not, such as alignment and</span>
-<span class="doccomment">/// non-nullness.</span>
+<span class="doccomment">/// additional requirements that `*mut T` does not, such as non-nullness.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// [`ArrayViewMut`]: type.ArrayViewMut.html</span>
 <span class="doccomment">///</span>
@@ -2987,12 +3018,8 @@
 <span class="doccomment">/// [`from_shape_ptr`](#method.from_shape_ptr) for details.</span>
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">RawArrayViewMut</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">RawViewRepr</span><span class="op">&lt;</span><span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">A</span><span class="op">&gt;</span>, <span class="ident">D</span><span class="op">&gt;</span>;
 
-<span class="doccomment">/// Array&#39;s representation.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// *Don’t use this type directly—use the type alias</span>
-<span class="doccomment">/// [`Array`](type.Array.html) for the array type!*</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">OwnedRepr</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>);
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">data_repr</span>::<span class="ident">OwnedRepr</span>;
+
 
 <span class="doccomment">/// RcArray&#39;s representation.</span>
 <span class="doccomment">///</span>
@@ -3006,7 +3033,7 @@
 <span class="doccomment">/// *Don’t use this type directly—use the type alias</span>
 <span class="doccomment">/// [`ArcArray`](type.ArcArray.html) for the array type!*</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">OwnedArcRepr</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>(<span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span><span class="op">&gt;</span>);
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">OwnedArcRepr</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>(<span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">OwnedRepr</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span><span class="op">&gt;</span>);
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> <span class="ident">Clone</span> <span class="kw">for</span> <span class="ident">OwnedArcRepr</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
@@ -3085,6 +3112,7 @@
 
 <span class="kw">mod</span> <span class="ident">impl_methods</span>;
 <span class="kw">mod</span> <span class="ident">impl_owned_array</span>;
+<span class="kw">mod</span> <span class="ident">impl_special_element_types</span>;
 
 <span class="doccomment">/// Private Methods</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span>
@@ -3129,7 +3157,7 @@
         <span class="kw">let</span> <span class="ident">ptr</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">ptr</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">strides</span> <span class="op">=</span> <span class="ident">dim</span>.<span class="ident">clone</span>();
         <span class="ident">strides</span>.<span class="ident">slice_mut</span>().<span class="ident">copy_from_slice</span>(<span class="self">self</span>.<span class="ident">strides</span>.<span class="ident">slice</span>());
-        <span class="kw">unsafe</span> { <span class="ident">ArrayView</span>::<span class="ident">new_</span>(<span class="ident">ptr</span>.<span class="ident">as_ptr</span>(), <span class="ident">dim</span>, <span class="ident">strides</span>) }
+        <span class="kw">unsafe</span> { <span class="ident">ArrayView</span>::<span class="ident">new</span>(<span class="ident">ptr</span>, <span class="ident">dim</span>, <span class="ident">strides</span>) }
     }
 
     <span class="kw">fn</span> <span class="ident">raw_strides</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">D</span> {
