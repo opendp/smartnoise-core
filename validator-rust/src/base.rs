@@ -594,6 +594,10 @@ pub struct ArrayProperties {
     /// index of last Materialize or Filter node, where dataset was created
     /// used to determine if arrays are conformable even when N is not known
     pub dataset_id: Option<i64>,
+    /// true if the array may not be length zero
+    pub is_not_empty: bool,
+    /// number of axes in the array
+    pub dimensionality: u32
 }
 
 
@@ -691,6 +695,9 @@ impl ArrayProperties {
     }
     pub fn assert_non_null(&self) -> Result<()> {
         if self.nullity { Err("data may contain nullity when non-nullity is required".into()) } else { Ok(())}
+    }
+    pub fn assert_is_not_empty(&self) -> Result<()> {
+        if self.is_not_empty { Ok(()) } else { Err("data may be empty when non-emptiness is required".into()) }
     }
     pub fn assert_is_releasable(&self) -> Result<()> {
         if self.releasable { Ok(()) } else { Err("data is not releasable when releasability is required".into()) }

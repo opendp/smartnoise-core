@@ -43,6 +43,9 @@ impl Component for proto::Filter {
         // This exists to prevent binary ops on non-conformable arrays from being approved
         data_property.dataset_id = None;
 
+        // no longer know if the data has a nonzero number of records
+        data_property.is_not_empty = false;
+
         Ok(data_property.into())
     }
 

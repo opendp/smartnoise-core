@@ -228,7 +228,14 @@ pub fn infer_property(value: &Value) -> Result<ValueProperties> {
                 Array::I64(_) => DataType::I64,
                 Array::Str(_) => DataType::Str,
             },
-            dataset_id: None
+            dataset_id: None,
+            is_not_empty: match array {
+                Array::Bool(array) => array.len(),
+                Array::F64(array) => array.len(),
+                Array::I64(array) => array.len(),
+                Array::Str(array) => array.len(),
+            } != 0,
+            dimensionality: array.shape().len() as u32
         }.into(),
         Value::Hashmap(hashmap) => {
             HashmapProperties {
