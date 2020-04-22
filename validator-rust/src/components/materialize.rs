@@ -55,6 +55,9 @@ impl Component for proto::Materialize {
                                 nature: None,
                                 data_type: data_type.clone(),
                                 dataset_id: self.dataset_id.as_ref().and_then(parse_i64_null),
+                                // this is a library-wide assumption - that datasets initially have more than zero rows
+                                is_not_empty: true,
+                                dimensionality: 1
                             }))).collect()),
                             columnar: true
                         })),
@@ -72,6 +75,9 @@ impl Component for proto::Materialize {
                             nature: None,
                             data_type,
                             dataset_id: self.dataset_id.as_ref().and_then(parse_i64_null),
+                            // this is a library-wide assumption - that datasets initially have more than zero rows
+                            is_not_empty: true,
+                            dimensionality: array.shape.len() as u32
                         })),
                         true => infer_property(&parse_value(value)?)
                     }
@@ -91,6 +97,9 @@ impl Component for proto::Materialize {
                         nature: None,
                         data_type: DataType::Str,
                         dataset_id: self.dataset_id.as_ref().and_then(parse_i64_null),
+                        // this is a library-wide assumption - that datasets initially have more than zero rows
+                        is_not_empty: true,
+                        dimensionality: 1
                     }))).collect()),
                 columnar: true,
             }.into()),

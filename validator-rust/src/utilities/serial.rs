@@ -260,7 +260,9 @@ pub fn parse_arraynd_properties(value: &proto::ArrayNdProperties) -> ArrayProper
             None => None,
         },
         data_type: parse_data_type(proto::DataType::from_i32(value.data_type).unwrap()),
-        dataset_id: value.dataset_id.as_ref().and_then(parse_i64_null)
+        dataset_id: value.dataset_id.as_ref().and_then(parse_i64_null),
+        is_not_empty: value.is_not_empty,
+        dimensionality: value.dimensionality
     }
 }
 
@@ -566,7 +568,9 @@ pub fn serialize_arraynd_properties(value: &ArrayProperties) -> proto::ArrayNdPr
             None => None
         },
         data_type: serialize_data_type(&value.data_type) as i32,
-        dataset_id: Some(serialize_i64_null(&value.dataset_id))
+        dataset_id: Some(serialize_i64_null(&value.dataset_id)),
+        is_not_empty: value.is_not_empty,
+        dimensionality: value.dimensionality
     }
 }
 
