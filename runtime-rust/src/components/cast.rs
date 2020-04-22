@@ -21,9 +21,9 @@ impl Evaluable for proto::Cast {
             "float" | "real" => Ok(Value::Array(Array::F64(cast_f64(&data)?))),
             "int" | "integer" => {
                 // TODO: handle different bounds on each column
-                let min = get_argument(&arguments, "min")?.first_i64()?;
-                let max = get_argument(&arguments, "max")?.first_i64()?;
-                Ok(cast_i64(&data, &min, &max)?.into())
+                let lower = get_argument(&arguments, "lower")?.first_i64()?;
+                let upper = get_argument(&arguments, "upper")?.first_i64()?;
+                Ok(cast_i64(&data, &lower, &upper)?.into())
             },
             "string" | "str" =>
                 Ok(cast_str(&data)?.into()),
@@ -86,24 +86,24 @@ pub fn cast_f64(data: &Array) -> Result<ArrayD<f64>> {
 ///
 /// If data are `bool`, map `true => 1` and `false => 0`
 ///
-/// If data are `String`, attempt to parse as `i64` and impute a uniform `i64` between `min` and `max` otherwise.
+/// If data are `String`, attempt to parse as `i64` and impute a uniform `i64` between `lower` and `upper` otherwise.
 ///
 /// If data are `f64`, round non-`NAN` values to their `i64` representation,
-/// impute uniform `i64` between `min` and `max` for values that are `NAN`.
+/// impute uniform `i64` between `lower` and `upper` for values that are `NAN`.
 ///
 /// # Arguments
 /// * `data` - Data to be cast to `i64`.
-/// * `min` - Minimum allowable imputation value.
-/// * `max` - Maximum allowable imputation value.
+/// * `lower` - Minimum allowable imputation value.
+/// * `upper` - Maximum allowable imputation value.
 ///
 /// # Return
 /// Data cast to `i64`.
-pub fn cast_i64(data: &Array, min: &i64, max: &i64) -> Result<ArrayD<i64>> {
+pub fn cast_i64(data: &Array, lower: &i64, upper: &i64) -> Result<ArrayD<i64>> {
     Ok(match data {
         Array::Str(data) => data
-            .mapv(|v| v.parse::<i64>().unwrap_or_else(|_| noise::sample_uniform_int(&min, &max).unwrap())),
+            .mapv(|v| v.parse::<i64>().unwrap_or_else(|_| noise::sample_uniform_int(&lower, &upper).unwrap())),
         Array::F64(data) => data
-            .mapv(|v| if !v.is_nan() {v.round() as i64} else {noise::sample_uniform_int(&min, &max).unwrap()}),
+            .mapv(|v| if !v.is_nan() {v.round() as i64} else {noise::sample_uniform_int(&lower, &upper).unwrap()}),
         Array::Bool(data) => data.mapv(|v| if v {1} else {0}),
         Array::I64(data) => data.clone()
     })

@@ -1,5 +1,9 @@
 protobuf
 pytest>=4.4.2
+numpy
 milksnake
 networkx
 matplotlib
+
+sphinx
+sphinx_rtd_theme

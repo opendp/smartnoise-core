@@ -243,8 +243,8 @@ pub fn parse_arraynd_properties(value: &proto::ArrayNdProperties) -> ArrayProper
             Some(nature) => match nature {
                 proto::array_nd_properties::Nature::Continuous(continuous) =>
                     Some(Nature::Continuous(NatureContinuous {
-                        min: parse_array1d_null(&continuous.minimum.unwrap()),
-                        max: parse_array1d_null(&continuous.maximum.unwrap()),
+                        lower: parse_array1d_null(&continuous.minimum.unwrap()),
+                        upper: parse_array1d_null(&continuous.maximum.unwrap()),
                     })),
                 proto::array_nd_properties::Nature::Categorical(categorical) =>
                     Some(Nature::Categorical(NatureCategorical {
@@ -541,8 +541,8 @@ pub fn serialize_arraynd_properties(value: &ArrayProperties) -> proto::ArrayNdPr
                     categories: Some(serialize_array2d_jagged(&categorical.categories))
                 })),
                 Nature::Continuous(x) => Some(proto::array_nd_properties::Nature::Continuous(proto::NatureContinuous {
-                    minimum: Some(serialize_array1d_null(&x.min)),
-                    maximum: Some(serialize_array1d_null(&x.max)),
+                    minimum: Some(serialize_array1d_null(&x.lower)),
+                    maximum: Some(serialize_array1d_null(&x.upper)),
                 }))
             },
             None => None

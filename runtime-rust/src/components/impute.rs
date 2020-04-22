@@ -53,27 +53,27 @@ impl Evaluable for proto::Impute {
                 // if f64, impute uniform values
                 // if i64, no need to impute (numeric imputation replaces only f64::NAN values, which are not defined for the i64 type)
                 "uniform" => {
-                    return Ok(match (get_argument(&arguments, "data")?, get_argument(&arguments, "min")?, get_argument(&arguments, "max")?) {
-                        (Value::Array(data), Value::Array(min), Value::Array(max)) => match (data, min, max) {
-                            (Array::F64(data), Array::F64(min), Array::F64(max)) =>
-                                impute_float_uniform(&data, &min, &max)?.into(),
-                            (Array::I64(data), Array::I64(_min), Array::I64(_max)) =>
+                    return Ok(match (get_argument(&arguments, "data")?, get_argument(&arguments, "lower")?, get_argument(&arguments, "upper")?) {
+                        (Value::Array(data), Value::Array(lower), Value::Array(upper)) => match (data, lower, upper) {
+                            (Array::F64(data), Array::F64(lower), Array::F64(upper)) =>
+                                impute_float_uniform(&data, &lower, &upper)?.into(),
+                            (Array::I64(data), Array::I64(_lower), Array::I64(_upper)) =>
                                 // continuous integers are already non-null
                                 data.clone().into(),
-                            _ => return Err("data, min, and max must all be the same type".into())
+                            _ => return Err("data, lower, and upper must all be the same type".into())
                         },
-                        _ => return Err("data, min, max, shift, and scale must be ArrayND".into())
+                        _ => return Err("data, lower, upper, shift, and scale must be ArrayND".into())
                     })
                 },
                 // if specified distribution is Gaussian, get necessary arguments and impute
                 "gaussian" => {
                     let data = get_argument(&arguments, "data")?.array()?.f64()?;
-                    let min = get_argument(&arguments, "min")?.array()?.f64()?;
-                    let max = get_argument(&arguments, "max")?.array()?.f64()?;
+                    let lower = get_argument(&arguments, "lower")?.array()?.f64()?;
+                    let upper = get_argument(&arguments, "upper")?.array()?.f64()?;
                     let scale = get_argument(&arguments, "scale")?.array()?.f64()?;
                     let shift = get_argument(&arguments, "shift")?.array()?.f64()?;
 
-                    return Ok(impute_float_gaussian(&data, &min, &max, &shift, &scale)?.into());
+                    return Ok(impute_float_gaussian(&data, &lower, &upper, &shift, &scale)?.into());
 
                 },
                 _ => return Err("Distribution not supported".into())
@@ -87,8 +87,8 @@ impl Evaluable for proto::Impute {
 ///
 /// # Arguments
 /// * `data` - Data for which you would like to impute the `NAN` values.
-/// * `min` - Lower bound on imputation range for each column.
-/// * `max` - Upper bound on imputation range for each column.
+/// * `lower` - Lower bound on imputation range for each column.
+/// * `upper` - Upper bound on imputation range for each column.
 ///
 /// # Return
 /// Data with `NAN` values replaced with imputed values.
@@ -100,13 +100,13 @@ impl Evaluable for proto::Impute {
 /// use core::f64::NAN;
 ///
 /// let data: ArrayD<f64> = arr2(&[ [1., NAN, 3., NAN], [2., 2., NAN, NAN] ]).into_dyn();
-/// let min: ArrayD<f64> = arr1(&[0., 2., 3., 4.]).into_dyn();
-/// let max: ArrayD<f64> = arr1(&[10., 2., 5., 5.]).into_dyn();
-/// let imputed = impute_float_uniform(&data, &min, &max);
+/// let lower: ArrayD<f64> = arr1(&[0., 2., 3., 4.]).into_dyn();
+/// let upper: ArrayD<f64> = arr1(&[10., 2., 5., 5.]).into_dyn();
+/// let imputed = impute_float_uniform(&data, &lower, &upper);
 /// # imputed.unwrap();
 /// ```
 
-pub fn impute_float_uniform(data: &ArrayD<f64>, min: &ArrayD<f64>, max: &ArrayD<f64>) -> Result<ArrayD<f64>> {
+pub fn impute_float_uniform(data: &ArrayD<f64>, lower: &ArrayD<f64>, upper: &ArrayD<f64>) -> Result<ArrayD<f64>> {
     let mut data = data.clone();
 
     let num_columns = get_num_columns(&data)?;
@@ -114,8 +114,8 @@ pub fn impute_float_uniform(data: &ArrayD<f64>, min: &ArrayD<f64>, max: &ArrayD<
     // iterate over the generalized columns
     data.gencolumns_mut().into_iter()
         // pair generalized columns with arguments
-        .zip(standardize_numeric_argument(&min, &num_columns)?.iter())
-        .zip(standardize_numeric_argument(&max, &num_columns)?.iter())
+        .zip(standardize_numeric_argument(&lower, &num_columns)?.iter())
+        .zip(standardize_numeric_argument(&upper, &num_columns)?.iter())
         // for each pairing, iterate over the cells
         .map(|((mut column, min), max)| column.iter_mut()
             // ignore nan values
@@ -139,8 +139,8 @@ pub fn impute_float_uniform(data: &ArrayD<f64>, min: &ArrayD<f64>, max: &ArrayD<
 /// * `data` - Data for which you would like to impute the `NAN` values.
 /// * `shift` - The mean of the untruncated Gaussian noise distribution for each column.
 /// * `scale` - The standard deviation of the untruncated Gaussian noise distribution for each column.
-/// * `min` - Lower bound on imputation range for each column.
-/// * `max` - Upper bound on imputation range for each column.
+/// * `lower` - Lower bound on imputation range for each column.
+/// * `upper` - Upper bound on imputation range for each column.
 ///
 /// # Return
 /// Data with `NAN` values replaced with imputed values.
@@ -151,14 +151,14 @@ pub fn impute_float_uniform(data: &ArrayD<f64>, min: &ArrayD<f64>, max: &ArrayD<
 /// use whitenoise_runtime::components::impute::impute_float_gaussian;
 /// use core::f64::NAN;
 /// let data: ArrayD<f64> = arr1(&[1., NAN, 3., NAN]).into_dyn();
-/// let min: ArrayD<f64> = arr1(&[0.0]).into_dyn();
-/// let max: ArrayD<f64> = arr1(&[10.0]).into_dyn();
+/// let lower: ArrayD<f64> = arr1(&[0.0]).into_dyn();
+/// let upper: ArrayD<f64> = arr1(&[10.0]).into_dyn();
 /// let shift: ArrayD<f64> = arr1(&[5.0]).into_dyn();
 /// let scale: ArrayD<f64> = arr1(&[7.0]).into_dyn();
-/// let imputed = impute_float_gaussian(&data, &min, &max, &shift, &scale);
+/// let imputed = impute_float_gaussian(&data, &lower, &upper, &shift, &scale);
 /// # imputed.unwrap();
 /// ```
-pub fn impute_float_gaussian(data: &ArrayD<f64>, min: &ArrayD<f64>, max: &ArrayD<f64>, shift: &ArrayD<f64>, scale: &ArrayD<f64>) -> Result<ArrayD<f64>> {
+pub fn impute_float_gaussian(data: &ArrayD<f64>, lower: &ArrayD<f64>, upper: &ArrayD<f64>, shift: &ArrayD<f64>, scale: &ArrayD<f64>) -> Result<ArrayD<f64>> {
 
     let mut data = data.clone();
 
@@ -167,8 +167,8 @@ pub fn impute_float_gaussian(data: &ArrayD<f64>, min: &ArrayD<f64>, max: &ArrayD
     // iterate over the generalized columns
     data.gencolumns_mut().into_iter()
         // pair generalized columns with arguments
-        .zip(standardize_numeric_argument(&min, &num_columns)?.iter()
-            .zip(standardize_numeric_argument(&max, &num_columns)?.iter()))
+        .zip(standardize_numeric_argument(&lower, &num_columns)?.iter()
+            .zip(standardize_numeric_argument(&upper, &num_columns)?.iter()))
         .zip(standardize_numeric_argument(&shift, &num_columns)?.iter()
             .zip(standardize_numeric_argument(&scale, &num_columns)?.iter()))
         // for each pairing, iterate over the cells

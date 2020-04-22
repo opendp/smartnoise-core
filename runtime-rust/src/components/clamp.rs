@@ -31,15 +31,15 @@ impl Evaluable for proto::Clamp {
         }
         // if categories argument was not provided, clamp data as numeric
         else {
-            match (get_argument(&arguments, "data")?, get_argument(&arguments, "min")?, get_argument(&arguments, "max")?) {
-                (Value::Array(data), Value::Array(min), Value::Array(max)) => Ok(match (data, min, max) {
-                    (Array::F64(data), Array::F64(min), Array::F64(max)) =>
-                        clamp_numeric_float(&data, &min, &max)?.into(),
-                    (Array::I64(data), Array::I64(min), Array::I64(max)) =>
-                        clamp_numeric_integer(&data, &min, &max)?.into(),
-                    _ => return Err("data, min, and max must all have type f64".into())
+            match (get_argument(&arguments, "data")?, get_argument(&arguments, "lower")?, get_argument(&arguments, "upper")?) {
+                (Value::Array(data), Value::Array(lower), Value::Array(upper)) => Ok(match (data, lower, upper) {
+                    (Array::F64(data), Array::F64(lower), Array::F64(upper)) =>
+                        clamp_numeric_float(&data, &lower, &upper)?.into(),
+                    (Array::I64(data), Array::I64(lower), Array::I64(upper)) =>
+                        clamp_numeric_integer(&data, &lower, &upper)?.into(),
+                    _ => return Err("data, lower, and upper must all have type f64".into())
                 }),
-                _ => return Err("data, min, and max must all be ArrayND".into())
+                _ => return Err("data, lower, and upper must all be ArrayND".into())
             }
         }
     }
@@ -49,8 +49,8 @@ impl Evaluable for proto::Clamp {
 ///
 /// # Arguments
 /// * `data` - Data to be clamped.
-/// * `min` - Desired lower bound for each column of the data.
-/// * `max` - Desired upper bound for each column of the data.
+/// * `lower` - Desired lower bound for each column of the data.
+/// * `upper` - Desired upper bound for each column of the data.
 ///
 /// # Return
 /// Data clamped to desired bounds.
@@ -60,14 +60,14 @@ impl Evaluable for proto::Clamp {
 /// use ndarray::{ArrayD, arr2, arr1};
 /// use whitenoise_runtime::components::clamp::clamp_numeric_float;
 /// let data = arr2(&[ [1.,2.,3.], [7.,11.,9.] ]).into_dyn();
-/// let mins: ArrayD<f64> = arr1(&[0.5, 8., 4.]).into_dyn();
-/// let maxes: ArrayD<f64> = arr1(&[2.5, 10., 12.]).into_dyn();
+/// let lower: ArrayD<f64> = arr1(&[0.5, 8., 4.]).into_dyn();
+/// let upper: ArrayD<f64> = arr1(&[2.5, 10., 12.]).into_dyn();
 ///
-/// let clamped_data = clamp_numeric_float(&data, &mins, &maxes).unwrap();
+/// let clamped_data = clamp_numeric_float(&data, &lower, &upper).unwrap();
 /// assert!(clamped_data == arr2(&[ [1., 8., 4.], [2.5, 10., 9.] ]).into_dyn());
 /// ```
 pub fn clamp_numeric_float(
-    data: &ArrayD<f64>, min: &ArrayD<f64>, max: &ArrayD<f64>
+    data: &ArrayD<f64>, lower: &ArrayD<f64>, upper: &ArrayD<f64>
 )-> Result<ArrayD<f64>> {
     let mut data = data.clone();
 
@@ -76,8 +76,8 @@ pub fn clamp_numeric_float(
     // iterate over the generalized columns
     data.gencolumns_mut().into_iter()
         // pair generalized columns with arguments
-        .zip(standardize_numeric_argument(&min, &num_columns)?.iter())
-        .zip(standardize_numeric_argument(&max, &num_columns)?.iter())
+        .zip(standardize_numeric_argument(&lower, &num_columns)?.iter())
+        .zip(standardize_numeric_argument(&upper, &num_columns)?.iter())
         // for each pairing, iterate over the cells
         .for_each(|((mut column, min), max)| column.iter_mut()
             // ignore nan values
@@ -93,8 +93,8 @@ pub fn clamp_numeric_float(
 ///
 /// # Arguments
 /// * `data` - Data to be clamped.
-/// * `min` - Desired lower bound for each column of the data.
-/// * `max` - Desired upper bound for each column of the data.
+/// * `lower` - Desired lower bound for each column of the data.
+/// * `upper` - Desired upper bound for each column of the data.
 ///
 /// # Return
 /// Data clamped to desired bounds.
@@ -104,14 +104,14 @@ pub fn clamp_numeric_float(
 /// use ndarray::{ArrayD, arr2, arr1};
 /// use whitenoise_runtime::components::clamp::clamp_numeric_integer;
 /// let data = arr2(&[ [1, 2, 3], [7, 11, 9] ]).into_dyn();
-/// let mins: ArrayD<i64> = arr1(&[0, 8, 4]).into_dyn();
-/// let maxes: ArrayD<i64> = arr1(&[2, 10, 12]).into_dyn();
+/// let lower: ArrayD<i64> = arr1(&[0, 8, 4]).into_dyn();
+/// let upper: ArrayD<i64> = arr1(&[2, 10, 12]).into_dyn();
 ///
-/// let clamped_data = clamp_numeric_integer(&data, &mins, &maxes).unwrap();
+/// let clamped_data = clamp_numeric_integer(&data, &lower, &upper).unwrap();
 /// assert!(clamped_data == arr2(&[ [1, 8, 4], [2, 10, 9] ]).into_dyn());
 /// ```
 pub fn clamp_numeric_integer(
-    data: &ArrayD<i64>, min: &ArrayD<i64>, max: &ArrayD<i64>
+    data: &ArrayD<i64>, lower: &ArrayD<i64>, upper: &ArrayD<i64>
 )-> Result<ArrayD<i64>> {
     let mut data = data.clone();
 
@@ -120,8 +120,8 @@ pub fn clamp_numeric_integer(
     // iterate over the generalized columns
     data.gencolumns_mut().into_iter()
         // pair generalized columns with arguments
-        .zip(standardize_numeric_argument(&min, &num_columns)?.iter())
-        .zip(standardize_numeric_argument(&max, &num_columns)?.iter())
+        .zip(standardize_numeric_argument(&lower, &num_columns)?.iter())
+        .zip(standardize_numeric_argument(&upper, &num_columns)?.iter())
         // for each pairing, iterate over the cells
         .for_each(|((mut column, min), max)| column.iter_mut()
             // mutate the cell via the operator

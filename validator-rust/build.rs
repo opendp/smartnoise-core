@@ -51,12 +51,12 @@ struct ArgumentJSON {
 
 /// Returns the path to the prototypes directory`pointed to by the `PROTODIR` environment variable, if it is set.
 fn env_protodir() -> PathBuf {
-    match env::var_os("PROTODIR") {
+    match env::var_os("WN_PROTO_DIR") {
         Some(path) => {
             let proto_dir = PathBuf::from(path);
             if !proto_dir.exists() {
                 panic!(
-                    "PROTODIR environment variable points to non-existent file ({:?})",
+                    "WN_PROTO_DIR environment variable points to non-existent file ({:?})",
                     proto_dir
                 );
             }
@@ -65,7 +65,7 @@ fn env_protodir() -> PathBuf {
         None => {
             let proto_dir = PathBuf::from("../prototypes/");
             if !proto_dir.exists() {
-                panic!("Failed to find the prototypes directory. The PROTODIR environment variable is not set.");
+                panic!("Failed to find the prototypes directory. The WN_PROTO_DIR environment variable is not set.");
             }
             proto_dir
         }

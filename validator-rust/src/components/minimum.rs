@@ -57,10 +57,10 @@ impl Aggregator for proto::Minimum {
                 if k != &1 {
                     return Err("Minimum sensitivity is only implemented for KNorm of 1".into());
                 }
-                let min = data_property.min_f64()?;
-                let max = data_property.max_f64()?;
+                let lower = data_property.lower_f64()?;
+                let upper = data_property.upper_f64()?;
 
-                let row_sensitivity = min.iter().zip(max.iter())
+                let row_sensitivity = lower.iter().zip(upper.iter())
                     .map(|(min, max)| (max - min))
                     .collect::<Vec<f64>>();
 

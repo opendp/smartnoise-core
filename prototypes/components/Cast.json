@@ -9,12 +9,12 @@
       "default": "None",
       "description": "Positive class (class to be mapped to `true`) for each column. Used only if casting to `bool`."
     },
-    "min": {
+    "lower": {
       "type": "Array",
       "default": "None",
       "description": "Minimum allowable imputation value. Used only if casting to `i64`."
     },
-    "max": {
+    "upper": {
       "type": "Array",
       "default": "None",
       "description": "Maximum allowable imputation value. Used only if casting to `i64`."

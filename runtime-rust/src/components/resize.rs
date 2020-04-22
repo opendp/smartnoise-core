@@ -50,10 +50,10 @@ impl Evaluable for proto::Resize {
         else {
             match (
                 get_argument(&arguments, "data")?.array()?,
-                get_argument(&arguments, "min")?.array()?,
-                get_argument(&arguments, "max")?.array()?
+                get_argument(&arguments, "lower")?.array()?,
+                get_argument(&arguments, "upper")?.array()?
             ) {
-                (Array::F64(data), Array::F64(min), Array::F64(max)) => {
+                (Array::F64(data), Array::F64(lower), Array::F64(upper)) => {
                     // If there is no valid distribution argument provided, generate uniform by default
                     let distribution = match get_argument(&arguments, "type") {
                         Ok(distribution) => distribution.first_string()?,
@@ -67,11 +67,11 @@ impl Evaluable for proto::Resize {
                         Ok(scale) => Some(scale.array()?.f64()?),
                         Err(_) => None
                     };
-                    Ok(resize_float(data, &n, &distribution, min, max, &shift, &scale)?.into())
+                    Ok(resize_float(data, &n, &distribution, lower, upper, &shift, &scale)?.into())
                 }
-                (Array::I64(data), Array::I64(min), Array::I64(max)) =>
-                    Ok(resize_integer(data, &n, min, max)?.into()),
-                _ => Err("data, min, and max must be of a homogeneous numeric type".into())
+                (Array::I64(data), Array::I64(lower), Array::I64(upper)) =>
+                    Ok(resize_integer(data, &n, lower, upper)?.into()),
+                _ => Err("data, lower, and upper must be of a homogeneous numeric type".into())
             }
         }
     }
@@ -88,15 +88,15 @@ impl Evaluable for proto::Resize {
 /// * `data` - The data to be resized
 /// * `n` - An estimate of the size of the data -- this could be the guess of the user, or the result of a DP release
 /// * `distribution` - The distribution to be used when imputing records
-/// * `min` - A lower bound on data elements
-/// * `max` - An upper bound on data elements
+/// * `lower` - A lower bound on data elements
+/// * `upper` - An upper bound on data elements
 /// * `shift` - The shift (expectation) argument for the Gaussian distribution
 /// * `scale` - The scale (standard deviation) argument for the Gaussian distribution
 ///
 /// # Return
 /// A resized version of data consistent with the provided `n`
 pub fn resize_float(data: &ArrayD<f64>, n: &i64, distribution: &String,
-                    min: &ArrayD<f64>, max: &ArrayD<f64>,
+                    lower: &ArrayD<f64>, upper: &ArrayD<f64>,
                     shift: &Option<&ArrayD<f64>>, scale: &Option<&ArrayD<f64>>) -> Result<ArrayD<f64>> {
     // get number of observations in actual data
     let real_n: i64 = data.len_of(Axis(0)) as i64;
@@ -115,9 +115,9 @@ pub fn resize_float(data: &ArrayD<f64>, n: &i64, distribution: &String,
             // generate synthetic data
             // NOTE: only uniform and gaussian supported at this time
             let synthetic = match distribution.to_lowercase().as_str() {
-                "uniform" => impute_float_uniform(&synthetic_base, &min, &max),
+                "uniform" => impute_float_uniform(&synthetic_base, &lower, &upper),
                 "gaussian" => impute_float_gaussian(
-                    &synthetic_base, &min, &max,
+                    &synthetic_base, &lower, &upper,
                     &shift.cloned().ok_or_else(|| Error::from("shift must be defined for gaussian imputation"))?,
                     &scale.cloned().ok_or_else(|| Error::from("scale must be defined for gaussian imputation"))?),
                 _ => Err("unrecognized distribution".into())
@@ -141,14 +141,14 @@ pub fn resize_float(data: &ArrayD<f64>, n: &i64, distribution: &String,
 /// # Arguments
 /// * `data` - The data to be resized
 /// * `n` - An estimate of the size of the data -- this could be the guess of the user, or the result of a DP release
-/// * `min` - A lower bound on data elements
-/// * `max` - An upper bound on data elements
+/// * `lower` - A lower bound on data elements
+/// * `upper` - An upper bound on data elements
 ///
 /// # Return
 /// A resized version of data consistent with the provided `n`
 pub fn resize_integer(
     data: &ArrayD<i64>, n: &i64,
-    min: &ArrayD<i64>, max: &ArrayD<i64>,
+    lower: &ArrayD<i64>, upper: &ArrayD<i64>,
 ) -> Result<ArrayD<i64>> {
 
     // get number of observations in actual data
@@ -165,13 +165,13 @@ pub fn resize_integer(
             synthetic_shape[0] = (n - real_n) as usize;
             let num_columns = get_num_columns(data)?;
 
-            let min = standardize_numeric_argument(min, &num_columns)?
+            let lower = standardize_numeric_argument(lower, &num_columns)?
                 .into_dimensionality::<Ix1>()?.to_vec();
-            let max = standardize_numeric_argument(max, &num_columns)?
+            let upper = standardize_numeric_argument(upper, &num_columns)?
                 .into_dimensionality::<Ix1>()?.to_vec();
 
             let mut synthetic = ndarray::ArrayD::zeros(synthetic_shape);
-            synthetic.gencolumns_mut().into_iter().zip(min.into_iter().zip(max.into_iter()))
+            synthetic.gencolumns_mut().into_iter().zip(lower.into_iter().zip(upper.into_iter()))
                 .map(|(mut column, (min, max))| column.iter_mut()
                     .map(|v| {
                         *v = sample_uniform_int(&min, &max)?;

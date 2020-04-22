@@ -61,8 +61,8 @@ impl Aggregator for proto::Sum {
 
                 data_property.assert_is_not_aggregated()?;
                 data_property.assert_non_null()?;
-                let data_min = data_property.min_f64()?;
-                let data_max = data_property.max_f64()?;
+                let data_lower = data_property.lower_f64()?;
+                let data_upper = data_property.upper_f64()?;
 
                 use proto::privacy_definition::Neighboring;
                 let neighboring_type = Neighboring::from_i32(privacy_definition.neighboring)
@@ -70,18 +70,18 @@ impl Aggregator for proto::Sum {
 
                 let row_sensitivity = match k {
                     1 => match neighboring_type {
-                        Neighboring::AddRemove => data_min.iter().zip(data_max.iter())
+                        Neighboring::AddRemove => data_lower.iter().zip(data_upper.iter())
                             .map(|(min, max)| min.abs().max(max.abs()))
                             .collect::<Vec<f64>>(),
-                        Neighboring::Substitute => data_min.iter().zip(data_max.iter())
+                        Neighboring::Substitute => data_lower.iter().zip(data_upper.iter())
                             .map(|(min, max)| max - min)
                             .collect::<Vec<f64>>()
                     },
                     2 => match neighboring_type {
-                        Neighboring::AddRemove => data_min.iter().zip(data_max.iter())
+                        Neighboring::AddRemove => data_lower.iter().zip(data_upper.iter())
                             .map(|(min, max)| min.powi(2).max(max.powi(2)))
                             .collect::<Vec<f64>>(),
-                        Neighboring::Substitute => data_min.iter().zip(data_max.iter())
+                        Neighboring::Substitute => data_lower.iter().zip(data_upper.iter())
                             .map(|(min, max)| (max - min).powi(2))
                             .collect::<Vec<f64>>()
                     },

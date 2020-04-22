@@ -13,51 +13,50 @@ test_csv_names = ["age", "sex", "educ", "race", "income", "married"]
 
 
 def test_multilayer_analysis(run=True):
-    with whitenoise.Analysis() as analysis:
+    with whitenoise.Analysis(eager=True) as analysis:
         PUMS = whitenoise.Dataset(path=TEST_CSV_PATH, column_names=test_csv_names)
 
         age = op.cast(PUMS['age'], type="FLOAT")
         sex = op.cast(PUMS['sex'], type="BOOL", true_label="TRUE")
 
-        age_clamped = op.clamp(age, min=0., max=150.)
+        age_clamped = op.clamp(age, lower=0., upper=150.)
         age_resized = op.resize(age_clamped, n=1000)
 
         mean_age = op.dp_mean(
             data=op.cast(PUMS['race'], type="FLOAT"),
             privacy_usage={'epsilon': .65},
-            data_min=0.,
-            data_max=100.,
+            data_lower=0.,
+            data_upper=100.,
             data_n=500
         )
-
         analysis.release()
 
         sex_plus_22 = op.add(
             op.cast(sex, type="FLOAT"),
             22.,
-            left_n=1000, left_min=0., left_max=1.)
+            left_n=1000, left_lower=0., left_upper=1.)
 
         op.dp_mean(
             age_resized / 2. + sex_plus_22,
             privacy_usage={'epsilon': .1},
-            data_min=mean_age - 5.2,
-            data_max=102.,
+            data_lower=mean_age - 5.2,
+            data_upper=102.,
             data_n=500) + 5.
 
         op.dp_variance(
             op.cast(PUMS['educ'], type="FLOAT"),
             privacy_usage={'epsilon': .15},
             data_n=1000,
-            data_min=0.,
-            data_max=12.
+            data_lower=0.,
+            data_upper=12.
         )
 
         # op.dp_moment_raw(
         #     op.cast(PUMS['married'], type="FLOAT"),
         #     privacy_usage={'epsilon': .15},
         #     data_n=1000000,
-        #     data_min=0.,
-        #     data_max=12.,
+        #     data_lower=0.,
+        #     data_upper=12.,
         #     order=3
         # )
         #
@@ -67,10 +66,10 @@ def test_multilayer_analysis(run=True):
         #     privacy_usage={'epsilon': .15},
         #     left_n=1000,
         #     right_n=1000,
-        #     left_min=0.,
-        #     left_max=1.,
-        #     right_min=0.,
-        #     right_max=1.
+        #     left_lower=0.,
+        #     left_upper=1.,
+        #     right_lower=0.,
+        #     right_upper=1.
         # )
 
     if run:
@@ -89,8 +88,8 @@ def test_dp_linear_stats(run=True):
         num_records = op.dp_count(
             age,
             privacy_usage={'epsilon': .5},
-            min=0,
-            max=10000
+            lower=0,
+            upper=10000
         )
         analysis.release()
 
@@ -101,8 +100,8 @@ def test_dp_linear_stats(run=True):
         covariance = op.dp_covariance(
             data=vars,
             privacy_usage={'epsilon': .5},
-            data_min=[0., 0.],
-            data_max=[150., 150000.],
+            data_lower=[0., 0.],
+            data_upper=[150., 150000.],
             data_n=num_records)
         analysis.release()
         print("covariance released")
@@ -110,8 +109,8 @@ def test_dp_linear_stats(run=True):
         num_means = op.dp_mean(
             data=vars,
             privacy_usage={'epsilon': .5},
-            data_min=[0., 0.],
-            data_max=[150., 150000.],
+            data_lower=[0., 0.],
+            data_upper=[150., 150000.],
             data_n=num_records)
 
         analysis.release()
@@ -123,8 +122,8 @@ def test_dp_linear_stats(run=True):
         age_variance = op.dp_variance(
             age,
             privacy_usage={'epsilon': .5},
-            data_min=0.,
-            data_max=150.,
+            data_lower=0.,
+            data_upper=150.,
             data_n=num_records)
 
         analysis.release()
@@ -132,7 +131,7 @@ def test_dp_linear_stats(run=True):
         print("age variance:", age_variance.value)
 
         # If I clamp, impute, resize, then I can reuse their properties for multiple statistics
-        clamped_age = op.clamp(age, min=0., max=100.)
+        clamped_age = op.clamp(age, lower=0., upper=100.)
         imputed_age = op.impute(clamped_age)
         preprocessed_age = op.resize(imputed_age, n=num_records)
 
@@ -154,7 +153,7 @@ def test_dp_linear_stats(run=True):
             privacy_usage={'epsilon': .5}
         )
 
-        # mean with min, max properties propagated up from prior bounds
+        # mean with lower, upper properties propagated up from prior bounds
         transformed_mean = op.dp_mean(
             -(preprocessed_age + 2.),
             privacy_usage={'epsilon': .5}
@@ -168,8 +167,8 @@ def test_dp_linear_stats(run=True):
             op.mean(preprocessed_age),
             privacy_usage={'epsilon': .5})
 
-        custom_minimum = op.laplace_mechanism(
-            op.minimum(preprocessed_age),
+        custom_maximum = op.laplace_mechanism(
+            op.maximum(preprocessed_age),
             privacy_usage={'epsilon': .5})
 
         custom_maximum = op.laplace_mechanism(
@@ -182,26 +181,26 @@ def test_dp_linear_stats(run=True):
 
         income = op.cast(dataset_pums['income'], type="FLOAT")
         income_max = op.laplace_mechanism(
-            op.maximum(income, data_min=0., data_max=1000000.),
+            op.maximum(income, data_lower=0., data_upper=1000000.),
             privacy_usage={'epsilon': 10})
 
         # releases may also be postprocessed and reused as arguments to more components
-        age_sum + custom_minimum * 23.
+        age_sum + custom_maximum * 23.
 
         analysis.release()
         print("laplace quantile:", custom_quantile.value)
 
         age_histogram = op.dp_histogram(
-            op.cast(age, type='int', min=0, max=100),
+            op.cast(age, type='int', lower=0, upper=100),
             edges=list(range(0, 100, 25)),
-            count_max=300,
+            count_upper=300,
             null_value=150,
             privacy_usage={'epsilon': 2.}
         )
 
         sex_histogram = op.dp_histogram(
             op.cast(dataset_pums['sex'], type='bool', true_label="1"),
-            count_max=1000,
+            count_upper=1000,
             privacy_usage={'epsilon': 2.}
         )
 
@@ -248,8 +247,8 @@ def test_raw_dataset(run=True):
         op.dp_mean(
             data=whitenoise.Dataset(value=[1., 2., 3., 4., 5.], num_columns=1),
             privacy_usage={'epsilon': 1},
-            data_min=0.,
-            data_max=10.,
+            data_lower=0.,
+            data_upper=10.,
             data_n=10,
         )
 
@@ -368,7 +367,7 @@ def test_histogram():
 
     with whitenoise.Analysis() as analysis:
         data = whitenoise.Dataset(path=TEST_CSV_PATH, column_names=test_csv_names)
-        income = op.to_int(data['income'], min=0, max=0)
+        income = op.to_int(data['income'], lower=0, upper=0)
         sex = op.to_bool(data['sex'], true_label="1")
 
         income_histogram = op.dp_histogram(
@@ -396,8 +395,8 @@ def test_covariance():
         # get full covariance matrix
         cov = op.dp_covariance(data=op.to_float(wn_data['age', 'sex', 'educ', 'income', 'married']),
                                privacy_usage={'epsilon': 10},
-                               data_min=[0., 0., 1., 0., 0.],
-                               data_max=[100., 1., 16., 500_000., 1.],
+                               data_lower=[0., 0., 1., 0., 0.],
+                               data_upper=[100., 1., 16., 500_000., 1.],
                                data_n=1000)
     analysis.release()
 
@@ -420,3 +419,30 @@ def test_covariance():
     plt.imshow(non_dp_corr - dp_corr, interpolation='nearest')
     plt.colorbar()
     plt.show()
+
+
+def test_properties():
+    with whitenoise.Analysis():
+        # load data
+        data = whitenoise.Dataset(path=TEST_CSV_PATH, column_names=test_csv_names)
+
+        # establish data
+        age_dt = op.cast(data['age'], 'FLOAT')
+
+        # ensure data are non-null
+        non_null_age_dt = op.impute(age_dt, distribution='Uniform', lower=0., upper=100.)
+        clamped = op.clamp(age_dt, lower=0., upper=100.)
+
+        # create potential for null data again
+        potentially_null_age_dt = non_null_age_dt / 0.
+
+        # print('original properties:\n{0}\n\n'.format(age_dt.properties))
+        print('properties after imputation:\n{0}\n\n'.format(non_null_age_dt.nullity))
+        print('properties after nan mult:\n{0}\n\n'.format(potentially_null_age_dt.nullity))
+
+        print("lower", clamped.lower)
+        print("upper", clamped.upper)
+        print("releasable", clamped.releasable)
+        # print("props", clamped.properties)
+        print("data_type", clamped.data_type)
+        print("categories", clamped.categories)

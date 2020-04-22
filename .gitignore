@@ -73,6 +73,8 @@ prototypes/components.proto
 docs/debug/*
 docs/doc/.lock
 docs/.rustc_info.json
+docs/bindings-python/*
+docs/doc/*
 
 # jupyter notebook
 .ipynb_checkpoints

@@ -70,9 +70,9 @@ impl Expandable for proto::DpCount {
         computation_graph.insert(component_id.clone(), proto::Component {
             arguments: hashmap![
                 "data".to_owned() => id_count,
-                "min".to_owned() => *component.arguments.get("min")
-                    .ok_or_else(|| Error::from("min must be provided as an argument"))?,
-                "max".to_owned() => count_max_id
+                "lower".to_owned() => *component.arguments.get("lower")
+                    .ok_or_else(|| Error::from("lower must be provided as an argument"))?,
+                "upper".to_owned() => count_max_id
             ],
             variant: Some(proto::component::Variant::from(proto::SimpleGeometricMechanism {
                 privacy_usage: self.privacy_usage.clone(),

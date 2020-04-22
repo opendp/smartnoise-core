@@ -56,14 +56,14 @@ impl Aggregator for proto::Mean {
 
                 data_property.assert_non_null()?;
                 data_property.assert_is_not_aggregated()?;
-                let data_min = data_property.min_f64()?;
-                let data_max = data_property.max_f64()?;
+                let data_lower = data_property.lower_f64()?;
+                let data_upper = data_property.upper_f64()?;
                 let data_n = data_property.num_records()? as f64;
 
                 // AddRemove vs. Substitute share the same bounds
 
                 let row_sensitivity = match k {
-                    1 | 2 => data_min.iter().zip(data_max.iter())
+                    1 | 2 => data_lower.iter().zip(data_upper.iter())
                         .map(|(min, max)| ((max - min) / data_n).powi(*k as i32))
                         .collect::<Vec<f64>>(),
                     _ => return Err("KNorm sensitivity is only supported in L1 and L2 spaces".into())

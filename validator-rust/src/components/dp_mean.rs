@@ -91,8 +91,8 @@ impl Report for proto::DpMean {
 
         let mut releases = Vec::new();
 
-        let minimums = data_property.min_f64()?;
-        let maximums = data_property.max_f64()?;
+        let lower = data_property.lower_f64()?;
+        let upper = data_property.upper_f64()?;
         let num_records = data_property.num_records()?;
 
         let num_columns = data_property.num_columns()?;
@@ -123,8 +123,8 @@ impl Report for proto::DpMean {
                     argument: serde_json::json!({
                         "n": num_records,
                         "constraint": {
-                            "lowerbound": minimums[column_number],
-                            "upperbound": maximums[column_number]
+                            "lowerbound": lower[column_number],
+                            "upperbound": upper[column_number]
                         }
                     })
                 }

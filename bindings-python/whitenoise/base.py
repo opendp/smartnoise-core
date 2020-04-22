@@ -1,60 +1,28 @@
-import json
-import numpy as np
+import warnings
 
-from whitenoise.wrapper import LibraryWrapper
-
-# these modules are generated via the subprocess call
-from whitenoise import base_pb2
-from whitenoise import components_pb2
-from whitenoise import value_pb2
-import os
+from whitenoise.api import LibraryWrapper
+from whitenoise.value import *
 
 core_wrapper = LibraryWrapper()
 
-ALL_CONSTRAINTS = ["n", "min", "max", "categories"]
-
-variant_message_map_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'variant_message_map.json')
-
-with open(variant_message_map_path, 'r') as variant_message_map_file:
-    variant_message_map = json.load(variant_message_map_file)
-
-
-def privacy_usage(epsilon=None, delta=0):
-    # upgrade epsilon/delta to lists if they aren't already
-    if epsilon is not None and not issubclass(type(epsilon), list):
-        epsilon = [epsilon]
-
-    if delta is not None and not issubclass(type(delta), list):
-        delta = [delta]
-
-    if epsilon is not None and delta is not None:
-        return [
-            value_pb2.PrivacyUsage(
-                distance_approximate=value_pb2.PrivacyUsage.DistanceApproximate(
-                    epsilon=val_epsilon,
-                    delta=val_delta
-                )
-            )
-            for val_epsilon, val_delta in zip(epsilon, delta)
-        ]
-
-    if epsilon is not None and delta is None:
-        return [
-            value_pb2.PrivacyUsage(
-                distance_pure=value_pb2.PrivacyUsage.DistancePure(
-                    epsilon=val_epsilon
-                )
-            )
-            for val_epsilon in epsilon
-        ]
-
-    # otherwise, no privacy usage
+# All available extensions for arguments (data_n, left_lower, etc)
+ALL_CONSTRAINTS = ["n", "lower", "upper", "categories"]
 
 
 class Dataset(object):
     def __init__(self, *, path=None, value=None,
                  num_columns=None, column_names=None,
                  value_format=None, skip_row=True, private=True):
+        """
+        Datasets represent a single tabular resource. Datasets are assumed to be private, and may be loaded from csv files or as literal arrays.
+        :param path: Path to a csv file on the filesystem. It is assumed that the csv file is well-formed.
+        :param value: Alternatively, a literal value/array to pass via protobuf. It is preferred to pass a path to a csv, to keep the data out of the analysis object.
+        :param num_columns: The number of columns in the data resource.
+        :param column_names: Alternatively, the set of column names in the data resource.
+        :param value_format: If ambiguous, the data format of the value (either array, hashmap or jagged)
+        :param skip_row: Set to True if the first row is the csv header. The csv header is always ignored.
+        :param private: Whether to flag the data in the dataset as private. This is of course private by default.
+        """
 
         global context
         if not context:
@@ -73,7 +41,7 @@ class Dataset(object):
         if path is not None:
             data_source['file_path'] = path
         if value is not None:
-            data_source['literal'] = Analysis._serialize_value_proto(value, value_format)
+            data_source['literal'] = serialize_value_proto(value, value_format)
 
         self.component = Component('Materialize',
                                    arguments={
@@ -96,6 +64,21 @@ class Component(object):
                  arguments: dict = None, options: dict = None,
                  constraints: dict = None,
                  value=None, value_format=None):
+        """
+        Representation for the most atomic computation. There are helpers to construct these in components.py.
+
+        The response from the helper functions are instances of this class.
+        This class facilitates accessing releases, extending the graph, and viewing static properties.
+
+        Many components are linked together to form an analysis graph.
+
+        :param name: The id of the component. A list of component id is here: https://opendifferentialprivacy.github.io/whitenoise-core/doc/whitenoise_validator/docs/components/index.html
+        :param arguments: Inputs to the component that come from prior nodes on the graph.
+        :param options: Inputs to the component that are passed directly via protobuf.
+        :param constraints: Additional modifiers on data inputs, like data_lower, or left_categories.
+        :param value: A value that is already known about the data, to be stored in the release.
+        :param value_format: The format of the value, one of `array`, `jagged`, `hashmap`
+        """
 
         self.name: str = name
         self.arguments: dict = Component._expand_constraints(arguments or {}, constraints)
@@ -111,16 +94,33 @@ class Component(object):
         else:
             raise ValueError("all whitenoise components must be created within the context of an analysis")
 
+        self.batch = self.analysis.batch
+
     # pull the released values out from the analysis' release protobuf
     @property
     def value(self):
+        """
+        Retrieve the released values from the analysis' release.
+        If this returns None, then either analysis.release() has not yet been called, or this node is not releasable.
+
+        :return: The value stored in the release corresponding to this node
+        """
         return self.analysis.release_values.get(self.component_id, {"value": None})["value"]
 
     @property
     def actual_privacy_usage(self):
+        """
+        If a component is designed to potentially use less privacy usage than it was budgeted, this provides the reduced value
+
+        :return: A privacy usage
+        """
         return self.analysis.release_values.get(self.component_id, {"privacy_usage": None})["privacy_usage"]
 
-    def get_usages(self):
+    def get_parents(self):
+        """
+        List all nodes that use this node as a dependency/argument.
+        :return: {[node_id]: [parent]}
+        """
         parents = [component for component in self.analysis.components.values()
                    if id(self) in list(id(i) for i in component.arguments.values())]
 
@@ -128,20 +128,25 @@ class Component(object):
                              if id(self) == id(v)) for parent in parents}
 
     def get_accuracy(self, alpha):
-        self.analysis.properties = core_wrapper.get_properties(
-            self.analysis._serialize_analysis_proto(),
-            self.analysis._serialize_release_proto()).properties
+        """
+        Retrieve the accuracy for the values released by the component.
+        The true value differs from the estimate by at most "accuracy amount" with (1 - alpha)100% confidence.
+        """
+        self.analysis.update_properties()
 
         return core_wrapper.privacy_usage_to_accuracy(
-            privacy_definition=self.analysis._serialize_privacy_definition(),
-            component=self.analysis._serialize_component(self),
+            privacy_definition=serialize_privacy_definition(self.analysis),
+            component=serialize_component(self),
             properties={name: self.analysis.properties.get(arg.component_id) for name, arg in self.arguments.items() if arg},
             alpha=alpha)
 
     def from_accuracy(self, value, alpha):
+        """
+        Retrieve the privacy usage necessary such that the true value differs from the estimate by at most "value amount" with (1 - alpha)100% confidence
+        """
         return core_wrapper.accuracy_to_privacy_usage(
-            privacy_definition=self.analysis._serialize_privacy_definition(),
-            component=self.analysis._serialize_component(self),
+            privacy_definition=serialize_privacy_definition(self.analysis),
+            component=serialize_component(self),
             properties={name: self.analysis.properties.get(arg.component_id) for name, arg in self.arguments.items() if arg},
             accuracy=base_pb2.Accuracy(
                 value=value,
@@ -149,13 +154,86 @@ class Component(object):
 
     @property
     def properties(self):
-        # TODO: this doesn't have to be recomputed every time
-        self.analysis.properties = core_wrapper.get_properties(
-            self.analysis._serialize_analysis_proto(),
-            self.analysis._serialize_release_proto()).properties
-
-        # TODO: parse into something human readable. Serialization is not necessary
+        """view protobuf representing all known properties of the component"""
+        self.analysis.update_properties()
         return self.analysis.properties.get(self.component_id)
+
+    @property
+    def nullity(self):
+        """view the statically derived nullity property on the data"""
+        self.analysis.update_properties()
+        return self.analysis.properties.get(self.component_id).array.nullity
+
+    @property
+    def lower(self):
+        """view the statically derived lower bound on the data"""
+        self.analysis.update_properties()
+        try:
+            return parse_array1d_null(self.analysis.properties.get(self.component_id).array.continuous.minimum)
+        except AttributeError:
+            return None
+
+    @property
+    def upper(self):
+        """view the statically derived upper bound on the data"""
+        self.analysis.update_properties()
+        try:
+            return parse_array1d_null(self.analysis.properties.get(self.component_id).array.continuous.maximum)
+        except AttributeError:
+            return None
+
+    @property
+    def num_records(self):
+        """view the statically derived number of records"""
+        self.analysis.update_properties()
+        try:
+            num_records = self.analysis.properties.get(self.component_id).array.num_records
+            return num_records.option if num_records.HasField("option") else None
+        except AttributeError:
+            return None
+
+    @property
+    def num_columns(self):
+        """view the statically derived number of columns"""
+        self.analysis.update_properties()
+        try:
+            num_columns = self.analysis.properties.get(self.component_id).array.num_columns
+            return num_columns.option if num_columns.HasField("option") else None
+        except AttributeError:
+            return None
+
+    @property
+    def data_type(self):
+        """view the statically derived data type"""
+        self.analysis.update_properties()
+        try:
+            return {
+                value_pb2.DataType.BOOL: "bool",
+                value_pb2.DataType.I64: "int",
+                value_pb2.DataType.F64: "float",
+                value_pb2.DataType.STRING: "string"
+            }[self.analysis.properties.get(self.component_id).array.data_type]
+        except AttributeError:
+            return None
+
+    @property
+    def releasable(self):
+        """check if the data from this component is releasable/public"""
+        self.analysis.update_properties()
+        try:
+            return self.analysis.properties.get(self.component_id).array.releasable
+        except AttributeError:
+            return None
+
+    @property
+    def categories(self):
+        """view the statically derived category set"""
+        self.analysis.update_properties()
+        try:
+            categories = self.analysis.properties.get(self.component_id).array.nature.categorical.categories
+            return parse_jagged(categories)
+        except AttributeError:
+            return None
 
     def __pos__(self):
         return self
@@ -181,8 +259,11 @@ class Component(object):
     def __rmul__(self, other):
         return Component('Multiply', arguments={'left': Component.of(other), 'right': self})
 
-    def __div__(self, other):
+    def __floordiv__(self, other):
         return Component('Divide', arguments={'left': self, 'right': Component.of(other)})
+
+    def __rfloordiv__(self, other):
+        return Component('Divide', arguments={'left': Component.of(other), 'right': self})
 
     def __truediv__(self, other):
         return Component('Divide', arguments={
@@ -190,7 +271,9 @@ class Component(object):
             'right': Component('Cast', arguments={'data': Component.of(other)}, options={"type": "float"})})
 
     def __rtruediv__(self, other):
-        return Component('Divide', arguments={'left': Component.of(other), 'right': self})
+        return Component('Divide', arguments={
+            'left': Component('Cast', arguments={'data': Component.of(other)}, options={"type": "float"}),
+            'right': Component('Cast', arguments={'data': self}, options={"type": "float"})})
 
     def __mod__(self, other):
         return Component('Modulo', arguments={'left': self, 'right': Component.of(other)})
@@ -274,7 +357,17 @@ class Component(object):
         return f'<{self.component_id}: {self.name} Component>'
 
     @staticmethod
-    def of(value, value_format=None):
+    def of(value, value_format=None, private=False):
+        """
+        Given an array, list of lists, or dictionary, attempt to wrap it in a component and place the value in the release.
+        Loose literals are by default public.
+        This is an alternative constructor for a Literal, that potentially doesn't wrap the value in a Literal component if it is None or already a Component
+
+        :param value: The value to be wrapped.
+        :param value_format: must be one of `array`, `hashmap`, `jagged`
+        :param private: Loose literals are by default public.
+        :return: A Literal component with the value attached to the parent analysis' release.
+        """
         if value is None:
             return
 
@@ -285,10 +378,16 @@ class Component(object):
         if type(value) == Component:
             return value
 
-        return Component('Literal', value=value, value_format=value_format)
+        return Component('Literal', options={"private": private}, value=value, value_format=value_format)
 
     @staticmethod
     def _expand_constraints(arguments, constraints):
+        """
+        Helper function to insert additional nodes when _lower, _n, etc constraints are passed through to the component constructor utilities' kwargs.
+        :param arguments: {[argument name]: [component]}
+        :param constraints: restrictions on the data that will be translated into additional nodes components
+        :return: a modified argument set for the current component
+        """
 
         if not constraints:
             return arguments
@@ -299,14 +398,14 @@ class Component(object):
             filtered = [i for i in filtered
                         if i in ALL_CONSTRAINTS]
 
-            if 'max' in filtered and 'min' in filtered:
-                min_component = Component.of(constraints[argument + '_min'])
-                max_component = Component.of(constraints[argument + '_max'])
+            if 'upper' in filtered and 'lower' in filtered:
+                min_component = Component.of(constraints[argument + '_lower'])
+                max_component = Component.of(constraints[argument + '_upper'])
 
                 arguments[argument] = Component('Clamp', arguments={
                     "data": arguments[argument],
-                    "min": min_component,
-                    "max": max_component
+                    "lower": min_component,
+                    "upper": max_component
                 })
 
                 # TODO: imputation on ints is unnecessary
@@ -315,17 +414,19 @@ class Component(object):
                 })
 
             else:
-                if 'max' in filtered:
-                    arguments[argument] = Component('RowMax', arguments={
-                        "left": arguments[argument],
-                        "right": Component.of(constraints[argument + '_max'])
-                    })
+                if 'upper' in filtered:
+                    raise ValueError("both 'lower' and 'upper' must be specified")
+                    # arguments[argument] = Component('RowMax', arguments={
+                    #     "left": arguments[argument],
+                    #     "right": Component.of(constraints[argument + '_upper'])
+                    # })
 
-                if 'min' in filtered:
-                    arguments[argument] = Component('RowMin', arguments={
-                        "left": arguments[argument],
-                        "right": Component.of(constraints[argument + '_min'])
-                    })
+                if 'lower' in filtered:
+                    raise ValueError("both 'lower' and 'upper' must be specified")
+                    # arguments[argument] = Component('RowMin', arguments={
+                    #     "left": arguments[argument],
+                    #     "right": Component.of(constraints[argument + '_lower'])
+                    # })
 
             if 'categories' in filtered:
                 arguments[argument] = Component('Clamp', arguments={
@@ -343,10 +444,39 @@ class Component(object):
 
 
 class Analysis(object):
-    def __init__(self, *components, dynamic=False, datasets=None, distance='APPROXIMATE', neighboring='SUBSTITUTE'):
+    def __init__(self,
+                 dynamic=False, eager=False,
+                 distance='APPROXIMATE', neighboring='SUBSTITUTE',
+                 stack_traces=True):
+        """
+        Top-level class that contains a definition of privacy and collection of statistics.
+        This class tracks cumulative privacy usage for all components within.
+
+        The dynamic flag makes the library easier to use, because multiple batches may be strung together before calling release().
+        However, it opens the execution up to potential side channel attacks. Disable this if side channels are a concern.
+
+        The eager flag makes the library easier to debug, because stack traces pass through malformed components.
+        As a library user, it may be useful to enable eager and find a small, similar public dataset to help shape your analysis.
+        Building an analysis with a large dataset and eager enabled is not recommended, because every additional node causes an additional release.
+
+        :param dynamic: flag for enabling dynamic validation
+        :param eager: release every time a component is added
+        :param distance: currently may be `PURE` or `APPROXIMATE`
+        :param neighboring: may be `SUBSTITUTE` or `ADD_REMOVE`
+        :param stack_traces: set to False to suppress potentially sensitive stack traces
+        """
 
         # if false, validate the analysis before running it (enforces static validation)
         self.dynamic = dynamic
+
+        # if true, run the analysis every time a new component is added
+        self.eager = eager
+
+        if eager:
+            # when eager is set, the analysis is released every time a new node is added
+            warnings.warn("eager graph execution is inefficient, and should only be enabled for debugging")
+
+        self.batch = 0
 
         # privacy definition
         self.distance: str = distance
@@ -355,12 +485,10 @@ class Analysis(object):
         # core data structures
         self.components: dict = {}
         self.release_values = {}
-        self.datasets: list = datasets or []
+        self.datasets: list = []
 
         # track node ids
         self.component_count = 0
-        for component in components:
-            self.add_component(component)
 
         # track the number of datasets in use
         self.dataset_count = 0
@@ -368,7 +496,22 @@ class Analysis(object):
         # nested analyses
         self._context_cache = None
 
+        # set to false to suppress potentially private stack traces from releases
+        self.stack_traces = stack_traces
+
+        # helper to track if properties are current
+        self.properties = {}
+        self.properties_id = {"count": self.component_count, "batch": self.batch}
+
     def add_component(self, component, value=None, value_format=None):
+        """
+        Every component must be contained in an analysis.
+
+        :param component: The description of computation
+        :param value: Optionally, the result of the computation.
+        :param value_format: Optionally, the format of the result of the computation- `array` `hashmap` `jagged`
+        :return:
+        """
         if component.analysis:
             raise ValueError("this component is already a part of another analysis")
 
@@ -384,193 +527,135 @@ class Analysis(object):
         self.components[self.component_count] = component
         self.component_count += 1
 
-    def _serialize_privacy_definition(self):
-        return base_pb2.PrivacyDefinition(
-            distance=base_pb2.PrivacyDefinition.Distance.Value(self.distance),
-            neighboring=base_pb2.PrivacyDefinition.Neighboring.Value(self.neighboring)
-        )
+        if self.eager:
+            self.release()
 
-    def _serialize_component(self, component):
-        return components_pb2.Component(**{
-            'arguments': {
-                name: component_child.component_id
-                for name, component_child in component.arguments.items()
-                if component_child is not None
-            },
-            variant_message_map[component.name]:
-                getattr(components_pb2, component.name)(**(component.options or {}))
-        })
-
-    def _serialize_analysis_proto(self):
-
-        vertices = {}
-        for component_id in self.components:
-            vertices[component_id] = self._serialize_component(self.components[component_id])
-
-        return base_pb2.Analysis(
-            computation_graph=base_pb2.ComputationGraph(value=vertices),
-            privacy_definition=self._serialize_privacy_definition()
-        )
-
-    def _serialize_release_proto(self):
-
-        return base_pb2.Release(
-            values={
-                component_id: base_pb2.ReleaseNode(
-                    value=self._serialize_value_proto(
-                        self.release_values[component_id]['value'],
-                        self.release_values[component_id].get("value_format")),
-                    privacy_usage=privacy_usage(
-                        **self.release_values[component_id].get("privacy_usage", {})))
-                for component_id in self.release_values
-            })
-
-    @staticmethod
-    def _parse_release_proto(release):
-        def parse_release_node(release_node):
-            parsed = {
-                "value": Analysis._parse_value_proto(release_node.value),
-                "value_format": release_node.value.WhichOneof("data")
-            }
-            if release_node.privacy_usage:
-                parsed['privacy_usage'] = release_node.privacy_usage
-            return parsed
-        return {
-            node_id: parse_release_node(release_node) for node_id, release_node in release.values.items()
-        }
-
-    @staticmethod
-    def _serialize_value_proto(value, value_format=None):
-
-        def make_array1d(array):
-
-            data_type = {
-                np.bool: "bool",
-                np.int64: "i64",
-                np.float64: "f64",
-                np.bool_: "bool",
-                np.string_: "string",
-                np.str_: "string"
-            }[array.dtype.type]
-
-            container_type = {
-                np.bool: value_pb2.Array1dBool,
-                np.int64: value_pb2.Array1dI64,
-                np.float64: value_pb2.Array1dF64,
-                np.bool_: value_pb2.Array1dBool,
-                np.string_: value_pb2.Array1dStr,
-                np.str_: value_pb2.Array1dStr
-            }[array.dtype.type]
-
-            return value_pb2.Array1d(**{
-                data_type: container_type(data=list(array))
-            })
-
-        if value_format == 'hashmap' or issubclass(type(value), dict):
-            return value_pb2.Value(
-                hashmap_string={key: Analysis._serialize_value_proto(value[key]) for key in value}
-            )
-
-        if value_format == 'jagged':
-            if not issubclass(type(value), list):
-                value = [value]
-            if not any(issubclass(type(elem), list) for elem in value):
-                value = [value]
-            value = [elem if issubclass(type(elem), list) else [elem] for elem in value]
-
-            return value_pb2.Value(jagged=value_pb2.Array2dJagged(
-                data=[value_pb2.Array1dOption(option=None if column is None else make_array1d(np.array(column))) for
-                      column in value],
-                data_type=value_pb2.DataType
-                    .Value({
-                               np.bool: "BOOL",
-                               np.int64: "I64",
-                               np.float64: "F64",
-                               np.bool_: "BOOL",
-                               np.string_: "STRING",
-                               np.str_: "STRING"
-                           }[np.array(value[0]).dtype.type])
-            ))
-
-        if value_format is not None and value_format != 'array':
-            raise ValueError('format must be either "array", "jagged", "hashmap" or None')
-
-        array = np.array(value)
-
-        return value_pb2.Value(
-            array=value_pb2.ArrayNd(
-                shape=list(array.shape),
-                order=list(range(array.ndim)),
-                flattened=make_array1d(array.flatten())
-            ))
-
-    @staticmethod
-    def _parse_value_proto(value):
-
-        def parse_array1d(array):
-            data_type = array.WhichOneof("data")
-            if data_type:
-                return list(getattr(array, data_type).data)
-
-        def parse_array1d_option(array):
-            if array.HasField("option"):
-                return parse_array1d(array.option)
-
-        if value.HasField("array"):
-            data = parse_array1d(value.array.flattened)
-            if data:
-                if value.array.shape:
-                    return np.array(data).reshape(value.array.shape)
-                return data[0]
-
-        if value.HasField("hashmap"):
-            return {k: Analysis._parse_value_proto(v) for k, v in value.hashmap_string.data.items()}
-
-        if value.HasField("jagged"):
-            return [
-                parse_array1d_option(column) for column in value.jagged.data
-            ]
+    def update_properties(self):
+        """
+        If new nodes have been added or there has been a release, recompute the properties for all of the components.
+        :return:
+        """
+        if not (self.properties_id['count'] == self.component_count and self.properties_id['batch'] == self.batch):
+            self.properties = core_wrapper.get_properties(
+                serialize_analysis_proto(self),
+                serialize_release_proto(self.release_values)).properties
+            self.properties_id = {'count': self.component_count, 'batch': self.batch}
 
     def validate(self):
+        """
+        Check if an analysis is differentially private, given a set of released values.
+        This function is data agnostic. It calls the validator rust FFI with protobuf objects.
+
+        :return: A success or failure response
+        """
         return core_wrapper.validate_analysis(
-            self._serialize_analysis_proto(),
-            self._serialize_release_proto()).value
+            serialize_analysis_proto(self),
+            serialize_release_proto(self.release_values)).value
 
     @property
     def privacy_usage(self):
+        """
+        Compute the overall privacy usage of an analysis.
+        This function is data agnostic. It calls the validator rust FFI with protobuf objects.
+
+        :return: A privacy usage response
+        """
         return core_wrapper.compute_privacy_usage(
-            self._serialize_analysis_proto(),
-            self._serialize_release_proto())
+            serialize_analysis_proto(self),
+            serialize_release_proto(self.release_values))
 
     def release(self):
+        """
+        Evaluate an analysis and release the differentially private results.
+        This function touches private data. It calls the runtime rust FFI with protobuf objects.
+
+        The response is stored internally in the analysis instance and the all further components are computed in the next batch.
+
+        :return:
+        """
         if not self.dynamic:
             assert self.validate(), "cannot release, analysis is not valid"
 
         release_proto: base_pb2.Release = core_wrapper.compute_release(
-            self._serialize_analysis_proto(),
-            self._serialize_release_proto())
+            serialize_analysis_proto(self),
+            serialize_release_proto(self.release_values),
+            self.stack_traces)
 
-        self.release_values = Analysis._parse_release_proto(release_proto)
+        self.release_values = parse_release_proto(release_proto)
+        self.batch += 1
 
     def report(self):
-        return json.loads(core_wrapper.generate_report(
-            self._serialize_analysis_proto(),
-            self._serialize_release_proto()))
+        """
+        FFI Helper. Generate a json string with a summary/report of the Analysis and Release
+        This function is data agnostic. It calls the validator rust FFI with protobuf objects.
 
-    def __enter__(self):
+        :return: parsed JSON array of summaries of releases
+        """
+        return json.loads(core_wrapper.generate_report(
+            serialize_analysis_proto(self),
+            serialize_release_proto(self.release_values)))
+
+    def clean(self):
+        """
+        Remove all nodes from the analysis that do not have public descendants with released values.
+
+        This can be helpful to clear away components that fail property checks.
+        :return:
+        """
+        parents = {}
+        for (component_id, component) in self.components.items():
+            for argument in component.arguments:
+                parents.setdefault(argument.component_id, set()).add(component_id)
+        traversal = [ident for ident, pars in parents.items() if not pars]
+
+        while traversal:
+            component_id = traversal.pop()
+            component = self.components[component_id]
+
+            # remove if releasable and not released OR if not releasable and has no parents
+            if (component.releasable and component_id not in self.release_values) \
+                    or (not component.releasable and not parents[component_id]):
+                # invalidate the component
+                component.analysis = None
+                del self.components[component_id]
+
+                # remove this node from all children, and add children to traversal
+                for argument in component.arguments:
+                    parents[argument.component_id].remove(component_id)
+                    traversal.append(argument.component_id)
+
+    def enter(self):
+        """
+        Set the current analysis as active.
+        This allows building analyses outside of context managers, in a REPL environment.
+        All new Components will be attributed to the entered analysis.
+        :return:
+        """
         global context
         self._context = context
         context = self
-        return context
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __enter__(self):
+        self.enter()
+        return self
+
+    def exit(self):
+        """
+        Set the current analysis as inactive.
+
+        Components constructed after exit() will not longer be attributed to the previously active analysis.
+        :return:
+        """
         global context
         context = self._context
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.exit()
 
     def _make_networkx(self):
         import networkx as nx
 
-        analysis = self._serialize_analysis_proto()
+        analysis = serialize_analysis_proto(self)
         graph = nx.DiGraph()
 
         def label(node_id):
@@ -583,6 +668,11 @@ class Analysis(object):
         return graph
 
     def plot(self):
+        """
+        Visual utility for graphing the analysis. Each component is a node, and arguments are edges.
+        networkx and matplotlib are necessary, but must be installed separately
+        :return:
+        """
         import networkx as nx
         import matplotlib.pyplot as plt
         import warnings

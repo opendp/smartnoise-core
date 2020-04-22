@@ -73,31 +73,42 @@ All projects implement protobuf code generation, protobuf serialization/deserial
 
         git clone $REPOSITORY_URI
 
-3. Install system dependencies (rust, python, gcc for gmp/mpfr, protoc for protocol buffers)
+3. Install system dependencies (rust, gcc, protoc, python 3.6+ for bindings)  
+
     Mac:
 
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh       
         xcode-select --install
-        brew install python protobuf
+        brew install protobuf python
+      
+      You can test with `cargo build` in a new terminal.
 
-    Linux:
+    Linux:  
 
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-        sudo apt-get install python diffutils gcc make m4
+        sudo apt-get install diffutils gcc make m4 python
         sudo snap install protobuf --classic
+       
+      You can test with `cargo build` in a new terminal.
 
-    Windows:
-      
-        choco install rust python msys2 protoc
-        refreshenv
-        reg Query "HKLM\Hardware\Description\System\CentralProcessor\0" | find /i "x86" > NUL && setx MSYS2_ARCH=i686 || setx MSYS2_ARCH=x86_64
-        bash -xlc "pacman --noconfirm -S --needed pacman-mirrors"
-        bash -xlc "pacman --noconfirm -S --needed diffutils make mingw-w64-%MSYS2_ARCH%-gcc"
+    Windows:  
+
+        choco install rust msys2 protoc python
         
-      For non-Chocolatey users: download and install the latest build of protobuf
-        + https://github.com/protocolbuffers/protobuf/releases/latest
-
-    You can test with `cargo build` in a new terminal.
+      For non-Chocolatey users: download and install the latest build of rust, msys2, protobuf and python  
+      - https://forge.rust-lang.org/infra/other-installation-methods.html     
+      - https://github.com/protocolbuffers/protobuf/releases/latest    
+      - https://www.msys2.org/  
+      - https://www.python.org/downloads/windows/ 
+       
+      Then install gcc under MSYS2
+      
+        refreshenv
+        reg Query "HKLM\Hardware\Description\System\CentralProcessor\0" | find /i "x86" > NUL && setx WN_SYS_ARCH=i686 || setx WN_SYS_ARCH=x86_64
+        bash -xlc "pacman --noconfirm -S --needed pacman-mirrors"
+        bash -xlc "pacman --noconfirm -S --needed diffutils make mingw-w64-%WN_SYS_ARCH%-gcc"
+              
+      You can test with `bash -xc cargo build`. The bash prefix ensures that gmp and mpfr build with the GNU/gcc/mingw toolchain.
 
 4. Install the python bindings
 
@@ -109,32 +120,35 @@ All projects implement protobuf code generation, protobuf serialization/deserial
     
 #### If `cargo build` fails due to the package `gmp-mpfr-sys`
 
-Install system libs (GMP version 6.2, MPFR version 4.0.2-p1)
-  Mac:
+First install system libs (GMP version 6.2, MPFR version 4.0.2-p1)  
 
+  Mac:
+  
     brew install gmp mpfr
 
-  Linux, Windows:
+  Linux:  
+    Build gmp and mpfr from source. Then set the environment variable:
+    
+    export DEP_GMP_OUT_DIR=/path/to/folder/containing/lib/and/includes
 
-    # gmp and mpfr must be built from source, and set the environment variable
+  Windows:  
+    This is not fully tested. Build gmp and mpfr from source. Then set the environment variable and also switch the rust toolchain:
+   
     setx DEP_GMP_OUT_DIR=/path/to/folder/containing/lib/and/includes
-
-  Windows:
-
-    rustup toolchain install stable-x86_64-pc-windows-gnu
-    rustup default stable-x86_64-pc-windows-gnu
+    rustup toolchain install stable-%WN_SYS_ARCH%-pc-windows-gnu
+    rustup default stable-%WN_SYS_ARCH%-pc-windows-gnu
 
 To install the python bindings, set the variable
 
     export WN_USE_SYSTEM_LIBS=True
 
-To individually build the runtime, set the feature flag
+To build the runtime, set the feature flag
 
     cd runtime-rust; cargo build --feature use-system-libs
 
 #### If `cargo build` fails due to the package `openssl`
 
-Provide an alternative openssl installation, either via directions in the automatic or manual section:
+Provide an alternative openssl installation, either via directions in the automatic or manual section:  
   + https://docs.rs/openssl/0.10.29/openssl/
 
 Otherwise, please open an issue.
@@ -165,10 +179,10 @@ The [Rust documentation](https://opendifferentialprivacy.github.io/whitenoise-co
 
 Please let us know if you encounter a bug by [creating an issue](https://github.com/opendifferentialprivacy/whitenoise-core/issues).
 
-We appreciate all contributions. If you are planning to contribute back bug-fixes, please do so without any further discussion.
+We appreciate all contributions. We welcome pull requests with bug-fixes without prior discussion.
 
 If you plan to contribute new features, utility functions or extensions to the core, please first open an issue and discuss the feature with us.
-  - Sending a PR without discussion might end up resulting in a rejected PR, because we might be taking the core in a different direction than you might be aware of.
+  - Sending a PR without discussion might end up resulting in a rejected PR, because we may be taking the core in a different direction than you might be aware of.
 
 ## Contributing Team
 

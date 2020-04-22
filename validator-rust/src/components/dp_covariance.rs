@@ -130,8 +130,8 @@ impl Report for proto::DpCovariance {
             argument = serde_json::json!({
                 "n": data_property.num_records()?,
                 "constraint": {
-                    "lowerbound": data_property.min_f64()?,
-                    "upperbound": data_property.max_f64()?
+                    "lowerbound": data_property.lower_f64()?,
+                    "upperbound": data_property.upper_f64()?
                 }
             });
         }
@@ -147,10 +147,10 @@ impl Report for proto::DpCovariance {
             argument = serde_json::json!({
                 "n": left_property.num_records()?,
                 "constraint": {
-                    "lowerbound_left": left_property.min_f64()?,
-                    "upperbound_left": left_property.max_f64()?,
-                    "lowerbound_right": right_property.min_f64()?,
-                    "upperbound_right": right_property.max_f64()?
+                    "lowerbound_left": left_property.lower_f64()?,
+                    "upperbound_left": left_property.upper_f64()?,
+                    "lowerbound_right": right_property.lower_f64()?,
+                    "upperbound_right": right_property.upper_f64()?
                 }
             });
         }

@@ -606,74 +606,74 @@ pub struct JaggedProperties {
 }
 
 impl ArrayProperties {
-    pub fn min_f64_option(&self) -> Result<Vec<Option<f64>>> {
+    pub fn lower_f64_option(&self) -> Result<Vec<Option<f64>>> {
         match self.nature.to_owned() {
             Some(value) => match value {
-                Nature::Continuous(continuous) => match continuous.min {
+                Nature::Continuous(continuous) => match continuous.lower {
                     Vector1DNull::F64(bound) => Ok(bound),
-                    _ => Err("min must be composed of floats".into())
+                    _ => Err("lower must be composed of floats".into())
                 },
-                _ => Err("min must be an array".into())
+                _ => Err("lower must be an array".into())
             },
-            None => Err("continuous nature for min is not defined".into())
+            None => Err("continuous nature for lower is not defined".into())
         }
     }
-    pub fn min_f64(&self) -> Result<Vec<f64>> {
-        let bound = self.min_f64_option()?;
+    pub fn lower_f64(&self) -> Result<Vec<f64>> {
+        let bound = self.lower_f64_option()?;
         let value = bound.iter().filter_map(|v| v.to_owned()).collect::<Vec<f64>>();
-        if bound.len() == value.len() { Ok(value) } else { Err("not all min are known".into()) }
+        if bound.len() == value.len() { Ok(value) } else { Err("not all lower bounds are known".into()) }
     }
-    pub fn max_f64_option(&self) -> Result<Vec<Option<f64>>> {
+    pub fn upper_f64_option(&self) -> Result<Vec<Option<f64>>> {
         match self.nature.to_owned() {
             Some(value) => match value {
-                Nature::Continuous(continuous) => match continuous.max {
+                Nature::Continuous(continuous) => match continuous.upper {
                     Vector1DNull::F64(bound) => Ok(bound),
-                    _ => Err("max must be composed of floats".into())
+                    _ => Err("upper must be composed of floats".into())
                 },
-                _ => Err("max must be an array".into())
+                _ => Err("upper must be an array".into())
             },
-            None => Err("continuous nature for max is not defined".into())
+            None => Err("continuous nature for upper is not defined".into())
         }
     }
-    pub fn max_f64(&self) -> Result<Vec<f64>> {
-        let bound = self.max_f64_option()?;
+    pub fn upper_f64(&self) -> Result<Vec<f64>> {
+        let bound = self.upper_f64_option()?;
         let value = bound.iter().filter_map(|v| v.to_owned()).collect::<Vec<f64>>();
-        if bound.len() == value.len() { Ok(value) } else { Err("not all max are known".into()) }
+        if bound.len() == value.len() { Ok(value) } else { Err("not all upper bounds are known".into()) }
     }
 
-    pub fn min_i64_option(&self) -> Result<Vec<Option<i64>>> {
+    pub fn lower_i64_option(&self) -> Result<Vec<Option<i64>>> {
         match self.nature.to_owned() {
             Some(value) => match value {
-                Nature::Continuous(continuous) => match continuous.min {
+                Nature::Continuous(continuous) => match continuous.lower {
                     Vector1DNull::I64(bound) => Ok(bound),
-                    _ => Err("min must be composed of integers".into())
+                    _ => Err("lower must be composed of integers".into())
                 },
-                _ => Err("min must be an array".into())
+                _ => Err("lower must be an array".into())
             },
-            None => Err("continuous nature for min is not defined".into())
+            None => Err("continuous nature for lower is not defined".into())
         }
     }
-    pub fn min_i64(&self) -> Result<Vec<i64>> {
-        let bound = self.min_i64_option()?;
+    pub fn lower_i64(&self) -> Result<Vec<i64>> {
+        let bound = self.lower_i64_option()?;
         let value = bound.iter().filter_map(|v| v.to_owned()).collect::<Vec<i64>>();
-        if bound.len() == value.len() { Ok(value) } else { Err("not all min are known".into()) }
+        if bound.len() == value.len() { Ok(value) } else { Err("not all lower bounds are known".into()) }
     }
-    pub fn max_i64_option(&self) -> Result<Vec<Option<i64>>> {
+    pub fn upper_i64_option(&self) -> Result<Vec<Option<i64>>> {
         match self.nature.to_owned() {
             Some(value) => match value {
-                Nature::Continuous(continuous) => match continuous.max {
+                Nature::Continuous(continuous) => match continuous.upper {
                     Vector1DNull::I64(bound) => Ok(bound),
-                    _ => Err("max must be composed of integers".into())
+                    _ => Err("upper must be composed of integers".into())
                 },
-                _ => Err("max must be an array".into())
+                _ => Err("upper must be an array".into())
             },
-            None => Err("continuous nature for max is not defined".into())
+            None => Err("continuous nature for upper is not defined".into())
         }
     }
-    pub fn max_i64(&self) -> Result<Vec<i64>> {
-        let bound = self.max_i64_option()?;
+    pub fn upper_i64(&self) -> Result<Vec<i64>> {
+        let bound = self.upper_i64_option()?;
         let value = bound.iter().filter_map(|v| v.to_owned()).collect::<Vec<i64>>();
-        if bound.len() == value.len() { Ok(value) } else { Err("not all max are known".into()) }
+        if bound.len() == value.len() { Ok(value) } else { Err("not all upper bounds are known".into()) }
     }
 
     pub fn categories(&self) -> Result<Jagged> {
@@ -758,8 +758,8 @@ pub struct NatureCategorical {
 
 #[derive(Clone, Debug)]
 pub struct NatureContinuous {
-    pub min: Vector1DNull,
-    pub max: Vector1DNull,
+    pub lower: Vector1DNull,
+    pub upper: Vector1DNull,
 }
 
 #[derive(Clone, Debug)]
