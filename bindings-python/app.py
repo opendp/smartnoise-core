@@ -17,8 +17,7 @@ import os
 os.environ['RUST_BACKTRACE'] = 'full'
 
 
-# test_validator_properties.test_dp_mean()
-
+test_validator_properties.test_partition()
 
 # test_properties()
 

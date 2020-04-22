@@ -1,7 +1,7 @@
 use crate::errors::*;
 
 
-use std::collections::HashMap;
+use std::collections::{HashMap, BTreeMap};
 
 use crate::{proto, base};
 
@@ -52,9 +52,8 @@ impl Component for proto::Partition {
                     .ok_or("num_partitions or by must be passed to Partition")?.array()?.first_i64()?;
 
                 let lengths = match data_property.num_records {
-                    Some(num_records) => (0..num_partitions)
-                        .map(|index| Some(num_records / num_partitions + (if index > (num_records % num_partitions) {0} else {1})))
-                        .collect::<Vec<Option<i64>>>(),
+                    Some(num_records) => even_split_lengths(num_records, num_partitions)
+                        .into_iter().map(Some).collect(),
                     None => (0..num_partitions)
                         .map(|_| None)
                         .collect::<Vec<Option<i64>>>()
@@ -67,7 +66,7 @@ impl Component for proto::Partition {
                         let mut partition_property = data_property.clone();
                         partition_property.num_records = *partition_num_records;
                         (index as i64, ValueProperties::Array(partition_property))
-                    }).collect::<HashMap<i64, ValueProperties>>().into(),
+                    }).collect::<BTreeMap<i64, ValueProperties>>().into(),
                     columnar: false
                 }
             }
@@ -77,9 +76,15 @@ impl Component for proto::Partition {
 
 }
 
-pub fn broadcast_partitions<T: Clone + Eq + std::hash::Hash>(
+pub fn even_split_lengths(num_records: i64, num_partitions: i64) -> Vec<i64> {
+    (0..num_partitions)
+        .map(|index| num_records / num_partitions + (if index >= (num_records % num_partitions) {0} else {1}))
+        .collect()
+}
+
+pub fn broadcast_partitions<T: Clone + Eq + std::hash::Hash + Ord>(
     categories: &[Option<Vec<T>>], properties: &ArrayProperties
-) -> Result<HashMap<T, ValueProperties>> {
+) -> Result<BTreeMap<T, ValueProperties>> {
 
     if categories.len() != 1 {
         return Err("categories: must be defined for one column".into())
@@ -89,4 +94,34 @@ pub fn broadcast_partitions<T: Clone + Eq + std::hash::Hash>(
     Ok(partitions.iter()
         .map(|v| (v.clone(), ValueProperties::Array(properties.clone())))
         .collect())
+}
+
+
+#[cfg(test)]
+mod partition_tests {
+    use crate::components::partition::even_split_lengths;
+
+    fn vec_eq(left: &Vec<i64>, right: &Vec<i64>) -> bool {
+        (left.len() == right.len()) && left.iter().zip(right)
+            .all(|(a, b)| a == b)
+    }
+
+    #[test]
+    fn test_units() {
+        assert!(vec_eq(
+            &even_split_lengths(4, 3),
+            &vec![2, 1, 1]));
+        assert!(vec_eq(
+            &even_split_lengths(5, 3),
+            &vec![2, 2, 1]));
+        assert!(vec_eq(
+            &even_split_lengths(3, 3),
+            &vec![1, 1, 1]));
+        assert!(vec_eq(
+            &even_split_lengths(2, 3),
+            &vec![1, 1, 0]));
+        assert!(vec_eq(
+            &even_split_lengths(2, 0),
+            &vec![]));
+    }
 }

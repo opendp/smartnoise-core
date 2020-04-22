@@ -6,14 +6,14 @@
 use crate::errors::*;
 
 
-use ndarray::{Axis};
+use ndarray::Axis;
 use ndarray::prelude::*;
 use ndarray_stats::QuantileExt;
 
 use itertools::Itertools;
 use crate::base::{Array, Value, Jagged, Nature, Vector1DNull, NatureContinuous, NatureCategorical, ValueProperties, ArrayProperties, DataType, HashmapProperties, JaggedProperties, Hashmap};
 
-use std::collections::{HashMap};
+use std::collections::BTreeMap;
 use crate::utilities::deduplicate;
 
 pub fn infer_lower(value: &Value) -> Result<Vector1DNull> {
@@ -26,7 +26,7 @@ pub fn infer_lower(value: &Value) -> Result<Vector1DNull> {
                             Some(array.first().ok_or_else(|| Error::from("lower bounds may not be length zero"))?.to_owned())]),
                     Array::I64(array) =>
                         Vector1DNull::I64(vec![
-                            Some(array.first().ok_or_else(|| Error::from( "lower bounds may not be length zero"))?.to_owned())]),
+                            Some(array.first().ok_or_else(|| Error::from("lower bounds may not be length zero"))?.to_owned())]),
                     _ => return Err("Cannot infer numeric lower bounds on a non-numeric vector".into())
                 },
                 1 => match array {
@@ -51,7 +51,7 @@ pub fn infer_lower(value: &Value) -> Result<Vector1DNull> {
                 },
                 _ => return Err("arrays may have max dimensionality of 2".into())
             }
-        },
+        }
         Value::Hashmap(_hashmap) => return Err("constraint inference is not implemented for hashmaps".into()),
         Value::Jagged(jagged) => {
             match jagged {
@@ -70,10 +70,10 @@ pub fn infer_lower(value: &Value) -> Result<Vector1DNull> {
         }
     })
 }
+
 pub fn infer_upper(value: &Value) -> Result<Vector1DNull> {
     Ok(match value {
         Value::Array(array) => {
-
             match array.shape().len() as i64 {
                 0 => match array {
                     Array::F64(array) =>
@@ -106,7 +106,7 @@ pub fn infer_upper(value: &Value) -> Result<Vector1DNull> {
                 },
                 _ => return Err("arrays may have max dimensionality of 2".into())
             }
-        },
+        }
         Value::Hashmap(_hashmap) => return Err("constraint inference is not implemented for hashmaps".into()),
         Value::Jagged(jagged) => {
             match jagged {
@@ -235,7 +235,7 @@ pub fn infer_property(value: &Value) -> Result<ValueProperties> {
                 Array::I64(array) => array.len(),
                 Array::Str(array) => array.len(),
             } != 0,
-            dimensionality: array.shape().len() as u32
+            dimensionality: array.shape().len() as u32,
         }.into(),
         Value::Hashmap(hashmap) => {
             HashmapProperties {
@@ -245,19 +245,19 @@ pub fn infer_property(value: &Value) -> Result<ValueProperties> {
                     Hashmap::Str(hashmap) => hashmap.iter()
                         .map(|(name, value)| infer_property(value)
                             .map(|v| (name.clone(), v)))
-                        .collect::<Result<HashMap<String, ValueProperties>>>()?.into(),
+                        .collect::<Result<BTreeMap<String, ValueProperties>>>()?.into(),
                     Hashmap::I64(hashmap) => hashmap.iter()
                         .map(|(name, value)| infer_property(value)
                             .map(|v| (*name, v)))
-                        .collect::<Result<HashMap<i64, ValueProperties>>>()?.into(),
+                        .collect::<Result<BTreeMap<i64, ValueProperties>>>()?.into(),
                     Hashmap::Bool(hashmap) => hashmap.iter()
                         .map(|(name, value)| infer_property(value)
                             .map(|v| (*name, v)))
-                        .collect::<Result<HashMap<bool, ValueProperties>>>()?.into(),
+                        .collect::<Result<BTreeMap<bool, ValueProperties>>>()?.into(),
                 },
-                columnar: false
+                columnar: false,
             }.into()
-        },
+        }
         Value::Jagged(_jagged) => JaggedProperties {
             releasable: true
         }.into()

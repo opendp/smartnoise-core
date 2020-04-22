@@ -97,12 +97,23 @@ def test_equal():
     with whitenoise.Analysis(filter_level='all') as analysis:
         data = whitenoise.Dataset(**dataset_bools)
 
-        print(data.component.analysis.release_values[data.component.component_id])
-
         equality = data[0] == data[1]
 
         analysis.release()
         assert np.array_equal(equality.value, np.array([True, False, False, True]))
+
+
+def test_partition():
+    with whitenoise.Analysis(filter_level='all') as analysis:
+        data = whitenoise.Dataset(**dataset_bools)[[0, 1]]
+
+        partitioned = op.partition(data, num_partitions=3)
+        analysis.release()
+        # print(partitioned.value)
+
+        assert np.array_equal(partitioned.value[0], np.array([[True, True], [True, False]]))
+        assert np.array_equal(partitioned.value[1], np.array([[False, True]]))
+        assert np.array_equal(partitioned.value[2], np.array([[False, False]]))
 
 
 def test_index():
