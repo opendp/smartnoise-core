@@ -3,10 +3,14 @@
     "data": {
       "type": "Array",
       "description": "Result to be released privately via the Gaussian mechanism."
+    },
+    "candidates": {
+      "type": "Array",
+      "description": "Set from which Exponential mechanism will return an element."
     }
   },
-  "id": "GaussianMechanism",
-  "name": "gaussian_mechanism",
+  "id": "ExponentialMechanism",
+  "name": "exponential_mechanism",
   "options": {
     "privacy_usage": {
       "type": "repeated PrivacyUsage",
@@ -16,7 +20,7 @@
   },
   "return": {
     "type": "Array",
-    "description": "Original data perturbed with Gaussian noise."
+    "description": "Element from the data selected via the Exponential mechanism."
   },
-  "description": "Privatizes a result by returning it perturbed with Gaussian noise."
+  "description": "Returns an element from a finite set with probability relative to its utility."
 }

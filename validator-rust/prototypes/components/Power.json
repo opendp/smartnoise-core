@@ -1,15 +1,9 @@
 {
   "arguments": {
     "data": {
-      "nature": [
-        "continuous"
-      ],
       "type": "Array"
     },
     "radical": {
-      "nature": [
-        "continuous"
-      ],
       "type": "Array"
     }
   },
@@ -17,9 +11,6 @@
   "name": "power",
   "options": {},
   "return": {
-    "nature": [
-      "continuous"
-    ],
     "type": "Array"
   }
 }

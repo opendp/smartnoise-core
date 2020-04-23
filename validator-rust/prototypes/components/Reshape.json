@@ -24,9 +24,6 @@
     }
   },
   "return": {
-    "nature": [
-      "continuous"
-    ],
     "type": "Array",
     "description": "Reshape of data."
   },

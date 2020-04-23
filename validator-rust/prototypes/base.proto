@@ -149,3 +149,10 @@ message ComponentExpansion {
     map<uint32, ReleaseNode> releases = 3;
     repeated uint32 traversal = 4;
 }
+
+message Utility {
+    map<uint32, Component> computation_graph = 1;
+    map<uint32, ReleaseNode> releases = 2;
+    uint32 candidate_id = 3;
+    uint32 output_id = 4;
+}

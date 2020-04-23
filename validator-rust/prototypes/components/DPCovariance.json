@@ -1,25 +1,16 @@
 {
   "arguments": {
     "left": {
-      "nature": [
-        "continuous"
-      ],
       "type": "Array",
       "default": "None",
       "description": "Left data array used to calculate cross-covariance matrix. Used only if `data` not provided."
     },
     "right": {
-      "nature": [
-        "continuous"
-      ],
       "type": "Array",
       "default": "None",
       "description": "Right data array used to calculate cross-covariance matrix. Used only if `data` not provided."
     },
     "data": {
-      "nature": [
-        "continuous"
-      ],
       "type": "Array",
       "default": "None",
       "description": "2D data array used to construct covariance matrix."

@@ -1,9 +1,6 @@
 {
   "arguments": {
     "data": {
-      "nature": [
-        "continuous"
-      ],
       "type": "Array",
       "description": "True value to be released privately via the Laplace mechanism."
     }
@@ -18,9 +15,6 @@
     }
   },
   "return": {
-    "nature": [
-      "continuous"
-    ],
     "type": "Array",
     "description": "Original data perturbed with Laplace noise."
   },

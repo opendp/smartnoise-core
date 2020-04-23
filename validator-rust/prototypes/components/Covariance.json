@@ -2,25 +2,16 @@
   "arguments": {
     "data": {
       "default": "None",
-      "nature": [
-        "continuous"
-      ],
       "type": "Array",
       "description": "2D data array used to construct covariance matrix."
     },
     "left": {
       "default": "None",
-      "nature": [
-        "continuous"
-      ],
       "type": "Array",
       "description": "Left data array used to calculate cross-covariance matrix. Used only if `data` not provided."
     },
     "right": {
       "default": "None",
-      "nature": [
-        "continuous"
-      ],
       "type": "Array",
       "description": "Right data array used to calculate cross-covariance matrix. Used only if `data` not provided."
     }
@@ -35,9 +26,6 @@
     }
   },
   "return": {
-    "nature": [
-      "continuous"
-    ],
     "type": "Array",
     "description": "Flattened covariance or cross-covariance matrix."
   },

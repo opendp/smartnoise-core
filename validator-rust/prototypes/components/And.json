@@ -1,7 +1,6 @@
 {
   "arguments": {
     "left": {
-      "nature": [],
       "type": "Array"
     },
     "right": {
@@ -12,7 +11,6 @@
   "name": "logical_and",
   "options": {},
   "return": {
-    "nature": [],
     "type": "Array"
   }
 }

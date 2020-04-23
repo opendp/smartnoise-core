@@ -1,9 +1,6 @@
 {
   "arguments": {
     "column_names": {
-      "nature": [
-        "categorical"
-      ],
       "type": "Array"
     }
   },
@@ -29,7 +26,6 @@
     }
   },
   "return": {
-    "nature": null,
     "type": "Hashmap"
   },
   "description": "Load a tabular frame from a data source"

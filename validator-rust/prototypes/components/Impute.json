@@ -1,9 +1,6 @@
 {
   "arguments": {
     "data": {
-      "nature": [
-        "continuous"
-      ],
       "type": "Array",
       "description": "The data for which null values will be imputed."
     },
@@ -47,9 +44,6 @@
   "name": "impute",
   "options": {},
   "return": {
-    "nature": [
-      "continuous"
-    ],
     "type": "Array",
     "description": "Data with null values replaced by imputed values."
   },

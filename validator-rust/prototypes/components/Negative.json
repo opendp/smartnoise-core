@@ -1,7 +1,6 @@
 {
   "arguments": {
     "data": {
-      "nature": [],
       "type": "Array"
     }
   },
@@ -9,9 +8,6 @@
   "name": "negative",
   "options": {},
   "return": {
-    "nature": [
-      "continuous"
-    ],
     "type": "Array"
   }
 }

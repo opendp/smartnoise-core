@@ -1,10 +1,6 @@
 {
   "arguments": {
     "data": {
-      "nature": [
-        "continuous",
-        "categorical"
-      ],
       "type": "Array"
     },
     "lower": {
@@ -43,9 +39,6 @@
     }
   },
   "return": {
-    "nature": [
-      "continuous"
-    ],
     "type": "Array",
     "description": "Differentially private row count."
   },
