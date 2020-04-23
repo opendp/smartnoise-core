@@ -1,6 +1,6 @@
 use whitenoise_validator::errors::*;
 
-use crate::base::NodeArguments;
+use crate::NodeArguments;
 use whitenoise_validator::base::{Value, Array, Jagged, ReleaseNode};
 use whitenoise_validator::utilities::{standardize_numeric_argument, standardize_categorical_argument, standardize_null_target_argument, get_argument};
 use crate::components::Evaluable;

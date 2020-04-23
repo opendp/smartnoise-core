@@ -1,6 +1,5 @@
 import opendp.whitenoise as whitenoise
 import opendp.whitenoise.components as op
-import numpy as np
 
 
 def test_insertion_simple():
@@ -8,7 +7,7 @@ def test_insertion_simple():
     Conduct a differentially private analysis with values inserted from other systems
     :return:
     """
-    with whitenoise.Analysis(dynamic=False) as analysis:
+    with whitenoise.Analysis() as analysis:
 
         # construct a fake dataset that describes your actual data (will never be run)
         data = whitenoise.Dataset(path="", column_names=["A", "B", "C", "D"])

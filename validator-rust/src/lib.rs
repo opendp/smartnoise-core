@@ -94,7 +94,7 @@ pub fn compute_privacy_usage(
     let release = request.release.as_ref()
         .ok_or_else(|| Error::from("release must be defined"))?;
 
-    let (_graph_properties, graph) = utilities::propagate_properties(analysis, release, None, false)?;
+    let (_, graph, _) = utilities::propagate_properties(analysis, release, None, false)?;
 
     let usage_option = graph.iter()
         // return the privacy usage from the release, else from the analysis
@@ -122,7 +122,7 @@ pub fn generate_report(
         .ok_or("the computation graph must be defined in an analysis")?
         .value;
 
-    let (graph_properties, _graph_expanded) = utilities::propagate_properties(analysis, release, None, false)?;
+    let graph_properties = utilities::propagate_properties(analysis, release, None, false)?.0;
     let release = utilities::serial::parse_release(&release)?;
 
     // variable names
@@ -205,7 +205,7 @@ pub fn accuracy_to_privacy_usage(
         .filter_map(|(name, idx)| Some((idx.clone(), request.properties.get(name)?.clone())))
         .collect::<HashMap<u32, proto::ValueProperties>>();
 
-    let (properties, graph) = utilities::propagate_properties(
+    let (properties, graph, _) = utilities::propagate_properties(
         &proto::Analysis {
             computation_graph: Some(proto::ComputationGraph {
                 value: hashmap![component.arguments.values().max().cloned().unwrap_or(0) + 1 => component.clone()]
@@ -257,7 +257,7 @@ pub fn privacy_usage_to_accuracy(
         .filter_map(|(name, idx)| Some((idx.clone(), request.properties.get(name)?.clone())))
         .collect::<HashMap<u32, proto::ValueProperties>>();
 
-    let (properties, graph) = utilities::propagate_properties(
+    let (properties, graph, _) = utilities::propagate_properties(
         &proto::Analysis {
             computation_graph: Some(proto::ComputationGraph {
                 value: hashmap![component.arguments.values().max().cloned().unwrap_or(0) + 1 => component.clone()]
@@ -329,14 +329,15 @@ pub fn get_properties(
         };
     }
 
-    let (properties, _graph) = utilities::propagate_properties(
+    let (properties, _graph, warnings) = utilities::propagate_properties(
         &analysis, &release, None, true
     )?;
 
     Ok(proto::GraphProperties {
         properties: properties.iter()
             .map(|(node_id, properties)| (*node_id, serialize_value_properties(properties)))
-            .collect::<HashMap<u32, proto::ValueProperties>>()
+            .collect::<HashMap<u32, proto::ValueProperties>>(),
+        warnings
     })
 }
 

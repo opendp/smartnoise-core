@@ -162,21 +162,26 @@ def _communicate(function, argument, response_type, ffi):
 
     # Errors from here are propagated up from either the rust validator or runtime
     if response.HasField("error"):
-
-        library_traceback = response.error.message
-
-        # noinspection PyBroadException
-        try:
-            # on Linux, stack traces are more descriptive
-            if platform.system() == "Linux":
-                message, *frames = re.split("\n +[0-9]+: ", library_traceback)
-                library_traceback = '\n'.join(reversed(["  " + frame.replace("         at", "at") for frame in frames
-                                                        if ("at src/" in frame or "whitenoise_validator" in frame)
-                                                        and "whitenoise_validator::errors::Error" not in frame])) \
-                                    + "\n  " + message
-        except Exception:
-            pass
+        library_traceback = format_error(response.error)
 
         # stack traces beyond this point come from the internal rust libraries
         raise RuntimeError(library_traceback)
     return response.data
+
+
+def format_error(error):
+    library_traceback = error.message
+
+    # noinspection PyBroadException
+    try:
+        # on Linux, stack traces are more descriptive
+        if platform.system() == "Linux":
+            message, *frames = re.split("\n +[0-9]+: ", library_traceback)
+            library_traceback = '\n'.join(reversed(["  " + frame.replace("         at", "at") for frame in frames
+                                                    if ("at src/" in frame or "whitenoise_validator" in frame)
+                                                    and "whitenoise_validator::errors::Error" not in frame])) \
+                                + "\n  " + message
+    except Exception:
+        pass
+
+    return library_traceback

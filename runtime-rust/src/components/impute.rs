@@ -3,7 +3,7 @@ use whitenoise_validator::errors::*;
 use crate::components::Evaluable;
 use whitenoise_validator::base::{Value, Array, Jagged, ReleaseNode};
 use whitenoise_validator::utilities::{standardize_numeric_argument, standardize_categorical_argument, standardize_weight_argument, get_argument, standardize_null_candidates_argument};
-use crate::base::NodeArguments;
+use crate::NodeArguments;
 use crate::utilities::{noise};
 use crate::utilities;
 use ndarray::{ArrayD};

@@ -129,6 +129,7 @@ message Vector2DJaggedProperties {
 
 message GraphProperties {
     map<uint32, ValueProperties> properties = 1;
+    repeated Error warnings = 2;
 }
 
 message PrivacyUsages {

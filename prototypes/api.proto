@@ -116,8 +116,12 @@ message ResponseExpandComponent {
 // RUNTIME API
 
 message ResponseRelease {
+	message Success {
+		Release release = 1;
+		repeated Error warnings = 2;
+	}
 	oneof value {
-		Release data = 1;
+		Success data = 1;
 		Error error = 2;
 	}
 }

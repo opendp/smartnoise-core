@@ -1,6 +1,7 @@
 import warnings
 
-from opendp.whitenoise.api import LibraryWrapper
+from opendp.whitenoise import api_pb2
+from opendp.whitenoise.api import LibraryWrapper, format_error
 from opendp.whitenoise.value import *
 
 core_wrapper = LibraryWrapper()
@@ -552,6 +553,9 @@ class Analysis(object):
         self.properties = {}
         self.properties_id = {"count": self.component_count, "batch": self.batch}
 
+        # stack traces for individual nodes that failed to execute
+        self.warnings = []
+
     def add_component(self, component, value=None, value_format=None, value_public=False):
         """
         Every component must be contained in an analysis.
@@ -587,9 +591,14 @@ class Analysis(object):
         :return:
         """
         if not (self.properties_id['count'] == self.component_count and self.properties_id['batch'] == self.batch):
-            self.properties = core_wrapper.get_properties(
+            response = core_wrapper.get_properties(
                 serialize_analysis(self),
-                serialize_release(self.release_values)).properties
+                serialize_release(self.release_values))
+
+            self.properties = response.properties
+            self.warnings = [format_error(warning) for warning in response.warnings]
+            if self.warnings:
+                warnings.warn("Some nodes failed to execute. View stack traces via your_analysis.print_warnings(). Remove failed nodes with your_analysis.clean().")
             self.properties_id = {'count': self.component_count, 'batch': self.batch}
 
     def validate(self):
@@ -627,13 +636,16 @@ class Analysis(object):
         if not self.dynamic:
             assert self.validate(), "cannot release, analysis is not valid"
 
-        release_proto: base_pb2.Release = core_wrapper.compute_release(
+        response_proto: api_pb2.ResponseRelease.Success = core_wrapper.compute_release(
             serialize_analysis(self),
             serialize_release(self.release_values),
             self.stack_traces,
             serialize_filter_level(self.filter_level))
 
-        self.release_values = parse_release(release_proto)
+        self.release_values = parse_release(response_proto.release)
+        self.warnings = [format_error(warning) for warning in response_proto.warnings]
+        if self.warnings:
+            warnings.warn("Some nodes failed to execute. View stack traces via your_analysis.print_warnings(). Remove failed nodes with your_analysis.clean().")
         self.batch += 1
 
     def report(self):
@@ -708,6 +720,13 @@ class Analysis(object):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.exit()
+
+    def print_warnings(self):
+        """
+        print internal warnings about failed nodes after running the graph dynamically
+        """
+        for warning in self.warnings:
+            print(warning)
 
     def _make_networkx(self):
         import networkx as nx

@@ -1,6 +1,6 @@
 use whitenoise_validator::errors::*;
 
-use crate::base::NodeArguments;
+use crate::NodeArguments;
 use whitenoise_validator::base::{Array, ReleaseNode, Value, Hashmap};
 use whitenoise_validator::utilities::get_argument;
 use whitenoise_validator::components::partition::even_split_lengths;

@@ -18,13 +18,13 @@ import os
 os.environ['RUST_BACKTRACE'] = 'full'
 
 test_insertion.test_insertion_simple()
-# test_validator_properties.test_partition()
-1 / 0
-# test_properties()
+test_validator_properties.test_partition()
+
+test_properties()
 
 
-# analysis = test_multilayer_analysis(run=False)
-# analysis.release()
+analysis = test_multilayer_analysis(run=False)
+analysis.release()
 
 analysis = test_dp_linear_stats(run=False)
 analysis.release()
