@@ -60,7 +60,10 @@ impl Aggregator for proto::KthRawSampleMoment {
                     .map(|(min, max)| (max - min).powi(self.k as i32) / (num_records as f64))
                     .collect::<Vec<f64>>();
 
-                Ok(Array::from(row_sensitivity).into_dyn().into())
+                let mut array_sensitivity = Array::from(row_sensitivity).into_dyn();
+                array_sensitivity.insert_axis_inplace(Axis(0));
+
+                Ok(array_sensitivity.into())
             },
             _ => Err("KthRawSampleMoment sensitivity is only implemented for KNorm of 1".into())
         }

@@ -1,5 +1,6 @@
 import opendp.whitenoise as whitenoise
 import opendp.whitenoise.components as op
+import numpy as np
 
 
 def test_insertion_simple():
@@ -64,3 +65,29 @@ def test_insertion_simple():
         print("noised histogram b", geo_histogram_b.value)
         print("noised histogram c", lap_histogram_c.value)
         print("C categories", col_c.categories)
+
+        # multicolumnar insertion
+
+        # pull a column out
+        col_rest = op.to_float(data[['C', 'D']])
+
+        # describe the preprocessing you actually perform on the data
+        col_rest_resized = op.resize(op.impute(op.clamp(col_rest, lower=[0., 5.], upper=1000.)), n=10000)
+
+        # run a fake aggregation
+        actual_mean = op.mean(col_rest_resized)
+
+        # insert aggregated data from an external system
+        actual_mean.set([[10., 12.]])
+
+        # describe the differentially private operation
+        gaussian_mean = op.gaussian_mechanism(actual_mean, privacy_usage={"epsilon": .4, "delta": 1e-6})
+
+        # check if the analysis is permissible
+        analysis.validate()
+
+        # compute the missing releasable nodes- in this case, only the gaussian mean
+        analysis.release()
+
+        # retrieve the noised mean
+        print("rest gaussian mean", gaussian_mean.value)

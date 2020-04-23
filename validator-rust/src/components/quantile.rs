@@ -71,7 +71,10 @@ impl Aggregator for proto::Quantile {
                     .map(|(min, max)| (max - min))
                     .collect::<Vec<f64>>();
 
-                Ok(Array::from(row_sensitivity).into_dyn().into())
+                let mut array_sensitivity = Array::from(row_sensitivity).into_dyn();
+                array_sensitivity.insert_axis_inplace(Axis(0));
+
+                Ok(array_sensitivity.into())
             }
             SensitivitySpace::Exponential => {
                 let num_columns = data_property.num_columns()?;

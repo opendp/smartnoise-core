@@ -70,7 +70,10 @@ impl Aggregator for proto::Mean {
                     _ => return Err("KNorm sensitivity is only supported in L1 and L2 spaces".into())
                 };
 
-                Ok(Array::from(row_sensitivity).into_dyn().into())
+                let mut array_sensitivity = Array::from(row_sensitivity).into_dyn();
+                array_sensitivity.insert_axis_inplace(Axis(0));
+
+                Ok(array_sensitivity.into())
             }
             _ => Err("Mean sensitivity is only implemented for KNorm".into())
         }
