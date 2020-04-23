@@ -1,6 +1,6 @@
 import warnings
 
-from opendp.whitenoise import api_pb2
+from opendp.whitenoise import api_pb2, value_pb2
 from opendp.whitenoise.api import LibraryWrapper, format_error
 from opendp.whitenoise.value import *
 
@@ -172,7 +172,10 @@ class Component(object):
                 base_pb2.Accuracy(value=value, alpha=alpha) for value, alpha in zip(value, alpha)
             ]))
 
-        return [parse_privacy_usage(usage) for usage in privacy_usages.values]
+        value = [parse_privacy_usage(usage) for usage in privacy_usages.values]
+        if self.dimensionality <= 1 and value:
+            value = value[0]
+        return value
 
     @property
     def properties(self):
@@ -181,17 +184,29 @@ class Component(object):
         return self.analysis.properties.get(self.component_id)
 
     @property
+    def dimensionality(self):
+        """view the statically derived dimensionality (number of axes)"""
+        try:
+            return self.properties.array.dimensionality
+        except AttributeError:
+            return None
+
+    @property
     def nullity(self):
         """view the statically derived nullity property on the data"""
-        self.analysis.update_properties()
-        return self.analysis.properties.get(self.component_id).array.nullity
+        try:
+            return self.properties.array.nullity
+        except AttributeError:
+            return None
 
     @property
     def lower(self):
         """view the statically derived lower bound on the data"""
-        self.analysis.update_properties()
         try:
-            return parse_array1d_null(self.analysis.properties.get(self.component_id).array.continuous.minimum)
+            value = parse_array1d_null(self.properties.array.continuous.minimum)
+            if self.dimensionality <= 1 and value:
+                value = value[0]
+            return value
         except AttributeError:
             return None
 
@@ -200,16 +215,18 @@ class Component(object):
         """view the statically derived upper bound on the data"""
         self.analysis.update_properties()
         try:
-            return parse_array1d_null(self.analysis.properties.get(self.component_id).array.continuous.maximum)
+            value = parse_array1d_null(self.properties.array.continuous.maximum)
+            if self.dimensionality <= 1 and value:
+                value = value[0]
+            return value
         except AttributeError:
             return None
 
     @property
     def num_records(self):
         """view the statically derived number of records"""
-        self.analysis.update_properties()
         try:
-            num_records = self.analysis.properties.get(self.component_id).array.num_records
+            num_records = self.properties.array.num_records
             return num_records.option if num_records.HasField("option") else None
         except AttributeError:
             return None
@@ -217,9 +234,8 @@ class Component(object):
     @property
     def num_columns(self):
         """view the statically derived number of columns"""
-        self.analysis.update_properties()
         try:
-            num_columns = self.analysis.properties.get(self.component_id).array.num_columns
+            num_columns = self.properties.array.num_columns
             return num_columns.option if num_columns.HasField("option") else None
         except AttributeError:
             return None
@@ -227,34 +243,35 @@ class Component(object):
     @property
     def data_type(self):
         """view the statically derived data type"""
-        self.analysis.update_properties()
         try:
             return {
                 value_pb2.DataType.BOOL: "bool",
                 value_pb2.DataType.I64: "int",
                 value_pb2.DataType.F64: "float",
                 value_pb2.DataType.STRING: "string"
-            }[self.analysis.properties.get(self.component_id).array.data_type]
+            }[self.properties.array.data_type]
         except AttributeError:
             return None
 
     @property
     def releasable(self):
         """check if the data from this component is releasable/public"""
-        self.analysis.update_properties()
         try:
-            return self.analysis.properties.get(self.component_id).array.releasable
+            return self.properties.array.releasable
         except AttributeError:
             return None
 
     @property
     def categories(self):
         """view the statically derived category set"""
-        self.analysis.update_properties()
-
         try:
-            categories = self.analysis.properties.get(self.component_id).array.categorical.categories.data
-            return [parse_array1d_option(i) for i in categories]
+            categories = self.properties.array.categorical.categories.data
+            value = [parse_array1d_option(i) for i in categories]
+            if not value:
+                return None
+            if self.dimensionality <= 1 and value:
+                value = value[0]
+            return value
         except AttributeError:
             return None
 

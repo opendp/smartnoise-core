@@ -63,6 +63,7 @@ def test_insertion_simple():
         analysis.release()
         print("noised histogram b", geo_histogram_b.value)
         print("noised histogram c", lap_histogram_c.value)
+        print("C dimensionality", col_c.dimensionality)
         print("C categories", col_c.categories)
 
         # multicolumnar insertion
