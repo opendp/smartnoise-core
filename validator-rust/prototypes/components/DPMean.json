@@ -1,9 +1,6 @@
 {
   "arguments": {
     "data": {
-      "nature": [
-        "continuous"
-      ],
       "type": "Array"
     }
   },

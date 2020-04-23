@@ -1,15 +1,9 @@
 {
   "arguments": {
     "left": {
-      "nature": [
-        "continuous"
-      ],
       "type": "Array"
     },
     "right": {
-      "nature": [
-        "continuous"
-      ],
       "type": "Array"
     }
   },
@@ -17,7 +11,6 @@
   "name": "greater_than",
   "options": {},
   "return": {
-    "nature": [],
     "type": "Array"
   }
 }

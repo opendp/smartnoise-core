@@ -1,10 +1,6 @@
 {
   "arguments": {
     "data": {
-      "nature": [
-        "continuous",
-        "categorical"
-      ],
       "type": "Array",
       "description": "Data to be clamped."
     },
@@ -33,10 +29,6 @@
   "name": "clamp",
   "options": {},
   "return": {
-    "nature": [
-      "continuous",
-      "categorical"
-    ],
     "type": "Array",
     "description": "Clamped data."
   },

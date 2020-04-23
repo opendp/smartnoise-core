@@ -1,10 +1,10 @@
 {
   "arguments": {
     "data": {
-      "default": "None",
-      "nature": [
-        "continuous"
-      ],
+      "type": "Array",
+      "description": "Result to be released privately via the Gaussian mechanism."
+    },
+    "candidates": {
       "type": "Array",
       "description": "Set from which Exponential mechanism will return an element."
     }
@@ -14,13 +14,11 @@
   "options": {
     "privacy_usage": {
       "type": "repeated PrivacyUsage",
+      "default": "None",
       "description": "Object describing the type and amount of privacy to be used for the mechanism release."
     }
   },
   "return": {
-    "nature": [
-      "continuous"
-    ],
     "type": "Array",
     "description": "Element from the data selected via the Exponential mechanism."
   },

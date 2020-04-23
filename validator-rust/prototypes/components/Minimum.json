@@ -1,9 +1,6 @@
 {
   "arguments": {
     "data": {
-      "nature": [
-        "continuous"
-      ],
       "type": "Array",
       "description": "Data for which you want the maximum value in each column."
     }
@@ -12,9 +9,6 @@
   "name": "minimum",
   "options": {},
   "return": {
-    "nature": [
-      "continuous"
-    ],
     "type": "Array",
     "description": "Maximum of each column in the data."
   },

@@ -1,10 +1,6 @@
 {
   "arguments": {
     "data": {
-      "nature": [
-        "continuous",
-        "categorical"
-      ],
       "type": "Array"
     },
     "edges": {
@@ -23,9 +19,6 @@
       "description": "The value to which elements not included in `categories` will be mapped for each column of the data. Used only if `categories` is not `None`."
     },
     "inclusive_left": {
-      "nature": [
-        "categorical"
-      ],
       "type": "Array",
       "default": "True",
       "description": "Whether or not the left edge of the bin is inclusive. If `true` bins are of the form [lower, upper). Otherwise, bins are of the form (lower, upper]. Used only if data are of `continuous` nature."
@@ -35,9 +28,6 @@
   "name": "histogram",
   "options": {},
   "return": {
-    "nature": [
-      "continuous"
-    ],
     "type": "Array"
   }
 }

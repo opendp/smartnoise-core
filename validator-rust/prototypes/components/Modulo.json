@@ -1,15 +1,9 @@
 {
   "arguments": {
     "left": {
-      "nature": [
-        "continuous"
-      ],
       "type": "Array"
     },
     "right": {
-      "nature": [
-        "continuous"
-      ],
       "type": "Array"
     }
   },
@@ -17,9 +11,6 @@
   "name": "modulo",
   "options": {},
   "return": {
-    "nature": [
-      "continuous"
-    ],
     "type": "Array"
   }
 }

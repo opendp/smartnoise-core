@@ -1,12 +1,10 @@
 {
   "arguments": {
     "data": {
-      "nature": [],
       "type": "Array",
       "description": "The data to be resized."
     },
     "n": {
-      "nature": [],
       "type": "Array",
       "description": "An estimate of the number of rows in the data. This could be the guess of the user, or the result of a DP release."
     },
@@ -50,7 +48,6 @@
   "name": "resize",
   "options": {},
   "return": {
-    "nature": [],
     "type": "Array",
     "description": "A resized version of data consistent with the provided `n`"
   },

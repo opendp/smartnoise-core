@@ -1,9 +1,6 @@
 {
   "arguments": {
     "data": {
-      "nature": [
-        "continuous"
-      ],
       "type": "Array"
     }
   },
@@ -11,9 +8,6 @@
   "name": "mean",
   "options": {},
   "return": {
-    "nature": [
-      "continuous"
-    ],
     "type": "Array",
     "description": "Arithmetic mean for each column of the data in question."
   },

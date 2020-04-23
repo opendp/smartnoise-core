@@ -1,16 +1,10 @@
 {
   "arguments": {
     "data": {
-      "nature": [
-        "continuous"
-      ],
       "type": "Array"
     },
     "base": {
       "default": "2.71828",
-      "nature": [
-        "continuous"
-      ],
       "type": "Array"
     }
   },
@@ -18,9 +12,6 @@
   "name": "log",
   "options": {},
   "return": {
-    "nature": [
-      "continuous"
-    ],
     "type": "Array"
   }
 }
