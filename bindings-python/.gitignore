@@ -4,6 +4,12 @@ bindings-python.iml
 __pycache__/
 dist/
 
+opendp/_native*
+opendp.egg-info
+.eggs/
+opendp/whitenoise/components.py
+opendp/whitenoise/variant_message_map.json
+
 whitenoise/_native*
 whitenoise.egg-info
 .eggs/

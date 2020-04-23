@@ -1,7 +1,6 @@
-from whitenoise import base_pb2
-from whitenoise import components_pb2
-from whitenoise import value_pb2
-import whitenoise
+from opendp.whitenoise import base_pb2
+from opendp.whitenoise import components_pb2
+from opendp.whitenoise import value_pb2
 
 import os
 import json

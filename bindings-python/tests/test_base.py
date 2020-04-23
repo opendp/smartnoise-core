@@ -1,7 +1,7 @@
 from os.path import abspath, dirname, isfile, join
 import pytest
-import whitenoise
-import whitenoise.components as op
+import opendp.whitenoise as whitenoise
+import opendp.whitenoise.components as op
 
 # Path to the test csv file
 #
@@ -351,8 +351,8 @@ def test_everything(run=True):
 
 
 def test_histogram():
-    import whitenoise
-    import whitenoise.components as op
+    import opendp.whitenoise as whitenoise
+    import opendp.whitenoise.components as op
     import numpy as np
 
     # establish data information
@@ -381,8 +381,8 @@ def test_histogram():
     print("Income histogram Geometric DP release:   " + str(income_histogram.value))
 
 def test_covariance():
-    import whitenoise
-    import whitenoise.components as op
+    import opendp.whitenoise as whitenoise
+    import opendp.whitenoise.components as op
     import numpy as np
     import pandas as pd
     import matplotlib.pyplot as plt

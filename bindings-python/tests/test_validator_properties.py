@@ -1,6 +1,5 @@
-
-import whitenoise
-import whitenoise.components as op
+import opendp.whitenoise as whitenoise
+import opendp.whitenoise.components as op
 import random
 import string
 import numpy as np

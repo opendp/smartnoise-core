@@ -1,7 +1,7 @@
 import warnings
 
-from whitenoise.api import LibraryWrapper
-from whitenoise.value import *
+from opendp.whitenoise.api import LibraryWrapper
+from opendp.whitenoise.value import *
 
 core_wrapper = LibraryWrapper()
 
