@@ -17,6 +17,7 @@ from tests import test_insertion
 import os
 os.environ['RUST_BACKTRACE'] = 'full'
 
+test_validator_properties.test_dp_mean()
 test_insertion.test_insertion_simple()
 test_validator_properties.test_partition()
 

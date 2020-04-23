@@ -103,8 +103,7 @@ class Component(object):
 
         if accuracy:
             privacy_usages = self.from_accuracy(accuracy['value'], accuracy['alpha'])
-            # TODO: this could be written cleaner
-            options['privacy_usage'] = [serialize_privacy_usage(usage)[0] for usage in privacy_usages]
+            options['privacy_usage'] = serialize_privacy_usage(privacy_usages)
 
         self.batch = self.analysis.batch
 
@@ -152,7 +151,10 @@ class Component(object):
             properties={name: self.analysis.properties.get(arg.component_id) for name, arg in self.arguments.items() if arg},
             alpha=alpha)
 
-        return [accuracy.value for accuracy in response.values]
+        value = [accuracy.value for accuracy in response.values]
+        if self.dimensionality <= 1 and value:
+            value = value[0]
+        return value
 
     def from_accuracy(self, value, alpha):
         """
