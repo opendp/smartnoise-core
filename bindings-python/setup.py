@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 import os
 
 # turn on backtraces in rust (for build.rs)
@@ -55,6 +55,7 @@ def build_python(spec):
 setup(
     package_dir={"opendp": "opendp"},
     package_data={"opendp": ["whitenoise/variant_message_map.json"]},
+    packages=find_packages(),
     extras_require={
         "plotting": [
             "networkx",

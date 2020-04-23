@@ -5,7 +5,7 @@ __pycache__/
 dist/
 
 opendp/_native*
-opendp.egg-info
+opendp_whitenoise_core.egg-info
 .eggs/
 opendp/whitenoise/components.py
 opendp/whitenoise/variant_message_map.json
