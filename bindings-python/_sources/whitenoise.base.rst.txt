@@ -1,7 +1,0 @@
-whitenoise.base module
-======================
-
-.. automodule:: whitenoise.base
-   :members:
-   :undoc-members:
-   :show-inheritance:

@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["release","FFI wrapper for release"]],"mod":[["proto",""]],"struct":[["ByteBuffer","Container for responses over FFI."]]});
+initSidebarItems({"fn":[["release","FFI wrapper for release"]],"mod":[["proto",""]],"struct":[["ByteBufferRuntime","Container for responses over FFI."]]});

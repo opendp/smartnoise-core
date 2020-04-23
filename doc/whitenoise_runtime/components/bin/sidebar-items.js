@@ -1,1 +1,0 @@
-initSidebarItems({"enum":[["BinSide",""]],"fn":[["bin","Maps data to bins."]]});

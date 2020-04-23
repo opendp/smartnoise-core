@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `validator-rust/src/components/transforms.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>transforms.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../whitenoise_validator/index.html'><div class='logo-container'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/build/opendifferentialprivacy/whitenoise-core/validator-rust/src/components/transforms.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>transforms.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../whitenoise_validator/index.html'><div class='logo-container'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -1171,6 +1171,34 @@
 <span id="1171">1171</span>
 <span id="1172">1172</span>
 <span id="1173">1173</span>
+<span id="1174">1174</span>
+<span id="1175">1175</span>
+<span id="1176">1176</span>
+<span id="1177">1177</span>
+<span id="1178">1178</span>
+<span id="1179">1179</span>
+<span id="1180">1180</span>
+<span id="1181">1181</span>
+<span id="1182">1182</span>
+<span id="1183">1183</span>
+<span id="1184">1184</span>
+<span id="1185">1185</span>
+<span id="1186">1186</span>
+<span id="1187">1187</span>
+<span id="1188">1188</span>
+<span id="1189">1189</span>
+<span id="1190">1190</span>
+<span id="1191">1191</span>
+<span id="1192">1192</span>
+<span id="1193">1193</span>
+<span id="1194">1194</span>
+<span id="1195">1195</span>
+<span id="1196">1196</span>
+<span id="1197">1197</span>
+<span id="1198">1198</span>
+<span id="1199">1199</span>
+<span id="1200">1200</span>
+<span id="1201">1201</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
@@ -1245,10 +1273,11 @@
             <span class="ident">aggregator</span>: <span class="prelude-val">None</span>,
             <span class="ident">data_type</span>: <span class="ident">left_property</span>.<span class="ident">data_type</span>,
             <span class="ident">dataset_id</span>: <span class="ident">left_property</span>.<span class="ident">dataset_id</span>,
+            <span class="ident">is_not_empty</span>: <span class="ident">left_property</span>.<span class="ident">is_not_empty</span> <span class="kw-2">&amp;</span><span class="op">&amp;</span> <span class="ident">right_property</span>.<span class="ident">is_not_empty</span>,
+            <span class="ident">dimensionality</span>: <span class="ident">left_property</span>.<span class="ident">dimensionality</span>
+                .<span class="ident">max</span>(<span class="ident">right_property</span>.<span class="ident">dimensionality</span>)
         }.<span class="ident">into</span>())
     }
-
-
 }
 
 
@@ -1310,6 +1339,9 @@
             <span class="ident">aggregator</span>: <span class="prelude-val">None</span>,
             <span class="ident">data_type</span>: <span class="ident">left_property</span>.<span class="ident">data_type</span>,
             <span class="ident">dataset_id</span>: <span class="ident">left_property</span>.<span class="ident">dataset_id</span>,
+            <span class="ident">is_not_empty</span>: <span class="ident">left_property</span>.<span class="ident">is_not_empty</span> <span class="kw-2">&amp;</span><span class="op">&amp;</span> <span class="ident">right_property</span>.<span class="ident">is_not_empty</span>,
+            <span class="ident">dimensionality</span>: <span class="ident">left_property</span>.<span class="ident">dimensionality</span>
+                .<span class="ident">max</span>(<span class="ident">right_property</span>.<span class="ident">dimensionality</span>)
         }.<span class="ident">into</span>())
     }
 
@@ -1336,9 +1368,6 @@
         <span class="kw">if</span> <span class="ident">left_property</span>.<span class="ident">data_type</span> <span class="op">!</span><span class="op">=</span> <span class="ident">right_property</span>.<span class="ident">data_type</span> {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;left and right arguments must share the same data types&quot;</span>.<span class="ident">into</span>())
         }
-
-        <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;left {}&quot;</span>, <span class="ident">left_property</span>.<span class="ident">nullity</span>);
-        <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;right {}&quot;</span>, <span class="ident">right_property</span>.<span class="ident">nullity</span>);
 
         <span class="prelude-val">Ok</span>(<span class="ident">ArrayProperties</span> {
             <span class="ident">nullity</span>: <span class="ident">left_property</span>.<span class="ident">nullity</span> <span class="op">|</span><span class="op">|</span> <span class="ident">right_property</span>.<span class="ident">nullity</span>,
@@ -1432,6 +1461,9 @@
             <span class="ident">num_records</span>,
             <span class="ident">aggregator</span>: <span class="prelude-val">None</span>,
             <span class="ident">dataset_id</span>: <span class="ident">left_property</span>.<span class="ident">dataset_id</span>,
+            <span class="ident">is_not_empty</span>: <span class="ident">left_property</span>.<span class="ident">is_not_empty</span> <span class="kw-2">&amp;</span><span class="op">&amp;</span> <span class="ident">right_property</span>.<span class="ident">is_not_empty</span>,
+            <span class="ident">dimensionality</span>: <span class="ident">left_property</span>.<span class="ident">dimensionality</span>
+                .<span class="ident">max</span>(<span class="ident">right_property</span>.<span class="ident">dimensionality</span>)
         }.<span class="ident">into</span>())
     }
 
@@ -1581,6 +1613,9 @@
             <span class="ident">aggregator</span>: <span class="prelude-val">None</span>,
             <span class="ident">data_type</span>: <span class="ident">left_property</span>.<span class="ident">data_type</span>,
             <span class="ident">dataset_id</span>: <span class="ident">left_property</span>.<span class="ident">dataset_id</span>,
+            <span class="ident">is_not_empty</span>: <span class="ident">left_property</span>.<span class="ident">is_not_empty</span> <span class="kw-2">&amp;</span><span class="op">&amp;</span> <span class="ident">right_property</span>.<span class="ident">is_not_empty</span>,
+            <span class="ident">dimensionality</span>: <span class="ident">left_property</span>.<span class="ident">dimensionality</span>
+                .<span class="ident">max</span>(<span class="ident">right_property</span>.<span class="ident">dimensionality</span>)
         }.<span class="ident">into</span>())
     }
 
@@ -1642,6 +1677,10 @@
             },
             <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;arguments for power must be numeric and homogeneously typed&quot;</span>.<span class="ident">into</span>())
         }
+
+        <span class="ident">data_property</span>.<span class="ident">is_not_empty</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">is_not_empty</span> <span class="kw-2">&amp;</span><span class="op">&amp;</span> <span class="ident">radical_property</span>.<span class="ident">is_not_empty</span>;
+        <span class="ident">data_property</span>.<span class="ident">dimensionality</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">dimensionality</span>
+            .<span class="ident">max</span>(<span class="ident">radical_property</span>.<span class="ident">dimensionality</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">data_property</span>.<span class="ident">into</span>())
     }
 
@@ -1695,6 +1734,9 @@
                 <span class="ident">i64</span>: <span class="prelude-val">None</span>
             }, <span class="kw-2">&amp;</span><span class="ident">data_property</span>.<span class="ident">num_columns</span>()<span class="question-mark">?</span>)<span class="question-mark">?</span>;
 
+        <span class="ident">data_property</span>.<span class="ident">is_not_empty</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">is_not_empty</span> <span class="kw-2">&amp;</span><span class="op">&amp;</span> <span class="ident">base_property</span>.<span class="ident">is_not_empty</span>;
+        <span class="ident">data_property</span>.<span class="ident">dimensionality</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">dimensionality</span>
+            .<span class="ident">max</span>(<span class="ident">base_property</span>.<span class="ident">dimensionality</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">data_property</span>.<span class="ident">into</span>())
     }
 
@@ -1731,8 +1773,6 @@
 
         <span class="prelude-val">Ok</span>(<span class="ident">data_property</span>.<span class="ident">into</span>())
     }
-
-
 }
 
 <span class="kw">impl</span> <span class="ident">Component</span> <span class="kw">for</span> <span class="ident">proto</span>::<span class="ident">Modulo</span> {
@@ -1792,6 +1832,9 @@
             <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;arguments for power must be numeric and homogeneously typed&quot;</span>.<span class="ident">into</span>())
         };
 
+        <span class="ident">left_property</span>.<span class="ident">is_not_empty</span> <span class="op">=</span> <span class="ident">left_property</span>.<span class="ident">is_not_empty</span> <span class="kw-2">&amp;</span><span class="op">&amp;</span> <span class="ident">right_property</span>.<span class="ident">is_not_empty</span>;
+        <span class="ident">left_property</span>.<span class="ident">dimensionality</span> <span class="op">=</span> <span class="ident">left_property</span>.<span class="ident">dimensionality</span>
+            .<span class="ident">max</span>(<span class="ident">right_property</span>.<span class="ident">dimensionality</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">left_property</span>.<span class="ident">into</span>())
     }
 
@@ -1834,10 +1877,12 @@
         <span class="ident">left_property</span>.<span class="ident">num_columns</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">num_columns</span>);
         <span class="ident">left_property</span>.<span class="ident">num_records</span> <span class="op">=</span> <span class="ident">num_records</span>;
 
+        <span class="ident">left_property</span>.<span class="ident">is_not_empty</span> <span class="op">=</span> <span class="ident">left_property</span>.<span class="ident">is_not_empty</span> <span class="kw-2">&amp;</span><span class="op">&amp;</span> <span class="ident">right_property</span>.<span class="ident">is_not_empty</span>;
+        <span class="ident">left_property</span>.<span class="ident">dimensionality</span> <span class="op">=</span> <span class="ident">left_property</span>.<span class="ident">dimensionality</span>
+            .<span class="ident">max</span>(<span class="ident">right_property</span>.<span class="ident">dimensionality</span>);
+
         <span class="prelude-val">Ok</span>(<span class="ident">left_property</span>.<span class="ident">into</span>())
     }
-
-
 }
 
 
@@ -1878,10 +1923,12 @@
         <span class="ident">left_property</span>.<span class="ident">num_columns</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">num_columns</span>);
         <span class="ident">left_property</span>.<span class="ident">num_records</span> <span class="op">=</span> <span class="ident">num_records</span>;
 
+        <span class="ident">left_property</span>.<span class="ident">is_not_empty</span> <span class="op">=</span> <span class="ident">left_property</span>.<span class="ident">is_not_empty</span> <span class="kw-2">&amp;</span><span class="op">&amp;</span> <span class="ident">right_property</span>.<span class="ident">is_not_empty</span>;
+        <span class="ident">left_property</span>.<span class="ident">dimensionality</span> <span class="op">=</span> <span class="ident">left_property</span>.<span class="ident">dimensionality</span>
+            .<span class="ident">max</span>(<span class="ident">right_property</span>.<span class="ident">dimensionality</span>);
+
         <span class="prelude-val">Ok</span>(<span class="ident">left_property</span>.<span class="ident">into</span>())
     }
-
-
 }
 
 
@@ -1925,6 +1972,7 @@
         <span class="kw">let</span> <span class="ident">right_property</span> <span class="op">=</span> <span class="ident">properties</span>.<span class="ident">get</span>(<span class="string">&quot;right&quot;</span>)
             .<span class="ident">ok_or</span>(<span class="string">&quot;right: missing&quot;</span>)<span class="question-mark">?</span>.<span class="ident">array</span>()
             .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;right:&quot;</span>))<span class="question-mark">?</span>.<span class="ident">clone</span>();
+
         <span class="ident">left_property</span>.<span class="ident">assert_is_not_aggregated</span>()<span class="question-mark">?</span>;
         <span class="ident">right_property</span>.<span class="ident">assert_is_not_aggregated</span>()<span class="question-mark">?</span>;
 
@@ -1948,6 +1996,8 @@
             <span class="ident">aggregator</span>: <span class="prelude-val">None</span>,
             <span class="ident">data_type</span>: <span class="ident">DataType</span>::<span class="ident">Bool</span>,
             <span class="ident">dataset_id</span>: <span class="ident">left_property</span>.<span class="ident">dataset_id</span>,
+            <span class="ident">is_not_empty</span>: <span class="ident">left_property</span>.<span class="ident">is_not_empty</span> <span class="kw-2">&amp;</span><span class="op">&amp;</span> <span class="ident">right_property</span>.<span class="ident">is_not_empty</span>,
+            <span class="ident">dimensionality</span>: <span class="ident">left_property</span>.<span class="ident">dimensionality</span>.<span class="ident">max</span>(<span class="ident">right_property</span>.<span class="ident">dimensionality</span>)
         }.<span class="ident">into</span>())
     }
 
@@ -1998,6 +2048,9 @@
             <span class="ident">aggregator</span>: <span class="prelude-val">None</span>,
             <span class="ident">data_type</span>: <span class="ident">DataType</span>::<span class="ident">Bool</span>,
             <span class="ident">dataset_id</span>: <span class="ident">left_property</span>.<span class="ident">dataset_id</span>,
+            <span class="ident">is_not_empty</span>: <span class="ident">left_property</span>.<span class="ident">is_not_empty</span> <span class="kw-2">&amp;</span><span class="op">&amp;</span> <span class="ident">right_property</span>.<span class="ident">is_not_empty</span>,
+            <span class="ident">dimensionality</span>: <span class="ident">left_property</span>.<span class="ident">dimensionality</span>
+                .<span class="ident">max</span>(<span class="ident">right_property</span>.<span class="ident">dimensionality</span>)
         }.<span class="ident">into</span>())
     }
 
@@ -2048,6 +2101,9 @@
             <span class="ident">aggregator</span>: <span class="prelude-val">None</span>,
             <span class="ident">data_type</span>: <span class="ident">DataType</span>::<span class="ident">Bool</span>,
             <span class="ident">dataset_id</span>: <span class="ident">left_property</span>.<span class="ident">dataset_id</span>,
+            <span class="ident">is_not_empty</span>: <span class="ident">left_property</span>.<span class="ident">is_not_empty</span> <span class="kw-2">&amp;</span><span class="op">&amp;</span> <span class="ident">right_property</span>.<span class="ident">is_not_empty</span>,
+            <span class="ident">dimensionality</span>: <span class="ident">left_property</span>.<span class="ident">dimensionality</span>
+                .<span class="ident">max</span>(<span class="ident">right_property</span>.<span class="ident">dimensionality</span>)
         }.<span class="ident">into</span>())
     }
 
