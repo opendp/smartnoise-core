@@ -1,0 +1,66 @@
+\documentclass[11pt]{scrartcl} % Font size
+\input{structure.tex} % Include the file specifying the document structure and custom commands
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\title{
+	\normalfont\normalsize
+	\textsc{Harvard Privacy Tools Project}\\ % Your university, school and/or department name(s)
+	\vspace{25pt} % Whitespace
+	\rule{\linewidth}{0.5pt}\\ % Thin top horizontal rule
+	\vspace{20pt} % Whitespace
+	{\huge Laplace Mechanism Accuracy}\\ % The assignment title
+	\vspace{12pt} % Whitespace
+	\rule{\linewidth}{2pt}\\ % Thick bottom horizontal rule
+	\vspace{12pt} % Whitespace
+}
+
+\date{\normalsize\today} % Today's date (\today) or a custom date
+
+\begin{document}
+
+\maketitle
+
+
+\begin{definition}
+Let $z$ be the true value of the statistic and let $X$ be the random variable the noisy release is drawn from. Let $\alpha$ be the statistical significance level, and let $Y = \vert X-z \vert.$ Then, accuracy $a$ for statistical significance level $\alpha$ is the $a$ s.t.
+$$ \alpha = \pr[Y > a].$$
+\end{definition}
+
+\begin{theorem}
+The accuracy of an $\epsilon$-differentially private release from the Laplace mechanism on a function with $\ell_1$-sensitivity $\Delta_1$, at statistical significance level $\alpha$ is
+$$ a = \frac{\Delta_1}{\epsilon}\ln(1/\alpha).$$
+\end{theorem}
+
+\begin{proof}
+Recall the definition of the Laplace mechanism, which adds Laplace noise proportional to $\Delta_1/\epsilon$ to the true query responses \cite{DMNS06}. The probability density function $f$ of the Laplace distribution, for $x \sim X$ with location parameter $\mu$ and scaling parameter $\lambda$ is defined to be
+
+$$ f(x) = \frac{1}{2\lambda}e^{\frac{-\vert x-\mu \vert}{ \lambda}}$$
+
+Then, since the pdf $g$ of $Y$ is the same as the folded pdf of $X$, shifted over by $\mu$ and doubled,
+
+$$ g(y) = \frac{1}{\lambda}e^{-y/\lambda}.$$\
+
+Then, 
+
+\begin{align*}
+\alpha &= \pr[Y>a] \\
+	&= 1 - \pr[Y\le a]\\
+	&= 1 - \int_{-\infty}^a g(y) dy \\
+	&= 1 - \int_0^a g(y) dy \\
+	&= 1 - (1-e^{-a/\lambda})
+\end{align*}
+
+Solving for $a$ gives $a = \lambda \ln (1/\alpha)$. Then, since 
+
+$$\lambda = \frac{\Delta_1}{\epsilon},$$
+
+$$ a = \frac{\Delta_1}{\epsilon}\ln(1/\alpha).$$
+\end{proof}
+
+\bibliographystyle{alpha}
+\bibliography{accuracies}
+
+\end{document}

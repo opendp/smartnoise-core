@@ -1,15 +1,17 @@
+//extern crate statrs;
+
 use crate::errors::*;
 
-
 use std::collections::HashMap;
+use statrs::function::erf;
+use ::itertools::izip;
 
-
-use crate::components::Aggregator;
+use crate::components::{Aggregator, Accuracy};
 use crate::{proto, base};
 
 use crate::components::{Component, Expandable};
 use crate::base::{Value, SensitivitySpace, ValueProperties, DataType};
-use crate::utilities::{prepend, expand_mechanism};
+use crate::utilities::{prepend, expand_mechanism, broadcast_privacy_usage, get_epsilon, get_delta};
 
 
 impl Component for proto::GaussianMechanism {
@@ -83,16 +85,21 @@ impl Accuracy for proto::GaussianMechanism {
 
         // sensitivity must be computable
         let sensitivities = sensitivity_value.array()?.f64()?;
+        let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivities.len())?;
+        let delta = usages.iter().map(get_delta).collect::<Result<Vec<f64>>>()?;
+        let iter = izip!(sensitivities.into_iter(), accuracies.values.iter(), delta.into_iter());
 
-        Ok(Some(sensitivities.into_iter().zip(accuracies.values.iter())
-            .map(|(sensitivity, accuracy)| proto::PrivacyUsage {
+        Ok(Some(
+            iter.map( |(sensitivity, accuracy, delta)| {
+                let c: f64 = 2.0_f64 * (1.25_f64 / delta).ln();
+                let sigma: f64 = c.sqrt() * sensitivity / accuracy.value;
+                proto::PrivacyUsage {
                 distance: Some(proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
-                    /// ToDo: add epsilon
-                    ///epsilon: (1. / accuracy.alpha).ln() * (sensitivity / accuracy.value),
-                    ///delta: 0.,
-                }))
-            })
-            .collect()))
+                    epsilon: sigma * 2.0_f64.sqrt() * erf::erf_inv(1.0_f64 - accuracy.alpha),
+                    delta: delta
+                    }))
+                }
+            }).collect()))
     }
 
     fn privacy_usage_to_accuracy(
@@ -118,13 +125,18 @@ impl Accuracy for proto::GaussianMechanism {
 
         let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivities.len())?;
         let epsilon = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
+        let delta = usages.iter().map(get_delta).collect::<Result<Vec<f64>>>()?;
+        let iter = izip!(sensitivities.into_iter(), epsilon.into_iter(), delta.into_iter());
 
-        Ok(Some(sensitivities.into_iter().zip(epsilon.into_iter())
-            .map(|(sensitivity, epsilon)| proto::Accuracy {
-                /// ToDo: add accuracy
-                /// value: (1. / *alpha).ln() * (sensitivity / epsilon),
-                alpha: *alpha,
-            })
-            .collect()))
+        Ok(Some(
+            iter.map( |(sensitivity, epsilon, delta)| {
+                let c: f64 = 2.0_f64 * (1.25_f64 / delta).ln();
+                let sigma: f64 = c.sqrt() * sensitivity / epsilon;
+    
+                proto::Accuracy {
+                    value : sigma * 2.0_f64.sqrt() * erf::erf_inv(1.0_f64 - *alpha),  
+                    alpha: *alpha,
+                    }
+                }).collect()))
     }
 }

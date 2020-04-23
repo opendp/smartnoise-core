@@ -1,10 +1,9 @@
 use crate::errors::*;
 
-
 use std::collections::HashMap;
 use math::round;
 
-use crate::components::{Aggregator};
+use crate::components::{Aggregator, Accuracy};
 use crate::{proto, base};
 
 use crate::components::{Component, Expandable};
@@ -91,8 +90,7 @@ impl Accuracy for proto::SimpleGeometricMechanism {
         Ok(Some(sensitivities.into_iter().zip(accuracies.values.iter())
             .map(|(sensitivity, accuracy)| proto::PrivacyUsage {
                 distance: Some(proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
-                    /// ToDo: Add epsilon
-                    /// epsilon: (1. / accuracy.alpha).ln() * (sensitivity / accuracy.value),
+                    epsilon: (1. / accuracy.alpha).ln() * (sensitivity / accuracy.value),
                     delta: 0.,
                 }))
             })
@@ -124,11 +122,12 @@ impl Accuracy for proto::SimpleGeometricMechanism {
         let epsilon = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
 
         Ok(Some(sensitivities.into_iter().zip(epsilon.into_iter())
-            .map(|(sensitivity, epsilon)| proto::Accuracy {
-                /// ToDo: Add accuracy
-                ///value: round::ceil((1. / *alpha).ln() * (sensitivity / epsilon),0),
-                alpha: *alpha,
-            })
-            .collect()))
+            .map(|(sensitivity, epsilon)| {
+                let unrounded_accuracy = (1. / *alpha).ln() * (sensitivity / epsilon);              
+                proto::Accuracy {
+                    value: round::ceil(unrounded_accuracy, 0),
+                    alpha: *alpha,
+            }
+        }).collect()))      
     }
 }

@@ -1,0 +1,60 @@
+\documentclass[11pt]{scrartcl} % Font size
+\input{structure.tex} % Include the file specifying the document structure and custom commands
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\title{
+	\normalfont\normalsize
+	\textsc{Harvard Privacy Tools Project}\\ % Your university, school and/or department name(s)
+	\vspace{25pt} % Whitespace
+	\rule{\linewidth}{0.5pt}\\ % Thin top horizontal rule
+	\vspace{20pt} % Whitespace
+	{\huge Gaussian Mechanism Accuracy}\\ % The assignment title
+	\vspace{12pt} % Whitespace
+	\rule{\linewidth}{2pt}\\ % Thick bottom horizontal rule
+	\vspace{12pt} % Whitespace
+}
+
+\date{\normalsize\today} % Today's date (\today) or a custom date
+
+\begin{document}
+
+\maketitle
+
+\begin{definition}
+Let $z$ be the true value of the statistic and let $X$ be the random variable the noisy release is drawn from. Let $\alpha$ be the statistical significance level, and let $Y = \vert X-z \vert.$ Then, accuracy $a$ for statistical significance level $\alpha$ is the $a$ s.t.
+$$ \alpha = \pr[Y > a].$$
+\end{definition}
+
+\begin{theorem}
+The accuracy of an $(\epsilon,\delta)$-differentially private release from the Gaussian mechanism on a function with $\ell_2$-sensitivity $\Delta_2$ at statistical significance level $\alpha$ is
+$$ a = \frac{2 \Delta_2}{\epsilon} \sqrt{\ln \left( \frac{1.25}{\delta} \right)} \hspace{0.1cm} \text{erf}^{-1} (1 - \alpha).$$
+\end{theorem}
+
+\begin{proof}
+Note that
+\begin{align*}
+\alpha &= 1 - P[Y \le a] \\
+	&= 1 - 2 \int_0^a f(y) dy \\
+	&= 1 - \frac{2}{\sigma \sqrt{2\pi}} \int_0^a e^{-\frac{1}{2}\left( \frac{y}{\sigma}\right)^2} dy \\
+	&= 1 - \text{erf}\left( \frac{a}{\sigma \sqrt{2}}\right).
+\end{align*},
+
+where the last two lines are taken from the definitions of the Gaussian distribution.
+
+Recall from the definition of the Gaussian mechanism that it adds Gaussian noise to queries with standard deviation
+$\sigma \ge c \Delta_2 / \epsilon$, where $c^2 \ge 2 \ln \left( \frac{1.25}{\delta} \right)$ \cite{DR14}.\footnote{In the formulation of the Gaussian mechanism in Dwork \& Roth, they say that $c^2 \ge 2 \ln \left( \frac{1.25}{\delta} \right)$. However, this bound comes from a tighter bound in their proof on p.264, which requires that $c^2 > 2 \ln (\sqrt{2 e^{8/9}/\pi}(1/\delta))$. Since $\sqrt{2 e^{8/9}/\pi} < 1.25$, the bound can safely be made tight.} Setting $\sigma$ into its minimum value, plugging it into the above expression and solving for $a$ then gives
+
+\begin{align*}
+a &= \sigma \sqrt{2} \hspace{0.1cm} \text{erf}^{-1} (1 - \alpha)\\
+	&= \frac{\Delta_2 \sqrt{2}}{\epsilon} \sqrt{ 2 \ln \left( \frac{1.25}{\delta} \right)} \hspace{0.1cm} \text{erf}^{-1} (1 - \alpha)\\
+	&= \frac{2 \Delta_2}{\epsilon} \sqrt{\ln \left( \frac{1.25}{\delta} \right)} \hspace{0.1cm} \text{erf}^{-1} (1 - \alpha)
+\end{align*}
+\end{proof}
+
+\bibliographystyle{alpha}
+\bibliography{accuracies}
+
+\end{document}
