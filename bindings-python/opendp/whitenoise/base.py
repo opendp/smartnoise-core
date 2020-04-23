@@ -250,11 +250,18 @@ class Component(object):
     def categories(self):
         """view the statically derived category set"""
         self.analysis.update_properties()
+
         try:
-            categories = self.analysis.properties.get(self.component_id).array.nature.categorical.categories
-            return parse_jagged(categories)
+            categories = self.analysis.properties.get(self.component_id).array.categorical.categories.data
+            return [parse_array1d_option(i) for i in categories]
         except AttributeError:
             return None
+
+    def set(self, value):
+        self.analysis.release_values[self.component_id] = {
+            'value': value,
+            'public': self.releasable
+        }
 
     def __pos__(self):
         return self
