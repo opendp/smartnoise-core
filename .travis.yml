@@ -22,6 +22,12 @@ jobs:
     os: linux
     language: rust
     rust: stable
+    before_install:
+      # Python + sphinx for generating python documentation
+      - sudo apt-get -y install python3-pip python-dev
+      - python3 -V
+      # Install sphinx packages
+      - pip3 -V; cd bindings-python; pip3 install -r requirements-sphinx-only.txt; cd ..;
     script:
     # (1) Rust Validator -> Test & Build
     - cd validator-rust; cargo build --verbose --workspace;
@@ -43,10 +49,27 @@ jobs:
     #
     - echo $TRAVIS_BRANCH;
     # switch to master after initial version
+    # - if [ "$TRAVIS_BRANCH" == "ms-docs-fix" ]; then
     - if [ "$TRAVIS_BRANCH" == "develop" ]; then
-        ./generate_docs.sh
-      fi
-
+        bash generate_docs.sh;
+      fi;
+    # -------------------------------------------
+    # Deploy the Rust documentation to
+    # GitHub pages
+    # - Triggered when the branch is "master"
+    # -------------------------------------------
+    deploy:
+      provider: pages
+      skip_cleanup: true
+      local_dir: docs
+      # Set in the settings page of your repository, as a secure variable
+      github_token: $GITHUB_TOKEN
+      keep_history: true
+      target_branch: gh-pages
+      on:
+        branch: develop # switch to master after initial version
+        #branch: ms-docs-fix # Testing on a dev. branch
+  #verbose: true
   # - name: Deploy manylinux2010_i686 32-bit
   #   services:
   #   - docker
@@ -66,13 +89,13 @@ jobs:
   #   deploy:
   #     skip_cleanup: true
   #     provider: script
-  #     script: 
-  #       python3 -m pip install --upgrade pip && 
-  #       python3 -m pip install twine && 
+  #     script:
+  #       python3 -m pip install --upgrade pip &&
+  #       python3 -m pip install twine &&
   #       python3 -m twine upload --verbose --skip-existing wheelhouse/*
   #     on:
   #       branch: develop
-        
+
   # - name: Deploy manylinux2010_x86_64 64-bit
   #   services:
   #   - docker
@@ -93,11 +116,11 @@ jobs:
   #   deploy:
   #     skip_cleanup: true
   #     provider: script
-  #     script: 
+  #     script:
   #       python3 -m pip install --upgrade pip && python3 -m pip install twine && python3 -m twine upload --verbose --skip-existing wheelhouse/*
   #     on:
   #       branch: develop
-        
+
 
   # RISC
   # - name: Deploy manylinux2014_aarch64
@@ -120,15 +143,15 @@ jobs:
   #     script: pip3 install twine && python3 -m twine upload --verbose --skip-existing wheelhouse/*
   #     on:
   #       branch: master
-        
+
 
 
   # - name: Deploy osx
-  #   # adapted from: https://github.com/cclauss/Travis-CI-Python-on-three-OSes/blob/master/.travis.yml  
+  #   # adapted from: https://github.com/cclauss/Travis-CI-Python-on-three-OSes/blob/master/.travis.yml
   #   os: osx
   #   osx_image: xcode11 # python3.7 comes installed with xcode11 image
   #   language: rust
-  #   rust: stable  
+  #   rust: stable
   #   install:
   #   - python3 -m pip install delocate
   #   script:
@@ -140,11 +163,11 @@ jobs:
   #   deploy:
   #     skip_cleanup: true
   #     provider: script
-  #     script: 
+  #     script:
   #       python3 -m pip install --upgrade pip && python3 -m pip install twine && python3 -m twine upload --verbose --skip-existing wheelhouse/*
   #     on:
   #       branch: develop
-        
+
 
   # - name: Deploy windows
   #   language: rust
@@ -166,4 +189,4 @@ jobs:
   #     script: pip3 install twine && python3 -m twine upload --verbose --skip-existing wheelhouse/*
   #     on:
   #       branch: master
-  #       
+  #
