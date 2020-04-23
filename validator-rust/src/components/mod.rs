@@ -11,7 +11,7 @@ use crate::errors::*;
 
 
 mod transforms;
-mod bin;
+//mod bin;
 mod cast;
 mod clamp;
 mod count;
@@ -35,7 +35,7 @@ mod kth_raw_sample_moment;
 mod maximum;
 mod materialize;
 mod minimum;
-//mod partition;
+pub mod partition;
 mod quantile;
 mod reshape;
 mod mean;
@@ -53,7 +53,7 @@ use std::collections::HashMap;
 use crate::base::{Value, NodeProperties, SensitivitySpace, ValueProperties, Array};
 use crate::proto;
 use crate::utilities::json::{JSONRelease};
-use crate::utilities::get_ith_release;
+use crate::utilities::get_ith_column;
 use ndarray::ArrayD;
 
 /// Universal Component trait
@@ -216,13 +216,13 @@ impl Component for proto::component::Variant {
 
         propagate_property!(
             // INSERT COMPONENT LIST
-            Bin, Cast, Clamp, Count, Covariance, Digitize,
+            Cast, Clamp, Count, Covariance, Digitize,
 
             Filter, Histogram, Impute, Index, KthRawSampleMoment, Materialize, Maximum, Mean,
 
             GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism,
 
-            Minimum, Quantile, Reshape, Resize, Sum, Variance,
+            Minimum, Partition, Quantile, Reshape, Resize, Sum, Variance,
 
             Add, Subtract, Divide, Multiply, Power, Log, Modulo, LogicalAnd, LogicalOr, Negate,
             Equal, LessThan, GreaterThan, Negative
@@ -315,9 +315,9 @@ impl Accuracy for proto::component::Variant {
     /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn accuracy_to_privacy_usage(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
-        _properties: &NodeProperties,
-        _accuracy: &proto::Accuracies,
+        privacy_definition: &proto::PrivacyDefinition,
+        properties: &NodeProperties,
+        accuracy: &proto::Accuracies,
     ) -> Result<Option<Vec<proto::PrivacyUsage>>> {
         macro_rules! accuracy_to_privacy_usage {
             ($( $variant:ident ),*) => {
@@ -334,7 +334,7 @@ impl Accuracy for proto::component::Variant {
 
         accuracy_to_privacy_usage!(
             // INSERT COMPONENT LIST
-            // LaplaceMechanism, GeometricMechanism
+             LaplaceMechanism
         );
 
         Ok(None)
@@ -345,16 +345,16 @@ impl Accuracy for proto::component::Variant {
     /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn privacy_usage_to_accuracy(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
-        _properties: &NodeProperties,
-        _alpha: &f64
+        privacy_definition: &proto::PrivacyDefinition,
+        properties: &NodeProperties,
+        alpha: &f64
     ) -> Result<Option<Vec<proto::Accuracy>>> {
         macro_rules! privacy_usage_to_accuracy {
             ($( $variant:ident ),*) => {
                 {
                     $(
                        if let proto::component::Variant::$variant(x) = self {
-                            return x.privacy_usage_to_accuracy(privacy_definition, properties)
+                            return x.privacy_usage_to_accuracy(privacy_definition, properties, alpha)
                                 .chain_err(|| format!("node specification {:?}:", self))
                        }
                     )*
@@ -364,7 +364,7 @@ impl Accuracy for proto::component::Variant {
 
         privacy_usage_to_accuracy!(
             // INSERT COMPONENT LIST
-//            Dpmean
+            LaplaceMechanism
         );
 
         Ok(None)
@@ -460,7 +460,7 @@ impl Named for proto::Literal {
         fn array_to_names<T: ToString + Clone + Default>(array: &ArrayD<T>, num_columns: i64) -> Result<Vec<String>> {
             (0..num_columns as usize)
                 .map(|index| {
-                    let array = get_ith_release(array, &index)?;
+                    let array = get_ith_column(array, &index)?;
                     match array.ndim() {
                         0 => match array.first() {
                             Some(value) => Ok(value.to_string()),

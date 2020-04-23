@@ -9,7 +9,7 @@ use crate::{proto, base};
 
 use crate::components::{Component, Expandable};
 use crate::base::{Value, SensitivitySpace, ValueProperties, DataType};
-use crate::utilities::{prepend, expand_mechanism};
+use crate::utilities::{prepend, expand_mechanism, broadcast_privacy_usage, get_epsilon};
 
 
 impl Component for proto::LaplaceMechanism {
@@ -41,8 +41,6 @@ impl Component for proto::LaplaceMechanism {
 
         Ok(data_property.into())
     }
-
-
 }
 
 
@@ -70,19 +68,64 @@ impl Expandable for proto::LaplaceMechanism {
 impl Accuracy for proto::LaplaceMechanism {
     fn accuracy_to_privacy_usage(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
-        _properties: &base::NodeProperties,
-        _accuracies: &proto::Accuracies,
+        privacy_definition: &proto::PrivacyDefinition,
+        properties: &base::NodeProperties,
+        accuracies: &proto::Accuracies,
     ) -> Result<Option<Vec<proto::PrivacyUsage>>> {
-        Err("not implemented".into())
+        let data_property = properties.get("data")
+            .ok_or("data: missing")?.array()
+            .map_err(prepend("data:"))?.clone();
+
+        let aggregator = data_property.aggregator.clone()
+            .ok_or_else(|| Error::from("aggregator: missing"))?;
+
+        let sensitivity_value = aggregator.component.compute_sensitivity(
+            &privacy_definition,
+            &aggregator.properties,
+            &SensitivitySpace::KNorm(1))?;
+
+        // sensitivity must be computable
+        let sensitivities = sensitivity_value.array()?.f64()?;
+
+        Ok(Some(sensitivities.into_iter().zip(accuracies.values.iter())
+            .map(|(sensitivity, accuracy)| proto::PrivacyUsage {
+                distance: Some(proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
+                    epsilon: (1. / accuracy.alpha).ln() * (sensitivity / accuracy.value),
+                    delta: 0.,
+                }))
+            })
+            .collect()))
     }
 
     fn privacy_usage_to_accuracy(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
-        _properties: &base::NodeProperties,
-        _alpha: &f64
+        privacy_definition: &proto::PrivacyDefinition,
+        properties: &base::NodeProperties,
+        alpha: &f64
     ) -> Result<Option<Vec<proto::Accuracy>>> {
-        Err("not implemented".into())
+        let data_property = properties.get("data")
+            .ok_or("data: missing")?.array()
+            .map_err(prepend("data:"))?.clone();
+
+        let aggregator = data_property.aggregator.clone()
+            .ok_or_else(|| Error::from("aggregator: missing"))?;
+
+        let sensitivity_value = aggregator.component.compute_sensitivity(
+            &privacy_definition,
+            &aggregator.properties,
+            &SensitivitySpace::KNorm(1))?;
+
+        // sensitivity must be computable
+        let sensitivities = sensitivity_value.array()?.f64()?;
+
+        let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivities.len())?;
+        let epsilon = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
+
+        Ok(Some(sensitivities.into_iter().zip(epsilon.into_iter())
+            .map(|(sensitivity, epsilon)| proto::Accuracy {
+                value: (1. / *alpha).ln() * (sensitivity / epsilon),
+                alpha: *alpha,
+            })
+            .collect()))
     }
 }

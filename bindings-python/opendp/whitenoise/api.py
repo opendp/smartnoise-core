@@ -1,5 +1,5 @@
-from whitenoise._native_validator import ffi as ffi_validator, lib as lib_validator
-from whitenoise._native_runtime import ffi as ffi_runtime, lib as lib_runtime
+from opendp._native_validator import ffi as ffi_validator, lib as lib_validator
+from opendp._native_runtime import ffi as ffi_runtime, lib as lib_runtime
 
 from . import api_pb2
 import re
@@ -58,7 +58,7 @@ class LibraryWrapper(object):
             ffi=ffi_validator)
 
     @staticmethod
-    def accuracy_to_privacy_usage(privacy_definition, component, properties, accuracy):
+    def accuracy_to_privacy_usage(privacy_definition, component, properties, accuracies):
         """
         FFI Helper. Estimate the privacy usage necessary to bound accuracy to a given value.
         This function is data agnostic. It calls the validator rust FFI with protobuf objects.
@@ -66,14 +66,17 @@ class LibraryWrapper(object):
         :param privacy_definition: A descriptive object defining neighboring, distance definitions
         :param component: The component to compute accuracy for
         :param properties: Properties about all of the arguments to the component
-        :param accuracy: A value and alpha to convert to privacy usage
+        :param accuracies: A value and alpha to convert to privacy usage for each column
         :return: A privacy usage response
         """
         return _communicate(
             argument=api_pb2.RequestAccuracyToPrivacyUsage(
-                privacy_definition=privacy_definition, component=component, properties=properties, accuracy=accuracy),
+                privacy_definition=privacy_definition,
+                component=component,
+                properties=properties,
+                accuracies=accuracies),
             function=lib_validator.accuracy_to_privacy_usage,
-            response_type=api_pb2.RequestAccuracyToPrivacyUsage,
+            response_type=api_pb2.ResponseAccuracyToPrivacyUsage,
             ffi=ffi_validator)
 
     @staticmethod
@@ -90,9 +93,12 @@ class LibraryWrapper(object):
         """
         return _communicate(
             argument=api_pb2.RequestPrivacyUsageToAccuracy(
-                privacy_definition=privacy_definition, component=component, properties=properties, alpha=alpha),
+                privacy_definition=privacy_definition,
+                component=component,
+                properties=properties,
+                alpha=alpha),
             function=lib_validator.privacy_usage_to_accuracy,
-            response_type=api_pb2.RequestPrivacyUsageToAccuracy,
+            response_type=api_pb2.ResponsePrivacyUsageToAccuracy,
             ffi=ffi_validator)
 
     @staticmethod
@@ -112,7 +118,7 @@ class LibraryWrapper(object):
             ffi=ffi_validator)
 
     @staticmethod
-    def compute_release(analysis, release, stack_trace):
+    def compute_release(analysis, release, stack_trace, filter_level):
         """
         FFI Helper. Evaluate an analysis and release the differentially private results.
         This function touches private data. It calls the runtime rust FFI with protobuf objects.
@@ -120,13 +126,15 @@ class LibraryWrapper(object):
         :param analysis: A description of computation
         :param release: A collection of public values
         :param stack_trace: Set to False to suppress stack traces
+        :param filter_level: Configures how much data should be included in the release
         :return: A response containing an updated release
         """
         return _communicate(
             argument=api_pb2.RequestRelease(
                 analysis=analysis,
                 release=release,
-                stack_trace=stack_trace),
+                stack_trace=stack_trace,
+                filter_level=filter_level),
             function=lib_runtime.release,
             response_type=api_pb2.ResponseRelease,
             ffi=ffi_runtime)
@@ -154,21 +162,26 @@ def _communicate(function, argument, response_type, ffi):
 
     # Errors from here are propagated up from either the rust validator or runtime
     if response.HasField("error"):
-
-        library_traceback = response.error.message
-
-        # noinspection PyBroadException
-        try:
-            # on Linux, stack traces are more descriptive
-            if platform.system() == "Linux":
-                message, *frames = re.split("\n +[0-9]+: ", library_traceback)
-                library_traceback = '\n'.join(reversed(["  " + frame.replace("         at", "at") for frame in frames
-                                                        if ("at src/" in frame or "whitenoise_validator" in frame)
-                                                        and "whitenoise_validator::errors::Error" not in frame])) \
-                                    + "\n  " + message
-        except Exception:
-            pass
+        library_traceback = format_error(response.error)
 
         # stack traces beyond this point come from the internal rust libraries
         raise RuntimeError(library_traceback)
     return response.data
+
+
+def format_error(error):
+    library_traceback = error.message
+
+    # noinspection PyBroadException
+    try:
+        # on Linux, stack traces are more descriptive
+        if platform.system() == "Linux":
+            message, *frames = re.split("\n +[0-9]+: ", library_traceback)
+            library_traceback = '\n'.join(reversed(["  " + frame.replace("         at", "at") for frame in frames
+                                                    if ("at src/" in frame or "whitenoise_validator" in frame)
+                                                    and "whitenoise_validator::errors::Error" not in frame])) \
+                                + "\n  " + message
+    except Exception:
+        pass
+
+    return library_traceback

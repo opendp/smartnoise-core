@@ -23,10 +23,14 @@ impl Component for proto::Index {
         let column_names = public_arguments.get("columns")
             .ok_or_else(|| Error::from("columns: missing"))?.deref().to_owned().array()?.clone();
 
+        let dimensionality = column_names.shape().len() as u32 + 1;
+
         let properties = match data_property {
             ValueProperties::Hashmap(data_property) => {
-                // TODO: check that hashmap is columnar. The columnar property is in another branch.
-                //       when partition is added, should we allow column stacking of partitions?
+                // TODO: Should columnar stacking of partitions be allowed?
+                if !data_property.columnar {
+                    return Err("data to Index must be columnar".into())
+                }
                 match data_property.properties {
                     Hashmap::Str(value_properties) => match column_names {
                         // String column names on string hashmap
@@ -96,13 +100,13 @@ impl Component for proto::Index {
                         .enumerate().filter(|(_, mask)| *mask)
                         .map(|(idx, _)| select_properties(&data_property, &idx))
                         .collect::<Result<Vec<ValueProperties>>>(),
-                    _ => return Err("the data type of the indices are not supported".into())
+                    _ => return Err("when indexing an array, the data type of the indices must be integer column number(s) or a boolean mask".into())
                 }
             },
             ValueProperties::Jagged(_) => Err("indexing is not supported on vectors".into())
         }?;
 
-        stack_properties(&properties)
+        stack_properties(&properties, dimensionality)
     }
 
 }
@@ -200,7 +204,7 @@ fn get_common_value<T: Clone + Eq>(values: &Vec<T>) -> Option<T> {
     } else { None }
 }
 
-fn stack_properties(all_properties: &Vec<ValueProperties>) -> Result<ValueProperties> {
+fn stack_properties(all_properties: &Vec<ValueProperties>, dimensionality: u32) -> Result<ValueProperties> {
     let all_properties = all_properties.into_iter()
         .map(|property| Ok(property.array()?.clone()))
         .collect::<Result<Vec<ArrayProperties>>>()?;
@@ -235,6 +239,9 @@ fn stack_properties(all_properties: &Vec<ValueProperties>) -> Result<ValueProper
         nature: None,
         data_type: get_common_value(&all_properties.iter().map(|prop| prop.data_type.clone()).collect())
             .ok_or_else(|| Error::from("dataset must have homogeneous type"))?,
-        dataset_id
+        dataset_id,
+        // this is a library-wide assumption - that datasets have more than zero rows
+        is_not_empty: true,
+        dimensionality
     }))
 }

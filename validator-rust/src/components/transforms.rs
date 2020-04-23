@@ -71,10 +71,11 @@ impl Component for proto::Add {
             aggregator: None,
             data_type: left_property.data_type,
             dataset_id: left_property.dataset_id,
+            is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
+            dimensionality: left_property.dimensionality
+                .max(right_property.dimensionality)
         }.into())
     }
-
-
 }
 
 
@@ -136,6 +137,9 @@ impl Component for proto::Subtract {
             aggregator: None,
             data_type: left_property.data_type,
             dataset_id: left_property.dataset_id,
+            is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
+            dimensionality: left_property.dimensionality
+                .max(right_property.dimensionality)
         }.into())
     }
 
@@ -162,9 +166,6 @@ impl Component for proto::Multiply {
         if left_property.data_type != right_property.data_type {
             return Err("left and right arguments must share the same data types".into())
         }
-
-        println!("left {}", left_property.nullity);
-        println!("right {}", right_property.nullity);
 
         Ok(ArrayProperties {
             nullity: left_property.nullity || right_property.nullity,
@@ -258,6 +259,9 @@ impl Component for proto::Multiply {
             num_records,
             aggregator: None,
             dataset_id: left_property.dataset_id,
+            is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
+            dimensionality: left_property.dimensionality
+                .max(right_property.dimensionality)
         }.into())
     }
 
@@ -407,6 +411,9 @@ impl Component for proto::Divide {
             aggregator: None,
             data_type: left_property.data_type,
             dataset_id: left_property.dataset_id,
+            is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
+            dimensionality: left_property.dimensionality
+                .max(right_property.dimensionality)
         }.into())
     }
 
@@ -468,6 +475,10 @@ impl Component for proto::Power {
             },
             _ => return Err("arguments for power must be numeric and homogeneously typed".into())
         }
+
+        data_property.is_not_empty = data_property.is_not_empty && radical_property.is_not_empty;
+        data_property.dimensionality = data_property.dimensionality
+            .max(radical_property.dimensionality);
         Ok(data_property.into())
     }
 
@@ -521,6 +532,9 @@ impl Component for proto::Log {
                 i64: None
             }, &data_property.num_columns()?)?;
 
+        data_property.is_not_empty = data_property.is_not_empty && base_property.is_not_empty;
+        data_property.dimensionality = data_property.dimensionality
+            .max(base_property.dimensionality);
         Ok(data_property.into())
     }
 
@@ -557,8 +571,6 @@ impl Component for proto::Negative {
 
         Ok(data_property.into())
     }
-
-
 }
 
 impl Component for proto::Modulo {
@@ -618,6 +630,9 @@ impl Component for proto::Modulo {
             _ => return Err("arguments for power must be numeric and homogeneously typed".into())
         };
 
+        left_property.is_not_empty = left_property.is_not_empty && right_property.is_not_empty;
+        left_property.dimensionality = left_property.dimensionality
+            .max(right_property.dimensionality);
         Ok(left_property.into())
     }
 
@@ -660,10 +675,12 @@ impl Component for proto::And {
         left_property.num_columns = Some(num_columns);
         left_property.num_records = num_records;
 
+        left_property.is_not_empty = left_property.is_not_empty && right_property.is_not_empty;
+        left_property.dimensionality = left_property.dimensionality
+            .max(right_property.dimensionality);
+
         Ok(left_property.into())
     }
-
-
 }
 
 
@@ -704,10 +721,12 @@ impl Component for proto::Or {
         left_property.num_columns = Some(num_columns);
         left_property.num_records = num_records;
 
+        left_property.is_not_empty = left_property.is_not_empty && right_property.is_not_empty;
+        left_property.dimensionality = left_property.dimensionality
+            .max(right_property.dimensionality);
+
         Ok(left_property.into())
     }
-
-
 }
 
 
@@ -751,6 +770,7 @@ impl Component for proto::Equal {
         let right_property = properties.get("right")
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
+
         left_property.assert_is_not_aggregated()?;
         right_property.assert_is_not_aggregated()?;
 
@@ -774,6 +794,8 @@ impl Component for proto::Equal {
             aggregator: None,
             data_type: DataType::Bool,
             dataset_id: left_property.dataset_id,
+            is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
+            dimensionality: left_property.dimensionality.max(right_property.dimensionality)
         }.into())
     }
 
@@ -824,6 +846,9 @@ impl Component for proto::LessThan {
             aggregator: None,
             data_type: DataType::Bool,
             dataset_id: left_property.dataset_id,
+            is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
+            dimensionality: left_property.dimensionality
+                .max(right_property.dimensionality)
         }.into())
     }
 
@@ -874,6 +899,9 @@ impl Component for proto::GreaterThan {
             aggregator: None,
             data_type: DataType::Bool,
             dataset_id: left_property.dataset_id,
+            is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
+            dimensionality: left_property.dimensionality
+                .max(right_property.dimensionality)
         }.into())
     }
 

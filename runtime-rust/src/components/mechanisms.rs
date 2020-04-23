@@ -1,15 +1,15 @@
 use whitenoise_validator::errors::*;
 
-use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value, Array};
-use whitenoise_validator::utilities::{get_argument, broadcast_privacy_usage, broadcast_ndarray};
+use crate::NodeArguments;
+use whitenoise_validator::base::{Array, ReleaseNode};
+use whitenoise_validator::utilities::{get_argument, broadcast_privacy_usage, broadcast_ndarray, get_epsilon, get_delta};
 use crate::components::Evaluable;
 use crate::utilities;
 use whitenoise_validator::proto;
 use ndarray;
 
 impl Evaluable for proto::LaplaceMechanism {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
         let mut data = match get_argument(&arguments, "data")?.array()? {
             Array::F64(data) => data.clone(),
             Array::I64(data) => data.mapv(|v| v as f64),
@@ -37,12 +37,16 @@ impl Evaluable for proto::LaplaceMechanism {
                 .collect::<Result<()>>())
             .collect::<Result<()>>()?;
 
-        Ok(data.into())
+        Ok(ReleaseNode {
+            value: data.into(),
+            privacy_usages: Some(usages),
+            public: true
+        })
     }
 }
 
 impl Evaluable for proto::GaussianMechanism {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
         let mut data = match get_argument(&arguments, "data")?.array()? {
             Array::F64(data) => data.clone(),
             Array::I64(data) => data.mapv(|v| v as f64),
@@ -75,12 +79,16 @@ impl Evaluable for proto::GaussianMechanism {
                 }).collect::<Result<()>>())
             .collect::<Result<()>>()?;
 
-        Ok(data.into())
+        Ok(ReleaseNode {
+            value: data.into(),
+            privacy_usages: Some(usages),
+            public: true
+        })
     }
 }
 
 impl Evaluable for proto::SimpleGeometricMechanism {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
         let mut data = get_argument(&arguments, "data")?.array()?.i64()?.clone();
 //        println!("data: {:?}", data.shape());
 
@@ -114,24 +122,10 @@ impl Evaluable for proto::SimpleGeometricMechanism {
                 .collect::<Result<()>>())
             .collect::<Result<()>>()?;
 
-        Ok(data.into())
-    }
-}
-
-
-fn get_epsilon(usage: &proto::PrivacyUsage) -> Result<f64> {
-    match usage.distance.clone()
-        .ok_or_else(|| Error::from("distance must be defined on a PrivacyUsage"))? {
-        proto::privacy_usage::Distance::DistancePure(distance) => Ok(distance.epsilon),
-        proto::privacy_usage::Distance::DistanceApproximate(distance) => Ok(distance.epsilon),
-//        _ => Err("epsilon is not defined".into())
-    }
-}
-
-fn get_delta(usage: &proto::PrivacyUsage) -> Result<f64> {
-    match usage.distance.clone()
-        .ok_or_else(|| Error::from("distance must be defined on a PrivacyUsage"))? {
-        proto::privacy_usage::Distance::DistanceApproximate(distance) => Ok(distance.delta),
-        _ => Err("delta is not defined".into())
+        Ok(ReleaseNode {
+            value: data.into(),
+            privacy_usages: Some(usages),
+            public: true
+        })
     }
 }

@@ -1,7 +1,7 @@
 use whitenoise_validator::errors::*;
 
-use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value, Array, Jagged};
+use crate::NodeArguments;
+use whitenoise_validator::base::{Value, Array, Jagged, ReleaseNode};
 use whitenoise_validator::utilities::{standardize_numeric_argument, standardize_categorical_argument, standardize_null_target_argument, get_argument};
 use crate::components::Evaluable;
 use ndarray::ArrayD;
@@ -10,7 +10,7 @@ use whitenoise_validator::proto;
 use std::hash::Hash;
 
 impl Evaluable for proto::Clamp {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
         // if categories argument was provided, clamp data as if they are categorical (regardless of atomic type)
         if arguments.contains_key("categories") {
             match (get_argument(&arguments, "data")?, get_argument(&arguments, "categories")?, get_argument(&arguments, "null_value")?) {
@@ -41,7 +41,7 @@ impl Evaluable for proto::Clamp {
                 }),
                 _ => return Err("data, lower, and upper must all be ArrayND".into())
             }
-        }
+        }.map(ReleaseNode::new)
     }
 }
 
@@ -161,8 +161,8 @@ pub fn clamp_numeric_integer(
 ///                                         "not_a_letter".to_string()]).into_dyn();
 ///
 /// let clamped_data = clamp_categorical(&data, &categories, &null_value).unwrap();
-/// assert!(clamped_data == arr2(&[["a".to_string(), "b".to_string(), "not_a_letter".to_string()],
-///                                ["a".to_string(), "not_a_letter".to_string(), "b".to_string()]]).into_dyn();)
+/// assert_eq!(clamped_data, arr2(&[["a".to_string(), "b".to_string(), "not_a_letter".to_string()],
+///                                ["a".to_string(), "not_a_letter".to_string(), "b".to_string()]]).into_dyn());
 /// ```
 pub fn clamp_categorical<T: Ord + Hash>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>, null_value: &ArrayD<T>)
                             -> Result<ArrayD<T>> where T:Clone, T:PartialEq, T:Default {

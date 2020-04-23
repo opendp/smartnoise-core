@@ -1,9 +1,9 @@
 use whitenoise_validator::errors::*;
 
-use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value, Array};
+use crate::NodeArguments;
+use whitenoise_validator::base::{Array, ReleaseNode};
 use crate::components::Evaluable;
-use ndarray::{ArrayD};
+use ndarray::ArrayD;
 use ndarray;
 use whitenoise_validator::proto;
 use whitenoise_validator::utilities::get_argument;
@@ -13,8 +13,8 @@ use noisy_float::types::n64;
 
 
 impl Evaluable for proto::Histogram {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        Ok(match (get_argument(arguments, "data")?.array()?, get_argument(arguments, "categories")?.array()?) {
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+        Ok(ReleaseNode::new(match (get_argument(arguments, "data")?.array()?, get_argument(arguments, "categories")?.array()?) {
             (Array::Bool(data), Array::Bool(categories)) =>
                 histogram(data, categories)?.into(),
             (Array::F64(data), Array::F64(categories)) =>
@@ -24,12 +24,11 @@ impl Evaluable for proto::Histogram {
             (Array::Str(data), Array::Str(categories)) =>
                 histogram(data, categories)?.into(),
             _ => return Err("data and categories must be homogeneously typed".into())
-        })
+        }))
     }
 }
 
 pub fn histogram<T: Clone + Eq + Ord + std::hash::Hash>(data: &ArrayD<T>, categories: &ArrayD<T>) -> Result<ArrayD<i64>> {
-
     let zeros = categories.iter()
         .map(|cat| (cat, 0)).collect::<BTreeMap<&T, i64>>();
 

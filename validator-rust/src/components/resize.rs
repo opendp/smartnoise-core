@@ -177,6 +177,7 @@ impl Component for proto::Resize {
         }
 
         data_property.num_records = Some(num_records);
+        data_property.is_not_empty = num_records > 0;
         Ok(data_property.into())
     }
 

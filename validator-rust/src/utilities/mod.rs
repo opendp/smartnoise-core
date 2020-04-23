@@ -7,10 +7,10 @@ use crate::errors::*;
 
 use crate::proto;
 
-use crate::base::{Release, Value, ValueProperties, SensitivitySpace, NodeProperties, ArrayProperties};
+use crate::base::{Release, Value, ValueProperties, SensitivitySpace, NodeProperties, ArrayProperties, ReleaseNode};
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
-use crate::utilities::serial::{parse_release, parse_value_properties, serialize_value, parse_value};
+use crate::utilities::serial::{parse_release, parse_value_properties, serialize_value, parse_release_node};
 use crate::utilities::inference::infer_property;
 
 use itertools::Itertools;
@@ -20,16 +20,20 @@ use ndarray::prelude::*;
 use crate::components::*;
 use crate::utilities::array::slow_select;
 use noisy_float::prelude::n64;
+use std::iter::FromIterator;
+use crate::ffi::serialize_error;
 
 /// Retrieve the Values for each of the arguments of a component from the Release.
-pub fn get_input_arguments(
+pub fn get_public_arguments(
     component: &proto::Component,
     graph_evaluation: &Release,
 ) -> Result<HashMap<String, Value>> {
     let mut arguments = HashMap::<String, Value>::new();
     for (field_id, field) in component.arguments.clone() {
         if let Some(evaluation) = graph_evaluation.get(&field) {
-            arguments.insert(field_id.to_owned(), evaluation.to_owned());
+            if evaluation.public {
+                arguments.insert(field_id.to_owned(), evaluation.to_owned().value.clone());
+            }
         }
     }
     Ok(arguments)
@@ -73,38 +77,70 @@ pub fn get_input_properties<T>(
 pub fn propagate_properties(
     analysis: &proto::Analysis,
     release: &proto::Release,
-) -> Result<(HashMap<u32, ValueProperties>, HashMap<u32, proto::Component>)> {
-    // compute properties for every node in the graph
+    properties: Option<&HashMap<u32, proto::ValueProperties>>,
+    dynamic: bool
+) -> Result<(HashMap<u32, ValueProperties>, HashMap<u32, proto::Component>, Vec<proto::Error>)> {
 
-    let privacy_definition = analysis.privacy_definition.to_owned().unwrap();
-    let mut graph: HashMap<u32, proto::Component> = analysis.computation_graph.to_owned().unwrap().value;
+    let privacy_definition = analysis.privacy_definition.to_owned()
+        .ok_or_else(|| Error::from("privacy definition must be defined"))?;
+    let mut graph: HashMap<u32, proto::Component> = analysis.computation_graph.to_owned()
+        .ok_or_else(|| Error::from("computation graph be defined"))?.value;
     let mut traversal: Vec<u32> = get_traversal(&graph)?;
+
     // extend and pop from the end of the traversal
     traversal.reverse();
 
     let mut graph_evaluation: Release = parse_release(&release)?;
 
-    let mut graph_properties = graph_evaluation.iter()
-        .map(|(node_id, value)| Ok((*node_id, infer_property(value)?)))
-        .collect::<Result<HashMap<u32, ValueProperties>>>()?;
+    let mut graph_properties = match properties {
+        Some(properties) => properties.iter()
+            .map(|(idx, props)| (idx.clone(), parse_value_properties(props)))
+            .collect::<HashMap<u32, ValueProperties>>(),
+        None => HashMap::new()
+    };
+
+    // infer properties on public evaluations
+    graph_properties.extend(graph_evaluation.iter()
+        .filter(|(_, release_node)| release_node.public)
+        .map(|(node_id, release_node)| Ok((*node_id, infer_property(&release_node.value)?)))
+        .collect::<Result<HashMap<u32, ValueProperties>>>()?);
 
     let mut maximum_id = graph.keys().cloned()
         .fold(0, std::cmp::max);
+
+    let mut failed_ids = HashSet::new();
+    let mut warnings = Vec::new();
 
     while !traversal.is_empty() {
         let node_id = *traversal.last().unwrap();
 
         let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
-        let input_properties = get_input_properties(&component, &graph_properties)?;
-        let public_arguments = get_input_arguments(&component, &graph_evaluation)?;
 
-        let mut expansion = component.clone().variant.unwrap().expand_component(
-            &privacy_definition,
-            &component,
-            &input_properties,
-            &node_id,
-            &maximum_id,
-        )?;
+        if component.arguments.values().any(|v| failed_ids.contains(v)) {
+            failed_ids.insert(traversal.pop().unwrap());
+            continue
+        }
+
+        let input_properties = get_input_properties(&component, &graph_properties)?;
+        let public_arguments = get_public_arguments(&component, &graph_evaluation)?;
+
+        let mut expansion = match (dynamic, component.clone().variant
+            .ok_or_else(|| Error::from("component variant must be defined"))?
+            .expand_component(
+                &privacy_definition,
+                &component,
+                &input_properties,
+                &node_id,
+                &maximum_id,
+            )) {
+            (_, Ok(expansion)) => expansion,
+            (true, Err(err)) => {
+                failed_ids.insert(traversal.pop().unwrap());
+                warnings.push(serialize_error(err));
+                continue
+            },
+            (false, Err(err)) => return Err(err)
+        };
 
         // patch the computation graph
         graph.extend(expansion.computation_graph.clone());
@@ -112,8 +148,8 @@ pub fn propagate_properties(
             .map(|(node_id, props)| (*node_id, parse_value_properties(props)))
             .collect::<HashMap<u32, ValueProperties>>());
         graph_evaluation.extend(expansion.releases.iter()
-            .map(|(node_id, release)| Ok((*node_id, parse_value(&release.value.clone().unwrap())?)))
-            .collect::<Result<HashMap<u32, Value>>>()?);
+            .map(|(node_id, release)| Ok((*node_id, parse_release_node(&release)?)))
+            .collect::<Result<HashMap<u32, ReleaseNode>>>()?);
 
         maximum_id = *expansion.computation_graph.keys().max()
             .map(|v| v.max(&maximum_id)).unwrap_or(&maximum_id);
@@ -126,10 +162,20 @@ pub fn propagate_properties(
         }
         traversal.pop();
 
-//        println!("graph evaluation in prop {:?}", graph_evaluation);
-        graph_properties.insert(node_id.clone(), match graph_evaluation.get(&node_id) {
+        let component_properties = match graph_evaluation.get(&node_id) {
             // if node has already been evaluated, infer properties directly from the public data
-            Some(value) => infer_property(&value),
+            Some(release_node) => {
+                if release_node.public {
+                    infer_property(&release_node.value)
+                } else {
+                    let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
+                    component.clone().variant
+                        .ok_or_else(|| Error::from("privacy definition must be defined"))?
+                        .propagate_property(
+                            &privacy_definition, &public_arguments, &input_properties)
+                        .chain_err(|| format!("at node_id {:?}", node_id))
+                }
+            }
 
             // if node has not been evaluated, propagate properties over it
             None => {
@@ -138,9 +184,22 @@ pub fn propagate_properties(
                     &privacy_definition, &public_arguments, &input_properties)
                     .chain_err(|| format!("at node_id {:?}", node_id))
             }
-        }?);
+        };
+
+        let component_properties = match (dynamic, component_properties) {
+            (_, Ok(properties)) => properties,
+            (true, Err(err)) => {
+                failed_ids.insert(traversal.pop().unwrap());
+                warnings.push(serialize_error(err));
+                continue
+            },
+            (false, Err(err)) => return Err(err)
+        };
+
+//        println!("graph evaluation in prop {:?}", graph_evaluation);
+        graph_properties.insert(node_id.clone(), component_properties);
     }
-    Ok((graph_properties, graph))
+    Ok((graph_properties, graph, warnings))
 }
 
 /// Given a computation graph, return an ordering of nodes that ensures all dependencies of any node have been visited
@@ -154,14 +213,14 @@ pub fn get_traversal(
     // track node parents
     let mut parents = HashMap::<u32, HashSet<u32>>::new();
     graph.iter().for_each(|(node_id, component)| {
-        if !parents.contains_key(node_id) {
-            parents.insert(*node_id, HashSet::<u32>::new());
-        }
+        parents.entry(*node_id)
+            .or_insert_with(HashSet::<u32>::new);
+
         component.arguments.values().for_each(|argument_node_id| {
             parents.entry(*argument_node_id)
                 .or_insert_with(HashSet::<u32>::new)
                 .insert(*node_id);
-        })
+        });
     });
 
     // store the optimal computation order of node ids
@@ -169,7 +228,8 @@ pub fn get_traversal(
 
     // collect all sources (nodes with zero arguments)
     let mut queue: Vec<u32> = graph.iter()
-        .filter(|(_node_id, component)| component.arguments.is_empty())
+        .filter(|(_node_id, component)| component.arguments.is_empty()
+            || component.arguments.values().all(|arg_idx| !graph.contains_key(arg_idx)))
         .map(|(node_id, _component)| node_id.to_owned()).collect();
 
     let mut visited = HashMap::new();
@@ -202,6 +262,27 @@ pub fn get_traversal(
         }
     }
     Ok(traversal)
+}
+
+/// Retrieve the set of node ids in a graph that have no dependent nodes.
+///
+/// # Arguments
+/// * `computation_graph` - a prost protobuf hashmap representing a computation graph
+///
+/// # Returns
+/// The set of node ids that have no dependent nodes
+pub fn get_sinks(computation_graph: &HashMap<u32, proto::Component>) -> HashSet<u32> {
+    // start with all nodes
+    let mut node_ids = HashSet::from_iter(computation_graph.keys().cloned());
+
+    // remove nodes that are referenced in arguments
+    computation_graph.values()
+        .for_each(|component| component.arguments.values()
+            .for_each(|source_node_id| {
+                node_ids.remove(source_node_id);
+            }));
+
+    return node_ids;
 }
 
 /// Given an array, conduct well-formedness checks and broadcast
@@ -375,15 +456,14 @@ pub fn standardize_weight_argument(
 pub fn get_literal(value: &Value, batch: &u32) -> Result<(proto::Component, proto::ReleaseNode)> {
     Ok((proto::Component {
         arguments: HashMap::new(),
-        variant: Some(proto::component::Variant::Literal(proto::Literal {
-            private: false
-        })),
+        variant: Some(proto::component::Variant::Literal(proto::Literal {})),
         omit: true,
         batch: *batch,
     },
         proto::ReleaseNode {
             value: Some(serialize_value(value)?),
-            privacy_usage: Vec::new(),
+            privacy_usages: None,
+            public: true
         }))
 }
 
@@ -403,12 +483,9 @@ pub fn get_component_privacy_usage(
     };
 
     // if release usage is defined, then use the actual eps, etc. from the release
-    if let Some(release_node) = release_node {
-        let release_privacy_usage = (*release_node.privacy_usage).to_vec();
-        if !release_privacy_usage.is_empty() {
-            privacy_usage = release_privacy_usage
-        }
-    }
+    release_node.map(|v| if let Some(release_privacy_usage) = v.privacy_usages.clone() {
+        privacy_usage = release_privacy_usage.values
+    });
 
     // sum privacy usage within the node
     privacy_usage.into_iter()
@@ -425,15 +502,32 @@ pub fn privacy_usage_reducer(
 
     proto::PrivacyUsage {
         distance: match (left.distance.to_owned().unwrap(), right.distance.to_owned().unwrap()) {
-            (Distance::DistancePure(x), Distance::DistancePure(y)) => Some(Distance::DistancePure(proto::privacy_usage::DistancePure {
+            (Distance::Pure(x), Distance::Pure(y)) => Some(Distance::Pure(proto::privacy_usage::DistancePure {
                 epsilon: operator(x.epsilon, y.epsilon)
             })),
-            (Distance::DistanceApproximate(x), Distance::DistanceApproximate(y)) => Some(Distance::DistanceApproximate(proto::privacy_usage::DistanceApproximate {
+            (Distance::Approximate(x), Distance::Approximate(y)) => Some(Distance::Approximate(proto::privacy_usage::DistanceApproximate {
                 epsilon: operator(x.epsilon, y.epsilon),
                 delta: operator(x.delta, y.delta),
             })),
             _ => None
         }
+    }
+}
+
+pub fn get_epsilon(usage: &proto::PrivacyUsage) -> Result<f64> {
+    match usage.distance.clone()
+        .ok_or_else(|| Error::from("distance must be defined on a PrivacyUsage"))? {
+        proto::privacy_usage::Distance::Pure(distance) => Ok(distance.epsilon),
+        proto::privacy_usage::Distance::Approximate(distance) => Ok(distance.epsilon),
+//        _ => Err("epsilon is not defined".into())
+    }
+}
+
+pub fn get_delta(usage: &proto::PrivacyUsage) -> Result<f64> {
+    match usage.distance.clone()
+        .ok_or_else(|| Error::from("distance must be defined on a PrivacyUsage"))? {
+        proto::privacy_usage::Distance::Approximate(distance) => Ok(distance.delta),
+        _ => Err("delta is not defined".into())
     }
 }
 
@@ -447,15 +541,15 @@ pub fn broadcast_privacy_usage(usages: &[proto::PrivacyUsage], length: usize) ->
     }
 
     Ok(match usages[0].distance.clone().ok_or("distance must be defined on a privacy usage")? {
-        proto::privacy_usage::Distance::DistancePure(pure) => (0..length)
+        proto::privacy_usage::Distance::Pure(pure) => (0..length)
             .map(|_| proto::PrivacyUsage {
-                distance: Some(proto::privacy_usage::Distance::DistancePure(proto::privacy_usage::DistancePure {
+                distance: Some(proto::privacy_usage::Distance::Pure(proto::privacy_usage::DistancePure {
                     epsilon: pure.epsilon / (length as f64)
                 }))
             }).collect(),
-        proto::privacy_usage::Distance::DistanceApproximate(approx) => (0..length)
+        proto::privacy_usage::Distance::Approximate(approx) => (0..length)
             .map(|_| proto::PrivacyUsage {
-                distance: Some(proto::privacy_usage::Distance::DistanceApproximate(proto::privacy_usage::DistanceApproximate {
+                distance: Some(proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
                     epsilon: approx.epsilon / (length as f64),
                     delta: approx.delta / (length as f64),
                 }))
@@ -529,7 +623,7 @@ pub fn expand_mechanism(
     })
 }
 
-pub fn get_ith_release<T: Clone + Default>(value: &ArrayD<T>, i: &usize) -> Result<ArrayD<T>> {
+pub fn get_ith_column<T: Clone + Default>(value: &ArrayD<T>, i: &usize) -> Result<ArrayD<T>> {
     match value.ndim() {
         0 => if i == &0 {Ok(value.clone())} else {Err("ith release does not exist".into())},
         1 => Ok(value.clone()),

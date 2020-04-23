@@ -20,6 +20,7 @@ impl Component for proto::Minimum {
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
         data_property.assert_is_not_aggregated()?;
+        data_property.assert_is_not_empty()?;
 
         // save a snapshot of the state when aggregating
         data_property.aggregator = Some(AggregatorProperties {
@@ -64,7 +65,10 @@ impl Aggregator for proto::Minimum {
                     .map(|(min, max)| (max - min))
                     .collect::<Vec<f64>>();
 
-                Ok(Array::from(row_sensitivity).into_dyn().into())
+                let mut array_sensitivity = Array::from(row_sensitivity).into_dyn();
+                array_sensitivity.insert_axis_inplace(Axis(0));
+
+                Ok(array_sensitivity.into())
             }
             _ => Err("Minimum sensitivity is only implemented for KNorm of 1".into())
         }

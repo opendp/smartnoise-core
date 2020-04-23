@@ -8,7 +8,7 @@ use crate::components::{Expandable, Report};
 
 use crate::base::{NodeProperties, Value, Array};
 use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, value_to_json};
-use crate::utilities::{prepend, broadcast_privacy_usage, get_ith_release};
+use crate::utilities::{prepend, broadcast_privacy_usage, get_ith_column};
 
 
 
@@ -86,8 +86,8 @@ impl Report for proto::DpSum {
                 statistic: "DPSum".to_string(),
                 variables: serde_json::json!(variable_name),
                 release_info: match release.array()? {
-                    Array::F64(v) => value_to_json(&get_ith_release(v, &column_number)?.into())?,
-                    Array::I64(v) => value_to_json(&get_ith_release(v, &column_number)?.into())?,
+                    Array::F64(v) => value_to_json(&get_ith_column(v, &column_number)?.into())?,
+                    Array::I64(v) => value_to_json(&get_ith_column(v, &column_number)?.into())?,
                     _ => return Err("maximum must be numeric".into())
                 },
                 privacy_loss: privacy_usage_to_json(&privacy_usages[column_number].clone()),

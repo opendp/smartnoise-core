@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 import os
 
 # turn on backtraces in rust (for build.rs)
@@ -10,7 +10,7 @@ WN_RELEASE = os.environ.get("WN_RELEASE", "false") != "false"
 # set the environment variable to use precompiled external libraries
 WN_USE_SYSTEM_LIBS = os.environ.get("WN_USE_SYSTEM_LIBS", "false") != "false"
 
-rust_build_path = os.path.join('..', 'target', 'release' if WN_RELEASE else 'debug')
+rust_build_path = os.path.join('target', 'release' if WN_RELEASE else 'debug')
 rust_build_cmd = 'cargo build'
 if WN_RELEASE:
     rust_build_cmd += ' --release'
@@ -26,7 +26,7 @@ def build_native(spec):
     )
 
     spec.add_cffi_module(
-        module_path='whitenoise._native_validator',
+        module_path='opendp._native_validator',
         dylib=lambda: build_validator.find_dylib('whitenoise_validator', in_path=rust_build_path),
         header_filename=lambda: build_validator.find_header('api.h', in_path='.'),
         rtld_flags=['NOW', 'NODELETE']
@@ -38,7 +38,7 @@ def build_native(spec):
     )
 
     spec.add_cffi_module(
-        module_path='whitenoise._native_runtime',
+        module_path='opendp._native_runtime',
         dylib=lambda: build_runtime.find_dylib('whitenoise_runtime', in_path=rust_build_path),
         header_filename=lambda: build_runtime.find_header('api.h', in_path='.'),
         rtld_flags=['NOW', 'NODELETE']
@@ -53,8 +53,9 @@ def build_python(spec):
 
 
 setup(
-    package_dir={"whitenoise": "whitenoise"},
-    package_data={"whitenoise": ["variant_message_map.json"]},
+    package_dir={"opendp": "opendp"},
+    package_data={"opendp": ["whitenoise/variant_message_map.json"]},
+    packages=find_packages(),
     extras_require={
         "plotting": [
             "networkx",

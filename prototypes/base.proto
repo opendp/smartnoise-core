@@ -45,7 +45,17 @@ message Release {
 }
 message ReleaseNode {
     Value value = 1;
-    repeated PrivacyUsage privacy_usage = 2;
+    PrivacyUsages privacy_usages = 2;
+    bool public = 3;
+}
+
+enum FilterLevel {
+    // release from runtime should include public data (either literals or sanitized data)
+    PUBLIC = 0;
+    // release from runtime should include public and prior known values
+    PUBLIC_AND_PRIOR = 1;
+    // release from runtime should include evaluations from all nodes
+    ALL = 2;
 }
 
 message ValueProperties {
@@ -97,10 +107,12 @@ message ArrayNDProperties {
     bool releasable = 7;
 
     oneof nature {
-        NatureContinuous continuous = 10;
-        NatureCategorical categorical = 11;
+        NatureContinuous continuous = 100;
+        NatureCategorical categorical = 101;
     }
     I64Null dataset_id = 8;
+    bool is_not_empty = 9;
+    uint32 dimensionality = 10;
 }
 message NatureContinuous {
     Array1dNull minimum = 1;
@@ -117,6 +129,7 @@ message Vector2DJaggedProperties {
 
 message GraphProperties {
     map<uint32, ValueProperties> properties = 1;
+    repeated Error warnings = 2;
 }
 
 message PrivacyUsages {

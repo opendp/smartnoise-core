@@ -9,12 +9,12 @@
 //! Implementations of the Evaluable trait are distributed among the module files.
 
 use whitenoise_validator::errors::*;
-use crate::base::NodeArguments;
-use whitenoise_validator::base::Value;
+use crate::NodeArguments;
+use whitenoise_validator::base::ReleaseNode;
 
 use whitenoise_validator::proto;
 
-pub mod bin;
+//pub mod bin;
 pub mod cast;
 pub mod clamp;
 pub mod count;
@@ -29,6 +29,7 @@ pub mod maximum;
 pub mod materialize;
 pub mod mean;
 pub mod minimum;
+pub mod partition;
 pub mod quantile;
 pub mod reshape;
 pub mod mechanisms;
@@ -50,7 +51,7 @@ pub trait Evaluable {
     ///
     /// # Returns
     /// The concrete value corresponding to the abstract computation that the struct represents
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<Value>;
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode>;
 }
 
 impl Evaluable for proto::component::Variant {
@@ -59,7 +60,7 @@ impl Evaluable for proto::component::Variant {
     /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn evaluate(
         &self, arguments: &NodeArguments,
-    ) -> Result<Value> {
+    ) -> Result<ReleaseNode> {
         macro_rules! evaluate {
             ($( $variant:ident ),*) => {
                 {
@@ -75,8 +76,8 @@ impl Evaluable for proto::component::Variant {
 
         evaluate!(
             // INSERT COMPONENT LIST
-            Bin, Cast, Clamp, Count, Covariance, Digitize, Filter, Histogram, Impute, Index, KthRawSampleMoment, Maximum,
-            Materialize, Mean, Minimum, Quantile, Reshape, LaplaceMechanism, GaussianMechanism,
+            Cast, Clamp, Count, Covariance, Digitize, Filter, Histogram, Impute, Index, KthRawSampleMoment, Maximum,
+            Materialize, Mean, Minimum, Partition, Quantile, Reshape, LaplaceMechanism, GaussianMechanism,
             SimpleGeometricMechanism, Resize, Sum, Variance,
 
             Add, Subtract, Divide, Multiply, Power, Log, Modulo, LogicalAnd, LogicalOr, Negate,

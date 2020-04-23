@@ -1,7 +1,7 @@
 use whitenoise_validator::errors::*;
 
-use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value, Array};
+use crate::NodeArguments;
+use whitenoise_validator::base::{Array, ReleaseNode};
 use whitenoise_validator::utilities::get_argument;
 use crate::components::Evaluable;
 use whitenoise_validator::proto;
@@ -11,12 +11,12 @@ use crate::utilities::get_num_columns;
 
 
 impl Evaluable for proto::Minimum {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        match get_argument(&arguments, "data")?.array()? {
-            Array::F64(data) => Ok(minimum(&data)?.into()),
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+        Ok(ReleaseNode::new(match get_argument(&arguments, "data")?.array()? {
+            Array::F64(data) => minimum(&data)?.into(),
 //                ArrayND::I64(data) => Ok(minimum(&data)?.into()),
             _ => return Err("data must be either f64 or i64".into())
-        }
+        }))
     }
 }
 

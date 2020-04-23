@@ -7,7 +7,7 @@ use prost::Message;
 /// The array referenced by this struct contains the serialized value of one protobuf message.
 #[repr(C)]
 #[allow(dead_code)]
-pub struct ByteBuffer {
+pub struct ByteBufferRuntime {
     /// The length of the array containing serialized protobuf data
     pub len: i64,
     /// Pointer to start of array containing serialized protobuf data
@@ -21,7 +21,7 @@ pub struct ByteBuffer {
 /// - `request_length` - the length of the array
 ///
 /// # Returns
-/// a [ByteBuffer struct](struct.ByteBuffer.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseRelease](proto/struct.ResponseRelease.html)
+/// a [ByteBufferRuntime struct](struct.ByteBufferRuntime.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseRelease](proto/struct.ResponseRelease.html)
 #[no_mangle]
 pub extern "C" fn release(
     request_ptr: *const u8, request_length: i32,
@@ -31,7 +31,13 @@ pub extern "C" fn release(
     let response = proto::ResponseRelease {
         value: match proto::RequestRelease::decode(request_buffer) {
             Ok(request) => match super::release(&request) {
-                Ok(release) => Some(proto::response_release::Value::Data(release)),
+                Ok((release, warnings)) => Some(proto::response_release::Value::Data(proto::response_release::Success {
+                    release: Some(release),
+                    warnings: match request.stack_trace {
+                        true => warnings,
+                        false => Vec::new()
+                    }
+                })),
                 Err(err) => match request.stack_trace {
                     true =>
                         Some(proto::response_release::Value::Error(serialize_error(err))),

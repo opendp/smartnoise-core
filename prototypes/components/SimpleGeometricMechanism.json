@@ -1,7 +1,6 @@
 {
   "arguments": {
     "data": {
-      "default": "None",
       "nature": [
         "continuous"
       ],
@@ -20,6 +19,7 @@
   "options": {
     "privacy_usage": {
       "type": "repeated PrivacyUsage",
+      "default": "None",
       "description": "Object describing the type and amount of privacy to be used for the mechanism release."
     },
     "enforce_constant_time": {

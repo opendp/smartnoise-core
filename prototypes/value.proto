@@ -113,8 +113,8 @@ message PrivacyUsage {
         double delta = 2;
     }
     oneof distance {
-        DistancePure distance_pure = 1;
-        DistanceApproximate distance_approximate = 2;
+        DistancePure pure = 1;
+        DistanceApproximate approximate = 2;
     }
 }
 

@@ -6,7 +6,7 @@ use crate::proto;
 
 use ndarray::prelude::Ix1;
 
-use std::collections::{HashMap};
+use std::collections::{HashMap, BTreeMap};
 use ndarray::{ArrayD};
 
 use crate::utilities::{standardize_categorical_argument, deduplicate};
@@ -32,14 +32,14 @@ pub enum Value {
 
 impl Value {
     /// Retrieve an Array from a Value, assuming the Value contains an Array
-    pub fn array<'a>(&'a self) -> Result<&'a Array> {
+    pub fn array(&self) -> Result<&Array> {
         match self {
             Value::Array(array) => Ok(array),
             _ => Err("value must be an Array".into())
         }
     }
     /// Retrieve Jagged from a Value, assuming the Value contains Jagged
-    pub fn jagged<'a>(&'a self) -> Result<&'a Jagged> {
+    pub fn jagged(&self) -> Result<&Jagged> {
         match self {
             Value::Jagged(jagged) => Ok(jagged),
             _ => Err("value must be Jagged".into())
@@ -102,20 +102,20 @@ impl From<ArrayD<String>> for Value {
     }
 }
 
-impl From<HashMap<bool, Value>> for Value {
-    fn from(value: HashMap<bool, Value>) -> Self {
+impl From<BTreeMap<bool, Value>> for Value {
+    fn from(value: BTreeMap<bool, Value>) -> Self {
         Value::Hashmap(Hashmap::<Value>::Bool(value))
     }
 }
 
-impl From<HashMap<i64, Value>> for Value {
-    fn from(value: HashMap<i64, Value>) -> Self {
+impl From<BTreeMap<i64, Value>> for Value {
+    fn from(value: BTreeMap<i64, Value>) -> Self {
         Value::Hashmap(Hashmap::<Value>::I64(value))
     }
 }
 
-impl From<HashMap<String, Value>> for Value {
-    fn from(value: HashMap<String, Value>) -> Self {
+impl From<BTreeMap<String, Value>> for Value {
+    fn from(value: BTreeMap<String, Value>) -> Self {
         Value::Hashmap(Hashmap::<Value>::Str(value))
     }
 }
@@ -323,7 +323,7 @@ impl Jagged {
             .ok_or_else(|| "not all columns are known in float Jagged matrix".into())
     }
     /// Retrieve the f64 jagged matrix, assuming the data type of the jagged matrix is f64
-    pub fn f64_option<'a>(&'a self) -> Result<&'a Vec<Option<Vec<f64>>>> {
+    pub fn f64_option(&self) -> Result<&Vec<Option<Vec<f64>>>> {
         match self {
             Jagged::F64(data) => Ok(data),
             _ => Err("expected float type on a non-float Jagged matrix".into())
@@ -441,9 +441,9 @@ impl From<Vec<Option<Vec<String>>>> for Jagged {
 /// The Hashmap has a one-to-one mapping to a protobuf Hashmap.
 #[derive(Clone, Debug)]
 pub enum Hashmap<T> {
-    Bool(HashMap<bool, T>),
-    I64(HashMap<i64, T>),
-    Str(HashMap<String, T>),
+    Bool(BTreeMap<bool, T>),
+    I64(BTreeMap<i64, T>),
+    Str(BTreeMap<String, T>),
 }
 
 impl<T> Hashmap<T> {
@@ -464,27 +464,27 @@ impl<T> Hashmap<T> {
     pub fn from_values(&self, values: Vec<T>) -> Hashmap<T> where T: Clone {
         match self {
             Hashmap::Bool(value) => value.keys().cloned()
-                .zip(values).collect::<HashMap<bool, T>>().into(),
+                .zip(values).collect::<BTreeMap<bool, T>>().into(),
             Hashmap::I64(value) => value.keys().cloned()
-                .zip(values).collect::<HashMap<i64, T>>().into(),
+                .zip(values).collect::<BTreeMap<i64, T>>().into(),
             Hashmap::Str(value) => value.keys().cloned()
-                .zip(values).collect::<HashMap<String, T>>().into(),
+                .zip(values).collect::<BTreeMap<String, T>>().into(),
         }
     }
 }
 
-impl<T> From<HashMap<i64, T>> for Hashmap<T> {
-    fn from(value: HashMap<i64, T>) -> Self {
+impl<T> From<BTreeMap<i64, T>> for Hashmap<T> {
+    fn from(value: BTreeMap<i64, T>) -> Self {
         Hashmap::<T>::I64(value)
     }
 }
-impl<T> From<HashMap<bool, T>> for Hashmap<T> {
-    fn from(value: HashMap<bool, T>) -> Self {
+impl<T> From<BTreeMap<bool, T>> for Hashmap<T> {
+    fn from(value: BTreeMap<bool, T>) -> Self {
         Hashmap::<T>::Bool(value)
     }
 }
-impl<T> From<HashMap<String, T>> for Hashmap<T> {
-    fn from(value: HashMap<String, T>) -> Self {
+impl<T> From<BTreeMap<String, T>> for Hashmap<T> {
+    fn from(value: BTreeMap<String, T>) -> Self {
         Hashmap::<T>::Str(value)
     }
 }
@@ -594,6 +594,10 @@ pub struct ArrayProperties {
     /// index of last Materialize or Filter node, where dataset was created
     /// used to determine if arrays are conformable even when N is not known
     pub dataset_id: Option<i64>,
+    /// true if the array may not be length zero
+    pub is_not_empty: bool,
+    /// number of axes in the array
+    pub dimensionality: u32
 }
 
 
@@ -691,6 +695,9 @@ impl ArrayProperties {
     }
     pub fn assert_non_null(&self) -> Result<()> {
         if self.nullity { Err("data may contain nullity when non-nullity is required".into()) } else { Ok(())}
+    }
+    pub fn assert_is_not_empty(&self) -> Result<()> {
+        if self.is_not_empty { Ok(()) } else { Err("data may be empty when non-emptiness is required".into()) }
     }
     pub fn assert_is_releasable(&self) -> Result<()> {
         if self.releasable { Ok(()) } else { Err("data is not releasable when releasability is required".into()) }
@@ -804,7 +811,23 @@ pub enum SensitivitySpace {
     Exponential,
 }
 /// A release consists of Values for each node id.
-pub type Release = HashMap<u32, Value>;
+pub type Release = HashMap<u32, ReleaseNode>;
+
+pub struct ReleaseNode {
+    pub value: Value,
+    pub privacy_usages: Option<Vec<proto::PrivacyUsage>>,
+    pub public: bool
+}
+
+impl ReleaseNode {
+    pub fn new(value: Value) -> ReleaseNode {
+        ReleaseNode {
+            value,
+            privacy_usages: None,
+            public: false
+        }
+    }
+}
 
 // The properties for a node consists of Properties for each of its arguments.
 pub type NodeProperties = HashMap<String, ValueProperties>;

@@ -88,7 +88,10 @@ impl Aggregator for proto::Sum {
                     _ => return Err("KNorm sensitivity is only supported in L1 and L2 spaces".into())
                 };
 
-                Ok(Array::from(row_sensitivity).into_dyn().into())
+                let mut array_sensitivity = Array::from(row_sensitivity).into_dyn();
+                array_sensitivity.insert_axis_inplace(Axis(0));
+
+                Ok(array_sensitivity.into())
             }
             _ => Err("Sum sensitivity is only implemented for KNorm of 1".into())
         }

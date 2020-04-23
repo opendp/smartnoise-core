@@ -4,7 +4,7 @@ use crate::errors::*;
 use std::collections::HashMap;
 
 
-use crate::components::{Aggregator};
+use crate::components::Aggregator;
 use crate::{proto, base};
 
 use crate::components::{Component, Expandable};
@@ -24,7 +24,7 @@ impl Component for proto::GaussianMechanism {
             .map_err(prepend("data:"))?.clone();
 
         if data_property.data_type != DataType::F64 && data_property.data_type != DataType::I64 {
-            return Err("data: atomic type must be numeric".into())
+            return Err("data: atomic type must be numeric".into());
         }
         let aggregator = data_property.aggregator.clone()
             .ok_or_else(|| Error::from("aggregator: missing"))?;
@@ -40,10 +40,7 @@ impl Component for proto::GaussianMechanism {
 
         Ok(data_property.into())
     }
-
-
 }
-
 
 impl Expandable for proto::GaussianMechanism {
     fn expand_component(
@@ -60,7 +57,7 @@ impl Expandable for proto::GaussianMechanism {
             component,
             properties,
             component_id,
-            maximum_id
+            maximum_id,
         )
     }
 }

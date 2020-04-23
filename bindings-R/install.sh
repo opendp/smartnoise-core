@@ -1,46 +1,74 @@
-FILE_RUST_MANIFEST=runtime-rust/Cargo.toml
+#!/usr/bin/env bash
+set -e
+
 FILE_MAKEVARS=src/Makevars
 
-echo "> Copying runtime package"
+# use the external tar program from the operating system to avoid billions of path length warnings
+export R_BUILD_TAR=tar
 
-if test -f "src/$FILE_RUST_MANIFEST"; then
-  echo "RUST: rebuild source"
-  # only update src, for faster builds
-  rm -r src/runtime-rust/src
-  cp -fR ../runtime-rust/src src/runtime-rust/src
-else
-  echo "RUST: rebuild all"
+echo "> Copying packages package"
 
-  rm -r src/runtime-rust
-  cp -fR ../runtime-rust/ src/runtime-rust
+refresh_rust_sources () {
 
-  rm -r src/prototypes
-  cp -fR ../prototypes/ src/prototypes
+  if test -f "src/$1-rust/Cargo.toml"; then
+    echo "RUST: $1 rebuild source"
+    # only update src, for faster builds
+    rm -r src/$1-rust/src
+    cp -fR ../$1-rust/src src/$1-rust/src
 
-  # runtime's default config is to build a dynamic library
-  # but `ldd src/yarrow.so` (the shim) shows the broken (not found) runtime dependency
-  # fixed by compiling the runtime statically into the shim
-  sed -i 's/dylib/staticlib/g' src/runtime-rust/Cargo.toml
-fi
+  else
+    echo "RUST: $1 rebuild all"
+
+    rm -rf src/$1-rust
+    cp -fR ../$1-rust/ src/$1-rust
+
+    # default config is to build a dynamic library
+    # but `ldd src/whitenoise.so` (the shim) shows the broken (not found) runtime dependency
+    # fixed by compiling the runtime statically into the shim
+    # TODO: the '' argument was added for mac, may break linux distros
+    sed -i '' 's/cdylib/staticlib/g' src/$1-rust/Cargo.toml
+  fi
+}
+
+refresh_rust_sources "validator"
+refresh_rust_sources "runtime"
+
+mkdir -p inst
+rm -r inst/prototypes
+cp -fR ../prototypes/ inst/prototypes
 
 # REBUILD MAKEVARS FILE
-rm $FILE_MAKEVARS
+rm -f $FILE_MAKEVARS
 
 # if release is passed to install.sh, then pass build flag to cargo and adjust output directory
-if [[ $1 == "release" ]]; then
+RUST_BUILD_TARGET=debug
+if [[ -n "$WN_RELEASE" ]] && [[ "$WN_RELEASE" != "false" ]]; then
+  RUST_BUILD_TARGET=release
   RUST_BUILD_FLAG=--release
 fi
 
+if [[ -n "$WN_USE_SYSTEM_LIBS" ]] && [[ "$WN_USE_SYSTEM_LIBS" != "false" ]]; then
+  RUST_FEATURE_FLAG="--features use-system-libs"
+fi
+
 cat << EOF > ${FILE_MAKEVARS}
-LIBDIR = runtime-rust/target/${1:-debug}
-STATLIB = \$(LIBDIR)/libdifferential_privacy_runtime_rust.a
-PKG_LIBS = -L\$(LIBDIR) -l"differential_privacy_runtime_rust" -lresolv -lcrypto -lssl
+export WN_PROTO_DIR = ../../inst/prototypes
+LIBDIR_VALIDATOR = validator-rust/target/${RUST_BUILD_TARGET}
+LIBDIR_RUNTIME = runtime-rust/target/${RUST_BUILD_TARGET}
 
+STATLIB_VALIDATOR = \$(LIBDIR_VALIDATOR)/whitenoise_validator.a
+STATLIB_RUNTIME = \$(LIBDIR_RUNTIME)/whitenoise_runtime.a
 
-\$(SHLIB): \$(STATLIB)
+PKG_LIBS = -L\$(LIBDIR_VALIDATOR) -l"whitenoise_validator" -L\$(LIBDIR_RUNTIME) -l"whitenoise_runtime"
+# -lresolv -lcrypto -lssl
 
-\$(STATLIB):
-	cargo +nightly build ${RUST_BUILD_FLAG}--manifest-path=${FILE_RUST_MANIFEST}
+\$(SHLIB): \$(STATLIB_VALIDATOR) \$(STATLIB_RUNTIME)
+
+\$(STATLIB_VALIDATOR):
+	cargo build ${RUST_BUILD_FLAG} --manifest-path=validator-rust/Cargo.toml
+
+\$(STATLIB_RUNTIME):
+	cargo build ${RUST_BUILD_FLAG} --manifest-path=runtime-rust/Cargo.toml ${RUST_FEATURE_FLAG}
 
 EOF
 
@@ -48,4 +76,4 @@ EOF
 #	rm -Rf $(SHLIB) $(STATLIB) $(OBJECTS) runtime-rust/target
 
 echo "> Building and installing package"
-(cd .. && R -e "devtools::install('bindings-R')")
+R -e "pkgbuild::compile_dll(); devtools::document(); devtools::install()"

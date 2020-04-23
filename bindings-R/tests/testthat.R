@@ -1,4 +1,4 @@
 library(testthat)
-library(yarrow)
+library(whitenoise)
 
-test_check("yarrow")
+test_check("whitenoise")

@@ -23,7 +23,8 @@ impl Component for proto::Materialize {
         let data_source = self.data_source.clone()
             .ok_or_else(|| Error::from("data source must be supplied"))?;
 
-        match data_source.value.as_ref().unwrap() {
+        match data_source.value.as_ref()
+            .ok_or_else(|| Error::from("data_source variant must be defined"))? {
             proto::data_source::Value::Literal(value) => {
                 let array = match value.data.as_ref().ok_or_else(|| Error::from("Value variant must not empty"))? {
                     proto::value::Data::Array(value) => value,
@@ -39,19 +40,47 @@ impl Component for proto::Materialize {
                     proto::array1d::Data::F64(_) => DataType::F64,
                 };
 
-                match self.private {
-                    true => Ok(ValueProperties::Array(ArrayProperties {
-                        num_records: None,
-                        num_columns: Some(column_names.len() as i64),
-                        nullity: true,
-                        releasable: false,
-                        c_stability: column_names.iter().map(|_| 1.).collect(),
-                        aggregator: None,
-                        nature: None,
-                        data_type,
-                        dataset_id: self.dataset_id.as_ref().and_then(parse_i64_null),
-                    })),
-                    false => infer_property(&parse_value(value)?)
+                if public_arguments.get("column_names").is_some() {
+                    match self.public {
+                        false => Ok(ValueProperties::Hashmap(HashmapProperties {
+                            num_records: None,
+                            disjoint: false,
+                            properties: Hashmap::<ValueProperties>::Str(column_names.iter().map(|name| (name.clone(), ValueProperties::Array(ArrayProperties {
+                                num_records: None,
+                                num_columns: Some(1),
+                                nullity: true,
+                                releasable: self.public,
+                                c_stability: vec![1.],
+                                aggregator: None,
+                                nature: None,
+                                data_type: data_type.clone(),
+                                dataset_id: self.dataset_id.as_ref().and_then(parse_i64_null),
+                                // this is a library-wide assumption - that datasets initially have more than zero rows
+                                is_not_empty: true,
+                                dimensionality: 1
+                            }))).collect()),
+                            columnar: true
+                        })),
+                        true => return Err("column_names on value-materialized public data is not currently supported. Use num_columns instead.".into())
+                    }
+                } else {
+                    match self.public {
+                        false => Ok(ValueProperties::Array(ArrayProperties {
+                            num_records: None,
+                            num_columns: Some(column_names.len() as i64),
+                            nullity: true,
+                            releasable: false,
+                            c_stability: column_names.iter().map(|_| 1.).collect(),
+                            aggregator: None,
+                            nature: None,
+                            data_type,
+                            dataset_id: self.dataset_id.as_ref().and_then(parse_i64_null),
+                            // this is a library-wide assumption - that datasets initially have more than zero rows
+                            is_not_empty: true,
+                            dimensionality: array.shape.len() as u32
+                        })),
+                        true => infer_property(&parse_value(value)?)
+                    }
                 }
             }
             proto::data_source::Value::FilePath(_) => Ok(HashmapProperties {
@@ -62,12 +91,15 @@ impl Component for proto::Materialize {
                         num_records: None,
                         num_columns: Some(1),
                         nullity: true,
-                        releasable: !self.private,
+                        releasable: self.public,
                         c_stability: vec![1.],
                         aggregator: None,
                         nature: None,
                         data_type: DataType::Str,
                         dataset_id: self.dataset_id.as_ref().and_then(parse_i64_null),
+                        // this is a library-wide assumption - that datasets initially have more than zero rows
+                        is_not_empty: true,
+                        dimensionality: 1
                     }))).collect()),
                 columnar: true,
             }.into()),
