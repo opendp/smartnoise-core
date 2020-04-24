@@ -20,6 +20,8 @@ use ndarray::prelude::*;
 use crate::components::*;
 use crate::utilities::array::slow_select;
 use noisy_float::prelude::n64;
+use std::iter::FromIterator;
+use crate::ffi::serialize_error;
 
 /// Retrieve the Values for each of the arguments of a component from the Release.
 pub fn get_public_arguments(
@@ -77,7 +79,8 @@ pub fn propagate_properties(
     release: &proto::Release,
     properties: Option<&HashMap<u32, proto::ValueProperties>>,
     dynamic: bool
-) -> Result<(HashMap<u32, ValueProperties>, HashMap<u32, proto::Component>)> {
+
+) -> Result<(HashMap<u32, ValueProperties>, HashMap<u32, proto::Component>, Vec<proto::Error>)> {
 
     let privacy_definition = analysis.privacy_definition.to_owned()
         .ok_or_else(|| Error::from("privacy definition must be defined"))?;
@@ -108,6 +111,8 @@ pub fn propagate_properties(
 
     let mut failed_ids = HashSet::new();
 
+    let mut warnings = Vec::new();
+
     while !traversal.is_empty() {
         let node_id = *traversal.last().unwrap();
 
@@ -131,8 +136,10 @@ pub fn propagate_properties(
                 &maximum_id,
             )) {
             (_, Ok(expansion)) => expansion,
-            (true, Err(_)) => {
+
+            (true, Err(err)) => {
                 failed_ids.insert(traversal.pop().unwrap());
+                warnings.push(serialize_error(err));
                 continue
             },
             (false, Err(err)) => return Err(err)
@@ -184,8 +191,9 @@ pub fn propagate_properties(
 
         let component_properties = match (dynamic, component_properties) {
             (_, Ok(properties)) => properties,
-            (true, Err(_)) => {
+            (true, Err(err)) => {
                 failed_ids.insert(traversal.pop().unwrap());
+                warnings.push(serialize_error(err));
                 continue
             },
             (false, Err(err)) => return Err(err)
@@ -194,7 +202,7 @@ pub fn propagate_properties(
 //        println!("graph evaluation in prop {:?}", graph_evaluation);
         graph_properties.insert(node_id.clone(), component_properties);
     }
-    Ok((graph_properties, graph))
+    Ok((graph_properties, graph, warnings))
 }
 
 /// Given a computation graph, return an ordering of nodes that ensures all dependencies of any node have been visited
@@ -257,6 +265,27 @@ pub fn get_traversal(
         }
     }
     Ok(traversal)
+}
+
+/// Retrieve the set of node ids in a graph that have no dependent nodes.
+///
+/// # Arguments
+/// * `computation_graph` - a prost protobuf hashmap representing a computation graph
+///
+/// # Returns
+/// The set of node ids that have no dependent nodes
+pub fn get_sinks(computation_graph: &HashMap<u32, proto::Component>) -> HashSet<u32> {
+    // start with all nodes
+    let mut node_ids = HashSet::from_iter(computation_graph.keys().cloned());
+
+    // remove nodes that are referenced in arguments
+    computation_graph.values()
+        .for_each(|component| component.arguments.values()
+            .for_each(|source_node_id| {
+                node_ids.remove(source_node_id);
+            }));
+
+    return node_ids;
 }
 
 /// Given an array, conduct well-formedness checks and broadcast

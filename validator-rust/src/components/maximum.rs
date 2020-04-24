@@ -66,7 +66,10 @@ impl Aggregator for proto::Maximum {
                     .map(|(min, max)| (max - min))
                     .collect::<Vec<f64>>();
 
-                Ok(Array::from(row_sensitivity).into_dyn().into())
+                let mut array_sensitivity = Array::from(row_sensitivity).into_dyn();
+                array_sensitivity.insert_axis_inplace(Axis(0));
+
+                Ok(array_sensitivity.into())
             },
             _ => Err("Maximum sensitivity is only implemented for KNorm of 1".into())
         }

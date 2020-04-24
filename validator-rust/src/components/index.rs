@@ -23,7 +23,7 @@ impl Component for proto::Index {
         let column_names = public_arguments.get("columns")
             .ok_or_else(|| Error::from("columns: missing"))?.deref().to_owned().array()?.clone();
 
-        let dimensionality = column_names.shape().len() as u32;
+        let dimensionality = column_names.shape().len() as u32 + 1;
 
         let properties = match data_property {
             ValueProperties::Hashmap(data_property) => {

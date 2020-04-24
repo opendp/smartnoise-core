@@ -1,7 +1,8 @@
 import warnings
 
-from whitenoise.api import LibraryWrapper
-from whitenoise.value import *
+from opendp.whitenoise import api_pb2, value_pb2
+from opendp.whitenoise.api import LibraryWrapper, format_error
+from opendp.whitenoise.value import *
 
 core_wrapper = LibraryWrapper()
 
@@ -102,8 +103,7 @@ class Component(object):
 
         if accuracy:
             privacy_usages = self.from_accuracy(accuracy['value'], accuracy['alpha'])
-            # TODO: this could be written cleaner
-            options['privacy_usage'] = [serialize_privacy_usage(usage)[0] for usage in privacy_usages]
+            options['privacy_usage'] = serialize_privacy_usage(privacy_usages)
 
         self.batch = self.analysis.batch
 
@@ -151,7 +151,10 @@ class Component(object):
             properties={name: self.analysis.properties.get(arg.component_id) for name, arg in self.arguments.items() if arg},
             alpha=alpha)
 
-        return [accuracy.value for accuracy in response.values]
+        value = [accuracy.value for accuracy in response.values]
+        if self.dimensionality <= 1 and value:
+            value = value[0]
+        return value
 
     def from_accuracy(self, value, alpha):
         """
@@ -171,7 +174,10 @@ class Component(object):
                 base_pb2.Accuracy(value=value, alpha=alpha) for value, alpha in zip(value, alpha)
             ]))
 
-        return [parse_privacy_usage(usage) for usage in privacy_usages.values]
+        value = [parse_privacy_usage(usage) for usage in privacy_usages.values]
+        if self.dimensionality <= 1 and value:
+            value = value[0]
+        return value
 
     @property
     def properties(self):
@@ -180,17 +186,29 @@ class Component(object):
         return self.analysis.properties.get(self.component_id)
 
     @property
+    def dimensionality(self):
+        """view the statically derived dimensionality (number of axes)"""
+        try:
+            return self.properties.array.dimensionality
+        except AttributeError:
+            return None
+
+    @property
     def nullity(self):
         """view the statically derived nullity property on the data"""
-        self.analysis.update_properties()
-        return self.analysis.properties.get(self.component_id).array.nullity
+        try:
+            return self.properties.array.nullity
+        except AttributeError:
+            return None
 
     @property
     def lower(self):
         """view the statically derived lower bound on the data"""
-        self.analysis.update_properties()
         try:
-            return parse_array1d_null(self.analysis.properties.get(self.component_id).array.continuous.minimum)
+            value = parse_array1d_null(self.properties.array.continuous.minimum)
+            if self.dimensionality <= 1 and value:
+                value = value[0]
+            return value
         except AttributeError:
             return None
 
@@ -199,16 +217,18 @@ class Component(object):
         """view the statically derived upper bound on the data"""
         self.analysis.update_properties()
         try:
-            return parse_array1d_null(self.analysis.properties.get(self.component_id).array.continuous.maximum)
+            value = parse_array1d_null(self.properties.array.continuous.maximum)
+            if self.dimensionality <= 1 and value:
+                value = value[0]
+            return value
         except AttributeError:
             return None
 
     @property
     def num_records(self):
         """view the statically derived number of records"""
-        self.analysis.update_properties()
         try:
-            num_records = self.analysis.properties.get(self.component_id).array.num_records
+            num_records = self.properties.array.num_records
             return num_records.option if num_records.HasField("option") else None
         except AttributeError:
             return None
@@ -216,9 +236,8 @@ class Component(object):
     @property
     def num_columns(self):
         """view the statically derived number of columns"""
-        self.analysis.update_properties()
         try:
-            num_columns = self.analysis.properties.get(self.component_id).array.num_columns
+            num_columns = self.properties.array.num_columns
             return num_columns.option if num_columns.HasField("option") else None
         except AttributeError:
             return None
@@ -226,35 +245,43 @@ class Component(object):
     @property
     def data_type(self):
         """view the statically derived data type"""
-        self.analysis.update_properties()
         try:
             return {
                 value_pb2.DataType.BOOL: "bool",
                 value_pb2.DataType.I64: "int",
                 value_pb2.DataType.F64: "float",
                 value_pb2.DataType.STRING: "string"
-            }[self.analysis.properties.get(self.component_id).array.data_type]
+            }[self.properties.array.data_type]
         except AttributeError:
             return None
 
     @property
     def releasable(self):
         """check if the data from this component is releasable/public"""
-        self.analysis.update_properties()
         try:
-            return self.analysis.properties.get(self.component_id).array.releasable
+            return self.properties.array.releasable
         except AttributeError:
             return None
 
     @property
     def categories(self):
         """view the statically derived category set"""
-        self.analysis.update_properties()
         try:
-            categories = self.analysis.properties.get(self.component_id).array.nature.categorical.categories
-            return parse_jagged(categories)
+            categories = self.properties.array.categorical.categories.data
+            value = [parse_array1d_option(i) for i in categories]
+            if not value:
+                return None
+            if self.dimensionality <= 1 and value:
+                value = value[0]
+            return value
         except AttributeError:
             return None
+
+    def set(self, value):
+        self.analysis.release_values[self.component_id] = {
+            'value': value,
+            'public': self.releasable
+        }
 
     def __pos__(self):
         return self
@@ -545,6 +572,9 @@ class Analysis(object):
         self.properties = {}
         self.properties_id = {"count": self.component_count, "batch": self.batch}
 
+        # stack traces for individual nodes that failed to execute
+        self.warnings = []
+
     def add_component(self, component, value=None, value_format=None, value_public=False):
         """
         Every component must be contained in an analysis.
@@ -580,9 +610,14 @@ class Analysis(object):
         :return:
         """
         if not (self.properties_id['count'] == self.component_count and self.properties_id['batch'] == self.batch):
-            self.properties = core_wrapper.get_properties(
+            response = core_wrapper.get_properties(
                 serialize_analysis(self),
-                serialize_release(self.release_values)).properties
+                serialize_release(self.release_values))
+
+            self.properties = response.properties
+            self.warnings = [format_error(warning) for warning in response.warnings]
+            if self.warnings:
+                warnings.warn("Some nodes failed to execute. View stack traces via your_analysis.print_warnings(). Remove failed nodes with your_analysis.clean().")
             self.properties_id = {'count': self.component_count, 'batch': self.batch}
 
     def validate(self):
@@ -620,13 +655,16 @@ class Analysis(object):
         if not self.dynamic:
             assert self.validate(), "cannot release, analysis is not valid"
 
-        release_proto: base_pb2.Release = core_wrapper.compute_release(
+        response_proto: api_pb2.ResponseRelease.Success = core_wrapper.compute_release(
             serialize_analysis(self),
             serialize_release(self.release_values),
             self.stack_traces,
             serialize_filter_level(self.filter_level))
 
-        self.release_values = parse_release(release_proto)
+        self.release_values = parse_release(response_proto.release)
+        self.warnings = [format_error(warning) for warning in response_proto.warnings]
+        if self.warnings:
+            warnings.warn("Some nodes failed to execute. View stack traces via your_analysis.print_warnings(). Remove failed nodes with your_analysis.clean().")
         self.batch += 1
 
     def report(self):
@@ -701,6 +739,13 @@ class Analysis(object):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.exit()
+
+    def print_warnings(self):
+        """
+        print internal warnings about failed nodes after running the graph dynamically
+        """
+        for warning in self.warnings:
+            print(warning)
 
     def _make_networkx(self):
         import networkx as nx

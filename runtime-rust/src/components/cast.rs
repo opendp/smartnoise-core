@@ -1,6 +1,6 @@
 use whitenoise_validator::errors::*;
 
-use crate::base::NodeArguments;
+use crate::NodeArguments;
 use whitenoise_validator::base::{Value, Array, ReleaseNode};
 use crate::components::Evaluable;
 use ndarray::ArrayD;

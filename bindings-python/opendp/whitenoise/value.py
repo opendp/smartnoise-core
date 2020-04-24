@@ -1,7 +1,6 @@
-from whitenoise import base_pb2
-from whitenoise import components_pb2
-from whitenoise import value_pb2
-import whitenoise
+from opendp.whitenoise import base_pb2
+from opendp.whitenoise import components_pb2
+from opendp.whitenoise import value_pb2
 
 import os
 import json
@@ -21,43 +20,43 @@ def serialize_privacy_usage(usage):
     :param usage: either a dict {'epsilon': float, 'delta': float} or PrivacyUsage. May also be contained in a list.
     :return: List[PrivacyUsage]
     """
-    if usage is None:
+    if not usage:
         return []
 
     if issubclass(type(usage), value_pb2.PrivacyUsage):
         return [usage]
 
-    epsilon = usage['epsilon']
-    delta = usage.get('delta', 0)
+    # normalize to array
+    if issubclass(type(usage), dict):
+        usage = [usage]
 
-    # upgrade epsilon/delta to lists if they aren't already
-    if epsilon is not None and not issubclass(type(epsilon), list):
-        epsilon = [epsilon]
+    serialized = []
+    for column in usage:
 
-    if delta is not None and not issubclass(type(delta), list):
-        delta = [delta]
+        if issubclass(type(usage), value_pb2.PrivacyUsage):
+            serialized.append(usage)
+            continue
 
-    if epsilon is not None and delta is not None:
-        return [
-            value_pb2.PrivacyUsage(
+        epsilon = column['epsilon']
+        delta = column.get('delta', 0)
+
+        if delta is not None:
+            serialized.append(value_pb2.PrivacyUsage(
                 approximate=value_pb2.PrivacyUsage.DistanceApproximate(
-                    epsilon=val_epsilon,
-                    delta=val_delta
+                    epsilon=epsilon,
+                    delta=delta
                 )
-            )
-            for val_epsilon, val_delta in zip(epsilon, delta)
-        ]
+            ))
 
-    if epsilon is not None and delta is None:
-        return [
-            value_pb2.PrivacyUsage(
-                pure=value_pb2.PrivacyUsage.DistancePure(
-                    epsilon=val_epsilon
+        else:
+            serialized.append(value_pb2.PrivacyUsage(
+                approximate=value_pb2.PrivacyUsage.DistancePure(
+                    epsilon=epsilon
                 )
-            )
-            for val_epsilon in epsilon
-        ]
-    # otherwise, no privacy usage
+            ))
+
+    return serialized
+
 
 
 def serialize_privacy_definition(analysis):

@@ -1,3 +1,1 @@
-//! Standalone documentation pages.
-
-pub mod components;
+include!(concat!(env!("OUT_DIR"), "/components.rs"));

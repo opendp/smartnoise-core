@@ -9,7 +9,7 @@
 //! Implementations of the Evaluable trait are distributed among the module files.
 
 use whitenoise_validator::errors::*;
-use crate::base::NodeArguments;
+use crate::NodeArguments;
 use whitenoise_validator::base::ReleaseNode;
 
 use whitenoise_validator::proto;

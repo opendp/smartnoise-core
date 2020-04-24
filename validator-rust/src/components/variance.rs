@@ -81,7 +81,10 @@ impl Aggregator for proto::Variance {
                     .map(|(min, max)| ((max - min).powi(2) * scaling_constant).powi(*k as i32))
                     .collect::<Vec<f64>>();
 
-                Ok(Array::from(row_sensitivity).into_dyn().into())
+                let mut array_sensitivity = Array::from(row_sensitivity).into_dyn();
+                array_sensitivity.insert_axis_inplace(Axis(0));
+
+                Ok(array_sensitivity.into())
             },
             _ => Err("Variance sensitivity is only implemented for KNorm of 1".into())
         }

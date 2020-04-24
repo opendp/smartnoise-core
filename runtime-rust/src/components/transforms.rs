@@ -1,7 +1,7 @@
 use whitenoise_validator::errors::*;
 
 use crate::components::Evaluable;
-use crate::base::NodeArguments;
+use crate::NodeArguments;
 use whitenoise_validator::base::{Value, Array, ReleaseNode};
 use whitenoise_validator::utilities::get_argument;
 use whitenoise_validator::proto;

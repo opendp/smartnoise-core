@@ -65,7 +65,10 @@ impl Aggregator for proto::Minimum {
                     .map(|(min, max)| (max - min))
                     .collect::<Vec<f64>>();
 
-                Ok(Array::from(row_sensitivity).into_dyn().into())
+                let mut array_sensitivity = Array::from(row_sensitivity).into_dyn();
+                array_sensitivity.insert_axis_inplace(Axis(0));
+
+                Ok(array_sensitivity.into())
             }
             _ => Err("Minimum sensitivity is only implemented for KNorm of 1".into())
         }

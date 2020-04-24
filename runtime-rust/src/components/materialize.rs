@@ -1,7 +1,7 @@
 use whitenoise_validator::errors::*;
 
 use ndarray::prelude::*;
-use crate::base::NodeArguments;
+use crate::NodeArguments;
 use whitenoise_validator::base::{Value, Array, Hashmap, ReleaseNode};
 use crate::components::Evaluable;
 use std::collections::BTreeMap;

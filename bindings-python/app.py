@@ -11,19 +11,21 @@ from tests.test_base import (
 )
 
 from tests import test_validator_properties
+from tests import test_insertion
 
 # turn on stack traces from panics
 import os
 os.environ['RUST_BACKTRACE'] = 'full'
 
-
+test_validator_properties.test_dp_mean()
+test_insertion.test_insertion_simple()
 test_validator_properties.test_partition()
 
-# test_properties()
+test_properties()
 
 
-# analysis = test_multilayer_analysis(run=False)
-# analysis.release()
+analysis = test_multilayer_analysis(run=False)
+analysis.release()
 
 analysis = test_dp_linear_stats(run=False)
 analysis.release()

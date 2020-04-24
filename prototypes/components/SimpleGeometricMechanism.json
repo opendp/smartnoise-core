@@ -1,7 +1,6 @@
 {
   "arguments": {
     "data": {
-      "default": "None",
       "nature": [
         "continuous"
       ],

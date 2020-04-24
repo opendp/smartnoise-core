@@ -6,7 +6,7 @@ use whitenoise_validator::utilities::{get_argument, standardize_numeric_argument
 use ndarray::{ArrayD, Axis};
 use rug::{Float, ops::Pow};
 
-use crate::base::NodeArguments;
+use crate::NodeArguments;
 use crate::components::Evaluable;
 use crate::utilities::noise;
 use crate::components::impute::{impute_float_gaussian, impute_float_uniform, impute_categorical};

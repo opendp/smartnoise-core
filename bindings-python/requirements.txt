@@ -1,9 +1,15 @@
-protobuf
+protobuf==3.11.3
 pytest>=4.4.2
-numpy
-milksnake
-networkx
-matplotlib
+numpy==1.18.2
+milksnake==0.1.5
+networkx==2.4
+matplotlib==3.2.1
 
-sphinx
-sphinx_rtd_theme
+pandas==1.0.3
+
+#
+# Documentation generation
+#
+Sphinx==3.0.1
+sphinx-rtd-theme==0.4.3
+#sphinx_rtd_theme
