@@ -1,5 +1,3 @@
-//extern crate statrs;
-
 use crate::errors::*;
 
 use std::collections::HashMap;
