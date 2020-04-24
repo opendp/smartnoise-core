@@ -42,8 +42,7 @@ pub fn release(
             .ok_or_else(|| Error::from("release must be defined"))?,
         &proto::FilterLevel::from_i32(request.filter_level)
             .ok_or_else(|| Error::from(format!("unrecognized filter level {:?}", request.filter_level)))?)
-<<<<<<< HEAD
-=======
+
 }
 
 /// Given a description of computation, and some computed values, execute the computation and return computed values
@@ -260,5 +259,4 @@ pub fn execute_graph(
     })?;
 
     Ok((release, warnings))
->>>>>>> e9e9706bd699122cc5d2a17f08658f99c0afaacb
 }

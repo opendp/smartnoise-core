@@ -65,18 +65,11 @@ impl Evaluable for proto::Partition {
 /// assert_eq!(partitioned.get(&2).unwrap().clone(), arr2(&[ [10, 11] ]).into_dyn());
 /// ```
 pub fn partition_evenly<T: Clone + Default + std::fmt::Debug>(data: &ArrayD<T>, num_partitions: i64) -> BTreeMap<i64, ArrayD<T>> {
-<<<<<<< HEAD
-    println!("data to part {:?}", data);
-=======
->>>>>>> e9e9706bd699122cc5d2a17f08658f99c0afaacb
 
     let mut offset = 0;
     even_split_lengths(data.len_of(Axis(0)) as i64, num_partitions).into_iter().enumerate()
         .map(|(idx, length)| {
-<<<<<<< HEAD
-            println!("offset {:?} length {:?}", offset, length);
-=======
->>>>>>> e9e9706bd699122cc5d2a17f08658f99c0afaacb
+
             let entry = (
                 idx as i64,
                 slow_select(data, Axis(0),
