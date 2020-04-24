@@ -11,5 +11,5 @@ fn main() {
     //     crate_dir,
     //     cbindgen::Config::from_file("cbindgen.toml").unwrap())
     //     .expect("Unable to generate bindings")
-    //     .write_to_file("../api_runtime.h");
+    //     .write_to_file("./api.h");
 }
