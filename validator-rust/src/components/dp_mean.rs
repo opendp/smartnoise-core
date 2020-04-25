@@ -47,7 +47,7 @@ impl Expandable for proto::DpMean {
 
         // noising
 	let _component_math_impl_val = properties.clone().entry(String::from("implementation"));
-	match self.implementation.as_str() {
+	match self.mechanism.as_str() {
 	    "Laplace" =>
         computation_graph.insert(component_id.clone(), proto::Component {
             arguments: hashmap!["data".to_owned() => id_mean],
