@@ -27,7 +27,7 @@ impl Expandable for proto::DpMean {
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
-        properties: &base::NodeProperties,
+        _properties: &base::NodeProperties,
         component_id: &u32,
         maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
@@ -46,7 +46,6 @@ impl Expandable for proto::DpMean {
         });
 
         // noising
-	let _component_math_impl_val = properties.clone().entry(String::from("implementation"));
 	match self.mechanism.as_str() {
 	    "Laplace" =>
         computation_graph.insert(component_id.clone(), proto::Component {

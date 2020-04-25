@@ -18,7 +18,7 @@ impl Expandable for proto::DpMinimum {
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
-        properties: &base::NodeProperties,
+        _properties: &base::NodeProperties,
         component_id: &u32,
         maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
@@ -39,15 +39,27 @@ impl Expandable for proto::DpMinimum {
 //        let id_candidates = component.arguments.get("candidates").unwrap().clone();
 
         // sanitizing
-	let _component_math_impl_val = properties.clone().entry(String::from("implementation"));
-        computation_graph.insert(component_id.clone(), proto::Component {
-            arguments: hashmap!["data".to_owned() => id_minimum],
-            variant: Some(proto::component::Variant::from(proto::LaplaceMechanism {
-                privacy_usage: self.privacy_usage.clone()
-            })),
-            omit: false,
-            batch: component.batch,
-        });
+	match self.mechanism.as_str() {
+	    "Laplace" =>
+		computation_graph.insert(component_id.clone(), proto::Component {
+		    arguments: hashmap!["data".to_owned() => id_minimum],
+		    variant: Some(proto::component::Variant::from(proto::LaplaceMechanism {
+			privacy_usage: self.privacy_usage.clone()
+		    })),
+		    omit: false,
+		    batch: component.batch,
+		}),
+	    "Gaussian" =>
+		computation_graph.insert(component_id.clone(), proto::Component {
+		    arguments: hashmap!["data".to_owned() => id_minimum],
+		    variant: Some(proto::component::Variant::from(proto::GaussianMechanism {
+			privacy_usage: self.privacy_usage.clone()
+		    })),
+		    omit: false,
+		    batch: component.batch,
+		}),
+	    _x => panic!("Unexpected invalid token {:?}", self.implementation.as_str()),
+	};
 
         Ok(proto::ComponentExpansion {
             computation_graph,

@@ -6,11 +6,11 @@ use std::collections::HashMap;
 use crate::{proto, base};
 use crate::hashmap;
 use crate::components::{Expandable, Report};
-use ndarray::{arr0};
+use ndarray::arr0;
 
 use crate::base::{NodeProperties, Value, ValueProperties};
 use crate::utilities::json::{JSONRelease, privacy_usage_to_json, AlgorithmInfo, value_to_json};
-use crate::utilities::{get_literal};
+use crate::utilities::get_literal;
 
 
 impl Expandable for proto::DpCount {
@@ -29,7 +29,6 @@ impl Expandable for proto::DpCount {
         let count_max_id = match component.arguments.get("count_max") {
             Some(id) => id.clone(),
             None => {
-
                 let num_records = match properties.get("data")
                     .ok_or("data: missing")? {
                     ValueProperties::Array(value) => value.num_records,
@@ -66,28 +65,31 @@ impl Expandable for proto::DpCount {
         });
 
         // noising
-	let _component_math_impl_val = properties.clone().entry(String::from("implementation"));
-        computation_graph.insert(component_id.clone(), proto::Component {
-            arguments: hashmap![
-                "data".to_owned() => id_count,
-                "lower".to_owned() => *component.arguments.get("lower")
-                    .ok_or_else(|| Error::from("lower must be provided as an argument"))?,
-                "upper".to_owned() => count_max_id
-            ],
-            variant: Some(proto::component::Variant::from(proto::SimpleGeometricMechanism {
-                privacy_usage: self.privacy_usage.clone(),
-                enforce_constant_time: false
-            })),
-            omit: false,
-            batch: component.batch,
-        });
+        match self.mechanism.as_str() {
+            "SimpleGeometric" =>
+                computation_graph.insert(component_id.clone(), proto::Component {
+                    arguments: hashmap![
+                        "data".to_owned() => id_count,
+                        "lower".to_owned() => *component.arguments.get("lower")
+                            .ok_or_else(|| Error::from("lower must be provided as an argument"))?,
+                        "upper".to_owned() => count_max_id
+                    ],
+                    variant: Some(proto::component::Variant::from(proto::SimpleGeometricMechanism {
+                        privacy_usage: self.privacy_usage.clone(),
+                        enforce_constant_time: false,
+                    })),
+                    omit: false,
+                    batch: component.batch,
+                }),
+            _x => panic!("Unexpected invalid token {:?}", self.implementation.as_str()),
+        };
 
 
         Ok(proto::ComponentExpansion {
             computation_graph,
             properties: HashMap::new(),
             releases,
-            traversal: vec![id_count]
+            traversal: vec![id_count],
         })
     }
 }
@@ -116,8 +118,8 @@ impl Report for proto::DpCount {
                 name: "".to_string(),
                 cite: "".to_string(),
                 mechanism: self.implementation.clone(),
-                argument: serde_json::json!({})
-            }
+                argument: serde_json::json!({}),
+            },
         }]))
     }
 }

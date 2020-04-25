@@ -76,15 +76,18 @@ impl Expandable for proto::DpCovariance {
         // noise
         current_id += 1;
         let id_noise = current_id;
-	let _component_math_impl_val = properties.clone().entry(String::from("implementation"));
-        computation_graph.insert(id_noise, proto::Component {
-            arguments: hashmap!["data".to_owned() => id_covariance],
-            variant: Some(proto::component::Variant::from(proto::LaplaceMechanism {
-                privacy_usage: self.privacy_usage.clone()
-            })),
-            omit: true,
-            batch: component.batch,
-        });
+	match self.mechanism.as_str() {
+	    "Laplace" =>
+		computation_graph.insert(id_noise, proto::Component {
+		    arguments: hashmap!["data".to_owned() => id_covariance],
+		    variant: Some(proto::component::Variant::from(proto::LaplaceMechanism {
+			privacy_usage: self.privacy_usage.clone()
+		    })),
+		    omit: true,
+		    batch: component.batch,
+		}),
+	    _x => panic!("Unexpected invalid token {:?}", self.implementation.as_str()),
+	};
 
         // reshape into matrix
         computation_graph.insert(component_id.clone(), proto::Component {

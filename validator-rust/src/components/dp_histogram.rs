@@ -73,7 +73,8 @@ impl Expandable for proto::DpHistogram {
         });
 
         // noising
-	let _component_math_impl_val = properties.clone().entry(String::from("implementation"));
+	match self.mechanism.as_str() {
+	    "SimpleGeometric" =>
         computation_graph.insert(*component_id, proto::Component {
             arguments: hashmap![
                 "data".to_owned() => id_histogram,
@@ -87,7 +88,9 @@ impl Expandable for proto::DpHistogram {
             })),
             omit: false,
             batch: component.batch,
-        });
+        }),
+	    _x => panic!("Unexpected invalid token {:?}", self.implementation.as_str()),
+	};
 
         Ok(proto::ComponentExpansion {
             computation_graph,
