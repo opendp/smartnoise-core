@@ -58,6 +58,8 @@ The core library is the `validator`, which provides a suite of utilities for che
 There must also be a medium to execute the analysis, called a `runtime`. There is a reference runtime written in rust, but runtimes may be written using any computation framework- be it SQL, Spark or Dask- to address your individual data needs. 
 
 Finally, there are helper libraries for building analyses, called `bindings`. Bindings may be written for any language, and are thin wrappers over the validator and/or runtime(s). Language bindings are currently available for Python, with support for at minimum R and SQL forthcoming.
+- [Python Bindings](https://github.com/opendifferentialprivacy/whitenoise-core-python)
+- [R Bindings (WIP)](https://github.com/opendifferentialprivacy/whitenoise-core-R)
 
 All projects implement protobuf code generation, protobuf serialization/deserialization, communication over FFI, handle distributable packaging, and have at some point compiled cross-platform (more testing needed). Communication among projects is handled via proto definitions from the `prototypes` directory. The validator and reference runtime compile to standalone libraries that may be linked into your project, allowing communication over C foreign function interfaces.
 
