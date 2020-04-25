@@ -75,7 +75,7 @@ All projects implement protobuf code generation, protobuf serialization/deserial
 
         git clone $REPOSITORY_URI
 
-3. Install system dependencies (rust, gcc, protoc, python 3.6+ for bindings)  
+2. Install system dependencies (rust, gcc, protoc, python 3.6+ for bindings)  
 
     Mac:
 
@@ -112,13 +112,10 @@ All projects implement protobuf code generation, protobuf serialization/deserial
               
       You can test with `bash -xc cargo build`. The bash prefix ensures that gmp and mpfr build with the GNU/gcc/mingw toolchain.
 
-4. Install the python bindings
-
-        cd bindings-python
-        pip install -e ".[test,plotting]"
-
-    If you are doing package development, I recommend using `bindings-python/debug_*.sh` for debugging.
-
+3. Optional - Install language bindings
+    - [Python](https://github.com/opendifferentialprivacy/whitenoise-core-python#from-source)
+    - [R (WIP)](https://github.com/opendifferentialprivacy/whitenoise-core-R#installation)
+    
     
 #### If `cargo build` fails due to the package `gmp-mpfr-sys`
 
