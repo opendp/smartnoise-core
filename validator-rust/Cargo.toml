@@ -35,4 +35,4 @@ build-deps = "0.1.4"
 
 [lib]
 name = "whitenoise_validator"
-crate-type = ["rlib", "cdylib"]
+crate-type = ["rlib", "cdylib", "staticlib"]
