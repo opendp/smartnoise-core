@@ -47,6 +47,8 @@ impl Expandable for proto::DpMean {
 
         // noising
 	let _component_math_impl_val = properties.clone().entry(String::from("implementation"));
+	match self.implementation.as_str() {
+	    "Laplace" =>
         computation_graph.insert(component_id.clone(), proto::Component {
             arguments: hashmap!["data".to_owned() => id_mean],
             variant: Some(proto::component::Variant::from(proto::LaplaceMechanism {
@@ -54,8 +56,18 @@ impl Expandable for proto::DpMean {
             })),
             omit: false,
             batch: component.batch,
-        });
-
+        }),
+	    "Gaussian" =>
+        computation_graph.insert(component_id.clone(), proto::Component {
+            arguments: hashmap!["data".to_owned() => id_mean],
+            variant: Some(proto::component::Variant::from(proto::GaussianMechanism {
+                privacy_usage: self.privacy_usage.clone()
+            })),
+            omit: false,
+            batch: component.batch,
+        }),
+	    _x => panic!("Unexpected invalid token {:?}", self.implementation.as_str()),
+	};
 
         Ok(proto::ComponentExpansion {
             computation_graph,
