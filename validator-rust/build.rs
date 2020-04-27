@@ -49,29 +49,6 @@ struct ArgumentJSON {
     description: Option<String>,
 }
 
-/// Returns the path to the prototypes directory`pointed to by the `PROTODIR` environment variable, if it is set.
-fn env_protodir() -> PathBuf {
-    match env::var_os("WN_PROTO_DIR") {
-        Some(path) => {
-            let proto_dir = PathBuf::from(path);
-            if !proto_dir.exists() {
-                panic!(
-                    "WN_PROTO_DIR environment variable points to non-existent file ({:?})",
-                    proto_dir
-                );
-            }
-            proto_dir
-        },
-        None => {
-            let proto_dir = PathBuf::from("../prototypes/");
-            if !proto_dir.exists() {
-                panic!("Failed to find the prototypes directory. The WN_PROTO_DIR environment variable is not set.");
-            }
-            proto_dir
-        }
-    }
-}
-
 fn proto_tgt(protodir: &PathBuf, path: &str) -> String {
     let mut protodir = protodir.clone();
     protodir.push(path);
@@ -95,7 +72,10 @@ fn doc(text: &Option<String>, prefix: &str) -> String {
 }
 
 fn main() {
-    let proto_dir = env_protodir();
+    let proto_dir = PathBuf::from("./prototypes");
+    if !proto_dir.exists() {
+        panic!("Failed to find the prototypes directory.");
+    }
 
     let comps_dir = proto_tgt(&proto_dir, "components");
     let comp_proto_tgt = proto_tgt(&proto_dir, "components.proto");
@@ -260,7 +240,7 @@ message Component {
 //        crate_dir,
 //        cbindgen::Config::from_file("cbindgen.toml").unwrap())
 //        .expect("Unable to generate bindings")
-//        .write_to_file("../api_validator.h");
+//        .write_to_file("./api.h");
 
     // panic to prevent stdout from being masked
     // panic!("You can't suppress me rustc!");

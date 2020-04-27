@@ -58,6 +58,8 @@ The core library is the `validator`, which provides a suite of utilities for che
 There must also be a medium to execute the analysis, called a `runtime`. There is a reference runtime written in rust, but runtimes may be written using any computation framework- be it SQL, Spark or Dask- to address your individual data needs. 
 
 Finally, there are helper libraries for building analyses, called `bindings`. Bindings may be written for any language, and are thin wrappers over the validator and/or runtime(s). Language bindings are currently available for Python, with support for at minimum R and SQL forthcoming.
+- [Python Bindings](https://github.com/opendifferentialprivacy/whitenoise-core-python)
+- [R Bindings (WIP)](https://github.com/opendifferentialprivacy/whitenoise-core-R)
 
 All projects implement protobuf code generation, protobuf serialization/deserialization, communication over FFI, handle distributable packaging, and have at some point compiled cross-platform (more testing needed). Communication among projects is handled via proto definitions from the `prototypes` directory. The validator and reference runtime compile to standalone libraries that may be linked into your project, allowing communication over C foreign function interfaces.
 
@@ -73,7 +75,7 @@ All projects implement protobuf code generation, protobuf serialization/deserial
 
         git clone $REPOSITORY_URI
 
-3. Install system dependencies (rust, gcc, protoc, python 3.6+ for bindings)  
+2. Install system dependencies (rust, gcc, protoc, python 3.6+ for bindings)  
 
     Mac:
 
@@ -110,13 +112,10 @@ All projects implement protobuf code generation, protobuf serialization/deserial
               
       You can test with `bash -xc cargo build`. The bash prefix ensures that gmp and mpfr build with the GNU/gcc/mingw toolchain.
 
-4. Install the python bindings
-
-        cd bindings-python
-        pip install -e ".[test,plotting]"
-
-    If you are doing package development, I recommend using `bindings-python/debug_*.sh` for debugging.
-
+3. Optional - Install language bindings
+    - [Python](https://github.com/opendifferentialprivacy/whitenoise-core-python#from-source)
+    - [R (WIP)](https://github.com/opendifferentialprivacy/whitenoise-core-R#installation)
+    
     
 #### If `cargo build` fails due to the package `gmp-mpfr-sys`
 

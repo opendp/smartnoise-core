@@ -43,4 +43,4 @@ cbindgen = "0.9.1"
 
 [lib]
 name = "whitenoise_runtime"
-crate-type = ["rlib", "cdylib"]
+crate-type = ["rlib", "cdylib", "staticlib"]
