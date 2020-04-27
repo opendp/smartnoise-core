@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["erf","`erf` calculates the error function at `x`."],["erf_inv","`erf_inv` calculates the inverse error function at `x`."],["erfc","`erfc` calculates the complementary error function at `x`."],["erfc_inv","`erfc_inv` calculates the complementary inverse error function at `x`."]]});

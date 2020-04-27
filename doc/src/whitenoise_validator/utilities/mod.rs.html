@@ -667,6 +667,9 @@
 <span id="667">667</span>
 <span id="668">668</span>
 <span id="669">669</span>
+<span id="670">670</span>
+<span id="671">671</span>
+<span id="672">672</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">json</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">serial</span>;
@@ -749,6 +752,7 @@
     <span class="ident">release</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">Release</span>,
     <span class="ident">properties</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">proto</span>::<span class="ident">ValueProperties</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     <span class="ident">dynamic</span>: <span class="ident">bool</span>
+
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">ValueProperties</span><span class="op">&gt;</span>, <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">proto</span>::<span class="ident">Component</span><span class="op">&gt;</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">Error</span><span class="op">&gt;</span>)<span class="op">&gt;</span> {
 
     <span class="kw">let</span> <span class="ident">privacy_definition</span> <span class="op">=</span> <span class="ident">analysis</span>.<span class="ident">privacy_definition</span>.<span class="ident">to_owned</span>()
@@ -779,6 +783,7 @@
         .<span class="ident">fold</span>(<span class="number">0</span>, <span class="ident">std</span>::<span class="ident">cmp</span>::<span class="ident">max</span>);
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">failed_ids</span> <span class="op">=</span> <span class="ident">HashSet</span>::<span class="ident">new</span>();
+
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">warnings</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
 
     <span class="kw">while</span> <span class="op">!</span><span class="ident">traversal</span>.<span class="ident">is_empty</span>() {
@@ -804,6 +809,7 @@
                 <span class="kw-2">&amp;</span><span class="ident">maximum_id</span>,
             )) {
             (<span class="kw">_</span>, <span class="prelude-val">Ok</span>(<span class="ident">expansion</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">expansion</span>,
+
             (<span class="bool-val">true</span>, <span class="prelude-val">Err</span>(<span class="ident">err</span>)) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="ident">failed_ids</span>.<span class="ident">insert</span>(<span class="ident">traversal</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>());
                 <span class="ident">warnings</span>.<span class="ident">push</span>(<span class="ident">serialize_error</span>(<span class="ident">err</span>));

@@ -61,6 +61,7 @@ ALIASES["serde"] = {};
 ALIASES["serde_derive"] = {};
 ALIASES["serde_json"] = {};
 ALIASES["special"] = {};
+ALIASES["statrs"] = {};
 ALIASES["syn"] = {};
 ALIASES["synstructure"] = {};
 ALIASES["unicode_xid"] = {};

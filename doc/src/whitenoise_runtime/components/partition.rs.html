@@ -79,6 +79,7 @@
 <span id="79">79</span>
 <span id="80">80</span>
 <span id="81">81</span>
+<span id="82">82</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">whitenoise_validator</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
@@ -151,6 +152,7 @@
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">offset</span> <span class="op">=</span> <span class="number">0</span>;
     <span class="ident">even_split_lengths</span>(<span class="ident">data</span>.<span class="ident">len_of</span>(<span class="ident">Axis</span>(<span class="number">0</span>)) <span class="kw">as</span> <span class="ident">i64</span>, <span class="ident">num_partitions</span>).<span class="ident">into_iter</span>().<span class="ident">enumerate</span>()
         .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">idx</span>, <span class="ident">length</span>)<span class="op">|</span> {
+
             <span class="kw">let</span> <span class="ident">entry</span> <span class="op">=</span> (
                 <span class="ident">idx</span> <span class="kw">as</span> <span class="ident">i64</span>,
                 <span class="ident">slow_select</span>(<span class="ident">data</span>, <span class="ident">Axis</span>(<span class="number">0</span>),
