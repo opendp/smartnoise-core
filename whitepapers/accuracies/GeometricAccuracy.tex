@@ -1,0 +1,50 @@
+\documentclass[11pt]{scrartcl} % Font size
+\input{structure.tex} % Include the file specifying the document structure and custom commands
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\title{
+	\normalfont\normalsize
+	\textsc{Harvard Privacy Tools Project}\\ % Your university, school and/or department name(s)
+	\vspace{25pt} % Whitespace
+	\rule{\linewidth}{0.5pt}\\ % Thin top horizontal rule
+	\vspace{20pt} % Whitespace
+	{\huge Geometric Mechanism Accuracy}\\ % The assignment title
+	\vspace{12pt} % Whitespace
+	\rule{\linewidth}{2pt}\\ % Thick bottom horizontal rule
+	\vspace{12pt} % Whitespace
+}
+
+\date{\normalsize\today} % Today's date (\today) or a custom date
+
+\begin{document}
+
+\maketitle
+
+\begin{definition}
+Let $z$ be the true value of the statistic and let $X$ be the random variable the noisy release is drawn from. Let $\alpha$ be the statistical significance level, and let $Y = \vert X-z \vert.$ Then, accuracy $a$ for a given $\alpha \in [0,1]$ is the $a$ s.t.
+$$ \alpha = \pr[Y > a].$$
+\end{definition}
+
+\begin{theorem}
+The accuracy of an $\epsilon$-differentially private release from the geometric mechanism on a function with sensitivity $\Delta_1$, at statistical significance level $\alpha$ is
+$$ a = \lceil \frac{\Delta_1}{\epsilon}\ln(1/\alpha) \rceil.$$
+\end{theorem}\cite{balcer2017differential, ghosh2012universally}
+
+\begin{proof}
+This follows directly from the proof of accuracy for the Laplace mechanism, with the observation that the geometric mechanism is simply a discretization of the Laplace mechanism, hence the ceiling in the accuracy statement.
+\end{proof}
+
+\subsection{A note on converting from accuracy to privacy}
+
+We offer the ability to convert from an accuracy guarantee to a privacy guarantee in our system. In the context of the geometric mechanism, it is not entirely clear what that conversion would mean, since for a set accuracy level $a$ and significance level $\alpha$, there are a range of possible values for $\epsilon$. Since this range of $\epsilon$ depends on both $a$ \textit{and} $\alpha$, rather than choosing the minimum or maximum over the range of $\epsilon$'s we instead use the original accuracy guarantee from the Laplace mechanism (i.e. the geometric mechanism's accuracy guarantee without the ceiling) to convert from statements about accuracy to statements about privacy:
+
+$$ \epsilon = \frac{\Delta_1}{a}\ln(1/\alpha).$$
+
+One might argue that in general we shouldn't take the ceiling when determining the accuracy, since the additional information might be useful to an end-user. For example, if a user is attempting to determine how much budget to give a query, and they first ask for accuracy for an $\epsilon$ that gives (without the ceiling) $a = 3.02$, they might determine to increase the amount of accuracy to get the accuracy guarantee to $a = 3$. If instead we take the ceiling, they would get back $a = 4$ and not know that a (theoretical) small change in $\epsilon$ would lead to a noticeable improvement in their accuracy guarantee. 
+
+\bibliographystyle{alpha}
+\bibliography{accuracies}
+\end{document}

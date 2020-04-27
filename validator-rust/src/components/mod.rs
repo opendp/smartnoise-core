@@ -333,8 +333,9 @@ impl Accuracy for proto::component::Variant {
         }
 
         accuracy_to_privacy_usage!(
-            // INSERT COMPONENT LIST
-             LaplaceMechanism
+             LaplaceMechanism,
+             GaussianMechanism,
+             SimpleGeometricMechanism
         );
 
         Ok(None)
@@ -363,8 +364,9 @@ impl Accuracy for proto::component::Variant {
         }
 
         privacy_usage_to_accuracy!(
-            // INSERT COMPONENT LIST
-            LaplaceMechanism
+            LaplaceMechanism,
+            GaussianMechanism,
+            SimpleGeometricMechanism
         );
 
         Ok(None)
