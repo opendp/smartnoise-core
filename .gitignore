@@ -55,3 +55,4 @@ docs/doc/bstr/utf8/struct.CharIndices.html
 
 target/
 Cargo.lock
+bindings-python/
