@@ -8,7 +8,6 @@ These pages contain Rust-generated documentation for the Validator and Runtime
 
 - Validator: [whitenoise_validator](https://opendifferentialprivacy.github.io/whitenoise-core/doc/whitenoise_validator/index.html)
 - Runtime: [whitenoise_runtime](https://opendifferentialprivacy.github.io/whitenoise-core/doc/whitenoise_runtime/index.html)
-- Whitenoise Core also contains bindings for Python 3.
 
 ---
 
