@@ -37,6 +37,10 @@ use crate::utilities::serial::serialize_value_properties;
 use crate::base::{ReleaseNode, Value};
 use std::iter::FromIterator;
 
+// for accuracy guarantees
+extern crate statrs;
+extern crate math;
+
 // include protobuf-generated traits
 pub mod proto {
     include!(concat!(env!("OUT_DIR"), "/whitenoise.rs"));

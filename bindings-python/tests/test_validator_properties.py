@@ -77,7 +77,6 @@ def test_divide():
         # assert not (2. / clamped_nonzero).nullity
         # assert not (imputed / 2.).nullity
 
-
 def  test_dp_mean():
     with whitenoise.Analysis():
         data = whitenoise.Dataset(**generate_synthetic(float, variants=['Random']))
@@ -123,4 +122,3 @@ def test_index():
 
         analysis.release()
         assert all(a == b for a, b in zip(index_0.value, [True, True, False, False]))
-

@@ -20,7 +20,6 @@ def serialize_privacy_usage(usage):
     :param usage: either a dict {'epsilon': float, 'delta': float} or PrivacyUsage. May also be contained in a list.
     :return: List[PrivacyUsage]
     """
-
     if not usage:
         return []
 

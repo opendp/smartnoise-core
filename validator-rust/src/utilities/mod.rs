@@ -79,6 +79,7 @@ pub fn propagate_properties(
     release: &proto::Release,
     properties: Option<&HashMap<u32, proto::ValueProperties>>,
     dynamic: bool
+
 ) -> Result<(HashMap<u32, ValueProperties>, HashMap<u32, proto::Component>, Vec<proto::Error>)> {
 
     let privacy_definition = analysis.privacy_definition.to_owned()
@@ -109,6 +110,7 @@ pub fn propagate_properties(
         .fold(0, std::cmp::max);
 
     let mut failed_ids = HashSet::new();
+
     let mut warnings = Vec::new();
 
     while !traversal.is_empty() {
@@ -134,6 +136,7 @@ pub fn propagate_properties(
                 &maximum_id,
             )) {
             (_, Ok(expansion)) => expansion,
+
             (true, Err(err)) => {
                 failed_ids.insert(traversal.pop().unwrap());
                 warnings.push(serialize_error(err));

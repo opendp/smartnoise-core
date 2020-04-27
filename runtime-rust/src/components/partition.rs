@@ -69,6 +69,7 @@ pub fn partition_evenly<T: Clone + Default + std::fmt::Debug>(data: &ArrayD<T>, 
     let mut offset = 0;
     even_split_lengths(data.len_of(Axis(0)) as i64, num_partitions).into_iter().enumerate()
         .map(|(idx, length)| {
+
             let entry = (
                 idx as i64,
                 slow_select(data, Axis(0),

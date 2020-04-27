@@ -1,0 +1,64 @@
+\documentclass[11pt]{scrartcl} % Font size
+\input{structure.tex} % Include the file specifying the document structure and custom commands
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\title{
+	\normalfont\normalsize
+	\textsc{Harvard Privacy Tools Project}\\ % Your university, school and/or department name(s)
+	\vspace{25pt} % Whitespace
+	\rule{\linewidth}{0.5pt}\\ % Thin top horizontal rule
+	\vspace{20pt} % Whitespace
+	{\huge The Exponential Mechanism for Medians}\\ % The assignment title
+	\vspace{12pt} % Whitespace
+	\rule{\linewidth}{2pt}\\ % Thick bottom horizontal rule
+	\vspace{12pt} % Whitespace
+}
+
+% \author{\LARGE} % Your name
+
+\date{\normalsize\today} % Today's date (\today) or a custom date
+
+\begin{document}
+\maketitle
+
+\section{The Exponential Mechanism}
+
+Sometimes, the global sensitivity of a function is too great, so the Laplace mechanism will not produce meaningful results. The median is one such function. In many cases, the \textit{Exponential mechanism} is an alternate approach that gives reasonable utility.\footnote{This is not the \textit{only} advantage of the exponential mechanism. It is a way to compute differentially private queries on non-numeric data, unlike the Laplace mechanism it does not assume that the probability of outputting a response ought to be symmetric about the true response, etc.} Introduced in 2007 by McSherry and Talwar, the exponential mechanism posits that for a given database, users prefer some outputs over others. That those preferences may be encapsulated with a utility score, where a high utility score indicates a higher preference for that output. The exponential mechanism releases outputs with probability proportional (in the exponent) to the utility score and the sensitivity of the utility function. 
+
+\begin{definition}  
+Let $\mathcal{X}$ be a space of databases and let $[m,M]$ be an arbitrary range. Let $u: \mathcal{X} \times [m,M] \rightarrow \mathbb{R}$ be a utility function, which maps pairs of databases and outputs to a utility score. Let $\Delta u$ be the sensitivity of $u$ with respect to the database argument. The exponential mechanism outputs $r \in [m,M]$ with probability proportional to $\exp\left(\frac{\varepsilon u(x,r)}{2 \Delta u}\right)$ \cite{mcsherry2007mechanism, dwork2014algorithmic}.\footnote{The original definition is from \cite{mcsherry2007mechanism}, but here we state the version rewritten in \cite{dwork2014algorithmic} as it is slightly clearer.}
+\end{definition}
+
+\begin{theorem}
+The exponential mechanism preserves $(\varepsilon,0)$-differential privacy \cite{mcsherry2007mechanism, dwork2014algorithmic}.\footnote{As written in \cite{mcsherry2007mechanism}, the mechanism actually preserves $(2\varepsilon\Delta u,0)$-differential privacy; the main difference in the $\cite{dwork2014algorithmic}$ version is that it has the extra factor of $2\Delta u$ to avoid these extra terms.}
+\end{theorem}
+
+Note that the exponential mechanism may not be tractable in many cases, as it assumes the existence of a utility function, and even if one exists it may not be tractable to compute it efficiently. 
+
+\section{An Exponential Mechanism for a Median}
+
+\subsection{Defining a sensible utility function}
+
+Note that a user will prefer an output that is closer to the true median over one that is further away. Let $x$ be an (ordered) data set, let $r$ be a possible output, and let $n$ be the size of the data set. Note that if $r$ is close to the median, its rank will be close to $n/2$. Then, the following utility function is a sensical one:
+
+\begin{equation}
+u(x, r) = - \left\vert \text{rank}_x(r) - \frac{n}{2} \right\vert.\footnote{Note that you could use a different measure of distance here if desired; an $L_1$ norm in terms of rank is just convenient to reduce sensitivity.}
+\end{equation}
+
+Note that the \textit{rank} function here is a slight abuse of notation since $r$ is an element from the \textit{data range}, not from the underlying database $x$, so does not have a rank. 
+
+\subsection{Sensitivity of the utility function}
+
+\subsubsection{Neighboring Definition: Change One}
+
+\subsubsection{Neighboring Definition: Add/Drop One}
+
+\subsection{The Normalization Factor}
+
+\bibliographystyle{alpha}
+\nocite{*}
+\bibliography{expMechMedian}
+\end{document}
