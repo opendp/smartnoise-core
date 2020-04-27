@@ -39,27 +39,20 @@ impl Expandable for proto::DpMinimum {
 //        let id_candidates = component.arguments.get("candidates").unwrap().clone();
 
         // sanitizing
-	match self.mechanism.as_str() {
-	    "Laplace" =>
-		computation_graph.insert(component_id.clone(), proto::Component {
-		    arguments: hashmap!["data".to_owned() => id_minimum],
-		    variant: Some(proto::component::Variant::from(proto::LaplaceMechanism {
-			privacy_usage: self.privacy_usage.clone()
-		    })),
-		    omit: false,
-		    batch: component.batch,
-		}),
-	    "Gaussian" =>
-		computation_graph.insert(component_id.clone(), proto::Component {
-		    arguments: hashmap!["data".to_owned() => id_minimum],
-		    variant: Some(proto::component::Variant::from(proto::GaussianMechanism {
-			privacy_usage: self.privacy_usage.clone()
-		    })),
-		    omit: false,
-		    batch: component.batch,
-		}),
-	    _x => panic!("Unexpected invalid token {:?}", self.implementation.as_str()),
-	};
+        computation_graph.insert(component_id.clone(), proto::Component {
+            arguments: hashmap!["data".to_owned() => id_minimum],
+            variant: Some(match self.mechanism.to_lowercase().as_str() {
+                "laplace" => proto::component::Variant::from(proto::LaplaceMechanism {
+                    privacy_usage: self.privacy_usage.clone()
+                }),
+                "gaussian" => proto::component::Variant::from(proto::GaussianMechanism {
+                    privacy_usage: self.privacy_usage.clone()
+                }),
+                _ => panic!("Unexpected invalid token {:?}", self.implementation.as_str()),
+            }),
+            omit: false,
+            batch: component.batch,
+        });
 
         Ok(proto::ComponentExpansion {
             computation_graph,

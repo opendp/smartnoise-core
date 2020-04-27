@@ -26,33 +26,6 @@ impl Expandable for proto::DpCount {
         let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
         let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
 
-        let count_max_id = match component.arguments.get("count_max") {
-            Some(id) => id.clone(),
-            None => {
-                let num_records = match properties.get("data")
-                    .ok_or("data: missing")? {
-                    ValueProperties::Array(value) => value.num_records,
-                    ValueProperties::Hashmap(value) => value.num_records,
-                    _ => return Err("data: must not be hashmap".into())
-                };
-
-                let count_max = match num_records {
-                    Some(num_records) => arr0(num_records).into_dyn(),
-                    None => match self.enforce_constant_time {
-                        true => return Err("count_max must be set when enforcing constant time".into()),
-                        false => arr0(std::i64::MAX).into_dyn()
-                    }
-                };
-                // count_max
-                maximum_id += 1;
-                let id_count_max = maximum_id;
-                let (patch_node, count_max_release) = get_literal(&count_max.into(), &component.batch)?;
-                computation_graph.insert(id_count_max.clone(), patch_node);
-                releases.insert(id_count_max.clone(), count_max_release);
-                id_count_max
-            }
-        };
-
         // count
         maximum_id += 1;
         let id_count = maximum_id;
@@ -64,26 +37,66 @@ impl Expandable for proto::DpCount {
             batch: component.batch,
         });
 
-        // noising
-        match self.mechanism.as_str() {
-            "SimpleGeometric" =>
-                computation_graph.insert(component_id.clone(), proto::Component {
-                    arguments: hashmap![
-                        "data".to_owned() => id_count,
-                        "lower".to_owned() => *component.arguments.get("lower")
-                            .ok_or_else(|| Error::from("lower must be provided as an argument"))?,
-                        "upper".to_owned() => count_max_id
-                    ],
-                    variant: Some(proto::component::Variant::from(proto::SimpleGeometricMechanism {
-                        privacy_usage: self.privacy_usage.clone(),
-                        enforce_constant_time: false,
-                    })),
-                    omit: false,
-                    batch: component.batch,
-                }),
-            _x => panic!("Unexpected invalid token {:?}", self.implementation.as_str()),
-        };
+        if self.mechanism.to_lowercase().as_str() == "simplegeometric" {
+            let count_max_id = match component.arguments.get("upper") {
+                Some(id) => id.clone(),
+                None => {
+                    let num_records = match properties.get("data")
+                        .ok_or("data: missing")? {
+                        ValueProperties::Array(value) => value.num_records,
+                        ValueProperties::Hashmap(value) => value.num_records,
+                        _ => return Err("data: must not be hashmap".into())
+                    };
 
+                    let count_max = match num_records {
+                        Some(num_records) => arr0(num_records).into_dyn(),
+                        None => match self.enforce_constant_time {
+                            true => return Err("upper must be set when enforcing constant time".into()),
+                            false => arr0(std::i64::MAX).into_dyn()
+                        }
+                    };
+                    // count_max
+                    maximum_id += 1;
+                    let id_count_max = maximum_id;
+                    let (patch_node, count_max_release) = get_literal(&count_max.into(), &component.batch)?;
+                    computation_graph.insert(id_count_max.clone(), patch_node);
+                    releases.insert(id_count_max.clone(), count_max_release);
+                    id_count_max
+                }
+            };
+
+            // noising
+            computation_graph.insert(component_id.clone(), proto::Component {
+                arguments: hashmap![
+                    "data".to_owned() => id_count,
+                    "lower".to_owned() => *component.arguments.get("lower")
+                        .ok_or_else(|| Error::from("lower must be provided as an argument"))?,
+                    "upper".to_owned() => count_max_id
+                ],
+                variant: Some(proto::component::Variant::from(proto::SimpleGeometricMechanism {
+                    privacy_usage: self.privacy_usage.clone(),
+                    enforce_constant_time: false,
+                })),
+                omit: false,
+                batch: component.batch,
+            });
+        } else {
+            // noising
+            computation_graph.insert(component_id.clone(), proto::Component {
+                arguments: hashmap!["data".to_owned() => id_count],
+                variant: Some(match self.mechanism.to_lowercase().as_str() {
+                    "laplace" => proto::component::Variant::from(proto::LaplaceMechanism {
+                        privacy_usage: self.privacy_usage.clone()
+                    }),
+                    "gaussian" => proto::component::Variant::from(proto::GaussianMechanism {
+                        privacy_usage: self.privacy_usage.clone()
+                    }),
+                    _ => panic!("Unexpected invalid token {:?}", self.implementation.as_str()),
+                }),
+                omit: false,
+                batch: component.batch,
+            });
+        }
 
         Ok(proto::ComponentExpansion {
             computation_graph,

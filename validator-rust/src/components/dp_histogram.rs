@@ -30,28 +30,8 @@ impl Expandable for proto::DpHistogram {
             .ok_or_else(|| Error::from("data is a required argument to DPHistogram"))?.to_owned();
 
         let data_property = properties.get("data")
-                                        .ok_or("data: missing")?.array()
-                                        .map_err(prepend("data:"))?;
-
-        let id_upper = match component.arguments.get("upper") {
-            Some(id) => id.clone(),
-            None => {
-                let count_max = match data_property.num_records {
-                    Some(num_records) => arr0(num_records).into_dyn(),
-                    None => match self.enforce_constant_time {
-                        true => return Err("upper must be set when enforcing constant time".into()),
-                        false => arr0(std::i64::MAX).into_dyn()
-                    }
-                };
-                // count_max
-                maximum_id += 1;
-                let max_id = maximum_id;
-                let (patch_node, count_max_release) = get_literal(&count_max.into(), &component.batch)?;
-                computation_graph.insert(max_id.clone(), patch_node);
-                releases.insert(max_id.clone(), count_max_release);
-                max_id
-            }
-        };
+            .ok_or("data: missing")?.array()
+            .map_err(prepend("data:"))?;
 
         // histogram
         maximum_id += 1;
@@ -72,25 +52,63 @@ impl Expandable for proto::DpHistogram {
             batch: component.batch,
         });
 
-        // noising
-	match self.mechanism.as_str() {
-	    "SimpleGeometric" =>
-        computation_graph.insert(*component_id, proto::Component {
-            arguments: hashmap![
-                "data".to_owned() => id_histogram,
-                "lower".to_owned() => *component.arguments.get("lower")
-                    .ok_or_else(|| Error::from("lower must be provided as an argument"))?,
-                "upper".to_owned() => id_upper
-            ],
-            variant: Some(proto::component::Variant::from(proto::SimpleGeometricMechanism {
-                privacy_usage: self.privacy_usage.clone(),
-                enforce_constant_time: false
-            })),
-            omit: false,
-            batch: component.batch,
-        }),
-	    _x => panic!("Unexpected invalid token {:?}", self.implementation.as_str()),
-	};
+        if self.mechanism.to_lowercase().as_str() == "simplegeometric" {
+            let id_upper = match component.arguments.get("upper") {
+                Some(id) => id.clone(),
+                None => {
+                    let count_max = match data_property.num_records {
+                        Some(num_records) => arr0(num_records).into_dyn(),
+                        None => match self.enforce_constant_time {
+                            true => return Err("upper must be set when enforcing constant time".into()),
+                            false => arr0(std::i64::MAX).into_dyn()
+                        }
+                    };
+                    // count_max
+                    maximum_id += 1;
+                    let max_id = maximum_id;
+                    let (patch_node, count_max_release) = get_literal(&count_max.into(), &component.batch)?;
+                    computation_graph.insert(max_id.clone(), patch_node);
+                    releases.insert(max_id.clone(), count_max_release);
+                    max_id
+                }
+            };
+
+            // noising
+            computation_graph.insert(*component_id, proto::Component {
+                arguments: hashmap![
+                    "data".to_owned() => id_histogram,
+                    "lower".to_owned() => *component.arguments.get("lower")
+                        .ok_or_else(|| Error::from("lower must be provided as an argument"))?,
+                    "upper".to_owned() => id_upper
+                ],
+                variant: Some(proto::component::Variant::from(proto::SimpleGeometricMechanism {
+                    privacy_usage: self.privacy_usage.clone(),
+                    enforce_constant_time: false
+                })),
+                omit: false,
+                batch: component.batch,
+            });
+        } else {
+
+            // noising
+            computation_graph.insert(*component_id, proto::Component {
+                arguments: hashmap![
+                    "data".to_owned() => id_histogram
+                ],
+                variant: Some(match self.mechanism.to_lowercase().as_str() {
+                    "laplace" => proto::component::Variant::from(proto::LaplaceMechanism {
+                        privacy_usage: self.privacy_usage.clone()
+                    }),
+                    "gaussian" => proto::component::Variant::from(proto::GaussianMechanism {
+                        privacy_usage: self.privacy_usage.clone()
+                    }),
+                    _ => panic!("Unexpected invalid token {:?}", self.implementation.as_str()),
+                }),
+                omit: false,
+                batch: component.batch,
+            });
+        }
+
 
         Ok(proto::ComponentExpansion {
             computation_graph,
