@@ -1,8 +1,7 @@
 {
   "arguments": {
     "data": {
-      "default": "None",
-      "type": "Array",
+      "type_value": "Array",
       "description": "Vector of data to stack into a matrix. A Hashmap of matrices will be emitted if multiple rows are provided."
     }
   },
@@ -10,21 +9,27 @@
   "name": "reshape",
   "options": {
     "symmetric": {
-      "type": "bool",
-      "default": "False",
+      "type_proto": "bool",
+      "type_rust": "bool",
+      "default_python": "False",
+      "default_rust": "false",
       "description": "Set if data are elements from the upper triangle of a symmetric matrix."
     },
     "layout": {
-      "type": "string",
+      "type_proto": "string",
+      "type_rust": "String",
+      "default_python": "'row'",
+      "default_rust": "String::from(\"row\")",
       "description": "Consecutive elements of either the `row` or `column` reside next to each other."
     },
     "shape": {
-      "type": "repeated uint32",
+      "type_proto": "repeated uint32",
+      "type_rust": "Vec<u32>",
       "description": "The shape of the output matrix."
     }
   },
   "return": {
-    "type": "Array",
+    "type_value": "Array",
     "description": "Reshape of data."
   },
   "description": "Reshapes a row vector into a matrix."

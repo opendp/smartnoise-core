@@ -1,22 +1,24 @@
 {
   "arguments": {
     "data": {
-      "type": "Array"
+      "type_value": "Array"
     },
     "num_partitions": {
-      "default": "None",
-      "type": "Array"
+      "default_python": "None",
+      "default_rust": "None",
+      "type_value": "Array"
     },
     "by": {
-      "default": "None",
-      "type": "Array"
+      "default_python": "None",
+      "default_rust": "None",
+      "type_value": "Array"
     }
   },
   "id": "Partition",
   "name": "partition",
   "options": {},
   "return": {
-    "type": "Hashmap"
+    "type_value": "Hashmap"
   },
   "description": "Split the rows of data into either into k equally sized partitions, or by the categories of a vector"
 }

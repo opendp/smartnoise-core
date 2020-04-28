@@ -1,20 +1,22 @@
 {
   "arguments": {
     "data": {
-      "type": "Array"
+      "type_value": "Array"
     }
   },
   "id": "Variance",
   "name": "variance",
   "options": {
     "finite_sample_correction": {
-      "type": "bool",
-      "default": "True",
+      "type_proto": "bool",
+      "type_rust": "bool",
+      "default_python": "True",
+      "default_rust": "true",
       "description": "Whether or not to use the finite sample correction (Bessel's correction)."
     }
   },
   "return": {
-    "type": "Array",
+    "type_value": "Array",
     "description": "Sample variance for each column of the data."
   },
   "description": "Calculates the sample variance for each column of the data."

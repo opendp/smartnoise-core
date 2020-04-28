@@ -1,14 +1,14 @@
 {
   "arguments": {
     "data": {
-      "type": "Array"
+      "type_value": "Array"
     }
   },
   "id": "Count",
   "name": "count",
   "options": {},
   "return": {
-    "type": "Array"
+    "type_value": "Array"
   },
   "description": "Returns the number of rows in the data."
 }

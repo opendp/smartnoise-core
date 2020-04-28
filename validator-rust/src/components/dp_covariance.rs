@@ -66,7 +66,7 @@ impl Expandable for proto::DpCovariance {
         let id_covariance = current_id;
         computation_graph.insert(id_covariance, proto::Component {
             arguments,
-            variant: Some(proto::component::Variant::from(proto::Covariance {
+            variant: Some(proto::component::Variant::Covariance(proto::Covariance {
                 finite_sample_correction: self.finite_sample_correction
             })),
             omit: true,
@@ -79,13 +79,13 @@ impl Expandable for proto::DpCovariance {
         computation_graph.insert(id_noise, proto::Component {
             arguments: hashmap!["data".to_owned() => id_covariance],
             variant: Some(match self.mechanism.to_lowercase().as_str() {
-                "laplace" => proto::component::Variant::from(proto::LaplaceMechanism {
+                "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
                     privacy_usage: self.privacy_usage.clone()
                 }),
-                "gaussian" => proto::component::Variant::from(proto::GaussianMechanism {
+                "gaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
                     privacy_usage: self.privacy_usage.clone()
                 }),
-                _x => panic!("Unexpected invalid token {:?}", self.implementation.as_str()),
+                _x => panic!("Unexpected invalid token {:?}", self.mechanism.as_str()),
             }),
             omit: true,
             batch: component.batch,
@@ -94,7 +94,7 @@ impl Expandable for proto::DpCovariance {
         // reshape into matrix
         computation_graph.insert(component_id.clone(), proto::Component {
             arguments: hashmap!["data".to_owned() => id_noise],
-            variant: Some(proto::component::Variant::from(proto::Reshape {
+            variant: Some(proto::component::Variant::Reshape(proto::Reshape {
                 symmetric,
                 layout: "row".to_string(),
                 shape
@@ -177,7 +177,7 @@ impl Report for proto::DpCovariance {
             algorithm_info: AlgorithmInfo {
                 name: "".to_string(),
                 cite: "".to_string(),
-                mechanism: self.implementation.clone(),
+                mechanism: self.mechanism.clone(),
                 argument
             }
         }]))

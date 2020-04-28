@@ -1,31 +1,34 @@
 {
   "arguments": {
     "data": {
-      "type": "Array",
+      "type_value": "Array",
       "description": "Result to be released privately via the Geometric mechanism."
     },
     "lower": {
-      "type": "Array"
+      "type_value": "Array"
     },
     "upper": {
-      "type": "Array"
+      "type_value": "Array"
     }
   },
   "id": "SimpleGeometricMechanism",
   "name": "simple_geometric_mechanism",
   "options": {
     "privacy_usage": {
-      "type": "repeated PrivacyUsage",
-      "default": "None",
+      "type_proto": "repeated PrivacyUsage",
+      "type_rust": "Vec<proto::PrivacyUsage>",
+      "default_python": "None",
       "description": "Object describing the type and amount of privacy to be used for the mechanism release."
     },
     "enforce_constant_time": {
-      "type": "bool",
-      "default": "False"
+      "type_proto": "bool",
+      "type_rust": "bool",
+      "default_python": "False",
+      "default_rust": "false"
     }
   },
   "return": {
-    "type": "Array",
+    "type_value": "Array",
     "description": "Original data perturbed with Geometric noise."
   },
   "description": "Privatizes a result by returning it perturbed with Geometric noise."

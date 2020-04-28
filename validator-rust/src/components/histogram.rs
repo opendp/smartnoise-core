@@ -32,7 +32,7 @@ impl Component for proto::Histogram {
 
         // save a snapshot of the state when aggregating
         data_property.aggregator = Some(AggregatorProperties {
-            component: proto::component::Variant::from(self.clone()),
+            component: proto::component::Variant::Histogram(self.clone()),
             properties: properties.clone()
         });
 
@@ -87,7 +87,9 @@ impl Expandable for proto::Histogram {
                 let id_digitize = current_id;
                 computation_graph.insert(id_digitize, proto::Component {
                     arguments,
-                    variant: Some(proto::component::Variant::from(proto::Digitize {})),
+                    variant: Some(proto::component::Variant::Digitize(proto::Digitize {
+                        inclusive_left: self.inclusive_left
+                    })),
                     omit: true,
                     batch: component.batch,
                 });
@@ -107,7 +109,7 @@ impl Expandable for proto::Histogram {
                         "categories".to_owned() => *categories_id,
                         "null_value".to_owned() => *null_id
                     ],
-                    variant: Some(proto::component::Variant::from(proto::Clamp {})),
+                    variant: Some(proto::component::Variant::Clamp(proto::Clamp {})),
                     omit: true,
                     batch: component.batch,
                 });

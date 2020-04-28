@@ -1,14 +1,14 @@
 {
   "arguments": {
     "data": {
-      "type": "Array"
+      "type_value": "Array"
     }
   },
   "id": "Mean",
   "name": "mean",
   "options": {},
   "return": {
-    "type": "Array",
+    "type_value": "Array",
     "description": "Arithmetic mean for each column of the data in question."
   },
   "description": "Calculates the arithmetic mean of each column in the provided data."

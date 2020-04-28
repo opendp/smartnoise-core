@@ -1,7 +1,7 @@
 {
   "arguments": {
     "data": {
-      "type": "Array",
+      "type_value": "Array",
       "description": "Data for which you would like the kth raw moments."
     }
   },
@@ -9,12 +9,13 @@
   "name": "kth_raw_sample_moment",
   "options": {
     "k": {
-      "type": "uint32",
+      "type_proto": "uint32",
+      "type_rust": "u32",
       "description": "Integer statistical moment indicator."
     }
   },
   "return": {
-    "type": "Array",
+    "type_value": "Array",
     "description": "kth raw sample moment for each column."
   },
   "description": "Returns sample estimate of kth raw moment for each column of the data."
