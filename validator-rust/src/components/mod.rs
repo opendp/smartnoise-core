@@ -114,11 +114,12 @@ pub trait Expandable {
     ) -> Result<proto::ComponentExpansion>;
 }
 
-/// Aggregator Component trait
+/// Sensitivity component trait
 ///
 /// When a component is an aggregator, the abstract computation the component represents combines multiple rows together into a single value.
-/// For example, a mean, minimum, or scoring function on a dataset.
-pub trait Aggregator {
+/// For example, a mean, minimum, or scoring function on a dataset. A component that aggregates data has an associated sensitivity, which captures
+/// how much the input data affects the output of the aggregator.
+pub trait Sensitivity {
     /// Derivation for the sensitivity of an aggregator based on available local metadata.
     ///
     /// The sensitivity is the maximum amount that a perturbation of input data may have on the resulting value.
@@ -277,7 +278,7 @@ impl Expandable for proto::component::Variant {
     }
 }
 
-impl Aggregator for proto::component::Variant {
+impl Sensitivity for proto::component::Variant {
     /// Utility implementation on the enum containing all variants of a component.
     ///
     /// This utility delegates evaluation to the concrete implementation of each component variant.
@@ -440,7 +441,7 @@ impl Named for proto::component::Variant {
             // INSERT COMPONENT LIST
             Index, Literal, Materialize
         );
-        
+
         // default implementation
         match argument_variables.get("data") {
             // by convention, names pass through the "data" argument unchanged

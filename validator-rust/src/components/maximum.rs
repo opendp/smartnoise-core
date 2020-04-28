@@ -5,7 +5,7 @@ use std::collections::HashMap;
 
 use crate::{proto, base};
 
-use crate::components::{Component, Aggregator};
+use crate::components::{Component, Sensitivity};
 use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType};
 use crate::utilities::prepend;
 use ndarray::prelude::*;
@@ -41,7 +41,7 @@ impl Component for proto::Maximum {
 
 }
 
-impl Aggregator for proto::Maximum {
+impl Sensitivity for proto::Maximum {
     fn compute_sensitivity(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,

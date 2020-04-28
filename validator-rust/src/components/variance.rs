@@ -5,7 +5,7 @@ use std::collections::HashMap;
 
 use crate::{proto, base};
 
-use crate::components::{Component, Aggregator};
+use crate::components::{Component, Sensitivity};
 use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType};
 use crate::utilities::prepend;
 use ndarray::prelude::*;
@@ -40,7 +40,7 @@ impl Component for proto::Variance {
     }
 }
 
-impl Aggregator for proto::Variance {
+impl Sensitivity for proto::Variance {
     /// Variance sensitivities [are backed by the the proofs here](https://github.com/opendifferentialprivacy/whitenoise-core/blob/955703e3d80405d175c8f4642597ccdf2c00332a/whitepapers/sensitivities/variance/variance.pdf)
     fn compute_sensitivity(
         &self,

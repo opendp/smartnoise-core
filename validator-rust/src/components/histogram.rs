@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 use crate::{proto};
 
-use crate::components::{Component, Aggregator, Expandable};
+use crate::components::{Component, Sensitivity, Expandable};
 use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType, NatureContinuous, Nature, Vector1DNull, Jagged};
 use crate::utilities::{prepend, get_literal};
 use ndarray::{arr1, Array};
@@ -155,7 +155,7 @@ impl Expandable for proto::Histogram {
 }
 
 
-impl Aggregator for proto::Histogram {
+impl Sensitivity for proto::Histogram {
     /// Histogram sensitivities [are backed by the the proofs here](https://github.com/opendifferentialprivacy/whitenoise-core/blob/955703e3d80405d175c8f4642597ccdf2c00332a/whitepapers/sensitivities/counts/counts.pdf).
     fn compute_sensitivity(
         &self,
