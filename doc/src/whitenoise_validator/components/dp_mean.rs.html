@@ -132,6 +132,11 @@
 <span id="132">132</span>
 <span id="133">133</span>
 <span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
@@ -183,13 +188,18 @@
         <span class="comment">// noising</span>
         <span class="ident">computation_graph</span>.<span class="ident">insert</span>(<span class="ident">component_id</span>.<span class="ident">clone</span>(), <span class="ident">proto</span>::<span class="ident">Component</span> {
             <span class="ident">arguments</span>: <span class="macro">hashmap</span><span class="macro">!</span>[<span class="string">&quot;data&quot;</span>.<span class="ident">to_owned</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">id_mean</span>],
-            <span class="ident">variant</span>: <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">from</span>(<span class="ident">proto</span>::<span class="ident">LaplaceMechanism</span> {
-                <span class="ident">privacy_usage</span>: <span class="self">self</span>.<span class="ident">privacy_usage</span>.<span class="ident">clone</span>()
-            })),
+            <span class="ident">variant</span>: <span class="prelude-val">Some</span>(<span class="kw">match</span> <span class="self">self</span>.<span class="ident">mechanism</span>.<span class="ident">to_lowercase</span>().<span class="ident">as_str</span>() {
+                <span class="string">&quot;laplace&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">from</span>(<span class="ident">proto</span>::<span class="ident">LaplaceMechanism</span> {
+                    <span class="ident">privacy_usage</span>: <span class="self">self</span>.<span class="ident">privacy_usage</span>.<span class="ident">clone</span>()
+                }),
+                <span class="string">&quot;gaussian&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">from</span>(<span class="ident">proto</span>::<span class="ident">GaussianMechanism</span> {
+                    <span class="ident">privacy_usage</span>: <span class="self">self</span>.<span class="ident">privacy_usage</span>.<span class="ident">clone</span>()
+                }),
+                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;Unexpected invalid token {:?}&quot;</span>, <span class="self">self</span>.<span class="ident">implementation</span>.<span class="ident">as_str</span>()),
+            }),
             <span class="ident">omit</span>: <span class="bool-val">false</span>,
             <span class="ident">batch</span>: <span class="ident">component</span>.<span class="ident">batch</span>,
         });
-
 
         <span class="prelude-val">Ok</span>(<span class="ident">proto</span>::<span class="ident">ComponentExpansion</span> {
             <span class="ident">computation_graph</span>,
@@ -266,5 +276,6 @@
         }
         <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">releases</span>))
     }
-}</pre></div>
+}
+</pre></div>
 </section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../";window.currentCrate = "whitenoise_validator";</script><script src="../../../aliases.js"></script><script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script><script defer src="../../../search-index.js"></script></body></html>

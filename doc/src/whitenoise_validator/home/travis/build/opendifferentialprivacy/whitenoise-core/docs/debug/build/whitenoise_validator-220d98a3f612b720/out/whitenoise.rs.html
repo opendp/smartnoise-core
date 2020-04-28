@@ -1715,6 +1715,38 @@
 <span id="1715">1715</span>
 <span id="1716">1716</span>
 <span id="1717">1717</span>
+<span id="1718">1718</span>
+<span id="1719">1719</span>
+<span id="1720">1720</span>
+<span id="1721">1721</span>
+<span id="1722">1722</span>
+<span id="1723">1723</span>
+<span id="1724">1724</span>
+<span id="1725">1725</span>
+<span id="1726">1726</span>
+<span id="1727">1727</span>
+<span id="1728">1728</span>
+<span id="1729">1729</span>
+<span id="1730">1730</span>
+<span id="1731">1731</span>
+<span id="1732">1732</span>
+<span id="1733">1733</span>
+<span id="1734">1734</span>
+<span id="1735">1735</span>
+<span id="1736">1736</span>
+<span id="1737">1737</span>
+<span id="1738">1738</span>
+<span id="1739">1739</span>
+<span id="1740">1740</span>
+<span id="1741">1741</span>
+<span id="1742">1742</span>
+<span id="1743">1743</span>
+<span id="1744">1744</span>
+<span id="1745">1745</span>
+<span id="1746">1746</span>
+<span id="1747">1747</span>
+<span id="1748">1748</span>
+<span id="1749">1749</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BoolNull</span> {
@@ -2234,11 +2266,14 @@
     <span class="doccomment">/// Whether or not to require Geometric mechanism to run in constant time.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">bool</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">enforce_constant_time</span>: <span class="ident">bool</span>,
-    <span class="doccomment">/// Privatizing mechanism to use.</span>
+    <span class="doccomment">/// Privatizing algorithm to use.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">implementation</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
+    <span class="doccomment">/// Privatizing mechanism to use.</span>
+    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;3&quot;</span>)]</span>
+    <span class="kw">pub</span> <span class="ident">mechanism</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
     <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release.</span>
-    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;3&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;4&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">privacy_usage</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PrivacyUsage</span><span class="op">&gt;</span>,
 }
 <span class="doccomment">/// DPCovariance Component</span>
@@ -2261,11 +2296,14 @@
     <span class="doccomment">/// Whether or not to use the finite sample correction (Bessel&#39;s correction).</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">bool</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">finite_sample_correction</span>: <span class="ident">bool</span>,
-    <span class="doccomment">/// Privatizing mechanism to use.</span>
+    <span class="doccomment">/// Privatizing algorithm to use.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">implementation</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
+    <span class="doccomment">/// Privatizing mechanism to use.</span>
+    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;3&quot;</span>)]</span>
+    <span class="kw">pub</span> <span class="ident">mechanism</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
     <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release.</span>
-    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;3&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;4&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">privacy_usage</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PrivacyUsage</span><span class="op">&gt;</span>,
 }
 <span class="doccomment">/// DPHistogram Component</span>
@@ -2290,11 +2328,14 @@
     <span class="doccomment">/// Whether or not to require Geometric mechanism to run in constant time.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">bool</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">enforce_constant_time</span>: <span class="ident">bool</span>,
-    <span class="doccomment">/// Privatizing mechanism to use.</span>
+    <span class="doccomment">/// Privatizing algorithm to use.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">implementation</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
+    <span class="doccomment">/// Privatizing mechanism to use.</span>
+    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;3&quot;</span>)]</span>
+    <span class="kw">pub</span> <span class="ident">mechanism</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
     <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release.</span>
-    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;3&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;4&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">privacy_usage</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PrivacyUsage</span><span class="op">&gt;</span>,
 }
 <span class="doccomment">/// DPMaximum Component</span>
@@ -2310,11 +2351,14 @@
 <span class="doccomment">/// * `Value` - Array - Differentially private estimates of the maximum elements of the data.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DpMaximum</span> {
-    <span class="doccomment">/// Privatizing mechanism to use.</span>
+    <span class="doccomment">/// Privatizing algorithm to use.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">implementation</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
+    <span class="doccomment">/// Privatizing mechanism to use.</span>
+    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
+    <span class="kw">pub</span> <span class="ident">mechanism</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
     <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release.</span>
-    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;3&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">privacy_usage</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PrivacyUsage</span><span class="op">&gt;</span>,
 }
 <span class="doccomment">/// DPMean Component</span>
@@ -2330,11 +2374,14 @@
 <span class="doccomment">/// * `Value` - Array - Differentially private estimate of the mean of each column of the data.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DpMean</span> {
-    <span class="doccomment">/// Privatizing mechanism to use.</span>
+    <span class="doccomment">/// Privatizing algorithm to use.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">implementation</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
+    <span class="doccomment">/// Privatizing mechanism to use.</span>
+    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
+    <span class="kw">pub</span> <span class="ident">mechanism</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
     <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release.</span>
-    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;3&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">privacy_usage</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PrivacyUsage</span><span class="op">&gt;</span>,
 }
 <span class="doccomment">/// DPMedian Component</span>
@@ -2350,14 +2397,17 @@
 <span class="doccomment">/// * `Value` - Array - Differentially private estimates of the median of each column of the data.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DpMedian</span> {
-    <span class="doccomment">/// Privatizing mechanism to use.</span>
+    <span class="doccomment">/// Privatizing algorithm to use.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">implementation</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
     <span class="doccomment">/// Interpolation strategy. Must be one of &quot;lower&quot;, &quot;upper&quot;, &quot;midpoint&quot;, &quot;nearest&quot;, &quot;linear&quot;.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">interpolation</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
+    <span class="doccomment">/// Privatizing mechanism to use.</span>
+    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;3&quot;</span>)]</span>
+    <span class="kw">pub</span> <span class="ident">mechanism</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
     <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release.</span>
-    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;3&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;4&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">privacy_usage</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PrivacyUsage</span><span class="op">&gt;</span>,
 }
 <span class="doccomment">/// DPMinimum Component</span>
@@ -2373,11 +2423,14 @@
 <span class="doccomment">/// * `Value` - Array - Differentially private estimates of the minimum elements of the data.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DpMinimum</span> {
-    <span class="doccomment">/// Privatizing mechanism to use.</span>
+    <span class="doccomment">/// Privatizing algorithm to use.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">implementation</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
+    <span class="doccomment">/// Privatizing mechanism to use.</span>
+    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
+    <span class="kw">pub</span> <span class="ident">mechanism</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
     <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release.</span>
-    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;3&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">privacy_usage</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PrivacyUsage</span><span class="op">&gt;</span>,
 }
 <span class="doccomment">/// DPMomentRaw Component</span>
@@ -2393,14 +2446,17 @@
 <span class="doccomment">/// * `Value` - Array - Sample estimate of raw moment for each column of the data.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DpMomentRaw</span> {
-    <span class="doccomment">/// Privatizing mechanism to use.</span>
+    <span class="doccomment">/// Privatizing algorithm to use.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">implementation</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
+    <span class="doccomment">/// Privatizing mechanism to use.</span>
+    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
+    <span class="kw">pub</span> <span class="ident">mechanism</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
     <span class="doccomment">/// Integer statistical moment indicator.</span>
-    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">uint32</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">uint32</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;3&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">order</span>: <span class="ident">u32</span>,
     <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release.</span>
-    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;3&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;4&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">privacy_usage</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PrivacyUsage</span><span class="op">&gt;</span>,
 }
 <span class="doccomment">/// DPSum Component</span>
@@ -2411,16 +2467,21 @@
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `data` - Array</span>
+<span class="doccomment">/// * `lower` - Array - Estimated minimum possible sum for the geometric mechanism, when doing an integer sum.</span>
+<span class="doccomment">/// * `upper` - Array - Estimated maximum possible sum for the geometric mechanism, when doing an integer sum.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array - Differentially private sum over elements for each column of the data.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DpSum</span> {
-    <span class="doccomment">/// Privatizing mechanism to use.</span>
+    <span class="doccomment">/// Privatizing algorithm to use.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">implementation</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
+    <span class="doccomment">/// Privatizing mechanism to use.</span>
+    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
+    <span class="kw">pub</span> <span class="ident">mechanism</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
     <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release.</span>
-    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;3&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">privacy_usage</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PrivacyUsage</span><span class="op">&gt;</span>,
 }
 <span class="doccomment">/// DPVariance Component</span>
@@ -2439,11 +2500,14 @@
     <span class="doccomment">/// Whether or not to use the finite sample correction (Bessel&#39;s correction).</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">bool</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">finite_sample_correction</span>: <span class="ident">bool</span>,
-    <span class="doccomment">/// Privatizing mechanism to use.</span>
+    <span class="doccomment">/// Privatizing algorithm to use.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">implementation</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
+    <span class="doccomment">/// Privatizing mechanism to use.</span>
+    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;3&quot;</span>)]</span>
+    <span class="kw">pub</span> <span class="ident">mechanism</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
     <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release.</span>
-    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;3&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;4&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">privacy_usage</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PrivacyUsage</span><span class="op">&gt;</span>,
 }
 <span class="doccomment">/// Equal Component</span>

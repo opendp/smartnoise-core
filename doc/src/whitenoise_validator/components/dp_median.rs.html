@@ -122,6 +122,12 @@
 <span id="122">122</span>
 <span id="123">123</span>
 <span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
@@ -171,11 +177,17 @@
         <span class="comment">// sanitizing</span>
         <span class="ident">computation_graph</span>.<span class="ident">insert</span>(<span class="ident">component_id</span>.<span class="ident">clone</span>(), <span class="ident">proto</span>::<span class="ident">Component</span> {
             <span class="ident">arguments</span>: <span class="macro">hashmap</span><span class="macro">!</span>[
-                <span class="string">&quot;data&quot;</span>.<span class="ident">to_owned</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">id_median</span>
-            ],
-            <span class="ident">variant</span>: <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">from</span>(<span class="ident">proto</span>::<span class="ident">LaplaceMechanism</span> {
-                <span class="ident">privacy_usage</span>: <span class="self">self</span>.<span class="ident">privacy_usage</span>.<span class="ident">clone</span>()
-            })),
+			    <span class="string">&quot;data&quot;</span>.<span class="ident">to_owned</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">id_median</span>
+		    ],
+            <span class="ident">variant</span>: <span class="prelude-val">Some</span>(<span class="kw">match</span> <span class="self">self</span>.<span class="ident">mechanism</span>.<span class="ident">to_lowercase</span>().<span class="ident">as_str</span>() {
+                <span class="string">&quot;laplace&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">from</span>(<span class="ident">proto</span>::<span class="ident">LaplaceMechanism</span> {
+                    <span class="ident">privacy_usage</span>: <span class="self">self</span>.<span class="ident">privacy_usage</span>.<span class="ident">clone</span>()
+                }),
+                <span class="string">&quot;gaussian&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">from</span>(<span class="ident">proto</span>::<span class="ident">GaussianMechanism</span> {
+                    <span class="ident">privacy_usage</span>: <span class="self">self</span>.<span class="ident">privacy_usage</span>.<span class="ident">clone</span>()
+                }),
+                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;Unexpected invalid token {:?}&quot;</span>, <span class="self">self</span>.<span class="ident">implementation</span>.<span class="ident">as_str</span>()),
+            }),
             <span class="ident">omit</span>: <span class="bool-val">false</span>,
             <span class="ident">batch</span>: <span class="ident">component</span>.<span class="ident">batch</span>,
         });
