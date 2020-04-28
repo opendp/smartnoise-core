@@ -36,29 +36,64 @@ Let $\mathcal{X}$ be a space of databases and let $[m,M]$ be an arbitrary range.
 The exponential mechanism preserves $(\varepsilon,0)$-differential privacy \cite{mcsherry2007mechanism, dwork2014algorithmic}.\footnote{As written in \cite{mcsherry2007mechanism}, the mechanism actually preserves $(2\varepsilon\Delta u,0)$-differential privacy; the main difference in the $\cite{dwork2014algorithmic}$ version is that it has the extra factor of $2\Delta u$ to avoid these extra terms.}
 \end{theorem}
 
-Note that the exponential mechanism may not be tractable in many cases, as it assumes the existence of a utility function, and even if one exists it may not be tractable to compute it efficiently. 
+Note that the exponential mechanism may not be tractable in many cases, as it assumes the existence of a utility function, and even if one exists it may not be efficiently computable. 
 
 \section{An Exponential Mechanism for a Median}
 
 \subsection{Defining a sensible utility function}
-
-Note that a user will prefer an output that is closer to the true median over one that is further away. Let $x$ be an (ordered) data set, let $r$ be a possible output, and let $n$ be the size of the data set. Note that if $r$ is close to the median, its rank will be close to $n/2$. Then, the following utility function is a sensical one:
+%
+%Note that a user will prefer an output that is closer to the true median over one that is further away. Let $x$ be an (ordered) data set, let $r$ be a possible output, and let $n$ be the size of the data set. Note that if $r$ is close to the median, its rank will be close to $n/2$. Then, the following utility function is a sensical one:
+%
+%\begin{equation}
+%u(x, r) = - \left\vert \text{rank}_x(r) - \frac{n}{2} \right\vert.\footnote{Note that you could use a different measure of distance here if desired; an $L_1$ norm in terms of rank is just convenient to reduce sensitivity.}
+%\end{equation}
+%
+%Note that the \textit{rank} function here is a slight abuse of notation since $r$ is an element from the \textit{data range}, not from the underlying database $x$, so does not have a rank. 
 
 \begin{equation}
-u(x, r) = - \left\vert \text{rank}_x(r) - \frac{n}{2} \right\vert.\footnote{Note that you could use a different measure of distance here if desired; an $L_1$ norm in terms of rank is just convenient to reduce sensitivity.}
+u(x,r) = \max(\alpha, (1-\alpha))N - \left\vert (1-\alpha) \#(Z<x) - \alpha \# (Z>x) \right\vert 
 \end{equation}
-
-Note that the \textit{rank} function here is a slight abuse of notation since $r$ is an element from the \textit{data range}, not from the underlying database $x$, so does not have a rank. 
 
 \subsection{Sensitivity of the utility function}
 
 \subsubsection{Neighboring Definition: Change One}
 
+Let $C_1 = \#(Z<x), C_2 = \#(Z>x)$. Worst case, $C_1$ increases by 1 and $C_2$ decreases by 1.
+Then 
+
+\begin{align*}
+\Delta u &= \left\vert \left\vert (1-\alpha) (C_1 + 1) - \alpha (C_2-1) \right\vert - \left\vert (1-\alpha) C_1 - \alpha C_2 \right\vert \right\vert \\
+ &\le \left\vert (1-\alpha) (C_1 + 1) - \alpha (C_2-1) - (1-\alpha) C_1 + \alpha C_2 \right\vert  \\
+ &\le \left\vert C_1 + 1 - \alpha C_1 - \alpha - \alpha C_2 + \alpha - C_1 + \alpha C_2 + \alpha C_2 \right\vert  \\
+ &= 1
+\end{align*}
+
+If instead $C_2$ increases by 1 and $C_1$ decreases by 1, the result is identical (negative sign falls out).
+
+% note that this is definitely worse than only one of them happening cause then you're just in the add/drop one setting and you get max(alpha, 1-alpha).
+
 \subsubsection{Neighboring Definition: Add/Drop One}
+
+In the add/remove-1 model, utility function has sensitivity $\max(1-\alpha, \alpha)$:
+If we add 1, there are two worse-cases: $C_2$ increases by 1, nothing happens to $C_2$.
+\begin{align*}
+\Delta u &= \left\vert (1-\alpha) (C_1 + 1) - \alpha (C_2) \right\vert - \left\vert (1-\alpha) C_1 - \alpha C_2 \right\vert \\
+ &\le \left\vert (1-\alpha) (C_1 + 1) - \alpha (C_2) - (1-\alpha) C_1 + \alpha C_2 \right\vert \\
+&= \left\vert C_1 + 1 - \alpha C_1 - \alpha - \alpha C_2 - C_1 + \alpha C_1 + \alpha C_2 \right\vert \\
+&= 1 - \alpha
+\end{align*}
+b. nothing happens to $C_1, C_2$ increases by 1
+\begin{align*}
+\Delta u &= \left\vert (1-\alpha) (C_1) - \alpha (C_2 + 1) \right\vert - \left\vert (1-\alpha) C_1 - \alpha C_2 \right\vert \\
+&\le \left\vert C_1 -\alpha C_1 - \alpha C_2 - \alpha - C_1 + \alpha C_1 + \alpha C_2 \right\vert \\
+&= \alpha 
+\end{align*}
+
+Subtracting a point gives you same thing but with some negative signs inside the absolute values that come out in the wash.
 
 \subsection{The Normalization Factor}
 
-\bibliographystyle{alpha}
+\bibliographystyle{C_1}
 \nocite{*}
 \bibliography{expMechMedian}
 \end{document}
