@@ -5,7 +5,7 @@ use std::collections::HashMap;
 
 use crate::{proto, base};
 
-use crate::components::{Component, Aggregator};
+use crate::components::{Component, Sensitivity};
 use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType};
 
 use crate::utilities::prepend;
@@ -44,7 +44,7 @@ impl Component for proto::Quantile {
 
 }
 
-impl Aggregator for proto::Quantile {
+impl Sensitivity for proto::Quantile {
     fn compute_sensitivity(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,

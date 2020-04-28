@@ -38,6 +38,11 @@ lib
 # Jetbrains
 .idea
 
+# emacs
+*~
+*#
+.projectile
+
 # generated protobuf
 validator-rust/prototypes/components.proto
 
