@@ -101,7 +101,7 @@
 
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">proto</span>};
 
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">components</span>::{<span class="ident">Component</span>, <span class="ident">Aggregator</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">components</span>::{<span class="ident">Component</span>, <span class="ident">Sensitivity</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">base</span>::{<span class="ident">Value</span>, <span class="ident">NodeProperties</span>, <span class="ident">AggregatorProperties</span>, <span class="ident">SensitivitySpace</span>, <span class="ident">ValueProperties</span>, <span class="ident">DataType</span>, <span class="ident">NatureContinuous</span>, <span class="ident">Nature</span>, <span class="ident">Vector1DNull</span>};
 <span class="kw">use</span> <span class="ident">ndarray</span>::{<span class="ident">arr1</span>};
 
@@ -146,7 +146,7 @@
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Aggregator</span> <span class="kw">for</span> <span class="ident">proto</span>::<span class="ident">Count</span> {
+<span class="kw">impl</span> <span class="ident">Sensitivity</span> <span class="kw">for</span> <span class="ident">proto</span>::<span class="ident">Count</span> {
     <span class="doccomment">/// Count query sensitivities [are backed by the the proofs here](https://github.com/opendifferentialprivacy/whitenoise-core/blob/955703e3d80405d175c8f4642597ccdf2c00332a/whitepapers/sensitivities/counts/counts.pdf).</span>
     <span class="kw">fn</span> <span class="ident">compute_sensitivity</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,

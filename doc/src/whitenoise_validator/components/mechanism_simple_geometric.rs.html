@@ -137,7 +137,7 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashMap</span>;
 <span class="kw">use</span> <span class="ident">math</span>::<span class="ident">round</span>;
 
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">components</span>::{<span class="ident">Aggregator</span>, <span class="ident">Accuracy</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">components</span>::{<span class="ident">Sensitivity</span>, <span class="ident">Accuracy</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">proto</span>, <span class="ident">base</span>};
 
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">components</span>::{<span class="ident">Component</span>, <span class="ident">Expandable</span>};
@@ -257,12 +257,12 @@
 
         <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">sensitivities</span>.<span class="ident">into_iter</span>().<span class="ident">zip</span>(<span class="ident">epsilon</span>.<span class="ident">into_iter</span>())
             .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">sensitivity</span>, <span class="ident">epsilon</span>)<span class="op">|</span> {
-                <span class="kw">let</span> <span class="ident">unrounded_accuracy</span> <span class="op">=</span> (<span class="number">1.</span> <span class="op">/</span> <span class="kw-2">*</span><span class="ident">alpha</span>).<span class="ident">ln</span>() <span class="op">*</span> (<span class="ident">sensitivity</span> <span class="op">/</span> <span class="ident">epsilon</span>);              
+                <span class="kw">let</span> <span class="ident">unrounded_accuracy</span> <span class="op">=</span> (<span class="number">1.</span> <span class="op">/</span> <span class="kw-2">*</span><span class="ident">alpha</span>).<span class="ident">ln</span>() <span class="op">*</span> (<span class="ident">sensitivity</span> <span class="op">/</span> <span class="ident">epsilon</span>);
                 <span class="ident">proto</span>::<span class="ident">Accuracy</span> {
                     <span class="ident">value</span>: <span class="ident">round</span>::<span class="ident">ceil</span>(<span class="ident">unrounded_accuracy</span>, <span class="number">0</span>),
                     <span class="ident">alpha</span>: <span class="kw-2">*</span><span class="ident">alpha</span>,
             }
-        }).<span class="ident">collect</span>()))      
+        }).<span class="ident">collect</span>()))
     }
 }
 </pre></div>

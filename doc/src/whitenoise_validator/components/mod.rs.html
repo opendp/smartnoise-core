@@ -490,6 +490,7 @@
 <span id="490">490</span>
 <span id="491">491</span>
 <span id="492">492</span>
+<span id="493">493</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Component trait implementations</span>
 <span class="doccomment">//!</span>
@@ -607,11 +608,12 @@
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">ComponentExpansion</span><span class="op">&gt;</span>;
 }
 
-<span class="doccomment">/// Aggregator Component trait</span>
+<span class="doccomment">/// Sensitivity component trait</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// When a component is an aggregator, the abstract computation the component represents combines multiple rows together into a single value.</span>
-<span class="doccomment">/// For example, a mean, minimum, or scoring function on a dataset.</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Aggregator</span> {
+<span class="doccomment">/// For example, a mean, minimum, or scoring function on a dataset. A component that aggregates data has an associated sensitivity, which captures</span>
+<span class="doccomment">/// how much the input data affects the output of the aggregator.</span>
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Sensitivity</span> {
     <span class="doccomment">/// Derivation for the sensitivity of an aggregator based on available local metadata.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// The sensitivity is the maximum amount that a perturbation of input data may have on the resulting value.</span>
@@ -770,7 +772,7 @@
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Aggregator</span> <span class="kw">for</span> <span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span> {
+<span class="kw">impl</span> <span class="ident">Sensitivity</span> <span class="kw">for</span> <span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span> {
     <span class="doccomment">/// Utility implementation on the enum containing all variants of a component.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This utility delegates evaluation to the concrete implementation of each component variant.</span>
@@ -933,7 +935,7 @@
             <span class="comment">// INSERT COMPONENT LIST</span>
             <span class="ident">Index</span>, <span class="ident">Literal</span>, <span class="ident">Materialize</span>
         );
-        
+
         <span class="comment">// default implementation</span>
         <span class="kw">match</span> <span class="ident">argument_variables</span>.<span class="ident">get</span>(<span class="string">&quot;data&quot;</span>) {
             <span class="comment">// by convention, names pass through the &quot;data&quot; argument unchanged</span>

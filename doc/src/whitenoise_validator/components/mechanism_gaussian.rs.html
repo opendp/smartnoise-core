@@ -145,7 +145,7 @@
 <span class="kw">use</span> <span class="ident">statrs</span>::<span class="ident">function</span>::<span class="ident">erf</span>;
 <span class="kw">use</span> ::<span class="ident">itertools</span>::<span class="ident">izip</span>;
 
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">components</span>::{<span class="ident">Aggregator</span>, <span class="ident">Accuracy</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">components</span>::{<span class="ident">Sensitivity</span>, <span class="ident">Accuracy</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">proto</span>, <span class="ident">base</span>};
 
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">components</span>::{<span class="ident">Component</span>, <span class="ident">Expandable</span>};
@@ -271,9 +271,9 @@
             <span class="ident">iter</span>.<span class="ident">map</span>( <span class="op">|</span>(<span class="ident">sensitivity</span>, <span class="ident">epsilon</span>, <span class="ident">delta</span>)<span class="op">|</span> {
                 <span class="kw">let</span> <span class="ident">c</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="number">2.0_f64</span> <span class="op">*</span> (<span class="number">1.25_f64</span> <span class="op">/</span> <span class="ident">delta</span>).<span class="ident">ln</span>();
                 <span class="kw">let</span> <span class="ident">sigma</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="ident">c</span>.<span class="ident">sqrt</span>() <span class="op">*</span> <span class="ident">sensitivity</span> <span class="op">/</span> <span class="ident">epsilon</span>;
-    
+
                 <span class="ident">proto</span>::<span class="ident">Accuracy</span> {
-                    <span class="ident">value</span> : <span class="ident">sigma</span> <span class="op">*</span> <span class="number">2.0_f64</span>.<span class="ident">sqrt</span>() <span class="op">*</span> <span class="ident">erf</span>::<span class="ident">erf_inv</span>(<span class="number">1.0_f64</span> <span class="op">-</span> <span class="kw-2">*</span><span class="ident">alpha</span>),  
+                    <span class="ident">value</span> : <span class="ident">sigma</span> <span class="op">*</span> <span class="number">2.0_f64</span>.<span class="ident">sqrt</span>() <span class="op">*</span> <span class="ident">erf</span>::<span class="ident">erf_inv</span>(<span class="number">1.0_f64</span> <span class="op">-</span> <span class="kw-2">*</span><span class="ident">alpha</span>),
                     <span class="ident">alpha</span>: <span class="kw-2">*</span><span class="ident">alpha</span>,
                     }
                 }).<span class="ident">collect</span>()))
