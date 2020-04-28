@@ -8,9 +8,18 @@ use std::io::Write;
 use self::heck::CamelCase;
 
 
-pub fn build_bindings(components: &Vec<ComponentJSON>, output_path: PathBuf) {
+pub fn build_bindings(
+    components: &Vec<ComponentJSON>,
+    output_path_impls: PathBuf,
+    output_path_builders: PathBuf
+) {
 
-    let bindings_text = components.iter().map(|component| {
+    let mut bindings_analysis = Vec::new();
+    let mut bindings_builders = Vec::new();
+
+    components.iter().for_each(|component| {
+
+        // GENERATE ANALYSIS BINDINGS
         let positional_args = component.arguments.iter()
             .filter(|(_name, arg)| arg.default_rust.is_none())
             .map(|(name, _meta)| format!("{}: u32", name))
@@ -39,34 +48,9 @@ pub fn build_bindings(components: &Vec<ComponentJSON>, output_path: PathBuf) {
             })
             .collect::<Vec<String>>().join(",\n                ");
 
-        let arg_builders = component.arguments.keys()
-            .map(|name| {
-                format!(r#"
-    pub fn {name}(self, id: u32) -> Self {{
-        self.component.arguments.insert(String::from("{name}"), id);
-        self
-    }}"#, name=name)
-            })
-            .collect::<Vec<String>>().join("\n");
-
-        let option_builders = component.options.iter()
-            .map(|(name, arg)| {
-                format!(r#"
-    pub fn {name}(self, value: {rust_type}) -> Self {{
-        if let Some(proto::component::Variant::{variant}(ref mut variant)) = self.component.variant {{
-            variant.{name} = value;
-        }}
-        self
-    }}"#,
-                name=name,
-                variant=component.name.to_camel_case(),
-                rust_type=arg.type_rust.as_ref().unwrap())
-            })
-            .collect::<Vec<String>>().join("\n");
-
-        format!(r#"
+        bindings_analysis.push(format!(r#"
 impl Analysis {{
-    pub fn {name}({signature}) -> {id}Builder {{
+    pub fn {name}({signature}) -> builders::{id}Builder {{
         #[allow(unused_mut)]
         let mut arguments = HashMap::new();
         {argument_insertion}
@@ -81,14 +65,52 @@ impl Analysis {{
 
         self.component_count += 1;
         self.components.insert(self.component_count, component);
-        {id}Builder {{
+        builders::{id}Builder {{
             id: self.component_count,
             component: self.components.get_mut(&self.component_count).unwrap(),
             release: &mut self.release,
         }}
     }}
 }}
+"#,
+           name=component.name,
+           variant=component.name.to_camel_case(),
+           id=component.id.to_camel_case(),
+           signature=signature,
+           argument_insertion=argument_insertion,
+           option_insertion=option_insertion
+        ));
 
+        // GENERATE BUILDER BINDINGS
+        let arg_builders = component.arguments.keys()
+            .map(|name| {
+                format!(r#"
+    /// set the id of the {name} argument from a previous component
+    pub fn {name}(self, id: u32) -> Self {{
+        self.component.arguments.insert(String::from("{name}"), id);
+        self
+    }}"#, name=name)
+            })
+            .collect::<Vec<String>>().join("\n");
+
+        let option_builders = component.options.iter()
+            .map(|(name, arg)| {
+                format!(r#"
+    /// set the {name} directly
+    pub fn {name}(self, value: {rust_type}) -> Self {{
+        if let Some(proto::component::Variant::{variant}(ref mut variant)) = self.component.variant {{
+            variant.{name} = value;
+        }}
+        self
+    }}"#,
+                name=name,
+                variant=component.name.to_camel_case(),
+                rust_type=arg.type_rust.as_ref().unwrap())
+            })
+            .collect::<Vec<String>>().join("\n");
+
+        bindings_builders.push(format!(r#"
+/// Builder interface for [{id}](../../proto/struct.{id}.html)
 pub struct {id}Builder<'a> {{
     pub id: u32,
     pub component: &'a mut proto::Component,
@@ -108,23 +130,33 @@ impl<'a> {id}Builder<'a> {{
     }}
 }}
 "#,
-            name=component.name,
-            variant=component.name.to_camel_case(),
-            id=component.id.to_camel_case(),
-            signature=signature,
-            argument_insertion=argument_insertion,
-            option_insertion=option_insertion,
-            arg_builders=arg_builders,
-            option_builders=option_builders
-        )
+           id=component.id.to_camel_case(),
+           arg_builders=arg_builders,
+           option_builders=option_builders
+        ));
 
-    }).collect::<Vec<String>>().join("\n");
+    });
+
+    let bindings_builders_text = format!(r#"
+use crate::proto;
+use crate::base::{{Release, Value, ReleaseNode}};
+
+
+{}"#, bindings_builders.join("\n"));
 
     {
-        fs::remove_file(output_path.clone()).ok();
-        let mut file = File::create(output_path).unwrap();
-        file.write(bindings_text.as_bytes())
-            .expect("Unable to write bindings.rs file.");
+        fs::remove_file(output_path_impls.clone()).ok();
+        let mut file = File::create(output_path_impls).unwrap();
+        file.write(bindings_analysis.join("\n").as_bytes())
+            .expect("Unable to write bindings impls file.");
+        file.flush().unwrap();
+    }
+
+    {
+        fs::remove_file(output_path_builders.clone()).ok();
+        let mut file = File::create(output_path_builders).unwrap();
+        file.write(bindings_builders_text.as_bytes())
+            .expect("Unable to write bindings builders file.");
         file.flush().unwrap();
     }
 }
