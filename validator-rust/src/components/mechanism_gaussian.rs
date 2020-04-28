@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use statrs::function::erf;
 use ::itertools::izip;
 
-use crate::components::{Aggregator, Accuracy};
+use crate::components::{Sensitivity, Accuracy};
 use crate::{proto, base};
 
 use crate::components::{Component, Expandable};
@@ -130,9 +130,9 @@ impl Accuracy for proto::GaussianMechanism {
             iter.map( |(sensitivity, epsilon, delta)| {
                 let c: f64 = 2.0_f64 * (1.25_f64 / delta).ln();
                 let sigma: f64 = c.sqrt() * sensitivity / epsilon;
-    
+
                 proto::Accuracy {
-                    value : sigma * 2.0_f64.sqrt() * erf::erf_inv(1.0_f64 - *alpha),  
+                    value : sigma * 2.0_f64.sqrt() * erf::erf_inv(1.0_f64 - *alpha),
                     alpha: *alpha,
                     }
                 }).collect()))
