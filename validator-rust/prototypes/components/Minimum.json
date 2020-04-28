@@ -1,7 +1,7 @@
 {
   "arguments": {
     "data": {
-      "type": "Array",
+      "type_value": "Array",
       "description": "Data for which you want the maximum value in each column."
     }
   },
@@ -9,7 +9,7 @@
   "name": "minimum",
   "options": {},
   "return": {
-    "type": "Array",
+    "type_value": "Array",
     "description": "Maximum of each column in the data."
   },
   "description": "Find the minimum value of each column in the data."

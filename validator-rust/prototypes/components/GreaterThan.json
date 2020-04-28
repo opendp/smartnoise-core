@@ -1,16 +1,16 @@
 {
   "arguments": {
     "left": {
-      "type": "Array"
+      "type_value": "Array"
     },
     "right": {
-      "type": "Array"
+      "type_value": "Array"
     }
   },
   "id": "GreaterThan",
   "name": "greater_than",
   "options": {},
   "return": {
-    "type": "Array"
+    "type_value": "Array"
   }
 }

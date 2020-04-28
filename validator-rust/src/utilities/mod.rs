@@ -688,7 +688,7 @@ pub fn is_conformable(left: &ArrayProperties, right: &ArrayProperties) -> bool {
 
 
 #[cfg(test)]
-mod utilities_tests {
+mod test_utilities {
     use crate::utilities;
     #[test]
     fn test_deduplicate() {

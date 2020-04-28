@@ -4,6 +4,6 @@
   "name": "literal",
   "options": {},
   "return": {
-    "type": "Array"
+    "type_value": "Array"
   }
 }

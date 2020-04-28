@@ -28,7 +28,7 @@ impl Component for proto::KthRawSampleMoment {
 
         // save a snapshot of the state when aggregating
         data_property.aggregator = Some(AggregatorProperties {
-            component: proto::component::Variant::from(self.clone()),
+            component: proto::component::Variant::KthRawSampleMoment(self.clone()),
             properties: properties.clone()
         });
         data_property.num_records = Some(1);

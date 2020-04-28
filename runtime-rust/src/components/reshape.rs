@@ -135,7 +135,7 @@ pub fn reshape<T: Clone>(data: &ArrayD<T>, symmetric: &bool, layout: &Layout, sh
 }
 
 #[cfg(test)]
-mod reshape_tests {
+mod test_reshape {
     use ndarray::arr2;
     use crate::components::reshape::{reshape, Layout};
 

@@ -49,27 +49,29 @@ impl Component for proto::ExponentialMechanism {
         data_property.releasable = true;
         Ok(data_property.into())
     }
-
-
 }
 
 
 impl Expandable for proto::ExponentialMechanism {
     fn expand_component(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
         properties: &base::NodeProperties,
         component_id: &u32,
         maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
-        expand_mechanism(
+        let mut expansion = expand_mechanism(
             &SensitivitySpace::Exponential,
-            privacy_definition,
+            _privacy_definition,
             component,
             properties,
             component_id,
             maximum_id
-        )
+        )?;
+
+        let modified_component = component.clone();
+        expansion.computation_graph.insert(*component_id, modified_component);
+        Ok(expansion)
     }
 }

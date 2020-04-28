@@ -1,10 +1,10 @@
 {
   "arguments": {
     "data": {
-      "type": "Array"
+      "type_value": "Array"
     },
     "mask": {
-      "type": "Array",
+      "type_value": "Array",
       "description": "Boolean mask giving whether or not each row should be kept."
     }
   },
@@ -12,7 +12,7 @@
   "name": "filter",
   "options": {},
   "return": {
-    "type": "Array",
+    "type_value": "Array",
     "description": "Data with only the desired rows."
   },
   "description": "Filters data down into only the desired rows."

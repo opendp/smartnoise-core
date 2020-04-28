@@ -24,6 +24,7 @@ pub use errors::*;
 // trait which holds `display_chain`
 
 pub mod base;
+pub mod bindings;
 pub mod utilities;
 pub mod components;
 pub mod ffi;

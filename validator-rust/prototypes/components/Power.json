@@ -1,16 +1,16 @@
 {
   "arguments": {
     "data": {
-      "type": "Array"
+      "type_value": "Array"
     },
     "radical": {
-      "type": "Array"
+      "type_value": "Array"
     }
   },
   "id": "Power",
   "name": "power",
   "options": {},
   "return": {
-    "type": "Array"
+    "type_value": "Array"
   }
 }

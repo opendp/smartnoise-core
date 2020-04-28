@@ -46,7 +46,7 @@ impl Expandable for proto::DpSum {
                     "lower".to_owned() => sum_min_id,
                     "upper".to_owned() => sum_max_id
                 ],
-                variant: Some(proto::component::Variant::from(proto::SimpleGeometricMechanism {
+                variant: Some(proto::component::Variant::SimpleGeometricMechanism(proto::SimpleGeometricMechanism {
                     privacy_usage: self.privacy_usage.clone(),
                     enforce_constant_time: false,
                 })),
@@ -61,13 +61,13 @@ impl Expandable for proto::DpSum {
                     "data".to_owned() => id_sum
                 ],
                 variant: Some(match self.mechanism.to_lowercase().as_str() {
-                    "laplace" => proto::component::Variant::from(proto::LaplaceMechanism {
+                    "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
                         privacy_usage: self.privacy_usage.clone()
                     }),
-                    "gaussian" => proto::component::Variant::from(proto::GaussianMechanism {
+                    "gaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
                         privacy_usage: self.privacy_usage.clone()
                     }),
-                    _ => panic!("Unexpected invalid token {:?}", self.implementation.as_str()),
+                    _ => panic!("Unexpected invalid token {:?}", self.mechanism.as_str()),
                 }),
                 omit: false,
                 batch: component.batch,
@@ -127,7 +127,7 @@ impl Report for proto::DpSum {
                 algorithm_info: AlgorithmInfo {
                     name: "".to_string(),
                     cite: "".to_string(),
-                    mechanism: self.implementation.clone(),
+                    mechanism: self.mechanism.clone(),
                     argument: serde_json::json!({
                             "constraint": {
                                 "lowerbound": minimums[column_number],

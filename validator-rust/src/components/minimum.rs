@@ -24,7 +24,7 @@ impl Component for proto::Minimum {
 
         // save a snapshot of the state when aggregating
         data_property.aggregator = Some(AggregatorProperties {
-            component: proto::component::Variant::from(self.clone()),
+            component: proto::component::Variant::Minimum(self.clone()),
             properties: properties.clone(),
         });
 

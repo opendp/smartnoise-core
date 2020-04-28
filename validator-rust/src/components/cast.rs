@@ -25,7 +25,7 @@ impl Component for proto::Cast {
         data_property.assert_is_not_aggregated()?;
         let prior_datatype = data_property.data_type.clone();
 
-        data_property.data_type = match self.r#type.to_lowercase().as_str() {
+        data_property.data_type = match self.atomic_type.to_lowercase().as_str() {
             "float" => DataType::F64,
             "real" => DataType::F64,
             "int" => DataType::I64,
@@ -191,8 +191,8 @@ macro_rules! make_expandable {
                 Ok(proto::ComponentExpansion {
                     computation_graph: hashmap![component_id.clone() => proto::Component {
                         arguments: component.arguments.clone(),
-                        variant: Some(proto::component::Variant::from(proto::Cast {
-                            r#type: $var_type
+                        variant: Some(proto::component::Variant::Cast(proto::Cast {
+                            atomic_type: $var_type
                         })),
                         omit: false,
                         batch: component.batch,

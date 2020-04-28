@@ -5,10 +5,10 @@ use std::collections::HashMap;
 
 use crate::{proto, base};
 
-use crate::components::{Component, Sensitivity};
+use crate::components::{Component, Sensitivity, Utility};
 use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType};
 
-use crate::utilities::prepend;
+use crate::utilities::{prepend, get_literal};
 use ndarray::prelude::*;
 
 
@@ -27,12 +27,12 @@ impl Component for proto::Quantile {
 
         // save a snapshot of the state when aggregating
         data_property.aggregator = Some(AggregatorProperties {
-            component: proto::component::Variant::from(self.clone()),
+            component: proto::component::Variant::Quantile(self.clone()),
             properties: properties.clone(),
         });
 
         if data_property.data_type != DataType::F64 && data_property.data_type != DataType::I64 {
-            return Err("data: atomic type must be numeric".into())
+            return Err("data: atomic type must be numeric".into());
         }
 
         data_property.num_records = Some(1);
@@ -40,14 +40,12 @@ impl Component for proto::Quantile {
 
         Ok(data_property.into())
     }
-
-
 }
 
 impl Sensitivity for proto::Quantile {
     fn compute_sensitivity(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
+        privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
         sensitivity_type: &SensitivitySpace,
     ) -> Result<Value> {
@@ -78,11 +76,52 @@ impl Sensitivity for proto::Quantile {
             }
             SensitivitySpace::Exponential => {
                 let num_columns = data_property.num_columns()?;
-                let row_sensitivity = (0..num_columns).map(|_| 1.).collect::<Vec<f64>>();
 
-                Ok(Array::from(row_sensitivity).into_dyn().into())
-            },
+                let neighboring_type = Neighboring::from_i32(privacy_definition.neighboring)
+                    .ok_or_else(|| Error::from("neighboring definition must be either \"AddRemove\" or \"Substitute\""))?;
+                use proto::privacy_definition::Neighboring;
+                let cell_sensitivity = match neighboring_type {
+                    Neighboring::AddRemove => self.alpha.max(1. - self.alpha),
+                    Neighboring::Substitute => 1.
+                };
+                let row_sensitivity = (0..num_columns).map(|_| cell_sensitivity).collect::<Vec<f64>>();
+                let mut array_sensitivity = Array::from(row_sensitivity).into_dyn();
+                array_sensitivity.insert_axis_inplace(Axis(0));
+
+                Ok(array_sensitivity.into())
+            }
             _ => Err("Quantile sensitivity is not implemented for the specified sensitivity type".into())
         }
+    }
+}
+
+impl Utility for proto::Quantile {
+    fn get_utility(
+        &self,
+        _privacy_definition: &proto::PrivacyDefinition,
+    ) -> Result<proto::Utility> {
+        let mut computation_graph = HashMap::new();
+        let mut releases = HashMap::new();
+        let candidate_id = 0;
+        let mut output_id = 0;
+
+        computation_graph.insert(output_id, proto::Component {
+            arguments: HashMap::new(),
+            variant: Some(proto::component::Variant::Literal(proto::Literal {})),
+            omit: true,
+            batch: 0,
+        });
+        output_id += 1;
+
+        let (patch_node, release) = get_literal(&arr0(2.).into_dyn().into(), &0)?;
+        computation_graph.insert(output_id, patch_node);
+        releases.insert(output_id, release);
+
+        Ok(proto::Utility {
+            computation_graph,
+            releases,
+            candidate_id,
+            output_id,
+        })
     }
 }

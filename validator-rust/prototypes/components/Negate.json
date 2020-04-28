@@ -1,13 +1,13 @@
 {
   "arguments": {
     "data": {
-      "type": "Array"
+      "type_value": "Array"
     }
   },
   "id": "Negate",
   "name": "negate",
   "options": {},
   "return": {
-    "type": "Array"
+    "type_value": "Array"
   }
 }

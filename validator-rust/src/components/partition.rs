@@ -98,7 +98,7 @@ pub fn broadcast_partitions<T: Clone + Eq + std::hash::Hash + Ord>(
 
 
 #[cfg(test)]
-mod partition_tests {
+mod test_partition {
     use crate::components::partition::even_split_lengths;
 
     fn vec_eq(left: &Vec<i64>, right: &Vec<i64>) -> bool {

@@ -1,16 +1,16 @@
 {
   "arguments": {
     "left": {
-      "type": "Array"
+      "type_value": "Array"
     },
     "right": {
-      "type": "Array"
+      "type_value": "Array"
     }
   },
   "id": "Subtract",
   "name": "subtract",
   "options": {},
   "return": {
-    "type": "Array"
+    "type_value": "Array"
   }
 }
