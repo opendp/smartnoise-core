@@ -78,9 +78,15 @@ impl Expandable for proto::DpCovariance {
         let id_noise = current_id;
         computation_graph.insert(id_noise, proto::Component {
             arguments: hashmap!["data".to_owned() => id_covariance],
-            variant: Some(proto::component::Variant::from(proto::LaplaceMechanism {
-                privacy_usage: self.privacy_usage.clone()
-            })),
+            variant: Some(match self.mechanism.to_lowercase().as_str() {
+                "laplace" => proto::component::Variant::from(proto::LaplaceMechanism {
+                    privacy_usage: self.privacy_usage.clone()
+                }),
+                "gaussian" => proto::component::Variant::from(proto::GaussianMechanism {
+                    privacy_usage: self.privacy_usage.clone()
+                }),
+                _x => panic!("Unexpected invalid token {:?}", self.implementation.as_str()),
+            }),
             omit: true,
             batch: component.batch,
         });

@@ -46,11 +46,17 @@ impl Expandable for proto::DpMedian {
         // sanitizing
         computation_graph.insert(component_id.clone(), proto::Component {
             arguments: hashmap![
-                "data".to_owned() => id_median
-            ],
-            variant: Some(proto::component::Variant::from(proto::LaplaceMechanism {
-                privacy_usage: self.privacy_usage.clone()
-            })),
+			    "data".to_owned() => id_median
+		    ],
+            variant: Some(match self.mechanism.to_lowercase().as_str() {
+                "laplace" => proto::component::Variant::from(proto::LaplaceMechanism {
+                    privacy_usage: self.privacy_usage.clone()
+                }),
+                "gaussian" => proto::component::Variant::from(proto::GaussianMechanism {
+                    privacy_usage: self.privacy_usage.clone()
+                }),
+                _ => panic!("Unexpected invalid token {:?}", self.implementation.as_str()),
+            }),
             omit: false,
             batch: component.batch,
         });
