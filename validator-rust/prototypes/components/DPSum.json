@@ -5,6 +5,16 @@
         "continuous"
       ],
       "type": "Array"
+    },
+    "lower": {
+      "type": "Array",
+      "default": "None",
+      "description": "Estimated minimum possible sum for the geometric mechanism, when doing an integer sum."
+    },
+    "upper": {
+      "type": "Array",
+      "default": "None",
+      "description": "Estimated maximum possible sum for the geometric mechanism, when doing an integer sum."
     }
   },
   "id": "DPSum",
