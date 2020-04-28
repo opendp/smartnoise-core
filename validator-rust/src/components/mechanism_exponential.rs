@@ -4,7 +4,7 @@ use crate::errors::*;
 use std::collections::HashMap;
 
 
-use crate::components::{Aggregator};
+use crate::components::{Sensitivity};
 use crate::{proto, base};
 
 use crate::components::{Component, Expandable};

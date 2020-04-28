@@ -47,6 +47,11 @@
     "implementation": {
       "type": "string",
       "default": "'SimpleGeometric'",
+      "description": "Privatizing algorithm to use."
+    },
+    "mechanism": {
+      "type": "string",
+      "default": "'SimpleGeometric'",
       "description": "Privatizing mechanism to use."
     },
     "privacy_usage": {

@@ -10,8 +10,6 @@ use crate::base::{NodeProperties, Value, Array};
 use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, value_to_json};
 use crate::utilities::{prepend, broadcast_privacy_usage, get_ith_column};
 
-
-
 impl Expandable for proto::DpSum {
     fn expand_component(
         &self,
@@ -21,12 +19,12 @@ impl Expandable for proto::DpSum {
         component_id: &u32,
         maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
-        let mut current_id = *maximum_id;
+        let mut maximum_id = *maximum_id;
         let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
 
         // sum
-        current_id += 1;
-        let id_sum = current_id;
+        maximum_id += 1;
+        let id_sum = maximum_id;
         computation_graph.insert(id_sum, proto::Component {
             arguments: hashmap!["data".to_owned() => *component.arguments.get("data")
                 .ok_or_else(|| Error::from("data must be provided as an argument"))?],
@@ -35,15 +33,46 @@ impl Expandable for proto::DpSum {
             batch: component.batch,
         });
 
-        // noising
-        computation_graph.insert(component_id.clone(), proto::Component {
-            arguments: hashmap!["data".to_owned() => id_sum],
-            variant: Some(proto::component::Variant::from(proto::LaplaceMechanism {
-                privacy_usage: self.privacy_usage.clone()
-            })),
-            omit: false,
-            batch: component.batch,
-        });
+        if self.mechanism.to_lowercase().as_str() == "simplegeometric" {
+            let sum_max_id = *component.arguments.get("upper")
+                .ok_or_else(|| Error::from("upper must be defined for geometric mechanism"))?;
+            let sum_min_id = *component.arguments.get("lower")
+                .ok_or_else(|| Error::from("lower must be defined for geometric mechanism"))?;
+
+            // noising
+            computation_graph.insert(component_id.clone(), proto::Component {
+                arguments: hashmap![
+                    "data".to_owned() => id_sum,
+                    "lower".to_owned() => sum_min_id,
+                    "upper".to_owned() => sum_max_id
+                ],
+                variant: Some(proto::component::Variant::from(proto::SimpleGeometricMechanism {
+                    privacy_usage: self.privacy_usage.clone(),
+                    enforce_constant_time: false,
+                })),
+                omit: false,
+                batch: component.batch,
+            });
+        } else {
+
+            // noising
+            computation_graph.insert(component_id.clone(), proto::Component {
+                arguments: hashmap![
+                    "data".to_owned() => id_sum
+                ],
+                variant: Some(match self.mechanism.to_lowercase().as_str() {
+                    "laplace" => proto::component::Variant::from(proto::LaplaceMechanism {
+                        privacy_usage: self.privacy_usage.clone()
+                    }),
+                    "gaussian" => proto::component::Variant::from(proto::GaussianMechanism {
+                        privacy_usage: self.privacy_usage.clone()
+                    }),
+                    _ => panic!("Unexpected invalid token {:?}", self.implementation.as_str()),
+                }),
+                omit: false,
+                batch: component.batch,
+            });
+        };
 
         Ok(proto::ComponentExpansion {
             computation_graph,

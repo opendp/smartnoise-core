@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 use crate::{proto};
 
-use crate::components::{Component, Aggregator};
+use crate::components::{Component, Sensitivity};
 use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType, NatureContinuous, Nature, Vector1DNull};
 use ndarray::{arr1};
 
@@ -49,7 +49,7 @@ impl Component for proto::Count {
     }
 }
 
-impl Aggregator for proto::Count {
+impl Sensitivity for proto::Count {
     /// Count query sensitivities [are backed by the the proofs here](https://github.com/opendifferentialprivacy/whitenoise-core/blob/955703e3d80405d175c8f4642597ccdf2c00332a/whitepapers/sensitivities/counts/counts.pdf).
     fn compute_sensitivity(
         &self,
