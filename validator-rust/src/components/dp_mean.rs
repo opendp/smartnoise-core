@@ -48,13 +48,18 @@ impl Expandable for proto::DpMean {
         // noising
         computation_graph.insert(component_id.clone(), proto::Component {
             arguments: hashmap!["data".to_owned() => id_mean],
-            variant: Some(proto::component::Variant::from(proto::LaplaceMechanism {
-                privacy_usage: self.privacy_usage.clone()
-            })),
+            variant: Some(match self.mechanism.to_lowercase().as_str() {
+                "laplace" => proto::component::Variant::from(proto::LaplaceMechanism {
+                    privacy_usage: self.privacy_usage.clone()
+                }),
+                "gaussian" => proto::component::Variant::from(proto::GaussianMechanism {
+                    privacy_usage: self.privacy_usage.clone()
+                }),
+                _ => panic!("Unexpected invalid token {:?}", self.implementation.as_str()),
+            }),
             omit: false,
             batch: component.batch,
         });
-
 
         Ok(proto::ComponentExpansion {
             computation_graph,

@@ -12,6 +12,11 @@
   "options": {
     "implementation": {
       "type": "string",
+      "default": "'plug-in'",
+      "description": "Privatizing algorithm to use."
+    },
+    "mechanism": {
+      "type": "string",
       "default": "'Laplace'",
       "description": "Privatizing mechanism to use."
     },

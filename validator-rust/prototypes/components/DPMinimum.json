@@ -13,6 +13,11 @@
     "implementation": {
       "type": "string",
       "default": "'Laplace'",
+      "description": "Privatizing algorithm to use."
+    },
+    "mechanism": {
+      "type": "string",
+      "default": "'Laplace'",
       "description": "Privatizing mechanism to use."
     },
     "privacy_usage": {
