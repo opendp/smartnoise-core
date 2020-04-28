@@ -5,7 +5,7 @@ use crate::{ArgumentJSON, ComponentJSON};
 use std::path::PathBuf;
 
 fn stringify_argument((name, argument): (&String, &ArgumentJSON)) -> String {
-    let mut response = format!("* `{}` - {}", name, argument.type_proto.as_ref().unwrap_or(&"".to_string()));
+    let mut response = format!("* `{}` - {}", name, argument.type_value.as_ref().unwrap_or(&"".to_string()));
     if let Some(description) = &argument.clone().description {
         response.push_str(&format!(" - {}", description));
     }

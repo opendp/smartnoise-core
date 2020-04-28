@@ -92,7 +92,9 @@ fn main() {
     // code generation
     let out_dir = PathBuf::from(&env::var("OUT_DIR").unwrap());
 
-    bindings::build_bindings(&components, out_dir.join("bindings.rs"));
+    bindings::build_bindings(&components,
+                             out_dir.join("bindings_analysis.rs"),
+                             out_dir.join("bindings_builders.rs"));
     documentation::build_documentation(&components, out_dir.join("components.rs"));
     protobuf::build_protobuf(&components, proto_dir.join("components.proto"));
 

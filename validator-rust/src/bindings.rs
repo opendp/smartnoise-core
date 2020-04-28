@@ -1,7 +1,7 @@
-//! The Whitenoise rust bindings provide a friendly way to build differentially private analyses specifically for users of the Rust language
+//! Shorthand interface for building differentially private analyses.
 
 use crate::proto;
-use crate::base::{Release, Value, ReleaseNode};
+use crate::base::Release;
 use std::collections::HashMap;
 
 #[derive(Debug)]
@@ -13,7 +13,12 @@ pub struct Analysis {
     pub release: Release,
 }
 
-include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
+pub mod builders {
+    include!(concat!(env!("OUT_DIR"), "/bindings_builders.rs"));
+}
+
+include!(concat!(env!("OUT_DIR"), "/bindings_analysis.rs"));
+
 
 impl Analysis {
     pub fn new() -> Self {
@@ -31,16 +36,21 @@ impl Analysis {
 mod test_bindings {
     use crate::errors::*;
     use crate::bindings::Analysis;
-    use ndarray::arr0;
-    use crate::base::Value;
+    use ndarray::arr1;
 
     fn build_analysis() -> Result<()> {
         let mut analysis = Analysis::new();
 
         let lit_2 = analysis.literal().value(2.0.into()).enter();
         let lit_3 = analysis.literal().value(3.0.into()).enter();
-        let lit_6 = analysis.add(lit_2, lit_3).enter();
+        let _lit_5 = analysis.add(lit_2, lit_3).enter();
 
+        let col_a = analysis.literal()
+            .value(arr1(&[1., 2., 3.]).into_dyn().into())
+            .enter();
+        analysis.mean(col_a).enter();
+
+        analysis.count(col_a).enter();
         println!("graph {:?}", analysis.components);
         println!("release {:?}", analysis.release);
         Ok(())
