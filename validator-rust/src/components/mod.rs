@@ -45,7 +45,6 @@ mod mechanism_gaussian;
 mod mechanism_laplace;
 mod mechanism_simple_geometric;
 mod resize;
-//mod row_wise;
 mod sum;
 mod variance;
 
@@ -235,8 +234,8 @@ impl Component for proto::component::Variant {
 
             Minimum, Partition, Quantile, Reshape, Resize, Sum, Variance,
 
-            Abs, Add, Subtract, Divide, Multiply, Power, Log, Modulo, LogicalAnd, LogicalOr, Negate,
-            Equal, LessThan, GreaterThan, Negative
+            Abs, Add, LogicalAnd, Divide, Equal, GreaterThan, LessThan, Log, Modulo, Multiply,
+            Negate, Negative, LogicalOr, Power, RowMax, RowMin, Subtract
         );
 
         Err(format!("proto component {:?} is missing its Component trait", self).into())

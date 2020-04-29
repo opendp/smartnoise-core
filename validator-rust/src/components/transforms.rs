@@ -878,6 +878,151 @@ impl Component for proto::Power {
     }
 }
 
+
+impl Component for proto::RowMax {
+    fn propagate_property(
+        &self,
+        _privacy_definition: &proto::PrivacyDefinition,
+        _public_arguments: &HashMap<String, Value>,
+        properties: &base::NodeProperties,
+    ) -> Result<ValueProperties> {
+        let left_property = properties.get("left")
+            .ok_or("left: missing")?.array()
+            .map_err(prepend("left:"))?.clone();
+        let right_property = properties.get("right")
+            .ok_or("right: missing")?.array()
+            .map_err(prepend("right:"))?.clone();
+        left_property.assert_is_not_aggregated()?;
+        right_property.assert_is_not_aggregated()?;
+
+        let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
+        if left_property.data_type != right_property.data_type {
+            return Err("left and right arguments must share the same data types".into())
+        }
+
+        Ok(ArrayProperties {
+            nullity: left_property.nullity || right_property.nullity,
+            releasable: left_property.releasable && right_property.releasable,
+            nature: propagate_binary_nature(&left_property, &right_property, &BinaryOperators {
+                f64: Some(Box::new(|l: &f64, r: &f64|
+                    Ok(l.max(*r)))),
+                i64: Some(Box::new(|l: &i64, r: &i64|
+                    Ok(*l.max(r)))),
+                str: Some(Box::new(|l: &String, r: &String| Ok(format!("{}{}", l, r)))),
+                bool: None,
+            }, &OptimizeBinaryOperators {
+                f64: Some(Box::new(|bounds| Ok((
+                    // min
+                    match (bounds.left_lower, bounds.right_lower) {
+                        (Some(left_lower), Some(right_lower)) => Some(left_lower.max(*right_lower)),
+                        _ => None
+                    },
+                    // max
+                    match (bounds.left_upper, bounds.right_upper) {
+                        (Some(left_upper), Some(right_upper)) => Some(left_upper.max(*right_upper)),
+                        _ => None
+                    }
+                )))),
+                i64: Some(Box::new(|bounds| Ok((
+                    // min
+                    match (bounds.left_lower, bounds.right_lower) {
+                        (Some(left_lower), Some(right_lower)) => Some(*left_lower.max(right_lower)),
+                        _ => None
+                    },
+                    // max
+                    match (bounds.left_upper, bounds.right_upper) {
+                        (Some(left_upper), Some(right_upper)) => Some(*left_upper.max(right_upper)),
+                        _ => None
+                    }
+                ))))
+            }, &num_columns)?,
+            c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
+                .zip(broadcast(&right_property.c_stability, &num_columns)?)
+                .map(|(l, r)| l.max(r)).collect(),
+            num_columns: Some(num_columns),
+            num_records,
+            aggregator: None,
+            data_type: left_property.data_type,
+            dataset_id: left_property.dataset_id,
+            is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
+            dimensionality: left_property.dimensionality
+                .max(right_property.dimensionality)
+        }.into())
+    }
+}
+
+impl Component for proto::RowMin {
+    fn propagate_property(
+        &self,
+        _privacy_definition: &proto::PrivacyDefinition,
+        _public_arguments: &HashMap<String, Value>,
+        properties: &base::NodeProperties,
+    ) -> Result<ValueProperties> {
+        let left_property = properties.get("left")
+            .ok_or("left: missing")?.array()
+            .map_err(prepend("left:"))?.clone();
+        let right_property = properties.get("right")
+            .ok_or("right: missing")?.array()
+            .map_err(prepend("right:"))?.clone();
+        left_property.assert_is_not_aggregated()?;
+        right_property.assert_is_not_aggregated()?;
+
+        let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
+        if left_property.data_type != right_property.data_type {
+            return Err("left and right arguments must share the same data types".into())
+        }
+
+        Ok(ArrayProperties {
+            nullity: left_property.nullity || right_property.nullity,
+            releasable: left_property.releasable && right_property.releasable,
+            nature: propagate_binary_nature(&left_property, &right_property, &BinaryOperators {
+                f64: Some(Box::new(|l: &f64, r: &f64|
+                    Ok(l.min(*r)))),
+                i64: Some(Box::new(|l: &i64, r: &i64|
+                    Ok(*l.min(r)))),
+                str: Some(Box::new(|l: &String, r: &String| Ok(format!("{}{}", l, r)))),
+                bool: None,
+            }, &OptimizeBinaryOperators {
+                f64: Some(Box::new(|bounds| Ok((
+                    // min
+                    match (bounds.left_lower, bounds.right_lower) {
+                        (Some(left_lower), Some(right_lower)) => Some(left_lower.min(*right_lower)),
+                        _ => None
+                    },
+                    // max
+                    match (bounds.left_upper, bounds.right_upper) {
+                        (Some(left_upper), Some(right_upper)) => Some(left_upper.min(*right_upper)),
+                        _ => None
+                    }
+                )))),
+                i64: Some(Box::new(|bounds| Ok((
+                    // min
+                    match (bounds.left_lower, bounds.right_lower) {
+                        (Some(left_lower), Some(right_lower)) => Some(*left_lower.min(right_lower)),
+                        _ => None
+                    },
+                    // max
+                    match (bounds.left_upper, bounds.right_upper) {
+                        (Some(left_upper), Some(right_upper)) => Some(*left_upper.min(right_upper)),
+                        _ => None
+                    }
+                ))))
+            }, &num_columns)?,
+            c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
+                .zip(broadcast(&right_property.c_stability, &num_columns)?)
+                .map(|(l, r)| l.max(r)).collect(),
+            num_columns: Some(num_columns),
+            num_records,
+            aggregator: None,
+            data_type: left_property.data_type,
+            dataset_id: left_property.dataset_id,
+            is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
+            dimensionality: left_property.dimensionality
+                .max(right_property.dimensionality)
+        }.into())
+    }
+}
+
 impl Component for proto::Subtract {
     fn propagate_property(
         &self,
