@@ -87,9 +87,7 @@ impl Expandable for proto::Histogram {
                 let id_digitize = current_id;
                 computation_graph.insert(id_digitize, proto::Component {
                     arguments,
-                    variant: Some(proto::component::Variant::Digitize(proto::Digitize {
-                        inclusive_left: self.inclusive_left
-                    })),
+                    variant: Some(proto::component::Variant::Digitize(proto::Digitize {})),
                     omit: true,
                     batch: component.batch,
                 });

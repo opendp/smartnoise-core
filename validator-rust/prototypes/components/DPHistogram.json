@@ -31,6 +31,11 @@
       "default_python": "None",
       "default_rust": "None",
       "description": "Estimated maximum possible size of bin counts."
+    },
+    "inclusive_left": {
+      "type_value": "Array",
+      "default_python": "True",
+      "description": "Whether or not the left edge of the bin is inclusive. If `true` bins are of the form [lower, upper). Otherwise, bins are of the form (lower, upper]. Used only if data are of `continuous` nature."
     }
   },
   "id": "DPHistogram",
@@ -48,13 +53,6 @@
       "type_rust": "Vec<proto::PrivacyUsage>",
       "default_python": "None",
       "description": "Object describing the type and amount of privacy to be used for the mechanism release."
-    },
-    "inclusive_left": {
-      "type_proto": "bool",
-      "type_rust": "bool",
-      "default_python": "True",
-      "default_rust": "true",
-      "description": "Whether or not the left edge of the bin is inclusive. If `true` bins are of the form [lower, upper). Otherwise, bins are of the form (lower, upper]. Used only if data are of `continuous` nature."
     },
     "enforce_constant_time": {
       "type_proto": "bool",

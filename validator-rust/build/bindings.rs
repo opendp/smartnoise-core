@@ -96,7 +96,7 @@ impl Analysis {{
         let option_builders = component.options.iter()
             .map(|(name, arg)| {
                 format!(r#"
-    /// set the {name} directly
+    /// set the field attribute "{name}" directly
     pub fn {name}(self, value: {rust_type}) -> Self {{
         if let Some(proto::component::Variant::{variant}(ref mut variant)) = self.component.variant {{
             variant.{name} = value;
@@ -140,7 +140,6 @@ impl<'a> {id}Builder<'a> {{
     let bindings_builders_text = format!(r#"
 use crate::proto;
 use crate::base::{{Release, Value, ReleaseNode}};
-
 
 {}"#, bindings_builders.join("\n"));
 

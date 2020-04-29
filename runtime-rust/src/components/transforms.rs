@@ -11,6 +11,21 @@ use crate::utilities::broadcast_map;
 use crate::utilities::noise::sample_uniform_int;
 
 
+impl Evaluable for proto::Abs {
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+        match get_argument(&arguments, "data")? {
+            Value::Array(data) => match data {
+                Array::F64(data) =>
+                    Ok(data.mapv(|v| v.abs()).into()),
+                Array::I64(data) =>
+                    Ok(data.mapv(|v| v.abs()).into()),
+                _ => Err("Abs: The atomic type must be numeric".into())
+            },
+            _ => Err("Abs: The argument type must be an array".into())
+        }.map(ReleaseNode::new)
+    }
+}
+
 impl Evaluable for proto::Add {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
         match (get_argument(&arguments, "left")?, get_argument(&arguments, "right")?) {

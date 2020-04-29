@@ -13,6 +13,57 @@ use crate::base::{Value, NatureContinuous};
 use num::{CheckedAdd, CheckedSub};
 
 
+impl Component for proto::Abs {
+    fn propagate_property(
+        &self,
+        _privacy_definition: &proto::PrivacyDefinition,
+        _public_arguments: &HashMap<String, Value>,
+        properties: &base::NodeProperties,
+    ) -> Result<ValueProperties> {
+        let mut data_property = properties.get("data")
+            .ok_or("data: missing")?.array()
+            .map_err(prepend("data:"))?.clone();
+        data_property.assert_is_not_aggregated()?;
+
+        data_property.nature = propagate_unary_nature(
+            &data_property,
+            &UnaryOperators {
+                f64: Some(Box::new(|v| Ok(v.abs()))),
+                i64: Some(Box::new(|v| Ok(v.abs()))),
+                bool: None,
+                str: None,
+            },
+            &OptimizeUnaryOperators {
+                f64: Some(Box::new(|bounds| match (bounds.lower, bounds.upper) {
+                    (Some(lower), Some(upper)) => Ok((
+                        Some(match lower > &0. {
+                            true => *lower,
+                            false => -*upper
+                        }),
+                        Some(match lower + upper > 0. {
+                            true => *upper,
+                            false => -*lower
+                        }))),
+                    _ => Ok((None, None))
+                })),
+                i64: Some(Box::new(|bounds| match (bounds.lower, bounds.upper) {
+                    (Some(lower), Some(upper)) => Ok((
+                        Some(match lower > &0 {
+                            true => *lower,
+                            false => -*upper
+                        }),
+                        Some(match lower + upper > 0 {
+                            true => *upper,
+                            false => -*lower
+                        }))),
+                    _ => Ok((None, None))
+                })),
+            }, &data_property.num_columns()?)?;
+
+        Ok(data_property.into())
+    }
+}
+
 impl Component for proto::Add {
     fn propagate_property(
         &self,
