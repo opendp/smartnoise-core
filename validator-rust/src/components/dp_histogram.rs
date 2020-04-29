@@ -43,11 +43,11 @@ impl Expandable for proto::DpHistogram {
             .map(|v| histogram_arguments.insert("null_value".to_string(), *v));
         component.arguments.get("edges")
             .map(|v| histogram_arguments.insert("edges".to_string(), *v));
+        component.arguments.get("inclusive_left")
+            .map(|v| histogram_arguments.insert("inclusive_left".to_string(), *v));
         computation_graph.insert(id_histogram, proto::Component {
             arguments: histogram_arguments,
-            variant: Some(proto::component::Variant::Histogram(proto::Histogram {
-                inclusive_left: self.inclusive_left
-            })),
+            variant: Some(proto::component::Variant::Histogram(proto::Histogram {})),
             omit: true,
             batch: component.batch,
         });

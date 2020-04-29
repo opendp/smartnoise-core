@@ -17,19 +17,16 @@
       "type_value": "Array",
       "default_python": "None",
       "description": "The value to which elements not included in `categories` will be mapped for each column of the data. Used only if `categories` is not `None`."
+    },
+    "inclusive_left": {
+      "type_proto": "bool",
+      "default_python": "True",
+      "description": "Whether or not the left edge of the bin is inclusive. If `true` bins are of the form [lower, upper). Otherwise, bins are of the form (lower, upper]. Used only if data are of `continuous` nature."
     }
   },
   "id": "Histogram",
   "name": "histogram",
-  "options": {
-    "inclusive_left": {
-      "type_proto": "bool",
-      "type_rust": "bool",
-      "default_python": "True",
-      "default_rust": "true",
-      "description": "Whether or not the left edge of the bin is inclusive. If `true` bins are of the form [lower, upper). Otherwise, bins are of the form (lower, upper]. Used only if data are of `continuous` nature."
-    }
-  },
+  "options": {},
   "return": {
     "type_value": "Array"
   }

@@ -235,7 +235,7 @@ impl Component for proto::component::Variant {
 
             Minimum, Partition, Quantile, Reshape, Resize, Sum, Variance,
 
-            Add, Subtract, Divide, Multiply, Power, Log, Modulo, LogicalAnd, LogicalOr, Negate,
+            Abs, Add, Subtract, Divide, Multiply, Power, Log, Modulo, LogicalAnd, LogicalOr, Negate,
             Equal, LessThan, GreaterThan, Negative
         );
 
