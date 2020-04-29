@@ -28,7 +28,10 @@ impl Component for proto::Count {
             ValueProperties::Jagged(_) => return Err("Count is not implemented on jagged arrays".into())
         };
 
-        data_property.assert_is_not_aggregated()?;
+        if !data_property.releasable {
+            data_property.assert_is_not_aggregated()?;
+        }
+
         data_property.num_records = Some(1);
         data_property.num_columns = Some(1);
 

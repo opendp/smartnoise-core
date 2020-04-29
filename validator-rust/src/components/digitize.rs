@@ -28,7 +28,9 @@ impl Component for proto::Digitize {
             .unwrap_or_else(|| Value::Array(Array::I64(arr0(-1).into_dyn())));
         let null = null_value.array()?.i64()?;
 
-        data_property.assert_is_not_aggregated()?;
+        if !data_property.releasable {
+            data_property.assert_is_not_aggregated()?;
+        }
 
         public_arguments.get("edges")
             .ok_or_else(|| Error::from("edges: missing, must be public"))

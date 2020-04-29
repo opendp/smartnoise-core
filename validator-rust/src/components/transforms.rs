@@ -23,7 +23,9 @@ impl Component for proto::Abs {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
-        data_property.assert_is_not_aggregated()?;
+        if !data_property.releasable {
+            data_property.assert_is_not_aggregated()?;
+        }
 
         data_property.nature = propagate_unary_nature(
             &data_property,
@@ -77,8 +79,13 @@ impl Component for proto::Add {
         let right_property = properties.get("right")
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
-        left_property.assert_is_not_aggregated()?;
-        right_property.assert_is_not_aggregated()?;
+
+        if !left_property.releasable {
+            left_property.assert_is_not_aggregated()?;
+        }
+        if !right_property.releasable {
+            right_property.assert_is_not_aggregated()?;
+        }
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
         if left_property.data_type != right_property.data_type {
@@ -142,8 +149,13 @@ impl Component for proto::And {
         let right_property = properties.get("right")
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
-        left_property.assert_is_not_aggregated()?;
-        right_property.assert_is_not_aggregated()?;
+
+        if !left_property.releasable {
+            left_property.assert_is_not_aggregated()?;
+        }
+        if !right_property.releasable {
+            right_property.assert_is_not_aggregated()?;
+        }
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
         if left_property.data_type != right_property.data_type {
@@ -187,8 +199,13 @@ impl Component for proto::Divide {
         let right_property = properties.get("right")
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
-        left_property.assert_is_not_aggregated()?;
-        right_property.assert_is_not_aggregated()?;
+
+        if !left_property.releasable {
+            left_property.assert_is_not_aggregated()?;
+        }
+        if !right_property.releasable {
+            right_property.assert_is_not_aggregated()?;
+        }
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
         if left_property.data_type != right_property.data_type {
@@ -338,8 +355,12 @@ impl Component for proto::Equal {
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
-        left_property.assert_is_not_aggregated()?;
-        right_property.assert_is_not_aggregated()?;
+        if !left_property.releasable {
+            left_property.assert_is_not_aggregated()?;
+        }
+        if !right_property.releasable {
+            right_property.assert_is_not_aggregated()?;
+        }
 
         if left_property.data_type != right_property.data_type {
             return Err("left and right must be homogeneously typed".into())
@@ -382,8 +403,12 @@ impl Component for proto::GreaterThan {
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
-        left_property.assert_is_not_aggregated()?;
-        right_property.assert_is_not_aggregated()?;
+        if !left_property.releasable {
+            left_property.assert_is_not_aggregated()?;
+        }
+        if !right_property.releasable {
+            right_property.assert_is_not_aggregated()?;
+        }
 
         if left_property.data_type != right_property.data_type {
             return Err("left and right must be homogeneously typed".into())
@@ -433,8 +458,12 @@ impl Component for proto::LessThan {
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
-        left_property.assert_is_not_aggregated()?;
-        right_property.assert_is_not_aggregated()?;
+        if !left_property.releasable {
+            left_property.assert_is_not_aggregated()?;
+        }
+        if !right_property.releasable {
+            right_property.assert_is_not_aggregated()?;
+        }
 
         if left_property.data_type != right_property.data_type {
             return Err("left and right must be homogeneously typed".into())
@@ -483,8 +512,13 @@ impl Component for proto::Log {
         let base_property = properties.get("base")
             .ok_or("base: missing")?.array()
             .map_err(prepend("base:"))?.clone();
-        data_property.assert_is_not_aggregated()?;
-        base_property.assert_is_not_aggregated()?;
+
+        if !data_property.releasable {
+            data_property.assert_is_not_aggregated()?;
+        }
+        if !base_property.releasable {
+            base_property.assert_is_not_aggregated()?;
+        }
 
         if data_property.data_type != DataType::F64 || data_property.data_type != DataType::F64 {
             return Err("arguments for log must be float and homogeneously typed".into());
@@ -538,8 +572,13 @@ impl Component for proto::Modulo {
         let right_property = properties.get("right")
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
-        left_property.assert_is_not_aggregated()?;
-        right_property.assert_is_not_aggregated()?;
+
+        if !left_property.releasable {
+            left_property.assert_is_not_aggregated()?;
+        }
+        if !right_property.releasable {
+            right_property.assert_is_not_aggregated()?;
+        }
 
         match (left_property.data_type.clone(), right_property.data_type.clone()) {
             (DataType::F64, DataType::F64) => {
@@ -603,8 +642,13 @@ impl Component for proto::Multiply {
         let right_property = properties.get("right")
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
-        left_property.assert_is_not_aggregated()?;
-        right_property.assert_is_not_aggregated()?;
+
+        if !left_property.releasable {
+            left_property.assert_is_not_aggregated()?;
+        }
+        if !right_property.releasable {
+            right_property.assert_is_not_aggregated()?;
+        }
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
         if left_property.data_type != right_property.data_type {
@@ -721,7 +765,10 @@ impl Component for proto::Negate {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
-        data_property.assert_is_not_aggregated()?;
+
+        if !data_property.releasable {
+            data_property.assert_is_not_aggregated()?;
+        }
 
         data_property.nature = propagate_unary_nature(
             &data_property,
@@ -747,7 +794,10 @@ impl Component for proto::Negative {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
-        data_property.assert_is_not_aggregated()?;
+
+        if !data_property.releasable {
+            data_property.assert_is_not_aggregated()?;
+        }
 
         data_property.nature = propagate_unary_nature(
             &data_property,
@@ -782,8 +832,13 @@ impl Component for proto::Or {
         let right_property = properties.get("right")
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
-        left_property.assert_is_not_aggregated()?;
-        right_property.assert_is_not_aggregated()?;
+
+        if !left_property.releasable {
+            left_property.assert_is_not_aggregated()?;
+        }
+        if !right_property.releasable {
+            right_property.assert_is_not_aggregated()?;
+        }
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
         if left_property.data_type != right_property.data_type {
@@ -828,8 +883,13 @@ impl Component for proto::Power {
         let radical_property = properties.get("radical")
             .ok_or("radical: missing")?.array()
             .map_err(prepend("radical:"))?.clone();
-        data_property.assert_is_not_aggregated()?;
-        radical_property.assert_is_not_aggregated()?;
+
+        if !data_property.releasable {
+            data_property.assert_is_not_aggregated()?;
+        }
+        if !radical_property.releasable {
+            radical_property.assert_is_not_aggregated()?;
+        }
 
         match (data_property.data_type.clone(), radical_property.data_type.clone()) {
             (DataType::F64, DataType::F64) => {
@@ -892,8 +952,13 @@ impl Component for proto::RowMax {
         let right_property = properties.get("right")
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
-        left_property.assert_is_not_aggregated()?;
-        right_property.assert_is_not_aggregated()?;
+
+        if !left_property.releasable {
+            left_property.assert_is_not_aggregated()?;
+        }
+        if !right_property.releasable {
+            right_property.assert_is_not_aggregated()?;
+        }
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
         if left_property.data_type != right_property.data_type {
@@ -964,8 +1029,13 @@ impl Component for proto::RowMin {
         let right_property = properties.get("right")
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
-        left_property.assert_is_not_aggregated()?;
-        right_property.assert_is_not_aggregated()?;
+
+        if !left_property.releasable {
+            left_property.assert_is_not_aggregated()?;
+        }
+        if !right_property.releasable {
+            right_property.assert_is_not_aggregated()?;
+        }
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
         if left_property.data_type != right_property.data_type {
@@ -1036,8 +1106,13 @@ impl Component for proto::Subtract {
         let right_property = properties.get("right")
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
-        left_property.assert_is_not_aggregated()?;
-        right_property.assert_is_not_aggregated()?;
+
+        if !left_property.releasable {
+            left_property.assert_is_not_aggregated()?;
+        }
+        if !right_property.releasable {
+            right_property.assert_is_not_aggregated()?;
+        }
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
         if left_property.data_type != right_property.data_type {
