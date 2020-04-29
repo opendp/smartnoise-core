@@ -151,8 +151,9 @@ message ComponentExpansion {
 }
 
 message Utility {
-    map<uint32, Component> computation_graph = 1;
-    map<uint32, ReleaseNode> releases = 2;
+    ComputationGraph computation_graph = 1;
+    Release release = 2;
     uint32 candidate_id = 3;
     uint32 output_id = 4;
+    uint32 dataset_id = 5;
 }

@@ -192,11 +192,12 @@ pub trait Named {
 /// Utility component trait
 ///
 /// Components with utility implemented may be privatized with the exponential mechanism
-pub trait Utility {
+/// Components that implement the Utility trait must implement the Sensitivity trait
+pub trait Utility: Sensitivity {
     /// return a function represented in protobuf that computes the utility associated with this component
     fn get_utility (
         &self,
-        privacy_definition: &proto::PrivacyDefinition
+        properties: &NodeProperties
     ) -> Result<proto::Utility>;
 }
 
@@ -464,7 +465,7 @@ impl Named for proto::component::Variant {
 impl Utility for proto::component::Variant {
     fn get_utility(
         &self,
-        privacy_definition: &proto::PrivacyDefinition
+        properties: &NodeProperties
     ) -> Result<proto::Utility> {
 
         macro_rules! get_utility{
@@ -472,7 +473,7 @@ impl Utility for proto::component::Variant {
                 {
                     $(
                        if let proto::component::Variant::$variant(x) = self {
-                            return x.get_utility(privacy_definition)
+                            return x.get_utility(properties)
                                 .chain_err(|| format!("node specification {:?}:", self))
                        }
                     )*
