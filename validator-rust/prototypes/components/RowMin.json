@@ -8,9 +8,10 @@
     }
   },
   "id": "RowMin",
-  "name": "row_wise_min",
+  "name": "row_min",
   "options": {},
   "return": {
     "type_value": "Array"
-  }
+  },
+  "description": "Returns the minimum of the left and right arguments, per row."
 }

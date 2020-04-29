@@ -219,6 +219,35 @@ impl Evaluable for proto::Power {
     }
 }
 
+impl Evaluable for proto::RowMax {
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+        match (get_argument(&arguments, "left")?, get_argument(&arguments, "right")?) {
+            (Value::Array(left), Value::Array(right)) => match (left, right) {
+                (Array::F64(x), Array::F64(y)) =>
+                    Ok(broadcast_map(&x, &y, &|l: &f64, r: &f64| l.max(*r))?.into()),
+                (Array::I64(x), Array::I64(y)) =>
+                    Ok(broadcast_map(&x, &y, &|l: &i64, r: &i64| *std::cmp::max(l, r))?.into()),
+                _ => Err("RowMax: Either the argument types are mismatched or non-numeric.".into())
+            },
+            _ => Err("RowMax: Both arguments must be arrays.".into())
+        }.map(ReleaseNode::new)
+    }
+}
+
+impl Evaluable for proto::RowMin {
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+        match (get_argument(&arguments, "left")?, get_argument(&arguments, "right")?) {
+            (Value::Array(left), Value::Array(right)) => match (left, right) {
+                (Array::F64(x), Array::F64(y)) =>
+                    Ok(broadcast_map(&x, &y, &|l: &f64, r: &f64| l.min(*r))?.into()),
+                (Array::I64(x), Array::I64(y)) =>
+                    Ok(broadcast_map(&x, &y, &|l: &i64, r: &i64| *std::cmp::max(l, r))?.into()),
+                _ => Err("RowMin: Either the argument types are mismatched or non-numeric.".into())
+            },
+            _ => Err("RowMin: Both arguments must be arrays.".into())
+        }.map(ReleaseNode::new)
+    }
+}
 
 impl Evaluable for proto::Subtract {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
