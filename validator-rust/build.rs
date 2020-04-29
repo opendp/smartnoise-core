@@ -1,5 +1,7 @@
 extern crate prost_build;
 //extern crate cbindgen;
+extern crate heck;
+use self::heck::CamelCase;
 
 use std::io;
 use std::path::Path;
@@ -134,7 +136,7 @@ message Component {
     "#.to_string();
 
     let proto_text_variants = components.iter().enumerate()
-        .map(|(id, component)| format!("        {} {} = {};", component.id, component.name, id + 100))
+        .map(|(id, component)| format!("        {} {} = {};", component.id.to_camel_case(), component.name.to_camel_case(), id + 100))
         .collect::<Vec<String>>().join("\n");
 
     let proto_text_messages = components.iter()
@@ -145,11 +147,11 @@ message Component {
                 format!("{}\n    {} {} = {};",
                         doc(&spec.description, "    "),
                         spec.arg_type.clone().unwrap(),
-                        name,
+                        name.to_camel_case(),
                         id + 1)
             }).collect::<Vec<String>>().join("\n");
 
-            let mut component_description = format!("{} Component", component.id);
+            let mut component_description = format!("{} Component", component.id.to_camel_case());
             if let Some(description) = component.description.clone() {
                 component_description.push_str(&format!("\n\n{}", description));
             }
@@ -176,7 +178,7 @@ message Component {
             format!("{}\nmessage {} {{\n{}\n}}",
                     // code gen for the header
                     text_component_header,
-                    component.id,
+                    component.id.to_camel_case(),
                     text_options)
         })
         .collect::<Vec<String>>().join("\n\n");
@@ -218,7 +220,7 @@ message Component {
                 .collect::<Vec<String>>().join(", ");
 
             format!("/// | [{}](../../proto/struct.{}.html) | {} | {} |  ",
-                    component.id, component.id, component.name, inputs)
+                    component.id.to_camel_case(), component.id.to_camel_case(), component.name.to_camel_case(), inputs)
         })
         .collect::<Vec<String>>().join("\n");
 
