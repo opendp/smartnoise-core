@@ -38,8 +38,8 @@ jobs:
     #
     - echo $TRAVIS_BRANCH;
     # switch to master after initial version
-    # - if [ "$TRAVIS_BRANCH" == "ms-docs-fix" ]; then
-    - if [ "$TRAVIS_BRANCH" == "develop" ]; then
+    #- if [ "$TRAVIS_BRANCH" == "develop" ]; then
+    - if [ "$TRAVIS_BRANCH" == "master" ]; then
         bash build_docs.sh;
       fi;
     # -------------------------------------------
@@ -56,5 +56,5 @@ jobs:
       keep_history: true
       target_branch: gh-pages
       on:
-        branch: develop # switch to master after initial version
-        #branch: ms-docs-fix # Testing on a dev. branch
+        branch: master # switch to master after initial version
+        #branch: develop # switch to master after initial version
