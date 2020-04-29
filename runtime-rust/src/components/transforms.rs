@@ -43,17 +43,15 @@ impl Evaluable for proto::Add {
     }
 }
 
-impl Evaluable for proto::Subtract {
+impl Evaluable for proto::And {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
         match (get_argument(&arguments, "left")?, get_argument(&arguments, "right")?) {
             (Value::Array(left), Value::Array(right)) => match (left, right) {
-                (Array::F64(x), Array::F64(y)) =>
-                    Ok(broadcast_map(x, y, &|l, r| l - r)?.into()),
-                (Array::I64(x), Array::I64(y)) =>
-                    Ok(broadcast_map(x, y, &|l, r| l - r)?.into()),
-                _ => Err("Subtract: Either the argument types are mismatched or non-numeric.".into())
+                (Array::Bool(x), Array::Bool(y)) =>
+                    Ok(broadcast_map(&x, &y, &|l: &bool, r: &bool| *l && *r)?.into()),
+                _ => Err("And: Either the argument types are mismatched or non-numeric.".into())
             },
-            _ => Err("Subtract: Both arguments must be arrays.".into())
+            _ => Err("And: Both arguments must be arrays.".into())
         }.map(ReleaseNode::new)
     }
 }
@@ -78,6 +76,80 @@ impl Evaluable for proto::Divide {
     }
 }
 
+impl Evaluable for proto::Equal {
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+        match (get_argument(&arguments, "left")?, get_argument(&arguments, "right")?) {
+            (Value::Array(left), Value::Array(right)) => match (left, right) {
+                (Array::Bool(x), Array::Bool(y)) =>
+                    Ok(broadcast_map(&x, &y, &|l: &bool, r: &bool| l == r)?.into()),
+                (Array::I64(x), Array::I64(y)) =>
+                    Ok(broadcast_map(&x, &y, &|l: &i64, r: &i64| l == r)?.into()),
+                (Array::F64(x), Array::F64(y)) =>
+                    Ok(broadcast_map(&x, &y, &|l: &f64, r: &f64| l == r)?.into()),
+                (Array::Str(x), Array::Str(y)) =>
+                    Ok(broadcast_map(&x, &y, &|l: &String, r: &String| l == r)?.into()),
+                _ => Err("Equal: Argument types are mismatched.".into())
+            },
+            _ => Err("Equal: Both arguments must be arrays.".into())
+        }.map(ReleaseNode::new)
+    }
+}
+
+impl Evaluable for proto::GreaterThan {
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+        match (get_argument(&arguments, "left")?, get_argument(&arguments, "right")?) {
+            (Value::Array(left), Value::Array(right)) => match (left, right) {
+                (Array::I64(x), Array::I64(y)) =>
+                    Ok(broadcast_map(&x, &y, &|l: &i64, r: &i64| l > r)?.into()),
+                (Array::F64(x), Array::F64(y)) =>
+                    Ok(broadcast_map(&x, &y, &|l: &f64, r: &f64| l > r)?.into()),
+                _ => Err("LessThan: Either the argument types are mismatched or non-numeric.".into())
+            },
+            _ => Err("LessThan: Both arguments must be arrays.".into())
+        }.map(ReleaseNode::new)
+    }
+}
+
+impl Evaluable for proto::LessThan {
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+        match (get_argument(&arguments, "left")?, get_argument(&arguments, "right")?) {
+            (Value::Array(left), Value::Array(right)) => match (left, right) {
+                (Array::I64(x), Array::I64(y)) =>
+                    Ok(broadcast_map(&x, &y, &|l: &i64, r: &i64| l < r)?.into()),
+                (Array::F64(x), Array::F64(y)) =>
+                    Ok(broadcast_map(&x, &y, &|l: &f64, r: &f64| l < r)?.into()),
+                _ => Err("LessThan: Either the argument types are mismatched or non-numeric.".into())
+            },
+            _ => Err("LessThan: Both arguments must be arrays.".into())
+        }.map(ReleaseNode::new)
+    }
+}
+
+impl Evaluable for proto::Log {
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+        let base = get_argument(&arguments, "base")?.array()?.f64()?;
+        let data = get_argument(&arguments, "data")?.array()?.f64()?;
+        Ok(ReleaseNode::new(broadcast_map(base, data, &|base, x| x.log(*base))?.into()))
+    }
+}
+
+
+impl Evaluable for proto::Modulo {
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+        match (get_argument(&arguments, "left")?, get_argument(&arguments, "right")?) {
+            (Value::Array(left), Value::Array(right)) => match (left, right) {
+                (Array::F64(x), Array::F64(y)) =>
+                    Ok(broadcast_map(&x, &y, &|l: &f64, r: &f64| l.rem_euclid(*r))?.into()),
+                (Array::I64(x), Array::I64(y)) => {
+                    Ok(broadcast_map(&x, &y, &|l: &i64, r: &i64| l.rem_euclid(*r))?.into())
+                },
+                _ => Err("Modulo: Either the argument types are mismatched or non-numeric.".into())
+            },
+            _ => Err("Modulo: Both arguments must be arrays.".into())
+        }.map(ReleaseNode::new)
+    }
+}
+
 impl Evaluable for proto::Multiply {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
         match (get_argument(&arguments, "left")?, get_argument(&arguments, "right")?) {
@@ -89,6 +161,45 @@ impl Evaluable for proto::Multiply {
                 _ => Err("Multiply: Either the argument types are mismatched or non-numeric.".into())
             },
             _ => Err("Multiply: Both arguments must be arrays.".into())
+        }.map(ReleaseNode::new)
+    }
+}
+
+impl Evaluable for proto::Negate {
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+        match get_argument(&arguments, "data")? {
+            Value::Array(data) => match data {
+                Array::Bool(data) =>
+                    Ok(data.mapv(|v| !v).into()),
+                _ => Err("Or: Either the argument types are mismatched or non-numeric.".into())
+            },
+            _ => Err("Or: Both arguments must be arrays.".into())
+        }.map(ReleaseNode::new)
+    }
+}
+
+impl Evaluable for proto::Negative {
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+        match get_argument(&arguments, "data")? {
+            Value::Array(data) => match data {
+                Array::F64(x) => Ok((-x).into()),
+                Array::I64(x) => Ok((-x).into()),
+                _ => Err("Negative: Argument must be numeric.".into())
+            },
+            _ => Err("Negative: Argument must be an array.".into())
+        }.map(ReleaseNode::new)
+    }
+}
+
+impl Evaluable for proto::Or {
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+        match (get_argument(&arguments, "left")?, get_argument(&arguments, "right")?) {
+            (Value::Array(left), Value::Array(right)) => match (left, right) {
+                (Array::Bool(x), Array::Bool(y)) =>
+                    Ok(broadcast_map(&x, &y, &|l: &bool, r: &bool| *l || *r)?.into()),
+                _ => Err("Or: Either the argument types are mismatched or non-numeric.".into())
+            },
+            _ => Err("Or: Both arguments must be arrays.".into())
         }.map(ReleaseNode::new)
     }
 }
@@ -109,129 +220,17 @@ impl Evaluable for proto::Power {
 }
 
 
-impl Evaluable for proto::Log {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        let base = get_argument(&arguments, "base")?.array()?.f64()?;
-        let data = get_argument(&arguments, "data")?.array()?.f64()?;
-        Ok(ReleaseNode::new(broadcast_map(base, data, &|base, x| x.log(*base))?.into()))
-    }
-}
-
-impl Evaluable for proto::Modulo {
+impl Evaluable for proto::Subtract {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
         match (get_argument(&arguments, "left")?, get_argument(&arguments, "right")?) {
             (Value::Array(left), Value::Array(right)) => match (left, right) {
                 (Array::F64(x), Array::F64(y)) =>
-                    Ok(broadcast_map(&x, &y, &|l: &f64, r: &f64| l.rem_euclid(*r))?.into()),
-                (Array::I64(x), Array::I64(y)) => {
-                    Ok(broadcast_map(&x, &y, &|l: &i64, r: &i64| l.rem_euclid(*r))?.into())
-                },
-                _ => Err("Modulo: Either the argument types are mismatched or non-numeric.".into())
-            },
-            _ => Err("Modulo: Both arguments must be arrays.".into())
-        }.map(ReleaseNode::new)
-    }
-}
-
-impl Evaluable for proto::And {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        match (get_argument(&arguments, "left")?, get_argument(&arguments, "right")?) {
-            (Value::Array(left), Value::Array(right)) => match (left, right) {
-                (Array::Bool(x), Array::Bool(y)) =>
-                    Ok(broadcast_map(&x, &y, &|l: &bool, r: &bool| *l && *r)?.into()),
-                _ => Err("And: Either the argument types are mismatched or non-numeric.".into())
-            },
-            _ => Err("And: Both arguments must be arrays.".into())
-        }.map(ReleaseNode::new)
-    }
-}
-
-impl Evaluable for proto::Or {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        match (get_argument(&arguments, "left")?, get_argument(&arguments, "right")?) {
-            (Value::Array(left), Value::Array(right)) => match (left, right) {
-                (Array::Bool(x), Array::Bool(y)) =>
-                    Ok(broadcast_map(&x, &y, &|l: &bool, r: &bool| *l || *r)?.into()),
-                _ => Err("Or: Either the argument types are mismatched or non-numeric.".into())
-            },
-            _ => Err("Or: Both arguments must be arrays.".into())
-        }.map(ReleaseNode::new)
-    }
-}
-
-
-impl Evaluable for proto::Negate {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        match get_argument(&arguments, "data")? {
-            Value::Array(data) => match data {
-                Array::Bool(data) =>
-                    Ok(data.mapv(|v| !v).into()),
-                _ => Err("Or: Either the argument types are mismatched or non-numeric.".into())
-            },
-            _ => Err("Or: Both arguments must be arrays.".into())
-        }.map(ReleaseNode::new)
-    }
-}
-
-impl Evaluable for proto::Equal {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        match (get_argument(&arguments, "left")?, get_argument(&arguments, "right")?) {
-            (Value::Array(left), Value::Array(right)) => match (left, right) {
-                (Array::Bool(x), Array::Bool(y)) =>
-                    Ok(broadcast_map(&x, &y, &|l: &bool, r: &bool| l == r)?.into()),
+                    Ok(broadcast_map(x, y, &|l, r| l - r)?.into()),
                 (Array::I64(x), Array::I64(y)) =>
-                    Ok(broadcast_map(&x, &y, &|l: &i64, r: &i64| l == r)?.into()),
-                (Array::F64(x), Array::F64(y)) =>
-                    Ok(broadcast_map(&x, &y, &|l: &f64, r: &f64| l == r)?.into()),
-                (Array::Str(x), Array::Str(y)) =>
-                    Ok(broadcast_map(&x, &y, &|l: &String, r: &String| l == r)?.into()),
-                _ => Err("Equal: Argument types are mismatched.".into())
+                    Ok(broadcast_map(x, y, &|l, r| l - r)?.into()),
+                _ => Err("Subtract: Either the argument types are mismatched or non-numeric.".into())
             },
-            _ => Err("Equal: Both arguments must be arrays.".into())
-        }.map(ReleaseNode::new)
-    }
-}
-
-impl Evaluable for proto::LessThan {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        match (get_argument(&arguments, "left")?, get_argument(&arguments, "right")?) {
-            (Value::Array(left), Value::Array(right)) => match (left, right) {
-                (Array::I64(x), Array::I64(y)) =>
-                    Ok(broadcast_map(&x, &y, &|l: &i64, r: &i64| l < r)?.into()),
-                (Array::F64(x), Array::F64(y)) =>
-                    Ok(broadcast_map(&x, &y, &|l: &f64, r: &f64| l < r)?.into()),
-                _ => Err("LessThan: Either the argument types are mismatched or non-numeric.".into())
-            },
-            _ => Err("LessThan: Both arguments must be arrays.".into())
-        }.map(ReleaseNode::new)
-    }
-}
-
-impl Evaluable for proto::GreaterThan {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        match (get_argument(&arguments, "left")?, get_argument(&arguments, "right")?) {
-            (Value::Array(left), Value::Array(right)) => match (left, right) {
-                (Array::I64(x), Array::I64(y)) =>
-                    Ok(broadcast_map(&x, &y, &|l: &i64, r: &i64| l > r)?.into()),
-                (Array::F64(x), Array::F64(y)) =>
-                    Ok(broadcast_map(&x, &y, &|l: &f64, r: &f64| l > r)?.into()),
-                _ => Err("LessThan: Either the argument types are mismatched or non-numeric.".into())
-            },
-            _ => Err("LessThan: Both arguments must be arrays.".into())
-        }.map(ReleaseNode::new)
-    }
-}
-
-
-impl Evaluable for proto::Negative {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        match get_argument(&arguments, "data")? {
-            Value::Array(data) => match data {
-                Array::F64(x) => Ok((-x).into()),
-                Array::I64(x) => Ok((-x).into()),
-                _ => Err("Negative: Argument must be numeric.".into())
-            },
-            _ => Err("Negative: Argument must be an array.".into())
+            _ => Err("Subtract: Both arguments must be arrays.".into())
         }.map(ReleaseNode::new)
     }
 }
