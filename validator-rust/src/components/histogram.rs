@@ -21,7 +21,10 @@ impl Component for proto::Histogram {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
-        data_property.assert_is_not_aggregated()?;
+
+        if !data_property.releasable {
+            data_property.assert_is_not_aggregated()?;
+        }
 
         let categories = data_property.categories()?;
 

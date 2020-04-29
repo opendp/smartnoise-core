@@ -23,7 +23,10 @@ impl Component for proto::KthRawSampleMoment {
         if data_property.data_type != DataType::F64 {
             return Err("data: atomic type must be float".into())
         }
-        data_property.assert_is_not_aggregated()?;
+
+        if !data_property.releasable {
+            data_property.assert_is_not_aggregated()?;
+        }
         data_property.assert_is_not_empty()?;
 
         // save a snapshot of the state when aggregating

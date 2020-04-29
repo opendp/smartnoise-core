@@ -7,7 +7,7 @@ use crate::errors::*;
 
 use crate::proto;
 
-use crate::base::{Release, Value, ValueProperties, SensitivitySpace, NodeProperties, ArrayProperties, ReleaseNode};
+use crate::base::{Release, Value, ValueProperties, SensitivitySpace, NodeProperties, ReleaseNode};
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 use crate::utilities::serial::{parse_release, parse_value_properties, serialize_value, parse_release_node};
@@ -674,16 +674,6 @@ pub fn get_ith_column<T: Clone + Default>(value: &ArrayD<T>, i: &usize) -> Resul
 
 pub fn deduplicate<T: Eq + Hash + Ord + Clone>(values: Vec<T>) -> Vec<T> {
     values.into_iter().unique().collect()
-}
-
-pub fn is_conformable(left: &ArrayProperties, right: &ArrayProperties) -> bool {
-    match (left.num_columns, right.num_columns) {
-        (Some(l), Some(r)) => l == r,
-        _ => match (left.dataset_id, right.dataset_id) {
-            (Some(l), Some(r)) => l == r,
-            _ => false
-        }
-    }
 }
 
 
