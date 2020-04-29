@@ -38,25 +38,38 @@ The exponential mechanism preserves $(\varepsilon,0)$-differential privacy \cite
 
 Note that the exponential mechanism may not be tractable in many cases, as it assumes the existence of a utility function, and even if one exists it may not be efficiently computable. 
 
-\section{An Exponential Mechanism for a Median}
+\section{An Exponential Mechanism for Quantiles}
 
 \subsection{Defining a sensible utility function}
 %
-%Note that a user will prefer an output that is closer to the true median over one that is further away. Let $x$ be an (ordered) data set, let $r$ be a possible output, and let $n$ be the size of the data set. Note that if $r$ is close to the median, its rank will be close to $n/2$. Then, the following utility function is a sensical one:
-%
-%\begin{equation}
-%u(x, r) = - \left\vert \text{rank}_x(r) - \frac{n}{2} \right\vert.\footnote{Note that you could use a different measure of distance here if desired; an $L_1$ norm in terms of rank is just convenient to reduce sensitivity.}
-%\end{equation}
-%
-%Note that the \textit{rank} function here is a slight abuse of notation since $r$ is an element from the \textit{data range}, not from the underlying database $x$, so does not have a rank. 
+First, consider the case where the desired quantile is the median. Note that a user will prefer an output that is closer to the true median over one that is further away. Let $x$ be an (ordered) data set, and let $r$ be a possible median output by our mechanism. Note that if $r$ is exactly the median, there should be the same number of points in $x$ to the left and to the right of $r$. As $r$ decreases or increases, then the distance between the number of points to the right of $r$ and to the left of $r$ will increase. So, the distance between the number of points to the left and the number of points to the right of $r$ encapsulates how close the output is to the true median. \\
+
+Slightly more formally, let $\#(x<r)$ denote the number of points to the left of $r$ in database $x$ and let $\#(x<r)$ denote the number of points to the right of $r$ in database $x$. Define the utility function $u$ as
 
 \begin{equation}
-u(x,r) = \max(\alpha, (1-\alpha))N - \left\vert (1-\alpha) \#(Z<x) - \alpha \# (Z>x) \right\vert 
+u(x,r) \ \left\vert \#(x<R) - \#(x > R)\right\vert.
 \end{equation}
+
+To generalize this to an arbitrary quantile, let $N$ be the size of $x$ and let $\alpha \in (0,1)$ indicate the desired quantile. Then, we can modify our initial utility function as follows:
+
+\begin{equation}
+\label{eq:quant-util}
+u(x,r) = \max(\alpha, (1-\alpha))N - \left\vert (1-\alpha) \#(x<r) - \alpha \# (x>r) \right\vert .
+\end{equation}
+
+Say for example that $\alpha = 0.25$. Then, if $r$ is exactly at the first quantile, 
+$\#(x<r) $ will be the count of one fourth of the data and $\# (x>r)$ will be three fourths of the data; 
 
 \subsection{Sensitivity of the utility function}
 
 \subsubsection{Neighboring Definition: Change One}
+
+\begin{theorem}
+Let $u$ be defined as in Eq.~\ref{eq:quant-util}. The $\ell_1$-sensitivity of $u$ in the change-one model is bounded above by 1. 
+\end{theorem}
+
+\begin{proof}
+Say $X$ and $X'$ are neighboring databases which differ at some data point. Let $\Delta u$ denote the $\ell_1$-sensitivity of $u(\cdot, \cdot)$ with respect to the space of databases. 
 
 Let $C_1 = \#(Z<x), C_2 = \#(Z>x)$. Worst case, $C_1$ increases by 1 and $C_2$ decreases by 1.
 Then 
@@ -71,10 +84,15 @@ Then
 If instead $C_2$ increases by 1 and $C_1$ decreases by 1, the result is identical (negative sign falls out).
 
 % note that this is definitely worse than only one of them happening cause then you're just in the add/drop one setting and you get max(alpha, 1-alpha).
+\end{proof}
 
 \subsubsection{Neighboring Definition: Add/Drop One}
 
-In the add/remove-1 model, utility function has sensitivity $\max(1-\alpha, \alpha)$:
+\begin{theorem}
+Let $u$ be defined as in Eq.~\ref{eq:quant-util}. The $\ell_1$-sensitivity of $u$ in the add/drop one model is bounded above by $\max(\alpha, 1-\alpha)$.. 
+\end{theorem}
+
+\begin{proof}
 If we add 1, there are two worse-cases: $C_2$ increases by 1, nothing happens to $C_2$.
 \begin{align*}
 \Delta u &= \left\vert (1-\alpha) (C_1 + 1) - \alpha (C_2) \right\vert - \left\vert (1-\alpha) C_1 - \alpha C_2 \right\vert \\
@@ -90,6 +108,7 @@ b. nothing happens to $C_1, C_2$ increases by 1
 \end{align*}
 
 Subtracting a point gives you same thing but with some negative signs inside the absolute values that come out in the wash.
+\end{proof}
 
 \subsection{The Normalization Factor}
 
