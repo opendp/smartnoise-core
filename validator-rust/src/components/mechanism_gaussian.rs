@@ -54,8 +54,8 @@ impl Component for proto::GaussianMechanism {
 
         // Check delta value; checks depend on whether or not number of records is statically known.
         match data_property.num_records {
-            Some(_n) => {
-                let n = _n as f64;
+            Some(n) => {
+                let n = n as f64;
                 for delta in deltas.into_iter(){
                     if delta <= 0.0 {
                         return Err("delta: privacy parameter delta must be greater than 0".into());
