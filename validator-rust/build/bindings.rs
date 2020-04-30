@@ -151,10 +151,12 @@ use crate::base::{{Release, Value, ReleaseNode}};
 
 {}"#, bindings_builders.join("\n"));
 
+    let bindings_analysis_text = bindings_analysis.join("\n");
+
     {
         fs::remove_file(output_path_impls.clone()).ok();
         let mut file = File::create(output_path_impls).unwrap();
-        file.write(bindings_analysis.join("\n").as_bytes())
+        file.write(bindings_analysis_text.as_bytes())
             .expect("Unable to write bindings impls file.");
         file.flush().unwrap();
     }
