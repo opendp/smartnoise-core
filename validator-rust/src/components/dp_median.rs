@@ -22,50 +22,23 @@ impl Expandable for proto::DpMedian {
         component_id: &u32,
         maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
-        let mut current_id = *maximum_id;
-        let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
 
-        let data_id = *component.arguments.get("data")
-            .ok_or_else(|| Error::from("data is a required argument to DPMedian"))?;
-
-        // median
-        current_id += 1;
-        let id_median = current_id;
-        computation_graph.insert(id_median, proto::Component {
-            arguments: hashmap!["data".to_owned() => data_id],
-            variant: Some(proto::component::Variant::Quantile(proto::Quantile {
+        let quantile_component = proto::Component {
+            arguments: component.arguments.clone(),
+            variant: Some(proto::component::Variant::DpQuantile(proto::DpQuantile {
                 alpha: 0.5,
-                interpolation: self.interpolation.clone()
+                interpolation: self.interpolation.clone(),
+                privacy_usage: self.privacy_usage.clone(),
+                mechanism: self.mechanism.clone()
             })),
             omit: true,
             batch: component.batch,
-        });
-
-//        let id_candidates = component.arguments.get("candidates").unwrap().clone();
-
-        // sanitizing
-        computation_graph.insert(component_id.clone(), proto::Component {
-            arguments: hashmap![
-			    "data".to_owned() => id_median
-		    ],
-            variant: Some(match self.mechanism.to_lowercase().as_str() {
-                "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
-                    privacy_usage: self.privacy_usage.clone()
-                }),
-                "gaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
-                    privacy_usage: self.privacy_usage.clone()
-                }),
-                _ => panic!("Unexpected invalid token {:?}", self.mechanism.as_str()),
-            }),
-            omit: false,
-            batch: component.batch,
-        });
-
+        };
         Ok(proto::ComponentExpansion {
-            computation_graph,
+            computation_graph: hashmap![*maximum_id => quantile_component],
             properties: HashMap::new(),
             releases: HashMap::new(),
-            traversal: vec![id_median]
+            traversal: vec![*component_id]
         })
     }
 }

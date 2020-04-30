@@ -26,6 +26,7 @@ mod dp_median;
 mod dp_minimum;
 mod dp_mean;
 mod dp_moment_raw;
+mod dp_quantile;
 mod dp_sum;
 mod filter;
 mod histogram;
@@ -271,8 +272,8 @@ impl Expandable for proto::component::Variant {
         expand_component!(
             // INSERT COMPONENT LIST
             Clamp, Digitize, DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMedian,
-            DpMinimum, DpMomentRaw, DpSum, DpVariance, Histogram, Impute, GaussianMechanism,
-            LaplaceMechanism, SimpleGeometricMechanism, Resize,
+            DpMinimum, DpMomentRaw, DpQuantile, DpSum, DpVariance, Histogram, Impute,
+            GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism, Resize,
 
             ToBool, ToFloat, ToInt, ToString
         );

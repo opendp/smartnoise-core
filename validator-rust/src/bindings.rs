@@ -28,21 +28,14 @@ use crate::proto;
 use crate::base::Release;
 use std::collections::HashMap;
 
+
 #[derive(Debug)]
 pub struct Analysis {
     pub components: HashMap<u32, proto::Component>,
     pub component_count: u32,
     pub submission_count: u32,
-    pub dataset_count: u32,
     pub release: Release,
 }
-
-pub mod builders {
-    include!(concat!(env!("OUT_DIR"), "/bindings_builders.rs"));
-}
-
-include!(concat!(env!("OUT_DIR"), "/bindings_analysis.rs"));
-
 
 impl Analysis {
     pub fn new() -> Self {
@@ -50,16 +43,23 @@ impl Analysis {
             components: HashMap::new(),
             component_count: 0,
             submission_count: 0,
-            dataset_count: 0,
             release: Release::new(),
         }
     }
+}
+
+include!(concat!(env!("OUT_DIR"), "/bindings_analysis.rs"));
+
+pub mod builders {
+    include!(concat!(env!("OUT_DIR"), "/bindings_builders.rs"));
 }
 
 #[cfg(test)]
 mod test_bindings {
     use crate::errors::*;
     use crate::bindings::Analysis;
+    use crate::bindings::*;
+    use crate::bindings::builders;
     use ndarray::arr1;
 
     fn build_analysis() -> Result<()> {
