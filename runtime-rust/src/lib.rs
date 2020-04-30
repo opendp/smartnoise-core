@@ -17,7 +17,7 @@ pub mod ffi;
 
 extern crate libc;
 
-use whitenoise_validator::utilities::{serial, get_input_properties, get_sinks};
+use whitenoise_validator::utilities::{get_input_properties, get_sinks};
 
 use crate::components::*;
 
@@ -26,8 +26,8 @@ use std::vec::Vec;
 
 use itertools::Itertools;
 
-use whitenoise_validator::base::{Value, ReleaseNode};
-use whitenoise_validator::utilities::serial::{parse_release, serialize_release_node};
+use whitenoise_validator::base::{Value, ReleaseNode, Release};
+use whitenoise_validator::utilities::serial::{parse_release, serialize_release_node, serialize_release};
 use std::iter::FromIterator;
 use whitenoise_validator::ffi::serialize_error;
 
@@ -37,14 +37,15 @@ pub type NodeArguments<'a> = HashMap<String, &'a Value>;
 pub fn release(
     request: &proto::RequestRelease
 ) -> Result<(proto::Release, Vec<proto::Error>)> {
-    execute_graph(
+    let (release, warnings) = execute_analysis(
         request.analysis.as_ref()
             .ok_or_else(|| Error::from("analysis must be defined"))?,
-        request.release.as_ref()
-            .ok_or_else(|| Error::from("release must be defined"))?,
+        parse_release(request.release.as_ref()
+            .ok_or_else(|| Error::from("release must be defined"))?)?,
         &proto::FilterLevel::from_i32(request.filter_level)
-            .ok_or_else(|| Error::from(format!("unrecognized filter level {:?}", request.filter_level)))?)
+            .ok_or_else(|| Error::from(format!("unrecognized filter level {:?}", request.filter_level)))?)?;
 
+    Ok((serialize_release(&release)?, warnings))
 }
 
 /// Given a description of computation, and some computed values, execute the computation and return computed values
@@ -63,15 +64,15 @@ pub fn release(
 ///
 /// # Return
 /// a collection of computed values for components in the graph
-pub fn execute_graph(
+pub fn execute_analysis(
     analysis: &proto::Analysis,
-    release: &proto::Release,
+    mut release: Release,
     filter_level: &proto::FilterLevel
-) -> Result<(proto::Release, Vec<proto::Error>)> {
+) -> Result<(Release, Vec<proto::Error>)> {
 
-    // stack for storing which nodes to evaluate next
     let computation_graph = analysis.computation_graph.to_owned()
         .ok_or_else(|| Error::from("computation_graph must be defined to execute an analysis"))?;
+
     let mut graph: HashMap<u32, proto::Component> = computation_graph.value;
 
     // core state for the graph execution algorithm
@@ -84,11 +85,10 @@ pub fn execute_graph(
         mut warnings
     } = whitenoise_validator::get_properties(&proto::RequestGetProperties {
         analysis: Some(analysis.clone()),
-        release: Some(release.clone()),
-        node_ids: release.values.keys().cloned().collect()
+        release: Some(serialize_release(&release)?),
+        node_ids: release.keys().cloned().collect()
     })?;
 
-    let mut release = serial::parse_release(release)?;
     let mut maximum_id = graph.keys()
         .fold1(std::cmp::max)
         .map(|x| x.clone())
@@ -245,7 +245,7 @@ pub fn execute_graph(
     }
 
     // apply the filtering level to the final release
-    let release = serial::serialize_release(&match filter_level {
+    Ok((match filter_level {
 
         proto::FilterLevel::Public => release.into_iter()
             .filter(|(_node_id, release_node)|
@@ -258,7 +258,5 @@ pub fn execute_graph(
             .collect::<HashMap<u32, ReleaseNode>>(),
 
         proto::FilterLevel::All => release,
-    })?;
-
-    Ok((release, warnings))
+    }, warnings))
 }

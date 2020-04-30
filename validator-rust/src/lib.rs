@@ -377,15 +377,13 @@ pub fn expand_component(
         }
     }
 
-    let privacy_definition = request.privacy_definition.as_ref()
-        .ok_or_else(|| Error::from("privacy definition must be defined"))?;
     let component = request.component.as_ref()
         .ok_or_else(|| Error::from("component must be defined"))?;
     let component_id = request.component_id;
 
     let result = component.variant.as_ref()
         .ok_or_else(|| Error::from("component variant must be defined"))?.expand_component(
-        privacy_definition,
+        &request.privacy_definition,
         component,
         &properties,
         &component_id,
@@ -400,7 +398,7 @@ pub fn expand_component(
     if result.traversal.is_empty() {
         let propagated_property = component.clone().variant.as_ref()
             .ok_or_else(|| Error::from("component variant must be defined"))?
-            .propagate_property(&privacy_definition, &public_values, &properties)
+            .propagate_property(&request.privacy_definition, &public_values, &properties)
             .chain_err(|| format!("at node_id {:?}", component_id))?;
 
         patch_properties.insert(component_id.to_owned(), utilities::serial::serialize_value_properties(&propagated_property));

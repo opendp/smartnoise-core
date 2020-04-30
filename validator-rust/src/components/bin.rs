@@ -15,7 +15,7 @@ use noisy_float::prelude::n64;
 impl Component for proto::Bin {
     fn propagate_property(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
         public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
     ) -> Result<ValueProperties> {

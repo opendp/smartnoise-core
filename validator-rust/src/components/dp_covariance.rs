@@ -17,7 +17,7 @@ use crate::utilities::prepend;
 impl Expandable for proto::DpCovariance {
     fn expand_component(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         properties: &base::NodeProperties,
         component_id: &u32,

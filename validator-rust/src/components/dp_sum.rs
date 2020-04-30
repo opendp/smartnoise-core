@@ -13,7 +13,7 @@ use crate::utilities::{prepend, broadcast_privacy_usage, get_ith_column};
 impl Expandable for proto::DpSum {
     fn expand_component(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         _properties: &base::NodeProperties,
         component_id: &u32,

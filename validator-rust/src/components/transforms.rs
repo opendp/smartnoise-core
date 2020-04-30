@@ -16,7 +16,7 @@ use num::{CheckedAdd, CheckedSub};
 impl Component for proto::Abs {
     fn propagate_property(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
@@ -69,7 +69,7 @@ impl Component for proto::Abs {
 impl Component for proto::Add {
     fn propagate_property(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
@@ -139,7 +139,7 @@ impl Component for proto::Add {
 impl Component for proto::And {
     fn propagate_property(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
@@ -189,7 +189,7 @@ impl Component for proto::And {
 impl Component for proto::Divide {
     fn propagate_property(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
@@ -344,7 +344,7 @@ impl Component for proto::Divide {
 impl Component for proto::Equal {
     fn propagate_property(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
@@ -392,7 +392,7 @@ impl Component for proto::Equal {
 impl Component for proto::GreaterThan {
     fn propagate_property(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
@@ -447,7 +447,7 @@ impl Component for proto::GreaterThan {
 impl Component for proto::LessThan {
     fn propagate_property(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
@@ -502,7 +502,7 @@ impl Component for proto::LessThan {
 impl Component for proto::Log {
     fn propagate_property(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
@@ -562,7 +562,7 @@ impl Component for proto::Log {
 impl Component for proto::Modulo {
     fn propagate_property(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
@@ -632,7 +632,7 @@ impl Component for proto::Modulo {
 impl Component for proto::Multiply {
     fn propagate_property(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
@@ -758,7 +758,7 @@ impl Component for proto::Multiply {
 impl Component for proto::Negate {
     fn propagate_property(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
@@ -787,7 +787,7 @@ impl Component for proto::Negate {
 impl Component for proto::Negative {
     fn propagate_property(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
@@ -822,7 +822,7 @@ impl Component for proto::Negative {
 impl Component for proto::Or {
     fn propagate_property(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
@@ -873,7 +873,7 @@ impl Component for proto::Or {
 impl Component for proto::Power {
     fn propagate_property(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
@@ -942,7 +942,7 @@ impl Component for proto::Power {
 impl Component for proto::RowMax {
     fn propagate_property(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
@@ -1019,7 +1019,7 @@ impl Component for proto::RowMax {
 impl Component for proto::RowMin {
     fn propagate_property(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
@@ -1096,7 +1096,7 @@ impl Component for proto::RowMin {
 impl Component for proto::Subtract {
     fn propagate_property(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {

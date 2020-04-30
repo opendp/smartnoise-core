@@ -16,7 +16,7 @@ use crate::utilities::serial::serialize_release;
 impl Component for proto::Quantile {
     fn propagate_property(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
@@ -89,8 +89,8 @@ impl Sensitivity for proto::Quantile {
                     Neighboring::Substitute => 1.
                 };
                 let row_sensitivity = (0..num_columns).map(|_| cell_sensitivity).collect::<Vec<f64>>();
-                let mut array_sensitivity = Array::from(row_sensitivity).into_dyn();
-                array_sensitivity.insert_axis_inplace(Axis(0));
+                let array_sensitivity = Array::from(row_sensitivity).into_dyn();
+                // array_sensitivity.insert_axis_inplace(Axis(0));
 
                 Ok(array_sensitivity.into())
             }
@@ -143,8 +143,8 @@ impl Utility for proto::Quantile {
         };
 
         Ok(proto::Utility {
-            computation_graph: Some(proto::ComputationGraph { value: analysis.components }),
-            release: Some(serialize_release(&analysis.release)?),
+            computation_graph: analysis.components,
+            release: serialize_release(&analysis.release)?.values,
             candidate_id: candidate,
             output_id: utility,
             dataset_id: data,

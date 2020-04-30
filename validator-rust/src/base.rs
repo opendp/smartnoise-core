@@ -838,7 +838,7 @@ pub enum SensitivitySpace {
 pub type Release = HashMap<u32, ReleaseNode>;
 
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct ReleaseNode {
     pub value: Value,
     pub privacy_usages: Option<Vec<proto::PrivacyUsage>>,

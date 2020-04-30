@@ -82,8 +82,6 @@ pub fn propagate_properties(
 
 ) -> Result<(HashMap<u32, ValueProperties>, HashMap<u32, proto::Component>, Vec<proto::Error>)> {
 
-    let privacy_definition = analysis.privacy_definition.to_owned()
-        .ok_or_else(|| Error::from("privacy definition must be defined"))?;
     let mut graph: HashMap<u32, proto::Component> = analysis.computation_graph.to_owned()
         .ok_or_else(|| Error::from("computation graph be defined"))?.value;
     let mut traversal: Vec<u32> = get_traversal(&graph)?;
@@ -129,7 +127,7 @@ pub fn propagate_properties(
         let mut expansion = match (dynamic, component.clone().variant
             .ok_or_else(|| Error::from("component variant must be defined"))?
             .expand_component(
-                &privacy_definition,
+                &analysis.privacy_definition,
                 &component,
                 &input_properties,
                 &node_id,
@@ -175,7 +173,7 @@ pub fn propagate_properties(
                     component.clone().variant
                         .ok_or_else(|| Error::from("privacy definition must be defined"))?
                         .propagate_property(
-                            &privacy_definition, &public_arguments, &input_properties)
+                            &analysis.privacy_definition, &public_arguments, &input_properties)
                         .chain_err(|| format!("at node_id {:?}", node_id))
                 }
             }
@@ -184,7 +182,7 @@ pub fn propagate_properties(
             None => {
                 let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
                 component.clone().variant.unwrap().propagate_property(
-                    &privacy_definition, &public_arguments, &input_properties)
+                    &analysis.privacy_definition, &public_arguments, &input_properties)
                     .chain_err(|| format!("at node_id {:?}", node_id))
             }
         };
@@ -618,12 +616,14 @@ pub fn prepend(text: &str) -> impl Fn(Error) -> Error + '_ {
 /// Utility function for building component expansions for dp mechanisms
 pub fn expand_mechanism(
     sensitivity_type: &SensitivitySpace,
-    privacy_definition: &proto::PrivacyDefinition,
+    privacy_definition: &Option<proto::PrivacyDefinition>,
     component: &proto::Component,
     properties: &NodeProperties,
     component_id: &u32,
     maximum_id: &u32,
 ) -> Result<proto::ComponentExpansion> {
+    let privacy_definition = privacy_definition.as_ref()
+        .ok_or_else(|| "privacy definition must be defined")?;
     let mut current_id = *maximum_id;
     let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
     let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();

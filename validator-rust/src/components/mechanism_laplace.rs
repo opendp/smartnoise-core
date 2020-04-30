@@ -15,7 +15,7 @@ use crate::utilities::{prepend, expand_mechanism, broadcast_privacy_usage, get_e
 impl Component for proto::LaplaceMechanism {
     fn propagate_property(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
+        privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
@@ -32,7 +32,7 @@ impl Component for proto::LaplaceMechanism {
 
         // sensitivity must be computable
         let sensitivity_values = aggregator.component.compute_sensitivity(
-            &privacy_definition,
+            privacy_definition.as_ref().ok_or_else(|| "privacy_definition must be defined")?,
             &aggregator.properties,
             &SensitivitySpace::KNorm(1))?;
 
@@ -67,7 +67,7 @@ impl Component for proto::LaplaceMechanism {
 impl Expandable for proto::LaplaceMechanism {
     fn expand_component(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
+        privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         properties: &base::NodeProperties,
         component_id: &u32,

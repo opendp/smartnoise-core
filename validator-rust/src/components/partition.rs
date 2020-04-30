@@ -13,7 +13,7 @@ use crate::utilities::prepend;
 impl Component for proto::Partition {
     fn propagate_property(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
         public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
