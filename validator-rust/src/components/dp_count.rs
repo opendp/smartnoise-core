@@ -16,7 +16,7 @@ use crate::utilities::get_literal;
 impl Expandable for proto::DpCount {
     fn expand_component(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         properties: &base::NodeProperties,
         component_id: &u32,

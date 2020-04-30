@@ -5,23 +5,35 @@
       "description": "Result to be released privately via the Gaussian mechanism."
     },
     "candidates": {
-      "type_value": "Array",
+      "type_value": "Jagged",
       "description": "Set from which the Exponential mechanism will return an element."
     }
   },
   "id": "ExponentialMechanism",
   "name": "exponential_mechanism",
   "options": {
+    "aggregator": {
+      "type_proto": "Component",
+      "type_rust": "Option<std::boxed::Box<proto::Component>>",
+      "description": "component describing the type of aggregation to perform"
+    },
     "privacy_usage": {
       "type_proto": "repeated PrivacyUsage",
       "type_rust": "Vec<proto::PrivacyUsage>",
       "default_python": "None",
       "description": "Object describing the type and amount of privacy to be used for the mechanism release."
+    },
+    "utility": {
+      "type_proto": "Utility",
+      "type_rust": "Option<proto::Utility>",
+      "default_rust": "None",
+      "default_python": "None",
+      "description": "Ignore this argument in userland. Utility function that is internally overridden."
     }
   },
   "return": {
     "type_value": "Array",
-    "description": "Element from the data selected via the Exponential mechanism."
+    "description": "Element from the candidate set selected via the Exponential mechanism."
   },
   "description": "Returns an element from a finite set with probability relative to its utility."
 }

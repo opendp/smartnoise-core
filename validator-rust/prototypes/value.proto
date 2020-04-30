@@ -125,3 +125,13 @@ message DataSource {
         Value literal = 3;
     }
 }
+
+message ReleaseNode {
+    Value value = 1;
+    PrivacyUsages privacy_usages = 2;
+    bool public = 3;
+}
+
+message PrivacyUsages {
+    repeated PrivacyUsage values = 1;
+}

@@ -14,7 +14,7 @@ use crate::hashmap;
 impl Component for proto::Histogram {
     fn propagate_property(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
     ) -> Result<ValueProperties> {
@@ -56,7 +56,7 @@ impl Expandable for proto::Histogram {
     /// Add nodes for clamp or digitize if categories or edges are passed
     fn expand_component(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         properties: &NodeProperties,
         component_id: &u32,

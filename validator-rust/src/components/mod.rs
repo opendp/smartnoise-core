@@ -77,7 +77,7 @@ pub trait Component {
     /// Derived properties on the data resulting from the abstract computation
     fn propagate_property(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
+        privacy_definition: &Option<proto::PrivacyDefinition>,
         public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
     ) -> Result<ValueProperties>;
@@ -104,7 +104,7 @@ pub trait Expandable {
     /// More documentation at [ComponentExpansion](proto::ComponentExpansion).
     fn expand_component(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
+        privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         properties: &NodeProperties,
         component_id: &u32,
@@ -208,7 +208,7 @@ impl Component for proto::component::Variant {
     /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn propagate_property(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
+        privacy_definition: &Option<proto::PrivacyDefinition>,
         public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
     ) -> Result<ValueProperties> {
@@ -249,7 +249,7 @@ impl Expandable for proto::component::Variant {
     /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn expand_component(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
+        privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         properties: &NodeProperties,
         component_id: &u32,

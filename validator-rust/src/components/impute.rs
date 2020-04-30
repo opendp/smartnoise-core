@@ -15,7 +15,7 @@ use crate::utilities::{prepend, get_literal};
 impl Component for proto::Impute {
     fn propagate_property(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
         public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
@@ -113,7 +113,7 @@ impl Component for proto::Impute {
 impl Expandable for proto::Impute {
     fn expand_component(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         properties: &base::NodeProperties,
         component_id: &u32,

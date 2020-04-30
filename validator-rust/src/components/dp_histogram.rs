@@ -16,7 +16,7 @@ use crate::utilities::{prepend, broadcast_privacy_usage, get_ith_column, get_lit
 impl Expandable for proto::DpHistogram {
     fn expand_component(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         properties: &base::NodeProperties,
         component_id: &u32,

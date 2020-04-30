@@ -43,11 +43,6 @@ message ComputationGraph {
 message Release {
     map<uint32, ReleaseNode> values = 1;
 }
-message ReleaseNode {
-    Value value = 1;
-    PrivacyUsages privacy_usages = 2;
-    bool public = 3;
-}
 
 enum FilterLevel {
     // release from runtime should include public data (either literals or sanitized data)
@@ -132,9 +127,6 @@ message GraphProperties {
     repeated Error warnings = 2;
 }
 
-message PrivacyUsages {
-    repeated PrivacyUsage values = 1;
-}
 message Accuracies {
     repeated Accuracy values = 1;
 }
@@ -148,12 +140,4 @@ message ComponentExpansion {
     map<uint32, ValueProperties> properties = 2;
     map<uint32, ReleaseNode> releases = 3;
     repeated uint32 traversal = 4;
-}
-
-message Utility {
-    ComputationGraph computation_graph = 1;
-    Release release = 2;
-    uint32 candidate_id = 3;
-    uint32 output_id = 4;
-    uint32 dataset_id = 5;
 }
