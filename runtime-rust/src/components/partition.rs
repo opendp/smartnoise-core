@@ -11,6 +11,7 @@ use whitenoise_validator::proto;
 
 use whitenoise_validator::utilities::array::slow_select;
 use std::collections::BTreeMap;
+use indexmap::map::IndexMap;
 
 
 impl Evaluable for proto::Partition {
@@ -26,16 +27,16 @@ impl Evaluable for proto::Partition {
                 match data {
                     Array::F64(data) =>
                         Value::Hashmap(Hashmap::<Value>::I64(partition_evenly(data, num_partitions).into_iter()
-                            .map(|(idx, data)| (idx, data.into())).collect::<BTreeMap<i64, Value>>())),
+                            .map(|(idx, data)| (idx, data.into())).collect::<IndexMap<i64, Value>>())),
                     Array::I64(data) =>
                         Value::Hashmap(Hashmap::<Value>::I64(partition_evenly(data, num_partitions).into_iter()
-                            .map(|(idx, data)| (idx, data.into())).collect::<BTreeMap<i64, Value>>())),
+                            .map(|(idx, data)| (idx, data.into())).collect::<IndexMap<i64, Value>>())),
                     Array::Bool(data) =>
                         Value::Hashmap(Hashmap::<Value>::I64(partition_evenly(data, num_partitions).into_iter()
-                            .map(|(idx, data)| (idx, data.into())).collect::<BTreeMap<i64, Value>>())),
+                            .map(|(idx, data)| (idx, data.into())).collect::<IndexMap<i64, Value>>())),
                     Array::Str(data) =>
                         Value::Hashmap(Hashmap::<Value>::I64(partition_evenly(data, num_partitions).into_iter()
-                            .map(|(idx, data)| (idx, data.into())).collect::<BTreeMap<i64, Value>>())),
+                            .map(|(idx, data)| (idx, data.into())).collect::<IndexMap<i64, Value>>())),
                 }
             }
         }))

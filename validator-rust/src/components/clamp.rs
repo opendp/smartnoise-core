@@ -17,6 +17,7 @@ impl Component for proto::Clamp {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
+        _node_id: u32
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
@@ -40,26 +41,22 @@ impl Component for proto::Clamp {
                 (Jagged::F64(jagged), Array::F64(null)) => {
                     let null_target = standardize_null_target_argument(&null, &num_columns)?;
                     jagged.iter_mut().zip(null_target.into_iter())
-                        .for_each(|(cats, null)| cats.iter_mut()
-                            .for_each(|cats| cats.push(null)))
+                        .for_each(|(cats, null)| cats.push(null))
                 },
                 (Jagged::I64(jagged), Array::I64(null)) => {
                     let null_target = standardize_null_target_argument(&null, &num_columns)?;
                     jagged.iter_mut().zip(null_target.into_iter())
-                        .for_each(|(cats, null)| cats.iter_mut()
-                            .for_each(|cats| cats.push(null)))
+                        .for_each(|(cats, null)| cats.push(null))
                 },
                 (Jagged::Str(jagged), Array::Str(null)) => {
                     let null_target = standardize_null_target_argument(&null, &num_columns)?;
                     jagged.iter_mut().zip(null_target.into_iter())
-                        .for_each(|(cats, null)| cats.iter_mut()
-                            .for_each(|cats| cats.push(null.clone())))
+                        .for_each(|(cats, null)| cats.push(null))
                 },
                 (Jagged::Bool(jagged), Array::Bool(null)) => {
                     let null_target = standardize_null_target_argument(&null, &num_columns)?;
                     jagged.iter_mut().zip(null_target.into_iter())
-                        .for_each(|(cats, null)| cats.iter_mut()
-                            .for_each(|cats| cats.push(null)))
+                        .for_each(|(cats, null)| cats.push(null))
                 },
                 _ => return Err("categories and null_value must be homogeneously typed".into())
             };
@@ -225,7 +222,7 @@ impl Expandable for proto::Clamp {
             let id_lower = current_id.to_owned();
             let value = Value::Array(Array::F64(
                 ndarray::Array::from(properties.get("data").unwrap().to_owned().array()?.lower_f64()?).into_dyn()));
-            let (patch_node, release) = get_literal(&value, &component.batch)?;
+            let (patch_node, release) = get_literal(value, &component.batch)?;
             computation_graph.insert(id_lower.clone(), patch_node);
             releases.insert(id_lower.clone(), release);
             component.arguments.insert("lower".to_string(), id_lower);
@@ -236,7 +233,7 @@ impl Expandable for proto::Clamp {
             let id_upper = current_id.to_owned();
             let value = Value::Array(Array::F64(
                 ndarray::Array::from(properties.get("data").unwrap().to_owned().array()?.upper_f64()?).into_dyn()));
-            let (patch_node, release) = get_literal(&value, &component.batch)?;
+            let (patch_node, release) = get_literal(value, &component.batch)?;
             computation_graph.insert(id_upper.clone(), patch_node);
             releases.insert(id_upper.clone(), release);
             component.arguments.insert("upper".to_string(), id_upper);

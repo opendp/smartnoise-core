@@ -52,55 +52,24 @@ message Array1d {
     }
 }
 
+// N-dimensional homogeneously typed array
 message ArrayNd {
     Array1d flattened = 1;
     // length of axes
     repeated uint64 shape = 2;
-    // order of axes
-    repeated uint64 order = 3;
 }
 
-message HashmapStr {
-    map<string, Value> data = 1;
-}
-message HashmapBool {
-    map<bool, Value> data = 1;
-}
-message HashmapI64 {
-    map<int64, Value> data = 1;
-}
-
-message Hashmap {
-    oneof variant {
-        HashmapStr string = 1;
-        HashmapBool bool = 2;
-        HashmapI64 i64 = 4;
-    }
-}
-
-// for categorical constraint vectors, categorical releases
-message Array1dOption {
-    oneof data {Array1d option = 1;}
-}
 enum DataType {
-    BOOL = 0;
-    I64 = 1;
-    F64 = 2;
-    STRING = 3; 
-}
-message Array2dJagged {
-    repeated Array1dOption data = 1;
-    DataType data_type = 2;
+    UNKNOWN = 0;
+    BOOL = 1;
+    I64 = 2;
+    F64 = 3;
+    STRING = 4;
 }
 
-// literals
-message Value {
-    oneof data {
-        // bytes bytes = 1;
-        ArrayNd array = 2;
-        Hashmap hashmap = 3;
-        Array2dJagged jagged = 4;
-    }
+message Array2dJagged {
+    repeated Array1d data = 1;
+    DataType data_type = 2;
 }
 
 message PrivacyUsage {
@@ -116,20 +85,6 @@ message PrivacyUsage {
         DistancePure pure = 1;
         DistanceApproximate approximate = 2;
     }
-}
-
-message DataSource {
-    oneof value {
-        string file_path = 1;
-        string url_path = 2;
-        Value literal = 3;
-    }
-}
-
-message ReleaseNode {
-    Value value = 1;
-    PrivacyUsages privacy_usages = 2;
-    bool public = 3;
 }
 
 message PrivacyUsages {

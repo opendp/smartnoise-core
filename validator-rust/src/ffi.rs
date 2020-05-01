@@ -48,7 +48,7 @@ pub extern "C" fn validate_analysis(
 
     let response = proto::ResponseValidateAnalysis {
         value: match proto::RequestValidateAnalysis::decode(request_buffer) {
-            Ok(request) => match super::validate_analysis(&request) {
+            Ok(request) => match super::validate_analysis(request) {
                 Ok(x) =>
                     Some(proto::response_validate_analysis::Value::Data(x)),
                 Err(err) =>
@@ -77,7 +77,7 @@ pub extern "C" fn compute_privacy_usage(
 
     let response = proto::ResponseComputePrivacyUsage {
         value: match proto::RequestComputePrivacyUsage::decode(request_buffer) {
-            Ok(request) => match super::compute_privacy_usage(&request) {
+            Ok(request) => match super::compute_privacy_usage(request) {
                 Ok(x) =>
                     Some(proto::response_compute_privacy_usage::Value::Data(x)),
                 Err(err) =>
@@ -106,7 +106,7 @@ pub extern "C" fn generate_report(
 
     let response = proto::ResponseGenerateReport {
         value: match proto::RequestGenerateReport::decode(request_buffer) {
-            Ok(request) => match super::generate_report(&request) {
+            Ok(request) => match super::generate_report(request) {
                 Ok(x) =>
                     Some(proto::response_generate_report::Value::Data(x)),
                 Err(err) =>
@@ -135,7 +135,7 @@ pub extern "C" fn accuracy_to_privacy_usage(
 
     let response = proto::ResponseAccuracyToPrivacyUsage {
         value: match proto::RequestAccuracyToPrivacyUsage::decode(request_buffer) {
-            Ok(request) => match super::accuracy_to_privacy_usage(&request) {
+            Ok(request) => match super::accuracy_to_privacy_usage(request) {
                 Ok(x) =>
                     Some(proto::response_accuracy_to_privacy_usage::Value::Data(x)),
                 Err(err) =>
@@ -165,7 +165,7 @@ pub extern "C" fn privacy_usage_to_accuracy(
 
     let response = proto::ResponsePrivacyUsageToAccuracy {
         value: match proto::RequestPrivacyUsageToAccuracy::decode(request_buffer) {
-            Ok(request) => match super::privacy_usage_to_accuracy(&request) {
+            Ok(request) => match super::privacy_usage_to_accuracy(request) {
                 Ok(x) =>
                     Some(proto::response_privacy_usage_to_accuracy::Value::Data(x)),
                 Err(err) =>
@@ -194,7 +194,7 @@ pub extern "C" fn get_properties(
 
     let response = proto::ResponseGetProperties {
         value: match proto::RequestGetProperties::decode(request_buffer) {
-            Ok(request) => match super::get_properties(&request) {
+            Ok(request) => match super::get_properties(request) {
                 Ok(x) =>
                     Some(proto::response_get_properties::Value::Data(x)),
                 Err(err) =>
@@ -223,7 +223,7 @@ pub extern "C" fn expand_component(
 
     let response = proto::ResponseExpandComponent {
         value: match proto::RequestExpandComponent::decode(request_buffer) {
-            Ok(request) => match super::expand_component(&request) {
+            Ok(request) => match super::expand_component(request) {
                 Ok(x) =>
                     Some(proto::response_expand_component::Value::Data(x)),
                 Err(err) =>

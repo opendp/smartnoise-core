@@ -18,6 +18,7 @@ impl Component for proto::Bin {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
+        _node_id: u32
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
             .ok_or_else(|| Error::from("data: missing"))?.array()

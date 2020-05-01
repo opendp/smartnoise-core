@@ -58,7 +58,7 @@ impl Expandable for proto::DpCount {
                     // count_max
                     maximum_id += 1;
                     let id_count_max = maximum_id;
-                    let (patch_node, count_max_release) = get_literal(&count_max.into(), &component.batch)?;
+                    let (patch_node, count_max_release) = get_literal(count_max.into(), &component.batch)?;
                     computation_graph.insert(id_count_max.clone(), patch_node);
                     releases.insert(id_count_max.clone(), count_max_release);
                     id_count_max

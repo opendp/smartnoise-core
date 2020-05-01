@@ -5,12 +5,12 @@ pub mod array;
 
 use crate::errors::*;
 
-use crate::proto;
+use crate::{proto, base};
 
 use crate::base::{Release, Value, ValueProperties, SensitivitySpace, NodeProperties, ReleaseNode};
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
-use crate::utilities::serial::{parse_release, parse_value_properties, serialize_value, parse_release_node};
+use crate::utilities::serial::{parse_value_properties, serialize_value, parse_release_node};
 use crate::utilities::inference::infer_property;
 
 use itertools::Itertools;
@@ -26,11 +26,11 @@ use crate::ffi::serialize_error;
 /// Retrieve the Values for each of the arguments of a component from the Release.
 pub fn get_public_arguments(
     component: &proto::Component,
-    graph_evaluation: &Release,
+    release: &Release,
 ) -> Result<HashMap<String, Value>> {
     let mut arguments = HashMap::<String, Value>::new();
     for (field_id, field) in component.arguments.clone() {
-        if let Some(evaluation) = graph_evaluation.get(&field) {
+        if let Some(evaluation) = release.get(&field) {
             if evaluation.public {
                 arguments.insert(field_id.to_owned(), evaluation.to_owned().value.clone());
             }
@@ -75,33 +75,29 @@ pub fn get_input_properties<T>(
 /// * `0` - Properties for every node in the expanded graph
 /// * `1` - The expanded graph
 pub fn propagate_properties(
-    analysis: &proto::Analysis,
-    release: &proto::Release,
-    properties: Option<&HashMap<u32, proto::ValueProperties>>,
-    dynamic: bool
-
-) -> Result<(HashMap<u32, ValueProperties>, HashMap<u32, proto::Component>, Vec<proto::Error>)> {
-
-    let mut graph: HashMap<u32, proto::Component> = analysis.computation_graph.to_owned()
-        .ok_or_else(|| Error::from("computation graph be defined"))?.value;
+    analysis: &mut proto::Analysis,
+    release: &mut base::Release,
+    properties: Option<HashMap<u32, proto::ValueProperties>>,
+    dynamic: bool,
+) -> Result<(HashMap<u32, ValueProperties>, Vec<proto::Error>)> {
+    let ref mut graph = analysis.computation_graph.as_mut()
+        .ok_or_else(|| Error::from("computation_graph must be defined"))?.value;
     let mut traversal: Vec<u32> = get_traversal(&graph)?;
 
     // extend and pop from the end of the traversal
     traversal.reverse();
 
-    let mut graph_evaluation: Release = parse_release(&release)?;
-
     let mut graph_properties = match properties {
-        Some(properties) => properties.iter()
+        Some(properties) => properties.into_iter()
             .map(|(idx, props)| (idx.clone(), parse_value_properties(props)))
             .collect::<HashMap<u32, ValueProperties>>(),
         None => HashMap::new()
     };
 
     // infer properties on public evaluations
-    graph_properties.extend(graph_evaluation.iter()
+    graph_properties.extend(release.iter()
         .filter(|(_, release_node)| release_node.public)
-        .map(|(node_id, release_node)| Ok((*node_id, infer_property(&release_node.value)?)))
+        .map(|(node_id, release_node)| Ok((*node_id, infer_property(&release_node.value, Some(*node_id as i64))?)))
         .collect::<Result<HashMap<u32, ValueProperties>>>()?);
 
     let mut maximum_id = graph.keys().cloned()
@@ -118,11 +114,11 @@ pub fn propagate_properties(
 
         if component.arguments.values().any(|v| failed_ids.contains(v)) {
             failed_ids.insert(traversal.pop().unwrap());
-            continue
+            continue;
         }
 
         let input_properties = get_input_properties(&component, &graph_properties)?;
-        let public_arguments = get_public_arguments(&component, &graph_evaluation)?;
+        let public_arguments = get_public_arguments(&component, &release)?;
 
         let mut expansion = match (dynamic, component.clone().variant
             .ok_or_else(|| Error::from("component variant must be defined"))?
@@ -138,19 +134,19 @@ pub fn propagate_properties(
             (true, Err(err)) => {
                 failed_ids.insert(traversal.pop().unwrap());
                 warnings.push(serialize_error(err));
-                continue
-            },
+                continue;
+            }
             (false, Err(err)) => return Err(err)
         };
 
         // patch the computation graph
         graph.extend(expansion.computation_graph.clone());
-        graph_properties.extend(expansion.properties.iter()
-            .map(|(node_id, props)| (*node_id, parse_value_properties(props)))
+        graph_properties.extend(expansion.properties.into_iter()
+            .map(|(node_id, props)| (node_id, parse_value_properties(props)))
             .collect::<HashMap<u32, ValueProperties>>());
-        graph_evaluation.extend(expansion.releases.iter()
-            .map(|(node_id, release)| Ok((*node_id, parse_release_node(&release)?)))
-            .collect::<Result<HashMap<u32, ReleaseNode>>>()?);
+        release.extend(expansion.releases.into_iter()
+            .map(|(node_id, release)| (node_id, parse_release_node(release)))
+            .collect::<HashMap<u32, ReleaseNode>>());
 
         maximum_id = *expansion.computation_graph.keys().max()
             .map(|v| v.max(&maximum_id)).unwrap_or(&maximum_id);
@@ -163,17 +159,17 @@ pub fn propagate_properties(
         }
         traversal.pop();
 
-        let component_properties = match graph_evaluation.get(&node_id) {
+        let component_properties = match release.get(&node_id) {
             // if node has already been evaluated, infer properties directly from the public data
             Some(release_node) => {
                 if release_node.public {
-                    infer_property(&release_node.value)
+                    infer_property(&release_node.value, Some(node_id as i64))
                 } else {
                     let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
                     component.clone().variant
                         .ok_or_else(|| Error::from("privacy definition must be defined"))?
                         .propagate_property(
-                            &analysis.privacy_definition, &public_arguments, &input_properties)
+                            &analysis.privacy_definition, &public_arguments, &input_properties, node_id)
                         .chain_err(|| format!("at node_id {:?}", node_id))
                 }
             }
@@ -182,7 +178,7 @@ pub fn propagate_properties(
             None => {
                 let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
                 component.clone().variant.unwrap().propagate_property(
-                    &analysis.privacy_definition, &public_arguments, &input_properties)
+                    &analysis.privacy_definition, &public_arguments, &input_properties, node_id)
                     .chain_err(|| format!("at node_id {:?}", node_id))
             }
         };
@@ -192,15 +188,15 @@ pub fn propagate_properties(
             (true, Err(err)) => {
                 failed_ids.insert(node_id);
                 warnings.push(serialize_error(err));
-                continue
-            },
+                continue;
+            }
             (false, Err(err)) => return Err(err)
         };
 
 //        println!("graph evaluation in prop {:?}", graph_evaluation);
         graph_properties.insert(node_id.clone(), component_properties);
     }
-    Ok((graph_properties, graph, warnings))
+    Ok((graph_properties, warnings))
 }
 
 /// Given a computation graph, return an ordering of nodes that ensures all dependencies of any node have been visited
@@ -313,19 +309,17 @@ pub fn uniform_density(length: usize) -> Vec<f64> {
 #[doc(hidden)]
 pub fn normalize_probabilities(weights: &[f64]) -> Result<Vec<f64>> {
     if !weights.iter().all(|w| w >= &0.) {
-        return Err("all weights must be greater than zero".into())
+        return Err("all weights must be greater than zero".into());
     }
     let sum: f64 = weights.iter().sum();
     Ok(weights.iter().map(|prob| prob / sum).collect())
 }
 
 pub fn standardize_float_argument(
-    categories: &[Option<Vec<f64>>],
-    length: &i64
+    categories: &[Vec<f64>],
+    length: &i64,
 ) -> Result<Vec<Vec<f64>>> {
-    // check that no categories are explicitly None
-    let mut categories = categories.iter().cloned().collect::<Option<Vec<Vec<f64>>>>()
-        .ok_or_else(|| Error::from("categories must be defined for all columns"))?;
+    let mut categories = categories.to_owned();
 
     if categories.is_empty() {
         return Err("no categories are defined".into());
@@ -333,7 +327,7 @@ pub fn standardize_float_argument(
 
     categories.clone().into_iter().map(|mut col| {
         if !col.iter().all(|v| v.is_finite()) {
-            return Err("all floats must be finite".into())
+            return Err("all floats must be finite".into());
         }
 
         col.sort_unstable_by(|l, r| l.partial_cmp(r).unwrap());
@@ -341,7 +335,7 @@ pub fn standardize_float_argument(
         let original_length = col.len();
 
         if deduplicate(col.into_iter().map(n64).collect()).len() < original_length {
-            return Err("floats must not contain duplicates".into())
+            return Err("floats must not contain duplicates".into());
         }
         Ok(())
     }).collect::<Result<()>>()?;
@@ -357,12 +351,11 @@ pub fn standardize_float_argument(
 /// Given a jagged categories array, conduct well-formedness checks and broadcast
 #[doc(hidden)]
 pub fn standardize_categorical_argument<T: Clone + Eq + Hash + Ord>(
-    categories: &[Option<Vec<T>>],
+    categories: Vec<Vec<T>>,
     length: &i64,
 ) -> Result<Vec<Vec<T>>> {
-    // check that no categories are explicitly None
-    let mut categories = categories.iter().cloned().collect::<Option<Vec<Vec<T>>>>()
-        .ok_or_else(|| Error::from("categories must be defined for all columns"))?.into_iter()
+    // deduplicate categories
+    let mut categories = categories.into_iter()
         .map(deduplicate).collect::<Vec<Vec<T>>>();
 
     if categories.is_empty() {
@@ -380,12 +373,10 @@ pub fn standardize_categorical_argument<T: Clone + Eq + Hash + Ord>(
 /// Given a jagged null values array, conduct well-formedness checks, broadcast along columns, and flatten along rows.
 #[doc(hidden)]
 pub fn standardize_null_candidates_argument<T: Clone>(
-    value: &[Option<Vec<T>>],
+    value: &Vec<Vec<T>>,
     length: &i64,
 ) -> Result<Vec<Vec<T>>> {
-    let mut value = value.iter().cloned()
-        .collect::<Option<Vec<Vec<T>>>>()
-        .ok_or_else(|| Error::from("null must be defined for all columns"))?;
+    let mut value = value.clone();
 
     if value.is_empty() {
         return Err("null values cannot be an empty vector".into());
@@ -410,13 +401,13 @@ pub fn standardize_null_target_argument<T: Clone>(
     }
 
     if value.len() == *length as usize {
-        return Ok(value.iter().cloned().collect())
+        return Ok(value.iter().cloned().collect());
     }
 
     // broadcast nulls across all columns, if only one null is defined
     if value.len() == 1 {
         let value = value.first().unwrap();
-        return Ok((0..*length).map(|_| value.clone()).collect())
+        return Ok((0..*length).map(|_| value.clone()).collect());
     }
 
     bail!("length of null must be one, or {}", length)
@@ -443,7 +434,7 @@ pub fn standardize_weight_argument(
                 } else {
                     Err("length of weights does not match number of categories".into())
                 }).collect::<Result<Vec<Vec<f64>>>>()
-        },
+        }
         _ => if lengths.len() == weights.len() {
             weights.iter().map(|v| normalize_probabilities(v)).collect::<Result<Vec<Vec<f64>>>>()
         } else {
@@ -454,18 +445,20 @@ pub fn standardize_weight_argument(
 
 /// Utility for building extra Components to pass back when conducting expansions.
 #[doc(hidden)]
-pub fn get_literal(value: &Value, batch: &u32) -> Result<(proto::Component, proto::ReleaseNode)> {
-    Ok((proto::Component {
-        arguments: HashMap::new(),
-        variant: Some(proto::component::Variant::Literal(proto::Literal {})),
-        omit: true,
-        batch: *batch,
-    },
+pub fn get_literal(value: Value, batch: &u32) -> Result<(proto::Component, proto::ReleaseNode)> {
+    Ok((
+        proto::Component {
+            arguments: HashMap::new(),
+            variant: Some(proto::component::Variant::Literal(proto::Literal {})),
+            omit: true,
+            batch: *batch,
+        },
         proto::ReleaseNode {
-            value: Some(serialize_value(value)?),
+            value: Some(serialize_value(value)),
             privacy_usages: None,
-            public: true
-        }))
+            public: true,
+        }
+    ))
 }
 
 
@@ -478,7 +471,7 @@ pub fn get_component_privacy_usage(
     let mut privacy_usage: Vec<proto::PrivacyUsage> = match component.to_owned().variant? {
         proto::component::Variant::LaplaceMechanism(x) => x.privacy_usage,
         proto::component::Variant::GaussianMechanism(x) => x.privacy_usage,
-//        proto::component::Variant::ExponentialMechanism(x) => x.privacy_usage,
+        proto::component::Variant::ExponentialMechanism(x) => x.privacy_usage,
         proto::component::Variant::SimpleGeometricMechanism(x) => x.privacy_usage,
         _ => return None
     };
@@ -594,7 +587,7 @@ pub fn broadcast_privacy_usage(usages: &[proto::PrivacyUsage], length: usize) ->
 
 pub fn broadcast_ndarray<T: Clone>(value: &ArrayD<T>, shape: &[usize]) -> Result<ArrayD<T>> {
     if value.shape() == shape {
-        return Ok(value.clone())
+        return Ok(value.clone());
     }
 
     if value.len() != 1 {
@@ -643,7 +636,7 @@ pub fn expand_mechanism(
 
     current_id += 1;
     let id_sensitivity = current_id;
-    let (patch_node, release) = get_literal(&sensitivity, &component.batch)?;
+    let (patch_node, release) = get_literal(sensitivity, &component.batch)?;
     computation_graph.insert(id_sensitivity.clone(), patch_node);
     releases.insert(id_sensitivity.clone(), release);
 
@@ -656,13 +649,13 @@ pub fn expand_mechanism(
         computation_graph,
         properties: HashMap::new(),
         releases,
-        traversal: Vec::new()
+        traversal: Vec::new(),
     })
 }
 
 pub fn get_ith_column<T: Clone + Default>(value: &ArrayD<T>, i: &usize) -> Result<ArrayD<T>> {
     match value.ndim() {
-        0 => if i == &0 {Ok(value.clone())} else {Err("ith release does not exist".into())},
+        0 => if i == &0 { Ok(value.clone()) } else { Err("ith release does not exist".into()) },
         1 => Ok(value.clone()),
         2 => {
             let release = slow_select(value, Axis(1), &[*i]);
@@ -674,7 +667,7 @@ pub fn get_ith_column<T: Clone + Default>(value: &ArrayD<T>, i: &usize) -> Resul
             } else {
                 Ok(release)
             }
-        },
+        }
         _ => Err("releases must be 2-dimensional or less".into())
     }
 }
@@ -687,6 +680,7 @@ pub fn deduplicate<T: Eq + Hash + Ord + Clone>(values: Vec<T>) -> Vec<T> {
 #[cfg(test)]
 mod test_utilities {
     use crate::utilities;
+
     #[test]
     fn test_deduplicate() {
         let values = vec![2, 0, 1, 0];

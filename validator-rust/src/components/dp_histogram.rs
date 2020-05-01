@@ -66,7 +66,7 @@ impl Expandable for proto::DpHistogram {
                     // count_max
                     maximum_id += 1;
                     let max_id = maximum_id;
-                    let (patch_node, count_max_release) = get_literal(&count_max.into(), &component.batch)?;
+                    let (patch_node, count_max_release) = get_literal(count_max.into(), &component.batch)?;
                     computation_graph.insert(max_id.clone(), patch_node);
                     releases.insert(max_id.clone(), count_max_release);
                     max_id

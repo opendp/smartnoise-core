@@ -18,6 +18,7 @@ impl Component for proto::ExponentialMechanism {
         privacy_definition: &Option<proto::PrivacyDefinition>,
         public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
+        _node_id: u32
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
@@ -74,7 +75,7 @@ impl Expandable for proto::ExponentialMechanism {
         component_id: &u32,
         maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
-        let mut expansion = expand_mechanism(
+        let expansion = expand_mechanism(
             &SensitivitySpace::Exponential,
             privacy_definition,
             component,
@@ -89,13 +90,8 @@ impl Expandable for proto::ExponentialMechanism {
             .ok_or_else(|| Error::from("aggregator variant must be defined"))?
             .get_utility(properties)?;
 
-        // insert the utility function within the graph expansion
-        let mut component = component.clone();
-        if let Some(proto::component::Variant::ExponentialMechanism(mut mechanism)) = component.variant {
-            mechanism.utility = Some(utility);
-            component.variant = Some(proto::component::Variant::ExponentialMechanism(mechanism));
-        }
-        expansion.computation_graph.insert(*component_id, component);
+        // TODO insert utility Value into graph as literal
+
         Ok(expansion)
     }
 }

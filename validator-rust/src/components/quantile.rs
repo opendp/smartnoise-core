@@ -4,6 +4,7 @@ use crate::errors::*;
 use std::collections::HashMap;
 
 use crate::{proto, base};
+use crate::hashmap;
 
 use crate::components::{Component, Sensitivity, Utility};
 use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType};
@@ -19,6 +20,7 @@ impl Component for proto::Quantile {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
+        _node_id: u32
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
@@ -103,7 +105,7 @@ impl Utility for proto::Quantile {
     fn get_utility(
         &self,
         properties: &NodeProperties,
-    ) -> Result<proto::Utility> {
+    ) -> Result<proto::Function> {
         use crate::bindings;
 
         let data_property = properties.get("data")
@@ -142,12 +144,11 @@ impl Utility for proto::Quantile {
             analysis.subtract(optimal, abs_diff).enter()
         };
 
-        Ok(proto::Utility {
-            computation_graph: analysis.components,
-            release: serialize_release(&analysis.release)?.values,
-            candidate_id: candidate,
-            output_id: utility,
-            dataset_id: data,
+        Ok(proto::Function {
+            computation_graph: Some(proto::ComputationGraph { value: analysis.components }),
+            release: Some(serialize_release(analysis.release)),
+            arguments: hashmap!["candidate".to_string() => candidate, "dataset".to_string() => data],
+            outputs: hashmap!["utility".to_string() => utility]
         })
     }
 }

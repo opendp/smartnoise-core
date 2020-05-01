@@ -16,6 +16,7 @@ impl Component for proto::Covariance {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
+        _node_id: u32
     ) -> Result<ValueProperties> {
         if properties.contains_key("data") {
             let mut data_property = properties.get("data")

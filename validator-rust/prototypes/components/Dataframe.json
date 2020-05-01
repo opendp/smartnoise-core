@@ -1,0 +1,17 @@
+{
+  "arguments": {
+    "data": {
+      "type_value": "Array"
+    },
+    "columns": {
+      "type_value": "Array"
+    }
+  },
+  "id": "Dataframe",
+  "name": "dataframe",
+  "options": {},
+  "return": {
+    "type_value": "Hashmap"
+  },
+  "description": "Name columns of an array to produce a columnar hashmap (Dataframe)"
+}

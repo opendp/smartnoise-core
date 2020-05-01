@@ -5,7 +5,7 @@
 
 use crate::errors::*;
 
-
+use crate::proto;
 use ndarray::Axis;
 use ndarray::prelude::*;
 use ndarray_stats::QuantileExt;
@@ -13,8 +13,8 @@ use ndarray_stats::QuantileExt;
 use itertools::Itertools;
 use crate::base::{Array, Value, Jagged, Nature, Vector1DNull, NatureContinuous, NatureCategorical, ValueProperties, ArrayProperties, DataType, HashmapProperties, JaggedProperties, Hashmap};
 
-use std::collections::BTreeMap;
 use crate::utilities::deduplicate;
+use indexmap::map::IndexMap;
 
 pub fn infer_lower(value: &Value) -> Result<Vector1DNull> {
     Ok(match value {
@@ -55,19 +55,18 @@ pub fn infer_lower(value: &Value) -> Result<Vector1DNull> {
         Value::Hashmap(_hashmap) => return Err("constraint inference is not implemented for hashmaps".into()),
         Value::Jagged(jagged) => {
             match jagged {
-                Jagged::F64(jagged) => Vector1DNull::F64(jagged.iter().map(|col| Ok(match col {
-                    Some(col) => Some(col.iter().copied().fold1(|l, r| l.min(r))
-                        .ok_or_else(|| Error::from("attempted to infer lower bounds on an empty value"))?),
-                    None => None
-                })).collect::<Result<_>>()?),
-                Jagged::I64(jagged) => Vector1DNull::I64(jagged.iter().map(|col| Ok(match col {
-                    Some(col) => Some(*col.iter().fold1(std::cmp::min)
-                        .ok_or_else(|| Error::from("attempted to infer lower bounds on an empty value"))?),
-                    None => None
-                })).collect::<Result<_>>()?),
+                Jagged::F64(jagged) => Vector1DNull::F64(jagged.iter()
+                    .map(|col| col.iter().copied().fold1(|l, r| l.min(r))
+                        .ok_or_else(|| Error::from("attempted to infer lower bounds on an empty value")))
+                    .collect::<Result<Vec<f64>>>()?.into_iter().map(Some).collect()),
+                Jagged::I64(jagged) => Vector1DNull::I64(jagged.iter()
+                    .map(|col| col.iter().fold1(std::cmp::min)
+                        .ok_or_else(|| Error::from("attempted to infer lower bounds on an empty value")))
+                    .collect::<Result<Vec<&i64>>>()?.into_iter().copied().map(Some).collect()),
                 _ => return Err("Cannot infer numeric lower bounds on a non-numeric vector".into())
             }
         }
+        Value::Function(_function) => return Err("constraint inference is not implemented for functions".into())
     })
 }
 
@@ -110,20 +109,18 @@ pub fn infer_upper(value: &Value) -> Result<Vector1DNull> {
         Value::Hashmap(_hashmap) => return Err("constraint inference is not implemented for hashmaps".into()),
         Value::Jagged(jagged) => {
             match jagged {
-                Jagged::F64(jagged) => Vector1DNull::F64(jagged.iter().map(|col| Ok(match col {
-                    Some(col) => Some(col.iter().cloned()
-                        .fold1(|l, r| l.max(r))
-                        .ok_or_else(|| Error::from("attempted to infer upper bounds on an empty value"))?),
-                    None => None
-                })).collect::<Result<_>>()?),
-                Jagged::I64(jagged) => Vector1DNull::I64(jagged.iter().map(|col| Ok(match col {
-                    Some(col) => Some(*col.iter().fold1(std::cmp::max)
-                        .ok_or_else(|| Error::from("attempted to infer upper bounds on an empty value"))?),
-                    None => None
-                })).collect::<Result<_>>()?),
+                Jagged::F64(jagged) => Vector1DNull::F64(jagged.iter()
+                    .map(|col| col.iter().copied().fold1(|l, r| l.max(r))
+                        .ok_or_else(|| Error::from("attempted to infer lower bounds on an empty value")))
+                    .collect::<Result<Vec<f64>>>()?.into_iter().map(Some).collect()),
+                Jagged::I64(jagged) => Vector1DNull::I64(jagged.iter()
+                    .map(|col| col.iter().fold1(std::cmp::max)
+                        .ok_or_else(|| Error::from("attempted to infer lower bounds on an empty value")))
+                    .collect::<Result<Vec<&i64>>>()?.into_iter().copied().map(Some).collect()),
                 _ => return Err("Cannot infer numeric upper bounds on a non-numeric vector".into())
             }
         }
+        Value::Function(_function) => return Err("constraint inference is not implemented for functions".into())
     })
 }
 
@@ -132,41 +129,33 @@ pub fn infer_categories(value: &Value) -> Result<Jagged> {
         Value::Array(array) => match array {
             Array::Bool(array) =>
                 Jagged::Bool(array.gencolumns().into_iter().map(|col|
-                    Ok(Some(col.into_dyn().into_dimensionality::<Ix1>()?.to_vec())))
+                    Ok(col.into_dyn().into_dimensionality::<Ix1>()?.to_vec()))
                     .collect::<Result<Vec<_>>>()?),
             Array::F64(array) =>
                 Jagged::F64(array.gencolumns().into_iter().map(|col|
-                    Ok(Some(col.into_dyn().into_dimensionality::<Ix1>()?.to_vec())))
+                    Ok(col.into_dyn().into_dimensionality::<Ix1>()?.to_vec()))
                     .collect::<Result<Vec<_>>>()?),
             Array::I64(array) =>
                 Jagged::I64(array.gencolumns().into_iter().map(|col|
-                    Ok(Some(col.into_dyn().into_dimensionality::<Ix1>()?.to_vec())))
+                    Ok(col.into_dyn().into_dimensionality::<Ix1>()?.to_vec()))
                     .collect::<Result<Vec<_>>>()?),
             Array::Str(array) =>
                 Jagged::Str(array.gencolumns().into_iter().map(|col|
-                    Ok(Some(col.into_dyn().into_dimensionality::<Ix1>()?.to_vec())))
+                    Ok(col.into_dyn().into_dimensionality::<Ix1>()?.to_vec()))
                     .collect::<Result<Vec<_>>>()?),
         },
         Value::Hashmap(_) => return Err("category inference is not implemented for hashmaps".into()),
         Value::Jagged(jagged) => match jagged {
             Jagged::Bool(array) =>
-                Jagged::Bool(array.iter().map(|column_categories| match column_categories {
-                    Some(column_categories) => Some(deduplicate(column_categories.to_owned())),
-                    None => None
-                }).collect()),
-            Jagged::F64(array) =>
-                Jagged::F64(array.iter().map(|_| None).collect()),
+                Jagged::Bool(array.iter().cloned().map(deduplicate).collect()),
+            Jagged::F64(_array) =>
+                return Err("categories are not defined for floats".into()),
             Jagged::I64(array) =>
-                Jagged::I64(array.iter().map(|column_categories| match column_categories {
-                    Some(column_categories) => Some(deduplicate(column_categories.to_owned())),
-                    None => None
-                }).collect()),
+                Jagged::I64(array.iter().cloned().map(deduplicate).collect()),
             Jagged::Str(array) =>
-                Jagged::Str(array.iter().map(|column_categories| match column_categories {
-                    Some(column_categories) => Some(deduplicate(column_categories.to_owned())),
-                    None => None
-                }).collect()),
+                Jagged::Str(array.iter().cloned().map(deduplicate).collect()),
         }
+        Value::Function(_function) => return Err("category inference is not implemented for functions".into())
     }.deduplicate()
 }
 
@@ -194,7 +183,8 @@ pub fn infer_nature(value: &Value) -> Result<Option<Nature>> {
             _ => Some(Nature::Categorical(NatureCategorical {
                 categories: infer_categories(value)?,
             }))
-        }
+        },
+        Value::Function(_function) => return Err("nature inference is not implemented for functions".into())
     })
 }
 
@@ -212,7 +202,7 @@ pub fn infer_c_stability(value: &Array) -> Result<Vec<f64>> {
     Ok((0..value.num_columns()?).map(|_| 1.).collect())
 }
 
-pub fn infer_property(value: &Value) -> Result<ValueProperties> {
+pub fn infer_property(value: &Value, dataset_id: Option<i64>) -> Result<ValueProperties> {
     Ok(match value {
         Value::Array(array) => ArrayProperties {
             nullity: infer_nullity(&value)?,
@@ -228,37 +218,41 @@ pub fn infer_property(value: &Value) -> Result<ValueProperties> {
                 Array::I64(_) => DataType::I64,
                 Array::Str(_) => DataType::Str,
             },
-            dataset_id: None,
+            dataset_id,
             is_not_empty: match array {
                 Array::Bool(array) => array.len(),
                 Array::F64(array) => array.len(),
                 Array::I64(array) => array.len(),
                 Array::Str(array) => array.len(),
             } != 0,
-            dimensionality: array.shape().len() as u32,
+            dimensionality: Some(array.shape().len() as i64),
         }.into(),
         Value::Hashmap(hashmap) => {
             HashmapProperties {
                 num_records: None,
                 disjoint: false,
+                variant: proto::hashmap_properties::Variant::Dataframe,
                 properties: match hashmap {
                     Hashmap::Str(hashmap) => hashmap.iter()
-                        .map(|(name, value)| infer_property(value)
+                        .map(|(name, value)| infer_property(value, dataset_id)
                             .map(|v| (name.clone(), v)))
-                        .collect::<Result<BTreeMap<String, ValueProperties>>>()?.into(),
+                        .collect::<Result<IndexMap<String, ValueProperties>>>()?.into(),
                     Hashmap::I64(hashmap) => hashmap.iter()
-                        .map(|(name, value)| infer_property(value)
+                        .map(|(name, value)| infer_property(value, dataset_id)
                             .map(|v| (*name, v)))
-                        .collect::<Result<BTreeMap<i64, ValueProperties>>>()?.into(),
+                        .collect::<Result<IndexMap<i64, ValueProperties>>>()?.into(),
                     Hashmap::Bool(hashmap) => hashmap.iter()
-                        .map(|(name, value)| infer_property(value)
+                        .map(|(name, value)| infer_property(value, dataset_id)
                             .map(|v| (*name, v)))
-                        .collect::<Result<BTreeMap<bool, ValueProperties>>>()?.into(),
+                        .collect::<Result<IndexMap<bool, ValueProperties>>>()?.into(),
                 },
-                columnar: false,
             }.into()
         }
         Value::Jagged(_jagged) => JaggedProperties {
+            releasable: true
+        }.into(),
+        // TODO: custom properties for Functions (may not be needed)
+        Value::Function(_function) => JaggedProperties {
             releasable: true
         }.into()
     })

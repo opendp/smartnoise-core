@@ -16,6 +16,7 @@ impl Component for proto::Digitize {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
+        _node_id: u32
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
             .ok_or_else(|| Error::from("data: missing"))?.clone().array()
@@ -49,14 +50,14 @@ impl Component for proto::Digitize {
 
                                 let mut categories = (0..(col.len() - 1) as i64).collect::<Vec<i64>>();
                                 categories.push(null);
-                                Ok(Some(deduplicate(categories)))
+                                Ok(deduplicate(categories))
                             }).collect::<Result<_>>()?),
                     }));
                     Ok(())
                 }
                 Jagged::I64(jagged) => {
                     let null = standardize_null_target_argument(null, &num_columns)?;
-                    let edges = standardize_categorical_argument(jagged, &num_columns)?;
+                    let edges = standardize_categorical_argument(jagged.clone(), &num_columns)?;
                     data_property.nature = Some(Nature::Categorical(NatureCategorical {
                         categories: Jagged::I64(edges.into_iter().zip(null.into_iter())
                             .map(|(col, null)| {
@@ -71,7 +72,7 @@ impl Component for proto::Digitize {
 
                                 let mut categories = (0..(original_length - 1) as i64).collect::<Vec<i64>>();
                                 categories.push(null);
-                                Ok(Some(deduplicate(categories)))
+                                Ok(deduplicate(categories))
                             }).collect::<Result<_>>()?),
                     }));
                     Ok(())
@@ -103,7 +104,7 @@ impl Expandable for proto::Digitize {
             current_id += 1;
             let id_null_value = current_id;
             let value = Value::Array(Array::I64(arr0(-1).into_dyn()));
-            let (patch_node, release) = get_literal(&value, &component.batch)?;
+            let (patch_node, release) = get_literal(value, &component.batch)?;
             computation_graph.insert(id_null_value.clone(), patch_node);
             releases.insert(id_null_value.clone(), release);
             component.arguments.insert("null_value".to_string(), id_null_value);
@@ -112,7 +113,7 @@ impl Expandable for proto::Digitize {
             current_id += 1;
             let id_null_value = current_id;
             let value = Value::Array(Array::Bool(arr0(true).into_dyn()));
-            let (patch_node, release) = get_literal(&value, &component.batch)?;
+            let (patch_node, release) = get_literal(value, &component.batch)?;
             computation_graph.insert(id_null_value.clone(), patch_node);
             releases.insert(id_null_value.clone(), release);
             component.arguments.insert("inclusive_left".to_string(), id_null_value);

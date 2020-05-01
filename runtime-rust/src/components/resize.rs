@@ -205,7 +205,7 @@ pub fn resize_integer(
 /// A resized version of data consistent with the provided `n`
 pub fn resize_categorical<T>(
     data: &ArrayD<T>, n: &i64,
-    categories: &Vec<Option<Vec<T>>>,
+    categories: &Vec<Vec<T>>,
     weights: &Option<Vec<Vec<f64>>>,
 ) -> Result<ArrayD<T>> where T: Clone, T: PartialEq, T: Default, T: Ord, T: Hash {
 
@@ -230,7 +230,7 @@ pub fn resize_categorical<T>(
                 .for_each(|mut col| col.iter_mut()
                     .for_each(|v| *v = T::default()));
 
-            let null_value = (0..num_columns).map(|_| Some(vec![T::default()])).collect();
+            let null_value = (0..num_columns).map(|_| vec![T::default()]).collect();
 
             // impute categorical data for each column of nulls to create synthetic data
             synthetic = impute_categorical(
