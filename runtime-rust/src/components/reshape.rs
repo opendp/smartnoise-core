@@ -7,6 +7,7 @@ use crate::components::Evaluable;
 use ndarray::ArrayD;
 use whitenoise_validator::proto;
 use std::collections::BTreeMap;
+use indexmap::map::IndexMap;
 
 
 impl Evaluable for proto::Reshape {
@@ -25,7 +26,7 @@ impl Evaluable for proto::Reshape {
                     1 => Ok(reshaped.remove(0).into()),
                     _ => Ok(reshaped.into_iter().enumerate()
                         .map(|(idx, data)| (idx as i64, data.into()))
-                        .collect::<BTreeMap<i64, Value>>().into())
+                        .collect::<IndexMap<i64, Value>>().into())
                 }
             }
             Array::I64(data) => {
@@ -35,7 +36,7 @@ impl Evaluable for proto::Reshape {
                     1 => Ok(reshaped.remove(0).into()),
                     _ => Ok(reshaped.into_iter().enumerate()
                         .map(|(idx, data)| (idx as i64, data.into()))
-                        .collect::<BTreeMap<i64, Value>>().into())
+                        .collect::<IndexMap<i64, Value>>().into())
                 }
             }
             Array::F64(data) => {
@@ -45,7 +46,7 @@ impl Evaluable for proto::Reshape {
                     1 => Ok(reshaped.remove(0).into()),
                     _ => Ok(reshaped.into_iter().enumerate()
                         .map(|(idx, data)| (idx as i64, data.into()))
-                        .collect::<BTreeMap<i64, Value>>().into())
+                        .collect::<IndexMap<i64, Value>>().into())
                 }
             }
             Array::Str(data) => {
@@ -55,7 +56,7 @@ impl Evaluable for proto::Reshape {
                     1 => Ok(reshaped.remove(0).into()),
                     _ => Ok(reshaped.into_iter().enumerate()
                         .map(|(idx, data)| (idx as i64, data.into()))
-                        .collect::<BTreeMap<i64, Value>>().into())
+                        .collect::<IndexMap<i64, Value>>().into())
                 }
             }
         }.map(ReleaseNode::new)

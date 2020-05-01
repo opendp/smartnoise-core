@@ -29,15 +29,6 @@ syntax = "proto3";
 package whitenoise;
 import "value.proto";
 
-
-message Utility {
-    map<uint32, Component> computation_graph = 1;
-    map<uint32, ReleaseNode> release = 2;
-    uint32 candidate_id = 3;
-    uint32 output_id = 4;
-    uint32 dataset_id = 5;
-}
-
 message Component {
     // uint32 value is source_node_id
     map<string, uint32> arguments = 1;

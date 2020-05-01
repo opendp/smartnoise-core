@@ -42,7 +42,6 @@ impl Expandable for proto::DpQuantile {
                         batch: component.batch,
                     })),
                     privacy_usage: self.privacy_usage.clone(),
-                    utility: None,
                 }))),
                 omit: true,
                 batch: component.batch,

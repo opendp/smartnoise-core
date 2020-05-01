@@ -6,17 +6,55 @@ use crate::components::Evaluable;
 use whitenoise_validator::proto;
 use whitenoise_validator::utilities::array::{slow_stack, slow_select};
 use ndarray::prelude::*;
-use std::collections::BTreeMap;
 
 use whitenoise_validator::components::index::{to_name_vec, mask_columns};
 use whitenoise_validator::utilities::get_argument;
 use crate::utilities::to_nd;
+use indexmap::map::IndexMap;
 
 
 impl Evaluable for proto::Index {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
         let data = get_argument(&arguments, "data")?;
         let columns = get_argument(&arguments, "columns")?.array()?;
+
+        // TODO: synthetic generation for out-of-bounds indexing on private data with unknown column size
+        // // force the input to be an array- reject hashmap and jagged
+        // Ok(ReleaseNode::new(match column_names {
+        //     Some(column_names) => Value::Hashmap(Hashmap::<Value>::Str(match parse_value(value)?.array()? {
+        //         Array::F64(array) => {
+        //             let standardized = standardize_columns(array, num_columns)?;
+        //             column_names.into_iter().enumerate()
+        //                 .map(|(idx, name)| Ok((name.clone(), get_ith_column(&standardized, &idx)?.into())))
+        //                 .collect::<Result<BTreeMap<String, Value>>>()?
+        //         }
+        //         Array::I64(array) => {
+        //             let standardized = standardize_columns(array, num_columns)?;
+        //             column_names.into_iter().enumerate()
+        //                 .map(|(idx, name)| Ok((name.clone(), get_ith_column(&standardized, &idx)?.into())))
+        //                 .collect::<Result<BTreeMap<String, Value>>>()?
+        //         }
+        //         Array::Bool(array) => {
+        //             let standardized = standardize_columns(array, num_columns)?;
+        //             column_names.into_iter().enumerate()
+        //                 .map(|(idx, name)| Ok((name.clone(), get_ith_column(&standardized, &idx)?.into())))
+        //                 .collect::<Result<BTreeMap<String, Value>>>()?
+        //         }
+        //         Array::Str(array) => {
+        //             let standardized = standardize_columns(array, num_columns)?;
+        //             column_names.into_iter().enumerate()
+        //                 .map(|(idx, name)| Ok((name.clone(), get_ith_column(&standardized, &idx)?.into())))
+        //                 .collect::<Result<BTreeMap<String, Value>>>()?
+        //         }
+        //     })),
+        //     None => match parse_value(value)?.array()? {
+        //         Array::F64(array) => standardize_columns(array, num_columns)?.into(),
+        //         Array::I64(array) => standardize_columns(array, num_columns)?.into(),
+        //         Array::Bool(array) => standardize_columns(array, num_columns)?.into(),
+        //         Array::Str(array) => standardize_columns(array, num_columns)?.into(),
+        //     }
+        // }))
+
 
         let mut indexed = match data {
             // if value is a hashmap, we'll be stacking arrays column-wise
@@ -69,7 +107,8 @@ impl Evaluable for proto::Index {
                     Array::Str(data) => slow_select(data, Axis(1), &indices).into(),
                 })
             }
-            Value::Jagged(_) => Err("indexing is not supported for jagged arrays".into())
+            Value::Jagged(_) => Err("indexing is not supported for jagged arrays".into()),
+            Value::Function(_) => Err("indexing is not supported for functions".into())
         }?;
 
         // remove trailing singleton axis if a zero-dimensional index set was passed
@@ -92,7 +131,7 @@ impl Evaluable for proto::Index {
 }
 
 fn column_stack<T: Clone + Eq + std::hash::Hash + Ord>(
-    dataframe: &BTreeMap<T, Value>, column_names: &Vec<T>,
+    dataframe: &IndexMap<T, Value>, column_names: &Vec<T>,
 ) -> Result<Value> {
     if column_names.len() == 1 {
         return dataframe.get(column_names.first().unwrap()).cloned()
@@ -119,6 +158,7 @@ fn column_stack<T: Clone + Eq + std::hash::Hash + Ord>(
     };
 
     match data_type {
+        DataType::Unknown => unreachable!(),
         DataType::F64 => {
             let chunks = column_names.iter()
                 .map(|column_name| dataframe.get(column_name)

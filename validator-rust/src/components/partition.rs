@@ -1,13 +1,14 @@
 use crate::errors::*;
 
 
-use std::collections::{HashMap, BTreeMap};
+use std::collections::HashMap;
 
 use crate::{proto, base};
 
-use crate::components::{Component};
+use crate::components::Component;
 use crate::base::{Value, Jagged, ValueProperties, HashmapProperties, ArrayProperties};
 use crate::utilities::prepend;
+use indexmap::map::IndexMap;
 
 
 impl Component for proto::Partition {
@@ -16,6 +17,7 @@ impl Component for proto::Partition {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
+        _node_id: u32,
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
@@ -25,7 +27,7 @@ impl Component for proto::Partition {
             Some(by_property) => {
                 let by_property = by_property.array()
                     .map_err(prepend("by:"))?.clone();
-                let by_num_columns= by_property.num_columns
+                let by_num_columns = by_property.num_columns
                     .ok_or_else(|| Error::from("number of columns must be known on by"))?;
                 if by_num_columns != 1 {
                     return Err("Partition's by argument must contain a single column".into());
@@ -43,11 +45,10 @@ impl Component for proto::Partition {
                         Jagged::I64(categories) => broadcast_partitions(&categories, &data_property)?.into(),
                         _ => return Err("partitioning based on floats is not supported".into())
                     },
-                    columnar: false
+                    variant: proto::hashmap_properties::Variant::Partition,
                 }
-            },
+            }
             None => {
-
                 let num_partitions = public_arguments.get("num_partitions")
                     .ok_or("num_partitions or by must be passed to Partition")?.array()?.first_i64()?;
 
@@ -66,33 +67,29 @@ impl Component for proto::Partition {
                         let mut partition_property = data_property.clone();
                         partition_property.num_records = *partition_num_records;
                         (index as i64, ValueProperties::Array(partition_property))
-                    }).collect::<BTreeMap<i64, ValueProperties>>().into(),
-                    columnar: false
+                    }).collect::<IndexMap<i64, ValueProperties>>().into(),
+                    variant: proto::hashmap_properties::Variant::Partition,
                 }
             }
         }.into())
     }
-
-
 }
 
 pub fn even_split_lengths(num_records: i64, num_partitions: i64) -> Vec<i64> {
     (0..num_partitions)
-        .map(|index| num_records / num_partitions + (if index >= (num_records % num_partitions) {0} else {1}))
+        .map(|index| num_records / num_partitions + (if index >= (num_records % num_partitions) { 0 } else { 1 }))
         .collect()
 }
 
 pub fn broadcast_partitions<T: Clone + Eq + std::hash::Hash + Ord>(
-    categories: &[Option<Vec<T>>], properties: &ArrayProperties
-) -> Result<BTreeMap<T, ValueProperties>> {
-
+    categories: &[Vec<T>], properties: &ArrayProperties,
+) -> Result<IndexMap<T, ValueProperties>> {
     if categories.len() != 1 {
-        return Err("categories: must be defined for one column".into())
+        return Err("categories: must be defined for one column".into());
     }
-    let partitions = categories[0].clone()
-        .ok_or_else(|| Error::from("categories: must be defined"))?;
-    Ok(partitions.iter()
-        .map(|v| (v.clone(), ValueProperties::Array(properties.clone())))
+    let partitions = categories[0].clone();
+    Ok(partitions.into_iter()
+        .map(|v| (v, ValueProperties::Array(properties.clone())))
         .collect())
 }
 

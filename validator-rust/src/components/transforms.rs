@@ -19,6 +19,7 @@ impl Component for proto::Abs {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
+        _node_id: u32
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
@@ -72,6 +73,7 @@ impl Component for proto::Add {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
+        _node_id: u32
     ) -> Result<ValueProperties> {
         let left_property = properties.get("left")
             .ok_or("left: missing")?.array()
@@ -142,6 +144,7 @@ impl Component for proto::And {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
+        _node_id: u32
     ) -> Result<ValueProperties> {
         let mut left_property = properties.get("left")
             .ok_or("left: missing")?.array()
@@ -192,6 +195,7 @@ impl Component for proto::Divide {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
+        _node_id: u32
     ) -> Result<ValueProperties> {
         let left_property = properties.get("left")
             .ok_or("left: missing")?.array()
@@ -347,6 +351,7 @@ impl Component for proto::Equal {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
+        _node_id: u32
     ) -> Result<ValueProperties> {
         let left_property = properties.get("left")
             .ok_or("left: missing")?.array()
@@ -372,7 +377,7 @@ impl Component for proto::Equal {
             nullity: false,
             releasable: left_property.releasable && right_property.releasable,
             nature: Some(Nature::Categorical(NatureCategorical {
-                categories: Jagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
+                categories: Jagged::Bool((0..num_columns).map(|_| vec![true, false]).collect())
             })),
             c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
@@ -395,6 +400,7 @@ impl Component for proto::GreaterThan {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
+        _node_id: u32
     ) -> Result<ValueProperties> {
         let left_property = properties.get("left")
             .ok_or("left: missing")?.array()
@@ -426,7 +432,7 @@ impl Component for proto::GreaterThan {
             nullity: false,
             releasable: left_property.releasable && right_property.releasable,
             nature: Some(Nature::Categorical(NatureCategorical {
-                categories: Jagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
+                categories: Jagged::Bool((0..num_columns).map(|_| vec![true, false]).collect())
             })),
             c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
@@ -450,6 +456,7 @@ impl Component for proto::LessThan {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
+        _node_id: u32
     ) -> Result<ValueProperties> {
         let left_property = properties.get("left")
             .ok_or("left: missing")?.array()
@@ -481,7 +488,7 @@ impl Component for proto::LessThan {
             nullity: false,
             releasable: left_property.releasable && right_property.releasable,
             nature: Some(Nature::Categorical(NatureCategorical {
-                categories: Jagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
+                categories: Jagged::Bool((0..num_columns).map(|_| vec![true, false]).collect())
             })),
             c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
@@ -505,6 +512,7 @@ impl Component for proto::Log {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
+        _node_id: u32
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
             .ok_or("left: missing")?.array()
@@ -565,6 +573,7 @@ impl Component for proto::Modulo {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
+        _node_id: u32
     ) -> Result<ValueProperties> {
         let mut left_property = properties.get("left")
             .ok_or("left: missing")?.array()
@@ -635,6 +644,7 @@ impl Component for proto::Multiply {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
+        _node_id: u32
     ) -> Result<ValueProperties> {
         let left_property = properties.get("left")
             .ok_or("left: missing")?.array()
@@ -761,6 +771,7 @@ impl Component for proto::Negate {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
+        _node_id: u32
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
@@ -790,6 +801,7 @@ impl Component for proto::Negative {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
+        _node_id: u32
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
@@ -825,6 +837,7 @@ impl Component for proto::Or {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
+        _node_id: u32
     ) -> Result<ValueProperties> {
         let mut left_property = properties.get("left")
             .ok_or("left: missing")?.array()
@@ -876,6 +889,7 @@ impl Component for proto::Power {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
+        _node_id: u32
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
@@ -945,6 +959,7 @@ impl Component for proto::RowMax {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
+        _node_id: u32
     ) -> Result<ValueProperties> {
         let left_property = properties.get("left")
             .ok_or("left: missing")?.array()
@@ -1022,6 +1037,7 @@ impl Component for proto::RowMin {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
+        _node_id: u32
     ) -> Result<ValueProperties> {
         let left_property = properties.get("left")
             .ok_or("left: missing")?.array()
@@ -1099,6 +1115,7 @@ impl Component for proto::Subtract {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
+        _node_id: u32
     ) -> Result<ValueProperties> {
         let left_property = properties.get("left")
             .ok_or("left: missing")?.array()
@@ -1286,33 +1303,29 @@ pub fn propagate_unary_nature(
             }
             Nature::Categorical(nature) => Some(Nature::Categorical(NatureCategorical { categories: match nature.categories.standardize(&output_num_columns)? {
                 Jagged::F64(categories) => Jagged::F64(categories.iter().map(|cats|
-                    match (cats, &operator.f64) {
-                        (Some(cats), Some(operator)) =>
-                            Ok(Some(cats.iter().map(operator).collect::<Result<Vec<_>>>()?)),
-                        (Some(_), None) => Err("categories cannot be propagated for floats".into()),
-                        _ => Ok(None)
-                    }).collect::<Result<Vec<Option<Vec<_>>>>>()?),
+                    match &operator.f64 {
+                        Some(operator) =>
+                            Ok(cats.iter().map(operator).collect::<Result<Vec<_>>>()?),
+                        None => Err("categories cannot be propagated for floats".into()),
+                    }).collect::<Result<Vec<Vec<_>>>>()?),
                 Jagged::I64(categories) => Jagged::I64(categories.iter().map(|cats|
-                    match (cats, &operator.i64) {
-                        (Some(cats), Some(operator)) =>
-                            Ok(Some(cats.iter().map(operator).collect::<Result<Vec<_>>>()?)),
-                        (Some(_), None) => Err("categories cannot be propagated for integers".into()),
-                        _ => Ok(None)
-                    }).collect::<Result<Vec<Option<Vec<_>>>>>()?),
+                    match &operator.i64 {
+                        Some(operator) =>
+                            Ok(cats.iter().map(operator).collect::<Result<Vec<_>>>()?),
+                        None => Err("categories cannot be propagated for integers".into()),
+                    }).collect::<Result<Vec<Vec<_>>>>()?),
                 Jagged::Bool(categories) => Jagged::Bool(categories.iter().map(|cats|
-                    match (cats, &operator.bool) {
-                        (Some(cats), Some(operator)) =>
-                            Ok(Some(cats.iter().map(operator).collect::<Result<Vec<_>>>()?)),
-                        (Some(_), None) => Err("categories cannot be propagated for booleans".into()),
-                        _ => Ok(None)
-                    }).collect::<Result<Vec<Option<Vec<_>>>>>()?),
+                    match &operator.bool {
+                        Some(operator) =>
+                            Ok(cats.iter().map(operator).collect::<Result<Vec<_>>>()?),
+                        None => Err("categories cannot be propagated for booleans".into()),
+                    }).collect::<Result<Vec<Vec<_>>>>()?),
                 Jagged::Str(categories) => Jagged::Str(categories.iter().map(|cats|
-                    match (cats, &operator.str) {
-                        (Some(cats), Some(operator)) =>
-                            Ok(Some(cats.iter().map(operator).collect::<Result<Vec<_>>>()?)),
-                        (Some(_), None) => Err("categories cannot be propagated for strings".into()),
-                        _ => Ok(None)
-                    }).collect::<Result<Vec<Option<Vec<_>>>>>()?),
+                    match &operator.str {
+                        Some(operator) =>
+                            Ok(cats.iter().map(operator).collect::<Result<Vec<_>>>()?),
+                        None => Err("categories cannot be propagated for strings".into()),
+                    }).collect::<Result<Vec<Vec<_>>>>()?),
             }}))
         },
         None => None
@@ -1389,52 +1402,48 @@ pub fn propagate_binary_nature(
                 categories: match (left_nature.categories.standardize(&output_num_columns)?, right_nature.categories.standardize(&output_num_columns)?) {
                     (Jagged::F64(left), Jagged::F64(right)) =>
                         Jagged::F64(left.iter().zip(right.iter()).map(|(left, right)|
-                            match (left, right, &operator.f64) {
-                                (Some(left), Some(right), Some(operator)) => Ok(Some(left.iter()
+                            match &operator.f64 {
+                                Some(operator) => Ok(left.iter()
                                     .map(|left| right.iter()
                                         .map(|right| operator(left, right))
                                         .collect::<Result<Vec<_>>>())
                                     .collect::<Result<Vec<Vec<_>>>>()?
-                                    .into_iter().flatten().collect::<Vec<_>>())),
-                                (Some(_), Some(_), None) => Err("categories cannot be propagated for floats".into()),
-                                _ => Ok(None)
-                            }).collect::<Result<Vec<Option<Vec<_>>>>>()?),
+                                    .into_iter().flatten().collect::<Vec<_>>()),
+                                None => Err("categories cannot be propagated for floats".into()),
+                            }).collect::<Result<Vec<Vec<_>>>>()?),
                     (Jagged::I64(left), Jagged::I64(right)) =>
                         Jagged::I64(left.iter().zip(right.iter()).map(|(left, right)|
-                            match (left, right, &operator.i64) {
-                                (Some(left), Some(right), Some(operator)) => Ok(Some(left.iter()
+                            match &operator.i64 {
+                                Some(operator) => Ok(left.iter()
                                     .map(|left| right.iter()
                                         .map(|right| operator(left, right))
                                         .collect::<Result<Vec<_>>>())
                                     .collect::<Result<Vec<Vec<_>>>>()?
-                                    .into_iter().flatten().collect::<Vec<_>>())),
-                                (Some(_), Some(_), None) => Err("categories cannot be propagated for integers".into()),
-                                _ => Ok(None)
-                            }).collect::<Result<Vec<Option<Vec<_>>>>>()?),
+                                    .into_iter().flatten().collect::<Vec<_>>()),
+                                None => Err("categories cannot be propagated for integers".into()),
+                            }).collect::<Result<Vec<Vec<_>>>>()?),
                     (Jagged::Bool(left), Jagged::Bool(right)) =>
                         Jagged::Bool(left.iter().zip(right.iter()).map(|(left, right)|
-                            match (left, right, &operator.bool) {
-                                (Some(left), Some(right), Some(operator)) => Ok(Some(left.iter()
+                            match &operator.bool {
+                                Some(operator) => Ok(left.iter()
                                     .map(|left| right.iter()
                                         .map(|right| operator(left, right))
                                         .collect::<Result<Vec<_>>>())
                                     .collect::<Result<Vec<Vec<_>>>>()?
-                                    .into_iter().flatten().collect::<Vec<_>>())),
-                                (Some(_), Some(_), None) => Err("categories cannot be propagated for booleans".into()),
-                                _ => Ok(None)
-                            }).collect::<Result<Vec<Option<Vec<_>>>>>()?),
+                                    .into_iter().flatten().collect::<Vec<_>>()),
+                                None => Err("categories cannot be propagated for booleans".into()),
+                            }).collect::<Result<Vec<Vec<_>>>>()?),
                     (Jagged::Str(left), Jagged::Str(right)) =>
                         Jagged::Str(left.iter().zip(right.iter()).map(|(left, right)|
-                            match (left, right, &operator.str) {
-                                (Some(left), Some(right), Some(operator)) => Ok(Some(left.iter()
+                            match &operator.str {
+                                Some(operator) => Ok(left.iter()
                                     .map(|left| right.iter()
                                         .map(|right| operator(left, right))
                                         .collect::<Result<Vec<_>>>())
                                     .collect::<Result<Vec<Vec<_>>>>()?
-                                    .into_iter().flatten().collect::<Vec<_>>())),
-                                (Some(_), Some(_), None) => Err("categories cannot be propagated for strings".into()),
-                                _ => Ok(None)
-                            }).collect::<Result<Vec<Option<Vec<_>>>>>()?),
+                                    .into_iter().flatten().collect::<Vec<_>>()),
+                                None => Err("categories cannot be propagated for strings".into()),
+                            }).collect::<Result<Vec<Vec<_>>>>()?),
                     _ => return Err("natures must be homogeneously typed".into())
                 }.deduplicate()?
             })),

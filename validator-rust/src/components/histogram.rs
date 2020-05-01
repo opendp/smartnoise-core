@@ -17,6 +17,7 @@ impl Component for proto::Histogram {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
+        _node_id: u32
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
@@ -31,7 +32,7 @@ impl Component for proto::Histogram {
         if categories.num_columns() != 1 {
             return Err("data must contain one column".into())
         }
-        data_property.num_records = Some(categories.lengths()?[0] as i64);
+        data_property.num_records = Some(categories.lengths()[0] as i64);
 
         // save a snapshot of the state when aggregating
         data_property.aggregator = Some(AggregatorProperties {
@@ -131,12 +132,12 @@ impl Expandable for proto::Histogram {
                 let id_categories = current_id;
                 let categories = properties.get("data").ok_or("data: missing")?.array()?.categories()?;
                 let value = match categories {
-                    Jagged::I64(jagged) => arr1(jagged[0].as_ref().unwrap()).into_dyn().into(),
-                    Jagged::F64(jagged) => arr1(jagged[0].as_ref().unwrap()).into_dyn().into(),
-                    Jagged::Bool(jagged) => arr1(jagged[0].as_ref().unwrap()).into_dyn().into(),
-                    Jagged::Str(jagged) => arr1(jagged[0].as_ref().unwrap()).into_dyn().into(),
+                    Jagged::I64(jagged) => arr1(&jagged[0]).into_dyn().into(),
+                    Jagged::F64(jagged) => arr1(&jagged[0]).into_dyn().into(),
+                    Jagged::Bool(jagged) => arr1(&jagged[0]).into_dyn().into(),
+                    Jagged::Str(jagged) => arr1(&jagged[0]).into_dyn().into(),
                 };
-                let (patch_node, categories_release) = get_literal(&value, &component.batch)?;
+                let (patch_node, categories_release) = get_literal(value, &component.batch)?;
                 computation_graph.insert(id_categories.clone(), patch_node);
                 releases.insert(id_categories.clone(), categories_release);
 
@@ -182,7 +183,7 @@ impl Sensitivity for proto::Histogram {
                     .ok_or_else(|| Error::from("neighboring definition must be either \"AddRemove\" or \"Substitute\""))?;
 
                 // when categories are defined, a disjoint group by query is performed
-                let categories_length = data_property.categories()?.lengths()?[0];
+                let categories_length = data_property.categories()?.lengths()[0];
 
                 let num_records = data_property.num_records;
 

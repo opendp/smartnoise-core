@@ -16,6 +16,7 @@ mod cast;
 mod clamp;
 mod count;
 mod covariance;
+mod dataframe;
 mod digitize;
 mod dp_count;
 mod dp_variance;
@@ -73,6 +74,7 @@ pub trait Component {
     /// * `privacy_definition` - the definition of privacy under which the computation takes place
     /// * `public_arguments` - actual data values of arguments, typically either supplied literals or released values.
     /// * `properties` - derived properties of private input arguments
+    /// * `node_id` - id of the node in the analysis graph (used to set dataset_id in the data loaders)
     ///
     /// # Returns
     /// Derived properties on the data resulting from the abstract computation
@@ -81,6 +83,7 @@ pub trait Component {
         privacy_definition: &Option<proto::PrivacyDefinition>,
         public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
+        _node_id: u32
     ) -> Result<ValueProperties>;
 }
 
@@ -185,7 +188,7 @@ pub trait Named {
         &self,
         public_arguments: &HashMap<String, Value>,
         argument_variables: &HashMap<String, Vec<String>>,
-        release: &Option<&Value>
+        release: Option<&Value>
     ) -> Result<Vec<String>>;
 }
 
@@ -199,7 +202,7 @@ pub trait Utility: Sensitivity {
     fn get_utility (
         &self,
         properties: &NodeProperties
-    ) -> Result<proto::Utility>;
+    ) -> Result<proto::Function>;
 }
 
 
@@ -212,13 +215,14 @@ impl Component for proto::component::Variant {
         privacy_definition: &Option<proto::PrivacyDefinition>,
         public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
+        node_id: u32
     ) -> Result<ValueProperties> {
         macro_rules! propagate_property {
             ($( $variant:ident ),*) => {
                 {
                     $(
                        if let proto::component::Variant::$variant(x) = self {
-                            return x.propagate_property(privacy_definition, public_arguments, properties)
+                            return x.propagate_property(privacy_definition, public_arguments, properties, node_id)
                                 .chain_err(|| format!("node specification {:?}:", self))
                        }
                     )*
@@ -230,7 +234,7 @@ impl Component for proto::component::Variant {
             // INSERT COMPONENT LIST
             Cast, Clamp, Count, Covariance, Digitize,
 
-            Filter, Histogram, Impute, Index, KthRawSampleMoment, Materialize, Maximum, Mean,
+            Filter, Histogram, Impute, Index, KthRawSampleMoment, Literal, Materialize, Maximum, Mean,
 
             GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism,
 
@@ -431,7 +435,7 @@ impl Named for proto::component::Variant {
         &self,
         public_arguments: &HashMap<String, Value>,
         argument_variables: &HashMap<String, Vec<String>>,
-        release: &Option<&Value>
+        release: Option<&Value>
     ) -> Result<Vec<String>> {
 
         macro_rules! get_names{
@@ -467,7 +471,7 @@ impl Utility for proto::component::Variant {
     fn get_utility(
         &self,
         properties: &NodeProperties
-    ) -> Result<proto::Utility> {
+    ) -> Result<proto::Function> {
 
         macro_rules! get_utility{
             ($( $variant:ident ),*) => {

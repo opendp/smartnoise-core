@@ -17,6 +17,7 @@ impl Component for proto::Cast {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
+        _node_id: u32
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
             .ok_or_else(|| Error::from("data: missing"))?.array()
@@ -39,6 +40,7 @@ impl Component for proto::Cast {
         let num_columns = data_property.num_columns()?;
 
         match data_property.data_type {
+            DataType::Unknown => unreachable!(),
             DataType::Bool => {
                 // true label must be defined
                 let true_label = public_arguments.get("true_label")
@@ -48,26 +50,22 @@ impl Component for proto::Cast {
                     Some(nature) => match nature {
                         Nature::Categorical(cat_nature) => Some(Nature::Categorical(NatureCategorical {
                             categories: match (cat_nature.categories, true_label) {
-                                (Jagged::I64(cats), Array::I64(true_label)) => Jagged::Bool(cats.into_iter()
-                                    .map(|cats| cats.map(|cats|
-                                        cats.into_iter().map(|v| Some(&v) == true_label.first())
-                                            .unique().collect::<Vec<_>>()))
-                                    .collect::<Vec<Option<Vec<_>>>>()),
-                                (Jagged::F64(cats), Array::F64(true_label)) => Jagged::Bool(cats.into_iter()
-                                    .map(|cats| cats.map(|cats|
-                                        cats.into_iter().map(|v| Some(&v) == true_label.first())
-                                            .unique().collect::<Vec<_>>()))
-                                    .collect::<Vec<Option<Vec<_>>>>()),
-                                (Jagged::Bool(cats), Array::Bool(true_label)) => Jagged::Bool(cats.into_iter()
-                                    .map(|cats| cats.map(|cats|
-                                        cats.into_iter().map(|v| Some(&v) == true_label.first())
-                                            .unique().collect::<Vec<_>>()))
-                                    .collect::<Vec<Option<Vec<_>>>>()),
-                                (Jagged::Str(cats), Array::Str(true_label)) => Jagged::Bool(cats.into_iter()
-                                    .map(|cats| cats.map(|cats|
-                                        cats.into_iter().map(|v| Some(&v) == true_label.first())
-                                            .unique().collect::<Vec<_>>()))
-                                    .collect::<Vec<Option<Vec<_>>>>()),
+                                (Jagged::I64(cats), Array::I64(true_label)) => Jagged::Bool(cats.iter()
+                                    .map(|cats| cats.into_iter().map(|v| Some(v) == true_label.first())
+                                        .unique().collect::<Vec<_>>())
+                                    .collect::<Vec<Vec<_>>>()),
+                                (Jagged::F64(cats), Array::F64(true_label)) => Jagged::Bool(cats.iter()
+                                    .map(|cats| cats.into_iter().map(|v| Some(v) == true_label.first())
+                                        .unique().collect::<Vec<_>>())
+                                    .collect::<Vec<Vec<_>>>()),
+                                (Jagged::Bool(cats), Array::Bool(true_label)) => Jagged::Bool(cats.iter()
+                                    .map(|cats| cats.into_iter().map(|v| Some(v) == true_label.first())
+                                        .unique().collect::<Vec<_>>())
+                                    .collect::<Vec<Vec<_>>>()),
+                                (Jagged::Str(cats), Array::Str(true_label)) => Jagged::Bool(cats.iter()
+                                    .map(|cats| cats.into_iter().map(|v| Some(v) == true_label.first())
+                                        .unique().collect::<Vec<_>>())
+                                    .collect::<Vec<Vec<_>>>()),
                                 _ => return Err("type of true label must match the data type".into())
                             }
                         })),
@@ -76,7 +74,7 @@ impl Component for proto::Cast {
                     None => None
                 };
                 data_property.nature = Some(Nature::Categorical(NatureCategorical {
-                    categories: Jagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
+                    categories: Jagged::Bool((0..num_columns).map(|_| vec![true, false]).collect())
                 }));
                 data_property.nullity = false;
             },
@@ -100,10 +98,9 @@ impl Component for proto::Cast {
                             Jagged::Bool(cats) =>
                                 Some(Nature::Categorical(NatureCategorical {
                                     categories: Jagged::I64(cats.into_iter()
-                                        .map(|cats| cats
-                                            .map(|cats| cats.into_iter()
-                                                .map(|v| if v { 1 } else { 0 })
-                                                .unique().collect::<Vec<i64>>()))
+                                        .map(|cats| cats.into_iter()
+                                            .map(|v| if v { 1 } else { 0 })
+                                            .unique().collect::<Vec<i64>>())
                                         .collect())
                                 })),
 
@@ -138,20 +135,18 @@ impl Component for proto::Cast {
                             Jagged::Bool(jagged) =>
                                 Some(Nature::Categorical(NatureCategorical {
                                     categories: Jagged::Str(jagged.into_iter()
-                                        .map(|cats| cats
-                                            .map(|cats| cats.into_iter()
-                                                .map(|v| v.to_string())
-                                                .unique().collect()))
-                                        .collect::<Vec<Option<Vec<String>>>>())
+                                        .map(|cats| cats.into_iter()
+                                            .map(|v| v.to_string())
+                                            .unique().collect())
+                                        .collect::<Vec<Vec<String>>>())
                                 })),
                             Jagged::I64(jagged) =>
                                 Some(Nature::Categorical(NatureCategorical {
                                     categories: Jagged::Str(jagged.into_iter()
-                                        .map(|cats| cats
-                                            .map(|cats| cats.iter()
-                                                .map(|v| v.to_string())
-                                                .unique().collect()))
-                                        .collect::<Vec<Option<Vec<String>>>>())
+                                        .map(|cats| cats.into_iter()
+                                            .map(|v| v.to_string())
+                                            .unique().collect())
+                                        .collect::<Vec<Vec<String>>>())
                                 })),
                             Jagged::Str(jagged) => Some(Nature::Categorical(NatureCategorical {
                                 categories: Jagged::Str(jagged.clone())

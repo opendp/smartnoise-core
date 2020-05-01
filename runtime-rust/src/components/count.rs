@@ -22,7 +22,8 @@ impl Evaluable for proto::Count {
                 Some(value) => arr0(value.array()?.num_records()?).into_dyn().into(),
                 None => return Err("hashmap may not be empty".into())
             },
-            Value::Jagged(_) => return Err("Count is not implemented on Jagged arrays".into())
+            Value::Jagged(_) => return Err("Count is not implemented on Jagged arrays".into()),
+            Value::Function(_) => return Err("Count is not implemented on Functions".into())
         }))
     }
 }

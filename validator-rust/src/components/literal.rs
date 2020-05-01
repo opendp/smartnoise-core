@@ -1,11 +1,36 @@
 
 use crate::errors::*;
-use crate::components::Named;
+use crate::components::{Named, Component};
 use std::collections::HashMap;
 use crate::utilities::get_ith_column;
 use ndarray::ArrayD;
-use crate::{proto};
-use crate::base::{Value, Array};
+use crate::{proto, base};
+use crate::base::{Value, Array, ValueProperties, ArrayProperties, DataType};
+
+impl Component for proto::Literal {
+    fn propagate_property(
+        &self,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
+        _public_arguments: &HashMap<String, Value>,
+        _properties: &base::NodeProperties,
+        node_id: u32
+    ) -> Result<ValueProperties> {
+        Ok(ValueProperties::Array(ArrayProperties {
+            num_records: None,
+            num_columns: None,
+            nullity: true,
+            releasable: false,
+            c_stability: vec![],
+            aggregator: None,
+            nature: None,
+            data_type: DataType::Unknown,
+            dataset_id: Some(node_id as i64),
+            // this is a library-wide assumption - that datasets initially have more than zero rows
+            is_not_empty: true,
+            dimensionality: Some(2),
+        }))
+    }
+}
 
 
 impl Named for proto::Literal {
@@ -13,7 +38,7 @@ impl Named for proto::Literal {
         &self,
         _public_arguments: &HashMap<String, Value>,
         _argument_variables: &HashMap<String, Vec<String>>,
-        release: &Option<&Value>
+        release: Option<&Value>
     ) -> Result<Vec<String>> {
 
         fn array_to_names<T: ToString + Clone + Default>(array: &ArrayD<T>, num_columns: i64) -> Result<Vec<String>> {
@@ -41,7 +66,8 @@ impl Named for proto::Literal {
                     Array::I64(array) => array_to_names(array, value.num_columns()?),
                     Array::Str(array) => array_to_names(array, value.num_columns()?),
                     Array::Bool(array) => array_to_names(array, value.num_columns()?),
-                }
+                },
+                Value::Function(_function) => Ok(vec![])
             },
             None => Err("Literals must always be accompanied by a release".into())
         }

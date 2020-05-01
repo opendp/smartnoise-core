@@ -202,31 +202,31 @@ pub fn impute_float_gaussian(data: &ArrayD<f64>, lower: &ArrayD<f64>, upper: &Ar
 /// use whitenoise_runtime::components::impute::impute_categorical;
 /// let data: ArrayD<String> = arr2(&[["a".to_string(), "b".to_string(), "null_3".to_string()],
 ///                                   ["c".to_string(), "null_2".to_string(), "a".to_string()]]).into_dyn();
-/// let categories: Vec<Option<Vec<String>>> = vec![Some(vec!["a".to_string(), "c".to_string()]),
-///                                                 Some(vec!["b".to_string(), "d".to_string()]),
-///                                                 Some(vec!["f".to_string()])];
+/// let categories: Vec<Vec<String>> = vec![vec!["a".to_string(), "c".to_string()],
+///                                         vec!["b".to_string(), "d".to_string()],
+///                                         vec!["f".to_string()]];
 /// let weights = Some(vec![vec![1., 1.],
 ///                         vec![1., 2.],
 ///                         vec![1.]]);
-/// let null_value: Vec<Option<Vec<String>>> = vec![Some(vec!["null_1".to_string()]),
-///                                                 Some(vec!["null_2".to_string()]),
-///                                                 Some(vec!["null_3".to_string()])];
+/// let null_value: Vec<Vec<String>> = vec![vec!["null_1".to_string()],
+///                                         vec!["null_2".to_string()],
+///                                         vec!["null_3".to_string()]];
 ///
 /// let imputed = impute_categorical(&data, &categories, &weights, &null_value);
 /// # imputed.unwrap();
 /// ```
-pub fn impute_categorical<T>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>,
-                             weights: &Option<Vec<Vec<f64>>>, null_value: &Vec<Option<Vec<T>>>)
+pub fn impute_categorical<T: Clone>(data: &ArrayD<T>, categories: &Vec<Vec<T>>,
+                             weights: &Option<Vec<Vec<f64>>>, null_value: &Vec<Vec<T>>)
                              -> Result<ArrayD<T>> where T:Clone, T:PartialEq, T:Default, T: Ord, T: Hash {
 
     let mut data = data.clone();
 
     let num_columns = get_num_columns(&data)?;
 
-    let categories = standardize_categorical_argument(&categories, &num_columns)?;
+    let categories = standardize_categorical_argument(categories.clone(), &num_columns)?;
     let lengths = categories.iter().map(|cats| cats.len() as i64).collect::<Vec<i64>>();
     let probabilities = standardize_weight_argument(&weights, &lengths)?;
-    let null_value = standardize_null_candidates_argument(&null_value, &num_columns)?;
+    let null_value = standardize_null_candidates_argument(null_value, &num_columns)?;
 
     // iterate over the generalized columns
     data.gencolumns_mut().into_iter()

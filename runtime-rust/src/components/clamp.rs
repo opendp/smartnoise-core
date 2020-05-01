@@ -153,9 +153,9 @@ pub fn clamp_numeric_integer(
 /// use whitenoise_runtime::components::clamp::clamp_categorical;
 /// let data: ArrayD<String> = arr2(&[["a".to_string(), "b".to_string(), "3".to_string()],
 ///                                   ["a".to_string(), "2".to_string(), "b".to_string()]]).into_dyn();
-/// let categories: Vec<Option<Vec<String>>> = vec![Some(vec!["a".to_string(), "b".to_string()]),
-///                                                 Some(vec!["a".to_string(), "b".to_string()]),
-///                                                 Some(vec!["a".to_string(), "b".to_string()])];
+/// let categories: Vec<Vec<String>> = vec![vec!["a".to_string(), "b".to_string()],
+///                                                 vec!["a".to_string(), "b".to_string()],
+///                                                 vec!["a".to_string(), "b".to_string()]];
 /// let null_value: ArrayD<String> = arr1(&["not_a_letter".to_string(),
 ///                                         "not_a_letter".to_string(),
 ///                                         "not_a_letter".to_string()]).into_dyn();
@@ -164,7 +164,7 @@ pub fn clamp_numeric_integer(
 /// assert_eq!(clamped_data, arr2(&[["a".to_string(), "b".to_string(), "not_a_letter".to_string()],
 ///                                ["a".to_string(), "not_a_letter".to_string(), "b".to_string()]]).into_dyn());
 /// ```
-pub fn clamp_categorical<T: Ord + Hash>(data: &ArrayD<T>, categories: &Vec<Option<Vec<T>>>, null_value: &ArrayD<T>)
+pub fn clamp_categorical<T: Ord + Hash + Clone>(data: &ArrayD<T>, categories: &Vec<Vec<T>>, null_value: &ArrayD<T>)
                             -> Result<ArrayD<T>> where T:Clone, T:PartialEq, T:Default {
 
     let mut data = data.clone();
@@ -174,7 +174,7 @@ pub fn clamp_categorical<T: Ord + Hash>(data: &ArrayD<T>, categories: &Vec<Optio
     // iterate over the generalized columns
     data.gencolumns_mut().into_iter()
         // pair generalized columns with arguments
-        .zip(standardize_categorical_argument(&categories, &num_columns)?)
+        .zip(standardize_categorical_argument(categories.clone(), &num_columns)?)
         .zip(standardize_null_target_argument(&null_value, &num_columns)?)
         // for each pairing, iterate over the cells
         .for_each(|((mut column, categories), null)| column.iter_mut()

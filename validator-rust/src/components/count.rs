@@ -15,13 +15,12 @@ impl Component for proto::Count {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
+        _node_id: u32
     ) -> Result<ValueProperties> {
         let mut data_property = match properties.get("data").ok_or("data: missing")?.clone() {
             ValueProperties::Array(data_property) => data_property,
             ValueProperties::Hashmap(data_property) => {
-                if !data_property.columnar {
-                    return Err("Count may only be applied to arrays or columnar hashmaps (dataframes)".into())
-                }
+                data_property.assert_is_dataframe()?;
                 data_property.properties.values().first()
                     .ok_or_else(|| Error::from("dataframe must have at least one column"))?.array()?.to_owned()
             },
