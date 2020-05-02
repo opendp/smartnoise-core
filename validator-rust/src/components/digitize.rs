@@ -22,6 +22,10 @@ impl Component for proto::Digitize {
             .ok_or_else(|| Error::from("data: missing"))?.clone().array()
             .map_err(prepend("data:"))?.clone();
 
+        if data_property.data_type == DataType::Unknown {
+            return Err("data_type must be known".into())
+        }
+
         let num_columns = data_property.num_columns()
             .map_err(prepend("data:"))?;
 

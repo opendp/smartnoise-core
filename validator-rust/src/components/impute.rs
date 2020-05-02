@@ -28,11 +28,22 @@ impl Component for proto::Impute {
             data_property.assert_is_not_aggregated()?;
         }
 
+        // integers may not be null
         if data_property.data_type == DataType::I64 {
+            if data_property.nullity {
+                return Err("impossible state: integers contain nullity".into())
+            }
             return Ok(data_property.into())
         }
 
-        if let Some(_categories) = public_arguments.get("categories") {
+        if data_property.data_type == DataType::Unknown {
+            return Err("data_type must be known".into())
+        }
+
+        if let Some(categories) = public_arguments.get("categories") {
+            if data_property.data_type != categories.jagged()?.data_type() {
+                return Err("data's data_type must match categories' data_type".into())
+            }
             // TODO: propagation of categories through imputation and resize
             data_property.nature = None;
             return Ok(data_property.into());

@@ -19,6 +19,7 @@ pub mod cast;
 pub mod clamp;
 pub mod count;
 pub mod covariance;
+pub mod dataframe;
 pub mod digitize;
 pub mod filter;
 pub mod histogram;

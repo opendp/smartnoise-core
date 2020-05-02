@@ -430,6 +430,15 @@ impl Jagged {
                 Ok(standardize_categorical_argument(categories, &num_columns)?.into()),
         }
     }
+
+    pub fn data_type(&self) -> DataType {
+        match self {
+            Jagged::I64(_) => DataType::I64,
+            Jagged::F64(_) => DataType::F64,
+            Jagged::Bool(_) => DataType::Bool,
+            Jagged::Str(_) => DataType::Str,
+        }
+    }
 }
 
 
@@ -835,6 +844,7 @@ pub enum Vector1D {
 }
 
 /// Accepted spaces for sensitivity to be computed within.
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum SensitivitySpace {
     /// KNorm(1) is L1, KNorm(2) is L2.
     KNorm(u32),

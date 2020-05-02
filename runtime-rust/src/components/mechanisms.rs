@@ -1,6 +1,6 @@
 use whitenoise_validator::errors::*;
 
-use crate::{NodeArguments, evaluate_analysis};
+use crate::NodeArguments;
 use whitenoise_validator::base::{Array, ReleaseNode, Value, Jagged};
 use whitenoise_validator::utilities::{get_argument, broadcast_privacy_usage, broadcast_ndarray, get_epsilon, get_delta};
 use crate::components::Evaluable;
@@ -9,8 +9,6 @@ use whitenoise_validator::hashmap;
 use whitenoise_validator::proto;
 use ndarray;
 use ndarray::{Axis, arr1};
-use whitenoise_validator::utilities::serial::parse_release_node;
-use std::collections::HashMap;
 use crate::base::evaluate_function;
 
 impl Evaluable for proto::LaplaceMechanism {
@@ -152,14 +150,13 @@ impl Evaluable for proto::ExponentialMechanism {
                 let release_vec = candidates.into_iter()
                     .zip(sensitivity.iter().zip(epsilon.iter()))
                     .map(|(column, (sens, eps))| {
-
                         let utilities = column.into_iter()
                             .map(|candidate| evaluate_function(
                                 &utility,
                                 hashmap![
-                                "data".to_string() => data.clone(),
-                                "candidate".to_string() => Value::from(*candidate)
-                            ])?.get("utility").unwrap().first_f64())
+                                    "data".to_string() => data.clone(),
+                                    "candidate".to_string() => Value::from(*candidate)
+                                ])?.get("utility").unwrap().first_f64())
                             .collect::<Result<Vec<f64>>>()?;
 
                         utilities::mechanisms::exponential_mechanism(
@@ -172,19 +169,18 @@ impl Evaluable for proto::ExponentialMechanism {
 
                 // for some reason rustc needed a strange type hint
                 Result::<Value>::Ok(release_array.into())
-            },
+            }
             Jagged::I64(candidates) => {
                 let release_vec = candidates.into_iter()
                     .zip(sensitivity.iter().zip(epsilon.iter()))
                     .map(|(column, (sens, eps))| {
-
                         let utilities = column.into_iter()
                             .map(|candidate| evaluate_function(
                                 &utility,
                                 hashmap![
-                                "data".to_string() => data.clone(),
-                                "candidate".to_string() => Value::from(*candidate)
-                            ])?.get("utility").unwrap().first_f64())
+                                    "data".to_string() => data.clone(),
+                                    "candidate".to_string() => Value::from(*candidate)
+                                ])?.get("utility").unwrap().first_f64())
                             .collect::<Result<Vec<f64>>>()?;
 
                         utilities::mechanisms::exponential_mechanism(
@@ -197,19 +193,18 @@ impl Evaluable for proto::ExponentialMechanism {
 
                 // for some reason rustc needed a strange type hint
                 Result::<Value>::Ok(release_array.into())
-            },
+            }
             Jagged::Bool(candidates) => {
                 let release_vec = candidates.into_iter()
                     .zip(sensitivity.iter().zip(epsilon.iter()))
                     .map(|(column, (sens, eps))| {
-
                         let utilities = column.into_iter()
                             .map(|candidate| evaluate_function(
                                 &utility,
                                 hashmap![
-                                "data".to_string() => data.clone(),
-                                "candidate".to_string() => Value::from(*candidate)
-                            ])?.get("utility").unwrap().first_f64())
+                                    "data".to_string() => data.clone(),
+                                    "candidate".to_string() => Value::from(*candidate)
+                                ])?.get("utility").unwrap().first_f64())
                             .collect::<Result<Vec<f64>>>()?;
 
                         utilities::mechanisms::exponential_mechanism(
@@ -222,19 +217,18 @@ impl Evaluable for proto::ExponentialMechanism {
 
                 // for some reason rustc needed a strange type hint
                 Result::<Value>::Ok(release_array.into())
-            },
+            }
             Jagged::Str(candidates) => {
                 let release_vec = candidates.into_iter()
                     .zip(sensitivity.iter().zip(epsilon.iter()))
                     .map(|(column, (sens, eps))| {
-
                         let utilities = column.into_iter()
                             .map(|candidate| evaluate_function(
                                 &utility,
                                 hashmap![
-                                "data".to_string() => data.clone(),
-                                "candidate".to_string() => Value::from(candidate.clone())
-                            ])?.get("utility").unwrap().first_f64())
+                                    "data".to_string() => data.clone(),
+                                    "candidate".to_string() => Value::from(candidate.clone())
+                                ])?.get("utility").unwrap().first_f64())
                             .collect::<Result<Vec<f64>>>()?;
 
                         utilities::mechanisms::exponential_mechanism(
@@ -247,7 +241,7 @@ impl Evaluable for proto::ExponentialMechanism {
 
                 // for some reason rustc needed a strange type hint
                 Result::<Value>::Ok(release_array.into())
-            },
+            }
         }?;
 
         Ok(ReleaseNode {

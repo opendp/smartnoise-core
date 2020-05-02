@@ -27,6 +27,11 @@ impl Component for proto::Histogram {
             data_property.assert_is_not_aggregated()?;
         }
 
+        // this check is already guaranteed by the state space, but still included for safety
+        if data_property.data_type == DataType::Unknown {
+            return Err("data_type must be known".into())
+        }
+
         let categories = data_property.categories()?;
 
         if categories.num_columns() != 1 {

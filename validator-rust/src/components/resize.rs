@@ -3,7 +3,7 @@ use crate::errors::*;
 
 use std::collections::HashMap;
 
-use crate::{base};
+use crate::base;
 use crate::proto;
 
 use crate::components::{Component, Expandable};
@@ -19,7 +19,7 @@ impl Component for proto::Resize {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
-        _node_id: u32
+        _node_id: u32,
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
@@ -29,19 +29,29 @@ impl Component for proto::Resize {
             data_property.assert_is_not_aggregated()?;
         }
 
-        let num_columns = data_property.num_columns()?;
-
-        let num_records = public_arguments.get("n")
-            .ok_or("n must be passed to Resize")?.first_i64()?;
-
-        if num_records < 1 {
-            return Err("n must be greater than zero".into())
+        if let Some(num_columns) = public_arguments.get("number_columns") {
+            let num_columns = num_columns.first_i64()?;
+            if num_columns < 1 {
+                return Err("n must be greater than zero".into());
+            }
+            data_property.num_columns = Some(num_columns);
         }
 
-        if let Some(_categories) = public_arguments.get("categories") {
+        if let Some(num_records) = public_arguments.get("number_rows") {
+            let num_records = num_records.first_i64()?;
+            if num_records < 1 {
+                return Err("n must be greater than zero".into());
+            }
+            data_property.num_records = Some(num_records);
+            data_property.is_not_empty = num_records > 0;
+        }
+
+        if let Some(categories) = public_arguments.get("categories") {
+            if data_property.data_type != categories.jagged()?.data_type() {
+                return Err("data's data_type must match categories' data_type".into());
+            }
             // TODO: propagation of categories through imputation and resize
             data_property.nature = None;
-            data_property.num_records = Some(num_records);
             return Ok(data_property.into());
         }
 
@@ -110,7 +120,7 @@ impl Component for proto::Resize {
                     lower: Vector1DNull::F64(impute_lower),
                     upper: Vector1DNull::F64(impute_upper),
                 }));
-            },
+            }
 
             DataType::I64 => {
 
@@ -180,12 +190,8 @@ impl Component for proto::Resize {
             _ => return Err("bounds for imputation must be numeric".into())
         }
 
-        data_property.num_records = Some(num_records);
-        data_property.is_not_empty = num_records > 0;
         Ok(data_property.into())
     }
-
-
 }
 
 impl Expandable for proto::Resize {
@@ -237,7 +243,7 @@ impl Expandable for proto::Resize {
             computation_graph,
             properties: HashMap::new(),
             releases,
-            traversal: Vec::new()
+            traversal: Vec::new(),
         })
     }
 }
