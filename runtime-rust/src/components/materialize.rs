@@ -7,8 +7,6 @@ use indexmap::IndexMap;
 use crate::components::Evaluable;
 use ndarray;
 use whitenoise_validator::proto;
-use whitenoise_validator::utilities::array::{slow_stack, slow_select};
-use std::cmp::Ordering;
 
 impl Evaluable for proto::Materialize {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
@@ -79,29 +77,4 @@ impl Evaluable for proto::Materialize {
             }
         }
     }
-}
-
-
-fn standardize_columns<T: Default + Clone>(array: &ArrayD<T>, column_len: usize) -> Result<ArrayD<T>> {
-    Ok(match array.ndim() {
-        0 => return Err("dataset may not be a scalar".into()),
-        1 => match column_len {
-            0 => slow_select(array, Axis(1), &[]),
-            1 => array.clone(),
-            _ => slow_stack(
-                Axis(1),
-                &[array.view(), ndarray::Array::<T, IxDyn>::default(IxDyn(&[array.len(), column_len])).view()])?
-        },
-        2 => match array.len_of(Axis(1)).cmp(&column_len) {
-            Ordering::Less => slow_stack(
-                Axis(1),
-                &[array.view(), ndarray::Array::<T, IxDyn>::default(IxDyn(&[
-                    array.len_of(Axis(0)),
-                    column_len - array.len_of(Axis(1))])).view()],
-            )?,
-            Ordering::Equal => array.clone(),
-            Ordering::Greater => slow_select(array, Axis(1), &(0..column_len).collect::<Vec<_>>())
-        },
-        _ => return Err("array must be 1 or 2-dimensional".into())
-    })
 }

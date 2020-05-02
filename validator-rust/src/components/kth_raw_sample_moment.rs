@@ -21,6 +21,7 @@ impl Component for proto::KthRawSampleMoment {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
+
         if data_property.data_type != DataType::F64 {
             return Err("data: atomic type must be float".into())
         }

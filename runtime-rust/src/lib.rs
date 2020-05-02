@@ -18,19 +18,11 @@ pub mod base;
 
 extern crate libc;
 
-use whitenoise_validator::utilities::{get_input_properties, get_sinks};
-
-use crate::components::*;
-
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::vec::Vec;
 
-use itertools::Itertools;
-
-use whitenoise_validator::base::{Value, ReleaseNode, Release};
-use whitenoise_validator::utilities::serial::{parse_release, serialize_release_node, serialize_release};
-use std::iter::FromIterator;
-use whitenoise_validator::ffi::serialize_error;
+use whitenoise_validator::base::{Value};
+use whitenoise_validator::utilities::serial::{parse_release, serialize_release};
 use crate::base::evaluate_analysis;
 
 pub type NodeArguments<'a> = HashMap<String, &'a Value>;

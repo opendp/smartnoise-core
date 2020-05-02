@@ -41,8 +41,6 @@ impl Component for proto::Maximum {
 
         Ok(data_property.into())
     }
-
-
 }
 
 impl Sensitivity for proto::Maximum {

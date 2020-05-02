@@ -46,7 +46,7 @@ pub fn get_argument<'a>(
 ) -> Result<&'a Value> {
     match arguments.get(name) {
         Some(argument) => Ok(argument),
-        _ => Err((name.to_string() + " is not defined").into())
+        _ => Err((name.to_string() + " must be defined").into())
     }
 }
 
@@ -643,6 +643,21 @@ pub fn expand_mechanism(
     // noising
     let mut noise_component = component.clone();
     noise_component.arguments.insert("sensitivity".to_string(), id_sensitivity);
+
+    if sensitivity_type == &SensitivitySpace::Exponential {
+        let utility = component
+            .variant.as_ref()
+            .ok_or_else(|| Error::from("aggregator variant must be defined"))?
+            .get_utility(properties)?;
+
+        current_id += 1;
+        let id_utility = current_id;
+        let (patch_node, release) = get_literal(Value::Function(utility), &component.batch)?;
+        computation_graph.insert(id_utility.clone(), patch_node);
+        releases.insert(id_utility.clone(), release);
+        noise_component.arguments.insert("utility".to_string(), id_utility);
+    }
+
     computation_graph.insert(component_id.clone(), noise_component);
 
     Ok(proto::ComponentExpansion {

@@ -8,7 +8,7 @@ use crate::components::{Sensitivity, Utility};
 use crate::{proto, base};
 
 use crate::components::{Component, Expandable};
-use crate::base::{Value, SensitivitySpace, ValueProperties};
+use crate::base::{Value, SensitivitySpace, ValueProperties, DataType};
 use crate::utilities::{prepend, expand_mechanism, broadcast_privacy_usage, get_epsilon};
 
 
@@ -23,6 +23,10 @@ impl Component for proto::ExponentialMechanism {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
+
+        if data_property.data_type == DataType::Unknown {
+            return Err("data: data_type must be known".into())
+        }
 
         let candidates = public_arguments.get("candidates")
             .ok_or_else(|| Error::from("candidates: missing, must be public"))?.jagged()?;
@@ -75,23 +79,13 @@ impl Expandable for proto::ExponentialMechanism {
         component_id: &u32,
         maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
-        let expansion = expand_mechanism(
+        expand_mechanism(
             &SensitivitySpace::Exponential,
             privacy_definition,
             component,
             properties,
             component_id,
             maximum_id
-        )?;
-
-        let utility = self.aggregator.as_ref()
-            .ok_or_else(|| "aggregator must be defined when evaluating the Exponential mechanism")?
-            .variant.as_ref()
-            .ok_or_else(|| Error::from("aggregator variant must be defined"))?
-            .get_utility(properties)?;
-
-        // TODO insert utility Value into graph as literal
-
-        Ok(expansion)
+        )
     }
 }

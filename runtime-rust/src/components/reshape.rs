@@ -6,7 +6,6 @@ use whitenoise_validator::utilities::get_argument;
 use crate::components::Evaluable;
 use ndarray::ArrayD;
 use whitenoise_validator::proto;
-use std::collections::BTreeMap;
 use indexmap::map::IndexMap;
 
 

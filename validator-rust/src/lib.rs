@@ -425,7 +425,7 @@ pub fn expand_component(
         &component,
         &properties,
         &component_id,
-        &request.maximum_id,
+        &maximum_id,
     ).chain_err(|| format!("at node_id {:?}", component_id))?;
 
     let public_values = public_arguments.into_iter()

@@ -8,6 +8,10 @@
       "type_value": "Array",
       "description": "An estimate of the number of rows in the data. This could be the guess of the user, or the result of a DP release."
     },
+    "n_columns": {
+      "type_value": "Array",
+      "description": "An estimate of the number of columns in the data. This must be the guess of the user, if not previously known (optional)."
+    },
     "lower": {
       "type_value": "Array",
       "default_python": "None",

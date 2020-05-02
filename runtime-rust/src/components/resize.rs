@@ -19,7 +19,10 @@ use std::hash::Hash;
 
 impl Evaluable for proto::Resize {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        let n = get_argument(&arguments, "n")?.first_i64()?;
+        let number_rows  = arguments.get("number_rows")
+            .and_then(|v| v.first_i64().ok());
+        let number_cols  = arguments.get("number_columns")
+            .and_then(|v| v.first_i64().ok());
 
         // If "categories" constraint has been propagated, data are treated as categorical (regardless of atomic type)
         // and imputation (if necessary) is done by sampling from "categories" using the "probabilities" as sampling probabilities for each element.
@@ -35,11 +38,11 @@ impl Evaluable for proto::Resize {
                             return Err("categorical resizing over floats in not currently supported- try continuous imputation instead".into()),
 //                            resize_categorical(&data, &n, &categories, &probabilities)?.into(),
                         (Array::I64(data), Jagged::I64(categories)) =>
-                            resize_categorical(&data, &n, &categories, &weights)?.into(),
+                            resize_categorical(&data, number_rows, number_cols, &categories, &weights)?.into(),
                         (Array::Bool(data), Jagged::Bool(categories)) =>
-                            resize_categorical(&data, &n, &categories, &weights)?.into(),
+                            resize_categorical(&data, number_rows, number_cols, &categories, &weights)?.into(),
                         (Array::Str(data), Jagged::Str(categories)) =>
-                            resize_categorical(&data, &n, &categories, &weights)?.into(),
+                            resize_categorical(&data, number_rows, number_cols, &categories, &weights)?.into(),
                         _ => return Err("types of data, categories, and nulls must be homogeneous, weights must be f64".into())
                     }),
                 _ => return Err("data and nulls must be arrays, categories must be a jagged matrix".into())
@@ -67,10 +70,10 @@ impl Evaluable for proto::Resize {
                         Ok(scale) => Some(scale.array()?.f64()?),
                         Err(_) => None
                     };
-                    Ok(resize_float(data, &n, &distribution, lower, upper, &shift, &scale)?.into())
+                    Ok(resize_float(data, number_rows, number_cols, &distribution, lower, upper, &shift, &scale)?.into())
                 }
                 (Array::I64(data), Array::I64(lower), Array::I64(upper)) =>
-                    Ok(resize_integer(data, &n, lower, upper)?.into()),
+                    Ok(resize_integer(data, number_rows, number_cols, lower, upper)?.into()),
                 _ => Err("data, lower, and upper must be of a homogeneous numeric type".into())
             }
         }.map(ReleaseNode::new)
@@ -95,44 +98,92 @@ impl Evaluable for proto::Resize {
 ///
 /// # Return
 /// A resized version of data consistent with the provided `n`
-pub fn resize_float(data: &ArrayD<f64>, n: &i64, distribution: &String,
-                    lower: &ArrayD<f64>, upper: &ArrayD<f64>,
-                    shift: &Option<&ArrayD<f64>>, scale: &Option<&ArrayD<f64>>) -> Result<ArrayD<f64>> {
-    // get number of observations in actual data
-    let real_n: i64 = data.len_of(Axis(0)) as i64;
+pub fn resize_float(
+    data: &ArrayD<f64>,
+    number_rows: Option<i64>,
+    number_cols: Option<i64>,
+    distribution: &String,
+    lower: &ArrayD<f64>, upper: &ArrayD<f64>,
+    shift: &Option<&ArrayD<f64>>, scale: &Option<&ArrayD<f64>>
+) -> Result<ArrayD<f64>> {
+    let mut data = data.clone();
 
-    Ok(match &real_n.cmp(n) {
-        // if estimated n is correct, return real data
-        Ordering::Equal =>
-            data.clone(),
-        // if real n is less than estimated n, augment real data with synthetic data
-        Ordering::Less => {
-            // initialize synthetic data with correct shape
-            let mut synthetic_shape = data.shape().to_vec();
-            synthetic_shape[0] = (n - real_n) as usize;
-            let synthetic_base = ndarray::ArrayD::from_elem(synthetic_shape, std::f64::NAN).into_dyn();
+    if let Some(number_cols) = number_cols {
 
-            // generate synthetic data
-            // NOTE: only uniform and gaussian supported at this time
-            let synthetic = match distribution.to_lowercase().as_str() {
-                "uniform" => impute_float_uniform(&synthetic_base, &lower, &upper),
-                "gaussian" => impute_float_gaussian(
-                    &synthetic_base, &lower, &upper,
-                    &shift.cloned().ok_or_else(|| Error::from("shift must be defined for gaussian imputation"))?,
-                    &scale.cloned().ok_or_else(|| Error::from("scale must be defined for gaussian imputation"))?),
-                _ => Err("unrecognized distribution".into())
-            }?;
+        // get number of columns in actual data
+        let real_n = get_num_columns(&data)?;
 
-            // combine real and synthetic data
-            match ndarray::stack(Axis(0), &[data.view(), synthetic.view()]) {
-                Ok(value) => value,
-                Err(_) => return Err("failed to stack real and synthetic data".into())
+        data = match real_n.cmp(&number_cols) {
+            Ordering::Equal =>
+                data,
+            Ordering::Less => {
+                // initialize synthetic data with correct shape
+                let mut synthetic_shape = data.shape().to_vec();
+                synthetic_shape[1] = (number_cols - real_n) as usize;
+                let synthetic_base = ndarray::ArrayD::from_elem(synthetic_shape, std::f64::NAN).into_dyn();
+
+                // generate synthetic data
+                // NOTE: only uniform and gaussian supported at this time
+                let synthetic = match distribution.to_lowercase().as_str() {
+                    "uniform" => impute_float_uniform(&synthetic_base, &lower, &upper),
+                    "gaussian" => impute_float_gaussian(
+                        &synthetic_base, &lower, &upper,
+                        &shift.cloned().ok_or_else(|| Error::from("shift must be defined for gaussian imputation"))?,
+                        &scale.cloned().ok_or_else(|| Error::from("scale must be defined for gaussian imputation"))?),
+                    _ => Err("unrecognized distribution".into())
+                }?;
+
+                // combine real and synthetic data
+                match ndarray::stack(Axis(1), &[data.view(), synthetic.view()]) {
+                    Ok(value) => value,
+                    Err(_) => return Err("failed to stack real and synthetic data".into())
+                }
             }
+            Ordering::Greater =>
+                data.select(Axis(1), &create_sampling_indices(&number_cols, &real_n)?)
         }
-        // if real n is greater than estimated n, return a subset of the real data
-        Ordering::Greater =>
-            data.select(Axis(0), &create_sampling_indices(&n, &real_n)?)
-    })
+    }
+
+    if let Some(number_rows) = number_rows {
+
+        // get number of observations in actual data
+        let real_n: i64 = data.len_of(Axis(0)) as i64;
+
+        data = match real_n.cmp(&number_rows) {
+            // if estimated n is correct, return real data
+            Ordering::Equal =>
+                data,
+            // if real n is less than estimated n, augment real data with synthetic data
+            Ordering::Less => {
+                // initialize synthetic data with correct shape
+                let mut synthetic_shape = data.shape().to_vec();
+                synthetic_shape[0] = (number_rows - real_n) as usize;
+                let synthetic_base = ndarray::ArrayD::from_elem(synthetic_shape, std::f64::NAN).into_dyn();
+
+                // generate synthetic data
+                // NOTE: only uniform and gaussian supported at this time
+                let synthetic = match distribution.to_lowercase().as_str() {
+                    "uniform" => impute_float_uniform(&synthetic_base, &lower, &upper),
+                    "gaussian" => impute_float_gaussian(
+                        &synthetic_base, &lower, &upper,
+                        &shift.cloned().ok_or_else(|| Error::from("shift must be defined for gaussian imputation"))?,
+                        &scale.cloned().ok_or_else(|| Error::from("scale must be defined for gaussian imputation"))?),
+                    _ => Err("unrecognized distribution".into())
+                }?;
+
+                // combine real and synthetic data
+                match ndarray::stack(Axis(0), &[data.view(), synthetic.view()]) {
+                    Ok(value) => value,
+                    Err(_) => return Err("failed to stack real and synthetic data".into())
+                }
+            }
+            // if real n is greater than estimated n, return a subset of the real data
+            Ordering::Greater =>
+                data.select(Axis(0), &create_sampling_indices(&number_rows, &real_n)?)
+        }
+    }
+
+    Ok(data)
 }
 
 
@@ -147,49 +198,96 @@ pub fn resize_float(data: &ArrayD<f64>, n: &i64, distribution: &String,
 /// # Return
 /// A resized version of data consistent with the provided `n`
 pub fn resize_integer(
-    data: &ArrayD<i64>, n: &i64,
+    data: &ArrayD<i64>,
+    number_rows: Option<i64>,
+    number_cols: Option<i64>,
     lower: &ArrayD<i64>, upper: &ArrayD<i64>,
 ) -> Result<ArrayD<i64>> {
 
-    // get number of observations in actual data
-    let real_n = data.len_of(Axis(0)) as i64;
+    let mut data = data.clone();
 
-    Ok(match &real_n.cmp(n) {
-        // if estimated n is correct, return real data
-        Ordering::Equal =>
-            data.clone(),
-        // if real n is less than estimated n, augment real data with synthetic data
-        Ordering::Less => {
-            // initialize synthetic data with correct shape
-            let mut synthetic_shape = data.shape().to_vec();
-            synthetic_shape[0] = (n - real_n) as usize;
-            let num_columns = get_num_columns(data)?;
+    if let Some(number_cols) = number_cols {
 
-            let lower = standardize_numeric_argument(lower, &num_columns)?
-                .into_dimensionality::<Ix1>()?.to_vec();
-            let upper = standardize_numeric_argument(upper, &num_columns)?
-                .into_dimensionality::<Ix1>()?.to_vec();
+        // get number of columns in actual data
+        let real_n = get_num_columns(&data)?;
 
-            let mut synthetic = ndarray::ArrayD::zeros(synthetic_shape);
-            synthetic.gencolumns_mut().into_iter().zip(lower.into_iter().zip(upper.into_iter()))
-                .map(|(mut column, (min, max))| column.iter_mut()
-                    .map(|v| {
-                        *v = sample_uniform_int(&min, &max)?;
-                        Ok(())
-                    })
-                    .collect::<Result<_>>())
-                .collect::<Result<_>>()?;
+        data = match real_n.cmp(&number_cols) {
+            Ordering::Equal =>
+                data,
+            Ordering::Less => {
+                // initialize synthetic data with correct shape
+                let mut synthetic_shape = data.shape().to_vec();
+                synthetic_shape[1] = (number_cols - real_n) as usize;
 
-            // combine real and synthetic data
-            match ndarray::stack(Axis(0), &[data.view(), synthetic.view()]) {
-                Ok(value) => value,
-                Err(_) => return Err("failed to stack real and synthetic data".into())
+                let lower = standardize_numeric_argument(lower, &(number_cols - real_n))?
+                    .into_dimensionality::<Ix1>()?.to_vec();
+                let upper = standardize_numeric_argument(upper, &(number_cols - real_n))?
+                    .into_dimensionality::<Ix1>()?.to_vec();
+
+                let mut synthetic = ndarray::ArrayD::zeros(synthetic_shape);
+                synthetic.gencolumns_mut().into_iter().zip(lower.into_iter().zip(upper.into_iter()))
+                    .map(|(mut column, (min, max))| column.iter_mut()
+                        .map(|v| {
+                            *v = sample_uniform_int(&min, &max)?;
+                            Ok(())
+                        })
+                        .collect::<Result<_>>())
+                    .collect::<Result<_>>()?;
+
+                // combine real and synthetic data
+                match ndarray::stack(Axis(0), &[data.view(), synthetic.view()]) {
+                    Ok(value) => value,
+                    Err(_) => return Err("failed to stack real and synthetic data".into())
+                }
             }
+            Ordering::Greater =>
+                data.select(Axis(1), &create_sampling_indices(&number_cols, &real_n)?)
         }
-        // if real n is greater than estimated n, return a subset of the real data
-        Ordering::Greater =>
-            data.select(Axis(0), &create_sampling_indices(&n, &real_n)?)
-    })
+    }
+
+    if let Some(number_rows) = number_rows {
+        // get number of observations in actual data
+        let real_n = data.len_of(Axis(0)) as i64;
+
+        data = match &real_n.cmp(&number_rows) {
+            // if estimated n is correct, return real data
+            Ordering::Equal =>
+                data.clone(),
+            // if real n is less than estimated n, augment real data with synthetic data
+            Ordering::Less => {
+                // initialize synthetic data with correct shape
+                let mut synthetic_shape = data.shape().to_vec();
+                synthetic_shape[0] = (number_rows - real_n) as usize;
+                let num_columns = get_num_columns(&data)?;
+
+                let lower = standardize_numeric_argument(lower, &num_columns)?
+                    .into_dimensionality::<Ix1>()?.to_vec();
+                let upper = standardize_numeric_argument(upper, &num_columns)?
+                    .into_dimensionality::<Ix1>()?.to_vec();
+
+                let mut synthetic = ndarray::ArrayD::zeros(synthetic_shape);
+                synthetic.gencolumns_mut().into_iter().zip(lower.into_iter().zip(upper.into_iter()))
+                    .map(|(mut column, (min, max))| column.iter_mut()
+                        .map(|v| {
+                            *v = sample_uniform_int(&min, &max)?;
+                            Ok(())
+                        })
+                        .collect::<Result<_>>())
+                    .collect::<Result<_>>()?;
+
+                // combine real and synthetic data
+                match ndarray::stack(Axis(0), &[data.view(), synthetic.view()]) {
+                    Ok(value) => value,
+                    Err(_) => return Err("failed to stack real and synthetic data".into())
+                }
+            }
+            // if real n is greater than estimated n, return a subset of the real data
+            Ordering::Greater =>
+                data.select(Axis(0), &create_sampling_indices(&number_rows, &real_n)?)
+        }
+    }
+
+    Ok(data)
 }
 
 /// Resizes categorical data based on estimate of n and true size of data.
@@ -204,48 +302,94 @@ pub fn resize_integer(
 /// # Return
 /// A resized version of data consistent with the provided `n`
 pub fn resize_categorical<T>(
-    data: &ArrayD<T>, n: &i64,
+    data: &ArrayD<T>,
+    number_rows: Option<i64>,
+    number_cols: Option<i64>,
     categories: &Vec<Vec<T>>,
     weights: &Option<Vec<Vec<f64>>>,
 ) -> Result<ArrayD<T>> where T: Clone, T: PartialEq, T: Default, T: Ord, T: Hash {
 
-    // get number of observations in actual data
-    let real_n: i64 = data.len_of(Axis(0)) as i64;
+    let mut data = data.clone();
 
-    Ok(match &real_n.cmp(n) {
-        // if estimated n is correct, return real data
-        Ordering::Equal =>
-            data.clone(),
-        // if real n is less than estimated n, augment real data with synthetic data
-        Ordering::Less => {
-            // set synthetic data shape
-            let mut synthetic_shape = data.shape().to_vec();
-            synthetic_shape[0] = (n - real_n) as usize;
+    if let Some(number_cols) = number_cols {
 
-            let num_columns = get_num_columns(&data)?;
-            let mut synthetic = ndarray::Array::default(synthetic_shape).into_dyn();
+        // get number of columns in actual data
+        let real_n = get_num_columns(&data)?;
 
-            // iterate over initialized synthetic data and fill with correct null values
-            synthetic.gencolumns_mut().into_iter()
-                .for_each(|mut col| col.iter_mut()
-                    .for_each(|v| *v = T::default()));
+        data = match real_n.cmp(&number_cols) {
+            Ordering::Equal =>
+                data,
+            Ordering::Less => {
+                // set synthetic data shape
+                let mut synthetic_shape = data.shape().to_vec();
+                synthetic_shape[0] = (number_cols - real_n) as usize;
 
-            let null_value = (0..num_columns).map(|_| vec![T::default()]).collect();
+                let num_columns = get_num_columns(&data)?;
+                let mut synthetic = ndarray::Array::default(synthetic_shape).into_dyn();
 
-            // impute categorical data for each column of nulls to create synthetic data
-            synthetic = impute_categorical(
-                &synthetic, &categories, weights, &null_value)?;
+                // iterate over initialized synthetic data and fill with correct null values
+                synthetic.gencolumns_mut().into_iter()
+                    .for_each(|mut col| col.iter_mut()
+                        .for_each(|v| *v = T::default()));
 
-            // combine real and synthetic data
-            match slow_stack(Axis(0), &[data.view(), synthetic.view()]) {
-                Ok(value) => value,
-                Err(_) => return Err("failed to stack real and synthetic data".into())
+                let null_value = (0..num_columns).map(|_| vec![T::default()]).collect();
+
+                // impute categorical data for each column of nulls to create synthetic data
+                synthetic = impute_categorical(
+                    &synthetic, &categories, weights, &null_value)?;
+
+                // combine real and synthetic data
+                match slow_stack(Axis(0), &[data.view(), synthetic.view()]) {
+                    Ok(value) => value,
+                    Err(_) => return Err("failed to stack real and synthetic data".into())
+                }
             }
+            Ordering::Greater =>
+                slow_select(&data, Axis(0), &create_sampling_indices(&number_cols, &real_n)?).to_owned(),
         }
-        // if real n is greater than estimated n, return a subset of the real data
-        Ordering::Greater =>
-            slow_select(data, Axis(0), &create_sampling_indices(&n, &real_n)?).to_owned(),
-    })
+    }
+
+    if let Some(number_rows) = number_rows {
+        // get number of observations in actual data
+        let real_n: i64 = data.len_of(Axis(0)) as i64;
+
+        data = match &real_n.cmp(&number_rows) {
+            // if estimated n is correct, return real data
+            Ordering::Equal =>
+                data.clone(),
+            // if real n is less than estimated n, augment real data with synthetic data
+            Ordering::Less => {
+                // set synthetic data shape
+                let mut synthetic_shape = data.shape().to_vec();
+                synthetic_shape[0] = (number_rows - real_n) as usize;
+
+                let num_columns = get_num_columns(&data)?;
+                let mut synthetic = ndarray::Array::default(synthetic_shape).into_dyn();
+
+                // iterate over initialized synthetic data and fill with correct null values
+                synthetic.gencolumns_mut().into_iter()
+                    .for_each(|mut col| col.iter_mut()
+                        .for_each(|v| *v = T::default()));
+
+                let null_value = (0..num_columns).map(|_| vec![T::default()]).collect();
+
+                // impute categorical data for each column of nulls to create synthetic data
+                synthetic = impute_categorical(
+                    &synthetic, &categories, weights, &null_value)?;
+
+                // combine real and synthetic data
+                match slow_stack(Axis(0), &[data.view(), synthetic.view()]) {
+                    Ok(value) => value,
+                    Err(_) => return Err("failed to stack real and synthetic data".into())
+                }
+            }
+            // if real n is greater than estimated n, return a subset of the real data
+            Ordering::Greater =>
+                slow_select(&data, Axis(0), &create_sampling_indices(&number_rows, &real_n)?).to_owned(),
+        }
+    }
+
+    Ok(data)
 }
 
 /// Accepts set and element weights and returns a subset of size k (without replacement).
