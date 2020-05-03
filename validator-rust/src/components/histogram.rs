@@ -38,17 +38,18 @@ impl Component for proto::Histogram {
             return Err("data must contain one column".into())
         }
         data_property.num_records = Some(categories.lengths()[0] as i64);
+        let num_columns = data_property.num_columns()?;
 
         // save a snapshot of the state when aggregating
         data_property.aggregator = Some(AggregatorProperties {
             component: proto::component::Variant::Histogram(self.clone()),
-            properties: properties.clone()
+            properties: properties.clone(),
+            lipschitz_constant: (0..num_columns).map(|_| 1.).collect()
         });
 
-        let data_num_columns = data_property.num_columns()?;
         data_property.nature = Some(Nature::Continuous(NatureContinuous {
-            lower: Vector1DNull::I64((0..data_num_columns).map(|_| Some(0)).collect()),
-            upper: Vector1DNull::I64((0..data_num_columns).map(|_| None).collect()),
+            lower: Vector1DNull::I64((0..num_columns).map(|_| Some(0)).collect()),
+            upper: Vector1DNull::I64((0..num_columns).map(|_| None).collect()),
         }));
         data_property.data_type = DataType::I64;
 

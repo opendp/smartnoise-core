@@ -13,7 +13,7 @@ impl Evaluable for proto::Clamp {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
         // if categories argument was provided, clamp data as if they are categorical (regardless of atomic type)
         if arguments.contains_key("categories") {
-            match (get_argument(&arguments, "data")?, get_argument(&arguments, "categories")?, get_argument(&arguments, "null_value")?) {
+            match (get_argument(arguments, "data")?, get_argument(arguments, "categories")?, get_argument(arguments, "null_value")?) {
                 (Value::Array(data), Value::Jagged(categories), Value::Array(nulls)) => Ok(match (data, categories, nulls) {
                     (Array::Bool(data), Jagged::Bool(categories), Array::Bool(nulls)) =>
                         clamp_categorical(&data, &categories, &nulls)?.into(),
@@ -31,7 +31,7 @@ impl Evaluable for proto::Clamp {
         }
         // if categories argument was not provided, clamp data as numeric
         else {
-            match (get_argument(&arguments, "data")?, get_argument(&arguments, "lower")?, get_argument(&arguments, "upper")?) {
+            match (get_argument(arguments, "data")?, get_argument(arguments, "lower")?, get_argument(arguments, "upper")?) {
                 (Value::Array(data), Value::Array(lower), Value::Array(upper)) => Ok(match (data, lower, upper) {
                     (Array::F64(data), Array::F64(lower), Array::F64(upper)) =>
                         clamp_numeric_float(&data, &lower, &upper)?.into(),

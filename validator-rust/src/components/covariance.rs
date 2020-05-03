@@ -29,15 +29,18 @@ impl Component for proto::Covariance {
                 data_property.assert_is_not_aggregated()?;
             }
 
+            let num_columns = data_property.num_columns()?;
+            let num_columns = num_columns * (num_columns + 1) / 2;
+
             // save a snapshot of the state when aggregating
             data_property.aggregator = Some(AggregatorProperties {
                 component: proto::component::Variant::Covariance(self.clone()),
                 properties: properties.clone(),
+                lipschitz_constant: (0..num_columns).map(|_| 1.).collect()
             });
 
-            let num_columns = data_property.num_columns()?;
             data_property.num_records = Some(1);
-            data_property.num_columns = Some(num_columns * (num_columns + 1) / 2);
+            data_property.num_columns = Some(num_columns);
 
             if data_property.data_type != DataType::F64 {
                 return Err("data: atomic type must be float".into());
@@ -72,17 +75,20 @@ impl Component for proto::Covariance {
                 right_property.assert_is_not_aggregated()?;
             }
 
+            let num_columns = left_property.num_columns()? * right_property.num_columns()?;
+
             // save a snapshot of the state when aggregating
             left_property.aggregator = Some(AggregatorProperties {
                 component: proto::component::Variant::Covariance(self.clone()),
                 properties: properties.clone(),
+                lipschitz_constant: (0..num_columns).map(|_| 1.).collect()
             });
 
             left_property.nature = None;
             left_property.releasable = left_property.releasable && right_property.releasable;
 
             left_property.num_records = Some(1);
-            left_property.num_columns = Some(left_property.num_columns()? * right_property.num_columns()?);
+            left_property.num_columns = Some(num_columns);
 
             Ok(left_property.into())
         } else {

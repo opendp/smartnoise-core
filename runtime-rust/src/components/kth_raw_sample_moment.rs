@@ -12,7 +12,7 @@ use std::convert::TryFrom;
 
 impl Evaluable for proto::KthRawSampleMoment {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        let data = get_argument(&arguments, "data")?.array()?.f64()?;
+        let data = get_argument(arguments, "data")?.array()?.f64()?;
         Ok(ReleaseNode::new(kth_raw_sample_moment(data, &(self.k as i64))?.into()))
     }
 }

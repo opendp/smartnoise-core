@@ -100,6 +100,7 @@ message ArrayNDProperties {
     message AggregatorProperties {
         Component component = 1;
         map<string, ValueProperties> properties = 2;
+        Array1dF64 lipschitz_constant = 3;
     }
     AggregatorProperties aggregator = 5;
     

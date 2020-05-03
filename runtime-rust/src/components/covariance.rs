@@ -15,7 +15,7 @@ impl Evaluable for proto::Covariance {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
         let delta_degrees_of_freedom = if self.finite_sample_correction {1} else {0} as usize;
         if arguments.contains_key("data") {
-            let data = get_argument(&arguments, "data")?.array()?.f64()?;
+            let data = get_argument(arguments, "data")?.array()?.f64()?;
             let covariances = matrix_covariance(&data, &delta_degrees_of_freedom)?.into_iter()
                 .flat_map(|x| x)
                 .collect::<Vec<f64>>();
@@ -24,8 +24,8 @@ impl Evaluable for proto::Covariance {
             return Ok(ReleaseNode::new(arr1(&covariances).insert_axis(Axis(0)).into_dyn().into()));
         }
         if arguments.contains_key("left") && arguments.contains_key("right") {
-            let left = get_argument(&arguments, "left")?.array()?.f64()?;
-            let right = get_argument(&arguments, "right")?.array()?.f64()?;
+            let left = get_argument(arguments, "left")?.array()?.f64()?;
+            let right = get_argument(arguments, "right")?.array()?.f64()?;
 
             let cross_covariances = matrix_cross_covariance(&left, &right, &delta_degrees_of_freedom)?;
 

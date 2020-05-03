@@ -11,11 +11,11 @@ use whitenoise_validator::utilities::{get_argument, standardize_categorical_argu
 
 impl Evaluable for proto::Digitize {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        let inclusive_left: &ArrayD<bool> = get_argument(&arguments, "inclusive_left")?.array()?.bool()?;
+        let inclusive_left: &ArrayD<bool> = get_argument(arguments, "inclusive_left")?.array()?.bool()?;
 
-        let data = get_argument(&arguments, "data")?.array()?;
-        let edges = get_argument(&arguments, "edges")?.jagged()?;
-        let null = get_argument(&arguments, "null_value")?.array()?.i64()?;
+        let data = get_argument(arguments, "data")?.array()?;
+        let edges = get_argument(arguments, "edges")?.jagged()?;
+        let null = get_argument(arguments, "null_value")?.array()?.i64()?;
         let num_columns = data.num_columns()?;
 
         Ok(ReleaseNode::new(match (data, edges) {
@@ -51,7 +51,7 @@ impl Evaluable for proto::Digitize {
 /// use whitenoise_runtime::utilities::get_num_columns;
 ///
 /// let data = arr1(&[1.1, 2., 2.9, 4.1, 6.4]).into_dyn();
-/// let edges = vec![Some(vec![0., 1., 2., 3., 4., 5.])];
+/// let edges = vec![vec![0., 1., 2., 3., 4., 5.]];
 /// let inclusive_left = arr1(&[true]).into_dyn();
 /// let null = arr1(&[-1]).into_dyn();
 ///

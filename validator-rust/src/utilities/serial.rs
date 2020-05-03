@@ -227,6 +227,7 @@ pub fn parse_arraynd_properties(value: proto::ArrayNdProperties) -> ArrayPropert
                 properties: aggregator.properties.into_iter()
                     .map(|(name, properties)| (name, parse_value_properties(properties)))
                     .collect::<HashMap<String, ValueProperties>>(),
+                lipschitz_constant: parse_array1d_f64(aggregator.lipschitz_constant.unwrap())
             }),
             None => None
         },
@@ -541,6 +542,7 @@ pub fn serialize_arraynd_properties(value: ArrayProperties) -> proto::ArrayNdPro
                 properties: aggregator.properties.into_iter()
                     .map(|(name, properties)| (name, serialize_value_properties(properties)))
                     .collect::<HashMap<String, proto::ValueProperties>>(),
+                lipschitz_constant: Some(serialize_array1d_f64(aggregator.lipschitz_constant))
             }),
             None => None
         },

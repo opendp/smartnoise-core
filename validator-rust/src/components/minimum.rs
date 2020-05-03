@@ -30,6 +30,7 @@ impl Component for proto::Minimum {
         data_property.aggregator = Some(AggregatorProperties {
             component: proto::component::Variant::Minimum(self.clone()),
             properties: properties.clone(),
+            lipschitz_constant: (0..data_property.num_columns()?).map(|_| 1.).collect()
         });
 
         if data_property.data_type != DataType::F64 && data_property.data_type != DataType::I64 {

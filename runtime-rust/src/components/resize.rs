@@ -27,10 +27,10 @@ impl Evaluable for proto::Resize {
         // If "categories" constraint has been propagated, data are treated as categorical (regardless of atomic type)
         // and imputation (if necessary) is done by sampling from "categories" using the "probabilities" as sampling probabilities for each element.
         if arguments.contains_key("categories") {
-            let weights = get_argument(&arguments, "weights")
+            let weights = get_argument(arguments, "weights")
                 .and_then(|v| v.jagged()).and_then(|v| v.f64()).ok();
 
-            match (get_argument(&arguments, "data")?, get_argument(&arguments, "categories")?) {
+            match (get_argument(arguments, "data")?, get_argument(arguments, "categories")?) {
                 // match on types of various arguments and ensure they are consistent with each other
                 (Value::Array(data), Value::Jagged(categories)) =>
                     Ok(match (data, categories) {
@@ -52,9 +52,9 @@ impl Evaluable for proto::Resize {
         // is done according to a continuous distribution.
         else {
             match (
-                get_argument(&arguments, "data")?.array()?,
-                get_argument(&arguments, "lower")?.array()?,
-                get_argument(&arguments, "upper")?.array()?
+                get_argument(arguments, "data")?.array()?,
+                get_argument(arguments, "lower")?.array()?,
+                get_argument(arguments, "upper")?.array()?
             ) {
                 (Array::F64(data), Array::F64(lower), Array::F64(upper)) => {
                     // If there is no valid distribution argument provided, generate uniform by default
@@ -62,11 +62,11 @@ impl Evaluable for proto::Resize {
                         Ok(distribution) => distribution.first_string()?,
                         Err(_) => "uniform".to_string()
                     };
-                    let shift = match get_argument(&arguments, "shift") {
+                    let shift = match get_argument(arguments, "shift") {
                         Ok(shift) => Some(shift.array()?.f64()?),
                         Err(_) => None
                     };
-                    let scale = match get_argument(&arguments, "scale") {
+                    let scale = match get_argument(arguments, "scale") {
                         Ok(scale) => Some(scale.array()?.f64()?),
                         Err(_) => None
                     };

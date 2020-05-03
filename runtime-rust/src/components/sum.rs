@@ -12,7 +12,7 @@ use num::Zero;
 
 impl Evaluable for proto::Sum {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        match get_argument(&arguments, "data")?.array()? {
+        match get_argument(arguments, "data")?.array()? {
             Array::F64(data) => Ok(sum(&data)?.into()),
             Array::I64(data) => Ok(sum(&data)?.into()),
             _ => return Err("data must be either f64 or i64".into())
