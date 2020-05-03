@@ -12,7 +12,7 @@ use crate::utilities::get_num_columns;
 
 impl Evaluable for proto::Maximum {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        Ok(ReleaseNode::new(match get_argument(&arguments, "data")?.array()? {
+        Ok(ReleaseNode::new(match get_argument(arguments, "data")?.array()? {
             Array::F64(data) => maximum(&data)?.into(),
             _ => return Err("data must be either f64 or i64".into())
         }))

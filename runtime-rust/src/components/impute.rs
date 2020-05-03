@@ -17,13 +17,13 @@ impl Evaluable for proto::Impute {
 
         // if categories argument is not None, treat data as categorical (regardless of atomic type)
         if arguments.contains_key("categories") {
-            let weights = get_argument(&arguments, "weights")
+            let weights = get_argument(arguments, "weights")
                 .and_then(|v| v.jagged()).and_then(|v| v.f64()).ok();
 
             Ok(ReleaseNode::new(match (
-                get_argument(&arguments, "data")?.array()?,
-                get_argument(&arguments, "categories")?.jagged()?,
-                get_argument(&arguments, "null_values")?.jagged()?) {
+                get_argument(arguments, "data")?.array()?,
+                get_argument(arguments, "categories")?.jagged()?,
+                get_argument(arguments, "null_values")?.jagged()?) {
 
                 (Array::Bool(data), Jagged::Bool(categories), Jagged::Bool(nulls)) =>
                     impute_categorical(&data, &categories, &weights, &nulls)?.into(),
@@ -43,7 +43,7 @@ impl Evaluable for proto::Impute {
         // if categories argument is None, treat data as continuous
         else {
             // get specified data distribution for imputation -- default to Uniform if no valid distribution is provided
-            let distribution = match get_argument(&arguments, "distribution") {
+            let distribution = match get_argument(arguments, "distribution") {
                 Ok(distribution) => distribution.first_string()?,
                 Err(_) => "Uniform".to_string()
             };
@@ -53,7 +53,7 @@ impl Evaluable for proto::Impute {
                 // if f64, impute uniform values
                 // if i64, no need to impute (numeric imputation replaces only f64::NAN values, which are not defined for the i64 type)
                 "uniform" => {
-                    Ok(match (get_argument(&arguments, "data")?, get_argument(&arguments, "lower")?, get_argument(&arguments, "upper")?) {
+                    Ok(match (get_argument(arguments, "data")?, get_argument(arguments, "lower")?, get_argument(arguments, "upper")?) {
                         (Value::Array(data), Value::Array(lower), Value::Array(upper)) => match (data, lower, upper) {
                             (Array::F64(data), Array::F64(lower), Array::F64(upper)) =>
                                 impute_float_uniform(&data, &lower, &upper)?.into(),
@@ -67,11 +67,11 @@ impl Evaluable for proto::Impute {
                 },
                 // if specified distribution is Gaussian, get necessary arguments and impute
                 "gaussian" => {
-                    let data = get_argument(&arguments, "data")?.array()?.f64()?;
-                    let lower = get_argument(&arguments, "lower")?.array()?.f64()?;
-                    let upper = get_argument(&arguments, "upper")?.array()?.f64()?;
-                    let scale = get_argument(&arguments, "scale")?.array()?.f64()?;
-                    let shift = get_argument(&arguments, "shift")?.array()?.f64()?;
+                    let data = get_argument(arguments, "data")?.array()?.f64()?;
+                    let lower = get_argument(arguments, "lower")?.array()?.f64()?;
+                    let upper = get_argument(arguments, "upper")?.array()?.f64()?;
+                    let scale = get_argument(arguments, "scale")?.array()?.f64()?;
+                    let shift = get_argument(arguments, "shift")?.array()?.f64()?;
 
                     Ok(impute_float_gaussian(&data, &lower, &upper, &shift, &scale)?.into())
                 },

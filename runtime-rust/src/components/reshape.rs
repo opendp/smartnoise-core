@@ -17,7 +17,7 @@ impl Evaluable for proto::Reshape {
             _ => return Err("layout: unrecognized format. Must be either row or column".into())
         };
 
-        match get_argument(&arguments, "data")?.array()? {
+        match get_argument(arguments, "data")?.array()? {
             Array::Bool(data) => {
                 let mut reshaped = reshape(&data, &self.symmetric, &layout, &self.shape)?;
                 match reshaped.len().clone() {

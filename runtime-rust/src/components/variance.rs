@@ -13,7 +13,7 @@ impl Evaluable for proto::Variance {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
         let delta_degrees_of_freedom = if self.finite_sample_correction { 1 } else { 0 } as usize;
         Ok(ReleaseNode::new(variance(
-            &get_argument(&arguments, "data")?.array()?.f64()?.clone(),
+            &get_argument(arguments, "data")?.array()?.f64()?.clone(),
             &delta_degrees_of_freedom
         )?.into()))
     }

@@ -15,9 +15,9 @@ use crate::utilities::to_nd;
 
 impl Evaluable for proto::Filter {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        let mask = get_argument(&arguments, "mask")?.array()?.bool()?;
+        let mask = get_argument(arguments, "mask")?.array()?.bool()?;
 
-        Ok(ReleaseNode::new(match get_argument(&arguments, "data")?.array()? {
+        Ok(ReleaseNode::new(match get_argument(arguments, "data")?.array()? {
             Array::Str(data) => filter(data, mask)?.into(),
             Array::F64(data) => filter(data, mask)?.into(),
             Array::I64(data) => filter(data, mask)?.into(),

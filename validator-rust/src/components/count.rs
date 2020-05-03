@@ -37,7 +37,8 @@ impl Component for proto::Count {
         // save a snapshot of the state when aggregating
         data_property.aggregator = Some(AggregatorProperties {
             component: proto::component::Variant::Count(self.clone()),
-            properties: properties.clone()
+            properties: properties.clone(),
+            lipschitz_constant: vec![1.]
         });
 
         let data_num_records = data_property.num_records;

@@ -13,14 +13,14 @@ use crate::base::evaluate_function;
 
 impl Evaluable for proto::LaplaceMechanism {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        let mut data = match get_argument(&arguments, "data")?.array()? {
+        let mut data = match get_argument(arguments, "data")?.array()? {
             Array::F64(data) => data.clone(),
             Array::I64(data) => data.mapv(|v| v as f64),
             _ => return Err("data must be numeric".into())
         };
 //        println!("data: {:?}", data);
 
-        let sensitivity = get_argument(&arguments, "sensitivity")?.array()?.f64()?;
+        let sensitivity = get_argument(arguments, "sensitivity")?.array()?.f64()?;
 //        println!("sensitivity: {:?}", sensitivity);
 
         let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivity.len())?;
@@ -50,14 +50,14 @@ impl Evaluable for proto::LaplaceMechanism {
 
 impl Evaluable for proto::GaussianMechanism {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        let mut data = match get_argument(&arguments, "data")?.array()? {
+        let mut data = match get_argument(arguments, "data")?.array()? {
             Array::F64(data) => data.clone(),
             Array::I64(data) => data.mapv(|v| v as f64),
             _ => return Err("data must be numeric".into())
         };
 //        println!("data: {:?}", data.shape());
 
-        let sensitivity = get_argument(&arguments, "sensitivity")?.array()?.f64()?;
+        let sensitivity = get_argument(arguments, "sensitivity")?.array()?.f64()?;
 //        println!("sensitivity: {:?}", sensitivity.shape());
 
         let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivity.len())?;
@@ -92,10 +92,10 @@ impl Evaluable for proto::GaussianMechanism {
 
 impl Evaluable for proto::SimpleGeometricMechanism {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        let mut data = get_argument(&arguments, "data")?.array()?.i64()?.clone();
+        let mut data = get_argument(arguments, "data")?.array()?.i64()?.clone();
 //        println!("data: {:?}", data.shape());
 
-        let sensitivity = get_argument(&arguments, "sensitivity")?.array()?.f64()?;
+        let sensitivity = get_argument(arguments, "sensitivity")?.array()?.f64()?;
 //        println!("sensitivity: {:?}", sensitivity.shape());
 
         let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivity.len())?;
@@ -104,11 +104,11 @@ impl Evaluable for proto::SimpleGeometricMechanism {
 //        println!("epsilon: {:?}", epsilon.shape());
 
         let lower = broadcast_ndarray(
-            get_argument(&arguments, "lower")?.array()?.i64()?, data.shape())?;
+            get_argument(arguments, "lower")?.array()?.i64()?, data.shape())?;
 //        println!("min: {:?}", min.shape());
 
         let upper = broadcast_ndarray(
-            get_argument(&arguments, "upper")?.array()?.i64()?, data.shape())?;
+            get_argument(arguments, "upper")?.array()?.i64()?, data.shape())?;
 //        println!("max: {:?}", max.shape());
 
         data.gencolumns_mut().into_iter()
@@ -135,17 +135,17 @@ impl Evaluable for proto::SimpleGeometricMechanism {
 
 impl Evaluable for proto::ExponentialMechanism {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        let data = get_argument(&arguments, "data")?;
+        let data = get_argument(arguments, "data")?;
 
-        let sensitivity = get_argument(&arguments, "sensitivity")?.array()?.f64()?
+        let sensitivity = get_argument(arguments, "sensitivity")?.array()?.f64()?
             .iter().cloned().collect::<Vec<f64>>();
 
         let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivity.len())?;
         let epsilon = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
 
-        let utility = get_argument(&arguments, "utility")?.function()?;
+        let utility = get_argument(arguments, "utility")?.function()?;
 
-        let value = match get_argument(&arguments, "candidates")?.jagged()? {
+        let value = match get_argument(arguments, "candidates")?.jagged()? {
             Jagged::F64(candidates) => {
                 let release_vec = candidates.into_iter()
                     .zip(sensitivity.iter().zip(epsilon.iter()))

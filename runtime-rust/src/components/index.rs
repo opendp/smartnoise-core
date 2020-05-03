@@ -15,8 +15,8 @@ use indexmap::map::IndexMap;
 
 impl Evaluable for proto::Index {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        let data = get_argument(&arguments, "data")?;
-        let columns = get_argument(&arguments, "columns")?.array()?;
+        let data = get_argument(arguments, "data")?;
+        let columns = get_argument(arguments, "columns")?.array()?;
 
         // TODO: synthetic generation for out-of-bounds indexing on private data with unknown column size
         // // force the input to be an array- reject hashmap and jagged

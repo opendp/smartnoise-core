@@ -28,6 +28,13 @@ impl Component for proto::Abs {
             data_property.assert_is_not_aggregated()?;
         }
 
+        // ABS is 1-Lipschitz
+        if let Some(mut aggregator) = data_property.aggregator {
+            aggregator.lipschitz_constant = aggregator.lipschitz_constant
+                .into_iter().map(|v| v * 1.).collect();
+            data_property.aggregator = Some(aggregator);
+        }
+
         data_property.nature = propagate_unary_nature(
             &data_property,
             &UnaryOperators {
@@ -81,6 +88,13 @@ impl Component for proto::Add {
         let right_property = properties.get("right")
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
+
+        // // Add is 1-Lipschitz in L1 space
+        // if let Some(mut aggregator) = data_property.aggregator {
+        //     aggregator.lipschitz_constant = aggregator.lipschitz_constant
+        //         .into_iter().map(|v| v * 1.).collect();
+        //     data_property.aggregator = Some(aggregator);
+        // }
 
         if !left_property.releasable {
             left_property.assert_is_not_aggregated()?;

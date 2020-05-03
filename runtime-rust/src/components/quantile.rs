@@ -16,7 +16,7 @@ use std::ops::{Sub, Div, Add, Mul, Rem};
 
 impl Evaluable for proto::Quantile {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        Ok(ReleaseNode::new(match get_argument(&arguments, "data")?.array()? {
+        Ok(ReleaseNode::new(match get_argument(arguments, "data")?.array()? {
             Array::F64(data) =>
                 quantile(data.mapv(n64), &self.alpha, &self.interpolation)?.mapv(|v| v.raw()).into(),
             Array::I64(data) =>

@@ -55,6 +55,8 @@ impl Component for proto::Resize {
             return Ok(data_property.into());
         }
 
+        let num_columns = data_property.num_columns()?;
+
         match data_property.data_type {
             DataType::F64 => {
 
