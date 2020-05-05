@@ -90,7 +90,10 @@ impl Component for proto::Index {
                 }
             },
             ValueProperties::Array(data_property) => {
-                data_property.assert_is_not_aggregated()?;
+
+                if !data_property.releasable {
+                    data_property.assert_is_not_aggregated()?;
+                }
 
                 match column_names {
                     Array::I64(indices) => to_name_vec(&indices)?.into_iter()

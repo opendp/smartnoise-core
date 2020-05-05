@@ -4,10 +4,6 @@
   "name": "literal",
   "options": {},
   "return": {
-    "nature": [
-      "continuous",
-      "categorical"
-    ],
-    "type": "Array"
+    "type_value": "Array"
   }
 }

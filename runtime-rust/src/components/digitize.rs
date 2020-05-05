@@ -164,7 +164,7 @@ pub fn bin_index<T: PartialOrd + Clone>(
 }
 
 #[cfg(test)]
-mod bin_index_tests {
+mod test_bin_index {
     use crate::components::digitize::bin_index;
 
     #[test]

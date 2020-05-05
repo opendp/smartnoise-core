@@ -7,7 +7,7 @@ use crate::proto;
 use ndarray::prelude::Ix1;
 
 use std::collections::{HashMap, BTreeMap};
-use ndarray::{ArrayD};
+use ndarray::{ArrayD, arr0};
 
 use crate::utilities::{standardize_categorical_argument, deduplicate};
 
@@ -78,6 +78,30 @@ impl Value {
 
 
 // build Value from other types with .into()
+impl From<bool> for Value {
+    fn from(value: bool) -> Self {
+        Value::Array(Array::Bool(arr0(value).into_dyn()))
+    }
+}
+
+impl From<f64> for Value {
+    fn from(value: f64) -> Self {
+        Value::Array(Array::F64(arr0(value).into_dyn()))
+    }
+}
+
+impl From<i64> for Value {
+    fn from(value: i64) -> Self {
+        Value::Array(Array::I64(arr0(value).into_dyn()))
+    }
+}
+
+impl From<String> for Value {
+    fn from(value: String) -> Self {
+        Value::Array(Array::Str(arr0(value).into_dyn()))
+    }
+}
+
 impl From<ArrayD<bool>> for Value {
     fn from(value: ArrayD<bool>) -> Self {
         Value::Array(Array::Bool(value))
@@ -813,6 +837,8 @@ pub enum SensitivitySpace {
 /// A release consists of Values for each node id.
 pub type Release = HashMap<u32, ReleaseNode>;
 
+
+#[derive(Debug)]
 pub struct ReleaseNode {
     pub value: Value,
     pub privacy_usages: Option<Vec<proto::PrivacyUsage>>,

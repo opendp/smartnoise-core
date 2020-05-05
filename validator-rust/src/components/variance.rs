@@ -20,12 +20,14 @@ impl Component for proto::Variance {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
-        data_property.assert_is_not_aggregated()?;
+        if !data_property.releasable {
+            data_property.assert_is_not_aggregated()?;
+        }
         data_property.assert_is_not_empty()?;
 
         // save a snapshot of the state when aggregating
         data_property.aggregator = Some(AggregatorProperties {
-            component: proto::component::Variant::from(self.clone()),
+            component: proto::component::Variant::Variance(self.clone()),
             properties: properties.clone()
         });
 

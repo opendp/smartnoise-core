@@ -49,13 +49,13 @@ impl Expandable for proto::DpMean {
         computation_graph.insert(component_id.clone(), proto::Component {
             arguments: hashmap!["data".to_owned() => id_mean],
             variant: Some(match self.mechanism.to_lowercase().as_str() {
-                "laplace" => proto::component::Variant::from(proto::LaplaceMechanism {
+                "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
                     privacy_usage: self.privacy_usage.clone()
                 }),
-                "gaussian" => proto::component::Variant::from(proto::GaussianMechanism {
+                "gaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
                     privacy_usage: self.privacy_usage.clone()
                 }),
-                _ => panic!("Unexpected invalid token {:?}", self.implementation.as_str()),
+                _ => panic!("Unexpected invalid token {:?}", self.mechanism.as_str()),
             }),
             omit: false,
             batch: component.batch,
@@ -123,8 +123,10 @@ impl Report for proto::DpMean {
                 algorithm_info: AlgorithmInfo {
                     name: "".to_string(),
                     cite: "".to_string(),
-                    mechanism: self.implementation.clone(),
+                    mechanism: self.mechanism.clone(),
                     argument: serde_json::json!({
+                        // TODO: AlgorithmInfo -> serde_json::Value, move implementation into algorithm_info
+                        "implementation": self.implementation.clone(),
                         "n": num_records,
                         "constraint": {
                             "lowerbound": lower[column_number],

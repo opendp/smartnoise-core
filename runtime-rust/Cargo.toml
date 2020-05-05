@@ -32,14 +32,9 @@ error-chain = "0.12.2"
 noisy_float = "0.1.12"
 libmath = "0.2.1"
 
-
 [features]
 # re-export use-system-libs from mpfr
 use-system-libs = ["gmp-mpfr-sys/use-system-libs"]
-
-[build-dependencies]
-prost-build = "0.5.0"
-cbindgen = "0.9.1"
 
 [lib]
 name = "whitenoise_runtime"

@@ -1,7 +1,7 @@
 {
   "arguments": {
     "data": {
-      "type": "Array",
+      "type_value": "Array",
       "description": "Data to be cast to another type."
     }
   },
@@ -9,7 +9,7 @@
   "name": "to_string",
   "options": {},
   "return": {
-    "type": "Array"
+    "type_value": "Array"
   },
   "description": "Cast data to a string atomic type."
 }

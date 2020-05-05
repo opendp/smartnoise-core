@@ -65,7 +65,7 @@ pub fn broadcast_map<T, U>(
 
 
 #[cfg(test)]
-mod broadcast_map_tests {
+mod test_broadcast_map {
     use ndarray::{arr0, arr1, arr2};
     use crate::utilities::broadcast_map;
 

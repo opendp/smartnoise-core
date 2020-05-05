@@ -1,25 +1,16 @@
 {
   "arguments": {
     "left": {
-      "nature": [
-        "continuous"
-      ],
-      "type": "Array"
+      "type_value": "Array"
     },
     "right": {
-      "nature": [
-        "continuous"
-      ],
-      "type": "Array"
+      "type_value": "Array"
     }
   },
   "id": "Multiply",
   "name": "multiply",
   "options": {},
   "return": {
-    "nature": [
-      "continuous"
-    ],
-    "type": "Array"
+    "type_value": "Array"
   }
 }

@@ -1,56 +1,50 @@
 {
   "arguments": {
     "left": {
-      "nature": [
-        "continuous"
-      ],
-      "type": "Array",
-      "default": "None",
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
       "description": "Left data array used to calculate cross-covariance matrix. Used only if `data` not provided."
     },
     "right": {
-      "nature": [
-        "continuous"
-      ],
-      "type": "Array",
-      "default": "None",
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
       "description": "Right data array used to calculate cross-covariance matrix. Used only if `data` not provided."
     },
     "data": {
-      "nature": [
-        "continuous"
-      ],
-      "type": "Array",
-      "default": "None",
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
       "description": "2D data array used to construct covariance matrix."
     }
   },
   "id": "DPCovariance",
   "name": "dp_covariance",
   "options": {
-    "implementation": {
-      "type": "string",
-      "default": "'Laplace'",
-      "description": "Privatizing algorithm to use."
-    },
     "mechanism": {
-      "type": "string",
-      "default": "'Laplace'",
-      "description": "Privatizing mechanism to use."
+      "type_proto": "string",
+      "type_rust": "String",
+      "default_python": "\"Laplace\"",
+      "default_rust": "String::from(\"Laplace\")",
+      "description": "Privatizing mechanism to use. One of [`Laplace`, `Gaussian`]"
     },
     "privacy_usage": {
-      "type": "repeated PrivacyUsage",
-      "default": "None",
+      "type_proto": "repeated PrivacyUsage",
+      "type_rust": "Vec<proto::PrivacyUsage>",
+      "default_python": "None",
       "description": "Object describing the type and amount of privacy to be used for the mechanism release."
     },
     "finite_sample_correction": {
-      "type": "bool",
-      "default": "True",
+      "type_proto": "bool",
+      "type_rust": "bool",
+      "default_python": "True",
+      "default_rust": "true",
       "description": "Whether or not to use the finite sample correction (Bessel's correction)."
     }
   },
   "return": {
-    "type": "Array",
+    "type_value": "Array",
     "description": "Flattened covariance or cross-covariance matrix."
   },
   "description": "Calculate differentially private covariance.\n\nIf `data` argument is provided as a 2D array, calculate covariance matrix. Otherwise, `left` and `right` 1D arrays are used to calculate a cross-covariance matrix between elements of the two arrays."

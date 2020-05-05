@@ -53,7 +53,7 @@ pub fn mean(data: &ArrayD<f64>) -> Result<ArrayD<f64>> {
 
 
 #[cfg(test)]
-mod mean_tests {
+mod test_mean {
     use ndarray::{arr2};
     use crate::components::mean::mean;
     #[test]

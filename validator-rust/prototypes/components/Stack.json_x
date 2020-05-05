@@ -2,7 +2,7 @@
   "arguments": {
     "**kwargs": {
       "nature": null,
-      "type": "Array"
+      "type_value": "Array"
     }
   },
   "id": "Stack",
@@ -13,6 +13,6 @@
       "continuous",
       "categorical"
     ],
-    "type": "Array"
+    "type_value": "Array"
   }
 }

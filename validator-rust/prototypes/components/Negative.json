@@ -1,17 +1,13 @@
 {
   "arguments": {
     "data": {
-      "nature": [],
-      "type": "Array"
+      "type_value": "Array"
     }
   },
   "id": "Negative",
   "name": "negative",
   "options": {},
   "return": {
-    "nature": [
-      "continuous"
-    ],
-    "type": "Array"
+    "type_value": "Array"
   }
 }

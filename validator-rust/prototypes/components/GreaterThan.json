@@ -1,23 +1,16 @@
 {
   "arguments": {
     "left": {
-      "nature": [
-        "continuous"
-      ],
-      "type": "Array"
+      "type_value": "Array"
     },
     "right": {
-      "nature": [
-        "continuous"
-      ],
-      "type": "Array"
+      "type_value": "Array"
     }
   },
   "id": "GreaterThan",
   "name": "greater_than",
   "options": {},
   "return": {
-    "nature": [],
-    "type": "Array"
+    "type_value": "Array"
   }
 }

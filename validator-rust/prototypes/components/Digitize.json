@@ -1,36 +1,22 @@
 {
   "arguments": {
     "data": {
-      "nature": [
-        "continuous",
-        "categorical"
-      ],
-      "type": "Array",
+      "type_value": "Array",
       "description": "Data to be binned."
     },
     "edges": {
-      "nature": [
-        "continuous",
-        "categorical"
-      ],
-      "type": "Jagged",
+      "type_value": "Jagged",
       "description": "Values representing the edges of bins."
     },
     "null_value": {
-      "nature": [
-        "continuous",
-        "categorical"
-      ],
-      "type": "Array",
-      "default": "None",
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
       "description": "Value to which to map if there is no valid bin (e.g. if the element falls outside the bin range). The null value is the final category."
     },
     "inclusive_left": {
-      "nature": [
-        "categorical"
-      ],
-      "type": "Array",
-      "default": "True",
+      "type_value": "Array",
+      "default_python": "True",
       "description": "Whether or not the left edge of the bin is inclusive, i.e. the bins are of the form [lower, upper)."
     }
   },
@@ -38,10 +24,7 @@
   "name": "digitize",
   "options": {},
   "return": {
-    "nature": [
-      "continuous"
-    ],
-    "type": "Array"
+    "type_value": "Array"
   },
   "description": "Maps data to bins.\n\nBins will be of the form [lower, upper) or (lower, upper]. The null value is the final category."
 }

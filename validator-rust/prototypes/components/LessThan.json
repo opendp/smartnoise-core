@@ -1,19 +1,16 @@
 {
   "arguments": {
     "left": {
-      "nature": [],
-      "type": "Array"
+      "type_value": "Array"
     },
     "right": {
-      "nature": [],
-      "type": "Array"
+      "type_value": "Array"
     }
   },
   "id": "LessThan",
   "name": "less_than",
   "options": {},
   "return": {
-    "nature": [],
-    "type": "Array"
+    "type_value": "Array"
   }
 }
