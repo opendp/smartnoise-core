@@ -1,5 +1,7 @@
 extern crate prost_build;
 //extern crate cbindgen;
+extern crate heck;
+use self::heck::CamelCase;
 
 use std::io;
 use std::path::Path;
@@ -218,7 +220,7 @@ message Component {
                 .collect::<Vec<String>>().join(", ");
 
             format!("/// | [{}](../../proto/struct.{}.html) | {} | {} |  ",
-                    component.id, component.id, component.name, inputs)
+                    component.id, component.id.to_camel_case(), component.name, inputs)
         })
         .collect::<Vec<String>>().join("\n");
 
