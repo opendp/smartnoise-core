@@ -27,10 +27,24 @@ impl Component for proto::ExponentialMechanism {
             .ok_or_else(|| Error::from("aggregator: missing"))?;
 
         // sensitivity must be computable
-        aggregator.component.compute_sensitivity(
+        let sensitivity_values = aggregator.component.compute_sensitivity(
             &privacy_definition,
             &aggregator.properties,
             &SensitivitySpace::Exponential)?;
+
+        let sensitivities = sensitivity_values.array()?.f64()?;
+        let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivities.len())?;
+        let epsilons = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
+
+        // epsilons must be greater than 0.
+        for epsilon in epsilons.into_iter(){
+            if epsilon <= 0.0 {
+                return Err("epsilon: privacy parameter epsilon must be greater than 0".into());
+            };
+            if epsilon > 1.0   {
+                println!("Warning: A large privacy parameter of epsilon = {} is in use", epsilon.to_string());
+            }
+        }
 
         data_property.releasable = true;
         Ok(data_property.into())

@@ -1,11 +1,11 @@
-//! The Whitenoise rust validator contains methods for evaluating and constructing 
+//! The Whitenoise rust validator contains methods for evaluating and constructing
 //! differentially private analyses.
-//! 
-//! The validator defines a set of statically checkable properties that are 
+//!
+//! The validator defines a set of statically checkable properties that are
 //! necessary for a differentially private analysis, and then checks that the submitted analysis
 //! satisfies the properties.
 //!
-//! The validator also takes simple components from the Whitenoise runtime and combines them 
+//! The validator also takes simple components from the Whitenoise runtime and combines them
 //! into more complex mechanisms.
 
 // `error_chain!` can recurse deeply
@@ -107,9 +107,15 @@ pub fn compute_privacy_usage(
         .fold1(|usage_1, usage_2| utilities::privacy_usage_reducer(
             &usage_1, &usage_2, &|l, r| l + r));
 
+    match usage_option {
+        Some(privacy_usage) => {
+            utilities::privacy_usage_check(&privacy_usage)?;
+            Ok(privacy_usage)
+        },
+        None => Err("no information is released; privacy usage is none".into())
+    }
+
     // TODO: this should probably return a proto::PrivacyUsage with zero based on the privacy definition
-    usage_option
-        .ok_or_else(|| Error::from("no information is released; privacy usage is none"))
 }
 
 
