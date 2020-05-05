@@ -9,7 +9,7 @@ use crate::{proto, base};
 
 use crate::components::{Component, Expandable};
 use crate::base::{Value, SensitivitySpace, ValueProperties};
-use crate::utilities::{prepend, expand_mechanism};
+use crate::utilities::{prepend, expand_mechanism, broadcast_privacy_usage, get_epsilon};
 
 
 impl Component for proto::ExponentialMechanism {

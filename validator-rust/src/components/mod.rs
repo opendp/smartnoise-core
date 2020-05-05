@@ -40,7 +40,7 @@ pub mod partition;
 mod quantile;
 mod reshape;
 mod mean;
-mod mechanism_exponential;
+// mod mechanism_exponential;
 mod mechanism_gaussian;
 mod mechanism_laplace;
 mod mechanism_simple_geometric;
