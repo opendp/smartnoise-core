@@ -55,7 +55,7 @@ impl Evaluable for proto::Resize {
             ) {
                 (Array::F64(data), Array::F64(lower), Array::F64(upper)) => {
                     // If there is no valid distribution argument provided, generate uniform by default
-                    let distribution = match get_argument(&arguments, "type") {
+                    let distribution = match get_argument(&arguments, "distribution") {
                         Ok(distribution) => distribution.first_string()?,
                         Err(_) => "uniform".to_string()
                     };

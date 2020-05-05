@@ -32,18 +32,6 @@ pub fn buffer_to_ptr<T>(buffer: T) -> ffi_support::ByteBuffer
     }
 }
 
-/// Container for responses over FFI.
-///
-/// The array referenced by this struct contains the serialized value of one protobuf message.
-#[repr(C)]
-#[allow(dead_code)]
-pub struct ByteBufferValidator {
-    /// The length of the array containing serialized protobuf data
-    pub len: i64,
-    /// Pointer to start of array containing serialized protobuf data
-    pub data: *mut u8,
-}
-
 /// FFI wrapper for [validate_analysis](../fn.validate_analysis.html)
 ///
 /// # Arguments
@@ -252,3 +240,5 @@ pub extern "C" fn expand_component(
 pub fn serialize_error(err: super::Error) -> proto::Error {
     proto::Error { message: err.display_chain().to_string() }
 }
+
+ffi_support::define_bytebuffer_destructor!(whitenoise_validator_destroy_bytebuffer);
