@@ -26,72 +26,57 @@ impl Expandable for proto::DpQuantile {
         let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
 
         let data_id = *component.arguments.get("data")
-            .ok_or_else(|| Error::from("data is a required argument to DPMedian"))?;
+            .ok_or_else(|| Error::from("data is a required argument to DPQuantile"))?;
 
+        // quantile
+        let mut quantile_args = hashmap!["data".to_string() => data_id];
         if self.mechanism.to_lowercase().as_str() == "exponential" {
-            computation_graph.insert(*maximum_id, proto::Component {
-                arguments: hashmap!["data".to_owned() => data_id],
-                variant: Some(proto::component::Variant::ExponentialMechanism(Box::new(proto::ExponentialMechanism {
-                    aggregator: Some(Box::new(proto::Component {
-                        arguments: hashmap!["data".to_owned() => data_id],
-                        variant: Some(proto::component::Variant::Quantile(proto::Quantile {
-                            alpha: self.alpha,
-                            interpolation: self.interpolation.clone(),
-                        })),
-                        omit: true,
-                        batch: component.batch,
-                    })),
-                    privacy_usage: self.privacy_usage.clone(),
-                }))),
-                omit: true,
-                batch: component.batch,
-            });
-
-            Ok(proto::ComponentExpansion {
-                computation_graph,
-                properties: HashMap::new(),
-                releases: HashMap::new(),
-                traversal: Vec::new(),
-            })
-        } else {
-            // quantile
-            current_id += 1;
-            let id_median = current_id;
-            computation_graph.insert(id_median, proto::Component {
-                arguments: hashmap!["data".to_owned() => data_id],
-                variant: Some(proto::component::Variant::Quantile(proto::Quantile {
-                    alpha: 0.5,
-                    interpolation: self.interpolation.clone(),
-                })),
-                omit: true,
-                batch: component.batch,
-            });
-
-            // sanitizing
-            computation_graph.insert(component_id.clone(), proto::Component {
-                arguments: hashmap![
-			    "data".to_owned() => id_median
-		    ],
-                variant: Some(match self.mechanism.to_lowercase().as_str() {
-                    "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
-                        privacy_usage: self.privacy_usage.clone()
-                    }),
-                    "gaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
-                        privacy_usage: self.privacy_usage.clone()
-                    }),
-                    _ => panic!("Unexpected invalid token {:?}", self.mechanism.as_str()),
-                }),
-                omit: false,
-                batch: component.batch,
-            });
-
-            Ok(proto::ComponentExpansion {
-                computation_graph,
-                properties: HashMap::new(),
-                releases: HashMap::new(),
-                traversal: vec![id_median],
-            })
+            quantile_args.insert("candidates".to_string(), *component.arguments.get("candidates")
+                .ok_or_else(|| Error::from("candidates is a required argument to DPQuantile when the exponential mechanism is used."))?);
         }
+        current_id += 1;
+        let id_quantile = current_id;
+        computation_graph.insert(id_quantile, proto::Component {
+            arguments: quantile_args,
+            variant: Some(proto::component::Variant::Quantile(proto::Quantile {
+                alpha: self.alpha,
+                interpolation: self.interpolation.clone(),
+            })),
+            omit: true,
+            batch: component.batch,
+        });
+
+
+        // sanitizing
+        let mut sanitize_args = hashmap!["data".to_string() => id_quantile];
+        if self.mechanism.to_lowercase().as_str() == "exponential" {
+            sanitize_args.insert("candidates".to_string(), *component.arguments.get("candidates")
+                .ok_or_else(|| Error::from("candidates is a required argument to DPQuantile when the exponential mechanism is used."))?);
+        }
+        computation_graph.insert(component_id.clone(), proto::Component {
+            arguments: sanitize_args,
+            variant: Some(match self.mechanism.to_lowercase().as_str() {
+                "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
+                    privacy_usage: self.privacy_usage.clone()
+                }),
+                "gaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
+                    privacy_usage: self.privacy_usage.clone()
+                }),
+                "exponential" => proto::component::Variant::ExponentialMechanism(proto::ExponentialMechanism {
+                    privacy_usage: self.privacy_usage.clone()
+                }),
+                _ => panic!("Unexpected invalid token {:?}", self.mechanism.as_str()),
+            }),
+            omit: false,
+            batch: component.batch,
+        });
+
+        Ok(proto::ComponentExpansion {
+            computation_graph,
+            properties: HashMap::new(),
+            releases: HashMap::new(),
+            traversal: vec![id_quantile],
+        })
     }
 }
 

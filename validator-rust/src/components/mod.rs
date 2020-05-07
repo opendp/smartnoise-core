@@ -193,19 +193,6 @@ pub trait Named {
 }
 
 
-/// Utility component trait
-///
-/// Components with utility implemented may be privatized with the exponential mechanism
-/// Components that implement the Utility trait must implement the Sensitivity trait
-pub trait Utility: Sensitivity {
-    /// return a function represented in protobuf that computes the utility associated with this component
-    fn get_utility (
-        &self,
-        properties: &NodeProperties
-    ) -> Result<proto::Function>;
-}
-
-
 impl Component for proto::component::Variant {
     /// Utility implementation on the enum containing all variants of a component.
     ///
@@ -464,33 +451,5 @@ impl Named for proto::component::Variant {
             // otherwise if the component is non-standard, throw an error
             None => Err(format!("names are not implemented for proto component {:?}", self).into())
         }
-    }
-}
-
-impl Utility for proto::component::Variant {
-    fn get_utility(
-        &self,
-        properties: &NodeProperties
-    ) -> Result<proto::Function> {
-
-        macro_rules! get_utility{
-            ($( $variant:ident ),*) => {
-                {
-                    $(
-                       if let proto::component::Variant::$variant(x) = self {
-                            return x.get_utility(properties)
-                                .chain_err(|| format!("node specification {:?}:", self))
-                       }
-                    )*
-                }
-            }
-        }
-
-        get_utility!(
-            // INSERT COMPONENT LIST
-            Quantile
-        );
-
-        Err(format!("sensitivity is not implemented for proto component {:?}", self).into())
     }
 }

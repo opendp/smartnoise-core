@@ -4,14 +4,12 @@ use crate::errors::*;
 use std::collections::HashMap;
 
 use crate::{proto, base};
-use crate::hashmap;
 
-use crate::components::{Component, Sensitivity, Utility};
+use crate::components::{Component, Sensitivity};
 use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType};
 
 use crate::utilities::prepend;
 use ndarray::prelude::*;
-use crate::utilities::serial::serialize_release;
 
 
 impl Component for proto::Quantile {
@@ -63,7 +61,6 @@ impl Sensitivity for proto::Quantile {
         data_property.assert_is_not_aggregated()?;
         data_property.assert_non_null()?;
 
-
         match sensitivity_type {
             SensitivitySpace::KNorm(k) => {
                 if k != &1 {
@@ -97,59 +94,59 @@ impl Sensitivity for proto::Quantile {
 
                 Ok(array_sensitivity.into())
             }
-            _ => Err("Quantile sensitivity is not implemented for the specified sensitivity type".into())
+            _ => Err("Quantile sensitivity is not implemented for the specified sensitivity space".into())
         }
     }
 }
 
-impl Utility for proto::Quantile {
-    fn get_utility(
-        &self,
-        properties: &NodeProperties,
-    ) -> Result<proto::Function> {
-        use crate::bindings;
-
-        let data_property = properties.get("data")
-            .ok_or("data: missing")?.array()
-            .map_err(prepend("data:"))?.clone();
-        let num_records = data_property.num_records()?;
-
-        let mut analysis = bindings::Analysis::new();
-
-        let data = analysis.literal().enter();
-        let candidate = analysis.literal().enter();
-
-        // compute #(Z < x)
-        let count_z_lt_x = {
-            let mask = analysis.less_than(data, candidate).enter();
-            let filtered = analysis.filter(data, mask).enter();
-            analysis.count(filtered).enter()
-        };
-
-        // compute weighted difference
-        let abs_diff = {
-            let n = analysis.literal().value(num_records.into()).enter();
-            let alpha = analysis.literal().value(self.alpha.into()).enter();
-            let alpha_inv = analysis.literal().value((1. - self.alpha).into()).enter();
-            let count_z_gt_x = analysis.subtract(n, count_z_lt_x).enter();
-
-            let left = analysis.multiply(alpha_inv, count_z_lt_x).enter();
-            let right = analysis.multiply(alpha, count_z_gt_x).enter();
-            let diff = analysis.subtract(left, right).enter();
-            analysis.abs(diff).enter()
-        };
-
-        let utility = {
-            let optimal = analysis.literal()
-                .value((self.alpha.max(1. - self.alpha) * num_records as f64).into()).enter();
-            analysis.subtract(optimal, abs_diff).enter()
-        };
-
-        Ok(proto::Function {
-            computation_graph: Some(proto::ComputationGraph { value: analysis.components }),
-            release: Some(serialize_release(analysis.release)),
-            arguments: hashmap!["candidate".to_string() => candidate, "dataset".to_string() => data],
-            outputs: hashmap!["utility".to_string() => utility]
-        })
-    }
-}
+// impl Utility for proto::Quantile {
+//     fn get_utility(
+//         &self,
+//         properties: &NodeProperties,
+//     ) -> Result<proto::Function> {
+//         use crate::bindings;
+//
+//         let data_property = properties.get("data")
+//             .ok_or("data: missing")?.array()
+//             .map_err(prepend("data:"))?.clone();
+//         let num_records = data_property.num_records()?;
+//
+//         let mut analysis = bindings::Analysis::new();
+//
+//         let data = analysis.literal().enter();
+//         let candidate = analysis.literal().enter();
+//
+//         // compute #(Z < x)
+//         let count_z_lt_x = {
+//             let mask = analysis.less_than(data, candidate).enter();
+//             let filtered = analysis.filter(data, mask).enter();
+//             analysis.count(filtered).enter()
+//         };
+//
+//         // compute weighted difference
+//         let abs_diff = {
+//             let n = analysis.literal().value(num_records.into()).enter();
+//             let alpha = analysis.literal().value(self.alpha.into()).enter();
+//             let alpha_inv = analysis.literal().value((1. - self.alpha).into()).enter();
+//             let count_z_gt_x = analysis.subtract(n, count_z_lt_x).enter();
+//
+//             let left = analysis.multiply(alpha_inv, count_z_lt_x).enter();
+//             let right = analysis.multiply(alpha, count_z_gt_x).enter();
+//             let diff = analysis.subtract(left, right).enter();
+//             analysis.abs(diff).enter()
+//         };
+//
+//         let utility = {
+//             let optimal = analysis.literal()
+//                 .value((self.alpha.max(1. - self.alpha) * num_records as f64).into()).enter();
+//             analysis.subtract(optimal, abs_diff).enter()
+//         };
+//
+//         Ok(proto::Function {
+//             computation_graph: Some(proto::ComputationGraph { value: analysis.components }),
+//             release: Some(serialize_release(analysis.release)),
+//             arguments: hashmap!["candidate".to_string() => candidate, "dataset".to_string() => data],
+//             outputs: hashmap!["utility".to_string() => utility]
+//         })
+//     }
+// }

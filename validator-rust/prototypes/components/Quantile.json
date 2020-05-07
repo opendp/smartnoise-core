@@ -2,6 +2,10 @@
   "arguments": {
     "data": {
       "type_value": "Array"
+    },
+    "candidates": {
+      "type_value": "Jagged",
+      "description": "Set from which the Exponential mechanism will return an element."
     }
   },
   "id": "Quantile",

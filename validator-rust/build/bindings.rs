@@ -48,12 +48,6 @@ pub fn build_bindings(
             })
             .collect::<Vec<String>>().join(",\n                ");
 
-        let box_hack = if component.id == "ExponentialMechanism" {
-            ("Box::new(", ")")
-        } else {
-            ("", "")
-        };
-
         bindings_analysis.push(format!(r#"
 impl Analysis {{
     pub fn {name}({signature}) -> builders::{id}Builder {{
@@ -61,9 +55,9 @@ impl Analysis {{
         let mut arguments = HashMap::new();
         {argument_insertion}
         let component = proto::Component {{
-            variant: Some(proto::component::Variant::{variant}({box_hack_a}proto::{id} {{
+            variant: Some(proto::component::Variant::{variant}(proto::{id} {{
                 {option_insertion}
-            }}{box_hack_b})),
+            }})),
             omit: false,
             batch: self.submission_count,
             arguments,
@@ -84,9 +78,7 @@ impl Analysis {{
             id=component.id.to_camel_case(),
             signature=signature,
             argument_insertion=argument_insertion,
-            option_insertion=option_insertion,
-            box_hack_a=box_hack.0,
-            box_hack_b=box_hack.1
+            option_insertion=option_insertion
         ));
 
         // GENERATE BUILDER BINDINGS

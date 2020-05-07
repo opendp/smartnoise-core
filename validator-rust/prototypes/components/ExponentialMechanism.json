@@ -1,8 +1,8 @@
 {
   "arguments": {
     "data": {
-      "type_value": "Array",
-      "description": "Result to be released privately via the Gaussian mechanism."
+      "type_value": "Jagged",
+      "description": "Respective scores for each candidate."
     },
     "candidates": {
       "type_value": "Jagged",
@@ -12,11 +12,6 @@
   "id": "ExponentialMechanism",
   "name": "exponential_mechanism",
   "options": {
-    "aggregator": {
-      "type_proto": "Component",
-      "type_rust": "Option<std::boxed::Box<proto::Component>>",
-      "description": "component describing the type of aggregation to perform"
-    },
     "privacy_usage": {
       "type_proto": "repeated PrivacyUsage",
       "type_rust": "Vec<proto::PrivacyUsage>",
