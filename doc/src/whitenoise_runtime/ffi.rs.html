@@ -50,6 +50,8 @@
 <span id="50">50</span>
 <span id="51">51</span>
 <span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">whitenoise_validator</span>::<span class="ident">ffi</span>::<span class="ident">serialize_error</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">whitenoise_validator</span>::<span class="ident">proto</span>;
@@ -102,5 +104,8 @@
         }
     };
     <span class="ident">whitenoise_validator</span>::<span class="ident">ffi</span>::<span class="ident">buffer_to_ptr</span>(<span class="ident">response</span>)
-}</pre></div>
+}
+
+<span class="ident">ffi_support</span>::<span class="macro">define_bytebuffer_destructor</span><span class="macro">!</span>(<span class="ident">whitenoise_runtime_destroy_bytebuffer</span>);
+</pre></div>
 </section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../";window.currentCrate = "whitenoise_runtime";</script><script src="../../aliases.js"></script><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script><script defer src="../../search-index.js"></script></body></html>

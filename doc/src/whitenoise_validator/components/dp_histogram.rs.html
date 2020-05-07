@@ -220,7 +220,7 @@
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">histogram_arguments</span>.<span class="ident">insert</span>(<span class="string">&quot;inclusive_left&quot;</span>.<span class="ident">to_string</span>(), <span class="kw-2">*</span><span class="ident">v</span>));
         <span class="ident">computation_graph</span>.<span class="ident">insert</span>(<span class="ident">id_histogram</span>, <span class="ident">proto</span>::<span class="ident">Component</span> {
             <span class="ident">arguments</span>: <span class="ident">histogram_arguments</span>,
-            <span class="ident">variant</span>: <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">from</span>(<span class="ident">proto</span>::<span class="ident">Histogram</span> {})),
+            <span class="ident">variant</span>: <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">Histogram</span>(<span class="ident">proto</span>::<span class="ident">Histogram</span> {})),
             <span class="ident">omit</span>: <span class="bool-val">true</span>,
             <span class="ident">batch</span>: <span class="ident">component</span>.<span class="ident">batch</span>,
         });
@@ -254,7 +254,7 @@
                         .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;lower must be provided as an argument&quot;</span>))<span class="question-mark">?</span>,
                     <span class="string">&quot;upper&quot;</span>.<span class="ident">to_owned</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">id_upper</span>
                 ],
-                <span class="ident">variant</span>: <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">from</span>(<span class="ident">proto</span>::<span class="ident">SimpleGeometricMechanism</span> {
+                <span class="ident">variant</span>: <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">SimpleGeometricMechanism</span>(<span class="ident">proto</span>::<span class="ident">SimpleGeometricMechanism</span> {
                     <span class="ident">privacy_usage</span>: <span class="self">self</span>.<span class="ident">privacy_usage</span>.<span class="ident">clone</span>(),
                     <span class="ident">enforce_constant_time</span>: <span class="bool-val">false</span>
                 })),
@@ -269,13 +269,13 @@
                     <span class="string">&quot;data&quot;</span>.<span class="ident">to_owned</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">id_histogram</span>
                 ],
                 <span class="ident">variant</span>: <span class="prelude-val">Some</span>(<span class="kw">match</span> <span class="self">self</span>.<span class="ident">mechanism</span>.<span class="ident">to_lowercase</span>().<span class="ident">as_str</span>() {
-                    <span class="string">&quot;laplace&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">from</span>(<span class="ident">proto</span>::<span class="ident">LaplaceMechanism</span> {
+                    <span class="string">&quot;laplace&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">LaplaceMechanism</span>(<span class="ident">proto</span>::<span class="ident">LaplaceMechanism</span> {
                         <span class="ident">privacy_usage</span>: <span class="self">self</span>.<span class="ident">privacy_usage</span>.<span class="ident">clone</span>()
                     }),
-                    <span class="string">&quot;gaussian&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">from</span>(<span class="ident">proto</span>::<span class="ident">GaussianMechanism</span> {
+                    <span class="string">&quot;gaussian&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">GaussianMechanism</span>(<span class="ident">proto</span>::<span class="ident">GaussianMechanism</span> {
                         <span class="ident">privacy_usage</span>: <span class="self">self</span>.<span class="ident">privacy_usage</span>.<span class="ident">clone</span>()
                     }),
-                    <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;Unexpected invalid token {:?}&quot;</span>, <span class="self">self</span>.<span class="ident">implementation</span>.<span class="ident">as_str</span>()),
+                    <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;Unexpected invalid token {:?}&quot;</span>, <span class="self">self</span>.<span class="ident">mechanism</span>.<span class="ident">as_str</span>()),
                 }),
                 <span class="ident">omit</span>: <span class="bool-val">false</span>,
                 <span class="ident">batch</span>: <span class="ident">component</span>.<span class="ident">batch</span>,
@@ -333,7 +333,7 @@
                 <span class="ident">algorithm_info</span>: <span class="ident">AlgorithmInfo</span> {
                     <span class="ident">name</span>: <span class="string">&quot;&quot;</span>.<span class="ident">to_string</span>(),
                     <span class="ident">cite</span>: <span class="string">&quot;&quot;</span>.<span class="ident">to_string</span>(),
-                    <span class="ident">mechanism</span>: <span class="self">self</span>.<span class="ident">implementation</span>.<span class="ident">clone</span>(),
+                    <span class="ident">mechanism</span>: <span class="self">self</span>.<span class="ident">mechanism</span>.<span class="ident">clone</span>(),
                     <span class="ident">argument</span>: <span class="ident">serde_json</span>::<span class="macro">json</span><span class="macro">!</span>({}),
                 },
             };

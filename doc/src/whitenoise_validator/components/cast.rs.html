@@ -239,7 +239,7 @@
         <span class="ident">data_property</span>.<span class="ident">assert_is_not_aggregated</span>()<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">prior_datatype</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">data_type</span>.<span class="ident">clone</span>();
 
-        <span class="ident">data_property</span>.<span class="ident">data_type</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">r#type</span>.<span class="ident">to_lowercase</span>().<span class="ident">as_str</span>() {
+        <span class="ident">data_property</span>.<span class="ident">data_type</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">atomic_type</span>.<span class="ident">to_lowercase</span>().<span class="ident">as_str</span>() {
             <span class="string">&quot;float&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">DataType</span>::<span class="ident">F64</span>,
             <span class="string">&quot;real&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">DataType</span>::<span class="ident">F64</span>,
             <span class="string">&quot;int&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">DataType</span>::<span class="ident">I64</span>,
@@ -405,8 +405,8 @@
                 <span class="prelude-val">Ok</span>(<span class="ident">proto</span>::<span class="ident">ComponentExpansion</span> {
                     <span class="ident">computation_graph</span>: <span class="macro">hashmap</span><span class="macro">!</span>[<span class="ident">component_id</span>.<span class="ident">clone</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">Component</span> {
                         <span class="ident">arguments</span>: <span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">clone</span>(),
-                        <span class="ident">variant</span>: <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">from</span>(<span class="ident">proto</span>::<span class="ident">Cast</span> {
-                            <span class="ident">r#type</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">var_type</span>
+                        <span class="ident">variant</span>: <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">Cast</span>(<span class="ident">proto</span>::<span class="ident">Cast</span> {
+                            <span class="ident">atomic_type</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">var_type</span>
                         })),
                         <span class="ident">omit</span>: <span class="bool-val">false</span>,
                         <span class="ident">batch</span>: <span class="ident">component</span>.<span class="ident">batch</span>,

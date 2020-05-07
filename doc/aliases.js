@@ -9,7 +9,6 @@ ALIASES["bytes"] = {};
 ALIASES["cfg_if"] = {};
 ALIASES["csv"] = {};
 ALIASES["csv_core"] = {};
-ALIASES["derive_more"] = {};
 ALIASES["either"] = {};
 ALIASES["error_chain"] = {};
 ALIASES["failure"] = {};

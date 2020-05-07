@@ -404,15 +404,22 @@
 <span id="404">404</span>
 <span id="405">405</span>
 <span id="406">406</span>
+<span id="407">407</span>
+<span id="408">408</span>
+<span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
+<span id="413">413</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="doccomment">//! The Whitenoise rust validator contains methods for evaluating and constructing </span>
+<span class="doccomment">//! The Whitenoise rust validator contains methods for evaluating and constructing</span>
 <span class="doccomment">//! differentially private analyses.</span>
-<span class="doccomment">//! </span>
-<span class="doccomment">//! The validator defines a set of statically checkable properties that are </span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! The validator defines a set of statically checkable properties that are</span>
 <span class="doccomment">//! necessary for a differentially private analysis, and then checks that the submitted analysis</span>
 <span class="doccomment">//! satisfies the properties.</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! The validator also takes simple components from the Whitenoise runtime and combines them </span>
+<span class="doccomment">//! The validator also takes simple components from the Whitenoise runtime and combines them</span>
 <span class="doccomment">//! into more complex mechanisms.</span>
 
 <span class="comment">// `error_chain!` can recurse deeply</span>
@@ -431,6 +438,7 @@
 <span class="comment">// trait which holds `display_chain`</span>
 
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">base</span>;
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">bindings</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">utilities</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">components</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">ffi</span>;
@@ -514,9 +522,15 @@
         .<span class="ident">fold1</span>(<span class="op">|</span><span class="ident">usage_1</span>, <span class="ident">usage_2</span><span class="op">|</span> <span class="ident">utilities</span>::<span class="ident">privacy_usage_reducer</span>(
             <span class="kw-2">&amp;</span><span class="ident">usage_1</span>, <span class="kw-2">&amp;</span><span class="ident">usage_2</span>, <span class="kw-2">&amp;</span><span class="op">|</span><span class="ident">l</span>, <span class="ident">r</span><span class="op">|</span> <span class="ident">l</span> <span class="op">+</span> <span class="ident">r</span>));
 
+    <span class="kw">match</span> <span class="ident">usage_option</span> {
+        <span class="prelude-val">Some</span>(<span class="ident">privacy_usage</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="ident">utilities</span>::<span class="ident">privacy_usage_check</span>(<span class="kw-2">&amp;</span><span class="ident">privacy_usage</span>)<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>(<span class="ident">privacy_usage</span>)
+        },
+        <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;no information is released; privacy usage is none&quot;</span>.<span class="ident">into</span>())
+    }
+
     <span class="comment">// TODO: this should probably return a proto::PrivacyUsage with zero based on the privacy definition</span>
-    <span class="ident">usage_option</span>
-        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;no information is released; privacy usage is none&quot;</span>))
 }
 
 

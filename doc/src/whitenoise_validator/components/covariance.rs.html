@@ -185,6 +185,7 @@
 <span id="185">185</span>
 <span id="186">186</span>
 <span id="187">187</span>
+<span id="188">188</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
@@ -195,7 +196,7 @@
 
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">components</span>::{<span class="ident">Component</span>, <span class="ident">Sensitivity</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">base</span>::{<span class="ident">Value</span>, <span class="ident">NodeProperties</span>, <span class="ident">AggregatorProperties</span>, <span class="ident">SensitivitySpace</span>, <span class="ident">ValueProperties</span>, <span class="ident">DataType</span>};
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">utilities</span>::{<span class="ident">prepend</span>, <span class="ident">is_conformable</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">utilities</span>::<span class="ident">prepend</span>;
 <span class="kw">use</span> <span class="ident">ndarray</span>::<span class="ident">prelude</span>::<span class="kw-2">*</span>;
 
 <span class="kw">impl</span> <span class="ident">Component</span> <span class="kw">for</span> <span class="ident">proto</span>::<span class="ident">Covariance</span> {
@@ -211,11 +212,14 @@
                 .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;data:&quot;</span>))<span class="question-mark">?</span>.<span class="ident">clone</span>();
 
             <span class="ident">data_property</span>.<span class="ident">assert_is_not_empty</span>()<span class="question-mark">?</span>;
-            <span class="ident">data_property</span>.<span class="ident">assert_is_not_aggregated</span>()<span class="question-mark">?</span>;
+
+            <span class="kw">if</span> <span class="op">!</span><span class="ident">data_property</span>.<span class="ident">releasable</span> {
+                <span class="ident">data_property</span>.<span class="ident">assert_is_not_aggregated</span>()<span class="question-mark">?</span>;
+            }
 
             <span class="comment">// save a snapshot of the state when aggregating</span>
             <span class="ident">data_property</span>.<span class="ident">aggregator</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">AggregatorProperties</span> {
-                <span class="ident">component</span>: <span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">from</span>(<span class="self">self</span>.<span class="ident">clone</span>()),
+                <span class="ident">component</span>: <span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">Covariance</span>(<span class="self">self</span>.<span class="ident">clone</span>()),
                 <span class="ident">properties</span>: <span class="ident">properties</span>.<span class="ident">clone</span>(),
             });
 
@@ -224,7 +228,7 @@
             <span class="ident">data_property</span>.<span class="ident">num_columns</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">num_columns</span> <span class="op">*</span> (<span class="ident">num_columns</span> <span class="op">+</span> <span class="number">1</span>) <span class="op">/</span> <span class="number">2</span>);
 
             <span class="kw">if</span> <span class="ident">data_property</span>.<span class="ident">data_type</span> <span class="op">!</span><span class="op">=</span> <span class="ident">DataType</span>::<span class="ident">F64</span> {
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;data: atomic type must be float&quot;</span>.<span class="ident">into</span>())
+                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;data: atomic type must be float&quot;</span>.<span class="ident">into</span>());
             }
             <span class="comment">// min/max of data is not known after computing covariance</span>
             <span class="ident">data_property</span>.<span class="ident">nature</span> <span class="op">=</span> <span class="prelude-val">None</span>;
@@ -240,26 +244,27 @@
 
 
             <span class="kw">if</span> <span class="ident">left_property</span>.<span class="ident">data_type</span> <span class="op">!</span><span class="op">=</span> <span class="ident">DataType</span>::<span class="ident">F64</span> {
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;left: atomic type must be float&quot;</span>.<span class="ident">into</span>())
+                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;left: atomic type must be float&quot;</span>.<span class="ident">into</span>());
             }
             <span class="kw">if</span> <span class="ident">right_property</span>.<span class="ident">data_type</span> <span class="op">!</span><span class="op">=</span> <span class="ident">DataType</span>::<span class="ident">F64</span> {
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;right: atomic type must be float&quot;</span>.<span class="ident">into</span>())
+                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;right: atomic type must be float&quot;</span>.<span class="ident">into</span>());
             }
             <span class="ident">left_property</span>.<span class="ident">assert_is_not_empty</span>()<span class="question-mark">?</span>;
-            <span class="ident">left_property</span>.<span class="ident">assert_is_not_aggregated</span>()<span class="question-mark">?</span>;
-
             <span class="ident">right_property</span>.<span class="ident">assert_is_not_empty</span>()<span class="question-mark">?</span>;
-            <span class="ident">right_property</span>.<span class="ident">assert_is_not_aggregated</span>()<span class="question-mark">?</span>;
+
+            <span class="kw">if</span> <span class="op">!</span><span class="ident">left_property</span>.<span class="ident">releasable</span> {
+                <span class="ident">left_property</span>.<span class="ident">assert_is_not_aggregated</span>()<span class="question-mark">?</span>;
+            }
+
+            <span class="kw">if</span> <span class="op">!</span><span class="ident">right_property</span>.<span class="ident">releasable</span> {
+                <span class="ident">right_property</span>.<span class="ident">assert_is_not_aggregated</span>()<span class="question-mark">?</span>;
+            }
 
             <span class="comment">// save a snapshot of the state when aggregating</span>
             <span class="ident">left_property</span>.<span class="ident">aggregator</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">AggregatorProperties</span> {
-                <span class="ident">component</span>: <span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">from</span>(<span class="self">self</span>.<span class="ident">clone</span>()),
+                <span class="ident">component</span>: <span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">Covariance</span>(<span class="self">self</span>.<span class="ident">clone</span>()),
                 <span class="ident">properties</span>: <span class="ident">properties</span>.<span class="ident">clone</span>(),
             });
-
-            <span class="kw">if</span> <span class="op">!</span><span class="ident">is_conformable</span>(<span class="kw-2">&amp;</span><span class="ident">left_property</span>, <span class="kw-2">&amp;</span><span class="ident">right_property</span>) {
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;left and right property must be known to be conformable statically&quot;</span>.<span class="ident">into</span>())
-            }
 
             <span class="ident">left_property</span>.<span class="ident">nature</span> <span class="op">=</span> <span class="prelude-val">None</span>;
             <span class="ident">left_property</span>.<span class="ident">releasable</span> <span class="op">=</span> <span class="ident">left_property</span>.<span class="ident">releasable</span> <span class="kw-2">&amp;</span><span class="op">&amp;</span> <span class="ident">right_property</span>.<span class="ident">releasable</span>;
@@ -282,10 +287,8 @@
         <span class="ident">properties</span>: <span class="kw-2">&amp;</span><span class="ident">NodeProperties</span>,
         <span class="ident">sensitivity_type</span>: <span class="kw-2">&amp;</span><span class="ident">SensitivitySpace</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&gt;</span> {
-
         <span class="kw">match</span> <span class="ident">sensitivity_type</span> {
             <span class="ident">SensitivitySpace</span>::<span class="ident">KNorm</span>(<span class="ident">k</span>) <span class="op">=</span><span class="op">&gt;</span> {
-
                 <span class="kw">let</span> <span class="ident">data_n</span>;
                 <span class="kw">let</span> <span class="ident">differences</span> <span class="op">=</span> <span class="kw">match</span> (<span class="ident">properties</span>.<span class="ident">get</span>(<span class="string">&quot;data&quot;</span>), <span class="ident">properties</span>.<span class="ident">get</span>(<span class="string">&quot;left&quot;</span>), <span class="ident">properties</span>.<span class="ident">get</span>(<span class="string">&quot;right&quot;</span>)) {
                     (<span class="prelude-val">Some</span>(<span class="ident">data_property</span>), <span class="prelude-val">None</span>, <span class="prelude-val">None</span>) <span class="op">=</span><span class="op">&gt;</span> {
@@ -306,7 +309,7 @@
                                 .<span class="ident">map</span>(<span class="op">|</span>(<span class="kw">_</span>, (<span class="ident">right_min</span>, <span class="ident">right_max</span>))<span class="op">|</span>
                                     (<span class="kw-2">*</span><span class="ident">left_max</span> <span class="op">-</span> <span class="kw-2">*</span><span class="ident">left_min</span>) <span class="op">*</span> (<span class="kw-2">*</span><span class="ident">right_max</span> <span class="op">-</span> <span class="kw-2">*</span><span class="ident">right_min</span>))
                                 .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span><span class="op">&gt;</span>()).<span class="ident">flatten</span>().<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span><span class="op">&gt;</span>()
-                    },
+                    }
                     (<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="ident">left_property</span>), <span class="prelude-val">Some</span>(<span class="ident">right_property</span>)) <span class="op">=</span><span class="op">&gt;</span> {
 
                         <span class="comment">// left side: perform checks and prepare parameters</span>
@@ -367,10 +370,9 @@
                 <span class="ident">array_sensitivity</span>.<span class="ident">insert_axis_inplace</span>(<span class="ident">Axis</span>(<span class="number">0</span>));
 
                 <span class="prelude-val">Ok</span>(<span class="ident">array_sensitivity</span>.<span class="ident">into</span>())
-            },
+            }
             <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;Covariance sensitivity is only implemented for KNorm&quot;</span>.<span class="ident">into</span>())
         }
-
     }
 }</pre></div>
 </section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../";window.currentCrate = "whitenoise_validator";</script><script src="../../../aliases.js"></script><script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script><script defer src="../../../search-index.js"></script></body></html>

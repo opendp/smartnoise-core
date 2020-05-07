@@ -90,6 +90,8 @@
 <span id="90">90</span>
 <span id="91">91</span>
 <span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
@@ -113,12 +115,14 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">data_property</span> <span class="op">=</span> <span class="ident">properties</span>.<span class="ident">get</span>(<span class="string">&quot;data&quot;</span>)
             .<span class="ident">ok_or</span>(<span class="string">&quot;data: missing&quot;</span>)<span class="question-mark">?</span>.<span class="ident">array</span>()
             .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;data:&quot;</span>))<span class="question-mark">?</span>.<span class="ident">clone</span>();
-        <span class="ident">data_property</span>.<span class="ident">assert_is_not_aggregated</span>()<span class="question-mark">?</span>;
+        <span class="kw">if</span> <span class="op">!</span><span class="ident">data_property</span>.<span class="ident">releasable</span> {
+            <span class="ident">data_property</span>.<span class="ident">assert_is_not_aggregated</span>()<span class="question-mark">?</span>;
+        }
         <span class="ident">data_property</span>.<span class="ident">assert_is_not_empty</span>()<span class="question-mark">?</span>;
 
         <span class="comment">// save a snapshot of the state when aggregating</span>
         <span class="ident">data_property</span>.<span class="ident">aggregator</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">AggregatorProperties</span> {
-            <span class="ident">component</span>: <span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">from</span>(<span class="self">self</span>.<span class="ident">clone</span>()),
+            <span class="ident">component</span>: <span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">Variance</span>(<span class="self">self</span>.<span class="ident">clone</span>()),
             <span class="ident">properties</span>: <span class="ident">properties</span>.<span class="ident">clone</span>()
         });
 

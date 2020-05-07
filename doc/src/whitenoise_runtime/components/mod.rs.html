@@ -85,8 +85,6 @@
 <span id="85">85</span>
 <span id="86">86</span>
 <span id="87">87</span>
-<span id="88">88</span>
-<span id="89">89</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Component trait implementations</span>
 <span class="doccomment">//!</span>
@@ -124,8 +122,6 @@
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">reshape</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">mechanisms</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">resize</span>;
-<span class="comment">//pub mod row_max;</span>
-<span class="comment">//pub mod row_min;</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">sum</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">transforms</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">variance</span>;
@@ -170,8 +166,8 @@
             <span class="ident">Materialize</span>, <span class="ident">Mean</span>, <span class="ident">Minimum</span>, <span class="ident">Partition</span>, <span class="ident">Quantile</span>, <span class="ident">Reshape</span>, <span class="ident">LaplaceMechanism</span>, <span class="ident">GaussianMechanism</span>,
             <span class="ident">SimpleGeometricMechanism</span>, <span class="ident">Resize</span>, <span class="ident">Sum</span>, <span class="ident">Variance</span>,
 
-            <span class="ident">Add</span>, <span class="ident">Subtract</span>, <span class="ident">Divide</span>, <span class="ident">Multiply</span>, <span class="ident">Power</span>, <span class="ident">Log</span>, <span class="ident">Modulo</span>, <span class="ident">LogicalAnd</span>, <span class="ident">LogicalOr</span>, <span class="ident">Negate</span>,
-            <span class="ident">Equal</span>, <span class="ident">LessThan</span>, <span class="ident">GreaterThan</span>, <span class="ident">Negative</span>
+            <span class="ident">Abs</span>, <span class="ident">Add</span>, <span class="ident">LogicalAnd</span>, <span class="ident">Divide</span>, <span class="ident">Equal</span>, <span class="ident">GreaterThan</span>, <span class="ident">LessThan</span>, <span class="ident">Log</span>, <span class="ident">Modulo</span>, <span class="ident">Multiply</span>,
+            <span class="ident">Negate</span>, <span class="ident">Negative</span>, <span class="ident">LogicalOr</span>, <span class="ident">Power</span>, <span class="ident">RowMax</span>, <span class="ident">RowMin</span>, <span class="ident">Subtract</span>
         );
 
         <span class="prelude-val">Err</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Component type not implemented: {:?}&quot;</span>, <span class="self">self</span>).<span class="ident">into</span>())
