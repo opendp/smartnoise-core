@@ -192,7 +192,7 @@ pub fn propagate_properties(
         let component_properties = match (dynamic, component_properties) {
             (_, Ok(properties)) => properties,
             (true, Err(err)) => {
-                failed_ids.insert(traversal.pop().unwrap());
+                failed_ids.insert(node_id);
                 warnings.push(serialize_error(err));
                 continue
             },
