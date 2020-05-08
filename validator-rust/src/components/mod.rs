@@ -34,6 +34,7 @@ mod impute;
 pub mod index;
 mod kth_raw_sample_moment;
 mod literal;
+mod map;
 mod maximum;
 mod materialize;
 mod minimum;

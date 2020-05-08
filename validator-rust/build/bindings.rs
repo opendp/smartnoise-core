@@ -18,6 +18,9 @@ pub fn build_bindings(
     let mut bindings_builders = Vec::new();
 
     components.iter().for_each(|component| {
+        if component.id == "Map" {
+            return
+        }
 
         // GENERATE ANALYSIS BINDINGS
         let positional_args = component.arguments.iter()

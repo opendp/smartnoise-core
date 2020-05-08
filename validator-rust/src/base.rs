@@ -480,11 +480,11 @@ pub enum Indexmap<T> {
 }
 
 impl<T> Indexmap<T> {
-    pub fn keys_length(&self) -> i64 {
+    pub fn keys_length(&self) -> usize {
         match self {
-            Indexmap::Bool(value) => value.keys().len() as i64,
-            Indexmap::I64(value) => value.keys().len() as i64,
-            Indexmap::Str(value) => value.keys().len() as i64,
+            Indexmap::Bool(value) => value.keys().len(),
+            Indexmap::I64(value) => value.keys().len(),
+            Indexmap::Str(value) => value.keys().len(),
         }
     }
     pub fn values(&self) -> Vec<&T> {
@@ -591,6 +591,8 @@ pub struct IndexmapProperties {
     pub disjoint: bool,
     /// properties for each of the values in the indexmap
     pub properties: Indexmap<ValueProperties>,
+    /// denote which partition operation this data originates from
+    pub dataset_id: Option<i64>,
     /// denote if the value is a Dataframe or Partition
     pub variant: proto::indexmap_properties::Variant,
 }
@@ -613,6 +615,17 @@ impl IndexmapProperties {
     }
     pub fn num_records(&self) -> Result<i64> {
         self.num_records.ok_or_else(|| "number of rows is not defined".into())
+    }
+
+    pub fn from_values(&self, values: Vec<ValueProperties>) -> Indexmap<ValueProperties> {
+        match &self.properties {
+            Indexmap::Bool(value) => value.keys().cloned()
+                .zip(values).collect::<IndexMap<bool, ValueProperties>>().into(),
+            Indexmap::I64(value) => value.keys().cloned()
+                .zip(values).collect::<IndexMap<i64, ValueProperties>>().into(),
+            Indexmap::Str(value) => value.keys().cloned()
+                .zip(values).collect::<IndexMap<String, ValueProperties>>().into(),
+        }
     }
 }
 

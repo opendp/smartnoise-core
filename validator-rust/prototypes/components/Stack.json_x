@@ -1,7 +1,6 @@
 {
   "arguments": {
     "**kwargs": {
-      "nature": null,
       "type_value": "Array"
     }
   },

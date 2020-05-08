@@ -246,6 +246,7 @@ pub fn infer_property(value: &Value, dataset_id: Option<i64>) -> Result<ValuePro
                             .map(|v| (*name, v)))
                         .collect::<Result<IndexMap<bool, ValueProperties>>>()?.into(),
                 },
+                dataset_id
             }.into()
         }
         Value::Jagged(jagged) => JaggedProperties {

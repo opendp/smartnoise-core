@@ -9,6 +9,7 @@ use crate::components::{Component, Named};
 use std::ops::Deref;
 use ndarray::ArrayD;
 use ndarray::prelude::*;
+use crate::utilities::get_common_value;
 
 impl Component for proto::Index {
     fn propagate_property(
@@ -200,12 +201,6 @@ fn select_properties(properties: &ArrayProperties, index: &usize) -> Result<Valu
         })
     }
     Ok(ValueProperties::Array(properties))
-}
-
-fn get_common_value<T: Clone + Eq>(values: &Vec<T>) -> Option<T> {
-    if values.windows(2).all(|w| w[0] == w[1]) {
-        values.first().cloned()
-    } else { None }
 }
 
 fn stack_properties(all_properties: &Vec<ValueProperties>, dimensionality: Option<i64>) -> Result<ValueProperties> {

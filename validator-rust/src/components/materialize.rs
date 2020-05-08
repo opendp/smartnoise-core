@@ -37,6 +37,7 @@ impl Component for proto::Materialize {
                     is_not_empty: true,
                     dimensionality: Some(1)
                 }))).collect()),
+            dataset_id: Some(node_id as i64),
             variant: proto::indexmap_properties::Variant::Dataframe
         }.into())
     }

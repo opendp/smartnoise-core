@@ -74,6 +74,7 @@ message IndexmapProperties {
         PARTITION = 1;
     }
     Variant variant = 4;
+    I64Null dataset_id = 5;
 }
 
 message IndexmapValueProperties {

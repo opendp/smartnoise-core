@@ -46,6 +46,7 @@ impl Component for proto::Rename {
                     is_not_empty: data_property.is_not_empty,
                     dimensionality: Some(1),
                 }))).collect()),
+            dataset_id: data_property.dataset_id
         }))
     }
 }

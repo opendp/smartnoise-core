@@ -677,6 +677,12 @@ pub fn get_ith_column<T: Clone + Default>(value: &ArrayD<T>, i: &usize) -> Resul
     }
 }
 
+pub fn get_common_value<T: Clone + Eq>(values: &Vec<T>) -> Option<T> {
+    if values.windows(2).all(|w| w[0] == w[1]) {
+        values.first().cloned()
+    } else { None }
+}
+
 pub fn deduplicate<T: Eq + Hash + Ord + Clone>(values: Vec<T>) -> Vec<T> {
     values.into_iter().unique().collect()
 }

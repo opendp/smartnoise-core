@@ -80,7 +80,7 @@ pub fn parse_array1d(value: proto::Array1d) -> Vector1D {
 }
 
 
-pub fn parse_arraynd(value: proto::Array) -> Array {
+pub fn parse_array(value: proto::Array) -> Array {
     let shape: Vec<usize> = value.shape.into_iter().map(|x| x as usize).collect();
     match parse_array1d(value.flattened.unwrap()) {
         Vector1D::Bool(vector) => Array::Bool(ndarray::Array::from_shape_vec(shape, vector).unwrap().into_dyn()),
@@ -157,7 +157,7 @@ pub fn parse_value(value: proto::Value) -> Value {
         proto::value::Data::Function(function) =>
             Value::Function(function),
         proto::value::Data::Array(data) =>
-            Value::Array(parse_arraynd(data)),
+            Value::Array(parse_array(data)),
         proto::value::Data::Indexmap(data) =>
             Value::Indexmap(parse_indexmap(data)),
         proto::value::Data::Jagged(data) =>
@@ -183,7 +183,7 @@ pub fn parse_value_properties(value: proto::ValueProperties) -> ValueProperties 
         proto::value_properties::Variant::Indexmap(value) =>
             ValueProperties::Indexmap(parse_indexmap_properties(value)),
         proto::value_properties::Variant::Array(value) =>
-            ValueProperties::Array(parse_arraynd_properties(value)),
+            ValueProperties::Array(parse_array_properties(value)),
         proto::value_properties::Variant::Jagged(value) =>
             ValueProperties::Jagged(parse_jagged_properties(value)),
         proto::value_properties::Variant::Function(value) =>
@@ -218,11 +218,12 @@ pub fn parse_indexmap_properties(value: proto::IndexmapProperties) -> IndexmapPr
             proto::indexmap_value_properties::Variant::Bool(value) => parse_indexmap_properties_bool(value),
             proto::indexmap_value_properties::Variant::I64(value) => parse_indexmap_properties_i64(value),
         },
+        dataset_id: value.dataset_id.and_then(parse_i64_null),
         variant: proto::indexmap_properties::Variant::from_i32(value.variant).unwrap(),
     }
 }
 
-pub fn parse_arraynd_properties(value: proto::ArrayProperties) -> ArrayProperties {
+pub fn parse_array_properties(value: proto::ArrayProperties) -> ArrayProperties {
     ArrayProperties {
         num_records: value.num_records.and_then(parse_i64_null),
         num_columns: value.num_columns.and_then(parse_i64_null),
@@ -389,7 +390,7 @@ pub fn serialize_array1d(value: Vector1D) -> proto::Array1d {
     }
 }
 
-pub fn serialize_arraynd(value: Array) -> proto::Array {
+pub fn serialize_array(value: Array) -> proto::Array {
     match value {
         Array::Bool(array) => proto::Array {
             flattened: Some(serialize_array1d(Vector1D::Bool(array.iter().map(|s| *s).collect()))),
@@ -475,7 +476,7 @@ pub fn serialize_value(value: Value) -> proto::Value {
             Value::Function(data) =>
                 proto::value::Data::Function(data),
             Value::Array(data) =>
-                proto::value::Data::Array(serialize_arraynd(data)),
+                proto::value::Data::Array(serialize_array(data)),
             Value::Indexmap(data) =>
                 proto::value::Data::Indexmap(serialize_indexmap(data)),
             Value::Jagged(data) =>
@@ -516,7 +517,7 @@ pub fn serialize_indexmap_properties_i64(value: IndexMap<i64, ValueProperties>) 
     }
 }
 
-pub fn serialize_hashmap_properties_bool(value: IndexMap<bool, ValueProperties>) -> proto::IndexmapValuePropertiesBool {
+pub fn serialize_indexmap_properties_bool(value: IndexMap<bool, ValueProperties>) -> proto::IndexmapValuePropertiesBool {
     proto::IndexmapValuePropertiesBool {
         data: value.into_iter()
             .map(|(name, value)| (name, serialize_value_properties(value)))
@@ -524,7 +525,7 @@ pub fn serialize_hashmap_properties_bool(value: IndexMap<bool, ValueProperties>)
     }
 }
 
-pub fn serialize_hashmap_properties(value: IndexmapProperties) -> proto::IndexmapProperties {
+pub fn serialize_indexmap_properties(value: IndexmapProperties) -> proto::IndexmapProperties {
     proto::IndexmapProperties {
         num_records: Some(serialize_i64_null(value.num_records)),
         disjoint: value.disjoint,
@@ -532,14 +533,15 @@ pub fn serialize_hashmap_properties(value: IndexmapProperties) -> proto::Indexma
             variant: Some(match value.properties {
                 Indexmap::Str(value) => proto::indexmap_value_properties::Variant::String(serialize_indexmap_properties_str(value)),
                 Indexmap::I64(value) => proto::indexmap_value_properties::Variant::I64(serialize_indexmap_properties_i64(value)),
-                Indexmap::Bool(value) => proto::indexmap_value_properties::Variant::Bool(serialize_hashmap_properties_bool(value)),
+                Indexmap::Bool(value) => proto::indexmap_value_properties::Variant::Bool(serialize_indexmap_properties_bool(value)),
             })
         }),
+        dataset_id: Some(serialize_i64_null(value.dataset_id)),
         variant: value.variant as i32
     }
 }
 
-pub fn serialize_arraynd_properties(value: ArrayProperties) -> proto::ArrayProperties {
+pub fn serialize_array_properties(value: ArrayProperties) -> proto::ArrayProperties {
 
     let ArrayProperties {
         num_records, num_columns, nullity, releasable, c_stability, aggregator, nature, data_type, dataset_id, is_not_empty, dimensionality
@@ -629,9 +631,9 @@ pub fn serialize_value_properties(value: ValueProperties) -> proto::ValuePropert
     proto::ValueProperties {
         variant: Some(match value {
             ValueProperties::Indexmap(value) =>
-                proto::value_properties::Variant::Indexmap(serialize_hashmap_properties(value)),
+                proto::value_properties::Variant::Indexmap(serialize_indexmap_properties(value)),
             ValueProperties::Array(value) =>
-                proto::value_properties::Variant::Array(serialize_arraynd_properties(value)),
+                proto::value_properties::Variant::Array(serialize_array_properties(value)),
             ValueProperties::Jagged(value) =>
                 proto::value_properties::Variant::Jagged(serialize_jagged_properties(value)),
             ValueProperties::Function(value) => proto::value_properties::Variant::Function(value)

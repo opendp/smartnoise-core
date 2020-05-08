@@ -1,0 +1,19 @@
+{
+  "arguments": {
+    "**kwargs": {
+      "description": "All arguments are passed through to the component. Partitioned Indexmap arguments are mapped, and other arguments are broadcast."
+    }
+  },
+  "id": "Map",
+  "name": "map",
+  "options": {
+    "component": {
+      "type_proto": "Component",
+      "type_rust": "proto::Component"
+    }
+  },
+  "return": {
+    "type_value": "Indexmap"
+  },
+  "description": "Apply Component to each data partition."
+}

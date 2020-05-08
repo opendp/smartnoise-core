@@ -17,7 +17,7 @@ impl Component for proto::Partition {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
-        _node_id: u32,
+        node_id: u32,
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
@@ -45,6 +45,7 @@ impl Component for proto::Partition {
                         Jagged::I64(categories) => broadcast_partitions(&categories, &data_property)?.into(),
                         _ => return Err("partitioning based on floats is not supported".into())
                     },
+                    dataset_id: Some(node_id as i64),
                     variant: proto::indexmap_properties::Variant::Partition,
                 }
             }
@@ -68,6 +69,7 @@ impl Component for proto::Partition {
                         partition_property.num_records = *partition_num_records;
                         (index as i64, ValueProperties::Array(partition_property))
                     }).collect::<IndexMap<i64, ValueProperties>>().into(),
+                    dataset_id: Some(node_id as i64),
                     variant: proto::indexmap_properties::Variant::Partition,
                 }
             }
