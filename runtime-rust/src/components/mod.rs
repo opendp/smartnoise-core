@@ -25,15 +25,17 @@ pub mod histogram;
 pub mod impute;
 pub mod index;
 pub mod kth_raw_sample_moment;
-pub mod maximum;
+pub mod map;
 pub mod materialize;
+pub mod maximum;
 pub mod mean;
+pub mod mechanisms;
+pub mod merge;
 pub mod minimum;
 pub mod partition;
 pub mod quantile;
 pub mod rename;
 pub mod reshape;
-pub mod mechanisms;
 pub mod resize;
 pub mod sum;
 pub mod transforms;
@@ -75,8 +77,9 @@ impl Evaluable for proto::component::Variant {
 
         evaluate!(
             // INSERT COMPONENT LIST
-            Cast, Clamp, Count, Covariance, Digitize, Filter, Histogram, Impute, Index, KthRawSampleMoment, Maximum,
-            Materialize, Mean, Minimum, Partition, Quantile, Rename, Reshape,
+            Cast, Clamp, Count, Covariance, Digitize, Filter, Histogram, Impute, Index,
+            KthRawSampleMoment, Map, Maximum, Materialize, Mean, Merge, Minimum, Partition,
+            Quantile, Rename, Reshape,
 
             ExponentialMechanism, LaplaceMechanism, GaussianMechanism, SimpleGeometricMechanism,
 

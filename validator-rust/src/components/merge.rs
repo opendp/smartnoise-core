@@ -1,0 +1,62 @@
+use crate::errors::*;
+
+
+use std::collections::HashMap;
+
+use crate::{proto, base};
+
+use crate::components::Component;
+use crate::base::{Value, ValueProperties, ArrayProperties, AggregatorProperties};
+use crate::utilities::{get_common_value, prepend};
+
+use itertools::Itertools;
+
+
+impl Component for proto::Merge {
+    fn propagate_property(
+        &self,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
+        _public_arguments: &HashMap<String, Value>,
+        properties: &base::NodeProperties,
+        node_id: u32,
+    ) -> Result<ValueProperties> {
+
+        let data_property = properties.get("data")
+            .ok_or("data: missing")?.indexmap()
+            .map_err(prepend("data:"))?.clone();
+
+        let num_columns = get_common_value(&data_property.properties.values().iter()
+            .map(|v| Some(v.array().ok()?.num_columns)).collect())
+            .unwrap_or(None).ok_or_else(|| "num_columns must be known when merging")?;
+
+        // all partitions must be arrays
+        // NOTE: if you have a multilayer indexmap/partition, then step down via
+        //     Map<Map<Agg>> -> Map<Merge> -> Map<Agg> -> Merge
+        let array_props = data_property.properties.values().iter()
+            .map(|v| v.array()).collect::<Result<Vec<&ArrayProperties>>>()?;
+
+        Ok(ArrayProperties {
+            num_records: data_property.num_records,
+            num_columns,
+            nullity: get_common_value(&array_props.iter().map(|v| v.nullity).collect())
+                .unwrap_or(true),
+            releasable: get_common_value(&array_props.iter().map(|v| v.releasable).collect())
+                .unwrap_or(false),
+            c_stability: array_props.iter().map(|v| v.c_stability.clone())
+                .fold1(|l, r| l.iter().zip(r).map(|(l, r)| l.max(r)).collect::<Vec<f64>>())
+                .ok_or_else(|| "must have at least one partition when merging")?,
+            aggregator: Some(AggregatorProperties {
+                component: proto::component::Variant::Merge(self.clone()),
+                properties: properties.clone(),
+                lipschitz_constant: vec![]
+            }),
+            // TODO: merge natures
+            nature: None,
+            data_type: get_common_value(&array_props.iter().map(|v| v.data_type.clone()).collect())
+                .ok_or_else(|| "data_types must be equivalent when merging")?,
+            dataset_id: Some(node_id as i64),
+            is_not_empty: array_props.iter().any(|v| v.is_not_empty),
+            dimensionality: Some(2)
+        }.into())
+    }
+}

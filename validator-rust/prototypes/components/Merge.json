@@ -1,0 +1,15 @@
+{
+  "arguments": {
+    "data": {
+      "type_value": "Indexmap",
+      "description": "partitioned data to merge"
+    }
+  },
+  "id": "Merge",
+  "name": "merge",
+  "options": {},
+  "return": {
+    "type_value": "Array"
+  },
+  "description": "merge partitions into a single array"
+}

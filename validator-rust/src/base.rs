@@ -48,6 +48,13 @@ impl Value {
             _ => Err("value must be Jagged".into())
         }
     }
+    /// Retrieve Jagged from a Value, assuming the Value contains Jagged
+    pub fn indexmap(&self) -> Result<&Indexmap<Value>> {
+        match self {
+            Value::Indexmap(indexmap) => Ok(indexmap),
+            _ => Err("value must be Jagged".into())
+        }
+    }
 
     pub fn function(&self) -> Result<&proto::Function> {
         match self {
