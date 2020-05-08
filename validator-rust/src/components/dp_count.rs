@@ -44,7 +44,7 @@ impl Expandable for proto::DpCount {
                     let num_records = match properties.get("data")
                         .ok_or("data: missing")? {
                         ValueProperties::Array(value) => value.num_records,
-                        ValueProperties::Hashmap(value) => value.num_records,
+                        ValueProperties::Indexmap(value) => value.num_records,
                         _ => return Err("data: must not be hashmap".into())
                     };
 

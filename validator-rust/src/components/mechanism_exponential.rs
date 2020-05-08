@@ -3,13 +3,11 @@ use crate::errors::*;
 
 use std::collections::HashMap;
 
-
-use crate::components::{Sensitivity, Utility};
 use crate::{proto, base};
 
-use crate::components::{Component, Expandable};
+use crate::components::{Component, Expandable, Sensitivity};
 use crate::base::{Value, SensitivitySpace, ValueProperties, DataType};
-use crate::utilities::{prepend, expand_mechanism, broadcast_privacy_usage, get_epsilon};
+use crate::utilities::{prepend, broadcast_privacy_usage, get_epsilon, get_literal};
 
 
 impl Component for proto::ExponentialMechanism {
@@ -20,22 +18,28 @@ impl Component for proto::ExponentialMechanism {
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<ValueProperties> {
-        let mut data_property = properties.get("data")
-            .ok_or("data: missing")?.array()
-            .map_err(prepend("data:"))?.clone();
+        let mut utilities_property = properties.get("utilities")
+            .ok_or("utilities: missing")?.jagged()
+            .map_err(prepend("utilities:"))?.clone();
 
-        if data_property.data_type == DataType::Unknown {
-            return Err("data: data_type must be known".into())
+        if utilities_property.data_type != DataType::F64 {
+            return Err("utilities: data_type must be float".into())
         }
 
         let candidates = public_arguments.get("candidates")
             .ok_or_else(|| Error::from("candidates: missing, must be public"))?.jagged()?;
 
-        if data_property.num_columns()? != candidates.num_columns() {
-            return Err("candidates and data must share the same number of columns".into())
+        let utilities_num_records = utilities_property.num_records()?;
+        let candidates_num_records = candidates.num_records();
+
+        if utilities_num_records.len() != candidates_num_records.len() {
+            return Err("utilities and candidates must share the same number of columns".into())
+        }
+        if !utilities_num_records.iter().zip(candidates_num_records.iter()).all(|(l, r)| l == r) {
+            return Err("utilities and candidates must share the same number of rows in every column".into())
         }
 
-        let aggregator = data_property.aggregator.clone()
+        let aggregator = utilities_property.aggregator.clone()
             .ok_or_else(|| Error::from("aggregator: missing"))?;
 
         // sensitivity must be computable
@@ -65,7 +69,7 @@ impl Component for proto::ExponentialMechanism {
             data_property.releasable = true;
         }
 
-        Ok(data_property.into())
+        Ok(utilities_property.into())
     }
 }
 
@@ -79,13 +83,42 @@ impl Expandable for proto::ExponentialMechanism {
         component_id: &u32,
         maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
-        expand_mechanism(
-            &SensitivitySpace::Exponential,
+        let privacy_definition = privacy_definition.as_ref()
+            .ok_or_else(|| "privacy definition must be defined")?;
+        let mut current_id = *maximum_id;
+        let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
+        let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
+
+        // always overwrite sensitivity. This is not something a user may configure
+        let utilities_properties = properties.get("utilities")
+            .ok_or("utilities: missing")?.jagged()
+            .map_err(prepend("utilities:"))?.clone();
+
+        let aggregator = utilities_properties.aggregator
+            .ok_or_else(|| Error::from("aggregator: missing"))?;
+
+        let sensitivity = aggregator.component.compute_sensitivity(
             privacy_definition,
-            component,
-            properties,
-            component_id,
-            maximum_id
-        )
+            &aggregator.properties,
+            &SensitivitySpace::Exponential)?;
+
+        current_id += 1;
+        let id_sensitivity = current_id;
+        let (patch_node, release) = get_literal(sensitivity, &component.batch)?;
+        computation_graph.insert(id_sensitivity.clone(), patch_node);
+        releases.insert(id_sensitivity.clone(), release);
+
+        // noising
+        let mut noise_component = component.clone();
+        noise_component.arguments.insert("sensitivity".to_string(), id_sensitivity);
+
+        computation_graph.insert(component_id.clone(), noise_component);
+
+        Ok(proto::ComponentExpansion {
+            computation_graph,
+            properties: HashMap::new(),
+            releases,
+            traversal: Vec::new(),
+        })
     }
 }

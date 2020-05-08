@@ -60,7 +60,7 @@ impl Named for proto::Literal {
         match release {
             Some(release) => match release {
                 Value::Jagged(jagged) => Ok((0..jagged.num_columns()).map(|_| "[Literal vector]".to_string()).collect()),
-                Value::Hashmap(_) => Err("names for hashmap literals are not supported".into()),  // (or necessary)
+                Value::Indexmap(_) => Err("names for indexmap literals are not supported".into()),  // (or necessary)
                 Value::Array(value) => match value {
                     Array::F64(array) => array_to_names(array, value.num_columns()?),
                     Array::I64(array) => array_to_names(array, value.num_columns()?),

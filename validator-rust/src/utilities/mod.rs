@@ -565,7 +565,11 @@ pub fn broadcast_privacy_usage(usages: &[proto::PrivacyUsage], length: usize) ->
     }
 
     if usages.len() != 1 {
-        bail!("{} privacy parameters passed when {} were required", usages.len(), length);
+        if length != 1 {
+            bail!("{} privacy parameters passed when either one or {} was required", usages.len(), length);
+        } else {
+            bail!("{} privacy parameters passed when one was required", usages.len());
+        }
     }
 
     Ok(match usages[0].distance.clone().ok_or("distance must be defined on a privacy usage")? {

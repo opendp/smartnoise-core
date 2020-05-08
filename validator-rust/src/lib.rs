@@ -42,7 +42,6 @@ use std::iter::FromIterator;
 
 // for accuracy guarantees
 extern crate statrs;
-extern crate math;
 
 // include protobuf-generated traits
 pub mod proto {
@@ -173,7 +172,7 @@ pub fn generate_report(
             .ok_or_else(|| Error::from("component variant must be defined"))?
             .get_names(&public_arguments, &arguments_vars, release.get(node_id).map(|v| v.value.clone()).as_ref());
 
-        // update names in hashmap
+        // update names in indexmap
         node_vars.map(|v| nodes_varnames.insert(node_id.clone(), v)).ok();
 
         Ok(())

@@ -5,11 +5,11 @@ use std::collections::HashMap;
 use crate::{proto, base};
 
 use crate::components::{Component, Named};
-use crate::base::{Hashmap, Value, ValueProperties, HashmapProperties, ArrayProperties};
+use crate::base::{Indexmap, Value, ValueProperties, IndexmapProperties, ArrayProperties};
 use ndarray::prelude::*;
 use crate::utilities::prepend;
 
-impl Component for proto::Dataframe {
+impl Component for proto::Rename {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
@@ -24,11 +24,15 @@ impl Component for proto::Dataframe {
 
         let column_names = self.get_names(public_arguments, &HashMap::new(), None)?;
 
-        Ok(ValueProperties::Hashmap(HashmapProperties {
+        if column_names.len() != data_property.c_stability.len() {
+            return Err("Column names must be the same length as the number of columns.".into())
+        }
+
+        Ok(ValueProperties::Indexmap(IndexmapProperties {
             num_records: None,
             disjoint: false,
-            variant: proto::hashmap_properties::Variant::Dataframe,
-            properties: Hashmap::<ValueProperties>::Str(column_names.into_iter().enumerate()
+            variant: proto::indexmap_properties::Variant::Dataframe,
+            properties: Indexmap::<ValueProperties>::Str(column_names.into_iter().enumerate()
                 .map(|(idx, name)| (name, ValueProperties::Array(ArrayProperties {
                     num_records: data_property.num_records,
                     num_columns: Some(1),
@@ -46,7 +50,7 @@ impl Component for proto::Dataframe {
     }
 }
 
-impl Named for proto::Dataframe {
+impl Named for proto::Rename {
     fn get_names(
         &self,
         public_arguments: &HashMap<String, Value>,

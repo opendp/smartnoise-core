@@ -168,7 +168,8 @@ pub fn evaluate_analysis(
             Some(property) => match property.variant.clone().unwrap() {
                 proto::value_properties::Variant::Array(v) => v.releasable,
                 proto::value_properties::Variant::Jagged(v) => v.releasable,
-                proto::value_properties::Variant::Hashmap(_) => false
+                proto::value_properties::Variant::Indexmap(_) => false,
+                proto::value_properties::Variant::Function(v) => v.releasable
             },
             None => false
         };

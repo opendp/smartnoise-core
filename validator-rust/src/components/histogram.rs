@@ -37,7 +37,7 @@ impl Component for proto::Histogram {
         if categories.num_columns() != 1 {
             return Err("data must contain one column".into())
         }
-        data_property.num_records = Some(categories.lengths()[0] as i64);
+        data_property.num_records = Some(categories.num_records()[0] as i64);
         let num_columns = data_property.num_columns()?;
 
         // save a snapshot of the state when aggregating
@@ -188,7 +188,7 @@ impl Sensitivity for proto::Histogram {
                     .ok_or_else(|| Error::from("neighboring definition must be either \"AddRemove\" or \"Substitute\""))?;
 
                 // when categories are defined, a disjoint group by query is performed
-                let categories_length = data_property.categories()?.lengths()[0];
+                let categories_length = data_property.categories()?.num_records()[0];
 
                 let num_records = data_property.num_records;
 

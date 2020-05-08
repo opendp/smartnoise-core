@@ -19,7 +19,6 @@ pub mod cast;
 pub mod clamp;
 pub mod count;
 pub mod covariance;
-pub mod dataframe;
 pub mod digitize;
 pub mod filter;
 pub mod histogram;
@@ -32,6 +31,7 @@ pub mod mean;
 pub mod minimum;
 pub mod partition;
 pub mod quantile;
+pub mod rename;
 pub mod reshape;
 pub mod mechanisms;
 pub mod resize;
@@ -76,8 +76,11 @@ impl Evaluable for proto::component::Variant {
         evaluate!(
             // INSERT COMPONENT LIST
             Cast, Clamp, Count, Covariance, Digitize, Filter, Histogram, Impute, Index, KthRawSampleMoment, Maximum,
-            Materialize, Mean, Minimum, Partition, Quantile, Reshape, LaplaceMechanism, GaussianMechanism,
-            SimpleGeometricMechanism, Resize, Sum, Variance,
+            Materialize, Mean, Minimum, Partition, Quantile, Rename, Reshape,
+
+            ExponentialMechanism, LaplaceMechanism, GaussianMechanism, SimpleGeometricMechanism,
+
+            Resize, Sum, Variance,
 
             Abs, Add, LogicalAnd, Divide, Equal, GreaterThan, LessThan, Log, Modulo, Multiply,
             Negate, Negative, LogicalOr, Power, RowMax, RowMin, Subtract

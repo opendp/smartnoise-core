@@ -46,9 +46,8 @@ impl Expandable for proto::DpQuantile {
             batch: component.batch,
         });
 
-
         // sanitizing
-        let mut sanitize_args = hashmap!["data".to_string() => id_quantile];
+        let mut sanitize_args = hashmap!["utilities".to_string() => id_quantile];
         if self.mechanism.to_lowercase().as_str() == "exponential" {
             sanitize_args.insert("candidates".to_string(), *component.arguments.get("candidates")
                 .ok_or_else(|| Error::from("candidates is a required argument to DPQuantile when the exponential mechanism is used."))?);
@@ -110,7 +109,7 @@ impl Report for proto::DpQuantile {
 
             releases.push(JSONRelease {
                 description: "DP release information".to_string(),
-                statistic: "DPMedian".to_string(),
+                statistic: "DPQuantile".to_string(),
                 variables: serde_json::json!(variable_name),
                 release_info: match release.array()? {
                     Array::F64(v) => value_to_json(&get_ith_column(v, &column_number)?.into())?,

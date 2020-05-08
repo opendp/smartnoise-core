@@ -1,7 +1,6 @@
 use crate::errors::*;
 
 use std::collections::HashMap;
-use math::round;
 
 use crate::components::{Sensitivity, Accuracy};
 use crate::{proto, base};
@@ -143,12 +142,9 @@ impl Accuracy for proto::SimpleGeometricMechanism {
         let epsilon = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
 
         Ok(Some(sensitivities.into_iter().zip(epsilon.into_iter())
-            .map(|(sensitivity, epsilon)| {
-                let unrounded_accuracy = (1. / *alpha).ln() * (sensitivity / epsilon);
-                proto::Accuracy {
-                    value: round::ceil(unrounded_accuracy, 0),
-                    alpha: *alpha,
-            }
-        }).collect()))
+            .map(|(sensitivity, epsilon)| proto::Accuracy {
+                value: ((1. / *alpha).ln() * (sensitivity / epsilon)).ceil(),
+                alpha: *alpha,
+            }).collect()))
     }
 }

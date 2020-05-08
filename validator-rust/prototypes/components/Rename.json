@@ -1,0 +1,17 @@
+{
+  "arguments": {
+    "data": {
+      "type_value": "Array"
+    },
+    "column_names": {
+      "type_value": "Array"
+    }
+  },
+  "id": "Rename",
+  "name": "rename",
+  "options": {},
+  "return": {
+    "type_value": "Indexmap"
+  },
+  "description": "Name columns of an array or indexmap to produce an indexmap (representing a Dataframe) with the specified names"
+}

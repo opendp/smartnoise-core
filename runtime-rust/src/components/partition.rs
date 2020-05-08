@@ -1,7 +1,7 @@
 use whitenoise_validator::errors::*;
 
 use crate::NodeArguments;
-use whitenoise_validator::base::{Array, ReleaseNode, Value, Hashmap};
+use whitenoise_validator::base::{Array, ReleaseNode, Value, Indexmap};
 use whitenoise_validator::utilities::get_argument;
 use whitenoise_validator::components::partition::even_split_lengths;
 use crate::components::Evaluable;
@@ -10,7 +10,6 @@ use ndarray::{ArrayD, Axis};
 use whitenoise_validator::proto;
 
 use whitenoise_validator::utilities::array::slow_select;
-use std::collections::BTreeMap;
 use indexmap::map::IndexMap;
 
 
@@ -26,16 +25,16 @@ impl Evaluable for proto::Partition {
 
                 match data {
                     Array::F64(data) =>
-                        Value::Hashmap(Hashmap::<Value>::I64(partition_evenly(data, num_partitions).into_iter()
+                        Value::Indexmap(Indexmap::<Value>::I64(partition_evenly(data, num_partitions).into_iter()
                             .map(|(idx, data)| (idx, data.into())).collect::<IndexMap<i64, Value>>())),
                     Array::I64(data) =>
-                        Value::Hashmap(Hashmap::<Value>::I64(partition_evenly(data, num_partitions).into_iter()
+                        Value::Indexmap(Indexmap::<Value>::I64(partition_evenly(data, num_partitions).into_iter()
                             .map(|(idx, data)| (idx, data.into())).collect::<IndexMap<i64, Value>>())),
                     Array::Bool(data) =>
-                        Value::Hashmap(Hashmap::<Value>::I64(partition_evenly(data, num_partitions).into_iter()
+                        Value::Indexmap(Indexmap::<Value>::I64(partition_evenly(data, num_partitions).into_iter()
                             .map(|(idx, data)| (idx, data.into())).collect::<IndexMap<i64, Value>>())),
                     Array::Str(data) =>
-                        Value::Hashmap(Hashmap::<Value>::I64(partition_evenly(data, num_partitions).into_iter()
+                        Value::Indexmap(Indexmap::<Value>::I64(partition_evenly(data, num_partitions).into_iter()
                             .map(|(idx, data)| (idx, data.into())).collect::<IndexMap<i64, Value>>())),
                 }
             }
@@ -49,10 +48,10 @@ impl Evaluable for proto::Partition {
 ///
 /// # Arguments
 /// * `data` - Data to be partitioned.
-/// * `num_partitions` - Number of keys in the hashmap of arrays returned.
+/// * `num_partitions` - Number of keys in the indexmap of arrays returned.
 ///
 /// # Return
-/// Hashmap with data splits.
+/// Indexmap with data splits.
 ///
 /// # Example
 /// ```
@@ -65,7 +64,7 @@ impl Evaluable for proto::Partition {
 /// assert_eq!(partitioned.get(&1).unwrap().clone(), arr2(&[ [7, 8] ]).into_dyn());
 /// assert_eq!(partitioned.get(&2).unwrap().clone(), arr2(&[ [10, 11] ]).into_dyn());
 /// ```
-pub fn partition_evenly<T: Clone + Default + std::fmt::Debug>(data: &ArrayD<T>, num_partitions: i64) -> BTreeMap<i64, ArrayD<T>> {
+pub fn partition_evenly<T: Clone + Default + std::fmt::Debug>(data: &ArrayD<T>, num_partitions: i64) -> IndexMap<i64, ArrayD<T>> {
 
     let mut offset = 0;
     even_split_lengths(data.len_of(Axis(0)) as i64, num_partitions).into_iter().enumerate()
@@ -79,5 +78,5 @@ pub fn partition_evenly<T: Clone + Default + std::fmt::Debug>(data: &ArrayD<T>, 
             offset += length;
             entry
         })
-        .collect::<BTreeMap<i64, ArrayD<T>>>()
+        .collect::<IndexMap<i64, ArrayD<T>>>()
 }

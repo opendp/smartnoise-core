@@ -53,18 +53,21 @@ enum FilterLevel {
     ALL = 2;
 }
 
+// derived properties for the top-level Value type
 message ValueProperties {
     oneof variant {
-        HashmapProperties hashmap = 1;
-        ArrayNDProperties array = 2;
-        Vector2DJaggedProperties jagged = 3;
+        IndexmapProperties indexmap = 1;
+        ArrayProperties array = 2;
+        JaggedProperties jagged = 3;
+        FunctionProperties function = 4;
     }
 }
 
-message HashmapProperties {
+// derived properties for the Value::Indexmap type
+message IndexmapProperties {
     I64Null num_records = 1;
     bool disjoint = 2;
-    HashmapValueProperties value_properties = 3;
+    IndexmapValueProperties value_properties = 3;
 
     enum Variant {
         DATAFRAME = 0;
@@ -73,35 +76,39 @@ message HashmapProperties {
     Variant variant = 4;
 }
 
-message HashmapValueProperties {
+message IndexmapValueProperties {
     oneof variant {
-        HashmapValuePropertiesStr string = 1;
-        HashmapValuePropertiesBool bool = 2;
-        HashmapValuePropertiesI64 i64 = 3;
+        IndexmapValuePropertiesStr string = 1;
+        IndexmapValuePropertiesBool bool = 2;
+        IndexmapValuePropertiesI64 i64 = 3;
     }
 }
 
-message HashmapValuePropertiesStr {
+message IndexmapValuePropertiesStr {
     map<string, ValueProperties> data = 1;
 }
-message HashmapValuePropertiesBool {
+message IndexmapValuePropertiesBool {
     map<bool, ValueProperties> data = 1;
 }
-message HashmapValuePropertiesI64 {
+message IndexmapValuePropertiesI64 {
     map<int64, ValueProperties> data = 1;
 }
 
-message ArrayNDProperties {
+
+// sub-properties for Value::* types that may be aggregated
+message AggregatorProperties {
+    Component component = 1;
+    map<string, ValueProperties> properties = 2;
+    Array1dF64 lipschitz_constant = 3;
+}
+
+// derived properties for the Value::Array type
+message ArrayProperties {
     I64Null num_records = 1;
     I64Null num_columns = 2;
     bool nullity = 3;
     Array1dF64 c_stability = 4;
 
-    message AggregatorProperties {
-        Component component = 1;
-        map<string, ValueProperties> properties = 2;
-        Array1dF64 lipschitz_constant = 3;
-    }
     AggregatorProperties aggregator = 5;
     
     DataType data_type = 6;
@@ -120,14 +127,34 @@ message NatureContinuous {
     Array1dNull maximum = 2;
 }
 message NatureCategorical {
-    Array2dJagged categories = 1;
+    Jagged categories = 1;
 }
 
-message Vector2DJaggedProperties {
+// derived properties for the Value::Jagged type
+message JaggedProperties {
+
+    /// number of records per column
+    Array1dI64 num_records = 1;
+    /// true if the data may contain null values
+    bool nullity = 2;
+    /// set when data is aggregated, used to help compute sensitivity from the mechanisms
+    AggregatorProperties aggregator = 3;
+    /// either min/max or categories
+    oneof nature {
+        NatureContinuous continuous = 100;
+        NatureCategorical categorical = 101;
+    }
+    /// type of data
+    DataType data_type = 5;
+    bool releasable = 6;
+}
+
+// derived properties for the Value::Function type
+message FunctionProperties {
     bool releasable = 1;
 }
 
-
+// properties for each node on a graph
 message GraphProperties {
     map<uint32, ValueProperties> properties = 1;
     repeated Error warnings = 2;
@@ -162,34 +189,37 @@ message Value {
         // bytes bytes = 1;
 
         // N-dimensional homogeneously typed array
-        ArrayNd array = 2;
+        Array array = 2;
 
         // Key-Value pairs
-        Hashmap hashmap = 3;
+        Indexmap indexmap = 3;
 
         // Data structure with mixed column lengths
-        Array2dJagged jagged = 4;
+        Jagged jagged = 4;
 
         // Evaluable function
         Function function = 5;
     }
 }
 
-message HashmapStr {
-    map<string, Value> data = 1;
+message IndexmapStr {
+    repeated string keys = 1;
+    repeated Value values = 2;
 }
-message HashmapBool {
-    map<bool, Value> data = 1;
+message IndexmapBool {
+    repeated bool keys = 1;
+    repeated Value values = 2;
 }
-message HashmapI64 {
-    map<int64, Value> data = 1;
+message IndexmapI64 {
+    repeated int64 keys = 1;
+    repeated Value values = 2;
 }
 
-message Hashmap {
+message Indexmap {
     oneof variant {
-        HashmapStr string = 1;
-        HashmapBool bool = 2;
-        HashmapI64 i64 = 4;
+        IndexmapStr string = 1;
+        IndexmapBool bool = 2;
+        IndexmapI64 i64 = 4;
     }
 }
 

@@ -53,7 +53,7 @@ message Array1d {
 }
 
 // N-dimensional homogeneously typed array
-message ArrayNd {
+message Array {
     Array1d flattened = 1;
     // length of axes
     repeated uint64 shape = 2;
@@ -67,7 +67,7 @@ enum DataType {
     STRING = 4;
 }
 
-message Array2dJagged {
+message Jagged {
     repeated Array1d data = 1;
     DataType data_type = 2;
 }

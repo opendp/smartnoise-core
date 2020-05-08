@@ -2,6 +2,12 @@
   "arguments": {
     "data": {
       "type_value": "Array"
+    },
+    "candidates": {
+      "type_value": "Jagged",
+      "default_python": "None",
+      "default_rust": "None",
+      "description": "Set from which the Exponential mechanism will return an element."
     }
   },
   "id": "DPMedian",
@@ -10,8 +16,8 @@
     "mechanism": {
       "type_proto": "string",
       "type_rust": "String",
-      "default_python": "'Laplace'",
-      "default_rust": "String::from(\"Laplace\")",
+      "default_python": "'Exponential'",
+      "default_rust": "String::from(\"Exponential\")",
       "description": "Privatizing mechanism to use."
     },
     "privacy_usage": {

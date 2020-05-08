@@ -1,7 +1,7 @@
 use crate::errors::*;
 
 use std::collections::HashMap;
-use crate::base::{Array, Value, ValueProperties, Hashmap, ArrayProperties, Nature, NatureContinuous, NatureCategorical, Vector1DNull, Jagged};
+use crate::base::{Array, Value, ValueProperties, Indexmap, ArrayProperties, Nature, NatureContinuous, NatureCategorical, Vector1DNull, Jagged};
 
 use crate::{proto, base};
 use crate::components::{Component, Named};
@@ -27,18 +27,18 @@ impl Component for proto::Index {
         let dimensionality = Some(column_names.shape().len() as i64 + 1);
 
         let properties = match data_property {
-            ValueProperties::Hashmap(data_property) => {
+            ValueProperties::Indexmap(data_property) => {
                 // TODO: Should columnar stacking of partitions be allowed?
                 data_property.assert_is_dataframe()?;
 
                 match data_property.properties {
-                    Hashmap::Str(value_properties) => match column_names {
-                        // String column names on string hashmap
+                    Indexmap::Str(value_properties) => match column_names {
+                        // String column names on string indexmap
                         Array::Str(column_names) => to_name_vec(&column_names)?.into_iter()
                             .map(|v| value_properties.get(&v).cloned())
                             .collect::<Option<Vec<ValueProperties>>>()
                             .ok_or_else(|| Error::from("columns: unknown column in index")),
-                        // Bool mask on string hashmap
+                        // Bool mask on string indexmap
                         Array::Bool(column_names) => {
                             let mask = to_name_vec(&column_names)?;
                             if value_properties.len() != mask.len() {
@@ -51,7 +51,7 @@ impl Component for proto::Index {
                                 .map(|(_, value)| value.clone())
                                 .collect())
                         },
-                        // Indices on string hashmap
+                        // Indices on string indexmap
                         Array::I64(indices) => {
                             let indices = to_name_vec(&indices)?;
                             let column_names = value_properties.keys().cloned().collect::<Vec<String>>();
@@ -61,13 +61,13 @@ impl Component for proto::Index {
                         },
                         Array::F64(_) => Err("columns may not have float type".into())
                     },
-                    Hashmap::I64(value_properties) => match column_names {
-                        // I64 column names on I64 hashmap
+                    Indexmap::I64(value_properties) => match column_names {
+                        // I64 column names on I64 indexmap
                         Array::I64(column_names) => to_name_vec(&column_names)?.into_iter()
                             .map(|v| value_properties.get(&v).cloned())
                             .collect::<Option<Vec<ValueProperties>>>()
                             .ok_or_else(|| Error::from("columns: unknown column in index")),
-                        // Bool mask on I64 hashmap
+                        // Bool mask on I64 indexmap
                         Array::Bool(column_names) => {
                             let mask = to_name_vec(&column_names)?;
                             if value_properties.len() != mask.len() {
@@ -82,7 +82,7 @@ impl Component for proto::Index {
                         },
                         _ => Err("columns must be either integer or a boolean mask".into())
                     },
-                    Hashmap::Bool(value_properties) =>
+                    Indexmap::Bool(value_properties) =>
                         to_name_vec(column_names.bool()?)?.into_iter()
                             .map(|name| value_properties.get(&name).cloned()
                                 .ok_or_else(|| Error::from("columns: unknown column in index")))
@@ -106,7 +106,8 @@ impl Component for proto::Index {
                     _ => return Err("when indexing an array, the data type of the indices must be integer column number(s) or a boolean mask".into())
                 }
             },
-            ValueProperties::Jagged(_) => Err("indexing is not supported on vectors".into())
+            ValueProperties::Jagged(_) => Err("indexing is not supported on vectors".into()),
+            ValueProperties::Function(_) => Err("indexing is not suppported on functions".into())
         }?;
 
         stack_properties(&properties, dimensionality)

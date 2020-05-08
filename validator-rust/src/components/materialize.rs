@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use crate::{proto, base};
 
 use crate::components::{Component, Named};
-use crate::base::{Hashmap, Value, ValueProperties, HashmapProperties, ArrayProperties, DataType};
+use crate::base::{Indexmap, Value, ValueProperties, IndexmapProperties, ArrayProperties, DataType};
 use ndarray::prelude::*;
 
 impl Component for proto::Materialize {
@@ -19,10 +19,10 @@ impl Component for proto::Materialize {
 
         let column_names = self.get_names(public_arguments, &HashMap::new(), None)?;
 
-        Ok(HashmapProperties {
+        Ok(IndexmapProperties {
             num_records: None,
             disjoint: false,
-            properties: Hashmap::<ValueProperties>::Str(column_names.into_iter()
+            properties: Indexmap::<ValueProperties>::Str(column_names.into_iter()
                 .map(|name| (name, ValueProperties::Array(ArrayProperties {
                     num_records: None,
                     num_columns: Some(1),
@@ -37,7 +37,7 @@ impl Component for proto::Materialize {
                     is_not_empty: true,
                     dimensionality: Some(1)
                 }))).collect()),
-            variant: proto::hashmap_properties::Variant::Dataframe
+            variant: proto::indexmap_properties::Variant::Dataframe
         }.into())
     }
 }

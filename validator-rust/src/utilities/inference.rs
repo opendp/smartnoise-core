@@ -11,7 +11,7 @@ use ndarray::prelude::*;
 use ndarray_stats::QuantileExt;
 
 use itertools::Itertools;
-use crate::base::{Array, Value, Jagged, Nature, Vector1DNull, NatureContinuous, NatureCategorical, ValueProperties, ArrayProperties, DataType, HashmapProperties, JaggedProperties, Hashmap};
+use crate::base::{Array, Value, Jagged, Nature, Vector1DNull, NatureContinuous, NatureCategorical, ValueProperties, ArrayProperties, DataType, IndexmapProperties, JaggedProperties, Indexmap};
 
 use crate::utilities::deduplicate;
 use indexmap::map::IndexMap;
@@ -52,7 +52,7 @@ pub fn infer_lower(value: &Value) -> Result<Vector1DNull> {
                 _ => return Err("arrays may have max dimensionality of 2".into())
             }
         }
-        Value::Hashmap(_hashmap) => return Err("constraint inference is not implemented for hashmaps".into()),
+        Value::Indexmap(_) => return Err("constraint inference is not implemented for indexmaps".into()),
         Value::Jagged(jagged) => {
             match jagged {
                 Jagged::F64(jagged) => Vector1DNull::F64(jagged.iter()
@@ -106,7 +106,7 @@ pub fn infer_upper(value: &Value) -> Result<Vector1DNull> {
                 _ => return Err("arrays may have max dimensionality of 2".into())
             }
         }
-        Value::Hashmap(_hashmap) => return Err("constraint inference is not implemented for hashmaps".into()),
+        Value::Indexmap(_) => return Err("constraint inference is not implemented for indexmaps".into()),
         Value::Jagged(jagged) => {
             match jagged {
                 Jagged::F64(jagged) => Vector1DNull::F64(jagged.iter()
@@ -144,7 +144,7 @@ pub fn infer_categories(value: &Value) -> Result<Jagged> {
                     Ok(col.into_dyn().into_dimensionality::<Ix1>()?.to_vec()))
                     .collect::<Result<Vec<_>>>()?),
         },
-        Value::Hashmap(_) => return Err("category inference is not implemented for hashmaps".into()),
+        Value::Indexmap(_) => return Err("category inference is not implemented for indexmaps".into()),
         Value::Jagged(jagged) => match jagged {
             Jagged::Bool(array) =>
                 Jagged::Bool(array.iter().cloned().map(deduplicate).collect()),
@@ -177,7 +177,7 @@ pub fn infer_nature(value: &Value) -> Result<Option<Nature>> {
                 categories: infer_categories(&array.clone().into())?,
             })),
         },
-        Value::Hashmap(_) => None,
+        Value::Indexmap(_) => unreachable!(),
         Value::Jagged(jagged) => match jagged {
             Jagged::F64(_) => None,
             _ => Some(Nature::Categorical(NatureCategorical {
@@ -227,33 +227,46 @@ pub fn infer_property(value: &Value, dataset_id: Option<i64>) -> Result<ValuePro
             } != 0,
             dimensionality: Some(array.shape().len() as i64),
         }.into(),
-        Value::Hashmap(hashmap) => {
-            HashmapProperties {
+        Value::Indexmap(indexmap) => {
+            IndexmapProperties {
                 num_records: None,
                 disjoint: false,
-                variant: proto::hashmap_properties::Variant::Dataframe,
-                properties: match hashmap {
-                    Hashmap::Str(hashmap) => hashmap.iter()
+                variant: proto::indexmap_properties::Variant::Dataframe,
+                properties: match indexmap {
+                    Indexmap::Str(indexmap) => indexmap.iter()
                         .map(|(name, value)| infer_property(value, dataset_id)
                             .map(|v| (name.clone(), v)))
                         .collect::<Result<IndexMap<String, ValueProperties>>>()?.into(),
-                    Hashmap::I64(hashmap) => hashmap.iter()
+                    Indexmap::I64(indexmap) => indexmap.iter()
                         .map(|(name, value)| infer_property(value, dataset_id)
                             .map(|v| (*name, v)))
                         .collect::<Result<IndexMap<i64, ValueProperties>>>()?.into(),
-                    Hashmap::Bool(hashmap) => hashmap.iter()
+                    Indexmap::Bool(indexmap) => indexmap.iter()
                         .map(|(name, value)| infer_property(value, dataset_id)
                             .map(|v| (*name, v)))
                         .collect::<Result<IndexMap<bool, ValueProperties>>>()?.into(),
                 },
             }.into()
         }
-        Value::Jagged(_jagged) => JaggedProperties {
+        Value::Jagged(jagged) => JaggedProperties {
+            num_records: Some(jagged.num_records()),
+            nullity: match &jagged {
+                Jagged::F64(jagged) => jagged.iter()
+                    .any(|col| col.iter()
+                        .any(|elem| !elem.is_finite())),
+                _ => false
+            },
+            aggregator: None,
+            nature: infer_nature(value)?,
+            data_type: match jagged {
+                Jagged::Bool(_) => DataType::Bool,
+                Jagged::F64(_) => DataType::F64,
+                Jagged::I64(_) => DataType::I64,
+                Jagged::Str(_) => DataType::Str,
+            },
             releasable: true
         }.into(),
         // TODO: custom properties for Functions (may not be needed)
-        Value::Function(_function) => JaggedProperties {
-            releasable: true
-        }.into()
+        Value::Function(_function) => unreachable!()
     })
 }

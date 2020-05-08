@@ -92,21 +92,29 @@ pub fn quantile_utilities<T: Ord + Clone + Copy>(
     Ok(data.gencolumns().into_iter().zip(candidates.into_iter())
         .map(|(column, candidates)| {
             let mut column = column.to_vec();
+            let column_len = column.len();
             let mut candidates = candidates.into_iter().enumerate().collect::<Vec<(usize, T)>>();
             candidates.sort_unstable_by_key(|v| v.1);
             column.sort_unstable();
 
             let mut offsets = Vec::new();
             let mut index = 0;
-            column.into_iter().enumerate().for_each(|(offset, v)| while v > candidates[index].1 {
-                offsets.push(offset as f64);
-                index += 1;
+            column.into_iter().enumerate().for_each(|(offset, v)| {
+                while index < candidates.len() && v > candidates[index].1 {
+                    offsets.push(offset as f64);
+                    index += 1;
+                }
             });
+
+            // ensure offsets and candidates have the same length by appending offsets for candidates greater than the maximum value of the dataset
+            offsets.extend((0..candidates.len() - offsets.len())
+                .map(|_| column_len as f64).collect::<Vec<f64>>());
 
             let utilities = offsets.into_iter()
                 .map(|offset| constant - ((1. - alpha) * offset - alpha * (n - offset)).abs())
                 .collect::<Vec<f64>>();
 
+            // order they utilities by the order of the candidates before they were sorted
             candidates.into_iter().map(|(idx, _)| utilities[idx]).collect()
         })
         .collect::<Vec<Vec<f64>>>())

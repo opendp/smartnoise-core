@@ -1,6 +1,6 @@
 {
   "arguments": {
-    "data": {
+    "utilities": {
       "type_value": "Jagged",
       "description": "Respective scores for each candidate."
     },

@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use crate::{proto, base};
 
 use crate::components::{Component, Sensitivity};
-use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType};
+use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType, JaggedProperties};
 
 use crate::utilities::prepend;
 use ndarray::prelude::*;
@@ -16,7 +16,7 @@ impl Component for proto::Quantile {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &HashMap<String, Value>,
+        public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<ValueProperties> {
@@ -29,21 +29,45 @@ impl Component for proto::Quantile {
         }
         data_property.assert_is_not_empty()?;
 
-        // save a snapshot of the state when aggregating
-        data_property.aggregator = Some(AggregatorProperties {
-            component: proto::component::Variant::Quantile(self.clone()),
-            properties: properties.clone(),
-            lipschitz_constant: (0..data_property.num_columns()?).map(|_| 1.).collect()
-        });
-
         if data_property.data_type != DataType::F64 && data_property.data_type != DataType::I64 {
             return Err("data: atomic type must be numeric".into());
         }
 
-        data_property.num_records = Some(1);
-        data_property.nature = None;
+        Ok(match public_arguments.get("candidates") {
+            Some(candidates) => {
+                let candidates = candidates.jagged()?;
 
-        Ok(data_property.into())
+                if data_property.data_type != candidates.data_type() {
+                    return Err("data_type of data must match data_type of candidates".into())
+                }
+
+                JaggedProperties {
+                    num_records: Some(candidates.num_records()),
+                    nullity: false,
+                    aggregator: Some(AggregatorProperties {
+                        component: proto::component::Variant::Quantile(self.clone()),
+                        properties: properties.clone(),
+                        lipschitz_constant: (0..data_property.num_columns()?).map(|_| 1.).collect()
+                    }),
+                    nature: None,
+                    data_type: DataType::F64,
+                    releasable: false
+                }.into()
+            },
+            None => {
+                // save a snapshot of the state when aggregating
+                data_property.aggregator = Some(AggregatorProperties {
+                    component: proto::component::Variant::Quantile(self.clone()),
+                    properties: properties.clone(),
+                    lipschitz_constant: (0..data_property.num_columns()?).map(|_| 1.).collect()
+                });
+
+                data_property.num_records = Some(1);
+                data_property.nature = None;
+
+                data_property.into()
+            }
+        })
     }
 }
 
@@ -98,55 +122,3 @@ impl Sensitivity for proto::Quantile {
         }
     }
 }
-
-// impl Utility for proto::Quantile {
-//     fn get_utility(
-//         &self,
-//         properties: &NodeProperties,
-//     ) -> Result<proto::Function> {
-//         use crate::bindings;
-//
-//         let data_property = properties.get("data")
-//             .ok_or("data: missing")?.array()
-//             .map_err(prepend("data:"))?.clone();
-//         let num_records = data_property.num_records()?;
-//
-//         let mut analysis = bindings::Analysis::new();
-//
-//         let data = analysis.literal().enter();
-//         let candidate = analysis.literal().enter();
-//
-//         // compute #(Z < x)
-//         let count_z_lt_x = {
-//             let mask = analysis.less_than(data, candidate).enter();
-//             let filtered = analysis.filter(data, mask).enter();
-//             analysis.count(filtered).enter()
-//         };
-//
-//         // compute weighted difference
-//         let abs_diff = {
-//             let n = analysis.literal().value(num_records.into()).enter();
-//             let alpha = analysis.literal().value(self.alpha.into()).enter();
-//             let alpha_inv = analysis.literal().value((1. - self.alpha).into()).enter();
-//             let count_z_gt_x = analysis.subtract(n, count_z_lt_x).enter();
-//
-//             let left = analysis.multiply(alpha_inv, count_z_lt_x).enter();
-//             let right = analysis.multiply(alpha, count_z_gt_x).enter();
-//             let diff = analysis.subtract(left, right).enter();
-//             analysis.abs(diff).enter()
-//         };
-//
-//         let utility = {
-//             let optimal = analysis.literal()
-//                 .value((self.alpha.max(1. - self.alpha) * num_records as f64).into()).enter();
-//             analysis.subtract(optimal, abs_diff).enter()
-//         };
-//
-//         Ok(proto::Function {
-//             computation_graph: Some(proto::ComputationGraph { value: analysis.components }),
-//             release: Some(serialize_release(analysis.release)),
-//             arguments: hashmap!["candidate".to_string() => candidate, "dataset".to_string() => data],
-//             outputs: hashmap!["utility".to_string() => utility]
-//         })
-//     }
-// }

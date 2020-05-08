@@ -30,11 +30,18 @@ impl Component for proto::Resize {
         }
 
         if let Some(num_columns) = public_arguments.get("number_columns") {
+            if data_property.num_columns.is_some() {
+                return Err("cannot resize number of columns when number of columns is known".into())
+            }
+
             let num_columns = num_columns.first_i64()?;
             if num_columns < 1 {
                 return Err("n must be greater than zero".into());
             }
             data_property.num_columns = Some(num_columns);
+            data_property.nature = None;
+            data_property.c_stability = (0..num_columns).map(|_| 1.).collect::<Vec<f64>>();
+            data_property.dimensionality = Some(2);
         }
 
         if let Some(num_records) = public_arguments.get("number_rows") {

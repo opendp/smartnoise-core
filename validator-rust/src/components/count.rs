@@ -19,12 +19,13 @@ impl Component for proto::Count {
     ) -> Result<ValueProperties> {
         let mut data_property = match properties.get("data").ok_or("data: missing")?.clone() {
             ValueProperties::Array(data_property) => data_property,
-            ValueProperties::Hashmap(data_property) => {
+            ValueProperties::Indexmap(data_property) => {
                 data_property.assert_is_dataframe()?;
                 data_property.properties.values().first()
                     .ok_or_else(|| Error::from("dataframe must have at least one column"))?.array()?.to_owned()
             },
-            ValueProperties::Jagged(_) => return Err("Count is not implemented on jagged arrays".into())
+            ValueProperties::Jagged(_) => return Err("Count is not implemented on jagged arrays".into()),
+            ValueProperties::Function(_) => return Err("Count is not implemented for functions".into())
         };
 
         if !data_property.releasable {
@@ -67,7 +68,7 @@ impl Sensitivity for proto::Count {
                 value.assert_is_not_aggregated()?;
                 value.num_records
             },
-            ValueProperties::Hashmap(value) => value.num_records,
+            ValueProperties::Indexmap(value) => value.num_records,
             _ => return Err("data: must not be hashmap".into())
         };
 

@@ -18,9 +18,9 @@ impl Evaluable for proto::Count {
                 Array::I64(data) => count(data)?.into(),
                 Array::Str(data) => count(data)?.into()
             },
-            Value::Hashmap(hashmap) => match hashmap.values().first() {
+            Value::Indexmap(indexmap) => match indexmap.values().first() {
                 Some(value) => arr0(value.array()?.num_records()?).into_dyn().into(),
-                None => return Err("hashmap may not be empty".into())
+                None => return Err("indexmap may not be empty".into())
             },
             Value::Jagged(_) => return Err("Count is not implemented on Jagged arrays".into()),
             Value::Function(_) => return Err("Count is not implemented on Functions".into())

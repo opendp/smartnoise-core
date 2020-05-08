@@ -37,8 +37,6 @@ impl Component for proto::Cast {
             _ => bail!("data type is not recognized. Must be one of \"float\", \"int\", \"bool\" or \"string\"")
         };
 
-        let num_columns = data_property.num_columns()?;
-
         match data_property.data_type {
             DataType::Unknown => unreachable!(),
             DataType::Bool => {
@@ -73,9 +71,12 @@ impl Component for proto::Cast {
                     },
                     None => None
                 };
-                data_property.nature = Some(Nature::Categorical(NatureCategorical {
-                    categories: Jagged::Bool((0..num_columns).map(|_| vec![true, false]).collect())
-                }));
+
+                data_property.nature = data_property.num_columns
+                    .map(|num_columns| Nature::Categorical(NatureCategorical {
+                        categories: Jagged::Bool((0..num_columns).map(|_| vec![true, false]).collect())
+                    }));
+
                 data_property.nullity = false;
             },
             DataType::I64 => {

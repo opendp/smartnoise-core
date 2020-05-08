@@ -2,7 +2,7 @@ use whitenoise_validator::errors::*;
 
 use ndarray::prelude::*;
 use crate::NodeArguments;
-use whitenoise_validator::base::{Value, Hashmap, ReleaseNode};
+use whitenoise_validator::base::{Value, Indexmap, ReleaseNode};
 use indexmap::IndexMap;
 use crate::components::Evaluable;
 use ndarray;
@@ -61,16 +61,16 @@ impl Evaluable for proto::Materialize {
         match column_names {
             Some(column_names) => {
                 let column_names = column_names.into_dimensionality::<Ix1>()?.to_vec();
-                // convert hashmap of vecs into arrays
-                Ok(ReleaseNode::new(Value::Hashmap(Hashmap::Str(response.into_iter().enumerate()
+                // convert indexmap of vecs into arrays
+                Ok(ReleaseNode::new(Value::Indexmap(Indexmap::Str(response.into_iter().enumerate()
                     .map(|(k, v): (usize, Vec<String>)|
                         (column_names[k].clone(), ndarray::Array::from(v).into_dyn().into()))
                     .collect::<IndexMap<String, Value>>()))))
             }
             None => {
 
-                // convert hashmap of vecs into arrays
-                Ok(ReleaseNode::new(Value::Hashmap(Hashmap::I64(response.into_iter().enumerate()
+                // convert indexmap of vecs into arrays
+                Ok(ReleaseNode::new(Value::Indexmap(Indexmap::I64(response.into_iter().enumerate()
                     .map(|(k, v): (usize, Vec<String>)|
                         (k as i64, ndarray::Array::from(v).into_dyn().into()))
                     .collect::<IndexMap<i64, Value>>()))))

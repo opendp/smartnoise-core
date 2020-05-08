@@ -1,7 +1,7 @@
 use whitenoise_validator::errors::*;
 
 use crate::NodeArguments;
-use whitenoise_validator::base::{Value, Array, Hashmap, DataType, ReleaseNode};
+use whitenoise_validator::base::{Value, Array, Indexmap, DataType, ReleaseNode};
 use crate::components::Evaluable;
 use whitenoise_validator::proto;
 use whitenoise_validator::utilities::array::{slow_stack, slow_select};
@@ -18,48 +18,10 @@ impl Evaluable for proto::Index {
         let data = get_argument(arguments, "data")?;
         let columns = get_argument(arguments, "columns")?.array()?;
 
-        // TODO: synthetic generation for out-of-bounds indexing on private data with unknown column size
-        // // force the input to be an array- reject hashmap and jagged
-        // Ok(ReleaseNode::new(match column_names {
-        //     Some(column_names) => Value::Hashmap(Hashmap::<Value>::Str(match parse_value(value)?.array()? {
-        //         Array::F64(array) => {
-        //             let standardized = standardize_columns(array, num_columns)?;
-        //             column_names.into_iter().enumerate()
-        //                 .map(|(idx, name)| Ok((name.clone(), get_ith_column(&standardized, &idx)?.into())))
-        //                 .collect::<Result<BTreeMap<String, Value>>>()?
-        //         }
-        //         Array::I64(array) => {
-        //             let standardized = standardize_columns(array, num_columns)?;
-        //             column_names.into_iter().enumerate()
-        //                 .map(|(idx, name)| Ok((name.clone(), get_ith_column(&standardized, &idx)?.into())))
-        //                 .collect::<Result<BTreeMap<String, Value>>>()?
-        //         }
-        //         Array::Bool(array) => {
-        //             let standardized = standardize_columns(array, num_columns)?;
-        //             column_names.into_iter().enumerate()
-        //                 .map(|(idx, name)| Ok((name.clone(), get_ith_column(&standardized, &idx)?.into())))
-        //                 .collect::<Result<BTreeMap<String, Value>>>()?
-        //         }
-        //         Array::Str(array) => {
-        //             let standardized = standardize_columns(array, num_columns)?;
-        //             column_names.into_iter().enumerate()
-        //                 .map(|(idx, name)| Ok((name.clone(), get_ith_column(&standardized, &idx)?.into())))
-        //                 .collect::<Result<BTreeMap<String, Value>>>()?
-        //         }
-        //     })),
-        //     None => match parse_value(value)?.array()? {
-        //         Array::F64(array) => standardize_columns(array, num_columns)?.into(),
-        //         Array::I64(array) => standardize_columns(array, num_columns)?.into(),
-        //         Array::Bool(array) => standardize_columns(array, num_columns)?.into(),
-        //         Array::Str(array) => standardize_columns(array, num_columns)?.into(),
-        //     }
-        // }))
-
-
         let mut indexed = match data {
-            // if value is a hashmap, we'll be stacking arrays column-wise
-            Value::Hashmap(dataframe) => match dataframe {
-                Hashmap::Str(dataframe) => match columns {
+            // if value is an indexmap, we'll be stacking arrays column-wise
+            Value::Indexmap(dataframe) => match dataframe {
+                Indexmap::Str(dataframe) => match columns {
                     Array::Str(columns) => column_stack(
                         dataframe, &to_name_vec(columns)?),
                     Array::I64(columns) => {
@@ -74,7 +36,7 @@ impl Evaluable for proto::Index {
                         &to_name_vec(columns)?)?),
                     _ => Err("the data type of the column headers is not supported".into())
                 },
-                Hashmap::I64(dataframe) => {
+                Indexmap::I64(dataframe) => {
                     match columns {
                         Array::I64(columns) => column_stack(dataframe, &to_name_vec(columns)?),
                         Array::Bool(columns) => column_stack(dataframe, &mask_columns(
@@ -83,7 +45,7 @@ impl Evaluable for proto::Index {
                         _ => Err("the data type of the column headers is not supported".into())
                     }
                 }
-                Hashmap::Bool(dataframe) => {
+                Indexmap::Bool(dataframe) => {
                     let columns = columns.bool()?;
                     column_stack(dataframe, &to_name_vec(columns)?)
                 }

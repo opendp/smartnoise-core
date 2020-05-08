@@ -1,7 +1,7 @@
 {
   "arguments": {
     "data": {
-      "type_value": "Hashmap"
+      "type_value": "Indexmap"
     },
     "columns": {
       "type_value": "Array"

@@ -16,8 +16,6 @@ pub mod components;
 pub mod ffi;
 pub mod base;
 
-extern crate libc;
-
 use std::collections::HashMap;
 use std::vec::Vec;
 

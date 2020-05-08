@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use crate::{proto, base};
 
 use crate::components::Component;
-use crate::base::{Value, Jagged, ValueProperties, HashmapProperties, ArrayProperties};
+use crate::base::{Value, Jagged, ValueProperties, IndexmapProperties, ArrayProperties};
 use crate::utilities::prepend;
 use indexmap::map::IndexMap;
 
@@ -36,7 +36,7 @@ impl Component for proto::Partition {
                     .map_err(prepend("by:"))?;
                 data_property.num_records = None;
 
-                HashmapProperties {
+                IndexmapProperties {
                     num_records: data_property.num_records,
                     disjoint: true,
                     properties: match categories {
@@ -45,7 +45,7 @@ impl Component for proto::Partition {
                         Jagged::I64(categories) => broadcast_partitions(&categories, &data_property)?.into(),
                         _ => return Err("partitioning based on floats is not supported".into())
                     },
-                    variant: proto::hashmap_properties::Variant::Partition,
+                    variant: proto::indexmap_properties::Variant::Partition,
                 }
             }
             None => {
@@ -60,7 +60,7 @@ impl Component for proto::Partition {
                         .collect::<Vec<Option<i64>>>()
                 };
 
-                HashmapProperties {
+                IndexmapProperties {
                     num_records: data_property.num_records,
                     disjoint: false,
                     properties: lengths.iter().enumerate().map(|(index, partition_num_records)| {
@@ -68,7 +68,7 @@ impl Component for proto::Partition {
                         partition_property.num_records = *partition_num_records;
                         (index as i64, ValueProperties::Array(partition_property))
                     }).collect::<IndexMap<i64, ValueProperties>>().into(),
-                    variant: proto::hashmap_properties::Variant::Partition,
+                    variant: proto::indexmap_properties::Variant::Partition,
                 }
             }
         }.into())

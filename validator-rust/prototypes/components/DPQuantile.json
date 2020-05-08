@@ -2,6 +2,12 @@
   "arguments": {
     "data": {
       "type_value": "Array"
+    },
+    "candidates": {
+      "type_value": "Jagged",
+      "default_python": "None",
+      "default_rust": "None",
+      "description": "Set from which the Exponential mechanism will return an element."
     }
   },
   "id": "DPQuantile",

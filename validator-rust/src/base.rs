@@ -25,8 +25,8 @@ use indexmap::IndexMap;
 pub enum Value {
     /// An arbitrary-dimensional homogeneously typed array
     Array(Array),
-    /// A hash-map, where the keys are enum-typed and the values are of type Value
-    Hashmap(Hashmap<Value>),
+    /// An index-map, where the keys are enum-typed and the values are of type Value
+    Indexmap(Indexmap<Value>),
     /// A 2D homogeneously typed matrix, where the columns may be unknown and the column lengths may be inconsistent
     Jagged(Jagged),
     /// An arbitrary function expressed in the graph language
@@ -138,19 +138,19 @@ impl From<ArrayD<String>> for Value {
 
 impl From<IndexMap<bool, Value>> for Value {
     fn from(value: IndexMap<bool, Value>) -> Self {
-        Value::Hashmap(Hashmap::<Value>::Bool(value))
+        Value::Indexmap(Indexmap::<Value>::Bool(value))
     }
 }
 
 impl From<IndexMap<i64, Value>> for Value {
     fn from(value: IndexMap<i64, Value>) -> Self {
-        Value::Hashmap(Hashmap::<Value>::I64(value))
+        Value::Indexmap(Indexmap::<Value>::I64(value))
     }
 }
 
 impl From<IndexMap<String, Value>> for Value {
     fn from(value: IndexMap<String, Value>) -> Self {
-        Value::Hashmap(Hashmap::<Value>::Str(value))
+        Value::Indexmap(Indexmap::<Value>::Str(value))
     }
 }
 
@@ -389,7 +389,7 @@ impl Jagged {
             Jagged::Str(vector) => vector.len() as i64,
         }
     }
-    pub fn lengths(&self) -> Vec<i64> {
+    pub fn num_records(&self) -> Vec<i64> {
         match self {
             Jagged::Bool(value) => value.iter()
                 .map(|column| column.len() as i64).collect(),
@@ -466,61 +466,61 @@ impl From<Vec<Vec<String>>> for Jagged {
     }
 }
 
-/// The universal hash-map representation.
+/// The universal Indexmao representation.
 ///
 /// Used for any component that has multiple outputs.
 /// In practice, the only components that can emit multiple outputs are materialize (by columns) and partition (by rows)
 ///
-/// The Hashmap has a one-to-one mapping to a protobuf Hashmap.
+/// The Indexmap has a one-to-one mapping to a protobuf Indexmap.
 #[derive(Clone, Debug)]
-pub enum Hashmap<T> {
+pub enum Indexmap<T> {
     Bool(IndexMap<bool, T>),
     I64(IndexMap<i64, T>),
     Str(IndexMap<String, T>),
 }
 
-impl<T> Hashmap<T> {
+impl<T> Indexmap<T> {
     pub fn keys_length(&self) -> i64 {
         match self {
-            Hashmap::Bool(value) => value.keys().len() as i64,
-            Hashmap::I64(value) => value.keys().len() as i64,
-            Hashmap::Str(value) => value.keys().len() as i64,
+            Indexmap::Bool(value) => value.keys().len() as i64,
+            Indexmap::I64(value) => value.keys().len() as i64,
+            Indexmap::Str(value) => value.keys().len() as i64,
         }
     }
     pub fn values(&self) -> Vec<&T> {
         match self {
-            Hashmap::Bool(value) => value.values().collect(),
-            Hashmap::I64(value) => value.values().collect(),
-            Hashmap::Str(value) => value.values().collect(),
+            Indexmap::Bool(value) => value.values().collect(),
+            Indexmap::I64(value) => value.values().collect(),
+            Indexmap::Str(value) => value.values().collect(),
         }
     }
-    pub fn from_values(&self, values: Vec<T>) -> Hashmap<T> where T: Clone {
+    pub fn from_values(&self, values: Vec<T>) -> Indexmap<T> where T: Clone {
         match self {
-            Hashmap::Bool(value) => value.keys().cloned()
+            Indexmap::Bool(value) => value.keys().cloned()
                 .zip(values).collect::<IndexMap<bool, T>>().into(),
-            Hashmap::I64(value) => value.keys().cloned()
+            Indexmap::I64(value) => value.keys().cloned()
                 .zip(values).collect::<IndexMap<i64, T>>().into(),
-            Hashmap::Str(value) => value.keys().cloned()
+            Indexmap::Str(value) => value.keys().cloned()
                 .zip(values).collect::<IndexMap<String, T>>().into(),
         }
     }
 }
 
-impl<T> From<IndexMap<i64, T>> for Hashmap<T> {
+impl<T> From<IndexMap<i64, T>> for Indexmap<T> {
     fn from(value: IndexMap<i64, T>) -> Self {
-        Hashmap::<T>::I64(value)
+        Indexmap::<T>::I64(value)
     }
 }
 
-impl<T> From<IndexMap<bool, T>> for Hashmap<T> {
+impl<T> From<IndexMap<bool, T>> for Indexmap<T> {
     fn from(value: IndexMap<bool, T>) -> Self {
-        Hashmap::<T>::Bool(value)
+        Indexmap::<T>::Bool(value)
     }
 }
 
-impl<T> From<IndexMap<String, T>> for Hashmap<T> {
+impl<T> From<IndexMap<String, T>> for Indexmap<T> {
     fn from(value: IndexMap<String, T>) -> Self {
-        Hashmap::<T>::Str(value)
+        Indexmap::<T>::Str(value)
     }
 }
 
@@ -529,9 +529,10 @@ impl<T> From<IndexMap<String, T>> for Hashmap<T> {
 /// The ValueProperties has a one-to-one mapping to a protobuf ValueProperties.
 #[derive(Clone, Debug)]
 pub enum ValueProperties {
-    Hashmap(HashmapProperties),
+    Indexmap(IndexmapProperties),
     Array(ArrayProperties),
     Jagged(JaggedProperties),
+    Function(proto::FunctionProperties)
 }
 
 
@@ -543,18 +544,18 @@ impl ValueProperties {
             _ => Err("value must be an array".into())
         }
     }
-    /// Retrieve properties corresponding to an Hashmap, assuming the corresponding data value is actually the Hashmap variant
-    pub fn hashmap(&self) -> Result<&HashmapProperties> {
+    /// Retrieve properties corresponding to an Indexmap, assuming the corresponding data value is actually the Indexmap variant
+    pub fn indexmap(&self) -> Result<&IndexmapProperties> {
         match self {
-            ValueProperties::Hashmap(value) => Ok(value),
-            _ => Err("value must be a hashmap".into())
+            ValueProperties::Indexmap(value) => Ok(value),
+            _ => Err("value must be an indexmap".into())
         }
     }
     /// Retrieve properties corresponding to an Vector2DJagged, assuming the corresponding data value is actually the Vector2DJagged variant
     pub fn jagged(&self) -> Result<&JaggedProperties> {
         match self {
             ValueProperties::Jagged(value) => Ok(value),
-            _ => Err("value must be a ragged matrix".into())
+            _ => Err("value must be jagged".into())
         }
     }
 }
@@ -566,9 +567,9 @@ impl From<ArrayProperties> for ValueProperties {
     }
 }
 
-impl From<HashmapProperties> for ValueProperties {
-    fn from(value: HashmapProperties) -> Self {
-        ValueProperties::Hashmap(value)
+impl From<IndexmapProperties> for ValueProperties {
+    fn from(value: IndexmapProperties) -> Self {
+        ValueProperties::Indexmap(value)
     }
 }
 
@@ -579,34 +580,34 @@ impl From<JaggedProperties> for ValueProperties {
 }
 
 
-/// Derived properties for the universal Hashmap.
+/// Derived properties for the universal Indexmap.
 ///
-/// The HashmapProperties has a one-to-one mapping to a protobuf HashmapProperties.
+/// The IndexmapProperties has a one-to-one mapping to a protobuf IndexmapProperties.
 #[derive(Clone, Debug)]
-pub struct HashmapProperties {
+pub struct IndexmapProperties {
     /// global count over all partitions
     pub num_records: Option<i64>,
-    /// records within the values of the hashmap come from a partition of the rows
+    /// records within the values of the indexmap come from a partition of the rows
     pub disjoint: bool,
-    /// properties for each of the values in the hashmap
-    pub properties: Hashmap<ValueProperties>,
+    /// properties for each of the values in the indexmap
+    pub properties: Indexmap<ValueProperties>,
     /// denote if the value is a Dataframe or Partition
-    pub variant: proto::hashmap_properties::Variant,
+    pub variant: proto::indexmap_properties::Variant,
 }
 
-impl HashmapProperties {
+impl IndexmapProperties {
     pub fn assert_is_disjoint(&self) -> Result<()> {
         if self.disjoint { Err("partitions must be disjoint".into()) } else { Ok(()) }
     }
     pub fn assert_is_dataframe(&self) -> Result<()> {
-        if self.variant != proto::hashmap_properties::Variant::Dataframe {
-            return Err("hashmap must be a dataframe".into());
+        if self.variant != proto::indexmap_properties::Variant::Dataframe {
+            return Err("indexmap must be a dataframe".into());
         }
         Ok(())
     }
     pub fn assert_is_partition(&self) -> Result<()> {
-        if self.variant != proto::hashmap_properties::Variant::Partition {
-            return Err("hashmap must be a partition".into());
+        if self.variant != proto::indexmap_properties::Variant::Partition {
+            return Err("indexmap must be a partition".into());
         }
         Ok(())
     }
@@ -639,7 +640,7 @@ pub struct ArrayProperties {
     /// index of last Materialize or Filter node, where dataset was created
     /// used to determine if arrays are conformable even when N is not known
     pub dataset_id: Option<i64>,
-    /// true if the array may not be length zero
+    /// true if the number of rows is known to not be length zero
     pub is_not_empty: bool,
     /// number of axes in the array
     pub dimensionality: Option<i64>,
@@ -648,10 +649,26 @@ pub struct ArrayProperties {
 
 /// Derived properties for the universal Vector2DJagged.
 ///
-/// The Vector2DJagged has a one-to-one mapping to a protobuf Vector2DJagged.
+/// JaggedProperties has a one-to-one mapping to the protobuf JaggedProperties message.
 #[derive(Clone, Debug)]
 pub struct JaggedProperties {
+    /// number of records per column
+    pub num_records: Option<Vec<i64>>,
+    /// true if the data may contain null values
+    pub nullity: bool,
+    /// set when data is aggregated, used to help compute sensitivity from the mechanisms
+    pub aggregator: Option<AggregatorProperties>,
+    /// either min/max or categories
+    pub nature: Option<Nature>,
+    /// type of data
+    pub data_type: DataType,
     pub releasable: bool
+}
+
+impl JaggedProperties {
+    pub fn num_records(&self) -> Result<Vec<i64>> {
+        self.num_records.clone().ok_or_else(|| "number of records is not defined".into())
+    }
 }
 
 impl ArrayProperties {

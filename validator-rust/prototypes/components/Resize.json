@@ -4,12 +4,16 @@
       "type_value": "Array",
       "description": "The data to be resized."
     },
-    "n": {
+    "number_rows": {
       "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
       "description": "An estimate of the number of rows in the data. This could be the guess of the user, or the result of a DP release."
     },
-    "n_columns": {
+    "number_columns": {
       "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
       "description": "An estimate of the number of columns in the data. This must be the guess of the user, if not previously known (optional)."
     },
     "lower": {

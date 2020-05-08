@@ -20,7 +20,7 @@ impl Expandable for proto::DpMedian {
         component: &proto::Component,
         _properties: &base::NodeProperties,
         component_id: &u32,
-        maximum_id: &u32,
+        _maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
 
         let quantile_component = proto::Component {
@@ -35,7 +35,7 @@ impl Expandable for proto::DpMedian {
             batch: component.batch,
         };
         Ok(proto::ComponentExpansion {
-            computation_graph: hashmap![*maximum_id => quantile_component],
+            computation_graph: hashmap![*component_id => quantile_component],
             properties: HashMap::new(),
             releases: HashMap::new(),
             traversal: vec![*component_id]

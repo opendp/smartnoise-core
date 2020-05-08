@@ -27,7 +27,7 @@
     }
   },
   "return": {
-    "type_value": "Hashmap"
+    "type_value": "Indexmap"
   },
   "description": "Load a tabular frame from a data source"
 }

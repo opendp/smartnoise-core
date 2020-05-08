@@ -16,7 +16,6 @@ mod cast;
 mod clamp;
 mod count;
 mod covariance;
-mod dataframe;
 mod digitize;
 mod dp_count;
 mod dp_variance;
@@ -40,9 +39,10 @@ mod materialize;
 mod minimum;
 pub mod partition;
 mod quantile;
+mod rename;
 mod reshape;
 mod mean;
-// mod mechanism_exponential;
+mod mechanism_exponential;
 mod mechanism_gaussian;
 mod mechanism_laplace;
 mod mechanism_simple_geometric;
@@ -223,9 +223,9 @@ impl Component for proto::component::Variant {
 
             Filter, Histogram, Impute, Index, KthRawSampleMoment, Literal, Materialize, Maximum, Mean,
 
-            GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism,
+            ExponentialMechanism, GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism,
 
-            Minimum, Partition, Quantile, Reshape, Resize, Sum, Variance,
+            Minimum, Partition, Quantile, Rename, Reshape, Resize, Sum, Variance,
 
             Abs, Add, LogicalAnd, Divide, Equal, GreaterThan, LessThan, Log, Modulo, Multiply,
             Negate, Negative, LogicalOr, Power, RowMax, RowMin, Subtract
@@ -263,8 +263,9 @@ impl Expandable for proto::component::Variant {
         expand_component!(
             // INSERT COMPONENT LIST
             Clamp, Digitize, DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMedian,
-            DpMinimum, DpMomentRaw, DpQuantile, DpSum, DpVariance, Histogram, Impute,
-            GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism, Resize,
+            DpMinimum, DpMomentRaw, DpQuantile, DpSum, DpVariance, Histogram, Impute, Resize,
+
+            ExponentialMechanism, GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism,
 
             ToBool, ToFloat, ToInt, ToString
         );
