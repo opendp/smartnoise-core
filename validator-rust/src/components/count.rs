@@ -69,15 +69,15 @@ impl Sensitivity for proto::Count {
                 value.num_records
             },
             ValueProperties::Indexmap(value) => value.num_records,
-            _ => return Err("data: must not be hashmap".into())
+            _ => return Err("data: must be an array or indexmap".into())
         };
 
         match sensitivity_type {
             SensitivitySpace::KNorm(_k) => {
                 // k has no effect on the sensitivity, and is ignored
 
-                use proto::privacy_definition::Neighboring;
-                use proto::privacy_definition::Neighboring::{Substitute, AddRemove};
+                use proto::privacy_definition::Neighboring::{self, Substitute, AddRemove};
+
                 let neighboring_type = Neighboring::from_i32(privacy_definition.neighboring)
                     .ok_or_else(|| Error::from("neighboring definition must be either \"AddRemove\" or \"Substitute\""))?;
 
