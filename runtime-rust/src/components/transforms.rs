@@ -67,7 +67,7 @@ impl Evaluable for proto::Divide {
                     let upper = get_argument(arguments, "upper")?.first_i64()?;
                     if lower > upper {return Err("lower may not be greater than upper".into());}
                     Ok(broadcast_map(x, y, &|l, r|
-                        l.checked_div(r).unwrap_or_else(|| sample_uniform_int(&lower, &upper).unwrap()))?.into())
+                        l.checked_div(r).unwrap_or_else(|| sample_uniform_int(lower, upper).unwrap()))?.into())
                 }
                 _ => Err("Divide: Either the argument types are mismatched or non-numeric.".into())
             },

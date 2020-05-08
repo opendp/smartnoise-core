@@ -33,7 +33,7 @@ impl Evaluable for proto::LaplaceMechanism {
             .map(|(mut data_column, (sensitivity, epsilon))| data_column.iter_mut()
                 .zip(sensitivity.iter().zip(epsilon.iter()))
                 .map(|(v, (sens, eps))| {
-                    *v += utilities::mechanisms::laplace_mechanism(&eps, &sens)?;
+                    *v += utilities::mechanisms::laplace_mechanism(*eps, *sens)?;
                     Ok(())
                 })
                 .collect::<Result<()>>())
@@ -76,7 +76,7 @@ impl Evaluable for proto::GaussianMechanism {
                 .zip(sensitivity.iter())
                 .zip(epsilon.iter().zip(delta.iter()))
                 .map(|((v, sens), (eps, del))| {
-                    *v += utilities::mechanisms::gaussian_mechanism(&eps, &del, &sens)?;
+                    *v += utilities::mechanisms::gaussian_mechanism(*eps, *del, *sens)?;
                     Ok(())
                 }).collect::<Result<()>>())
             .collect::<Result<()>>()?;
@@ -118,7 +118,7 @@ impl Evaluable for proto::SimpleGeometricMechanism {
                 .zip(lower.iter().zip(upper.iter()))
                 .map(|((v, (sens, eps)), (c_min, c_max))| {
                     *v += utilities::mechanisms::simple_geometric_mechanism(
-                        &eps, &sens, &c_min, &c_max, &self.enforce_constant_time)?;
+                        *eps, *sens, *c_min, *c_max, self.enforce_constant_time)?;
                     Ok(())
                 })
                 .collect::<Result<()>>())
@@ -149,7 +149,7 @@ impl Evaluable for proto::ExponentialMechanism {
                 let release_vec = candidates.iter().zip(utilities)
                     .zip(sensitivity.iter().zip(epsilon.iter()))
                     .map(|((cands, utils), (sens, eps))|
-                        exponential_mechanism(eps, sens, cands, utils))
+                        exponential_mechanism(*eps, *sens, cands, utils))
                     .collect::<Result<Vec<f64>>>()?;
 
                 let mut release_array = arr1(&release_vec).into_dyn();
@@ -161,7 +161,7 @@ impl Evaluable for proto::ExponentialMechanism {
                 let release_vec = candidates.iter().zip(utilities)
                     .zip(sensitivity.iter().zip(epsilon.iter()))
                     .map(|((cands, utils), (sens, eps))|
-                        exponential_mechanism(eps, sens, cands, utils))
+                        exponential_mechanism(*eps, *sens, cands, utils))
                     .collect::<Result<Vec<i64>>>()?;
 
                 let mut release_array = arr1(&release_vec).into_dyn();
@@ -173,7 +173,7 @@ impl Evaluable for proto::ExponentialMechanism {
                 let release_vec = candidates.iter().zip(utilities)
                     .zip(sensitivity.iter().zip(epsilon.iter()))
                     .map(|((cands, utils), (sens, eps))|
-                        exponential_mechanism(eps, sens, cands, utils))
+                        exponential_mechanism(*eps, *sens, cands, utils))
                     .collect::<Result<Vec<String>>>()?;
 
                 let mut release_array = arr1(&release_vec).into_dyn();
@@ -185,7 +185,7 @@ impl Evaluable for proto::ExponentialMechanism {
                 let release_vec = candidates.iter().zip(utilities)
                     .zip(sensitivity.iter().zip(epsilon.iter()))
                     .map(|((cands, utils), (sens, eps))|
-                        exponential_mechanism(eps, sens, cands, utils))
+                        exponential_mechanism(*eps, *sens, cands, utils))
                     .collect::<Result<Vec<bool>>>()?;
 
                 let mut release_array = arr1(&release_vec).into_dyn();

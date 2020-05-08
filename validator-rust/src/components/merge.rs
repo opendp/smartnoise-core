@@ -10,7 +10,7 @@ use crate::base::{Value, ValueProperties, ArrayProperties, AggregatorProperties,
 use crate::utilities::{get_common_value, prepend};
 
 use itertools::Itertools;
-use ndarray::{ArrayViewD, Axis, stack, arr1, ArrayD};
+use ndarray::{ArrayViewD, Axis, stack};
 
 
 impl Component for proto::Merge {
@@ -74,7 +74,7 @@ impl Sensitivity for proto::Merge {
             .ok_or("data: missing")?.indexmap()?;
 
         match sensitivity_type {
-            SensitivitySpace::KNorm(k) => {
+            SensitivitySpace::KNorm(_k) => {
                 let partition_sensitivities = data_property.properties.values().iter()
                     .map(|v| v.array()?
                     .aggregator.as_ref().ok_or_else(|| "partitions must be aggregated to have sensitivity")?

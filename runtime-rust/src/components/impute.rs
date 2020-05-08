@@ -121,7 +121,7 @@ pub fn impute_float_uniform(data: &ArrayD<f64>, lower: &ArrayD<f64>, upper: &Arr
             .filter(|v| v.is_nan())
             // mutate the cell via the operator
             .map(|v| {
-                *v = noise::sample_uniform(&min, &max)?;
+                *v = noise::sample_uniform(*min, *max)?;
                 Ok(())
             })
             // pool errors
@@ -176,7 +176,7 @@ pub fn impute_float_gaussian(data: &ArrayD<f64>, lower: &ArrayD<f64>, upper: &Ar
             .filter(|v| v.is_nan())
             // mutate the cell via the operator
             .map(|v| {
-                *v = noise::sample_gaussian_truncated(&min, &max, &shift, &scale)?;
+                *v = noise::sample_gaussian_truncated(*min, *max, *shift, *scale)?;
                 Ok(())
             })
             .collect::<Result<()>>())

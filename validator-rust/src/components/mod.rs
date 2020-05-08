@@ -85,7 +85,7 @@ pub trait Component {
         privacy_definition: &Option<proto::PrivacyDefinition>,
         public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
-        _node_id: u32
+        _node_id: u32,
     ) -> Result<ValueProperties>;
 }
 
@@ -141,7 +141,7 @@ pub trait Sensitivity {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
-        sensitivity_type: &SensitivitySpace
+        sensitivity_type: &SensitivitySpace,
     ) -> Result<Value>;
 }
 
@@ -160,7 +160,7 @@ pub trait Accuracy {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
-        alpha: &f64
+        alpha: &f64,
     ) -> Result<Option<Vec<proto::Accuracy>>>;
 }
 
@@ -190,7 +190,7 @@ pub trait Named {
         &self,
         public_arguments: &HashMap<String, Value>,
         argument_variables: &HashMap<String, Vec<String>>,
-        release: Option<&Value>
+        release: Option<&Value>,
     ) -> Result<Vec<String>>;
 }
 
@@ -204,7 +204,7 @@ impl Component for proto::component::Variant {
         privacy_definition: &Option<proto::PrivacyDefinition>,
         public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
-        node_id: u32
+        node_id: u32,
     ) -> Result<ValueProperties> {
         macro_rules! propagate_property {
             ($( $variant:ident ),*) => {
@@ -262,6 +262,26 @@ impl Expandable for proto::component::Variant {
             }
         }
 
+        // expand_component!(Map, Merge);
+        //
+        // if properties.values().any(|props| props.indexmap()
+        //     .and_then(IndexmapProperties::assert_is_partition).is_ok()) {
+        //     let map_component = proto::Component {
+        //         arguments: component.arguments.clone(),
+        //         variant: Some(proto::component::Variant::Map(Box::new(proto::Map {
+        //             component: Some(Box::from(component.clone()))
+        //         }))),
+        //         omit: false,
+        //         batch: component.batch,
+        //     };
+        //     return Ok(proto::ComponentExpansion {
+        //         computation_graph: hashmap![*component_id => map_component],
+        //         properties: HashMap::new(),
+        //         releases: HashMap::new(),
+        //         traversal: vec![*component_id],
+        //     })
+        // }
+
         expand_component!(
             // INSERT COMPONENT LIST
             Clamp, Digitize, DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMedian,
@@ -278,7 +298,7 @@ impl Expandable for proto::component::Variant {
             computation_graph: HashMap::new(),
             properties: HashMap::new(),
             releases: HashMap::new(),
-            traversal: Vec::new()
+            traversal: Vec::new(),
         })
     }
 }
@@ -291,7 +311,7 @@ impl Sensitivity for proto::component::Variant {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
-        sensitivity_type: &SensitivitySpace
+        sensitivity_type: &SensitivitySpace,
     ) -> Result<Value> {
         macro_rules! compute_sensitivity {
             ($( $variant:ident ),*) => {
@@ -308,7 +328,7 @@ impl Sensitivity for proto::component::Variant {
 
         compute_sensitivity!(
             // INSERT COMPONENT LIST
-            Count, Covariance, Histogram, KthRawSampleMoment, Maximum, Mean, Minimum, Quantile, Sum, Variance
+            Count, Covariance, Histogram, KthRawSampleMoment, Maximum, Mean, Merge, Minimum, Quantile, Sum, Variance
         );
 
         Err(format!("sensitivity is not implemented for proto component {:?}", self).into())
@@ -354,7 +374,7 @@ impl Accuracy for proto::component::Variant {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
-        alpha: &f64
+        alpha: &f64,
     ) -> Result<Option<Vec<proto::Accuracy>>> {
         macro_rules! privacy_usage_to_accuracy {
             ($( $variant:ident ),*) => {
@@ -390,10 +410,9 @@ impl Report for proto::component::Variant {
         public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
         release: &Value,
-        variable_names: Option<&Vec<String>>
+        variable_names: Option<&Vec<String>>,
     ) -> Result<Option<Vec<JSONRelease>>> {
-
-        macro_rules! summarize{
+        macro_rules! summarize {
             ($( $variant:ident ),*) => {
                 {
                     $(
@@ -425,10 +444,9 @@ impl Named for proto::component::Variant {
         &self,
         public_arguments: &HashMap<String, Value>,
         argument_variables: &HashMap<String, Vec<String>>,
-        release: Option<&Value>
+        release: Option<&Value>,
     ) -> Result<Vec<String>> {
-
-        macro_rules! get_names{
+        macro_rules! get_names {
             ($( $variant:ident ),*) => {
                 {
                     $(

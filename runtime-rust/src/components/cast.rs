@@ -101,9 +101,9 @@ pub fn cast_f64(data: &Array) -> Result<ArrayD<f64>> {
 pub fn cast_i64(data: &Array, lower: &i64, upper: &i64) -> Result<ArrayD<i64>> {
     Ok(match data {
         Array::Str(data) => data
-            .mapv(|v| v.parse::<i64>().unwrap_or_else(|_| noise::sample_uniform_int(&lower, &upper).unwrap())),
+            .mapv(|v| v.parse::<i64>().unwrap_or_else(|_| noise::sample_uniform_int(*lower, *upper).unwrap())),
         Array::F64(data) => data
-            .mapv(|v| if !v.is_nan() {v.round() as i64} else {noise::sample_uniform_int(&lower, &upper).unwrap()}),
+            .mapv(|v| if !v.is_nan() {v.round() as i64} else {noise::sample_uniform_int(*lower, *upper).unwrap()}),
         Array::Bool(data) => data.mapv(|v| if v {1} else {0}),
         Array::I64(data) => data.clone()
     })

@@ -1,7 +1,5 @@
 use whitenoise_validator::errors::*;
 
-use rug::{float::Constant, Float, ops::Pow};
-
 use crate::utilities::noise;
 use crate::utilities;
 
@@ -26,10 +24,10 @@ use crate::utilities;
 /// # Examples
 /// ```
 /// use whitenoise_runtime::utilities::mechanisms::laplace_mechanism;
-/// let n = laplace_mechanism(&0.1, &2.0);
+/// let n = laplace_mechanism(0.1, 2.0);
 /// ```
-pub fn laplace_mechanism(epsilon: &f64, sensitivity: &f64) -> Result<f64> {
-    if epsilon < &0. || sensitivity < &0. {
+pub fn laplace_mechanism(epsilon: f64, sensitivity: f64) -> Result<f64> {
+    if epsilon < 0. || sensitivity < 0. {
         return Err(format!("epsilon ({}) and sensitivity ({}) must be positive", epsilon, sensitivity).into());
     }
     let scale: f64 = sensitivity / epsilon;
@@ -62,14 +60,14 @@ pub fn laplace_mechanism(epsilon: &f64, sensitivity: &f64) -> Result<f64> {
 /// # Examples
 /// ```
 /// use whitenoise_runtime::utilities::mechanisms::gaussian_mechanism;
-/// let n = gaussian_mechanism(&0.1, &0.0001, &2.0);
+/// let n = gaussian_mechanism(0.1, 0.0001, 2.0);
 /// ```
-pub fn gaussian_mechanism(epsilon: &f64, delta: &f64, sensitivity: &f64) -> Result<f64> {
-    if epsilon < &0. || delta < &0. || sensitivity < &0. {
+pub fn gaussian_mechanism(epsilon: f64, delta: f64, sensitivity: f64) -> Result<f64> {
+    if epsilon < 0. || delta < 0. || sensitivity < 0. {
         return Err(format!("epsilon ({}), delta ({}) and sensitivity ({}) must all be positive", epsilon, delta, sensitivity).into());
     }
     let scale: f64 = sensitivity * (2. * (1.25 / delta).ln()).sqrt() / epsilon;
-    let noise: f64 = noise::sample_gaussian(&0., &scale);
+    let noise: f64 = noise::sample_gaussian(0., scale);
     Ok(noise)
 }
 
@@ -94,18 +92,18 @@ pub fn gaussian_mechanism(epsilon: &f64, delta: &f64, sensitivity: &f64) -> Resu
 /// # Examples
 /// ```
 /// use whitenoise_runtime::utilities::mechanisms::simple_geometric_mechanism;
-/// let n = simple_geometric_mechanism(&0.1, &1., &0, &10, &true);
+/// let n = simple_geometric_mechanism(0.1, 1., 0, 10, true);
 /// ```
 pub fn simple_geometric_mechanism(
-    epsilon: &f64, sensitivity: &f64,
-    min: &i64, max: &i64,
-    enforce_constant_time: &bool
+    epsilon: f64, sensitivity: f64,
+    min: i64, max: i64,
+    enforce_constant_time: bool
 ) -> Result<i64> {
-    if epsilon < &0. || sensitivity < &0. {
+    if epsilon < 0. || sensitivity < 0. {
         return Err(format!("epsilon ({}) and sensitivity ({}) must be positive", epsilon, sensitivity).into());
     }
     let scale: f64 = sensitivity / epsilon;
-    let noise: i64 = noise::sample_simple_geometric_mechanism(&scale, &min, &max, &enforce_constant_time);
+    let noise: i64 = noise::sample_simple_geometric_mechanism(scale, min, max, enforce_constant_time);
     Ok(noise)
 }
 
@@ -132,19 +130,24 @@ pub fn simple_geometric_mechanism(
 ///     return util;
 /// }
 ///
+/// let utilities = xs.iter().map(utility).collect();
+///
 /// // create sample data
 /// let xs: Vec<f64> = vec![1., 2., 3., 4., 5.];
-/// let ans = exponential_mechanism(&1.0, &1.0, xs, &utility);
+/// let ans = exponential_mechanism(1.0, 1.0, &xs, utilities);
 /// # ans.unwrap();
 /// ```
+#[cfg(feature = "use-secure-noise")]
 pub fn exponential_mechanism<T>(
-    epsilon: &f64,
-    sensitivity: &f64,
+    epsilon: f64,
+    sensitivity: f64,
     candidate_set: &Vec<T>,
     utilities: Vec<f64>,
 ) -> Result<T> where T: Clone, {
 
     // get vector of e^(util), then use to find probabilities
+    use rug::{float::Constant, Float, ops::Pow};
+
     let rug_e = Float::with_val(53, Constant::Euler);
     let rug_eps = Float::with_val(53, epsilon);
     let rug_sens = Float::with_val(53, sensitivity);
@@ -154,7 +157,21 @@ pub fn exponential_mechanism<T>(
     let probability_vec: Vec<f64> = e_util_vec.iter().map(|x| (x / sum_e_util_vec.clone()).to_f64()).collect();
 
     // sample element relative to probability
-    let elem: T = utilities::sample_from_set(candidate_set, &probability_vec)?;
+    utilities::sample_from_set(candidate_set, &probability_vec)
+}
 
-    Ok(elem)
+#[cfg(not(feature = "use-secure-noise"))]
+pub fn exponential_mechanism<T>(
+    epsilon: f64,
+    sensitivity: f64,
+    candidate_set: &Vec<T>,
+    utilities: Vec<f64>,
+) -> Result<T> where T: Clone, {
+
+    // get vector of e^(util), and sample_from_set accepts weights
+    let weight_vec: Vec<f64> = utilities.into_iter()
+        .map(|x| (epsilon * x / (2. * sensitivity)).exp()).collect();
+
+    // sample element relative to probability
+    utilities::sample_from_set(candidate_set, &weight_vec)
 }

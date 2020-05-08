@@ -4,11 +4,10 @@ use whitenoise_validator::base::{Value, Array, Jagged, ReleaseNode};
 use whitenoise_validator::utilities::{get_argument, standardize_numeric_argument};
 
 use ndarray::{ArrayD, Axis};
-use rug::{Float, ops::Pow};
 
 use crate::NodeArguments;
 use crate::components::Evaluable;
-use crate::utilities::noise;
+use crate::utilities::create_subset;
 use crate::components::impute::{impute_float_gaussian, impute_float_uniform, impute_categorical};
 use crate::utilities::get_num_columns;
 use whitenoise_validator::utilities::array::{slow_select, slow_stack};
@@ -19,9 +18,9 @@ use std::hash::Hash;
 
 impl Evaluable for proto::Resize {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        let number_rows  = arguments.get("number_rows")
+        let number_rows = arguments.get("number_rows")
             .and_then(|v| v.first_i64().ok());
-        let number_cols  = arguments.get("number_columns")
+        let number_cols = arguments.get("number_columns")
             .and_then(|v| v.first_i64().ok());
 
         // If "categories" constraint has been propagated, data are treated as categorical (regardless of atomic type)
@@ -104,7 +103,7 @@ pub fn resize_float(
     number_cols: Option<i64>,
     distribution: &String,
     lower: &ArrayD<f64>, upper: &ArrayD<f64>,
-    shift: &Option<&ArrayD<f64>>, scale: &Option<&ArrayD<f64>>
+    shift: &Option<&ArrayD<f64>>, scale: &Option<&ArrayD<f64>>,
 ) -> Result<ArrayD<f64>> {
     let mut data = data.clone();
 
@@ -203,7 +202,6 @@ pub fn resize_integer(
     number_cols: Option<i64>,
     lower: &ArrayD<i64>, upper: &ArrayD<i64>,
 ) -> Result<ArrayD<i64>> {
-
     let mut data = data.clone();
 
     if let Some(number_cols) = number_cols {
@@ -228,7 +226,7 @@ pub fn resize_integer(
                 synthetic.gencolumns_mut().into_iter().zip(lower.into_iter().zip(upper.into_iter()))
                     .map(|(mut column, (min, max))| column.iter_mut()
                         .map(|v| {
-                            *v = sample_uniform_int(&min, &max)?;
+                            *v = sample_uniform_int(min, max)?;
                             Ok(())
                         })
                         .collect::<Result<_>>())
@@ -269,7 +267,7 @@ pub fn resize_integer(
                 synthetic.gencolumns_mut().into_iter().zip(lower.into_iter().zip(upper.into_iter()))
                     .map(|(mut column, (min, max))| column.iter_mut()
                         .map(|v| {
-                            *v = sample_uniform_int(&min, &max)?;
+                            *v = sample_uniform_int(min, max)?;
                             Ok(())
                         })
                         .collect::<Result<_>>())
@@ -308,7 +306,6 @@ pub fn resize_categorical<T>(
     categories: &Vec<Vec<T>>,
     weights: &Option<Vec<Vec<f64>>>,
 ) -> Result<ArrayD<T>> where T: Clone, T: PartialEq, T: Default, T: Ord, T: Hash {
-
     let mut data = data.clone();
 
     if let Some(number_cols) = number_cols {
@@ -390,63 +387,6 @@ pub fn resize_categorical<T>(
     }
 
     Ok(data)
-}
-
-/// Accepts set and element weights and returns a subset of size k (without replacement).
-///
-/// Weights are (after being normalized) the probability of drawing each element on the first draw (they sum to 1)
-/// Based on Algorithm A from Raimidis PS, Spirakis PG (2006). “Weighted random sampling with a reservoir.”
-///
-/// # Arguments
-/// * `set` - Set of elements for which you would like to create a subset
-/// * `weights` - Weight for each element in the set, corresponding to the probability it is drawn on the first draw.
-/// * `k` - The size of the desired subset
-///
-/// # Return
-/// subset of size k sampled according to weights
-///
-/// # Example
-/// ```
-/// use whitenoise_runtime::components::resize::create_subset;
-/// let set = vec![1, 2, 3, 4, 5, 6];
-/// let weights = vec![1., 1., 1., 2., 2., 2.];
-/// let k = 3;
-/// let subset = create_subset(&set, &weights, &k);
-/// # subset.unwrap();
-/// ```
-pub fn create_subset<T>(set: &Vec<T>, weights: &Vec<f64>, k: &i64) -> Result<Vec<T>> where T: Clone {
-    if *k as usize > set.len() { return Err("k must be less than the set length".into()); }
-
-    // generate sum of weights
-    let weights_rug: Vec<rug::Float> = weights.into_iter().map(|w| Float::with_val(53, w)).collect();
-    let weights_sum: rug::Float = Float::with_val(53, Float::sum(weights_rug.iter()));
-
-    // convert weights to probabilities
-    let probabilities: Vec<rug::Float> = weights_rug.iter().map(|w| w / weights_sum.clone()).collect();
-
-    // generate keys and identify top k indices
-    //
-
-    // generate key/index tuples
-    let mut key_vec: Vec<(rug::Float, usize)> = Vec::with_capacity(*k as usize);
-    for i in 0..set.len() {
-        key_vec.push((noise::sample_uniform_mpfr(0., 1.)?.pow(1. / probabilities[i as usize].clone()), i));
-    }
-
-    // sort key/index tuples by key and identify top k indices
-    key_vec.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap());
-    let mut top_indices: Vec<usize> = Vec::with_capacity(*k as usize);
-    for i in 0..(*k as usize) {
-        top_indices.push(key_vec[i].1);
-    }
-
-    // subsample based on top k indices
-    let mut subset: Vec<T> = Vec::with_capacity(*k as usize);
-    for value in top_indices.iter().map(|&index| set[index].clone()) {
-        subset.push(value);
-    }
-
-    Ok(subset)
 }
 
 /// Accepts size of set (n) and size of desired subset(k) and returns a uniformly drawn

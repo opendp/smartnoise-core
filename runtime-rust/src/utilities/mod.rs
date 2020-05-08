@@ -7,11 +7,26 @@ use openssl::rand::rand_bytes;
 use ieee754::Ieee754;
 
 use ndarray::{ArrayD, Zip, Axis};
-
-use rug::Float;
 use std::cmp::Ordering;
 use whitenoise_validator::utilities::array::{slow_select, slow_stack};
 use ndarray::prelude::IxDyn;
+
+///  Accepts an ndarray and returns the number of columns.
+///
+/// # Arguments
+/// * `data` - The data for which you want to know the number of columns.
+///
+/// # Return
+/// Number of columns in data.
+pub fn get_num_columns<T>(data: &ArrayD<T>) -> Result<i64> {
+    match data.ndim() {
+        0 => Err("data is a scalar".into()),
+        1 => Ok(1),
+        2 => Ok(data.shape().last().unwrap().clone() as i64),
+        _ => Err("data may be at most 2-dimensional".into())
+    }
+}
+
 
 /// Broadcast left and right to match each other, and map an operator over the pairs
 ///
@@ -277,8 +292,12 @@ pub fn combine_components_into_ieee(sign: &str, exponent: &str, mantissa: &str) 
 ///
 /// # Return
 /// Element from the candidate set
+#[cfg(feature="use-secure-noise")]
 pub fn sample_from_set<T>(candidate_set: &Vec<T>, weights: &Vec<f64>)
                           -> Result<T> where T: Clone {
+
+    use rug::Float;
+
     // generate uniform random number on [0,1)
     let unif: rug::Float = Float::with_val(53, noise::sample_uniform_mpfr(0., 1.)?);
 
@@ -299,28 +318,126 @@ pub fn sample_from_set<T>(candidate_set: &Vec<T>, weights: &Vec<f64>)
     }
 
     // sample an element relative to its probability
-    let mut return_index = 0;
+    let mut return_index: usize = 0;
     for i in 0..cumulative_probability_vec.len() {
         if unif <= cumulative_probability_vec[i] {
             return_index = i;
             break;
         }
     }
-    Ok(candidate_set[return_index as usize].clone())
+    Ok(candidate_set[return_index].clone())
 }
 
-///  Accepts an ndarray and returns the number of columns.
+#[cfg(not(feature="use-secure-noise"))]
+pub fn sample_from_set<T>(candidate_set: &Vec<T>, weights: &Vec<f64>)
+                          -> Result<T> where T: Clone {
+
+    // generate uniform random number on [0,sum(weights))
+    let sample: f64 = noise::sample_uniform(0., weights.iter().sum())?;
+
+    // return once the cumulative weight reaches the uniform sample
+    let mut cumulative = 0.;
+    let mut return_index: usize = 0;
+    loop {
+        cumulative += weights[return_index];
+        if cumulative >= sample { break }
+        return_index += 1;
+    }
+    Ok(candidate_set[return_index].clone())
+}
+
+/// Accepts set and element weights and returns a subset of size k (without replacement).
+///
+/// Weights are (after being normalized) the probability of drawing each element on the first draw (they sum to 1)
+/// Based on Algorithm A from Raimidis PS, Spirakis PG (2006). “Weighted random sampling with a reservoir.”
 ///
 /// # Arguments
-/// * `data` - The data for which you want to know the number of columns.
+/// * `set` - Set of elements for which you would like to create a subset
+/// * `weights` - Weight for each element in the set, corresponding to the probability it is drawn on the first draw.
+/// * `k` - The size of the desired subset
 ///
 /// # Return
-/// Number of columns in data.
-pub fn get_num_columns<T>(data: &ArrayD<T>) -> Result<i64> {
-    match data.ndim() {
-        0 => Err("data is a scalar".into()),
-        1 => Ok(1),
-        2 => Ok(data.shape().last().unwrap().clone() as i64),
-        _ => Err("data may be at most 2-dimensional".into())
+/// subset of size k sampled according to weights
+///
+/// # Example
+/// ```
+/// use whitenoise_runtime::utilities::create_subset;
+/// let set = vec![1, 2, 3, 4, 5, 6];
+/// let weights = vec![1., 1., 1., 2., 2., 2.];
+/// let k = 3;
+/// let subset = create_subset(&set, &weights, &k);
+/// # subset.unwrap();
+/// ```
+#[cfg(feature="use-secure-noise")]
+pub fn create_subset<T>(set: &Vec<T>, weights: &Vec<f64>, k: &i64) -> Result<Vec<T>> where T: Clone {
+    if *k as usize > set.len() { return Err("k must be less than the set length".into()); }
+
+    use rug::Float;
+    use rug::ops::Pow;
+
+    // generate sum of weights
+    let weights_rug: Vec<rug::Float> = weights.into_iter().map(|w| Float::with_val(53, w)).collect();
+    let weights_sum: rug::Float = Float::with_val(53, Float::sum(weights_rug.iter()));
+
+    // convert weights to probabilities
+    let probabilities: Vec<rug::Float> = weights_rug.iter().map(|w| w / weights_sum.clone()).collect();
+
+    // generate keys and identify top k indices
+    //
+
+    // generate key/index tuples
+    let mut key_vec: Vec<(rug::Float, usize)> = Vec::with_capacity(*k as usize);
+    for i in 0..set.len() {
+        key_vec.push((noise::sample_uniform_mpfr(0., 1.)?.pow(1. / probabilities[i as usize].clone()), i));
     }
+
+    // sort key/index tuples by key and identify top k indices
+    let mut top_indices: Vec<usize> = Vec::with_capacity(*k as usize);
+    key_vec.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap());
+    for i in 0..(*k as usize) {
+        top_indices.push(key_vec[i].1);
+    }
+
+    // subsample based on top k indices
+    let mut subset: Vec<T> = Vec::with_capacity(*k as usize);
+    for value in top_indices.iter().map(|&index| set[index].clone()) {
+        subset.push(value);
+    }
+
+    Ok(subset)
+}
+
+#[cfg(not(feature="use-secure-noise"))]
+pub fn create_subset<T>(set: &Vec<T>, weights: &Vec<f64>, k: &i64) -> Result<Vec<T>> where T: Clone {
+    if *k as usize > set.len() { return Err("k must be less than the set length".into()); }
+
+    // generate sum of weights
+    let weights_sum: f64 = weights.iter().sum();
+
+    // convert weights to probabilities
+    let probabilities: Vec<f64> = weights.iter().map(|w| w / weights_sum).collect();
+
+    // generate keys and identify top k indices
+    //
+
+    // generate key/index tuples
+    let mut key_vec = (0..set.len())
+        .map(|i| Ok((noise::sample_uniform(0., 1.)?.powf(1. / probabilities[i]), i)))
+        .collect::<Result<Vec<(f64, usize)>>>()?;
+
+    // sort key/index tuples by key and identify top k indices
+    key_vec.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap());
+
+    let mut top_indices: Vec<usize> = Vec::with_capacity(*k as usize);
+    for i in 0..(*k as usize) {
+        top_indices.push(key_vec[i].1);
+    }
+    
+    // subsample based on top k indices
+    let mut subset: Vec<T> = Vec::with_capacity(*k as usize);
+    for value in top_indices.iter().map(|&index| set[index].clone()) {
+        subset.push(value);
+    }
+
+    Ok(subset)
 }
