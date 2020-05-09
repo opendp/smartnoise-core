@@ -20,11 +20,8 @@ message PrivacyDefinition {
     uint32 group_size = 4;
 
     enum Distance {
-        // (e, 0)-differential privacy
-        PURE = 0;
-
-        // (e, d)-differential privacy
-        APPROXIMATE = 1;
+        // (epsilon, delta)-differential privacy
+        APPROXIMATE = 0;
     }
     // Define how to measure distance between probability distributions.
     Distance distance = 5;

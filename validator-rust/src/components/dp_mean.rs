@@ -7,7 +7,6 @@ use crate::{proto, base};
 use crate::hashmap;
 use crate::components::{Expandable, Report};
 
-
 use crate::base::{NodeProperties, Value};
 use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, value_to_json};
 use crate::utilities::{prepend, broadcast_privacy_usage, get_ith_column};
@@ -34,39 +33,91 @@ impl Expandable for proto::DpMean {
         let mut current_id = *maximum_id;
         let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
 
-        // mean
-        current_id += 1;
-        let id_mean = current_id;
-        computation_graph.insert(id_mean, proto::Component {
-            arguments: hashmap!["data".to_owned() => *component.arguments.get("data")
+        if self.implementation.to_lowercase().as_str() == "plug-in" {
+            // mean
+            current_id += 1;
+            let id_dp_sum = current_id;
+            computation_graph.insert(id_dp_sum, proto::Component {
+                arguments: hashmap!["data".to_owned() => *component.arguments.get("data")
+                    .ok_or_else(|| Error::from("data must be provided as an argument"))?],
+                variant: Some(proto::component::Variant::DpSum(proto::DpSum {
+                    mechanism: self.mechanism.clone(),
+                    privacy_usage: self.privacy_usage.iter().cloned().map(|v| v / 2.)
+                        .collect::<Result<Vec<proto::PrivacyUsage>>>()?
+                })),
+                omit: true,
+                batch: component.batch,
+            });
+
+            current_id += 1;
+            let id_dp_count = current_id;
+            computation_graph.insert(id_dp_count, proto::Component {
+                arguments: hashmap!["data".to_owned() => *component.arguments.get("data")
+                    .ok_or_else(|| Error::from("data must be provided as an argument"))?],
+                variant: Some(proto::component::Variant::DpCount(proto::DpCount {
+                    enforce_constant_time: false,
+                    mechanism: self.mechanism.clone(),
+                    privacy_usage: self.privacy_usage.iter().cloned().map(|v| v / 2.)
+                        .collect::<Result<Vec<proto::PrivacyUsage>>>()?
+                })),
+                omit: true,
+                batch: component.batch,
+            });
+
+            computation_graph.insert(*component_id, proto::Component {
+                arguments: hashmap!["left".to_owned() => id_dp_sum, "right".to_owned() => id_dp_count],
+                variant: Some(proto::component::Variant::Divide(proto::Divide {})),
+                omit: true,
+                batch: component.batch,
+            });
+
+            Ok(proto::ComponentExpansion {
+                computation_graph,
+                properties: HashMap::new(),
+                releases: HashMap::new(),
+                traversal: vec![id_dp_count, id_dp_sum]
+            })
+        }
+
+        else if self.implementation.to_lowercase().as_str() == "resize" {
+            // mean
+            current_id += 1;
+            let id_mean = current_id;
+            computation_graph.insert(id_mean, proto::Component {
+                arguments: hashmap!["data".to_owned() => *component.arguments.get("data")
                 .ok_or_else(|| Error::from("data must be provided as an argument"))?],
-            variant: Some(proto::component::Variant::Mean(proto::Mean {})),
-            omit: true,
-            batch: component.batch,
-        });
+                variant: Some(proto::component::Variant::Mean(proto::Mean {})),
+                omit: true,
+                batch: component.batch,
+            });
 
-        // noising
-        computation_graph.insert(component_id.clone(), proto::Component {
-            arguments: hashmap!["data".to_owned() => id_mean],
-            variant: Some(match self.mechanism.to_lowercase().as_str() {
-                "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
-                    privacy_usage: self.privacy_usage.clone()
+            // noising
+            computation_graph.insert(component_id.clone(), proto::Component {
+                arguments: hashmap!["data".to_owned() => id_mean],
+                variant: Some(match self.mechanism.to_lowercase().as_str() {
+                    "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
+                        privacy_usage: self.privacy_usage.clone()
+                    }),
+                    "gaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
+                        privacy_usage: self.privacy_usage.clone()
+                    }),
+                    _ => panic!("Unexpected invalid token {:?}", self.mechanism.as_str()),
                 }),
-                "gaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
-                    privacy_usage: self.privacy_usage.clone()
-                }),
-                _ => panic!("Unexpected invalid token {:?}", self.mechanism.as_str()),
-            }),
-            omit: false,
-            batch: component.batch,
-        });
+                omit: false,
+                batch: component.batch,
+            });
 
-        Ok(proto::ComponentExpansion {
-            computation_graph,
-            properties: HashMap::new(),
-            releases: HashMap::new(),
-            traversal: vec![id_mean]
-        })
+            Ok(proto::ComponentExpansion {
+                computation_graph,
+                properties: HashMap::new(),
+                releases: HashMap::new(),
+                traversal: vec![id_mean]
+            })
+        }
+
+        else {
+            bail!("`{}` is not recognized as a valid implementation. Must be one of [`resize`, `plug-in`]")
+        }
     }
 }
 

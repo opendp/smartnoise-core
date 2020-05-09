@@ -73,17 +73,12 @@ message Jagged {
 }
 
 message PrivacyUsage {
-
-    message DistancePure {
-        double epsilon = 1;
-    }
     message DistanceApproximate {
         double epsilon = 1;
         double delta = 2;
     }
     oneof distance {
-        DistancePure pure = 1;
-        DistanceApproximate approximate = 2;
+        DistanceApproximate approximate = 1;
     }
 }
 

@@ -11,6 +11,7 @@ use ndarray::{ArrayD, arr0};
 
 use crate::utilities::{standardize_categorical_argument, deduplicate};
 use indexmap::IndexMap;
+use std::ops::Div;
 
 /// The universal data representation.
 ///
@@ -914,3 +915,18 @@ impl ReleaseNode {
 
 // The properties for a node consists of Properties for each of its arguments.
 pub type NodeProperties = HashMap<String, ValueProperties>;
+
+
+impl Div<f64> for proto::PrivacyUsage {
+    type Output = Result<proto::PrivacyUsage>;
+
+    fn div(mut self, rhs: f64) -> Self::Output {
+        self.distance = Some(match self.distance.ok_or_else(|| "distance must be defined")? {
+            proto::privacy_usage::Distance::Approximate(approximate) => proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
+                epsilon: approximate.epsilon / rhs,
+                delta: approximate.delta / rhs
+            })
+        });
+        Ok(self)
+    }
+}

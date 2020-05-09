@@ -496,14 +496,10 @@ pub fn privacy_usage_reducer(
 
     proto::PrivacyUsage {
         distance: match (left.distance.to_owned().unwrap(), right.distance.to_owned().unwrap()) {
-            (Distance::Pure(x), Distance::Pure(y)) => Some(Distance::Pure(proto::privacy_usage::DistancePure {
-                epsilon: operator(x.epsilon, y.epsilon)
-            })),
             (Distance::Approximate(x), Distance::Approximate(y)) => Some(Distance::Approximate(proto::privacy_usage::DistanceApproximate {
                 epsilon: operator(x.epsilon, y.epsilon),
                 delta: operator(x.delta, y.delta),
-            })),
-            _ => None
+            }))
         }
     }
 }
@@ -531,9 +527,6 @@ pub fn privacy_usage_check(
     };
     match privacy.distance.as_ref()
         .ok_or_else(|| Error::from("distance must be defined"))? {
-        Distance::Pure(x) => {
-            check_epsilon(x.epsilon)?;
-        },
         Distance::Approximate(x) => {
             check_epsilon(x.epsilon)?;
             check_delta(x.delta)?;
@@ -545,7 +538,6 @@ pub fn privacy_usage_check(
 pub fn get_epsilon(usage: &proto::PrivacyUsage) -> Result<f64> {
     match usage.distance.clone()
         .ok_or_else(|| Error::from("distance must be defined on a PrivacyUsage"))? {
-        proto::privacy_usage::Distance::Pure(distance) => Ok(distance.epsilon),
         proto::privacy_usage::Distance::Approximate(distance) => Ok(distance.epsilon),
 //        _ => Err("epsilon is not defined".into())
     }
@@ -555,7 +547,7 @@ pub fn get_delta(usage: &proto::PrivacyUsage) -> Result<f64> {
     match usage.distance.clone()
         .ok_or_else(|| Error::from("distance must be defined on a PrivacyUsage"))? {
         proto::privacy_usage::Distance::Approximate(distance) => Ok(distance.delta),
-        _ => Err("delta is not defined".into())
+        // _ => Err("delta is not defined".into())
     }
 }
 
@@ -573,12 +565,6 @@ pub fn broadcast_privacy_usage(usages: &[proto::PrivacyUsage], length: usize) ->
     }
 
     Ok(match usages[0].distance.clone().ok_or("distance must be defined on a privacy usage")? {
-        proto::privacy_usage::Distance::Pure(pure) => (0..length)
-            .map(|_| proto::PrivacyUsage {
-                distance: Some(proto::privacy_usage::Distance::Pure(proto::privacy_usage::DistancePure {
-                    epsilon: pure.epsilon / (length as f64)
-                }))
-            }).collect(),
         proto::privacy_usage::Distance::Approximate(approx) => (0..length)
             .map(|_| proto::PrivacyUsage {
                 distance: Some(proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
