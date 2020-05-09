@@ -17,6 +17,7 @@ impl Component for proto::Count {
         properties: &NodeProperties,
         _node_id: u32
     ) -> Result<ValueProperties> {
+
         let mut data_property = match properties.get("data").ok_or("data: missing")?.clone() {
             ValueProperties::Array(data_property) => data_property,
             ValueProperties::Indexmap(data_property) => {
@@ -27,6 +28,10 @@ impl Component for proto::Count {
             ValueProperties::Jagged(_) => return Err("Count is not implemented on jagged arrays".into()),
             ValueProperties::Function(_) => return Err("Count is not implemented for functions".into())
         };
+
+        if self.distinct && data_property.data_type == DataType::F64 && data_property.nullity {
+            return Err("distinct counts on floats require non-nullity".into())
+        }
 
         if !data_property.releasable {
             data_property.assert_is_not_aggregated()?;

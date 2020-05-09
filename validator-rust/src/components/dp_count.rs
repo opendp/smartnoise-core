@@ -32,7 +32,9 @@ impl Expandable for proto::DpCount {
         computation_graph.insert(id_count.clone(), proto::Component {
             arguments: hashmap!["data".to_owned() => *component.arguments.get("data")
                 .ok_or_else(|| Error::from("data must be provided as an argument"))?],
-            variant: Some(proto::component::Variant::Count(proto::Count {})),
+            variant: Some(proto::component::Variant::Count(proto::Count {
+                distinct: self.distinct
+            })),
             omit: true,
             batch: component.batch,
         });
@@ -131,7 +133,9 @@ impl Report for proto::DpCount {
                 name: "".to_string(),
                 cite: "".to_string(),
                 mechanism: self.mechanism.clone(),
-                argument: serde_json::json!({}),
+                argument: serde_json::json!({
+                    "distinct": self.distinct
+                }),
             },
         }]))
     }

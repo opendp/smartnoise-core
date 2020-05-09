@@ -18,6 +18,13 @@
   "id": "DPCount",
   "name": "dp_count",
   "options": {
+    "distinct": {
+      "type_proto": "bool",
+      "type_rust": "bool",
+      "default_python": "False",
+      "default_rust": "false",
+      "description": "Set to true for the number of unique members in the data."
+    },
     "mechanism": {
       "type_proto": "string",
       "type_rust": "String",

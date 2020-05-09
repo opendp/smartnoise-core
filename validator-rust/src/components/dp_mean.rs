@@ -55,6 +55,7 @@ impl Expandable for proto::DpMean {
                 arguments: hashmap!["data".to_owned() => *component.arguments.get("data")
                     .ok_or_else(|| Error::from("data must be provided as an argument"))?],
                 variant: Some(proto::component::Variant::DpCount(proto::DpCount {
+                    distinct: false,
                     enforce_constant_time: false,
                     mechanism: self.mechanism.clone(),
                     privacy_usage: self.privacy_usage.iter().cloned().map(|v| v / 2.)
