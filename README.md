@@ -7,6 +7,10 @@
 ## WhiteNoise Core <br/> Differential Privacy Library <br/>
 
 See also the accompanying [WhiteNoise-System](https://github.com/opendifferentialprivacy/whitenoise-system) and [WhiteNoise-Samples](https://github.com/opendifferentialprivacy/whitenoise-samples) repositories for this system.
+  - **WhiteNoise Core** (this repository) - Open source library of differentially private algorithms and mechanisms (Rust implementation)
+    - [**WhiteNoise-Core-Python**](https://github.com/opendifferentialprivacy/whitenoise-core-python) - Python language bindings for Whitenoise-Core
+    - [**WhiteNoise-System**](https://github.com/opendifferentialprivacy/whitenoise-system) - Tools and service for differentially private processing of tabular and relational data. (Implemented in Python)
+    - [**WhiteNoise-Samples**](https://github.com/opendifferentialprivacy/whitenoise-samples) - Code samples and documentation for WhiteNoise differential privacy tools
 
 ---
 
@@ -76,9 +80,9 @@ All projects implement protobuf code generation, protobuf serialization/deserial
 1. Clone the repository
 
         git clone $REPOSITORY_URI
-    
+
     - You may find it easier to use the library with this repository set up as a submodule of the language bindings. In this case, skip this step and refer to the language bindings setup.
-    - The default install uses libtools, which requires no spaces in the path to your clone.  
+    - The default install uses libtools, which requires no spaces in the path to your clone.
 
 2. Install system dependencies (rust, gcc, protoc, python 3.6+ for bindings)
 
@@ -177,7 +181,7 @@ The [Rust documentation](https://opendifferentialprivacy.github.io/whitenoise-co
 
 ## Communication
 
-- Please use [GitHub issues](https://github.com/opendifferentialprivacy/whitenoise-core/issues) for bug reports, feature requests, install issues, and ideas. 
+- Please use [GitHub issues](https://github.com/opendifferentialprivacy/whitenoise-core/issues) for bug reports, feature requests, install issues, and ideas.
 - [Gitter](https://gitter.im/opendifferentialprivacy/WhiteNoise) is available for general chat and online discussions.
 - For other requests, please contact us at [whitenoise@opendp.io](mailto:whitenoise@opendp.io).
   - _Note: We encourage you to use [GitHub issues](https://github.com/opendifferentialprivacy/whitenoise-core/issues), especially for bugs._
