@@ -1,48 +1,53 @@
 {
   "arguments": {
     "data": {
-      "nature": [],
-      "type": "Array",
+      "type_value": "Array",
       "description": "The data to be resized."
     },
     "n": {
-      "nature": [],
-      "type": "Array",
+      "type_value": "Array",
       "description": "An estimate of the number of rows in the data. This could be the guess of the user, or the result of a DP release."
     },
     "lower": {
-      "type": "Array",
-      "default": "None",
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
       "description": "A lower bound on data elements for each column."
     },
     "upper": {
-      "type": "Array",
-      "default": "None",
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
       "description": "An upper bound on data elements for each column."
     },
     "categories": {
-      "default": "None",
-      "type": "Jagged",
+      "type_value": "Jagged",
+      "default_python": "None",
+      "default_rust": "None",
       "description": "The set of categories you want to be represented for each column of the data, if the data is categorical."
     },
     "weights": {
-      "default": "None",
-      "type": "Jagged",
+      "type_value": "Jagged",
+      "default_python": "None",
+      "default_rust": "None",
       "description": "Optional. The weight of each category when imputing. Uniform weights are used if not specified."
     },
     "distribution": {
-      "type": "String",
-      "default": "None",
+      "type_value": "String",
+      "default_python": "None",
+      "default_rust": "None",
       "description": "The distribution to be used when imputing records."
     },
     "shift": {
-      "type": "Array",
-      "default": "None",
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
       "description": "The expectation of the Gaussian distribution used for imputation (used only if `distribution = Gaussian`)."
     },
     "scale": {
-      "type": "Array",
-      "default": "None",
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
       "description": "The standard deviation of the Gaussian distribution used for imputation (used only if `distribution = Gaussian`)."
     }
   },
@@ -50,8 +55,7 @@
   "name": "resize",
   "options": {},
   "return": {
-    "nature": [],
-    "type": "Array",
+    "type_value": "Array",
     "description": "A resized version of data consistent with the provided `n`"
   },
   "description": "Resizes the data in question to be consistent with a provided sample size, `n`.\n\nThe library does not, in general, assume that the sample size of the data being analyzed is known. This introduces a number of problems around how to calculate statistics that are a function of the sample size.\n\nTo address this problem, the library asks the user to provide `n`, an estimate of the true sample size based on their own beliefs about the data or a previous differentially private count of the number of rows in the data. This component then either subsamples or appends to the data in order to make it consistent with the provided `n`."

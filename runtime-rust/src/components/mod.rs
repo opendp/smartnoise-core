@@ -34,8 +34,6 @@ pub mod quantile;
 pub mod reshape;
 pub mod mechanisms;
 pub mod resize;
-//pub mod row_max;
-//pub mod row_min;
 pub mod sum;
 pub mod transforms;
 pub mod variance;
@@ -80,8 +78,8 @@ impl Evaluable for proto::component::Variant {
             Materialize, Mean, Minimum, Partition, Quantile, Reshape, LaplaceMechanism, GaussianMechanism,
             SimpleGeometricMechanism, Resize, Sum, Variance,
 
-            Add, Subtract, Divide, Multiply, Power, Log, Modulo, LogicalAnd, LogicalOr, Negate,
-            Equal, LessThan, GreaterThan, Negative
+            Abs, Add, LogicalAnd, Divide, Equal, GreaterThan, LessThan, Log, Modulo, Multiply,
+            Negate, Negative, LogicalOr, Power, RowMax, RowMin, Subtract
         );
 
         Err(format!("Component type not implemented: {:?}", self).into())

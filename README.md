@@ -76,6 +76,9 @@ All projects implement protobuf code generation, protobuf serialization/deserial
 1. Clone the repository
 
         git clone $REPOSITORY_URI
+    
+    - You may find it easier to use the library with this repository set up as a submodule of the language bindings. In this case, skip this step and refer to the language bindings setup.
+    - The default install uses libtools, which requires no spaces in the path to your clone.  
 
 2. Install system dependencies (rust, gcc, protoc, python 3.6+ for bindings)
 

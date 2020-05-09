@@ -7,6 +7,7 @@ readme = "README.md"
 keywords = ["differential privacy", "data privacy"]
 categories = ["cryptography", "science"] # up to 5 allowed, must match those listed at https://crates.io/category_slugs
 repository = "https://github.com/opendifferentialprivacy/whitenoise-core"
+build="build/main.rs"
 edition = "2018"
 license = "MIT"
 
@@ -20,7 +21,6 @@ itertools = "0.8.2"
 num = "0.2.1"
 ndarray = "0.13.0"
 ndarray-stats = "0.3.0"
-derive_more = "0.99.3"
 error-chain = "0.12.2"
 serde_json = "1.0.48"
 serde = "1.0.104"
@@ -31,10 +31,11 @@ libmath = "0.2.1"
 [build-dependencies]
 serde_json = "1.0.48"
 serde = "1.0.104"
+itertools = "0.8.2"
+heck = "0.3.1"
 prost-build = { version = "0.5.0" }
 cbindgen = "0.9.1"
 build-deps = "0.1.4"
-heck = "0.3.1"
 
 [lib]
 name = "whitenoise_validator"

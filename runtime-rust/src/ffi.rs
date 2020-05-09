@@ -50,3 +50,5 @@ pub extern "C" fn release(
     };
     whitenoise_validator::ffi::buffer_to_ptr(response)
 }
+
+ffi_support::define_bytebuffer_destructor!(whitenoise_runtime_destroy_bytebuffer);

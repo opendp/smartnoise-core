@@ -1,52 +1,46 @@
 {
   "arguments": {
     "data": {
-      "nature": [
-        "continuous",
-        "categorical"
-      ],
-      "type": "Array"
+      "type_value": "Array"
     },
     "lower": {
-      "type": "Array",
-      "default": "0",
+      "type_value": "Array",
+      "default_python": "0",
       "description": "Estimated minimum possible size of the data."
     },
     "upper": {
-      "type": "Array",
-      "default": "None",
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
       "description": "Estimated maximum possible size of the data."
     }
   },
   "id": "DPCount",
   "name": "dp_count",
   "options": {
-    "implementation": {
-      "type": "string",
-      "default": "'SimpleGeometric'",
-      "description": "Privatizing algorithm to use."
-    },
     "mechanism": {
-      "type": "string",
-      "default": "'SimpleGeometric'",
-      "description": "Privatizing mechanism to use."
+      "type_proto": "string",
+      "type_rust": "String",
+      "default_python": "\"SimpleGeometric\"",
+      "default_rust": "String::from(\"SimpleGeometric\")",
+      "description": "Privatizing mechanism to use. One of [`SimpleGeometric`, `Laplace`, `Gaussian`]"
     },
     "privacy_usage": {
-      "type": "repeated PrivacyUsage",
-      "default": "None",
+      "type_proto": "repeated PrivacyUsage",
+      "type_rust": "Vec<proto::PrivacyUsage>",
+      "default_python": "None",
       "description": "Object describing the type and amount of privacy to be used for the mechanism release."
     },
     "enforce_constant_time": {
-      "type": "bool",
-      "default": "False",
+      "type_proto": "bool",
+      "type_rust": "bool",
+      "default_python": "False",
+      "default_rust": "false",
       "description": "Whether or not to require Geometric mechanism to run in constant time."
     }
   },
   "return": {
-    "nature": [
-      "continuous"
-    ],
-    "type": "Array",
+    "type_value": "Array",
     "description": "Differentially private row count."
   },
   "description": "Returns a differentially private row count."

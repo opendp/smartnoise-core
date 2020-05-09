@@ -1,33 +1,28 @@
 {
   "arguments": {
     "data": {
-      "nature": [
-        "continuous"
-      ],
-      "type": "Array"
+      "type_value": "Array"
     }
   },
   "id": "DPMaximum",
   "name": "dp_maximum",
   "options": {
-    "implementation": {
-      "type": "string",
-      "default": "'Laplace'",
-      "description": "Privatizing algorithm to use."
-    },
     "mechanism": {
-      "type": "string",
-      "default": "'Laplace'",
-      "description": "Privatizing mechanism to use."
+      "type_proto": "string",
+      "type_rust": "String",
+      "default_python": "\"Laplace\"",
+      "default_rust": "String::from(\"Laplace\")",
+      "description": "Privatizing mechanism to use. One of [`Laplace`, `Gaussian`]"
     },
     "privacy_usage": {
-      "type": "repeated PrivacyUsage",
-      "default": "None",
+      "type_proto": "repeated PrivacyUsage",
+      "type_rust": "Vec<proto::PrivacyUsage>",
+      "default_python": "None",
       "description": "Object describing the type and amount of privacy to be used for the mechanism release."
     }
   },
   "return": {
-    "type": "Array",
+    "type_value": "Array",
     "description": "Differentially private estimates of the maximum elements of the data."
   },
   "description": "Returns differentially private estimates of the maximum elements of each column of the data."

@@ -1,35 +1,39 @@
 {
   "arguments": {
     "data": {
-      "type": "Array",
+      "type_value": "Array",
       "description": "Data to be cast to another type."
     },
     "true_label": {
-      "type": "Array",
-      "default": "None",
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
       "description": "Positive class (class to be mapped to `true`) for each column. Used only if casting to `bool`."
     },
     "lower": {
-      "type": "Array",
-      "default": "None",
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
       "description": "Minimum allowable imputation value. Used only if casting to `i64`."
     },
     "upper": {
-      "type": "Array",
-      "default": "None",
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
       "description": "Maximum allowable imputation value. Used only if casting to `i64`."
     }
   },
   "id": "Cast",
   "name": "cast",
   "options": {
-    "type": {
-      "type": "string",
-      "description": "Type to which data should be cast. Must be one of `string`, `int`, `bool`, `float`."
+    "atomic_type": {
+      "type_proto": "string",
+      "type_rust": "String",
+      "description": "Type to which data should be cast. One of [`string`, `int`, `bool`, `float`]"
     }
   },
   "return": {
-    "type": "Array"
+    "type_value": "Array"
   },
   "description": "Cast data to an atomic type."
 }

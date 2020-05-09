@@ -33,8 +33,8 @@ impl Expandable for proto::DpMedian {
         let id_median = current_id;
         computation_graph.insert(id_median, proto::Component {
             arguments: hashmap!["data".to_owned() => data_id],
-            variant: Some(proto::component::Variant::from(proto::Quantile {
-                quantile: 0.5,
+            variant: Some(proto::component::Variant::Quantile(proto::Quantile {
+                alpha: 0.5,
                 interpolation: self.interpolation.clone()
             })),
             omit: true,
@@ -49,13 +49,13 @@ impl Expandable for proto::DpMedian {
 			    "data".to_owned() => id_median
 		    ],
             variant: Some(match self.mechanism.to_lowercase().as_str() {
-                "laplace" => proto::component::Variant::from(proto::LaplaceMechanism {
+                "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
                     privacy_usage: self.privacy_usage.clone()
                 }),
-                "gaussian" => proto::component::Variant::from(proto::GaussianMechanism {
+                "gaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
                     privacy_usage: self.privacy_usage.clone()
                 }),
-                _ => panic!("Unexpected invalid token {:?}", self.implementation.as_str()),
+                _ => panic!("Unexpected invalid token {:?}", self.mechanism.as_str()),
             }),
             omit: false,
             batch: component.batch,
@@ -115,7 +115,7 @@ impl Report for proto::DpMedian {
                 algorithm_info: AlgorithmInfo {
                     name: "".to_string(),
                     cite: "".to_string(),
-                    mechanism: self.implementation.clone(),
+                    mechanism: self.mechanism.clone(),
                     argument: serde_json::json!({
                         "constraint": {
                             "lowerbound": minimums[column_number],

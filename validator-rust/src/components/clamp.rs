@@ -25,7 +25,9 @@ impl Component for proto::Clamp {
         let num_columns = data_property.num_columns
             .ok_or("data: number of data columns missing")?;
 
-        data_property.assert_is_not_aggregated()?;
+        if !data_property.releasable {
+            data_property.assert_is_not_aggregated()?;
+        }
 
         // handle categorical clamping
         if let Some(categories) = public_arguments.get("categories") {

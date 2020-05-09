@@ -1,15 +1,15 @@
 {
   "arguments": {
     "data": {
-      "type": "Array",
+      "type_value": "Array",
       "description": "Data to be cast to another type."
     },
     "lower": {
-      "type": "Array",
+      "type_value": "Array",
       "description": "Minimum allowable imputation value. Integers cannot represent null, so values that cannot be parsed are imputed."
     },
     "upper": {
-      "type": "Array",
+      "type_value": "Array",
       "description": "Maximum allowable imputation value."
     }
   },
@@ -17,7 +17,7 @@
   "name": "to_int",
   "options": {},
   "return": {
-    "type": "Array"
+    "type_value": "Array"
   },
   "description": "Cast data to a int atomic type."
 }

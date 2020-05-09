@@ -30,13 +30,63 @@ impl Component for proto::GaussianMechanism {
             .ok_or_else(|| Error::from("aggregator: missing"))?;
 
         // sensitivity must be computable
-        aggregator.component.compute_sensitivity(
+        let sensitivity_values = aggregator.component.compute_sensitivity(
             &privacy_definition,
             &aggregator.properties,
             &SensitivitySpace::KNorm(2))?;
 
+        let sensitivities = sensitivity_values.array()?.f64()?;
+
+
+        if self.privacy_usage.len() == 0 {
+            data_property.releasable = false;
+        } else {
+            let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivities.len())?;
+            let epsilons = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
+            let deltas = usages.iter().map(get_delta).collect::<Result<Vec<f64>>>()?;
+
+            // epsilons must be greater than 0 and less than 1.
+            for epsilon in epsilons.into_iter() {
+                if epsilon <= 0.0 || epsilon >= 1.0 {
+                    return Err("epsilon: privacy parameter epsilon must be greater than 0".into());
+                };
+                if epsilon >= 1.0 {
+                    println!("Warning: A privacy parameter of epsilon = {} is in use. Privacy is only \
+                    guaranteed for the Gaussian mechanism as implemented in the rust runtime for epsilon \
+                    between 0 and 1.", epsilon);
+                }
+            }
+
+
+            // Check delta value; checks depend on whether or not number of records is statically known.
+            match data_property.num_records {
+                Some(n) => {
+                    let n = n as f64;
+                    for delta in deltas.into_iter() {
+                        if delta <= 0.0 {
+                            return Err("delta: privacy parameter delta must be greater than 0".into());
+                        };
+                        if delta > 1.0 / n {
+                            println!("Warning: A large delta of delta = {} is in use.", delta);
+                        }
+                    }
+                },
+                None => {
+                    for delta in deltas.into_iter() {
+                        if delta <= 0.0 {
+                            return Err("delta: privacy parameter delta must be greater than 0".into());
+                        } else {
+                            println!("Warning: Cannot determine if delta is reasonable due to statically \
+                            unknown number of records.");
+                        }
+                    }
+                }
+            }
+
+            data_property.releasable = true;
+        }
+
         data_property.aggregator = None;
-        data_property.releasable = true;
 
         Ok(data_property.into())
     }
@@ -76,13 +126,13 @@ impl Accuracy for proto::GaussianMechanism {
         let aggregator = data_property.aggregator.clone()
             .ok_or_else(|| Error::from("aggregator: missing"))?;
 
-        let sensitivity_value = aggregator.component.compute_sensitivity(
+        let sensitivity_values = aggregator.component.compute_sensitivity(
             &privacy_definition,
             &aggregator.properties,
             &SensitivitySpace::KNorm(2))?;
 
         // sensitivity must be computable
-        let sensitivities = sensitivity_value.array()?.f64()?;
+        let sensitivities = sensitivity_values.array()?.f64()?;
         let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivities.len())?;
         let delta = usages.iter().map(get_delta).collect::<Result<Vec<f64>>>()?;
         let iter = izip!(sensitivities.into_iter(), accuracies.values.iter(), delta.into_iter());
@@ -113,18 +163,18 @@ impl Accuracy for proto::GaussianMechanism {
         let aggregator = data_property.aggregator.clone()
             .ok_or_else(|| Error::from("aggregator: missing"))?;
 
-        let sensitivity_value = aggregator.component.compute_sensitivity(
+        let sensitivity_values = aggregator.component.compute_sensitivity(
             &privacy_definition,
             &aggregator.properties,
             &SensitivitySpace::KNorm(1))?;
 
         // sensitivity must be computable
-        let sensitivities = sensitivity_value.array()?.f64()?;
+        let sensitivities = sensitivity_values.array()?.f64()?;
 
         let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivities.len())?;
-        let epsilon = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
-        let delta = usages.iter().map(get_delta).collect::<Result<Vec<f64>>>()?;
-        let iter = izip!(sensitivities.into_iter(), epsilon.into_iter(), delta.into_iter());
+        let epsilons = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
+        let deltas = usages.iter().map(get_delta).collect::<Result<Vec<f64>>>()?;
+        let iter = izip!(sensitivities.into_iter(), epsilons.into_iter(), deltas.into_iter());
 
         Ok(Some(
             iter.map( |(sensitivity, epsilon, delta)| {

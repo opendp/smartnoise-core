@@ -1,10 +1,7 @@
 {
   "arguments": {
     "data": {
-      "nature": [
-        "continuous"
-      ],
-      "type": "Array",
+      "type_value": "Array",
       "description": "True value to be released privately via the Laplace mechanism."
     }
   },
@@ -12,16 +9,14 @@
   "name": "laplace_mechanism",
   "options": {
     "privacy_usage": {
-      "type": "repeated PrivacyUsage",
-      "default": "None",
+      "type_proto": "repeated PrivacyUsage",
+      "type_rust": "Vec<proto::PrivacyUsage>",
+      "default_python": "None",
       "description": "Object describing the type and amount of privacy to be used for the mechanism release."
     }
   },
   "return": {
-    "nature": [
-      "continuous"
-    ],
-    "type": "Array",
+    "type_value": "Array",
     "description": "Original data perturbed with Laplace noise."
   },
   "description": "Privatizes a result by returning it perturbed with Laplace noise."

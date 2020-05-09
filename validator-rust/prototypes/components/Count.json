@@ -1,21 +1,14 @@
 {
   "arguments": {
     "data": {
-      "nature": [
-        "continuous",
-        "categorical"
-      ],
-      "type": "Array"
+      "type_value": "Array"
     }
   },
   "id": "Count",
   "name": "count",
   "options": {},
   "return": {
-    "nature": [
-      "continuous"
-    ],
-    "type": "Array"
+    "type_value": "Array"
   },
   "description": "Returns the number of rows in the data."
 }

@@ -1,45 +1,49 @@
 {
   "arguments": {
     "data": {
-      "nature": [
-        "continuous"
-      ],
-      "type": "Array",
+      "type_value": "Array",
       "description": "The data for which null values will be imputed."
     },
     "lower": {
-      "type": "Array",
-      "default": "None",
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
       "description": "A lower bound on data elements for each column. Used only if `categories` is `None`."
     },
     "upper": {
-      "type": "Array",
-      "default": "None",
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
       "description": "An upper bound on data elements for each column. Used only if `categories` is `None`."
     },
     "categories": {
-      "default": "None",
-      "type": "Jagged",
+      "default_python": "None",
+      "type_value": "Jagged",
+      "default_rust": "None",
       "description": "The set of categories you want to be represented for each column of the data, if the data is categorical."
     },
     "weights": {
-      "default": "None",
-      "type": "Jagged",
+      "default_python": "None",
+      "type_value": "Jagged",
+      "default_rust": "None",
       "description": "Optional. The weight of each category when imputing. Uniform weights are used if not specified."
     },
     "distribution": {
-      "type": "String",
-      "default": "None",
+      "type_value": "String",
+      "default_python": "None",
+      "default_rust": "None",
       "description": "The distribution to be used when imputing records. Used only if `categories` is `None`."
     },
     "shift": {
-      "type": "Array",
-      "default": "None",
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
       "description": "The expectation of the Gaussian distribution to be used for imputation. Used only if `distribution` is `Gaussian`."
     },
     "scale": {
-      "type": "Array",
-      "default": "None",
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
       "description": "The standard deviation of the Gaussian distribution to be used for imputation. Used only if `distribution` is `Gaussian`."
     }
   },
@@ -47,10 +51,7 @@
   "name": "impute",
   "options": {},
   "return": {
-    "nature": [
-      "continuous"
-    ],
-    "type": "Array",
+    "type_value": "Array",
     "description": "Data with null values replaced by imputed values."
   },
   "description": "Replaces null values with draws from a specified distribution.\n\nIf the `categories` argument is provided, the data are considered to be categorical regardless of atomic type and the elements provided in `null_value` will be replaced with those in `categories` according to `weights`.\n\nIf the `categories` argument is not provided, the data are considered to be numeric and elements that are `f64::NAN` will be replaced according to the specified distribution."

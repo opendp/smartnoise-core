@@ -18,9 +18,9 @@ impl Evaluable for proto::Quantile {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
         Ok(ReleaseNode::new(match get_argument(&arguments, "data")?.array()? {
             Array::F64(data) =>
-                quantile(data.mapv(n64), &self.quantile, &self.interpolation)?.mapv(|v| v.raw()).into(),
+                quantile(data.mapv(n64), &self.alpha, &self.interpolation)?.mapv(|v| v.raw()).into(),
             Array::I64(data) =>
-                quantile(data.clone(), &self.quantile, &self.interpolation)?.into(),
+                quantile(data.clone(), &self.alpha, &self.interpolation)?.into(),
             _ => return Err("data must be either f64 or i64".into())
         }))
     }
@@ -31,7 +31,7 @@ impl Evaluable for proto::Quantile {
 ///
 /// # Arguments
 /// * `data` - Array of data for which you would like the quantile.
-/// * `q` - Desired quantile.
+/// * `alpha` - Desired quantile.
 ///
 /// # Return
 /// Quantile of interest for each column of your data.
@@ -47,18 +47,18 @@ impl Evaluable for proto::Quantile {
 /// assert!(median == arr1(& [1.0, 2.0, 3.0] ).into_dyn().mapv(n64));
 /// ```
 pub fn quantile<T: FromPrimitive + Ord + Clone + Sub<Output=T> + Mul<Output=T> + Div<Output=T> + Add<Output=T> + Rem<Output=T> + ToPrimitive>(
-    mut data: ArrayD<T>, q: &f64, interpolation: &String
+    mut data: ArrayD<T>, alpha: &f64, interpolation: &String
 ) -> Result<ArrayD<T>> {
-    if &0. > q || q > &1. {
+    if &0. > alpha || alpha > &1. {
         return Err("q must be within [0, 1]".into());
     }
 
     match match interpolation.as_str() {
-        "lower" => data.quantile_axis_mut(Axis(0), n64(*q), &interpolate::Lower),
-        "higher" => data.quantile_axis_mut(Axis(0), n64(*q), &interpolate::Higher),
-        "midpoint" => data.quantile_axis_mut(Axis(0), n64(*q), &interpolate::Midpoint),
-        "nearest" => data.quantile_axis_mut(Axis(0), n64(*q), &interpolate::Nearest),
-        "linear" => data.quantile_axis_mut(Axis(0), n64(*q), &interpolate::Linear),
+        "lower" => data.quantile_axis_mut(Axis(0), n64(*alpha), &interpolate::Lower),
+        "higher" => data.quantile_axis_mut(Axis(0), n64(*alpha), &interpolate::Higher),
+        "midpoint" => data.quantile_axis_mut(Axis(0), n64(*alpha), &interpolate::Midpoint),
+        "nearest" => data.quantile_axis_mut(Axis(0), n64(*alpha), &interpolate::Nearest),
+        "linear" => data.quantile_axis_mut(Axis(0), n64(*alpha), &interpolate::Linear),
         _ => return Err("interpolation type unrecognized".into())
     }  {
         Ok(quantiles) => Ok(quantiles),

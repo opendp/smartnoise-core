@@ -1,26 +1,17 @@
 {
   "arguments": {
     "data": {
-      "nature": [
-        "continuous"
-      ],
-      "type": "Array"
+      "type_value": "Array"
     },
     "base": {
-      "default": "2.71828",
-      "nature": [
-        "continuous"
-      ],
-      "type": "Array"
+      "default_python": "2.71828",
+      "type_value": "Array"
     }
   },
   "id": "Log",
   "name": "log",
   "options": {},
   "return": {
-    "nature": [
-      "continuous"
-    ],
-    "type": "Array"
+    "type_value": "Array"
   }
 }

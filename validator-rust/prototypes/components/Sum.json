@@ -1,10 +1,7 @@
 {
   "arguments": {
     "data": {
-      "nature": [
-        "continuous"
-      ],
-      "type": "Array",
+      "type_value": "Array",
       "description": "Data for which you want the sum of each column."
     }
   },
@@ -12,10 +9,7 @@
   "name": "sum",
   "options": {},
   "return": {
-    "nature": [
-      "continuous"
-    ],
-    "type": "Array",
+    "type_value": "Array",
     "description": "Sum of each column of the data."
   },
   "description": "Calculates the sum of each column of the data."

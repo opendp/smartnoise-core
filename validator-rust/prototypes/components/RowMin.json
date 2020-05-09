@@ -1,0 +1,17 @@
+{
+  "arguments": {
+    "left": {
+      "type_value": "Array"
+    },
+    "right": {
+      "type_value": "Array"
+    }
+  },
+  "id": "RowMin",
+  "name": "row_min",
+  "options": {},
+  "return": {
+    "type_value": "Array"
+  },
+  "description": "Returns the minimum of the left and right arguments, per row."
+}

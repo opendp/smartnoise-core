@@ -1,18 +1,16 @@
 {
   "arguments": {
     "left": {
-      "nature": [],
-      "type": "Array"
+      "type_value": "Array"
     },
     "right": {
-      "type": "Array"
+      "type_value": "Array"
     }
   },
   "id": "And",
   "name": "logical_and",
   "options": {},
   "return": {
-    "nature": [],
-    "type": "Array"
+    "type_value": "Array"
   }
 }

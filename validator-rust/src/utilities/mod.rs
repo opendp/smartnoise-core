@@ -7,7 +7,7 @@ use crate::errors::*;
 
 use crate::proto;
 
-use crate::base::{Release, Value, ValueProperties, SensitivitySpace, NodeProperties, ArrayProperties, ReleaseNode};
+use crate::base::{Release, Value, ValueProperties, SensitivitySpace, NodeProperties, ReleaseNode};
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 use crate::utilities::serial::{parse_release, parse_value_properties, serialize_value, parse_release_node};
@@ -192,7 +192,7 @@ pub fn propagate_properties(
         let component_properties = match (dynamic, component_properties) {
             (_, Ok(properties)) => properties,
             (true, Err(err)) => {
-                failed_ids.insert(traversal.pop().unwrap());
+                failed_ids.insert(node_id);
                 warnings.push(serialize_error(err));
                 continue
             },
@@ -517,6 +517,33 @@ pub fn privacy_usage_reducer(
     }
 }
 
+pub fn privacy_usage_check(
+    privacy : &proto::PrivacyUsage
+) -> Result<()> {
+    use proto::privacy_usage::Distance as Distance;
+    // helper function checks that parameters lie between 0 and 1. Errors if non-positive, warns if
+    // greater than 0
+    let check_params = |privacy_param: f64| -> Result<()> {
+        if privacy_param <= 0.0 {
+            return Err("Privacy parameter must be greater than 0.".into())
+        } else if privacy_param > 1.0{
+            println!("Large value of privacy parameter in use.");
+        }
+        Ok(())
+    };
+    match privacy.distance.as_ref()
+        .ok_or_else(|| Error::from("distance must be defined"))? {
+        Distance::Pure(x) => {
+            check_params(x.epsilon)?;
+        },
+        Distance::Approximate(x) => {
+            check_params(x.epsilon)?;
+            check_params(x.delta)?;
+        }
+    };
+    Ok(())
+}
+
 pub fn get_epsilon(usage: &proto::PrivacyUsage) -> Result<f64> {
     match usage.distance.clone()
         .ok_or_else(|| Error::from("distance must be defined on a PrivacyUsage"))? {
@@ -649,19 +676,9 @@ pub fn deduplicate<T: Eq + Hash + Ord + Clone>(values: Vec<T>) -> Vec<T> {
     values.into_iter().unique().collect()
 }
 
-pub fn is_conformable(left: &ArrayProperties, right: &ArrayProperties) -> bool {
-    match (left.num_columns, right.num_columns) {
-        (Some(l), Some(r)) => l == r,
-        _ => match (left.dataset_id, right.dataset_id) {
-            (Some(l), Some(r)) => l == r,
-            _ => false
-        }
-    }
-}
-
 
 #[cfg(test)]
-mod utilities_tests {
+mod test_utilities {
     use crate::utilities;
     #[test]
     fn test_deduplicate() {

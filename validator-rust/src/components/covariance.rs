@@ -7,7 +7,7 @@ use crate::{proto, base};
 
 use crate::components::{Component, Sensitivity};
 use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType};
-use crate::utilities::{prepend, is_conformable};
+use crate::utilities::prepend;
 use ndarray::prelude::*;
 
 impl Component for proto::Covariance {
@@ -23,11 +23,14 @@ impl Component for proto::Covariance {
                 .map_err(prepend("data:"))?.clone();
 
             data_property.assert_is_not_empty()?;
-            data_property.assert_is_not_aggregated()?;
+
+            if !data_property.releasable {
+                data_property.assert_is_not_aggregated()?;
+            }
 
             // save a snapshot of the state when aggregating
             data_property.aggregator = Some(AggregatorProperties {
-                component: proto::component::Variant::from(self.clone()),
+                component: proto::component::Variant::Covariance(self.clone()),
                 properties: properties.clone(),
             });
 
@@ -36,7 +39,7 @@ impl Component for proto::Covariance {
             data_property.num_columns = Some(num_columns * (num_columns + 1) / 2);
 
             if data_property.data_type != DataType::F64 {
-                return Err("data: atomic type must be float".into())
+                return Err("data: atomic type must be float".into());
             }
             // min/max of data is not known after computing covariance
             data_property.nature = None;
@@ -52,26 +55,27 @@ impl Component for proto::Covariance {
 
 
             if left_property.data_type != DataType::F64 {
-                return Err("left: atomic type must be float".into())
+                return Err("left: atomic type must be float".into());
             }
             if right_property.data_type != DataType::F64 {
-                return Err("right: atomic type must be float".into())
+                return Err("right: atomic type must be float".into());
             }
             left_property.assert_is_not_empty()?;
-            left_property.assert_is_not_aggregated()?;
-
             right_property.assert_is_not_empty()?;
-            right_property.assert_is_not_aggregated()?;
+
+            if !left_property.releasable {
+                left_property.assert_is_not_aggregated()?;
+            }
+
+            if !right_property.releasable {
+                right_property.assert_is_not_aggregated()?;
+            }
 
             // save a snapshot of the state when aggregating
             left_property.aggregator = Some(AggregatorProperties {
-                component: proto::component::Variant::from(self.clone()),
+                component: proto::component::Variant::Covariance(self.clone()),
                 properties: properties.clone(),
             });
-
-            if !is_conformable(&left_property, &right_property) {
-                return Err("left and right property must be known to be conformable statically".into())
-            }
 
             left_property.nature = None;
             left_property.releasable = left_property.releasable && right_property.releasable;
@@ -94,10 +98,8 @@ impl Sensitivity for proto::Covariance {
         properties: &NodeProperties,
         sensitivity_type: &SensitivitySpace,
     ) -> Result<Value> {
-
         match sensitivity_type {
             SensitivitySpace::KNorm(k) => {
-
                 let data_n;
                 let differences = match (properties.get("data"), properties.get("left"), properties.get("right")) {
                     (Some(data_property), None, None) => {
@@ -118,7 +120,7 @@ impl Sensitivity for proto::Covariance {
                                 .map(|(_, (right_min, right_max))|
                                     (*left_max - *left_min) * (*right_max - *right_min))
                                 .collect::<Vec<f64>>()).flatten().collect::<Vec<f64>>()
-                    },
+                    }
                     (None, Some(left_property), Some(right_property)) => {
 
                         // left side: perform checks and prepare parameters
@@ -179,9 +181,8 @@ impl Sensitivity for proto::Covariance {
                 array_sensitivity.insert_axis_inplace(Axis(0));
 
                 Ok(array_sensitivity.into())
-            },
+            }
             _ => Err("Covariance sensitivity is only implemented for KNorm".into())
         }
-
     }
 }

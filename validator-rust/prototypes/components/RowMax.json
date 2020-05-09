@@ -1,0 +1,17 @@
+{
+  "arguments": {
+    "left": {
+      "type_value": "Array"
+    },
+    "right": {
+      "type_value": "Array"
+    }
+  },
+  "id": "RowMax",
+  "name": "row_max",
+  "options": {},
+  "return": {
+    "type_value": "Array"
+  },
+  "description": "Returns the maximum of the left and right arguments, per row."
+}

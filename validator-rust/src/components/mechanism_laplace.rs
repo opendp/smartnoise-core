@@ -31,13 +31,33 @@ impl Component for proto::LaplaceMechanism {
             .ok_or_else(|| Error::from("aggregator: missing"))?;
 
         // sensitivity must be computable
-        aggregator.component.compute_sensitivity(
+        let sensitivity_values = aggregator.component.compute_sensitivity(
             &privacy_definition,
             &aggregator.properties,
             &SensitivitySpace::KNorm(1))?;
 
+        let sensitivities = sensitivity_values.array()?.f64()?;
+
+        if self.privacy_usage.len() == 0 {
+            data_property.releasable = false;
+        } else {
+            let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivities.len())?;
+            let epsilons = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
+
+            // epsilons must be greater than 0.
+            for epsilon in epsilons.into_iter(){
+                if epsilon <= 0.0 {
+                    return Err("epsilon: privacy parameter epsilon must be greater than 0".into());
+                };
+                if epsilon > 1.0   {
+                    println!("Warning: A large privacy parameter of epsilon = {} is in use", epsilon.to_string());
+                }
+            }
+
+            data_property.releasable = true;
+        }
+
         data_property.aggregator = None;
-        data_property.releasable = true;
 
         Ok(data_property.into())
     }
@@ -79,13 +99,13 @@ impl Accuracy for proto::LaplaceMechanism {
         let aggregator = data_property.aggregator.clone()
             .ok_or_else(|| Error::from("aggregator: missing"))?;
 
-        let sensitivity_value = aggregator.component.compute_sensitivity(
+        let sensitivity_values = aggregator.component.compute_sensitivity(
             &privacy_definition,
             &aggregator.properties,
             &SensitivitySpace::KNorm(1))?;
 
         // sensitivity must be computable
-        let sensitivities = sensitivity_value.array()?.f64()?;
+        let sensitivities = sensitivity_values.array()?.f64()?;
 
         Ok(Some(sensitivities.into_iter().zip(accuracies.values.iter())
             .map(|(sensitivity, accuracy)| proto::PrivacyUsage {
@@ -110,18 +130,18 @@ impl Accuracy for proto::LaplaceMechanism {
         let aggregator = data_property.aggregator.clone()
             .ok_or_else(|| Error::from("aggregator: missing"))?;
 
-        let sensitivity_value = aggregator.component.compute_sensitivity(
+        let sensitivity_values = aggregator.component.compute_sensitivity(
             &privacy_definition,
             &aggregator.properties,
             &SensitivitySpace::KNorm(1))?;
 
         // sensitivity must be computable
-        let sensitivities = sensitivity_value.array()?.f64()?;
+        let sensitivities = sensitivity_values.array()?.f64()?;
 
         let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivities.len())?;
-        let epsilon = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
+        let epsilons = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
 
-        Ok(Some(sensitivities.into_iter().zip(epsilon.into_iter())
+        Ok(Some(sensitivities.into_iter().zip(epsilons.into_iter())
             .map(|(sensitivity, epsilon)| proto::Accuracy {
                 value: (1. / *alpha).ln() * (sensitivity / epsilon),
                 alpha: *alpha,

@@ -1,36 +1,39 @@
 {
   "arguments": {
     "column_names": {
-      "nature": [
-        "categorical"
-      ],
-      "type": "Array"
+      "type_value": "Array"
     }
   },
   "id": "Materialize",
   "name": "materialize",
   "options": {
     "data_source": {
-      "type": "DataSource"
+      "type_proto": "DataSource",
+      "type_rust": "Option<proto::DataSource>"
     },
     "public": {
-      "type": "bool",
-      "default": "False"
+      "type_proto": "bool",
+      "type_rust": "bool",
+      "default_python": "False",
+      "default_rust": "false"
     },
     "dataset_id": {
-      "type": "I64Null",
-      "default": "None",
+      "type_proto": "I64Null",
+      "type_rust": "Option<proto::I64Null>",
+      "default_python": "None",
+      "default_rust": "None",
       "description": "when set, data with unknown number of records may still conform to data with the same dataset_id"
     },
     "skip_row": {
-      "type": "bool",
-      "default": "True",
+      "type_proto": "bool",
+      "type_rust": "bool",
+      "default_python": "True",
+      "default_rust": "true",
       "description": "when set, skip the first line (header) in a csv"
     }
   },
   "return": {
-    "nature": null,
-    "type": "Hashmap"
+    "type_value": "Hashmap"
   },
   "description": "Load a tabular frame from a data source"
 }

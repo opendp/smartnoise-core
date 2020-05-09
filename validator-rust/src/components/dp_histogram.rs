@@ -47,7 +47,7 @@ impl Expandable for proto::DpHistogram {
             .map(|v| histogram_arguments.insert("inclusive_left".to_string(), *v));
         computation_graph.insert(id_histogram, proto::Component {
             arguments: histogram_arguments,
-            variant: Some(proto::component::Variant::from(proto::Histogram {})),
+            variant: Some(proto::component::Variant::Histogram(proto::Histogram {})),
             omit: true,
             batch: component.batch,
         });
@@ -81,7 +81,7 @@ impl Expandable for proto::DpHistogram {
                         .ok_or_else(|| Error::from("lower must be provided as an argument"))?,
                     "upper".to_owned() => id_upper
                 ],
-                variant: Some(proto::component::Variant::from(proto::SimpleGeometricMechanism {
+                variant: Some(proto::component::Variant::SimpleGeometricMechanism(proto::SimpleGeometricMechanism {
                     privacy_usage: self.privacy_usage.clone(),
                     enforce_constant_time: false
                 })),
@@ -96,13 +96,13 @@ impl Expandable for proto::DpHistogram {
                     "data".to_owned() => id_histogram
                 ],
                 variant: Some(match self.mechanism.to_lowercase().as_str() {
-                    "laplace" => proto::component::Variant::from(proto::LaplaceMechanism {
+                    "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
                         privacy_usage: self.privacy_usage.clone()
                     }),
-                    "gaussian" => proto::component::Variant::from(proto::GaussianMechanism {
+                    "gaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
                         privacy_usage: self.privacy_usage.clone()
                     }),
-                    _ => panic!("Unexpected invalid token {:?}", self.implementation.as_str()),
+                    _ => panic!("Unexpected invalid token {:?}", self.mechanism.as_str()),
                 }),
                 omit: false,
                 batch: component.batch,
@@ -160,7 +160,7 @@ impl Report for proto::DpHistogram {
                 algorithm_info: AlgorithmInfo {
                     name: "".to_string(),
                     cite: "".to_string(),
-                    mechanism: self.implementation.clone(),
+                    mechanism: self.mechanism.clone(),
                     argument: serde_json::json!({}),
                 },
             };

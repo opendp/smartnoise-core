@@ -1,30 +1,27 @@
 {
   "arguments": {
     "data": {
-      "nature": [
-        "continuous"
-      ],
-      "type": "Array"
+      "type_value": "Array"
     }
   },
   "id": "Quantile",
   "name": "quantile",
   "options": {
-    "quantile": {
-      "type": "double",
+    "alpha": {
+      "type_proto": "double",
+      "type_rust": "f64",
       "description": "Desired quantiles, defined on `[0,1]`."
     },
     "interpolation": {
-      "type": "string",
-      "default": "'midpoint'",
-      "description": "Interpolation strategy. Must be one of \"lower\", \"upper\", \"midpoint\", \"nearest\", \"linear\"."
+      "type_proto": "string",
+      "type_rust": "String",
+      "default_python": "\"midpoint\"",
+      "default_rust": "String::from(\"midpoint\")",
+      "description": "Interpolation strategy. One of [`lower`, `upper`, `midpoint`, `nearest`, `linear`]"
     }
   },
   "return": {
-    "nature": [
-      "continuous"
-    ],
-    "type": "Array",
+    "type_value": "Array",
     "description": "Quantile values for each column."
   },
   "description": "Get values corresponding to specified quantiles for each column of the data."
