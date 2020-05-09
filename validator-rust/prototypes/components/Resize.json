@@ -57,6 +57,12 @@
       "default_python": "None",
       "default_rust": "None",
       "description": "The standard deviation of the Gaussian distribution used for imputation (used only if `distribution = Gaussian`)."
+    },
+    "minimum_rows": {
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
+      "description": "Only add synthetic data if the actual row count is less than this number. No sampling is performed. Cannot be set with `number_rows`"
     }
   },
   "id": "Resize",

@@ -29,6 +29,10 @@ impl Component for proto::Resize {
             data_property.assert_is_not_aggregated()?;
         }
 
+        if properties.contains_key("number_rows") && properties.contains_key("minimum_rows") {
+            return Err("only one of number_rows and minimum_rows may be set".into())
+        }
+
         if let Some(num_columns) = public_arguments.get("number_columns") {
             if data_property.num_columns.is_some() {
                 return Err("cannot resize number of columns when number of columns is known".into())
@@ -49,8 +53,17 @@ impl Component for proto::Resize {
             if num_records < 1 {
                 return Err("n must be greater than zero".into());
             }
+
             data_property.num_records = Some(num_records);
             data_property.is_not_empty = num_records > 0;
+        }
+
+        if let Some(minimum_rows) = public_arguments.get("minimum_rows") {
+            if minimum_rows.first_i64()? > 0 {
+                data_property.is_not_empty = true;
+            } else {
+                return Err("minimum number of records must be greater than zero".into())
+            }
         }
 
         if let Some(categories) = public_arguments.get("categories") {

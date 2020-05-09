@@ -18,10 +18,17 @@ use std::hash::Hash;
 
 impl Evaluable for proto::Resize {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        let number_rows = arguments.get("number_rows")
+        let mut number_rows = arguments.get("number_rows")
             .and_then(|v| v.first_i64().ok());
         let number_cols = arguments.get("number_columns")
             .and_then(|v| v.first_i64().ok());
+
+        let minimum_rows = arguments.get("minimum_rows")
+            .and_then(|v| v.first_i64().ok());
+
+        if let Some(minimum_rows) = minimum_rows {
+            number_rows = Some(minimum_rows.clone())
+        }
 
         // If "categories" constraint has been propagated, data are treated as categorical (regardless of atomic type)
         // and imputation (if necessary) is done by sampling from "categories" using the "probabilities" as sampling probabilities for each element.
@@ -37,11 +44,11 @@ impl Evaluable for proto::Resize {
                             return Err("categorical resizing over floats in not currently supported- try continuous imputation instead".into()),
 //                            resize_categorical(&data, &n, &categories, &probabilities)?.into(),
                         (Array::I64(data), Jagged::I64(categories)) =>
-                            resize_categorical(&data, number_rows, number_cols, &categories, &weights)?.into(),
+                            resize_categorical(&data, number_rows, number_cols, &categories, &weights, minimum_rows)?.into(),
                         (Array::Bool(data), Jagged::Bool(categories)) =>
-                            resize_categorical(&data, number_rows, number_cols, &categories, &weights)?.into(),
+                            resize_categorical(&data, number_rows, number_cols, &categories, &weights, minimum_rows)?.into(),
                         (Array::Str(data), Jagged::Str(categories)) =>
-                            resize_categorical(&data, number_rows, number_cols, &categories, &weights)?.into(),
+                            resize_categorical(&data, number_rows, number_cols, &categories, &weights, minimum_rows)?.into(),
                         _ => return Err("types of data, categories, and nulls must be homogeneous, weights must be f64".into())
                     }),
                 _ => return Err("data and nulls must be arrays, categories must be a jagged matrix".into())
@@ -69,10 +76,10 @@ impl Evaluable for proto::Resize {
                         Ok(scale) => Some(scale.array()?.f64()?),
                         Err(_) => None
                     };
-                    Ok(resize_float(data, number_rows, number_cols, &distribution, lower, upper, &shift, &scale)?.into())
+                    Ok(resize_float(data, number_rows, number_cols, &distribution, lower, upper, &shift, &scale, minimum_rows)?.into())
                 }
                 (Array::I64(data), Array::I64(lower), Array::I64(upper)) =>
-                    Ok(resize_integer(data, number_rows, number_cols, lower, upper)?.into()),
+                    Ok(resize_integer(data, number_rows, number_cols, lower, upper, minimum_rows)?.into()),
                 _ => Err("data, lower, and upper must be of a homogeneous numeric type".into())
             }
         }.map(ReleaseNode::new)
@@ -104,6 +111,7 @@ pub fn resize_float(
     distribution: &String,
     lower: &ArrayD<f64>, upper: &ArrayD<f64>,
     shift: &Option<&ArrayD<f64>>, scale: &Option<&ArrayD<f64>>,
+    minimum_rows: Option<i64>
 ) -> Result<ArrayD<f64>> {
     let mut data = data.clone();
 
@@ -147,6 +155,11 @@ pub fn resize_float(
 
         // get number of observations in actual data
         let real_n: i64 = data.len_of(Axis(0)) as i64;
+        if let Some(minimum_rows) = minimum_rows {
+            if minimum_rows > real_n {
+                return Ok(data.into())
+            }
+        }
 
         data = match real_n.cmp(&number_rows) {
             // if estimated n is correct, return real data
@@ -201,6 +214,7 @@ pub fn resize_integer(
     number_rows: Option<i64>,
     number_cols: Option<i64>,
     lower: &ArrayD<i64>, upper: &ArrayD<i64>,
+    minimum_rows: Option<i64>
 ) -> Result<ArrayD<i64>> {
     let mut data = data.clone();
 
@@ -246,6 +260,11 @@ pub fn resize_integer(
     if let Some(number_rows) = number_rows {
         // get number of observations in actual data
         let real_n = data.len_of(Axis(0)) as i64;
+        if let Some(minimum_rows) = minimum_rows {
+            if minimum_rows > real_n {
+                return Ok(data.into())
+            }
+        }
 
         data = match &real_n.cmp(&number_rows) {
             // if estimated n is correct, return real data
@@ -305,6 +324,7 @@ pub fn resize_categorical<T>(
     number_cols: Option<i64>,
     categories: &Vec<Vec<T>>,
     weights: &Option<Vec<Vec<f64>>>,
+    minimum_rows: Option<i64>
 ) -> Result<ArrayD<T>> where T: Clone, T: PartialEq, T: Default, T: Ord, T: Hash {
     let mut data = data.clone();
 
@@ -349,6 +369,11 @@ pub fn resize_categorical<T>(
     if let Some(number_rows) = number_rows {
         // get number of observations in actual data
         let real_n: i64 = data.len_of(Axis(0)) as i64;
+        if let Some(minimum_rows) = minimum_rows {
+            if minimum_rows > real_n {
+                return Ok(data.into())
+            }
+        }
 
         data = match &real_n.cmp(&number_rows) {
             // if estimated n is correct, return real data

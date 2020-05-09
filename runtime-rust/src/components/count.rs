@@ -73,10 +73,10 @@ pub fn count<T>(data: &ArrayD<T>) -> Result<ArrayD<i64>> {
 /// # Example
 /// ```
 /// use ndarray::{ArrayD, arr1, arr2};
-/// use whitenoise_runtime::components::count::count;
-/// let data = arr2(&[ [false, false, true], [true, true, true] ]).into_dyn();
-/// let n = count(&data).unwrap();
-/// assert!(n.first().unwrap() == &2);
+/// use whitenoise_runtime::components::count::count_distinct;
+/// let data = arr2(&[ [false, false, true], [true, false, true] ]).into_dyn();
+/// let distinct = count_distinct(&data).unwrap();
+/// assert_eq!(distinct, arr2(&[ [2, 1, 1] ]).into_dyn());
 /// ```
 pub fn count_distinct<T: Eq + Hash>(data: &ArrayD<T>) -> Result<ArrayD<i64>> {
     let counts = data.gencolumns().into_iter().map(|column| {
