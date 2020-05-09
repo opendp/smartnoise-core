@@ -26,5 +26,6 @@
   "return": {
     "type_value": "Array"
   },
-  "description": "Maps data to bins.\n\nBins will be of the form [lower, upper) or (lower, upper]. The null value is the final category."
+  "description": "Maps data to bins.\n\nBins will be of the form [lower, upper) or (lower, upper]. The null value is the final category.",
+  "proto_id": 19
 }

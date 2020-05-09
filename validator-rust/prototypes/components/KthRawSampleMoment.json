@@ -18,5 +18,6 @@
     "type_value": "Array",
     "description": "kth raw sample moment for each column."
   },
-  "description": "Returns sample estimate of kth raw moment for each column of the data."
+  "description": "Returns sample estimate of kth raw moment for each column of the data.",
+  "proto_id": 29
 }

@@ -32,5 +32,6 @@
     "type_value": "Array",
     "description": "Differentially private estimate of the mean of each column of the data."
   },
-  "description": "Returns differentially private estimates of the means of each column of the data."
+  "description": "Returns differentially private estimates of the means of each column of the data.",
+  "proto_id": 12
 }

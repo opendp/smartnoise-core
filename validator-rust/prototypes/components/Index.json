@@ -13,5 +13,6 @@
   "return": {
     "type_value": "Array"
   },
-  "description": "Index into data frames, partitions and arrays to retrieve homogeneously typed contiguous arrays"
+  "description": "Index into data frames, partitions and arrays to retrieve homogeneously typed contiguous arrays",
+  "proto_id": 28
 }

@@ -43,5 +43,6 @@
     "type_value": "Array",
     "description": "Differentially private row count."
   },
-  "description": "Returns a differentially private row count."
+  "description": "Returns a differentially private row count.",
+  "proto_id": 8
 }

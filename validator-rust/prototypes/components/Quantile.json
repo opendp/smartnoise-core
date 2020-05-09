@@ -30,5 +30,6 @@
     "type_value": "Array",
     "description": "Quantile values for each column."
   },
-  "description": "Get values corresponding to specified quantiles for each column of the data."
+  "description": "Get values corresponding to specified quantiles for each column of the data.",
+  "proto_id": 47
 }

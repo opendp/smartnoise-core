@@ -32,5 +32,6 @@
     "type_value": "Array",
     "description": "Differentially private sample variance for each column of the data."
   },
-  "description": "Returns a differentially private estimate of the variance for each column of the data."
+  "description": "Returns a differentially private estimate of the variance for each column of the data.",
+  "proto_id": 18
 }

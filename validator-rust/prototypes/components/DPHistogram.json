@@ -66,5 +66,6 @@
     "type_value": "Array",
     "description": "Differentially private histogram."
   },
-  "description": "Returns a differentially private histogram over user-defined categories. The final cell contains the counts for null values (outside the set of categories)."
+  "description": "Returns a differentially private histogram over user-defined categories. The final cell contains the counts for null values (outside the set of categories).",
+  "proto_id": 10
 }

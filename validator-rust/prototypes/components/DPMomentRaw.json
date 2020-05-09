@@ -30,5 +30,6 @@
     "type_value": "Array",
     "description": "Sample estimate of raw moment for each column of the data."
   },
-  "description": "Returns sample estimate of a raw moment for each column of the data."
+  "description": "Returns sample estimate of a raw moment for each column of the data.",
+  "proto_id": 15
 }

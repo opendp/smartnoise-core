@@ -54,5 +54,6 @@
     "type_value": "Array",
     "description": "Data with null values replaced by imputed values."
   },
-  "description": "Replaces null values with draws from a specified distribution.\n\nIf the `categories` argument is provided, the data are considered to be categorical regardless of atomic type and the elements provided in `null_value` will be replaced with those in `categories` according to `weights`.\n\nIf the `categories` argument is not provided, the data are considered to be numeric and elements that are `f64::NAN` will be replaced according to the specified distribution."
+  "description": "Replaces null values with draws from a specified distribution.\n\nIf the `categories` argument is provided, the data are considered to be categorical regardless of atomic type and the elements provided in `null_value` will be replaced with those in `categories` according to `weights`.\n\nIf the `categories` argument is not provided, the data are considered to be numeric and elements that are `f64::NAN` will be replaced according to the specified distribution.",
+  "proto_id": 27
 }

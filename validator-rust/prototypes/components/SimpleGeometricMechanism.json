@@ -31,5 +31,6 @@
     "type_value": "Array",
     "description": "Original data perturbed with Geometric noise."
   },
-  "description": "Privatizes a result by returning it perturbed with Geometric noise."
+  "description": "Privatizes a result by returning it perturbed with Geometric noise.",
+  "proto_id": 53
 }

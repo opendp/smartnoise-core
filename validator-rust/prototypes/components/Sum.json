@@ -12,5 +12,6 @@
     "type_value": "Array",
     "description": "Sum of each column of the data."
   },
-  "description": "Calculates the sum of each column of the data."
+  "description": "Calculates the sum of each column of the data.",
+  "proto_id": 56
 }

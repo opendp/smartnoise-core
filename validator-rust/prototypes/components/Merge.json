@@ -11,5 +11,6 @@
   "return": {
     "type_value": "Array"
   },
-  "description": "merge partitions into a single array"
+  "description": "merge partitions into a single array",
+  "proto_id": 38
 }

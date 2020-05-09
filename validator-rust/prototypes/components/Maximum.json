@@ -12,5 +12,6 @@
     "type_value": "Array",
     "description": "Maximum of each column in the data."
   },
-  "description": "Find the maximum value of each column in the data."
+  "description": "Find the maximum value of each column in the data.",
+  "proto_id": 36
 }

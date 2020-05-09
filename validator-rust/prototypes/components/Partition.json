@@ -20,5 +20,6 @@
   "return": {
     "type_value": "Indexmap"
   },
-  "description": "Split the rows of data into either into k equally sized partitions, or by the categories of a vector"
+  "description": "Split the rows of data into either into k equally sized partitions, or by the categories of a vector",
+  "proto_id": 45
 }

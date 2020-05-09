@@ -38,6 +38,7 @@ pub struct ComponentJSON {
     #[serde(rename(serialize = "return", deserialize = "return"))]
     arg_return: ArgumentJSON,
     description: Option<String>,
+    proto_id: i64
 }
 
 #[derive(Deserialize, Debug)]

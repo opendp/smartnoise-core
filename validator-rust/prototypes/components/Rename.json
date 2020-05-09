@@ -13,5 +13,6 @@
   "return": {
     "type_value": "Indexmap"
   },
-  "description": "Name columns of an array or indexmap to produce an indexmap (representing a Dataframe) with the specified names"
+  "description": "Name columns of an array or indexmap to produce an indexmap (representing a Dataframe) with the specified names",
+  "proto_id": 48
 }

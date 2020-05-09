@@ -15,5 +15,6 @@
   "return": {
     "type_value": "Array"
   },
-  "description": "Cast data to a bool atomic type."
+  "description": "Cast data to a bool atomic type.",
+  "proto_id": 57
 }

@@ -29,5 +29,6 @@
   "return": {
     "type_value": "Indexmap"
   },
-  "description": "Load a tabular frame from a data source"
+  "description": "Load a tabular frame from a data source",
+  "proto_id": 35
 }

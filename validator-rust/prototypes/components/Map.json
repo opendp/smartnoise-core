@@ -15,5 +15,6 @@
   "return": {
     "type_value": "Indexmap"
   },
-  "description": "Apply Component to each data partition."
+  "description": "Apply Component to each data partition.",
+  "proto_id": 34
 }

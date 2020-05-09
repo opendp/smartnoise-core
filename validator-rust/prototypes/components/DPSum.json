@@ -37,5 +37,6 @@
     "type_value": "Array",
     "description": "Differentially private sum over elements for each column of the data."
   },
-  "description": "Returns differentially private estimates of the sums of each column of the data."
+  "description": "Returns differentially private estimates of the sums of each column of the data.",
+  "proto_id": 17
 }

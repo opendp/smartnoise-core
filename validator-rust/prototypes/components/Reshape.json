@@ -32,5 +32,6 @@
     "type_value": "Array",
     "description": "Reshape of data."
   },
-  "description": "Reshapes a row vector into a matrix."
+  "description": "Reshapes a row vector into a matrix.",
+  "proto_id": 49
 }

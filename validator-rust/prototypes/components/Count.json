@@ -10,5 +10,6 @@
   "return": {
     "type_value": "Array"
   },
-  "description": "Returns the number of rows in the data."
+  "description": "Returns the number of rows in the data.",
+  "proto_id": 6
 }

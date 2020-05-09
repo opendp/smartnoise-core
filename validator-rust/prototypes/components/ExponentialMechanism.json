@@ -23,5 +23,6 @@
     "type_value": "Array",
     "description": "Element from the candidate set selected via the Exponential mechanism."
   },
-  "description": "Returns an element from a finite set with probability relative to its utility."
+  "description": "Returns an element from a finite set with probability relative to its utility.",
+  "proto_id": 22
 }

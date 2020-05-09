@@ -43,5 +43,6 @@
     "type_value": "Array",
     "description": "Differentially private estimates of the median of each column of the data."
   },
-  "description": "Returns differentially private estimates of the median of each column of the data."
+  "description": "Returns differentially private estimates of the median of each column of the data.",
+  "proto_id": 16
 }

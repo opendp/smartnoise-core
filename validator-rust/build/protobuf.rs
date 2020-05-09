@@ -40,8 +40,8 @@ message Component {
     oneof variant {
     "#.to_string();
 
-    let proto_text_variants = components.iter().enumerate()
-        .map(|(id, component)| format!("        {} {} = {};", component.id, component.name, id + 100))
+    let proto_text_variants = components.iter()
+        .map(|component| format!("        {} {} = {};", component.id, component.name, component.proto_id + 100))
         .collect::<Vec<String>>().join("\n");
 
     let proto_text_messages = components.iter()
