@@ -218,13 +218,20 @@ impl Sensitivity for proto::Histogram {
                 };
 
                 // epsilon is distributed evenly over all cells.
+                // histograms are the only mechanism where rows are disjoint, currently doing corrections for this here
                 let epsilon_corrected = sensitivity / categories_length as f64;
 
                 let num_columns = data_property.num_columns()?;
                 let num_records = categories_length;
+
                 Ok(Array::from_shape_vec(
                     vec![num_records as usize, num_columns as usize],
-                    (0..(num_records * num_columns)).map(|_| epsilon_corrected).collect())?.into())
+                    (0..num_records)
+                        .map(|_| data_property.c_stability.iter()
+                            .map(|c_stab| c_stab * epsilon_corrected)
+                            .collect::<Vec<f64>>())
+                        .flatten()
+                        .collect::<Vec<f64>>())?.into())
             },
             _ => Err("Histogram sensitivity is only implemented for KNorm".into())
         }

@@ -5,13 +5,13 @@
       "description": "Data for which you would like the kth raw moments."
     }
   },
-  "id": "KthRawSampleMoment",
-  "name": "kth_raw_sample_moment",
+  "id": "RawMoment",
+  "name": "raw_moment",
   "options": {
-    "k": {
+    "order": {
       "type_proto": "uint32",
       "type_rust": "u32",
-      "description": "Integer statistical moment indicator."
+      "description": "Indicate the kth integer statistical moment."
     }
   },
   "return": {

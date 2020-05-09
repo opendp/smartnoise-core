@@ -162,7 +162,7 @@ pub fn evaluate_analysis(
         // evaluate the component using the Evaluable trait, which is implemented on the proto::component::Variant enum
         let mut evaluation = component.clone().variant
             .ok_or_else(|| Error::from("variant of component must be known"))?
-            .evaluate(&node_arguments)?;
+            .evaluate(&analysis.privacy_definition, &node_arguments)?;
 
         evaluation.public = match graph_properties.get(&component_id) {
             Some(property) => match property.variant.clone().unwrap() {

@@ -43,8 +43,6 @@ impl Component for proto::Sum {
 
         Ok(data_property.into())
     }
-
-
 }
 
 impl Sensitivity for proto::Sum {
@@ -68,18 +66,23 @@ impl Sensitivity for proto::Sum {
                 data_property.assert_non_null()?;
                 let data_lower = data_property.lower_f64()?;
                 let data_upper = data_property.upper_f64()?;
+                let c_stability = data_property.c_stability;
 
                 use proto::privacy_definition::Neighboring;
                 let neighboring_type = Neighboring::from_i32(privacy_definition.neighboring)
                     .ok_or_else(|| Error::from("neighboring definition must be either \"AddRemove\" or \"Substitute\""))?;
 
                 let row_sensitivity = match k {
-                    1|2 => match neighboring_type {
-                        Neighboring::AddRemove => data_lower.iter().zip(data_upper.iter())
-                            .map(|(min, max)| min.abs().max(max.abs()))
+                    1 | 2 => match neighboring_type {
+                        Neighboring::AddRemove => data_lower.iter()
+                            .zip(data_upper.iter())
+                            .zip(c_stability.iter())
+                            .map(|((min, max), c_stab)| min.abs().max(max.abs()) * c_stab)
                             .collect::<Vec<f64>>(),
-                        Neighboring::Substitute => data_lower.iter().zip(data_upper.iter())
-                            .map(|(min, max)| max - min)
+                        Neighboring::Substitute => data_lower.iter()
+                            .zip(data_upper.iter())
+                            .zip(c_stability.iter())
+                            .map(|((min, max), c_stab)| (max - min) * c_stab)
                             .collect::<Vec<f64>>()
                     }
                     _ => return Err("KNorm sensitivity is only supported in L1 and L2 spaces".into())

@@ -11,7 +11,7 @@ use crate::utilities::standardize_columns;
 use indexmap::map::IndexMap;
 
 impl Evaluable for proto::Rename {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         let data = get_argument(arguments, "data")?.array()?;
 
         let column_names  = get_argument(arguments, "column_names")?

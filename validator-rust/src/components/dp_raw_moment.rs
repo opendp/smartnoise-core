@@ -12,7 +12,7 @@ use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, 
 use crate::utilities::{prepend, broadcast_privacy_usage, get_ith_column};
 
 
-impl Expandable for proto::DpMomentRaw {
+impl Expandable for proto::DpRawMoment {
     fn expand_component(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
@@ -30,8 +30,8 @@ impl Expandable for proto::DpMomentRaw {
         computation_graph.insert(id_moment, proto::Component {
             arguments: hashmap!["data".to_owned() => *component.arguments.get("data")
                 .ok_or_else(|| Error::from("data must be provided as an argument"))?],
-            variant: Some(proto::component::Variant::KthRawSampleMoment(proto::KthRawSampleMoment {
-                k: self.order
+            variant: Some(proto::component::Variant::RawMoment(proto::RawMoment {
+                order: self.order
             })),
             omit: true,
             batch: component.batch,
@@ -63,7 +63,7 @@ impl Expandable for proto::DpMomentRaw {
 }
 
 
-impl Report for proto::DpMomentRaw {
+impl Report for proto::DpRawMoment {
     fn summarize(
         &self,
         node_id: &u32,
@@ -93,7 +93,7 @@ impl Report for proto::DpMomentRaw {
 
             releases.push(JSONRelease {
                 description: "DP release information".to_string(),
-                statistic: "DPMomentRaw".to_string(),
+                statistic: "DPRawMoment".to_string(),
                 variables: serde_json::json!(variable_name),
                 release_info: match release.array()? {
                     Array::F64(v) => value_to_json(&get_ith_column(v, &column_number)?.into())?,

@@ -17,7 +17,7 @@ use ndarray::prelude::*;
 use std::hash::Hash;
 
 impl Evaluable for proto::Resize {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         let mut number_rows = arguments.get("number_rows")
             .and_then(|v| v.first_i64().ok());
         let number_cols = arguments.get("number_columns")

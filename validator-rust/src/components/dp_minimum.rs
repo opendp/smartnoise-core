@@ -20,45 +20,25 @@ impl Expandable for proto::DpMinimum {
         component: &proto::Component,
         _properties: &base::NodeProperties,
         component_id: &u32,
-        maximum_id: &u32,
+        _maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
-        let mut current_id = *maximum_id;
-        let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
-
-        // minimum
-        current_id += 1;
-        let id_minimum = current_id;
-        computation_graph.insert(id_minimum, proto::Component {
-            arguments: hashmap!["data".to_owned() => *component.arguments.get("data")
-                .ok_or_else(|| Error::from("data: missing"))?],
-            variant: Some(proto::component::Variant::Minimum(proto::Minimum {})),
-            omit: true,
-            batch: component.batch,
-        });
-
-//        let id_candidates = component.arguments.get("candidates").unwrap().clone();
-
-        // sanitizing
-        computation_graph.insert(component_id.clone(), proto::Component {
-            arguments: hashmap!["data".to_owned() => id_minimum],
-            variant: Some(match self.mechanism.to_lowercase().as_str() {
-                "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
-                    privacy_usage: self.privacy_usage.clone()
-                }),
-                "gaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
-                    privacy_usage: self.privacy_usage.clone()
-                }),
-                _ => panic!("Unexpected invalid token {:?}", self.mechanism.as_str()),
-            }),
+        let dp_quantile_component = proto::Component {
+            arguments: component.arguments.clone(),
+            variant: Some(proto::component::Variant::DpQuantile(proto::DpQuantile {
+                alpha: 0.,
+                interpolation: "lower".to_string(),
+                mechanism: self.mechanism.clone(),
+                privacy_usage: self.privacy_usage.clone()
+            })),
             omit: false,
             batch: component.batch,
-        });
+        };
 
         Ok(proto::ComponentExpansion {
-            computation_graph,
+            computation_graph: hashmap![*component_id => dp_quantile_component],
             properties: HashMap::new(),
             releases: HashMap::new(),
-            traversal: vec![id_minimum]
+            traversal: vec![*component_id]
         })
     }
 }

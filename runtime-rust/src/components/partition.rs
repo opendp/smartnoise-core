@@ -14,7 +14,7 @@ use indexmap::map::IndexMap;
 
 
 impl Evaluable for proto::Partition {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         let data = get_argument(arguments, "data")?.array()?;
         Ok(ReleaseNode::new(match get_argument(arguments, "by") {
             Ok(_value) => return Err("partitioning by categories is not implemented".into()),

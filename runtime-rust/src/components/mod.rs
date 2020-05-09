@@ -24,16 +24,14 @@ pub mod filter;
 pub mod histogram;
 pub mod impute;
 pub mod index;
-pub mod kth_raw_sample_moment;
 pub mod map;
 pub mod materialize;
-pub mod maximum;
 pub mod mean;
 pub mod mechanisms;
 pub mod merge;
-pub mod minimum;
 pub mod partition;
 pub mod quantile;
+pub mod raw_moment;
 pub mod rename;
 pub mod reshape;
 pub mod resize;
@@ -48,11 +46,16 @@ pub trait Evaluable {
     /// The concrete implementation of the abstract computation that the struct represents.
     ///
     /// # Arguments
+    /// * `privacy_definition` - the definition of privacy under which the computation takes place
     /// * `arguments` - a hashmap, where the `String` keys are the names of arguments, and the `Value` values are the data inputs
     ///
     /// # Returns
     /// The concrete value corresponding to the abstract computation that the struct represents
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode>;
+    fn evaluate(
+        &self,
+        privacy_definition: &Option<proto::PrivacyDefinition>,
+        arguments: &NodeArguments
+    ) -> Result<ReleaseNode>;
 }
 
 impl Evaluable for proto::component::Variant {
@@ -60,14 +63,16 @@ impl Evaluable for proto::component::Variant {
     ///
     /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn evaluate(
-        &self, arguments: &NodeArguments,
+        &self,
+        privacy_definition: &Option<proto::PrivacyDefinition>,
+        arguments: &NodeArguments
     ) -> Result<ReleaseNode> {
         macro_rules! evaluate {
             ($( $variant:ident ),*) => {
                 {
                     $(
                        if let proto::component::Variant::$variant(x) = self {
-                            return x.evaluate(arguments)
+                            return x.evaluate(privacy_definition, arguments)
                                 .chain_err(|| format!("node specification: {:?}:", self))
                        }
                     )*
@@ -78,12 +83,10 @@ impl Evaluable for proto::component::Variant {
         evaluate!(
             // INSERT COMPONENT LIST
             Cast, Clamp, Count, Covariance, Digitize, Filter, Histogram, Impute, Index,
-            KthRawSampleMoment, Map, Maximum, Materialize, Mean, Merge, Minimum, Partition,
-            Quantile, Rename, Reshape,
+            Map, Materialize, Mean, Merge, Partition,
+            Quantile, RawMoment, Rename, Reshape, Resize, Sum, Variance,
 
-            ExponentialMechanism, LaplaceMechanism, GaussianMechanism, SimpleGeometricMechanism,
-
-            Resize, Sum, Variance,
+            ExponentialMechanism, GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism,
 
             Abs, Add, LogicalAnd, Divide, Equal, GreaterThan, LessThan, Log, Modulo, Multiply,
             Negate, Negative, LogicalOr, Power, RowMax, RowMin, Subtract

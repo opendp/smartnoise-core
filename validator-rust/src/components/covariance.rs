@@ -118,15 +118,19 @@ impl Sensitivity for proto::Covariance {
                         data_property.assert_non_null()?;
                         let data_lower = data_property.lower_f64()?;
                         let data_upper = data_property.upper_f64()?;
+                        let c_stability = data_property.c_stability.clone();
                         data_n = data_property.num_records()? as f64;
 
                         // collect bound differences for upper triangle of matrix
-                        data_lower.iter().zip(data_upper.iter()).enumerate()
-                            .map(|(i, (left_min, left_max))| data_lower.iter().zip(data_upper.iter()).enumerate()
-                                .filter(|(j, _)| i <= *j)
-                                .map(|(_, (right_min, right_max))|
-                                    (*left_max - *left_min) * (*right_max - *right_min))
-                                .collect::<Vec<f64>>()).flatten().collect::<Vec<f64>>()
+                        data_lower.iter().zip(data_upper.iter())
+                            .zip(c_stability.iter()).enumerate()
+                            .map(|(i, ((left_min, left_max), left_stab))|
+                                data_lower.iter().zip(data_upper.iter())
+                                    .zip(c_stability.iter()).enumerate()
+                                    .filter(|(j, _)| i <= *j)
+                                    .map(|(_, ((right_min, right_max), right_stab))|
+                                        (*left_max - *left_min) * (*right_max - *right_min) * left_stab.max(*right_stab))
+                                    .collect::<Vec<f64>>()).flatten().collect::<Vec<f64>>()
                     }
                     (None, Some(left_property), Some(right_property)) => {
 
@@ -138,6 +142,7 @@ impl Sensitivity for proto::Covariance {
                         let left_n = left_property.num_records()?;
                         let left_lower = left_property.lower_f64()?;
                         let left_upper = left_property.upper_f64()?;
+                        let left_stability = left_property.c_stability;
 
                         // right side: perform checks and prepare parameters
                         let right_property = right_property.array()
@@ -147,6 +152,7 @@ impl Sensitivity for proto::Covariance {
                         let right_n = right_property.num_records()?;
                         let right_lower = right_property.lower_f64()?;
                         let right_upper = right_property.upper_f64()?;
+                        let right_stability = right_property.c_stability;
 
                         // ensure conformability
                         if left_n != right_n {
@@ -155,10 +161,11 @@ impl Sensitivity for proto::Covariance {
                         data_n = left_n as f64;
 
                         // collect bound differences for entire matrix
-                        left_lower.iter().zip(left_upper.iter())
-                            .map(|(left_min, left_max)| right_lower.iter().zip(right_upper.iter())
-                                .map(|(right_min, right_max)|
-                                    (left_max - *left_min) * (right_max - *right_min))
+                        left_lower.iter().zip(left_upper.iter()).zip(left_stability.iter())
+                            .map(|((left_min, left_max), left_stab)|
+                                right_lower.iter().zip(right_upper.iter()).zip(right_stability.iter())
+                                .map(|((right_min, right_max), right_stab)|
+                                    (left_max - *left_min) * (right_max - *right_min) * left_stab.max(*right_stab))
                                 .collect::<Vec<f64>>())
                             .flatten().collect::<Vec<f64>>()
                     }

@@ -9,7 +9,7 @@ use ndarray;
 use whitenoise_validator::proto;
 
 impl Evaluable for proto::Materialize {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         let column_names = arguments.get("column_names")
             .and_then(|column_names| column_names.array().ok()?.string().ok()).cloned();
 

@@ -10,7 +10,7 @@ use whitenoise_validator::utilities::get_argument;
 
 
 impl Evaluable for proto::Cast {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         let data = get_argument(arguments, "data")?.array()?;
         match self.atomic_type.to_lowercase().as_str() {
             // if casting to bool, identify what value should map to true, then cast

@@ -10,7 +10,7 @@ use whitenoise_validator::proto;
 use std::hash::Hash;
 
 impl Evaluable for proto::Clamp {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         // if categories argument was provided, clamp data as if they are categorical (regardless of atomic type)
         if arguments.contains_key("categories") {
             match (get_argument(arguments, "data")?, get_argument(arguments, "categories")?, get_argument(arguments, "null_value")?) {

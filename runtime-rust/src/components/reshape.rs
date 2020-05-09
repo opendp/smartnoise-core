@@ -10,7 +10,7 @@ use indexmap::map::IndexMap;
 
 
 impl Evaluable for proto::Reshape {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         let layout = match self.layout.to_lowercase().as_str() {
             "row" => Layout::Row,
             "column" => Layout::Column,

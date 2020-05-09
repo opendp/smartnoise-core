@@ -12,7 +12,7 @@ use ndarray::prelude::*;
 use std::iter::FromIterator;
 
 impl Evaluable for proto::Covariance {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         let delta_degrees_of_freedom = if self.finite_sample_correction {1} else {0} as usize;
         if arguments.contains_key("data") {
             let data = get_argument(arguments, "data")?.array()?.f64()?;

@@ -3,9 +3,9 @@ use crate::errors::*;
 
 use std::collections::HashMap;
 
-use crate::{proto, base};
+use crate::{proto, base, hashmap};
 
-use crate::components::{Component, Sensitivity};
+use crate::components::{Component, Sensitivity, Expandable};
 use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType, JaggedProperties};
 
 use crate::utilities::prepend;
@@ -85,6 +85,8 @@ impl Sensitivity for proto::Quantile {
         data_property.assert_is_not_aggregated()?;
         data_property.assert_non_null()?;
 
+        let c_stability = data_property.c_stability.clone();
+
         match sensitivity_type {
             SensitivitySpace::KNorm(k) => {
                 if k != &1 {
@@ -93,8 +95,10 @@ impl Sensitivity for proto::Quantile {
                 let lower = data_property.lower_f64()?;
                 let upper = data_property.upper_f64()?;
 
-                let row_sensitivity = lower.iter().zip(upper.iter())
-                    .map(|(min, max)| (max - min))
+                let row_sensitivity = lower.iter()
+                    .zip(upper.iter())
+                    .zip(c_stability.iter())
+                    .map(|((min, max), c_stab)| (max - min) * c_stab)
                     .collect::<Vec<f64>>();
 
                 let mut array_sensitivity = Array::from(row_sensitivity).into_dyn();
@@ -103,7 +107,6 @@ impl Sensitivity for proto::Quantile {
                 Ok(array_sensitivity.into())
             }
             SensitivitySpace::Exponential => {
-                let num_columns = data_property.num_columns()?;
 
                 let neighboring_type = Neighboring::from_i32(privacy_definition.neighboring)
                     .ok_or_else(|| Error::from("neighboring definition must be either \"AddRemove\" or \"Substitute\""))?;
@@ -112,7 +115,11 @@ impl Sensitivity for proto::Quantile {
                     Neighboring::AddRemove => self.alpha.max(1. - self.alpha),
                     Neighboring::Substitute => 1.
                 };
-                let row_sensitivity = (0..num_columns).map(|_| cell_sensitivity).collect::<Vec<f64>>();
+
+                let row_sensitivity = c_stability.iter()
+                    .map(|c_stab| c_stab * cell_sensitivity)
+                    .collect::<Vec<f64>>();
+
                 let array_sensitivity = Array::from(row_sensitivity).into_dyn();
                 // array_sensitivity.insert_axis_inplace(Axis(0));
 
@@ -122,3 +129,60 @@ impl Sensitivity for proto::Quantile {
         }
     }
 }
+
+impl Expandable for proto::Maximum {
+    fn expand_component(
+        &self,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
+        component: &proto::Component,
+        _properties: &base::NodeProperties,
+        component_id: &u32,
+        _maximum_id: &u32,
+    ) -> Result<proto::ComponentExpansion> {
+        let quantile_component = proto::Component {
+            arguments: component.arguments.clone(),
+            variant: Some(proto::component::Variant::Quantile(proto::Quantile {
+                alpha: 1.,
+                interpolation: "upper".to_string()
+            })),
+            omit: false,
+            batch: component.batch,
+        };
+
+        Ok(proto::ComponentExpansion {
+            computation_graph: hashmap![*component_id => quantile_component],
+            properties: HashMap::new(),
+            releases: HashMap::new(),
+            traversal: vec![*component_id]
+        })
+    }
+}
+
+impl Expandable for proto::Minimum {
+    fn expand_component(
+        &self,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
+        component: &proto::Component,
+        _properties: &base::NodeProperties,
+        component_id: &u32,
+        _maximum_id: &u32,
+    ) -> Result<proto::ComponentExpansion> {
+        let quantile_component = proto::Component {
+            arguments: component.arguments.clone(),
+            variant: Some(proto::component::Variant::Quantile(proto::Quantile {
+                alpha: 0.,
+                interpolation: "lower".to_string()
+            })),
+            omit: false,
+            batch: component.batch,
+        };
+
+        Ok(proto::ComponentExpansion {
+            computation_graph: hashmap![*component_id => quantile_component],
+            properties: HashMap::new(),
+            releases: HashMap::new(),
+            traversal: vec![*component_id]
+        })
+    }
+}
+

@@ -32,10 +32,19 @@ impl Component for proto::LaplaceMechanism {
             .ok_or_else(|| Error::from("aggregator: missing"))?;
 
         // sensitivity must be computable
-        let sensitivity_values = aggregator.component.compute_sensitivity(
+        let mut sensitivity_values = aggregator.component.compute_sensitivity(
             privacy_definition.as_ref().ok_or_else(|| "privacy_definition must be defined")?,
             &aggregator.properties,
             &SensitivitySpace::KNorm(1))?;
+
+        if aggregator.lipschitz_constant.iter().any(|v| v != &1.) {
+            let mut sensitivity = sensitivity_values.array()?.f64()?.clone();
+            sensitivity.gencolumns_mut().into_iter()
+                .zip(aggregator.lipschitz_constant.iter())
+                .for_each(|(mut sens, cons)| sens.iter_mut()
+                    .for_each(|v| *v *= cons));
+            sensitivity_values = sensitivity.into();
+        }
 
         let sensitivities = sensitivity_values.array()?.f64()?;
 

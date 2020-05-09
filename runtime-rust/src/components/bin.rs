@@ -10,7 +10,7 @@ use std::ops::{Div, Add};
 use whitenoise_validator::utilities::{get_argument, standardize_categorical_argument, standardize_numeric_argument, standardize_float_argument};
 
 impl Evaluable for proto::Bin {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<Value> {
         let inclusive_left: &ArrayD<bool> = get_argument(arguments, "inclusive_left")?.array()?.bool()?;
 
         let side = match self.side.as_str() {

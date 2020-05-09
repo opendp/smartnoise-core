@@ -65,12 +65,15 @@ impl Sensitivity for proto::Mean {
                 let data_lower = data_property.lower_f64()?;
                 let data_upper = data_property.upper_f64()?;
                 let data_n = data_property.num_records()? as f64;
+                let c_stability = data_property.c_stability;
 
                 // AddRemove vs. Substitute share the same bounds
 
                 let row_sensitivity = match k {
-                    1 | 2 => data_lower.iter().zip(data_upper.iter())
-                        .map(|(min, max)| ((max - min) / data_n))
+                    1 | 2 => data_lower.iter()
+                        .zip(data_upper.iter())
+                        .zip(c_stability.iter())
+                        .map(|((min, max), c_stab)| ((max - min) / data_n * c_stab))
                         .collect::<Vec<f64>>(),
                     _ => return Err("KNorm sensitivity is only supported in L1 and L2 spaces".into())
                 };

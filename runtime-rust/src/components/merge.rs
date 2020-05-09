@@ -11,7 +11,7 @@ use ndarray::{Axis, ArrayViewD, stack};
 
 
 impl Evaluable for proto::Merge {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         let arrays = get_argument(arguments, "data")?.indexmap()?.values().iter()
             .map(|v| v.array()).collect::<Result<Vec<&Array>>>()?;
 

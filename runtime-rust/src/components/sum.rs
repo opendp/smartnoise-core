@@ -11,7 +11,7 @@ use crate::utilities::get_num_columns;
 use num::Zero;
 
 impl Evaluable for proto::Sum {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         match get_argument(arguments, "data")?.array()? {
             Array::F64(data) => Ok(sum(&data)?.into()),
             Array::I64(data) => Ok(sum(&data)?.into()),

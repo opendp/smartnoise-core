@@ -11,22 +11,23 @@ use ndarray::{Axis, arr1};
 use crate::utilities::mechanisms::exponential_mechanism;
 
 impl Evaluable for proto::LaplaceMechanism {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         let mut data = match get_argument(arguments, "data")?.array()? {
             Array::F64(data) => data.clone(),
             Array::I64(data) => data.mapv(|v| v as f64),
             _ => return Err("data must be numeric".into())
         };
-//        println!("data: {:?}", data);
 
         let sensitivity = get_argument(arguments, "sensitivity")?.array()?.f64()?;
-//        println!("sensitivity: {:?}", sensitivity);
 
         let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivity.len())?;
 
-        let epsilon = ndarray::Array::from_shape_vec(
+        let mut epsilon = ndarray::Array::from_shape_vec(
             data.shape(), usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?)?;
-//        println!("epsilon: {:?}", epsilon);
+
+        // scale down epsilon such that overall budget accounts for the given group size
+        epsilon /= privacy_definition.as_ref()
+            .ok_or_else(|| "privacy_definition must be defined")?.group_size as f64;
 
         data.gencolumns_mut().into_iter()
             .zip(sensitivity.gencolumns().into_iter().zip(epsilon.gencolumns().into_iter()))
@@ -48,26 +49,26 @@ impl Evaluable for proto::LaplaceMechanism {
 }
 
 impl Evaluable for proto::GaussianMechanism {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         let mut data = match get_argument(arguments, "data")?.array()? {
             Array::F64(data) => data.clone(),
             Array::I64(data) => data.mapv(|v| v as f64),
             _ => return Err("data must be numeric".into())
         };
-//        println!("data: {:?}", data.shape());
 
         let sensitivity = get_argument(arguments, "sensitivity")?.array()?.f64()?;
-//        println!("sensitivity: {:?}", sensitivity.shape());
 
         let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivity.len())?;
 
-        let epsilon = ndarray::Array::from_shape_vec(
+        let mut epsilon = ndarray::Array::from_shape_vec(
             data.shape(), usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?)?;
-//        println!("epsilon: {:?}", epsilon.shape());
+
+        // scale down epsilon such that overall budget accounts for the given group size
+        epsilon /= privacy_definition.as_ref()
+            .ok_or_else(|| "privacy_definition must be defined")?.group_size as f64;
 
         let delta = ndarray::Array::from_shape_vec(
             data.shape(), usages.iter().map(get_delta).collect::<Result<Vec<f64>>>()?)?;
-//        println!("delta: {:?}", delta.shape());
 
         data.gencolumns_mut().into_iter()
             .zip(sensitivity.gencolumns().into_iter())
@@ -90,25 +91,24 @@ impl Evaluable for proto::GaussianMechanism {
 }
 
 impl Evaluable for proto::SimpleGeometricMechanism {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         let mut data = get_argument(arguments, "data")?.array()?.i64()?.clone();
-//        println!("data: {:?}", data.shape());
 
         let sensitivity = get_argument(arguments, "sensitivity")?.array()?.f64()?;
-//        println!("sensitivity: {:?}", sensitivity.shape());
 
         let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivity.len())?;
-        let epsilon = ndarray::Array::from_shape_vec(
+        let mut epsilon = ndarray::Array::from_shape_vec(
             data.shape(), usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?)?;
-//        println!("epsilon: {:?}", epsilon.shape());
+
+        // scale down epsilon such that overall budget accounts for the given group size
+        epsilon /= privacy_definition.as_ref()
+            .ok_or_else(|| "privacy_definition must be defined")?.group_size as f64;
 
         let lower = broadcast_ndarray(
             get_argument(arguments, "lower")?.array()?.i64()?, data.shape())?;
-//        println!("min: {:?}", min.shape());
 
         let upper = broadcast_ndarray(
             get_argument(arguments, "upper")?.array()?.i64()?, data.shape())?;
-//        println!("max: {:?}", max.shape());
 
         data.gencolumns_mut().into_iter()
             .zip(sensitivity.gencolumns().into_iter().zip(epsilon.gencolumns().into_iter()))
@@ -133,14 +133,18 @@ impl Evaluable for proto::SimpleGeometricMechanism {
 }
 
 impl Evaluable for proto::ExponentialMechanism {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         let candidates = get_argument(arguments, "candidates")?.jagged()?;
 
         let sensitivity = get_argument(arguments, "sensitivity")?.array()?.f64()?
             .iter().cloned().collect::<Vec<f64>>();
 
         let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivity.len())?;
-        let epsilon = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
+        let group_size = privacy_definition.as_ref()
+            .ok_or_else(|| "privacy_definition must be defined")?.group_size as f64;
+        let epsilon = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?
+            // scale down epsilon such that overall budget accounts for the given group size
+            .iter().map(|v| v / group_size).collect::<Vec<f64>>();
 
         let utilities = get_argument(arguments, "utilities")?.jagged()?.f64()?;
 

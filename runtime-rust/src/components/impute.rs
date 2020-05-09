@@ -13,7 +13,7 @@ use std::hash::Hash;
 
 
 impl Evaluable for proto::Impute {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
 
         // if categories argument is not None, treat data as categorical (regardless of atomic type)
         if arguments.contains_key("categories") {

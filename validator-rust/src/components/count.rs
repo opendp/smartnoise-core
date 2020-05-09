@@ -7,6 +7,7 @@ use crate::{proto};
 use crate::components::{Component, Sensitivity};
 use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType, NatureContinuous, Nature, Vector1DNull};
 use ndarray::{arr1};
+use itertools::Itertools;
 
 
 impl Component for proto::Count {
@@ -67,13 +68,28 @@ impl Sensitivity for proto::Count {
         sensitivity_type: &SensitivitySpace
     ) -> Result<Value> {
 
-        let num_records = match properties.get("data")
+        let (num_records, c_stability) = match properties.get("data")
             .ok_or("data: missing")? {
             ValueProperties::Array(value) => {
                 value.assert_is_not_aggregated()?;
-                value.num_records
+
+                // overall c_stability is the maximal c_stability of any column
+                let c_stability = value.c_stability.iter().copied().fold1(|l, r| l.max(r))
+                    .ok_or_else(|| "c_stability must be defined for each column")?;
+                (value.num_records, c_stability)
             },
-            ValueProperties::Indexmap(value) => value.num_records,
+            ValueProperties::Indexmap(value) => {
+                value.assert_is_dataframe()?;
+
+                // overall c_stability is the maximal c_stability of any column
+                let c_stability = value.properties.values().iter()
+                    .map(|v| v.array().map(|v| v.c_stability.clone()))
+                    .collect::<Result<Vec<Vec<f64>>>>()?.into_iter()
+                    .flatten()
+                    .fold1(|l, r| l.max(r))
+                    .ok_or_else(|| "c_stability must be defined for each column")?;
+                (value.num_records, c_stability)
+            },
             _ => return Err("data: must be an array or indexmap".into())
         };
 
@@ -97,7 +113,7 @@ impl Sensitivity for proto::Count {
                     // unknown N
                     (AddRemove, None) => 1.,
                 };
-                Ok(arr1(&[sensitivity]).into_dyn().into())
+                Ok((arr1(&[sensitivity]).into_dyn() * c_stability).into())
             },
             _ => Err("Count sensitivity is only implemented for KNorm".into())
         }

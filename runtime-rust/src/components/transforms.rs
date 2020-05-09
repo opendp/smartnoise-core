@@ -12,7 +12,7 @@ use crate::utilities::noise::sample_uniform_int;
 
 
 impl Evaluable for proto::Abs {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         match get_argument(arguments, "data")? {
             Value::Array(data) => match data {
                 Array::F64(data) =>
@@ -27,7 +27,7 @@ impl Evaluable for proto::Abs {
 }
 
 impl Evaluable for proto::Add {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         match (get_argument(arguments, "left")?, get_argument(arguments, "right")?) {
             (Value::Array(left), Value::Array(right)) => match (left, right) {
                 (Array::F64(x), Array::F64(y)) =>
@@ -44,7 +44,7 @@ impl Evaluable for proto::Add {
 }
 
 impl Evaluable for proto::And {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         match (get_argument(arguments, "left")?, get_argument(arguments, "right")?) {
             (Value::Array(left), Value::Array(right)) => match (left, right) {
                 (Array::Bool(x), Array::Bool(y)) =>
@@ -57,7 +57,7 @@ impl Evaluable for proto::And {
 }
 
 impl Evaluable for proto::Divide {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         match (get_argument(arguments, "left")?, get_argument(arguments, "right")?) {
             (Value::Array(left), Value::Array(right)) => match (left, right) {
                 (Array::F64(x), Array::F64(y)) =>
@@ -77,7 +77,7 @@ impl Evaluable for proto::Divide {
 }
 
 impl Evaluable for proto::Equal {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         match (get_argument(arguments, "left")?, get_argument(arguments, "right")?) {
             (Value::Array(left), Value::Array(right)) => match (left, right) {
                 (Array::Bool(x), Array::Bool(y)) =>
@@ -96,7 +96,7 @@ impl Evaluable for proto::Equal {
 }
 
 impl Evaluable for proto::GreaterThan {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         match (get_argument(arguments, "left")?, get_argument(arguments, "right")?) {
             (Value::Array(left), Value::Array(right)) => match (left, right) {
                 (Array::I64(x), Array::I64(y)) =>
@@ -111,7 +111,7 @@ impl Evaluable for proto::GreaterThan {
 }
 
 impl Evaluable for proto::LessThan {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         match (get_argument(arguments, "left")?, get_argument(arguments, "right")?) {
             (Value::Array(left), Value::Array(right)) => match (left, right) {
                 (Array::I64(x), Array::I64(y)) =>
@@ -126,7 +126,7 @@ impl Evaluable for proto::LessThan {
 }
 
 impl Evaluable for proto::Log {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         let base = get_argument(arguments, "base")?.array()?.f64()?;
         let data = get_argument(arguments, "data")?.array()?.f64()?;
         Ok(ReleaseNode::new(broadcast_map(base, data, &|base, x| x.log(*base))?.into()))
@@ -135,7 +135,7 @@ impl Evaluable for proto::Log {
 
 
 impl Evaluable for proto::Modulo {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         match (get_argument(arguments, "left")?, get_argument(arguments, "right")?) {
             (Value::Array(left), Value::Array(right)) => match (left, right) {
                 (Array::F64(x), Array::F64(y)) =>
@@ -151,7 +151,7 @@ impl Evaluable for proto::Modulo {
 }
 
 impl Evaluable for proto::Multiply {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         match (get_argument(arguments, "left")?, get_argument(arguments, "right")?) {
             (Value::Array(left), Value::Array(right)) => match (left, right) {
                 (Array::F64(x), Array::F64(y)) =>
@@ -166,7 +166,7 @@ impl Evaluable for proto::Multiply {
 }
 
 impl Evaluable for proto::Negate {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         match get_argument(arguments, "data")? {
             Value::Array(data) => match data {
                 Array::Bool(data) =>
@@ -179,7 +179,7 @@ impl Evaluable for proto::Negate {
 }
 
 impl Evaluable for proto::Negative {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         match get_argument(arguments, "data")? {
             Value::Array(data) => match data {
                 Array::F64(x) => Ok((-x).into()),
@@ -192,7 +192,7 @@ impl Evaluable for proto::Negative {
 }
 
 impl Evaluable for proto::Or {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         match (get_argument(arguments, "left")?, get_argument(arguments, "right")?) {
             (Value::Array(left), Value::Array(right)) => match (left, right) {
                 (Array::Bool(x), Array::Bool(y)) =>
@@ -205,7 +205,7 @@ impl Evaluable for proto::Or {
 }
 
 impl Evaluable for proto::Power {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         match (get_argument(arguments, "data")?, get_argument(arguments, "radical")?) {
             (Value::Array(left), Value::Array(right)) => match (left, right) {
                 (Array::F64(x), Array::F64(y)) =>
@@ -220,7 +220,7 @@ impl Evaluable for proto::Power {
 }
 
 impl Evaluable for proto::RowMax {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         match (get_argument(arguments, "left")?, get_argument(arguments, "right")?) {
             (Value::Array(left), Value::Array(right)) => match (left, right) {
                 (Array::F64(x), Array::F64(y)) =>
@@ -235,7 +235,7 @@ impl Evaluable for proto::RowMax {
 }
 
 impl Evaluable for proto::RowMin {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         match (get_argument(arguments, "left")?, get_argument(arguments, "right")?) {
             (Value::Array(left), Value::Array(right)) => match (left, right) {
                 (Array::F64(x), Array::F64(y)) =>
@@ -250,7 +250,7 @@ impl Evaluable for proto::RowMin {
 }
 
 impl Evaluable for proto::Subtract {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         match (get_argument(arguments, "left")?, get_argument(arguments, "right")?) {
             (Value::Array(left), Value::Array(right)) => match (left, right) {
                 (Array::F64(x), Array::F64(y)) =>

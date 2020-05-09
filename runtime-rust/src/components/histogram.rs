@@ -13,7 +13,7 @@ use noisy_float::types::n64;
 
 
 impl Evaluable for proto::Histogram {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         Ok(ReleaseNode::new(match (get_argument(arguments, "data")?.array()?, get_argument(arguments, "categories")?.array()?) {
             (Array::Bool(data), Array::Bool(categories)) =>
                 histogram(data, categories)?.into(),

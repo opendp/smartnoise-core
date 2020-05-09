@@ -15,7 +15,7 @@ use std::ops::{Sub, Div, Add, Mul, Rem};
 
 
 impl Evaluable for proto::Quantile {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         let data = get_argument(arguments, "data")?.array()?;
 
         Ok(match arguments.get("candidates") {

@@ -9,7 +9,7 @@ use crate::utilities::get_num_columns;
 use whitenoise_validator::proto;
 
 impl Evaluable for proto::Mean {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         Ok(ReleaseNode::new(mean(
             get_argument(arguments, "data")?.array()?.f64()?
         )?.into()))

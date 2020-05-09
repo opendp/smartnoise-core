@@ -25,19 +25,17 @@ mod dp_maximum;
 mod dp_median;
 mod dp_minimum;
 mod dp_mean;
-mod dp_moment_raw;
 mod dp_quantile;
+mod dp_raw_moment;
 mod dp_sum;
 mod filter;
 mod histogram;
 mod impute;
 pub mod index;
-mod kth_raw_sample_moment;
+mod raw_moment;
 mod literal;
 mod map;
-mod maximum;
 mod materialize;
-mod minimum;
 pub mod partition;
 mod quantile;
 mod rename;
@@ -222,12 +220,10 @@ impl Component for proto::component::Variant {
         propagate_property!(
             // INSERT COMPONENT LIST
             Cast, Clamp, Count, Covariance, Digitize,
-
-            Filter, Histogram, Impute, Index, KthRawSampleMoment, Literal, Materialize, Maximum, Mean,
+            Filter, Histogram, Impute, Index, Literal, Materialize, Mean,
+            Partition, Quantile, RawMoment, Rename, Reshape, Resize, Sum, Variance,
 
             ExponentialMechanism, GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism,
-
-            Minimum, Partition, Quantile, Rename, Reshape, Resize, Sum, Variance,
 
             Abs, Add, LogicalAnd, Divide, Equal, GreaterThan, LessThan, Log, Modulo, Multiply,
             Negate, Negative, LogicalOr, Power, RowMax, RowMin, Subtract
@@ -284,8 +280,12 @@ impl Expandable for proto::component::Variant {
 
         expand_component!(
             // INSERT COMPONENT LIST
-            Clamp, Digitize, DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMedian,
-            DpMinimum, DpMomentRaw, DpQuantile, DpSum, DpVariance, Histogram, Impute, Resize,
+            Clamp, Digitize,
+
+            DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMedian,
+            DpMinimum, DpQuantile, DpRawMoment, DpSum, DpVariance,
+
+            Histogram, Impute, Resize,
 
             ExponentialMechanism, GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism,
 
@@ -328,7 +328,7 @@ impl Sensitivity for proto::component::Variant {
 
         compute_sensitivity!(
             // INSERT COMPONENT LIST
-            Count, Covariance, Histogram, KthRawSampleMoment, Maximum, Mean, Merge, Minimum, Quantile, Sum, Variance
+            Count, Covariance, Histogram, Mean, Merge, Quantile, RawMoment, Sum, Variance
         );
 
         Err(format!("sensitivity is not implemented for proto component {:?}", self).into())
@@ -428,8 +428,8 @@ impl Report for proto::component::Variant {
 
         summarize!(
             // INSERT COMPONENT LIST
-            DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMinimum, DpMomentRaw,
-            DpSum, DpVariance
+            DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMinimum, DpQuantile,
+            DpRawMoment, DpSum, DpVariance
         );
 
         Ok(None)

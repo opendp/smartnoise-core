@@ -4,8 +4,8 @@
       "type_value": "Array"
     }
   },
-  "id": "DPMomentRaw",
-  "name": "dp_moment_raw",
+  "id": "DPRawMoment",
+  "name": "dp_raw_moment",
   "options": {
     "order": {
       "type_proto": "uint32",

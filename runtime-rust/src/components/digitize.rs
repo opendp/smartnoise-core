@@ -10,7 +10,7 @@ use std::ops::{Div, Add};
 use whitenoise_validator::utilities::{get_argument, standardize_categorical_argument, standardize_numeric_argument, standardize_float_argument};
 
 impl Evaluable for proto::Digitize {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         let inclusive_left: &ArrayD<bool> = get_argument(arguments, "inclusive_left")?.array()?.bool()?;
 
         let data = get_argument(arguments, "data")?.array()?;

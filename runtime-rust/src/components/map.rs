@@ -9,7 +9,7 @@ use std::collections::HashMap;
 
 
 impl Evaluable for proto::Map {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
 
         // TODO: currently unable to differentiate between dataframes and partitions
         let (args_partitioned, args_singular): (HashMap<String, &Value>, HashMap<String, &Value>) = arguments.into_iter()
@@ -36,7 +36,7 @@ impl Evaluable for proto::Map {
 
                     self.component.as_ref().ok_or_else(|| "component must be defined")?
                         .variant.as_ref().ok_or_else(|| "variant must be defined")?
-                        .evaluate(&partition_args).map(|v| v.value)
+                        .evaluate(privacy_definition, &partition_args).map(|v| v.value)
                 })
                 .collect::<Result<Vec<Value>>>()?))))
     }
