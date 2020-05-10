@@ -1,36 +1,9 @@
-//! Foreign function interfaces
-
-use crate::proto;
-use error_chain::ChainedError;
 use prost::Message;
+use whitenoise_validator::proto;
+use whitenoise_validator::utilities::serial::serialize_error;
 
-// useful tutorial for proto over ffi here:
-// https://github.com/mozilla/application-services/blob/master/docs/howtos/passing-protobuf-data-over-ffi.md
-#[doc(hidden)]
-pub unsafe fn ptr_to_buffer<'a>(data: *const u8, len: i32) -> &'a [u8] {
-    assert!(len >= 0, "Bad buffer len: {}", len);
-    if len == 0 {
-        // This will still fail, but as a bad protobuf format.
-        &[]
-    } else {
-        assert!(!data.is_null(), "Unexpected null data pointer");
-        std::slice::from_raw_parts(data, len as usize)
-    }
-}
-
-#[doc(hidden)]
-pub fn buffer_to_ptr<T>(buffer: T) -> ffi_support::ByteBuffer
-    where T: Message {
-    let mut out_buffer = Vec::new();
-    match prost::Message::encode(&buffer, &mut out_buffer) {
-        Ok(_t) => ffi_support::ByteBuffer::from_vec(out_buffer),
-        Err(error) => {
-            println!("Error encoding response protobuf.");
-            println!("{:?}", error);
-            ffi_support::ByteBuffer::new_with_size(0)
-        }
-    }
-}
+mod utilities;
+use crate::utilities::{ptr_to_buffer, buffer_to_ptr};
 
 /// FFI wrapper for [validate_analysis](../fn.validate_analysis.html)
 ///
@@ -48,7 +21,7 @@ pub extern "C" fn validate_analysis(
 
     let response = proto::ResponseValidateAnalysis {
         value: match proto::RequestValidateAnalysis::decode(request_buffer) {
-            Ok(request) => match super::validate_analysis(request) {
+            Ok(request) => match whitenoise_validator::validate_analysis(request) {
                 Ok(x) =>
                     Some(proto::response_validate_analysis::Value::Data(x)),
                 Err(err) =>
@@ -77,7 +50,7 @@ pub extern "C" fn compute_privacy_usage(
 
     let response = proto::ResponseComputePrivacyUsage {
         value: match proto::RequestComputePrivacyUsage::decode(request_buffer) {
-            Ok(request) => match super::compute_privacy_usage(request) {
+            Ok(request) => match whitenoise_validator::compute_privacy_usage(request) {
                 Ok(x) =>
                     Some(proto::response_compute_privacy_usage::Value::Data(x)),
                 Err(err) =>
@@ -106,7 +79,7 @@ pub extern "C" fn generate_report(
 
     let response = proto::ResponseGenerateReport {
         value: match proto::RequestGenerateReport::decode(request_buffer) {
-            Ok(request) => match super::generate_report(request) {
+            Ok(request) => match whitenoise_validator::generate_report(request) {
                 Ok(x) =>
                     Some(proto::response_generate_report::Value::Data(x)),
                 Err(err) =>
@@ -135,7 +108,7 @@ pub extern "C" fn accuracy_to_privacy_usage(
 
     let response = proto::ResponseAccuracyToPrivacyUsage {
         value: match proto::RequestAccuracyToPrivacyUsage::decode(request_buffer) {
-            Ok(request) => match super::accuracy_to_privacy_usage(request) {
+            Ok(request) => match whitenoise_validator::accuracy_to_privacy_usage(request) {
                 Ok(x) =>
                     Some(proto::response_accuracy_to_privacy_usage::Value::Data(x)),
                 Err(err) =>
@@ -165,7 +138,7 @@ pub extern "C" fn privacy_usage_to_accuracy(
 
     let response = proto::ResponsePrivacyUsageToAccuracy {
         value: match proto::RequestPrivacyUsageToAccuracy::decode(request_buffer) {
-            Ok(request) => match super::privacy_usage_to_accuracy(request) {
+            Ok(request) => match whitenoise_validator::privacy_usage_to_accuracy(request) {
                 Ok(x) =>
                     Some(proto::response_privacy_usage_to_accuracy::Value::Data(x)),
                 Err(err) =>
@@ -194,7 +167,7 @@ pub extern "C" fn get_properties(
 
     let response = proto::ResponseGetProperties {
         value: match proto::RequestGetProperties::decode(request_buffer) {
-            Ok(request) => match super::get_properties(request) {
+            Ok(request) => match whitenoise_validator::get_properties(request) {
                 Ok(x) =>
                     Some(proto::response_get_properties::Value::Data(x)),
                 Err(err) =>
@@ -223,7 +196,7 @@ pub extern "C" fn expand_component(
 
     let response = proto::ResponseExpandComponent {
         value: match proto::RequestExpandComponent::decode(request_buffer) {
-            Ok(request) => match super::expand_component(request) {
+            Ok(request) => match whitenoise_validator::expand_component(request) {
                 Ok(x) =>
                     Some(proto::response_expand_component::Value::Data(x)),
                 Err(err) =>
@@ -236,9 +209,48 @@ pub extern "C" fn expand_component(
     buffer_to_ptr(response)
 }
 
-#[doc(hidden)]
-pub fn serialize_error(err: super::Error) -> proto::Error {
-    proto::Error { message: err.display_chain().to_string() }
+/// FFI wrapper for [release](fn.release.html)
+///
+/// # Arguments
+/// - `request_ptr` - a pointer to an array containing the serialized protobuf of [RequestRelease](proto/struct.RequestRelease.html)
+/// - `request_length` - the length of the array
+///
+/// # Returns
+/// a [ByteBufferRuntime struct](struct.ByteBufferRuntime.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseRelease](proto/struct.ResponseRelease.html)
+#[cfg(feature = "use-runtime")]
+#[no_mangle]
+pub extern "C" fn release(
+    request_ptr: *const u8, request_length: i32,
+) -> ffi_support::ByteBuffer {
+
+    let request_buffer = unsafe { ptr_to_buffer(request_ptr, request_length) };
+
+    let response = proto::ResponseRelease {
+        value: match proto::RequestRelease::decode(request_buffer) {
+            Ok(request) => {
+                let stack_trace = request.stack_trace.clone();
+
+                match whitenoise_runtime::release(request) {
+                    Ok((release, warnings)) => Some(proto::response_release::Value::Data(proto::response_release::Success {
+                        release: Some(release),
+                        warnings: match stack_trace {
+                            true => warnings,
+                            false => Vec::new()
+                        }
+                    })),
+                    Err(err) => match stack_trace {
+                        true =>
+                            Some(proto::response_release::Value::Error(serialize_error(err))),
+                        false =>
+                            Some(proto::response_release::Value::Error(serialize_error("unspecified error while executing analysis".into())))
+                    }
+                }
+            }
+            Err(_) => Some(proto::response_release::Value::Error(serialize_error("unable to parse protobuf".into())))
+        }
+    };
+    buffer_to_ptr(response)
 }
 
-ffi_support::define_bytebuffer_destructor!(whitenoise_validator_destroy_bytebuffer);
+
+ffi_support::define_bytebuffer_destructor!(whitenoise_destroy_bytebuffer);

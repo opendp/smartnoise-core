@@ -13,7 +13,6 @@ use whitenoise_validator::errors::*;
 
 pub mod utilities;
 pub mod components;
-pub mod ffi;
 pub mod base;
 
 use std::collections::HashMap;

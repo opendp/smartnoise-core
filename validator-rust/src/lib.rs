@@ -29,7 +29,6 @@ pub mod base;
 pub mod bindings;
 pub mod utilities;
 pub mod components;
-pub mod ffi;
 pub mod docs;
 
 // import all trait implementations

@@ -4,6 +4,7 @@ use crate::proto;
 use std::collections::HashMap;
 use crate::base::{Release, Nature, Jagged, Vector1D, Value, Array, Vector1DNull, NatureCategorical, NatureContinuous, AggregatorProperties, ValueProperties, IndexmapProperties, JaggedProperties, DataType, Indexmap, ArrayProperties, ReleaseNode};
 use indexmap::IndexMap;
+use error_chain::ChainedError;
 
 // PARSERS
 pub fn parse_bool_null(value: proto::BoolNull) -> Option<bool> {
@@ -639,4 +640,9 @@ pub fn serialize_value_properties(value: ValueProperties) -> proto::ValuePropert
             ValueProperties::Function(value) => proto::value_properties::Variant::Function(value)
         })
     }
+}
+
+#[doc(hidden)]
+pub fn serialize_error(err: crate::Error) -> proto::Error {
+    proto::Error { message: err.display_chain().to_string() }
 }

@@ -10,7 +10,7 @@ use crate::{proto, base};
 use crate::base::{Release, Value, ValueProperties, SensitivitySpace, NodeProperties, ReleaseNode};
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
-use crate::utilities::serial::{parse_value_properties, serialize_value, parse_release_node};
+use crate::utilities::serial::{parse_value_properties, serialize_value, parse_release_node, serialize_error};
 use crate::utilities::inference::infer_property;
 
 use itertools::Itertools;
@@ -21,7 +21,6 @@ use crate::components::*;
 use crate::utilities::array::slow_select;
 use noisy_float::prelude::n64;
 use std::iter::FromIterator;
-use crate::ffi::serialize_error;
 
 /// Retrieve the Values for each of the arguments of a component from the Release.
 pub fn get_public_arguments(
