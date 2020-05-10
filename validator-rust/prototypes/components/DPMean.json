@@ -10,9 +10,9 @@
     "implementation": {
       "type_proto": "string",
       "type_rust": "String",
-      "default_python": "\"resized\"",
-      "default_rust": "String::from(\"resized\")",
-      "description": "Privatizing algorithm to use. One of [`resized`, `plug-in`]"
+      "default_python": "\"resize\"",
+      "default_rust": "String::from(\"resize\")",
+      "description": "Privatizing algorithm to use. One of [`resize`, `plug-in`]"
     },
     "mechanism": {
       "type_proto": "string",

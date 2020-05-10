@@ -130,10 +130,10 @@ pub fn simple_geometric_mechanism(
 ///     return util;
 /// }
 ///
-/// let utilities = xs.iter().map(utility).collect();
 ///
 /// // create sample data
 /// let xs: Vec<f64> = vec![1., 2., 3., 4., 5.];
+/// let utilities: Vec<f64> = xs.iter().map(utility).collect();
 /// let ans = exponential_mechanism(1.0, 1.0, &xs, utilities);
 /// # ans.unwrap();
 /// ```

@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use crate::{proto, base};
 
 use crate::components::{Component, Expandable, Sensitivity};
-use crate::base::{Value, SensitivitySpace, ValueProperties, DataType};
+use crate::base::{Value, SensitivitySpace, ValueProperties, DataType, ArrayProperties};
 use crate::utilities::{prepend, broadcast_privacy_usage, get_epsilon, get_literal};
 
 
@@ -18,7 +18,14 @@ impl Component for proto::ExponentialMechanism {
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<ValueProperties> {
-        let mut utilities_property = properties.get("utilities")
+        let privacy_definition = privacy_definition.as_ref()
+            .ok_or_else(|| "privacy_definition must be defined")?;
+
+        if privacy_definition.group_size == 0 {
+            return Err("group size must be greater than zero".into())
+        }
+
+        let utilities_property = properties.get("utilities")
             .ok_or("utilities: missing")?.jagged()
             .map_err(prepend("utilities:"))?.clone();
 
@@ -44,15 +51,31 @@ impl Component for proto::ExponentialMechanism {
 
         // sensitivity must be computable
         let sensitivity_values = aggregator.component.compute_sensitivity(
-            privacy_definition.as_ref().ok_or_else(|| "privacy_definition must be defined")?,
+            privacy_definition,
             &aggregator.properties,
             &SensitivitySpace::Exponential)?;
 
         let sensitivities = sensitivity_values.array()?.f64()?;
 
+        let num_columns = utilities_property.num_columns()?;
+        let mut output_property = ArrayProperties {
+            num_records: Some(1),
+            num_columns: Some(num_columns),
+            nullity: false,
+            releasable: true,
+            c_stability: (0..num_columns).map(|_| 1.).collect(),
+            aggregator: None,
+            nature: None,
+            data_type: candidates.data_type(),
+            dataset_id: None,
+            is_not_empty: true,
+            // TODO: preserve dimensionality through exponential mechanism
+            //     All outputs become 2D, so 1D outputs are lost
+            dimensionality: Some(2)
+        };
 
         if self.privacy_usage.len() == 0 {
-            data_property.releasable = false;
+            output_property.releasable = false;
         } else {
             let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivities.len())?;
             let epsilons = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
@@ -66,10 +89,10 @@ impl Component for proto::ExponentialMechanism {
                     println!("Warning: A large privacy parameter of epsilon = {} is in use", epsilon.to_string());
                 }
             }
-            data_property.releasable = true;
+            output_property.releasable = true;
         }
 
-        Ok(utilities_property.into())
+        Ok(output_property.into())
     }
 }
 

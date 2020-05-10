@@ -18,6 +18,14 @@ impl Component for proto::SimpleGeometricMechanism {
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<ValueProperties> {
+
+        let privacy_definition = privacy_definition.as_ref()
+            .ok_or_else(|| "privacy_definition must be defined")?;
+
+        if privacy_definition.group_size == 0 {
+            return Err("group size must be greater than zero".into())
+        }
+
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
@@ -31,7 +39,7 @@ impl Component for proto::SimpleGeometricMechanism {
 
         // sensitivity must be computable
         let mut sensitivity_values = aggregator.component.compute_sensitivity(
-            privacy_definition.as_ref().ok_or_else(|| "privacy_definition must be defined")?,
+            privacy_definition,
             &aggregator.properties,
             &SensitivitySpace::KNorm(1))?;
 

@@ -280,12 +280,10 @@ impl Expandable for proto::component::Variant {
 
         expand_component!(
             // INSERT COMPONENT LIST
-            Clamp, Digitize,
+            Clamp, Digitize, Histogram, Impute, Maximum, Minimum, Resize,
 
             DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMedian,
             DpMinimum, DpQuantile, DpRawMoment, DpSum, DpVariance,
-
-            Histogram, Impute, Resize,
 
             ExponentialMechanism, GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism,
 

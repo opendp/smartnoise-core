@@ -690,6 +690,10 @@ impl JaggedProperties {
     pub fn num_records(&self) -> Result<Vec<i64>> {
         self.num_records.clone().ok_or_else(|| "number of records is not defined".into())
     }
+
+    pub fn num_columns(&self) -> Result<i64> {
+        Ok(self.num_records()?.len() as i64)
+    }
 }
 
 impl ArrayProperties {

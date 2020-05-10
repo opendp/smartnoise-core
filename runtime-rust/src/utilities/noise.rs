@@ -131,7 +131,7 @@ pub fn sample_bit(prob: f64) -> Result<i64> {
 /// ```
 pub fn sample_uniform_int(min: i64, max: i64) -> Result<i64> {
 
-    if min > max {return Err("lower may not be greater than higher".into());}
+    if min > max {return Err("min may not be greater than max".into());}
 
     // define number of possible integers we could sample and the maximum
     // number of bits it would take to represent them
@@ -200,7 +200,7 @@ pub fn sample_uniform_int(min: i64, max: i64) -> Result<i64> {
 /// # unif.unwrap();
 /// ```
 pub fn sample_uniform(min: f64, max: f64) -> Result<f64> {
-    if min > max {return Err("higher cannot be less than lower".into());}
+    if min > max {return Err("lower may not be greater than upper".into());}
 
     // Generate mantissa
     let binary_string = utilities::get_bytes(7);
@@ -367,7 +367,7 @@ pub fn sample_gaussian(shift: f64, scale: f64) -> f64 {
 /// # n.unwrap();
 /// ```
 pub fn sample_gaussian_truncated(min: f64, max: f64, shift: f64, scale: f64) -> Result<f64> {
-    if min > max {return Err("higher cannot be less than lower".into());}
+    if min > max {return Err("lower may not be greater than upper".into());}
     if scale <= 0.0 {return Err("scale must be greater than zero".into());}
 
     let unif_min: f64 = Gaussian::new(shift, scale).distribution(min);

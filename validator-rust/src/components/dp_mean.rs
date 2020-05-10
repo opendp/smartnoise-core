@@ -117,7 +117,7 @@ impl Expandable for proto::DpMean {
         }
 
         else {
-            bail!("`{}` is not recognized as a valid implementation. Must be one of [`resize`, `plug-in`]")
+            bail!("`{}` is not recognized as a valid implementation. Must be one of [`resize`, `plug-in`]", self.implementation)
         }
     }
 }
