@@ -82,7 +82,7 @@ Communication among projects is handled via [Protocol Buffer definitions](https:
   - Communication over [FFI](https://en.wikipedia.org/wiki/Foreign_function_interface)
   - Handling of distributable packaging
 
-At some point the projects have at compiled cross-platform (more testing needed). The validator and reference runtime compile to standalone libraries that may be linked into your project, allowing communication over C foreign function interfaces.
+At some point the projects have compiled cross-platform (more testing needed). The validator and reference runtime compile to standalone libraries that may be linked into your project, allowing communication over C foreign function interfaces.
 
 ## Installation
 
