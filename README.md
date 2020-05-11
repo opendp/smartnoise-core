@@ -7,10 +7,6 @@
 ## WhiteNoise Core <br/> Differential Privacy Library <br/>
 
 See also the accompanying [WhiteNoise-System](https://github.com/opendifferentialprivacy/whitenoise-system) and [WhiteNoise-Samples](https://github.com/opendifferentialprivacy/whitenoise-samples) repositories for this system.
-  - **WhiteNoise Core** (this repository) - Open source library of differentially private algorithms and mechanisms (Rust implementation)
-    - [**WhiteNoise-Core-Python**](https://github.com/opendifferentialprivacy/whitenoise-core-python) - Python language bindings for Whitenoise-Core
-    - [**WhiteNoise-System**](https://github.com/opendifferentialprivacy/whitenoise-system) - Tools and service for differentially private processing of tabular and relational data. (Implemented in Python)
-    - [**WhiteNoise-Samples**](https://github.com/opendifferentialprivacy/whitenoise-samples) - Code samples and documentation for WhiteNoise differential privacy tools
 
 ---
 
@@ -22,7 +18,7 @@ Differentially private computations are specified as an analysis graph that can 
 
 
 - [More about WhiteNoise Core](#more-about-whitenoise-core)
-  - [Component List](#components)
+  - [Components](#components)
   - [Architecture](#architecture)
 - [Installation](#installation)
   - [Binaries](#binaries)
@@ -59,21 +55,40 @@ For a full listing of the extensive set of components available in the library [
 
 There are three sub-projects that address individual architectural concerns. These sub-projects communicate via protobuf messages that encode a graph description of an arbitrary computation, called an `analysis`.
 
-The core library is the `validator`, which provides a suite of utilities for checking and deriving necessary conditions for an analysis to be differentially private. This includes checking if sufficient properties have been met for each component, deriving sensitivities, noise scales and accuracies for various definitions of privacy, building reports and dynamically validating individual components. This library is written in rust.
+#### 1. Validator
+  - Location: `/validator-rust`
 
-There must also be a medium to execute the analysis, called a `runtime`. There is a reference runtime written in rust, but runtimes may be written using any computation framework- be it SQL, Spark or Dask- to address your individual data needs.
+The core library, is the `validator`, which provides a suite of utilities for checking and deriving necessary conditions for an analysis to be differentially private. This includes checking if sufficient properties have been met for each component, deriving sensitivities, noise scales and accuracies for various definitions of privacy, building reports and dynamically validating individual components. This library is written in Rust.
+
+#### 2. Runtime
+  - Location: `/runtime-rust`
+
+There must also be a medium to execute the analysis, called a `runtime`. There is a reference runtime written in Rust, but runtimes may be written using any computation framework--be it SQL, Spark or Dask--to address your individual data needs.
+
+#### 3. Bindings
+  - Python Bindings: [whitenoise-core-python](https://github.com/opendifferentialprivacy/whitenoise-core-python)
+  - R Bindings (in progress): [whitenoise-core-R](https://github.com/opendifferentialprivacy/whitenoise-core-R)
 
 Finally, there are helper libraries for building analyses, called `bindings`. Bindings may be written for any language, and are thin wrappers over the validator and/or runtime(s). Language bindings are currently available for Python, with support for at minimum R and SQL forthcoming.
-- [Python Bindings](https://github.com/opendifferentialprivacy/whitenoise-core-python)
-- [R Bindings (WIP)](https://github.com/opendifferentialprivacy/whitenoise-core-R)
 
-All projects implement protobuf code generation, protobuf serialization/deserialization, communication over FFI, handle distributable packaging, and have at some point compiled cross-platform (more testing needed). Communication among projects is handled via proto definitions from the `prototypes` directory. The validator and reference runtime compile to standalone libraries that may be linked into your project, allowing communication over C foreign function interfaces.
+
+#### Note on Protocol Buffers
+
+  - Location: `/validator-rust/prototypes`
+
+Communication among projects is handled via [Protocol Buffer definitions](https://developers.google.com/protocol-buffers/) in the `/validator-rust/prototypes` directory. All three sub-projects implement:
+  - Protobuf code generation
+  - Protobuf serialization/deserialization
+  - Communication over [FFI](https://en.wikipedia.org/wiki/Foreign_function_interface)
+  - Handling of distributable packaging
+
+At some point the projects have at compiled cross-platform (more testing needed). The validator and reference runtime compile to standalone libraries that may be linked into your project, allowing communication over C foreign function interfaces.
 
 ## Installation
 
 ### Binaries
 
-- (forthcoming PyPi binaries via milksnake)
+- (forthcoming PyPi binaries)
 
 ### From Source
 
