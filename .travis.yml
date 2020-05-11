@@ -1,4 +1,6 @@
-
+#
+# https://travis-ci.com/github/opendifferentialprivacy/whitenoise-core
+#
 
 branches:
   # all branches
@@ -57,4 +59,4 @@ jobs:
       target_branch: gh-pages
       on:
         branch: master # switch to master after initial version
-        #branch: develop # switch to master after initial version
+        #branch: develop 
