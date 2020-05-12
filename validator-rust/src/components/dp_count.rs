@@ -36,7 +36,7 @@ impl Expandable for proto::DpCount {
                 distinct: self.distinct
             })),
             omit: true,
-            batch: component.batch,
+            submission: component.submission,
         });
 
         if self.mechanism.to_lowercase().as_str() == "simplegeometric" {
@@ -60,7 +60,7 @@ impl Expandable for proto::DpCount {
                     // count_max
                     maximum_id += 1;
                     let id_count_max = maximum_id;
-                    let (patch_node, count_max_release) = get_literal(count_max.into(), &component.batch)?;
+                    let (patch_node, count_max_release) = get_literal(count_max.into(), &component.submission)?;
                     computation_graph.insert(id_count_max.clone(), patch_node);
                     releases.insert(id_count_max.clone(), count_max_release);
                     id_count_max
@@ -80,7 +80,7 @@ impl Expandable for proto::DpCount {
                     enforce_constant_time: false,
                 })),
                 omit: false,
-                batch: component.batch,
+                submission: component.submission,
             });
         } else {
             // noising
@@ -96,7 +96,7 @@ impl Expandable for proto::DpCount {
                     _ => panic!("Unexpected invalid token {:?}", self.mechanism.as_str()),
                 }),
                 omit: false,
-                batch: component.batch,
+                submission: component.submission,
             });
         }
 
@@ -126,7 +126,7 @@ impl Report for proto::DpCount {
             release_info: value_to_json(&release)?,
             privacy_loss: privacy_usage_to_json(&self.privacy_usage[0].clone()),
             accuracy: None,
-            batch: component.batch as u64,
+            submission: component.submission as u64,
             node_id: *node_id as u64,
             postprocess: false,
             algorithm_info: AlgorithmInfo {

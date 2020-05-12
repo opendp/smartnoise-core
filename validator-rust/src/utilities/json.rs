@@ -29,7 +29,7 @@ pub struct JSONRelease {
     /// optional parameter. It is a combination of the accuracy and alpha value
     pub accuracy: Option<Accuracy>,
     /// which release the implemented statistic is originating from. This provides a tool to keep track of overall privacyLoss.
-    pub batch: u64,
+    pub submission: u64,
     /// For advanced users. Corresponds to the node of the graph this release originated from
     #[serde(rename(serialize = "nodeID", deserialize = "nodeID"))]
     pub node_id: u64,

@@ -46,7 +46,7 @@ impl Expandable for proto::DpMean {
                         .collect::<Result<Vec<proto::PrivacyUsage>>>()?
                 })),
                 omit: true,
-                batch: component.batch,
+                submission: component.submission,
             });
 
             current_id += 1;
@@ -62,14 +62,14 @@ impl Expandable for proto::DpMean {
                         .collect::<Result<Vec<proto::PrivacyUsage>>>()?
                 })),
                 omit: true,
-                batch: component.batch,
+                submission: component.submission,
             });
 
             computation_graph.insert(*component_id, proto::Component {
                 arguments: hashmap!["left".to_owned() => id_dp_sum, "right".to_owned() => id_dp_count],
                 variant: Some(proto::component::Variant::Divide(proto::Divide {})),
                 omit: true,
-                batch: component.batch,
+                submission: component.submission,
             });
 
             Ok(proto::ComponentExpansion {
@@ -89,7 +89,7 @@ impl Expandable for proto::DpMean {
                 .ok_or_else(|| Error::from("data must be provided as an argument"))?],
                 variant: Some(proto::component::Variant::Mean(proto::Mean {})),
                 omit: true,
-                batch: component.batch,
+                submission: component.submission,
             });
 
             // noising
@@ -105,7 +105,7 @@ impl Expandable for proto::DpMean {
                     _ => panic!("Unexpected invalid token {:?}", self.mechanism.as_str()),
                 }),
                 omit: false,
-                batch: component.batch,
+                submission: component.submission,
             });
 
             Ok(proto::ComponentExpansion {
@@ -169,7 +169,7 @@ impl Report for proto::DpMean {
                 )?.into())?,
                 privacy_loss: privacy_usage_to_json(&privacy_usages[column_number].clone()),
                 accuracy: None,
-                batch: component.batch as u64,
+                submission: component.submission as u64,
                 node_id: *node_id as u64,
                 postprocess: false,
                 algorithm_info: AlgorithmInfo {

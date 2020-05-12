@@ -70,7 +70,7 @@ impl Expandable for proto::DpCovariance {
                 finite_sample_correction: self.finite_sample_correction
             })),
             omit: true,
-            batch: component.batch,
+            submission: component.submission,
         });
 
         // noise
@@ -88,7 +88,7 @@ impl Expandable for proto::DpCovariance {
                 _x => panic!("Unexpected invalid token {:?}", self.mechanism.as_str()),
             }),
             omit: true,
-            batch: component.batch,
+            submission: component.submission,
         });
 
         // reshape into matrix
@@ -100,7 +100,7 @@ impl Expandable for proto::DpCovariance {
                 shape
             })),
             omit: false,
-            batch: component.batch
+            submission: component.submission
         });
 
         Ok(proto::ComponentExpansion {
@@ -171,7 +171,7 @@ impl Report for proto::DpCovariance {
             release_info: value_to_json(&release)?,
             privacy_loss: serde_json::json![privacy_usage],
             accuracy: None,
-            batch: component.batch as u64,
+            submission: component.submission as u64,
             node_id: *node_id as u64,
             postprocess: false,
             algorithm_info: AlgorithmInfo {

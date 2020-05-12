@@ -30,7 +30,7 @@ impl Expandable for proto::DpMaximum {
                 privacy_usage: self.privacy_usage.clone()
             })),
             omit: false,
-            batch: component.batch,
+            submission: component.submission,
         };
 
         Ok(proto::ComponentExpansion {
@@ -80,7 +80,7 @@ impl Report for proto::DpMaximum {
                 },
                 privacy_loss: privacy_usage_to_json(&privacy_usages[column_number].clone()),
                 accuracy: None,
-                batch: component.batch as u64,
+                submission: component.submission as u64,
                 node_id: *node_id as u64,
                 postprocess: false,
                 algorithm_info: AlgorithmInfo {

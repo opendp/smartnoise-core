@@ -146,7 +146,7 @@ impl Expandable for proto::Maximum {
                 interpolation: "upper".to_string()
             })),
             omit: false,
-            batch: component.batch,
+            submission: component.submission,
         };
 
         Ok(proto::ComponentExpansion {
@@ -174,7 +174,7 @@ impl Expandable for proto::Minimum {
                 interpolation: "lower".to_string()
             })),
             omit: false,
-            batch: component.batch,
+            submission: component.submission,
         };
 
         Ok(proto::ComponentExpansion {

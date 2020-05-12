@@ -62,7 +62,7 @@ impl Analysis {{
                 {option_insertion}
             }})),
             omit: false,
-            batch: self.submission_count,
+            submission: self.submission_count,
             arguments,
         }};
 

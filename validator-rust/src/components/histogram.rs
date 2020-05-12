@@ -99,7 +99,7 @@ impl Expandable for proto::Histogram {
                     arguments,
                     variant: Some(proto::component::Variant::Digitize(proto::Digitize {})),
                     omit: true,
-                    batch: component.batch,
+                    submission: component.submission,
                 });
                 component.arguments = hashmap!["data".to_string() => id_digitize];
                 traversal.push(id_digitize);
@@ -119,7 +119,7 @@ impl Expandable for proto::Histogram {
                     ],
                     variant: Some(proto::component::Variant::Clamp(proto::Clamp {})),
                     omit: true,
-                    batch: component.batch,
+                    submission: component.submission,
                 });
                 component.arguments = hashmap!["data".to_string() => id_clamp];
                 traversal.push(id_clamp);
@@ -143,7 +143,7 @@ impl Expandable for proto::Histogram {
                     Jagged::Bool(jagged) => arr1(&jagged[0]).into_dyn().into(),
                     Jagged::Str(jagged) => arr1(&jagged[0]).into_dyn().into(),
                 };
-                let (patch_node, categories_release) = get_literal(value, &component.batch)?;
+                let (patch_node, categories_release) = get_literal(value, &component.submission)?;
                 computation_graph.insert(id_categories.clone(), patch_node);
                 releases.insert(id_categories.clone(), categories_release);
 

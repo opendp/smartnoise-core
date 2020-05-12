@@ -30,7 +30,7 @@ impl Expandable for proto::DpSum {
                 .ok_or_else(|| Error::from("data must be provided as an argument"))?],
             variant: Some(proto::component::Variant::Sum(proto::Sum {})),
             omit: true,
-            batch: component.batch,
+            submission: component.submission,
         });
 
         if self.mechanism.to_lowercase().as_str() == "simplegeometric" {
@@ -51,7 +51,7 @@ impl Expandable for proto::DpSum {
                     enforce_constant_time: false,
                 })),
                 omit: false,
-                batch: component.batch,
+                submission: component.submission,
             });
         } else {
 
@@ -70,7 +70,7 @@ impl Expandable for proto::DpSum {
                     _ => panic!("Unexpected invalid token {:?}", self.mechanism.as_str()),
                 }),
                 omit: false,
-                batch: component.batch,
+                submission: component.submission,
             });
         };
 
@@ -121,7 +121,7 @@ impl Report for proto::DpSum {
                 },
                 privacy_loss: privacy_usage_to_json(&privacy_usages[column_number].clone()),
                 accuracy: None,
-                batch: component.batch as u64,
+                submission: component.submission as u64,
                 node_id: *node_id as u64,
                 postprocess: false,
                 algorithm_info: AlgorithmInfo {

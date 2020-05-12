@@ -127,7 +127,7 @@ impl Expandable for proto::ExponentialMechanism {
 
         current_id += 1;
         let id_sensitivity = current_id;
-        let (patch_node, release) = get_literal(sensitivity, &component.batch)?;
+        let (patch_node, release) = get_literal(sensitivity, &component.submission)?;
         computation_graph.insert(id_sensitivity.clone(), patch_node);
         releases.insert(id_sensitivity.clone(), release);
 

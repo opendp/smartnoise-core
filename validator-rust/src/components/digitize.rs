@@ -108,7 +108,7 @@ impl Expandable for proto::Digitize {
             current_id += 1;
             let id_null_value = current_id;
             let value = Value::Array(Array::I64(arr0(-1).into_dyn()));
-            let (patch_node, release) = get_literal(value, &component.batch)?;
+            let (patch_node, release) = get_literal(value, &component.submission)?;
             computation_graph.insert(id_null_value.clone(), patch_node);
             releases.insert(id_null_value.clone(), release);
             component.arguments.insert("null_value".to_string(), id_null_value);
@@ -117,7 +117,7 @@ impl Expandable for proto::Digitize {
             current_id += 1;
             let id_null_value = current_id;
             let value = Value::Array(Array::Bool(arr0(true).into_dyn()));
-            let (patch_node, release) = get_literal(value, &component.batch)?;
+            let (patch_node, release) = get_literal(value, &component.submission)?;
             computation_graph.insert(id_null_value.clone(), patch_node);
             releases.insert(id_null_value.clone(), release);
             component.arguments.insert("inclusive_left".to_string(), id_null_value);

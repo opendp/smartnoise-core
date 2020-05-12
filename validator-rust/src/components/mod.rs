@@ -268,7 +268,7 @@ impl Expandable for proto::component::Variant {
         //             component: Some(Box::from(component.clone()))
         //         }))),
         //         omit: false,
-        //         batch: component.batch,
+        //         submission: component.submission,
         //     };
         //     return Ok(proto::ComponentExpansion {
         //         computation_graph: hashmap![*component_id => map_component],

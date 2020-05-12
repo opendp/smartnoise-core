@@ -241,7 +241,7 @@ impl Expandable for proto::Resize {
                 let id_lower = current_id;
                 let value = Value::Array(Array::F64(
                     ndarray::Array::from(data_property.lower_f64()?).into_dyn()));
-                let (patch_node, release) = get_literal(value, &component.batch)?;
+                let (patch_node, release) = get_literal(value, &component.submission)?;
                 computation_graph.insert(id_lower.clone(), patch_node);
                 releases.insert(id_lower.clone(), release);
                 component.arguments.insert("lower".to_string(), id_lower);
@@ -252,7 +252,7 @@ impl Expandable for proto::Resize {
                 let id_upper = current_id;
                 let value = Value::Array(Array::F64(
                     ndarray::Array::from(data_property.upper_f64()?).into_dyn()));
-                let (patch_node, release) = get_literal(value, &component.batch)?;
+                let (patch_node, release) = get_literal(value, &component.submission)?;
                 computation_graph.insert(id_upper.clone(), patch_node);
                 releases.insert(id_upper.clone(), release);
                 component.arguments.insert("upper".to_string(), id_upper);

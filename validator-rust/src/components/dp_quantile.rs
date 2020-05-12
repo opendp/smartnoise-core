@@ -43,7 +43,7 @@ impl Expandable for proto::DpQuantile {
                 interpolation: self.interpolation.clone(),
             })),
             omit: true,
-            batch: component.batch,
+            submission: component.submission,
         });
 
         // sanitizing
@@ -67,7 +67,7 @@ impl Expandable for proto::DpQuantile {
                 _ => panic!("Unexpected invalid token {:?}", self.mechanism.as_str()),
             }),
             omit: false,
-            batch: component.batch,
+            submission: component.submission,
         });
 
         Ok(proto::ComponentExpansion {
@@ -118,7 +118,7 @@ impl Report for proto::DpQuantile {
                 },
                 privacy_loss: privacy_usage_to_json(&privacy_usages[column_number].clone()),
                 accuracy: None,
-                batch: component.batch as u64,
+                submission: component.submission as u64,
                 node_id: *node_id as u64,
                 postprocess: false,
                 algorithm_info: AlgorithmInfo {

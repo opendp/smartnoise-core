@@ -191,7 +191,7 @@ macro_rules! make_expandable {
                             atomic_type: $var_type
                         })),
                         omit: false,
-                        batch: component.batch,
+                        submission: component.submission,
                     }],
                     properties: HashMap::new(),
                     releases: HashMap::new(),

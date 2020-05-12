@@ -35,7 +35,7 @@ message Component {
     // if true, then don't include the evaluation for this component in the release
     bool omit = 2;
     // for interactive analyses
-    uint32 batch = 3;
+    uint32 submission = 3;
 
     oneof variant {
     "#.to_string();

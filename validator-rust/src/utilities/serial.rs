@@ -571,7 +571,7 @@ pub fn serialize_array_properties(value: ArrayProperties) -> proto::ArrayPropert
                 component: Some(proto::Component {
                     variant: Some(aggregator.component),
                     omit: true,
-                    batch: 0,
+                    submission: 0,
                     arguments: HashMap::new(),
                 }),
                 properties: aggregator.properties.into_iter()
@@ -614,7 +614,7 @@ pub fn serialize_jagged_properties(value: JaggedProperties) -> proto::JaggedProp
                 component: Some(proto::Component {
                     variant: Some(aggregator.component),
                     omit: true,
-                    batch: 0,
+                    submission: 0,
                     arguments: HashMap::new(),
                 }),
                 properties: aggregator.properties.into_iter()

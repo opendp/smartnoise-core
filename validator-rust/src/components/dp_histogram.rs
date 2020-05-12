@@ -49,7 +49,7 @@ impl Expandable for proto::DpHistogram {
             arguments: histogram_arguments,
             variant: Some(proto::component::Variant::Histogram(proto::Histogram {})),
             omit: true,
-            batch: component.batch,
+            submission: component.submission,
         });
 
         if self.mechanism.to_lowercase().as_str() == "simplegeometric" {
@@ -66,7 +66,7 @@ impl Expandable for proto::DpHistogram {
                     // count_max
                     maximum_id += 1;
                     let max_id = maximum_id;
-                    let (patch_node, count_max_release) = get_literal(count_max.into(), &component.batch)?;
+                    let (patch_node, count_max_release) = get_literal(count_max.into(), &component.submission)?;
                     computation_graph.insert(max_id.clone(), patch_node);
                     releases.insert(max_id.clone(), count_max_release);
                     max_id
@@ -86,7 +86,7 @@ impl Expandable for proto::DpHistogram {
                     enforce_constant_time: false
                 })),
                 omit: false,
-                batch: component.batch,
+                submission: component.submission,
             });
         } else {
 
@@ -105,7 +105,7 @@ impl Expandable for proto::DpHistogram {
                     _ => panic!("Unexpected invalid token {:?}", self.mechanism.as_str()),
                 }),
                 omit: false,
-                batch: component.batch,
+                submission: component.submission,
             });
         }
 
@@ -154,7 +154,7 @@ impl Report for proto::DpHistogram {
                 )?.into())?,
                 privacy_loss: privacy_usage_to_json(&privacy_usages[column_number].clone()),
                 accuracy: None,
-                batch: component.batch as u64,
+                submission: component.submission as u64,
                 node_id: *node_id as u64,
                 postprocess: false,
                 algorithm_info: AlgorithmInfo {

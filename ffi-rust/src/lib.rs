@@ -5,6 +5,7 @@ use whitenoise_validator::utilities::serial::{serialize_error, parse_release, se
 mod utilities;
 use crate::utilities::{ptr_to_buffer, buffer_to_ptr};
 use whitenoise_validator::errors::*;
+use whitenoise_validator::base::Release;
 
 /// FFI wrapper for [validate_analysis](../fn.validate_analysis.html)
 ///
@@ -28,12 +29,16 @@ pub extern "C" fn validate_analysis(
                     analysis, release
                 } = request;
 
-                let analysis = analysis
-                    .ok_or_else(|| Error::from("analysis must be defined"))?;
-                let release = parse_release(release
-                    .ok_or_else(|| Error::from("release must be defined"))?);
+                let run = || -> Result<()> {
+                    let analysis = analysis
+                        .ok_or_else(|| Error::from("analysis must be defined"))?;
+                    let release = parse_release(release
+                        .ok_or_else(|| Error::from("release must be defined"))?);
 
-                match whitenoise_validator::validate_analysis(analysis, release) {
+                    whitenoise_validator::validate_analysis(analysis, release)
+                };
+
+                match run() {
                     Ok(_) =>
                         Some(proto::response_validate_analysis::Value::Data(proto::response_validate_analysis::Validated {
                             value: true,
@@ -72,12 +77,17 @@ pub extern "C" fn compute_privacy_usage(
                     analysis, release
                 } = request;
 
-                let mut analysis = analysis
-                    .ok_or_else(|| Error::from("analysis must be defined"))?;
-                let mut release = parse_release(release
-                    .ok_or_else(|| Error::from("release must be defined"))?);
 
-                match whitenoise_validator::compute_privacy_usage(analysis, release) {
+                let run = || -> Result<proto::PrivacyUsage> {
+                    let analysis = analysis
+                        .ok_or_else(|| Error::from("analysis must be defined"))?;
+                    let release = parse_release(release
+                        .ok_or_else(|| Error::from("release must be defined"))?);
+
+                    whitenoise_validator::compute_privacy_usage(analysis, release)
+                };
+
+                match run() {
                     Ok(x) =>
                         Some(proto::response_compute_privacy_usage::Value::Data(x)),
                     Err(err) =>
@@ -109,12 +119,16 @@ pub extern "C" fn generate_report(
         value: match proto::RequestGenerateReport::decode(request_buffer) {
             Ok(request) => {
 
-                let mut analysis = request.analysis
-                    .ok_or_else(|| Error::from("analysis must be defined"))?;
-                let mut release = parse_release(request.release
-                    .ok_or_else(|| Error::from("release must be defined"))?);
+                let run = || -> Result<String> {
+                    let analysis = request.analysis
+                        .ok_or_else(|| Error::from("analysis must be defined"))?;
+                    let release = parse_release(request.release
+                        .ok_or_else(|| Error::from("release must be defined"))?);
 
-                match whitenoise_validator::generate_report(analysis, release) {
+                    whitenoise_validator::generate_report(analysis, release)
+                };
+
+                match run() {
                     Ok(x) =>
                         Some(proto::response_generate_report::Value::Data(x)),
                     Err(err) =>
@@ -150,16 +164,21 @@ pub extern "C" fn accuracy_to_privacy_usage(
                     component, privacy_definition, properties, accuracies
                 } = request;
 
-                let component: proto::Component = component
-                    .ok_or_else(|| Error::from("component must be defined"))?;
-                let privacy_definition: proto::PrivacyDefinition = privacy_definition
-                    .ok_or_else(|| Error::from("privacy definition must be defined"))?;
-                let accuracies: proto::Accuracies = accuracies
-                    .ok_or_else(|| Error::from("accuracies must be defined"))?;
 
-                match whitenoise_validator::accuracy_to_privacy_usage(
-                    component, privacy_definition, properties, accuracies
-                ) {
+                let run = || -> Result<proto::PrivacyUsages> {
+                    let component: proto::Component = component
+                        .ok_or_else(|| Error::from("component must be defined"))?;
+                    let privacy_definition: proto::PrivacyDefinition = privacy_definition
+                        .ok_or_else(|| Error::from("privacy definition must be defined"))?;
+                    let accuracies: proto::Accuracies = accuracies
+                        .ok_or_else(|| Error::from("accuracies must be defined"))?;
+
+                    whitenoise_validator::accuracy_to_privacy_usage(
+                        component, privacy_definition, properties, accuracies
+                    )
+                };
+
+                match run() {
                     Ok(x) =>
                         Some(proto::response_accuracy_to_privacy_usage::Value::Data(x)),
                     Err(err) =>
@@ -196,12 +215,16 @@ pub extern "C" fn privacy_usage_to_accuracy(
                     component, privacy_definition, properties, alpha
                 } = request;
 
-                let component: proto::Component = component
-                    .ok_or_else(|| Error::from("component must be defined"))?;
-                let privacy_definition: proto::PrivacyDefinition = privacy_definition
-                    .ok_or_else(|| Error::from("privacy definition must be defined"))?;
+                let run = || -> Result<proto::Accuracies> {
+                    let component: proto::Component = component
+                        .ok_or_else(|| Error::from("component must be defined"))?;
+                    let privacy_definition: proto::PrivacyDefinition = privacy_definition
+                        .ok_or_else(|| Error::from("privacy definition must be defined"))?;
 
-                match whitenoise_validator::privacy_usage_to_accuracy(component, privacy_definition, properties, alpha) {
+                    whitenoise_validator::privacy_usage_to_accuracy(component, privacy_definition, properties, alpha)
+                };
+
+                match run() {
                     Ok(x) =>
                         Some(proto::response_privacy_usage_to_accuracy::Value::Data(x)),
                     Err(err) =>
@@ -237,12 +260,16 @@ pub extern "C" fn get_properties(
                     analysis, release, node_ids
                 } = request;
 
-                let mut analysis = analysis
-                    .ok_or_else(|| Error::from("analysis must be defined"))?;
-                let mut release = release
-                    .ok_or_else(|| Error::from("release must be defined"))?;
+                let run = || -> Result<proto::GraphProperties> {
+                    let analysis = analysis
+                        .ok_or_else(|| Error::from("analysis must be defined"))?;
+                    let release = parse_release(release
+                        .ok_or_else(|| Error::from("release must be defined"))?);
 
-                match whitenoise_validator::get_properties(analysis, release, node_ids) {
+                    whitenoise_validator::get_properties(analysis, release, node_ids)
+                };
+
+                match run() {
                     Ok(x) =>
                         Some(proto::response_get_properties::Value::Data(x)),
                     Err(err) =>
@@ -308,14 +335,19 @@ pub extern "C" fn release(
                     analysis, release, stack_trace, filter_level
                 } = request;
 
-                let analysis = analysis
-                    .ok_or_else(|| Error::from("analysis must be defined"))?;
-                let release = parse_release(release
-                    .ok_or_else(|| Error::from("release must be defined"))?);
-                let filter_level = proto::FilterLevel::from_i32(filter_level)
-                    .ok_or_else(|| Error::from(format!("unrecognized filter level {:?}", filter_level)))?;
 
-                match whitenoise_runtime::release(analysis, release, filter_level) {
+                let run = || -> Result<(Release, Vec<proto::Error>)> {
+                    let analysis = analysis
+                        .ok_or_else(|| Error::from("analysis must be defined"))?;
+                    let release = parse_release(release
+                        .ok_or_else(|| Error::from("release must be defined"))?);
+                    let filter_level = proto::FilterLevel::from_i32(filter_level)
+                        .ok_or_else(|| Error::from(format!("unrecognized filter level {:?}", filter_level)))?;
+
+                    whitenoise_runtime::release(analysis, release, filter_level)
+                };
+
+                match run() {
                     Ok((release, warnings)) => Some(proto::response_release::Value::Data(proto::response_release::Success {
                         release: Some(serialize_release(release)),
                         warnings: match stack_trace {
