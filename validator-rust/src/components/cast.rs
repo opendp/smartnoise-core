@@ -207,3 +207,78 @@ make_expandable!(ToBool, "bool".to_string());
 make_expandable!(ToFloat, "float".to_string());
 make_expandable!(ToInt, "int".to_string());
 make_expandable!(ToString, "string".to_string());
+
+
+#[cfg(test)]
+pub mod test_cast {
+    use crate::base::test_data;
+
+    pub mod utilities {
+        use crate::components::literal::test_literal;
+        use crate::bindings::Analysis;
+        use crate::base::Value;
+
+        pub fn analysis_f64(value: Value) -> (Analysis, u32) {
+            let (mut analysis, literal) = test_literal::analysis_literal(value, true);
+            let cast = analysis.to_float(literal).build();
+            (analysis, cast)
+        }
+
+        pub fn analysis_i64(value: Value, lower: Option<Value>, upper: Option<Value>) -> (Analysis, u32) {
+            let (mut analysis, literal) = test_literal::analysis_literal(value, true);
+            let lower = analysis.literal().value(match lower {
+                Some(lower) => lower, None => 0.into()
+            }).value_public(true).build();
+            let upper = analysis.literal().value(match upper {
+                Some(upper) => upper, None => 10.into()
+            }).value_public(true).build();
+            let cast = analysis.to_int(literal, lower, upper).build();
+            (analysis, cast)
+        }
+
+        pub fn analysis_string(value: Value) -> (Analysis, u32) {
+            let (mut analysis, literal) = test_literal::analysis_literal(value, true);
+            let cast = analysis.to_string(literal).build();
+            (analysis, cast)
+        }
+
+        pub fn analysis_bool(value: Value, true_label: Value) -> (Analysis, u32) {
+            let (mut analysis, literal) = test_literal::analysis_literal(value, true);
+            let true_label = analysis.literal().value(true_label).value_public(true).build();
+            let cast = analysis.to_bool(literal, true_label).build();
+            (analysis, cast)
+        }
+    }
+
+    macro_rules! test_propagation {
+        ( $( $variant:ident: $true_label:expr, )*) => {
+            $(
+                #[test]
+                fn $variant() {
+                    let (analysis, cast) = utilities::analysis_f64(test_data::$variant());
+                    analysis.properties(cast).unwrap();
+
+                    let (analysis, cast) = utilities::analysis_i64(test_data::$variant(), None, None);
+                    analysis.properties(cast).unwrap();
+
+                    let (analysis, cast) = utilities::analysis_bool(test_data::$variant(), $true_label);
+                    analysis.properties(cast).unwrap();
+
+                    let (analysis, cast) = utilities::analysis_string(test_data::$variant());
+                    analysis.properties(cast).unwrap();
+                }
+            )*
+        }
+    }
+
+    test_propagation!(
+        array1d_f64_0: 1.0.into(),
+        array1d_i64_0: 1.into(),
+        array1d_string_0: "a".to_string().into(),
+        array1d_bool_0: true.into(),
+        array1d_f64_10_uniform: 1.0.into(),
+        array1d_i64_10_uniform: 0.into(),
+        array1d_string_10_uniform: "a".to_string().into(),
+        array1d_bool_10_uniform: true.into(),
+    );
+}

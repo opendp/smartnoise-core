@@ -269,3 +269,193 @@ impl Expandable for proto::Resize {
         })
     }
 }
+
+
+
+#[cfg(test)]
+pub mod test_resize {
+    use crate::base::test_data;
+
+    pub mod utilities {
+        use crate::components::impute::test_impute;
+        use crate::bindings::Analysis;
+        use crate::base::Value;
+
+        pub fn analysis_f64_cont(value: Value, number_rows: Value, lower: Option<Value>, upper: Option<Value>) -> (Analysis, u32) {
+
+            let (mut analysis, imputed) = test_impute::utilities::analysis_f64_cont(
+                value,  None, None);
+
+            let lower = analysis.literal().value(match lower {
+                Some(lower) => lower, None => 0.0.into()
+            }).value_public(true).build();
+            let upper = analysis.literal().value(match upper {
+                Some(upper) => upper, None => 10.0.into()
+            }).value_public(true).build();
+            let number_rows = analysis.literal()
+                .value(number_rows).value_public(true)
+                .build();
+
+            let resized = analysis.resize(imputed)
+                .number_rows(number_rows).upper(upper).lower(lower)
+                .build();
+
+            (analysis, resized)
+        }
+
+        pub fn analysis_i64_cont(value: Value, number_rows: Value, lower: Option<Value>, upper: Option<Value>) -> (Analysis, u32) {
+            let (mut analysis, imputed) = test_impute::utilities::analysis_i64_cont(
+                value, None, None);
+
+            let lower = analysis.literal().value(match lower {
+                Some(lower) => lower, None => 0.into()
+            }).value_public(true).build();
+            let upper = analysis.literal().value(match upper {
+                Some(upper) => upper, None => 10.into()
+            }).value_public(true).build();
+            let number_rows = analysis.literal()
+                .value(number_rows).value_public(true)
+                .build();
+
+            let resized = analysis.resize(imputed)
+                .number_rows(number_rows).upper(upper).lower(lower)
+                .build();
+
+            (analysis, resized)
+        }
+
+        pub fn analysis_i64_cat(value: Value, number_rows: Value, categories: Value) -> (Analysis, u32) {
+            let (mut analysis, imputed) = test_impute::utilities::analysis_i64_cat(
+                value, categories.clone(), None);
+
+            let categories = analysis.literal()
+                .value(categories).value_public(true)
+                .build();
+            let number_rows = analysis.literal()
+                .value(number_rows).value_public(true)
+                .build();
+
+            let resized = analysis.resize(imputed)
+                .number_rows(number_rows)
+                .categories(categories)
+                .build();
+
+            (analysis, resized)
+        }
+
+        pub fn analysis_string_cat(value: Value, number_rows: Value, categories: Option<Value>) -> (Analysis, u32) {
+            let (mut analysis, imputed) = test_impute::utilities::analysis_string_cat(
+                value, None, None);
+
+            let categories = analysis.literal().value(match categories {
+                Some(categories) => categories,
+                None => Value::Jagged(vec![vec!["a", "b", "c", "d"].into_iter().map(String::from).collect::<Vec<String>>()].into())
+            }).value_public(true).build();
+            let number_rows = analysis.literal()
+                .value(number_rows).value_public(true)
+                .build();
+
+            let resized = analysis.resize(imputed)
+                .categories(categories)
+                .number_rows(number_rows)
+                .build();
+            (analysis, resized)
+        }
+
+        pub fn analysis_bool_cat(value: Value, number_rows: Value) -> (Analysis, u32) {
+            let (mut analysis, imputed) = test_impute::utilities::analysis_bool_cat(value);
+            let categories = analysis.literal()
+                .value(Value::Jagged(vec![vec![false, true]].into()))
+                .value_public(true).build();
+            let number_rows = analysis.literal()
+                .value(number_rows).value_public(true)
+                .build();
+
+            let resized = analysis.resize(imputed)
+                .categories(categories)
+                .number_rows(number_rows)
+                .build();
+            (analysis, resized)
+        }
+    }
+
+    macro_rules! test_f64 {
+        ( $( $variant:ident; $number_rows:expr; $lower:expr; $upper:expr, )*) => {
+            $(
+                #[test]
+                fn $variant() {
+                    let (analysis, resized) = utilities::analysis_f64_cont(
+                        test_data::$variant(), $number_rows, $lower, $upper);
+                    analysis.properties(resized).unwrap();
+                }
+            )*
+        }
+    }
+
+    test_f64!(
+        array1d_f64_0; 10.into(); None; None,
+        array1d_f64_10_uniform; 10.into(); None; None,
+    );
+
+    macro_rules! test_i64 {
+        ( $( $variant:ident; $number_rows:expr; $lower:expr; $upper:expr; $categories:expr; $null_values:expr, )*) => {
+            $(
+                #[test]
+                fn $variant() {
+                    use crate::base::Value;
+
+                    let (analysis, resized) = utilities::analysis_i64_cat(
+                        test_data::$variant(),
+                        $number_rows, $categories);
+                    analysis.properties(resized).unwrap();
+
+                    let (analysis, resized) = utilities::analysis_i64_cont(
+                        test_data::$variant(), $number_rows, $lower, $upper);
+                    analysis.properties(resized).unwrap();
+                }
+            )*
+        }
+    }
+
+    test_i64!(
+        array1d_i64_0; 10.into(); None; None; Value::Jagged(vec![vec![1]].into()); None,
+        array1d_i64_10_uniform; 10.into(); Some(0.into()); Some(10.into()); Value::Jagged(vec![(0..10).collect::<Vec<i64>>()].into()); Some((-1).into()),
+    );
+
+    macro_rules! test_string {
+        ( $( $variant:ident; $number_rows:expr; $categories:expr; $null_values:expr, )*) => {
+            $(
+                #[test]
+                fn $variant() {
+                    let (analysis, resized) = utilities::analysis_string_cat(
+                        test_data::$variant(),
+                        $number_rows, $categories);
+                    analysis.properties(resized).unwrap();
+                }
+            )*
+        }
+    }
+
+    test_string!(
+        array1d_string_0; 10.into(); None; None,
+        array1d_string_10_uniform; 10.into(); None; None,
+    );
+
+    macro_rules! test_bool {
+        ( $( $variant:ident; $number_rows:expr, )*) => {
+            $(
+                #[test]
+                fn $variant() {
+                    let (analysis, resized) = utilities::analysis_bool_cat(
+                        test_data::$variant(), $number_rows);
+                    analysis.properties(resized).unwrap();
+                }
+            )*
+        }
+    }
+
+    test_bool!(
+        array1d_bool_0; 10.into(),
+        array1d_bool_10_uniform; 10.into(),
+    );
+}

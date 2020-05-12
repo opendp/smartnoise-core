@@ -11,15 +11,20 @@ This library provides an FFI interface for the `whitenoise_validator` and `white
 
 Different combinations of feature flags may be set.
 
+
+To build with the runtime and secure noise:
+
+    cargo build
+
 To build without the runtime:
 
     cargo build --no-default-features
     
-To build with the runtime:
+To build with the runtime and secure noise:
 
     cargo build --no-default-features --features use-secure-noise
     
-To build with the runtime, where GMP and MPFR are provided by the operating system:
+To build with the runtime and secure noise, where GMP and MPFR are provided by the operating system:
 
     cargo build --no-default-features --features use-system-libs
 

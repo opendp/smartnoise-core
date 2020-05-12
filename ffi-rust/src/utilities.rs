@@ -19,8 +19,8 @@ pub unsafe fn ptr_to_buffer<'a>(data: *const u8, len: i32) -> &'a [u8] {
 pub fn buffer_to_ptr<T>(buffer: T) -> ffi_support::ByteBuffer
     where T: Message {
     let mut out_buffer = Vec::new();
-    match prost::Message::encode(&buffer, &mut out_buffer) {
-        Ok(_t) => ffi_support::ByteBuffer::from_vec(out_buffer),
+    match buffer.encode(&mut out_buffer) {
+        Ok(_) => ffi_support::ByteBuffer::from_vec(out_buffer),
         Err(error) => {
             println!("Error encoding response protobuf.");
             println!("{:?}", error);

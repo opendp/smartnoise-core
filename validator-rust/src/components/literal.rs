@@ -73,3 +73,27 @@ impl Named for proto::Literal {
         }
     }
 }
+
+
+
+#[cfg(test)]
+pub mod test_literal {
+    use crate::base::Value;
+    use crate::bindings::Analysis;
+    use crate::base::test_data::array1d_f64_10_uniform;
+
+    pub fn analysis_literal(value: Value, public: bool) -> (Analysis, u32) {
+        let mut analysis = Analysis::new();
+        let literal = analysis.literal()
+            .value(value).value_public(public)
+            .build();
+        (analysis, literal)
+    }
+
+    #[test]
+    fn test_literal() {
+        let (analysis, literal) = analysis_literal(array1d_f64_10_uniform(), true);
+
+        analysis.properties(literal).unwrap();
+    }
+}

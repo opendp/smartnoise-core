@@ -27,8 +27,8 @@ impl Component for proto::Bin {
         let num_columns = data_property.num_columns()
             .map_err(prepend("data:"))?;
 
-        let null_values = public_arguments.get("null_value")
-            .ok_or_else(|| Error::from("null: missing, must be public"))?.array()?;
+        let null_value = public_arguments.get("null_value")
+            .ok_or_else(|| Error::from("null_value: missing, must be public"))?.array()?;
 
         data_property.assert_is_not_aggregated()?;
         if data_property.data_type != DataType::F64 && data_property.data_type != DataType::I64 {
@@ -38,7 +38,7 @@ impl Component for proto::Bin {
         public_arguments.get("edges")
             .ok_or_else(|| Error::from("edges: missing, must be public"))
             .and_then(|v| v.jagged())
-            .and_then(|v| match (v, null_values) {
+            .and_then(|v| match (v, null_value) {
                 (Jagged::F64(jagged), Array::F64(null)) => {
                     let null = standardize_null_target_argument(null, &num_columns)?;
                     let edges = standardize_float_argument(jagged, &num_columns)?;

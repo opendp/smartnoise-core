@@ -128,7 +128,12 @@ impl<'a> {id}Builder<'a> {{
         self
     }}
 
-    pub fn enter(self) -> u32 {{
+    pub fn value_public(self, value: bool) -> Self {{
+        self.release.get_mut(&self.id).map(|v| v.public = value);
+        self
+    }}
+
+    pub fn build(self) -> u32 {{
         self.id
     }}
 }}

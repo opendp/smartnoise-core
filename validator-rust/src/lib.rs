@@ -35,7 +35,7 @@ pub mod docs;
 use crate::components::*;
 use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
-use crate::utilities::serial::{serialize_value_properties, parse_release, serialize_release_node};
+use crate::utilities::serial::{serialize_value_properties, serialize_release_node};
 use crate::base::{ReleaseNode, Value};
 use std::iter::FromIterator;
 
@@ -71,22 +71,11 @@ macro_rules! hashmap {
 /// The system may also be run dynamically- prior to expanding each node, calling the expand_component endpoint will also validate the component being expanded.
 /// NOTE: Evaluating the graph dynamically opens up additional potential timing attacks.
 pub fn validate_analysis(
-    request: proto::RequestValidateAnalysis
-) -> Result<proto::response_validate_analysis::Validated> {
-    let proto::RequestValidateAnalysis {
-        analysis, release
-    } = request;
-    let mut analysis = analysis
-        .ok_or_else(|| Error::from("analysis must be defined"))?;
-    let mut release = parse_release(release
-        .ok_or_else(|| Error::from("release must be defined"))?);
-
+    mut analysis: proto::Analysis,
+    mut release: base::Release
+) -> Result<()> {
     utilities::propagate_properties(&mut analysis, &mut release, None, false)?;
-
-    Ok(proto::response_validate_analysis::Validated {
-        value: true,
-        message: "The analysis is valid.".to_string(),
-    })
+    Ok(())
 }
 
 
@@ -95,16 +84,9 @@ pub fn validate_analysis(
 /// The privacy usage is sum of the privacy usages for each node.
 /// The Release's actual privacy usage, if defined, takes priority over the maximum allowable privacy usage defined in the Analysis.
 pub fn compute_privacy_usage(
-    request: proto::RequestComputePrivacyUsage
+    mut analysis: proto::Analysis,
+    mut release: base::Release
 ) -> Result<proto::PrivacyUsage> {
-    let proto::RequestComputePrivacyUsage {
-        analysis, release
-    } = request;
-
-    let mut analysis = analysis
-        .ok_or_else(|| Error::from("analysis must be defined"))?;
-    let mut release = parse_release(release
-        .ok_or_else(|| Error::from("release must be defined"))?);
 
     utilities::propagate_properties(&mut analysis, &mut release, None, false)?;
     // this is mutated within propagate_properties
@@ -128,19 +110,14 @@ pub fn compute_privacy_usage(
         },
         None => Err("no information is released; privacy usage is none".into())
     }
-
-    // TODO: this should probably return a proto::PrivacyUsage with zero based on the privacy definition
 }
 
 
 /// Generate a json string with a summary/report of the Analysis and Release
 pub fn generate_report(
-    request: proto::RequestGenerateReport
+    mut analysis: proto::Analysis,
+    mut release: base::Release
 ) -> Result<String> {
-    let mut analysis = request.analysis
-        .ok_or_else(|| Error::from("analysis must be defined"))?;
-    let mut release = parse_release(request.release
-        .ok_or_else(|| Error::from("release must be defined"))?);
 
     let graph_properties = utilities::propagate_properties(&mut analysis, &mut release, None, false)?.0;
 
@@ -215,18 +192,11 @@ pub fn generate_report(
 ///
 /// No context about the analysis is necessary, just the privacy definition and properties of the arguments of the component.
 pub fn accuracy_to_privacy_usage(
-    request: proto::RequestAccuracyToPrivacyUsage
+    component: proto::Component,
+    privacy_definition: proto::PrivacyDefinition,
+    properties: HashMap<String, proto::ValueProperties>,
+    accuracies: proto::Accuracies
 ) -> Result<proto::PrivacyUsages> {
-    let proto::RequestAccuracyToPrivacyUsage {
-        component, privacy_definition, properties, accuracies
-    } = request;
-
-    let component: proto::Component = component
-        .ok_or_else(|| Error::from("component must be defined"))?;
-    let privacy_definition: proto::PrivacyDefinition = privacy_definition
-        .ok_or_else(|| Error::from("privacy definition must be defined"))?;
-    let accuracies: proto::Accuracies = accuracies
-        .ok_or_else(|| Error::from("accuracies must be defined"))?;
 
     let proto_properties = component.arguments.iter()
         .filter_map(|(name, idx)| Some((idx.clone(), properties.get(name)?.clone())))
@@ -278,16 +248,11 @@ pub fn accuracy_to_privacy_usage(
 ///
 /// No context about the analysis is necessary, just the properties of the arguments of the component.
 pub fn privacy_usage_to_accuracy(
-    request: proto::RequestPrivacyUsageToAccuracy
+    component: proto::Component,
+    privacy_definition: proto::PrivacyDefinition,
+    properties: HashMap<String, proto::ValueProperties>,
+    alpha: f64
 ) -> Result<proto::Accuracies> {
-    let proto::RequestPrivacyUsageToAccuracy {
-        component, privacy_definition, properties, alpha
-    } = request;
-
-    let component: proto::Component = component
-        .ok_or_else(|| Error::from("component must be defined"))?;
-    let privacy_definition: proto::PrivacyDefinition = privacy_definition
-        .ok_or_else(|| Error::from("privacy definition must be defined"))?;
 
     let proto_properties = component.arguments.iter()
         .filter_map(|(name, idx)| Some((idx.clone(), properties.get(name)?.clone())))
@@ -337,16 +302,10 @@ pub fn privacy_usage_to_accuracy(
 
 /// Retrieve the static properties from every reachable node on the graph.
 pub fn get_properties(
-    request: proto::RequestGetProperties
+    mut analysis: proto::Analysis,
+    mut release: base::Release,
+    node_ids: Vec<u32>
 ) -> Result<proto::GraphProperties> {
-    let proto::RequestGetProperties {
-        analysis, release, node_ids
-    } = request;
-
-    let mut analysis = analysis
-        .ok_or_else(|| Error::from("analysis must be defined"))?;
-    let mut release = release
-        .ok_or_else(|| Error::from("release must be defined"))?;
 
     if node_ids.len() > 0 {
         let mut ancestors = HashSet::<u32>::new();
@@ -367,16 +326,15 @@ pub fn get_properties(
             }),
             privacy_definition: analysis.privacy_definition,
         };
-        release = proto::Release {
-            values: release.values.iter()
-                .filter(|(idx, _)| ancestors.contains(idx))
-                .map(|(idx, release_node)| (idx.clone(), release_node.clone()))
-                .collect::<HashMap<u32, proto::ReleaseNode>>()
-        };
+        release = release.iter()
+            .filter(|(idx, _)| ancestors.contains(idx))
+            .map(|(idx, release_node)|
+                (idx.clone(), release_node.clone()))
+            .collect();
     }
 
     let (properties, warnings) = utilities::propagate_properties(
-        &mut analysis, &mut parse_release(release), None, true,
+        &mut analysis, &mut release, None, true,
     )?;
 
     Ok(proto::GraphProperties {

@@ -7,7 +7,7 @@ use crate::proto;
 use ndarray::prelude::Ix1;
 
 use std::collections::HashMap;
-use ndarray::{ArrayD, arr0};
+use ndarray::{ArrayD, arr0, Dimension};
 
 use crate::utilities::{standardize_categorical_argument, deduplicate};
 use indexmap::IndexMap;
@@ -31,7 +31,7 @@ pub enum Value {
     /// A 2D homogeneously typed matrix, where the columns may be unknown and the column lengths may be inconsistent
     Jagged(Jagged),
     /// An arbitrary function expressed in the graph language
-    Function(proto::Function)
+    Function(proto::Function),
 }
 
 impl Value {
@@ -120,29 +120,34 @@ impl From<String> for Value {
     }
 }
 
-impl From<ArrayD<bool>> for Value {
-    fn from(value: ArrayD<bool>) -> Self {
-        Value::Array(Array::Bool(value))
+impl<T> From<ndarray::Array<bool, ndarray::Dim<T>>> for Value
+    where ndarray::Dim<T>: Dimension {
+    fn from(value: ndarray::Array<bool, ndarray::Dim<T>>) -> Self {
+        Value::Array(Array::Bool(value.into_dyn()))
     }
 }
 
-impl From<ArrayD<f64>> for Value {
-    fn from(value: ArrayD<f64>) -> Self {
-        Value::Array(Array::F64(value))
+impl<T> From<ndarray::Array<i64, ndarray::Dim<T>>> for Value
+    where ndarray::Dim<T>: Dimension {
+    fn from(value: ndarray::Array<i64, ndarray::Dim<T>>) -> Self {
+        Value::Array(Array::I64(value.into_dyn()))
     }
 }
 
-impl From<ArrayD<i64>> for Value {
-    fn from(value: ArrayD<i64>) -> Self {
-        Value::Array(Array::I64(value))
+impl<T> From<ndarray::Array<f64, ndarray::Dim<T>>> for Value
+    where ndarray::Dim<T>: Dimension {
+    fn from(value: ndarray::Array<f64, ndarray::Dim<T>>) -> Self {
+        Value::Array(Array::F64(value.into_dyn()))
     }
 }
 
-impl From<ArrayD<String>> for Value {
-    fn from(value: ArrayD<String>) -> Self {
-        Value::Array(Array::Str(value))
+impl<T> From<ndarray::Array<String, ndarray::Dim<T>>> for Value
+    where ndarray::Dim<T>: Dimension {
+    fn from(value: ndarray::Array<String, ndarray::Dim<T>>) -> Self {
+        Value::Array(Array::Str(value.into_dyn()))
     }
 }
+
 
 impl From<IndexMap<bool, Value>> for Value {
     fn from(value: IndexMap<bool, Value>) -> Self {
@@ -540,7 +545,7 @@ pub enum ValueProperties {
     Indexmap(IndexmapProperties),
     Array(ArrayProperties),
     Jagged(JaggedProperties),
-    Function(proto::FunctionProperties)
+    Function(proto::FunctionProperties),
 }
 
 
@@ -683,7 +688,7 @@ pub struct JaggedProperties {
     pub nature: Option<Nature>,
     /// type of data
     pub data_type: DataType,
-    pub releasable: bool
+    pub releasable: bool,
 }
 
 impl JaggedProperties {
@@ -818,7 +823,7 @@ pub enum DataType {
 pub struct AggregatorProperties {
     pub component: proto::component::Variant,
     pub properties: HashMap<String, ValueProperties>,
-    pub lipschitz_constant: Vec<f64>
+    pub lipschitz_constant: Vec<f64>,
 }
 
 #[derive(Clone, Debug)]
@@ -928,9 +933,100 @@ impl Div<f64> for proto::PrivacyUsage {
         self.distance = Some(match self.distance.ok_or_else(|| "distance must be defined")? {
             proto::privacy_usage::Distance::Approximate(approximate) => proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
                 epsilon: approximate.epsilon / rhs,
-                delta: approximate.delta / rhs
+                delta: approximate.delta / rhs,
             })
         });
         Ok(self)
+    }
+}
+
+
+#[cfg(test)]
+pub mod test_data {
+
+    use crate::base::Value;
+
+    pub fn array1d_f64_0() -> Value {
+        ndarray::arr1::<f64>(&[]).into()
+    }
+
+    pub fn array1d_i64_0() -> Value {
+        ndarray::arr1::<i64>(&[]).into()
+    }
+
+    pub fn array1d_bool_0() -> Value {
+        ndarray::arr1::<bool>(&[]).into()
+    }
+
+    pub fn array1d_string_0() -> Value {
+        ndarray::arr1::<String>(&[]).into()
+    }
+
+    pub fn array1d_f64_10_uniform() -> Value {
+        ndarray::arr1(&[
+            0.2642, 0.0674, 0.3674, 0.6783, 0.0139, 0.2740, 0.2942, 0.3816, 0.9062, 0.2864
+        ]).into()
+    }
+
+    pub fn array1d_i64_10_uniform() -> Value {
+        ndarray::arr1(&[
+            5, 6, 1, 2, 7, 2, 1, 9, 3, 6
+        ]).into()
+    }
+
+    pub fn array1d_bool_10_uniform() -> Value {
+        ndarray::arr1(&[
+            false, true, false, false, false, true, true, false, false, true,
+        ]).into()
+    }
+
+    pub fn array1d_string_10_uniform() -> Value {
+        ndarray::arr1(&[
+            "b", "a", "b", "b", "a", "b", "b", "a", "a", "a"
+        ]).mapv(|v| v.to_string()).into()
+    }
+
+    pub fn array2d_f64_0() -> Value {
+        ndarray::arr2::<f64, [f64; 0]>(&[]).into()
+    }
+
+    pub fn array2d_i64_0() -> Value {
+        ndarray::arr2::<i64, [i64; 0]>(&[]).into()
+    }
+
+    pub fn array2d_bool_0() -> Value {
+        ndarray::arr2::<bool, [bool; 0]>(&[]).into()
+    }
+
+    pub fn array2d_string_0() -> Value {
+        ndarray::arr2::<String, [String; 0]>(&[]).into()
+    }
+
+    pub fn array2d_f64_10() -> Value {
+        ndarray::arr2(&[
+            [0., 0., 02., 0.1789],
+            [1., 0., 03., 0.9004],
+            [2., 1., 05., 0.8419],
+            [3., 1., 07., 0.0845],
+            [4., 2., 11., 0.6996],
+            [5., 2., 13., 0.9594],
+            [6., 3., 17., 0.2823],
+            [7., 3., 19., 0.0514],
+            [8., 4., 23., 0.3068],
+            [9., 4., 29., 0.3553],
+        ]).into()
+    }
+
+    pub fn array2d_bool_8() -> Value {
+        ndarray::arr2(&[
+            [false, false, false],
+            [false, false, true],
+            [false, true, false],
+            [false, true, true],
+            [true, false, false],
+            [true, false, true],
+            [true, true, false],
+            [true, true, true],
+        ]).into()
     }
 }
