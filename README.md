@@ -88,7 +88,14 @@ At some point the projects have compiled cross-platform (more testing needed). T
 
 ### Binaries
 
-- (forthcoming PyPi binaries)
+#### PyPi packages
+- (forthcoming)
+
+#### Crates.io
+
+The Rust Validator and Runtime are available as crates:
+- Validator: [whitenoise_validator](https://crates.io/crates/whitenoise_validator) on crates.io
+- Runtime: [whitenoise_runtime](https://crates.io/crates/whitenoise_runtime) on crates.io
 
 ### From Source
 
