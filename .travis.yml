@@ -1,4 +1,13 @@
-
+# ------------------------------------------------------------------
+# Travis CI
+# https://travis-ci.com/github/opendifferentialprivacy/whitenoise-core
+#
+# - WhiteNoise Core Validator and runtime
+#   - Build and test Rust componets
+# - Documentation
+#   - For the master branch, build Rust docs and deploy on:
+#     - https://opendifferentialprivacy.github.io/whitenoise-core/
+# ------------------------------------------------------------------
 
 branches:
   # all branches
@@ -51,10 +60,10 @@ jobs:
       provider: pages
       skip_cleanup: true
       local_dir: docs
-      # Set in the settings page of your repository, as a secure variable
+      # Secure env variable in travis
       github_token: $GITHUB_TOKEN
       keep_history: true
       target_branch: gh-pages
       on:
-        branch: master # switch to master after initial version
-        #branch: develop # switch to master after initial version
+        branch: master 
+        #branch: develop

@@ -192,7 +192,7 @@ pub fn propagate_properties(
         let component_properties = match (dynamic, component_properties) {
             (_, Ok(properties)) => properties,
             (true, Err(err)) => {
-                failed_ids.insert(traversal.pop().unwrap());
+                failed_ids.insert(node_id);
                 warnings.push(serialize_error(err));
                 continue
             },
@@ -521,24 +521,31 @@ pub fn privacy_usage_check(
     privacy : &proto::PrivacyUsage
 ) -> Result<()> {
     use proto::privacy_usage::Distance as Distance;
-    // helper function checks that parameters lie between 0 and 1. Errors if non-positive, warns if
-    // greater than 0
-    let check_params = |privacy_param: f64| -> Result<()> {
+    // helper functions that check that privacy parameters lie in reasonable ranges
+    let check_epsilon = |privacy_param: f64| -> Result<()> {
         if privacy_param <= 0.0 {
-            return Err("Privacy parameter must be greater than 0.".into())
+            return Err("Privacy parameter epsilon must be greater than 0.".into())
         } else if privacy_param > 1.0{
-            println!("Large value of privacy parameter in use.");
+            println!("Large value of privacy parameter epsilon in use.");
+        }
+        Ok(())
+    };
+    let check_delta = |privacy_param: f64| -> Result<()> {
+        if privacy_param < 0.0 {
+            return Err("Privacy parameter delta must be non-negative.".into())
+        } else if privacy_param > 1.0{
+            return Err("Privacy parameter delta must be at most 1.".into())
         }
         Ok(())
     };
     match privacy.distance.as_ref()
         .ok_or_else(|| Error::from("distance must be defined"))? {
         Distance::Pure(x) => {
-            check_params(x.epsilon)?;
+            check_epsilon(x.epsilon)?;
         },
         Distance::Approximate(x) => {
-            check_params(x.epsilon)?;
-            check_params(x.delta)?;
+            check_epsilon(x.epsilon)?;
+            check_delta(x.delta)?;
         }
     };
     Ok(())

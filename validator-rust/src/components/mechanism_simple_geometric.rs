@@ -36,21 +36,27 @@ impl Component for proto::SimpleGeometricMechanism {
             &SensitivitySpace::KNorm(1))?;
 
         let sensitivities = sensitivity_values.array()?.f64()?;
-        let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivities.len())?;
-        let epsilons = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
 
-        // epsilons must be greater than 0.
-        for epsilon in epsilons.into_iter(){
-            if epsilon <= 0.0 {
-                return Err("epsilon: privacy parameter epsilon must be greater than 0".into());
-            };
-            if epsilon > 1.0   {
-                println!("Warning: A large privacy parameter of epsilon = {} is in use", epsilon.to_string());
+
+        if self.privacy_usage.len() == 0 {
+            data_property.releasable = false;
+        } else {
+            let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivities.len())?;
+            let epsilons = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
+
+            // epsilons must be greater than 0.
+            for epsilon in epsilons.into_iter() {
+                if epsilon <= 0.0 {
+                    return Err("epsilon: privacy parameter epsilon must be greater than 0".into());
+                };
+                if epsilon > 1.0 {
+                    println!("Warning: A large privacy parameter of epsilon = {} is in use", epsilon.to_string());
+                }
             }
+            data_property.releasable = true;
         }
 
         data_property.aggregator = None;
-        data_property.releasable = true;
 
         Ok(data_property.into())
     }
