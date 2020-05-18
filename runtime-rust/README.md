@@ -61,3 +61,4 @@ We appreciate all contributions. We welcome pull requests with bug-fixes without
 
 If you plan to contribute new features, utility functions or extensions to the core, please first open an issue and discuss the feature with us.
   - Sending a PR without discussion might end up resulting in a rejected PR, because we might be taking the core in a different direction than you might be aware of.
+  - Please review `../contributing.md` for additional guidelines and guidance.

@@ -4,6 +4,13 @@ Contributions to WhiteNoise are welcome from all members of the community. This 
 on-boarding experience for contributors, contributions to this document are also welcome. 
 Please use the Github issue board to track and take ownership of issues. 
 
+Please let us know if you encounter a bug by [creating an issue](https://github.com/opendifferentialprivacy/whitenoise-core/issues).
+We appreciate all contributions. We welcome pull requests with bug-fixes without prior discussion.
+
+If you plan to contribute new features, utility functions or extensions to the core, please first open an issue and 
+discuss the feature with us. Sending a PR without discussion might end up resulting in a rejected PR, because we might
+ be taking the core in a different direction than you might be aware of.
+
 For a description of the library architecture and installation instructions, see whitenoise-core/README.md. 
 Before contributing, we recommend following the Getting Started guide in that README to get sample 
 notebooks running and to gain some familiarity with the library structure.
