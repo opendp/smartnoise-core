@@ -40,7 +40,9 @@ that must be implemented for common possible types of components.
 
 ### For new statistics:
   - A `Component` implementation containing `propagate_property` function describing 
-        how to propagate input data through that node in the graph.
+        how to propagate properties through that node in the graph. This function also contains
+        checks that differential privacy guarantees are met, e.g. that the sensitivity is computable,
+        that the data is conformable, or if the computation can fail from overflows.
   - A `Sensitivity` implementation with `compute_sensitivity` function that describes how to compute
         the statistic for all combinations of implemented privacy definitions and sensitivity spaces
         - any derivations used for sensitivities should be derived in the `whitepapers/sensitivities`,
@@ -48,14 +50,14 @@ that must be implemented for common possible types of components.
         - include comment in `Sensitivity` implementation that links to the location of the proof
 ### For new DP statistics:
   - An `Expandable` implementation with `expand_component` function which describes how to expand the computation graph
-        to insert each component of the differentially private calculation. (Note that not all the nodes of the
-        expanded graph will be releasable)
+        to insert each component of the differentially private calculation.
   - A `Report` implementation with `summarize` function that stores the results of the differentially private computation as a
         JSON.
 
 #For new mechanisms:
  -  A `Component` implementation containing a `propagate_property` function describing 
-    how to propagate input data through that node in the graph.
+    how to propagate input properties through that node in the graph. This also contains checks on the 
+    privacy parameters to verify that they are reasonable.
  - An `Expandable` implementation with `expand_component` function which describes how to expand the computation graph
  - If possible, an `Accuracy` implementation with `accuracy_to_privacy_usage` and `privacy_usage_to_accuracy`
     functions that describe how to transition between accuracy and privacy guarantees. Any associated derivations 
