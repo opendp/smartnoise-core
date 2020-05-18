@@ -58,7 +58,7 @@ There are three sub-projects that address individual architectural concerns. The
 #### 1. Validator
   - Location: `/validator-rust`
 
-The core library, is the `validator`, which provides a suite of utilities for checking and deriving necessary conditions for an analysis to be differentially private. This includes checking if sufficient properties have been met for each component, deriving sensitivities, noise scales and accuracies for various definitions of privacy, building reports and dynamically validating individual components. This library is written in Rust.
+The core library, is the `validator`, which provides a suite of utilities for checking and deriving sufficient conditions for an analysis to be differentially private. This includes checking if specific properties have been met for each component, deriving sensitivities, noise scales and accuracies for various definitions of privacy, building reports and dynamically validating individual components. This library is written in Rust.
 
 #### 2. Runtime
   - Location: `/runtime-rust`
