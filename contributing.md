@@ -28,46 +28,47 @@ Contributing to the Validator
 
 Components need to be added to both the protobuf and to the source codebase. 
 
-### 1. Add component to protobuf in validator-rust/prototypes:
+### 1. Add a component to protobuf in validator-rust/prototypes:
 
-Add a JSON file to the [components subdirectory](validator-rust/prototypes/components). An entry in components.proto will be made automatically.
+Add a JSON file to the [components subdirectory](validator-rust/prototypes/components). An entry in components.proto will be made upon build. 
 
 ### 2. Add component to src/components:
 
 This will look different depending on the type of component you are contributing. The following list describes traits
-that must be implemented for common types of possible components. 
+that must be implemented for common types of components. 
 
 ### For new statistics:
-  - A `Component` implementation containing `propagate_property` function describing 
-        how to propagate properties through that node in the graph. This function also contains
-        checks that differential privacy guarantees are met, e.g. that the sensitivity is computable,
-        that the data is conformable, or if the computation can fail from overflows.
-  - A `Sensitivity` implementation with `compute_sensitivity` function that describes how to compute
-        the statistic for all combinations of implemented privacy definitions and sensitivity spaces
-        - any derivations used for sensitivities should be derived in the [`whitepapers/sensitivities`](whitepapers/sensitivities),
+  - Include a `Component` implementation containing the `propagate_property` function which 
+        how to propagate properties through that node in the graph. This function also 
+        checks that differential privacy guarantees are met: e.g. that the sensitivity is computable,
+        that the data is conformable, and/or overflows can cause the computation to fail.
+  - A `Sensitivity` implementation with a `compute_sensitivity` function that describes how to compute
+        the statistic for all combinations of implemented privacy definitions and sensitivity spaces.
+        - Any derivations used for sensitivities should be derived in the [`whitepapers/sensitivities`](whitepapers/sensitivities),
         or there should be a citation to published sensitivity analysis (or both).
-        - include comment in `Sensitivity` implementation that links to the location of the proof
+        - Include a comment in the `Sensitivity` implementation that links to the location of the proof
+
 ### For new DP statistics:
-  - An `Expandable` implementation with `expand_component` function which describes how to expand the computation graph
+  - An `Expandable` implementation with an `expand_component` function which describes how to expand the computation graph
         to insert each component of the differentially private calculation.
-  - A `Report` implementation with `summarize` function that stores the results of the differentially private computation as a
-        JSON.
+  - A `Report` implementation with a `summarize` function that stores the results of the differentially private computation 
+        as JSON.
 
 #For new mechanisms:
  -  A `Component` implementation containing a `propagate_property` function describing 
     how to propagate input properties through that node in the graph. This also contains checks on the 
     privacy parameters to verify that they are reasonable.
- - An `Expandable` implementation with `expand_component` function which describes how to expand the computation graph
+ - An `Expandable` implementation with an `expand_component` function which describes how to expand the computation graph
  - If possible, an `Accuracy` implementation with `accuracy_to_privacy_usage` and `privacy_usage_to_accuracy`
     functions that describe how to transition between accuracy and privacy guarantees. Any associated derivations 
     should be recorded in [`whitepapers/accuracy`](whitepapers/accuracies).
- - Contributors should add a whitepaper on the mechanism itself in  [`whitepapers/mechanisms`](whitepapers/mechanisms) or clearly cite the
-        academic paper the mechanism originated from.
+ - Contributors should add a whitepaper on the mechanism itself in  [`whitepapers/mechanisms`](whitepapers/mechanisms) or 
+      clearly cite the academic paper the mechanism originated from.
    
 Contributing to the Rust Runtime
 ================================
 
-Each [Component](runtime-rust/src/components) in the Rust runtime (`runtime-rust`) requires an `Evaluable` trait that describes how to evaluate the a node of the computation graph. Any new component should include documentation for both the arguments to the `evaluate` function and the the return type(s). Additionally, doctests and test modules should be included.
+Each [Component](runtime-rust/src/components) in the Rust runtime (`runtime-rust`) requires an `Evaluable` trait that describes how to evaluate a node of the computation graph. Any new component should include documentation for both the arguments to the `evaluate` function and the the return type(s). Additionally, doctests and test modules should be included.
 
 In order to contribute to underlying mechanisms and noise selection, which are implemented in the crate's [utility 
 functions](https://github.com/opendifferentialprivacy/whitenoise-core/tree/develop/runtime-rust/src/utilities), first read the noise whitepaper in [`whitepaper/noise`](whitepapers/noise) to understand the current design choices. Clearly document and test any code.
