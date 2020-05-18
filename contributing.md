@@ -60,23 +60,19 @@ that must be implemented for common types of possible components.
  - An `Expandable` implementation with `expand_component` function which describes how to expand the computation graph
  - If possible, an `Accuracy` implementation with `accuracy_to_privacy_usage` and `privacy_usage_to_accuracy`
     functions that describe how to transition between accuracy and privacy guarantees. Any associated derivations 
-    should be recorded in `whitepapers/accuracy`.
+    should be recorded in [`whitepapers/accuracy`](whitepapers/accuracies).
  - Contributors should add a whitepaper on the mechanism itself in  [`whitepapers/mechanisms`](whitepapers/mechanisms) or clearly cite the
         academic paper the mechanism originated from.
    
 Contributing to the Rust Runtime
 ================================
 
-Any component in the Rust runtime (`runtime-rust`) requires an `Evaluable` trait that describes how to evaluate the 
-a node of the computation graph. Any new component should include documentation of the arguments to the `evaluate` 
-function and the return type. Additionally, doctests and test modules should be included.
+Each [Component](runtime-rust/src/components) in the Rust runtime (`runtime-rust`) requires an `Evaluable` trait that describes how to evaluate the a node of the computation graph. Any new component should include documentation for both the arguments to the `evaluate` function and the the return type(s). Additionally, doctests and test modules should be included.
 
-In order to contribute to underlying mechanisms and noise selection, which are implemented in the crate's utility 
-functions, first read the noise whitepaper in `whitepaper/noise` to understand the current design choices. Clearly
-document and test any code.
+In order to contribute to underlying mechanisms and noise selection, which are implemented in the crate's [utility 
+functions](https://github.com/opendifferentialprivacy/whitenoise-core/tree/develop/runtime-rust/src/utilities), first read the noise whitepaper in [`whitepaper/noise`](whitepapers/noise) to understand the current design choices. Clearly document and test any code.
 
 Documentation and Testing
 =======================
 Code contributions should include both doctests and unit tests. We also encourage contributors to run the samples in 
-whitenoise-samples and to write their own samples that highlight their contributions. All code is integration tested and
-reviewed before merging. 
+[whitenoise-samples](https://github.com/opendifferentialprivacy/whitenoise-samples) and to write their own samples that highlight their contributions. All code is integration tested and reviewed before merging. 
