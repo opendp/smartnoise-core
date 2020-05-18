@@ -33,7 +33,7 @@ This often manifests as a compilation failure from `cargo build` ending with
         
         To build the runtime, set the feature flag
             
-            cd runtime-rust; cargo build --feature use-system-libs
+            cd runtime-rust; cargo build --features use-system-libs
         
         When building any of the language bindings, just set the variable
         
