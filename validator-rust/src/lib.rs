@@ -7,6 +7,8 @@
 //!
 //! The validator also takes simple components from the Whitenoise runtime and combines them
 //! into more complex mechanisms.
+//!
+//! - [Top-level documentation](https://opendifferentialprivacy.github.io/whitenoise-core/)
 
 // `error_chain!` can recurse deeply
 #![recursion_limit = "1024"]

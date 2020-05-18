@@ -21,7 +21,7 @@ Differentially private computations are specified as an analysis graph that can 
   - [Components](#components)
   - [Architecture](#architecture)
 - [Installation](#installation)
-  - [Binaries](#binaries)
+  - [Crates.io](#cratesio)
   - [From Source](#from-source)
 - [Getting Started](#getting-started)
   - [Jupyter Notebook Examples](#jupyter-notebook-examples)
@@ -85,103 +85,66 @@ Communication among projects is handled via [Protocol Buffer definitions](https:
 At some point the projects have compiled cross-platform (more testing needed). The validator and reference runtime compile to standalone libraries that may be linked into your project, allowing communication over C foreign function interfaces.
 
 ## Installation
-
-### Binaries
+Refer to [troubleshooting.md](troubleshooting.md) for install problems.
 
 #### PyPi packages
-- Please see [whitenoise-core-python](https://github.com/opendifferentialprivacy/whitenoise-core-python) which contains python bindings, including links to PyPi packages.
+Refer to [whitenoise-core-python](https://github.com/opendifferentialprivacy/whitenoise-core-python) which contains python bindings, including links to PyPi packages.
 
 #### Crates.io
+The crates are intended for library consumers.
 
 The Rust Validator and Runtime are available as crates:
 - Validator: [whitenoise_validator](https://crates.io/crates/whitenoise_validator) on crates.io
 - Runtime: [whitenoise_runtime](https://crates.io/crates/whitenoise_runtime) on crates.io
 
 ### From Source
+The source install is intended for library developers.
+
+You may find it easier to use the library with this repository set up as a submodule of some set of language bindings. 
+In this case, switch to the language bindings setup.
+You can still push commits and branches from the whitenoise-core submodule of whatever bindings language you prefer.
+- [Python](https://github.com/opendifferentialprivacy/whitenoise-core-python#from-source)
+- [R (WIP)](https://github.com/opendifferentialprivacy/whitenoise-core-R#installation)
 
 1. Clone the repository
+    
+        git clone git@github.com:opendifferentialprivacy/whitenoise-core.git
 
-        git clone $REPOSITORY_URI
-
-    - You may find it easier to use the library with this repository set up as a submodule of the language bindings. In this case, skip this step and refer to the language bindings setup.
-    - The default install uses libtools, which requires no spaces in the path to your clone.
-
-2. Install system dependencies (rust, gcc, protoc, python 3.6+ for bindings)
-
+2. Install system dependencies (rust, gcc)   
     Mac:
-
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-        xcode-select --install
-        brew install protobuf python
-
-      You can test with `cargo build` in a new terminal.
-
+    ```shell script
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+    xcode-select --install
+    ```
+    
     Linux:
-
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-        sudo apt-get install diffutils gcc make m4 python
-        sudo snap install protobuf --classic
-
-      You can test with `cargo build` in a new terminal.
+    ```shell script
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+    sudo apt-get install diffutils gcc make m4
+    ```
 
     Windows:
+    Install WSL and refer to the linux instructions.
 
-        choco install rust msys2 protoc python
-
-      For non-Chocolatey users: download and install the latest build of rust, msys2, protobuf and python
-      - https://forge.rust-lang.org/infra/other-installation-methods.html
-      - https://github.com/protocolbuffers/protobuf/releases/latest
-      - https://www.msys2.org/
-      - https://www.python.org/downloads/windows/
-
-      Then install gcc under MSYS2
-
-        refreshenv
-        reg Query "HKLM\Hardware\Description\System\CentralProcessor\0" | find /i "x86" > NUL && setx WN_SYS_ARCH=i686 || setx WN_SYS_ARCH=x86_64
-        bash -xlc "pacman --noconfirm -S --needed pacman-mirrors"
-        bash -xlc "pacman --noconfirm -S --needed diffutils make mingw-w64-%WN_SYS_ARCH%-gcc"
-
-      You can test with `bash -xc cargo build`. The bash prefix ensures that gmp and mpfr build with the GNU/gcc/mingw toolchain.
-
-3. Optional - Install language bindings
-    - [Python](https://github.com/opendifferentialprivacy/whitenoise-core-python#from-source)
-    - [R (WIP)](https://github.com/opendifferentialprivacy/whitenoise-core-R#installation)
-
-
-#### If `cargo build` fails due to the package `gmp-mpfr-sys`
-
-First install system libs (GMP version 6.2, MPFR version 4.0.2-p1)
-
-  Mac:
-
-    brew install gmp mpfr
-
-  Linux:
-    Build gmp and mpfr from source. Then set the environment variable:
-
-    export DEP_GMP_OUT_DIR=/path/to/folder/containing/lib/and/includes
-
-  Windows:
-    This is not fully tested. Build gmp and mpfr from source. Then set the environment variable and also switch the rust toolchain:
-
-    setx DEP_GMP_OUT_DIR=/path/to/folder/containing/lib/and/includes
-    rustup toolchain install stable-%WN_SYS_ARCH%-pc-windows-gnu
-    rustup default stable-%WN_SYS_ARCH%-pc-windows-gnu
-
-To install the python bindings, set the variable
-
-    export WN_USE_SYSTEM_LIBS=True
-
-To build the runtime, set the feature flag
-
-    cd runtime-rust; cargo build --feature use-system-libs
-
-#### If `cargo build` fails due to the package `openssl`
-
-Provide an alternative openssl installation, either via directions in the automatic or manual section:
-  + https://docs.rs/openssl/0.10.29/openssl/
-
-Otherwise, please open an issue.
+3. In a new terminal:  
+    Build crate
+    
+        cargo build
+    
+    Test crate
+    
+        cargo test
+    
+    Document crate
+    
+        cargo rustdoc --open
+    
+    Build production docs
+    
+        ./build_docs.sh
+    
+There are crates in `validator-rust` and `runtime-rust`, and a virtual crate in root that runs commands on both.
+Switch between crates via `cd`, or by setting the manifest path `--manifest-path=validator-rust/Cargo.toml`.
 
 
 ---
