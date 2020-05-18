@@ -17,9 +17,9 @@
 	\vspace{12pt} % Whitespace
 }
 
-\author{\LARGE Christian Covington} % Your name
+\author{} % Your name
 
-\date{\normalsize\today} % Today's date (\today) or a custom date
+\date{} % Today's date (\today) or a custom date
 
 \begin{document}
 
@@ -40,7 +40,8 @@ in the library, as properly doing so is more complicated in practice than in the
 \section{Source of Randomness}
 % TODO: make notes here on different models of noise generation?
 All of our random number generation involves uniform random sampling of bits via OpenSSL.
-We will take as given that OpenSSL is cryptographically secure.
+We will take as given that OpenSSL is cryptographically secure. We intend to support a broader set 
+of cryptographically secure sources of randomness at a later date.
 
 \section{Preliminaries}
 \begin{definition}
@@ -102,19 +103,14 @@ of floating-point operations with \emph{exact rounding}.
 MPFR has methods for, among other things, performing basic arithmetic operations and generating samples
 from basic noise distributions. \newline 
 
-\subsubsection{Use in the library}
-We use MPFR to sample from Uniform[0,1] and Gaussian(0,1) with exact rounding. We are currently thinking about what exact rounding can buy us in terms 
-of ensuring differential privacy in practice, but for now are using these only as accurate sampling mechanisms. \newline 
-
 \subsection{Biased Bit Sampling}
 Recall that we are taking as given that we are able to sample uniform bits from OpenSSL.
 For many applications, however, we want to be able to sample bits non-uniformly,
 i.e. where $\Pr(bit = 1) \neq \frac{1}{2}$. To do so, we use the $sample\_bit$ function.
 
 \subsubsection{$sample\_bit(prob: f64)$}
-This function uses the unbiased bit generation from OpenSSL to return a single bit, where $\Pr(bit = 1) = prob$.
-I was introduced to the method for biasing an unbiased coin from a homework assignment given by Michael Mitzenmacher,
-and I later found a write-up online \href{https://amakelov.wordpress.com/2013/10/10/arbitrarily-biasing-a-coin-in-2-expected-tosses/}{here}.
+This function uses the unbiased bit generation from OpenSSL to return a single bit, where $\Pr(bit = 1) = prob$ --
+there is a nice write-up of the algorithm \href{https://amakelov.wordpress.com/2013/10/10/arbitrarily-biasing-a-coin-in-2-expected-tosses/}{here}.
 We will give a general form of the algorithm, and then talk about implementation details.
 \begin{algorithm}[H]
 	\caption{Biasing an unbiased coin}
@@ -153,8 +149,51 @@ Our binary expansion is just the mantissa $(1.m_1m_2 \hdots m_{52})_2$, with
 the radix point shifted based on the value of the exponent.
 We can then index into the properly shifted mantissa and check the value of the $k$th element.
 
+This method was proposed in \cite{Mir12} as a component of a larger attempt to create
+a version of the Laplace mechanism that is not susceptible to floating-point attacks.\footnote{Note that the
+original method generates values $\in [0,1)$ rather than arbitrary $[min, max)$.}
+There is no universally agreed upon method for generating uniform random numbers (for privacy
+applications or otherwise), but this method seems to approximate the real numbers better than many
+others because of the sampling relative to the ULP. \newline
+
+\begin{tcolorbox}[colback = {green}, title = {Known Privacy Issues}, colbacktitle = black]
+	When $i=1023$ we are sampling from subnormal floating-point numbers. Because processors do not typically support
+	subnormals natively, they take much longer to sample and open us up to an easier timing attack, as
+	seen in \cite{AKM+15}. \newline 
+
+	We are incurring some floating-point error when converting from $[0,1)$ to $[min, max)$ which
+	could jeopardize privacy guarantees in ways that are difficult to reason about.\cite{Mir12} \cite{Ilv19}
+\end{tcolorbox}
+
+\subsubsection{Sampling from Uniform[min, max]}
+In this method, we start by generating a floating-point number in $[0,1)$,
+where each is generated with probability relative to its unit of least precision (ULP).\footnote{The ULP is the value
+represented by the least significant bit of the mantissa if that bit is a 1.}
+That is, we generate $x \in [2^{-i}, 2^{-i+1})$ with probability $\frac{1}{2^i}$
+for all $i \in \{1,2,\hdots,1022\}$ and $x \in [0, 2^{-1022})$ for $i = 1023$.
+At the end, we will scale our output from $[0,1)$ to be instead in $[min, max)$. Then our function outputs $u$, where
+\[ u = (1.m_1m_2 \hdots m_{52})_2 * 2^{-e} * (max - min) + min. \]
+
+This method was proposed in \cite{Mir12} as a component of a larger attempt to create
+a version of the Laplace mechanism that is not susceptible to floating-point attacks.\footnote{Note that the
+original method generates values $\in [0,1)$ rather than arbitrary $[min, max)$.}
+There is no universally agreed upon method for generating uniform random numbers (for privacy
+applications or otherwise), but this method seems to approximate the real numbers better than many
+others because of the sampling relative to the ULP. \newline
+
+\begin{tcolorbox}[colback = {green}, title = {Known Privacy Issues}, colbacktitle = black]
+	When $i=1023$ we are sampling from subnormal floating-point numbers. Because processors do not typically support
+	subnormals natively, they take much longer to sample and open us up to an easier timing attack, as
+	seen in \cite{AKM+15}. \newline
+
+	We are incurring some floating-point error when converting from $[0,1)$ to $[min, max)$ which
+	could jeopardize privacy guarantees in ways that are difficult to reason about.\cite{Mir12} \cite{Ilv19}
+\end{tcolorbox}
+
+We do have a method for generating uniform samples via MPFR that respects exact rounding, but it is being used in only a few places in the library.
+
 \subsection{Other Continuous Distributions}
-In general, we can generate draws from non-uniform continuous distributions (e.g. Laplace)
+In general, we can generate draws from non-uniform continuous distributions (e.g. Laplace, Gaussian)
 by using \href{https://en.wikipedia.org/wiki/Inverse_transform_sampling}{inverse transform sampling}.
 To draw from a distribution $f$ with CDF $F$,
 we sample $u$ from $Unif[0,1)$ and return $F^{-1}(u)$. \newline
@@ -166,7 +205,10 @@ we sample $u$ from $Unif[0,1)$ and return $F^{-1}(u)$. \newline
 	currently have a good solution.
 \end{tcolorbox}
 Because of the vulnerabilities inherent in using floating-point arithmetic, we would
-like to avoid using inverse transform sampling when possible.
+like to avoid using inverse transform sampling when possible. \newline 
+
+As mentioned for the Uniform, wehave a method for generating Gaussian samples via MPFR that respects exact rounding. It is not 
+currently being used in the library.
 
 \subsection{Geometric Distribution}
 The Geometric is one such case where we can generate a distribution without inverse transform sampling.
