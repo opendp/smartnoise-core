@@ -1,7 +1,7 @@
 [package]
 name = "whitenoise_runtime"
-version = "0.1.0"
-authors = ["Shoeboxam <shoeboxam@gmail.com>"]
+version = "0.1.1"
+authors = ["OpenDP-WhiteNoise <whitenoise@opendp.io>"]
 description = "A library of algorithms for differentially private data analysis."
 readme = "README.md"
 keywords = ["differential privacy", "data privacy"]
