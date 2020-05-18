@@ -38,25 +38,64 @@ The exponential mechanism preserves $(\varepsilon,0)$-differential privacy \cite
 
 Note that the exponential mechanism may not be tractable in many cases, as it assumes the existence of a utility function, and even if one exists it may not be tractable to compute it efficiently. 
 
-\section{An Exponential Mechanism for a Median}
+\section{An Exponential Mechanism for a quantile}
 
 \subsection{Defining a sensible utility function}
 
-Note that a user will prefer an output that is closer to the true median over one that is further away. Let $x$ be an (ordered) data set, let $r$ be a possible output, and let $n$ be the size of the data set. Note that if $r$ is close to the median, its rank will be close to $n/2$. Then, the following utility function is a sensical one:
+Note that a user will prefer an output that is closer to the true quantile over one that is further away. Let $x$ be an (ordered) data set, let $r$ be a possible output, and let $N$ be the size of the data set. Let $\#(Z>r)$ refer to the number of points in $x$ above $r$. Then, the following is a reasonable utility function for a release $r$ for the $\alpha$-quantile of $x$.
 
 \begin{equation}
-u(x, r) = - \left\vert \text{rank}_x(r) - \frac{n}{2} \right\vert.\footnote{Note that you could use a different measure of distance here if desired; an $L_1$ norm in terms of rank is just convenient to reduce sensitivity.}
-\end{equation}
-
-Note that the \textit{rank} function here is a slight abuse of notation since $r$ is an element from the \textit{data range}, not from the underlying database $x$, so does not have a rank. 
+u(x,r) = \max(\alpha, (1-\alpha))N - \vert (1-\alpha)\#(Z<r) - \alpha\#(Z>r)\vert.
+\end{equation} 
 
 \subsection{Sensitivity of the utility function}
 
 \subsubsection{Neighboring Definition: Change One}
+\begin{lemma}
+The above utility function $u$ has $\ell-1$ sensitivity bounded above by 1 in the change one model.
+\end{lemma}
 
+\begin{proof}
+Let $c_1 = \#(Z<r)$ and $c_2 = \#(Z>r)$. In the worst case, $c_1$ increases by 1 and $c_2$ decreases by 1.
+Then, 
+\begin{align*}
+\Delta u &= \vert (1-\alpha) (c_1 + 1) - \alpha (c_2-1) \vert - \vert (1-\alpha) c_1 - \alpha c_2 \vert  \\
+ &\le \vert (1-\alpha) (c_1 + 1) - \alpha (c_2-1) - (1-\alpha) c_1 + \alpha c_2 \vert\\
+ & \le \vert c_1 + 1 - \alpha c_1 - \alpha - \alpha c_2 + \alpha - c_1 + \alpha c_1 + \alpha c_2 \vert\\
+&= 1
+\end{align*}
+\end{proof}
 \subsubsection{Neighboring Definition: Add/Drop One}
 
-\subsection{The Normalization Factor}
+\begin{lemma}
+The above utility function $u$ has $\ell-1$ sensitivity bounded above by $\max(1-\alpha, \alpha)$ in the add/drop one model.
+\end{lemma}
+
+\begin{proof}
+Let $c_1 = \#(Z<r)$ and $c_2 = \#(Z>r)$.  Consider what happens if one point is added. There are two cases that would impact the utility function: 
+\begin{enumerate}
+\item $c_1$ increases by one and nothing happens to $c_2$.
+\item $c_2$ increases by one and nothing happens to $c_1$.
+\end{enumerate}
+
+Say the first case occurs. Then,
+
+\begin{align*}
+\delta u &= | (1-\alpha) (c_1 + 1) - \alpha (c_2) | - | (1-\alpha) c_1 - \alpha c_2 |  \\
+ 	&\le | (1-\alpha) (c_1 + 1) - \alpha (c_2) - (1-\alpha) c_1 + \alpha c_2 | \\
+	&= 1 - \alpha
+\end{align*}
+
+In the second case,
+
+\begin{align*}
+\delta u &= \vert (1-\alpha) (c_1) - \alpha (c_2 + 1) \vert - \vert (1-\alpha) c_1 - \alpha c_2 \vert \\
+	&\le \vert c_1 -\alpha c_1 - \alpha c_2 - \alpha - c_1 + \alpha c_1 + \alpha c_2  \vert\\
+	&= \alpha 
+\end{align*}
+\end{proof}
+
+Subtracting a point leads to the same results. 
 
 \bibliographystyle{alpha}
 \nocite{*}
