@@ -89,7 +89,7 @@ At some point the projects have compiled cross-platform (more testing needed). T
 ### Binaries
 
 #### PyPi packages
-- (forthcoming)
+- Please see [whitenoise-core-python](https://github.com/opendifferentialprivacy/whitenoise-core-python) which contains python bindings, including links to PyPi packages.
 
 #### Crates.io
 
