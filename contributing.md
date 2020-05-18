@@ -2,28 +2,26 @@ Contributing to WhiteNoise
 =============================
 Contributions to WhiteNoise are welcome from all members of the community. This document is here to simplify the 
 on-boarding experience for contributors, contributions to this document are also welcome. 
-Please use the Github issue board to track and take ownership of issues. 
+Please use the [GitHub issue board](https://github.com/orgs/opendifferentialprivacy/projects/1) to track and take ownership of issues. 
 
-Please let us know if you encounter a bug by [creating an issue](https://github.com/opendifferentialprivacy/whitenoise-core/issues).
-We appreciate all contributions. We welcome pull requests with bug-fixes without prior discussion.
+Please let us know if you encounter a bug by [creating an issue](https://github.com/opendifferentialprivacy/whitenoise-core/issues). We appreciate all contributions. We welcome pull requests with bug-fixes without prior discussion.
 
 If you plan to contribute new features, utility functions or extensions to the core, please first open an issue and 
 discuss the feature with us. Sending a PR without discussion might end up resulting in a rejected PR, because we might
  be taking the core in a different direction than you might be aware of.
 
-For a description of the library architecture and installation instructions, see whitenoise-core/README.md. 
-Before contributing, we recommend following the Getting Started guide in that README to get sample 
-notebooks running and to gain some familiarity with the library structure.
+For a description of the library architecture and installation instructions, see [whitenoise-core/README.md](./README.md). 
+Before contributing, we recommend following the [Getting Started guide](./README.md#getting-started) in that README to get sample notebooks running and to gain some familiarity with the library structure.
 
 General Contribution Guidelines
 ===============================
 
-- Use the issues boards
+- Use [GitHub issues](https://github.com/opendifferentialprivacy/whitenoise-core/issues) including the [Github issue board](https://github.com/orgs/opendifferentialprivacy/projects/1).
 - Anything implemented from the differential privacy literature should contain clear citations and/or whitepapers 
 explaining any necessary derivations.
-- Code should be clearly documented and include testing. See https://doc.rust-lang.org/rustdoc/documentation-tests.html
-for an explanation on how to implement block tests and https://doc.rust-lang.org/book/ch11-03-test-organization.html for
-information on testing modules.
+- Code should be clearly documented and include testing:
+  - Block tests in Rust: https://doc.rust-lang.org/rustdoc/documentation-tests.html
+  - Testing modules in Rust: https://doc.rust-lang.org/book/ch11-03-test-organization.html 
 
 Contributing to the Validator
 =============================
