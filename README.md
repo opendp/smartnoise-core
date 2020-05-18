@@ -68,8 +68,9 @@ There must also be a medium to execute the analysis, called a `runtime`. There i
 #### 3. Bindings
   - Python Bindings: [whitenoise-core-python](https://github.com/opendifferentialprivacy/whitenoise-core-python)
   - R Bindings (in progress): [whitenoise-core-R](https://github.com/opendifferentialprivacy/whitenoise-core-R)
+  - Rust Bindings (in progress): [whitenoise-core-Rust](https://opendifferentialprivacy.github.io/whitenoise-core/doc/whitenoise_validator/bindings/index.html)
 
-Finally, there are helper libraries for building analyses, called `bindings`. Bindings may be written for any language, and are thin wrappers over the validator and/or runtime(s). Language bindings are currently available for Python, with support for at minimum R and SQL forthcoming.
+Finally, there are helper libraries for building analyses, called `bindings`. Bindings may be written for any language, and are thin wrappers over the validator and/or runtime(s). Language bindings are currently available for Python, with support for at minimum R, Rust and SQL forthcoming.
 
 
 #### Note on Protocol Buffers
@@ -105,6 +106,7 @@ In this case, switch to the language bindings setup.
 You can still push commits and branches from the whitenoise-core submodule of whatever bindings language you prefer.
 - [Python](https://github.com/opendifferentialprivacy/whitenoise-core-python#from-source)
 - [R (WIP)](https://github.com/opendifferentialprivacy/whitenoise-core-R#installation)
+- [Rust (WIP)](https://opendifferentialprivacy.github.io/whitenoise-core/doc/whitenoise_validator/bindings/index.html)
 
 1. Clone the repository
     
