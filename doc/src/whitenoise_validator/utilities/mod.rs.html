@@ -687,6 +687,13 @@
 <span id="687">687</span>
 <span id="688">688</span>
 <span id="689">689</span>
+<span id="690">690</span>
+<span id="691">691</span>
+<span id="692">692</span>
+<span id="693">693</span>
+<span id="694">694</span>
+<span id="695">695</span>
+<span id="696">696</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">json</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">serial</span>;
@@ -1211,24 +1218,31 @@
     <span class="ident">privacy</span> : <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span>
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">use</span> <span class="ident">proto</span>::<span class="ident">privacy_usage</span>::<span class="ident">Distance</span> <span class="kw">as</span> <span class="ident">Distance</span>;
-    <span class="comment">// helper function checks that parameters lie between 0 and 1. Errors if non-positive, warns if</span>
-    <span class="comment">// greater than 0</span>
-    <span class="kw">let</span> <span class="ident">check_params</span> <span class="op">=</span> <span class="op">|</span><span class="ident">privacy_param</span>: <span class="ident">f64</span><span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="comment">// helper functions that check that privacy parameters lie in reasonable ranges</span>
+    <span class="kw">let</span> <span class="ident">check_epsilon</span> <span class="op">=</span> <span class="op">|</span><span class="ident">privacy_param</span>: <span class="ident">f64</span><span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="ident">privacy_param</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0.0</span> {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;Privacy parameter must be greater than 0.&quot;</span>.<span class="ident">into</span>())
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;Privacy parameter epsilon must be greater than 0.&quot;</span>.<span class="ident">into</span>())
         } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">privacy_param</span> <span class="op">&gt;</span> <span class="number">1.0</span>{
-            <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;Large value of privacy parameter in use.&quot;</span>);
+            <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;Large value of privacy parameter epsilon in use.&quot;</span>);
+        }
+        <span class="prelude-val">Ok</span>(())
+    };
+    <span class="kw">let</span> <span class="ident">check_delta</span> <span class="op">=</span> <span class="op">|</span><span class="ident">privacy_param</span>: <span class="ident">f64</span><span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="ident">privacy_param</span> <span class="op">&lt;</span> <span class="number">0.0</span> {
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;Privacy parameter delta must be non-negative.&quot;</span>.<span class="ident">into</span>())
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">privacy_param</span> <span class="op">&gt;</span> <span class="number">1.0</span>{
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;Privacy parameter delta must be at most 1.&quot;</span>.<span class="ident">into</span>())
         }
         <span class="prelude-val">Ok</span>(())
     };
     <span class="kw">match</span> <span class="ident">privacy</span>.<span class="ident">distance</span>.<span class="ident">as_ref</span>()
         .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;distance must be defined&quot;</span>))<span class="question-mark">?</span> {
         <span class="ident">Distance</span>::<span class="ident">Pure</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> {
-            <span class="ident">check_params</span>(<span class="ident">x</span>.<span class="ident">epsilon</span>)<span class="question-mark">?</span>;
+            <span class="ident">check_epsilon</span>(<span class="ident">x</span>.<span class="ident">epsilon</span>)<span class="question-mark">?</span>;
         },
         <span class="ident">Distance</span>::<span class="ident">Approximate</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> {
-            <span class="ident">check_params</span>(<span class="ident">x</span>.<span class="ident">epsilon</span>)<span class="question-mark">?</span>;
-            <span class="ident">check_params</span>(<span class="ident">x</span>.<span class="ident">delta</span>)<span class="question-mark">?</span>;
+            <span class="ident">check_epsilon</span>(<span class="ident">x</span>.<span class="ident">epsilon</span>)<span class="question-mark">?</span>;
+            <span class="ident">check_delta</span>(<span class="ident">x</span>.<span class="ident">delta</span>)<span class="question-mark">?</span>;
         }
     };
     <span class="prelude-val">Ok</span>(())
