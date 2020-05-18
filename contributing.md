@@ -19,7 +19,7 @@ General Contribution Guidelines
 - Use [GitHub issues](https://github.com/opendifferentialprivacy/whitenoise-core/issues) including the [Github issue board](https://github.com/orgs/opendifferentialprivacy/projects/1).
 - Anything implemented from the differential privacy literature should contain clear citations and/or whitepapers 
 explaining any necessary derivations.
-- Code should be clearly documented and include testing:
+- Code should be clearly documented and include testing. For more information, please see:
   - Block tests in Rust: https://doc.rust-lang.org/rustdoc/documentation-tests.html
   - Testing modules in Rust: https://doc.rust-lang.org/book/ch11-03-test-organization.html 
 
@@ -30,35 +30,31 @@ Components need to be added to both the protobuf and to the source codebase.
 
 ### 1. Add component to protobuf in validator-rust/prototypes:
 
-Add a json file to the components subdirectory. An entry in components.proto will be made automatically.
+Add a JSON file to the [components subdirectory](validator-rust/prototypes/components). An entry in components.proto will be made automatically.
+
 ### 2. Add component to src/components:
 
-This will look different depending on the type of component you are contributing. The following describes the traits
-that must be implemented for common possible types of components. 
+This will look different depending on the type of component you are contributing. The following list describes traits
+that must be implemented for common types of possible components. 
 
 ### For new statistics:
-  - A `Component` implementation containing `propagate_property` function describing 
+  - A `Component` implementation including the `propagate_property` function to describe 
         how to propagate input data through that node in the graph.
-  - A `Sensitivity` implementation with `compute_sensitivity` function that describes how to compute
-        the statistic for all combinations of implemented privacy definitions and sensitivity spaces
-        - any derivations used for sensitivities should be derived in the `whitepapers/sensitivities`,
-        or there should be a citation to published sensitivity analysis (or both).
-        - include comment in `Sensitivity` implementation that links to the location of the proof
-### For new DP statistics:
-  - An `Expandable` implementation with `expand_component` function which describes how to expand the computation graph
-        to insert each component of the differentially private calculation. (Note that not all the nodes of the
-        expanded graph will be releasable)
-  - A `Report` implementation with `summarize` function that stores the results of the differentially private computation as a
-        JSON.
+  - A `Sensitivity` implementation including a `compute_sensitivity` function that describes how to compute the statistic for all combinations of implemented privacy definitions and sensitivity spaces
+    - Any derivations used for sensitivities should be derived in the [`whitepapers/sensitivities`](whitepapers/sensitivities), or there should be a citation to published sensitivity analysis (or both).
+    - Include a comment in the `Sensitivity` implementation that links to the location of the proof
 
-#For new mechanisms:
- -  A `Component` implementation containing a `propagate_property` function describing 
+### For new DP statistics:
+  - An `Expandable` implementation with an `expand_component` function that describes how to expand the computation graph to insert each component of the differentially private calculation. 
+     - Note: Not all the nodes of the expanded graph will be releasable.
+  - A `Report` implementation including a `summarize` function that stores the results of the differentially private computation in JSON.
+
+### For new mechanisms:
+ - A `Component` implementation containing a `propagate_property` function describing 
     how to propagate input data through that node in the graph.
- - An `Expandable` implementation with `expand_component` function which describes how to expand the computation graph
- - If possible, an `Accuracy` implementation with `accuracy_to_privacy_usage` and `privacy_usage_to_accuracy`
-    functions that describe how to transition between accuracy and privacy guarantees. Any associated derivations 
-    should be recorded in `whitepapers/accuracy`.
- - Contributors should add a whitepaper on the mechanism itself in `whitepapers/mechanisms` or clearly cite the
+ - An `Expandable` implementation with an `expand_component` function which describes how to expand the computation graph.
+ - If possible, an `Accuracy` implementation with `accuracy_to_privacy_usage` and `privacy_usage_to_accuracy` functions that describe how to transition between accuracy and privacy guarantees. Any associated derivations should be recorded in [`whitepapers/accuracy`](whitepapers/accuracy).
+ - Contributors should add a whitepaper on the mechanism itself in [`whitepapers/mechanisms`](whitepapers/mechanisms) or clearly cite the
         academic paper the mechanism originated from.
    
 Contributing to the Rust Runtime
