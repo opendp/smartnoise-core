@@ -63,8 +63,56 @@
 <span id="63">63</span>
 <span id="64">64</span>
 <span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="doccomment">//! Shorthand interface for building differentially private analyses.</span>
+<span class="doccomment">//! Work-in-progress shorthand interface for building differentially private analyses.</span>
+<span class="doccomment">//! Bundled with the rust validator.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! The Analysis struct has impl&#39;s for each component variant, that returns a builder object.</span>
+<span class="doccomment">//! Mandatory arguments are supplied in analysis impl, but optional arguments and evaluated values may be set via the builder.</span>
+<span class="doccomment">//! Once the component is ready to add to the analysis, call enter() on the builder to get a node id of the component.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! # Example</span>
+<span class="doccomment">//! ```</span>
+<span class="doccomment">//! use whitenoise_validator::bindings::Analysis;</span>
+<span class="doccomment">//! use ndarray::arr1;</span>
+<span class="doccomment">//! let mut analysis = Analysis::new();</span>
+<span class="doccomment">//! let lit_2 = analysis.literal().value(2.0.into()).enter();</span>
+<span class="doccomment">//! let lit_3 = analysis.literal().value(3.0.into()).enter();</span>
+<span class="doccomment">//! let _lit_5 = analysis.add(lit_2, lit_3).enter();</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! let col_a = analysis.literal()</span>
+<span class="doccomment">//!     .value(arr1(&amp;[1., 2., 3.]).into_dyn().into())</span>
+<span class="doccomment">//!     .enter();</span>
+<span class="doccomment">//! analysis.mean(col_a).enter();</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! analysis.count(col_a).enter();</span>
+<span class="doccomment">//! println!(&quot;graph {:?}&quot;, analysis.components);</span>
+<span class="doccomment">//! println!(&quot;release {:?}&quot;, analysis.release);</span>
+<span class="doccomment">//! ```</span>
 
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">proto</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">base</span>::<span class="ident">Release</span>;
