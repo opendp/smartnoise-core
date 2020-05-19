@@ -47,8 +47,8 @@ jobs:
     #
     - echo $TRAVIS_BRANCH;
     # switch to master after initial version
-    #- if [ "$TRAVIS_BRANCH" == "develop" ]; then
-    - if [ "$TRAVIS_BRANCH" == "master" ]; then
+    #- if [ "$TRAVIS_BRANCH" == "master" ]; then
+    - if [ "$TRAVIS_BRANCH" == "ms_readme" ]; then
         bash build_docs.sh;
       fi;
     # -------------------------------------------
@@ -65,5 +65,6 @@ jobs:
       keep_history: true
       target_branch: gh-pages
       on:
-        branch: master 
+        branch: ms_readme
+        #branch: master
         #branch: develop
