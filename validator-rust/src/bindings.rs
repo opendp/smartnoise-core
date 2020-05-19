@@ -1,4 +1,28 @@
-//! Shorthand interface for building differentially private analyses.
+//! Work-in-progress shorthand interface for building differentially private analyses.
+//! Bundled with the rust validator.
+//!
+//! The Analysis struct has impl's for each component variant, that returns a builder object.
+//! Mandatory arguments are supplied in analysis impl, but optional arguments and evaluated values may be set via the builder.
+//! Once the component is ready to add to the analysis, call enter() on the builder to get a node id of the component.
+//!
+//! # Example
+//! ```
+//! use whitenoise_validator::bindings::Analysis;
+//! use ndarray::arr1;
+//! let mut analysis = Analysis::new();
+//! let lit_2 = analysis.literal().value(2.0.into()).enter();
+//! let lit_3 = analysis.literal().value(3.0.into()).enter();
+//! let _lit_5 = analysis.add(lit_2, lit_3).enter();
+//!
+//! let col_a = analysis.literal()
+//!     .value(arr1(&[1., 2., 3.]).into_dyn().into())
+//!     .enter();
+//! analysis.mean(col_a).enter();
+//!
+//! analysis.count(col_a).enter();
+//! println!("graph {:?}", analysis.components);
+//! println!("release {:?}", analysis.release);
+//! ```
 
 use crate::proto;
 use crate::base::Release;
