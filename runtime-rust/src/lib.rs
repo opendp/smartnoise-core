@@ -2,7 +2,9 @@
 //! 
 //! The runtime contains implementations of basic data transformations and aggregations, 
 //! statistics, and privatizing mechanisms. These functions are combined in the 
-//! Whitenoise validator to create more complex differentially private analyses. 
+//! Whitenoise validator to create more complex differentially private analyses.
+//!
+//! - [Top-level documentation](https://opendifferentialprivacy.github.io/whitenoise-core/)
 
 extern crate whitenoise_validator;
 
