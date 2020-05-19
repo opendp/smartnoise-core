@@ -52,11 +52,11 @@ u(x,r) = \max(\alpha, (1-\alpha))N - \vert (1-\alpha)\#(Z<r) - \alpha\#(Z>r)\ver
 
 \subsubsection{Neighboring Definition: Change One}
 \begin{lemma}
-The above utility function $u$ has $\ell-1$ sensitivity bounded above by 1 in the change one model.
+The above utility function $u$ has $\ell_11$ sensitivity bounded above by 1 in the change one model.
 \end{lemma}
 
 \begin{proof}
-Let $c_1 = \#(Z<r)$ and $c_2 = \#(Z>r)$. In the worst case, $c_1$ increases by 1 and $c_2$ decreases by 1.
+Let $c_1 = \#(Z<r)$ and $c_2 = \#(Z>r)$. In one worst case, $c_1$ increases by 1 and $c_2$ decreases by 1.
 Then, 
 \begin{align*}
 \Delta u &= \vert (1-\alpha) (c_1 + 1) - \alpha (c_2-1) \vert - \vert (1-\alpha) c_1 - \alpha c_2 \vert  \\
@@ -64,11 +64,12 @@ Then,
  & \le \vert c_1 + 1 - \alpha c_1 - \alpha - \alpha c_2 + \alpha - c_1 + \alpha c_1 + \alpha c_2 \vert\\
 &= 1
 \end{align*}
+If instead $c_2$ decreases by 1 and $c_1$ increases by 1, the same thing will happen except with a negative sign that will not impact the final result due to the absolute values.
 \end{proof}
 \subsubsection{Neighboring Definition: Add/Drop One}
 
 \begin{lemma}
-The above utility function $u$ has $\ell-1$ sensitivity bounded above by $\max(1-\alpha, \alpha)$ in the add/drop one model.
+The above utility function $u$ has $\ell_11$ sensitivity bounded above by $\max(1-\alpha, \alpha)$ in the add/drop one model.
 \end{lemma}
 
 \begin{proof}
@@ -81,7 +82,7 @@ Let $c_1 = \#(Z<r)$ and $c_2 = \#(Z>r)$.  Consider what happens if one point is 
 Say the first case occurs. Then,
 
 \begin{align*}
-\delta u &= | (1-\alpha) (c_1 + 1) - \alpha (c_2) | - | (1-\alpha) c_1 - \alpha c_2 |  \\
+\Delta u &= | (1-\alpha) (c_1 + 1) - \alpha (c_2) | - | (1-\alpha) c_1 - \alpha c_2 |  \\
  	&\le | (1-\alpha) (c_1 + 1) - \alpha (c_2) - (1-\alpha) c_1 + \alpha c_2 | \\
 	&= 1 - \alpha
 \end{align*}
