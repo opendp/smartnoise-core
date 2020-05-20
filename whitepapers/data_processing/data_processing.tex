@@ -17,9 +17,9 @@
 	\vspace{12pt} % Whitespace
 }
 
-\author{\LARGE Christian Covington} % Your name
+\author{} % Your name
 
-\date{\normalsize\today} % Today's date (\today) or a custom date
+\date{} % Today's date (\today) or a custom date
 
 \begin{document}
 
@@ -69,6 +69,7 @@ We require that, when asking for a statistic, the analyst must choose an $\hat{n
 of the true sample size $n$. If $\hat{n} = n$, then the analysis proceeds on the
 true data, $x$. If $\hat{n} \neq n$, the we either subsample or create synthetic data
 to create a data set, $\tilde{x}$, of size $\hat{n}$ to be used for the analysis.
+We refer to the entire process as a \emph{resize}.
 
 \subsubsection{Choosing $\hat{n}$}
 We offer two ways to choose an $\hat{n}$; the analyst make their own guess about $n$, or they can
@@ -92,17 +93,7 @@ we are making our system robust to metadata attacks.
 This does come with the downside that we have no notion of verifying $n$ within the library, this
 verification must come from users' trust in the veracity of the public metadata.
 
-% \subsubsection{Functions dependent on $\hat{n}$}
-% It is very common for our functions to be dependent on $\hat{n}$, which adds a layer of complication.
-% Say, for example, that we want the mean of a vector $x$. Typically, we would write
-% \[ \bar{x} = \frac{1}{n} \sum_{i=1}^{n} x_i, \]
-% but in our setting we do not know $n$. We could just replace $1/n$ with $1/\hat{n}$ and keep
-% the summation over the actual $n$ elements, but this would bias our estimate.
-% We will instead change our data $x$ to ensure that $\hat{n}$ is the correct number of elements in $x$.
-
 \subsubsection{Making data consistent with $\hat{n}$}
-% If $\hat{n} < n$, then we can subsample $x$ to get $\tilde{x}$ where $|\tilde{x}| = \hat{n}$. \newline
-% If $\hat{n} > n$, then we will add elements to $x$ to get $\tilde{x}$ where $|\tilde{x}| = \hat{n}$. \newline
 If we need to create synthetic data, we generate $\hat{n} - n$ new elements using
 the user-provided data bounds specified for the statistic in question.
 This could be done via any imputation method supported by the library.
@@ -111,28 +102,17 @@ our function sensitivity calculations remain correct. \newline
 
 If we need to subsample, we simply subsample without replacement to the desired size.
 Note that we cannot take advantage of any privacy amplification via subsampling results,
-as this would leak information about the relationship between $\hat{n}$ and $n$.
+as this would leak information about the relationship between $\hat{n}$ and $n$. \newline 
 
-% We considered sampling with replacement to generate $\tilde{x}$ for the case where $\hat{n} > n$,
-% but this complicates sensitivity calculations as any element in $x$ could appear in $\tilde{x}$ multiple times.
-% Hypothetically, we could sample with replacement in a way that guarantees for $\hat{n} < c \cdot n$ that any element in
-% $x$ occurs in $\tilde{x}$ at most $c$ times, but we cannot establish such a $c$ (with probability 1 that our
-% $c$ is correct) without leaking extra information about $n$.
+We are currently in the process of developing a more general resize framework whereby a user can specify that they would 
+like to allow the resize function, in the case that $\hat{n} > n$, to use data elements multiple times rather than imputing values.
+This reduces the risk of biasing statistics through bad choice of imputation parameters but does increase the c-stability of the 
+process, thus increasing the scale of the noise distribution from which privatizing mechanisms will draw noise.
 
 \subsection{Accuracy/Error}
 Our accuracy and error calculations in the library always assume that $\tilde{x}$ is the true data in question.
 That is, the additional error induced by subsampling or imputing extra values is not considered.
 
-\subsubsection{Maintaining Subset Consistency}
-Consider the case where $\hat{n} < n$ such that the library will subsample the data
-before calculating the statistic of interest. There are many cases in which
-the library should ensure subsampling across multiple steps with a consistent set of indices.
-For example, say the analyst wants to add two columns together or calculate a covariance --
-these operations become meaningless without a guarantee that the columns in question retain
-their relationship to each other when subset. \newline
-
-% \textbf{TODO: Talk to Mike about how exactly we are going to do this in the library}
-
-% \bibliographystyle{alpha}
-% \bibliography{data_processing}
+\bibliographystyle{alpha}
+\bibliography{data_processing}
 \end{document}
