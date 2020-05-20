@@ -10,7 +10,7 @@ use ndarray::{arr0};
 
 use crate::base::{NodeProperties, Value};
 use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, value_to_json};
-use crate::utilities::{prepend, broadcast_privacy_usage, get_ith_column, get_literal};
+use crate::utilities::{prepend, get_ith_column, get_literal, privacy::broadcast_privacy_usage};
 
 
 impl Expandable for proto::DpHistogram {
@@ -114,7 +114,8 @@ impl Expandable for proto::DpHistogram {
             computation_graph,
             properties: HashMap::new(),
             releases,
-            traversal: vec![id_histogram]
+            traversal: vec![id_histogram],
+            warnings: vec![]
         })
     }
 }

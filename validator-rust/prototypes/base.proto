@@ -17,22 +17,28 @@ message Analysis {
 // The definition of privacy determines parameters for sensitivity derivations and the set of available algorithms.
 message PrivacyDefinition {
     // Privacy leakage with respect `group_size` number of rows. This is typically one.
-    uint32 group_size = 4;
-
-    enum Distance {
-        // (epsilon, delta)-differential privacy
-        APPROXIMATE = 0;
-    }
-    // Define how to measure distance between probability distributions.
-    Distance distance = 5;
+    uint32 group_size = 1;
 
     enum Neighboring {
         SUBSTITUTE = 0;
         ADD_REMOVE = 1;
     }
-    // Define what kind of perturbation may be applied to a dataset to create a neighboring dataset.
-    Neighboring neighboring = 6;
+    // Define the kind of perturbation that may be applied to a dataset to create a neighboring dataset.
+    Neighboring neighboring = 2;
+
+    // enable to reject the use of algorithms using delta when n is not known
+    // enable to reject the use of algorithms when some soft violations of assumptions are observed
+    // - epsilon greater than one with the gaussian mechanism
+    bool strict_parameter_checks = 3;
+
+    // enable for tighter bounds checking to prevent leaks via overflow/underflow
+    bool protect_overflow = 4;
+    // enable if side-channel elapsed execution time is considered part of the release
+    bool protect_elapsed_time = 5;
+    // enable if side-channel memory usage is considered part of the release
+    bool protect_memory_utilization = 6;
 }
+
 message ComputationGraph {
     map<uint32, Component> value = 1;
 }
@@ -171,6 +177,7 @@ message ComponentExpansion {
     map<uint32, ValueProperties> properties = 2;
     map<uint32, ReleaseNode> releases = 3;
     repeated uint32 traversal = 4;
+    repeated Error warnings = 5;
 }
 
 

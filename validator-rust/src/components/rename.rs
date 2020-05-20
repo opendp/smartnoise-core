@@ -2,7 +2,7 @@ use crate::errors::*;
 
 use std::collections::HashMap;
 
-use crate::{proto, base};
+use crate::{proto, base, Warnable};
 
 use crate::components::{Component, Named};
 use crate::base::{Indexmap, Value, ValueProperties, IndexmapProperties, ArrayProperties};
@@ -16,7 +16,7 @@ impl Component for proto::Rename {
         public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
 
         let data_property = properties.get("data")
             .ok_or("data: missing")?.array()
@@ -47,7 +47,7 @@ impl Component for proto::Rename {
                     dimensionality: Some(1),
                 }))).collect()),
             dataset_id: data_property.dataset_id
-        }))
+        }).into())
     }
 }
 

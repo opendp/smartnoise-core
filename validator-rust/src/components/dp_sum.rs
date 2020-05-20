@@ -8,7 +8,7 @@ use crate::components::{Expandable, Report};
 
 use crate::base::{NodeProperties, Value, Array};
 use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, value_to_json};
-use crate::utilities::{prepend, broadcast_privacy_usage, get_ith_column};
+use crate::utilities::{prepend, privacy::broadcast_privacy_usage, get_ith_column};
 
 impl Expandable for proto::DpSum {
     fn expand_component(
@@ -78,7 +78,8 @@ impl Expandable for proto::DpSum {
             computation_graph,
             properties: HashMap::new(),
             releases: HashMap::new(),
-            traversal: vec![id_sum]
+            traversal: vec![id_sum],
+            warnings: vec![]
         })
     }
 }

@@ -3,7 +3,7 @@ use crate::errors::*;
 
 use std::collections::HashMap;
 
-use crate::{proto, base};
+use crate::{proto, base, Warnable};
 
 use crate::components::{Component, Sensitivity};
 use crate::base::{Value, ValueProperties, ArrayProperties, AggregatorProperties, NodeProperties, SensitivitySpace};
@@ -20,7 +20,7 @@ impl Component for proto::Merge {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
         node_id: u32,
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
 
         let data_property = properties.get("data")
             .ok_or("data: missing")?.indexmap()
@@ -36,7 +36,7 @@ impl Component for proto::Merge {
         let array_props = data_property.properties.values().iter()
             .map(|v| v.array()).collect::<Result<Vec<&ArrayProperties>>>()?;
 
-        Ok(ArrayProperties {
+        Ok(ValueProperties::Array(ArrayProperties {
             num_records: data_property.num_records,
             num_columns,
             nullity: get_common_value(&array_props.iter().map(|v| v.nullity).collect())
@@ -58,7 +58,7 @@ impl Component for proto::Merge {
             dataset_id: Some(node_id as i64),
             is_not_empty: array_props.iter().any(|v| v.is_not_empty),
             dimensionality: Some(2)
-        }.into())
+        }).into())
     }
 }
 

@@ -6,7 +6,8 @@ use std::collections::HashMap;
 use crate::{proto, base};
 use crate::hashmap;
 use crate::components::{Expandable, Report};
-use crate::utilities::{prepend, broadcast_privacy_usage, get_ith_column};
+use crate::utilities::{prepend, get_ith_column};
+use crate::utilities::privacy::{broadcast_privacy_usage};
 
 use crate::base::{NodeProperties, Value, Array};
 use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, value_to_json};
@@ -57,7 +58,8 @@ impl Expandable for proto::DpVariance {
             computation_graph,
             properties: HashMap::new(),
             releases: HashMap::new(),
-            traversal: vec![id_variance]
+            traversal: vec![id_variance],
+            warnings: vec![]
         })
     }
 }

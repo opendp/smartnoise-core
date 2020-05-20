@@ -5,11 +5,13 @@ use std::collections::HashMap;
 
 
 use crate::components::{Sensitivity, Accuracy};
-use crate::{proto, base};
+use crate::{proto, base, Warnable};
 
 use crate::components::{Component, Expandable};
 use crate::base::{Value, SensitivitySpace, ValueProperties, DataType};
-use crate::utilities::{prepend, expand_mechanism, broadcast_privacy_usage, get_epsilon};
+use crate::utilities::{prepend, expand_mechanism};
+use crate::utilities::privacy::{broadcast_privacy_usage, get_epsilon, privacy_usage_reducer, privacy_usage_check};
+use itertools::Itertools;
 
 
 impl Component for proto::LaplaceMechanism {
@@ -19,7 +21,7 @@ impl Component for proto::LaplaceMechanism {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
 
         let privacy_definition = privacy_definition.as_ref()
             .ok_or_else(|| "privacy_definition must be defined")?;
@@ -54,30 +56,21 @@ impl Component for proto::LaplaceMechanism {
             sensitivity_values = sensitivity.into();
         }
 
-        let sensitivities = sensitivity_values.array()?.f64()?;
+        // make sure sensitivities are an f64 array
+        sensitivity_values.array()?.f64()?;
 
-        if self.privacy_usage.len() == 0 {
-            data_property.releasable = false;
-        } else {
-            let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivities.len())?;
-            let epsilons = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
+        let privacy_usage = self.privacy_usage.iter().cloned()
+            .fold1(|l, r| privacy_usage_reducer(&l, &r, |l, r| l + r)).unwrap();
 
-            // epsilons must be greater than 0.
-            for epsilon in epsilons.into_iter(){
-                if epsilon <= 0.0 {
-                    return Err("epsilon: privacy parameter epsilon must be greater than 0".into());
-                };
-                if epsilon > 1.0   {
-                    println!("Warning: A large privacy parameter of epsilon = {} is in use", epsilon.to_string());
-                }
-            }
+        let warnings = privacy_usage_check(
+            &privacy_usage,
+            data_property.num_records,
+            privacy_definition.strict_parameter_checks)?;
 
-            data_property.releasable = true;
-        }
-
+        data_property.releasable = true;
         data_property.aggregator = None;
 
-        Ok(data_property.into())
+        Ok(Warnable(data_property.into(), warnings))
     }
 }
 

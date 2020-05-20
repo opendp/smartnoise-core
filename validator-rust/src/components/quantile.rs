@@ -3,7 +3,7 @@ use crate::errors::*;
 
 use std::collections::HashMap;
 
-use crate::{proto, base, hashmap};
+use crate::{proto, base, hashmap, Warnable};
 
 use crate::components::{Component, Sensitivity, Expandable};
 use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType, JaggedProperties};
@@ -19,7 +19,7 @@ impl Component for proto::Quantile {
         public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
@@ -41,7 +41,7 @@ impl Component for proto::Quantile {
                     return Err("data_type of data must match data_type of candidates".into())
                 }
 
-                JaggedProperties {
+                ValueProperties::Jagged(JaggedProperties {
                     num_records: Some(candidates.num_records()),
                     nullity: false,
                     aggregator: Some(AggregatorProperties {
@@ -52,7 +52,7 @@ impl Component for proto::Quantile {
                     nature: None,
                     data_type: DataType::F64,
                     releasable: false
-                }.into()
+                }).into()
             },
             None => {
                 // save a snapshot of the state when aggregating
@@ -65,7 +65,7 @@ impl Component for proto::Quantile {
                 data_property.num_records = Some(1);
                 data_property.nature = None;
 
-                data_property.into()
+                ValueProperties::Array(data_property).into()
             }
         })
     }
@@ -153,7 +153,8 @@ impl Expandable for proto::Maximum {
             computation_graph: hashmap![*component_id => quantile_component],
             properties: HashMap::new(),
             releases: HashMap::new(),
-            traversal: vec![*component_id]
+            traversal: vec![*component_id],
+            warnings: vec![]
         })
     }
 }
@@ -181,7 +182,8 @@ impl Expandable for proto::Minimum {
             computation_graph: hashmap![*component_id => quantile_component],
             properties: HashMap::new(),
             releases: HashMap::new(),
-            traversal: vec![*component_id]
+            traversal: vec![*component_id],
+            warnings: vec![]
         })
     }
 }

@@ -5,11 +5,13 @@ use statrs::function::erf;
 use ::itertools::izip;
 
 use crate::components::{Sensitivity, Accuracy};
-use crate::{proto, base};
+use crate::{proto, base, Warnable};
 
 use crate::components::{Component, Expandable};
 use crate::base::{Value, SensitivitySpace, ValueProperties, DataType};
-use crate::utilities::{prepend, expand_mechanism, broadcast_privacy_usage, get_epsilon, get_delta};
+use crate::utilities::{prepend, expand_mechanism};
+use crate::utilities::privacy::{broadcast_privacy_usage, get_epsilon, get_delta, privacy_usage_reducer, privacy_usage_check};
+use itertools::Itertools;
 
 
 impl Component for proto::GaussianMechanism {
@@ -18,14 +20,13 @@ impl Component for proto::GaussianMechanism {
         privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
-        _node_id: u32
-    ) -> Result<ValueProperties> {
-
+        _node_id: u32,
+    ) -> Result<Warnable<ValueProperties>> {
         let privacy_definition = privacy_definition.as_ref()
             .ok_or_else(|| "privacy_definition must be defined")?;
 
         if privacy_definition.group_size == 0 {
-            return Err("group size must be greater than zero".into())
+            return Err("group size must be greater than zero".into());
         }
 
         let mut data_property = properties.get("data")
@@ -53,60 +54,37 @@ impl Component for proto::GaussianMechanism {
             sensitivity_values = sensitivity.into();
         }
 
-        let sensitivities = sensitivity_values.array()?.f64()?;
+        // check that sensitivity is an f64 array
+        sensitivity_values.array()?.f64()?;
 
+        let privacy_usage = self.privacy_usage.iter().cloned()
+            .fold1(|l, r| privacy_usage_reducer(&l, &r, |l, r| l + r)).unwrap();
 
-        if self.privacy_usage.len() == 0 {
-            data_property.releasable = false;
-        } else {
-            let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivities.len())?;
-            let epsilons = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
-            let deltas = usages.iter().map(get_delta).collect::<Result<Vec<f64>>>()?;
+        let mut warnings = privacy_usage_check(
+            &privacy_usage,
+            data_property.num_records,
+            privacy_definition.strict_parameter_checks)?;
 
-            // epsilons must be greater than 0 and less than 1.
-            for epsilon in epsilons.into_iter() {
-                if epsilon <= 0.0 || epsilon >= 1.0 {
-                    return Err("epsilon: privacy parameter epsilon must be greater than 0".into());
-                };
-                if epsilon >= 1.0 {
-                    println!("Warning: A privacy parameter of epsilon = {} is in use. Privacy is only \
+        let epsilon = get_epsilon(&privacy_usage)?;
+        if epsilon > 1.0 {
+            let message = Error::from(format!("Warning: A privacy parameter of epsilon = {} is in use. Privacy is only \
                     guaranteed for the Gaussian mechanism as implemented in the rust runtime for epsilon \
-                    between 0 and 1.", epsilon);
-                }
+                    between 0 and 1.", epsilon));
+
+            if privacy_definition.strict_parameter_checks {
+                return Err(message)
             }
-
-
-            // Check delta value; checks depend on whether or not number of records is statically known.
-            match data_property.num_records {
-                Some(n) => {
-                    let n = n as f64;
-                    for delta in deltas.into_iter() {
-                        if delta <= 0.0 {
-                            return Err("delta: privacy parameter delta must be greater than 0".into());
-                        };
-                        if delta > 1.0 / n {
-                            println!("Warning: A large delta of delta = {} is in use.", delta);
-                        }
-                    }
-                },
-                None => {
-                    for delta in deltas.into_iter() {
-                        if delta <= 0.0 {
-                            return Err("delta: privacy parameter delta must be greater than 0".into());
-                        } else {
-                            println!("Warning: Cannot determine if delta is reasonable due to statically \
-                            unknown number of records.");
-                        }
-                    }
-                }
-            }
-
-            data_property.releasable = true;
+            warnings.push(message);
         }
 
+        if get_delta(&privacy_usage)? == 0.0 {
+            return Err("delta: may not be zero".into())
+        }
+
+        data_property.releasable = true;
         data_property.aggregator = None;
 
-        Ok(data_property.into())
+        Ok(Warnable(data_property.into(), warnings))
     }
 }
 
@@ -155,14 +133,16 @@ impl Accuracy for proto::GaussianMechanism {
         let delta = usages.iter().map(get_delta).collect::<Result<Vec<f64>>>()?;
         let iter = izip!(sensitivities.into_iter(), accuracies.values.iter(), delta.into_iter());
 
+        use proto::privacy_usage::{Distance, DistanceApproximate};
+
         Ok(Some(
-            iter.map( |(sensitivity, accuracy, delta)| {
+            iter.map(|(sensitivity, accuracy, delta)| {
                 let c: f64 = 2.0_f64 * (1.25_f64 / delta).ln();
                 let sigma: f64 = c.sqrt() * sensitivity / accuracy.value;
                 proto::PrivacyUsage {
-                distance: Some(proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
-                    epsilon: sigma * 2.0_f64.sqrt() * erf::erf_inv(1.0_f64 - accuracy.alpha),
-                    delta: delta
+                    distance: Some(Distance::Approximate(DistanceApproximate {
+                        epsilon: sigma * 2.0_f64.sqrt() * erf::erf_inv(1.0_f64 - accuracy.alpha),
+                        delta,
                     }))
                 }
             }).collect()))
@@ -172,7 +152,7 @@ impl Accuracy for proto::GaussianMechanism {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         properties: &base::NodeProperties,
-        alpha: &f64
+        alpha: &f64,
     ) -> Result<Option<Vec<proto::Accuracy>>> {
         let data_property = properties.get("data")
             .ok_or("data: missing")?.array()
@@ -195,14 +175,14 @@ impl Accuracy for proto::GaussianMechanism {
         let iter = izip!(sensitivities.into_iter(), epsilons.into_iter(), deltas.into_iter());
 
         Ok(Some(
-            iter.map( |(sensitivity, epsilon, delta)| {
+            iter.map(|(sensitivity, epsilon, delta)| {
                 let c: f64 = 2.0_f64 * (1.25_f64 / delta).ln();
                 let sigma: f64 = c.sqrt() * sensitivity / epsilon;
 
                 proto::Accuracy {
-                    value : sigma * 2.0_f64.sqrt() * erf::erf_inv(1.0_f64 - *alpha),
+                    value: sigma * 2.0_f64.sqrt() * erf::erf_inv(1.0_f64 - *alpha),
                     alpha: *alpha,
-                    }
-                }).collect()))
+                }
+            }).collect()))
     }
 }

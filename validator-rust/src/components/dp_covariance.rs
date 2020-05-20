@@ -107,7 +107,8 @@ impl Expandable for proto::DpCovariance {
             computation_graph,
             properties: HashMap::new(),
             releases: HashMap::new(),
-            traversal: vec![id_covariance, id_noise]
+            traversal: vec![id_covariance, id_noise],
+            warnings: vec![]
         })
     }
 }

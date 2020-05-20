@@ -9,7 +9,7 @@ use crate::components::{Expandable, Report};
 
 use crate::base::{NodeProperties, Value};
 use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, value_to_json};
-use crate::utilities::{prepend, broadcast_privacy_usage, get_ith_column};
+use crate::utilities::{prepend, privacy::broadcast_privacy_usage, get_ith_column};
 use serde_json;
 
 
@@ -76,7 +76,8 @@ impl Expandable for proto::DpMean {
                 computation_graph,
                 properties: HashMap::new(),
                 releases: HashMap::new(),
-                traversal: vec![id_dp_count, id_dp_sum]
+                traversal: vec![id_dp_count, id_dp_sum],
+                warnings: vec![]
             })
         }
 
@@ -112,7 +113,8 @@ impl Expandable for proto::DpMean {
                 computation_graph,
                 properties: HashMap::new(),
                 releases: HashMap::new(),
-                traversal: vec![id_mean]
+                traversal: vec![id_mean],
+                warnings: vec![]
             })
         }
 

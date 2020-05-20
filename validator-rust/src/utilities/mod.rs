@@ -6,7 +6,7 @@ pub mod privacy;
 
 use crate::errors::*;
 
-use crate::{proto, base};
+use crate::{proto, base, Warnable};
 
 use crate::base::{Release, Value, ValueProperties, SensitivitySpace, NodeProperties, ReleaseNode};
 use std::collections::{HashMap, HashSet};
@@ -159,15 +159,14 @@ pub fn propagate_properties(
         }
         traversal.pop();
 
-        let component_properties = match release.get(&node_id) {
+        let propagation_result = match release.get(&node_id) {
             // if node has already been evaluated, infer properties directly from the public data
             Some(release_node) => {
                 if release_node.public {
-                    infer_property(&release_node.value, Some(node_id as i64))
+                    Ok(Warnable(infer_property(&release_node.value, Some(node_id as i64))?, vec![]))
                 } else {
-                    let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
-                    component.clone().variant
-                        .ok_or_else(|| Error::from("privacy definition must be defined"))?
+                    graph.get(&node_id).unwrap().variant.as_ref()
+                        .ok_or_else(|| Error::from("variant must be defined"))?
                         .propagate_property(
                             &analysis.privacy_definition, &public_arguments, &input_properties, node_id)
                         .chain_err(|| format!("at node_id {:?}", node_id))
@@ -176,15 +175,24 @@ pub fn propagate_properties(
 
             // if node has not been evaluated, propagate properties over it
             None => {
-                let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
-                component.clone().variant.unwrap().propagate_property(
-                    &analysis.privacy_definition, &public_arguments, &input_properties, node_id)
+                graph.get(&node_id).unwrap().variant.as_ref()
+                    .ok_or_else(|| "variant must be defined")?
+                    .propagate_property(
+                        &analysis.privacy_definition, &public_arguments, &input_properties, node_id)
                     .chain_err(|| format!("at node_id {:?}", node_id))
             }
         };
 
-        let component_properties = match (dynamic, component_properties) {
-            (_, Ok(properties)) => properties,
+        let component_properties = match (dynamic, propagation_result) {
+            (_, Ok(propagation_result)) => {
+                let Warnable(component_properties, propagation_warnings) = propagation_result;
+
+                warnings.extend(propagation_warnings.into_iter()
+                    .map(|err| serialize_error(err.chain_err(|| format!("at node_id {:?}", node_id))))
+                    .collect::<Vec<proto::Error>>());
+
+                component_properties
+            },
             (true, Err(err)) => {
                 failed_ids.insert(node_id);
                 warnings.push(serialize_error(err));
@@ -462,119 +470,6 @@ pub fn get_literal(value: Value, submission: &u32) -> Result<(proto::Component, 
 }
 
 
-pub fn get_component_privacy_usage(
-    component: &proto::Component,
-    release_node: Option<&proto::ReleaseNode>,
-) -> Option<proto::PrivacyUsage> {
-
-    // get the maximum possible usage allowed to the component
-    let mut privacy_usage: Vec<proto::PrivacyUsage> = match component.to_owned().variant? {
-        proto::component::Variant::LaplaceMechanism(x) => x.privacy_usage,
-        proto::component::Variant::GaussianMechanism(x) => x.privacy_usage,
-        proto::component::Variant::ExponentialMechanism(x) => x.privacy_usage,
-        proto::component::Variant::SimpleGeometricMechanism(x) => x.privacy_usage,
-        _ => return None
-    };
-
-    // if release usage is defined, then use the actual eps, etc. from the release
-    release_node.map(|v| if let Some(release_privacy_usage) = v.privacy_usages.clone() {
-        privacy_usage = release_privacy_usage.values
-    });
-
-    // sum privacy usage within the node
-    privacy_usage.into_iter()
-        .fold1(|usage_a, usage_b|
-            privacy_usage_reducer(&usage_a, &usage_b, &|a, b| a + b))
-}
-
-pub fn privacy_usage_reducer(
-    left: &proto::PrivacyUsage,
-    right: &proto::PrivacyUsage,
-    operator: &dyn Fn(f64, f64) -> f64,
-) -> proto::PrivacyUsage {
-    use proto::privacy_usage::Distance as Distance;
-
-    proto::PrivacyUsage {
-        distance: match (left.distance.to_owned().unwrap(), right.distance.to_owned().unwrap()) {
-            (Distance::Approximate(x), Distance::Approximate(y)) => Some(Distance::Approximate(proto::privacy_usage::DistanceApproximate {
-                epsilon: operator(x.epsilon, y.epsilon),
-                delta: operator(x.delta, y.delta),
-            }))
-        }
-    }
-}
-
-pub fn privacy_usage_check(
-    privacy : &proto::PrivacyUsage
-) -> Result<()> {
-    use proto::privacy_usage::Distance as Distance;
-    // helper functions that check that privacy parameters lie in reasonable ranges
-    let check_epsilon = |privacy_param: f64| -> Result<()> {
-        if privacy_param <= 0.0 {
-            return Err("Privacy parameter epsilon must be greater than 0.".into())
-        } else if privacy_param > 1.0{
-            println!("Large value of privacy parameter epsilon in use.");
-        }
-        Ok(())
-    };
-    let check_delta = |privacy_param: f64| -> Result<()> {
-        if privacy_param < 0.0 {
-            return Err("Privacy parameter delta must be non-negative.".into())
-        } else if privacy_param > 1.0{
-            return Err("Privacy parameter delta must be at most 1.".into())
-        }
-        Ok(())
-    };
-    match privacy.distance.as_ref()
-        .ok_or_else(|| Error::from("distance must be defined"))? {
-        Distance::Approximate(x) => {
-            check_epsilon(x.epsilon)?;
-            check_delta(x.delta)?;
-        }
-    };
-    Ok(())
-}
-
-pub fn get_epsilon(usage: &proto::PrivacyUsage) -> Result<f64> {
-    match usage.distance.clone()
-        .ok_or_else(|| Error::from("distance must be defined on a PrivacyUsage"))? {
-        proto::privacy_usage::Distance::Approximate(distance) => Ok(distance.epsilon),
-//        _ => Err("epsilon is not defined".into())
-    }
-}
-
-pub fn get_delta(usage: &proto::PrivacyUsage) -> Result<f64> {
-    match usage.distance.clone()
-        .ok_or_else(|| Error::from("distance must be defined on a PrivacyUsage"))? {
-        proto::privacy_usage::Distance::Approximate(distance) => Ok(distance.delta),
-        // _ => Err("delta is not defined".into())
-    }
-}
-
-pub fn broadcast_privacy_usage(usages: &[proto::PrivacyUsage], length: usize) -> Result<Vec<proto::PrivacyUsage>> {
-    if usages.len() == length {
-        return Ok(usages.to_owned());
-    }
-
-    if usages.len() != 1 {
-        if length != 1 {
-            bail!("{} privacy parameters passed when either one or {} was required", usages.len(), length);
-        } else {
-            bail!("{} privacy parameters passed when one was required", usages.len());
-        }
-    }
-
-    Ok(match usages[0].distance.clone().ok_or("distance must be defined on a privacy usage")? {
-        proto::privacy_usage::Distance::Approximate(approx) => (0..length)
-            .map(|_| proto::PrivacyUsage {
-                distance: Some(proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
-                    epsilon: approx.epsilon / (length as f64),
-                    delta: approx.delta / (length as f64),
-                }))
-            }).collect()
-    })
-}
-
 pub fn broadcast_ndarray<T: Clone>(value: &ArrayD<T>, shape: &[usize]) -> Result<ArrayD<T>> {
     if value.shape() == shape {
         return Ok(value.clone());
@@ -641,6 +536,7 @@ pub fn expand_mechanism(
         properties: HashMap::new(),
         releases,
         traversal: Vec::new(),
+        warnings: vec![]
     })
 }
 

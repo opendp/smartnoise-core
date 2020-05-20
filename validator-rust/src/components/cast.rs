@@ -3,7 +3,7 @@ use crate::errors::*;
 use std::collections::HashMap;
 
 
-use crate::{proto, base};
+use crate::{proto, base, Warnable};
 use crate::hashmap;
 use crate::components::{Component, Expandable};
 
@@ -18,7 +18,7 @@ impl Component for proto::Cast {
         public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
         _node_id: u32
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
         let mut data_property = properties.get("data")
             .ok_or_else(|| Error::from("data: missing"))?.array()
             .map_err(prepend("data:"))?.clone();
@@ -168,7 +168,7 @@ impl Component for proto::Cast {
             }
         };
 
-        Ok(data_property.into())
+        Ok(ValueProperties::Array(data_property.clone()).into())
     }
 
 }
@@ -196,7 +196,8 @@ macro_rules! make_expandable {
                     properties: HashMap::new(),
                     releases: HashMap::new(),
                     // add the component_id, to force the node to be re-evaluated and the Cast to be expanded
-                    traversal: vec![*component_id]
+                    traversal: vec![*component_id],
+                    warnings: vec![]
                 })
             }
         }

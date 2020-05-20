@@ -909,7 +909,7 @@ pub type Release = HashMap<u32, ReleaseNode>;
 pub struct ReleaseNode {
     pub value: Value,
     pub privacy_usages: Option<Vec<proto::PrivacyUsage>>,
-    pub public: bool,
+    pub public: bool
 }
 
 impl ReleaseNode {
@@ -917,7 +917,7 @@ impl ReleaseNode {
         ReleaseNode {
             value,
             privacy_usages: None,
-            public: false,
+            public: false
         }
     }
 }

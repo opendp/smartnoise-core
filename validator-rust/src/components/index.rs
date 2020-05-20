@@ -3,7 +3,7 @@ use crate::errors::*;
 use std::collections::HashMap;
 use crate::base::{Array, Value, ValueProperties, Indexmap, ArrayProperties, Nature, NatureContinuous, NatureCategorical, Vector1DNull, Jagged};
 
-use crate::{proto, base};
+use crate::{proto, base, Warnable};
 use crate::components::{Component, Named};
 
 use std::ops::Deref;
@@ -18,7 +18,7 @@ impl Component for proto::Index {
         public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
         let data_property = properties.get("data")
             .ok_or("data: missing")?.clone();
 
@@ -111,7 +111,7 @@ impl Component for proto::Index {
             ValueProperties::Function(_) => Err("indexing is not suppported on functions".into())
         }?;
 
-        stack_properties(&properties, dimensionality)
+        stack_properties(&properties, dimensionality).map(Warnable::new)
     }
 
 }

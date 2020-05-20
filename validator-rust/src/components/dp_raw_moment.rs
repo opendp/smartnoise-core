@@ -9,7 +9,7 @@ use crate::components::{Expandable, Report};
 
 use crate::base::{NodeProperties, Value, Array};
 use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, value_to_json};
-use crate::utilities::{prepend, broadcast_privacy_usage, get_ith_column};
+use crate::utilities::{prepend, privacy::broadcast_privacy_usage, get_ith_column};
 
 
 impl Expandable for proto::DpRawMoment {
@@ -57,7 +57,8 @@ impl Expandable for proto::DpRawMoment {
             computation_graph,
             properties: HashMap::new(),
             releases: HashMap::new(),
-            traversal: vec![id_moment]
+            traversal: vec![id_moment],
+            warnings: vec![]
         })
     }
 }

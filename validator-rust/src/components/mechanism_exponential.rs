@@ -3,12 +3,13 @@ use crate::errors::*;
 
 use std::collections::HashMap;
 
-use crate::{proto, base};
+use crate::{proto, base, Warnable};
 
 use crate::components::{Component, Expandable, Sensitivity};
 use crate::base::{Value, SensitivitySpace, ValueProperties, DataType, ArrayProperties};
-use crate::utilities::{prepend, broadcast_privacy_usage, get_epsilon, get_literal};
-
+use crate::utilities::{prepend, get_literal};
+use crate::utilities::privacy::{broadcast_privacy_usage, get_epsilon, privacy_usage_reducer, privacy_usage_check};
+use itertools::Itertools;
 
 impl Component for proto::ExponentialMechanism {
     fn propagate_property(
@@ -17,7 +18,7 @@ impl Component for proto::ExponentialMechanism {
         public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
         let privacy_definition = privacy_definition.as_ref()
             .ok_or_else(|| "privacy_definition must be defined")?;
 
@@ -55,7 +56,8 @@ impl Component for proto::ExponentialMechanism {
             &aggregator.properties,
             &SensitivitySpace::Exponential)?;
 
-        let sensitivities = sensitivity_values.array()?.f64()?;
+        // make sure sensitivities are an f64 array
+        sensitivity_values.array()?.f64()?;
 
         let num_columns = utilities_property.num_columns()?;
         let mut output_property = ArrayProperties {
@@ -74,25 +76,17 @@ impl Component for proto::ExponentialMechanism {
             dimensionality: Some(2)
         };
 
-        if self.privacy_usage.len() == 0 {
-            output_property.releasable = false;
-        } else {
-            let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivities.len())?;
-            let epsilons = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
+        let privacy_usage = self.privacy_usage.iter().cloned()
+            .fold1(|l, r| privacy_usage_reducer(&l, &r, |l, r| l + r)).unwrap();
 
-            // epsilons must be greater than 0.
-            for epsilon in epsilons.into_iter() {
-                if epsilon <= 0.0 {
-                    return Err("epsilon: privacy parameter epsilon must be greater than 0".into());
-                };
-                if epsilon > 1.0 {
-                    println!("Warning: A large privacy parameter of epsilon = {} is in use", epsilon.to_string());
-                }
-            }
-            output_property.releasable = true;
-        }
+        let warnings = privacy_usage_check(
+            &privacy_usage,
+            output_property.num_records,
+            privacy_definition.strict_parameter_checks)?;
 
-        Ok(output_property.into())
+        output_property.releasable = true;
+
+        Ok(Warnable(output_property.into(), warnings))
     }
 }
 
@@ -142,6 +136,7 @@ impl Expandable for proto::ExponentialMechanism {
             properties: HashMap::new(),
             releases,
             traversal: Vec::new(),
+            warnings: vec![]
         })
     }
 }

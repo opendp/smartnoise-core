@@ -4,7 +4,7 @@ use crate::components::{Named, Component};
 use std::collections::HashMap;
 use crate::utilities::get_ith_column;
 use ndarray::ArrayD;
-use crate::{proto, base};
+use crate::{proto, base, Warnable};
 use crate::base::{Value, Array, ValueProperties, ArrayProperties, DataType};
 
 impl Component for proto::Literal {
@@ -14,7 +14,7 @@ impl Component for proto::Literal {
         _public_arguments: &HashMap<String, Value>,
         _properties: &base::NodeProperties,
         node_id: u32
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
         Ok(ValueProperties::Array(ArrayProperties {
             num_records: None,
             num_columns: None,
@@ -28,7 +28,7 @@ impl Component for proto::Literal {
             // this is a library-wide assumption - that datasets initially have more than zero rows
             is_not_empty: true,
             dimensionality: None,
-        }))
+        }).into())
     }
 }
 

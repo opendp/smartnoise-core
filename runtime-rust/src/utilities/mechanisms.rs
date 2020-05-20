@@ -63,7 +63,7 @@ pub fn laplace_mechanism(epsilon: f64, sensitivity: f64) -> Result<f64> {
 /// let n = gaussian_mechanism(0.1, 0.0001, 2.0);
 /// ```
 pub fn gaussian_mechanism(epsilon: f64, delta: f64, sensitivity: f64) -> Result<f64> {
-    if epsilon < 0. || delta < 0. || sensitivity < 0. {
+    if epsilon <= 0. || delta <= 0. || sensitivity <= 0. {
         return Err(format!("epsilon ({}), delta ({}) and sensitivity ({}) must all be positive", epsilon, delta, sensitivity).into());
     }
     let scale: f64 = sensitivity * (2. * (1.25 / delta).ln()).sqrt() / epsilon;

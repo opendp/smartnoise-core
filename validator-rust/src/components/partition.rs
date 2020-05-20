@@ -3,7 +3,7 @@ use crate::errors::*;
 
 use std::collections::HashMap;
 
-use crate::{proto, base};
+use crate::{proto, base, Warnable};
 
 use crate::components::Component;
 use crate::base::{Value, Jagged, ValueProperties, IndexmapProperties, ArrayProperties};
@@ -18,12 +18,12 @@ impl Component for proto::Partition {
         public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
         node_id: u32,
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
-        Ok(match properties.get("by") {
+        Ok(ValueProperties::Indexmap(match properties.get("by") {
             Some(by_property) => {
                 let by_property = by_property.array()
                     .map_err(prepend("by:"))?.clone();
@@ -73,7 +73,7 @@ impl Component for proto::Partition {
                     variant: proto::indexmap_properties::Variant::Partition,
                 }
             }
-        }.into())
+        }).into())
     }
 }
 

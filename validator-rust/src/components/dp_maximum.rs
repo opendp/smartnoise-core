@@ -9,7 +9,7 @@ use crate::components::{Expandable, Report};
 
 use crate::base::{NodeProperties, Value, Array};
 use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, value_to_json};
-use crate::utilities::{prepend, broadcast_privacy_usage, get_ith_column};
+use crate::utilities::{prepend, privacy::broadcast_privacy_usage, get_ith_column};
 
 
 impl Expandable for proto::DpMaximum {
@@ -37,7 +37,8 @@ impl Expandable for proto::DpMaximum {
             computation_graph: hashmap![*component_id => dp_quantile_component],
             properties: HashMap::new(),
             releases: HashMap::new(),
-            traversal: vec![*component_id]
+            traversal: vec![*component_id],
+            warnings: vec![]
         })
     }
 }

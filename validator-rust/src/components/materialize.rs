@@ -2,7 +2,7 @@ use crate::errors::*;
 
 use std::collections::HashMap;
 
-use crate::{proto, base};
+use crate::{proto, base, Warnable};
 
 use crate::components::{Component, Named};
 use crate::base::{Indexmap, Value, ValueProperties, IndexmapProperties, ArrayProperties, DataType};
@@ -15,11 +15,11 @@ impl Component for proto::Materialize {
         public_arguments: &HashMap<String, Value>,
         _properties: &base::NodeProperties,
         node_id: u32
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
 
         let column_names = self.get_names(public_arguments, &HashMap::new(), None)?;
 
-        Ok(IndexmapProperties {
+        Ok(ValueProperties::Indexmap(IndexmapProperties {
             num_records: None,
             disjoint: false,
             properties: Indexmap::<ValueProperties>::Str(column_names.into_iter()
@@ -39,7 +39,7 @@ impl Component for proto::Materialize {
                 }))).collect()),
             dataset_id: Some(node_id as i64),
             variant: proto::indexmap_properties::Variant::Dataframe
-        }.into())
+        }).into())
     }
 }
 

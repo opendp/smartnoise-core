@@ -3,7 +3,7 @@ use crate::errors::*;
 use crate::components::Component;
 use std::collections::HashMap;
 use crate::base::{Value, ValueProperties};
-use crate::base;
+use crate::{base, Warnable};
 use crate::proto;
 use crate::utilities::prepend;
 
@@ -15,7 +15,7 @@ impl Component for proto::Reshape {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
         node_id: u32
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
@@ -48,7 +48,7 @@ impl Component for proto::Reshape {
         // This exists to prevent binary ops on non-conformable arrays from being approved
         data_property.dataset_id = Some(node_id as i64);
 
-        Ok(data_property.into())
+        Ok(ValueProperties::Array(data_property).into())
     }
 
 

@@ -175,7 +175,7 @@ pub fn parse_release_node(release_node: proto::ReleaseNode) -> ReleaseNode {
     ReleaseNode {
         value: parse_value(release_node.value.unwrap()),
         privacy_usages: release_node.privacy_usages.clone().map(|v| v.values),
-        public: release_node.public,
+        public: release_node.public
     }
 }
 
@@ -498,7 +498,7 @@ pub fn serialize_release_node(release_node: ReleaseNode) -> proto::ReleaseNode {
     proto::ReleaseNode {
         value: Some(serialize_value(release_node.value)),
         privacy_usages: release_node.privacy_usages.map(|v| proto::PrivacyUsages { values: v }),
-        public: release_node.public,
+        public: release_node.public
     }
 }
 

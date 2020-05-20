@@ -2,7 +2,7 @@ use crate::errors::*;
 
 use std::collections::HashMap;
 
-use crate::{proto};
+use crate::{proto, Warnable};
 
 use crate::components::{Component, Sensitivity, Expandable};
 use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType, NatureContinuous, Nature, Vector1DNull, Jagged};
@@ -18,7 +18,7 @@ impl Component for proto::Histogram {
         _public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
         _node_id: u32
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
@@ -53,7 +53,7 @@ impl Component for proto::Histogram {
         }));
         data_property.data_type = DataType::I64;
 
-        Ok(data_property.into())
+        Ok(ValueProperties::Array(data_property).into())
     }
 }
 
@@ -159,7 +159,8 @@ impl Expandable for proto::Histogram {
             computation_graph,
             properties: HashMap::new(),
             releases,
-            traversal
+            traversal,
+            warnings: vec![]
         })
     }
 }

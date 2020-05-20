@@ -3,7 +3,7 @@ use crate::errors::*;
 use std::collections::HashMap;
 use crate::base::{Nature, Vector1DNull, Array, ValueProperties, NatureCategorical, Jagged, DataType};
 
-use crate::{proto, base};
+use crate::{proto, base, Warnable};
 use crate::utilities::{prepend, get_literal, standardize_null_target_argument};
 use crate::components::{Component, Expandable};
 
@@ -18,7 +18,7 @@ impl Component for proto::Clamp {
         public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
@@ -63,7 +63,7 @@ impl Component for proto::Clamp {
             categories = categories.standardize(&num_columns)?;
             data_property.nature = Some(Nature::Categorical(NatureCategorical { categories }));
 
-            return Ok(data_property.into());
+            return Ok(ValueProperties::Array(data_property).into())
         }
 
         // else handle numerical clamping
@@ -195,7 +195,7 @@ impl Component for proto::Clamp {
             _ => return Err("numeric clamping requires numeric data".into())
         }
 
-        Ok(data_property.into())
+        Ok(ValueProperties::Array(data_property).into())
     }
 
 }
@@ -245,7 +245,8 @@ impl Expandable for proto::Clamp {
             computation_graph,
             properties: HashMap::new(),
             releases,
-            traversal: Vec::new()
+            traversal: Vec::new(),
+            warnings: vec![]
         })
     }
 }

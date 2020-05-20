@@ -3,7 +3,7 @@ use crate::errors::*;
 
 use std::collections::HashMap;
 
-use crate::base;
+use crate::{base, Warnable};
 use crate::proto;
 
 use crate::components::{Component, Expandable};
@@ -20,7 +20,7 @@ impl Component for proto::Resize {
         public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
         _node_id: u32,
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
@@ -72,7 +72,7 @@ impl Component for proto::Resize {
             }
             // TODO: propagation of categories through imputation and resize
             data_property.nature = None;
-            return Ok(data_property.into());
+            return Ok(ValueProperties::Array(data_property).into())
         }
 
         let num_columns = data_property.num_columns()?;
@@ -212,7 +212,7 @@ impl Component for proto::Resize {
             _ => return Err("bounds for imputation must be numeric".into())
         }
 
-        Ok(data_property.into())
+        Ok(ValueProperties::Array(data_property).into())
     }
 }
 
@@ -266,6 +266,7 @@ impl Expandable for proto::Resize {
             properties: HashMap::new(),
             releases,
             traversal: Vec::new(),
+            warnings: vec![]
         })
     }
 }

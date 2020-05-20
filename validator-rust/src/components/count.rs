@@ -2,7 +2,7 @@ use crate::errors::*;
 
 use std::collections::HashMap;
 
-use crate::{proto};
+use crate::{proto, Warnable};
 
 use crate::components::{Component, Sensitivity};
 use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType, NatureContinuous, Nature, Vector1DNull};
@@ -17,7 +17,7 @@ impl Component for proto::Count {
         _public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
         _node_id: u32
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
 
         let mut data_property = match properties.get("data").ok_or("data: missing")?.clone() {
             ValueProperties::Array(data_property) => data_property,
@@ -55,7 +55,7 @@ impl Component for proto::Count {
         }));
         data_property.data_type = DataType::I64;
 
-        Ok(data_property.into())
+        Ok(ValueProperties::Array(data_property).into())
     }
 }
 

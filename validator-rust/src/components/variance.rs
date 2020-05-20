@@ -3,7 +3,7 @@ use crate::errors::*;
 
 use std::collections::HashMap;
 
-use crate::{proto, base};
+use crate::{proto, base, Warnable};
 
 use crate::components::{Component, Sensitivity};
 use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType};
@@ -17,7 +17,7 @@ impl Component for proto::Variance {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
@@ -42,7 +42,7 @@ impl Component for proto::Variance {
         data_property.num_records = Some(1);
         data_property.nature = None;
 
-        Ok(data_property.into())
+        Ok(ValueProperties::Array(data_property).into())
     }
 }
 

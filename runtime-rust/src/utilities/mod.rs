@@ -91,17 +91,17 @@ mod test_broadcast_map {
         let data1d = arr1(&[2., 3., 5.]).into_dyn();
         let data2d = arr2(&[[2., 4.], [3., 7.], [5., 2.]]).into_dyn();
 
-        assert!(broadcast_map(
-            &data0d, &data1d, &|l, r| l * r,
-        ).unwrap() == arr1(&[4., 6., 10.]).into_dyn());
+        assert_eq!(
+            broadcast_map(&data0d, &data1d, &|l, r| l * r).unwrap(),
+            arr1(&[4., 6., 10.]).into_dyn());
 
-        assert!(broadcast_map(
-            &data1d, &data2d, &|l, r| l / r,
-        ).unwrap() == arr2(&[[1., 2./4.], [1., 3./7.], [1., 5. / 2.]]).into_dyn());
+        assert_eq!(
+            broadcast_map(&data1d, &data2d, &|l, r| l / r).unwrap(),
+            arr2(&[[1., 2. / 4.], [1., 3. / 7.], [1., 5. / 2.]]).into_dyn());
 
-        assert!(broadcast_map(
-            &data2d, &data0d, &|l, r| l + r,
-        ).unwrap() == arr2(&[[4., 6.], [5., 9.], [7., 4.]]).into_dyn());
+        assert_eq!(
+            broadcast_map(&data2d, &data0d, &|l, r| l + r).unwrap(),
+            arr2(&[[4., 6.], [5., 9.], [7., 4.]]).into_dyn());
     }
 
     #[test]

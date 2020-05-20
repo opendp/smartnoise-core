@@ -10,7 +10,7 @@ use crate::components::{Expandable, Report};
 
 use crate::base::{NodeProperties, Value, Array};
 use crate::utilities::json::{JSONRelease, value_to_json, privacy_usage_to_json, AlgorithmInfo};
-use crate::utilities::{prepend, broadcast_privacy_usage, get_ith_column};
+use crate::utilities::{prepend, privacy::broadcast_privacy_usage, get_ith_column};
 
 
 impl Expandable for proto::DpQuantile {
@@ -75,6 +75,7 @@ impl Expandable for proto::DpQuantile {
             properties: HashMap::new(),
             releases: HashMap::new(),
             traversal: vec![id_quantile],
+            warnings: vec![]
         })
     }
 }

@@ -3,7 +3,7 @@ use crate::errors::*;
 use std::collections::HashMap;
 use crate::base::{Nature, NatureCategorical, Vector1DNull, Jagged, ArrayProperties, ValueProperties, DataType};
 
-use crate::{proto, base};
+use crate::{proto, base, Warnable};
 
 use crate::utilities::{prepend};
 
@@ -20,7 +20,7 @@ impl Component for proto::Abs {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
@@ -70,7 +70,7 @@ impl Component for proto::Abs {
                 })),
             }, &data_property.num_columns()?)?;
 
-        Ok(data_property.into())
+        Ok(ValueProperties::Array(data_property).into())
     }
 }
 
@@ -81,7 +81,7 @@ impl Component for proto::Add {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
         let left_property = properties.get("left")
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
@@ -108,7 +108,7 @@ impl Component for proto::Add {
             return Err("left and right arguments must share the same data types".into())
         }
 
-        Ok(ArrayProperties {
+        Ok(ValueProperties::Array(ArrayProperties {
             nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
             nature: propagate_binary_nature(&left_property, &right_property, &BinaryOperators {
@@ -148,7 +148,7 @@ impl Component for proto::Add {
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality)
-        }.into())
+        }).into())
     }
 }
 
@@ -159,7 +159,7 @@ impl Component for proto::And {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
         let mut left_property = properties.get("left")
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
@@ -199,7 +199,7 @@ impl Component for proto::And {
         left_property.dimensionality = left_property.dimensionality
             .max(right_property.dimensionality);
 
-        Ok(left_property.into())
+        Ok(ValueProperties::Array(left_property).into())
     }
 }
 
@@ -210,7 +210,7 @@ impl Component for proto::Divide {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
         let left_property = properties.get("left")
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
@@ -258,7 +258,7 @@ impl Component for proto::Divide {
             _ => true
         };
 
-        Ok(ArrayProperties {
+        Ok(ValueProperties::Array(ArrayProperties {
             nullity: left_property.nullity || right_property.nullity || float_denominator_may_span_zero,
             releasable: left_property.releasable && right_property.releasable,
             nature: propagate_binary_nature(&left_property, &right_property, &BinaryOperators {
@@ -355,7 +355,7 @@ impl Component for proto::Divide {
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality)
-        }.into())
+        }).into())
     }
 }
 
@@ -366,7 +366,7 @@ impl Component for proto::Equal {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
         let left_property = properties.get("left")
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
@@ -387,7 +387,7 @@ impl Component for proto::Equal {
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
-        Ok(ArrayProperties {
+        Ok(ValueProperties::Array(ArrayProperties {
             nullity: false,
             releasable: left_property.releasable && right_property.releasable,
             nature: Some(Nature::Categorical(NatureCategorical {
@@ -403,7 +403,7 @@ impl Component for proto::Equal {
             dataset_id: left_property.dataset_id,
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality.max(right_property.dimensionality)
-        }.into())
+        }).into())
     }
 }
 
@@ -415,7 +415,7 @@ impl Component for proto::GreaterThan {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
         let left_property = properties.get("left")
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
@@ -442,7 +442,7 @@ impl Component for proto::GreaterThan {
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
-        Ok(ArrayProperties {
+        Ok(ValueProperties::Array(ArrayProperties {
             nullity: false,
             releasable: left_property.releasable && right_property.releasable,
             nature: Some(Nature::Categorical(NatureCategorical {
@@ -459,7 +459,7 @@ impl Component for proto::GreaterThan {
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality)
-        }.into())
+        }).into())
     }
 }
 
@@ -471,7 +471,7 @@ impl Component for proto::LessThan {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
         let left_property = properties.get("left")
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
@@ -498,7 +498,7 @@ impl Component for proto::LessThan {
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
-        Ok(ArrayProperties {
+        Ok(ValueProperties::Array(ArrayProperties {
             nullity: false,
             releasable: left_property.releasable && right_property.releasable,
             nature: Some(Nature::Categorical(NatureCategorical {
@@ -515,7 +515,7 @@ impl Component for proto::LessThan {
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality)
-        }.into())
+        }).into())
     }
 }
 
@@ -527,7 +527,7 @@ impl Component for proto::Log {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
         let mut data_property = properties.get("data")
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
@@ -576,7 +576,7 @@ impl Component for proto::Log {
         data_property.is_not_empty = data_property.is_not_empty && base_property.is_not_empty;
         data_property.dimensionality = data_property.dimensionality
             .max(base_property.dimensionality);
-        Ok(data_property.into())
+        Ok(ValueProperties::Array(data_property).into())
     }
 }
 
@@ -588,7 +588,7 @@ impl Component for proto::Modulo {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
         let mut left_property = properties.get("left")
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
@@ -647,7 +647,7 @@ impl Component for proto::Modulo {
         left_property.is_not_empty = left_property.is_not_empty && right_property.is_not_empty;
         left_property.dimensionality = left_property.dimensionality
             .max(right_property.dimensionality);
-        Ok(left_property.into())
+        Ok(ValueProperties::Array(left_property).into())
     }
 }
 
@@ -659,7 +659,7 @@ impl Component for proto::Multiply {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
         let left_property = properties.get("left")
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
@@ -679,7 +679,7 @@ impl Component for proto::Multiply {
             return Err("left and right arguments must share the same data types".into())
         }
 
-        Ok(ArrayProperties {
+        Ok(ValueProperties::Array(ArrayProperties {
             nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
             nature: propagate_binary_nature(&left_property, &right_property, &BinaryOperators {
@@ -774,7 +774,7 @@ impl Component for proto::Multiply {
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality)
-        }.into())
+        }).into())
     }
 }
 
@@ -786,7 +786,7 @@ impl Component for proto::Negate {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
@@ -805,7 +805,7 @@ impl Component for proto::Negate {
             }, &OptimizeUnaryOperators { f64: None, i64: None },
             &data_property.num_columns()?)?;
 
-        Ok(data_property.into())
+        Ok(ValueProperties::Array(data_property).into())
     }
 }
 
@@ -816,7 +816,7 @@ impl Component for proto::Negative {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
@@ -840,7 +840,7 @@ impl Component for proto::Negative {
                     Ok((bounds.upper.map(|v| -v).clone(), bounds.lower.map(|v| -v).clone())))),
             }, &data_property.num_columns()?)?;
 
-        Ok(data_property.into())
+        Ok(ValueProperties::Array(data_property).into())
     }
 }
 
@@ -852,7 +852,7 @@ impl Component for proto::Or {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
         let mut left_property = properties.get("left")
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
@@ -892,7 +892,7 @@ impl Component for proto::Or {
         left_property.dimensionality = left_property.dimensionality
             .max(right_property.dimensionality);
 
-        Ok(left_property.into())
+        Ok(ValueProperties::Array(left_property).into())
     }
 }
 
@@ -904,7 +904,7 @@ impl Component for proto::Power {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
@@ -962,7 +962,7 @@ impl Component for proto::Power {
         data_property.is_not_empty = data_property.is_not_empty && radical_property.is_not_empty;
         data_property.dimensionality = data_property.dimensionality
             .max(radical_property.dimensionality);
-        Ok(data_property.into())
+        Ok(ValueProperties::Array(data_property).into())
     }
 }
 
@@ -974,7 +974,7 @@ impl Component for proto::RowMax {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
         let left_property = properties.get("left")
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
@@ -994,7 +994,7 @@ impl Component for proto::RowMax {
             return Err("left and right arguments must share the same data types".into())
         }
 
-        Ok(ArrayProperties {
+        Ok(ValueProperties::Array(ArrayProperties {
             nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
             nature: propagate_binary_nature(&left_property, &right_property, &BinaryOperators {
@@ -1041,7 +1041,7 @@ impl Component for proto::RowMax {
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality)
-        }.into())
+        }).into())
     }
 }
 
@@ -1052,7 +1052,7 @@ impl Component for proto::RowMin {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
         let left_property = properties.get("left")
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
@@ -1072,7 +1072,7 @@ impl Component for proto::RowMin {
             return Err("left and right arguments must share the same data types".into())
         }
 
-        Ok(ArrayProperties {
+        Ok(ValueProperties::Array(ArrayProperties {
             nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
             nature: propagate_binary_nature(&left_property, &right_property, &BinaryOperators {
@@ -1119,7 +1119,7 @@ impl Component for proto::RowMin {
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality)
-        }.into())
+        }).into())
     }
 }
 
@@ -1130,7 +1130,7 @@ impl Component for proto::Subtract {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
         let left_property = properties.get("left")
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
@@ -1150,7 +1150,7 @@ impl Component for proto::Subtract {
             return Err("left and right arguments must share the same data types".into())
         }
 
-        Ok(ArrayProperties {
+        Ok(ValueProperties::Array(ArrayProperties {
             nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
             nature: propagate_binary_nature(&left_property, &right_property, &BinaryOperators {
@@ -1190,7 +1190,7 @@ impl Component for proto::Subtract {
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality)
-        }.into())
+        }).into())
     }
 }
 

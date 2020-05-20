@@ -105,6 +105,7 @@ impl Expandable for proto::DpCount {
             properties: HashMap::new(),
             releases,
             traversal: vec![id_count],
+            warnings: vec![]
         })
     }
 }

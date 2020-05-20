@@ -3,7 +3,7 @@ use crate::errors::*;
 
 use std::collections::HashMap;
 
-use crate::{base};
+use crate::{base, Warnable};
 use crate::proto;
 use crate::components::{Component, Expandable};
 
@@ -19,7 +19,7 @@ impl Component for proto::Impute {
         public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
@@ -33,7 +33,7 @@ impl Component for proto::Impute {
             if data_property.nullity {
                 return Err("impossible state: integers contain nullity".into())
             }
-            return Ok(data_property.into())
+            return Ok(ValueProperties::Array(data_property).into())
         }
 
         if data_property.data_type == DataType::Unknown {
@@ -54,7 +54,7 @@ impl Component for proto::Impute {
 
             // TODO: propagation of categories through imputation and resize
             data_property.nature = None;
-            return Ok(data_property.into());
+            return Ok(ValueProperties::Array(data_property).into())
         }
 
         let num_columns = data_property.num_columns
@@ -124,7 +124,7 @@ impl Component for proto::Impute {
             upper: Vector1DNull::F64(impute_upper),
         }));
 
-        Ok(data_property.into())
+        Ok(ValueProperties::Array(data_property).into())
     }
 }
 
@@ -173,7 +173,8 @@ impl Expandable for proto::Impute {
             computation_graph,
             properties: HashMap::new(),
             releases,
-            traversal: Vec::new()
+            traversal: Vec::new(),
+            warnings: vec![]
         })
     }
 }

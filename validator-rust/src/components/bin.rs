@@ -19,7 +19,7 @@ impl Component for proto::Bin {
         public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
         _node_id: u32
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
         let mut data_property = properties.get("data")
             .ok_or_else(|| Error::from("data: missing"))?.array()
             .map_err(prepend("data:"))?.clone();

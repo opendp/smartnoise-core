@@ -24,7 +24,6 @@ pub mod filter;
 pub mod histogram;
 pub mod impute;
 pub mod index;
-pub mod map;
 pub mod materialize;
 pub mod mean;
 pub mod mechanisms;
@@ -83,7 +82,7 @@ impl Evaluable for proto::component::Variant {
         evaluate!(
             // INSERT COMPONENT LIST
             Cast, Clamp, Count, Covariance, Digitize, Filter, Histogram, Impute, Index,
-            Map, Materialize, Mean, Merge, Partition,
+            Materialize, Mean, Merge, Partition,
             Quantile, RawMoment, Rename, Reshape, Resize, Sum, Variance,
 
             ExponentialMechanism, GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism,

@@ -3,7 +3,7 @@ use crate::errors::*;
 use std::collections::HashMap;
 use crate::base::{Nature, NodeProperties, NatureCategorical, Jagged, ValueProperties, DataType, Array};
 
-use crate::{proto, base};
+use crate::{proto, base, Warnable};
 use crate::utilities::{prepend, standardize_categorical_argument, standardize_null_target_argument, deduplicate, standardize_float_argument, get_literal};
 use crate::components::{Component, Expandable};
 
@@ -17,7 +17,7 @@ impl Component for proto::Digitize {
         public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
         _node_id: u32
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
         let mut data_property = properties.get("data")
             .ok_or_else(|| Error::from("data: missing"))?.clone().array()
             .map_err(prepend("data:"))?.clone();
@@ -85,7 +85,7 @@ impl Component for proto::Digitize {
             })?;
 
         data_property.data_type = DataType::I64;
-        Ok(data_property.into())
+        Ok(ValueProperties::Array(data_property).into())
     }
 }
 
@@ -129,7 +129,8 @@ impl Expandable for proto::Digitize {
             computation_graph,
             properties: HashMap::new(),
             releases,
-            traversal: Vec::new()
+            traversal: Vec::new(),
+            warnings: vec![]
         })
     }
 }

@@ -3,7 +3,7 @@ use crate::errors::*;
 
 use std::collections::HashMap;
 
-use crate::{proto, base};
+use crate::{proto, base, Warnable};
 
 use crate::components::{Component, Sensitivity};
 use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType};
@@ -17,7 +17,7 @@ impl Component for proto::Covariance {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
         if properties.contains_key("data") {
             let mut data_property = properties.get("data")
                 .ok_or("data: missing")?.array()
@@ -47,7 +47,7 @@ impl Component for proto::Covariance {
             }
             // min/max of data is not known after computing covariance
             data_property.nature = None;
-            Ok(data_property.into())
+            Ok(ValueProperties::Array(data_property).into())
         } else if properties.contains_key("left") && properties.contains_key("right") {
             let mut left_property = properties.get("left")
                 .ok_or("left: missing")?.array()
@@ -90,7 +90,7 @@ impl Component for proto::Covariance {
             left_property.num_records = Some(1);
             left_property.num_columns = Some(num_columns);
 
-            Ok(left_property.into())
+            Ok(ValueProperties::Array(left_property).into())
         } else {
             Err("either \"data\" for covariance, or \"left\" and \"right\" for cross-covariance must be supplied".into())
         }

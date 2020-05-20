@@ -21,6 +21,18 @@ pub mod errors {
     error_chain! {}
 }
 
+pub struct Warnable<T>(T, Vec<Error>);
+impl<T> Warnable<T> {
+    pub fn new(value: T) -> Self {
+        Warnable(value, Vec::new())
+    }
+}
+impl<T> From<T> for Warnable<T> {
+    fn from(value: T) -> Self {
+        Warnable::new(value)
+    }
+}
+
 #[doc(hidden)]
 pub use errors::*;
 // trait which holds `display_chain`
@@ -35,7 +47,7 @@ pub mod docs;
 use crate::components::*;
 use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
-use crate::utilities::serial::{serialize_value_properties, serialize_release_node};
+use crate::utilities::serial::{serialize_value_properties, serialize_release_node, serialize_error};
 use crate::base::{ReleaseNode, Value};
 use std::iter::FromIterator;
 
@@ -96,16 +108,16 @@ pub fn compute_privacy_usage(
     let usage_option = graph.iter()
         // return the privacy usage from the release, else from the analysis
         .filter_map(|(node_id, component)|
-            utilities::get_component_privacy_usage(
+            utilities::privacy::get_component_privacy_usage(
                 component,
                 release.get(node_id).cloned().map(serialize_release_node).as_ref()))
         // linear sum
-        .fold1(|usage_1, usage_2| utilities::privacy_usage_reducer(
-            &usage_1, &usage_2, &|l, r| l + r));
+        .fold1(|usage_1, usage_2| utilities::privacy::privacy_usage_reducer(
+            &usage_1, &usage_2, |l, r| l + r));
 
     match usage_option {
         Some(privacy_usage) => {
-            utilities::privacy_usage_check(&privacy_usage)?;
+            utilities::privacy::privacy_usage_check(&privacy_usage, None, false)?;
             Ok(privacy_usage)
         },
         None => Err("no information is released; privacy usage is none".into())
@@ -375,7 +387,7 @@ pub fn expand_component(
     let component = component
         .ok_or_else(|| Error::from("component must be defined"))?;
 
-    let result = component.variant.as_ref()
+    let mut result = component.variant.as_ref()
         .ok_or_else(|| Error::from("component variant must be defined"))?.expand_component(
         &privacy_definition,
         &component,
@@ -388,20 +400,16 @@ pub fn expand_component(
         .map(|(name, release_node)| (name.clone(), release_node.value.clone()))
         .collect::<HashMap<String, Value>>();
 
-    let mut patch_properties = result.properties;
     if result.traversal.is_empty() {
-        let propagated_property = component.clone().variant.as_ref()
+        let Warnable(propagated_property, propagation_warnings) = component.clone().variant.as_ref()
             .ok_or_else(|| Error::from("component variant must be defined"))?
             .propagate_property(&privacy_definition, &public_values, &properties, component_id)
             .chain_err(|| format!("at node_id {:?}", component_id))?;
 
-        patch_properties.insert(component_id.to_owned(), utilities::serial::serialize_value_properties(propagated_property));
+        result.warnings.extend(propagation_warnings.into_iter()
+            .map(|err| serialize_error(err.chain_err(|| format!("at node_id {:?}", component_id)))));
+        result.properties.insert(component_id.to_owned(), utilities::serial::serialize_value_properties(propagated_property));
     }
 
-    Ok(proto::ComponentExpansion {
-        computation_graph: result.computation_graph,
-        properties: patch_properties,
-        releases: result.releases,
-        traversal: result.traversal,
-    })
+    Ok(result)
 }

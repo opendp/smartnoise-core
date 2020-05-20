@@ -53,7 +53,7 @@ mod variance;
 use std::collections::HashMap;
 
 use crate::base::{Value, NodeProperties, SensitivitySpace, ValueProperties};
-use crate::proto;
+use crate::{proto, Warnable};
 use crate::utilities::json::{JSONRelease};
 
 /// Universal Component trait
@@ -84,7 +84,7 @@ pub trait Component {
         public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
         _node_id: u32,
-    ) -> Result<ValueProperties>;
+    ) -> Result<Warnable<ValueProperties>>;
 }
 
 /// Expandable Component trait
@@ -203,7 +203,7 @@ impl Component for proto::component::Variant {
         public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
         node_id: u32,
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
         macro_rules! propagate_property {
             ($( $variant:ident ),*) => {
                 {
@@ -297,6 +297,7 @@ impl Expandable for proto::component::Variant {
             properties: HashMap::new(),
             releases: HashMap::new(),
             traversal: Vec::new(),
+            warnings: vec![]
         })
     }
 }

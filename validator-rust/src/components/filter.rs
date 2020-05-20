@@ -4,7 +4,7 @@ use crate::components::Component;
 use std::collections::HashMap;
 use crate::base::{Value, ValueProperties, DataType};
 use crate::utilities::prepend;
-use crate::base;
+use crate::{base, Warnable};
 use crate::proto;
 use crate::components::transforms::propagate_binary_shape;
 
@@ -15,7 +15,7 @@ impl Component for proto::Filter {
         _public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
         node_id: u32
-    ) -> Result<ValueProperties> {
+    ) -> Result<Warnable<ValueProperties>> {
         let mut data_property = properties.get("data")
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
@@ -51,6 +51,6 @@ impl Component for proto::Filter {
         // no longer know if the data has a nonzero number of records
         data_property.is_not_empty = false;
 
-        Ok(data_property.into())
+        Ok(ValueProperties::Array(data_property).into())
     }
 }

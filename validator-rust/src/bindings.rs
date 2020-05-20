@@ -44,8 +44,11 @@ impl Analysis {
         Analysis {
             privacy_definition: proto::PrivacyDefinition {
                 group_size: 1,
-                distance: proto::privacy_definition::Distance::Approximate as i32,
-                neighboring: proto::privacy_definition::Neighboring::AddRemove as i32
+                neighboring: proto::privacy_definition::Neighboring::AddRemove as i32,
+                strict_parameter_checks: false,
+                protect_overflow: false,
+                protect_elapsed_time: false,
+                protect_memory_utilization: false
             },
             components: HashMap::new(),
             component_count: 0,
