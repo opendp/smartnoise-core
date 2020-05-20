@@ -83,22 +83,25 @@ impl Expandable for proto::DpCount {
                 submission: component.submission,
             });
         } else {
-            // noising
-            computation_graph.insert(component_id.clone(), proto::Component {
-                arguments: hashmap!["data".to_owned() => id_count],
-                variant: Some(match self.mechanism.to_lowercase().as_str() {
-                    "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
-                        privacy_usage: self.privacy_usage.clone()
-                    }),
-                    "gaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
-                        privacy_usage: self.privacy_usage.clone()
-                    }),
-                    _ => panic!("Unexpected invalid token {:?}", self.mechanism.as_str()),
-                }),
-                omit: false,
-                submission: component.submission,
-            });
+            return Err("mechanism: only `SimpleGeometric` is available".into())
         }
+        // else {
+        //     // noising
+        //     computation_graph.insert(component_id.clone(), proto::Component {
+        //         arguments: hashmap!["data".to_owned() => id_count],
+        //         variant: Some(match self.mechanism.to_lowercase().as_str() {
+        //             "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
+        //                 privacy_usage: self.privacy_usage.clone()
+        //             }),
+        //             "gaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
+        //                 privacy_usage: self.privacy_usage.clone()
+        //             }),
+        //             _ => panic!("Unexpected invalid token {:?}", self.mechanism.as_str()),
+        //         }),
+        //         omit: false,
+        //         submission: component.submission,
+        //     });
+        // }
 
         Ok(proto::ComponentExpansion {
             computation_graph,

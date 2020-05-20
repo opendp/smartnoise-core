@@ -30,7 +30,7 @@
       "type_rust": "String",
       "default_python": "\"SimpleGeometric\"",
       "default_rust": "String::from(\"SimpleGeometric\")",
-      "description": "Privatizing mechanism to use. One of [`SimpleGeometric`, `Laplace`, `Gaussian`]"
+      "description": "Privatizing mechanism to use. One of [`SimpleGeometric`]"
     },
     "privacy_usage": {
       "type_proto": "repeated PrivacyUsage",

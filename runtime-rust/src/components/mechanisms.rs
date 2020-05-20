@@ -14,11 +14,7 @@ use crate::utilities::mechanisms::exponential_mechanism;
 
 impl Evaluable for proto::LaplaceMechanism {
     fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        let mut data = match get_argument(arguments, "data")?.array()? {
-            Array::F64(data) => data.clone(),
-            Array::I64(data) => data.mapv(|v| v as f64),
-            _ => return Err("data must be numeric".into())
-        };
+        let mut data = get_argument(arguments, "data")?.array()?.f64()?.to_owned();
 
         let sensitivity = get_argument(arguments, "sensitivity")?.array()?.f64()?;
 
@@ -48,11 +44,7 @@ impl Evaluable for proto::LaplaceMechanism {
 
 impl Evaluable for proto::GaussianMechanism {
     fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        let mut data = match get_argument(arguments, "data")?.array()? {
-            Array::F64(data) => data.clone(),
-            Array::I64(data) => data.mapv(|v| v as f64),
-            _ => return Err("data must be numeric".into())
-        };
+        let mut data = get_argument(arguments, "data")?.array()?.f64()?.to_owned();
 
         let sensitivity = get_argument(arguments, "sensitivity")?.array()?.f64()?;
 

@@ -33,8 +33,8 @@ impl Component for proto::GaussianMechanism {
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
-        if data_property.data_type != DataType::F64 && data_property.data_type != DataType::I64 {
-            return Err("data: atomic type must be numeric".into());
+        if data_property.data_type != DataType::F64 {
+            return Err("data: atomic type must be float".into());
         }
         let aggregator = data_property.aggregator.clone()
             .ok_or_else(|| Error::from("aggregator: missing"))?;
