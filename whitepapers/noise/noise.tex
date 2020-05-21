@@ -201,6 +201,8 @@ for a timing attack.
 	\end{algorithmic}
 \end{algorithm}
 
+The $ect$ boolean stands for \emph{enforce constant time}. 
+
 \subsection{Sampling from Uniform[min, max)}
 \label{subsec:unif_sampling}
 In this method, we start by generating a floating-point number $y \in [0,1)$,
@@ -229,6 +231,12 @@ and does not give guidance on what to do if the sample from the Geometric is $> 
 There is no universally agreed upon method for generating uniform random numbers (for privacy
 applications or otherwise), but this method seems to approximate the real numbers better than many
 others because of the sampling relative to the ULP. \newline
+
+The implementation of this algorithm in the library (called \emph{sample\_uniform}) differs slightly in its generation of $u$ because 
+the built-in function that recomposes component parts of the floating-point representation back into a floating-point number 
+takes the biased version of the exponent. This does not affect the results, only the exact specification of the parameters. 
+We use the version above for clarity.\footnote{We could (and perhaps should) make the version in the library consistent with the simplified version 
+shown here.} \newline
 
 \begin{tcolorbox}[colback = {green}, title = {Known Privacy Issues}, colbacktitle = black]
 	When $g=1023$ we are sampling from subnormal floating-point numbers. Because processors do not typically support
