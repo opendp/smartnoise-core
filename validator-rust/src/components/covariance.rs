@@ -174,7 +174,7 @@ impl Sensitivity for proto::Covariance {
                 };
 
                 let row_sensitivity = differences.iter()
-                    .map(|difference| (difference * scaling_constant).powi(*k as i32))
+                    .map(|difference| (difference * scaling_constant))
                     .collect::<Vec<f64>>();
 
                 let mut array_sensitivity = Array::from(row_sensitivity).into_dyn();
