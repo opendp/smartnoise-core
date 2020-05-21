@@ -695,7 +695,7 @@ pub fn sample_snapping_noise(mechanism_input: &f64, epsilon: &f64, B: &f64, sens
 
     // perform rounding and snapping
     let inner_result_rounded = snapping::get_closest_multiple_of_Lambda(&inner_result, &m);
-    let private_estimate = num::clamp(sensitivity * inner_result_rounded, -B_scaled.abs(), B_scaled.abs());
+    let private_estimate = num::clamp(sensitivity * inner_result_rounded, -1*(B.abs()), B.abs());
     let snapping_mech_noise = private_estimate - mechanism_input;
 
     return snapping_mech_noise;
