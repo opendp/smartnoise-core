@@ -41,10 +41,34 @@ impl Component for proto::Count {
         data_property.num_records = Some(1);
         data_property.num_columns = Some(1);
 
+        let c_stability = match properties.get("data")
+            .ok_or("data: missing")? {
+            ValueProperties::Array(value) => {
+                value.assert_is_not_aggregated()?;
+
+                // overall c_stability is the maximum c_stability of any column
+                vec![value.c_stability.iter().copied().fold1(|l, r| l.max(r))
+                    .ok_or_else(|| "c_stability must be defined for each column")?]
+            },
+            ValueProperties::Indexmap(value) => {
+                value.assert_is_dataframe()?;
+
+                // overall c_stability is the maximal c_stability of any column
+                vec![value.properties.values().iter()
+                    .map(|v| v.array().map(|v| v.c_stability.clone()))
+                    .collect::<Result<Vec<Vec<f64>>>>()?.into_iter()
+                    .flatten()
+                    .fold1(|l, r| l.max(r))
+                    .ok_or_else(|| "c_stability must be defined for each column")?]
+            },
+            _ => return Err("data: must be an array or indexmap".into())
+        };
+
         // save a snapshot of the state when aggregating
         data_property.aggregator = Some(AggregatorProperties {
             component: proto::component::Variant::Count(self.clone()),
             properties: properties.clone(),
+            c_stability,
             lipschitz_constant: vec![1.]
         });
 

@@ -31,6 +31,7 @@ impl Component for proto::Sum {
         data_property.aggregator = Some(AggregatorProperties {
             component: proto::component::Variant::Sum(self.clone()),
             properties: properties.clone(),
+            c_stability: data_property.c_stability.clone(),
             lipschitz_constant: (0..data_property.num_columns()?).map(|_| 1.).collect()
         });
 
@@ -66,7 +67,6 @@ impl Sensitivity for proto::Sum {
                 data_property.assert_non_null()?;
                 let data_lower = data_property.lower_f64()?;
                 let data_upper = data_property.upper_f64()?;
-                let c_stability = data_property.c_stability;
 
                 use proto::privacy_definition::Neighboring;
                 let neighboring_type = Neighboring::from_i32(privacy_definition.neighboring)
@@ -76,13 +76,11 @@ impl Sensitivity for proto::Sum {
                     1 | 2 => match neighboring_type {
                         Neighboring::AddRemove => data_lower.iter()
                             .zip(data_upper.iter())
-                            .zip(c_stability.iter())
-                            .map(|((min, max), c_stab)| min.abs().max(max.abs()) * c_stab)
+                            .map(|(min, max)| min.abs().max(max.abs()))
                             .collect::<Vec<f64>>(),
                         Neighboring::Substitute => data_lower.iter()
                             .zip(data_upper.iter())
-                            .zip(c_stability.iter())
-                            .map(|((min, max), c_stab)| (max - min) * c_stab)
+                            .map(|(min, max)| (max - min))
                             .collect::<Vec<f64>>()
                     }
                     _ => return Err("KNorm sensitivity is only supported in L1 and L2 spaces".into())

@@ -44,6 +44,7 @@ impl Component for proto::Histogram {
         data_property.aggregator = Some(AggregatorProperties {
             component: proto::component::Variant::Histogram(self.clone()),
             properties: properties.clone(),
+            c_stability: data_property.c_stability.clone(),
             lipschitz_constant: (0..num_columns).map(|_| 1.).collect()
         });
 
@@ -228,8 +229,8 @@ impl Sensitivity for proto::Histogram {
                 Ok(Array::from_shape_vec(
                     vec![num_records as usize, num_columns as usize],
                     (0..num_records)
-                        .map(|_| data_property.c_stability.iter()
-                            .map(|c_stab| c_stab * epsilon_corrected)
+                        .map(|_| (0..num_columns)
+                            .map(|_| epsilon_corrected)
                             .collect::<Vec<f64>>())
                         .flatten()
                         .collect::<Vec<f64>>())?.into())

@@ -49,6 +49,8 @@ impl Component for proto::Merge {
             aggregator: Some(AggregatorProperties {
                 component: proto::component::Variant::Merge(self.clone()),
                 properties: properties.clone(),
+                // TODO: bring forth the constants from the parts
+                c_stability: vec![],
                 lipschitz_constant: vec![]
             }),
             // TODO: merge natures

@@ -47,6 +47,7 @@ impl Component for proto::Quantile {
                     aggregator: Some(AggregatorProperties {
                         component: proto::component::Variant::Quantile(self.clone()),
                         properties: properties.clone(),
+                        c_stability: data_property.c_stability.clone(),
                         lipschitz_constant: (0..data_property.num_columns()?).map(|_| 1.).collect()
                     }),
                     nature: None,
@@ -59,6 +60,7 @@ impl Component for proto::Quantile {
                 data_property.aggregator = Some(AggregatorProperties {
                     component: proto::component::Variant::Quantile(self.clone()),
                     properties: properties.clone(),
+                    c_stability: data_property.c_stability.clone(),
                     lipschitz_constant: (0..data_property.num_columns()?).map(|_| 1.).collect()
                 });
 
@@ -85,8 +87,6 @@ impl Sensitivity for proto::Quantile {
         data_property.assert_is_not_aggregated()?;
         data_property.assert_non_null()?;
 
-        let c_stability = data_property.c_stability.clone();
-
         match sensitivity_type {
             SensitivitySpace::KNorm(k) => {
                 if k != &1 {
@@ -97,8 +97,7 @@ impl Sensitivity for proto::Quantile {
 
                 let row_sensitivity = lower.iter()
                     .zip(upper.iter())
-                    .zip(c_stability.iter())
-                    .map(|((min, max), c_stab)| (max - min) * c_stab)
+                    .map(|(min, max)| max - min)
                     .collect::<Vec<f64>>();
 
                 let mut array_sensitivity = Array::from(row_sensitivity).into_dyn();
@@ -116,8 +115,8 @@ impl Sensitivity for proto::Quantile {
                     Neighboring::Substitute => 1.
                 };
 
-                let row_sensitivity = c_stability.iter()
-                    .map(|c_stab| c_stab * cell_sensitivity)
+                let row_sensitivity = (0..data_property.num_columns()?)
+                    .map(|_| cell_sensitivity)
                     .collect::<Vec<f64>>();
 
                 let array_sensitivity = Array::from(row_sensitivity).into_dyn();

@@ -237,6 +237,7 @@ pub fn parse_array_properties(value: proto::ArrayProperties) -> ArrayProperties 
                 properties: aggregator.properties.into_iter()
                     .map(|(name, properties)| (name, parse_value_properties(properties)))
                     .collect::<HashMap<String, ValueProperties>>(),
+                c_stability: parse_array1d_f64(aggregator.c_stability.unwrap()),
                 lipschitz_constant: parse_array1d_f64(aggregator.lipschitz_constant.unwrap())
             }),
             None => None
@@ -273,6 +274,7 @@ pub fn parse_jagged_properties(value: proto::JaggedProperties) -> JaggedProperti
                 properties: aggregator.properties.into_iter()
                     .map(|(name, properties)| (name, parse_value_properties(properties)))
                     .collect::<HashMap<String, ValueProperties>>(),
+                c_stability: parse_array1d_f64(aggregator.c_stability.unwrap()),
                 lipschitz_constant: parse_array1d_f64(aggregator.lipschitz_constant.unwrap())
             }),
             None => None
@@ -577,7 +579,8 @@ pub fn serialize_array_properties(value: ArrayProperties) -> proto::ArrayPropert
                 properties: aggregator.properties.into_iter()
                     .map(|(name, properties)| (name, serialize_value_properties(properties)))
                     .collect::<HashMap<String, proto::ValueProperties>>(),
-                lipschitz_constant: Some(serialize_array1d_f64(aggregator.lipschitz_constant))
+                lipschitz_constant: Some(serialize_array1d_f64(aggregator.lipschitz_constant)),
+                c_stability: Some(serialize_array1d_f64(aggregator.c_stability)),
             }),
             None => None
         },
@@ -620,6 +623,7 @@ pub fn serialize_jagged_properties(value: JaggedProperties) -> proto::JaggedProp
                 properties: aggregator.properties.into_iter()
                     .map(|(name, properties)| (name, serialize_value_properties(properties)))
                     .collect::<HashMap<String, proto::ValueProperties>>(),
+                c_stability: Some(serialize_array1d_f64(aggregator.c_stability)),
                 lipschitz_constant: Some(serialize_array1d_f64(aggregator.lipschitz_constant))
             }),
             None => None

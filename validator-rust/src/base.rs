@@ -841,6 +841,7 @@ pub enum DataType {
 pub struct AggregatorProperties {
     pub component: proto::component::Variant,
     pub properties: HashMap<String, ValueProperties>,
+    pub c_stability: Vec<f64>,
     pub lipschitz_constant: Vec<f64>,
 }
 

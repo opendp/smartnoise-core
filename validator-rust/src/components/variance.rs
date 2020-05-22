@@ -32,6 +32,7 @@ impl Component for proto::Variance {
         data_property.aggregator = Some(AggregatorProperties {
             component: proto::component::Variant::Variance(self.clone()),
             properties: properties.clone(),
+            c_stability: data_property.c_stability.clone(),
             lipschitz_constant: (0..data_property.num_columns()?).map(|_| 1.).collect()
         });
 
@@ -67,7 +68,6 @@ impl Sensitivity for proto::Variance {
                 let data_min = data_property.lower_f64()?;
                 let data_max = data_property.upper_f64()?;
                 let data_n = data_property.num_records()? as f64;
-                let c_stability = data_property.c_stability;
 
                 let delta_degrees_of_freedom = if self.finite_sample_correction { 1 } else { 0 } as f64;
                 let normalization = data_n - delta_degrees_of_freedom;
@@ -86,8 +86,7 @@ impl Sensitivity for proto::Variance {
 
                 let row_sensitivity = data_min.iter()
                     .zip(data_max.iter())
-                    .zip(c_stability.iter())
-                    .map(|(min, max)| (((max - min) * c_stab).powi(2) * scaling_constant))
+                    .map(|(min, max)| ((max - min).powi(2) * scaling_constant))
                     .collect::<Vec<f64>>();
 
                 let mut array_sensitivity = Array::from(row_sensitivity).into_dyn();

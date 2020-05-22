@@ -36,6 +36,7 @@ impl Component for proto::RawMoment {
         data_property.aggregator = Some(AggregatorProperties {
             component: proto::component::Variant::RawMoment(self.clone()),
             properties: properties.clone(),
+            c_stability: data_property.c_stability.clone(),
             lipschitz_constant: (0..data_property.num_columns()?).map(|_| 1.).collect()
         });
         data_property.num_records = Some(1);
@@ -60,13 +61,11 @@ impl Sensitivity for proto::RawMoment {
                 let lower = data_property.lower_f64()?;
                 let upper = data_property.upper_f64()?;
                 let num_records = data_property.num_records()?;
-                let c_stability = data_property.c_stability;
 
                 let row_sensitivity = lower.iter()
                     .zip(upper.iter())
-                    .zip(c_stability.iter())
-                    .map(|((min, max), c_stab)|
-                        (((max - min) * c_stab).powi(self.order as i32) / (num_records as f64)).powi(k))
+                    .map(|(min, max)|
+                        ((max - min).powi(self.order as i32) / (num_records as f64)).powi(k))
                     .collect::<Vec<f64>>();
 
                 let mut array_sensitivity = Array::from(row_sensitivity).into_dyn();
