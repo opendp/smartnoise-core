@@ -38,14 +38,14 @@ mod map;
 mod materialize;
 pub mod partition;
 mod quantile;
-mod rename;
+// mod rename;
 mod reshape;
 mod mean;
 mod exponential_mechanism;
 mod gaussian_mechanism;
 mod laplace_mechanism;
 mod simple_geometric_mechanism;
-mod merge;
+// mod merge;
 mod resize;
 mod sum;
 mod variance;
@@ -251,7 +251,7 @@ impl Component for proto::Component {
             // INSERT COMPONENT LIST
             Cast, Clamp, Count, Covariance, Digitize,
             Filter, Histogram, Impute, Index, Literal, Materialize, Mean,
-            Partition, Quantile, RawMoment, Rename, Reshape, Resize, Sum, Variance,
+            Partition, Quantile, RawMoment, Reshape, Resize, Sum, Variance,
 
             ExponentialMechanism, GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism,
 
@@ -394,7 +394,7 @@ impl Sensitivity for proto::component::Variant {
 
         compute_sensitivity!(
             // INSERT COMPONENT LIST
-            Count, Covariance, Histogram, Mean, Merge, Quantile, RawMoment, Sum, Variance
+            Count, Covariance, Histogram, Mean, Quantile, RawMoment, Sum, Variance
         );
 
         Err(format!("sensitivity is not implemented for proto component {:?}", self).into())

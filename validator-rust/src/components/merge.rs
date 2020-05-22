@@ -59,7 +59,7 @@ impl Component for proto::Merge {
                 .ok_or_else(|| "data_types must be equivalent when merging")?,
             dataset_id: Some(node_id as i64),
             is_not_empty: array_props.iter().any(|v| v.is_not_empty),
-            dimensionality: Some(2)
+            dimensionality: Some(2),
         }).into())
     }
 }

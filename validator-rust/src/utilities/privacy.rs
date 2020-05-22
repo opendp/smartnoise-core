@@ -3,9 +3,9 @@ use crate::errors::*;
 use itertools::Itertools;
 use std::cmp::Ordering;
 use crate::proto;
-use crate::base::{ValueProperties, Release, Indexmap, Value};
+use crate::base::{ValueProperties, Release, Indexmap, Value, GroupId};
 use crate::components::Mechanism;
-use crate::utilities::get_input_properties;
+use crate::utilities::{get_input_properties, get_common_value};
 
 
 fn get_dependents(graph: &HashMap<u32, proto::Component>) -> HashMap<u32, HashSet<u32>> {
@@ -370,4 +370,42 @@ pub fn broadcast_privacy_usage(usages: &[proto::PrivacyUsage], length: usize) ->
                 }))
             }).collect()
     })
+}
+
+pub fn get_c_stability_multiplier(arguments: Vec<Vec<GroupId>>) -> Result<f64> {
+    let partition_depth = get_common_value(&arguments.iter()
+        .map(|group_ids| group_ids.len())
+        .collect())
+        .ok_or_else(|| "all arguments must be parts of the same partition")?;
+
+    if arguments.is_empty() {
+        return Err("c-stability cannot be determined on an empty argument set".into())
+    }
+    if partition_depth == 0 {
+        return Ok(1.)
+    }
+
+    if partition_depth > 1 {
+        if !(0..partition_depth - 1).all(|depth|
+            get_common_value(&arguments.iter()
+                .map(|group_ids| group_ids[depth].clone())
+                .collect()
+            ).is_some()) {
+            return Err("all arguments must be parts of the same partition")?
+        }
+    }
+
+    let group_ids = arguments.into_iter()
+        .map(|group_id| group_id.last().unwrap().clone())
+        .collect::<Vec<GroupId>>();
+
+    get_common_value(&group_ids.iter()
+        .map(|group_id| group_id.partition_id).collect())
+        .ok_or_else(|| "all arguments must be parts of the same partition")?;
+
+    let mut counts = HashMap::new();
+    group_ids.into_iter().for_each(|group_id|
+        *counts.entry(group_id.index.unwrap()).or_insert(0) += 1);
+
+    Ok(*counts.values().max().unwrap() as f64)
 }

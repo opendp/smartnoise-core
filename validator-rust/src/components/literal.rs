@@ -28,6 +28,7 @@ impl Component for proto::Literal {
             // this is a library-wide assumption - that datasets initially have more than zero rows
             is_not_empty: true,
             dimensionality: None,
+            group_id: vec![]
         }).into())
     }
 }

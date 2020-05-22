@@ -147,7 +147,8 @@ impl Component for proto::Add {
             dataset_id: left_property.dataset_id,
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
-                .max(right_property.dimensionality)
+                .max(right_property.dimensionality),
+            group_id: left_property.group_id
         }).into())
     }
 }
@@ -354,7 +355,8 @@ impl Component for proto::Divide {
             dataset_id: left_property.dataset_id,
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
-                .max(right_property.dimensionality)
+                .max(right_property.dimensionality),
+            group_id: left_property.group_id
         }).into())
     }
 }
@@ -402,7 +404,8 @@ impl Component for proto::Equal {
             data_type: DataType::Bool,
             dataset_id: left_property.dataset_id,
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
-            dimensionality: left_property.dimensionality.max(right_property.dimensionality)
+            dimensionality: left_property.dimensionality.max(right_property.dimensionality),
+            group_id: left_property.group_id
         }).into())
     }
 }
@@ -458,7 +461,8 @@ impl Component for proto::GreaterThan {
             dataset_id: left_property.dataset_id,
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
-                .max(right_property.dimensionality)
+                .max(right_property.dimensionality),
+            group_id: left_property.group_id
         }).into())
     }
 }
@@ -514,7 +518,8 @@ impl Component for proto::LessThan {
             dataset_id: left_property.dataset_id,
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
-                .max(right_property.dimensionality)
+                .max(right_property.dimensionality),
+            group_id: left_property.group_id
         }).into())
     }
 }
@@ -773,7 +778,8 @@ impl Component for proto::Multiply {
             dataset_id: left_property.dataset_id,
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
-                .max(right_property.dimensionality)
+                .max(right_property.dimensionality),
+            group_id: left_property.group_id
         }).into())
     }
 }
@@ -1040,7 +1046,8 @@ impl Component for proto::RowMax {
             dataset_id: left_property.dataset_id,
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
-                .max(right_property.dimensionality)
+                .max(right_property.dimensionality),
+            group_id: left_property.group_id
         }).into())
     }
 }
@@ -1118,7 +1125,8 @@ impl Component for proto::RowMin {
             dataset_id: left_property.dataset_id,
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
-                .max(right_property.dimensionality)
+                .max(right_property.dimensionality),
+            group_id: left_property.group_id
         }).into())
     }
 }
@@ -1189,7 +1197,8 @@ impl Component for proto::Subtract {
             dataset_id: left_property.dataset_id,
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
-                .max(right_property.dimensionality)
+                .max(right_property.dimensionality),
+            group_id: left_property.group_id
         }).into())
     }
 }
@@ -1228,6 +1237,9 @@ pub struct OptimizeBinaryOperators {
 }
 
 pub fn propagate_binary_shape(left_property: &ArrayProperties, right_property: &ArrayProperties) -> Result<(i64, Option<i64>)> {
+    if left_property.group_id != right_property.group_id {
+        return Err("data from separate partitions may not be mixed".into())
+    }
 
     let left_num_columns = left_property.num_columns()?;
     let right_num_columns = right_property.num_columns()?;
@@ -1352,6 +1364,8 @@ pub fn propagate_binary_nature(
     optimization_operator: &OptimizeBinaryOperators,
     &output_num_columns: &i64
 ) -> Result<Option<Nature>> {
+
+
     Ok(match (left_property.nature.clone(), right_property.nature.clone()) {
         (Some(left_nature), Some(right_nature)) => match (left_nature, right_nature) {
             (Nature::Continuous(left_nature), Nature::Continuous(right_nature)) => {

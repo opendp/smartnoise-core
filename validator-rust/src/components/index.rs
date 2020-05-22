@@ -1,7 +1,7 @@
 use crate::errors::*;
 
 use std::collections::HashMap;
-use crate::base::{Array, Value, ValueProperties, Indexmap, ArrayProperties, Nature, NatureContinuous, NatureCategorical, Vector1DNull, Jagged};
+use crate::base::{Array, Value, ValueProperties, Indexmap, ArrayProperties, Nature, NatureContinuous, NatureCategorical, Vector1DNull, Jagged, IndexKey};
 
 use crate::{proto, base, Warnable};
 use crate::components::{Component, Named};
@@ -29,65 +29,103 @@ impl Component for proto::Index {
 
         let properties = match data_property {
             ValueProperties::Indexmap(data_property) => {
-                // TODO: Should columnar stacking of partitions be allowed?
-                data_property.assert_is_dataframe()?;
 
-                match data_property.properties {
-                    Indexmap::Str(value_properties) => match column_names {
-                        // String column names on string indexmap
-                        Array::Str(column_names) => to_name_vec(&column_names)?.into_iter()
-                            .map(|v| value_properties.get(&v).cloned())
-                            .collect::<Option<Vec<ValueProperties>>>()
-                            .ok_or_else(|| Error::from("columns: unknown column in index")),
-                        // Bool mask on string indexmap
-                        Array::Bool(column_names) => {
-                            let mask = to_name_vec(&column_names)?;
-                            if value_properties.len() != mask.len() {
-                                return Err("mask must be the same length as the number of columns".into());
-                            }
+                match data_property.variant {
+                    proto::indexmap_properties::Variant::Dataframe => {
 
-                            Ok(mask.into_iter()
-                                .zip(value_properties.values())
-                                .filter(|(mask, _)| *mask)
-                                .map(|(_, value)| value.clone())
-                                .collect())
-                        },
-                        // Indices on string indexmap
-                        Array::I64(indices) => {
-                            let indices = to_name_vec(&indices)?;
-                            let column_names = value_properties.keys().cloned().collect::<Vec<String>>();
-                            indices.iter().map(|index| value_properties.get(column_names.get(*index as usize)
-                                .ok_or_else(|| Error::from("column index is out of range"))?).cloned()
-                                .ok_or_else(|| Error::from("properties not found"))).collect::<Result<Vec<ValueProperties>>>()
-                        },
-                        Array::F64(_) => Err("columns may not have float type".into())
-                    },
-                    Indexmap::I64(value_properties) => match column_names {
-                        // I64 column names on I64 indexmap
-                        Array::I64(column_names) => to_name_vec(&column_names)?.into_iter()
-                            .map(|v| value_properties.get(&v).cloned())
-                            .collect::<Option<Vec<ValueProperties>>>()
-                            .ok_or_else(|| Error::from("columns: unknown column in index")),
-                        // Bool mask on I64 indexmap
-                        Array::Bool(column_names) => {
-                            let mask = to_name_vec(&column_names)?;
-                            if value_properties.len() != mask.len() {
-                                return Err("mask must be the same length as the number of columns".into());
-                            }
+                        match data_property.properties {
+                            Indexmap::Str(value_properties) => match column_names {
+                                // String column names on string indexmap
+                                Array::Str(column_names) => to_name_vec(&column_names)?.into_iter()
+                                    .map(|v| value_properties.get(&v).cloned())
+                                    .collect::<Option<Vec<ValueProperties>>>()
+                                    .ok_or_else(|| Error::from("columns: unknown column in index")),
+                                // Bool mask on string indexmap
+                                Array::Bool(column_names) => {
+                                    let mask = to_name_vec(&column_names)?;
+                                    if value_properties.len() != mask.len() {
+                                        return Err("mask must be the same length as the number of columns".into());
+                                    }
 
-                            Ok(mask.into_iter()
-                                .zip(value_properties.values())
-                                .filter(|(mask, _)| *mask)
-                                .map(|(_, value)| value.clone())
-                                .collect())
-                        },
-                        _ => Err("columns must be either integer or a boolean mask".into())
-                    },
-                    Indexmap::Bool(value_properties) =>
-                        to_name_vec(column_names.bool()?)?.into_iter()
-                            .map(|name| value_properties.get(&name).cloned()
-                                .ok_or_else(|| Error::from("columns: unknown column in index")))
-                            .collect::<Result<Vec<ValueProperties>>>()
+                                    Ok(mask.into_iter()
+                                        .zip(value_properties.values())
+                                        .filter(|(mask, _)| *mask)
+                                        .map(|(_, value)| value.clone())
+                                        .collect())
+                                },
+                                // Indices on string indexmap
+                                Array::I64(indices) => {
+                                    let indices = to_name_vec(&indices)?;
+                                    let column_names = value_properties.keys().cloned().collect::<Vec<String>>();
+                                    indices.iter().map(|index| value_properties.get(column_names.get(*index as usize)
+                                        .ok_or_else(|| Error::from("column index is out of range"))?).cloned()
+                                        .ok_or_else(|| Error::from("properties not found"))).collect::<Result<Vec<ValueProperties>>>()
+                                },
+                                Array::F64(_) => Err("columns may not have float type".into())
+                            },
+                            Indexmap::I64(value_properties) => match column_names {
+                                // I64 column names on I64 indexmap
+                                Array::I64(column_names) => to_name_vec(&column_names)?.into_iter()
+                                    .map(|v| value_properties.get(&v).cloned())
+                                    .collect::<Option<Vec<ValueProperties>>>()
+                                    .ok_or_else(|| Error::from("columns: unknown column in index")),
+                                // Bool mask on I64 indexmap
+                                Array::Bool(column_names) => {
+                                    let mask = to_name_vec(&column_names)?;
+                                    if value_properties.len() != mask.len() {
+                                        return Err("mask must be the same length as the number of columns".into());
+                                    }
+
+                                    Ok(mask.into_iter()
+                                        .zip(value_properties.values())
+                                        .filter(|(mask, _)| *mask)
+                                        .map(|(_, value)| value.clone())
+                                        .collect())
+                                },
+                                _ => Err("columns must be either integer or a boolean mask".into())
+                            },
+                            Indexmap::Bool(value_properties) =>
+                                to_name_vec(column_names.bool()?)?.into_iter()
+                                    .map(|name| value_properties.get(&name).cloned()
+                                        .ok_or_else(|| Error::from("columns: unknown column in index")))
+                                    .collect::<Result<Vec<ValueProperties>>>()
+                        }
+                    }
+                    proto::indexmap_properties::Variant::Partition => {
+                        let partition_key = IndexKey::new(column_names.clone())?;
+                        let mut properties = match (data_property.properties, column_names.clone()) {
+                            (Indexmap::Str(value_properties), Array::Str(index)) => {
+                                if index.len() != 1 {
+                                    return Err("when partitioning, only one index is permitted".into())
+                                }
+                                value_properties
+                                    .get(index.first().unwrap())
+                                    .ok_or_else(|| "unknown partition index")?.array()?.clone()
+                            },
+                            (Indexmap::Bool(value_properties), Array::Bool(index)) => {
+                                if index.len() != 1 {
+                                    return Err("when partitioning, only one index is permitted".into())
+                                }
+                                value_properties
+                                    .get(index.first().unwrap())
+                                    .ok_or_else(|| "unknown partition index")?.array()?.clone()
+                            },
+                            (Indexmap::I64(value_properties), Array::I64(index)) => {
+                                if index.len() != 1 {
+                                    return Err("when partitioning, only one index is permitted".into())
+                                }
+                                value_properties
+                                    .get(index.first().unwrap())
+                                    .ok_or_else(|| "unknown partition index")?.array()?.clone()
+                            },
+                            _ => return Err("unknown partition index".into())
+                        };
+
+                        let last_idx = properties.group_id.len() - 1;
+                        properties.group_id.get_mut(last_idx)
+                            .map(|v| v.index = Some(partition_key));
+                        return Ok(Warnable::new(ValueProperties::Array(properties)))
+                    }
                 }
             },
             ValueProperties::Array(data_property) => {
@@ -221,6 +259,10 @@ fn stack_properties(all_properties: &Vec<ValueProperties>, dimensionality: Optio
         return Err("indexing is not currently supported on aggregated data".into())
     }
 
+    let group_id = get_common_value(&all_properties.iter()
+        .map(|v| v.group_id.clone()).collect())
+        .ok_or_else(|| "group_id: must be homogeneous")?;
+
     // TODO: preserve nature when indexing
 
     Ok(ValueProperties::Array(ArrayProperties {
@@ -241,6 +283,7 @@ fn stack_properties(all_properties: &Vec<ValueProperties>, dimensionality: Optio
         dataset_id: all_properties[0].dataset_id,
         // this is a library-wide assumption - that datasets have more than zero rows
         is_not_empty: true,
-        dimensionality
+        dimensionality,
+        group_id
     }))
 }

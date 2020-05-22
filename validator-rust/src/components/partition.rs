@@ -40,9 +40,9 @@ impl Component for proto::Partition {
                     num_records: data_property.num_records,
                     disjoint: true,
                     properties: match categories {
-                        Jagged::Bool(categories) => broadcast_partitions(&categories, &data_property)?.into(),
-                        Jagged::Str(categories) => broadcast_partitions(&categories, &data_property)?.into(),
-                        Jagged::I64(categories) => broadcast_partitions(&categories, &data_property)?.into(),
+                        Jagged::Bool(categories) => broadcast_partitions(&categories, &data_property, node_id)?.into(),
+                        Jagged::Str(categories) => broadcast_partitions(&categories, &data_property, node_id)?.into(),
+                        Jagged::I64(categories) => broadcast_partitions(&categories, &data_property, node_id)?.into(),
                         _ => return Err("partitioning based on floats is not supported".into())
                     },
                     dataset_id: Some(node_id as i64),
@@ -67,6 +67,10 @@ impl Component for proto::Partition {
                     properties: lengths.iter().enumerate().map(|(index, partition_num_records)| {
                         let mut partition_property = data_property.clone();
                         partition_property.num_records = *partition_num_records;
+                        partition_property.group_id.push(base::GroupId {
+                            partition_id: node_id,
+                            index: None
+                        });
                         (index as i64, ValueProperties::Array(partition_property))
                     }).collect::<IndexMap<i64, ValueProperties>>().into(),
                     dataset_id: Some(node_id as i64),
@@ -84,11 +88,16 @@ pub fn even_split_lengths(num_records: i64, num_partitions: i64) -> Vec<i64> {
 }
 
 pub fn broadcast_partitions<T: Clone + Eq + std::hash::Hash + Ord>(
-    categories: &[Vec<T>], properties: &ArrayProperties,
+    categories: &[Vec<T>], properties: &ArrayProperties, node_id: u32
 ) -> Result<IndexMap<T, ValueProperties>> {
     if categories.len() != 1 {
         return Err("categories: must be defined for one column".into());
     }
+    let mut properties = properties.clone();
+    properties.group_id.push(base::GroupId {
+        partition_id: node_id,
+        index: None
+    });
     let partitions = categories[0].clone();
     Ok(partitions.into_iter()
         .map(|v| (v, ValueProperties::Array(properties.clone())))

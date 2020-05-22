@@ -7,9 +7,9 @@ use ndarray::ArrayD;
 use ndarray;
 use whitenoise_validator::proto;
 use whitenoise_validator::utilities::get_argument;
-use std::collections::BTreeMap;
 use crate::utilities::get_num_columns;
 use noisy_float::types::n64;
+use indexmap::map::IndexMap;
 
 
 impl Evaluable for proto::Histogram {
@@ -30,7 +30,7 @@ impl Evaluable for proto::Histogram {
 
 pub fn histogram<T: Clone + Eq + Ord + std::hash::Hash>(data: &ArrayD<T>, categories: &ArrayD<T>) -> Result<ArrayD<i64>> {
     let zeros = categories.iter()
-        .map(|cat| (cat, 0)).collect::<BTreeMap<&T, i64>>();
+        .map(|cat| (cat, 0)).collect::<IndexMap<&T, i64>>();
 
     let counts = data.gencolumns().into_iter()
         .map(|column| {

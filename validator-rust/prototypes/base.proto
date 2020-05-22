@@ -107,51 +107,96 @@ message AggregatorProperties {
     Array1dF64 c_stability = 4;
 }
 
-// derived properties for the Value::Array type
+/// derived properties for the Value::Array
+///    a homogeneously-typed (0, 1, 2)-dimensional array
 message ArrayProperties {
+
+    /// length of axis zero. May be unknown
     I64Null num_records = 1;
+
+    /// length of axis one. If dimensionality is one, then one. May be unknown
     I64Null num_columns = 2;
+
+    /// true if data may contain null values
     bool nullity = 3;
+
+    /// multiplier on epsilon usage
     Array1dF64 c_stability = 4;
 
+    /// description of the aggregation that has been applied to the data
+    /// used to help compute sensitivity in the mechanisms
     AggregatorProperties aggregator = 5;
-    
+
+    /// atomic type
     DataType data_type = 6;
+
+    /// true if the data has been sanitized
     bool releasable = 7;
 
+    /// node_id of the dataset this observation originated from
+    /// used to check for conformability, is erased upon resize, is reset upon filter
+    I64Null dataset_id = 8;
+
+    /// true if the row length is known to be greater than zero
+    bool is_not_empty = 9;
+
+    /// number of axes in the array
+    I64Null dimensionality = 10;
+
+    /// used for tracking subpartitions
+    repeated GroupId group_id = 11;
+
     oneof nature {
+        /// numerical bounds of each column
         NatureContinuous continuous = 100;
+        /// categories of each column
         NatureCategorical categorical = 101;
     }
-    I64Null dataset_id = 8;
-    bool is_not_empty = 9;
-    I64Null dimensionality = 10;
 }
+
 message NatureContinuous {
     Array1dNull minimum = 1;
     Array1dNull maximum = 2;
 }
+
 message NatureCategorical {
     Jagged categories = 1;
 }
 
-// derived properties for the Value::Jagged type
+message GroupId {
+    /// node id of partition
+    uint32 partition_id = 1;
+    /// indexes referenced in the partition
+    Array index = 2;
+}
+
+/// derived properties for the Value::Jagged type
+///   a homogeneously-typed vector of vectors
+///   each vector represents a column
 message JaggedProperties {
 
     /// number of records per column
     Array1dI64 num_records = 1;
+
     /// true if the data may contain null values
     bool nullity = 2;
-    /// set when data is aggregated, used to help compute sensitivity from the mechanisms
+
+    /// description of the aggregation that has been applied to the data
+    /// used to help compute sensitivity in the mechanisms
     AggregatorProperties aggregator = 3;
-    /// either min/max or categories
+
+    /// atomic type
+    DataType data_type = 4;
+
+    /// true if the data has been sanitized
+    bool releasable = 5;
+
     oneof nature {
+        /// numerical bounds of each column
         NatureContinuous continuous = 100;
+        /// categories of each column
         NatureCategorical categorical = 101;
     }
-    /// type of data
-    DataType data_type = 5;
-    bool releasable = 6;
 }
 
 // derived properties for the Value::Function type
@@ -179,14 +224,6 @@ message ComponentExpansion {
     map<uint32, ReleaseNode> releases = 3;
     repeated uint32 traversal = 4;
     repeated Error warnings = 5;
-}
-
-
-message Function {
-    ComputationGraph computation_graph = 1;
-    Release release = 2;
-    map<string, uint32> arguments = 3;
-    map<string, uint32> outputs = 4;
 }
 
 // literals
@@ -227,6 +264,13 @@ message Indexmap {
         IndexmapBool bool = 2;
         IndexmapI64 i64 = 4;
     }
+}
+
+message Function {
+    ComputationGraph computation_graph = 1;
+    Release release = 2;
+    map<string, uint32> arguments = 3;
+    map<string, uint32> outputs = 4;
 }
 
 message ReleaseNode {

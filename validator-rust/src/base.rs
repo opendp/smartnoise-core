@@ -113,6 +113,16 @@ impl PartialEq for Array {
     }
 }
 
+impl From<IndexKey> for Array {
+    fn from(index: IndexKey) -> Self {
+        match index {
+            IndexKey::Str(v) => Array::Str(arr0(v).into_dyn()),
+            IndexKey::Bool(v) => Array::Bool(arr0(v).into_dyn()),
+            IndexKey::I64(v) => Array::I64(arr0(v).into_dyn()),
+        }
+    }
+}
+
 // build Value from other types with .into()
 impl From<bool> for Value {
     fn from(value: bool) -> Self {
@@ -688,6 +698,8 @@ pub struct ArrayProperties {
     pub is_not_empty: bool,
     /// number of axes in the array
     pub dimensionality: Option<i64>,
+    /// used for tracking subpartitions
+    pub group_id: Vec<GroupId>
 }
 
 
@@ -923,6 +935,44 @@ pub enum SensitivitySpace {
 /// A release consists of Values for each node id.
 pub type Release = HashMap<u32, ReleaseNode>;
 
+#[derive(PartialEq, Eq, Clone, Debug)]
+pub struct GroupId {
+    pub partition_id: u32,
+    pub index: Option<IndexKey>
+}
+
+#[derive(PartialEq, Eq, Clone, Debug, Hash)]
+pub enum IndexKey {
+    Str(String),
+    I64(i64),
+    Bool(bool)
+}
+
+impl IndexKey {
+    pub fn new(array: Array) -> Result<IndexKey> {
+        match array {
+            Array::I64(array) => {
+                if array.len() != 1 {
+                    return Err("Value must have one element".into())
+                }
+                Ok(IndexKey::I64(*array.first().unwrap()))
+            }
+            Array::Str(array) => {
+                if array.len() != 1 {
+                    return Err("Value must have one element".into())
+                }
+                Ok(IndexKey::Str(array.first().unwrap().to_string()))
+            }
+            Array::Bool(array) => {
+                if array.len() != 1 {
+                    return Err("Value must have one element".into())
+                }
+                Ok(IndexKey::Bool(*array.first().unwrap()))
+            }
+            Array::F64(_) => Err("Floats may not be index keys, because they are not comparable".into())
+        }
+    }
+}
 
 #[derive(Clone, Debug)]
 pub struct ReleaseNode {

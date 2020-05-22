@@ -541,7 +541,6 @@ pub fn expand_mechanism(
         privacy_usage, sensitivity_value.array()?.num_columns()? as usize)?.into_iter()
         .zip(data_property.c_stability.iter())
         // reduce epsilon allowed to algorithm based on c-stability and group size
-        // TODO: strip c-stability out of sensitivity calcs
         .map(|(usage, c_stab)| usage / (c_stab * privacy_definition.group_size as f64))
         .collect::<Result<Vec<proto::PrivacyUsage>>>()?;
 

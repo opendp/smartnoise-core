@@ -226,6 +226,7 @@ pub fn infer_property(value: &Value, dataset_id: Option<i64>) -> Result<ValuePro
                 Array::Str(array) => array.len(),
             } != 0,
             dimensionality: Some(array.shape().len() as i64),
+            group_id: vec![]
         }.into(),
         Value::Indexmap(indexmap) => {
             IndexmapProperties {

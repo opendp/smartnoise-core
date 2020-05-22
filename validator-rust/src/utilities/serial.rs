@@ -2,7 +2,7 @@
 
 use crate::proto;
 use std::collections::HashMap;
-use crate::base::{Release, Nature, Jagged, Vector1D, Value, Array, Vector1DNull, NatureCategorical, NatureContinuous, AggregatorProperties, ValueProperties, IndexmapProperties, JaggedProperties, DataType, Indexmap, ArrayProperties, ReleaseNode};
+use crate::base::{Release, Nature, Jagged, Vector1D, Value, Array, Vector1DNull, NatureCategorical, NatureContinuous, AggregatorProperties, ValueProperties, IndexmapProperties, JaggedProperties, DataType, Indexmap, ArrayProperties, ReleaseNode, GroupId, IndexKey};
 use indexmap::IndexMap;
 use error_chain::ChainedError;
 
@@ -224,6 +224,13 @@ pub fn parse_indexmap_properties(value: proto::IndexmapProperties) -> IndexmapPr
     }
 }
 
+pub fn parse_group_id(value: proto::GroupId) -> GroupId {
+    GroupId {
+        partition_id: value.partition_id,
+        index: value.index.map(|idx| IndexKey::new(parse_array(idx)).unwrap())
+    }
+}
+
 pub fn parse_array_properties(value: proto::ArrayProperties) -> ArrayProperties {
     ArrayProperties {
         num_records: value.num_records.and_then(parse_i64_null),
@@ -260,6 +267,7 @@ pub fn parse_array_properties(value: proto::ArrayProperties) -> ArrayProperties 
         dataset_id: value.dataset_id.and_then(parse_i64_null),
         is_not_empty: value.is_not_empty,
         dimensionality: value.dimensionality.and_then(parse_i64_null),
+        group_id: value.group_id.into_iter().map(parse_group_id).collect()
     }
 }
 
@@ -544,10 +552,21 @@ pub fn serialize_indexmap_properties(value: IndexmapProperties) -> proto::Indexm
     }
 }
 
+
+pub fn serialize_group_id(value: GroupId) -> proto::GroupId {
+    proto::GroupId {
+        partition_id: value.partition_id,
+        index: value.index.map(|idx| serialize_array(idx.into()))
+    }
+}
+
 pub fn serialize_array_properties(value: ArrayProperties) -> proto::ArrayProperties {
 
     let ArrayProperties {
-        num_records, num_columns, nullity, releasable, c_stability, aggregator, nature, data_type, dataset_id, is_not_empty, dimensionality
+        num_records, num_columns, nullity, releasable,
+        c_stability, aggregator, nature,
+        data_type, dataset_id, is_not_empty,
+        dimensionality, group_id
     } = value;
 
     proto::ArrayProperties {
@@ -588,6 +607,7 @@ pub fn serialize_array_properties(value: ArrayProperties) -> proto::ArrayPropert
         dataset_id: Some(serialize_i64_null(dataset_id)),
         is_not_empty,
         dimensionality: Some(serialize_i64_null(dimensionality)),
+        group_id: group_id.into_iter().map(serialize_group_id).collect()
     }
 }
 
