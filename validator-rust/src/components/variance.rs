@@ -80,7 +80,7 @@ impl Sensitivity for proto::Variance {
                 };
 
                 let row_sensitivity = data_min.iter().zip(data_max.iter())
-                    .map(|(min, max)| ((max - min).powi(2) * scaling_constant).powi(*k as i32))
+                    .map(|(min, max)| ((max - min).powi(2) * scaling_constant))
                     .collect::<Vec<f64>>();
 
                 let mut array_sensitivity = Array::from(row_sensitivity).into_dyn();

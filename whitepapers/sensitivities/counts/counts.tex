@@ -68,15 +68,15 @@ Consider a series of $k$ disjoint count queries $\mathbf{q} = \{q_1, \ldots, q_k
 \subsection{$\ell_2$-sensitivity}
 
 \begin{theorem}
-A single count query has $\ell_2$-sensitivity 1 in the change-one model. A series of $k$ disjoint counts has $\ell_2$-sensitivity 2 in the change-one model.
+A single count query has $\ell_2$-sensitivity 1 in the change-one model. A series of $k$ disjoint counts has $\ell_2$-sensitivity $\sqrt{2}$ in the change-one model.
 \end{theorem}
 
 \begin{proof}
 From the proof of Theorem \ref{thm:change1L1}, the difference between counts on two neighboring databases is at most 1. Squaring this gives the same value. For a series of $k$ disjoint counts,
 \begin{align*}
-\left\vert \mathbf{q}(x) - \mathbf{q}(x') \right\vert_2 &= \left\vert \left(q_1(x) - q_1(x')\right)^2 + \ldots + \left(q_k(x) - q_k(x')\right)^2 \right\vert \\
- & \le \left\vert 1^2 + 1^2 \right\vert \\
- &= 2.
+\left\vert \mathbf{q}(x) - \mathbf{q}(x') \right\vert_2 &= \left( \left(q_1(x) - q_1(x')\right)^2 + \ldots + \left(q_k(x) - q_k(x')\right)^2 \right)^{1/2} \\
+ & \le \left( 1^2 + 1^2 \right)^{1/2} \\
+ &= \sqrt{2}.
  \end{align*}
 \end{proof}
 
@@ -111,9 +111,6 @@ The same argument holds for $x'$ equal to $x$ with a single point added.
 A single count query has $\ell_2$-sensitivity 1 in the add/drop-one model. A series of $k$ disjoint counts also has $\ell_2$-sensitivity 1 in the add/drop-one model.
 \end{theorem}
 
-\begin{proof}
-Squaring the sensitivity bounds from Theorem \ref{thm:addDropL1} gives 1 as an upper bound on the $\ell_2$ sensitivity for both a single count and a series of $k$ disjoint counts.
-\end{proof}
 % \bibliographystyle{alpha}
 % \bibliography{mean}
 
