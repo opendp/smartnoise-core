@@ -18,7 +18,7 @@ pub fn build_bindings(
     let mut bindings_builders = Vec::new();
 
     components.iter().for_each(|component| {
-        if component.id == "Map" {
+        if component.id == "Map" || component.id == "Merge" {
             return
         }
 
@@ -52,7 +52,6 @@ pub fn build_bindings(
             .collect::<Vec<String>>().join(",\n                ");
 
         bindings_analysis.push(format!(r#"
-impl Analysis {{
     pub fn {name}({signature}) -> builders::{id}Builder {{
         #[allow(unused_mut)]
         let mut arguments = HashMap::new();
@@ -74,7 +73,6 @@ impl Analysis {{
             release: &mut self.release,
         }}
     }}
-}}
 "#,
             name=component.name,
             variant=component.name.to_camel_case(),
@@ -151,7 +149,7 @@ use crate::base::{{Release, Value, ReleaseNode}};
 
 {}"#, bindings_builders.join("\n"));
 
-    let bindings_analysis_text = bindings_analysis.join("\n");
+    let bindings_analysis_text = format!("impl Analysis {{\n{}\n}}", bindings_analysis.join("\n"));
 
     {
         fs::remove_file(output_path_impls.clone()).ok();

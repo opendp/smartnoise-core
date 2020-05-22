@@ -11,7 +11,6 @@ use ndarray::{ArrayD, arr0, Dimension};
 
 use crate::utilities::{standardize_categorical_argument, deduplicate};
 use indexmap::IndexMap;
-use std::ops::Div;
 
 /// The universal data representation.
 ///
@@ -94,6 +93,25 @@ impl Value {
     }
 }
 
+impl PartialEq for Value {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Value::Array(lhs), Value::Array(rhs)) => lhs == rhs,
+            _ => false
+        }
+    }
+}
+
+impl PartialEq for Array {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Array::Bool(lhs), Array::Bool(rhs)) => lhs == rhs,
+            (Array::F64(lhs), Array::F64(rhs)) => lhs == rhs,
+            (Array::I64(lhs), Array::I64(rhs)) => lhs == rhs,
+            _ => false
+        }
+    }
+}
 
 // build Value from other types with .into()
 impl From<bool> for Value {
@@ -924,21 +942,6 @@ impl ReleaseNode {
 
 // The properties for a node consists of Properties for each of its arguments.
 pub type NodeProperties = HashMap<String, ValueProperties>;
-
-
-impl Div<f64> for proto::PrivacyUsage {
-    type Output = Result<proto::PrivacyUsage>;
-
-    fn div(mut self, rhs: f64) -> Self::Output {
-        self.distance = Some(match self.distance.ok_or_else(|| "distance must be defined")? {
-            proto::privacy_usage::Distance::Approximate(approximate) => proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
-                epsilon: approximate.epsilon / rhs,
-                delta: approximate.delta / rhs,
-            })
-        });
-        Ok(self)
-    }
-}
 
 
 #[cfg(test)]

@@ -1,0 +1,16 @@
+{
+  "arguments": {
+    "data": {
+      "type_value": "Indexmap",
+      "description": "Arrays to union together"
+    }
+  },
+  "id": "Union",
+  "name": "union",
+  "options": {},
+  "return": {
+    "type_value": "Array"
+  },
+  "description": "Cast data to a string atomic type.",
+  "proto_id": 62
+}

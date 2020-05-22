@@ -1,15 +1,15 @@
 {
   "arguments": {
-    "data": {
-      "type_value": "Indexmap",
-      "description": "partitioned data to merge"
+    "**kwargs": {
+      "type_value": "Array",
+      "description": "data to merge together into an indexmap"
     }
   },
   "id": "Merge",
   "name": "merge",
   "options": {},
   "return": {
-    "type_value": "Array"
+    "type_value": "Indexmap"
   },
   "description": "merge partitions into a single array",
   "proto_id": 38

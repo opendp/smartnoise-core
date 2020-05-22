@@ -2,13 +2,13 @@ use crate::errors::*;
 
 use std::collections::HashMap;
 
-use crate::components::{Sensitivity, Accuracy};
+use crate::components::{Sensitivity, Accuracy, Mechanism};
 use crate::{proto, base, Warnable};
 
 use crate::components::{Component, Expandable};
-use crate::base::{Value, SensitivitySpace, ValueProperties, DataType};
+use crate::base::{Value, SensitivitySpace, ValueProperties, DataType, NodeProperties};
 use crate::utilities::{prepend, expand_mechanism};
-use crate::utilities::privacy::{broadcast_privacy_usage, get_epsilon, privacy_usage_reducer, privacy_usage_check};
+use crate::utilities::privacy::{broadcast_privacy_usage, get_epsilon, privacy_usage_check};
 use itertools::Itertools;
 
 
@@ -40,25 +40,13 @@ impl Component for proto::SimpleGeometricMechanism {
             .ok_or_else(|| Error::from("aggregator: missing"))?;
 
         // sensitivity must be computable
-        let mut sensitivity_values = aggregator.component.compute_sensitivity(
+        aggregator.component.compute_sensitivity(
             privacy_definition,
             &aggregator.properties,
             &SensitivitySpace::KNorm(1))?;
 
-        if aggregator.lipschitz_constant.iter().any(|v| v != &1.) {
-            let mut sensitivity = sensitivity_values.array()?.f64()?.clone();
-            sensitivity.gencolumns_mut().into_iter()
-                .zip(aggregator.lipschitz_constant.iter())
-                .for_each(|(mut sens, cons)| sens.iter_mut()
-                    .for_each(|v| *v *= cons));
-            sensitivity_values = sensitivity.into();
-        }
-
-        // make sure sensitivities are an f64 array
-        sensitivity_values.array()?.f64()?;
-
-        let privacy_usage = self.privacy_usage.iter().cloned()
-            .fold1(|l, r| privacy_usage_reducer(&l, &r, |l, r| l + r)).unwrap();
+        let privacy_usage = self.privacy_usage.iter().cloned().map(Ok)
+            .fold1(|l, r| l? + r?).ok_or_else(|| "privacy_usage: must be defined")??;
 
         let warnings = privacy_usage_check(
             &privacy_usage,
@@ -85,6 +73,7 @@ impl Expandable for proto::SimpleGeometricMechanism {
         expand_mechanism(
             &SensitivitySpace::KNorm(1),
             privacy_definition,
+            self.privacy_usage.as_ref(),
             component,
             properties,
             component_id,
@@ -92,6 +81,28 @@ impl Expandable for proto::SimpleGeometricMechanism {
         )
     }
 }
+
+impl Mechanism for proto::SimpleGeometricMechanism {
+    fn get_privacy_usage(
+        &self,
+        privacy_definition: &proto::PrivacyDefinition,
+        release_usage: Option<&Vec<proto::PrivacyUsage>>,
+        properties: &NodeProperties
+    ) -> Result<Option<Vec<proto::PrivacyUsage>>> {
+
+        let data_property = properties.get("data")
+            .ok_or("data: missing")?.array()
+            .map_err(prepend("data:"))?;
+        Ok(Some(match release_usage {
+            Some(release_usage) => release_usage.into_iter().cloned()
+                .zip(data_property.c_stability.iter())
+                .map(|(usage, c_stab)| usage * (privacy_definition.group_size as f64 * c_stab))
+                .collect::<Result<Vec<proto::PrivacyUsage>>>()?,
+            None => self.privacy_usage.clone()
+        }))
+    }
+}
+
 
 impl Accuracy for proto::SimpleGeometricMechanism {
     fn accuracy_to_privacy_usage(

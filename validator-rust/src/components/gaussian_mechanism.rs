@@ -4,13 +4,13 @@ use std::collections::HashMap;
 use statrs::function::erf;
 use ::itertools::izip;
 
-use crate::components::{Sensitivity, Accuracy};
+use crate::components::{Sensitivity, Accuracy, Mechanism};
 use crate::{proto, base, Warnable};
 
 use crate::components::{Component, Expandable};
-use crate::base::{Value, SensitivitySpace, ValueProperties, DataType};
+use crate::base::{Value, SensitivitySpace, ValueProperties, DataType, NodeProperties};
 use crate::utilities::{prepend, expand_mechanism};
-use crate::utilities::privacy::{broadcast_privacy_usage, get_epsilon, get_delta, privacy_usage_reducer, privacy_usage_check};
+use crate::utilities::privacy::{broadcast_privacy_usage, get_epsilon, get_delta, privacy_usage_check};
 use itertools::Itertools;
 
 
@@ -57,8 +57,8 @@ impl Component for proto::GaussianMechanism {
         // check that sensitivity is an f64 array
         sensitivity_values.array()?.f64()?;
 
-        let privacy_usage = self.privacy_usage.iter().cloned()
-            .fold1(|l, r| privacy_usage_reducer(&l, &r, |l, r| l + r)).unwrap();
+        let privacy_usage = self.privacy_usage.iter().cloned().map(Ok)
+            .fold1(|l, r| l? + r?).ok_or_else(|| "privacy_usage: must be defined")??;
 
         let mut warnings = privacy_usage_check(
             &privacy_usage,
@@ -100,6 +100,7 @@ impl Expandable for proto::GaussianMechanism {
         expand_mechanism(
             &SensitivitySpace::KNorm(2),
             privacy_definition,
+            self.privacy_usage.as_ref(),
             component,
             properties,
             component_id,
@@ -107,6 +108,28 @@ impl Expandable for proto::GaussianMechanism {
         )
     }
 }
+
+impl Mechanism for proto::GaussianMechanism {
+    fn get_privacy_usage(
+        &self,
+        privacy_definition: &proto::PrivacyDefinition,
+        release_usage: Option<&Vec<proto::PrivacyUsage>>,
+        properties: &NodeProperties
+    ) -> Result<Option<Vec<proto::PrivacyUsage>>> {
+
+        let data_property = properties.get("data")
+            .ok_or("data: missing")?.array()
+            .map_err(prepend("data:"))?;
+        Ok(Some(match release_usage {
+            Some(release_usage) => release_usage.into_iter().cloned()
+                .zip(data_property.c_stability.iter())
+                .map(|(usage, c_stab)| usage * (privacy_definition.group_size as f64 * c_stab))
+                .collect::<Result<Vec<proto::PrivacyUsage>>>()?,
+            None => self.privacy_usage.clone()
+        }))
+    }
+}
+
 
 impl Accuracy for proto::GaussianMechanism {
     fn accuracy_to_privacy_usage(

@@ -5,10 +5,10 @@ use std::collections::HashMap;
 
 use crate::{proto, base, Warnable};
 
-use crate::components::{Component, Expandable, Sensitivity};
-use crate::base::{Value, SensitivitySpace, ValueProperties, DataType, ArrayProperties};
+use crate::components::{Component, Expandable, Sensitivity, Mechanism};
+use crate::base::{Value, SensitivitySpace, ValueProperties, DataType, ArrayProperties, NodeProperties};
 use crate::utilities::{prepend, get_literal};
-use crate::utilities::privacy::{broadcast_privacy_usage, get_epsilon, privacy_usage_reducer, privacy_usage_check};
+use crate::utilities::privacy::{privacy_usage_check};
 use itertools::Itertools;
 
 impl Component for proto::ExponentialMechanism {
@@ -17,13 +17,13 @@ impl Component for proto::ExponentialMechanism {
         privacy_definition: &Option<proto::PrivacyDefinition>,
         public_arguments: &HashMap<String, Value>,
         properties: &base::NodeProperties,
-        _node_id: u32
+        _node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
         let privacy_definition = privacy_definition.as_ref()
             .ok_or_else(|| "privacy_definition must be defined")?;
 
         if privacy_definition.group_size == 0 {
-            return Err("group size must be greater than zero".into())
+            return Err("group size must be greater than zero".into());
         }
 
         let utilities_property = properties.get("utilities")
@@ -31,7 +31,7 @@ impl Component for proto::ExponentialMechanism {
             .map_err(prepend("utilities:"))?.clone();
 
         if utilities_property.data_type != DataType::F64 {
-            return Err("utilities: data_type must be float".into())
+            return Err("utilities: data_type must be float".into());
         }
 
         let candidates = public_arguments.get("candidates")
@@ -41,10 +41,10 @@ impl Component for proto::ExponentialMechanism {
         let candidates_num_records = candidates.num_records();
 
         if utilities_num_records.len() != candidates_num_records.len() {
-            return Err("utilities and candidates must share the same number of columns".into())
+            return Err("utilities and candidates must share the same number of columns".into());
         }
         if !utilities_num_records.iter().zip(candidates_num_records.iter()).all(|(l, r)| l == r) {
-            return Err("utilities and candidates must share the same number of rows in every column".into())
+            return Err("utilities and candidates must share the same number of rows in every column".into());
         }
 
         let aggregator = utilities_property.aggregator.clone()
@@ -73,11 +73,12 @@ impl Component for proto::ExponentialMechanism {
             is_not_empty: true,
             // TODO: preserve dimensionality through exponential mechanism
             //     All outputs become 2D, so 1D outputs are lost
-            dimensionality: Some(2)
+            dimensionality: Some(2),
         };
 
-        let privacy_usage = self.privacy_usage.iter().cloned()
-            .fold1(|l, r| privacy_usage_reducer(&l, &r, |l, r| l + r)).unwrap();
+        let privacy_usage = self.privacy_usage.iter().cloned().map(Ok)
+            .fold1(|l, r| l? + r?)
+            .ok_or_else(|| "privacy_usage: must be defined")??;
 
         let warnings = privacy_usage_check(
             &privacy_usage,
@@ -89,7 +90,6 @@ impl Component for proto::ExponentialMechanism {
         Ok(Warnable(output_property.into(), warnings))
     }
 }
-
 
 impl Expandable for proto::ExponentialMechanism {
     fn expand_component(
@@ -136,7 +136,27 @@ impl Expandable for proto::ExponentialMechanism {
             properties: HashMap::new(),
             releases,
             traversal: Vec::new(),
-            warnings: vec![]
+            warnings: vec![],
         })
+    }
+}
+
+impl Mechanism for proto::ExponentialMechanism {
+    fn get_privacy_usage(
+        &self,
+        privacy_definition: &proto::PrivacyDefinition,
+        release_usage: Option<&Vec<proto::PrivacyUsage>>,
+        properties: &NodeProperties,
+    ) -> Result<Option<Vec<proto::PrivacyUsage>>> {
+        let data_property = properties.get("data")
+            .ok_or("data: missing")?.array()
+            .map_err(prepend("data:"))?;
+        Ok(Some(match release_usage {
+            Some(release_usage) => release_usage.into_iter().cloned()
+                .zip(data_property.c_stability.iter())
+                .map(|(usage, c_stab)| usage * (privacy_definition.group_size as f64 * c_stab))
+                .collect::<Result<Vec<proto::PrivacyUsage>>>()?,
+            None => self.privacy_usage.clone()
+        }))
     }
 }

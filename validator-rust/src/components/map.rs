@@ -1,15 +1,15 @@
-use crate::errors::*;
-
-
-use std::collections::HashMap;
-
-use crate::{proto, base, Warnable};
-
-use crate::components::{Component};
-use crate::base::{Value, ValueProperties, IndexmapProperties};
-use crate::utilities::get_common_value;
-
-
+// use crate::errors::*;
+//
+//
+// use std::collections::HashMap;
+//
+// use crate::{proto, base, Warnable};
+//
+// use crate::components::{Component};
+// use crate::base::{Value, ValueProperties, IndexmapProperties};
+// use crate::utilities::get_common_value;
+//
+//
 // impl Expandable for proto::Map {
 //     fn expand_component(
 //         &self,
@@ -22,7 +22,6 @@ use crate::utilities::get_common_value;
 //         let component = self.component.as_ref().ok_or_else(|| "component must be defined")?;
 //
 //         component
-//             .variant.as_ref().ok_or_else(|| "component variant must be defined")?
 //             .expand_component(
 //                 privacy_definition,
 //                 component,

@@ -22,6 +22,7 @@ use crate::components::*;
 use crate::utilities::array::slow_select;
 use noisy_float::prelude::n64;
 use std::iter::FromIterator;
+use crate::utilities::privacy::broadcast_privacy_usage;
 
 /// Retrieve the Values for each of the arguments of a component from the Release.
 pub fn get_public_arguments(
@@ -120,8 +121,7 @@ pub fn propagate_properties(
         let input_properties = get_input_properties(&component, &graph_properties)?;
         let public_arguments = get_public_arguments(&component, &release)?;
 
-        let mut expansion = match (dynamic, component.clone().variant
-            .ok_or_else(|| Error::from("component variant must be defined"))?
+        let mut expansion = match (dynamic, component.clone()
             .expand_component(
                 &analysis.privacy_definition,
                 &component,
@@ -165,8 +165,7 @@ pub fn propagate_properties(
                 if release_node.public {
                     Ok(Warnable(infer_property(&release_node.value, Some(node_id as i64))?, vec![]))
                 } else {
-                    graph.get(&node_id).unwrap().variant.as_ref()
-                        .ok_or_else(|| Error::from("variant must be defined"))?
+                    graph.get(&node_id).unwrap()
                         .propagate_property(
                             &analysis.privacy_definition, &public_arguments, &input_properties, node_id)
                         .chain_err(|| format!("at node_id {:?}", node_id))
@@ -175,8 +174,7 @@ pub fn propagate_properties(
 
             // if node has not been evaluated, propagate properties over it
             None => {
-                graph.get(&node_id).unwrap().variant.as_ref()
-                    .ok_or_else(|| "variant must be defined")?
+                graph.get(&node_id).unwrap()
                     .propagate_property(
                         &analysis.privacy_definition, &public_arguments, &input_properties, node_id)
                     .chain_err(|| format!("at node_id {:?}", node_id))
@@ -495,6 +493,7 @@ pub fn prepend(text: &str) -> impl Fn(Error) -> Error + '_ {
 pub fn expand_mechanism(
     sensitivity_type: &SensitivitySpace,
     privacy_definition: &Option<proto::PrivacyDefinition>,
+    privacy_usage: &Vec<proto::PrivacyUsage>,
     component: &proto::Component,
     properties: &NodeProperties,
     component_id: &u32,
@@ -502,6 +501,7 @@ pub fn expand_mechanism(
 ) -> Result<proto::ComponentExpansion> {
     let privacy_definition = privacy_definition.as_ref()
         .ok_or_else(|| "privacy definition must be defined")?;
+
     let mut current_id = *maximum_id;
     let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
     let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
@@ -514,21 +514,49 @@ pub fn expand_mechanism(
     let aggregator = data_property.aggregator
         .ok_or_else(|| Error::from("aggregator: missing"))?;
 
-    let sensitivity = aggregator.component.compute_sensitivity(
+    // sensitivity scaling
+    let mut sensitivity_value = aggregator.component.compute_sensitivity(
         privacy_definition,
         &aggregator.properties,
         &sensitivity_type)?;
 
+    if aggregator.lipschitz_constant.iter().any(|v| v != &1.) {
+        let mut sensitivity = sensitivity_value.array()?.f64()?.clone();
+        sensitivity.gencolumns_mut().into_iter()
+            .zip(aggregator.lipschitz_constant.iter())
+            .for_each(|(mut sens, cons)| sens.iter_mut()
+                .for_each(|v| *v *= cons));
+        sensitivity_value = sensitivity.into();
+    }
+
     current_id += 1;
     let id_sensitivity = current_id;
-    let (patch_node, release) = get_literal(sensitivity, &component.submission)?;
+    let (patch_node, release) = get_literal(sensitivity_value.clone(), &component.submission)?;
     computation_graph.insert(id_sensitivity.clone(), patch_node);
     releases.insert(id_sensitivity.clone(), release);
 
-    // noising
+    // privacy usage scaling
+    let privacy_usage = broadcast_privacy_usage(
+        // spread usage over each column
+        privacy_usage, sensitivity_value.array()?.num_columns()? as usize)?.into_iter()
+        .zip(data_property.c_stability.iter())
+        // reduce epsilon allowed to algorithm based on c-stability and group size
+        // TODO: strip c-stability out of sensitivity calcs
+        .map(|(usage, c_stab)| usage / (c_stab * privacy_definition.group_size as f64))
+        .collect::<Result<Vec<proto::PrivacyUsage>>>()?;
+
+    // insert sensitivity and usage
     let mut noise_component = component.clone();
     noise_component.arguments.insert("sensitivity".to_string(), id_sensitivity);
 
+    match noise_component.variant
+        .as_mut().ok_or_else(|| "variant must be defined")? {
+        proto::component::Variant::LaplaceMechanism(variant) => variant.privacy_usage = privacy_usage,
+        proto::component::Variant::GaussianMechanism(variant) => variant.privacy_usage = privacy_usage,
+        proto::component::Variant::ExponentialMechanism(variant) => variant.privacy_usage = privacy_usage,
+        proto::component::Variant::SimpleGeometricMechanism(variant) => variant.privacy_usage = privacy_usage,
+        _ => ()
+    };
     computation_graph.insert(component_id.clone(), noise_component);
 
     Ok(proto::ComponentExpansion {

@@ -45,11 +45,12 @@ pub mod docs;
 
 // import all trait implementations
 use crate::components::*;
-use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
-use crate::utilities::serial::{serialize_value_properties, serialize_release_node, serialize_error};
+use crate::utilities::serial::{serialize_value_properties, serialize_error};
 use crate::base::{ReleaseNode, Value};
 use std::iter::FromIterator;
+use std::ops::{Div, Mul, Add};
+use crate::utilities::privacy::compute_graph_privacy_usage;
 
 // for accuracy guarantees
 extern crate statrs;
@@ -100,28 +101,19 @@ pub fn compute_privacy_usage(
     mut release: base::Release
 ) -> Result<proto::PrivacyUsage> {
 
-    utilities::propagate_properties(&mut analysis, &mut release, None, false)?;
+    let properties = utilities::propagate_properties(&mut analysis, &mut release, None, false)?.0;
     // this is mutated within propagate_properties
     let graph = analysis.computation_graph
         .ok_or_else(|| Error::from("computation_graph must be defined"))?.value;
+    let privacy_definition = analysis.privacy_definition
+        .ok_or_else(|| "privacy_definition must be defined")?;
 
-    let usage_option = graph.iter()
-        // return the privacy usage from the release, else from the analysis
-        .filter_map(|(node_id, component)|
-            utilities::privacy::get_component_privacy_usage(
-                component,
-                release.get(node_id).cloned().map(serialize_release_node).as_ref()))
-        // linear sum
-        .fold1(|usage_1, usage_2| utilities::privacy::privacy_usage_reducer(
-            &usage_1, &usage_2, |l, r| l + r));
+    let privacy_usage = compute_graph_privacy_usage(
+        &graph, &privacy_definition, &properties, &release)?;
 
-    match usage_option {
-        Some(privacy_usage) => {
-            utilities::privacy::privacy_usage_check(&privacy_usage, None, false)?;
-            Ok(privacy_usage)
-        },
-        None => Err("no information is released; privacy usage is none".into())
-    }
+    utilities::privacy::privacy_usage_check(&privacy_usage, None, false)?;
+
+    Ok(privacy_usage)
 }
 
 
@@ -156,9 +148,10 @@ pub fn generate_report(
         }
 
         // get variable names for this node
-        let node_vars = component.variant
-            .ok_or_else(|| Error::from("component variant must be defined"))?
-            .get_names(&public_arguments, &arguments_vars, release.get(node_id).map(|v| v.value.clone()).as_ref());
+        let node_vars = component.get_names(
+            &public_arguments,
+            &arguments_vars,
+            release.get(node_id).map(|v| v.value.clone()).as_ref());
 
         // update names in indexmap
         node_vars.map(|v| nodes_varnames.insert(node_id.clone(), v)).ok();
@@ -178,16 +171,14 @@ pub fn generate_report(
                 Some(node_release) => node_release.value.clone(),
                 None => return Ok(None)
             };
-            component.variant.as_ref()
-                .ok_or_else(|| Error::from("component variant must be defined"))?
-                .summarize(
-                    &node_id,
-                    &component,
-                    &public_arguments,
-                    &input_properties,
-                    &node_release,
-                    variable_names,
-                )
+            component.summarize(
+                &node_id,
+                &component,
+                &public_arguments,
+                &input_properties,
+                &node_release,
+                variable_names,
+            )
         })
         .collect::<Result<Vec<Option<Vec<utilities::json::JSONRelease>>>>>()?.into_iter()
         .filter_map(|v| v).flat_map(|v| v)
@@ -237,9 +228,8 @@ pub fn accuracy_to_privacy_usage(
             .filter_map(|(name, idx)| Some((name.clone(), properties.get(idx)?.clone())))
             .collect::<HashMap<String, base::ValueProperties>>();
 
-        Ok(match component.variant.as_ref()
-            .ok_or_else(|| Error::from("component variant must be defined"))?
-            .accuracy_to_privacy_usage(&privacy_definition, &component_properties, &accuracies)? {
+        Ok(match component.accuracy_to_privacy_usage(
+            &privacy_definition, &component_properties, &accuracies)? {
             Some(accuracies) => Some((idx.clone(), accuracies)),
             None => None
         })
@@ -293,9 +283,8 @@ pub fn privacy_usage_to_accuracy(
             .filter_map(|(name, idx)| Some((name.clone(), properties.get(idx)?.clone())))
             .collect::<HashMap<String, base::ValueProperties>>();
 
-        Ok(match component.variant.as_ref()
-            .ok_or_else(|| Error::from("component variant must be defined"))?
-            .privacy_usage_to_accuracy(&privacy_definition, &component_properties, &alpha)? {
+        Ok(match component.privacy_usage_to_accuracy(
+            &privacy_definition, &component_properties, &alpha)? {
             Some(accuracies) => Some((idx.clone(), accuracies)),
             None => None
         })
@@ -387,8 +376,7 @@ pub fn expand_component(
     let component = component
         .ok_or_else(|| Error::from("component must be defined"))?;
 
-    let mut result = component.variant.as_ref()
-        .ok_or_else(|| Error::from("component variant must be defined"))?.expand_component(
+    let mut result = component.expand_component(
         &privacy_definition,
         &component,
         &properties,
@@ -401,8 +389,7 @@ pub fn expand_component(
         .collect::<HashMap<String, Value>>();
 
     if result.traversal.is_empty() {
-        let Warnable(propagated_property, propagation_warnings) = component.clone().variant.as_ref()
-            .ok_or_else(|| Error::from("component variant must be defined"))?
+        let Warnable(propagated_property, propagation_warnings) = component.clone()
             .propagate_property(&privacy_definition, &public_values, &properties, component_id)
             .chain_err(|| format!("at node_id {:?}", component_id))?;
 
@@ -412,4 +399,53 @@ pub fn expand_component(
     }
 
     Ok(result)
+}
+
+
+
+impl Div<f64> for proto::PrivacyUsage {
+    type Output = Result<proto::PrivacyUsage>;
+
+    fn div(mut self, rhs: f64) -> Self::Output {
+        self.distance = Some(match self.distance.ok_or_else(|| "distance must be defined")? {
+            proto::privacy_usage::Distance::Approximate(approximate) => proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
+                epsilon: approximate.epsilon / rhs,
+                delta: approximate.delta / rhs,
+            })
+        });
+        Ok(self)
+    }
+}
+
+impl Mul<f64> for proto::PrivacyUsage {
+    type Output = Result<proto::PrivacyUsage>;
+
+    fn mul(mut self, rhs: f64) -> Self::Output {
+        self.distance = Some(match self.distance.ok_or_else(|| "distance must be defined")? {
+            proto::privacy_usage::Distance::Approximate(approximate) => proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
+                epsilon: approximate.epsilon * rhs,
+                delta: approximate.delta * rhs,
+            })
+        });
+        Ok(self)
+    }
+}
+
+impl Add<proto::PrivacyUsage> for proto::PrivacyUsage {
+    type Output = Result<proto::PrivacyUsage>;
+
+    fn add(mut self, rhs: proto::PrivacyUsage) -> Self::Output {
+        let left_distance = self.distance.ok_or_else(|| "distance must be defined")?;
+        let right_distance = rhs.distance.ok_or_else(|| "distance must be defined")?;
+
+        use proto::privacy_usage::Distance;
+
+        self.distance = Some(match (left_distance, right_distance) {
+            (Distance::Approximate(lhs), Distance::Approximate(rhs)) => proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
+                epsilon: lhs.epsilon + rhs.epsilon,
+                delta: lhs.delta + rhs.delta,
+            })
+        });
+        Ok(self)
+    }
 }

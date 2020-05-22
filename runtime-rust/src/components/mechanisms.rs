@@ -1,7 +1,7 @@
 use whitenoise_validator::errors::*;
 
 use crate::NodeArguments;
-use whitenoise_validator::base::{Array, ReleaseNode, Value, Jagged};
+use whitenoise_validator::base::{ReleaseNode, Value, Jagged};
 use whitenoise_validator::utilities::{
     get_argument, broadcast_ndarray,
     privacy::{get_epsilon, get_delta, broadcast_privacy_usage}};

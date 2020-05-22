@@ -41,10 +41,10 @@ mod quantile;
 mod rename;
 mod reshape;
 mod mean;
-mod mechanism_exponential;
-mod mechanism_gaussian;
-mod mechanism_laplace;
-mod mechanism_simple_geometric;
+mod exponential_mechanism;
+mod gaussian_mechanism;
+mod laplace_mechanism;
+mod simple_geometric_mechanism;
 mod merge;
 mod resize;
 mod sum;
@@ -116,9 +116,36 @@ pub trait Expandable {
     ) -> Result<proto::ComponentExpansion>;
 }
 
+/// Mechanism component trait
+///
+/// When a component is a Mechanism, it consumes a privacy budget.
+pub trait Mechanism {
+    /// Extraction of privacy usage by the component.
+    ///
+    /// By default, this returns the upper bound of the privacy usage of the component.
+    ///
+    /// If the component has been evaluated, it is possible the actual usage of the component differs from the upper bound.
+    /// In this case, the release_usage is returned.
+    ///
+    /// # Arguments
+    /// * `self` - the protobuf object corresponding to the prost protobuf struct, containing an upper bound on privacy usage
+    /// * `privacy_definition` - the definition of privacy under which the sensitivity is to be computed
+    /// * `release_usage` - optionally, the privacy actually used by the mechanism (if it has already been released)
+    /// * `sensitivity_type` - space for which the sensitivity is computed within
+    ///
+    /// # Returns
+    /// Privacy usages after group_size, c_stability and privacy amplification have been taken into account.
+    fn get_privacy_usage(
+        &self,
+        privacy_definition: &proto::PrivacyDefinition,
+        release_usage: Option<&Vec<proto::PrivacyUsage>>,
+        properties: &NodeProperties
+    ) -> Result<Option<Vec<proto::PrivacyUsage>>>;
+}
+
 /// Sensitivity component trait
 ///
-/// When a component is an aggregator, the abstract computation the component represents combines multiple rows together into a single value.
+/// When a component has sensitivity, the abstract computation the component represents combines multiple rows together into a single value.
 /// For example, a mean, minimum, or scoring function on a dataset. A component that aggregates data has an associated sensitivity, which captures
 /// how much the input data affects the output of the aggregator.
 pub trait Sensitivity {
@@ -193,8 +220,8 @@ pub trait Named {
 }
 
 
-impl Component for proto::component::Variant {
-    /// Utility implementation on the enum containing all variants of a component.
+impl Component for proto::Component {
+    /// Utility implementation on the component.
     ///
     /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn propagate_property(
@@ -204,13 +231,16 @@ impl Component for proto::component::Variant {
         properties: &NodeProperties,
         node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
+        let variant = self.variant.as_ref()
+            .ok_or_else(|| "variant: must be defined")?;
+
         macro_rules! propagate_property {
             ($( $variant:ident ),*) => {
                 {
                     $(
-                       if let proto::component::Variant::$variant(x) = self {
+                       if let proto::component::Variant::$variant(x) = variant {
                             return x.propagate_property(privacy_definition, public_arguments, properties, node_id)
-                                .chain_err(|| format!("node specification {:?}:", self))
+                                .chain_err(|| format!("node specification {:?}:", variant))
                        }
                     )*
                 }
@@ -229,12 +259,12 @@ impl Component for proto::component::Variant {
             Negate, Negative, LogicalOr, Power, RowMax, RowMin, Subtract
         );
 
-        Err(format!("proto component {:?} is missing its Component trait", self).into())
+        Err(format!("proto component {:?} is missing its Component trait", variant).into())
     }
 }
 
-impl Expandable for proto::component::Variant {
-    /// Utility implementation on the enum containing all variants of a component.
+impl Expandable for proto::Component {
+    /// Utility implementation on the component.
     ///
     /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn expand_component(
@@ -245,13 +275,16 @@ impl Expandable for proto::component::Variant {
         component_id: &u32,
         maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
+        let variant = self.variant.as_ref()
+            .ok_or_else(|| "variant: must be defined")?;
+
         macro_rules! expand_component {
             ($( $variant:ident ),*) => {
                 {
                     $(
-                       if let proto::component::Variant::$variant(x) = self {
+                       if let proto::component::Variant::$variant(x) = variant {
                             return x.expand_component(privacy_definition, component, properties, component_id, maximum_id)
-                                .chain_err(|| format!("node specification {:?}:", self))
+                                .chain_err(|| format!("node specification {:?}:", variant))
                        }
                     )*
                 }
@@ -302,6 +335,40 @@ impl Expandable for proto::component::Variant {
     }
 }
 
+impl Mechanism for proto::Component {
+
+    fn get_privacy_usage(
+        &self,
+        privacy_definition: &proto::PrivacyDefinition,
+        release_usage: Option<&Vec<proto::PrivacyUsage>>,
+        properties: &NodeProperties
+    ) -> Result<Option<Vec<proto::PrivacyUsage>>> {
+        let variant = self.variant.as_ref()
+            .ok_or_else(|| "variant: must be defined")?;
+
+        macro_rules! get_privacy_usage {
+            ($( $variant:ident ),*) => {
+                {
+                    $(
+                       if let proto::component::Variant::$variant(x) = variant {
+                            return x.get_privacy_usage(privacy_definition, release_usage, properties)
+                                .chain_err(|| format!("node specification {:?}:", variant))
+                       }
+                    )*
+                }
+            }
+        }
+
+        get_privacy_usage!(
+            // INSERT COMPONENT LIST
+            ExponentialMechanism, GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism
+        );
+
+        Ok(None)
+    }
+}
+
+
 impl Sensitivity for proto::component::Variant {
     /// Utility implementation on the enum containing all variants of a component.
     ///
@@ -334,8 +401,8 @@ impl Sensitivity for proto::component::Variant {
     }
 }
 
-impl Accuracy for proto::component::Variant {
-    /// Utility implementation on the enum containing all variants of a component.
+impl Accuracy for proto::Component {
+    /// Utility implementation on the component.
     ///
     /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn accuracy_to_privacy_usage(
@@ -344,13 +411,16 @@ impl Accuracy for proto::component::Variant {
         properties: &NodeProperties,
         accuracy: &proto::Accuracies,
     ) -> Result<Option<Vec<proto::PrivacyUsage>>> {
+        let variant = self.variant.as_ref()
+            .ok_or_else(|| "variant: must be defined")?;
+
         macro_rules! accuracy_to_privacy_usage {
             ($( $variant:ident ),*) => {
                 {
                     $(
-                       if let proto::component::Variant::$variant(x) = self {
+                       if let proto::component::Variant::$variant(x) = variant {
                             return x.accuracy_to_privacy_usage(privacy_definition, properties, accuracy)
-                                .chain_err(|| format!("node specification {:?}:", self))
+                                .chain_err(|| format!("node specification {:?}:", variant))
                        }
                     )*
                 }
@@ -366,7 +436,7 @@ impl Accuracy for proto::component::Variant {
         Ok(None)
     }
 
-    /// Utility implementation on the enum containing all variants of a component.
+    /// Utility implementation on the component.
     ///
     /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn privacy_usage_to_accuracy(
@@ -375,13 +445,16 @@ impl Accuracy for proto::component::Variant {
         properties: &NodeProperties,
         alpha: &f64,
     ) -> Result<Option<Vec<proto::Accuracy>>> {
+        let variant = self.variant.as_ref()
+            .ok_or_else(|| "variant: must be defined")?;
+
         macro_rules! privacy_usage_to_accuracy {
             ($( $variant:ident ),*) => {
                 {
                     $(
-                       if let proto::component::Variant::$variant(x) = self {
+                       if let proto::component::Variant::$variant(x) = variant {
                             return x.privacy_usage_to_accuracy(privacy_definition, properties, alpha)
-                                .chain_err(|| format!("node specification {:?}:", self))
+                                .chain_err(|| format!("node specification {:?}:", variant))
                        }
                     )*
                 }
@@ -398,8 +471,8 @@ impl Accuracy for proto::component::Variant {
     }
 }
 
-impl Report for proto::component::Variant {
-    /// Utility implementation on the enum containing all variants of a component.
+impl Report for proto::Component {
+    /// Utility implementation on the component.
     ///
     /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn summarize(
@@ -411,14 +484,17 @@ impl Report for proto::component::Variant {
         release: &Value,
         variable_names: Option<&Vec<String>>,
     ) -> Result<Option<Vec<JSONRelease>>> {
+        let variant = self.variant.as_ref()
+            .ok_or_else(|| "variant: must be defined")?;
+
         macro_rules! summarize {
             ($( $variant:ident ),*) => {
                 {
                     $(
-                       if let proto::component::Variant::$variant(x) = self {
+                       if let proto::component::Variant::$variant(x) = variant {
                             return x.summarize(node_id, component, public_arguments,
                                  properties, release, variable_names)
-                                .chain_err(|| format!("node specification: {:?}:", self))
+                                .chain_err(|| format!("node specification: {:?}:", variant))
                        }
                     )*
                 }
@@ -435,8 +511,8 @@ impl Report for proto::component::Variant {
     }
 }
 
-impl Named for proto::component::Variant {
-    /// Utility implementation on the enum containing all variants of a component.
+impl Named for proto::Component {
+    /// Utility implementation on the component.
     ///
     /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn get_names(
@@ -445,13 +521,16 @@ impl Named for proto::component::Variant {
         argument_variables: &HashMap<String, Vec<String>>,
         release: Option<&Value>,
     ) -> Result<Vec<String>> {
+        let variant = self.variant.as_ref()
+            .ok_or_else(|| "variant: must be defined")?;
+
         macro_rules! get_names {
             ($( $variant:ident ),*) => {
                 {
                     $(
-                       if let proto::component::Variant::$variant(x) = self {
+                       if let proto::component::Variant::$variant(x) = variant {
                             return x.get_names(public_arguments, argument_variables, release)
-                                .chain_err(|| format!("node specification {:?}:", self))
+                                .chain_err(|| format!("node specification {:?}:", variant))
                        }
                     )*
                 }
@@ -469,7 +548,8 @@ impl Named for proto::component::Variant {
             // by convention, names pass through the "data" argument unchanged
             Some(variable_names) => Ok(variable_names.clone()),
             // otherwise if the component is non-standard, throw an error
-            None => Err(format!("names are not implemented for proto component {:?}", self).into())
+            None => Err(format!("names are not implemented for proto component {:?}", variant).into())
         }
     }
 }
+
