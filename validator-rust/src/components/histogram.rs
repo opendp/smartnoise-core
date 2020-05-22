@@ -173,8 +173,7 @@ impl Sensitivity for proto::Histogram {
         data_property.assert_is_not_aggregated()?;
 
         match sensitivity_type {
-            SensitivitySpace::KNorm(_k) => {
-                // k has no effect on the sensitivity, and is ignored
+            SensitivitySpace::KNorm(k) => {
 
                 use proto::privacy_definition::Neighboring;
                 use proto::privacy_definition::Neighboring::{Substitute, AddRemove};
@@ -202,7 +201,11 @@ impl Sensitivity for proto::Histogram {
                     (AddRemove, 2, Some(_)) => 1.,
 
                     // over two categories, N either known or unknown. Record may switch from one bin to another.
-                    (Substitute, _, _) => 2.,
+                    (Substitute, _, _) => match k {
+                        1 => 2.,
+                        2 => 2.0_f64.sqrt(),
+                        _ =>  return Err("KNorm sensitivity is only supported in L1 and L2 spaces".into())
+                    } ,
                     // over two categories, N either known or unknown. Only one bin may be edited.
                     (AddRemove, _, _) => 1.,
                 };
