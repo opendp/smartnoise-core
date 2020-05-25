@@ -1,0 +1,12 @@
+\babel@toc {english}{}
+\contentsline {section}{\numberline {1}Overview}{1}{section.1}
+\contentsline {section}{\numberline {2}Preliminaries}{1}{section.2}
+\contentsline {section}{\numberline {3}Randomness}{2}{section.3}
+\contentsline {section}{\numberline {4}Noise Generation}{2}{section.4}
+\contentsline {subsection}{\numberline {4.1}Introduction to MPFR}{2}{subsection.4.1}
+\contentsline {subsection}{\numberline {4.2}Biased bit sampling}{3}{subsection.4.2}
+\contentsline {subsection}{\numberline {4.3}Sampling from censored Geometric}{4}{subsection.4.3}
+\contentsline {subsection}{\numberline {4.4}Sampling from Uniform[min, max)}{5}{subsection.4.4}
+\contentsline {subsection}{\numberline {4.5}Problems with sampling from other continuous distributions}{6}{subsection.4.5}
+\contentsline {subsubsection}{\numberline {4.5.1}Potential fixes for Laplace}{6}{subsubsection.4.5.1}
+\contentsline {subsubsection}{\numberline {4.5.2}Potential fixes for Gaussian}{6}{subsubsection.4.5.2}
