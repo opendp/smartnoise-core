@@ -105,20 +105,20 @@ the parameters passed by the user.
         \end{align*}
     \end{proof} 
     So, in order for a mechanism to respect $(\epsilon, \delta)$-DP on the original data, it must respect 
-    $\left( \frac{1}{c}\log\left(\frac{e^{\epsilon'}-1}{s} + 1 \right), \frac{\delta'}{s\left(\sum_{i=1}^{c-1}e^{i \epsilon}\right)} \right)$-DP 
+    $\left( \frac{1}{c}\log\left(\frac{e^{\epsilon}-1}{s} + 1 \right), \frac{\delta}{s\left(\sum_{i=1}^{c-1}e^{i \epsilon}\right)} \right)$-DP 
     on the resized data.
 \end{theorem}
 
-We now present an mini-algorithm for finding the \emph{functional} $(\epsilon'', \delta'')$.
+We now present an mini-algorithm for finding the \emph{functional} $(\epsilon, \delta)$.
 \begin{algorithm}
-    \caption{Finding Functional $(\epsilon'', \delta'')$: get\_func\_priv($p, \epsilon, \delta$)}
+    \caption{Finding Functional $(\epsilon_f, \delta_f)$: get\_func\_priv($p, \epsilon, \delta$)}
     \label{alg:finding_functional_privacy}
     \begin{algorithmic}[1]
         \State $c \gets \lceil p \rceil$ \Comment{sets c-stability property}
         \State $s \gets p/c$ \Comment{sets subsampled\_proportion property}
-        \State $\epsilon'' \gets \frac{1}{c}\log\left(\frac{e^{\epsilon'}-1}{s} + 1\right)$
-        \State $\delta'' \gets \frac{\delta'}{s\left(\sum_{i=1}^{c-1}e^{i \epsilon}\right)}$
-        \\ \Return $(\epsilon'', \delta'')$ 
+        \State $\epsilon_{f} \gets \frac{1}{c}\log\left(\frac{e^{\epsilon}-1}{s} + 1\right)$
+        \State $\delta_{f} \gets \frac{\delta}{s\left(\sum_{i=1}^{c-1}e^{i \epsilon}\right)}$
+        \\ \Return $(\epsilon_{f}, \delta_{f})$ 
     \end{algorithmic}
 \end{algorithm}
 
