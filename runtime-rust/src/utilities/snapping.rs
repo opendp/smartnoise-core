@@ -166,7 +166,7 @@ pub fn get_closest_multiple_of_Lambda(x: &f64, m: &i64) -> f64 {
     return Lambda_mult_f64;
 }
 
-pub fn redefine_epsilon(epsilon: &f64, B: &f64, precision: &f64) -> f64 {
+pub fn redefine_epsilon(epsilon: &f64, B: &f64, precision: &u32) -> f64 {
     /// Redefine epsilon for snapping mechanism such that we can
     /// ensure that we do not exhaust too much privacy budget
     ///
@@ -178,11 +178,11 @@ pub fn redefine_epsilon(epsilon: &f64, B: &f64, precision: &f64) -> f64 {
     /// # Returns
     /// functional epsilon that will determine amount of noise
 
-    let eta = 2_f64.powf(-precision);
+    let eta = 2_f64.powf(-(*precision as f64));
     return (epsilon - 2.0*eta) / (1.0 + 12.0*B*eta);
 }
 
-pub fn get_accuracy(alpha: &f64, epsilon: &f64, sensitivity: &f64, B: &f64, precision: &f64) -> f64 {
+pub fn get_accuracy(alpha: &f64, epsilon: &f64, sensitivity: &f64, B: &f64, precision: &u32) -> f64 {
     /// Get accuracy as described in
     /// https://github.com/ctcovington/floating_point/blob/master/snapping_mechanism/notes/snapping_implementation_notes.pdf
     ///
@@ -196,12 +196,12 @@ pub fn get_accuracy(alpha: &f64, epsilon: &f64, sensitivity: &f64, B: &f64, prec
     /// # Returns
     /// accuracy guarantee for snapping mechanism
 
-    let accuracy = ( (1.0 + 12.0 * B * 2_f64.powf(-precision)) / (epsilon - 2_f64.powf(-precision + 1.0)) )
+    let accuracy = ( (1.0 + 12.0 * B * 2_f64.powf(-(*precision as f64))) / (epsilon - 2_f64.powf(-(*precision as f64) + 1.)) )
                    * (1.0 + (1.0 / alpha).ln()) * (sensitivity);
     return accuracy;
 }
 
-pub fn get_epsilon(accuracy: &f64, alpha: &f64, sensitivity: &f64, B: &f64, precision: &f64) -> f64 {
+pub fn get_epsilon(accuracy: &f64, alpha: &f64, sensitivity: &f64, B: &f64, precision: &u32) -> f64 {
     /// Given accuracy, get epsilon as described in
     /// https://github.com/ctcovington/floating_point/blob/master/snapping_mechanism/notes/snapping_implementation_notes.pdf
     ///
@@ -215,22 +215,35 @@ pub fn get_epsilon(accuracy: &f64, alpha: &f64, sensitivity: &f64, B: &f64, prec
     /// # Returns
     /// epsilon use for snapping mechanism
 
-    let epsilon = ( (1.0 + 12.0 * B *2_f64.powf(-precision)) / accuracy) * (1.0 + (1.0 / alpha).ln())
-                  * (sensitivity) + 2_f64.powf(-precision + 1.0);
+    let epsilon = ( (1.0 + 12.0 * B * 2_f64.powf(-(*precision as f64))) / accuracy) * (1.0 + (1.0 / alpha).ln())
+                  * (sensitivity) + 2_f64.powf(-(*precision as f64) + 1.);
     return epsilon;
 }
 
-pub fn parameter_setup(epsilon: &f64, B: &f64, sensitivity: &f64, precision: &f64) -> (f64, f64, f64, f64, i64) {
+pub fn get_precision(B: &f64) -> u32 {
+    let precision: u32;
+    if (B <= &(2_u32.pow(66) as f64)) {
+        precision = 118;
+    } else {
+        let (t, k) = get_smallest_greater_or_eq_power_of_two(&B);
+        precision = 118 + (k as u32) - 66;
+    }
+    return precision;
+}
+
+pub fn parameter_setup(epsilon: &f64, B: &f64, sensitivity: &f64) -> (f64, f64, f64, f64, i64, u32) {
     /// Given input parameters, finds values of parameters for use inside of mechanism
     /// (e.g. scaled bounds, epsilon_prime to set the inner noise distribution, etc.)
     /// # Arguments
     /// * `epsilon` - desired privacy guarantee
     /// * `B` - snapping bound
     /// * `sensitivity` - sensitivity for function to which mechanism is being applied
-    /// * `precision` - amount of arithmetic precision to which we have access
     ///
     /// # Returns
     /// updated parameters for snapping mechanism
+
+    // find sufficient precision
+    let precision = get_precision(&B);
 
     // scale clamping bound by sensitivity
     let B_scaled = B / sensitivity;
@@ -242,5 +255,5 @@ pub fn parameter_setup(epsilon: &f64, B: &f64, sensitivity: &f64, precision: &f6
     let (Lambda_prime_scaled, m) = get_smallest_greater_or_eq_power_of_two(&lambda_prime_scaled);
     let Lambda_prime = Lambda_prime_scaled * sensitivity;
 
-    return(B_scaled, epsilon_prime, Lambda_prime, Lambda_prime_scaled, m);
+    return(B_scaled, epsilon_prime, Lambda_prime, Lambda_prime_scaled, m, precision);
 }
