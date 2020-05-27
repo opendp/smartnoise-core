@@ -11,8 +11,25 @@ use crate::components::{Component, Expandable};
 use crate::base::{Value, SensitivitySpace, ValueProperties, DataType};
 use crate::utilities::{prepend, expand_mechanism, broadcast_privacy_usage, get_epsilon};
 
+/// Finds precision necessary to run Snapping mechanism.
+/// 
+/// # Arguments
+/// * `B` - Upper bound on function value being privatized.
+/// 
+/// # Returns
+/// Gets necessary precision for Snapping mechanism.
+pub fn get_precision(B: &f64) -> u32 {
+    let precision: u32;
+    if (B <= &(2_u32.pow(66) as f64)) {
+        precision = 118;
+    } else {
+        let (t, k) = get_smallest_greater_or_eq_power_of_two(&B);
+        precision = 118 + (k as u32) - 66;
+    }
+    return precision;
+}
 
-impl Component for proto::LaplaceMechanism {
+impl Component for proto::SnappingMechanism {
     fn propagate_property(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
@@ -64,7 +81,7 @@ impl Component for proto::LaplaceMechanism {
 }
 
 
-impl Expandable for proto::LaplaceMechanism {
+impl Expandable for proto::SnappingMechanism {
     fn expand_component(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
@@ -85,7 +102,7 @@ impl Expandable for proto::LaplaceMechanism {
 }
 
 
-impl Accuracy for proto::LaplaceMechanism {
+impl Accuracy for proto::SnappingMechanism {
     fn accuracy_to_privacy_usage(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
@@ -107,10 +124,13 @@ impl Accuracy for proto::LaplaceMechanism {
         // sensitivity must be computable
         let sensitivities = sensitivity_values.array()?.f64()?;
 
+        // find necessary precision
+        let precision = get_precision(&self.B);
+
         Ok(Some(sensitivities.into_iter().zip(accuracies.values.iter())
             .map(|(sensitivity, accuracy)| proto::PrivacyUsage {
                 distance: Some(proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
-                    epsilon: ( (1.0 + 12.0 * B * 2_f64.powf(-(*precision as f64))) / accuracy) * (1.0 + (1.0 / alpha).ln())
+                    epsilon: ( (1.0 + 12.0 * self.B * 2_f64.powf(-(*precision as f64))) / accuracy.value) * (1.0 + (1.0 / accuracy.alpha).ln())
                                 * (sensitivity) + 2_f64.powf(-(*precision as f64) + 1.),
                     delta: 0.,
                 }))
@@ -139,12 +159,15 @@ impl Accuracy for proto::LaplaceMechanism {
         // sensitivity must be computable
         let sensitivities = sensitivity_values.array()?.f64()?;
 
+        // find necessary precision
+        let precision = get_precision(&self.B);
+
         let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivities.len())?;
         let epsilons = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
 
         Ok(Some(sensitivities.into_iter().zip(epsilons.into_iter())
             .map(|(sensitivity, epsilon)| proto::Accuracy {
-                value: ( (1.0 + 12.0 * B * 2_f64.powf(-(*precision as f64))) / (epsilon - 2_f64.powf(-(*precision as f64) + 1.)) )
+                value: ( (1.0 + 12.0 * self.B * 2_f64.powf(-(*precision as f64))) / (epsilon - 2_f64.powf(-(*precision as f64) + 1.)) )
                          * (1.0 + (1.0 / alpha).ln()) * (sensitivity),
                 alpha: *alpha,
             })
