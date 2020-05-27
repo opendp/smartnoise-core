@@ -4,16 +4,14 @@ use ieee754::Ieee754;
 
 use crate::utilities::utilities;
 
+/// Gets smallest power of two that is equal to or greater than x.
+///
+/// # Arguments
+/// * `x` - The number for which we want the next power of two.
+///
+/// # Returns
+/// The number greater than x and the power of two it represents.
 pub fn get_smallest_greater_or_eq_power_of_two(x: &f64) -> (f64, i64) {
-    /// Gets smallest power of two that is equal to or greater than x
-    ///
-    /// # Arguments
-    /// * `x` - the number for which we want the next power of two
-    ///
-    /// # Returns
-    /// * (f64 greater power of two value, i64 of the actual power)
-
-
     // convert x to binary and split it into its component parts
     let x_binary = utilities::f64_to_binary(&x);
     let (sign, exponent, mantissa) = utilities::split_ieee_into_components(&x_binary);
@@ -36,17 +34,17 @@ pub fn get_smallest_greater_or_eq_power_of_two(x: &f64) -> (f64, i64) {
     }
 }
 
+/// Accepts components of IEEE string and `power`, divides the exponent by `power`, and returns the updated components.
+///
+/// # Arguments
+/// * `sign` - Sign bit (length 1).
+/// * `exponent` - Exponent bits (length 11).
+/// * `mantissa` - Mantissa bits (length 52).
+/// * `power` - Power of two by which components should be divided. 
+///
+/// # Return
+/// Updated components - sign, updated exponent, and mantissa.
 pub fn divide_components_by_power_of_two(sign: &str, exponent: &str, mantissa: &str, power: &i64) -> (String, String, String) {
-    /// Accepts components of IEEE string and `power`, divides the exponent by `power`, and returns the updated components
-    ///
-    /// # Arguments
-    /// * `sign` - Sign bit (length 1)
-    /// * `exponent` - Exponent bits (length 11)
-    /// * `mantissa` - Mantissa bits (length 52)
-    ///
-    /// # Return
-    /// * updated components - sign, updated exponent, and mantissa
-
     // update exponent by subtracting power, then convert back to binary
     let updated_exponent_int = i64::from_str_radix(&exponent, 2).unwrap() - power;
     let updated_exponent_bin = format!("{:011b}", updated_exponent_int);
@@ -55,17 +53,17 @@ pub fn divide_components_by_power_of_two(sign: &str, exponent: &str, mantissa: &
     return(sign.to_string(), updated_exponent_bin.to_string(), mantissa.to_string());
 }
 
+/// Accepts components of IEEE string and `power`, multiplies the exponent by `power`, and returns the updated components.
+///
+/// # Arguments
+/// * `sign` - Sign bit (length 1).
+/// * `exponent` - Exponent bits (length 11).
+/// * `mantissa` - Mantissa bits (length 52).
+/// * `power` - Power of two by which components should be multiplied. 
+///
+/// # Return
+/// Updated components - sign, updated exponent, and mantissa.
 pub fn multiply_components_by_power_of_two(sign: &str, exponent: &str, mantissa: &str, power: &i64) -> (String, String, String) {
-    /// Accepts components of IEEE string and `power`, multiplies the exponent by `power`, and returns the updated components
-    ///
-    /// # Arguments
-    /// * `sign` - Sign bit (length 1)
-    /// * `exponent` - Exponent bits (length 11)
-    /// * `mantissa` - Mantissa bits (length 52)
-    ///
-    /// # Return
-    /// * updated components - sign, updated exponent, and mantissa
-
     // update exponent by subtracting power, then convert back to binary
     let updated_exponent_int = i64::from_str_radix(&exponent, 2).unwrap() + power;
     let updated_exponent_bin = format!("{:011b}", updated_exponent_int);
@@ -74,17 +72,16 @@ pub fn multiply_components_by_power_of_two(sign: &str, exponent: &str, mantissa:
     return(sign.to_string(), updated_exponent_bin.to_string(), mantissa.to_string());
 }
 
+/// Accepts components of IEEE representation, rounds to the nearest integer, and returns updated components.
+///
+/// # Arguments
+/// * `sign` - Sign bit (length 1).
+/// * `exponent` - Exponent bits (length 11).
+/// * `mantissa` - Mantissa bits (length 52).
+///
+/// Returns
+/// Updated components - sign, exponent, and mantissa.
 pub fn round_components_to_nearest_int(sign: &str, exponent: &str, mantissa: &str) -> (String, String, String) {
-    /// Accepts components of IEEE representation, rounds to the nearest integer, and returns updated components
-    ///
-    /// # Arguments
-    /// * `sign` - Sign bit (length 1)
-    /// * `exponent` - Exponent bits (length 11)
-    /// * `mantissa` - Mantissa bits (length 52)
-    ///
-    /// Returns
-    /// * updated components - sign, exponent, and mantissa
-
     // get unbiased exponent
     let unbiased_exponent_numeric_i64 = i64::from_str_radix(&exponent, 2).unwrap() - 1023;
     let unbiased_exponent_numeric:usize = if unbiased_exponent_numeric_i64 > 0 { usize::try_from(unbiased_exponent_numeric_i64).unwrap()} else { 0 };
@@ -147,15 +144,15 @@ pub fn round_components_to_nearest_int(sign: &str, exponent: &str, mantissa: &st
     }
 }
 
+/// Finds the closest number to x that is a multiple of Lambda.
+/// 
+/// # Arguments
+/// * `x` - Number to be rounded to closest multiple of Lambda.
+/// * `m` - Integer such that Lambda = 2^m.
+///
+/// # Returns
+/// Closest multiple of Lambda to x.
 pub fn get_closest_multiple_of_Lambda(x: &f64, m: &i64) -> f64 {
-    ///
-    /// # Arguments
-    /// * `x` - number to be rounded to closest multiple of Lambda
-    /// * `m` - integer such that Lambda = 2^m
-    ///
-    /// # Returns
-    /// closest multiple of Lambda to `x`
-
     let x_binary = utilities::f64_to_binary(&x);
     let (sign_a, exponent_a, mantissa_a) = utilities::split_ieee_into_components(&x_binary);
     let (sign_b, exponent_b, mantissa_b) = divide_components_by_power_of_two(&sign_a, &exponent_a, &mantissa_a, &m);
@@ -166,55 +163,52 @@ pub fn get_closest_multiple_of_Lambda(x: &f64, m: &i64) -> f64 {
     return Lambda_mult_f64;
 }
 
+/// Gets functional epsilon for Snapping mechanism such that privacy loss does not exceed the user's proposed budget.
+/// Described in https://github.com/ctcovington/floating_point/blob/master/snapping_mechanism/notes/snapping_implementation_notes.pdf
+/// 
+/// # Arguments
+/// * `epsilon` - Desired privacy guarantee.
+/// * `B` - Upper bound on function value being privatized.
+/// * `precision` - Number of bits of precision to which arithmetic inside the mechanism has access.
+///
+/// # Returns
+/// Functional epsilon that will determine amount of noise.
 pub fn redefine_epsilon(epsilon: &f64, B: &f64, precision: &u32) -> f64 {
-    /// Redefine epsilon for snapping mechanism such that we can
-    /// ensure that we do not exhaust too much privacy budget
-    ///
-    /// # Arguments
-    /// * `epsilon` - desired privacy guarantee
-    /// * `B` - snapping bound
-    /// * `precision` - amount of arithmetic precision to which we have access
-    ///
-    /// # Returns
-    /// functional epsilon that will determine amount of noise
-
     let eta = 2_f64.powf(-(*precision as f64));
     return (epsilon - 2.0*eta) / (1.0 + 12.0*B*eta);
 }
 
+/// Finds accuracy that is achievable given desired epsilon and confidence requirements. Described in
+/// https://github.com/ctcovington/floating_point/blob/master/snapping_mechanism/notes/snapping_implementation_notes.pdf
+///
+/// # Arguments
+/// * `alpha` - Desired confidence level.
+/// * `epsilon` - Desired privacy guarantee.
+/// * `sensitivity` - l1 Sensitivity of function to which mechanism is being applied.
+/// * `B` - Upper bound on function value being privatized.
+/// * `precision` - Number of bits of precision to which arithmetic inside the mechanism has access.
+///
+/// # Returns
+/// Epsilon use for the Snapping mechanism.
 pub fn get_accuracy(alpha: &f64, epsilon: &f64, sensitivity: &f64, B: &f64, precision: &u32) -> f64 {
-    /// Get accuracy as described in
-    /// https://github.com/ctcovington/floating_point/blob/master/snapping_mechanism/notes/snapping_implementation_notes.pdf
-    ///
-    /// # Arguments
-    /// * `alpha` - desired confidence level
-    /// * `epsilon` - desired privacy guarantee
-    /// * `sensitivity` - sensitivity for function to which mechanism is being applied
-    /// * `B` - snapping bound
-    /// * `precision` - amount of arithmetic precision to which we have access
-    ///
-    /// # Returns
-    /// accuracy guarantee for snapping mechanism
-
     let accuracy = ( (1.0 + 12.0 * B * 2_f64.powf(-(*precision as f64))) / (epsilon - 2_f64.powf(-(*precision as f64) + 1.)) )
                    * (1.0 + (1.0 / alpha).ln()) * (sensitivity);
     return accuracy;
 }
 
+/// Finds epsilon that will achieve desired accuracy and confidence requirements. Described in 
+/// https://github.com/ctcovington/floating_point/blob/master/snapping_mechanism/notes/snapping_implementation_notes.pdf
+///
+/// # Arguments
+/// * `accuracy` - Desired accuracy level.
+/// * `alpha` - Desired confidence level.
+/// * `sensitivity` - l1 Sensitivity of function to which mechanism is being applied.
+/// * `B` - Upper bound on function value being privatized.
+/// * `precision` - Number of bits of precision to which arithmetic inside the mechanism has access.
+///
+/// # Returns
+/// Epsilon use for the Snapping mechanism.
 pub fn get_epsilon(accuracy: &f64, alpha: &f64, sensitivity: &f64, B: &f64, precision: &u32) -> f64 {
-    /// Given accuracy, get epsilon as described in
-    /// https://github.com/ctcovington/floating_point/blob/master/snapping_mechanism/notes/snapping_implementation_notes.pdf
-    ///
-    /// # Arguments
-    /// * `accuracy` - desired accuracy level
-    /// * `alpha` - desired confidence level
-    /// * `sensitivity` - sensitivity for function to which mechanism is being applied
-    /// * `B` - snapping bound
-    /// * `precision` - amount of arithmetic precision to which we have access
-    ///
-    /// # Returns
-    /// epsilon use for snapping mechanism
-
     let epsilon = ( (1.0 + 12.0 * B * 2_f64.powf(-(*precision as f64))) / accuracy) * (1.0 + (1.0 / alpha).ln())
                   * (sensitivity) + 2_f64.powf(-(*precision as f64) + 1.);
     return epsilon;
@@ -231,17 +225,17 @@ pub fn get_precision(B: &f64) -> u32 {
     return precision;
 }
 
+/// Given input parameters, finds values of parameters for use inside of mechanism
+/// (e.g. scaled bounds, epsilon_prime to set the inner noise distribution, etc.)
+/// 
+/// # Arguments
+/// * `epsilon` - Desired privacy guarantee.
+/// * `B` - Upper bound on function value being privatized.
+/// * `sensitivity` - l1 sensitivity for function to which the mechanism is being applied.
+///
+/// # Returns
+/// Updated parameters for the Snapping mechanism.
 pub fn parameter_setup(epsilon: &f64, B: &f64, sensitivity: &f64) -> (f64, f64, f64, f64, i64, u32) {
-    /// Given input parameters, finds values of parameters for use inside of mechanism
-    /// (e.g. scaled bounds, epsilon_prime to set the inner noise distribution, etc.)
-    /// # Arguments
-    /// * `epsilon` - desired privacy guarantee
-    /// * `B` - snapping bound
-    /// * `sensitivity` - sensitivity for function to which mechanism is being applied
-    ///
-    /// # Returns
-    /// updated parameters for snapping mechanism
-
     // find sufficient precision
     let precision = get_precision(&B);
 
