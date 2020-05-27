@@ -3,9 +3,6 @@
       "data": {
         "type_value": "Array",
         "description": "Result to be released privately via the Snapping mechanism."
-      },
-      "B": {
-        "type_value": "Array"
       }
     },
     "id": "SnappingMechanism",
@@ -16,6 +13,12 @@
         "type_rust": "Vec<proto::PrivacyUsage>",
         "default_python": "None",
         "description": "Object describing the type and amount of privacy to be used for the mechanism release."
+      }, 
+      "b": {
+        "type_proto": "repeated double",
+        "type_rust": "Vec<f64>",
+        "default_python": "None",
+        "description": "An upper bound on the absolute value of the quantity of interest being privatized."
       }
     },
     "return": {

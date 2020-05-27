@@ -241,8 +241,6 @@ impl Evaluable for proto::SnappingMechanism {
         let epsilon = ndarray::Array::from_shape_vec(
             data.shape(), usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?)?;
 
-        let B = get_argument(&arguments, "B")?.array()?.f64()?;
-
         data.gencolumns_mut().into_iter()
             .zip(sensitivity.gencolumns().into_iter().zip(epsilon.gencolumns().into_iter()))
             .zip(B.gencolumns().into_iter())
@@ -251,7 +249,7 @@ impl Evaluable for proto::SnappingMechanism {
                 .zip(B.iter())
                 .map(|((v, (sens, eps)), B)| {
                     *v += utilities::mechanisms::snapping_mechanism(
-                        &v, &eps, &B, &sens)?;
+                        &v, &eps, &self.b, &sens)?;
                     Ok(())
                 })
                 .collect::<Result<()>>())
