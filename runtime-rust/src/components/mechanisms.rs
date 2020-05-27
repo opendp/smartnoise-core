@@ -129,3 +129,42 @@ impl Evaluable for proto::SimpleGeometricMechanism {
         })
     }
 }
+
+impl Evaluable for proto::SnappingMechanism {
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+        let mut data = match get_argument(&arguments, "data")?.array()? {
+            Array::F64(data) => data.clone(),
+            Array::I64(data) => data.mapv(|v| v as f64),
+            _ => return Err("data must be numeric".into())
+        };
+
+        let sensitivity = get_argument(&arguments, "sensitivity")?.array()?.f64()?;
+
+        let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivity.len())?;
+
+        let epsilon = ndarray::Array::from_shape_vec(
+            data.shape(), usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?)?;
+
+        let B = get_argument(&arguments, "B")?.array()?.f64()?;
+
+        data.gencolumns_mut().into_iter()
+            .zip(sensitivity.gencolumns().into_iter().zip(epsilon.gencolumns().into_iter()))
+            .zip(B.gencolumns().into_iter())
+            .map(|((mut data_column, (sensitivity, epsilon)), B)| data_column.iter_mut()
+                .zip(sensitivity.iter().zip(epsilon.iter()))
+                .zip(B.iter())
+                .map(|((v, (sens, eps)), B)| {
+                    *v += utilities::mechanisms::snapping_mechanism(
+                        &v, &eps, &B, &sens)?;
+                    Ok(())
+                })
+                .collect::<Result<()>>())
+            .collect::<Result<()>>()?;
+
+        Ok(ReleaseNode {
+            value: data.into(),
+            privacy_usages: Some(usages),
+            public: true
+        })
+    }
+}
