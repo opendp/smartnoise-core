@@ -44,7 +44,7 @@ mod mean;
 mod mechanism_gaussian;
 mod mechanism_laplace;
 mod mechanism_simple_geometric;
-mod mechanism_snapping
+mod mechanism_snapping;
 mod resize;
 mod sum;
 mod variance;
