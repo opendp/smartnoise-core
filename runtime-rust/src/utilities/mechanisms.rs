@@ -35,6 +35,36 @@ pub fn laplace_mechanism(epsilon: f64, sensitivity: f64, enforce_constant_time: 
     noise::sample_laplace(0., scale, enforce_constant_time)
 }
 
+/// Returns noise drawn according to the Snapping mechanism
+///
+/// Developed as a variant of the Laplace mechanism which does not suffer from floating-point side channel attacks.
+/// For more information, see [Mironov (2012)](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.366.5957&rep=rep1&type=pdf)
+/// 
+/// # Arguments
+///
+/// * `mechanism_input` - Quantity to be privatized.
+/// * `epsilon` - Multiplicative privacy loss parameter.
+/// * `B` - Upper bound on the absolute value of the mechanism input. We recommend that this be an upper bound on any mechanism input
+/// * `sensitivity` - Upper bound on the L1 sensitivity of the function you want to privatize.
+/// * `precision` - Number of bits of precision to which arithmetic within the mechanism has access.
+///
+/// # Return
+/// Array of a single value drawn generated via the Snapping mechanism.
+///
+/// # Examples
+/// ```
+/// use whitenoise_runtime::utilities::mechanisms::snapping_mechanism;
+/// let n = snapping_mechanism(&50., &1., &100., &0.1, &128.);
+/// ```
+pub fn snapping_mechanism(mechanism_input: &f64, epsilon: &f64, B: &f64, sensitivity: &f64, precision: &i64) -> Result<f64> {
+    if epsilon < &0. || sensitivity < &0. {
+        return Err(format!("epsilon ({}) and sensitivity ({}) must be positive", epsilon, sensitivity).into());
+    }
+    let noise: f64 = noise::sample_snapping_noise(mechanism_input, epsilon, B, sensitivity, precision);
+
+    Ok(noise)
+}
+
 /// Returns noise drawn according to the Gaussian mechanism.
 ///
 /// Let c = sqrt(2*ln(1.25/delta)). Noise is drawn from a Gaussian distribution with scale
