@@ -645,30 +645,29 @@ pub fn sample_simple_geometric_mechanism(
     })
 }
 
+/// Get noise according to the Snapping mechanism.
+///
+/// # Arguments
+/// * `mechanism_input` - Non-private value of the statistic to be privatized.
+/// * `epsilon` - Desired privacy guarantee.
+/// * `B` - Upper bound on function value being privatized.
+/// * `sensitivity` - l1 Sensitivity of function to which mechanism is being applied.
+/// * `precision` - Number of bits of precision to which arithmetic inside the mechanism has access.
+///
+/// # Returns
+/// Noise according to the Snapping mechanism.
+///
+/// # Example
+/// ```
+/// let mechanism_input: f64 = 50.0;
+/// let epsilon: f64 = 1.0;
+/// let B: f64 = 100.0;
+/// let sensitivity: f64 = 1.0/1000.0;
+/// let precision: i64 = 118;
+/// let snapping_noise = sampling_snapping_noise(&mechanism_input, &epsilon, &B, &sensitivity, &precision);
+/// println!("snapping noise: {}", snapping_noise);
+/// ```
 pub fn sample_snapping_noise(mechanism_input: &f64, epsilon: &f64, B: &f64, sensitivity: &f64, precision: &i64) -> f64 {
-    /// Get noise according to the snapping mechanism
-    ///
-    /// # Arguments
-    /// * `mechanism_input` - non-private statistic calculation
-    /// * `epsilon` - desired privacy guarantee
-    /// * `B` - snapping bound
-    /// * `sensitivity` - sensitivity for function to which mechanism is being applied
-    /// * `precision` - amount of arithmetic precision to which we have access
-    ///
-    /// # Returns
-    /// noise according to snapping mechanism
-    ///
-    /// # Example
-    /// ```
-    /// let mechanism_input: f64 = 50.0;
-    /// let epsilon: f64 = 1.0;
-    /// let B: f64 = 100.0;
-    /// let sensitivity: f64 = 1.0/1000.0;
-    /// let precision: i64 = 64;
-    /// let snapping_noise = sampling_snapping_noise(&mechanism_input, &epsilon, &B, &sensitivity, &precision);
-    /// println!("snapping noise: {}", snapping_noise);
-    /// ```
-
     // scale mechanism input by sensitivity
     let mechanism_input_scaled = mechanism_input / sensitivity;
 

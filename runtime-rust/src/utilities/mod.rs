@@ -31,15 +31,15 @@ pub fn get_num_columns<T>(data: &ArrayD<T>) -> Result<i64> {
 }
 
 
-/// Broadcast left and right to match each other, and map an operator over the pairs
+/// Broadcast left and right to match each other, and map an operator over the pairs.
 ///
 /// # Arguments
-/// * `left` - left vector to map over
-/// * `right` - right vector to map over
-/// * `operator` - function to apply to each pair
+/// * `left` - Left vector to map over.
+/// * `right` - Right vector to map over.
+/// * `operator` - Function to apply to each pair.
 ///
 /// # Return
-/// An array of mapped data
+/// An array of mapped data.
 ///
 /// # Example
 /// ```
@@ -269,9 +269,9 @@ pub fn binary_to_f64(binary_string: &str) -> Result<f64> {
 /// * `binary_string` - 64-bit binary string.
 ///
 /// # Return
-/// * `(sign, exponent, mantissa)` - where each is a `String`.
-pub fn split_ieee_into_components(binary_string: &str) -> (String, String, String) {
-    (binary_string[0..1].to_string(), binary_string[1..12].to_string(), binary_string[12..].to_string())
+/// (sign, exponent, mantissa) - where each is a `String`.
+pub fn split_ieee_into_components(binary_string: &String) -> (String, String, String) {
+    return (binary_string[0..1].to_string(), binary_string[1..12].to_string(), binary_string[12..].to_string());
 }
 
 /// Combines `String` versions of sign, exponent, and mantissa into
