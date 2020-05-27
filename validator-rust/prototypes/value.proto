@@ -1,0 +1,127 @@
+syntax = "proto3";
+
+package whitenoise;
+
+
+message BoolNull {oneof data {bool option = 1;}}
+message I64Null {oneof data {int64 option = 1;}}
+message F64Null {oneof data {double option = 1;}}
+message StrNull {oneof data {string option = 1;}}
+
+message Array1dBoolNull {
+    repeated BoolNull data = 1;
+}
+message Array1dI64Null {
+    repeated I64Null data = 1;
+}
+message Array1dF64Null {
+    repeated F64Null data = 1;
+}
+message Array1dStrNull {
+    repeated StrNull data = 1;
+}
+
+message Array1dNull {
+    oneof data {
+        Array1dBoolNull bool = 1;
+        Array1dI64Null i64 = 2;
+        Array1dF64Null f64 = 3;
+        Array1dStrNull string = 4;
+    }
+}
+
+message Array1dBool {
+    repeated bool data = 1;
+}
+message Array1dI64 {
+    repeated int64 data = 1;
+}
+message Array1dF64 {
+    repeated double data = 1;
+}
+message Array1dStr {
+    repeated string data = 1;
+}
+
+message Array1d {
+    oneof data {
+        Array1dBool bool = 1;
+        Array1dI64 i64 = 2;
+        Array1dF64 f64 = 3;
+        Array1dStr string = 4;
+    }
+}
+
+message ArrayNd {
+    Array1d flattened = 1;
+    // length of axes
+    repeated uint64 shape = 2;
+    // order of axes
+    repeated uint64 order = 3;
+}
+
+message HashmapStr {
+    map<string, Value> data = 1;
+}
+message HashmapBool {
+    map<bool, Value> data = 1;
+}
+message HashmapI64 {
+    map<int64, Value> data = 1;
+}
+
+message Hashmap {
+    oneof variant {
+        HashmapStr string = 1;
+        HashmapBool bool = 2;
+        HashmapI64 i64 = 4;
+    }
+}
+
+// for categorical constraint vectors, categorical releases
+message Array1dOption {
+    oneof data {Array1d option = 1;}
+}
+enum DataType {
+    BOOL = 0;
+    I64 = 1;
+    F64 = 2;
+    STRING = 3; 
+}
+message Array2dJagged {
+    repeated Array1dOption data = 1;
+    DataType data_type = 2;
+}
+
+// literals
+message Value {
+    oneof data {
+        // bytes bytes = 1;
+        ArrayNd array = 2;
+        Hashmap hashmap = 3;
+        Array2dJagged jagged = 4;
+    }
+}
+
+message PrivacyUsage {
+
+    message DistancePure {
+        double epsilon = 1;
+    }
+    message DistanceApproximate {
+        double epsilon = 1;
+        double delta = 2;
+    }
+    oneof distance {
+        DistancePure pure = 1;
+        DistanceApproximate approximate = 2;
+    }
+}
+
+message DataSource {
+    oneof value {
+        string file_path = 1;
+        string url_path = 2;
+        Value literal = 3;
+    }
+}

@@ -1,0 +1,34 @@
+{
+  "arguments": {
+    "data": {
+      "type_value": "Array"
+    }
+  },
+  "id": "DPMomentRaw",
+  "name": "dp_moment_raw",
+  "options": {
+    "order": {
+      "type_proto": "uint32",
+      "type_rust": "u32",
+      "description": "Integer statistical moment indicator."
+    },
+    "mechanism": {
+      "type_proto": "string",
+      "type_rust": "String",
+      "default_python": "\"Laplace\"",
+      "default_rust": "String::from(\"Laplace\")",
+      "description": "Privatizing mechanism to use. One of [`Laplace`, `Gaussian`]"
+    },
+    "privacy_usage": {
+      "type_proto": "repeated PrivacyUsage",
+      "type_rust": "Vec<proto::PrivacyUsage>",
+      "default_python": "None",
+      "description": "Object describing the type and amount of privacy to be used for the mechanism release."
+    }
+  },
+  "return": {
+    "type_value": "Array",
+    "description": "Sample estimate of raw moment for each column of the data."
+  },
+  "description": "Returns sample estimate of a raw moment for each column of the data."
+}

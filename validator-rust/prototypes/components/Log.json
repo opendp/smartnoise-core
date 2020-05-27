@@ -1,0 +1,17 @@
+{
+  "arguments": {
+    "data": {
+      "type_value": "Array"
+    },
+    "base": {
+      "default_python": "2.71828",
+      "type_value": "Array"
+    }
+  },
+  "id": "Log",
+  "name": "log",
+  "options": {},
+  "return": {
+    "type_value": "Array"
+  }
+}

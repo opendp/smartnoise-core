@@ -1,15 +1,18 @@
 use whitenoise_validator::errors::*;
 
-use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value, get_argument};
+use crate::NodeArguments;
+use whitenoise_validator::base::{ReleaseNode};
+use whitenoise_validator::utilities::get_argument;
 use crate::components::Evaluable;
 use ndarray::{ArrayD, Array};
-use crate::utilities::utilities::get_num_columns;
+use crate::utilities::get_num_columns;
 use whitenoise_validator::proto;
 
 impl Evaluable for proto::Mean {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        Ok(mean(get_argument(&arguments, "data")?.get_arraynd()?.get_f64()?)?.into())
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+        Ok(ReleaseNode::new(mean(
+            get_argument(&arguments, "data")?.array()?.f64()?
+        )?.into()))
     }
 }
 
@@ -33,7 +36,7 @@ pub fn mean(data: &ArrayD<f64>) -> Result<ArrayD<f64>> {
     // iterate over the generalized columns
     let means = data.gencolumns().into_iter()
         .map(|column| column.mean()).collect::<Option<Vec<f64>>>()
-        .ok_or::<Error>("attempted mean of an empty column".into())?;
+        .ok_or_else(|| Error::from("attempted mean of an empty column"))?;
 
     // ensure means are of correct dimension
     let array = match data.ndim() {
@@ -45,5 +48,18 @@ pub fn mean(data: &ArrayD<f64>) -> Result<ArrayD<f64>> {
     match array {
         Ok(array) => Ok(array),
         Err(_) => Err("unable to package Mean result into an array".into())
+    }
+}
+
+
+#[cfg(test)]
+mod test_mean {
+    use ndarray::{arr2};
+    use crate::components::mean::mean;
+    #[test]
+    fn test_mean() {
+        let data = arr2(&[ [1.,10.], [2., 20.], [3., 30.] ]).into_dyn();
+        let means = mean(&data).unwrap();
+        assert!(means == arr2(&[[2., 20.]]).into_dyn());
     }
 }

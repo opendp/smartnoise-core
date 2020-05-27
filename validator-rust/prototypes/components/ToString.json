@@ -1,0 +1,15 @@
+{
+  "arguments": {
+    "data": {
+      "type_value": "Array",
+      "description": "Data to be cast to another type."
+    }
+  },
+  "id": "ToString",
+  "name": "to_string",
+  "options": {},
+  "return": {
+    "type_value": "Array"
+  },
+  "description": "Cast data to a string atomic type."
+}

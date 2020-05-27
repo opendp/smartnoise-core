@@ -2,11 +2,9 @@
 
 use crate::errors::*;
 
-
-use ndarray::prelude::*;
 use crate::proto;
-use std::collections::{HashMap};
-use crate::base::{Release, Nature, Vector2DJagged, Vector1D, Value, ArrayND, Vector1DNull, NatureCategorical, NatureContinuous, AggregatorProperties, ValueProperties, HashmapProperties, Vector2DJaggedProperties, DataType, Hashmap, ArrayNDProperties};
+use std::collections::{HashMap, BTreeMap};
+use crate::base::{Release, Nature, Jagged, Vector1D, Value, Array, Vector1DNull, NatureCategorical, NatureContinuous, AggregatorProperties, ValueProperties, HashmapProperties, JaggedProperties, DataType, Hashmap, ArrayProperties, ReleaseNode};
 
 // PARSERS
 pub fn parse_bool_null(value: &proto::BoolNull) -> Option<bool> {
@@ -83,24 +81,24 @@ pub fn parse_array1d(value: &proto::Array1d) -> Vector1D {
 }
 
 
-pub fn parse_arraynd(value: &proto::ArrayNd) -> ArrayND {
+pub fn parse_arraynd(value: &proto::ArrayNd) -> Array {
     let shape: Vec<usize> = value.shape.iter().map(|x| *x as usize).collect();
     match parse_array1d(&value.flattened.to_owned().unwrap()) {
-        Vector1D::Bool(vector) => ArrayND::Bool(Array::from_shape_vec(shape, vector).unwrap().into_dyn()),
-        Vector1D::I64(vector) => ArrayND::I64(Array::from_shape_vec(shape, vector).unwrap().into_dyn()),
-        Vector1D::F64(vector) => ArrayND::F64(Array::from_shape_vec(shape, vector).unwrap().into_dyn()),
-        Vector1D::Str(vector) => ArrayND::Str(Array::from_shape_vec(shape, vector).unwrap().into_dyn()),
+        Vector1D::Bool(vector) => Array::Bool(ndarray::Array::from_shape_vec(shape, vector).unwrap().into_dyn()),
+        Vector1D::I64(vector) => Array::I64(ndarray::Array::from_shape_vec(shape, vector).unwrap().into_dyn()),
+        Vector1D::F64(vector) => Array::F64(ndarray::Array::from_shape_vec(shape, vector).unwrap().into_dyn()),
+        Vector1D::Str(vector) => Array::Str(ndarray::Array::from_shape_vec(shape, vector).unwrap().into_dyn()),
     }
 }
 
-pub fn parse_hashmap_str(value: &proto::HashmapStr) -> HashMap<String, Value> {
+pub fn parse_hashmap_str(value: &proto::HashmapStr) -> BTreeMap<String, Value> {
     value.data.iter().map(|(name, data)| (name.clone(), parse_value(data).unwrap())).collect()
 }
-pub fn parse_hashmap_i64(value: &proto::HashmapI64) -> HashMap<i64, Value> {
-    value.data.iter().map(|(name, data)| (name.clone(), parse_value(data).unwrap())).collect()
+pub fn parse_hashmap_i64(value: &proto::HashmapI64) -> BTreeMap<i64, Value> {
+    value.data.iter().map(|(name, data)| (*name, parse_value(data).unwrap())).collect()
 }
-pub fn parse_hashmap_bool(value: &proto::HashmapBool) -> HashMap<bool, Value> {
-    value.data.iter().map(|(name, data)| (name.clone(), parse_value(data).unwrap())).collect()
+pub fn parse_hashmap_bool(value: &proto::HashmapBool) -> BTreeMap<bool, Value> {
+    value.data.iter().map(|(name, data)| (*name, parse_value(data).unwrap())).collect()
 }
 
 pub fn parse_hashmap(value: &proto::Hashmap) -> Hashmap<Value> {
@@ -120,7 +118,7 @@ pub fn parse_array1d_option(value: &proto::Array1dOption) -> Option<Vector1D> {
     }
 }
 
-pub fn parse_data_type(value: &proto::DataType) -> DataType {
+pub fn parse_data_type(value: proto::DataType) -> DataType {
     match value {
         proto::DataType::Bool => DataType::Bool,
         proto::DataType::F64 => DataType::F64,
@@ -129,9 +127,9 @@ pub fn parse_data_type(value: &proto::DataType) -> DataType {
     }
 }
 
-pub fn parse_array2d_jagged(value: &proto::Array2dJagged) -> Vector2DJagged {
+pub fn parse_array2d_jagged(value: &proto::Array2dJagged) -> Jagged {
     match proto::DataType::from_i32(value.data_type).unwrap() {
-        proto::DataType::Bool => Vector2DJagged::Bool(value.data.iter()
+        proto::DataType::Bool => Jagged::Bool(value.data.iter()
             .map(|column| match parse_array1d_option(column) {
                 Some(vector) => Some(match vector {
                     Vector1D::Bool(vector) => vector,
@@ -139,7 +137,7 @@ pub fn parse_array2d_jagged(value: &proto::Array2dJagged) -> Vector2DJagged {
                 }),
                 None => None
             }).collect::<Vec<Option<Vec<bool>>>>()),
-        proto::DataType::F64 => Vector2DJagged::F64(value.data.iter()
+        proto::DataType::F64 => Jagged::F64(value.data.iter()
             .map(|column| match parse_array1d_option(column) {
                 Some(vector) => Some(match vector {
                     Vector1D::F64(vector) => vector,
@@ -147,7 +145,7 @@ pub fn parse_array2d_jagged(value: &proto::Array2dJagged) -> Vector2DJagged {
                 }),
                 None => None
             }).collect::<Vec<Option<Vec<f64>>>>()),
-        proto::DataType::I64 => Vector2DJagged::I64(value.data.iter()
+        proto::DataType::I64 => Jagged::I64(value.data.iter()
             .map(|column| match parse_array1d_option(column) {
                 Some(vector) => Some(match vector {
                     Vector1D::I64(vector) => vector,
@@ -155,7 +153,7 @@ pub fn parse_array2d_jagged(value: &proto::Array2dJagged) -> Vector2DJagged {
                 }),
                 None => None
             }).collect::<Vec<Option<Vec<i64>>>>()),
-        proto::DataType::String => Vector2DJagged::Str(value.data.iter()
+        proto::DataType::String => Jagged::Str(value.data.iter()
             .map(|column| match parse_array1d_option(column) {
                 Some(vector) => Some(match vector {
                     Vector1D::Str(vector) => vector,
@@ -168,31 +166,37 @@ pub fn parse_array2d_jagged(value: &proto::Array2dJagged) -> Vector2DJagged {
 
 pub fn parse_value(value: &proto::Value) -> Result<Value> {
     Ok(match value.data.to_owned().unwrap() {
-        proto::value::Data::ArrayNd(data) =>
-            Value::ArrayND(parse_arraynd(&data)),
+        proto::value::Data::Array(data) =>
+            Value::Array(parse_arraynd(&data)),
         proto::value::Data::Hashmap(data) =>
             Value::Hashmap(parse_hashmap(&data)),
-        proto::value::Data::Array2dJagged(data) =>
-            Value::Vector2DJagged(parse_array2d_jagged(&data))
+        proto::value::Data::Jagged(data) =>
+            Value::Jagged(parse_array2d_jagged(&data))
     })
 }
 
 pub fn parse_release(release: &proto::Release) -> Result<Release> {
-    let mut evaluations = Release::new();
-    for (node_id, node_release) in &release.values {
-        evaluations.insert(*node_id, parse_value(&node_release.value.to_owned().unwrap()).unwrap());
-    }
-    Ok(evaluations)
+    release.values.iter().map(|(idx, release_node)| Ok((*idx, parse_release_node(release_node)?)))
+        .collect::<Result<HashMap<u32, ReleaseNode>>>()
+}
+
+pub fn parse_release_node(release_node: &proto::ReleaseNode) -> Result<ReleaseNode> {
+    Ok(ReleaseNode {
+        value: parse_value(release_node.value.as_ref()
+            .ok_or_else(|| Error::from("value must be defined in a release node"))?)?,
+        privacy_usages: release_node.privacy_usages.clone().map(|v| v.values),
+        public: release_node.public
+    })
 }
 
 pub fn parse_value_properties(value: &proto::ValueProperties) -> ValueProperties {
     match value.variant.clone().unwrap() {
         proto::value_properties::Variant::Hashmap(value) =>
             ValueProperties::Hashmap(parse_hashmap_properties(&value)),
-        proto::value_properties::Variant::Arraynd(value) =>
-            ValueProperties::ArrayND(parse_arraynd_properties(&value)),
-        proto::value_properties::Variant::Vector2djagged(value) =>
-            ValueProperties::Vector2DJagged(parse_array2d_jagged_properties(&value)),
+        proto::value_properties::Variant::Array(value) =>
+            ValueProperties::Array(parse_arraynd_properties(&value)),
+        proto::value_properties::Variant::Jagged(value) =>
+            ValueProperties::Jagged(parse_array2d_jagged_properties(&value)),
     }
 }
 
@@ -203,12 +207,12 @@ pub fn parse_hashmap_properties_str(value: &proto::HashmapValuePropertiesStr) ->
 }
 pub fn parse_hashmap_properties_bool(value: &proto::HashmapValuePropertiesBool) -> Hashmap<ValueProperties> {
     Hashmap::<ValueProperties>::Bool(value.data.iter()
-        .map(|(name, properties)| (name.clone(), parse_value_properties(properties)))
+        .map(|(name, properties)| (*name, parse_value_properties(properties)))
         .collect())
 }
 pub fn parse_hashmap_properties_i64(value: &proto::HashmapValuePropertiesI64) -> Hashmap<ValueProperties> {
     Hashmap::<ValueProperties>::I64(value.data.iter()
-        .map(|(name, properties)| (name.clone(), parse_value_properties(properties)))
+        .map(|(name, properties)| (*name, parse_value_properties(properties)))
         .collect())
 }
 
@@ -216,16 +220,17 @@ pub fn parse_hashmap_properties(value: &proto::HashmapProperties) -> HashmapProp
     HashmapProperties {
         num_records: parse_i64_null(&value.num_records.clone().unwrap()),
         disjoint: false,
-        value_properties: match value.value_properties.clone().unwrap().variant.unwrap() {
+        properties: match value.value_properties.clone().unwrap().variant.unwrap() {
             proto::hashmap_value_properties::Variant::String(value) => parse_hashmap_properties_str(&value),
             proto::hashmap_value_properties::Variant::Bool(value) => parse_hashmap_properties_bool(&value),
             proto::hashmap_value_properties::Variant::I64(value) => parse_hashmap_properties_i64(&value),
-        }
+        },
+        columnar: value.columnar
     }
 }
 
-pub fn parse_arraynd_properties(value: &proto::ArrayNdProperties) -> ArrayNDProperties {
-    ArrayNDProperties {
+pub fn parse_arraynd_properties(value: &proto::ArrayNdProperties) -> ArrayProperties {
+    ArrayProperties {
         num_records: parse_i64_null(&value.num_records.to_owned().unwrap()),
         num_columns: parse_i64_null(&value.num_columns.to_owned().unwrap()),
         nullity: value.nullity,
@@ -244,8 +249,8 @@ pub fn parse_arraynd_properties(value: &proto::ArrayNdProperties) -> ArrayNDProp
             Some(nature) => match nature {
                 proto::array_nd_properties::Nature::Continuous(continuous) =>
                     Some(Nature::Continuous(NatureContinuous {
-                        min: parse_array1d_null(&continuous.minimum.unwrap()),
-                        max: parse_array1d_null(&continuous.maximum.unwrap()),
+                        lower: parse_array1d_null(&continuous.minimum.unwrap()),
+                        upper: parse_array1d_null(&continuous.maximum.unwrap()),
                     })),
                 proto::array_nd_properties::Nature::Categorical(categorical) =>
                     Some(Nature::Categorical(NatureCategorical {
@@ -254,13 +259,17 @@ pub fn parse_arraynd_properties(value: &proto::ArrayNdProperties) -> ArrayNDProp
             },
             None => None,
         },
-        data_type: parse_data_type(&proto::DataType::from_i32(value.data_type).unwrap()),
-        dataset_id: value.dataset_id.as_ref().and_then(parse_i64_null)
+        data_type: parse_data_type(proto::DataType::from_i32(value.data_type).unwrap()),
+        dataset_id: value.dataset_id.as_ref().and_then(parse_i64_null),
+        is_not_empty: value.is_not_empty,
+        dimensionality: value.dimensionality
     }
 }
 
-pub fn parse_array2d_jagged_properties(_value: &proto::Vector2DJaggedProperties) -> Vector2DJaggedProperties {
-    Vector2DJaggedProperties {}
+pub fn parse_array2d_jagged_properties(value: &proto::Vector2DJaggedProperties) -> JaggedProperties {
+    JaggedProperties {
+        releasable: value.releasable
+    }
 }
 
 
@@ -302,25 +311,25 @@ pub fn serialize_str_null(value: &Option<String>) -> proto::StrNull {
 }
 
 
-pub fn serialize_array1d_bool_null(value: &Vec<Option<bool>>) -> proto::Array1dBoolNull {
+pub fn serialize_array1d_bool_null(value: &[Option<bool>]) -> proto::Array1dBoolNull {
     proto::Array1dBoolNull {
         data: value.iter().map(serialize_bool_null).collect()
     }
 }
 
-pub fn serialize_array1d_i64_null(value: &Vec<Option<i64>>) -> proto::Array1dI64Null {
+pub fn serialize_array1d_i64_null(value: &[Option<i64>]) -> proto::Array1dI64Null {
     proto::Array1dI64Null {
         data: value.iter().map(serialize_i64_null).collect()
     }
 }
 
-pub fn serialize_array1d_f64_null(value: &Vec<Option<f64>>) -> proto::Array1dF64Null {
+pub fn serialize_array1d_f64_null(value: &[Option<f64>]) -> proto::Array1dF64Null {
     proto::Array1dF64Null {
         data: value.iter().map(serialize_f64_null).collect()
     }
 }
 
-pub fn serialize_array1d_str_null(value: &Vec<Option<String>>) -> proto::Array1dStrNull {
+pub fn serialize_array1d_str_null(value: &[Option<String>]) -> proto::Array1dStrNull {
     proto::Array1dStrNull {
         data: value.iter().map(serialize_str_null).collect()
     }
@@ -339,13 +348,13 @@ pub fn serialize_array1d_null(value: &Vector1DNull) -> proto::Array1dNull {
 }
 
 
-pub fn serialize_array1d_bool(value: &Vec<bool>) -> proto::Array1dBool { proto::Array1dBool { data: value.to_owned() } }
+pub fn serialize_array1d_bool(value: &[bool]) -> proto::Array1dBool { proto::Array1dBool { data: value.to_owned() } }
 
-pub fn serialize_array1d_i64(value: &Vec<i64>) -> proto::Array1dI64 { proto::Array1dI64 { data: value.to_owned() } }
+pub fn serialize_array1d_i64(value: &[i64]) -> proto::Array1dI64 { proto::Array1dI64 { data: value.to_owned() } }
 
-pub fn serialize_array1d_f64(value: &Vec<f64>) -> proto::Array1dF64 { proto::Array1dF64 { data: value.to_owned() } }
+pub fn serialize_array1d_f64(value: &[f64]) -> proto::Array1dF64 { proto::Array1dF64 { data: value.to_owned() } }
 
-pub fn serialize_array1d_str(value: &Vec<String>) -> proto::Array1dStr { proto::Array1dStr { data: value.to_owned() } }
+pub fn serialize_array1d_str(value: &[String]) -> proto::Array1dStr { proto::Array1dStr { data: value.to_owned() } }
 
 
 pub fn serialize_array1d(value: &Vector1D) -> proto::Array1d {
@@ -359,24 +368,24 @@ pub fn serialize_array1d(value: &Vector1D) -> proto::Array1d {
     }
 }
 
-pub fn serialize_arraynd(value: &ArrayND) -> proto::ArrayNd {
+pub fn serialize_arraynd(value: &Array) -> proto::ArrayNd {
     match value {
-        ArrayND::Bool(array) => proto::ArrayNd {
+        Array::Bool(array) => proto::ArrayNd {
             flattened: Some(serialize_array1d(&Vector1D::Bool(array.iter().map(|s| s.to_owned()).collect()))),
             order: (1..array.ndim()).map(|x| { x as u64 }).collect(),
             shape: array.shape().iter().map(|y| { *y as u64 }).collect(),
         },
-        ArrayND::F64(array) => proto::ArrayNd {
+        Array::F64(array) => proto::ArrayNd {
             flattened: Some(serialize_array1d(&Vector1D::F64(array.iter().map(|s| s.to_owned()).collect()))),
             order: (1..array.ndim()).map(|x| { x as u64 }).collect(),
             shape: array.shape().iter().map(|y| { *y as u64 }).collect(),
         },
-        ArrayND::I64(array) => proto::ArrayNd {
+        Array::I64(array) => proto::ArrayNd {
             flattened: Some(serialize_array1d(&Vector1D::I64(array.iter().map(|s| s.to_owned()).collect()))),
             order: (1..array.ndim()).map(|x| { x as u64 }).collect(),
             shape: array.shape().iter().map(|y| { *y as u64 }).collect(),
         },
-        ArrayND::Str(array) => proto::ArrayNd {
+        Array::Str(array) => proto::ArrayNd {
             flattened: Some(serialize_array1d(&Vector1D::Str(array.iter().map(|s| s.to_owned()).collect()))),
             order: (1..array.ndim()).map(|x| { x as u64 }).collect(),
             shape: array.shape().iter().map(|y| { *y as u64 }).collect(),
@@ -384,24 +393,24 @@ pub fn serialize_arraynd(value: &ArrayND) -> proto::ArrayNd {
     }
 }
 
-pub fn serialize_hashmap_str(value: &HashMap<String, Value>) -> proto::HashmapStr {
+pub fn serialize_hashmap_str(value: &BTreeMap<String, Value>) -> proto::HashmapStr {
     proto::HashmapStr {
         data: value.iter()
             .map(|(name, value)| (name.clone(), serialize_value(value).unwrap()))
             .collect()
     }
 }
-pub fn serialize_hashmap_bool(value: &HashMap<bool, Value>) -> proto::HashmapBool {
+pub fn serialize_hashmap_bool(value: &BTreeMap<bool, Value>) -> proto::HashmapBool {
     proto::HashmapBool {
         data: value.iter()
-            .map(|(name, value)| (name.clone(), serialize_value(value).unwrap()))
+            .map(|(name, value)| (*name, serialize_value(value).unwrap()))
             .collect()
     }
 }
-pub fn serialize_hashmap_i64(value: &HashMap<i64, Value>) -> proto::HashmapI64 {
+pub fn serialize_hashmap_i64(value: &BTreeMap<i64, Value>) -> proto::HashmapI64 {
     proto::HashmapI64 {
         data: value.iter()
-            .map(|(name, value)| (name.clone(), serialize_value(value).unwrap()))
+            .map(|(name, value)| (*name, serialize_value(value).unwrap()))
             .collect()
     }
 }
@@ -432,28 +441,28 @@ pub fn serialize_data_type(value: &DataType) -> proto::DataType {
     }
 }
 
-pub fn serialize_array2d_jagged(value: &Vector2DJagged) -> proto::Array2dJagged {
+pub fn serialize_array2d_jagged(value: &Jagged) -> proto::Array2dJagged {
     proto::Array2dJagged {
         data_type: match value {
-            Vector2DJagged::Bool(_x) => proto::DataType::Bool as i32,
-            Vector2DJagged::F64(_x) => proto::DataType::F64 as i32,
-            Vector2DJagged::I64(_x) => proto::DataType::I64 as i32,
-            Vector2DJagged::Str(_x) => proto::DataType::String as i32,
+            Jagged::Bool(_x) => proto::DataType::Bool as i32,
+            Jagged::F64(_x) => proto::DataType::F64 as i32,
+            Jagged::I64(_x) => proto::DataType::I64 as i32,
+            Jagged::Str(_x) => proto::DataType::String as i32,
         },
         data: match value {
-            Vector2DJagged::Bool(data) => data.iter().map(|column| serialize_array1d_option(&match column {
+            Jagged::Bool(data) => data.iter().map(|column| serialize_array1d_option(&match column {
                 Some(column) => Some(Vector1D::Bool(column.to_owned())),
                 None => None
             })).collect(),
-            Vector2DJagged::F64(data) => data.iter().map(|column| serialize_array1d_option(&match column {
+            Jagged::F64(data) => data.iter().map(|column| serialize_array1d_option(&match column {
                 Some(column) => Some(Vector1D::F64(column.to_owned())),
                 None => None
             })).collect(),
-            Vector2DJagged::I64(data) => data.iter().map(|column| serialize_array1d_option(&match column {
+            Jagged::I64(data) => data.iter().map(|column| serialize_array1d_option(&match column {
                 Some(column) => Some(Vector1D::I64(column.to_owned())),
                 None => None
             })).collect(),
-            Vector2DJagged::Str(data) => data.iter().map(|column| serialize_array1d_option(&match column {
+            Jagged::Str(data) => data.iter().map(|column| serialize_array1d_option(&match column {
                 Some(column) => Some(Vector1D::Str(column.to_owned())),
                 None => None
             })).collect(),
@@ -464,50 +473,50 @@ pub fn serialize_array2d_jagged(value: &Vector2DJagged) -> proto::Array2dJagged 
 pub fn serialize_value(value: &Value) -> Result<proto::Value> {
     Ok(proto::Value {
         data: Some(match value {
-            Value::ArrayND(data) =>
-                proto::value::Data::ArrayNd(serialize_arraynd(data)),
+            Value::Array(data) =>
+                proto::value::Data::Array(serialize_arraynd(data)),
             Value::Hashmap(data) =>
                 proto::value::Data::Hashmap(serialize_hashmap(data)),
-            Value::Vector2DJagged(data) =>
-                proto::value::Data::Array2dJagged(serialize_array2d_jagged(data))
+            Value::Jagged(data) =>
+                proto::value::Data::Jagged(serialize_array2d_jagged(data))
         })
     })
 }
 
 pub fn serialize_release(release: &Release) -> Result<proto::Release> {
-    let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
-    for (node_id, node_eval) in release {
-        if let Ok(array_serialized) = serialize_value(node_eval) {
-            releases.insert(*node_id, proto::ReleaseNode {
-                value: Some(array_serialized),
-                // TODO: store actual usage from algorithm. No algorithms actually use this yet
-                privacy_usage: Vec::new(),
-            });
-        }
-    }
     Ok(proto::Release {
-        values: releases
+        values: release.into_iter()
+            .map(|(idx, release_node)| Ok((*idx, serialize_release_node(release_node)?)))
+            .collect::<Result<HashMap<u32, proto::ReleaseNode>>>()?
     })
 }
 
-pub fn serialize_hashmap_properties_str(value: &HashMap<String, ValueProperties>) -> proto::HashmapValuePropertiesStr {
+pub fn serialize_release_node(release_node: &ReleaseNode) -> Result<proto::ReleaseNode> {
+    Ok(proto::ReleaseNode {
+        value: Some(serialize_value(&release_node.value)?),
+        privacy_usages: release_node.privacy_usages.as_ref().map(|v| proto::PrivacyUsages {values: v.clone()}),
+        public: release_node.public
+    })
+}
+
+pub fn serialize_hashmap_properties_str(value: &BTreeMap<String, ValueProperties>) -> proto::HashmapValuePropertiesStr {
     proto::HashmapValuePropertiesStr {
         data: value.iter()
             .map(|(name, value)| (name.clone(), serialize_value_properties(value)))
             .collect::<HashMap<String, proto::ValueProperties>>()
     }
 }
-pub fn serialize_hashmap_properties_i64(value: &HashMap<i64, ValueProperties>) -> proto::HashmapValuePropertiesI64 {
+pub fn serialize_hashmap_properties_i64(value: &BTreeMap<i64, ValueProperties>) -> proto::HashmapValuePropertiesI64 {
     proto::HashmapValuePropertiesI64 {
         data: value.iter()
-            .map(|(name, value)| (name.clone(), serialize_value_properties(value)))
+            .map(|(name, value)| (*name, serialize_value_properties(value)))
             .collect::<HashMap<i64, proto::ValueProperties>>()
     }
 }
-pub fn serialize_hashmap_properties_bool(value: &HashMap<bool, ValueProperties>) -> proto::HashmapValuePropertiesBool {
+pub fn serialize_hashmap_properties_bool(value: &BTreeMap<bool, ValueProperties>) -> proto::HashmapValuePropertiesBool {
     proto::HashmapValuePropertiesBool {
         data: value.iter()
-            .map(|(name, value)| (name.clone(), serialize_value_properties(value)))
+            .map(|(name, value)| (*name, serialize_value_properties(value)))
             .collect::<HashMap<bool, proto::ValueProperties>>()
     }
 }
@@ -517,16 +526,17 @@ pub fn serialize_hashmap_properties(value: &HashmapProperties) -> proto::Hashmap
         num_records: Some(serialize_i64_null(&value.num_records)),
         disjoint: value.disjoint,
         value_properties: Some(proto::HashmapValueProperties {
-            variant: Some(match value.value_properties.clone() {
+            variant: Some(match value.properties.clone() {
                 Hashmap::Str(value) => proto::hashmap_value_properties::Variant::String(serialize_hashmap_properties_str(&value)),
                 Hashmap::I64(value) => proto::hashmap_value_properties::Variant::I64(serialize_hashmap_properties_i64(&value)),
                 Hashmap::Bool(value) => proto::hashmap_value_properties::Variant::Bool(serialize_hashmap_properties_bool(&value)),
             })
-        })
+        }),
+        columnar: value.columnar
     }
 }
 
-pub fn serialize_arraynd_properties(value: &ArrayNDProperties) -> proto::ArrayNdProperties {
+pub fn serialize_arraynd_properties(value: &ArrayProperties) -> proto::ArrayNdProperties {
     proto::ArrayNdProperties {
         num_records: Some(serialize_i64_null(&value.num_records)),
         num_columns: Some(serialize_i64_null(&value.num_columns)),
@@ -539,8 +549,8 @@ pub fn serialize_arraynd_properties(value: &ArrayNDProperties) -> proto::ArrayNd
                     categories: Some(serialize_array2d_jagged(&categorical.categories))
                 })),
                 Nature::Continuous(x) => Some(proto::array_nd_properties::Nature::Continuous(proto::NatureContinuous {
-                    minimum: Some(serialize_array1d_null(&x.min)),
-                    maximum: Some(serialize_array1d_null(&x.max)),
+                    minimum: Some(serialize_array1d_null(&x.lower)),
+                    maximum: Some(serialize_array1d_null(&x.upper)),
                 }))
             },
             None => None
@@ -548,7 +558,7 @@ pub fn serialize_arraynd_properties(value: &ArrayNDProperties) -> proto::ArrayNd
         aggregator: match value.aggregator.clone() {
             Some(aggregator) => Some(proto::array_nd_properties::AggregatorProperties {
                 component: Some(proto::Component {
-                    variant: Some(proto::component::Variant::from(aggregator.component)),
+                    variant: Some(aggregator.component),
                     omit: true, batch: 0, arguments: HashMap::new(),
                 }),
                 properties: aggregator.properties.iter()
@@ -558,12 +568,16 @@ pub fn serialize_arraynd_properties(value: &ArrayNDProperties) -> proto::ArrayNd
             None => None
         },
         data_type: serialize_data_type(&value.data_type) as i32,
-        dataset_id: Some(serialize_i64_null(&value.dataset_id))
+        dataset_id: Some(serialize_i64_null(&value.dataset_id)),
+        is_not_empty: value.is_not_empty,
+        dimensionality: value.dimensionality
     }
 }
 
-pub fn serialize_vector2d_jagged_properties(_value: &Vector2DJaggedProperties) -> proto::Vector2DJaggedProperties {
-    proto::Vector2DJaggedProperties {}
+pub fn serialize_vector2d_jagged_properties(value: &JaggedProperties) -> proto::Vector2DJaggedProperties {
+    proto::Vector2DJaggedProperties {
+        releasable: value.releasable
+    }
 }
 
 pub fn serialize_value_properties(value: &ValueProperties) -> proto::ValueProperties {
@@ -571,10 +585,10 @@ pub fn serialize_value_properties(value: &ValueProperties) -> proto::ValueProper
         variant: Some(match value {
             ValueProperties::Hashmap(value) =>
                 proto::value_properties::Variant::Hashmap(serialize_hashmap_properties(value)),
-            ValueProperties::ArrayND(value) =>
-                proto::value_properties::Variant::Arraynd(serialize_arraynd_properties(value)),
-            ValueProperties::Vector2DJagged(value) =>
-                proto::value_properties::Variant::Vector2djagged(serialize_vector2d_jagged_properties(value))
+            ValueProperties::Array(value) =>
+                proto::value_properties::Variant::Array(serialize_arraynd_properties(value)),
+            ValueProperties::Jagged(value) =>
+                proto::value_properties::Variant::Jagged(serialize_vector2d_jagged_properties(value))
         })
     }
 }

@@ -3,15 +3,15 @@ use crate::errors::*;
 use std::collections::HashMap;
 
 
-use crate::proto;
+use crate::{proto, base};
+use crate::hashmap;
+use crate::components::{Component, Expandable};
 
-use crate::components::{Component};
-
-use crate::base::{Value, NodeProperties, prepend, ValueProperties, DataType, Nature, NatureCategorical, Vector2DJagged};
-
+use crate::base::{Value, NodeProperties, ValueProperties, DataType, Nature, NatureCategorical, Jagged, Vector1DNull, NatureContinuous, Array};
+use crate::utilities::prepend;
+use itertools::Itertools;
 
 impl Component for proto::Cast {
-    // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
@@ -19,16 +19,13 @@ impl Component for proto::Cast {
         properties: &NodeProperties,
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
-            .ok_or::<Error>("data: missing".into())?.get_arraynd()
+            .ok_or_else(|| Error::from("data: missing"))?.array()
             .map_err(prepend("data:"))?.clone();
 
-        let datatype = public_arguments.get("type")
-            .ok_or::<Error>("type: missing, must be public".into())?.get_first_str()
-            .map_err(prepend("type:"))?;
+        data_property.assert_is_not_aggregated()?;
+        let prior_datatype = data_property.data_type.clone();
 
-        let _prior_datatype = data_property.data_type.clone();
-
-        data_property.data_type = match datatype.to_lowercase().as_str() {
+        data_property.data_type = match self.atomic_type.to_lowercase().as_str() {
             "float" => DataType::F64,
             "real" => DataType::F64,
             "int" => DataType::I64,
@@ -39,49 +36,178 @@ impl Component for proto::Cast {
             _ => bail!("data type is not recognized. Must be one of \"float\", \"int\", \"bool\" or \"string\"")
         };
 
-        let num_columns = data_property.get_num_columns()?;
+        let num_columns = data_property.num_columns()?;
 
-        // TODO: It is possible to preserve significantly more properties here
         match data_property.data_type {
             DataType::Bool => {
                 // true label must be defined
-                public_arguments.get("true_label")
-                    .ok_or::<Error>("true_label: missing, must be public".into())?.get_arraynd()?;
+                let true_label = public_arguments.get("true_label")
+                    .ok_or_else(|| Error::from("true_label: missing, must be public"))?.array()?.clone();
 
+                data_property.nature = match data_property.nature {
+                    Some(nature) => match nature {
+                        Nature::Categorical(cat_nature) => Some(Nature::Categorical(NatureCategorical {
+                            categories: match (cat_nature.categories, true_label) {
+                                (Jagged::I64(cats), Array::I64(true_label)) => Jagged::Bool(cats.into_iter()
+                                    .map(|cats| cats.map(|cats|
+                                        cats.into_iter().map(|v| Some(&v) == true_label.first())
+                                            .unique().collect::<Vec<_>>()))
+                                    .collect::<Vec<Option<Vec<_>>>>()),
+                                (Jagged::F64(cats), Array::F64(true_label)) => Jagged::Bool(cats.into_iter()
+                                    .map(|cats| cats.map(|cats|
+                                        cats.into_iter().map(|v| Some(&v) == true_label.first())
+                                            .unique().collect::<Vec<_>>()))
+                                    .collect::<Vec<Option<Vec<_>>>>()),
+                                (Jagged::Bool(cats), Array::Bool(true_label)) => Jagged::Bool(cats.into_iter()
+                                    .map(|cats| cats.map(|cats|
+                                        cats.into_iter().map(|v| Some(&v) == true_label.first())
+                                            .unique().collect::<Vec<_>>()))
+                                    .collect::<Vec<Option<Vec<_>>>>()),
+                                (Jagged::Str(cats), Array::Str(true_label)) => Jagged::Bool(cats.into_iter()
+                                    .map(|cats| cats.map(|cats|
+                                        cats.into_iter().map(|v| Some(&v) == true_label.first())
+                                            .unique().collect::<Vec<_>>()))
+                                    .collect::<Vec<Option<Vec<_>>>>()),
+                                _ => return Err("type of true label must match the data type".into())
+                            }
+                        })),
+                        Nature::Continuous(_) => None
+                    },
+                    None => None
+                };
                 data_property.nature = Some(Nature::Categorical(NatureCategorical {
-                    categories: Vector2DJagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
+                    categories: Jagged::Bool((0..num_columns).map(|_| Some(vec![true, false])).collect())
                 }));
                 data_property.nullity = false;
             },
             DataType::I64 => {
-                // min must be defined, for imputation of values that won't cast
-                public_arguments.get("min")
-                    .ok_or::<Error>("min: missing, must be public".into())?.get_first_str()
+                // lower must be defined, for imputation of values that won't cast
+                public_arguments.get("lower")
+                    .ok_or_else(|| Error::from("lower: missing, must be public"))?.first_i64()
                     .map_err(prepend("type:"))?;
                 // max must be defined
-                public_arguments.get("max")
-                    .ok_or::<Error>("max: missing, must be public".into())?.get_first_str()
+                public_arguments.get("upper")
+                    .ok_or_else(|| Error::from("upper: missing, must be public"))?.first_i64()
                     .map_err(prepend("type:"))?;
+
                 data_property.nature = None;
+                data_property.nature = match data_property.nature {
+                    Some(nature) => match nature.clone() {
+                        Nature::Categorical(cat_nature) => match cat_nature.categories {
+                            // properties are lost because floats cannot be categorical
+                            Jagged::F64(_) => None,
+                            Jagged::I64(_) => Some(nature.clone()),
+                            Jagged::Bool(cats) =>
+                                Some(Nature::Categorical(NatureCategorical {
+                                    categories: Jagged::I64(cats.into_iter()
+                                        .map(|cats| cats
+                                            .map(|cats| cats.into_iter()
+                                                .map(|v| if v { 1 } else { 0 })
+                                                .unique().collect::<Vec<i64>>()))
+                                        .collect())
+                                })),
+
+                            // properties are lost because of potential imputation
+                            Jagged::Str(_) => None
+                        },
+                        Nature::Continuous(bounds) => match (bounds.lower.clone(), bounds.upper.clone()) {
+                            (Vector1DNull::F64(lower), Vector1DNull::F64(upper)) =>
+                                Some(Nature::Continuous(NatureContinuous {
+                                    lower: Vector1DNull::I64(lower.into_iter()
+                                        .map(|v| v.map(|v| v.round() as i64))
+                                        .collect()),
+                                    upper: Vector1DNull::I64(upper.into_iter()
+                                        .map(|v| v.map(|v| v.round() as i64))
+                                        .collect())
+                                })),
+                            (Vector1DNull::I64(_), Vector1DNull::I64(_)) =>
+                                Some(Nature::Continuous(NatureContinuous { lower: bounds.lower, upper: bounds.upper })),
+                            _ => None
+                        }
+                    },
+                    None => None
+                };
                 data_property.nullity = false;
             },
             DataType::Str => {
-                data_property.nature = None;
                 data_property.nullity = false;
+                data_property.nature = match data_property.nature {
+                    Some(nature) => match nature {
+                        Nature::Categorical(nature) => match nature.categories {
+                            Jagged::F64(_) => None,
+                            Jagged::Bool(jagged) =>
+                                Some(Nature::Categorical(NatureCategorical {
+                                    categories: Jagged::Str(jagged.into_iter()
+                                        .map(|cats| cats
+                                            .map(|cats| cats.into_iter()
+                                                .map(|v| v.to_string())
+                                                .unique().collect()))
+                                        .collect::<Vec<Option<Vec<String>>>>())
+                                })),
+                            Jagged::I64(jagged) =>
+                                Some(Nature::Categorical(NatureCategorical {
+                                    categories: Jagged::Str(jagged.into_iter()
+                                        .map(|cats| cats
+                                            .map(|cats| cats.iter()
+                                                .map(|v| v.to_string())
+                                                .unique().collect()))
+                                        .collect::<Vec<Option<Vec<String>>>>())
+                                })),
+                            Jagged::Str(jagged) => Some(Nature::Categorical(NatureCategorical {
+                                categories: Jagged::Str(jagged.clone())
+                            }))
+                        },
+                        _ => None
+                    },
+                    None => None
+                }
             },
             DataType::F64 => {
                 data_property.nature = None;
-                data_property.nullity = true;
+                data_property.nullity = match prior_datatype {
+                    DataType::F64 => data_property.nullity,
+                    DataType::Bool => false,
+                    _ => true
+                }
             }
         };
 
         Ok(data_property.into())
     }
 
-    fn get_names(
-        &self,
-        _properties: &NodeProperties,
-    ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
+}
+
+macro_rules! make_expandable {
+    ($variant:ident, $var_type:expr) => {
+        impl Expandable for proto::$variant {
+            fn expand_component(
+                &self,
+                _privacy_definition: &proto::PrivacyDefinition,
+                component: &proto::Component,
+                _properties: &base::NodeProperties,
+                component_id: &u32,
+                _maximum_id: &u32,
+            ) -> Result<proto::ComponentExpansion> {
+                Ok(proto::ComponentExpansion {
+                    computation_graph: hashmap![component_id.clone() => proto::Component {
+                        arguments: component.arguments.clone(),
+                        variant: Some(proto::component::Variant::Cast(proto::Cast {
+                            atomic_type: $var_type
+                        })),
+                        omit: false,
+                        batch: component.batch,
+                    }],
+                    properties: HashMap::new(),
+                    releases: HashMap::new(),
+                    // add the component_id, to force the node to be re-evaluated and the Cast to be expanded
+                    traversal: vec![*component_id]
+                })
+            }
+        }
     }
 }
+
+make_expandable!(ToBool, "bool".to_string());
+make_expandable!(ToFloat, "float".to_string());
+make_expandable!(ToInt, "int".to_string());
+make_expandable!(ToString, "string".to_string());

@@ -1,63 +1,64 @@
 use whitenoise_validator::errors::*;
 
-use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value, ArrayND, get_argument};
+use crate::NodeArguments;
+use whitenoise_validator::base::{Value, Array, ReleaseNode};
+use whitenoise_validator::utilities::get_argument;
 use crate::components::Evaluable;
-use ndarray::{ArrayD, Array};
+use ndarray::ArrayD;
 use whitenoise_validator::proto;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 
 impl Evaluable for proto::Reshape {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
         let layout = match self.layout.to_lowercase().as_str() {
             "row" => Layout::Row,
             "column" => Layout::Column,
             _ => return Err("layout: unrecognized format. Must be either row or column".into())
         };
 
-        match get_argument(&arguments, "data")?.get_arraynd()? {
-            ArrayND::Bool(data) => {
+        match get_argument(&arguments, "data")?.array()? {
+            Array::Bool(data) => {
                 let mut reshaped = reshape(&data, &self.symmetric, &layout, &self.shape)?;
                 match reshaped.len().clone() {
                     0 => Err("at least one record is required to reshape".into()),
                     1 => Ok(reshaped.remove(0).into()),
                     _ => Ok(reshaped.into_iter().enumerate()
                         .map(|(idx, data)| (idx as i64, data.into()))
-                        .collect::<HashMap<i64, Value>>().into())
+                        .collect::<BTreeMap<i64, Value>>().into())
                 }
             }
-            ArrayND::I64(data) => {
+            Array::I64(data) => {
                 let mut reshaped = reshape(&data, &self.symmetric, &layout, &self.shape)?;
                 match reshaped.len().clone() {
                     0 => Err("at least one record is required to reshape".into()),
                     1 => Ok(reshaped.remove(0).into()),
                     _ => Ok(reshaped.into_iter().enumerate()
                         .map(|(idx, data)| (idx as i64, data.into()))
-                        .collect::<HashMap<i64, Value>>().into())
+                        .collect::<BTreeMap<i64, Value>>().into())
                 }
             }
-            ArrayND::F64(data) => {
+            Array::F64(data) => {
                 let mut reshaped = reshape(&data, &self.symmetric, &layout, &self.shape)?;
                 match reshaped.len().clone() {
                     0 => Err("at least one record is required to reshape".into()),
                     1 => Ok(reshaped.remove(0).into()),
                     _ => Ok(reshaped.into_iter().enumerate()
                         .map(|(idx, data)| (idx as i64, data.into()))
-                        .collect::<HashMap<i64, Value>>().into())
+                        .collect::<BTreeMap<i64, Value>>().into())
                 }
             }
-            ArrayND::Str(data) => {
+            Array::Str(data) => {
                 let mut reshaped = reshape(&data, &self.symmetric, &layout, &self.shape)?;
                 match reshaped.len().clone() {
                     0 => Err("at least one record is required to reshape".into()),
                     1 => Ok(reshaped.remove(0).into()),
                     _ => Ok(reshaped.into_iter().enumerate()
                         .map(|(idx, data)| (idx as i64, data.into()))
-                        .collect::<HashMap<i64, Value>>().into())
+                        .collect::<BTreeMap<i64, Value>>().into())
                 }
             }
-        }
+        }.map(ReleaseNode::new)
     }
 }
 
@@ -86,7 +87,7 @@ pub enum Layout {
 /// let n = reshape(&data, &true, &Layout::Row, &vec![2, 2]).unwrap();
 /// assert!(n[0] == arr2(&[ [false, false], [false, true] ]).into_dyn());
 /// ```
-pub fn reshape<T: Clone + std::fmt::Debug>(data: &ArrayD<T>, symmetric: &bool, layout: &Layout, shape: &Vec<u32>) -> Result<Vec<ArrayD<T>>> {
+pub fn reshape<T: Clone>(data: &ArrayD<T>, symmetric: &bool, layout: &Layout, shape: &Vec<u32>) -> Result<Vec<ArrayD<T>>> {
     data.genrows().into_iter()
         .map(|row| {
             if *symmetric {
@@ -119,13 +120,13 @@ pub fn reshape<T: Clone + std::fmt::Debug>(data: &ArrayD<T>, symmetric: &bool, l
                     Layout::Column => return Err("not implemented".into())
                 };
 
-                Ok(Array::from_shape_vec((num_rows as usize, num_rows as usize), full)?.into_dyn())
+                Ok(ndarray::Array::from_shape_vec((num_rows as usize, num_rows as usize), full)?.into_dyn())
             } else {
                 if &Layout::Column == layout {
                     return Err("reshaping for dense columnar memory layouts is not supported".into());
                 }
                 let shape = shape.iter().map(|v| v.clone() as usize).collect::<Vec<usize>>();
-                match Array::from_shape_vec(shape, row.to_vec()) {
+                match ndarray::ArrayD::from_shape_vec(shape, row.to_vec()) {
                     Ok(arr) => Ok(arr),
                     Err(_) => Err("reshape has incorrect size".into())
                 }
@@ -134,8 +135,8 @@ pub fn reshape<T: Clone + std::fmt::Debug>(data: &ArrayD<T>, symmetric: &bool, l
 }
 
 #[cfg(test)]
-mod reshape_tests {
-    use ndarray::{arr2};
+mod test_reshape {
+    use ndarray::arr2;
     use crate::components::reshape::{reshape, Layout};
 
     #[test]
@@ -151,6 +152,4 @@ mod reshape_tests {
         let n = reshape(&data, &true, &Layout::Row, &vec![4, 4]).unwrap();
         assert!(n[0] == arr2(&[[0, 1, 2, 3], [1, 4, 5, 6], [2, 5, 7, 8], [3, 6, 8, 9]]).into_dyn());
     }
-
-
 }

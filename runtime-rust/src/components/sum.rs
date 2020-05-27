@@ -1,21 +1,22 @@
 use whitenoise_validator::errors::*;
 
-use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value, get_argument, ArrayND};
+use crate::NodeArguments;
+use whitenoise_validator::base::{Array, ReleaseNode};
+use whitenoise_validator::utilities::{get_argument};
 use crate::components::Evaluable;
 use whitenoise_validator::proto;
-use ndarray::{ArrayD, Array};
+use ndarray::{ArrayD};
 use std::ops::Add;
-use crate::utilities::utilities::get_num_columns;
+use crate::utilities::get_num_columns;
 use num::Zero;
 
 impl Evaluable for proto::Sum {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        match get_argument(&arguments, "data")?.get_arraynd()? {
-            ArrayND::F64(data) => Ok(sum(&data)?.into()),
-            ArrayND::I64(data) => Ok(sum(&data)?.into()),
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+        match get_argument(&arguments, "data")?.array()? {
+            Array::F64(data) => Ok(sum(&data)?.into()),
+            Array::I64(data) => Ok(sum(&data)?.into()),
             _ => return Err("data must be either f64 or i64".into())
-        }
+        }.map(ReleaseNode::new)
     }
 }
 
@@ -43,8 +44,8 @@ pub fn sum<T: Add<T, Output=T> + Zero + Copy>(data: &ArrayD<T>) -> Result<ArrayD
         .map(|column| column.fold(T::zero(), |sum, i| sum + *i)).collect::<Vec<T>>();
 
     let array = match data.ndim() {
-        1 => Array::from_shape_vec(vec![], means),
-        2 => Array::from_shape_vec(vec![1 as usize, get_num_columns(&data)? as usize], means),
+        1 => ndarray::Array::from_shape_vec(vec![], means),
+        2 => ndarray::Array::from_shape_vec(vec![1 as usize, get_num_columns(&data)? as usize], means),
         _ => return Err("invalid data shape for Sum".into())
     };
 

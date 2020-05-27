@@ -5,9 +5,10 @@ use std::collections::HashMap;
 
 use crate::{proto, base};
 
-use crate::components::{Component, Aggregator};
-use crate::base::{Value, NodeProperties, AggregatorProperties, Sensitivity, prepend, ValueProperties};
-
+use crate::components::{Component, Sensitivity};
+use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType};
+use crate::utilities::prepend;
+use ndarray::prelude::*;
 
 impl Component for proto::KthRawSampleMoment {
     fn propagate_property(
@@ -17,52 +18,57 @@ impl Component for proto::KthRawSampleMoment {
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
-            .ok_or("data: missing")?.get_arraynd()
+            .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
+        if data_property.data_type != DataType::F64 {
+            return Err("data: atomic type must be float".into())
+        }
+
+        if !data_property.releasable {
+            data_property.assert_is_not_aggregated()?;
+        }
+        data_property.assert_is_not_empty()?;
 
         // save a snapshot of the state when aggregating
         data_property.aggregator = Some(AggregatorProperties {
-            component: proto::component::Variant::from(self.clone()),
+            component: proto::component::Variant::KthRawSampleMoment(self.clone()),
             properties: properties.clone()
         });
         data_property.num_records = Some(1);
         Ok(data_property.into())
     }
-
-    fn get_names(
-        &self,
-        _properties: &NodeProperties,
-    ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
-    }
 }
 
-impl Aggregator for proto::KthRawSampleMoment {
+impl Sensitivity for proto::KthRawSampleMoment {
     fn compute_sensitivity(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
-        sensitivity_type: &Sensitivity
-    ) -> Result<Vec<f64>> {
+        sensitivity_type: &SensitivitySpace
+    ) -> Result<Value> {
         let data_property = properties.get("data")
-            .ok_or("data: missing")?.get_arraynd()
+            .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
         match sensitivity_type {
-            Sensitivity::KNorm(k) => {
+            SensitivitySpace::KNorm(k) => {
                 if k != &1 {
                     return Err("KthRawSampleMoment sensitivity is only implemented for KNorm of 1".into())
                 }
-                let min = data_property.get_min_f64()?;
-                let max = data_property.get_max_f64()?;
-                let num_records = data_property.get_num_records()?;
+                let lower = data_property.lower_f64()?;
+                let upper = data_property.upper_f64()?;
+                let num_records = data_property.num_records()?;
 
-                Ok(min.iter()
-                    .zip(max)
+                let row_sensitivity = lower.iter().zip(upper.iter())
                     .map(|(min, max)| (max - min).powi(self.k as i32) / (num_records as f64))
-                    .collect())
+                    .collect::<Vec<f64>>();
+
+                let mut array_sensitivity = Array::from(row_sensitivity).into_dyn();
+                array_sensitivity.insert_axis_inplace(Axis(0));
+
+                Ok(array_sensitivity.into())
             },
-            _ => return Err("KthRawSampleMoment sensitivity is only implemented for KNorm of 1".into())
+            _ => Err("KthRawSampleMoment sensitivity is only implemented for KNorm of 1".into())
         }
     }
 }

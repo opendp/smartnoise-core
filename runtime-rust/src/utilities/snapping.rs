@@ -2,7 +2,7 @@ use openssl::rand::rand_bytes;
 use std::{cmp, convert::TryFrom};
 use ieee754::Ieee754;
 
-use crate::utilities::utilities;
+use crate::utilities;
 
 pub fn get_smallest_greater_or_eq_power_of_two(x: &f64) -> (f64, i64) {
     /// Gets smallest power of two that is equal to or greater than x

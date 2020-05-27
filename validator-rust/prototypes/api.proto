@@ -1,0 +1,127 @@
+syntax = "proto3";
+
+package whitenoise;
+
+import "base.proto";
+import "components.proto";
+import "value.proto";
+
+// REQUESTS
+// VALIDATOR API
+
+message RequestValidateAnalysis {
+	Analysis analysis = 1;
+	Release release = 2;
+}
+message RequestComputePrivacyUsage {
+	Analysis analysis = 1;
+	Release release = 2;
+}
+message RequestGenerateReport {
+	Analysis analysis = 1;
+	Release release = 2;
+}
+message RequestGetProperties {
+	Analysis analysis = 1;
+	Release release = 2;
+	// only compute properties for these nodes. If empty, properties for all nodes are returned
+	repeated uint32 node_ids = 3;
+}
+message RequestAccuracyToPrivacyUsage {
+	PrivacyDefinition privacy_definition = 1;
+	Component component = 2;
+	map<string, ValueProperties> properties = 3;
+	Accuracies accuracies = 4;
+}
+message RequestPrivacyUsageToAccuracy {
+	PrivacyDefinition privacy_definition = 1;
+	Component component = 2;
+	map<string, ValueProperties> properties = 3;
+	double alpha = 4;
+}
+message RequestExpandComponent {
+	Component component = 1;
+	map<string, ValueProperties> properties = 2;
+	map<string, ReleaseNode> arguments = 3;
+	PrivacyDefinition privacy_definition = 4;
+	uint32 component_id = 5;
+	uint32 maximum_id = 6;
+}
+
+// REQUESTS
+// RUNTIME API
+
+message RequestRelease {
+	Analysis analysis = 1;
+	Release release = 2;
+
+	// enable to return stack traces in the error response variant
+	bool stack_trace = 10;
+
+	// configure how much data should be returned from runtime
+	FilterLevel filter_level = 11;
+}
+
+// RESPONSES
+// VALIDATOR API
+
+message ResponseValidateAnalysis {
+	message Validated {
+	    bool value = 1;
+	    string message = 2;
+	}
+	oneof value {
+		Validated data = 1;
+		Error error = 2;
+	}
+}
+message ResponseComputePrivacyUsage {
+	oneof value {
+		PrivacyUsage data = 1;
+		Error error = 2;
+	}
+}
+message ResponseGenerateReport {
+	oneof value {
+		string data = 1;
+		Error error = 2;
+	}
+}
+message ResponseGetProperties {
+	oneof value {
+		GraphProperties data = 1;
+		Error error = 2;
+	}
+}
+message ResponseAccuracyToPrivacyUsage {
+	oneof value {
+		PrivacyUsages data = 1;
+		Error error = 2;
+	}
+}
+message ResponsePrivacyUsageToAccuracy {
+	oneof value {
+		Accuracies data = 1;
+		Error error = 2;
+	}
+}
+message ResponseExpandComponent {
+	oneof value {
+		ComponentExpansion data = 1;
+		Error error = 2;
+	}
+}
+
+// RESPONSES
+// RUNTIME API
+
+message ResponseRelease {
+	message Success {
+		Release release = 1;
+		repeated Error warnings = 2;
+	}
+	oneof value {
+		Success data = 1;
+		Error error = 2;
+	}
+}

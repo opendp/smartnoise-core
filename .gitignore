@@ -38,36 +38,26 @@ lib
 # Jetbrains
 .idea
 
-# Cmake
-CMakeLists.txt.user
-CMakeCache.txt
-CMakeFiles
-CMakeScripts
-Testing
-Makefile
-cmake_install.cmake
-install_manifest.txt
-compile_commands.json
-CTestTestfile.cmake
-_deps
-
-cmake-build-debug
-
-# Build directories for conan library dependencies
-build
-
-# generated protobuf bindings
-*/prototypes
+# emacs
+*~
+*#
+.projectile
 
 # generated protobuf
-prototypes/components.proto
-.Rproj.user
+validator-rust/prototypes/components.proto
 
 
 *.DS_Store
 docs/debug/*
 docs/doc/.lock
 docs/.rustc_info.json
+docs/bindings-python/*
+docs/doc/*
 
 # jupyter notebook
 .ipynb_checkpoints
+docs/doc/bstr/utf8/struct.CharIndices.html
+
+target/
+Cargo.lock
+bindings-python/

@@ -1,0 +1,16 @@
+{
+  "arguments": {
+    "data": {
+      "type_value": "Array",
+      "description": "Data for which you want the maximum value in each column."
+    }
+  },
+  "id": "Maximum",
+  "name": "maximum",
+  "options": {},
+  "return": {
+    "type_value": "Array",
+    "description": "Maximum of each column in the data."
+  },
+  "description": "Find the maximum value of each column in the data."
+}

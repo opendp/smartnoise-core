@@ -5,13 +5,11 @@ use std::collections::HashMap;
 
 use crate::{base};
 use crate::proto;
-
 use crate::components::{Component, Expandable};
 
-
-
-use ndarray::Array;
-use crate::base::{Vector1DNull, Nature, NatureContinuous, Value, NodeProperties, ArrayND, get_literal, prepend, ValueProperties};
+use ndarray;
+use crate::base::{Vector1DNull, Nature, NatureContinuous, Value, Array, ValueProperties, DataType};
+use crate::utilities::{prepend, get_literal};
 
 
 impl Component for proto::Impute {
@@ -22,56 +20,74 @@ impl Component for proto::Impute {
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
-            .ok_or("data: missing")?.get_arraynd()
+            .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
+
+        if !data_property.releasable {
+            data_property.assert_is_not_aggregated()?;
+        }
+
+        if data_property.data_type == DataType::I64 {
+            return Ok(data_property.into())
+        }
+
+        if let Some(_categories) = public_arguments.get("categories") {
+            // TODO: propagation of categories through imputation and resize
+            data_property.nature = None;
+            return Ok(data_property.into());
+        }
 
         let num_columns = data_property.num_columns
             .ok_or("data: number of columns missing")?;
         // 1. check public arguments (constant n)
-        let impute_minimum = match public_arguments.get("min") {
-            Some(min) => min.get_arraynd()?.clone().get_vec_f64(Some(num_columns))?,
+        let impute_lower = match public_arguments.get("lower") {
+            Some(min) => min.array()?.clone().vec_f64(Some(num_columns))
+                .map_err(prepend("lower:"))?,
 
             // 2. then private arguments (for example from another clamped column)
-            None => match properties.get("min") {
-                Some(min) => min.get_arraynd()?.get_min_f64()?,
+            None => match properties.get("lower") {
+                Some(min) => min.array()?.lower_f64()
+                    .map_err(prepend("lower:"))?,
 
                 // 3. then data properties (propagated from prior clamping/min/max)
                 None => data_property
-                    .get_min_f64()?
+                    .lower_f64().map_err(prepend("lower:"))?
             }
         };
 
         // 1. check public arguments (constant n)
-        let impute_maximum = match public_arguments.get("max") {
-            Some(max) => max.get_arraynd()?.clone().get_vec_f64(Some(num_columns))?,
+        let impute_upper = match public_arguments.get("upper") {
+            Some(max) => max.array()?.clone().vec_f64(Some(num_columns))
+                .map_err(prepend("upper:"))?,
 
             // 2. then private arguments (for example from another clamped column)
-            None => match properties.get("max") {
-                Some(min) => min.get_arraynd()?.get_max_f64()?,
+            None => match properties.get("upper") {
+                Some(min) => min.array()?.upper_f64()
+                    .map_err(prepend("max:"))?,
 
                 // 3. then data properties (propagated from prior clamping/min/max)
                 None => data_property
-                    .get_max_f64()?
+                    .upper_f64().map_err(prepend("upper:"))?
             }
         };
 
-        if !impute_minimum.iter().zip(impute_maximum.clone()).all(|(min, max)| *min < max) {
-            return Err("minimum is greater than maximum".into());
+        if !impute_lower.iter().zip(impute_upper.clone()).all(|(low, high)| *low < high) {
+            return Err("lower is greater than upper".into());
         }
 
         // the actual data bound (if it exists) may be wider than the imputation parameters
-        let impute_minimum = match data_property.get_min_f64_option() {
-            Ok(data_minimum) => impute_minimum.iter().zip(data_minimum)
-                .map(|(impute_min, optional_data_min)| match optional_data_min {
-                    Some(data_min) => Some(impute_min.min(data_min)),
+        let impute_lower = match data_property.lower_f64_option() {
+            Ok(data_lower) => impute_lower.iter().zip(data_lower)
+                .map(|(impute_lower, optional_data_lower)| match optional_data_lower {
+                    Some(data_lower) => Some(impute_lower.min(data_lower)),
                     // since there was no prior bound, nothing is known about the min
                     None => None
                 }).collect(),
             Err(_) => (0..num_columns).map(|_| None).collect()
         };
 
-        let impute_maximum = match data_property.get_max_f64_option() {
-            Ok(data_maximum) => impute_maximum.iter().zip(data_maximum)
+        let impute_upper = match data_property.upper_f64_option() {
+            Ok(data_upper) => impute_upper.iter().zip(data_upper)
                 .map(|(impute_max, optional_data_max)| match optional_data_max {
                     Some(data_max) => Some(impute_max.max(data_max)),
                     // since there was no prior bound, nothing is known about the max
@@ -84,19 +100,14 @@ impl Component for proto::Impute {
 
         // impute may only ever widen prior existing bounds
         data_property.nature = Some(Nature::Continuous(NatureContinuous {
-            min: Vector1DNull::F64(impute_minimum),
-            max: Vector1DNull::F64(impute_maximum),
+            lower: Vector1DNull::F64(impute_lower),
+            upper: Vector1DNull::F64(impute_upper),
         }));
 
         Ok(data_property.into())
     }
 
-    fn get_names(
-        &self,
-        _properties: &NodeProperties,
-    ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
-    }
+
 }
 
 impl Expandable for proto::Impute {
@@ -105,38 +116,40 @@ impl Expandable for proto::Impute {
         _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
         properties: &base::NodeProperties,
-        component_id: u32,
-        maximum_id: u32,
+        component_id: &u32,
+        maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
-        let mut current_id = maximum_id;
+        let mut current_id = *maximum_id;
         let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
         let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
 
         let mut component = component.clone();
 
-        if !properties.contains_key("min") {
-            current_id += 1;
-            let id_min = current_id.clone();
-            let value = Value::ArrayND(ArrayND::F64(
-                Array::from(properties.get("data").unwrap().to_owned().get_arraynd()?.get_min_f64()?).into_dyn()));
-            let (patch_node, release) = get_literal(&value, &component.batch)?;
-            computation_graph.insert(id_min.clone(), patch_node);
-            releases.insert(id_min.clone(), release);
-            component.arguments.insert("min".to_string(), id_min);
+        if !properties.contains_key("categories") {
+            if !properties.contains_key("lower") {
+                current_id += 1;
+                let id_lower = current_id;
+                let value = Value::Array(Array::F64(
+                    ndarray::Array::from(properties.get("data").unwrap().to_owned().array()?.lower_f64()?).into_dyn()));
+                let (patch_node, release) = get_literal(&value, &component.batch)?;
+                computation_graph.insert(id_lower.clone(), patch_node);
+                releases.insert(id_lower.clone(), release);
+                component.arguments.insert("lower".to_string(), id_lower);
+            }
+
+            if !properties.contains_key("upper") {
+                current_id += 1;
+                let id_upper = current_id;
+                let value = Value::Array(Array::F64(
+                    ndarray::Array::from(properties.get("data").unwrap().to_owned().array()?.upper_f64()?).into_dyn()));
+                let (patch_node, release) = get_literal(&value, &component.batch)?;
+                computation_graph.insert(id_upper.clone(), patch_node);
+                releases.insert(id_upper.clone(), release);
+                component.arguments.insert("upper".to_string(), id_upper);
+            }
         }
 
-        if !properties.contains_key("max") {
-            current_id += 1;
-            let id_max = current_id.clone();
-            let value = Value::ArrayND(ArrayND::F64(
-                Array::from(properties.get("data").unwrap().to_owned().get_arraynd()?.get_max_f64()?).into_dyn()));
-            let (patch_node, release) = get_literal(&value, &component.batch)?;
-            computation_graph.insert(id_max.clone(), patch_node);
-            releases.insert(id_max.clone(), release);
-            component.arguments.insert("max".to_string(), id_max);
-        }
-
-        computation_graph.insert(component_id, component);
+        computation_graph.insert(component_id.clone(), component);
 
         Ok(proto::ComponentExpansion {
             computation_graph,

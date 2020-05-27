@@ -1,0 +1,41 @@
+{
+  "arguments": {
+    "data": {
+      "type_value": "Array"
+    },
+    "lower": {
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
+      "description": "Estimated minimum possible sum for the geometric mechanism, when doing an integer sum."
+    },
+    "upper": {
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
+      "description": "Estimated maximum possible sum for the geometric mechanism, when doing an integer sum."
+    }
+  },
+  "id": "DPSum",
+  "name": "dp_sum",
+  "options": {
+    "mechanism": {
+      "type_proto": "string",
+      "type_rust": "String",
+      "default_python": "\"Laplace\"",
+      "default_rust": "String::from(\"Laplace\")",
+      "description": "Privatizing mechanism to use. One of [`Laplace`, `Gaussian`, `SimpleGeometric`]"
+    },
+    "privacy_usage": {
+      "type_proto": "repeated PrivacyUsage",
+      "type_rust": "Vec<proto::PrivacyUsage>",
+      "default_python": "None",
+      "description": "Object describing the type and amount of privacy to be used for the mechanism release."
+    }
+  },
+  "return": {
+    "type_value": "Array",
+    "description": "Differentially private sum over elements for each column of the data."
+  },
+  "description": "Returns differentially private estimates of the sums of each column of the data."
+}

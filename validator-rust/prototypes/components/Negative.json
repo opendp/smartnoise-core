@@ -1,0 +1,13 @@
+{
+  "arguments": {
+    "data": {
+      "type_value": "Array"
+    }
+  },
+  "id": "Negative",
+  "name": "negative",
+  "options": {},
+  "return": {
+    "type_value": "Array"
+  }
+}

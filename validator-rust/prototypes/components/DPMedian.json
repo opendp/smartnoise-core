@@ -1,0 +1,36 @@
+{
+  "arguments": {
+    "data": {
+      "type_value": "Array"
+    }
+  },
+  "id": "DPMedian",
+  "name": "dp_median",
+  "options": {
+    "mechanism": {
+      "type_proto": "string",
+      "type_rust": "String",
+      "default_python": "'Laplace'",
+      "default_rust": "String::from(\"Laplace\")",
+      "description": "Privatizing mechanism to use."
+    },
+    "privacy_usage": {
+      "type_proto": "repeated PrivacyUsage",
+      "type_rust": "Vec<proto::PrivacyUsage>",
+      "default_python": "None",
+      "description": "Object describing the type and amount of privacy to be used for the mechanism release."
+    },
+    "interpolation": {
+      "type_proto": "string",
+      "type_rust": "String",
+      "default_python": "\"midpoint\"",
+      "default_rust": "String::from(\"midpoint\")",
+      "description": "Interpolation strategy. One of [`lower`, `upper`, `midpoint`, `nearest`, `linear`]"
+    }
+  },
+  "return": {
+    "type_value": "Array",
+    "description": "Differentially private estimates of the median of each column of the data."
+  },
+  "description": "Returns differentially private estimates of the median of each column of the data."
+}

@@ -1,40 +1,47 @@
 use whitenoise_validator::errors::*;
 
 use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value, ArrayND, get_argument, Vector2DJagged, standardize_numeric_argument, standardize_categorical_argument};
+use whitenoise_validator::base::{Value, Array, Jagged};
 use crate::components::Evaluable;
 use ndarray::{ArrayD};
 use whitenoise_validator::proto;
-use crate::utilities::utilities::get_num_columns;
+use crate::utilities::get_num_columns;
 use std::ops::{Div, Add};
+use whitenoise_validator::utilities::{get_argument, standardize_categorical_argument, standardize_numeric_argument, standardize_float_argument};
 
 impl Evaluable for proto::Bin {
     fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        let inclusive_left: &ArrayD<bool> = get_argument(&arguments, "inclusive_left")?.get_arraynd()?.get_bool()?;
+        let inclusive_left: &ArrayD<bool> = get_argument(&arguments, "inclusive_left")?.array()?.bool()?;
 
         let side = match self.side.as_str() {
-            "left" => BinSide::Left,
-            "center" => BinSide::Center,
-            "right" => BinSide::Right,
-            _ => return Err("bin side must be left, center or right".into())
+            "lower" => BinSide::Lower,
+            "midpoint" => BinSide::Midpoint,
+            "upper" => BinSide::Upper,
+            _ => return Err("bin side must be lower, midpoint or upper".into())
         };
 
-        let data = get_argument(&arguments, "data")?.get_arraynd()?;
-        let edges = get_argument(&arguments, "edges")?.get_jagged()?;
-        let null = get_argument(&arguments, "null")?.get_arraynd()?;
+        let data = get_argument(&arguments, "data")?.array()?;
+        let edges = get_argument(&arguments, "edges")?.jagged()?;
+        let null = get_argument(&arguments, "null_value")?.array()?;
+
+        let num_columns = data.num_columns()?;
 
         match (data, edges, null) {
-            (ArrayND::F64(data), Vector2DJagged::F64(edges), ArrayND::F64(null)) =>
-                Ok(bin(&data, &edges, &inclusive_left, &null, &side)?.into()),
-            (ArrayND::I64(data), Vector2DJagged::I64(edges), ArrayND::I64(null)) =>
-                Ok(bin(&data, &edges, &inclusive_left, &null, &side)?.into()),
+            (Array::F64(data), Jagged::F64(edges), Array::F64(null)) =>
+                Ok(bin(&data, standardize_float_argument(edges, &num_columns)?, &inclusive_left, &null, &side)?.into()),
+
+            (Array::I64(data), Jagged::I64(edges), Array::I64(null)) =>
+                Ok(bin(&data, standardize_categorical_argument(edges, &num_columns)?, &inclusive_left, &null, &side)?.into()),
+
             _ => return Err("data and edges must both be f64 or i64".into())
         }
     }
 }
 
 pub enum BinSide {
-    Left, Right, Center
+    Lower,
+    Midpoint,
+    Upper,
 }
 
 /// Maps data to bins.
@@ -57,17 +64,17 @@ pub enum BinSide {
 /// use whitenoise_runtime::components::bin::{bin, BinSide};
 ///
 /// let data = arr1(&[1.1, 2., 2.9, 4.1, 6.4]).into_dyn();
-/// let edges = vec![Some(vec![0., 1., 2., 3., 4., 5.])];
+/// let edges = vec![vec![0., 1., 2., 3., 4., 5.]];
 /// let inclusive_left = arr1(&[true]).into_dyn();
 /// let null = arr1(&[-1.]).into_dyn();
-/// let side = BinSide::Center;
+/// let side = BinSide::Midpoint;
 ///
-/// let binned = bin(&data, &edges, &inclusive_left, &null, &side).unwrap();
+/// let binned = bin(&data, edges, &inclusive_left, &null, &side).unwrap();
 /// assert!(binned == arr1(&[1.5, 2.5, 2.5, 4.5, -1.]).into_dyn());
 /// ```
 pub fn bin<T: std::cmp::PartialOrd + Clone + Div<T, Output=T> + Add<T, Output=T> + From<i32> + Copy>(
     data: &ArrayD<T>,
-    edges: &Vec<Option<Vec<T>>>,
+    edges: Vec<Vec<T>>,
     inclusive_left: &ArrayD<bool>,
     null: &ArrayD<T>,
     side: &BinSide
@@ -76,30 +83,28 @@ pub fn bin<T: std::cmp::PartialOrd + Clone + Div<T, Output=T> + Add<T, Output=T>
 
     let num_columns = get_num_columns(&data)?;
 
-    let edges = standardize_categorical_argument(&edges, &num_columns)?;
     let inclusive_left = standardize_numeric_argument(&inclusive_left, &num_columns)?;
     let null = standardize_numeric_argument(&null, &num_columns)?;
 
     // iterate over the generalized columns
     data.gencolumns_mut().into_iter()
         // pair generalized columns with arguments
-        .zip(edges.iter().zip(null.iter()))
+        .zip(edges.into_iter().zip(null.into_iter()))
         .zip(inclusive_left.iter())
         // for each pairing, iterate over the cells
-        .map(|((mut column, (edges, null)), inclusive_left)| {
-            let mut edges = edges.clone();
+        .for_each(|((mut column, (mut edges, null)), inclusive_left)| {
             edges.sort_by(|a, b| a.partial_cmp(b).unwrap());
             column.iter_mut()
                 // mutate the cell via the operator
-                .map(|v| {
+                .for_each(|v| {
                     // checks for nullity
                     if edges.len() == 0 || *v < edges[0] || *v > edges[edges.len() - 1] {
                         *v = null.clone();
-                        return Ok(())
+                        return;
                     }
 
                     // assign to edge
-                    for idx in 0..edges.len() {
+                    for idx in 0..(edges.len() - 1) {
                         // check whether left or right side of bin should be considered inclusive
                         if match inclusive_left {
                             true => edges[idx] <= *v && *v < edges[idx + 1],
@@ -107,19 +112,16 @@ pub fn bin<T: std::cmp::PartialOrd + Clone + Div<T, Output=T> + Add<T, Output=T>
                         } {
                             // assign element a new name based on bin naming rule
                             *v = match side {
-                                BinSide::Left => edges[idx],
-                                BinSide::Right => edges[idx + 1],
-                                BinSide::Center => (edges[idx] / T::from(2)) + (edges[idx + 1] / T::from(2))
+                                BinSide::Lower => edges[idx],
+                                BinSide::Upper => edges[idx + 1],
+                                BinSide::Midpoint => (edges[idx] / T::from(2)) + (edges[idx + 1] / T::from(2))
                             };
-                            return Ok(())
+                            return;
                         }
                     }
-
-                    return Err("arguments to binning are not well-formed".into())
+                    *v = edges[edges.len() - 1];
                 })
-                .collect::<Result<()>>()
-        })
-        .collect::<Result<()>>()?;
+        });
 
     Ok(data)
 }
@@ -164,8 +166,8 @@ pub fn bin<T: std::cmp::PartialOrd + Clone + Div<T, Output=T> + Add<T, Output=T>
 //
 //    for k in 0..n_cols {
 //        // create vector versions of data and edges
-//        let data_vec: Vec<T> = data.slice(s![k as usize, ..]).clone().into_dimensionality::<Ix1>().unwrap().to_vec();
-//        let mut sorted_edges: Vec<T> = edges.slice(s![k as usize, ..]).clone().into_dimensionality::<Ix1>().unwrap().to_vec();
+//        let data_vec: Vec<T> = data.slice(s![k as usize, ..]).clone().into_dimensionality::<Ix1>()?.to_vec();
+//        let mut sorted_edges: Vec<T> = edges.slice(s![k as usize, ..]).clone().into_dimensionality::<Ix1>()?.to_vec();
 //
 //        //  ensure edges are sorted in ascending order
 //        sorted_edges.sort_by(|a, b| a.partial_cmp(b).unwrap());

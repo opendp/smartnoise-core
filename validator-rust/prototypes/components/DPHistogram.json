@@ -1,0 +1,70 @@
+{
+  "arguments": {
+    "data": {
+      "type_value": "Array"
+    },
+    "edges": {
+      "type_value": "Jagged",
+      "default_python": "None",
+      "default_rust": "None",
+      "description": "Set of edges to bin continuous-valued data. Used only if data are of `continuous` nature."
+    },
+    "categories": {
+      "type_value": "Jagged",
+      "default_python": "None",
+      "default_rust": "None",
+      "description": "Set of categories in data. Used only if data are of `categorical` nature."
+    },
+    "null_value": {
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
+      "description": "The value to which elements not included in `categories` will be mapped for each column of the data. Used only if `categories` is not `None`. The null value is the final category- counts for the null category are at the end of the vector of counts."
+    },
+    "lower": {
+      "type_value": "Array",
+      "default_python": "0",
+      "description": "Estimated minimum possible size of bin counts."
+    },
+    "upper": {
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
+      "description": "Estimated maximum possible size of bin counts."
+    },
+    "inclusive_left": {
+      "type_value": "Array",
+      "default_python": "True",
+      "description": "Whether or not the left edge of the bin is inclusive. If `true` bins are of the form [lower, upper). Otherwise, bins are of the form (lower, upper]. Used only if data are of `continuous` nature."
+    }
+  },
+  "id": "DPHistogram",
+  "name": "dp_histogram",
+  "options": {
+    "mechanism": {
+      "type_proto": "string",
+      "type_rust": "String",
+      "default_python": "\"SimpleGeometric\"",
+      "default_rust": "String::from(\"SimpleGeometric\")",
+      "description": "Privatizing mechanism to use. One of [`SimpleGeometric`, `Laplace`, `Gaussian`]"
+    },
+    "privacy_usage": {
+      "type_proto": "repeated PrivacyUsage",
+      "type_rust": "Vec<proto::PrivacyUsage>",
+      "default_python": "None",
+      "description": "Object describing the type and amount of privacy to be used for the mechanism release."
+    },
+    "enforce_constant_time": {
+      "type_proto": "bool",
+      "type_rust": "bool",
+      "default_python": "False",
+      "default_rust": "false",
+      "description": "Whether or not to require Geometric mechanism to run in constant time."
+    }
+  },
+  "return": {
+    "type_value": "Array",
+    "description": "Differentially private histogram."
+  },
+  "description": "Returns a differentially private histogram over user-defined categories. The final cell contains the counts for null values (outside the set of categories)."
+}

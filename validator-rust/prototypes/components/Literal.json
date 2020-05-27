@@ -1,0 +1,9 @@
+{
+  "arguments": {},
+  "id": "Literal",
+  "name": "literal",
+  "options": {},
+  "return": {
+    "type_value": "Array"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "arguments": {
+    "data": {
+      "type_value": "Array"
+    },
+    "edges": {
+      "type_value": "Jagged",
+      "default_python": "None",
+      "description": "Set of edges to bin continuous-valued data. Used only if data are of `continuous` nature."
+    },
+    "categories": {
+      "type_value": "Jagged",
+      "default_python": "None",
+      "description": "Set of categories in data. Used only if data are of `categorical` nature."
+    },
+    "null_value": {
+      "type_value": "Array",
+      "default_python": "None",
+      "description": "The value to which elements not included in `categories` will be mapped for each column of the data. Used only if `categories` is not `None`."
+    },
+    "inclusive_left": {
+      "type_proto": "bool",
+      "default_python": "True",
+      "description": "Whether or not the left edge of the bin is inclusive. If `true` bins are of the form [lower, upper). Otherwise, bins are of the form (lower, upper]. Used only if data are of `continuous` nature."
+    }
+  },
+  "id": "Histogram",
+  "name": "histogram",
+  "options": {},
+  "return": {
+    "type_value": "Array"
+  }
+}

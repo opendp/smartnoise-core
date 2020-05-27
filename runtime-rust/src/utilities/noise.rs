@@ -5,7 +5,7 @@ use std::{cmp, f64::consts};
 use rug::rand::{ThreadRandGen, ThreadRandState};
 use rug::Float;
 
-use crate::utilities::utilities;
+use crate::utilities;
 use crate::utilities::snapping;
 
 // Give MPFR ability to draw randomness from OpenSSL
@@ -96,7 +96,7 @@ pub fn sample_bit(prob: &f64) -> Result<i64> {
 /// ```
 pub fn sample_uniform_int(min: &i64, max: &i64) -> Result<i64> {
 
-    if min > max {return Err("min cannot be less than max".into());}
+    if min > max {return Err("lower may not be greater than higher".into());}
 
     // define number of possible integers we could sample and the maximum
     // number of bits it would take to represent them
@@ -165,7 +165,7 @@ pub fn sample_uniform_int(min: &i64, max: &i64) -> Result<i64> {
 /// # unif.unwrap();
 /// ```
 pub fn sample_uniform(min: &f64, max: &f64) -> Result<f64> {
-    if min > max {return Err("min cannot be less than max".into());}
+    if min > max {return Err("higher cannot be less than lower".into());}
 
     // Generate mantissa
     let binary_string = utilities::get_bytes(7);
@@ -332,15 +332,13 @@ pub fn sample_gaussian(shift: &f64, scale: &f64) -> f64 {
 /// ```
 pub fn sample_gaussian_truncated(min: &f64, max: &f64, shift: &f64, scale: &f64) -> Result<f64> {
     // TODO: why can't probability take a ref? perhaps need to drop the dependency
-    let min = min.clone();
-    let max = max.clone();
     let shift = shift.clone();
     let scale = scale.clone();
-    if min > max {return Err("min cannot be less than max".into());}
+    if min > max {return Err("higher cannot be less than lower".into());}
     if scale <= 0.0 {return Err("scale must be greater than zero".into());}
 
-    let unif_min: f64 = Gaussian::new(shift, scale).distribution(min);
-    let unif_max: f64 = Gaussian::new(shift, scale).distribution(max);
+    let unif_min: f64 = Gaussian::new(shift, scale).distribution(*min);
+    let unif_max: f64 = Gaussian::new(shift, scale).distribution(*max);
     let unif: f64 = sample_uniform(&unif_min, &unif_max)?;
     Ok(Gaussian::new(shift, scale).inverse(unif))
 }
@@ -521,7 +519,7 @@ pub fn sample_snapping_noise(mechanism_input: &f64, epsilon: &f64, B: &f64, sens
 
     // perform rounding and snapping
     let inner_result_rounded = snapping::get_closest_multiple_of_Lambda(&inner_result, &m);
-    let private_estimate = num::clamp(sensitivity * inner_result_rounded, -1*(B.abs()), B.abs());
+    let private_estimate = num::clamp(sensitivity * inner_result_rounded, -1.*(B.abs()), B.abs());
     let snapping_mech_noise = private_estimate - mechanism_input;
 
     return snapping_mech_noise;

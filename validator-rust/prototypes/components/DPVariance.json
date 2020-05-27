@@ -1,0 +1,36 @@
+{
+  "arguments": {
+    "data": {
+      "type_value": "Array"
+    }
+  },
+  "id": "DPVariance",
+  "name": "dp_variance",
+  "options": {
+    "mechanism": {
+      "type_proto": "string",
+      "type_rust": "String",
+      "default_python": "\"Laplace\"",
+      "default_rust": "String::from(\"Laplace\")",
+      "description": "Privatizing mechanism to use. One of [`Laplace`, `Gaussian`]"
+    },
+    "privacy_usage": {
+      "type_proto": "repeated PrivacyUsage",
+      "type_rust": "Vec<proto::PrivacyUsage>",
+      "default_python": "None",
+      "description": "Object describing the type and amount of privacy to be used for the mechanism release."
+    },
+    "finite_sample_correction": {
+      "type_proto": "bool",
+      "type_rust": "bool",
+      "default_python": "True",
+      "default_rust": "true",
+      "description": "Whether or not to use the finite sample correction (Bessel's correction)."
+    }
+  },
+  "return": {
+    "type_value": "Array",
+    "description": "Differentially private sample variance for each column of the data."
+  },
+  "description": "Returns a differentially private estimate of the variance for each column of the data."
+}

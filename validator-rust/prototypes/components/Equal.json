@@ -1,0 +1,16 @@
+{
+  "arguments": {
+    "left": {
+      "type_value": "Array"
+    },
+    "right": {
+      "type_value": "Array"
+    }
+  },
+  "id": "Equal",
+  "name": "equal",
+  "options": {},
+  "return": {
+    "type_value": "Array"
+  }
+}

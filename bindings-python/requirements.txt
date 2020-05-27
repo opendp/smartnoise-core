@@ -1,5 +1,0 @@
-protobuf==3.9.1
-pytest>=4.4.2
-milksnake
-networkx
-matplotlib

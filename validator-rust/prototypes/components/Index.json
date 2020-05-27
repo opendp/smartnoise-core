@@ -1,0 +1,17 @@
+{
+  "arguments": {
+    "data": {
+      "type_value": "Hashmap"
+    },
+    "columns": {
+      "type_value": "Array"
+    }
+  },
+  "id": "Index",
+  "name": "index",
+  "options": {},
+  "return": {
+    "type_value": "Array"
+  },
+  "description": "Index into data frames, partitions and arrays to retrieve homogeneously typed contiguous arrays"
+}

@@ -1,0 +1,39 @@
+{
+  "arguments": {
+    "column_names": {
+      "type_value": "Array"
+    }
+  },
+  "id": "Materialize",
+  "name": "materialize",
+  "options": {
+    "data_source": {
+      "type_proto": "DataSource",
+      "type_rust": "Option<proto::DataSource>"
+    },
+    "public": {
+      "type_proto": "bool",
+      "type_rust": "bool",
+      "default_python": "False",
+      "default_rust": "false"
+    },
+    "dataset_id": {
+      "type_proto": "I64Null",
+      "type_rust": "Option<proto::I64Null>",
+      "default_python": "None",
+      "default_rust": "None",
+      "description": "when set, data with unknown number of records may still conform to data with the same dataset_id"
+    },
+    "skip_row": {
+      "type_proto": "bool",
+      "type_rust": "bool",
+      "default_python": "True",
+      "default_rust": "true",
+      "description": "when set, skip the first line (header) in a csv"
+    }
+  },
+  "return": {
+    "type_value": "Hashmap"
+  },
+  "description": "Load a tabular frame from a data source"
+}

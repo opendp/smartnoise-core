@@ -1,0 +1,24 @@
+{
+  "arguments": {
+    "data": {
+      "type_value": "Array"
+    },
+    "num_partitions": {
+      "default_python": "None",
+      "default_rust": "None",
+      "type_value": "Array"
+    },
+    "by": {
+      "default_python": "None",
+      "default_rust": "None",
+      "type_value": "Array"
+    }
+  },
+  "id": "Partition",
+  "name": "partition",
+  "options": {},
+  "return": {
+    "type_value": "Hashmap"
+  },
+  "description": "Split the rows of data into either into k equally sized partitions, or by the categories of a vector"
+}

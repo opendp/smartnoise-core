@@ -7,13 +7,13 @@ use crate::{base};
 use crate::proto;
 
 use crate::components::{Component, Expandable};
-use ndarray::Array;
+use ndarray;
 
-use crate::base::{Value, ArrayND, NodeProperties, get_literal, Nature, NatureContinuous, Vector1DNull, prepend, ValueProperties};
+use crate::base::{Value, Array, Nature, NatureContinuous, Vector1DNull, ValueProperties, DataType};
+use crate::utilities::{prepend, get_literal};
 
 
 impl Component for proto::Resize {
-    // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
@@ -21,92 +21,170 @@ impl Component for proto::Resize {
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
-            .ok_or("data: missing")?.get_arraynd()
+            .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
-        let num_columns = data_property.get_num_columns()?;
+        if !data_property.releasable {
+            data_property.assert_is_not_aggregated()?;
+        }
+
+        let num_columns = data_property.num_columns()?;
 
         let num_records = public_arguments.get("n")
-            .ok_or("n must be passed to Resize")?.get_arraynd()?.get_i64()?;
+            .ok_or("n must be passed to Resize")?.first_i64()?;
 
-        if num_records.len() as i64 > 1 {
-            Err("n must be a scalar")?;
-        }
-        let num_records: i64 = match num_records.first() {
-            Some(first) => first.to_owned(),
-            None => return Err("n cannot be none".into())
-        };
-
-        // 1. check public arguments (constant n)
-        let impute_minimum = match public_arguments.get("min") {
-            Some(min) => min.get_arraynd()?.clone().get_vec_f64(Some(num_columns))?,
-
-            // 2. then private arguments (for example from another clamped column)
-            None => match properties.get("min") {
-                Some(min) => min.get_arraynd()?.get_min_f64()?,
-
-                // 3. then data properties (propagated from prior clamping/min/max)
-                None => data_property
-                    .get_min_f64()?
-            }
-        };
-
-        // 1. check public arguments (constant n)
-        let impute_maximum = match public_arguments.get("max") {
-            Some(max) => max.get_arraynd()?.clone().get_vec_f64(Some(num_columns))?,
-
-            // 2. then private arguments (for example from another clamped column)
-            None => match properties.get("max") {
-                Some(min) => min.get_arraynd()?.get_max_f64()?,
-
-                // 3. then data properties (propagated from prior clamping/min/max)
-                None => data_property
-                    .get_max_f64()?
-            }
-        };
-
-        if !impute_minimum.iter().zip(impute_maximum.clone()).all(|(min, max)| *min < max) {
-            return Err("minimum is greater than maximum".into());
+        if num_records < 1 {
+            return Err("n must be greater than zero".into())
         }
 
-        // the actual data bound (if it exists) may be wider than the imputation parameters
-        let impute_minimum = match data_property.get_min_f64_option() {
-            Ok(data_minimum) => impute_minimum.iter().zip(data_minimum)
-                .map(|(impute_min, optional_data_min)| match optional_data_min {
-                    Some(data_min) => Some(impute_min.min(data_min)),
-                    // since there was no prior bound, nothing is known about the min
-                    None => None
-                }).collect(),
-            Err(_) => (0..num_columns).map(|_| None).collect()
-        };
+        if let Some(_categories) = public_arguments.get("categories") {
+            // TODO: propagation of categories through imputation and resize
+            data_property.nature = None;
+            data_property.num_records = Some(num_records);
+            return Ok(data_property.into());
+        }
 
-        let impute_maximum = match data_property.get_max_f64_option() {
-            Ok(data_maximum) => impute_maximum.iter().zip(data_maximum)
-                .map(|(impute_max, optional_data_max)| match optional_data_max {
-                    Some(data_max) => Some(impute_max.max(data_max)),
-                    // since there was no prior bound, nothing is known about the max
-                    None => None
-                }).collect(),
-            Err(_) => (0..num_columns).map(|_| None).collect()
-        };
+        match data_property.data_type {
+            DataType::F64 => {
 
-        // impute may only ever widen prior existing bounds
-        data_property.nature = Some(Nature::Continuous(NatureContinuous {
-            min: Vector1DNull::F64(impute_minimum),
-            max: Vector1DNull::F64(impute_maximum),
-        }));
+                // 1. check public arguments (constant n)
+                let impute_lower = match public_arguments.get("lower") {
+                    Some(lower) => lower.array()?.clone().vec_f64(Some(num_columns))
+                        .map_err(prepend("lower:"))?,
+
+                    // 2. then private arguments (for example from another clamped column)
+                    None => match properties.get("lower") {
+                        Some(lower) => lower.array()?.lower_f64()
+                            .map_err(prepend("lower:"))?,
+
+                        // 3. then data properties (propagated from prior clamping/min/max)
+                        None => data_property
+                            .lower_f64().map_err(prepend("min:"))?
+                    }
+                };
+
+                // 1. check public arguments (constant n)
+                let impute_upper = match public_arguments.get("upper") {
+                    Some(upper) => upper.array()?.clone().vec_f64(Some(num_columns))
+                        .map_err(prepend("upper:"))?,
+
+                    // 2. then private arguments (for example from another clamped column)
+                    None => match properties.get("upper") {
+                        Some(upper) => upper.array()?.upper_f64()
+                            .map_err(prepend("upper:"))?,
+
+                        // 3. then data properties (propagated from prior clamping/min/max)
+                        None => data_property
+                            .upper_f64().map_err(prepend("upper:"))?
+                    }
+                };
+
+                if !impute_lower.iter().zip(impute_upper.clone()).all(|(low, high)| *low < high) {
+                    return Err("lower is greater than upper".into());
+                }
+
+                // the actual data bound (if it exists) may be wider than the imputation parameters
+                let impute_lower = match data_property.lower_f64_option() {
+                    Ok(data_lower) => impute_lower.iter().zip(data_lower)
+                        .map(|(impute_lower, optional_data_lower)| match optional_data_lower {
+                            Some(data_lower) => Some(impute_lower.min(data_lower)),
+                            // since there was no prior bound, nothing is known about the min
+                            None => None
+                        }).collect(),
+                    Err(_) => (0..num_columns).map(|_| None).collect()
+                };
+
+                let impute_upper = match data_property.upper_f64_option() {
+                    Ok(data_upper) => impute_upper.iter().zip(data_upper)
+                        .map(|(impute_upper, optional_data_upper)| match optional_data_upper {
+                            Some(data_upper) => Some(impute_upper.max(data_upper)),
+                            // since there was no prior bound, nothing is known about the max
+                            None => None
+                        }).collect(),
+                    Err(_) => (0..num_columns).map(|_| None).collect()
+                };
+
+                // impute may only ever widen prior existing bounds
+                data_property.nature = Some(Nature::Continuous(NatureContinuous {
+                    lower: Vector1DNull::F64(impute_lower),
+                    upper: Vector1DNull::F64(impute_upper),
+                }));
+            },
+
+            DataType::I64 => {
+
+                // 1. check public arguments (constant n)
+                let impute_lower = match public_arguments.get("lower") {
+                    Some(lower) => lower.array()?.clone().vec_i64(Some(num_columns))
+                        .map_err(prepend("lower:"))?,
+
+                    // 2. then private arguments (for example from another clamped column)
+                    None => match properties.get("lower") {
+                        Some(lower) => lower.array()?.lower_i64()
+                            .map_err(prepend("lower:"))?,
+
+                        // 3. then data properties (propagated from prior clamping/lower/upper)
+                        None => data_property
+                            .lower_i64().map_err(prepend("lower:"))?
+                    }
+                };
+
+                // 1. check public arguments (constant n)
+                let impute_upper = match public_arguments.get("upper") {
+                    Some(upper) => upper.array()?.clone().vec_i64(Some(num_columns))
+                        .map_err(prepend("upper:"))?,
+
+                    // 2. then private arguments (for example from another clamped column)
+                    None => match properties.get("upper") {
+                        Some(upper) => upper.array()?.upper_i64()
+                            .map_err(prepend("upper:"))?,
+
+                        // 3. then data properties (propagated from prior clamping/lower/upper)
+                        None => data_property
+                            .upper_i64().map_err(prepend("upper:"))?
+                    }
+                };
+
+                if !impute_lower.iter().zip(impute_upper.clone()).all(|(low, high)| *low < high) {
+                    return Err("lower is greater than upper".into());
+                }
+
+                // the actual data bound (if it exists) may be wider than the imputation parameters
+                let impute_lower = match data_property.lower_i64_option() {
+                    Ok(data_lower) => impute_lower.into_iter().zip(data_lower.into_iter())
+                        .map(|(impute_lower, optional_data_lower)| match optional_data_lower {
+                            Some(data_lower) => Some(impute_lower.min(data_lower)),
+                            // since there was no prior bound, nothing is known about the min
+                            None => None
+                        }).collect(),
+                    Err(_) => (0..num_columns).map(|_| None).collect()
+                };
+
+                let impute_upper = match data_property.upper_i64_option() {
+                    Ok(data_upper) => impute_upper.into_iter().zip(data_upper.into_iter())
+                        .map(|(impute_upper, optional_data_upper)| match optional_data_upper {
+                            Some(data_upper) => Some(impute_upper.max(data_upper)),
+                            // since there was no prior bound, nothing is known about the max
+                            None => None
+                        }).collect(),
+                    Err(_) => (0..num_columns).map(|_| None).collect()
+                };
+
+                // impute may only ever widen prior existing bounds
+                data_property.nature = Some(Nature::Continuous(NatureContinuous {
+                    lower: Vector1DNull::I64(impute_lower),
+                    upper: Vector1DNull::I64(impute_upper),
+                }));
+            }
+            _ => return Err("bounds for imputation must be numeric".into())
+        }
 
         data_property.num_records = Some(num_records);
-
+        data_property.is_not_empty = num_records > 0;
         Ok(data_property.into())
     }
 
-    fn get_names(
-        &self,
-        _properties: &NodeProperties,
-    ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
-    }
+
 }
 
 impl Expandable for proto::Resize {
@@ -115,54 +193,44 @@ impl Expandable for proto::Resize {
         _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
         properties: &base::NodeProperties,
-        component_id: u32,
-        maximum_id: u32,
+        component_id: &u32,
+        maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
-        let mut current_id = maximum_id;
+        let mut current_id = *maximum_id;
         let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
         let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
 
         let mut component = component.clone();
 
         let data_property = properties.get("data")
-            .ok_or("data: missing")?.get_arraynd()
+            .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
-        if !properties.contains_key("min") {
-            current_id += 1;
-            let id_min = current_id.clone();
-            let value = Value::ArrayND(ArrayND::F64(
-                Array::from(data_property.get_min_f64()?).into_dyn()));
-            let (patch_node, release) = get_literal(&value, &component.batch)?;
-            computation_graph.insert(id_min.clone(), patch_node);
-            releases.insert(id_min.clone(), release);
-            component.arguments.insert("min".to_string(), id_min);
+        if !properties.contains_key("categories") {
+            if !properties.contains_key("lower") {
+                current_id += 1;
+                let id_lower = current_id;
+                let value = Value::Array(Array::F64(
+                    ndarray::Array::from(data_property.lower_f64()?).into_dyn()));
+                let (patch_node, release) = get_literal(&value, &component.batch)?;
+                computation_graph.insert(id_lower.clone(), patch_node);
+                releases.insert(id_lower.clone(), release);
+                component.arguments.insert("lower".to_string(), id_lower);
+            }
+
+            if !properties.contains_key("upper") {
+                current_id += 1;
+                let id_upper = current_id;
+                let value = Value::Array(Array::F64(
+                    ndarray::Array::from(data_property.upper_f64()?).into_dyn()));
+                let (patch_node, release) = get_literal(&value, &component.batch)?;
+                computation_graph.insert(id_upper.clone(), patch_node);
+                releases.insert(id_upper.clone(), release);
+                component.arguments.insert("upper".to_string(), id_upper);
+            }
         }
 
-        if !properties.contains_key("max") {
-            current_id += 1;
-            let id_max = current_id.clone();
-            let value = Value::ArrayND(ArrayND::F64(
-                Array::from(data_property.get_max_f64()?).into_dyn()));
-            let (patch_node, release) = get_literal(&value, &component.batch)?;
-            computation_graph.insert(id_max.clone(), patch_node);
-            releases.insert(id_max.clone(), release);
-            component.arguments.insert("max".to_string(), id_max);
-        }
-
-        if !properties.contains_key("n") {
-            current_id += 1;
-            let id_n = current_id.clone();
-            let value = Value::ArrayND(ArrayND::I64(Array::from_shape_vec(
-                (), vec![data_property.get_num_records()?])
-                .unwrap().into_dyn()));
-            let (patch_node, release) = get_literal(&value, &component.batch)?;
-            computation_graph.insert(id_n.clone(), patch_node);
-            releases.insert(id_n.clone(), release);
-            component.arguments.insert("n".to_string(), id_n);
-        }
-
-        computation_graph.insert(component_id, component);
+        computation_graph.insert(*component_id, component);
 
         Ok(proto::ComponentExpansion {
             computation_graph,

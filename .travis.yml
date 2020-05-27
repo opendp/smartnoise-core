@@ -1,65 +1,70 @@
-dist: bionic
+# ------------------------------------------------------------------
+# Travis CI
+# https://travis-ci.com/github/opendifferentialprivacy/whitenoise-core
+#
+# - WhiteNoise Core Validator and runtime
+#   - Build and test Rust componets
+# - Documentation
+#   - For the master branch, build Rust docs and deploy on:
+#     - https://opendifferentialprivacy.github.io/whitenoise-core/
+# ------------------------------------------------------------------
 
-.branches:
+branches:
   # all branches
   only:
   - gh-pages
   - /.*/
 
-language: rust
+# all jobs should enable the release flag for compiler optimizations
+env:
+  global:
+  - WHITENOISE_RELEASE=True
+  - PROTO_VERSION=3.11.4
+  - TWINE_USERNAME=__token__
 
-rust:
-  - stable
+notifications:
+  email: false
 
-before_install:
-  # Update to install python 3.6
-  #   > Commented out for now.  It works but takes a while to run...
-  #- sudo apt update
-  #- sudo apt install -y software-properties-common
-  #- sudo apt install -y python3-pip
-  #- python3 --version
+jobs:
+  include:
+  - name: Test Rust
+    os: linux
+    language: rust
+    rust: stable
+    script:
+    # (1) Rust Validator -> Test & Build
+    - cd validator-rust; cargo build --verbose --workspace;
+    - cargo test --verbose --workspace;
+    - cd ..
+    # (2) Rust Runtime -> Test & Build
+    - cd runtime-rust; cargo build --verbose --workspace;
+    - cargo test --verbose --workspace;
+    - cd ..;
 
-script:
-  # (1) Rust Validator -> Test & Build
-  - cd validator-rust; cargo build --verbose --workspace;
-  - cargo test --verbose --workspace;
-  - cd ..
-  # (2) Rust Runtime -> Test & Build
-  - cd runtime-rust; cargo build --verbose --workspace;
-  - cargo test --verbose --workspace;
-  - cd ..;
-  # (3) Build python bindings and run tests
-  #   > Commented out for now.  It works but takes a while to run...
-  #- cd bindings-python; python3 -m pip install -r requirements.txt;
-  #- export RUST_BACKTRACE=1; python3 -m pip install -e . -v;
-  #- python3 -m pytest -x -v; cd ..;
-
-after_success:
-  #
-  # Build the documentation for gh-pages
-  #
-  - echo $TRAVIS_BRANCH;
-  # switch to master after initial version
-  - if [ "$TRAVIS_BRANCH" == "develop" ]; then
-    cd runtime-rust;
-    cargo doc --verbose --target-dir=../docs;
-    cd ..; rm -rf docs/debug;
-    fi
-
-# -------------------------------------------
-# Deploy the Rust documentation to
-# GitHub pages
-# - Triggered when the branch is "master"
-# -------------------------------------------
-deploy:
-  provider: pages
-  skip_cleanup: true
-  local_dir: docs
-  # Set in the settings page of your repository, as a secure variable
-  github_token: $GITHUB_TOKEN
-  keep_history: true
-  target_branch: gh-pages
-  on:
-    # branch: 62-rp-pages
-    branch: develop # switch to master after initial version
-  #verbose: true
+    after_success:
+    #
+    # Build the documentation for gh-pages
+    #
+    - echo $TRAVIS_BRANCH;
+    # switch to master after initial version
+    #- if [ "$TRAVIS_BRANCH" == "ms_readme" ]; then
+    - if [ "$TRAVIS_BRANCH" == "master" ]; then
+        bash build_docs.sh;
+      fi;
+    # -------------------------------------------
+    # Deploy the Rust documentation to
+    # GitHub pages
+    # - Triggered when the branch is "master"
+    # -------------------------------------------
+    deploy:
+      provider: pages
+      skip_cleanup: true
+      local_dir: docs
+      # Secure env variable in travis
+      github_token: $GITHUB_TOKEN
+      keep_history: true
+      target_branch: gh-pages
+      on:
+        branch: master
+        #branch: ms_readme
+        #branch: develop

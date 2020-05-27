@@ -1,0 +1,158 @@
+syntax = "proto3";
+
+package whitenoise;
+
+import "value.proto";
+import "components.proto";
+
+message Error {
+    string message = 1;
+}
+
+message Analysis {
+    PrivacyDefinition privacy_definition = 1;
+    ComputationGraph computation_graph = 2;
+}
+
+// The definition of privacy determines parameters for sensitivity derivations and the set of available algorithms.
+message PrivacyDefinition {
+    // Privacy leakage with respect `group_size` number of rows. This is typically one.
+    uint32 group_size = 4;
+
+    enum Distance {
+        // (e, 0)-differential privacy
+        PURE = 0;
+
+        // (e, d)-differential privacy
+        APPROXIMATE = 1;
+    }
+    // Define how to measure distance between probability distributions.
+    Distance distance = 5;
+
+    enum Neighboring {
+        SUBSTITUTE = 0;
+        ADD_REMOVE = 1;
+    }
+    // Define what kind of perturbation may be applied to a dataset to create a neighboring dataset.
+    Neighboring neighboring = 6;
+}
+message ComputationGraph {
+    map<uint32, Component> value = 1;
+}
+
+message Release {
+    map<uint32, ReleaseNode> values = 1;
+}
+message ReleaseNode {
+    Value value = 1;
+    PrivacyUsages privacy_usages = 2;
+    bool public = 3;
+}
+
+enum FilterLevel {
+    // release from runtime should include public data (either literals or sanitized data)
+    PUBLIC = 0;
+    // release from runtime should include public and prior known values
+    PUBLIC_AND_PRIOR = 1;
+    // release from runtime should include evaluations from all nodes
+    ALL = 2;
+}
+
+message ValueProperties {
+    oneof variant {
+        HashmapProperties hashmap = 1;
+        ArrayNDProperties array = 2;
+        Vector2DJaggedProperties jagged = 3;
+    }
+}
+
+message HashmapProperties {
+    I64Null num_records = 1;
+    bool disjoint = 2;
+    HashmapValueProperties value_properties = 3;
+    bool columnar = 4;
+}
+
+message HashmapValueProperties {
+    oneof variant {
+        HashmapValuePropertiesStr string = 1;
+        HashmapValuePropertiesBool bool = 2;
+        HashmapValuePropertiesI64 i64 = 3;
+    }
+}
+
+message HashmapValuePropertiesStr {
+    map<string, ValueProperties> data = 1;
+}
+message HashmapValuePropertiesBool {
+    map<bool, ValueProperties> data = 1;
+}
+message HashmapValuePropertiesI64 {
+    map<int64, ValueProperties> data = 1;
+}
+
+message ArrayNDProperties {
+    I64Null num_records = 1;
+    I64Null num_columns = 2;
+    bool nullity = 3;
+    Array1dF64 c_stability = 4;
+
+    message AggregatorProperties {
+        Component component = 1;
+        map<string, ValueProperties> properties = 2;
+    }
+    AggregatorProperties aggregator = 5;
+    
+    DataType data_type = 6;
+    bool releasable = 7;
+
+    oneof nature {
+        NatureContinuous continuous = 100;
+        NatureCategorical categorical = 101;
+    }
+    I64Null dataset_id = 8;
+    bool is_not_empty = 9;
+    uint32 dimensionality = 10;
+}
+message NatureContinuous {
+    Array1dNull minimum = 1;
+    Array1dNull maximum = 2;
+}
+message NatureCategorical {
+    Array2dJagged categories = 1;
+}
+
+message Vector2DJaggedProperties {
+    bool releasable = 1;
+}
+
+
+message GraphProperties {
+    map<uint32, ValueProperties> properties = 1;
+    repeated Error warnings = 2;
+}
+
+message PrivacyUsages {
+    repeated PrivacyUsage values = 1;
+}
+message Accuracies {
+    repeated Accuracy values = 1;
+}
+message Accuracy {
+    double value = 1;
+    double alpha = 2;
+}
+
+message ComponentExpansion {
+    map<uint32, Component> computation_graph = 1;
+    map<uint32, ValueProperties> properties = 2;
+    map<uint32, ReleaseNode> releases = 3;
+    repeated uint32 traversal = 4;
+}
+
+message Utility {
+    map<uint32, Component> computation_graph = 1;
+    map<uint32, ReleaseNode> releases = 2;
+    uint32 candidate_id = 3;
+    uint32 output_id = 4;
+}

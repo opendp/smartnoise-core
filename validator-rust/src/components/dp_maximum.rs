@@ -5,28 +5,12 @@ use std::collections::HashMap;
 
 use crate::{proto, base};
 use crate::hashmap;
-use crate::components::{Component, Accuracy, Expandable, Report, get_ith_release};
+use crate::components::{Expandable, Report};
 
-use crate::base::{NodeProperties, Value, ValueProperties, prepend, broadcast_privacy_usage, ArrayND};
+use crate::base::{NodeProperties, Value, Array};
 use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, value_to_json};
+use crate::utilities::{prepend, broadcast_privacy_usage, get_ith_column};
 
-impl Component for proto::DpMaximum {
-    fn propagate_property(
-        &self,
-        _privacy_definition: &proto::PrivacyDefinition,
-        _public_arguments: &HashMap<String, Value>,
-        _properties: &base::NodeProperties,
-    ) -> Result<ValueProperties> {
-        Err("DPMaximum is abstract, and has no property propagation".into())
-    }
-
-    fn get_names(
-        &self,
-        _properties: &NodeProperties,
-    ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
-    }
-}
 
 impl Expandable for proto::DpMaximum {
     fn expand_component(
@@ -34,18 +18,18 @@ impl Expandable for proto::DpMaximum {
         _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
         _properties: &base::NodeProperties,
-        component_id: u32,
-        maximum_id: u32,
+        component_id: &u32,
+        maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
-        let mut current_id = maximum_id.clone();
+        let mut current_id = *maximum_id;
         let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
 
         // Maximum
         current_id += 1;
-        let id_maximum = current_id.clone();
+        let id_maximum = current_id;
         computation_graph.insert(id_maximum, proto::Component {
             arguments: hashmap!["data".to_owned() => *component.arguments.get("data").unwrap()],
-            variant: Some(proto::component::Variant::from(proto::Maximum {})),
+            variant: Some(proto::component::Variant::Maximum(proto::Maximum {})),
             omit: true,
             batch: component.batch,
         });
@@ -53,11 +37,17 @@ impl Expandable for proto::DpMaximum {
 //        let id_candidates = component.arguments.get("candidates").unwrap().clone();
 
         // sanitizing
-        computation_graph.insert(component_id, proto::Component {
+        computation_graph.insert(component_id.clone(), proto::Component {
             arguments: hashmap!["data".to_owned() => id_maximum],
-            variant: Some(proto::component::Variant::from(proto::LaplaceMechanism {
-                privacy_usage: self.privacy_usage.clone()
-            })),
+            variant: Some(match self.mechanism.to_lowercase().as_str() {
+                "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
+                    privacy_usage: self.privacy_usage.clone()
+                }),
+                "gaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
+                    privacy_usage: self.privacy_usage.clone()
+                }),
+                _ => panic!("Unexpected invalid token {:?}", self.mechanism.as_str()),
+            }),
             omit: false,
             batch: component.batch,
         });
@@ -66,27 +56,8 @@ impl Expandable for proto::DpMaximum {
             computation_graph,
             properties: HashMap::new(),
             releases: HashMap::new(),
-            traversal: vec![id_maximum]
+            traversal: vec![id_maximum],
         })
-    }
-}
-
-impl Accuracy for proto::DpMaximum {
-    fn accuracy_to_privacy_usage(
-        &self,
-        _privacy_definition: &proto::PrivacyDefinition,
-        _properties: &base::NodeProperties,
-        _accuracy: &proto::Accuracy,
-    ) -> Option<proto::PrivacyUsage> {
-        None
-    }
-
-    fn privacy_usage_to_accuracy(
-        &self,
-        _privacy_definition: &proto::PrivacyDefinition,
-        _property: &base::NodeProperties,
-    ) -> Option<f64> {
-        None
     }
 }
 
@@ -98,42 +69,47 @@ impl Report for proto::DpMaximum {
         _public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
         release: &Value,
+        variable_names: Option<&Vec<String>>,
     ) -> Result<Option<Vec<JSONRelease>>> {
         let data_property = properties.get("data")
-            .ok_or("data: missing")?.get_arraynd()
+            .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
         let mut releases = Vec::new();
 
-        let minimums = data_property.get_min_f64()?;
-        let maximums = data_property.get_max_f64()?;
+        let minimums = data_property.lower_f64()?;
+        let maximums = data_property.upper_f64()?;
 
-        let num_columns = data_property.get_num_columns()?;
+        let num_columns = data_property.num_columns()?;
         let privacy_usages = broadcast_privacy_usage(&self.privacy_usage, num_columns as usize)?;
 
-        for column_number in 0..num_columns {
+        for column_number in 0..(num_columns as usize) {
+            let variable_name = variable_names
+                .and_then(|names| names.get(column_number)).cloned()
+                .unwrap_or_else(|| "[Unknown]".to_string());
+
             releases.push(JSONRelease {
                 description: "DP release information".to_string(),
                 statistic: "DPMaximum".to_string(),
-                variables: serde_json::json!(Vec::<String>::new()),
-                release_info: match release.get_arraynd()? {
-                    ArrayND::F64(v) => value_to_json(&get_ith_release(v, &(column_number as usize))?.into())?,
-                    ArrayND::I64(v) => value_to_json(&get_ith_release(v, &(column_number as usize))?.into())?,
+                variables: serde_json::json!(variable_name),
+                release_info: match release.array()? {
+                    Array::F64(v) => value_to_json(&get_ith_column(v, &column_number)?.into())?,
+                    Array::I64(v) => value_to_json(&get_ith_column(v, &column_number)?.into())?,
                     _ => return Err("maximum must be numeric".into())
                 },
-                privacy_loss: privacy_usage_to_json(&privacy_usages[column_number as usize].clone()),
+                privacy_loss: privacy_usage_to_json(&privacy_usages[column_number].clone()),
                 accuracy: None,
                 batch: component.batch as u64,
-                node_id: node_id.clone() as u64,
+                node_id: *node_id as u64,
                 postprocess: false,
                 algorithm_info: AlgorithmInfo {
                     name: "".to_string(),
                     cite: "".to_string(),
-                    mechanism: self.implementation.clone(),
+                    mechanism: self.mechanism.clone(),
                     argument: serde_json::json!({
                         "constraint": {
-                            "lowerbound": minimums[column_number as usize],
-                            "upperbound": maximums[column_number as usize]
+                            "lowerbound": minimums[column_number],
+                            "upperbound": maximums[column_number]
                         }
                     }),
                 },

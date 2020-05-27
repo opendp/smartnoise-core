@@ -5,31 +5,12 @@ use std::collections::HashMap;
 
 use crate::{proto, base};
 use crate::hashmap;
-use crate::components::{Component, Accuracy, Expandable, Report, get_ith_release};
+use crate::components::{Expandable, Report};
+use ndarray::{arr0};
 
-
-use crate::base::{NodeProperties, Value, ValueProperties, prepend, broadcast_privacy_usage};
+use crate::base::{NodeProperties, Value};
 use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, value_to_json};
-
-
-impl Component for proto::DpHistogram {
-    // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
-    fn propagate_property(
-        &self,
-        _privacy_definition: &proto::PrivacyDefinition,
-        _public_arguments: &HashMap<String, Value>,
-        _properties: &base::NodeProperties,
-    ) -> Result<ValueProperties> {
-        Err("DPCount is abstract, and has no property propagation".into())
-    }
-
-    fn get_names(
-        &self,
-        _properties: &NodeProperties,
-    ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
-    }
-}
+use crate::utilities::{prepend, broadcast_privacy_usage, get_ith_column, get_literal};
 
 
 impl Expandable for proto::DpHistogram {
@@ -37,83 +18,104 @@ impl Expandable for proto::DpHistogram {
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
         component: &proto::Component,
-        _properties: &base::NodeProperties,
-        component_id: u32,
-        maximum_id: u32,
+        properties: &base::NodeProperties,
+        component_id: &u32,
+        maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
-        let mut current_id = maximum_id.clone();
+        let mut maximum_id = *maximum_id;
         let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
+        let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
 
         let data_id = component.arguments.get("data")
-            .ok_or::<Error>("data is a required argument to DPHistogram".into())?;
-        let edges_id = component.arguments.get("edges")
-            .ok_or::<Error>("edges is a required argument to DPHistogram".into())?;
-        let null_id = component.arguments.get("null")
-            .ok_or::<Error>("null is a required argument to DPHistogram".into())?;
-        let inclusive_left_id = component.arguments.get("inclusive_left")
-            .ok_or::<Error>("inclusive_left is a required argument to DPHistogram".into())?;
-        let count_min_id = component.arguments.get("count_min")
-            .ok_or::<Error>("count_min is a required argument to DPHistogram".into())?;
-        let count_max_id = component.arguments.get("count_max")
-            .ok_or::<Error>("count_max is a required argument to DPHistogram".into())?;
-        // TODO: also handle categorical case, which doesn't require binning
-        // bin
-        current_id += 1;
-        let id_bin = current_id.clone();
-        computation_graph.insert(id_bin, proto::Component {
-            arguments: hashmap![
-                "data".to_owned() => *data_id,
-                "edges".to_owned() => *edges_id,
-                "null".to_owned() => *null_id,
-                "inclusive_left".to_owned() => *inclusive_left_id
-            ],
-            variant: Some(proto::component::Variant::from(proto::Bin {
-                side: self.side.clone()
-            })),
+            .ok_or_else(|| Error::from("data is a required argument to DPHistogram"))?.to_owned();
+
+        let data_property = properties.get("data")
+            .ok_or("data: missing")?.array()
+            .map_err(prepend("data:"))?;
+
+        // histogram
+        maximum_id += 1;
+        let id_histogram = maximum_id;
+        let mut histogram_arguments = hashmap!["data".to_owned() => data_id];
+        component.arguments.get("categories")
+            .map(|v| histogram_arguments.insert("categories".to_string(), *v));
+        component.arguments.get("null_value")
+            .map(|v| histogram_arguments.insert("null_value".to_string(), *v));
+        component.arguments.get("edges")
+            .map(|v| histogram_arguments.insert("edges".to_string(), *v));
+        component.arguments.get("inclusive_left")
+            .map(|v| histogram_arguments.insert("inclusive_left".to_string(), *v));
+        computation_graph.insert(id_histogram, proto::Component {
+            arguments: histogram_arguments,
+            variant: Some(proto::component::Variant::Histogram(proto::Histogram {})),
             omit: true,
             batch: component.batch,
         });
 
-        // dp_count
-        computation_graph.insert(component_id, proto::Component {
-            arguments: hashmap![
-                "data".to_owned() => id_bin,
-                "count_min".to_owned() => *count_min_id,
-                "count_max".to_owned() => *count_max_id
-            ],
-            variant: Some(proto::component::Variant::from(proto::DpCount {
-                privacy_usage: self.privacy_usage.clone(),
-                implementation: self.implementation.clone(),
-            })),
-            omit: false,
-            batch: component.batch,
-        });
+        if self.mechanism.to_lowercase().as_str() == "simplegeometric" {
+            let id_upper = match component.arguments.get("upper") {
+                Some(id) => id.clone(),
+                None => {
+                    let count_max = match data_property.num_records {
+                        Some(num_records) => arr0(num_records).into_dyn(),
+                        None => match self.enforce_constant_time {
+                            true => return Err("upper must be set when enforcing constant time".into()),
+                            false => arr0(std::i64::MAX).into_dyn()
+                        }
+                    };
+                    // count_max
+                    maximum_id += 1;
+                    let max_id = maximum_id;
+                    let (patch_node, count_max_release) = get_literal(&count_max.into(), &component.batch)?;
+                    computation_graph.insert(max_id.clone(), patch_node);
+                    releases.insert(max_id.clone(), count_max_release);
+                    max_id
+                }
+            };
+
+            // noising
+            computation_graph.insert(*component_id, proto::Component {
+                arguments: hashmap![
+                    "data".to_owned() => id_histogram,
+                    "lower".to_owned() => *component.arguments.get("lower")
+                        .ok_or_else(|| Error::from("lower must be provided as an argument"))?,
+                    "upper".to_owned() => id_upper
+                ],
+                variant: Some(proto::component::Variant::SimpleGeometricMechanism(proto::SimpleGeometricMechanism {
+                    privacy_usage: self.privacy_usage.clone(),
+                    enforce_constant_time: false
+                })),
+                omit: false,
+                batch: component.batch,
+            });
+        } else {
+
+            // noising
+            computation_graph.insert(*component_id, proto::Component {
+                arguments: hashmap![
+                    "data".to_owned() => id_histogram
+                ],
+                variant: Some(match self.mechanism.to_lowercase().as_str() {
+                    "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
+                        privacy_usage: self.privacy_usage.clone()
+                    }),
+                    "gaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
+                        privacy_usage: self.privacy_usage.clone()
+                    }),
+                    _ => panic!("Unexpected invalid token {:?}", self.mechanism.as_str()),
+                }),
+                omit: false,
+                batch: component.batch,
+            });
+        }
+
 
         Ok(proto::ComponentExpansion {
             computation_graph,
             properties: HashMap::new(),
-            releases: HashMap::new(),
-            traversal: vec![id_bin]
+            releases,
+            traversal: vec![id_histogram]
         })
-    }
-}
-
-impl Accuracy for proto::DpHistogram {
-    fn accuracy_to_privacy_usage(
-        &self,
-        _privacy_definition: &proto::PrivacyDefinition,
-        _properties: &base::NodeProperties,
-        _accuracy: &proto::Accuracy,
-    ) -> Option<proto::PrivacyUsage> {
-        None
-    }
-
-    fn privacy_usage_to_accuracy(
-        &self,
-        _privacy_definition: &proto::PrivacyDefinition,
-        _property: &base::NodeProperties,
-    ) -> Option<f64> {
-        None
     }
 }
 
@@ -125,46 +127,41 @@ impl Report for proto::DpHistogram {
         _public_arguments: &HashMap<String, Value>,
         properties: &NodeProperties,
         release: &Value,
+        variable_names: Option<&Vec<String>>,
     ) -> Result<Option<Vec<JSONRelease>>> {
         let data_property = properties.get("data")
-            .ok_or("data: missing")?.get_arraynd()
+            .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
         let mut releases = Vec::new();
 
-        let minimums = data_property.get_min_f64()?;
-        let maximums = data_property.get_max_f64()?;
-        let num_records = data_property.get_num_records()?;
-
-        let num_columns = data_property.get_num_columns()?;
+        let num_columns = data_property.num_columns()?;
         let privacy_usages = broadcast_privacy_usage(&self.privacy_usage, num_columns as usize)?;
 
-        for column_number in 0..num_columns {
+        for column_number in 0..(num_columns as usize) {
+            let variable_name = variable_names
+                .and_then(|names| names.get(column_number)).cloned()
+                .unwrap_or_else(|| "[Unknown]".to_string());
+
             let release = JSONRelease {
                 description: "DP release information".to_string(),
                 statistic: "DPHistogram".to_string(),
-                variables: serde_json::json!(Vec::<String>::new()),
+                variables: serde_json::json!(variable_name),
                 // extract ith column of release
-                release_info: value_to_json(&get_ith_release(
-                    release.get_arraynd()?.get_i64()?,
-                    &(column_number as usize)
+                release_info: value_to_json(&get_ith_column(
+                    release.array()?.i64()?,
+                    &column_number
                 )?.into())?,
-                privacy_loss: privacy_usage_to_json(&privacy_usages[column_number as usize].clone()),
+                privacy_loss: privacy_usage_to_json(&privacy_usages[column_number].clone()),
                 accuracy: None,
                 batch: component.batch as u64,
-                node_id: node_id.clone() as u64,
+                node_id: *node_id as u64,
                 postprocess: false,
                 algorithm_info: AlgorithmInfo {
                     name: "".to_string(),
                     cite: "".to_string(),
-                    mechanism: self.implementation.clone(),
-                    argument: serde_json::json!({
-                            "n": num_records,
-                            "constraint": {
-                                "lowerbound": minimums[column_number as usize],
-                                "upperbound": maximums[column_number as usize]
-                            }
-                        }),
+                    mechanism: self.mechanism.clone(),
+                    argument: serde_json::json!({}),
                 },
             };
 

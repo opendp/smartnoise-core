@@ -5,11 +5,13 @@ use std::collections::HashMap;
 
 use crate::{proto, base};
 
-use crate::components::{Component, Aggregator};
-use crate::base::{Value, NodeProperties, AggregatorProperties, Sensitivity, prepend, ValueProperties};
+use crate::components::{Component, Sensitivity};
+use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType};
+use crate::utilities::prepend;
+use ndarray::prelude::*;
+
 
 impl Component for proto::Sum {
-    // modify min, max, n, categories, is_public, non-null, etc. based on the arguments and component
     fn propagate_property(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,
@@ -17,14 +19,22 @@ impl Component for proto::Sum {
         properties: &base::NodeProperties,
     ) -> Result<ValueProperties> {
         let mut data_property = properties.get("data")
-            .ok_or("data: missing")?.get_arraynd()
+            .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
+
+        if !data_property.releasable {
+            data_property.assert_is_not_aggregated()?;
+        }
 
         // save a snapshot of the state when aggregating
         data_property.aggregator = Some(AggregatorProperties {
-            component: proto::component::Variant::from(self.clone()),
+            component: proto::component::Variant::Sum(self.clone()),
             properties: properties.clone(),
         });
+
+        if data_property.data_type != DataType::F64 && data_property.data_type != DataType::I64 {
+            return Err("data: atomic type must be numeric".into())
+        }
 
         data_property.num_records = Some(1);
         data_property.nature = None;
@@ -32,58 +42,51 @@ impl Component for proto::Sum {
         Ok(data_property.into())
     }
 
-    fn get_names(
-        &self,
-        _properties: &NodeProperties,
-    ) -> Result<Vec<String>> {
-        Err("get_names not implemented".into())
-    }
+
 }
 
-impl Aggregator for proto::Sum {
+impl Sensitivity for proto::Sum {
+    /// Sum sensitivities [are backed by the the proofs here](https://github.com/opendifferentialprivacy/whitenoise-core/blob/955703e3d80405d175c8f4642597ccdf2c00332a/whitepapers/sensitivities/sums/sums.pdf)
     fn compute_sensitivity(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
-        sensitivity_type: &Sensitivity,
-    ) -> Result<Vec<f64>> {
+        sensitivity_type: &SensitivitySpace,
+    ) -> Result<Value> {
 
         match sensitivity_type {
 
-            Sensitivity::KNorm(k) => {
+            SensitivitySpace::KNorm(k) => {
 
                 let data_property = properties.get("data")
-                    .ok_or("data: missing")?.get_arraynd()
+                    .ok_or("data: missing")?.array()
                     .map_err(prepend("data:"))?.clone();
 
                 data_property.assert_is_not_aggregated()?;
                 data_property.assert_non_null()?;
-                let data_min = data_property.get_min_f64()?;
-                let data_max = data_property.get_max_f64()?;
+                let data_lower = data_property.lower_f64()?;
+                let data_upper = data_property.upper_f64()?;
 
                 use proto::privacy_definition::Neighboring;
                 let neighboring_type = Neighboring::from_i32(privacy_definition.neighboring)
-                    .ok_or::<Error>("neighboring definition must be either \"AddRemove\" or \"Substitute\"".into())?;
+                    .ok_or_else(|| Error::from("neighboring definition must be either \"AddRemove\" or \"Substitute\""))?;
 
-                match k {
-                    1 => Ok(match neighboring_type {
-                        Neighboring::AddRemove => data_min.iter().zip(data_max.iter())
+                let row_sensitivity = match k {
+                    1|2 => match neighboring_type {
+                        Neighboring::AddRemove => data_lower.iter().zip(data_upper.iter())
                             .map(|(min, max)| min.abs().max(max.abs()))
                             .collect::<Vec<f64>>(),
-                        Neighboring::Substitute => data_min.iter().zip(data_max.iter())
+                        Neighboring::Substitute => data_lower.iter().zip(data_upper.iter())
                             .map(|(min, max)| max - min)
                             .collect::<Vec<f64>>()
-                    }),
-                    2 => Ok(match neighboring_type {
-                        Neighboring::AddRemove => data_min.iter().zip(data_max.iter())
-                            .map(|(min, max)| min.powi(2).max(max.powi(2)))
-                            .collect::<Vec<f64>>(),
-                        Neighboring::Substitute => data_min.iter().zip(data_max.iter())
-                            .map(|(min, max)| (max - min).powi(2))
-                            .collect::<Vec<f64>>()
-                    }),
-                    _ => Err("KNorm sensitivity is only supported in L1 and L2 spaces".into())
-                }
+                    }
+                    _ => return Err("KNorm sensitivity is only supported in L1 and L2 spaces".into())
+                };
+
+                let mut array_sensitivity = Array::from(row_sensitivity).into_dyn();
+                array_sensitivity.insert_axis_inplace(Axis(0));
+
+                Ok(array_sensitivity.into())
             }
             _ => Err("Sum sensitivity is only implemented for KNorm of 1".into())
         }

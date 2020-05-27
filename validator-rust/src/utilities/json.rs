@@ -69,11 +69,11 @@ pub struct AlgorithmInfo {
 /// converts an ArrayND (which can take any of types (float, integer, string, and Boolean) to JSON
 pub fn value_to_json(value: &base::Value) -> Result<serde_json::Value> {
     match value {
-        base::Value::ArrayND(array) => match array {
-            base::ArrayND::F64(value) => arraynd_to_json(value),
-            base::ArrayND::I64(value) => arraynd_to_json(value),
-            base::ArrayND::Str(value) => arraynd_to_json(value),
-            base::ArrayND::Bool(value) => arraynd_to_json(value)
+        base::Value::Array(array) => match array {
+            base::Array::F64(value) => arraynd_to_json(value),
+            base::Array::I64(value) => arraynd_to_json(value),
+            base::Array::Str(value) => arraynd_to_json(value),
+            base::Array::Bool(value) => arraynd_to_json(value)
         },
         _ => Err("only arrayND to json is implemented".into())
     }
@@ -83,8 +83,8 @@ pub fn value_to_json(value: &base::Value) -> Result<serde_json::Value> {
 pub fn arraynd_to_json<T: Serialize + Clone>(array: &ArrayD<T>) -> Result<serde_json::Value> {
     match array.ndim() {
         0 => Ok(serde_json::json!(array.first().unwrap())),
-        1 => Ok(serde_json::json!(array.clone().into_dimensionality::<Ix1>().unwrap().to_vec())),
-        2 => Ok(serde_json::json!(array.genrows().into_iter().map(|row| row.into_iter().map(|v| v.clone()).collect::<Vec<T>>()).collect::<Vec<Vec<T>>>())),
+        1 => Ok(serde_json::json!(array.clone().into_dimensionality::<Ix1>()?.to_vec())),
+        2 => Ok(serde_json::json!(array.genrows().into_iter().map(|row| row.iter().cloned().collect::<Vec<T>>()).collect::<Vec<Vec<T>>>())),
         _ => Err("array must have dimensionality less than 2".into())
     }
 }
@@ -94,9 +94,9 @@ pub fn arraynd_to_json<T: Serialize + Clone>(array: &ArrayD<T>) -> Result<serde_
 /// User provide a value for either epsilon, delta, or rho depending on the type of dp definitions (i.e. pure, approximated and concentrated).
 pub fn privacy_usage_to_json(privacy_usage: &proto::PrivacyUsage) -> serde_json::Value {
     match privacy_usage.distance.clone().unwrap() {
-        proto::privacy_usage::Distance::DistancePure(distance) =>
+        proto::privacy_usage::Distance::Pure(distance) =>
             serde_json::json!({"name": "pure", "epsilon": distance.epsilon}),
-        proto::privacy_usage::Distance::DistanceApproximate(distance) =>
+        proto::privacy_usage::Distance::Approximate(distance) =>
             serde_json::json!({"name": "approximate", "epsilon": distance.epsilon, "delta": distance.delta})
     }
 }

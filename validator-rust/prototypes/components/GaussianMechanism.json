@@ -1,0 +1,23 @@
+{
+  "arguments": {
+    "data": {
+      "type_value": "Array",
+      "description": "Result to be released privately via the Gaussian mechanism."
+    }
+  },
+  "id": "GaussianMechanism",
+  "name": "gaussian_mechanism",
+  "options": {
+    "privacy_usage": {
+      "type_proto": "repeated PrivacyUsage",
+      "type_rust": "Vec<proto::PrivacyUsage>",
+      "default_python": "None",
+      "description": "Object describing the type and amount of privacy to be used for the mechanism release."
+    }
+  },
+  "return": {
+    "type_value": "Array",
+    "description": "Original data perturbed with Gaussian noise."
+  },
+  "description": "Privatizes a result by returning it perturbed with Gaussian noise."
+}

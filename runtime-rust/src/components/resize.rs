@@ -1,38 +1,46 @@
 use whitenoise_validator::errors::*;
 use whitenoise_validator::proto;
-use whitenoise_validator::base::{Value, ArrayND, Vector2DJagged, get_argument, standardize_null_argument};
+use whitenoise_validator::base::{Value, Array, Jagged, ReleaseNode};
+use whitenoise_validator::utilities::{get_argument, standardize_numeric_argument};
 
-use ndarray::{ArrayD, Axis, Array};
+use ndarray::{ArrayD, Axis};
 use rug::{Float, ops::Pow};
 
-use crate::base::NodeArguments;
+use crate::NodeArguments;
 use crate::components::Evaluable;
 use crate::utilities::noise;
 use crate::components::impute::{impute_float_gaussian, impute_float_uniform, impute_categorical};
-use crate::utilities::utilities::get_num_columns;
+use crate::utilities::get_num_columns;
 use whitenoise_validator::utilities::array::{slow_select, slow_stack};
+use std::cmp::Ordering;
+use crate::utilities::noise::sample_uniform_int;
+use ndarray::prelude::*;
+use std::hash::Hash;
 
 impl Evaluable for proto::Resize {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        let n = get_argument(&arguments, "n")?.get_first_i64()?;
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
+        let n = get_argument(&arguments, "n")?.first_i64()?;
 
         // If "categories" constraint has been propagated, data are treated as categorical (regardless of atomic type)
         // and imputation (if necessary) is done by sampling from "categories" using the "probabilities" as sampling probabilities for each element.
         if arguments.contains_key("categories") {
-            match (get_argument(&arguments, "data")?, get_argument(&arguments, "categories")?,
-                   get_argument(&arguments, "probabilities")?, get_argument(&arguments, "null")?) {
+            let weights = get_argument(&arguments, "weights")
+                .and_then(|v| v.jagged()).and_then(|v| v.f64()).ok();
+
+            match (get_argument(&arguments, "data")?, get_argument(&arguments, "categories")?) {
                 // match on types of various arguments and ensure they are consistent with each other
-                (Value::ArrayND(data), Value::Vector2DJagged(categories), Value::Vector2DJagged(probabilities), Value::Vector2DJagged(nulls)) =>
-                    Ok(match (data, categories, probabilities, nulls) {
-                        (ArrayND::F64(data), Vector2DJagged::F64(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::F64(nulls)) =>
-                            resize_categorical(&data, &n, &categories, &probabilities, &nulls)?.into(),
-                        (ArrayND::I64(data), Vector2DJagged::I64(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::I64(nulls)) =>
-                            resize_categorical(&data, &n, &categories, &probabilities, &nulls)?.into(),
-                        (ArrayND::Bool(data), Vector2DJagged::Bool(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::Bool(nulls)) =>
-                            resize_categorical(&data, &n, &categories, &probabilities, &nulls)?.into(),
-                        (ArrayND::Str(data), Vector2DJagged::Str(categories), Vector2DJagged::F64(probabilities), Vector2DJagged::Str(nulls)) =>
-                            resize_categorical(&data, &n, &categories, &probabilities, &nulls)?.into(),
-                        _ => return Err("types of data, categories, and nulls must be homogenous, probabilities must be f64".into())
+                (Value::Array(data), Value::Jagged(categories)) =>
+                    Ok(match (data, categories) {
+                        (Array::F64(_), Jagged::F64(_)) =>
+                            return Err("categorical resizing over floats in not currently supported- try continuous imputation instead".into()),
+//                            resize_categorical(&data, &n, &categories, &probabilities)?.into(),
+                        (Array::I64(data), Jagged::I64(categories)) =>
+                            resize_categorical(&data, &n, &categories, &weights)?.into(),
+                        (Array::Bool(data), Jagged::Bool(categories)) =>
+                            resize_categorical(&data, &n, &categories, &weights)?.into(),
+                        (Array::Str(data), Jagged::Str(categories)) =>
+                            resize_categorical(&data, &n, &categories, &weights)?.into(),
+                        _ => return Err("types of data, categories, and nulls must be homogeneous, weights must be f64".into())
                     }),
                 _ => return Err("data and nulls must be arrays, categories must be a jagged matrix".into())
             }
@@ -40,29 +48,32 @@ impl Evaluable for proto::Resize {
         // If "categories" constraint is not populated, data are treated as numeric and imputation (if necessary)
         // is done according to a continuous distribution.
         else {
-            // If there is no valid distribution argument provided, generate uniform by default
-            let distribution = match get_argument(&arguments, "type") {
-                Ok(distribution) => distribution.get_first_str()?,
-                Err(_) => "Uniform".to_string()
-            };
-            let shift = match get_argument(&arguments, "shift") {
-                Ok(shift) => Some(shift.get_arraynd()?.get_f64()?),
-                Err(_) => None
-            };
-            let scale = match get_argument(&arguments, "scale") {
-                Ok(scale) => Some(scale.get_arraynd()?.get_f64()?),
-                Err(_) => None
-            };
-            match (get_argument(&arguments, "data")?, get_argument(&arguments, "min")?, get_argument(&arguments, "max")?) {
-                // TODO: add support for resizing ints
-                (Value::ArrayND(data), Value::ArrayND(min), Value::ArrayND(max)) => match (data, min, max) {
-                    (ArrayND::F64(data), ArrayND::F64(min), ArrayND::F64(max)) =>
-                        Ok(Value::ArrayND(ArrayND::F64(resize_float(&data, &n, &distribution, &min, &max, &shift, &scale)?))),
-                    _ => Err("data, min, and max must all be of float type".into())
-                },
-                _ => Err("data, min, and max must all be arrays".into())
+            match (
+                get_argument(&arguments, "data")?.array()?,
+                get_argument(&arguments, "lower")?.array()?,
+                get_argument(&arguments, "upper")?.array()?
+            ) {
+                (Array::F64(data), Array::F64(lower), Array::F64(upper)) => {
+                    // If there is no valid distribution argument provided, generate uniform by default
+                    let distribution = match get_argument(&arguments, "distribution") {
+                        Ok(distribution) => distribution.first_string()?,
+                        Err(_) => "uniform".to_string()
+                    };
+                    let shift = match get_argument(&arguments, "shift") {
+                        Ok(shift) => Some(shift.array()?.f64()?),
+                        Err(_) => None
+                    };
+                    let scale = match get_argument(&arguments, "scale") {
+                        Ok(scale) => Some(scale.array()?.f64()?),
+                        Err(_) => None
+                    };
+                    Ok(resize_float(data, &n, &distribution, lower, upper, &shift, &scale)?.into())
+                }
+                (Array::I64(data), Array::I64(lower), Array::I64(upper)) =>
+                    Ok(resize_integer(data, &n, lower, upper)?.into()),
+                _ => Err("data, lower, and upper must be of a homogeneous numeric type".into())
             }
-        }
+        }.map(ReleaseNode::new)
     }
 }
 
@@ -77,38 +88,38 @@ impl Evaluable for proto::Resize {
 /// * `data` - The data to be resized
 /// * `n` - An estimate of the size of the data -- this could be the guess of the user, or the result of a DP release
 /// * `distribution` - The distribution to be used when imputing records
-/// * `min` - A lower bound on data elements
-/// * `max` - An upper bound on data elements
+/// * `lower` - A lower bound on data elements
+/// * `upper` - An upper bound on data elements
 /// * `shift` - The shift (expectation) argument for the Gaussian distribution
 /// * `scale` - The scale (standard deviation) argument for the Gaussian distribution
 ///
 /// # Return
 /// A resized version of data consistent with the provided `n`
 pub fn resize_float(data: &ArrayD<f64>, n: &i64, distribution: &String,
-                    min: &ArrayD<f64>, max: &ArrayD<f64>,
+                    lower: &ArrayD<f64>, upper: &ArrayD<f64>,
                     shift: &Option<&ArrayD<f64>>, scale: &Option<&ArrayD<f64>>) -> Result<ArrayD<f64>> {
     // get number of observations in actual data
     let real_n: i64 = data.len_of(Axis(0)) as i64;
 
-    Ok(match &real_n {
+    Ok(match &real_n.cmp(n) {
         // if estimated n is correct, return real data
-        real_n if real_n == n =>
+        Ordering::Equal =>
             data.clone(),
-        // if estimated n is larger than real n, augment real data with synthetic data
-        real_n if real_n < n => {
+        // if real n is less than estimated n, augment real data with synthetic data
+        Ordering::Less => {
             // initialize synthetic data with correct shape
             let mut synthetic_shape = data.shape().to_vec();
             synthetic_shape[0] = (n - real_n) as usize;
-            let synthetic_base = Array::from_elem(synthetic_shape, std::f64::NAN).into_dyn();
+            let synthetic_base = ndarray::ArrayD::from_elem(synthetic_shape, std::f64::NAN).into_dyn();
 
             // generate synthetic data
             // NOTE: only uniform and gaussian supported at this time
-            let synthetic = match distribution.as_str() {
-                "Uniform" => impute_float_uniform(&synthetic_base, &min, &max),
-                "Gaussian" => impute_float_gaussian(
-                        &synthetic_base, &min, &max,
-                        &shift.cloned().ok_or::<Error>("shift must be defined for gaussian imputation".into())?,
-                        &scale.cloned().ok_or::<Error>("scale must be defined for gaussian imputation".into())?),
+            let synthetic = match distribution.to_lowercase().as_str() {
+                "uniform" => impute_float_uniform(&synthetic_base, &lower, &upper),
+                "gaussian" => impute_float_gaussian(
+                    &synthetic_base, &lower, &upper,
+                    &shift.cloned().ok_or_else(|| Error::from("shift must be defined for gaussian imputation"))?,
+                    &scale.cloned().ok_or_else(|| Error::from("scale must be defined for gaussian imputation"))?),
                 _ => Err("unrecognized distribution".into())
             }?;
 
@@ -117,12 +128,67 @@ pub fn resize_float(data: &ArrayD<f64>, n: &i64, distribution: &String,
                 Ok(value) => value,
                 Err(_) => return Err("failed to stack real and synthetic data".into())
             }
-        },
-        // if estimated n is smaller than real n, return a subset of the real data
-        real_n if real_n > n =>
-            slow_select(&data, Axis(0), &create_sampling_indices(&n, &real_n)?),
-//            data.select(Axis(0), &create_sampling_indices(&n, &real_n)?).to_owned(),
-        _ => return Err("invalid configuration for n when resizing".into())
+        }
+        // if real n is greater than estimated n, return a subset of the real data
+        Ordering::Greater =>
+            data.select(Axis(0), &create_sampling_indices(&n, &real_n)?)
+    })
+}
+
+
+/// Resizes data (made up exclusively of i64) based on estimate of n and true size of data.
+///
+/// # Arguments
+/// * `data` - The data to be resized
+/// * `n` - An estimate of the size of the data -- this could be the guess of the user, or the result of a DP release
+/// * `lower` - A lower bound on data elements
+/// * `upper` - An upper bound on data elements
+///
+/// # Return
+/// A resized version of data consistent with the provided `n`
+pub fn resize_integer(
+    data: &ArrayD<i64>, n: &i64,
+    lower: &ArrayD<i64>, upper: &ArrayD<i64>,
+) -> Result<ArrayD<i64>> {
+
+    // get number of observations in actual data
+    let real_n = data.len_of(Axis(0)) as i64;
+
+    Ok(match &real_n.cmp(n) {
+        // if estimated n is correct, return real data
+        Ordering::Equal =>
+            data.clone(),
+        // if real n is less than estimated n, augment real data with synthetic data
+        Ordering::Less => {
+            // initialize synthetic data with correct shape
+            let mut synthetic_shape = data.shape().to_vec();
+            synthetic_shape[0] = (n - real_n) as usize;
+            let num_columns = get_num_columns(data)?;
+
+            let lower = standardize_numeric_argument(lower, &num_columns)?
+                .into_dimensionality::<Ix1>()?.to_vec();
+            let upper = standardize_numeric_argument(upper, &num_columns)?
+                .into_dimensionality::<Ix1>()?.to_vec();
+
+            let mut synthetic = ndarray::ArrayD::zeros(synthetic_shape);
+            synthetic.gencolumns_mut().into_iter().zip(lower.into_iter().zip(upper.into_iter()))
+                .map(|(mut column, (min, max))| column.iter_mut()
+                    .map(|v| {
+                        *v = sample_uniform_int(&min, &max)?;
+                        Ok(())
+                    })
+                    .collect::<Result<_>>())
+                .collect::<Result<_>>()?;
+
+            // combine real and synthetic data
+            match ndarray::stack(Axis(0), &[data.view(), synthetic.view()]) {
+                Ok(value) => value,
+                Err(_) => return Err("failed to stack real and synthetic data".into())
+            }
+        }
+        // if real n is greater than estimated n, return a subset of the real data
+        Ordering::Greater =>
+            data.select(Axis(0), &create_sampling_indices(&n, &real_n)?)
     })
 }
 
@@ -140,45 +206,45 @@ pub fn resize_float(data: &ArrayD<f64>, n: &i64, distribution: &String,
 pub fn resize_categorical<T>(
     data: &ArrayD<T>, n: &i64,
     categories: &Vec<Option<Vec<T>>>,
-    weights: &Vec<Option<Vec<f64>>>,
-    null_value: &Vec<Option<Vec<T>>>
-) -> Result<ArrayD<T>> where T: Clone, T: PartialEq, T: Default {
+    weights: &Option<Vec<Vec<f64>>>,
+) -> Result<ArrayD<T>> where T: Clone, T: PartialEq, T: Default, T: Ord, T: Hash {
+
     // get number of observations in actual data
     let real_n: i64 = data.len_of(Axis(0)) as i64;
 
-    Ok(match &real_n {
+    Ok(match &real_n.cmp(n) {
         // if estimated n is correct, return real data
-        real_n if real_n == n =>
+        Ordering::Equal =>
             data.clone(),
-        // if estimated n is larger than real n, augment real data with synthetic data
-        real_n if real_n < n => {
+        // if real n is less than estimated n, augment real data with synthetic data
+        Ordering::Less => {
             // set synthetic data shape
             let mut synthetic_shape = data.shape().to_vec();
             synthetic_shape[0] = (n - real_n) as usize;
 
             let num_columns = get_num_columns(&data)?;
-            let mut synthetic = Array::default(synthetic_shape).into_dyn();
+            let mut synthetic = ndarray::Array::default(synthetic_shape).into_dyn();
 
             // iterate over initialized synthetic data and fill with correct null values
             synthetic.gencolumns_mut().into_iter()
-                .zip(standardize_null_argument(&null_value, &num_columns)?.iter())
-                .for_each(|(mut col, null)| col.iter_mut()
-                    .for_each(|v| *v = null.clone()));
+                .for_each(|mut col| col.iter_mut()
+                    .for_each(|v| *v = T::default()));
+
+            let null_value = (0..num_columns).map(|_| Some(vec![T::default()])).collect();
 
             // impute categorical data for each column of nulls to create synthetic data
             synthetic = impute_categorical(
-                &synthetic, &categories, &weights, &null_value)?;
+                &synthetic, &categories, weights, &null_value)?;
 
             // combine real and synthetic data
             match slow_stack(Axis(0), &[data.view(), synthetic.view()]) {
                 Ok(value) => value,
                 Err(_) => return Err("failed to stack real and synthetic data".into())
             }
-        },
-        // if estimated n is smaller than real n, return a subset of the real data
-        real_n if real_n > n =>
+        }
+        // if real n is greater than estimated n, return a subset of the real data
+        Ordering::Greater =>
             slow_select(data, Axis(0), &create_sampling_indices(&n, &real_n)?).to_owned(),
-        _ => return Err("invalid configuration for n when resizing".into())
     })
 }
 
@@ -205,8 +271,7 @@ pub fn resize_categorical<T>(
 /// # subset.unwrap();
 /// ```
 pub fn create_subset<T>(set: &Vec<T>, weights: &Vec<f64>, k: &i64) -> Result<Vec<T>> where T: Clone {
-
-    if *k as usize > set.len() {return Err("k must be less than the set length".into())}
+    if *k as usize > set.len() { return Err("k must be less than the set length".into()); }
 
     // generate sum of weights
     let weights_rug: Vec<rug::Float> = weights.into_iter().map(|w| Float::with_val(53, w)).collect();
@@ -215,29 +280,25 @@ pub fn create_subset<T>(set: &Vec<T>, weights: &Vec<f64>, k: &i64) -> Result<Vec
     // convert weights to probabilities
     let probabilities: Vec<rug::Float> = weights_rug.iter().map(|w| w / weights_sum.clone()).collect();
 
-    // initialize subsample
-    let _subsample_vec: Vec<T> = Vec::with_capacity(*k as usize);
-
-    //
     // generate keys and identify top k indices
     //
 
     // generate key/index tuples
-    let mut key_vec = Vec::with_capacity(*k as usize);
-    for i in 0..*k {
+    let mut key_vec: Vec<(rug::Float, usize)> = Vec::with_capacity(*k as usize);
+    for i in 0..set.len() {
         key_vec.push((noise::sample_uniform_mpfr(0., 1.)?.pow(1. / probabilities[i as usize].clone()), i));
     }
 
     // sort key/index tuples by key and identify top k indices
-    key_vec.sort_by(|a, b| b.partial_cmp(a).unwrap());
-    let mut top_indices: Vec<i64> = Vec::with_capacity(*k as usize);
-    for i in 0..*k {
-        top_indices.push(key_vec[i as usize].1 as i64);
+    key_vec.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap());
+    let mut top_indices: Vec<usize> = Vec::with_capacity(*k as usize);
+    for i in 0..(*k as usize) {
+        top_indices.push(key_vec[i].1);
     }
 
     // subsample based on top k indices
     let mut subset: Vec<T> = Vec::with_capacity(*k as usize);
-    for value in top_indices.iter().map(|&index| set[index as usize].clone()) {
+    for value in top_indices.iter().map(|&index| set[index].clone()) {
         subset.push(value);
     }
 
@@ -266,7 +327,7 @@ pub fn create_subset<T>(set: &Vec<T>, weights: &Vec<f64>, k: &i64) -> Result<Vec
 /// ```
 pub fn create_sampling_indices(k: &i64, n: &i64) -> Result<Vec<usize>> {
     // create set of all indices
-    let index_vec: Vec<usize> = (0..*n).map(|v| v as usize).collect();
+    let index_vec: Vec<usize> = (0..(*n as usize)).collect();
 
     // create uniform selection weights
     let weight_vec: Vec<f64> = vec![1.; *n as usize];

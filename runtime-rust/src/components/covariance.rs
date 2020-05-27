@@ -1,7 +1,8 @@
 use whitenoise_validator::errors::*;
 
-use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value, get_argument};
+use crate::NodeArguments;
+use whitenoise_validator::base::ReleaseNode;
+use whitenoise_validator::utilities::get_argument;
 use crate::components::Evaluable;
 use ndarray::{ArrayD, Array};
 
@@ -11,25 +12,26 @@ use ndarray::prelude::*;
 use std::iter::FromIterator;
 
 impl Evaluable for proto::Covariance {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
+    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
         let delta_degrees_of_freedom = if self.finite_sample_correction {1} else {0} as usize;
         if arguments.contains_key("data") {
-            let data = get_argument(&arguments, "data")?.get_arraynd()?.get_f64()?;
+            let data = get_argument(&arguments, "data")?.array()?.f64()?;
             let covariances = matrix_covariance(&data, &delta_degrees_of_freedom)?.into_iter()
                 .flat_map(|x| x)
                 .collect::<Vec<f64>>();
 
             // flatten into a row vector, every column is a release
-            return Ok(arr1(&covariances).insert_axis(Axis(0)).into_dyn().into());
+            return Ok(ReleaseNode::new(arr1(&covariances).insert_axis(Axis(0)).into_dyn().into()));
         }
         if arguments.contains_key("left") && arguments.contains_key("right") {
-            let left = get_argument(&arguments, "left")?.get_arraynd()?.get_f64()?;
-            let right = get_argument(&arguments, "right")?.get_arraynd()?.get_f64()?;
+            let left = get_argument(&arguments, "left")?.array()?.f64()?;
+            let right = get_argument(&arguments, "right")?.array()?.f64()?;
 
             let cross_covariances = matrix_cross_covariance(&left, &right, &delta_degrees_of_freedom)?;
 
             // flatten into a row vector, every column is a release
-            return Ok(Array::from_iter(cross_covariances.iter()).insert_axis(Axis(0)).into_dyn().mapv(|v| v.clone()).into());
+            return Ok(ReleaseNode::new(Array::from_iter(cross_covariances.iter())
+                .insert_axis(Axis(0)).into_dyn().mapv(|v| v.clone()).into()));
         }
         Err("insufficient data supplied to Covariance".into())
     }
@@ -75,6 +77,7 @@ pub fn matrix_covariance(data: &ArrayD<f64>, delta_degrees_of_freedom: &usize) -
                         delta_degrees_of_freedom)));
             covariances.push(col_covariances);
         });
+
     Ok(covariances)
 }
 
@@ -107,6 +110,7 @@ pub fn matrix_covariance(data: &ArrayD<f64>, delta_degrees_of_freedom: &usize) -
 ///
 /// // cross-covariance of left with itself is equivalent to the standard covariance matrix
 /// assert!(left_covar == arr2(&[ [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5] ]).into_dyn());
+/// ```
 pub fn matrix_cross_covariance(
     left: &ArrayD<f64>, right: &ArrayD<f64>,
     delta_degrees_of_freedom: &usize
