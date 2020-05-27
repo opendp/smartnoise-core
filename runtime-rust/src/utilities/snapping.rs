@@ -214,6 +214,13 @@ pub fn get_epsilon(accuracy: &f64, alpha: &f64, sensitivity: &f64, B: &f64, prec
     return epsilon;
 }
 
+/// Finds precision necessary to run Snapping mechanism.
+/// 
+/// # Arguments
+/// * `B` - Upper bound on function value being privatized.
+/// 
+/// # Returns
+/// Gets necessary precision for Snapping mechanism.
 pub fn get_precision(B: &f64) -> u32 {
     let precision: u32;
     if (B <= &(2_u32.pow(66) as f64)) {
