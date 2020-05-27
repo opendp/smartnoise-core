@@ -652,7 +652,6 @@ pub fn sample_simple_geometric_mechanism(
 /// * `epsilon` - Desired privacy guarantee.
 /// * `B` - Upper bound on function value being privatized.
 /// * `sensitivity` - l1 Sensitivity of function to which mechanism is being applied.
-/// * `precision` - Number of bits of precision to which arithmetic inside the mechanism has access.
 ///
 /// # Returns
 /// Noise according to the Snapping mechanism.
@@ -667,7 +666,7 @@ pub fn sample_simple_geometric_mechanism(
 /// let snapping_noise = sampling_snapping_noise(&mechanism_input, &epsilon, &B, &sensitivity, &precision);
 /// println!("snapping noise: {}", snapping_noise);
 /// ```
-pub fn sample_snapping_noise(mechanism_input: &f64, epsilon: &f64, B: &f64, sensitivity: &f64, precision: &i64) -> f64 {
+pub fn sample_snapping_noise(mechanism_input: &f64, epsilon: &f64, B: &f64, sensitivity: &f64) -> f64 {
     // scale mechanism input by sensitivity
     let mechanism_input_scaled = mechanism_input / sensitivity;
 

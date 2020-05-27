@@ -46,7 +46,6 @@ pub fn laplace_mechanism(epsilon: f64, sensitivity: f64, enforce_constant_time: 
 /// * `epsilon` - Multiplicative privacy loss parameter.
 /// * `B` - Upper bound on the absolute value of the mechanism input. We recommend that this be an upper bound on any mechanism input
 /// * `sensitivity` - Upper bound on the L1 sensitivity of the function you want to privatize.
-/// * `precision` - Number of bits of precision to which arithmetic within the mechanism has access.
 ///
 /// # Return
 /// Array of a single value drawn generated via the Snapping mechanism.
@@ -56,11 +55,11 @@ pub fn laplace_mechanism(epsilon: f64, sensitivity: f64, enforce_constant_time: 
 /// use whitenoise_runtime::utilities::mechanisms::snapping_mechanism;
 /// let n = snapping_mechanism(&50., &1., &100., &0.1, &128.);
 /// ```
-pub fn snapping_mechanism(mechanism_input: &f64, epsilon: &f64, B: &f64, sensitivity: &f64, precision: &i64) -> Result<f64> {
+pub fn snapping_mechanism(mechanism_input: &f64, epsilon: &f64, B: &f64, sensitivity: &f64) -> Result<f64> {
     if epsilon < &0. || sensitivity < &0. {
         return Err(format!("epsilon ({}) and sensitivity ({}) must be positive", epsilon, sensitivity).into());
     }
-    let noise: f64 = noise::sample_snapping_noise(mechanism_input, epsilon, B, sensitivity, precision);
+    let noise: f64 = noise::sample_snapping_noise(mechanism_input, epsilon, B, sensitivity);
 
     Ok(noise)
 }
