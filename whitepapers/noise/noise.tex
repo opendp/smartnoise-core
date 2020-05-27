@@ -81,7 +81,10 @@ For our purposes, we will care only about the case where $S = \F$, the set of IE
 \end{definition}
 
 \section{Randomness}
-All of our random number generation involves uniform random sampling of bits via OpenSSL.
+Nearly all of our random number generation involves uniform random sampling of bits via OpenSSL. 
+The exception is when we use methods from MPFR (see below) to sample from a probability distribution.
+In this case, we feed the state of then OpenSSL RNG directly into the method. \newline 
+
 We will take as given that OpenSSL is cryptographically secure. We intend to support a broader set 
 of cryptographically secure sources of randomness at a later date.
 
