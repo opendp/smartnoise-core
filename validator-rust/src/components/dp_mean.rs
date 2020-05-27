@@ -55,6 +55,9 @@ impl Expandable for proto::DpMean {
                 "gaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
                     privacy_usage: self.privacy_usage.clone()
                 }),
+                "snapping" => proto::component::Variant::SnappingMechanism(proto::SnappingMechanism {
+                    privacy_usage: self.privacy_usage.clone()
+                }),
                 _ => panic!("Unexpected invalid token {:?}", self.mechanism.as_str()),
             }),
             omit: false,
