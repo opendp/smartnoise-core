@@ -32,38 +32,146 @@ This document contains notes on our choices regarding ``data processing'', which
 for all things related to data bookkeeping (data bounds, imputation, sample size calculations, etc.).
 
 \section{Clamping}
+
+\subsection{Introduction}
 Many operations in the library require the definition of a set of possible data values
 we would like to use for said operation. For numeric variables, this typically
 takes the form of a closed interval $[min, max] \in \R$ or $\Z$. For categorical
-variables, this is a discrete set of elements.
+variables, this is a discrete set of elements. The \emph{clamp} component sets these 
+properties for a given analysis.
 In our system, we have slightly different notions of clamping for numeric and categorical variables.
 We consider $f64$ and $i64$ to be allowable numeric types, and $i64, bool,$ and $String$ to be
 allowable categorical types. \newline
 
-Our method for clamping numeric types should be familiar; it accepts data, a min, and a max,
+Our method for clamping numeric types should be familiar; it requires data, a lower bound, and an upper bound,
 and maps data elements outside of the interval $[min, max]$ to the nearest point in the interval.
-Null values (represented as $NAN$ for the $f64$ type and which do not exist for the $i64$ type)
+Null values (represented as NAN for the $f64$ type and which do not exist for the $i64$ type)
 are preserved by numeric clamping. \newline
 
-Our categorical clamping accepts data, a set of feasible values, and a null value.
+Our categorical clamping requires data, a set of feasible values, and a null value.
 Data elements that are outside the set of feasible values are mapped to the null value.
 Null values are preserved by the categorical clamping. \newline 
 
-\cnote{Give algorithm statement here?}
+\subsection{Algorithm Statement}
+The component arguments are as follows:
+\begin{enumerate}
+    \item X: The data of size $n \times m$ to be clamped.
+    \item categories: A vector of length $m$, where each element is the set of plausible data values 
+                      for column $m$ of $X$. If not provided, defaults to None.
+    \item null\_value: A vector of length $m$, where each element is the designated ``null'' 
+                      for column $m$ of $X$. That is, elements $\not\in$ categories are mapped to the 
+                      null\_value. If not provided, defaults to None.
+    \item lower: A vector of length $m$, where each element is a proposed minimum value for column $m$ of $X$.
+                 If not provided, defaults to None.
+    \item upper: A vector of length $m$, where each element is a proposed maximum value for column $m$ of $X$.
+                 If not provided, defaults to None. 
+\end{enumerate}
 
-\section{Imputation}
+\begin{algorithm}[H]
+    \label{alg:clamping}
+    \caption{Clamping: clamp($X$, categories, lower, upper)}
+    \begin{algorithmic}[1]
+        \For{$j \in [m]$} \Comment{Iterate over columns}
+            \For{$i \in [n]$} \Comment{Iterate over rows}
+                \If{categories $\neq$ None} \Comment{Proceed with categorical clamping}
+                    \If{$X_{i,j} \not\in categories[j]$}
+                        \State $X_{i,j} \gets null\_value[j]$
+                    \EndIf
+                \Else \Comment{Proceed with numeric clamping}
+                    \If{$X_{i,j} < lower[j]$}
+                        \State $X_{i,j} \gets lower[j]$
+                    \ElsIf{$X_{i,j} > upper[j]$}
+                        \State $X_{i,j} \gets upper[j]$
+                    \EndIf
+                \EndIf
+            \EndFor
+        \EndFor
+        \\ \Return $X$
+    \end{algorithmic}
+\end{algorithm}
+
+\section{Imputation} 
+\label{sec:impute}
+
+\subsection{Introduction}
+Some operations in the library require the private data to be non-null. The \emph{impute} component 
+sets the non-null property for an analysis. \newline 
+
 Much like clamping, we have slightly different notions of imputation for numeric and categorical variables.
 In this case, we consider only $f64$ to be an allowable numeric type, while
-$f64, i64, bool,$ and $String$ are allowable categorical types. \newline
+$f64, i64, bool,$ and $String$ are allowable categorical types. We do not allow for numeric imputation on $i64$
+because $i64$ does not support NAN values and thus are non-null by default. \newline
 
-Numeric imputation is parameterized by min, max, and a supported probability distribution (e.g. Gaussian or Uniform)
-with appropriate arguments. $NAN$ values are replaced with a draw from the provided distribution. \newline
+Numeric imputation is parameterized by min, max, and a supported probability distribution (Gaussian or Uniform)
+with appropriate arguments. NAN values are replaced with a draw from the provided distribution. \newline
 
 Categorical imputation is parameterized by categories, probabilities, and a null value.
 Each data element equal to the null value is replaced with a draw from the set of categories,
-according to the probabilities provided. \newline
+according to the probabilities provided.
 
-\cnote{Give algorithm statement here?}
+\subsection{Algorithm Statement}
+The component arguments are as follows:
+\begin{enumerate}
+    \item X: The data of size $n \times m$ for which values should be imputed.
+    \item categories: A vector of length $m$, where each element is the set of plausible data values 
+                      for column $m$ of $X$. If not provided, defaults to None.
+    \item weights: A vector of length $m$, where each element is a set of imputation weights associated with the categories 
+                   for column $m$ of $X$. If not provided, defaults to None.
+    \item null\_value: A vector of length $m$, where each element is the designated ``null'' 
+                      for column $m$ of $X$. If an element is equal to the corresponding null\_value
+                      for its column, it is imputed from the probability distribution over the categories
+                      defined by the weights.
+    \item distribution: A string providing the distribution from which elements will be imputed. 
+                        Currently supported options are ``Uniform'' and ``Gaussian''. 
+                        Used only if \emph{categories} == None. 
+                        Defaults to ``Uniform''.
+    \item shift: A vector of length $m$, where each element is the expectation of the Gaussian distribution used 
+                 for imputing missing values in column $m$ of $X$. Used only if \emph{distribution} == ``Gaussian''.
+                 Defaults to None. 
+    \item shift: A vector of length $m$, where each element is the standard deviation of the Gaussian distribution used 
+                 for imputing missing values in column $m$ of $X$. Used only if \emph{distribution} == ``Gaussian''.
+                 Defaults to None. 
+    \item lower: A vector of length $m$, where each element is a proposed minimum value for column $m$ of $X$.
+                 Acts as a lower bound for the distribution from which elements are imputed.
+                 If not provided, defaults to None.
+    \item upper: A vector of length $m$, where each element is a proposed maximum value for column $m$ of $X$.
+                 Acts as a lower bound for the distribution from which elements are imputed.
+                 If not provided, defaults to None. 
+\end{enumerate}
+
+Let Categorical$(k, (p_1, \hdots, p_k))$ be the \href{https://en.wikipedia.org/wiki/Categorical_distribution}{categorical distribution}, which chooses 
+a single element from the set $\{1, 2, \hdots, k\}$ where each element $i$ has probability of being chosen $p_i$.
+Then we have
+\begin{algorithm}[H]
+    \label{alg:imputation}
+    \caption{Imputation: \newline impute($X$, categories, weights, null\_value, distribution, shift, scale, lower, upper)}
+    \begin{algorithmic}[1]
+        \For{$j \in [m]$} \Comment{Iterate over columns}
+            \For{$i \in [n]$} \Comment{Iterate over rows}
+                \If{categories $\neq$ None} \Comment{Proceed with categorical imputation}
+                    \If{$X_{i,j} == null\_value[j]$}
+                        \State sampling\_index $\gets$ Categorical$(\big\vert \text{weights}[j] \big\vert, \text{weights}[j])$ 
+                        \State $X_{i,j} \gets$ categories[j][sampling\_index] 
+                    \EndIf
+                \Else \Comment{Proceed with numeric imputation}
+                    \If{$X_{i,j} ==$ NAN}
+                        \If{distribution $==$ ``Uniform''}
+                            \State $X_{i,j} \gets$ Uniform(lower[j], upper[j])
+                        \ElsIf{distribution $==$ ``Gaussian''}
+                            \State $X_{i,j} \gets$ Gaussian(shift[j], scale[j])
+                            \If{$X_{i,j} < lower[j]$}
+                                \State $X_{i,j} \gets lower[j]$
+                            \ElsIf{$X_{i,j} > upper[j]$}
+                                \State $X_{i,j} \gets upper[j]$
+                            \EndIf
+                        \EndIf
+                    \EndIf
+                \EndIf
+            \EndFor
+        \EndFor
+        \\ \Return $X$
+    \end{algorithmic}
+\end{algorithm}
 
 \section{Resize}
 \label{sec:resize}
@@ -89,14 +197,14 @@ The \emph{resize} function takes the following inputs:
     \item $\tilde{n}$: The size of the private underlying data.
     \item $n$: The desired size of the new data.
     \item $p$: The proportion of the underlying data that can be used to construct the new data. $p$ can be $> 1$.
-    \item $...$: Various arguments explaining imputation rules (not of interest for this document).
+    \item $...$: Various arguments explaining imputation rules (these will follow the rules from section~\ref{sec:impute}).
 \end{enumerate}
 
 Let $sample(Y, m)$ be a function that samples $m$ elements from data set $Y$ without replacement. 
 Let $Aug(Y, m, \hdots)$ be a function that imputes new elements independent of the data (using imputation parameters given by $\hdots$) for a data set $Y$ until it is of size $m$. 
 The algorithm will look something like the following:
 \begin{algorithm}[H]
-    \caption{Resize: resize(X, n, p, neighboring, ...)}
+    \caption{Resize: resize($X$, $n$, $p$, neighboring, ...)}
     \label{alg:gen_resize}
     \begin{algorithmic}[1]
         \State $c \gets \lceil p \rceil$ \Comment{sets c-stability property}
