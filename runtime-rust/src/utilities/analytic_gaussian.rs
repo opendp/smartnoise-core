@@ -8,6 +8,7 @@ use statrs::function::erf;
 use crate::utilities::noise;
 use crate::utilities;
 
+
 pub fn predicate_stop_DT(epsilon: &f64, s: &f64, delta: &f64, delta_thr: &f64) -> bool {
     let pred: bool;
     if (delta > delta_thr) {
@@ -49,7 +50,7 @@ pub fn function_s_to_alpha(epsilon: &f64, s: &f64, delta: &f64, delta_thr: &f64)
 }
 
 pub fn predicate_stop_BS(epsilon: &f64, s: &f64, delta: &f64, delta_thr: &f64, tol: &f64) -> bool {
-    let pred: bool = (function_s_to_delta(&epsilon, &s, &delta, &delta_thr) - *delta) <= *tol;
+    let pred: bool = (function_s_to_delta(&epsilon, &s, &delta, &delta_thr) - *delta).abs() <= *tol;
     return(pred);
 }
 
@@ -58,11 +59,11 @@ pub fn Phi(t: &f64) -> f64 {
 }
 
 pub fn caseA(epsilon: &f64, s: &f64) -> f64 {
-    return( Phi( &(epsilon*s).sqrt() ) - epsilon.exp() * Phi( &(epsilon*(s+2.)).sqrt() ) );
+    return( Phi( &(epsilon*s).sqrt() ) - epsilon.exp() * Phi( &(-(epsilon*(s+2.)).sqrt()) ) );
 }
 
 pub fn caseB(epsilon: &f64, s: &f64) -> f64 {
-    return( Phi( &(-(epsilon*s).sqrt() )) - epsilon.exp() * Phi( &(epsilon*(s+2.)).sqrt() ) );
+    return( Phi( &(-(epsilon*s).sqrt() )) - epsilon.exp() * Phi( &(-(epsilon*(s+2.)).sqrt()) ) );
 }
 
 pub fn doubling_trick(s_inf: &f64, s_sup: &f64, epsilon: &f64, delta: &f64, delta_thr: &f64) -> (f64, f64) {
@@ -96,9 +97,9 @@ pub fn get_analytic_gaussian_sigma(epsilon: &f64, delta: &f64, sensitivity: &f64
         alpha = 1.;
     } else {
         let (s_inf, s_sup) = doubling_trick(&0., &1., epsilon, delta, &delta_thr);
-        let tol: f64 = &s_sup * &2.0_f64.powf(-5.);
+        let tol: f64 = 10_f64.powf(-5.); //TODO: checking this -- Borja & Wang use 10**-12, but this yields a larger sigma than does 10**-5
         let s_final = binary_search(&s_inf, &s_sup, epsilon, delta, &delta_thr, &tol);
-        let alpha = function_s_to_alpha(epsilon, &s_final, delta, &delta_thr);
+        alpha = function_s_to_alpha(epsilon, &s_final, delta, &delta_thr);
     }
     return( alpha * *sensitivity / (2. * *epsilon).sqrt() );
 }
