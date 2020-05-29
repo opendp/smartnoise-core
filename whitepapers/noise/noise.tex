@@ -117,9 +117,9 @@ Let's first show that this procedure gives the correct expectation:
 		 &= \sum_{i=1}^{\infty} b_i \cdot \frac{1}{2^i} \\
 		 &= \sum_{i=1}^{\infty}\frac{b_i}{2^i}.
 \end{align*}
-This is consistent with the statement in Algorithm~\ref{alg:biasing_a_coin}, so we know that
+This is consistent with the statement in Algorithm~\ref{alg:biasing_a_coin_theory}, so we know that
 the process returns bits with the correct bias.
-In terms of efficiency, we know that we can stop coin flipping once we get a heads,
+In terms of efficiency, we know that we can stop flipping coins once we get a heads,
 so that part of the algorithm has $\E(\# flips) = 2$. \newline
 
 The part that is a bit more difficult is constructing the infinite binary expansion of $p$.
@@ -158,14 +158,14 @@ We end up with the following algorithm:
 \subsection{Sampling from Censored Geometric}
 The Geometric distribution is a building block for many of our other mechanism, either as the basis of the 
 noise distribution (as for the Geometric mechanism) or as a component of a larger algorithm (as we will show in 
-section~\ref{{subsec:unif_sampling}}). For now, the library supports sampling only from a censored Geometric distribution. 
+section~\ref{subsec:unif_sampling}). For now, the library supports sampling only from a censored Geometric distribution. 
 \begin{algorithm}[H]
 	\caption{Generating draws from Censored Geometric: \newline sample\_geometric\_censored(p: f64, max\_trials: i64, ect: bool)}
 	\label{alg:censored_geom_p}
 	\begin{algorithmic}[1]
 		\State trial\_index $\gets 1$
 		\State geom\_return $\gets 0$
-		\While trial\_index $\leq$ max\_trials
+		\While {trial\_index $\leq$ max\_trials}
 			\State bit $\gets sample\_bit(p)$
 			\If{bit $== 1$}
 				\If{geom\_return $== 0$} \Comment{Update result from Geometric only if we have not already seen a 1}
@@ -174,8 +174,7 @@ section~\ref{{subsec:unif_sampling}}). For now, the library supports sampling on
 						\State return geom\_return
 					\EndIf
 				\EndIf
-			\Else
-				\State trial\_index $+= 1$
+			\State trial\_index $+= 1$
 			\EndIf
 		\EndWhile
 		\If{geom\_return $== 0$} \Comment{If Geometric result $>$ censoring bound...}
