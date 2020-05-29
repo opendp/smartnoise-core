@@ -369,19 +369,20 @@ pub fn sample_geometric_censored(prob: &f64, max_trials: &i64, enforce_constant_
     let mut geom_return: i64 = 0;
 
     // generate bits until we find a 1
+    // if enforcing the runtime of the algorithm to be constant, the while loop
+    // continues after the 1 is found and just stores the first location of a 1 bit.
     while n_trials <= *max_trials {
         bit = sample_bit(prob)?;
         if bit == 1 {
+            // If we haven't seen a 1 yet, set the return to the current number of trials
             if geom_return == 0 {
                 geom_return = n_trials;
                 if enforce_constant_time == &false {
                     return Ok(geom_return);
                 }
             }
-            n_trials += 1;
-        } else {
-            n_trials += 1;
         }
+        n_trials += 1;
     }
 
     // set geom_return to max if we never saw a bit equaling 1
