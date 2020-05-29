@@ -96,7 +96,7 @@ pub fn get_analytic_gaussian_sigma(epsilon: &f64, delta: &f64, sensitivity: &f64
         alpha = 1.;
     } else {
         let (s_inf, s_sup) = doubling_trick(&0., &1., epsilon, delta, &delta_thr);
-        let tol: f64 = &s_sup * 2.powf(-5);
+        let tol: f64 = &s_sup * &2.0_f64.powf(-5.);
         let s_final = binary_search(&s_inf, &s_sup, epsilon, delta, &delta_thr, &tol);
         let alpha = function_s_to_alpha(epsilon, &s_final, delta, &delta_thr);
     }
