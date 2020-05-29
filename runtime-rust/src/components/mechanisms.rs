@@ -74,7 +74,7 @@ impl Evaluable for proto::GaussianMechanism {
                 .zip(sensitivity.iter())
                 .zip(epsilon.iter().zip(delta.iter()))
                 .map(|((v, sens), (eps, del))| {
-                    *v += utilities::mechanisms::gaussian_mechanism(&eps, &del, &sens)?;
+                    *v += utilities::mechanisms::analytic_gaussian_mechanism(&eps, &del, &sens)?;
                     Ok(())
                 }).collect::<Result<()>>())
             .collect::<Result<()>>()?;
