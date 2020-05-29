@@ -15,6 +15,38 @@ impl ThreadRandGen for GeneratorOpenSSL {
     }
 }
 
+/// Return sample from a censored Geometric distribution with parameter p=0.5 without calling to sample_bit.
+/// 
+/// The algorithm generates 1023 bits uniformly at random and returns the
+/// index of the first bit with value 1. If all 1023 bits are 0, then
+/// the algorithm acts as if the last bit was a 1 and returns 1023.
+/// 
+/// This is a less general version of the sample_geometric_censored function, designed to be used
+/// only inside of the sample_bit function. The major difference is that this function does not 
+/// call sample_bit itself (whereas sample_geometric_censored does), so having this more specialized
+/// version allows us to avoid an infinite dependence loop. 
+pub fn censored_specific_geom() -> Result<i16> {
+    let mut geom: i16 = 1023;
+    // read bytes in one at a time, need 128 to fully generate geometric
+    for i in 0..128 {
+        // read random bytes
+        let binary_string = utilities::get_bytes(1);
+        let binary_char_vec: Vec<char> = binary_string.chars().collect();
+
+        // find first element that is '1' and mark its overall index
+        let first_one_index = binary_char_vec.iter().position(|&x| x == '1');
+        let first_one_overall_index: i16;
+        if first_one_index.is_some() {
+            let first_one_index_int = first_one_index.unwrap() as i16;
+            first_one_overall_index = 8*i + first_one_index_int;
+        } else {
+            first_one_overall_index = geom;
+        }
+        geom = cmp::min(geom, first_one_overall_index+1);
+    }
+    return Ok(geom);
+}
+
 /// Sample a single bit with arbitrary probability of success
 ///
 /// Uses only an unbiased source of coin flips (sample_floating_point_probability_exponent).
@@ -51,8 +83,8 @@ pub fn sample_bit(prob: &f64) -> Result<i64> {
     // ensure that prob is a valid probability
     assert!(prob >= &0.0 && prob <= &1.0);
 
-    // repeatedly flip coin (up to 1023 times) and identify index (0-based) of first heads
-    let first_heads_index: i16 = (sample_geometric_censored(&0.5, &1023, &false)? - 1) as i16;
+    // repeatedly flip fair coin (up to 1023 times) and identify index (0-based) of first heads
+    let first_heads_index: i16 = censored_specific_geom()? - 1;
 
     // decompose probability into mantissa (string of bits) and exponent integer to quickly identify the value in the first_heads_index
     let (_sign, exponent, mantissa) = prob.decompose_raw();
