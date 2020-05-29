@@ -174,8 +174,8 @@ section~\ref{subsec:unif_sampling}). For now, the library supports sampling only
 						\State return geom\_return
 					\EndIf
 				\EndIf
-			\State trial\_index $+= 1$
 			\EndIf
+		\State trial\_index $+= 1$
 		\EndWhile
 		\If{geom\_return $== 0$} \Comment{If Geometric result $>$ censoring bound...}
 			\State return max\_trials \Comment{have it return the value of the bound}
