@@ -378,6 +378,7 @@ pub fn sample_geometric_censored(prob: &f64, max_trials: &i64, enforce_constant_
                     return Ok(geom_return);
                 }
             }
+            n_trials += 1;
         } else {
             n_trials += 1;
         }
