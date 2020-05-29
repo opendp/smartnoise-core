@@ -85,7 +85,7 @@ pub fn analytic_gaussian_mechanism(epsilon: &f64, delta: &f64, sensitivity: &f64
         return Err(format!("epsilon ({}), delta ({}) and sensitivity ({}) must all be positive", epsilon, delta, sensitivity).into());
     }
 
-    let scale: f64 = analytic_gaussian::get_analytic_gaussian_sigma(epsilon, delta, sensitivity;
+    let scale: f64 = analytic_gaussian::get_analytic_gaussian_sigma(epsilon, delta, sensitivity);
     let noise: f64 = noise::sample_gaussian(&0., &scale);
     Ok(noise)
 }
