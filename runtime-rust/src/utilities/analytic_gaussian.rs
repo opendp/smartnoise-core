@@ -89,14 +89,15 @@ pub fn binary_search(s_inf: &f64, s_sup: &f64, epsilon: &f64, delta: &f64, delta
     return( s_inf_mut + (s_sup_mut - s_inf_mut)/2. );
 }
 
-pub fn get_analytic_gaussian_sigma(epsilon: &f64, delta: &f64, sensitivity: &f64, tol: &f64) -> f64 {
+pub fn get_analytic_gaussian_sigma(epsilon: &f64, delta: &f64, sensitivity: &f64) -> f64 {
     let delta_thr = caseA(epsilon, &0.);
     let mut alpha: f64 = 0.;
     if (delta == &delta_thr) {
         alpha = 1.;
     } else {
         let (s_inf, s_sup) = doubling_trick(&0., &1., epsilon, delta, &delta_thr);
-        let s_final = binary_search(&s_inf, &s_sup, epsilon, delta, &delta_thr, tol);
+        let tol: f64 = &s_sup * 2.powf(-5);
+        let s_final = binary_search(&s_inf, &s_sup, epsilon, delta, &delta_thr, &tol);
         let alpha = function_s_to_alpha(epsilon, &s_final, delta, &delta_thr);
     }
     return( alpha * *sensitivity / (2. * *epsilon).sqrt() );
