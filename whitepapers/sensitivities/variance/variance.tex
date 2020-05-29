@@ -116,44 +116,40 @@ This follows from Theorem \ref{thm:l1change} with a renormalization by $n-1$.
 \end{proof}
 
 \subsection{$\ell_2$-sensitivity}
-\begin{theorem}
-\label{thm:l2change}
-	Let $X$ be a data set with $n$ elements, $x_1, \hdots, x_n$ and let
-	\[ f(X) = \sum_{i=1}^n (x_i - \bar{x})^2 \]
-	be the sample variance.
-	For $X$ bounded between $m$ and $M,$ $f(\cdot)$ has an $\ell_2$-sensitivity in the change-one model of
-	\[ \left( \frac{n-1}{n} (M-m)^2 \right)^2 \]
-\end{theorem}
+%\begin{theorem}
+%\label{thm:l2change}
+%	Let $X$ be a data set with $n$ elements, $x_1, \hdots, x_n$ and let
+%	\[ f(X) = \sum_{i=1}^n (x_i - \bar{x})^2 \]
+%	be the sample variance.
+%	For $X$ bounded between $m$ and $M,$ $f(\cdot)$ has an $\ell_2$-sensitivity in the change-one model of
+%	\[ \frac{n-1}{n} (M-m)^2 \]
+%\end{theorem}
 
-\begin{proof}
-	We can pick up from statement~\ref{eq:l1_np1_bound}, switching from an $\ell_1$ to an $\ell_2$ norm and interpreting the data sets in question to be of size $n$ rather than $n+1$.
-	\begin{align*}
-		(f(x') - f(x''))^2
-			&= \left( (x_{n}-\bar{x})^2 \frac{n-1}{n} - (x_{n}'-\bar{x})^2 \frac{n-1}{n} \right)^2 \\
-			&= \left( \frac{n-1}{n} \right)^2 \left( (x_n - \bar{x})^2 - (x'_n - \bar{x})^2 \right)^2 \\
-			&\leq \left( \frac{n-1}{n} \right)^2 \left( (M-m)^2 \right)^2 \\
-			&= \left( \frac{n-1}{n} \right)^2 (M - m)^4 \\
-			&= \left( \frac{n-1}{n} (M - m)^2 \right)^2.
-	\end{align*}
-\end{proof}
+%\begin{proof}
+%	Pick up from statement~\ref{eq:l1_np1_bound}, switching from an $\ell_1$ to an $\ell_2$ norm and interpret the data sets in question to be of size $n$ rather than $n+1$.
+%%	\begin{align*}
+%%		(f(x') - f(x''))^2
+%%			&= \left( (x_{n}-\bar{x})^2 \frac{n-1}{n} - (x_{n}'-\bar{x})^2 \frac{n-1}{n} \right)^2 \\
+%%			&= \left( \frac{n-1}{n} \right)^2 \left( (x_n - \bar{x})^2 - (x'_n - \bar{x})^2 \right)^2 \\
+%%			&\leq \left( \frac{n-1}{n} \right)^2 \left( (M-m)^2 \right)^2 \\
+%%			&= \left( \frac{n-1}{n} \right)^2 (M - m)^4 \\
+%%			&= \left( \frac{n-1}{n} (M - m)^2 \right)^2.
+%%	\end{align*}
+%\end{proof}
 
 \begin{corollary}
 Variance has $\ell_2$-sensitivity in the change-one model bounded above by
-$$ \left(\frac{n-1}{n^2} (M-m)^2\right)^2.$$ 
+$$ \frac{n-1}{n^2} (M-m)^2.$$ 
 \end{corollary}
-
-\begin{proof}
-This follows from Theorem \ref{thm:l2change} with a renormalization by $n$.
-\end{proof}
 
 \begin{corollary}
 Sample variance has $\ell_2$-sensitivity in the change-one model bounded above by
-$$ \left(\frac{1}{n} (M-m)^2\right)^2.$$ 
+$$ \frac{1}{n} (M-m)^2.$$ 
 \end{corollary}
 
-\begin{proof}
-This follows from Theorem \ref{thm:l2change} with a renormalization by $n-1$.
-\end{proof}
+%\begin{proof}
+%This follows from Theorem \ref{thm:l2change} with a renormalization by $n-1$.
+%\end{proof}
 
 \section{Neighboring Definition: Add/Drop One}
 \subsection{$\ell_1$-sensitivity}
@@ -234,25 +230,25 @@ This follows from Theorem \ref{thm:l1addsub} with a renormalization by $n-1$.
 \begin{theorem}
 \label{thm:l2addsub}
 Variance has $\ell_2$-sensitivity in the add/drop one model bounded above by
-	$$ \left( \left( M-m \right)^2 \frac{1}{n+1} \right)^2.$$
+	$$ \left( M-m \right)^2 \frac{1}{n+1} .$$
 \end{theorem}
 
-\begin{proof}
-Because the bounds in Equations \ref{eq:L1add} and \ref{eq:L1sub} are positive, they hold for their square. Then, by the inequality for $n \ge 1$ in Equation \ref{ineq} it follows that the $\ell_2$ sensitivity of the variance is bounded by 
-$$
-\left( \left( M-m \right)^2 \frac{1}{n+1} \right)^2,
-$$
-where the change in constant from Equations \ref{eq:L1add} to $1/(n+1)$ comes from the $1/n$ in the definition of variance.
-\end{proof}
+%\begin{proof}
+%Because the bounds in Equations \ref{eq:L1add} and \ref{eq:L1sub} are positive, they hold for their square. Then, by the inequality for $n \ge 1$ in Equation \ref{ineq} it follows that the $\ell_2$ sensitivity of the variance is bounded by 
+%$$
+%\left( \left( M-m \right)^2 \frac{1}{n+1} \right)^2,
+%$$
+%where the change in constant from Equations \ref{eq:L1add} to $1/(n+1)$ comes from the $1/n$ in the definition of variance.
+%\end{proof}
 
 \begin{corollary}
 Sample variance has $\ell_2$-sensitivity in the add/drop one model bounded above by
-	$$ \left( \left( M-m \right)^2 \frac{n}{n^2 - 1} \right)^2.$$
+	$$ \left( M-m \right)^2 \frac{n}{n^2 - 1}.$$
 \end{corollary}
 
-\begin{proof}
-The logic here is the same as for \ref{thm:l2addsub} with a renormalization by $n-1$ rather than by $n$.
-\end{proof}
+%\begin{proof}
+%The logic here is the same as for \ref{thm:l2addsub} with a renormalization by $n-1$ rather than by $n$.
+%\end{proof}
 
 \bibliographystyle{alpha}
 \bibliography{mean}
