@@ -72,22 +72,14 @@ impl Sensitivity for proto::Sum {
                     .ok_or_else(|| Error::from("neighboring definition must be either \"AddRemove\" or \"Substitute\""))?;
 
                 let row_sensitivity = match k {
-                    1 => match neighboring_type {
+                    1|2 => match neighboring_type {
                         Neighboring::AddRemove => data_lower.iter().zip(data_upper.iter())
                             .map(|(min, max)| min.abs().max(max.abs()))
                             .collect::<Vec<f64>>(),
                         Neighboring::Substitute => data_lower.iter().zip(data_upper.iter())
                             .map(|(min, max)| max - min)
                             .collect::<Vec<f64>>()
-                    },
-                    2 => match neighboring_type {
-                        Neighboring::AddRemove => data_lower.iter().zip(data_upper.iter())
-                            .map(|(min, max)| min.powi(2).max(max.powi(2)))
-                            .collect::<Vec<f64>>(),
-                        Neighboring::Substitute => data_lower.iter().zip(data_upper.iter())
-                            .map(|(min, max)| (max - min).powi(2))
-                            .collect::<Vec<f64>>()
-                    },
+                    }
                     _ => return Err("KNorm sensitivity is only supported in L1 and L2 spaces".into())
                 };
 

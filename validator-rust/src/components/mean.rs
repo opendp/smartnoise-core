@@ -68,7 +68,7 @@ impl Sensitivity for proto::Mean {
 
                 let row_sensitivity = match k {
                     1 | 2 => data_lower.iter().zip(data_upper.iter())
-                        .map(|(min, max)| ((max - min) / data_n).powi(*k as i32))
+                        .map(|(min, max)| ((max - min) / data_n))
                         .collect::<Vec<f64>>(),
                     _ => return Err("KNorm sensitivity is only supported in L1 and L2 spaces".into())
                 };
