@@ -1,5 +1,6 @@
 pub mod mechanisms;
 pub mod noise;
+pub mod analytic_gaussian;
 
 use whitenoise_validator::errors::*;
 
