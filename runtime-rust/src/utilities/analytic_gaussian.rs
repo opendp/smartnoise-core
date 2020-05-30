@@ -98,12 +98,9 @@ pub fn get_analytic_gaussian_sigma(epsilon: &f64, delta: &f64, sensitivity: &f64
         alpha = 1.;
     } else {
         let (s_inf, s_sup) = doubling_trick(&0., &1., epsilon, delta, &delta_thr);
-        println!("s_inf: {}, s_sup: {}", s_inf, s_sup);
         let tol: f64 = 10_f64.powf(-12.);
         let s_final = binary_search(&s_inf, &s_sup, epsilon, delta, &delta_thr, &tol);
-        println!("s_final: {}", s_final);
         alpha = function_s_to_alpha(epsilon, &s_final, delta, &delta_thr);
-        println!("alpha: {}", alpha);
     }
     return( alpha * *sensitivity / (2. * *epsilon).sqrt() );
 }
