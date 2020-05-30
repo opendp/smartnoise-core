@@ -8,9 +8,6 @@ use statrs::function::erf;
 use crate::utilities::noise;
 use crate::utilities;
 
-
-use statrs::function::erf;
-
 pub fn predicate_stop_DT(epsilon: &f64, s: &f64, delta: &f64, delta_thr: &f64) -> bool {
     let pred: bool;
     if (delta > delta_thr) {
