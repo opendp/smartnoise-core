@@ -9,6 +9,8 @@ use crate::utilities::noise;
 use crate::utilities;
 
 
+use statrs::function::erf;
+
 pub fn predicate_stop_DT(epsilon: &f64, s: &f64, delta: &f64, delta_thr: &f64) -> bool {
     let pred: bool;
     if (delta > delta_thr) {
@@ -50,8 +52,9 @@ pub fn function_s_to_alpha(epsilon: &f64, s: &f64, delta: &f64, delta_thr: &f64)
 }
 
 pub fn predicate_stop_BS(epsilon: &f64, s: &f64, delta: &f64, delta_thr: &f64, tol: &f64) -> bool {
-    let pred: bool = (function_s_to_delta(&epsilon, &s, &delta, &delta_thr) - *delta).abs() <= *tol;
-    return(pred);
+    let pred_1: bool = (function_s_to_delta(epsilon, s, delta, delta_thr) - *delta).abs() <= *tol;
+    let pred_2: bool = function_s_to_delta(epsilon, s, delta, delta_thr) <= *delta;
+    return(pred_1 & pred_2);
 }
 
 pub fn Phi(t: &f64) -> f64 {
@@ -86,8 +89,9 @@ pub fn binary_search(s_inf: &f64, s_sup: &f64, epsilon: &f64, delta: &f64, delta
         } else {
             s_inf_mut = s_mid;
         }
+        s_mid = s_inf_mut + (s_sup_mut - s_inf_mut)/2.;
     }
-    return( s_inf_mut + (s_sup_mut - s_inf_mut)/2. );
+    return(s_mid);
 }
 
 pub fn get_analytic_gaussian_sigma(epsilon: &f64, delta: &f64, sensitivity: &f64) -> f64 {
@@ -97,9 +101,12 @@ pub fn get_analytic_gaussian_sigma(epsilon: &f64, delta: &f64, sensitivity: &f64
         alpha = 1.;
     } else {
         let (s_inf, s_sup) = doubling_trick(&0., &1., epsilon, delta, &delta_thr);
-        let tol: f64 = 10_f64.powf(-5.); //TODO: checking this -- Borja & Wang use 10**-12, but this yields a larger sigma than does 10**-5
+        println!("s_inf: {}, s_sup: {}", s_inf, s_sup);
+        let tol: f64 = 10_f64.powf(-12.);
         let s_final = binary_search(&s_inf, &s_sup, epsilon, delta, &delta_thr, &tol);
+        println!("s_final: {}", s_final);
         alpha = function_s_to_alpha(epsilon, &s_final, delta, &delta_thr);
+        println!("alpha: {}", alpha);
     }
     return( alpha * *sensitivity / (2. * *epsilon).sqrt() );
 }
