@@ -215,7 +215,7 @@ The algorithm will look something like the following:
         \ElsIf{neighboring == ``add/remove one''}
             \State $m \gets Binomial(c\tilde{n}, s)$ \Comment{number of records that can be filled using subsampled private data}
         \EndIf
-        \State $(\epsilon', \delta') \gets \left(\log\left(1+s\left(e^{c\epsilon}-1\right) \right), s\left(\sum_{i=1}^{c-1}e^{i \epsilon}\right)\delta \right)$ \Comment{privacy amplification via subsampling}
+        \State $(\epsilon', \delta') \gets \left(\log\left(1+s\left(e^{c\epsilon}-1\right) \right), s\left(\sum_{i=0}^{c-1}e^{i \epsilon}\right)\delta \right)$ \Comment{privacy amplification via subsampling}
         \State $X' \gets sample\left( X_c, \max(m, n), neighboring \right) \bigcup \left( Aug(\varnothing, \max(0, n - m), \hdots) \right)$
         \\ \Return $(X', \epsilon', \delta')$
     \end{algorithmic}
