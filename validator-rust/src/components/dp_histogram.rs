@@ -4,13 +4,13 @@ use crate::errors::*;
 use std::collections::HashMap;
 
 use crate::{proto, base};
-use crate::hashmap;
 use crate::components::{Expandable, Report};
 use ndarray::{arr0};
 
-use crate::base::{NodeProperties, Value};
+use crate::base::{NodeProperties, Value, IndexKey};
 use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, value_to_json};
-use crate::utilities::{prepend, get_ith_column, get_literal, privacy::broadcast_privacy_usage};
+use crate::utilities::{prepend, get_ith_column, get_literal, privacy::spread_privacy_usage};
+use indexmap::map::IndexMap;
 
 
 impl Expandable for proto::DpHistogram {
@@ -26,34 +26,35 @@ impl Expandable for proto::DpHistogram {
         let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
         let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
 
-        let data_id = component.arguments.get("data")
+        let data_id = component.arguments().get::<IndexKey>(&"data".into())
             .ok_or_else(|| Error::from("data is a required argument to DPHistogram"))?.to_owned();
 
-        let data_property = properties.get("data")
+        let data_property = properties.get::<IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?;
 
         // histogram
         maximum_id += 1;
         let id_histogram = maximum_id;
-        let mut histogram_arguments = hashmap!["data".to_owned() => data_id];
-        component.arguments.get("categories")
-            .map(|v| histogram_arguments.insert("categories".to_string(), *v));
-        component.arguments.get("null_value")
-            .map(|v| histogram_arguments.insert("null_value".to_string(), *v));
-        component.arguments.get("edges")
-            .map(|v| histogram_arguments.insert("edges".to_string(), *v));
-        component.arguments.get("inclusive_left")
-            .map(|v| histogram_arguments.insert("inclusive_left".to_string(), *v));
+        let mut histogram_arguments = indexmap!["data".into() => data_id];
+        let arguments = component.arguments();
+        arguments.get::<IndexKey>(&"categories".into())
+            .map(|v| histogram_arguments.insert("categories".into(), *v));
+        arguments.get::<IndexKey>(&"null_value".into())
+            .map(|v| histogram_arguments.insert("null_value".into(), *v));
+        arguments.get::<IndexKey>(&"edges".into())
+            .map(|v| histogram_arguments.insert("edges".into(), *v));
+        arguments.get::<IndexKey>(&"inclusive_left".into())
+            .map(|v| histogram_arguments.insert("inclusive_left".into(), *v));
         computation_graph.insert(id_histogram, proto::Component {
-            arguments: histogram_arguments,
+            arguments: Some(proto::IndexmapNodeIds::new(histogram_arguments)),
             variant: Some(proto::component::Variant::Histogram(proto::Histogram {})),
             omit: true,
             submission: component.submission,
         });
 
         if self.mechanism.to_lowercase().as_str() == "simplegeometric" {
-            let id_upper = match component.arguments.get("upper") {
+            let id_upper = match arguments.get::<IndexKey>(&"upper".into()) {
                 Some(id) => id.clone(),
                 None => {
                     let count_max = match data_property.num_records {
@@ -75,12 +76,12 @@ impl Expandable for proto::DpHistogram {
 
             // noising
             computation_graph.insert(*component_id, proto::Component {
-                arguments: hashmap![
-                    "data".to_owned() => id_histogram,
-                    "lower".to_owned() => *component.arguments.get("lower")
+                arguments: Some(proto::IndexmapNodeIds::new(indexmap![
+                    "data".into() => id_histogram,
+                    "lower".into() => *arguments.get::<IndexKey>(&"lower".into())
                         .ok_or_else(|| Error::from("lower must be provided as an argument"))?,
-                    "upper".to_owned() => id_upper
-                ],
+                    "upper".into() => id_upper
+                ])),
                 variant: Some(proto::component::Variant::SimpleGeometricMechanism(proto::SimpleGeometricMechanism {
                     privacy_usage: self.privacy_usage.clone(),
                     enforce_constant_time: false
@@ -128,19 +129,19 @@ impl Report for proto::DpHistogram {
         &self,
         node_id: &u32,
         component: &proto::Component,
-        _public_arguments: &HashMap<String, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &NodeProperties,
         release: &Value,
         variable_names: Option<&Vec<String>>,
     ) -> Result<Option<Vec<JSONRelease>>> {
-        let data_property = properties.get("data")
+        let data_property = properties.get::<base::IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
         let mut releases = Vec::new();
 
         let num_columns = data_property.num_columns()?;
-        let privacy_usages = broadcast_privacy_usage(&self.privacy_usage, num_columns as usize)?;
+        let privacy_usages = spread_privacy_usage(&self.privacy_usage, num_columns as usize)?;
 
         for column_number in 0..(num_columns as usize) {
             let variable_name = variable_names

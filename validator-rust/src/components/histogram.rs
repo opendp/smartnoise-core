@@ -2,24 +2,24 @@ use crate::errors::*;
 
 use std::collections::HashMap;
 
-use crate::{proto, Warnable};
+use crate::{proto, Warnable, base};
 
 use crate::components::{Component, Sensitivity, Expandable};
-use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType, NatureContinuous, Nature, Vector1DNull, Jagged};
+use crate::base::{IndexKey, Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType, NatureContinuous, Nature, Vector1DNull, Jagged};
 use crate::utilities::{prepend, get_literal};
 use ndarray::{arr1, Array};
-use crate::hashmap;
+use indexmap::map::IndexMap;
 
 
 impl Component for proto::Histogram {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &HashMap<String, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let mut data_property = properties.get("data")
+        let mut data_property = properties.get::<base::IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
@@ -74,60 +74,64 @@ impl Expandable for proto::Histogram {
         let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
         let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
 
-        let data_id = component.arguments.get("data")
+        let data_id = component.arguments().get::<IndexKey>(&"data".into())
             .ok_or_else(|| Error::from("data is a required argument to Histogram"))?.to_owned();
 
         let mut component = component.clone();
 
         let mut traversal = Vec::<u32>::new();
-        match (component.arguments.get("edges"), component.arguments.get("categories")) {
+        match (
+            component.arguments().get::<IndexKey>(&"edges".into()),
+            component.arguments().get::<IndexKey>(&"categories".into())) {
 
             (Some(edges_id), None) => {
                 // digitize
-                let mut arguments = hashmap![
-                    "data".to_owned() => data_id,
-                    "edges".to_owned() => *edges_id
+                let mut arguments = indexmap![
+                    IndexKey::from("data") => data_id,
+                    "edges".into() => *edges_id
                 ];
 
-                component.arguments.get("null_value")
-                    .map(|v| arguments.insert("null_value".to_string(), *v));
-                component.arguments.get("inclusive_left")
-                    .map(|v| arguments.insert("inclusive_left".to_string(), *v));
+                let prior_arguments = component.arguments();
+                prior_arguments.get::<IndexKey>(&"null_value".into())
+                    .map(|v| arguments.insert("null_value".into(), *v));
+                prior_arguments.get::<IndexKey>(&"inclusive_left".into())
+                    .map(|v| arguments.insert("inclusive_left".into(), *v));
 
                 current_id += 1;
                 let id_digitize = current_id;
                 computation_graph.insert(id_digitize, proto::Component {
-                    arguments,
+                    arguments: Some(proto::IndexmapNodeIds::new(arguments)),
                     variant: Some(proto::component::Variant::Digitize(proto::Digitize {})),
                     omit: true,
                     submission: component.submission,
                 });
-                component.arguments = hashmap!["data".to_string() => id_digitize];
+                component.arguments = Some(proto::IndexmapNodeIds::new(indexmap!["data".into() => id_digitize]));
                 traversal.push(id_digitize);
             }
 
             (None, Some(categories_id)) => {
                 // clamp
-                let null_id = component.arguments.get("null_value")
+                let prior_arguments = component.arguments();
+                let null_id = prior_arguments.get::<IndexKey>(&"null_value".into())
                     .ok_or_else(|| Error::from("null_value is a required argument to Histogram when categories are not known"))?;
                 current_id += 1;
                 let id_clamp = current_id;
                 computation_graph.insert(id_clamp, proto::Component {
-                    arguments: hashmap![
-                        "data".to_owned() => data_id,
-                        "categories".to_owned() => *categories_id,
-                        "null_value".to_owned() => *null_id
-                    ],
+                    arguments: Some(proto::IndexmapNodeIds::new(indexmap![
+                        "data".into() => data_id,
+                        "categories".into() => *categories_id,
+                        "null_value".into() => *null_id
+                    ])),
                     variant: Some(proto::component::Variant::Clamp(proto::Clamp {})),
                     omit: true,
                     submission: component.submission,
                 });
-                component.arguments = hashmap!["data".to_string() => id_clamp];
+                component.arguments = Some(proto::IndexmapNodeIds::new(indexmap!["data".into() => id_clamp]));
                 traversal.push(id_clamp);
             }
 
             (None, None) => {
-                let data_property = properties.get("data")
+                let data_property = properties.get::<IndexKey>(&"data".into())
                     .ok_or("data: missing")?.array()
                     .map_err(prepend("data:"))?.clone();
 
@@ -137,7 +141,8 @@ impl Expandable for proto::Histogram {
 
                 current_id += 1;
                 let id_categories = current_id;
-                let categories = properties.get("data").ok_or("data: missing")?.array()?.categories()?;
+                let categories = properties.get::<IndexKey>(&"data".into())
+                    .ok_or("data: missing")?.array()?.categories()?;
                 let value = match categories {
                     Jagged::I64(jagged) => arr1(&jagged[0]).into_dyn().into(),
                     Jagged::F64(jagged) => arr1(&jagged[0]).into_dyn().into(),
@@ -148,7 +153,7 @@ impl Expandable for proto::Histogram {
                 computation_graph.insert(id_categories.clone(), patch_node);
                 releases.insert(id_categories.clone(), categories_release);
 
-                component.arguments.insert("categories".to_string(), id_categories);
+                component.insert_argument(&"categories".into(), id_categories);
             }
 
             (Some(_), Some(_)) => return Err("either edges or categories must be supplied".into())
@@ -175,7 +180,7 @@ impl Sensitivity for proto::Histogram {
         properties: &NodeProperties,
         sensitivity_type: &SensitivitySpace
     ) -> Result<Value> {
-        let data_property = properties.get("data")
+        let data_property = properties.get::<base::IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 

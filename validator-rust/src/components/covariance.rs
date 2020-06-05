@@ -1,25 +1,24 @@
 use crate::errors::*;
 
 
-use std::collections::HashMap;
-
 use crate::{proto, base, Warnable};
 
 use crate::components::{Component, Sensitivity};
-use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType};
+use crate::base::{IndexKey, Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType};
 use crate::utilities::prepend;
 use ndarray::prelude::*;
+use indexmap::map::IndexMap;
 
 impl Component for proto::Covariance {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &HashMap<String, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        if properties.contains_key("data") {
-            let mut data_property = properties.get("data")
+        if properties.contains_key(&IndexKey::from("data")) {
+            let mut data_property = properties.get::<IndexKey>(&"data".into())
                 .ok_or("data: missing")?.array()
                 .map_err(prepend("data:"))?.clone();
 
@@ -54,12 +53,12 @@ impl Component for proto::Covariance {
             // min/max of data is not known after computing covariance
             data_property.nature = None;
             Ok(ValueProperties::Array(data_property).into())
-        } else if properties.contains_key("left") && properties.contains_key("right") {
-            let mut left_property = properties.get("left")
+        } else if properties.contains_key::<IndexKey>(&"left".into()) && properties.contains_key::<IndexKey>(&"right".into()) {
+            let mut left_property = properties.get::<IndexKey>(&"left".into())
                 .ok_or("left: missing")?.array()
                 .map_err(prepend("left:"))?.clone();
 
-            let right_property = properties.get("right")
+            let right_property = properties.get::<IndexKey>(&"right".into())
                 .ok_or("right: missing")?.array()
                 .map_err(prepend("right:"))?.clone();
 
@@ -117,7 +116,7 @@ impl Sensitivity for proto::Covariance {
         match sensitivity_type {
             SensitivitySpace::KNorm(k) => {
                 let data_n;
-                let differences = match (properties.get("data"), properties.get("left"), properties.get("right")) {
+                let differences = match (properties.get(&IndexKey::from("data")), properties.get::<IndexKey>(&"left".into()), properties.get::<IndexKey>(&"right".into())) {
                     (Some(data_property), None, None) => {
 
                         // data: perform checks and prepare parameters

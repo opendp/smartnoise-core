@@ -1,30 +1,31 @@
 use crate::errors::*;
 
-use std::collections::HashMap;
 
-use crate::{proto, Warnable};
+use crate::{proto, Warnable, base};
 
 use crate::components::{Component, Sensitivity};
-use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType, NatureContinuous, Nature, Vector1DNull};
+use crate::base::{IndexKey, Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType, NatureContinuous, Nature, Vector1DNull};
 use ndarray::{arr1};
 use itertools::Itertools;
+use indexmap::map::IndexMap;
 
 
 impl Component for proto::Count {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &HashMap<String, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
 
-        let mut data_property = match properties.get("data").ok_or("data: missing")?.clone() {
+        let mut data_property = match properties.get::<IndexKey>(&"data".into()).ok_or("data: missing")?.clone() {
             ValueProperties::Array(data_property) => data_property,
             ValueProperties::Indexmap(data_property) => {
                 data_property.assert_is_dataframe()?;
-                data_property.properties.values().first()
-                    .ok_or_else(|| Error::from("dataframe must have at least one column"))?.array()?.to_owned()
+                data_property.properties.get_index(0)
+                    .ok_or_else(|| Error::from("dataframe must have at least one column"))?
+                    .1.array()?.to_owned()
             },
             ValueProperties::Jagged(_) => return Err("Count is not implemented on jagged arrays".into()),
             ValueProperties::Function(_) => return Err("Count is not implemented for functions".into())
@@ -41,7 +42,7 @@ impl Component for proto::Count {
         data_property.num_records = Some(1);
         data_property.num_columns = Some(1);
 
-        let c_stability = match properties.get("data")
+        let c_stability = match properties.get::<IndexKey>(&"data".into())
             .ok_or("data: missing")? {
             ValueProperties::Array(value) => {
                 value.assert_is_not_aggregated()?;
@@ -54,7 +55,7 @@ impl Component for proto::Count {
                 value.assert_is_dataframe()?;
 
                 // overall c_stability is the maximal c_stability of any column
-                vec![value.properties.values().iter()
+                vec![value.properties.values()
                     .map(|v| v.array().map(|v| v.c_stability.clone()))
                     .collect::<Result<Vec<Vec<f64>>>>()?.into_iter()
                     .flatten()
@@ -92,7 +93,7 @@ impl Sensitivity for proto::Count {
         sensitivity_type: &SensitivitySpace
     ) -> Result<Value> {
 
-        let (num_records, c_stability) = match properties.get("data")
+        let (num_records, c_stability) = match properties.get(&IndexKey::from("data"))
             .ok_or("data: missing")? {
             ValueProperties::Array(value) => {
                 value.assert_is_not_aggregated()?;
@@ -106,7 +107,7 @@ impl Sensitivity for proto::Count {
                 value.assert_is_dataframe()?;
 
                 // overall c_stability is the maximal c_stability of any column
-                let c_stability = value.properties.values().iter()
+                let c_stability = value.properties.values()
                     .map(|v| v.array().map(|v| v.c_stability.clone()))
                     .collect::<Result<Vec<Vec<f64>>>>()?.into_iter()
                     .flatten()

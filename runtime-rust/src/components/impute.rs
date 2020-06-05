@@ -1,7 +1,7 @@
 use whitenoise_validator::errors::*;
 
 use crate::components::Evaluable;
-use whitenoise_validator::base::{Value, Array, Jagged, ReleaseNode};
+use whitenoise_validator::base::{Value, Array, Jagged, ReleaseNode, IndexKey};
 use whitenoise_validator::utilities::{standardize_numeric_argument, standardize_categorical_argument, standardize_weight_argument, get_argument, standardize_null_candidates_argument};
 use crate::NodeArguments;
 use crate::utilities::{noise};
@@ -16,7 +16,7 @@ impl Evaluable for proto::Impute {
     fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
 
         // if categories argument is not None, treat data as categorical (regardless of atomic type)
-        if arguments.contains_key("categories") {
+        if arguments.contains_key::<IndexKey>(&"categories".into()) {
             let weights = get_argument(arguments, "weights")
                 .and_then(|v| v.jagged()).and_then(|v| v.f64()).ok();
 

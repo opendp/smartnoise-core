@@ -1,24 +1,22 @@
 use crate::errors::*;
 
-
-use std::collections::HashMap;
-
 use crate::{proto, base, Warnable};
 
 use crate::components::{Component, Sensitivity};
-use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType};
+use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType, IndexKey};
 use crate::utilities::prepend;
 use ndarray::prelude::*;
+use indexmap::map::IndexMap;
 
 impl Component for proto::Variance {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &HashMap<String, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let mut data_property = properties.get("data")
+        let mut data_property = properties.get::<IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
@@ -59,7 +57,7 @@ impl Sensitivity for proto::Variance {
         match sensitivity_type {
             SensitivitySpace::KNorm(k) => {
 
-                let data_property = properties.get("data")
+                let data_property = properties.get::<IndexKey>(&"data".into())
                     .ok_or("data: missing")?.array()
                     .map_err(prepend("data:"))?.clone();
 

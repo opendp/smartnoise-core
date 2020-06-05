@@ -1,6 +1,6 @@
 use whitenoise_validator::errors::*;
 use whitenoise_validator::proto;
-use whitenoise_validator::base::{Value, Array, Jagged, ReleaseNode};
+use whitenoise_validator::base::{Value, Array, Jagged, ReleaseNode, IndexKey};
 use whitenoise_validator::utilities::{get_argument, standardize_numeric_argument};
 
 use ndarray::{ArrayD, Axis};
@@ -18,12 +18,12 @@ use std::hash::Hash;
 
 impl Evaluable for proto::Resize {
     fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        let mut number_rows = arguments.get("number_rows")
+        let mut number_rows = arguments.get::<IndexKey>(&"number_rows".into())
             .and_then(|v| v.first_i64().ok());
-        let number_cols = arguments.get("number_columns")
+        let number_cols = arguments.get::<IndexKey>(&"number_columns".into())
             .and_then(|v| v.first_i64().ok());
 
-        let minimum_rows = arguments.get("minimum_rows")
+        let minimum_rows = arguments.get::<IndexKey>(&"minimum_rows".into())
             .and_then(|v| v.first_i64().ok());
 
         if let Some(minimum_rows) = minimum_rows {
@@ -32,7 +32,7 @@ impl Evaluable for proto::Resize {
 
         // If "categories" constraint has been propagated, data are treated as categorical (regardless of atomic type)
         // and imputation (if necessary) is done by sampling from "categories" using the "probabilities" as sampling probabilities for each element.
-        if arguments.contains_key("categories") {
+        if arguments.contains_key::<IndexKey>(&"categories".into()) {
             let weights = get_argument(arguments, "weights")
                 .and_then(|v| v.jagged()).and_then(|v| v.f64()).ok();
 

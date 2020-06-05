@@ -8,18 +8,19 @@ use crate::utilities::{prepend, get_literal, standardize_null_target_argument};
 use crate::components::{Component, Expandable};
 
 use ndarray;
-use crate::base::{Value, NatureContinuous};
+use crate::base::{IndexKey, Value, NatureContinuous};
+use indexmap::map::IndexMap;
 
 
 impl Component for proto::Clamp {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: &HashMap<String, Value>,
+        public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let mut data_property = properties.get("data")
+        let mut data_property = properties.get::<IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
@@ -31,8 +32,8 @@ impl Component for proto::Clamp {
         }
 
         // handle categorical clamping
-        if let Some(categories) = public_arguments.get("categories") {
-            let null = public_arguments.get("null_value")
+        if let Some(categories) = public_arguments.get::<IndexKey>(&"categories".into()) {
+            let null = public_arguments.get::<IndexKey>(&"null_value".into())
                 .ok_or_else(|| Error::from("null value must be defined when clamping by categories"))?
                 .array()?;
 
@@ -71,12 +72,12 @@ impl Component for proto::Clamp {
             DataType::F64 => {
 
                 // 1. check public arguments (constant n)
-                let mut clamp_lower = match public_arguments.get("lower") {
+                let mut clamp_lower = match public_arguments.get::<IndexKey>(&"lower".into()) {
                     Some(min) => min.clone().array()?.clone().vec_f64(Some(num_columns))
                         .map_err(prepend("lower:"))?,
 
                     // 2. then private arguments (for example from another clamped column)
-                    None => match properties.get("lower") {
+                    None => match properties.get::<IndexKey>(&"lower".into()) {
                         Some(min) => min.array()?.lower_f64()
                             .map_err(prepend("lower:"))?,
 
@@ -87,12 +88,12 @@ impl Component for proto::Clamp {
                 };
 
                 // 1. check public arguments (constant n)
-                let mut clamp_upper = match public_arguments.get("upper") {
+                let mut clamp_upper = match public_arguments.get::<IndexKey>(&"upper".into()) {
                     Some(upper) => upper.array()?.clone().vec_f64(Some(num_columns))
                         .map_err(prepend("upper:"))?,
 
                     // 2. then private arguments (for example from another clamped column)
-                    None => match properties.get("upper") {
+                    None => match properties.get::<IndexKey>(&"upper".into()) {
                         Some(upper) => upper.array()?.upper_f64()
                             .map_err(prepend("upper:"))?,
 
@@ -133,12 +134,12 @@ impl Component for proto::Clamp {
 
             DataType::I64 => {
                 // 1. check public arguments (constant n)
-                let mut clamp_lower = match public_arguments.get("lower") {
+                let mut clamp_lower = match public_arguments.get::<IndexKey>(&"lower".into()) {
                     Some(lower) => lower.clone().array()?.clone().vec_i64(Some(num_columns))
                         .map_err(prepend("lower:"))?,
 
                     // 2. then private arguments (for example from another clamped column)
-                    None => match properties.get("lower") {
+                    None => match properties.get::<IndexKey>(&"lower".into()) {
                         Some(lower) => lower.array()?.lower_i64()
                             .map_err(prepend("lower:"))?,
 
@@ -149,12 +150,12 @@ impl Component for proto::Clamp {
                 };
 
                 // 1. check public arguments (constant n)
-                let mut clamp_upper = match public_arguments.get("upper") {
+                let mut clamp_upper = match public_arguments.get::<IndexKey>(&"upper".into()) {
                     Some(upper) => upper.array()?.clone().vec_i64(Some(num_columns))
                         .map_err(prepend("upper:"))?,
 
                     // 2. then private arguments (for example from another clamped column)
-                    None => match properties.get("upper") {
+                    None => match properties.get::<IndexKey>(&"upper".into()) {
                         Some(upper) => upper.array()?.upper_i64()
                             .map_err(prepend("upper:"))?,
 
@@ -215,28 +216,28 @@ impl Expandable for proto::Clamp {
         let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
 
         let mut component = component.clone();
-        let has_categorical = properties.contains_key("categories");
+        let has_categorical = properties.contains_key(&IndexKey::from("categories"));
 
-        if !has_categorical && !properties.contains_key("lower") {
+        if !has_categorical && !properties.contains_key::<IndexKey>(&"lower".into()) {
             current_id += 1;
             let id_lower = current_id.to_owned();
             let value = Value::Array(Array::F64(
-                ndarray::Array::from(properties.get("data").unwrap().to_owned().array()?.lower_f64()?).into_dyn()));
+                ndarray::Array::from(properties.get::<IndexKey>(&"data".into()).unwrap().to_owned().array()?.lower_f64()?).into_dyn()));
             let (patch_node, release) = get_literal(value, &component.submission)?;
             computation_graph.insert(id_lower.clone(), patch_node);
             releases.insert(id_lower.clone(), release);
-            component.arguments.insert("lower".to_string(), id_lower);
+            component.insert_argument(&"lower".into(), id_lower);
         }
 
-        if !has_categorical && !properties.contains_key("upper") {
+        if !has_categorical && !properties.contains_key::<IndexKey>(&"upper".into()) {
             current_id += 1;
             let id_upper = current_id.to_owned();
             let value = Value::Array(Array::F64(
-                ndarray::Array::from(properties.get("data").unwrap().to_owned().array()?.upper_f64()?).into_dyn()));
+                ndarray::Array::from(properties.get::<IndexKey>(&"data".into()).unwrap().to_owned().array()?.upper_f64()?).into_dyn()));
             let (patch_node, release) = get_literal(value, &component.submission)?;
             computation_graph.insert(id_upper.clone(), patch_node);
             releases.insert(id_upper.clone(), release);
-            component.arguments.insert("upper".to_string(), id_upper);
+            component.insert_argument(&"upper".into(), id_upper);
         }
 
         computation_graph.insert(component_id.clone(), component);

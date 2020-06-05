@@ -30,8 +30,8 @@ package whitenoise;
 import "value.proto";
 
 message Component {
-    // uint32 value is source_node_id
-    map<string, uint32> arguments = 1;
+    IndexmapNodeIds arguments = 1;
+
     // if true, then don't include the evaluation for this component in the release
     bool omit = 2;
     // for interactive analyses

@@ -16,7 +16,7 @@ impl Component for proto::Bin {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: &HashMap<String, Value>,
+        public_arguments: &IndexMap<String, Value>,
         properties: &NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {

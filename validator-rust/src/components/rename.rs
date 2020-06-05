@@ -13,7 +13,7 @@ impl Component for proto::Rename {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: &HashMap<String, Value>,
+        public_arguments: &IndexMap<String, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
@@ -55,8 +55,8 @@ impl Component for proto::Rename {
 impl Named for proto::Rename {
     fn get_names(
         &self,
-        public_arguments: &HashMap<String, Value>,
-        _argument_variables: &HashMap<String, Vec<String>>,
+        public_arguments: &IndexMap<String, Value>,
+        _argument_variables: &IndexMap<String, Vec<String>>,
         _release: Option<&Value>
     ) -> Result<Vec<String>> {
         Ok(public_arguments.get("column_names")

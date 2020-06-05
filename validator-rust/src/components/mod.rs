@@ -48,13 +48,15 @@ mod simple_geometric_mechanism;
 // mod merge;
 mod resize;
 mod sum;
+// mod union;
 mod variance;
 
 use std::collections::HashMap;
 
-use crate::base::{Value, NodeProperties, SensitivitySpace, ValueProperties};
-use crate::{proto, Warnable};
+use crate::base::{IndexKey, Value, NodeProperties, SensitivitySpace, ValueProperties};
+use crate::{proto, Warnable, base};
 use crate::utilities::json::{JSONRelease};
+use indexmap::map::IndexMap;
 
 /// Universal Component trait
 ///
@@ -81,7 +83,7 @@ pub trait Component {
     fn propagate_property(
         &self,
         privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: &HashMap<String, Value>,
+        public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &NodeProperties,
         _node_id: u32,
     ) -> Result<Warnable<ValueProperties>>;
@@ -198,7 +200,7 @@ pub trait Report {
         &self,
         node_id: &u32,
         component: &proto::Component,
-        public_arguments: &HashMap<String, Value>,
+        public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &NodeProperties,
         release: &Value,
         variable_names: Option<&Vec<String>>,
@@ -213,8 +215,8 @@ pub trait Named {
     /// Propagate the human readable names of the variables associated with this component
     fn get_names(
         &self,
-        public_arguments: &HashMap<String, Value>,
-        argument_variables: &HashMap<String, Vec<String>>,
+        public_arguments: &IndexMap<base::IndexKey, Value>,
+        argument_variables: &IndexMap<base::IndexKey, Vec<String>>,
         release: Option<&Value>,
     ) -> Result<Vec<String>>;
 }
@@ -227,7 +229,7 @@ impl Component for proto::Component {
     fn propagate_property(
         &self,
         privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: &HashMap<String, Value>,
+        public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &NodeProperties,
         node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
@@ -313,7 +315,7 @@ impl Expandable for proto::Component {
 
         expand_component!(
             // INSERT COMPONENT LIST
-            Clamp, Digitize, Histogram, Impute, Maximum, Minimum, Resize,
+            Clamp, Digitize, Histogram, Impute, Maximum, Minimum, Partition, Resize,
 
             DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMedian,
             DpMinimum, DpQuantile, DpRawMoment, DpSum, DpVariance,
@@ -479,7 +481,7 @@ impl Report for proto::Component {
         &self,
         node_id: &u32,
         component: &proto::Component,
-        public_arguments: &HashMap<String, Value>,
+        public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &NodeProperties,
         release: &Value,
         variable_names: Option<&Vec<String>>,
@@ -517,8 +519,8 @@ impl Named for proto::Component {
     /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn get_names(
         &self,
-        public_arguments: &HashMap<String, Value>,
-        argument_variables: &HashMap<String, Vec<String>>,
+        public_arguments: &IndexMap<base::IndexKey, Value>,
+        argument_variables: &IndexMap<base::IndexKey, Vec<String>>,
         release: Option<&Value>,
     ) -> Result<Vec<String>> {
         let variant = self.variant.as_ref()
@@ -544,7 +546,7 @@ impl Named for proto::Component {
         );
 
         // default implementation
-        match argument_variables.get("data") {
+        match argument_variables.get(&IndexKey::from("data")) {
             // by convention, names pass through the "data" argument unchanged
             Some(variable_names) => Ok(variable_names.clone()),
             // otherwise if the component is non-standard, throw an error

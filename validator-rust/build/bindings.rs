@@ -38,7 +38,7 @@ pub fn build_bindings(
         let argument_insertion = component.arguments.iter()
             .filter(|(_name, arg)| arg.default_rust.is_none())
             .map(|(name, _meta)|
-                format!("arguments.insert(String::from(\"{name}\"), {name});", name=name))
+                format!("arguments.insert(\"{name}\".into(), {name});", name=name))
             .collect::<Vec<String>>().join("\n        ");
 
         let option_insertion = component.options.iter()
@@ -54,7 +54,7 @@ pub fn build_bindings(
         bindings_analysis.push(format!(r#"
     pub fn {name}({signature}) -> builders::{id}Builder {{
         #[allow(unused_mut)]
-        let mut arguments = HashMap::new();
+        let mut arguments = IndexMap::<base::IndexKey, u32>::new();
         {argument_insertion}
         let component = proto::Component {{
             variant: Some(proto::component::Variant::{variant}(proto::{id} {{
@@ -62,7 +62,7 @@ pub fn build_bindings(
             }})),
             omit: false,
             submission: self.submission_count,
-            arguments,
+            arguments: Some(proto::IndexmapNodeIds::new(arguments)),
         }};
 
         self.component_count += 1;
@@ -88,7 +88,7 @@ pub fn build_bindings(
                 format!(r#"
     /// set the id of the {name} argument from a previous component
     pub fn {name}(self, id: u32) -> Self {{
-        self.component.arguments.insert(String::from("{name}"), id);
+        self.component.insert_argument(&"{name}".into(), id);
         self
     }}"#, name=name)
             })
@@ -143,13 +143,23 @@ impl<'a> {id}Builder<'a> {{
 
     });
 
+
     let bindings_builders_text = format!(r#"
 use crate::proto;
 use crate::base::{{Release, Value, ReleaseNode}};
 
-{}"#, bindings_builders.join("\n"));
+{}
+"#, bindings_builders.join("\n"));
 
-    let bindings_analysis_text = format!("impl Analysis {{\n{}\n}}", bindings_analysis.join("\n"));
+
+    let bindings_analysis_text = format!(r#"
+use indexmap::IndexMap;
+use crate::base;
+
+impl Analysis {{
+{}
+}}
+"#, bindings_analysis.join("\n"));
 
     {
         fs::remove_file(output_path_impls.clone()).ok();

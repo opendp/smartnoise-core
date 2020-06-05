@@ -1,8 +1,8 @@
 //! Serialization and deserialization between prost protobuf structs and internal representations
 
-use crate::proto;
+use crate::{proto, base};
 use std::collections::HashMap;
-use crate::base::{Release, Nature, Jagged, Vector1D, Value, Array, Vector1DNull, NatureCategorical, NatureContinuous, AggregatorProperties, ValueProperties, IndexmapProperties, JaggedProperties, DataType, Indexmap, ArrayProperties, ReleaseNode, GroupId, IndexKey};
+use crate::base::{Release, Nature, Jagged, Vector1D, Value, Array, Vector1DNull, NatureCategorical, NatureContinuous, AggregatorProperties, ValueProperties, IndexmapProperties, JaggedProperties, DataType, ArrayProperties, ReleaseNode, GroupId, IndexKey};
 use indexmap::IndexMap;
 use error_chain::ChainedError;
 
@@ -91,30 +91,11 @@ pub fn parse_array(value: proto::Array) -> Array {
     }
 }
 
-pub fn parse_indexmap_str(value: proto::IndexmapStr) -> IndexMap<String, Value> {
-    value.keys.into_iter().zip(value.values.into_iter())
-        .map(|(k, v)| (k, parse_value(v)))
+pub fn parse_indexmap(value: proto::Indexmap) -> IndexMap<IndexKey, Value> {
+    value.keys.iter()
+        .zip(value.values.into_iter())
+        .map(|(k, v)| (parse_index_key(k.clone()), parse_value(v)))
         .collect()
-}
-
-pub fn parse_indexmap_i64(value: proto::IndexmapI64) -> IndexMap<i64, Value> {
-    value.keys.into_iter().zip(value.values.into_iter())
-        .map(|(k, v)| (k, parse_value(v)))
-        .collect()
-}
-
-pub fn parse_indexmap_bool(value: proto::IndexmapBool) -> IndexMap<bool, Value> {
-    value.keys.into_iter().zip(value.values.into_iter())
-        .map(|(k, v)| (k, parse_value(v)))
-        .collect()
-}
-
-pub fn parse_indexmap(value: proto::Indexmap) -> Indexmap<Value> {
-    match value.variant.clone().unwrap() {
-        proto::indexmap::Variant::String(value) => Indexmap::Str(parse_indexmap_str(value)),
-        proto::indexmap::Variant::I64(value) => Indexmap::I64(parse_indexmap_i64(value)),
-        proto::indexmap::Variant::Bool(value) => Indexmap::Bool(parse_indexmap_bool(value)),
-    }
 }
 
 pub fn parse_data_type(value: proto::DataType) -> DataType {
@@ -192,42 +173,40 @@ pub fn parse_value_properties(value: proto::ValueProperties) -> ValueProperties 
     }
 }
 
-pub fn parse_indexmap_properties_str(value: proto::IndexmapValuePropertiesStr) -> Indexmap<ValueProperties> {
-    Indexmap::<ValueProperties>::Str(value.data.into_iter()
-        .map(|(name, properties)| (name, parse_value_properties(properties)))
-        .collect())
+pub fn parse_indexmap_node_ids(value: proto::IndexmapNodeIds) -> IndexMap<IndexKey, u32> {
+    value.keys.iter().zip(value.values.into_iter())
+        .map(|(k, v)| (parse_index_key(k.clone()), v))
+        .collect()
 }
 
-pub fn parse_indexmap_properties_bool(value: proto::IndexmapValuePropertiesBool) -> Indexmap<ValueProperties> {
-    Indexmap::<ValueProperties>::Bool(value.data.into_iter()
-        .map(|(name, properties)| (name, parse_value_properties(properties)))
-        .collect())
-}
-
-pub fn parse_indexmap_properties_i64(value: proto::IndexmapValuePropertiesI64) -> Indexmap<ValueProperties> {
-    Indexmap::<ValueProperties>::I64(value.data.into_iter()
-        .map(|(name, properties)| (name, parse_value_properties(properties)))
-        .collect())
+pub fn parse_indexmap_value_properties(value: proto::IndexmapValueProperties) -> IndexMap<IndexKey, ValueProperties> {
+    value.keys.iter().zip(value.values.into_iter())
+        .map(|(k, v)| (parse_index_key(k.clone()), parse_value_properties(v)))
+        .collect()
 }
 
 pub fn parse_indexmap_properties(value: proto::IndexmapProperties) -> IndexmapProperties {
     IndexmapProperties {
         num_records: value.num_records.and_then(parse_i64_null),
         disjoint: false,
-        properties: match value.value_properties.clone().unwrap().variant.unwrap() {
-            proto::indexmap_value_properties::Variant::String(value) => parse_indexmap_properties_str(value),
-            proto::indexmap_value_properties::Variant::Bool(value) => parse_indexmap_properties_bool(value),
-            proto::indexmap_value_properties::Variant::I64(value) => parse_indexmap_properties_i64(value),
-        },
+        properties: parse_indexmap_value_properties(value.value_properties.unwrap()),
         dataset_id: value.dataset_id.and_then(parse_i64_null),
         variant: proto::indexmap_properties::Variant::from_i32(value.variant).unwrap(),
+    }
+}
+
+pub fn parse_index_key(value: proto::IndexKey) -> base::IndexKey {
+    match value.key.unwrap() {
+        proto::index_key::Key::Str(key) => base::IndexKey::Str(key),
+        proto::index_key::Key::Bool(key) => base::IndexKey::Bool(key),
+        proto::index_key::Key::I64(key) => base::IndexKey::I64(key),
     }
 }
 
 pub fn parse_group_id(value: proto::GroupId) -> GroupId {
     GroupId {
         partition_id: value.partition_id,
-        index: value.index.map(|idx| IndexKey::new(parse_array(idx)).unwrap())
+        index: value.index.map(|idx| parse_index_key(idx))
     }
 }
 
@@ -241,9 +220,7 @@ pub fn parse_array_properties(value: proto::ArrayProperties) -> ArrayProperties 
         aggregator: match value.aggregator.clone() {
             Some(aggregator) => Some(AggregatorProperties {
                 component: aggregator.component.unwrap().variant.unwrap(),
-                properties: aggregator.properties.into_iter()
-                    .map(|(name, properties)| (name, parse_value_properties(properties)))
-                    .collect::<HashMap<String, ValueProperties>>(),
+                properties: parse_indexmap_value_properties(aggregator.properties.unwrap()),
                 c_stability: parse_array1d_f64(aggregator.c_stability.unwrap()),
                 lipschitz_constant: parse_array1d_f64(aggregator.lipschitz_constant.unwrap())
             }),
@@ -279,9 +256,7 @@ pub fn parse_jagged_properties(value: proto::JaggedProperties) -> JaggedProperti
         aggregator: match value.aggregator.clone() {
             Some(aggregator) => Some(AggregatorProperties {
                 component: aggregator.component.unwrap().variant.unwrap(),
-                properties: aggregator.properties.into_iter()
-                    .map(|(name, properties)| (name, parse_value_properties(properties)))
-                    .collect::<HashMap<String, ValueProperties>>(),
+                properties: parse_indexmap_value_properties(aggregator.properties.unwrap()),
                 c_stability: parse_array1d_f64(aggregator.c_stability.unwrap()),
                 lipschitz_constant: parse_array1d_f64(aggregator.lipschitz_constant.unwrap())
             }),
@@ -422,35 +397,10 @@ pub fn serialize_array(value: Array) -> proto::Array {
     }
 }
 
-pub fn serialize_indexmap_str(value: IndexMap<String, Value>) -> proto::IndexmapStr {
-    proto::IndexmapStr {
-        keys: value.keys().cloned().collect(),
-        values: value.into_iter().map(|(_k, v)| serialize_value(v)).collect()
-    }
-}
-
-pub fn serialize_indexmap_bool(value: IndexMap<bool, Value>) -> proto::IndexmapBool {
-    proto::IndexmapBool {
-        keys: value.keys().copied().collect(),
-        values: value.into_iter().map(|(_k, v)| serialize_value(v)).collect()
-    }
-}
-
-pub fn serialize_indexmap_i64(value: IndexMap<i64, Value>) -> proto::IndexmapI64 {
-    proto::IndexmapI64 {
-        keys: value.keys().copied().collect(),
-        values: value.into_iter().map(|(_k, v)| serialize_value(v)).collect()
-    }
-}
-
-
-pub fn serialize_indexmap(value: Indexmap<Value>) -> proto::Indexmap {
+pub fn serialize_indexmap(value: IndexMap<IndexKey, Value>) -> proto::Indexmap {
     proto::Indexmap {
-        variant: Some(match value {
-            Indexmap::Str(value) => proto::indexmap::Variant::String(serialize_indexmap_str(value)),
-            Indexmap::Bool(value) => proto::indexmap::Variant::Bool(serialize_indexmap_bool(value)),
-            Indexmap::I64(value) => proto::indexmap::Variant::I64(serialize_indexmap_i64(value))
-        })
+        keys: value.keys().map(|k| serialize_index_key(k.clone())).collect(),
+        values: value.into_iter().map(|(_, v)| serialize_value(v)).collect()
     }
 }
 
@@ -512,27 +462,17 @@ pub fn serialize_release_node(release_node: ReleaseNode) -> proto::ReleaseNode {
     }
 }
 
-pub fn serialize_indexmap_properties_str(value: IndexMap<String, ValueProperties>) -> proto::IndexmapValuePropertiesStr {
-    proto::IndexmapValuePropertiesStr {
-        data: value.into_iter()
-            .map(|(name, value)| (name.clone(), serialize_value_properties(value)))
-            .collect::<HashMap<String, proto::ValueProperties>>()
+pub fn serialize_indexmap_node_ids(value: IndexMap<IndexKey, u32>) -> proto::IndexmapNodeIds {
+    proto::IndexmapNodeIds {
+        keys: value.keys().cloned().map(serialize_index_key).collect(),
+        values: value.values().cloned().collect()
     }
 }
 
-pub fn serialize_indexmap_properties_i64(value: IndexMap<i64, ValueProperties>) -> proto::IndexmapValuePropertiesI64 {
-    proto::IndexmapValuePropertiesI64 {
-        data: value.into_iter()
-            .map(|(name, value)| (name, serialize_value_properties(value)))
-            .collect::<HashMap<i64, proto::ValueProperties>>()
-    }
-}
-
-pub fn serialize_indexmap_properties_bool(value: IndexMap<bool, ValueProperties>) -> proto::IndexmapValuePropertiesBool {
-    proto::IndexmapValuePropertiesBool {
-        data: value.into_iter()
-            .map(|(name, value)| (name, serialize_value_properties(value)))
-            .collect::<HashMap<bool, proto::ValueProperties>>()
+pub fn serialize_indexmap_value_properties(value: IndexMap<IndexKey, ValueProperties>) -> proto::IndexmapValueProperties {
+    proto::IndexmapValueProperties {
+        keys: value.keys().cloned().map(serialize_index_key).collect(),
+        values: value.values().cloned().map(serialize_value_properties).collect()
     }
 }
 
@@ -541,22 +481,28 @@ pub fn serialize_indexmap_properties(value: IndexmapProperties) -> proto::Indexm
         num_records: Some(serialize_i64_null(value.num_records)),
         disjoint: value.disjoint,
         value_properties: Some(proto::IndexmapValueProperties {
-            variant: Some(match value.properties {
-                Indexmap::Str(value) => proto::indexmap_value_properties::Variant::String(serialize_indexmap_properties_str(value)),
-                Indexmap::I64(value) => proto::indexmap_value_properties::Variant::I64(serialize_indexmap_properties_i64(value)),
-                Indexmap::Bool(value) => proto::indexmap_value_properties::Variant::Bool(serialize_indexmap_properties_bool(value)),
-            })
+            keys: value.properties.keys().cloned().map(serialize_index_key).collect(),
+            values: value.properties.values().cloned().map(serialize_value_properties).collect()
         }),
         dataset_id: Some(serialize_i64_null(value.dataset_id)),
         variant: value.variant as i32
     }
 }
 
+pub fn serialize_index_key(value: base::IndexKey) -> proto::IndexKey {
+    proto::IndexKey {
+        key: Some(match value {
+            base::IndexKey::Str(key) => proto::index_key::Key::Str(key),
+            base::IndexKey::Bool(key) => proto::index_key::Key::Bool(key),
+            base::IndexKey::I64(key) => proto::index_key::Key::I64(key),
+        })
+    }
+}
 
 pub fn serialize_group_id(value: GroupId) -> proto::GroupId {
     proto::GroupId {
         partition_id: value.partition_id,
-        index: value.index.map(|idx| serialize_array(idx.into()))
+        index: value.index.map(|idx| serialize_index_key(idx))
     }
 }
 
@@ -593,11 +539,9 @@ pub fn serialize_array_properties(value: ArrayProperties) -> proto::ArrayPropert
                     variant: Some(aggregator.component),
                     omit: true,
                     submission: 0,
-                    arguments: HashMap::new(),
+                    arguments: Some(proto::IndexmapNodeIds::default()),
                 }),
-                properties: aggregator.properties.into_iter()
-                    .map(|(name, properties)| (name, serialize_value_properties(properties)))
-                    .collect::<HashMap<String, proto::ValueProperties>>(),
+                properties: Some(serialize_indexmap_value_properties(aggregator.properties)),
                 lipschitz_constant: Some(serialize_array1d_f64(aggregator.lipschitz_constant)),
                 c_stability: Some(serialize_array1d_f64(aggregator.c_stability)),
             }),
@@ -638,11 +582,9 @@ pub fn serialize_jagged_properties(value: JaggedProperties) -> proto::JaggedProp
                     variant: Some(aggregator.component),
                     omit: true,
                     submission: 0,
-                    arguments: HashMap::new(),
+                    arguments: Some(proto::IndexmapNodeIds::default()),
                 }),
-                properties: aggregator.properties.into_iter()
-                    .map(|(name, properties)| (name, serialize_value_properties(properties)))
-                    .collect::<HashMap<String, proto::ValueProperties>>(),
+                properties: Some(serialize_indexmap_value_properties(aggregator.properties)),
                 c_stability: Some(serialize_array1d_f64(aggregator.c_stability)),
                 lipschitz_constant: Some(serialize_array1d_f64(aggregator.lipschitz_constant))
             }),

@@ -1,17 +1,17 @@
 
 use crate::errors::*;
 use crate::components::{Named, Component};
-use std::collections::HashMap;
 use crate::utilities::get_ith_column;
 use ndarray::ArrayD;
 use crate::{proto, base, Warnable};
 use crate::base::{Value, Array, ValueProperties, ArrayProperties, DataType};
+use indexmap::map::IndexMap;
 
 impl Component for proto::Literal {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &HashMap<String, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, Value>,
         _properties: &base::NodeProperties,
         node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
@@ -37,8 +37,8 @@ impl Component for proto::Literal {
 impl Named for proto::Literal {
     fn get_names(
         &self,
-        _public_arguments: &HashMap<String, Value>,
-        _argument_variables: &HashMap<String, Vec<String>>,
+        _public_arguments: &IndexMap<base::IndexKey, Value>,
+        _argument_variables: &IndexMap<base::IndexKey, Vec<String>>,
         release: Option<&Value>
     ) -> Result<Vec<String>> {
 

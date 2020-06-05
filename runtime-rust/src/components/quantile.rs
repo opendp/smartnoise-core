@@ -1,7 +1,7 @@
 use whitenoise_validator::errors::*;
 
 use crate::NodeArguments;
-use whitenoise_validator::base::{Array, ReleaseNode, Jagged, Value};
+use whitenoise_validator::base::{Array, ReleaseNode, Jagged, Value, IndexKey};
 use whitenoise_validator::utilities::get_argument;
 use crate::components::Evaluable;
 use whitenoise_validator::proto;
@@ -18,7 +18,7 @@ impl Evaluable for proto::Quantile {
     fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         let data = get_argument(arguments, "data")?.array()?;
 
-        Ok(match arguments.get("candidates") {
+        Ok(match arguments.get::<IndexKey>(&"candidates".into()) {
             Some(candidates) => match (candidates.jagged()?, data) {
                 (Jagged::F64(candidates), Array::F64(data)) => Value::Jagged(quantile_utilities(
                     candidates.into_iter().map(|col| col.into_iter().copied().map(n64).collect()).collect(),

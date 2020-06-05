@@ -4,13 +4,13 @@ use crate::errors::*;
 use std::collections::HashMap;
 
 use crate::{proto, base};
-use crate::hashmap;
 use crate::components::{Expandable, Report};
 
 
-use crate::base::{NodeProperties, Value, Array};
+use crate::base::{IndexKey, NodeProperties, Value, Array};
 use crate::utilities::json::{JSONRelease, value_to_json, privacy_usage_to_json, AlgorithmInfo};
-use crate::utilities::{prepend, privacy::broadcast_privacy_usage, get_ith_column};
+use crate::utilities::{prepend, privacy::spread_privacy_usage, get_ith_column};
+use indexmap::map::IndexMap;
 
 
 impl Expandable for proto::DpQuantile {
@@ -25,19 +25,19 @@ impl Expandable for proto::DpQuantile {
         let mut current_id = *maximum_id;
         let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
 
-        let data_id = *component.arguments.get("data")
+        let data_id = *component.arguments().get::<IndexKey>(&"data".into())
             .ok_or_else(|| Error::from("data is a required argument to DPQuantile"))?;
 
         // quantile
-        let mut quantile_args = hashmap!["data".to_string() => data_id];
+        let mut quantile_args = indexmap![IndexKey::from("data") => data_id];
         if self.mechanism.to_lowercase().as_str() == "exponential" {
-            quantile_args.insert("candidates".to_string(), *component.arguments.get("candidates")
+            quantile_args.insert("candidates".into(), *component.arguments().get::<IndexKey>(&"candidates".into())
                 .ok_or_else(|| Error::from("candidates is a required argument to DPQuantile when the exponential mechanism is used."))?);
         }
         current_id += 1;
         let id_quantile = current_id;
         computation_graph.insert(id_quantile, proto::Component {
-            arguments: quantile_args,
+            arguments: Some(proto::IndexmapNodeIds::new(quantile_args)),
             variant: Some(proto::component::Variant::Quantile(proto::Quantile {
                 alpha: self.alpha,
                 interpolation: self.interpolation.clone(),
@@ -47,13 +47,13 @@ impl Expandable for proto::DpQuantile {
         });
 
         // sanitizing
-        let mut sanitize_args = hashmap!["utilities".to_string() => id_quantile];
+        let mut sanitize_args = indexmap!["utilities".into() => id_quantile];
         if self.mechanism.to_lowercase().as_str() == "exponential" {
-            sanitize_args.insert("candidates".to_string(), *component.arguments.get("candidates")
+            sanitize_args.insert("candidates".into(), *component.arguments().get::<IndexKey>(&"candidates".into())
                 .ok_or_else(|| Error::from("candidates is a required argument to DPQuantile when the exponential mechanism is used."))?);
         }
         computation_graph.insert(component_id.clone(), proto::Component {
-            arguments: sanitize_args,
+            arguments: Some(proto::IndexmapNodeIds::new(sanitize_args)),
             variant: Some(match self.mechanism.to_lowercase().as_str() {
                 "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
                     privacy_usage: self.privacy_usage.clone()
@@ -86,12 +86,12 @@ impl Report for proto::DpQuantile {
         &self,
         node_id: &u32,
         component: &proto::Component,
-        _public_arguments: &HashMap<String, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &NodeProperties,
         release: &Value,
         variable_names: Option<&Vec<String>>,
     ) -> Result<Option<Vec<JSONRelease>>> {
-        let data_property = properties.get("data")
+        let data_property = properties.get::<base::IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
@@ -101,7 +101,7 @@ impl Report for proto::DpQuantile {
         let maximums = data_property.upper_f64().unwrap();
 
         let num_columns = data_property.num_columns()?;
-        let privacy_usages = broadcast_privacy_usage(&self.privacy_usage, num_columns as usize)?;
+        let privacy_usages = spread_privacy_usage(&self.privacy_usage, num_columns as usize)?;
 
         for column_number in 0..(num_columns as usize) {
             let variable_name = variable_names

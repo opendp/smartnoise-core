@@ -7,19 +7,20 @@ use crate::{proto, base, Warnable};
 use crate::hashmap;
 use crate::components::{Component, Expandable};
 
-use crate::base::{Value, NodeProperties, ValueProperties, DataType, Nature, NatureCategorical, Jagged, Vector1DNull, NatureContinuous, Array};
+use crate::base::{Value, NodeProperties, ValueProperties, DataType, Nature, NatureCategorical, Jagged, Vector1DNull, NatureContinuous, Array, IndexKey};
 use crate::utilities::prepend;
 use itertools::Itertools;
+use indexmap::map::IndexMap;
 
 impl Component for proto::Cast {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: &HashMap<String, Value>,
+        public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let mut data_property = properties.get("data")
+        let mut data_property = properties.get::<IndexKey>(&"data".into())
             .ok_or_else(|| Error::from("data: missing"))?.array()
             .map_err(prepend("data:"))?.clone();
 
@@ -41,9 +42,10 @@ impl Component for proto::Cast {
             DataType::Unknown => unreachable!(),
             DataType::Bool => {
                 // true label must be defined
-                let true_label = public_arguments.get("true_label")
+                let true_label = public_arguments.get::<IndexKey>(&"true_label".into())
                     .ok_or_else(|| Error::from("true_label: missing, must be public"))?.array()?.clone();
 
+                // check categories for equality with true_label
                 data_property.nature = match data_property.nature {
                     Some(nature) => match nature {
                         Nature::Categorical(cat_nature) => Some(Nature::Categorical(NatureCategorical {
@@ -64,7 +66,7 @@ impl Component for proto::Cast {
                                     .map(|cats| cats.into_iter().map(|v| Some(v) == true_label.first())
                                         .unique().collect::<Vec<_>>())
                                     .collect::<Vec<Vec<_>>>()),
-                                _ => return Err("type of true label must match the data type".into())
+                                _ => return Err("type of true_label must match the data type".into())
                             }
                         })),
                         Nature::Continuous(_) => None
@@ -72,20 +74,23 @@ impl Component for proto::Cast {
                     None => None
                 };
 
-                data_property.nature = data_property.num_columns
-                    .map(|num_columns| Nature::Categorical(NatureCategorical {
-                        categories: Jagged::Bool((0..num_columns).map(|_| vec![true, false]).collect())
-                    }));
+                if data_property.nature.is_none() {
+                    println!("data num columns {:?}", data_property.num_columns);
+                    data_property.nature = data_property.num_columns
+                        .map(|num_columns| Nature::Categorical(NatureCategorical {
+                            categories: Jagged::Bool((0..num_columns).map(|_| vec![true, false]).collect())
+                        }));
+                }
 
                 data_property.nullity = false;
             },
             DataType::I64 => {
                 // lower must be defined, for imputation of values that won't cast
-                public_arguments.get("lower")
+                public_arguments.get::<IndexKey>(&"lower".into())
                     .ok_or_else(|| Error::from("lower: missing, must be public"))?.first_i64()
                     .map_err(prepend("type:"))?;
                 // max must be defined
-                public_arguments.get("upper")
+                public_arguments.get::<IndexKey>(&"upper".into())
                     .ok_or_else(|| Error::from("upper: missing, must be public"))?.first_i64()
                     .map_err(prepend("type:"))?;
 

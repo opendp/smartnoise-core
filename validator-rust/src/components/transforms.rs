@@ -1,6 +1,5 @@
 use crate::errors::*;
 
-use std::collections::HashMap;
 use crate::base::{Nature, NatureCategorical, Vector1DNull, Jagged, ArrayProperties, ValueProperties, DataType};
 
 use crate::{proto, base, Warnable};
@@ -9,19 +8,20 @@ use crate::utilities::{prepend};
 
 use crate::components::{Component};
 
-use crate::base::{Value, NatureContinuous};
+use crate::base::{IndexKey, Value, NatureContinuous};
 use num::{CheckedAdd, CheckedSub};
+use indexmap::map::IndexMap;
 
 
 impl Component for proto::Abs {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &HashMap<String, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let mut data_property = properties.get("data")
+        let mut data_property = properties.get(&IndexKey::from("data"))
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
         if !data_property.releasable {
@@ -78,14 +78,14 @@ impl Component for proto::Add {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &HashMap<String, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let left_property = properties.get("left")
+        let left_property = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
-        let right_property = properties.get("right")
+        let right_property = properties.get::<IndexKey>(&"right".into())
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
@@ -157,14 +157,14 @@ impl Component for proto::And {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &HashMap<String, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let mut left_property = properties.get("left")
+        let mut left_property = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
-        let right_property = properties.get("right")
+        let right_property = properties.get::<IndexKey>(&"right".into())
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
@@ -208,14 +208,14 @@ impl Component for proto::Divide {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &HashMap<String, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let left_property = properties.get("left")
+        let left_property = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
-        let right_property = properties.get("right")
+        let right_property = properties.get::<IndexKey>(&"right".into())
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
@@ -365,14 +365,14 @@ impl Component for proto::Equal {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &HashMap<String, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let left_property = properties.get("left")
+        let left_property = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
-        let right_property = properties.get("right")
+        let right_property = properties.get::<IndexKey>(&"right".into())
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
@@ -415,14 +415,14 @@ impl Component for proto::GreaterThan {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &HashMap<String, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let left_property = properties.get("left")
+        let left_property = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
-        let right_property = properties.get("right")
+        let right_property = properties.get::<IndexKey>(&"right".into())
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
@@ -472,14 +472,14 @@ impl Component for proto::LessThan {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &HashMap<String, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let left_property = properties.get("left")
+        let left_property = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
-        let right_property = properties.get("right")
+        let right_property = properties.get::<IndexKey>(&"right".into())
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
@@ -529,14 +529,14 @@ impl Component for proto::Log {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &HashMap<String, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let mut data_property = properties.get("data")
+        let mut data_property = properties.get(&IndexKey::from("data"))
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
-        let base_property = properties.get("base")
+        let base_property = properties.get::<IndexKey>(&"base".into())
             .ok_or("base: missing")?.array()
             .map_err(prepend("base:"))?.clone();
 
@@ -590,14 +590,14 @@ impl Component for proto::Modulo {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &HashMap<String, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let mut left_property = properties.get("left")
+        let mut left_property = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
-        let right_property = properties.get("right")
+        let right_property = properties.get::<IndexKey>(&"right".into())
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
@@ -661,14 +661,14 @@ impl Component for proto::Multiply {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &HashMap<String, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let left_property = properties.get("left")
+        let left_property = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
-        let right_property = properties.get("right")
+        let right_property = properties.get::<IndexKey>(&"right".into())
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
@@ -789,11 +789,11 @@ impl Component for proto::Negate {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &HashMap<String, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let mut data_property = properties.get("data")
+        let mut data_property = properties.get(&IndexKey::from("data"))
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
@@ -819,11 +819,11 @@ impl Component for proto::Negative {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &HashMap<String, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let mut data_property = properties.get("data")
+        let mut data_property = properties.get(&IndexKey::from("data"))
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
@@ -855,14 +855,14 @@ impl Component for proto::Or {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &HashMap<String, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let mut left_property = properties.get("left")
+        let mut left_property = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
-        let right_property = properties.get("right")
+        let right_property = properties.get::<IndexKey>(&"right".into())
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
@@ -907,14 +907,14 @@ impl Component for proto::Power {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &HashMap<String, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let mut data_property = properties.get("data")
+        let mut data_property = properties.get(&IndexKey::from("data"))
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
-        let radical_property = properties.get("radical")
+        let radical_property = properties.get::<IndexKey>(&"radical".into())
             .ok_or("radical: missing")?.array()
             .map_err(prepend("radical:"))?.clone();
 
@@ -977,14 +977,14 @@ impl Component for proto::RowMax {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &HashMap<String, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let left_property = properties.get("left")
+        let left_property = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
-        let right_property = properties.get("right")
+        let right_property = properties.get::<IndexKey>(&"right".into())
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
@@ -1056,14 +1056,14 @@ impl Component for proto::RowMin {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &HashMap<String, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let left_property = properties.get("left")
+        let left_property = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
-        let right_property = properties.get("right")
+        let right_property = properties.get::<IndexKey>(&"right".into())
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
@@ -1135,14 +1135,14 @@ impl Component for proto::Subtract {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &HashMap<String, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let left_property = properties.get("left")
+        let left_property = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
-        let right_property = properties.get("right")
+        let right_property = properties.get::<IndexKey>(&"right".into())
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 

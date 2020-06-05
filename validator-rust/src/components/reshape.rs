@@ -1,22 +1,22 @@
 use crate::errors::*;
 
 use crate::components::Component;
-use std::collections::HashMap;
-use crate::base::{Value, ValueProperties};
+use crate::base::{Value, ValueProperties, IndexKey};
 use crate::{base, Warnable};
 use crate::proto;
 use crate::utilities::prepend;
+use indexmap::map::IndexMap;
 
 
 impl Component for proto::Reshape {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &HashMap<String, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &base::NodeProperties,
         node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let mut data_property = properties.get("data")
+        let mut data_property = properties.get::<IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 

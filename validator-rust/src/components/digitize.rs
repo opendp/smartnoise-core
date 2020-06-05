@@ -1,7 +1,7 @@
 use crate::errors::*;
 
 use std::collections::HashMap;
-use crate::base::{Nature, NodeProperties, NatureCategorical, Jagged, ValueProperties, DataType, Array};
+use crate::base::{IndexKey, Nature, NodeProperties, NatureCategorical, Jagged, ValueProperties, DataType, Array};
 
 use crate::{proto, base, Warnable};
 use crate::utilities::{prepend, standardize_categorical_argument, standardize_null_target_argument, deduplicate, standardize_float_argument, get_literal};
@@ -9,16 +9,17 @@ use crate::components::{Component, Expandable};
 
 use crate::base::Value;
 use ndarray::arr0;
+use indexmap::map::IndexMap;
 
 impl Component for proto::Digitize {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: &HashMap<String, Value>,
+        public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let mut data_property = properties.get("data")
+        let mut data_property = properties.get(&IndexKey::from("data"))
             .ok_or_else(|| Error::from("data: missing"))?.clone().array()
             .map_err(prepend("data:"))?.clone();
 
@@ -29,7 +30,7 @@ impl Component for proto::Digitize {
         let num_columns = data_property.num_columns()
             .map_err(prepend("data:"))?;
 
-        let null_value = public_arguments.get("null_value").cloned()
+        let null_value = public_arguments.get::<IndexKey>(&"null_value".into()).cloned()
             .unwrap_or_else(|| Value::Array(Array::I64(arr0(-1).into_dyn())));
         let null = null_value.array()?.i64()?;
 
@@ -37,7 +38,7 @@ impl Component for proto::Digitize {
             data_property.assert_is_not_aggregated()?;
         }
 
-        public_arguments.get("edges")
+        public_arguments.get::<IndexKey>(&"edges".into())
             .ok_or_else(|| Error::from("edges: missing, must be public"))
             .and_then(|v| v.jagged())
             .and_then(|v| match v {
@@ -104,23 +105,23 @@ impl Expandable for proto::Digitize {
 
         let mut component = component.clone();
 
-        if !properties.contains_key("null_value") {
+        if !properties.contains_key(&IndexKey::from("null_value")) {
             current_id += 1;
             let id_null_value = current_id;
             let value = Value::Array(Array::I64(arr0(-1).into_dyn()));
             let (patch_node, release) = get_literal(value, &component.submission)?;
             computation_graph.insert(id_null_value.clone(), patch_node);
             releases.insert(id_null_value.clone(), release);
-            component.arguments.insert("null_value".to_string(), id_null_value);
+            component.insert_argument(&"null_value".into(), id_null_value);
         }
-        if !properties.contains_key("inclusive_left") {
+        if !properties.contains_key::<IndexKey>(&"inclusive_left".into()) {
             current_id += 1;
             let id_null_value = current_id;
             let value = Value::Array(Array::Bool(arr0(true).into_dyn()));
             let (patch_node, release) = get_literal(value, &component.submission)?;
             computation_graph.insert(id_null_value.clone(), patch_node);
             releases.insert(id_null_value.clone(), release);
-            component.arguments.insert("inclusive_left".to_string(), id_null_value);
+            component.insert_argument(&"inclusive_left".into(), id_null_value);
         }
 
         computation_graph.insert(component_id.clone(), component);

@@ -4,14 +4,14 @@ use crate::errors::*;
 use std::collections::HashMap;
 
 use crate::{proto, base};
-use crate::hashmap;
 use crate::components::{Expandable, Report};
 
 
-use crate::base::{NodeProperties, Value};
+use crate::base::{IndexKey, NodeProperties, Value};
 use crate::utilities::json::{JSONRelease, value_to_json, AlgorithmInfo, privacy_usage_to_json};
 use std::convert::TryFrom;
 use crate::utilities::prepend;
+use indexmap::map::IndexMap;
 
 
 impl Expandable for proto::DpCovariance {
@@ -29,32 +29,32 @@ impl Expandable for proto::DpCovariance {
         let arguments;
         let shape;
         let symmetric;
-        match properties.get("data") {
+        match properties.get(&IndexKey::from("data")) {
             Some(data_property) => {
                 let data_property = data_property.array()
                     .map_err(prepend("data:"))?.clone();
 
                 let num_columns = data_property.num_columns()?;
                 shape = vec![u32::try_from(num_columns)?, u32::try_from(num_columns)?];
-                arguments = hashmap![
-                    "data".to_owned() => *component.arguments.get("data")
+                arguments = indexmap![
+                    "data".into() => *component.arguments().get::<IndexKey>(&"data".into())
                         .ok_or_else(|| Error::from("data must be provided as an argument"))?
                 ];
                 symmetric = true;
             },
             None => {
-                let left_property = properties.get("left")
+                let left_property = properties.get::<IndexKey>(&"left".into())
                     .ok_or("data: missing")?.array()
                     .map_err(prepend("data:"))?.clone();
-                let right_property = properties.get("right")
+                let right_property = properties.get::<IndexKey>(&"right".into())
                     .ok_or("data: missing")?.array()
                     .map_err(prepend("data:"))?.clone();
 
                 shape = vec![u32::try_from(left_property.num_columns()?)?, u32::try_from(right_property.num_columns()?)?];
-                arguments = hashmap![
-                    "left".to_owned() => *component.arguments.get("left")
+                arguments = indexmap![
+                    "left".into() => *component.arguments().get::<IndexKey>(&"left".into())
                         .ok_or_else(|| Error::from("left must be provided as an argument"))?,
-                    "right".to_owned() => *component.arguments.get("right")
+                    "right".into() => *component.arguments().get::<IndexKey>(&"right".into())
                         .ok_or_else(|| Error::from("right must be provided as an argument"))?
                 ];
                 symmetric = false;
@@ -65,7 +65,7 @@ impl Expandable for proto::DpCovariance {
         current_id += 1;
         let id_covariance = current_id;
         computation_graph.insert(id_covariance, proto::Component {
-            arguments,
+            arguments: Some(proto::IndexmapNodeIds::new(arguments)),
             variant: Some(proto::component::Variant::Covariance(proto::Covariance {
                 finite_sample_correction: self.finite_sample_correction
             })),
@@ -77,7 +77,7 @@ impl Expandable for proto::DpCovariance {
         current_id += 1;
         let id_noise = current_id;
         computation_graph.insert(id_noise, proto::Component {
-            arguments: hashmap!["data".to_owned() => id_covariance],
+            arguments: Some(proto::IndexmapNodeIds::new(indexmap!["data".into() => id_covariance])),
             variant: Some(match self.mechanism.to_lowercase().as_str() {
                 "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
                     privacy_usage: self.privacy_usage.clone()
@@ -93,7 +93,7 @@ impl Expandable for proto::DpCovariance {
 
         // reshape into matrix
         computation_graph.insert(component_id.clone(), proto::Component {
-            arguments: hashmap!["data".to_owned() => id_noise],
+            arguments: Some(proto::IndexmapNodeIds::new(indexmap!["data".into() => id_noise])),
             variant: Some(proto::component::Variant::Reshape(proto::Reshape {
                 symmetric,
                 layout: "row".to_string(),
@@ -118,7 +118,7 @@ impl Report for proto::DpCovariance {
         &self,
         node_id: &u32,
         component: &proto::Component,
-        _public_arguments: &HashMap<String, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &NodeProperties,
         release: &Value,
         variable_names: Option<&Vec<String>>,
@@ -127,8 +127,8 @@ impl Report for proto::DpCovariance {
         let argument;
         let statistic;
 
-        if properties.contains_key("data") {
-            let data_property = properties.get("data")
+        if properties.contains_key(&IndexKey::from("data")) {
+            let data_property = properties.get::<IndexKey>(&"data".into())
                 .ok_or("data: missing")?.array()
                 .map_err(prepend("data:"))?.clone();
 
@@ -142,10 +142,10 @@ impl Report for proto::DpCovariance {
             });
         }
         else {
-            let left_property = properties.get("left")
+            let left_property = properties.get::<IndexKey>(&"left".into())
                 .ok_or("data: missing")?.array()
                 .map_err(prepend("data:"))?.clone();
-            let right_property = properties.get("right")
+            let right_property = properties.get::<IndexKey>(&"right".into())
                 .ok_or("data: missing")?.array()
                 .map_err(prepend("data:"))?.clone();
 

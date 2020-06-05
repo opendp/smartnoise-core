@@ -2,7 +2,7 @@ use whitenoise_validator::errors::*;
 
 use ndarray::prelude::*;
 use crate::NodeArguments;
-use whitenoise_validator::base::{Value, Array, Indexmap, ReleaseNode};
+use whitenoise_validator::base::{Value, Array, ReleaseNode};
 use crate::components::Evaluable;
 use ndarray;
 use whitenoise_validator::proto;

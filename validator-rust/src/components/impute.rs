@@ -8,19 +8,20 @@ use crate::proto;
 use crate::components::{Component, Expandable};
 
 use ndarray;
-use crate::base::{Vector1DNull, Nature, NatureContinuous, Value, Array, ValueProperties, DataType};
+use crate::base::{Vector1DNull, Nature, NatureContinuous, Value, Array, ValueProperties, DataType, IndexKey};
 use crate::utilities::{prepend, get_literal};
+use indexmap::map::IndexMap;
 
 
 impl Component for proto::Impute {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: &HashMap<String, Value>,
+        public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let mut data_property = properties.get("data")
+        let mut data_property = properties.get::<base::IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
@@ -40,12 +41,12 @@ impl Component for proto::Impute {
             return Err("data_type must be known".into())
         }
 
-        if let Some(categories) = public_arguments.get("categories") {
+        if let Some(categories) = public_arguments.get::<IndexKey>(&"categories".into()) {
             if data_property.data_type != categories.jagged()?.data_type() {
                 return Err("categories and data must be homogeneously typed".into())
             }
 
-            let null_values = public_arguments.get("null_values")
+            let null_values = public_arguments.get::<IndexKey>(&"null_values".into())
                 .ok_or_else(|| Error::from("null_values: missing, must be public"))?.jagged()?;
 
             if null_values.data_type() != data_property.data_type {
@@ -60,12 +61,12 @@ impl Component for proto::Impute {
         let num_columns = data_property.num_columns
             .ok_or("data: number of columns missing")?;
         // 1. check public arguments (constant n)
-        let impute_lower = match public_arguments.get("lower") {
+        let impute_lower = match public_arguments.get::<IndexKey>(&"lower".into()) {
             Some(min) => min.array()?.clone().vec_f64(Some(num_columns))
                 .map_err(prepend("lower:"))?,
 
             // 2. then private arguments (for example from another clamped column)
-            None => match properties.get("lower") {
+            None => match properties.get::<IndexKey>(&"lower".into()) {
                 Some(min) => min.array()?.lower_f64()
                     .map_err(prepend("lower:"))?,
 
@@ -76,12 +77,12 @@ impl Component for proto::Impute {
         };
 
         // 1. check public arguments (constant n)
-        let impute_upper = match public_arguments.get("upper") {
+        let impute_upper = match public_arguments.get::<IndexKey>(&"upper".into()) {
             Some(max) => max.array()?.clone().vec_f64(Some(num_columns))
                 .map_err(prepend("upper:"))?,
 
             // 2. then private arguments (for example from another clamped column)
-            None => match properties.get("upper") {
+            None => match properties.get::<IndexKey>(&"upper".into()) {
                 Some(min) => min.array()?.upper_f64()
                     .map_err(prepend("max:"))?,
 
@@ -143,27 +144,27 @@ impl Expandable for proto::Impute {
 
         let mut component = component.clone();
 
-        if !properties.contains_key("categories") {
-            if !properties.contains_key("lower") {
+        if !properties.contains_key::<base::IndexKey>(&"categories".into()) {
+            if !properties.contains_key::<IndexKey>(&"lower".into()) {
                 current_id += 1;
                 let id_lower = current_id;
                 let value = Value::Array(Array::F64(
-                    ndarray::Array::from(properties.get("data").unwrap().to_owned().array()?.lower_f64()?).into_dyn()));
+                    ndarray::Array::from(properties.get::<IndexKey>(&"data".into()).unwrap().to_owned().array()?.lower_f64()?).into_dyn()));
                 let (patch_node, release) = get_literal(value, &component.submission)?;
                 computation_graph.insert(id_lower.clone(), patch_node);
                 releases.insert(id_lower.clone(), release);
-                component.arguments.insert("lower".to_string(), id_lower);
+                component.insert_argument(&"lower".into(), id_lower);
             }
 
-            if !properties.contains_key("upper") {
+            if !properties.contains_key::<IndexKey>(&"upper".into()) {
                 current_id += 1;
                 let id_upper = current_id;
                 let value = Value::Array(Array::F64(
-                    ndarray::Array::from(properties.get("data").unwrap().to_owned().array()?.upper_f64()?).into_dyn()));
+                    ndarray::Array::from(properties.get::<IndexKey>(&"data".into()).unwrap().to_owned().array()?.upper_f64()?).into_dyn()));
                 let (patch_node, release) = get_literal(value, &component.submission)?;
                 computation_graph.insert(id_upper.clone(), patch_node);
                 releases.insert(id_upper.clone(), release);
-                component.arguments.insert("upper".to_string(), id_upper);
+                component.insert_argument(&"upper".into(), id_upper);
             }
         }
 

@@ -4,13 +4,13 @@ use crate::errors::*;
 use std::collections::HashMap;
 
 use crate::{proto, base};
-use crate::hashmap;
 use crate::components::{Expandable, Report};
 use ndarray::arr0;
 
-use crate::base::{NodeProperties, Value, ValueProperties};
+use crate::base::{IndexKey, NodeProperties, Value, ValueProperties};
 use crate::utilities::json::{JSONRelease, privacy_usage_to_json, AlgorithmInfo, value_to_json};
 use crate::utilities::get_literal;
+use indexmap::map::IndexMap;
 
 
 impl Expandable for proto::DpCount {
@@ -30,8 +30,10 @@ impl Expandable for proto::DpCount {
         maximum_id += 1;
         let id_count = maximum_id;
         computation_graph.insert(id_count.clone(), proto::Component {
-            arguments: hashmap!["data".to_owned() => *component.arguments.get("data")
-                .ok_or_else(|| Error::from("data must be provided as an argument"))?],
+            arguments: Some(proto::IndexmapNodeIds::new(indexmap![
+                "data".into() => *component.arguments().get(&IndexKey::from("data"))
+                    .ok_or_else(|| Error::from("data must be provided as an argument"))?
+            ])),
             variant: Some(proto::component::Variant::Count(proto::Count {
                 distinct: self.distinct
             })),
@@ -40,10 +42,10 @@ impl Expandable for proto::DpCount {
         });
 
         if self.mechanism.to_lowercase().as_str() == "simplegeometric" {
-            let count_max_id = match component.arguments.get("upper") {
+            let count_max_id = match component.arguments().get::<IndexKey>(&"upper".into()) {
                 Some(id) => id.clone(),
                 None => {
-                    let num_records = match properties.get("data")
+                    let num_records = match properties.get::<IndexKey>(&"data".into())
                         .ok_or("data: missing")? {
                         ValueProperties::Array(value) => value.num_records,
                         ValueProperties::Indexmap(value) => value.num_records,
@@ -69,12 +71,12 @@ impl Expandable for proto::DpCount {
 
             // noising
             computation_graph.insert(component_id.clone(), proto::Component {
-                arguments: hashmap![
-                    "data".to_owned() => id_count,
-                    "lower".to_owned() => *component.arguments.get("lower")
+                arguments: Some(proto::IndexmapNodeIds::new(indexmap![
+                    "data".into() => id_count,
+                    "lower".into() => *component.arguments().get::<IndexKey>(&"lower".into())
                         .ok_or_else(|| Error::from("lower must be provided as an argument"))?,
-                    "upper".to_owned() => count_max_id
-                ],
+                    "upper".into() => count_max_id
+                ])),
                 variant: Some(proto::component::Variant::SimpleGeometricMechanism(proto::SimpleGeometricMechanism {
                     privacy_usage: self.privacy_usage.clone(),
                     enforce_constant_time: false,
@@ -118,7 +120,7 @@ impl Report for proto::DpCount {
         &self,
         node_id: &u32,
         component: &proto::Component,
-        _public_arguments: &HashMap<String, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, Value>,
         _properties: &NodeProperties,
         release: &Value,
         variable_names: Option<&Vec<String>>,

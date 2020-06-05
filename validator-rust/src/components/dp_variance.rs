@@ -4,13 +4,13 @@ use crate::errors::*;
 use std::collections::HashMap;
 
 use crate::{proto, base};
-use crate::hashmap;
 use crate::components::{Expandable, Report};
 use crate::utilities::{prepend, get_ith_column};
-use crate::utilities::privacy::{broadcast_privacy_usage};
+use crate::utilities::privacy::{spread_privacy_usage};
 
-use crate::base::{NodeProperties, Value, Array};
+use crate::base::{IndexKey, NodeProperties, Value, Array};
 use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, value_to_json};
+use indexmap::map::IndexMap;
 
 
 impl Expandable for proto::DpVariance {
@@ -29,8 +29,9 @@ impl Expandable for proto::DpVariance {
         current_id += 1;
         let id_variance = current_id;
         computation_graph.insert(id_variance, proto::Component {
-            arguments: hashmap!["data".to_owned() => *component.arguments.get("data")
-                .ok_or_else(|| Error::from("data must be provided as an argument"))?],
+            arguments: Some(proto::IndexmapNodeIds::new(indexmap![
+                "data".into() => *component.arguments().get(&IndexKey::from("data"))
+                    .ok_or_else(|| Error::from("data must be provided as an argument"))?])),
             variant: Some(proto::component::Variant::Variance(proto::Variance {
                 finite_sample_correction: self.finite_sample_correction
             })),
@@ -40,7 +41,7 @@ impl Expandable for proto::DpVariance {
 
         // noising
         computation_graph.insert(component_id.clone(), proto::Component {
-            arguments: hashmap!["data".to_owned() => id_variance],
+            arguments: Some(proto::IndexmapNodeIds::new(indexmap!["data".into() => id_variance])),
             variant: Some(match self.mechanism.to_lowercase().as_str() {
                 "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
                     privacy_usage: self.privacy_usage.clone()
@@ -69,12 +70,12 @@ impl Report for proto::DpVariance {
         &self,
         node_id: &u32,
         component: &proto::Component,
-        _public_arguments: &HashMap<String, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &NodeProperties,
         release: &Value,
         variable_names: Option<&Vec<String>>,
     ) -> Result<Option<Vec<JSONRelease>>> {
-        let data_property = properties.get("data")
+        let data_property = properties.get(&IndexKey::from("data"))
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
@@ -85,7 +86,7 @@ impl Report for proto::DpVariance {
         let num_records = data_property.num_records()?;
 
         let num_columns = data_property.num_columns()?;
-        let privacy_usages = broadcast_privacy_usage(&self.privacy_usage, num_columns as usize)?;
+        let privacy_usages = spread_privacy_usage(&self.privacy_usage, num_columns as usize)?;
 
         for column_number in 0..(num_columns as usize) {
             let variable_name = variable_names

@@ -1,7 +1,7 @@
 use whitenoise_validator::errors::*;
 
 use crate::NodeArguments;
-use whitenoise_validator::base::{Value, Array, Indexmap, DataType, ReleaseNode};
+use whitenoise_validator::base::{Value, Array, DataType, ReleaseNode, IndexKey};
 use crate::components::Evaluable;
 use whitenoise_validator::proto;
 use whitenoise_validator::utilities::array::{slow_stack, slow_select};
@@ -20,35 +20,34 @@ impl Evaluable for proto::Index {
 
         let mut indexed = match data {
             // if value is an indexmap, we'll be stacking arrays column-wise
-            Value::Indexmap(dataframe) => match dataframe {
-                Indexmap::Str(dataframe) => match columns {
-                    Array::Str(columns) => column_stack(
-                        dataframe, &to_name_vec(columns)?),
-                    Array::I64(columns) => {
-                        let column_names = dataframe.keys().cloned().collect::<Vec<String>>();
-                        let columns = to_name_vec(columns)?.iter()
-                            .map(|index| column_names.get(*index as usize).cloned()
-                                .ok_or_else(|| Error::from("column index out of bounds"))).collect::<Result<Vec<String>>>()?;
-                        column_stack(dataframe, &columns)
+            Value::Indexmap(dataframe) => {
+                let column_names = if let Ok(names) = get_argument(arguments, "names") {
+                    match names.array()? {
+                        Array::Str(names) => to_name_vec(names)?
+                             .into_iter().map(IndexKey::from).collect(),
+                        Array::I64(names) => to_name_vec(names)?
+                            .into_iter().map(IndexKey::from).collect(),
+                        Array::Bool(names) => to_name_vec(names)?
+                            .into_iter().map(IndexKey::from).collect(),
+                        Array::F64(_) => return Err("cannot index by floats".into()),
                     }
-                    Array::Bool(columns) => column_stack(dataframe, &mask_columns(
-                        &dataframe.keys().cloned().collect::<Vec<String>>(),
-                        &to_name_vec(columns)?)?),
-                    _ => Err("the data type of the column headers is not supported".into())
-                },
-                Indexmap::I64(dataframe) => {
-                    match columns {
-                        Array::I64(columns) => column_stack(dataframe, &to_name_vec(columns)?),
-                        Array::Bool(columns) => column_stack(dataframe, &mask_columns(
-                            &dataframe.keys().cloned().collect::<Vec<i64>>(),
-                            &to_name_vec(columns)?)?),
-                        _ => Err("the data type of the column headers is not supported".into())
-                    }
-                }
-                Indexmap::Bool(dataframe) => {
-                    let columns = columns.bool()?;
-                    column_stack(dataframe, &to_name_vec(columns)?)
-                }
+
+                } else if let Ok(indices) = get_argument(arguments, "indices") {
+                    let column_names = dataframe.keys().cloned().collect::<Vec<IndexKey>>();
+                    to_name_vec(indices.array()?.i64()?)?.iter()
+                        .map(|index| column_names.get(*index as usize).cloned()
+                            .ok_or_else(|| Error::from("column index out of bounds"))).collect::<Result<Vec<IndexKey>>>()?
+
+                } else if let Ok(mask) = get_argument(arguments, "mask") {
+                    mask_columns(
+                        &dataframe.keys().cloned().collect::<Vec<IndexKey>>(),
+                        &to_name_vec(mask.array()?.bool()?)?)?
+
+                } else {
+                    return Err("names, indices, or mask must be supplied".into())
+                };
+
+                column_stack(dataframe, &column_names)
             },
 
             // if the value is an array, we'll be selecting columns
@@ -92,8 +91,8 @@ impl Evaluable for proto::Index {
     }
 }
 
-fn column_stack<T: Clone + Eq + std::hash::Hash + Ord>(
-    dataframe: &IndexMap<T, Value>, column_names: &Vec<T>,
+fn column_stack(
+    dataframe: &IndexMap<IndexKey, Value>, column_names: &Vec<IndexKey>,
 ) -> Result<Value> {
     if column_names.len() == 1 {
         return dataframe.get(column_names.first().unwrap()).cloned()

@@ -48,7 +48,8 @@ impl Analysis {
                 strict_parameter_checks: false,
                 protect_overflow: false,
                 protect_elapsed_time: false,
-                protect_memory_utilization: false
+                protect_memory_utilization: false,
+                protect_floating_point: false
             },
             components: HashMap::new(),
             component_count: 0,

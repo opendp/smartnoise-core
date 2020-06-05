@@ -85,3 +85,16 @@ message PrivacyUsage {
 message PrivacyUsages {
     repeated PrivacyUsage values = 1;
 }
+
+message IndexmapNodeIds {
+    repeated IndexKey keys = 1;
+    repeated uint32 values = 2;
+}
+
+message IndexKey {
+    oneof key {
+        string str = 1;
+        int64 i64 = 2;
+        bool bool = 3;
+    }
+}

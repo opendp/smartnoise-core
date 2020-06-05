@@ -6,21 +6,22 @@ use std::collections::HashMap;
 use crate::{proto, base, hashmap, Warnable};
 
 use crate::components::{Component, Sensitivity, Expandable};
-use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType, JaggedProperties};
+use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType, JaggedProperties, IndexKey};
 
 use crate::utilities::prepend;
 use ndarray::prelude::*;
+use indexmap::map::IndexMap;
 
 
 impl Component for proto::Quantile {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: &HashMap<String, Value>,
+        public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let mut data_property = properties.get("data")
+        let mut data_property = properties.get::<IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
@@ -33,7 +34,7 @@ impl Component for proto::Quantile {
             return Err("data: atomic type must be numeric".into());
         }
 
-        Ok(match public_arguments.get("candidates") {
+        Ok(match public_arguments.get::<IndexKey>(&"candidates".into()) {
             Some(candidates) => {
                 let candidates = candidates.jagged()?;
 
@@ -80,7 +81,7 @@ impl Sensitivity for proto::Quantile {
         properties: &NodeProperties,
         sensitivity_type: &SensitivitySpace,
     ) -> Result<Value> {
-        let data_property = properties.get("data")
+        let data_property = properties.get::<IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 

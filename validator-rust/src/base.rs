@@ -2,15 +2,17 @@
 
 use crate::errors::*;
 
-use crate::proto;
+use crate::{proto, base};
 
 use ndarray::prelude::Ix1;
 
 use std::collections::HashMap;
 use ndarray::{ArrayD, arr0, Dimension};
 
-use crate::utilities::{standardize_categorical_argument, deduplicate};
+use crate::utilities::{standardize_categorical_argument, deduplicate, serial};
 use indexmap::IndexMap;
+use crate::utilities::serial::{parse_indexmap_node_ids, serialize_index_key};
+use std::ops::{Add, Mul, Div};
 
 /// The universal data representation.
 ///
@@ -26,7 +28,7 @@ pub enum Value {
     /// An arbitrary-dimensional homogeneously typed array
     Array(Array),
     /// An index-map, where the keys are enum-typed and the values are of type Value
-    Indexmap(Indexmap<Value>),
+    Indexmap(IndexMap<IndexKey, Value>),
     /// A 2D homogeneously typed matrix, where the columns may be unknown and the column lengths may be inconsistent
     Jagged(Jagged),
     /// An arbitrary function expressed in the graph language
@@ -49,7 +51,7 @@ impl Value {
         }
     }
     /// Retrieve Jagged from a Value, assuming the Value contains Jagged
-    pub fn indexmap(&self) -> Result<&Indexmap<Value>> {
+    pub fn indexmap(&self) -> Result<&IndexMap<IndexKey, Value>> {
         match self {
             Value::Indexmap(indexmap) => Ok(indexmap),
             _ => Err("value must be Jagged".into())
@@ -148,6 +150,16 @@ impl From<String> for Value {
     }
 }
 
+impl From<IndexKey> for Value {
+    fn from(value: IndexKey) -> Self {
+        match value {
+            IndexKey::Str(v) => v.into(),
+            IndexKey::Bool(v) => v.into(),
+            IndexKey::I64(v) => v.into()
+        }
+    }
+}
+
 impl<T> From<ndarray::Array<bool, ndarray::Dim<T>>> for Value
     where ndarray::Dim<T>: Dimension {
     fn from(value: ndarray::Array<bool, ndarray::Dim<T>>) -> Self {
@@ -177,21 +189,9 @@ impl<T> From<ndarray::Array<String, ndarray::Dim<T>>> for Value
 }
 
 
-impl From<IndexMap<bool, Value>> for Value {
-    fn from(value: IndexMap<bool, Value>) -> Self {
-        Value::Indexmap(Indexmap::<Value>::Bool(value))
-    }
-}
-
-impl From<IndexMap<i64, Value>> for Value {
-    fn from(value: IndexMap<i64, Value>) -> Self {
-        Value::Indexmap(Indexmap::<Value>::I64(value))
-    }
-}
-
-impl From<IndexMap<String, Value>> for Value {
-    fn from(value: IndexMap<String, Value>) -> Self {
-        Value::Indexmap(Indexmap::<Value>::Str(value))
+impl From<IndexMap<IndexKey, Value>> for Value {
+    fn from(value: IndexMap<IndexKey, Value>) -> Self {
+        Value::Indexmap(value)
     }
 }
 
@@ -507,63 +507,60 @@ impl From<Vec<Vec<String>>> for Jagged {
     }
 }
 
-/// The universal Indexmao representation.
+/// The universal Indexmap representation.
 ///
 /// Used for any component that has multiple outputs.
 /// In practice, the only components that can emit multiple outputs are materialize (by columns) and partition (by rows)
 ///
 /// The Indexmap has a one-to-one mapping to a protobuf Indexmap.
-#[derive(Clone, Debug)]
-pub enum Indexmap<T> {
-    Bool(IndexMap<bool, T>),
-    I64(IndexMap<i64, T>),
-    Str(IndexMap<String, T>),
-}
+// #[derive(Clone, Debug)]
+// pub struct Indexmap<T> (IndexMap<IndexKey, T>);
 
-impl<T> Indexmap<T> {
-    pub fn keys_length(&self) -> usize {
-        match self {
-            Indexmap::Bool(value) => value.keys().len(),
-            Indexmap::I64(value) => value.keys().len(),
-            Indexmap::Str(value) => value.keys().len(),
-        }
-    }
-    pub fn values(&self) -> Vec<&T> {
-        match self {
-            Indexmap::Bool(value) => value.values().collect(),
-            Indexmap::I64(value) => value.values().collect(),
-            Indexmap::Str(value) => value.values().collect(),
-        }
-    }
-    pub fn from_values(&self, values: Vec<T>) -> Indexmap<T> where T: Clone {
-        match self {
-            Indexmap::Bool(value) => value.keys().cloned()
-                .zip(values).collect::<IndexMap<bool, T>>().into(),
-            Indexmap::I64(value) => value.keys().cloned()
-                .zip(values).collect::<IndexMap<i64, T>>().into(),
-            Indexmap::Str(value) => value.keys().cloned()
-                .zip(values).collect::<IndexMap<String, T>>().into(),
-        }
-    }
-}
-
-impl<T> From<IndexMap<i64, T>> for Indexmap<T> {
-    fn from(value: IndexMap<i64, T>) -> Self {
-        Indexmap::<T>::I64(value)
-    }
-}
-
-impl<T> From<IndexMap<bool, T>> for Indexmap<T> {
-    fn from(value: IndexMap<bool, T>) -> Self {
-        Indexmap::<T>::Bool(value)
-    }
-}
-
-impl<T> From<IndexMap<String, T>> for Indexmap<T> {
-    fn from(value: IndexMap<String, T>) -> Self {
-        Indexmap::<T>::Str(value)
-    }
-}
+// TODO PRE-COMMIT: REMOVE
+// impl<T> Indexmap<T> {
+//     pub fn keys_length(&self) -> usize {
+//         match self {
+//             Indexmap::Bool(value) => value.keys().len(),
+//             Indexmap::I64(value) => value.keys().len(),
+//             Indexmap::Str(value) => value.keys().len(),
+//         }
+//     }
+//     pub fn values(&self) -> Vec<&T> {
+//         match self {
+//             Indexmap::Bool(value) => value.values().collect(),
+//             Indexmap::I64(value) => value.values().collect(),
+//             Indexmap::Str(value) => value.values().collect(),
+//         }
+//     }
+//     pub fn from_values(&self, values: Vec<T>) -> Indexmap<T> where T: Clone {
+//         match self {
+//             Indexmap::Bool(value) => value.keys().cloned()
+//                 .zip(values).collect::<IndexMap<bool, T>>().into(),
+//             Indexmap::I64(value) => value.keys().cloned()
+//                 .zip(values).collect::<IndexMap<i64, T>>().into(),
+//             Indexmap::Str(value) => value.keys().cloned()
+//                 .zip(values).collect::<IndexMap<String, T>>().into(),
+//         }
+//     }
+// }
+//
+// impl<T> From<IndexMap<i64, T>> for Indexmap<T> {
+//     fn from(value: IndexMap<i64, T>) -> Self {
+//         Indexmap::<T>::I64(value)
+//     }
+// }
+//
+// impl<T> From<IndexMap<bool, T>> for Indexmap<T> {
+//     fn from(value: IndexMap<bool, T>) -> Self {
+//         Indexmap::<T>::Bool(value)
+//     }
+// }
+//
+// impl<T> From<IndexMap<String, T>> for Indexmap<T> {
+//     fn from(value: IndexMap<String, T>) -> Self {
+//         Indexmap::<T>::Str(value)
+//     }
+// }
 
 /// Derived properties for the universal value.
 ///
@@ -631,7 +628,7 @@ pub struct IndexmapProperties {
     /// records within the values of the indexmap come from a partition of the rows
     pub disjoint: bool,
     /// properties for each of the values in the indexmap
-    pub properties: Indexmap<ValueProperties>,
+    pub properties: IndexMap<IndexKey, ValueProperties>,
     /// denote which partition operation this data originates from
     pub dataset_id: Option<i64>,
     /// denote if the value is a Dataframe or Partition
@@ -658,15 +655,9 @@ impl IndexmapProperties {
         self.num_records.ok_or_else(|| "number of rows is not defined".into())
     }
 
-    pub fn from_values(&self, values: Vec<ValueProperties>) -> Indexmap<ValueProperties> {
-        match &self.properties {
-            Indexmap::Bool(value) => value.keys().cloned()
-                .zip(values).collect::<IndexMap<bool, ValueProperties>>().into(),
-            Indexmap::I64(value) => value.keys().cloned()
-                .zip(values).collect::<IndexMap<i64, ValueProperties>>().into(),
-            Indexmap::Str(value) => value.keys().cloned()
-                .zip(values).collect::<IndexMap<String, ValueProperties>>().into(),
-        }
+    pub fn from_values(&self, values: Vec<ValueProperties>) -> IndexMap<IndexKey, ValueProperties> {
+        self.properties.keys().cloned()
+            .zip(values).collect::<IndexMap<base::IndexKey, ValueProperties>>().into()
     }
 }
 
@@ -852,7 +843,7 @@ pub enum DataType {
 #[derive(Clone, Debug)]
 pub struct AggregatorProperties {
     pub component: proto::component::Variant,
-    pub properties: HashMap<String, ValueProperties>,
+    pub properties: IndexMap<IndexKey, ValueProperties>,
     pub c_stability: Vec<f64>,
     pub lipschitz_constant: Vec<f64>,
 }
@@ -945,7 +936,17 @@ pub struct GroupId {
 pub enum IndexKey {
     Str(String),
     I64(i64),
-    Bool(bool)
+    Bool(bool),
+}
+
+impl ToString for IndexKey {
+    fn to_string(&self) -> String {
+        match self {
+            IndexKey::Str(v) => v.to_string(),
+            IndexKey::I64(v) => v.to_string(),
+            IndexKey::Bool(v) => v.to_string()
+        }
+    }
 }
 
 impl IndexKey {
@@ -974,6 +975,30 @@ impl IndexKey {
     }
 }
 
+impl From<String> for IndexKey {
+    fn from(value: String) -> Self {
+        IndexKey::Str(value)
+    }
+}
+
+impl From<&str> for IndexKey {
+    fn from(value: &str) -> Self {
+        IndexKey::Str(value.to_string())
+    }
+}
+
+impl From<bool> for IndexKey {
+    fn from(value: bool) -> Self {
+        IndexKey::Bool(value)
+    }
+}
+
+impl From<i64> for IndexKey {
+    fn from(value: i64) -> Self {
+        IndexKey::I64(value)
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct ReleaseNode {
     pub value: Value,
@@ -991,9 +1016,94 @@ impl ReleaseNode {
     }
 }
 
-// The properties for a node consists of Properties for each of its arguments.
-pub type NodeProperties = HashMap<String, ValueProperties>;
+impl proto::Component {
+    pub fn insert_argument(&mut self, key: &IndexKey, value: u32) {
 
+        let key = serial::serialize_index_key(key.clone());
+        match &mut self.arguments {
+            Some(arguments) => match arguments.keys.iter()
+                .position(|idx| idx == &key) {
+                Some(idx) => arguments.values[idx] = value,
+                None => {
+                    arguments.keys.push(key);
+                    arguments.values.push(value)
+                }
+            },
+            None => self.arguments = Some(proto::IndexmapNodeIds {
+                keys: vec![key],
+                values: vec![value]
+            })
+        };
+    }
+
+    pub fn arguments(&self) -> IndexMap<IndexKey, u32> {
+        match &self.arguments {
+            Some(arguments) => parse_indexmap_node_ids(arguments.clone()),
+            None => IndexMap::new()
+        }
+    }
+}
+
+impl proto::IndexmapNodeIds {
+    pub fn new(arguments: IndexMap<base::IndexKey, u32>) -> Self {
+        proto::IndexmapNodeIds {
+            keys: arguments.keys().map(|k| serialize_index_key(k.clone())).collect(),
+            values: arguments.values().cloned().collect()
+        }
+    }
+}
+
+// The properties for a node consists of Properties for each of its arguments.
+pub type NodeProperties = IndexMap<base::IndexKey, ValueProperties>;
+
+
+
+impl Div<f64> for proto::PrivacyUsage {
+    type Output = Result<proto::PrivacyUsage>;
+
+    fn div(mut self, rhs: f64) -> Self::Output {
+        self.distance = Some(match self.distance.ok_or_else(|| "distance must be defined")? {
+            proto::privacy_usage::Distance::Approximate(approximate) => proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
+                epsilon: approximate.epsilon / rhs,
+                delta: approximate.delta / rhs,
+            })
+        });
+        Ok(self)
+    }
+}
+
+impl Mul<f64> for proto::PrivacyUsage {
+    type Output = Result<proto::PrivacyUsage>;
+
+    fn mul(mut self, rhs: f64) -> Self::Output {
+        self.distance = Some(match self.distance.ok_or_else(|| "distance must be defined")? {
+            proto::privacy_usage::Distance::Approximate(approximate) => proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
+                epsilon: approximate.epsilon * rhs,
+                delta: approximate.delta * rhs,
+            })
+        });
+        Ok(self)
+    }
+}
+
+impl Add<proto::PrivacyUsage> for proto::PrivacyUsage {
+    type Output = Result<proto::PrivacyUsage>;
+
+    fn add(mut self, rhs: proto::PrivacyUsage) -> Self::Output {
+        let left_distance = self.distance.ok_or_else(|| "distance must be defined")?;
+        let right_distance = rhs.distance.ok_or_else(|| "distance must be defined")?;
+
+        use proto::privacy_usage::Distance;
+
+        self.distance = Some(match (left_distance, right_distance) {
+            (Distance::Approximate(lhs), Distance::Approximate(rhs)) => proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
+                epsilon: lhs.epsilon + rhs.epsilon,
+                delta: lhs.delta + rhs.delta,
+            })
+        });
+        Ok(self)
+    }
+}
 
 #[cfg(test)]
 pub mod test_data {

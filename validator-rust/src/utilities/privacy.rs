@@ -3,7 +3,7 @@ use crate::errors::*;
 use itertools::Itertools;
 use std::cmp::Ordering;
 use crate::proto;
-use crate::base::{ValueProperties, Release, Indexmap, Value, GroupId};
+use crate::base::{ValueProperties, Release, Value, GroupId, IndexKey};
 use crate::components::Mechanism;
 use crate::utilities::{get_input_properties, get_common_value};
 
@@ -11,7 +11,7 @@ use crate::utilities::{get_input_properties, get_common_value};
 fn get_dependents(graph: &HashMap<u32, proto::Component>) -> HashMap<u32, HashSet<u32>> {
     let mut dependents = HashMap::<u32, HashSet<u32>>::new();
     graph.iter().for_each(|(node_id, component)| {
-        component.arguments.values().for_each(|source_node_id| {
+        component.arguments().values().for_each(|source_node_id| {
             dependents
                 .entry(*source_node_id)
                 .or_insert_with(HashSet::<u32>::new)
@@ -60,7 +60,7 @@ fn batch_partition<'a>(
             // get all source nodes within the submission, and set them as dependency_id zero
             let mut traversal = subgraph.iter()
                 .filter(|(_, component)|
-                    component.arguments.values().any(|id| subgraph.contains_key(id)))
+                    component.arguments().values().any(|id| subgraph.contains_key(id)))
                 // (id, dependency_id)
                 .map(|(id, _)| (*id, 0))
                 .collect::<Vec<(u32, u32)>>();
@@ -156,7 +156,7 @@ pub fn compute_graph_privacy_usage(
             // for each index, check if their column name (category) is the same as the category in the signature
             .map(|index_id| Ok((
                 *index_id, category == release.get(graph.get(index_id).unwrap()
-                    .arguments.get("columns")
+                    .arguments().get(&IndexKey::from("columns"))
                     .ok_or_else(|| "columns must be specified on an index")?)
                     .ok_or_else(|| "columns value must be defined")?.value)))
 
@@ -228,28 +228,23 @@ pub fn compute_graph_privacy_usage(
         let partition_properties = properties.get(&partition_node_id)
             .ok_or_else(|| "partition properties must be defined")?;
 
-        match &partition_properties.indexmap()?.properties {
-            Indexmap::Str(partitions) => partitions.keys()
-                .map(|category| get_category_indexes(category.clone().into(), partition_node_id)?.iter()
-                    .map(|index_id| {
-                        let (batches, partition_ids) = batch_partition(
-                            &get_downstream_graph(*index_id)?, &release_privacy_usages)?;
-                        let batch_usages = batches.into_iter()
-                            .map(|(_, batch)| compute_batch_privacy_usage(batch))
-                            .fold1(|l, r| l? + r?)
-                            .unwrap_or_else(|| Ok(zero_usage()))?;
+        partition_properties.indexmap()?.properties.keys()
+            .map(|category| get_category_indexes(category.clone().into(), partition_node_id)?.iter()
+                .map(|index_id| {
+                    let (batches, partition_ids) = batch_partition(
+                        &get_downstream_graph(*index_id)?, &release_privacy_usages)?;
+                    let batch_usages = batches.into_iter()
+                        .map(|(_, batch)| compute_batch_privacy_usage(batch))
+                        .fold1(|l, r| l? + r?)
+                        .unwrap_or_else(|| Ok(zero_usage()))?;
 
-                        batch_usages + compute_partition_usage(partition_ids)?
-                    })
-                    // sum all indexes into the category
-                    .fold1(|l, r| l? + r?)
-                    .unwrap_or_else(|| Ok(zero_usage())))
-                .fold1(max_usage)
-                .unwrap_or_else(|| Ok(zero_usage())),
-            _ => panic!("TODO: once str is debugged"),
-            // Indexmap::Bool(indexmap) => indexmap.keys(),
-            // Indexmap::I64(indexmap) => indexmap.keys()
-        }
+                    batch_usages + compute_partition_usage(partition_ids)?
+                })
+                // sum all indexes into the category
+                .fold1(|l, r| l? + r?)
+                .unwrap_or_else(|| Ok(zero_usage())))
+            .fold1(max_usage)
+            .unwrap_or_else(|| Ok(zero_usage()))
     })
         .fold1(|l, r| l? + r?)
         .unwrap_or_else(|| Ok(zero_usage()))?;
@@ -348,7 +343,7 @@ pub fn get_delta(usage: &proto::PrivacyUsage) -> Result<f64> {
     }
 }
 
-pub fn broadcast_privacy_usage(usages: &[proto::PrivacyUsage], length: usize) -> Result<Vec<proto::PrivacyUsage>> {
+pub fn spread_privacy_usage(usages: &[proto::PrivacyUsage], length: usize) -> Result<Vec<proto::PrivacyUsage>> {
     if usages.len() == length {
         return Ok(usages.to_owned());
     }

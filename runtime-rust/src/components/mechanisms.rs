@@ -4,7 +4,7 @@ use crate::NodeArguments;
 use whitenoise_validator::base::{ReleaseNode, Value, Jagged};
 use whitenoise_validator::utilities::{
     get_argument, broadcast_ndarray,
-    privacy::{get_epsilon, get_delta, broadcast_privacy_usage}};
+    privacy::{get_epsilon, get_delta, spread_privacy_usage}};
 use crate::components::Evaluable;
 use crate::utilities;
 use whitenoise_validator::proto;
@@ -18,7 +18,7 @@ impl Evaluable for proto::LaplaceMechanism {
 
         let sensitivity = get_argument(arguments, "sensitivity")?.array()?.f64()?;
 
-        let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivity.len())?;
+        let usages = spread_privacy_usage(&self.privacy_usage, sensitivity.len())?;
 
         let epsilon = ndarray::Array::from_shape_vec(
             data.shape(), usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?)?;
@@ -48,7 +48,7 @@ impl Evaluable for proto::GaussianMechanism {
 
         let sensitivity = get_argument(arguments, "sensitivity")?.array()?.f64()?;
 
-        let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivity.len())?;
+        let usages = spread_privacy_usage(&self.privacy_usage, sensitivity.len())?;
 
         let epsilon = ndarray::Array::from_shape_vec(
             data.shape(), usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?)?;
@@ -82,7 +82,7 @@ impl Evaluable for proto::SimpleGeometricMechanism {
 
         let sensitivity = get_argument(arguments, "sensitivity")?.array()?.f64()?;
 
-        let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivity.len())?;
+        let usages = spread_privacy_usage(&self.privacy_usage, sensitivity.len())?;
         let epsilon = ndarray::Array::from_shape_vec(
             data.shape(), usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?)?;
 
@@ -121,7 +121,7 @@ impl Evaluable for proto::ExponentialMechanism {
         let sensitivity = get_argument(arguments, "sensitivity")?.array()?.f64()?
             .iter().cloned().collect::<Vec<f64>>();
 
-        let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivity.len())?;
+        let usages = spread_privacy_usage(&self.privacy_usage, sensitivity.len())?;
         let epsilon = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
 
         let utilities = get_argument(arguments, "utilities")?.jagged()?.f64()?;

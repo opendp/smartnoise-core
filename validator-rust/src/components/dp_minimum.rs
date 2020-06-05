@@ -10,7 +10,8 @@ use crate::components::{Expandable, Report};
 
 use crate::base::{NodeProperties, Value, Array};
 use crate::utilities::json::{JSONRelease, value_to_json, privacy_usage_to_json, AlgorithmInfo};
-use crate::utilities::{prepend, privacy::broadcast_privacy_usage, get_ith_column};
+use crate::utilities::{prepend, privacy::spread_privacy_usage, get_ith_column};
+use indexmap::map::IndexMap;
 
 
 impl Expandable for proto::DpMinimum {
@@ -50,12 +51,12 @@ impl Report for proto::DpMinimum {
         &self,
         node_id: &u32,
         component: &proto::Component,
-        _public_arguments: &HashMap<String, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &NodeProperties,
         release: &Value,
         variable_names: Option<&Vec<String>>,
     ) -> Result<Option<Vec<JSONRelease>>> {
-        let data_property = properties.get("data")
+        let data_property = properties.get::<base::IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
@@ -65,7 +66,7 @@ impl Report for proto::DpMinimum {
         let upper = data_property.upper_f64()?;
         let num_columns = data_property.num_columns()?;
 
-        let privacy_usages = broadcast_privacy_usage(&self.privacy_usage, num_columns as usize)?;
+        let privacy_usages = spread_privacy_usage(&self.privacy_usage, num_columns as usize)?;
 
         for column_number in 0..(num_columns as usize) {
             let variable_name = variable_names

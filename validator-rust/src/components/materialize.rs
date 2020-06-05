@@ -1,29 +1,28 @@
 use crate::errors::*;
 
-use std::collections::HashMap;
-
 use crate::{proto, base, Warnable};
 
 use crate::components::{Component, Named};
-use crate::base::{Indexmap, Value, ValueProperties, IndexmapProperties, ArrayProperties, DataType};
+use crate::base::{Value, ValueProperties, IndexmapProperties, ArrayProperties, DataType};
 use ndarray::prelude::*;
+use indexmap::map::IndexMap;
 
 impl Component for proto::Materialize {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: &HashMap<String, Value>,
+        public_arguments: &IndexMap<base::IndexKey, Value>,
         _properties: &base::NodeProperties,
         node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
 
-        let column_names = self.get_names(public_arguments, &HashMap::new(), None)?;
+        let column_names = self.get_names(public_arguments, &IndexMap::new(), None)?;
 
         Ok(ValueProperties::Indexmap(IndexmapProperties {
             num_records: None,
             disjoint: false,
-            properties: Indexmap::<ValueProperties>::Str(column_names.into_iter()
-                .map(|name| (name, ValueProperties::Array(ArrayProperties {
+            properties: column_names.into_iter()
+                .map(|name| (name.into(), ValueProperties::Array(ArrayProperties {
                     num_records: None,
                     num_columns: Some(1),
                     nullity: true,
@@ -37,7 +36,7 @@ impl Component for proto::Materialize {
                     is_not_empty: true,
                     dimensionality: Some(1),
                     group_id: vec![]
-                }))).collect()),
+                }))).collect(),
             dataset_id: Some(node_id as i64),
             variant: proto::indexmap_properties::Variant::Dataframe
         }).into())
@@ -47,14 +46,14 @@ impl Component for proto::Materialize {
 impl Named for proto::Materialize {
     fn get_names(
         &self,
-        public_arguments: &HashMap<String, Value>,
-        _argument_variables: &HashMap<String, Vec<String>>,
+        public_arguments: &IndexMap<base::IndexKey, Value>,
+        _argument_variables: &IndexMap<base::IndexKey, Vec<String>>,
         _release: Option<&Value>
     ) -> Result<Vec<String>> {
 
-        let column_names = public_arguments.get("column_names")
+        let column_names = public_arguments.get::<base::IndexKey>(&"column_names".into())
             .and_then(|column_names| column_names.array().ok()?.string().ok()).cloned();
-        let num_columns = public_arguments.get("num_columns")
+        let num_columns = public_arguments.get::<base::IndexKey>(&"num_columns".into())
             .and_then(|num_columns| num_columns.array().ok()?.first_i64().ok());
 
         // standardize to vec of column names

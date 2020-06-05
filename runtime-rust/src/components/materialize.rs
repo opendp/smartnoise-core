@@ -2,7 +2,7 @@ use whitenoise_validator::errors::*;
 
 use ndarray::prelude::*;
 use crate::NodeArguments;
-use whitenoise_validator::base::{Value, Indexmap, ReleaseNode};
+use whitenoise_validator::base::{Value, ReleaseNode, IndexKey};
 use indexmap::IndexMap;
 use crate::components::Evaluable;
 use ndarray;
@@ -10,10 +10,10 @@ use whitenoise_validator::proto;
 
 impl Evaluable for proto::Materialize {
     fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        let column_names = arguments.get("column_names")
+        let column_names = arguments.get::<IndexKey>(&"column_names".into())
             .and_then(|column_names| column_names.array().ok()?.string().ok()).cloned();
 
-        let num_columns = arguments.get("num_columns")
+        let num_columns = arguments.get::<IndexKey>(& "num_columns".into())
             .and_then(|num_columns| num_columns.first_i64().ok());
 
         // num columns is sufficient shared information to build the dataframes
@@ -62,18 +62,18 @@ impl Evaluable for proto::Materialize {
             Some(column_names) => {
                 let column_names = column_names.into_dimensionality::<Ix1>()?.to_vec();
                 // convert indexmap of vecs into arrays
-                Ok(ReleaseNode::new(Value::Indexmap(Indexmap::Str(response.into_iter().enumerate()
+                Ok(ReleaseNode::new(Value::Indexmap(response.into_iter().enumerate()
                     .map(|(k, v): (usize, Vec<String>)|
-                        (column_names[k].clone(), ndarray::Array::from(v).into_dyn().into()))
-                    .collect::<IndexMap<String, Value>>()))))
+                        (IndexKey::from(column_names[k].clone()), ndarray::Array::from(v).into_dyn().into()))
+                    .collect::<IndexMap<IndexKey, Value>>())))
             }
             None => {
 
                 // convert indexmap of vecs into arrays
-                Ok(ReleaseNode::new(Value::Indexmap(Indexmap::I64(response.into_iter().enumerate()
+                Ok(ReleaseNode::new(Value::Indexmap(response.into_iter().enumerate()
                     .map(|(k, v): (usize, Vec<String>)|
-                        (k as i64, ndarray::Array::from(v).into_dyn().into()))
-                    .collect::<IndexMap<i64, Value>>()))))
+                        (IndexKey::from(k as i64), ndarray::Array::from(v).into_dyn().into()))
+                    .collect::<IndexMap<IndexKey, Value>>())))
             }
         }
     }

@@ -46,11 +46,11 @@ pub mod docs;
 // import all trait implementations
 use crate::components::*;
 use std::collections::{HashMap, HashSet};
-use crate::utilities::serial::{serialize_value_properties, serialize_error};
-use crate::base::{ReleaseNode, Value};
+use crate::utilities::serial::{serialize_value_properties, serialize_error, parse_index_key, parse_release_node, parse_indexmap_value_properties};
+use crate::base::{Value, IndexKey};
 use std::iter::FromIterator;
-use std::ops::{Div, Mul, Add};
 use crate::utilities::privacy::compute_graph_privacy_usage;
+use indexmap::map::IndexMap;
 
 // for accuracy guarantees
 extern crate statrs;
@@ -60,6 +60,7 @@ pub mod proto {
     include!(concat!(env!("OUT_DIR"), "/whitenoise.rs"));
 }
 
+#[macro_use] extern crate indexmap;
 // define the useful macro for building hashmaps globally
 #[macro_export]
 #[doc(hidden)]
@@ -71,7 +72,6 @@ macro_rules! hashmap {
          map
     }}
 }
-
 
 /// Validate if an analysis is well-formed.
 ///
@@ -137,10 +137,10 @@ pub fn generate_report(
         let public_arguments = utilities::get_public_arguments(&component, &release)?;
 
         // variable names for argument nodes
-        let mut arguments_vars: HashMap<String, Vec<String>> = HashMap::new();
+        let mut arguments_vars: IndexMap<base::IndexKey, Vec<String>> = IndexMap::new();
 
         // iterate through argument nodes
-        for (field_id, field) in &component.arguments {
+        for (field_id, field) in &component.arguments() {
             // get variable names corresponding to that argument
             if let Some(arg_vars) = nodes_varnames.get(field) {
                 arguments_vars.insert(field_id.clone(), arg_vars.clone());
@@ -197,17 +197,17 @@ pub fn generate_report(
 pub fn accuracy_to_privacy_usage(
     component: proto::Component,
     privacy_definition: proto::PrivacyDefinition,
-    properties: HashMap<String, proto::ValueProperties>,
+    properties: IndexMap<IndexKey, proto::ValueProperties>,
     accuracies: proto::Accuracies
 ) -> Result<proto::PrivacyUsages> {
 
-    let proto_properties = component.arguments.iter()
+    let proto_properties = component.arguments().iter()
         .filter_map(|(name, idx)| Some((idx.clone(), properties.get(name)?.clone())))
         .collect::<HashMap<u32, proto::ValueProperties>>();
 
     let mut analysis = proto::Analysis {
         computation_graph: Some(proto::ComputationGraph {
-            value: hashmap![component.arguments.values().max().cloned().unwrap_or(0) + 1 => component.clone()]
+            value: hashmap![component.arguments().values().max().cloned().unwrap_or(0) + 1 => component.clone()]
         }),
         privacy_definition: Some(privacy_definition.clone()),
     };
@@ -224,9 +224,9 @@ pub fn accuracy_to_privacy_usage(
         .value;
 
     let privacy_usages = graph.iter().map(|(idx, component)| {
-        let component_properties = component.arguments.iter()
+        let component_properties = component.arguments().iter()
             .filter_map(|(name, idx)| Some((name.clone(), properties.get(idx)?.clone())))
-            .collect::<HashMap<String, base::ValueProperties>>();
+            .collect::<IndexMap<base::IndexKey, base::ValueProperties>>();
 
         Ok(match component.accuracy_to_privacy_usage(
             &privacy_definition, &component_properties, &accuracies)? {
@@ -252,17 +252,17 @@ pub fn accuracy_to_privacy_usage(
 pub fn privacy_usage_to_accuracy(
     component: proto::Component,
     privacy_definition: proto::PrivacyDefinition,
-    properties: HashMap<String, proto::ValueProperties>,
+    properties: IndexMap<IndexKey, proto::ValueProperties>,
     alpha: f64
 ) -> Result<proto::Accuracies> {
 
-    let proto_properties = component.arguments.iter()
+    let proto_properties = component.arguments().iter()
         .filter_map(|(name, idx)| Some((idx.clone(), properties.get(name)?.clone())))
         .collect::<HashMap<u32, proto::ValueProperties>>();
 
     let mut analysis = proto::Analysis {
         computation_graph: Some(proto::ComputationGraph {
-            value: hashmap![component.arguments.values().max().cloned().unwrap_or(0) + 1 => component.clone()]
+            value: hashmap![component.arguments().values().max().cloned().unwrap_or(0) + 1 => component.clone()]
         }),
         privacy_definition: Some(privacy_definition.clone()),
     };
@@ -279,9 +279,9 @@ pub fn privacy_usage_to_accuracy(
         .value;
 
     let accuracies = graph.iter().map(|(idx, component)| {
-        let component_properties = component.arguments.iter()
+        let component_properties = component.arguments().iter()
             .filter_map(|(name, idx)| Some((name.clone(), properties.get(idx)?.clone())))
-            .collect::<HashMap<String, base::ValueProperties>>();
+            .collect::<IndexMap<IndexKey, base::ValueProperties>>();
 
         Ok(match component.privacy_usage_to_accuracy(
             &privacy_definition, &component_properties, &alpha)? {
@@ -315,7 +315,7 @@ pub fn get_properties(
         while !traversal.is_empty() {
             let node_id = traversal.pop().unwrap();
             computation_graph.get(&node_id)
-                .map(|component| component.arguments.values().for_each(|v| traversal.push(*v)));
+                .map(|component| component.arguments().values().for_each(|v| traversal.push(*v)));
             ancestors.insert(node_id);
         }
         analysis = proto::Analysis {
@@ -358,13 +358,17 @@ pub fn expand_component(
         component, properties, arguments, privacy_definition, component_id, maximum_id,
     } = request;
 
-    let public_arguments = arguments.into_iter()
-        .map(|(k, v)| (k, utilities::serial::parse_release_node(v)))
-        .collect::<HashMap<String, ReleaseNode>>();
+    let public_arguments = match arguments {
+        Some(arguments) => arguments.keys.iter().zip(arguments.values.into_iter())
+            .map(|(k, v)| (parse_index_key(k.clone()), parse_release_node(v)))
+            .collect(),
+        None => IndexMap::new()
+    };
 
-    let mut properties: base::NodeProperties = properties.into_iter()
-        .map(|(k, v)| (k, utilities::serial::parse_value_properties(v)))
-        .collect();
+    let mut properties: base::NodeProperties = match properties {
+        Some(properties) => parse_indexmap_value_properties(properties),
+        None => IndexMap::new()
+    };
 
     for (k, v) in &public_arguments {
         // this if should be redundant, no private data should be passed to the validator
@@ -386,7 +390,7 @@ pub fn expand_component(
 
     let public_values = public_arguments.into_iter()
         .map(|(name, release_node)| (name.clone(), release_node.value.clone()))
-        .collect::<HashMap<String, Value>>();
+        .collect::<IndexMap<IndexKey, Value>>();
 
     if result.traversal.is_empty() {
         let Warnable(propagated_property, propagation_warnings) = component.clone()
@@ -399,53 +403,4 @@ pub fn expand_component(
     }
 
     Ok(result)
-}
-
-
-
-impl Div<f64> for proto::PrivacyUsage {
-    type Output = Result<proto::PrivacyUsage>;
-
-    fn div(mut self, rhs: f64) -> Self::Output {
-        self.distance = Some(match self.distance.ok_or_else(|| "distance must be defined")? {
-            proto::privacy_usage::Distance::Approximate(approximate) => proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
-                epsilon: approximate.epsilon / rhs,
-                delta: approximate.delta / rhs,
-            })
-        });
-        Ok(self)
-    }
-}
-
-impl Mul<f64> for proto::PrivacyUsage {
-    type Output = Result<proto::PrivacyUsage>;
-
-    fn mul(mut self, rhs: f64) -> Self::Output {
-        self.distance = Some(match self.distance.ok_or_else(|| "distance must be defined")? {
-            proto::privacy_usage::Distance::Approximate(approximate) => proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
-                epsilon: approximate.epsilon * rhs,
-                delta: approximate.delta * rhs,
-            })
-        });
-        Ok(self)
-    }
-}
-
-impl Add<proto::PrivacyUsage> for proto::PrivacyUsage {
-    type Output = Result<proto::PrivacyUsage>;
-
-    fn add(mut self, rhs: proto::PrivacyUsage) -> Self::Output {
-        let left_distance = self.distance.ok_or_else(|| "distance must be defined")?;
-        let right_distance = rhs.distance.ok_or_else(|| "distance must be defined")?;
-
-        use proto::privacy_usage::Distance;
-
-        self.distance = Some(match (left_distance, right_distance) {
-            (Distance::Approximate(lhs), Distance::Approximate(rhs)) => proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
-                epsilon: lhs.epsilon + rhs.epsilon,
-                delta: lhs.delta + rhs.delta,
-            })
-        });
-        Ok(self)
-    }
 }

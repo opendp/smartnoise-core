@@ -18,17 +18,18 @@ pub mod base;
 use std::collections::{HashMap, HashSet};
 use std::vec::Vec;
 
-use whitenoise_validator::base::{Value, ReleaseNode, Release};
-use whitenoise_validator::utilities::serial::{parse_release, serialize_release_node, serialize_error};
+use whitenoise_validator::base::{Value, ReleaseNode, Release, IndexKey};
+use whitenoise_validator::utilities::serial::{parse_release, serialize_release_node, serialize_error, serialize_index_key};
 use whitenoise_validator::utilities::{get_sinks, get_input_properties};
 
 use crate::components::Evaluable;
 
 use itertools::Itertools;
 use std::iter::FromIterator;
+use indexmap::map::IndexMap;
 
 
-pub type NodeArguments<'a> = HashMap<String, &'a Value>;
+pub type NodeArguments<'a> = IndexMap<IndexKey, &'a Value>;
 
 
 /// Given a description of computation, and some computed values, execute the computation and return computed values
@@ -84,7 +85,7 @@ pub fn release(
     // track node parents. Each key is a node id, and the value is the set of node ids that use it
     let mut parents = HashMap::<u32, HashSet<u32>>::new();
     graph.iter().for_each(|(node_id, component)| {
-        component.arguments.values().for_each(|source_node_id| {
+        component.arguments().values().for_each(|source_node_id| {
             parents.entry(*source_node_id).or_insert_with(HashSet::<u32>::new).insert(*node_id);
         })
     });
@@ -105,7 +106,7 @@ pub fn release(
 
         // check if any dependencies of the current node remain unevaluated
         let mut evaluable = true;
-        for source_node_id in component.arguments.values() {
+        for source_node_id in component.arguments().values() {
             if !release.contains_key(&source_node_id) {
                 evaluable = false;
                 traversal.push(*source_node_id);
@@ -120,20 +121,26 @@ pub fn release(
         // all dependencies are present in the graph. Begin node expansion
 
         // collect metadata about node inputs
-        let node_properties: HashMap<String, proto::ValueProperties> =
+        let node_properties: IndexMap<IndexKey, proto::ValueProperties> =
             get_input_properties(&component, &graph_properties)?;
-        let public_arguments = component.arguments.iter()
-            .map(|(name, node_id)| (name.clone(), release.get(node_id).unwrap()))
+        let comp_arguments = component.arguments();
+        let public_arguments = comp_arguments.iter()
+            .map(|(name, node_id)| (name, release.get(node_id).unwrap()))
             .filter(|(_, release_node)| release_node.public)
-            .map(|(name, release_node)| (name.clone(), serialize_release_node(release_node.clone())))
-            .collect::<HashMap<String, proto::ReleaseNode>>();
+            .collect::<IndexMap<&IndexKey, &ReleaseNode>>();
 
         // expand the current node
         let expansion: proto::ComponentExpansion = match whitenoise_validator::expand_component(proto::RequestExpandComponent {
             privacy_definition: privacy_definition.clone(),
             component: Some(component),
-            properties: node_properties,
-            arguments: public_arguments,
+            properties: Some(proto::IndexmapValueProperties {
+                keys: node_properties.keys().cloned().map(serialize_index_key).collect(),
+                values: node_properties.values().cloned().collect()
+            }),
+            arguments: Some(proto::IndexmapReleaseNode {
+                keys: public_arguments.keys().cloned().cloned().map(serialize_index_key).collect(),
+                values: public_arguments.into_iter().map(|(_, v)| serialize_release_node(v.clone())).collect()
+            }),
             component_id,
             maximum_id
         }) {
@@ -179,9 +186,9 @@ pub fn release(
         let component = graph.get(&component_id).unwrap();
 
         // collect arguments by string name to the component that will be executed
-        let node_arguments = component.arguments.iter()
-            .map(|(name, node_id)| (name.clone(), &release.get(node_id).unwrap().value))
-            .collect::<HashMap<String, &Value>>();
+        let node_arguments = component.arguments().into_iter()
+            .map(|(name, node_id)| (name, &release.get(&node_id).unwrap().value))
+            .collect::<IndexMap<IndexKey, &Value>>();
 
         // evaluate the component using the Evaluable trait, which is implemented on the proto::component::Variant enum
         let mut evaluation = component.clone().variant
@@ -203,7 +210,7 @@ pub fn release(
 
         if filter_level != proto::FilterLevel::All {
             // prune evaluations from the release. Private nodes that have no unevaluated parents do not need be stored anymore
-            for argument_node_id in component.arguments.values() {
+            for argument_node_id in component.arguments().values() {
                 if let Some(parent_node_ids) = parents.get_mut(argument_node_id) {
                     parent_node_ids.remove(&component_id);
 

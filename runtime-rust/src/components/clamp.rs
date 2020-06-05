@@ -1,7 +1,7 @@
 use whitenoise_validator::errors::*;
 
 use crate::NodeArguments;
-use whitenoise_validator::base::{Value, Array, Jagged, ReleaseNode};
+use whitenoise_validator::base::{Value, Array, Jagged, ReleaseNode, IndexKey};
 use whitenoise_validator::utilities::{standardize_numeric_argument, standardize_categorical_argument, standardize_null_target_argument, get_argument};
 use crate::components::Evaluable;
 use ndarray::ArrayD;
@@ -12,7 +12,7 @@ use std::hash::Hash;
 impl Evaluable for proto::Clamp {
     fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         // if categories argument was provided, clamp data as if they are categorical (regardless of atomic type)
-        if arguments.contains_key("categories") {
+        if arguments.contains_key::<IndexKey>(&"categories".into()) {
             match (get_argument(arguments, "data")?, get_argument(arguments, "categories")?, get_argument(arguments, "null_value")?) {
                 (Value::Array(data), Value::Jagged(categories), Value::Array(nulls)) => Ok(match (data, categories, nulls) {
                     (Array::Bool(data), Jagged::Bool(categories), Array::Bool(nulls)) =>

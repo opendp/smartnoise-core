@@ -9,19 +9,20 @@ use crate::proto;
 use crate::components::{Component, Expandable};
 use ndarray;
 
-use crate::base::{Value, Array, Nature, NatureContinuous, Vector1DNull, ValueProperties, DataType};
+use crate::base::{Value, Array, Nature, NatureContinuous, Vector1DNull, ValueProperties, DataType, IndexKey};
 use crate::utilities::{prepend, get_literal};
+use indexmap::map::IndexMap;
 
 
 impl Component for proto::Resize {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: &HashMap<String, Value>,
+        public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &base::NodeProperties,
         _node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
-        let mut data_property = properties.get("data")
+        let mut data_property = properties.get::<IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
@@ -29,11 +30,12 @@ impl Component for proto::Resize {
             data_property.assert_is_not_aggregated()?;
         }
 
-        if properties.contains_key("number_rows") && properties.contains_key("minimum_rows") {
+        if properties.contains_key::<IndexKey>(&"number_rows".into())
+            && properties.contains_key::<IndexKey>(&"minimum_rows".into()) {
             return Err("only one of number_rows and minimum_rows may be set".into())
         }
 
-        if let Some(num_columns) = public_arguments.get("number_columns") {
+        if let Some(num_columns) = public_arguments.get::<IndexKey>(&"number_columns".into()) {
             if data_property.num_columns.is_some() {
                 return Err("cannot resize number of columns when number of columns is known".into())
             }
@@ -48,7 +50,7 @@ impl Component for proto::Resize {
             data_property.dimensionality = Some(2);
         }
 
-        if let Some(num_records) = public_arguments.get("number_rows") {
+        if let Some(num_records) = public_arguments.get::<IndexKey>(&"number_rows".into()) {
             let num_records = num_records.first_i64()?;
             if num_records < 1 {
                 return Err("n must be greater than zero".into());
@@ -58,7 +60,7 @@ impl Component for proto::Resize {
             data_property.is_not_empty = num_records > 0;
         }
 
-        if let Some(minimum_rows) = public_arguments.get("minimum_rows") {
+        if let Some(minimum_rows) = public_arguments.get::<IndexKey>(&"minimum_rows".into()) {
             if minimum_rows.first_i64()? > 0 {
                 data_property.is_not_empty = true;
             } else {
@@ -66,7 +68,7 @@ impl Component for proto::Resize {
             }
         }
 
-        if let Some(categories) = public_arguments.get("categories") {
+        if let Some(categories) = public_arguments.get::<IndexKey>(&"categories".into()) {
             if data_property.data_type != categories.jagged()?.data_type() {
                 return Err("data's data_type must match categories' data_type".into());
             }
@@ -81,12 +83,12 @@ impl Component for proto::Resize {
             DataType::F64 => {
 
                 // 1. check public arguments (constant n)
-                let impute_lower = match public_arguments.get("lower") {
+                let impute_lower = match public_arguments.get::<IndexKey>(&"lower".into()) {
                     Some(lower) => lower.array()?.clone().vec_f64(Some(num_columns))
                         .map_err(prepend("lower:"))?,
 
                     // 2. then private arguments (for example from another clamped column)
-                    None => match properties.get("lower") {
+                    None => match properties.get::<IndexKey>(&"lower".into()) {
                         Some(lower) => lower.array()?.lower_f64()
                             .map_err(prepend("lower:"))?,
 
@@ -97,12 +99,12 @@ impl Component for proto::Resize {
                 };
 
                 // 1. check public arguments (constant n)
-                let impute_upper = match public_arguments.get("upper") {
+                let impute_upper = match public_arguments.get::<IndexKey>(&"upper".into()) {
                     Some(upper) => upper.array()?.clone().vec_f64(Some(num_columns))
                         .map_err(prepend("upper:"))?,
 
                     // 2. then private arguments (for example from another clamped column)
-                    None => match properties.get("upper") {
+                    None => match properties.get::<IndexKey>(&"upper".into()) {
                         Some(upper) => upper.array()?.upper_f64()
                             .map_err(prepend("upper:"))?,
 
@@ -147,12 +149,12 @@ impl Component for proto::Resize {
             DataType::I64 => {
 
                 // 1. check public arguments (constant n)
-                let impute_lower = match public_arguments.get("lower") {
+                let impute_lower = match public_arguments.get::<IndexKey>(&"lower".into()) {
                     Some(lower) => lower.array()?.clone().vec_i64(Some(num_columns))
                         .map_err(prepend("lower:"))?,
 
                     // 2. then private arguments (for example from another clamped column)
-                    None => match properties.get("lower") {
+                    None => match properties.get::<IndexKey>(&"lower".into()) {
                         Some(lower) => lower.array()?.lower_i64()
                             .map_err(prepend("lower:"))?,
 
@@ -163,12 +165,12 @@ impl Component for proto::Resize {
                 };
 
                 // 1. check public arguments (constant n)
-                let impute_upper = match public_arguments.get("upper") {
+                let impute_upper = match public_arguments.get::<IndexKey>(&"upper".into()) {
                     Some(upper) => upper.array()?.clone().vec_i64(Some(num_columns))
                         .map_err(prepend("upper:"))?,
 
                     // 2. then private arguments (for example from another clamped column)
-                    None => match properties.get("upper") {
+                    None => match properties.get::<IndexKey>(&"upper".into()) {
                         Some(upper) => upper.array()?.upper_i64()
                             .map_err(prepend("upper:"))?,
 
@@ -231,12 +233,12 @@ impl Expandable for proto::Resize {
 
         let mut component = component.clone();
 
-        let data_property = properties.get("data")
+        let data_property = properties.get::<IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
-        if !properties.contains_key("categories") {
-            if !properties.contains_key("lower") {
+        if !properties.contains_key::<IndexKey>(&"categories".into()) {
+            if !properties.contains_key::<IndexKey>(&"lower".into()) {
                 current_id += 1;
                 let id_lower = current_id;
                 let value = Value::Array(Array::F64(
@@ -244,10 +246,10 @@ impl Expandable for proto::Resize {
                 let (patch_node, release) = get_literal(value, &component.submission)?;
                 computation_graph.insert(id_lower.clone(), patch_node);
                 releases.insert(id_lower.clone(), release);
-                component.arguments.insert("lower".to_string(), id_lower);
+                component.insert_argument(&"lower".into(), id_lower);
             }
 
-            if !properties.contains_key("upper") {
+            if !properties.contains_key::<IndexKey>(&"upper".into()) {
                 current_id += 1;
                 let id_upper = current_id;
                 let value = Value::Array(Array::F64(
@@ -255,7 +257,7 @@ impl Expandable for proto::Resize {
                 let (patch_node, release) = get_literal(value, &component.submission)?;
                 computation_graph.insert(id_upper.clone(), patch_node);
                 releases.insert(id_upper.clone(), release);
-                component.arguments.insert("upper".to_string(), id_upper);
+                component.insert_argument(&"upper".into(), id_upper);
             }
         }
 

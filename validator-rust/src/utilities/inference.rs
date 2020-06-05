@@ -11,7 +11,7 @@ use ndarray::prelude::*;
 use ndarray_stats::QuantileExt;
 
 use itertools::Itertools;
-use crate::base::{Array, Value, Jagged, Nature, Vector1DNull, NatureContinuous, NatureCategorical, ValueProperties, ArrayProperties, DataType, IndexmapProperties, JaggedProperties, Indexmap};
+use crate::base::{Array, Value, Jagged, Nature, Vector1DNull, NatureContinuous, NatureCategorical, ValueProperties, ArrayProperties, DataType, IndexmapProperties, JaggedProperties, IndexKey};
 
 use crate::utilities::deduplicate;
 use indexmap::map::IndexMap;
@@ -233,20 +233,10 @@ pub fn infer_property(value: &Value, dataset_id: Option<i64>) -> Result<ValuePro
                 num_records: None,
                 disjoint: false,
                 variant: proto::indexmap_properties::Variant::Dataframe,
-                properties: match indexmap {
-                    Indexmap::Str(indexmap) => indexmap.iter()
-                        .map(|(name, value)| infer_property(value, dataset_id)
-                            .map(|v| (name.clone(), v)))
-                        .collect::<Result<IndexMap<String, ValueProperties>>>()?.into(),
-                    Indexmap::I64(indexmap) => indexmap.iter()
-                        .map(|(name, value)| infer_property(value, dataset_id)
-                            .map(|v| (*name, v)))
-                        .collect::<Result<IndexMap<i64, ValueProperties>>>()?.into(),
-                    Indexmap::Bool(indexmap) => indexmap.iter()
-                        .map(|(name, value)| infer_property(value, dataset_id)
-                            .map(|v| (*name, v)))
-                        .collect::<Result<IndexMap<bool, ValueProperties>>>()?.into(),
-                },
+                properties: indexmap.iter()
+                    .map(|(name, value)| infer_property(value, dataset_id)
+                        .map(|v| (name.clone(), v)))
+                    .collect::<Result<IndexMap<IndexKey, ValueProperties>>>()?.into(),
                 dataset_id
             }.into()
         }

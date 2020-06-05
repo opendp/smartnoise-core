@@ -4,13 +4,13 @@ use crate::errors::*;
 use std::collections::HashMap;
 
 use crate::{proto, base};
-use crate::hashmap;
 use crate::components::{Expandable, Report};
 
-use crate::base::{NodeProperties, Value};
+use crate::base::{IndexKey, NodeProperties, Value};
 use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, value_to_json};
-use crate::utilities::{prepend, privacy::broadcast_privacy_usage, get_ith_column};
+use crate::utilities::{prepend, privacy::spread_privacy_usage, get_ith_column};
 use serde_json;
+use indexmap::map::IndexMap;
 
 
 impl Expandable for proto::DpMean {
@@ -38,8 +38,9 @@ impl Expandable for proto::DpMean {
             current_id += 1;
             let id_dp_sum = current_id;
             computation_graph.insert(id_dp_sum, proto::Component {
-                arguments: hashmap!["data".to_owned() => *component.arguments.get("data")
-                    .ok_or_else(|| Error::from("data must be provided as an argument"))?],
+                arguments: Some(proto::IndexmapNodeIds::new(indexmap![
+                    "data".into() => *component.arguments().get::<base::IndexKey>(&"data".into())
+                        .ok_or_else(|| Error::from("data must be provided as an argument"))?])),
                 variant: Some(proto::component::Variant::DpSum(proto::DpSum {
                     mechanism: self.mechanism.clone(),
                     privacy_usage: self.privacy_usage.iter().cloned().map(|v| v / 2.)
@@ -52,8 +53,9 @@ impl Expandable for proto::DpMean {
             current_id += 1;
             let id_dp_count = current_id;
             computation_graph.insert(id_dp_count, proto::Component {
-                arguments: hashmap!["data".to_owned() => *component.arguments.get("data")
-                    .ok_or_else(|| Error::from("data must be provided as an argument"))?],
+                arguments: Some(proto::IndexmapNodeIds::new(indexmap![
+                    "data".into() => *component.arguments().get::<IndexKey>(&"data".into())
+                        .ok_or_else(|| Error::from("data must be provided as an argument"))?])),
                 variant: Some(proto::component::Variant::DpCount(proto::DpCount {
                     distinct: false,
                     enforce_constant_time: false,
@@ -66,7 +68,7 @@ impl Expandable for proto::DpMean {
             });
 
             computation_graph.insert(*component_id, proto::Component {
-                arguments: hashmap!["left".to_owned() => id_dp_sum, "right".to_owned() => id_dp_count],
+                arguments: Some(proto::IndexmapNodeIds::new(indexmap!["left".into() => id_dp_sum, "right".into() => id_dp_count])),
                 variant: Some(proto::component::Variant::Divide(proto::Divide {})),
                 omit: true,
                 submission: component.submission,
@@ -86,8 +88,9 @@ impl Expandable for proto::DpMean {
             current_id += 1;
             let id_mean = current_id;
             computation_graph.insert(id_mean, proto::Component {
-                arguments: hashmap!["data".to_owned() => *component.arguments.get("data")
-                .ok_or_else(|| Error::from("data must be provided as an argument"))?],
+                arguments: Some(proto::IndexmapNodeIds::new(indexmap![
+                    "data".into() => *component.arguments().get::<IndexKey>(&"data".into())
+                        .ok_or_else(|| Error::from("data must be provided as an argument"))?])),
                 variant: Some(proto::component::Variant::Mean(proto::Mean {})),
                 omit: true,
                 submission: component.submission,
@@ -95,7 +98,7 @@ impl Expandable for proto::DpMean {
 
             // noising
             computation_graph.insert(component_id.clone(), proto::Component {
-                arguments: hashmap!["data".to_owned() => id_mean],
+                arguments: Some(proto::IndexmapNodeIds::new(indexmap!["data".into() => id_mean])),
                 variant: Some(match self.mechanism.to_lowercase().as_str() {
                     "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
                         privacy_usage: self.privacy_usage.clone()
@@ -137,13 +140,13 @@ impl Report for proto::DpMean {
         &self,
         node_id: &u32,
         component: &proto::Component,
-        _public_arguments: &HashMap<String, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &NodeProperties,
         release: &Value,
         variable_names: Option<&Vec<String>>,
     ) -> Result<Option<Vec<JSONRelease>>> {
 
-        let data_property = properties.get("data")
+        let data_property = properties.get::<base::IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
@@ -154,7 +157,7 @@ impl Report for proto::DpMean {
         let num_records = data_property.num_records()?;
 
         let num_columns = data_property.num_columns()?;
-        let privacy_usages = broadcast_privacy_usage(&self.privacy_usage, num_columns as usize)?;
+        let privacy_usages = spread_privacy_usage(&self.privacy_usage, num_columns as usize)?;
 
         for column_number in 0..(num_columns as usize) {
             let variable_name = variable_names

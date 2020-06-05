@@ -31,7 +31,7 @@ pub mod merge;
 pub mod partition;
 pub mod quantile;
 pub mod raw_moment;
-pub mod rename;
+// pub mod rename;
 pub mod reshape;
 pub mod resize;
 pub mod sum;
@@ -83,7 +83,7 @@ impl Evaluable for proto::component::Variant {
             // INSERT COMPONENT LIST
             Cast, Clamp, Count, Covariance, Digitize, Filter, Histogram, Impute, Index,
             Materialize, Mean, Merge, Partition,
-            Quantile, RawMoment, Rename, Reshape, Resize, Sum, Variance,
+            Quantile, RawMoment, Reshape, Resize, Sum, Variance,
 
             ExponentialMechanism, GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism,
 

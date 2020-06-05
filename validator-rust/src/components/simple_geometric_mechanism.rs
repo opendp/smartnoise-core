@@ -1,22 +1,21 @@
 use crate::errors::*;
 
-use std::collections::HashMap;
-
 use crate::components::{Sensitivity, Accuracy, Mechanism};
 use crate::{proto, base, Warnable};
 
 use crate::components::{Component, Expandable};
-use crate::base::{Value, SensitivitySpace, ValueProperties, DataType, NodeProperties};
+use crate::base::{Value, SensitivitySpace, ValueProperties, DataType, NodeProperties, IndexKey};
 use crate::utilities::{prepend, expand_mechanism};
-use crate::utilities::privacy::{broadcast_privacy_usage, get_epsilon, privacy_usage_check};
+use crate::utilities::privacy::{spread_privacy_usage, get_epsilon, privacy_usage_check};
 use itertools::Itertools;
+use indexmap::map::IndexMap;
 
 
 impl Component for proto::SimpleGeometricMechanism {
     fn propagate_property(
         &self,
         privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &HashMap<String, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
@@ -28,7 +27,7 @@ impl Component for proto::SimpleGeometricMechanism {
             return Err("group size must be greater than zero".into())
         }
 
-        let mut data_property = properties.get("data")
+        let mut data_property = properties.get::<IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
@@ -90,7 +89,7 @@ impl Mechanism for proto::SimpleGeometricMechanism {
         properties: &NodeProperties
     ) -> Result<Option<Vec<proto::PrivacyUsage>>> {
 
-        let data_property = properties.get("data")
+        let data_property = properties.get::<IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?;
         Ok(Some(match release_usage {
@@ -111,7 +110,7 @@ impl Accuracy for proto::SimpleGeometricMechanism {
         properties: &base::NodeProperties,
         accuracies: &proto::Accuracies,
     ) -> Result<Option<Vec<proto::PrivacyUsage>>> {
-        let data_property = properties.get("data")
+        let data_property = properties.get::<IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
@@ -142,7 +141,7 @@ impl Accuracy for proto::SimpleGeometricMechanism {
         properties: &base::NodeProperties,
         alpha: &f64
     ) -> Result<Option<Vec<proto::Accuracy>>> {
-        let data_property = properties.get("data")
+        let data_property = properties.get::<IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
@@ -157,7 +156,7 @@ impl Accuracy for proto::SimpleGeometricMechanism {
         // sensitivity must be computable
         let sensitivities = sensitivity_values.array()?.f64()?;
 
-        let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivities.len())?;
+        let usages = spread_privacy_usage(&self.privacy_usage, sensitivities.len())?;
         let epsilon = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
 
         Ok(Some(sensitivities.into_iter().zip(epsilon.into_iter())

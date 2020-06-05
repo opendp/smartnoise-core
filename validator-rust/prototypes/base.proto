@@ -37,6 +37,8 @@ message PrivacyDefinition {
     bool protect_elapsed_time = 5;
     // enable if side-channel memory usage is considered part of the release
     bool protect_memory_utilization = 6;
+    // enable to block mechanisms known to be vulnerable to floating point attacks
+    bool protect_floating_point = 7;
 }
 
 message ComputationGraph {
@@ -81,28 +83,15 @@ message IndexmapProperties {
 }
 
 message IndexmapValueProperties {
-    oneof variant {
-        IndexmapValuePropertiesStr string = 1;
-        IndexmapValuePropertiesBool bool = 2;
-        IndexmapValuePropertiesI64 i64 = 3;
-    }
-}
-
-message IndexmapValuePropertiesStr {
-    map<string, ValueProperties> data = 1;
-}
-message IndexmapValuePropertiesBool {
-    map<bool, ValueProperties> data = 1;
-}
-message IndexmapValuePropertiesI64 {
-    map<int64, ValueProperties> data = 1;
+    repeated IndexKey keys = 1;
+    repeated ValueProperties values = 2;
 }
 
 
 // sub-properties for Value::* types that may be aggregated
 message AggregatorProperties {
     Component component = 1;
-    map<string, ValueProperties> properties = 2;
+    IndexmapValueProperties properties = 2;
     Array1dF64 lipschitz_constant = 3;
     Array1dF64 c_stability = 4;
 }
@@ -167,7 +156,7 @@ message GroupId {
     /// node id of partition
     uint32 partition_id = 1;
     /// indexes referenced in the partition
-    Array index = 2;
+    IndexKey index = 2;
 }
 
 /// derived properties for the Value::Jagged type
@@ -245,25 +234,9 @@ message Value {
     }
 }
 
-message IndexmapStr {
-    repeated string keys = 1;
-    repeated Value values = 2;
-}
-message IndexmapBool {
-    repeated bool keys = 1;
-    repeated Value values = 2;
-}
-message IndexmapI64 {
-    repeated int64 keys = 1;
-    repeated Value values = 2;
-}
-
 message Indexmap {
-    oneof variant {
-        IndexmapStr string = 1;
-        IndexmapBool bool = 2;
-        IndexmapI64 i64 = 4;
-    }
+    repeated IndexKey keys = 1;
+    repeated Value values = 2;
 }
 
 message Function {
@@ -277,4 +250,10 @@ message ReleaseNode {
     Value value = 1;
     PrivacyUsages privacy_usages = 2;
     bool public = 3;
+}
+
+
+message IndexmapReleaseNode {
+    repeated IndexKey keys = 1;
+    repeated ReleaseNode values = 2;
 }

@@ -30,19 +30,19 @@ message RequestGetProperties {
 message RequestAccuracyToPrivacyUsage {
 	PrivacyDefinition privacy_definition = 1;
 	Component component = 2;
-	map<string, ValueProperties> properties = 3;
+	IndexmapValueProperties properties = 3;
 	Accuracies accuracies = 4;
 }
 message RequestPrivacyUsageToAccuracy {
 	PrivacyDefinition privacy_definition = 1;
 	Component component = 2;
-	map<string, ValueProperties> properties = 3;
+	IndexmapValueProperties properties = 3;
 	double alpha = 4;
 }
 message RequestExpandComponent {
 	Component component = 1;
-	map<string, ValueProperties> properties = 2;
-	map<string, ReleaseNode> arguments = 3;
+	IndexmapValueProperties properties = 2;
+	IndexmapReleaseNode arguments = 3;
 	PrivacyDefinition privacy_definition = 4;
 	uint32 component_id = 5;
 	uint32 maximum_id = 6;

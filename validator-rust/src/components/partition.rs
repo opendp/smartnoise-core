@@ -5,9 +5,9 @@ use std::collections::HashMap;
 
 use crate::{proto, base, Warnable};
 
-use crate::components::Component;
-use crate::base::{Value, Jagged, ValueProperties, IndexmapProperties, ArrayProperties};
-use crate::utilities::prepend;
+use crate::components::{Component, Expandable};
+use crate::base::{IndexKey, Value, Jagged, ValueProperties, IndexmapProperties, ArrayProperties, NodeProperties};
+use crate::utilities::{prepend, get_literal};
 use indexmap::map::IndexMap;
 
 
@@ -15,15 +15,15 @@ impl Component for proto::Partition {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: &HashMap<String, Value>,
+        public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &base::NodeProperties,
         node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
-        let mut data_property = properties.get("data")
+        let mut data_property = properties.get::<IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
-        Ok(ValueProperties::Indexmap(match properties.get("by") {
+        Ok(ValueProperties::Indexmap(match properties.get::<IndexKey>(&"by".into()) {
             Some(by_property) => {
                 let by_property = by_property.array()
                     .map_err(prepend("by:"))?.clone();
@@ -40,9 +40,12 @@ impl Component for proto::Partition {
                     num_records: data_property.num_records,
                     disjoint: true,
                     properties: match categories {
-                        Jagged::Bool(categories) => broadcast_partitions(&categories, &data_property, node_id)?.into(),
-                        Jagged::Str(categories) => broadcast_partitions(&categories, &data_property, node_id)?.into(),
-                        Jagged::I64(categories) => broadcast_partitions(&categories, &data_property, node_id)?.into(),
+                        Jagged::Bool(categories) => broadcast_partitions(&categories, &data_property, node_id)?
+                            .into_iter().map(|(k, v)| (k.into(), v)).collect(),
+                        Jagged::Str(categories) => broadcast_partitions(&categories, &data_property, node_id)?
+                            .into_iter().map(|(k, v)| (k.into(), v)).collect(),
+                        Jagged::I64(categories) => broadcast_partitions(&categories, &data_property, node_id)?
+                            .into_iter().map(|(k, v)| (k.into(), v)).collect(),
                         _ => return Err("partitioning based on floats is not supported".into())
                     },
                     dataset_id: Some(node_id as i64),
@@ -50,7 +53,7 @@ impl Component for proto::Partition {
                 }
             }
             None => {
-                let num_partitions = public_arguments.get("num_partitions")
+                let num_partitions = public_arguments.get::<IndexKey>(&"num_partitions".into())
                     .ok_or("num_partitions or by must be passed to Partition")?.array()?.first_i64()?;
 
                 let lengths = match data_property.num_records {
@@ -71,13 +74,52 @@ impl Component for proto::Partition {
                             partition_id: node_id,
                             index: None
                         });
-                        (index as i64, ValueProperties::Array(partition_property))
-                    }).collect::<IndexMap<i64, ValueProperties>>().into(),
+                        (IndexKey::from(index as i64), ValueProperties::Array(partition_property))
+                    }).collect::<IndexMap<IndexKey, ValueProperties>>(),
                     dataset_id: Some(node_id as i64),
                     variant: proto::indexmap_properties::Variant::Partition,
                 }
             }
         }).into())
+    }
+}
+
+impl Expandable for proto::Partition {
+    fn expand_component(
+        &self,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
+        component: &proto::Component,
+        properties: &NodeProperties,
+        component_id: &u32,
+        maximum_id: &u32
+    ) -> Result<proto::ComponentExpansion> {
+
+        let mut current_id = *maximum_id;
+        let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
+        let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
+
+        if let Some(by) = properties.get::<IndexKey>(&"by".into()) {
+            let categories = by.array()?.categories()?;
+            current_id += 1;
+            let id_categories = current_id;
+            let (patch_node, release) = get_literal(Value::Jagged(categories), &component.submission)?;
+
+            computation_graph.insert(id_categories.clone(), patch_node);
+            releases.insert(id_categories.clone(), release);
+
+            let mut categories_component = component.clone();
+            categories_component.insert_argument(&"categories".into(), id_categories);
+
+            computation_graph.insert(component_id.clone(), categories_component);
+        }
+
+        Ok(proto::ComponentExpansion {
+            computation_graph,
+            properties: HashMap::new(),
+            releases,
+            traversal: Vec::new(),
+            warnings: vec![],
+        })
     }
 }
 

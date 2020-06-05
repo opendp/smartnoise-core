@@ -6,16 +6,17 @@ use std::collections::HashMap;
 use crate::{proto, base, Warnable};
 
 use crate::components::{Component, Expandable, Sensitivity, Mechanism};
-use crate::base::{Value, SensitivitySpace, ValueProperties, DataType, ArrayProperties, NodeProperties};
+use crate::base::{Value, SensitivitySpace, ValueProperties, DataType, ArrayProperties, NodeProperties, IndexKey};
 use crate::utilities::{prepend, get_literal};
 use crate::utilities::privacy::{privacy_usage_check};
 use itertools::Itertools;
+use indexmap::map::IndexMap;
 
 impl Component for proto::ExponentialMechanism {
     fn propagate_property(
         &self,
         privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: &HashMap<String, Value>,
+        public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &base::NodeProperties,
         _node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
@@ -26,7 +27,7 @@ impl Component for proto::ExponentialMechanism {
             return Err("group size must be greater than zero".into());
         }
 
-        let utilities_property = properties.get("utilities")
+        let utilities_property = properties.get::<IndexKey>(&"utilities".into())
             .ok_or("utilities: missing")?.jagged()
             .map_err(prepend("utilities:"))?.clone();
 
@@ -34,7 +35,7 @@ impl Component for proto::ExponentialMechanism {
             return Err("utilities: data_type must be float".into());
         }
 
-        let candidates = public_arguments.get("candidates")
+        let candidates = public_arguments.get::<IndexKey>(&"candidates".into())
             .ok_or_else(|| Error::from("candidates: missing, must be public"))?.jagged()?;
 
         let utilities_num_records = utilities_property.num_records()?;
@@ -108,7 +109,7 @@ impl Expandable for proto::ExponentialMechanism {
         let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
 
         // always overwrite sensitivity. This is not something a user may configure
-        let utilities_properties = properties.get("utilities")
+        let utilities_properties = properties.get::<IndexKey>(&"utilities".into())
             .ok_or("utilities: missing")?.jagged()
             .map_err(prepend("utilities:"))?.clone();
 
@@ -128,7 +129,7 @@ impl Expandable for proto::ExponentialMechanism {
 
         // noising
         let mut noise_component = component.clone();
-        noise_component.arguments.insert("sensitivity".to_string(), id_sensitivity);
+        noise_component.insert_argument(&"sensitivity".into(), id_sensitivity);
 
         computation_graph.insert(component_id.clone(), noise_component);
 
@@ -149,7 +150,7 @@ impl Mechanism for proto::ExponentialMechanism {
         release_usage: Option<&Vec<proto::PrivacyUsage>>,
         properties: &NodeProperties,
     ) -> Result<Option<Vec<proto::PrivacyUsage>>> {
-        let data_property = properties.get("data")
+        let data_property = properties.get::<IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?;
         Ok(Some(match release_usage {

@@ -8,7 +8,7 @@ use crate::errors::*;
 
 use crate::{proto, base, Warnable};
 
-use crate::base::{Release, Value, ValueProperties, SensitivitySpace, NodeProperties, ReleaseNode};
+use crate::base::{Release, Value, ValueProperties, SensitivitySpace, NodeProperties, ReleaseNode, IndexKey};
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 use crate::utilities::serial::{parse_value_properties, serialize_value, parse_release_node, serialize_error};
@@ -22,18 +22,19 @@ use crate::components::*;
 use crate::utilities::array::slow_select;
 use noisy_float::prelude::n64;
 use std::iter::FromIterator;
-use crate::utilities::privacy::broadcast_privacy_usage;
+use crate::utilities::privacy::spread_privacy_usage;
+use indexmap::map::IndexMap;
 
 /// Retrieve the Values for each of the arguments of a component from the Release.
 pub fn get_public_arguments(
     component: &proto::Component,
     release: &Release,
-) -> Result<HashMap<String, Value>> {
-    let mut arguments = HashMap::<String, Value>::new();
-    for (field_id, field) in component.arguments.clone() {
-        if let Some(evaluation) = release.get(&field) {
+) -> Result<IndexMap<base::IndexKey, Value>> {
+    let mut arguments = IndexMap::<base::IndexKey, Value>::new();
+    for (arg_name, arg_node_id) in component.arguments() {
+        if let Some(evaluation) = release.get(&arg_node_id) {
             if evaluation.public {
-                arguments.insert(field_id.to_owned(), evaluation.to_owned().value.clone());
+                arguments.insert(arg_name.to_owned(), evaluation.to_owned().value.clone());
             }
         }
     }
@@ -42,10 +43,10 @@ pub fn get_public_arguments(
 
 /// Retrieve the specified Value from the arguments to a component.
 pub fn get_argument<'a>(
-    arguments: &HashMap<String, &'a Value>,
+    arguments: &IndexMap<base::IndexKey, &'a Value>,
     name: &str,
 ) -> Result<&'a Value> {
-    match arguments.get(name) {
+    match arguments.get::<IndexKey>(&name.into()) {
         Some(argument) => Ok(argument),
         _ => Err((name.to_string() + " must be defined").into())
     }
@@ -55,11 +56,11 @@ pub fn get_argument<'a>(
 pub fn get_input_properties<T>(
     component: &proto::Component,
     graph_properties: &HashMap<u32, T>,
-) -> Result<HashMap<String, T>> where T: std::clone::Clone {
-    let mut properties = HashMap::<String, T>::new();
-    for (field_id, field) in component.arguments.clone() {
-        if let Some(property) = graph_properties.get(&field) {
-            properties.insert(field_id.to_owned(), property.clone());
+) -> Result<IndexMap<base::IndexKey, T>> where T: std::clone::Clone {
+    let mut properties = IndexMap::<base::IndexKey, T>::new();
+    for (arg_name, arg_node_id) in component.arguments() {
+        if let Some(property) = graph_properties.get(&arg_node_id) {
+            properties.insert(arg_name.to_owned(), property.clone());
         }
     }
     Ok(properties)
@@ -113,7 +114,7 @@ pub fn propagate_properties(
 
         let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
 
-        if component.arguments.values().any(|v| failed_ids.contains(v)) {
+        if component.arguments().values().any(|v| failed_ids.contains(v)) {
             failed_ids.insert(traversal.pop().unwrap());
             continue;
         }
@@ -219,7 +220,7 @@ pub fn get_traversal(
         parents.entry(*node_id)
             .or_insert_with(HashSet::<u32>::new);
 
-        component.arguments.values().for_each(|argument_node_id| {
+        component.arguments().values().for_each(|argument_node_id| {
             parents.entry(*argument_node_id)
                 .or_insert_with(HashSet::<u32>::new)
                 .insert(*node_id);
@@ -231,8 +232,8 @@ pub fn get_traversal(
 
     // collect all sources (nodes with zero arguments)
     let mut queue: Vec<u32> = graph.iter()
-        .filter(|(_node_id, component)| component.arguments.is_empty()
-            || component.arguments.values().all(|arg_idx| !graph.contains_key(arg_idx)))
+        .filter(|(_node_id, component)| component.arguments().is_empty()
+            || component.arguments().values().all(|arg_idx| !graph.contains_key(arg_idx)))
         .map(|(node_id, _component)| node_id.to_owned()).collect();
 
     let mut visited = HashMap::new();
@@ -245,7 +246,7 @@ pub fn get_traversal(
         let mut is_cyclic = false;
 
         parents.get(&queue_node_id).unwrap().iter().for_each(|parent_node_id| {
-            let parent_arguments = graph.get(parent_node_id).unwrap().to_owned().arguments;
+            let parent_arguments = graph.get(parent_node_id).unwrap().to_owned().arguments();
 
             // if parent has been reached more times than it has arguments, then it is cyclic
             let count = visited.entry(*parent_node_id).or_insert(0);
@@ -280,7 +281,7 @@ pub fn get_sinks(computation_graph: &HashMap<u32, proto::Component>) -> HashSet<
 
     // remove nodes that are referenced in arguments
     computation_graph.values()
-        .for_each(|component| component.arguments.values()
+        .for_each(|component| component.arguments().values()
             .for_each(|source_node_id| {
                 node_ids.remove(source_node_id);
             }));
@@ -454,7 +455,7 @@ pub fn standardize_weight_argument(
 pub fn get_literal(value: Value, submission: &u32) -> Result<(proto::Component, proto::ReleaseNode)> {
     Ok((
         proto::Component {
-            arguments: HashMap::new(),
+            arguments: None,
             variant: Some(proto::component::Variant::Literal(proto::Literal {})),
             omit: true,
             submission: *submission,
@@ -507,7 +508,7 @@ pub fn expand_mechanism(
     let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
 
     // always overwrite sensitivity. This is not something a user may configure
-    let data_property = properties.get("data")
+    let data_property = properties.get::<IndexKey>(&"data".into())
         .ok_or("data: missing")?.array()
         .map_err(prepend("data:"))?.clone();
 
@@ -536,7 +537,7 @@ pub fn expand_mechanism(
     releases.insert(id_sensitivity.clone(), release);
 
     // privacy usage scaling
-    let privacy_usage = broadcast_privacy_usage(
+    let privacy_usage = spread_privacy_usage(
         // spread usage over each column
         privacy_usage, sensitivity_value.array()?.num_columns()? as usize)?.into_iter()
         .zip(data_property.c_stability.iter())
@@ -546,7 +547,7 @@ pub fn expand_mechanism(
 
     // insert sensitivity and usage
     let mut noise_component = component.clone();
-    noise_component.arguments.insert("sensitivity".to_string(), id_sensitivity);
+    noise_component.insert_argument(&"sensitivity".into(), id_sensitivity);
 
     match noise_component.variant
         .as_mut().ok_or_else(|| "variant must be defined")? {
