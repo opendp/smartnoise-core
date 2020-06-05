@@ -216,7 +216,7 @@ The algorithm will look something like the following:
             \State $m \gets Binomial(c\tilde{n}, s)$ \Comment{number of records that can be filled using subsampled private data}
         \EndIf
         \State $(\epsilon', \delta') \gets \left(\log\left(1+s\left(e^{c\epsilon}-1\right) \right), s\left(\sum_{i=0}^{c-1}e^{i \epsilon}\right)\delta \right)$ \Comment{privacy amplification via subsampling}
-        \State $X' \gets sample\left( X_c, \max(m, n), neighboring \right) \bigcup \left( Aug(\varnothing, \max(0, n - m), \hdots) \right)$
+        \State $X' \gets sample\left( X_c, \max(m, n) \right) \bigcup \left( Aug(\varnothing, \max(0, n - m), \hdots) \right)$
         \\ \Return $(X', \epsilon', \delta')$
     \end{algorithmic}
 \end{algorithm}
@@ -241,7 +241,7 @@ the parameters passed by the user.
     on the resized data respects $(\epsilon, \delta)$-DP on the true private data.
     \begin{proof}
         We know that an $(\epsilon, \delta)$-DP on the resized data corresponds to a 
-        \[ (\epsilon', \delta') = \left(\log\left(1+s\left(e^{c\epsilon}-1\right) \right), s\left(\sum_{i=1}^{c-1}e^{i \epsilon}\right)\delta \right) \]
+        \[ (\epsilon', \delta') = \left(\log\left(1+s\left(e^{c\epsilon}-1\right) \right), s\left(\sum_{i=0}^{c-1}e^{i \epsilon}\right)\delta \right) \]
         guarantee on the original data. But we want our mechanism to respect $(\epsilon_f, \delta_f)$ on the resized data such that it 
         respects $(\epsilon, \delta)$ on the original data. So we replace $(\epsilon, \delta)$ with 
         $\epsilon_f, \delta_f$ and $(\epsilon', \delta')$ with $(\epsilon, \delta)$. 
