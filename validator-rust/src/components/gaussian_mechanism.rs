@@ -121,9 +121,10 @@ impl Mechanism for proto::GaussianMechanism {
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?;
         Ok(Some(match release_usage {
-            Some(release_usage) => release_usage.into_iter().cloned()
+            Some(release_usage) => release_usage.iter()
                 .zip(data_property.c_stability.iter())
-                .map(|(usage, c_stab)| usage * (privacy_definition.group_size as f64 * c_stab))
+                .map(|(usage, c_stab)|
+                    usage.effective_to_actual(1., *c_stab, privacy_definition.group_size))
                 .collect::<Result<Vec<proto::PrivacyUsage>>>()?,
             None => self.privacy_usage.clone()
         }))
@@ -184,13 +185,13 @@ impl Accuracy for proto::GaussianMechanism {
         let aggregator = data_property.aggregator.clone()
             .ok_or_else(|| Error::from("aggregator: missing"))?;
 
-        let sensitivity_values = aggregator.component.compute_sensitivity(
+        let sensitivities_value = aggregator.component.compute_sensitivity(
             &privacy_definition,
             &aggregator.properties,
             &SensitivitySpace::KNorm(1))?;
 
         // sensitivity must be computable
-        let sensitivities = sensitivity_values.array()?.f64()?;
+        let sensitivities = sensitivities_value.array()?.f64()?;
 
         let usages = spread_privacy_usage(&self.privacy_usage, sensitivities.len())?;
         let epsilons = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;

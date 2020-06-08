@@ -12,7 +12,7 @@ use ndarray::{ArrayD, arr0, Dimension};
 use crate::utilities::{standardize_categorical_argument, deduplicate, serial};
 use indexmap::IndexMap;
 use crate::utilities::serial::{parse_indexmap_node_ids, serialize_index_key};
-use std::ops::{Add, Mul, Div};
+use std::ops::{Add, Div};
 
 /// The universal data representation.
 ///
@@ -507,60 +507,6 @@ impl From<Vec<Vec<String>>> for Jagged {
     }
 }
 
-/// The universal Indexmap representation.
-///
-/// Used for any component that has multiple outputs.
-/// In practice, the only components that can emit multiple outputs are materialize (by columns) and partition (by rows)
-///
-/// The Indexmap has a one-to-one mapping to a protobuf Indexmap.
-// #[derive(Clone, Debug)]
-// pub struct Indexmap<T> (IndexMap<IndexKey, T>);
-
-// TODO PRE-COMMIT: REMOVE
-// impl<T> Indexmap<T> {
-//     pub fn keys_length(&self) -> usize {
-//         match self {
-//             Indexmap::Bool(value) => value.keys().len(),
-//             Indexmap::I64(value) => value.keys().len(),
-//             Indexmap::Str(value) => value.keys().len(),
-//         }
-//     }
-//     pub fn values(&self) -> Vec<&T> {
-//         match self {
-//             Indexmap::Bool(value) => value.values().collect(),
-//             Indexmap::I64(value) => value.values().collect(),
-//             Indexmap::Str(value) => value.values().collect(),
-//         }
-//     }
-//     pub fn from_values(&self, values: Vec<T>) -> Indexmap<T> where T: Clone {
-//         match self {
-//             Indexmap::Bool(value) => value.keys().cloned()
-//                 .zip(values).collect::<IndexMap<bool, T>>().into(),
-//             Indexmap::I64(value) => value.keys().cloned()
-//                 .zip(values).collect::<IndexMap<i64, T>>().into(),
-//             Indexmap::Str(value) => value.keys().cloned()
-//                 .zip(values).collect::<IndexMap<String, T>>().into(),
-//         }
-//     }
-// }
-//
-// impl<T> From<IndexMap<i64, T>> for Indexmap<T> {
-//     fn from(value: IndexMap<i64, T>) -> Self {
-//         Indexmap::<T>::I64(value)
-//     }
-// }
-//
-// impl<T> From<IndexMap<bool, T>> for Indexmap<T> {
-//     fn from(value: IndexMap<bool, T>) -> Self {
-//         Indexmap::<T>::Bool(value)
-//     }
-// }
-//
-// impl<T> From<IndexMap<String, T>> for Indexmap<T> {
-//     fn from(value: IndexMap<String, T>) -> Self {
-//         Indexmap::<T>::Str(value)
-//     }
-// }
 
 /// Derived properties for the universal value.
 ///
@@ -1057,34 +1003,30 @@ impl proto::IndexmapNodeIds {
 pub type NodeProperties = IndexMap<base::IndexKey, ValueProperties>;
 
 
-
-impl Div<f64> for proto::PrivacyUsage {
-    type Output = Result<proto::PrivacyUsage>;
-
-    fn div(mut self, rhs: f64) -> Self::Output {
-        self.distance = Some(match self.distance.ok_or_else(|| "distance must be defined")? {
-            proto::privacy_usage::Distance::Approximate(approximate) => proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
-                epsilon: approximate.epsilon / rhs,
-                delta: approximate.delta / rhs,
+impl proto::PrivacyUsage {
+    pub(crate) fn actual_to_effective(&self, p: f64, c_stability: f64, group_size: u32) -> Result<Self> {
+        Ok(proto::PrivacyUsage {
+            distance: Some(match self.distance.as_ref().ok_or_else(|| "distance must be defined")? {
+                proto::privacy_usage::Distance::Approximate(app) => proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
+                    epsilon: app.epsilon / c_stability / p / group_size as f64,
+                    delta: app.delta / c_stability / p / ((group_size as f64 * app.epsilon).exp() - 1.) / (app.epsilon.exp() - 1.),
+                })
             })
-        });
-        Ok(self)
+        })
+    }
+
+    pub(crate) fn effective_to_actual(&self, p: f64, c_stability: f64, group_size: u32) -> Result<Self> {
+        Ok(proto::PrivacyUsage {
+            distance: Some(match self.distance.as_ref().ok_or_else(|| "distance must be defined")? {
+                proto::privacy_usage::Distance::Approximate(app) => proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
+                    epsilon: app.epsilon * c_stability * p * group_size as f64,
+                    delta: app.delta * c_stability * p * ((group_size as f64 * app.epsilon).exp() - 1.) / (app.epsilon.exp() - 1.),
+                })
+            })
+        })
     }
 }
 
-impl Mul<f64> for proto::PrivacyUsage {
-    type Output = Result<proto::PrivacyUsage>;
-
-    fn mul(mut self, rhs: f64) -> Self::Output {
-        self.distance = Some(match self.distance.ok_or_else(|| "distance must be defined")? {
-            proto::privacy_usage::Distance::Approximate(approximate) => proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
-                epsilon: approximate.epsilon * rhs,
-                delta: approximate.delta * rhs,
-            })
-        });
-        Ok(self)
-    }
-}
 
 impl Add<proto::PrivacyUsage> for proto::PrivacyUsage {
     type Output = Result<proto::PrivacyUsage>;
@@ -1099,6 +1041,21 @@ impl Add<proto::PrivacyUsage> for proto::PrivacyUsage {
             (Distance::Approximate(lhs), Distance::Approximate(rhs)) => proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
                 epsilon: lhs.epsilon + rhs.epsilon,
                 delta: lhs.delta + rhs.delta,
+            })
+        });
+        Ok(self)
+    }
+}
+
+
+impl Div<f64> for proto::PrivacyUsage {
+    type Output = Result<proto::PrivacyUsage>;
+
+    fn div(mut self, rhs: f64) -> Self::Output {
+        self.distance = Some(match self.distance.ok_or_else(|| "distance must be defined")? {
+            proto::privacy_usage::Distance::Approximate(approximate) => proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
+                epsilon: approximate.epsilon / rhs,
+                delta: approximate.delta / rhs,
             })
         });
         Ok(self)

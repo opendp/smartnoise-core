@@ -93,9 +93,10 @@ impl Mechanism for proto::SimpleGeometricMechanism {
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?;
         Ok(Some(match release_usage {
-            Some(release_usage) => release_usage.into_iter().cloned()
+            Some(release_usage) => release_usage.iter()
                 .zip(data_property.c_stability.iter())
-                .map(|(usage, c_stab)| usage * (privacy_definition.group_size as f64 * c_stab))
+                .map(|(usage, c_stab)|
+                    usage.effective_to_actual(1., *c_stab, privacy_definition.group_size))
                 .collect::<Result<Vec<proto::PrivacyUsage>>>()?,
             None => self.privacy_usage.clone()
         }))

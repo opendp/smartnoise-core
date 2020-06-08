@@ -489,7 +489,6 @@ pub fn prepend(text: &str) -> impl Fn(Error) -> Error + '_ {
     move |e| format!("{} {}", text, e).into()
 }
 
-
 /// Utility function for building component expansions for dp mechanisms
 pub fn expand_mechanism(
     sensitivity_type: &SensitivitySpace,
@@ -536,13 +535,17 @@ pub fn expand_mechanism(
     computation_graph.insert(id_sensitivity.clone(), patch_node);
     releases.insert(id_sensitivity.clone(), release);
 
-    // privacy usage scaling
-    let privacy_usage = spread_privacy_usage(
+    // spread privacy usage over each column
+    let spread_usages = spread_privacy_usage(
         // spread usage over each column
-        privacy_usage, sensitivity_value.array()?.num_columns()? as usize)?.into_iter()
+        privacy_usage, sensitivity_value.array()?.num_columns()? as usize)?;
+
+    // convert to effective usage
+    let effective_usages = spread_usages.into_iter()
         .zip(data_property.c_stability.iter())
         // reduce epsilon allowed to algorithm based on c-stability and group size
-        .map(|(usage, c_stab)| usage / (c_stab * privacy_definition.group_size as f64))
+        .map(|(usage, c_stab)|
+            usage.actual_to_effective(1., *c_stab, privacy_definition.group_size))
         .collect::<Result<Vec<proto::PrivacyUsage>>>()?;
 
     // insert sensitivity and usage
@@ -551,10 +554,10 @@ pub fn expand_mechanism(
 
     match noise_component.variant
         .as_mut().ok_or_else(|| "variant must be defined")? {
-        proto::component::Variant::LaplaceMechanism(variant) => variant.privacy_usage = privacy_usage,
-        proto::component::Variant::GaussianMechanism(variant) => variant.privacy_usage = privacy_usage,
-        proto::component::Variant::ExponentialMechanism(variant) => variant.privacy_usage = privacy_usage,
-        proto::component::Variant::SimpleGeometricMechanism(variant) => variant.privacy_usage = privacy_usage,
+        proto::component::Variant::LaplaceMechanism(variant) => variant.privacy_usage = effective_usages,
+        proto::component::Variant::GaussianMechanism(variant) => variant.privacy_usage = effective_usages,
+        proto::component::Variant::ExponentialMechanism(variant) => variant.privacy_usage = effective_usages,
+        proto::component::Variant::SimpleGeometricMechanism(variant) => variant.privacy_usage = effective_usages,
         _ => ()
     };
     computation_graph.insert(component_id.clone(), noise_component);
