@@ -15,6 +15,38 @@ impl ThreadRandGen for GeneratorOpenSSL {
     }
 }
 
+/// Return sample from a censored Geometric distribution with parameter p=0.5 without calling to sample_bit.
+/// 
+/// The algorithm generates 1023 bits uniformly at random and returns the
+/// index of the first bit with value 1. If all 1023 bits are 0, then
+/// the algorithm acts as if the last bit was a 1 and returns 1023.
+/// 
+/// This is a less general version of the sample_geometric_censored function, designed to be used
+/// only inside of the sample_bit function. The major difference is that this function does not 
+/// call sample_bit itself (whereas sample_geometric_censored does), so having this more specialized
+/// version allows us to avoid an infinite dependence loop. 
+pub fn censored_specific_geom() -> Result<i16> {
+    let mut geom: i16 = 1023;
+    // read bytes in one at a time, need 128 to fully generate geometric
+    for i in 0..128 {
+        // read random bytes
+        let binary_string = utilities::get_bytes(1);
+        let binary_char_vec: Vec<char> = binary_string.chars().collect();
+
+        // find first element that is '1' and mark its overall index
+        let first_one_index = binary_char_vec.iter().position(|&x| x == '1');
+        let first_one_overall_index: i16;
+        if first_one_index.is_some() {
+            let first_one_index_int = first_one_index.unwrap() as i16;
+            first_one_overall_index = 8*i + first_one_index_int;
+        } else {
+            first_one_overall_index = geom;
+        }
+        geom = cmp::min(geom, first_one_overall_index+1);
+    }
+    return Ok(geom);
+}
+
 /// Sample a single bit with arbitrary probability of success
 ///
 /// Uses only an unbiased source of coin flips (sample_floating_point_probability_exponent).
@@ -51,8 +83,8 @@ pub fn sample_bit(prob: &f64) -> Result<i64> {
     // ensure that prob is a valid probability
     assert!(prob >= &0.0 && prob <= &1.0);
 
-    // repeatedly flip coin (up to 1023 times) and identify index (0-based) of first heads
-    let first_heads_index: i16 = sample_floating_point_probability_exponent()? - 1;
+    // repeatedly flip fair coin (up to 1023 times) and identify index (0-based) of first heads
+    let first_heads_index: i16 = censored_specific_geom()? - 1;
 
     // decompose probability into mantissa (string of bits) and exponent integer to quickly identify the value in the first_heads_index
     let (_sign, exponent, mantissa) = prob.decompose_raw();
@@ -174,11 +206,10 @@ pub fn sample_uniform(min: &f64, max: &f64) -> Result<f64> {
     let mantissa_int = u64::from_str_radix(mantissa, 2).unwrap();
 
     // Generate exponent
-    let geom: i16 = sample_floating_point_probability_exponent()?;
-    let exponent: u16 = (-geom + 1023) as u16;
+    let exponent: i16 = -sample_geometric_censored(&0.5, &1023, &true)? as i16;
 
-    // Generate uniform random number from (0,1)
-    let uniform_rand = f64::recompose_raw(false, exponent, mantissa_int);
+    // Generate uniform random number from [0,1)
+    let uniform_rand = f64::recompose(false, exponent, mantissa_int);
 
     Ok(uniform_rand * (max - min) + min)
 }
@@ -342,39 +373,6 @@ pub fn sample_gaussian_truncated(min: &f64, max: &f64, shift: &f64, scale: &f64)
     Ok(Gaussian::new(shift, scale).inverse(unif))
 }
 
-/// Return sample from a censored Geometric distribution with parameter p=0.5
-///
-/// The algorithm generates 1023 bits uniformly at random and returns the
-/// index of the first bit with value 1. If all 1023 bits are 0, then
-/// the algorithm acts as if the last bit was a 1 and returns 1023.
-///
-/// This method was written specifically to generate an exponent
-/// for the floating point representation of a uniform random number on [0,1),
-/// ensuring that the numbers are distributed proportionally to
-/// their unit of least precision.
-pub fn sample_floating_point_probability_exponent() -> Result<i16> {
-
-    let mut geom: i16 = 1023;
-    // read bytes in one at a time, need 128 to fully generate geometric
-    for i in 0..128 {
-        // read random bytes
-        let binary_string = utilities::get_bytes(1);
-        let binary_char_vec: Vec<char> = binary_string.chars().collect();
-
-        // find first element that is '1' and mark its overall index
-        let first_one_index = binary_char_vec.iter().position(|&x| x == '1');
-        let first_one_overall_index: i16;
-        if first_one_index.is_some() {
-            let first_one_index_int = first_one_index.unwrap() as i16;
-            first_one_overall_index = 8*i + first_one_index_int;
-        } else {
-            first_one_overall_index = geom;
-        }
-        geom = cmp::min(geom, first_one_overall_index+1);
-    }
-    return Ok(geom);
-}
-
 /// Sample from the censored geometric distribution with parameter "prob" and maximum
 /// number of trials "max_trials".
 ///
@@ -403,18 +401,20 @@ pub fn sample_geometric_censored(prob: &f64, max_trials: &i64, enforce_constant_
     let mut geom_return: i64 = 0;
 
     // generate bits until we find a 1
+    // if enforcing the runtime of the algorithm to be constant, the while loop
+    // continues after the 1 is found and just stores the first location of a 1 bit.
     while n_trials <= *max_trials {
         bit = sample_bit(prob)?;
         if bit == 1 {
+            // If we haven't seen a 1 yet, set the return to the current number of trials
             if geom_return == 0 {
                 geom_return = n_trials;
                 if enforce_constant_time == &false {
                     return Ok(geom_return);
                 }
             }
-        } else {
-            n_trials += 1;
         }
+        n_trials += 1;
     }
 
     // set geom_return to max if we never saw a bit equaling 1
