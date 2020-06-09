@@ -222,7 +222,7 @@ The algorithm will look something like the following:
 \end{algorithm}
 
 The $\epsilon', \delta'$ terms come from first applying the group privacy definition with group size $c$ to the 
-database $X_c$ to get $\left(c\epsilon, \left(\sum_{i=1}^{c-1}e^{i \epsilon}\right)\delta \right)$ \cite{Vad17}
+database $X_c$ to get $\left(c\epsilon, \left(\sum_{i=0}^{c-1}e^{i \epsilon}\right)\delta \right)$ \cite{Vad17}
 and then applying privacy amplification by subsampling results from Theorems 8 and 9 of \cite{BBG18}. 
 Note that, for the ``replace one'' definition, we could be using $\frac{m}{c\tilde{n}}$ instead of $s$ in the privacy calculation. Using $s$ gives us a very slightly 
 worse privacy guarantee (the only difference is the $\lfloor \cdot \rfloor$ we used to get $m$), but is nice for 
@@ -237,7 +237,7 @@ the parameters passed by the user.
 
 \begin{theorem}
     A mechanism that respects 
-    \[ (\epsilon_f, \delta_f) = \left( \frac{1}{c}\log\left(\frac{e^{\epsilon}-1}{s} + 1 \right), \frac{\delta}{s\left(\sum_{i=1}^{c-1}e^{i \epsilon}\right)} \right)\text{-DP} \] 
+    \[ (\epsilon_f, \delta_f) = \left( \frac{1}{c}\log\left(\frac{e^{\epsilon}-1}{s} + 1 \right), \frac{\delta}{s\left(\sum_{i=0}^{c-1}e^{i \epsilon}\right)} \right)\text{-DP} \] 
     on the resized data respects $(\epsilon, \delta)$-DP on the true private data.
     \begin{proof}
         We know that an $(\epsilon, \delta)$-DP on the resized data corresponds to a 
@@ -257,12 +257,12 @@ the parameters passed by the user.
 
         We carry out a similar calculation for $\delta, \delta_f$:
         \begin{align*}
-            \delta &= s\left(\sum_{i=1}^{c-1}e^{i \epsilon}\right)\delta_f \\
-            \frac{\delta}{s\left(\sum_{i=1}^{c-1}e^{i \epsilon}\right)} &= \delta_f.
+            \delta &= s\left(\sum_{i=0}^{c-1}e^{i \epsilon}\right)\delta_f \\
+            \frac{\delta}{s\left(\sum_{i=0}^{c-1}e^{i \epsilon}\right)} &= \delta_f.
         \end{align*}
     \end{proof} 
     So, in order for a mechanism to respect $(\epsilon, \delta)$-DP on the original data, it must respect 
-    $\left( \frac{1}{c}\log\left(\frac{e^{\epsilon}-1}{s} + 1 \right), \frac{\delta}{s\left(\sum_{i=1}^{c-1}e^{i \epsilon}\right)} \right)$-DP 
+    $\left( \frac{1}{c}\log\left(\frac{e^{\epsilon}-1}{s} + 1 \right), \frac{\delta}{s\left(\sum_{i=0}^{c-1}e^{i \epsilon}\right)} \right)$-DP 
     on the resized data.
 \end{theorem}
 
@@ -274,7 +274,7 @@ We now present an mini-algorithm for finding the \emph{functional} $(\epsilon, \
         \State $c \gets \lceil p \rceil$ \Comment{sets c-stability property}
         \State $s \gets p/c$ \Comment{sets subsampled\_proportion property}
         \State $\epsilon_{f} \gets \frac{1}{c}\log\left(\frac{e^{\epsilon}-1}{s} + 1\right)$
-        \State $\delta_{f} \gets \frac{\delta}{s\left(\sum_{i=1}^{c-1}e^{i \epsilon}\right)}$
+        \State $\delta_{f} \gets \frac{\delta}{s\left(\sum_{i=0}^{c-1}e^{i \epsilon}\right)}$
         \\ \Return $(\epsilon_{f}, \delta_{f})$ 
     \end{algorithmic}
 \end{algorithm}
