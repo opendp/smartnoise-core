@@ -128,7 +128,7 @@ The component arguments are as follows:
     \item shift: A vector of length $m$, where each element is the expectation of the Gaussian distribution used 
                  for imputing missing values in column $m$ of $X$. Used only if \emph{distribution} == ``Gaussian''.
                  Defaults to None. 
-    \item shift: A vector of length $m$, where each element is the standard deviation of the Gaussian distribution used 
+    \item scale: A vector of length $m$, where each element is the standard deviation of the Gaussian distribution used 
                  for imputing missing values in column $m$ of $X$. Used only if \emph{distribution} == ``Gaussian''.
                  Defaults to None. 
     \item lower: A vector of length $m$, where each element is a proposed minimum value for column $m$ of $X$.
@@ -215,14 +215,14 @@ The algorithm will look something like the following:
         \ElsIf{neighboring == ``add/remove one''}
             \State $m \gets Binomial(c\tilde{n}, s)$ \Comment{number of records that can be filled using subsampled private data}
         \EndIf
-        \State $(\epsilon', \delta') \gets \left(\log\left(1+s\left(e^{c\epsilon}-1\right) \right), s\left(\sum_{i=1}^{c-1}e^{i \epsilon}\right)\delta \right)$ \Comment{privacy amplification via subsampling}
-        \State $X' \gets sample\left( X_c, \max(m, n), neighboring \right) \bigcup \left( Aug(\varnothing, \max(0, n - m), \hdots) \right)$
+        \State $(\epsilon', \delta') \gets \left(\log\left(1+s\left(e^{c\epsilon}-1\right) \right), s\left(\sum_{i=0}^{c-1}e^{i \epsilon}\right)\delta \right)$ \Comment{privacy amplification via subsampling}
+        \State $X' \gets sample\left( X_c, \max(m, n) \right) \bigcup \left( Aug(\varnothing, \max(0, n - m), \hdots) \right)$
         \\ \Return $(X', \epsilon', \delta')$
     \end{algorithmic}
 \end{algorithm}
 
 The $\epsilon', \delta'$ terms come from first applying the group privacy definition with group size $c$ to the 
-database $X_c$ to get $\left(c\epsilon, \left(\sum_{i=1}^{c-1}e^{i \epsilon}\right)\delta \right)$ \cite{Vad17}
+database $X_c$ to get $\left(c\epsilon, \left(\sum_{i=0}^{c-1}e^{i \epsilon}\right)\delta \right)$ \cite{Vad17}
 and then applying privacy amplification by subsampling results from Theorems 8 and 9 of \cite{BBG18}. 
 Note that, for the ``replace one'' definition, we could be using $\frac{m}{c\tilde{n}}$ instead of $s$ in the privacy calculation. Using $s$ gives us a very slightly 
 worse privacy guarantee (the only difference is the $\lfloor \cdot \rfloor$ we used to get $m$), but is nice for 
@@ -231,35 +231,38 @@ consistency between the methods and not having to keep track of $m$ as an extra 
 \subsection{Functional Privacy Parameters}
 We established in section~\ref{subsec:algorithm_statement} that a user asking for an $(\epsilon, \delta)$-DP guarantee will get an 
 $(\epsilon', \delta')$-DP guarantee with respect to the original private data. What we'd really like, however, is for the user to ask for an $(\epsilon, \delta)$-DP 
-gurantee and have the library come up with what we will call a \emph{functional $(\epsilon'', \delta'')$} that will ensure $(\epsilon, \delta)$-DP 
-on the original data. Any components that operate on the resized data will use the \emph{functional $(\epsilon'', \delta'')$} internally instead of 
+gurantee and have the library come up with what we will call a \emph{functional $(\epsilon_f, \delta_f)$} that will ensure $(\epsilon, \delta)$-DP 
+on the original data. Any components that operate on the resized data will use the \emph{functional $(\epsilon_f, \delta_f)$} internally instead of 
 the parameters passed by the user.
 
 \begin{theorem}
     A mechanism that respects 
-    \[ \left( \frac{1}{c}\log\left(\frac{e^{\epsilon'}-1}{s} + 1 \right), \frac{\delta'}{s\left(\sum_{i=1}^{c-1}e^{i \epsilon}\right)} \right)\text{-DP} \] 
+    \[ (\epsilon_f, \delta_f) = \left( \frac{1}{c}\log\left(\frac{e^{\epsilon}-1}{s} + 1 \right), \frac{\delta}{s\left(\sum_{i=0}^{c-1}e^{i \epsilon}\right)} \right)\text{-DP} \] 
     on the resized data respects $(\epsilon, \delta)$-DP on the true private data.
     \begin{proof}
         We know that an $(\epsilon, \delta)$-DP on the resized data corresponds to a 
-        \[ (\epsilon', \delta') = \left(\log\left(1+s\left(e^{c\epsilon}-1\right) \right), s\left(\sum_{i=1}^{c-1}e^{i \epsilon}\right)\delta \right) \]
-        guarantee on the private data. We just need to invert the function to find $(\epsilon, \delta)$ in terms of $(\epsilon', \delta')$. \newline 
+        \[ (\epsilon', \delta') = \left(\log\left(1+s\left(e^{c\epsilon}-1\right) \right), s\left(\sum_{i=0}^{c-1}e^{i \epsilon}\right)\delta \right) \]
+        guarantee on the original data. But we want our mechanism to respect $(\epsilon_f, \delta_f)$ on the resized data such that it 
+        respects $(\epsilon, \delta)$ on the original data. So we replace $(\epsilon, \delta)$ with 
+        $\epsilon_f, \delta_f$ and $(\epsilon', \delta')$ with $(\epsilon, \delta)$. 
+        Then we can invert the function to get what we want. \newline 
 
-        Let's start with $\epsilon, \epsilon'$:
+        Let's start with $\epsilon, \epsilon_f$:
         \begin{align*}
-            \epsilon' &= \log\left(1+s\left(e^{c\epsilon}-1\right)\right) \\
-            e^{\epsilon'} &= 1+s\left(e^{c\epsilon}-1\right) \\
-            \frac{e^{\epsilon'}-1}{s} &= e^{c\epsilon}-1 \\
-            \frac{1}{c}\log\left(\frac{e^{\epsilon'}-1}{s} + 1 \right) &= \epsilon.
+            \epsilon &= \log\left(1+s\left(e^{c\epsilon_f}-1\right)\right) \\
+            e^{\epsilon} &= 1+s\left(e^{c\epsilon_f}-1\right) \\
+            \frac{e^{\epsilon}-1}{s} &= e^{c\epsilon_f}-1 \\
+            \frac{1}{c}\log\left(\frac{e^{\epsilon}-1}{s} + 1 \right) &= \epsilon_f.
         \end{align*}
 
-        We carry out a similar calculation for $\delta, \delta'$:
+        We carry out a similar calculation for $\delta, \delta_f$:
         \begin{align*}
-            \delta' &= s\left(\sum_{i=1}^{c-1}e^{i \epsilon}\right)\delta \\
-            \frac{\delta'}{s\left(\sum_{i=1}^{c-1}e^{i \epsilon}\right)} &= \delta.
+            \delta &= s\left(\sum_{i=0}^{c-1}e^{i \epsilon}\right)\delta_f \\
+            \frac{\delta}{s\left(\sum_{i=0}^{c-1}e^{i \epsilon}\right)} &= \delta_f.
         \end{align*}
     \end{proof} 
     So, in order for a mechanism to respect $(\epsilon, \delta)$-DP on the original data, it must respect 
-    $\left( \frac{1}{c}\log\left(\frac{e^{\epsilon}-1}{s} + 1 \right), \frac{\delta}{s\left(\sum_{i=1}^{c-1}e^{i \epsilon}\right)} \right)$-DP 
+    $\left( \frac{1}{c}\log\left(\frac{e^{\epsilon}-1}{s} + 1 \right), \frac{\delta}{s\left(\sum_{i=0}^{c-1}e^{i \epsilon}\right)} \right)$-DP 
     on the resized data.
 \end{theorem}
 
@@ -271,7 +274,7 @@ We now present an mini-algorithm for finding the \emph{functional} $(\epsilon, \
         \State $c \gets \lceil p \rceil$ \Comment{sets c-stability property}
         \State $s \gets p/c$ \Comment{sets subsampled\_proportion property}
         \State $\epsilon_{f} \gets \frac{1}{c}\log\left(\frac{e^{\epsilon}-1}{s} + 1\right)$
-        \State $\delta_{f} \gets \frac{\delta}{s\left(\sum_{i=1}^{c-1}e^{i \epsilon}\right)}$
+        \State $\delta_{f} \gets \frac{\delta}{s\left(\sum_{i=0}^{c-1}e^{i \epsilon}\right)}$
         \\ \Return $(\epsilon_{f}, \delta_{f})$ 
     \end{algorithmic}
 \end{algorithm}
