@@ -45,10 +45,9 @@ mod exponential_mechanism;
 mod gaussian_mechanism;
 mod laplace_mechanism;
 mod simple_geometric_mechanism;
-// mod merge;
 mod resize;
 mod sum;
-// mod union;
+mod union;
 mod variance;
 
 use std::collections::HashMap;
@@ -253,7 +252,7 @@ impl Component for proto::Component {
             // INSERT COMPONENT LIST
             Cast, Clamp, Count, Covariance, Digitize,
             Filter, Histogram, Impute, Index, Literal, Materialize, Mean,
-            Partition, Quantile, RawMoment, Reshape, Resize, Sum, Variance,
+            Partition, Quantile, RawMoment, Reshape, Resize, Sum, Union, Variance,
 
             ExponentialMechanism, GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism,
 
@@ -293,7 +292,7 @@ impl Expandable for proto::Component {
             }
         }
 
-        // expand_component!(Map, Merge);
+        // expand_component!(Map, Union);
         //
         // if properties.values().any(|props| props.indexmap()
         //     .and_then(IndexmapProperties::assert_is_partition).is_ok()) {
@@ -315,7 +314,7 @@ impl Expandable for proto::Component {
 
         expand_component!(
             // INSERT COMPONENT LIST
-            Clamp, Digitize, Histogram, Impute, Maximum, Minimum, Partition, Resize,
+            Clamp, Digitize, Histogram, Impute, Index, Maximum, Minimum, Partition, Resize,
 
             DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMedian,
             DpMinimum, DpQuantile, DpRawMoment, DpSum, DpVariance,
@@ -396,7 +395,7 @@ impl Sensitivity for proto::component::Variant {
 
         compute_sensitivity!(
             // INSERT COMPONENT LIST
-            Count, Covariance, Histogram, Mean, Quantile, RawMoment, Sum, Variance
+            Count, Covariance, Histogram, Mean, Quantile, RawMoment, Sum, Union, Variance
         );
 
         Err(format!("sensitivity is not implemented for proto component {:?}", self).into())

@@ -1,16 +1,16 @@
 use crate::errors::*;
 
 
-use std::collections::HashMap;
-
 use crate::{proto, base, Warnable};
 
 use crate::components::{Component, Sensitivity};
-use crate::base::{Value, ValueProperties, ArrayProperties, AggregatorProperties, NodeProperties, SensitivitySpace};
-use crate::utilities::{get_common_value, prepend};
+use crate::base::{Value, ValueProperties, ArrayProperties, AggregatorProperties, NodeProperties, SensitivitySpace, IndexKey, IndexmapProperties};
+use crate::utilities::{get_common_value};
 
 use itertools::Itertools;
 use ndarray::{ArrayViewD, Axis, stack};
+use indexmap::map::IndexMap;
+use crate::utilities::privacy::get_group_id_path;
 // given a partitional indexmap, output the concatenation of all partitions
 
 impl Component for proto::Union {
@@ -22,48 +22,59 @@ impl Component for proto::Union {
         node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
 
-        let data_property = properties.get("data")
-            .ok_or("data: missing")?.indexmap()
-            .map_err(prepend("data:"))?.clone();
-
         // all partitions must be arrays
-        let array_props = data_property.properties.values().iter()
+        let array_props = properties.values()
             .map(|v| v.array()).collect::<Result<Vec<&ArrayProperties>>>()?;
 
         let num_columns = get_common_value(&array_props.iter()
             .map(|v| Some(v.num_columns)).collect())
             .unwrap_or(None).ok_or_else(|| "num_columns must be known when unioning")?;
 
-        Ok(ValueProperties::Array(ArrayProperties {
-            num_records: data_property.num_records,
-            num_columns,
-            nullity: get_common_value(&array_props.iter().map(|v| v.nullity).collect())
-                .unwrap_or(true),
-            releasable: get_common_value(&array_props.iter().map(|v| v.releasable).collect())
-                .unwrap_or(false),
-            // TODO: inflate this by group_id
-            c_stability: array_props.iter().map(|v| v.c_stability.clone())
-                .fold1(|l, r| l.iter().zip(r).map(|(l, r)| l.max(r)).collect::<Vec<f64>>())
-                .ok_or_else(|| "must have at least one partition when merging")?,
-            aggregator: Some(AggregatorProperties {
-                component: proto::component::Variant::Union(self.clone()),
+        let num_records = array_props.iter().fold(Some(0), |sum, v| match (sum, v.num_records) {
+            (Some(l), Some(r)) => Some(l + r),
+            _ => None
+        });
+
+        Ok(Warnable::new(if self.flatten {
+            ValueProperties::Array(ArrayProperties {
+                num_records,
+                num_columns,
+                nullity: get_common_value(&array_props.iter().map(|v| v.nullity).collect())
+                    .unwrap_or(true),
+                releasable: get_common_value(&array_props.iter().map(|v| v.releasable).collect())
+                    .unwrap_or(false),
+                // TODO: inflate this by group_id
+                c_stability: array_props.iter().map(|v| v.c_stability.clone())
+                    .fold1(|l, r| l.iter().zip(r).map(|(l, r)| l.max(r)).collect::<Vec<f64>>())
+                    .ok_or_else(|| "must have at least one partition when merging")?,
+                aggregator: Some(AggregatorProperties {
+                    component: proto::component::Variant::Union(self.clone()),
+                    properties: properties.clone(),
+                    // TODO: bring forth the constants from the parts
+                    c_stability: vec![],
+                    lipschitz_constant: vec![]
+                }),
+                // TODO: merge natures
+                nature: None,
+                data_type: get_common_value(&array_props.iter().map(|v| v.data_type.clone()).collect())
+                    .ok_or_else(|| "data_types must be equivalent when merging")?,
+                dataset_id: Some(node_id as i64),
+                is_not_empty: array_props.iter().any(|v| v.is_not_empty),
+                dimensionality: Some(2),
+                group_id: get_group_id_path(array_props.iter()
+                    .map(|prop| prop.group_id.clone())
+                    .collect())?
+            }).into()
+        } else {
+            ValueProperties::Indexmap(IndexmapProperties {
                 properties: properties.clone(),
-                // TODO: bring forth the constants from the parts
-                c_stability: vec![],
-                lipschitz_constant: vec![]
-            }),
-            // TODO: merge natures
-            nature: None,
-            data_type: get_common_value(&array_props.iter().map(|v| v.data_type.clone()).collect())
-                .ok_or_else(|| "data_types must be equivalent when merging")?,
-            dataset_id: Some(node_id as i64),
-            is_not_empty: array_props.iter().any(|v| v.is_not_empty),
-            dimensionality: Some(2),
-        }).into())
+                variant: proto::indexmap_properties::Variant::Partition
+            })
+        }))
     }
 }
 
-impl Sensitivity for proto::Merge {
+impl Sensitivity for proto::Union {
     fn compute_sensitivity(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
@@ -71,26 +82,24 @@ impl Sensitivity for proto::Merge {
         sensitivity_type: &SensitivitySpace
     ) -> Result<Value> {
 
-        let data_property = properties.get("data")
-            .ok_or("data: missing")?.indexmap()?;
+        let partition_sensitivities = properties.values()
+            .map(|v| {
+                let aggregator: &AggregatorProperties = v.array()?
+                    .aggregator.as_ref().ok_or_else(|| "partitions must be aggregated to have sensitivity")?;
 
-        match sensitivity_type {
-            SensitivitySpace::KNorm(_k) => {
-                let partition_sensitivities = data_property.properties.values().iter()
-                    .map(|v| v.array()?
-                        .aggregator.as_ref().ok_or_else(|| "partitions must be aggregated to have sensitivity")?
-                        .component.compute_sensitivity(privacy_definition, properties, sensitivity_type))
-                    .collect::<Result<Vec<Value>>>()?;
-                Ok(stack(Axis(0), &partition_sensitivities.iter()
-                    .map(|v| Ok(v.array()?.f64()?.view()))
-                    .collect::<Result<Vec<ArrayViewD<f64>>>>()?)?.into())
+                aggregator.component
+                    .compute_sensitivity(privacy_definition, &aggregator.properties, sensitivity_type)
+            })
+            .collect::<Result<Vec<Value>>>()?;
 
-                // to take max sensitivities of each partition
-                // .gencolumns().into_iter()
-                // .map(|column| column.iter().fold(std::f64::NEG_INFINITY, |a, &b| a.max(b)))
-                // .collect::<Vec<f64>>();
-            },
-            _ => Err("Count sensitivity is only implemented for KNorm".into())
-        }
+        Ok(if self.flatten {
+            stack(Axis(0), &partition_sensitivities.iter()
+                .map(|v| Ok(v.array()?.f64()?.view()))
+                .collect::<Result<Vec<ArrayViewD<f64>>>>()?)?.into()
+        } else {
+            properties.keys()
+                .cloned().zip(partition_sensitivities)
+                .collect::<IndexMap<IndexKey, Value>>().into()
+        })
     }
 }

@@ -187,10 +187,7 @@ pub fn parse_indexmap_value_properties(value: proto::IndexmapValueProperties) ->
 
 pub fn parse_indexmap_properties(value: proto::IndexmapProperties) -> IndexmapProperties {
     IndexmapProperties {
-        num_records: value.num_records.and_then(parse_i64_null),
-        disjoint: false,
         properties: parse_indexmap_value_properties(value.value_properties.unwrap()),
-        dataset_id: value.dataset_id.and_then(parse_i64_null),
         variant: proto::indexmap_properties::Variant::from_i32(value.variant).unwrap(),
     }
 }
@@ -478,13 +475,10 @@ pub fn serialize_indexmap_value_properties(value: IndexMap<IndexKey, ValueProper
 
 pub fn serialize_indexmap_properties(value: IndexmapProperties) -> proto::IndexmapProperties {
     proto::IndexmapProperties {
-        num_records: Some(serialize_i64_null(value.num_records)),
-        disjoint: value.disjoint,
         value_properties: Some(proto::IndexmapValueProperties {
             keys: value.properties.keys().cloned().map(serialize_index_key).collect(),
             values: value.properties.values().cloned().map(serialize_value_properties).collect()
         }),
-        dataset_id: Some(serialize_i64_null(value.dataset_id)),
         variant: value.variant as i32
     }
 }

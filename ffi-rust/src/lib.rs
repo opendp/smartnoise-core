@@ -1,6 +1,6 @@
 use prost::Message;
 use whitenoise_validator::proto;
-use whitenoise_validator::utilities::serial::{serialize_error, parse_release, serialize_release};
+use whitenoise_validator::utilities::serial::{serialize_error, parse_release, serialize_release, parse_indexmap_value_properties};
 
 mod utilities;
 use crate::utilities::{ptr_to_buffer, buffer_to_ptr};
@@ -165,11 +165,14 @@ pub extern "C" fn accuracy_to_privacy_usage(
                 } = request;
 
 
+                // this function allows for catching errors via ?.
                 let run = || -> Result<proto::PrivacyUsages> {
                     let component: proto::Component = component
                         .ok_or_else(|| Error::from("component must be defined"))?;
                     let privacy_definition: proto::PrivacyDefinition = privacy_definition
                         .ok_or_else(|| Error::from("privacy definition must be defined"))?;
+                    let properties = parse_indexmap_value_properties(properties
+                        .ok_or_else(|| Error::from("properties must be defined"))?);
                     let accuracies: proto::Accuracies = accuracies
                         .ok_or_else(|| Error::from("accuracies must be defined"))?;
 
@@ -220,6 +223,8 @@ pub extern "C" fn privacy_usage_to_accuracy(
                         .ok_or_else(|| Error::from("component must be defined"))?;
                     let privacy_definition: proto::PrivacyDefinition = privacy_definition
                         .ok_or_else(|| Error::from("privacy definition must be defined"))?;
+                    let properties = parse_indexmap_value_properties(properties
+                        .ok_or_else(|| Error::from("properties must be defined"))?);
 
                     whitenoise_validator::privacy_usage_to_accuracy(component, privacy_definition, properties, alpha)
                 };

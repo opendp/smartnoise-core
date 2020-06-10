@@ -79,7 +79,7 @@ pub fn get_input_properties<T>(
 pub fn propagate_properties(
     analysis: &mut proto::Analysis,
     release: &mut base::Release,
-    properties: Option<HashMap<u32, proto::ValueProperties>>,
+    properties: Option<HashMap<u32, base::ValueProperties>>,
     dynamic: bool,
 ) -> Result<(HashMap<u32, ValueProperties>, Vec<proto::Error>)> {
     let ref mut graph = analysis.computation_graph.as_mut()
@@ -89,12 +89,7 @@ pub fn propagate_properties(
     // extend and pop from the end of the traversal
     traversal.reverse();
 
-    let mut graph_properties = match properties {
-        Some(properties) => properties.into_iter()
-            .map(|(idx, props)| (idx.clone(), parse_value_properties(props)))
-            .collect::<HashMap<u32, ValueProperties>>(),
-        None => HashMap::new()
-    };
+    let mut graph_properties = properties.unwrap_or_else(HashMap::new);
 
     // infer properties on public evaluations
     graph_properties.extend(release.iter()

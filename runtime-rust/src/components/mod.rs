@@ -27,7 +27,6 @@ pub mod index;
 pub mod materialize;
 pub mod mean;
 pub mod mechanisms;
-pub mod merge;
 pub mod partition;
 pub mod quantile;
 pub mod raw_moment;
@@ -36,6 +35,7 @@ pub mod reshape;
 pub mod resize;
 pub mod sum;
 pub mod transforms;
+pub mod union;
 pub mod variance;
 
 /// Evaluable component trait
@@ -82,8 +82,8 @@ impl Evaluable for proto::component::Variant {
         evaluate!(
             // INSERT COMPONENT LIST
             Cast, Clamp, Count, Covariance, Digitize, Filter, Histogram, Impute, Index,
-            Materialize, Mean, Merge, Partition,
-            Quantile, RawMoment, Reshape, Resize, Sum, Variance,
+            Materialize, Mean, Partition,
+            Quantile, RawMoment, Reshape, Resize, Sum, Union, Variance,
 
             ExponentialMechanism, GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism,
 

@@ -75,7 +75,6 @@ impl Component for proto::Cast {
                 };
 
                 if data_property.nature.is_none() {
-                    println!("data num columns {:?}", data_property.num_columns);
                     data_property.nature = data_property.num_columns
                         .map(|num_columns| Nature::Categorical(NatureCategorical {
                             categories: Jagged::Bool((0..num_columns).map(|_| vec![true, false]).collect())

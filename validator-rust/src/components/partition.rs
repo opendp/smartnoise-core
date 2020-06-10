@@ -37,8 +37,6 @@ impl Component for proto::Partition {
                 data_property.num_records = None;
 
                 IndexmapProperties {
-                    num_records: data_property.num_records,
-                    disjoint: true,
                     properties: match categories {
                         Jagged::Bool(categories) => broadcast_partitions(&categories, &data_property, node_id)?
                             .into_iter().map(|(k, v)| (k.into(), v)).collect(),
@@ -48,7 +46,6 @@ impl Component for proto::Partition {
                             .into_iter().map(|(k, v)| (k.into(), v)).collect(),
                         _ => return Err("partitioning based on floats is not supported".into())
                     },
-                    dataset_id: Some(node_id as i64),
                     variant: proto::indexmap_properties::Variant::Partition,
                 }
             }
@@ -65,8 +62,6 @@ impl Component for proto::Partition {
                 };
 
                 IndexmapProperties {
-                    num_records: data_property.num_records,
-                    disjoint: false,
                     properties: lengths.iter().enumerate().map(|(index, partition_num_records)| {
                         let mut partition_property = data_property.clone();
                         partition_property.num_records = *partition_num_records;
@@ -74,9 +69,9 @@ impl Component for proto::Partition {
                             partition_id: node_id,
                             index: None
                         });
+                        partition_property.dataset_id = Some(node_id as i64);
                         (IndexKey::from(index as i64), ValueProperties::Array(partition_property))
                     }).collect::<IndexMap<IndexKey, ValueProperties>>(),
-                    dataset_id: Some(node_id as i64),
                     variant: proto::indexmap_properties::Variant::Partition,
                 }
             }
@@ -140,6 +135,7 @@ pub fn broadcast_partitions<T: Clone + Eq + std::hash::Hash + Ord>(
         partition_id: node_id,
         index: None
     });
+    properties.dataset_id = Some(node_id as i64);
     let partitions = categories[0].clone();
     Ok(partitions.into_iter()
         .map(|v| (v, ValueProperties::Array(properties.clone())))

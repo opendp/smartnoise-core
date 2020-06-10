@@ -1,15 +1,16 @@
 use crate::errors::*;
 
-use crate::base::{Array, Value, ValueProperties, ArrayProperties, Nature, NatureContinuous, NatureCategorical, Vector1DNull, Jagged, IndexKey};
+use crate::base::{Array, Value, ValueProperties, ArrayProperties, Nature, NatureContinuous, NatureCategorical, Vector1DNull, Jagged, IndexKey, NodeProperties};
 
 use crate::{proto, base, Warnable};
-use crate::components::{Component, Named};
+use crate::components::{Component, Named, Expandable};
 
 use std::ops::Deref;
 use ndarray::ArrayD;
 use ndarray::prelude::*;
-use crate::utilities::get_common_value;
+use crate::utilities::{get_common_value, get_literal};
 use indexmap::map::IndexMap;
+use std::collections::HashMap;
 
 impl Component for proto::Index {
     fn propagate_property(
@@ -110,6 +111,46 @@ impl Component for proto::Index {
         }?;
 
         stack_properties(&properties, dimensionality).map(Warnable::new)
+    }
+}
+
+impl Expandable for proto::Index {
+    fn expand_component(
+        &self,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
+        component: &proto::Component,
+        properties: &NodeProperties,
+        component_id: &u32,
+        maximum_id: &u32
+    ) -> Result<proto::ComponentExpansion> {
+        let mut current_id = *maximum_id;
+        let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
+        let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
+
+        let data_property: ValueProperties = properties.get::<IndexKey>(&"data".into())
+            .ok_or("data: missing")?.clone();
+
+        if let Ok(indexmap) = data_property.indexmap() {
+            if indexmap.variant == proto::indexmap_properties::Variant::Partition {
+                current_id += 1;
+                let id_is_partition = current_id;
+                let (patch_node, release) = get_literal(true.into(), &component.submission)?;
+                computation_graph.insert(id_is_partition.clone(), patch_node);
+                releases.insert(id_is_partition.clone(), release);
+
+                let mut component = component.clone();
+                component.insert_argument(&"is_partition".into(), id_is_partition);
+                computation_graph.insert(*component_id, component);
+            }
+        }
+
+        Ok(proto::ComponentExpansion {
+            computation_graph,
+            properties: HashMap::new(),
+            releases,
+            traversal: Vec::new(),
+            warnings: vec![]
+        })
     }
 }
 

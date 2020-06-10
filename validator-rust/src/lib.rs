@@ -197,13 +197,13 @@ pub fn generate_report(
 pub fn accuracy_to_privacy_usage(
     component: proto::Component,
     privacy_definition: proto::PrivacyDefinition,
-    properties: IndexMap<IndexKey, proto::ValueProperties>,
+    properties: IndexMap<IndexKey, base::ValueProperties>,
     accuracies: proto::Accuracies
 ) -> Result<proto::PrivacyUsages> {
 
     let proto_properties = component.arguments().iter()
         .filter_map(|(name, idx)| Some((idx.clone(), properties.get(name)?.clone())))
-        .collect::<HashMap<u32, proto::ValueProperties>>();
+        .collect::<HashMap<u32, base::ValueProperties>>();
 
     let mut analysis = proto::Analysis {
         computation_graph: Some(proto::ComputationGraph {
@@ -252,13 +252,13 @@ pub fn accuracy_to_privacy_usage(
 pub fn privacy_usage_to_accuracy(
     component: proto::Component,
     privacy_definition: proto::PrivacyDefinition,
-    properties: IndexMap<IndexKey, proto::ValueProperties>,
+    properties: IndexMap<IndexKey, base::ValueProperties>,
     alpha: f64
 ) -> Result<proto::Accuracies> {
 
     let proto_properties = component.arguments().iter()
         .filter_map(|(name, idx)| Some((idx.clone(), properties.get(name)?.clone())))
-        .collect::<HashMap<u32, proto::ValueProperties>>();
+        .collect::<HashMap<u32, base::ValueProperties>>();
 
     let mut analysis = proto::Analysis {
         computation_graph: Some(proto::ComputationGraph {

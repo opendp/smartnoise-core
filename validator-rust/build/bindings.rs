@@ -18,7 +18,7 @@ pub fn build_bindings(
     let mut bindings_builders = Vec::new();
 
     components.iter().for_each(|component| {
-        if component.id == "Map" || component.id == "Merge" {
+        if component.id == "Map" || component.id == "Union" {
             return
         }
 

@@ -190,10 +190,15 @@ pub fn release(
             .map(|(name, node_id)| (name, &release.get(&node_id).unwrap().value))
             .collect::<IndexMap<IndexKey, &Value>>();
 
+        println!("node id:    {:?}", component_id);
+        println!("component:  {:?}", component.variant);
+        println!("arguments:  {:?}", node_arguments);
         // evaluate the component using the Evaluable trait, which is implemented on the proto::component::Variant enum
         let mut evaluation = component.clone().variant
             .ok_or_else(|| Error::from("variant of component must be known"))?
             .evaluate(&privacy_definition, &node_arguments)?;
+
+        println!("evaluation: {:?}", evaluation);
 
         evaluation.public = match graph_properties.get(&component_id) {
             Some(property) => match property.variant.clone().unwrap() {

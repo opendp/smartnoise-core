@@ -113,7 +113,7 @@ impl Sensitivity for proto::Count {
                     .flatten()
                     .fold1(|l, r| l.max(r))
                     .ok_or_else(|| "c_stability must be defined for each column")?;
-                (value.num_records, c_stability)
+                (value.num_records()?, c_stability)
             },
             _ => return Err("data: must be an array or indexmap".into())
         };

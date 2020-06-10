@@ -230,14 +230,11 @@ pub fn infer_property(value: &Value, dataset_id: Option<i64>) -> Result<ValuePro
         }.into(),
         Value::Indexmap(indexmap) => {
             IndexmapProperties {
-                num_records: None,
-                disjoint: false,
                 variant: proto::indexmap_properties::Variant::Dataframe,
                 properties: indexmap.iter()
                     .map(|(name, value)| infer_property(value, dataset_id)
                         .map(|v| (name.clone(), v)))
                     .collect::<Result<IndexMap<IndexKey, ValueProperties>>>()?.into(),
-                dataset_id
             }.into()
         }
         Value::Jagged(jagged) => JaggedProperties {

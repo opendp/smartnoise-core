@@ -19,8 +19,6 @@ impl Component for proto::Materialize {
         let column_names = self.get_names(public_arguments, &IndexMap::new(), None)?;
 
         Ok(ValueProperties::Indexmap(IndexmapProperties {
-            num_records: None,
-            disjoint: false,
             properties: column_names.into_iter()
                 .map(|name| (name.into(), ValueProperties::Array(ArrayProperties {
                     num_records: None,
@@ -37,7 +35,6 @@ impl Component for proto::Materialize {
                     dimensionality: Some(1),
                     group_id: vec![]
                 }))).collect(),
-            dataset_id: Some(node_id as i64),
             variant: proto::indexmap_properties::Variant::Dataframe
         }).into())
     }

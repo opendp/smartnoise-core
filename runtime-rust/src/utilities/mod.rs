@@ -22,7 +22,7 @@ pub fn get_num_columns<T>(data: &ArrayD<T>) -> Result<i64> {
     match data.ndim() {
         0 => Err("data is a scalar".into()),
         1 => Ok(1),
-        2 => Ok(data.shape().last().unwrap().clone() as i64),
+        2 => Ok(data.len_of(Axis(1)) as i64),
         _ => Err("data may be at most 2-dimensional".into())
     }
 }

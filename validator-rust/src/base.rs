@@ -9,7 +9,7 @@ use ndarray::prelude::Ix1;
 use std::collections::HashMap;
 use ndarray::{ArrayD, arr0, Dimension};
 
-use crate::utilities::{standardize_categorical_argument, deduplicate, serial};
+use crate::utilities::{standardize_categorical_argument, deduplicate, serial, get_common_value};
 use indexmap::IndexMap;
 use crate::utilities::serial::{parse_indexmap_node_ids, serialize_index_key};
 use std::ops::{Add, Div};
@@ -569,22 +569,13 @@ impl From<JaggedProperties> for ValueProperties {
 /// The IndexmapProperties has a one-to-one mapping to a protobuf IndexmapProperties.
 #[derive(Clone, Debug)]
 pub struct IndexmapProperties {
-    /// global count over all partitions
-    pub num_records: Option<i64>,
-    /// records within the values of the indexmap come from a partition of the rows
-    pub disjoint: bool,
     /// properties for each of the values in the indexmap
     pub properties: IndexMap<IndexKey, ValueProperties>,
-    /// denote which partition operation this data originates from
-    pub dataset_id: Option<i64>,
     /// denote if the value is a Dataframe or Partition
     pub variant: proto::indexmap_properties::Variant,
 }
 
 impl IndexmapProperties {
-    pub fn assert_is_disjoint(&self) -> Result<()> {
-        if self.disjoint { Err("partitions must be disjoint".into()) } else { Ok(()) }
-    }
     pub fn assert_is_dataframe(&self) -> Result<()> {
         if self.variant != proto::indexmap_properties::Variant::Dataframe {
             return Err("indexmap must be a dataframe".into());
@@ -597,8 +588,26 @@ impl IndexmapProperties {
         }
         Ok(())
     }
-    pub fn num_records(&self) -> Result<i64> {
-        self.num_records.ok_or_else(|| "number of rows is not defined".into())
+    pub fn num_records(&self) -> Result<Option<i64>> {
+        match self.variant {
+            proto::indexmap_properties::Variant::Dataframe =>
+                get_common_value(&self.properties.values()
+                    .map(|v| Ok(v.array()?.num_records))
+                    .collect::<Result<Vec<Option<i64>>>>()?)
+                    .ok_or_else(|| "dataframe columns must share the same number of rows".into()),
+            proto::indexmap_properties::Variant::Partition =>
+                Ok(self.properties.values()
+                    .map(|v: &ValueProperties| match v {
+                        ValueProperties::Indexmap(v) => v.num_records(),
+                        ValueProperties::Array(v) => Ok(v.num_records),
+                        _ => Err("invalid Value type for counting records".into())
+                    })
+                    .collect::<Result<Vec<Option<i64>>>>()?.into_iter()
+                    .fold(Some(0), |sum, v| match (sum, v) {
+                        (Some(l), Some(r)) => Some(l + r),
+                        _ => None
+                    }))
+        }
     }
 
     pub fn from_values(&self, values: Vec<ValueProperties>) -> IndexMap<IndexKey, ValueProperties> {
@@ -872,7 +881,7 @@ pub enum SensitivitySpace {
 /// A release consists of Values for each node id.
 pub type Release = HashMap<u32, ReleaseNode>;
 
-#[derive(PartialEq, Eq, Clone, Debug)]
+#[derive(PartialEq, Eq, Clone, Debug, Hash)]
 pub struct GroupId {
     pub partition_id: u32,
     pub index: Option<IndexKey>
