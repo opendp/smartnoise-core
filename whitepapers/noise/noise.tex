@@ -176,7 +176,7 @@ for a timing attack.
 	\begin{algorithmic}[1]
 		\State trial\_index $\gets 1$
 		\State geom\_return $\gets 0$
-		\While trial\_index $\leq$ max\_trials
+		\While {trial\_index $\leq$ max\_trials}
 			\State bit $\gets sample\_bit(p)$
 			\If{bit $== 1$}
 				\If{geom\_return $== 0$} \Comment{Update result from Geometric only if we have not already seen a 1}
