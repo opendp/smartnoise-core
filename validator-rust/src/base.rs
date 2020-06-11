@@ -352,15 +352,15 @@ impl Array {
         }
     }
 
-    pub fn shape(&self) -> Vec<i64> {
+    pub fn shape(&self) -> Vec<usize> {
         match self {
             Array::Bool(array) => array.shape().to_owned(),
             Array::F64(array) => array.shape().to_owned(),
             Array::I64(array) => array.shape().to_owned(),
             Array::Str(array) => array.shape().to_owned()
-        }.iter().map(|arr| *arr as i64).collect()
+        }
     }
-    pub fn num_records(&self) -> Result<i64> {
+    pub fn num_records(&self) -> Result<usize> {
         let shape = self.shape();
         match shape.len() {
             0 => Ok(1),
@@ -368,7 +368,7 @@ impl Array {
             _ => Err("arrays may have max dimensionality of 2".into())
         }
     }
-    pub fn num_columns(&self) -> Result<i64> {
+    pub fn num_columns(&self) -> Result<usize> {
         let shape = self.shape();
         match shape.len() {
             0 => Ok(1),

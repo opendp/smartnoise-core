@@ -209,8 +209,8 @@ pub fn infer_property(value: &Value, prior_property: Option<&ValueProperties>, d
             releasable: true,
             nature: infer_nature(&value)?,
             c_stability: infer_c_stability(&array)?,
-            num_columns: Some(array.num_columns()?),
-            num_records: Some(array.num_records()?),
+            num_columns: Some(array.num_columns()? as i64),
+            num_records: Some(array.num_records()? as i64),
             aggregator: None,
             data_type: match array {
                 Array::Bool(_) => DataType::Bool,

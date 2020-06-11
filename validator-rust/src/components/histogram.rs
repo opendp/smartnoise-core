@@ -224,10 +224,6 @@ impl Sensitivity for proto::Histogram {
                     (AddRemove, _, _) => 1.,
                 };
 
-                // epsilon is distributed evenly over all cells.
-                // histograms are the only mechanism where rows are disjoint, currently doing corrections for this here
-                let epsilon_corrected = sensitivity / categories_length as f64;
-
                 let num_columns = data_property.num_columns()?;
                 let num_records = categories_length;
 
@@ -235,7 +231,7 @@ impl Sensitivity for proto::Histogram {
                     vec![num_records as usize, num_columns as usize],
                     (0..num_records)
                         .map(|_| (0..num_columns)
-                            .map(|_| epsilon_corrected)
+                            .map(|_| sensitivity)
                             .collect::<Vec<f64>>())
                         .flatten()
                         .collect::<Vec<f64>>())?.into())

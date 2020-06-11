@@ -16,7 +16,7 @@ impl Evaluable for proto::Union {
             .map(|(key, &value)| (key.clone(), value.clone()))
             .collect::<IndexMap<IndexKey, Value>>();
 
-        if self.flatten {
+        if !self.flatten {
             return Ok(ReleaseNode::new(data.into()))
         }
 

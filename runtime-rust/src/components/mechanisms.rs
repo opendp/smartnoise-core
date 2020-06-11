@@ -14,24 +14,24 @@ use crate::utilities::mechanisms::exponential_mechanism;
 
 impl Evaluable for proto::LaplaceMechanism {
     fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        let mut data = get_argument(arguments, "data")?.array()?.f64()?.to_owned();
+        let data = get_argument(arguments, "data")?.array()?;
+        let num_columns = data.num_columns()?;
+        let mut data = data.f64()?.to_owned();
 
         let sensitivity = get_argument(arguments, "sensitivity")?.array()?.f64()?;
 
-        let usages = spread_privacy_usage(&self.privacy_usage, sensitivity.len())?;
-
-        let epsilon = ndarray::Array::from_shape_vec(
-            data.shape(), usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?)?;
+        let usages = spread_privacy_usage(&self.privacy_usage, num_columns)?;
+        let epsilon = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
 
         data.gencolumns_mut().into_iter()
-            .zip(sensitivity.gencolumns().into_iter().zip(epsilon.gencolumns().into_iter()))
-            .map(|(mut data_column, (sensitivity, epsilon))| data_column.iter_mut()
-                .zip(sensitivity.iter().zip(epsilon.iter()))
-                .map(|(v, (sens, eps))| {
-                    *v += utilities::mechanisms::laplace_mechanism(*eps, *sens)?;
-                    Ok(())
-                })
-                .collect::<Result<()>>())
+            .zip(sensitivity.gencolumns().into_iter().zip(epsilon.into_iter()))
+            .map(|(mut data_column, (sensitivity, epsilon))|
+                data_column.iter_mut().zip(sensitivity.iter())
+                    .map(|(v, sens)| {
+                        *v += utilities::mechanisms::laplace_mechanism(epsilon, *sens)?;
+                        Ok(())
+                    })
+                    .collect::<Result<()>>())
             .collect::<Result<()>>()?;
 
         Ok(ReleaseNode {
@@ -44,26 +44,24 @@ impl Evaluable for proto::LaplaceMechanism {
 
 impl Evaluable for proto::GaussianMechanism {
     fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        let mut data = get_argument(arguments, "data")?.array()?.f64()?.to_owned();
+        let data = get_argument(arguments, "data")?.array()?;
+        let num_columns = data.num_columns()?;
+        let mut data = data.f64()?.to_owned();
 
         let sensitivity = get_argument(arguments, "sensitivity")?.array()?.f64()?;
 
-        let usages = spread_privacy_usage(&self.privacy_usage, sensitivity.len())?;
+        let usages = spread_privacy_usage(&self.privacy_usage, num_columns)?;
 
-        let epsilon = ndarray::Array::from_shape_vec(
-            data.shape(), usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?)?;
-
-        let delta = ndarray::Array::from_shape_vec(
-            data.shape(), usages.iter().map(get_delta).collect::<Result<Vec<f64>>>()?)?;
+        let epsilon = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
+        let delta = usages.iter().map(get_delta).collect::<Result<Vec<f64>>>()?;
 
         data.gencolumns_mut().into_iter()
             .zip(sensitivity.gencolumns().into_iter())
-            .zip(epsilon.gencolumns().into_iter().zip(delta.gencolumns().into_iter()))
+            .zip(epsilon.into_iter().zip(delta.into_iter()))
             .map(|((mut data_column, sensitivity), (epsilon, delta))| data_column.iter_mut()
                 .zip(sensitivity.iter())
-                .zip(epsilon.iter().zip(delta.iter()))
-                .map(|((v, sens), (eps, del))| {
-                    *v += utilities::mechanisms::gaussian_mechanism(*eps, *del, *sens)?;
+                .map(|(v, sens)| {
+                    *v += utilities::mechanisms::gaussian_mechanism(epsilon, delta, *sens)?;
                     Ok(())
                 }).collect::<Result<()>>())
             .collect::<Result<()>>()?;
@@ -78,13 +76,14 @@ impl Evaluable for proto::GaussianMechanism {
 
 impl Evaluable for proto::SimpleGeometricMechanism {
     fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        let mut data = get_argument(arguments, "data")?.array()?.i64()?.clone();
+        let data = get_argument(arguments, "data")?.array()?;
+        let num_columns = data.num_columns()?;
+        let mut data = data.i64()?.to_owned();
 
         let sensitivity = get_argument(arguments, "sensitivity")?.array()?.f64()?;
 
-        let usages = spread_privacy_usage(&self.privacy_usage, sensitivity.len())?;
-        let epsilon = ndarray::Array::from_shape_vec(
-            data.shape(), usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?)?;
+        let usages = spread_privacy_usage(&self.privacy_usage, num_columns)?;
+        let epsilon = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
 
         let lower = broadcast_ndarray(
             get_argument(arguments, "lower")?.array()?.i64()?, data.shape())?;
@@ -93,14 +92,14 @@ impl Evaluable for proto::SimpleGeometricMechanism {
             get_argument(arguments, "upper")?.array()?.i64()?, data.shape())?;
 
         data.gencolumns_mut().into_iter()
-            .zip(sensitivity.gencolumns().into_iter().zip(epsilon.gencolumns().into_iter()))
+            .zip(sensitivity.gencolumns().into_iter().zip(epsilon.into_iter()))
             .zip(lower.gencolumns().into_iter().zip(upper.gencolumns().into_iter()))
             .map(|((mut data_column, (sensitivity, epsilon)), (lower, upper))| data_column.iter_mut()
-                .zip(sensitivity.iter().zip(epsilon.iter()))
+                .zip(sensitivity.iter())
                 .zip(lower.iter().zip(upper.iter()))
-                .map(|((v, (sens, eps)), (c_min, c_max))| {
+                .map(|((v, sens), (c_min, c_max))| {
                     *v += utilities::mechanisms::simple_geometric_mechanism(
-                        *eps, *sens, *c_min, *c_max, self.enforce_constant_time)?;
+                        epsilon, *sens, *c_min, *c_max, self.enforce_constant_time)?;
                     Ok(())
                 })
                 .collect::<Result<()>>())

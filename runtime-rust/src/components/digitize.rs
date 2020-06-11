@@ -16,7 +16,7 @@ impl Evaluable for proto::Digitize {
         let data = get_argument(arguments, "data")?.array()?;
         let edges = get_argument(arguments, "edges")?.jagged()?;
         let null = get_argument(arguments, "null_value")?.array()?.i64()?;
-        let num_columns = data.num_columns()?;
+        let num_columns = data.num_columns()? as i64;
 
         Ok(ReleaseNode::new(match (data, edges) {
             (Array::F64(data), Jagged::F64(edges)) =>

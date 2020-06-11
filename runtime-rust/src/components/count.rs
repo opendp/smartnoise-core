@@ -32,7 +32,7 @@ impl Evaluable for proto::Count {
                     Array::Str(data) => count(data)?.into()
                 },
                 Value::Indexmap(indexmap) => match indexmap.get_index(0) {
-                    Some(value) => arr0(value.1.array()?.num_records()?).into_dyn().into(),
+                    Some(value) => arr0(value.1.array()?.num_records()? as i64).into_dyn().into(),
                     None => return Err("indexmap may not be empty".into())
                 },
                 Value::Jagged(_) => return Err("Count is not implemented on Jagged arrays".into()),

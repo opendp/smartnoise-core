@@ -42,8 +42,8 @@ impl Named for proto::Literal {
         release: Option<&Value>
     ) -> Result<Vec<String>> {
 
-        fn array_to_names<T: ToString + Clone + Default>(array: &ArrayD<T>, num_columns: i64) -> Result<Vec<String>> {
-            (0..num_columns as usize)
+        fn array_to_names<T: ToString + Clone + Default>(array: &ArrayD<T>, num_columns: usize) -> Result<Vec<String>> {
+            (0..num_columns)
                 .map(|index| {
                     let array = get_ith_column(array, &index)?;
                     match array.ndim() {

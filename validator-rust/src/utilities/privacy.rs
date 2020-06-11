@@ -420,7 +420,6 @@ pub fn spread_privacy_usage(usages: &[proto::PrivacyUsage], length: usize) -> Re
 }
 
 pub fn get_group_id_path(arguments: Vec<Vec<GroupId>>) -> Result<Vec<GroupId>> {
-    println!("group id path: {:?}", arguments);
     let partition_depth = get_common_value(&arguments.iter()
         .map(|group_ids| group_ids.len())
         .collect())

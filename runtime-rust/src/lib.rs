@@ -188,10 +188,11 @@ pub fn release(
             .map(|(name, node_id)| (name, &release.get(&node_id).unwrap().value))
             .collect::<IndexMap<IndexKey, &Value>>();
 
-        println!("node id:    {:?}", component_id);
-        println!("component:  {:?}", component.variant);
-        println!("arguments:  {:?}", node_arguments);
-        println!("properties: {:?}", expansion.properties);
+        // println!("node id:    {:?}", component_id);
+        // println!("component:  {:?}", component.variant);
+        // println!("arguments:  {:?}", node_arguments);
+        // println!("properties: {:?}", expansion.properties);
+
         // evaluate the component using the Evaluable trait, which is implemented on the proto::component::Variant enum
         let mut evaluation = component.clone().variant
             .ok_or_else(|| Error::from("variant of component must be known"))?
