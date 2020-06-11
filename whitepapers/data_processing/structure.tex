@@ -23,6 +23,7 @@
 \usepackage{hyperref}
 \usepackage{comment}
 \usepackage{amsmath}
+\usepackage{amssymb}
 \usepackage{bbm}
 \usepackage{algpseudocode, algorithm, algorithmicx}
 \usepackage[toc,page]{appendix}
@@ -119,3 +120,9 @@
 \DeclareMathOperator*{\E}{\mathbbm{E}}
 \DeclareMathOperator*{\Z}{\mathbbm{Z}}
 \DeclareMathOperator*{\R}{\mathbbm{R}}
+
+\newtheorem{theorem}{Theorem}
+
+
+\newcommand{\AuthorNote}[2]{{\color{red} {\textbf [[ #1:} #2 {\textbf ]]}}}
+\newcommand{\cnote}[1]{\AuthorNote{Christian}{#1}}
