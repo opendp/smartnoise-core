@@ -371,10 +371,14 @@ pub fn expand_component(
     };
 
     for (k, v) in &public_arguments {
-        // this if should be redundant, no private data should be passed to the validator
-        if v.public {
-            properties.insert(k.clone(), utilities::inference::infer_property(&v.value, None)?);
+        if !v.public {
+            return Err("private data should not be sent to the validator".into())
         }
+        properties.insert(k.clone(),
+                          utilities::inference::infer_property(
+                              &v.value,
+                              properties.get(k),
+                              None)?);
     }
 
     let component = component

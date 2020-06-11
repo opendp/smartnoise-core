@@ -72,7 +72,6 @@ pub fn clamp_numeric_float(
     let mut data = data.clone();
 
     let num_columns = get_num_columns(&data)?;
-    println!("{:?}", data);
 
     // iterate over the generalized columns
     data.gencolumns_mut().into_iter()

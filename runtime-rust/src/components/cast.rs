@@ -72,7 +72,6 @@ pub fn cast_bool(data: &Array, positive: &Array) -> Result<ArrayD<bool>> {
 /// # Return
 /// Data cast to `f64`.
 pub fn cast_f64(data: &Array) -> Result<ArrayD<f64>> {
-    println!("float cast {:?}", data);
     Ok(match data {
         Array::Str(data) => data.mapv(|v| match v.parse::<f64>() {
             Ok(v) => v, Err(_) => std::f64::NAN

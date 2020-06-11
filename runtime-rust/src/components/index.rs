@@ -24,7 +24,6 @@ impl Evaluable for proto::Index {
             Value::Indexmap(dataframe) => {
                 let column_names = if let Ok(names) = get_argument(arguments, "names") {
                     dimensionality = names.array()?.shape().len() + 1;
-                    println!("\n\n{:?}\n{:?}\n\n", names, dimensionality);
                     match names.array()? {
                         Array::Str(names) => to_name_vec(names)?
                              .into_iter().map(IndexKey::from).collect(),
@@ -85,8 +84,6 @@ impl Evaluable for proto::Index {
         let is_partition = get_argument(arguments, "is_partition")
             .map(|v| v.clone())
             .unwrap_or(false.into()).first_bool()?;
-
-        println!("is partition: {:?}", is_partition);
 
         // remove trailing singleton axis if a zero-dimensional index set was passed
         match &mut indexed {

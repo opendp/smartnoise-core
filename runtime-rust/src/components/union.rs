@@ -12,7 +12,6 @@ use indexmap::map::IndexMap;
 
 impl Evaluable for proto::Union {
     fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
-
         let data = arguments.into_iter()
             .map(|(key, &value)| (key.clone(), value.clone()))
             .collect::<IndexMap<IndexKey, Value>>();

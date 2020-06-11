@@ -1,9 +1,6 @@
 {
-  "arguments": {
-    "**kwargs": {
-      "description": "All arguments are passed through to the component. Partitioned Indexmap arguments are mapped, and other arguments are broadcast."
-    }
-  },
+  "any_argument": true,
+  "arguments": {},
   "id": "Map",
   "name": "map",
   "options": {

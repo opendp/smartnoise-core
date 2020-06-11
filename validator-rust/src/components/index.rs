@@ -79,6 +79,7 @@ impl Component for proto::Index {
                         let last_idx = part_properties.group_id.len() - 1;
                         part_properties.group_id.get_mut(last_idx)
                             .map(|v| v.index = Some(partition_key));
+
                         return Ok(Warnable::new(ValueProperties::Array(part_properties)))
                     }
                 }

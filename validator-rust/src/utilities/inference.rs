@@ -202,7 +202,7 @@ pub fn infer_c_stability(value: &Array) -> Result<Vec<f64>> {
     Ok((0..value.num_columns()?).map(|_| 1.).collect())
 }
 
-pub fn infer_property(value: &Value, dataset_id: Option<i64>) -> Result<ValueProperties> {
+pub fn infer_property(value: &Value, prior_property: Option<&ValueProperties>, dataset_id: Option<i64>) -> Result<ValueProperties> {
     Ok(match value {
         Value::Array(array) => ArrayProperties {
             nullity: infer_nullity(&value)?,
@@ -226,16 +226,30 @@ pub fn infer_property(value: &Value, dataset_id: Option<i64>) -> Result<ValuePro
                 Array::Str(array) => array.len(),
             } != 0,
             dimensionality: Some(array.shape().len() as i64),
-            group_id: vec![]
+            group_id: match prior_property {
+                Some(prior_property) => prior_property.array()?.group_id.clone(),
+                None => Vec::new()
+            }
         }.into(),
         Value::Indexmap(indexmap) => {
-            IndexmapProperties {
-                variant: proto::indexmap_properties::Variant::Dataframe,
-                properties: indexmap.iter()
-                    .map(|(name, value)| infer_property(value, dataset_id)
-                        .map(|v| (name.clone(), v)))
-                    .collect::<Result<IndexMap<IndexKey, ValueProperties>>>()?.into(),
-            }.into()
+            match prior_property {
+                Some(prior_property) => IndexmapProperties {
+                    variant: proto::indexmap_properties::Variant::Dataframe,
+                    properties: indexmap.iter()
+                        .zip(prior_property.indexmap()?.properties.values())
+                        .map(|((name, value), prop)|
+                            infer_property(value, Some(prop), dataset_id)
+                                .map(|v| (name.clone(), v)))
+                        .collect::<Result<IndexMap<IndexKey, ValueProperties>>>()?.into(),
+                }.into(),
+                None => IndexmapProperties {
+                    variant: proto::indexmap_properties::Variant::Dataframe,
+                    properties: indexmap.iter()
+                        .map(|(name, value)| infer_property(value, None, dataset_id)
+                            .map(|v| (name.clone(), v)))
+                        .collect::<Result<IndexMap<IndexKey, ValueProperties>>>()?.into(),
+                }.into()
+            }
         }
         Value::Jagged(jagged) => JaggedProperties {
             num_records: Some(jagged.num_records()),

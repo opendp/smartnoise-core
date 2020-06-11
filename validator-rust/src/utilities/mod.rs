@@ -94,7 +94,11 @@ pub fn propagate_properties(
     // infer properties on public evaluations
     graph_properties.extend(release.iter()
         .filter(|(_, release_node)| release_node.public)
-        .map(|(node_id, release_node)| Ok((*node_id, infer_property(&release_node.value, Some(*node_id as i64))?)))
+        .map(|(node_id, release_node)|
+            Ok((*node_id, infer_property(
+                &release_node.value,
+                graph_properties.get(node_id),
+                Some(*node_id as i64))?)))
         .collect::<Result<HashMap<u32, ValueProperties>>>()?);
 
     let mut maximum_id = graph.keys().cloned()
@@ -159,7 +163,10 @@ pub fn propagate_properties(
             // if node has already been evaluated, infer properties directly from the public data
             Some(release_node) => {
                 if release_node.public {
-                    Ok(Warnable(infer_property(&release_node.value, Some(node_id as i64))?, vec![]))
+                    Ok(Warnable(infer_property(
+                        &release_node.value,
+                        graph_properties.get(&node_id),
+                        Some(node_id as i64))?, vec![]))
                 } else {
                     graph.get(&node_id).unwrap()
                         .propagate_property(
@@ -589,6 +596,20 @@ pub fn get_common_value<T: Clone + Eq>(values: &Vec<T>) -> Option<T> {
     if values.windows(2).all(|w| w[0] == w[1]) {
         values.first().cloned()
     } else { None }
+}
+
+
+pub fn get_dependents(graph: &HashMap<u32, proto::Component>) -> HashMap<u32, HashSet<u32>> {
+    let mut dependents = HashMap::<u32, HashSet<u32>>::new();
+    graph.iter().for_each(|(node_id, component)| {
+        component.arguments().values().for_each(|source_node_id| {
+            dependents
+                .entry(*source_node_id)
+                .or_insert_with(HashSet::<u32>::new)
+                .insert(*node_id);
+        })
+    });
+    dependents
 }
 
 pub fn deduplicate<T: Eq + Hash + Ord + Clone>(values: Vec<T>) -> Vec<T> {

@@ -5,21 +5,8 @@ use std::cmp::Ordering;
 use crate::proto;
 use crate::base::{ValueProperties, Release, Value, GroupId, IndexKey};
 use crate::components::Mechanism;
-use crate::utilities::{get_input_properties, get_common_value};
+use crate::utilities::{get_input_properties, get_common_value, get_dependents};
 
-
-fn get_dependents(graph: &HashMap<u32, proto::Component>) -> HashMap<u32, HashSet<u32>> {
-    let mut dependents = HashMap::<u32, HashSet<u32>>::new();
-    graph.iter().for_each(|(node_id, component)| {
-        component.arguments().values().for_each(|source_node_id| {
-            dependents
-                .entry(*source_node_id)
-                .or_insert_with(HashSet::<u32>::new)
-                .insert(*node_id);
-        })
-    });
-    dependents
-}
 
 fn compute_batch_privacy_usage(
     privacy_usages: Vec<&proto::PrivacyUsage>
@@ -433,6 +420,7 @@ pub fn spread_privacy_usage(usages: &[proto::PrivacyUsage], length: usize) -> Re
 }
 
 pub fn get_group_id_path(arguments: Vec<Vec<GroupId>>) -> Result<Vec<GroupId>> {
+    println!("group id path: {:?}", arguments);
     let partition_depth = get_common_value(&arguments.iter()
         .map(|group_ids| group_ids.len())
         .collect())

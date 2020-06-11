@@ -20,7 +20,7 @@ use std::vec::Vec;
 
 use whitenoise_validator::base::{Value, ReleaseNode, Release, IndexKey};
 use whitenoise_validator::utilities::serial::{parse_release, serialize_release_node, serialize_error, serialize_index_key};
-use whitenoise_validator::utilities::{get_sinks, get_input_properties};
+use whitenoise_validator::utilities::{get_sinks, get_input_properties, get_dependents};
 
 use crate::components::Evaluable;
 
@@ -83,12 +83,7 @@ pub fn release(
     let original_ids: HashSet<u32> = HashSet::from_iter(release.keys().cloned());
 
     // track node parents. Each key is a node id, and the value is the set of node ids that use it
-    let mut parents = HashMap::<u32, HashSet<u32>>::new();
-    graph.iter().for_each(|(node_id, component)| {
-        component.arguments().values().for_each(|source_node_id| {
-            parents.entry(*source_node_id).or_insert_with(HashSet::<u32>::new).insert(*node_id);
-        })
-    });
+    let mut parents = get_dependents(&graph);
 
     // evaluate components until the traversal is empty
     while !traversal.is_empty() {
@@ -160,14 +155,15 @@ pub fn release(
                     descendants.insert(descendant);
                 }
                 traversal = traversal.into_iter()
-                    .filter(|v| !descendants.contains(v)).collect();
+                    .filter(|v| !descendants.contains(v))
+                    .collect();
                 continue
             }
         };
 
         // extend the runtime state with the expansion
         graph.extend(expansion.computation_graph.clone());
-        graph_properties.extend(expansion.properties);
+        graph_properties.extend(expansion.properties.clone());
         release.extend(parse_release(proto::Release{values: expansion.releases}));
         traversal.extend(expansion.traversal.clone());
 
@@ -176,6 +172,8 @@ pub fn release(
 
         // if nodes were added to the traversal, then evaluate the new nodes first
         if !expansion.traversal.is_empty() {
+            // TODO: this could be more optimized
+            parents = get_dependents(&graph);
             continue;
         }
 
@@ -193,12 +191,13 @@ pub fn release(
         println!("node id:    {:?}", component_id);
         println!("component:  {:?}", component.variant);
         println!("arguments:  {:?}", node_arguments);
+        println!("properties: {:?}", expansion.properties);
         // evaluate the component using the Evaluable trait, which is implemented on the proto::component::Variant enum
         let mut evaluation = component.clone().variant
             .ok_or_else(|| Error::from("variant of component must be known"))?
             .evaluate(&privacy_definition, &node_arguments)?;
 
-        println!("evaluation: {:?}", evaluation);
+        // println!("evaluation: {:?}", evaluation);
 
         evaluation.public = match graph_properties.get(&component_id) {
             Some(property) => match property.variant.clone().unwrap() {
@@ -216,18 +215,19 @@ pub fn release(
         if filter_level != proto::FilterLevel::All {
             // prune evaluations from the release. Private nodes that have no unevaluated parents do not need be stored anymore
             for argument_node_id in component.arguments().values() {
-                if let Some(parent_node_ids) = parents.get_mut(argument_node_id) {
+                let no_parents = if let Some(parent_node_ids) = parents.get_mut(argument_node_id) {
                     parent_node_ids.remove(&component_id);
 
-                    let no_parents = parent_node_ids.len() == 0;
-                    let must_include = filter_level == proto::FilterLevel::PublicAndPrior && original_ids.contains(argument_node_id);
-                    let is_public = release.get(argument_node_id).map(|v| v.public).unwrap_or(false);
-                    let is_omitted = graph.get(argument_node_id).map(|v| v.omit).unwrap_or(true);
+                    parent_node_ids.len() == 0
+                } else {true};
 
-                    // remove argument node from release
-                    if no_parents && ((!must_include && !is_public) || is_omitted) {
-                        release.remove(argument_node_id);
-                    }
+                let must_include = filter_level == proto::FilterLevel::PublicAndPrior && original_ids.contains(argument_node_id);
+                let is_public = release.get(argument_node_id).map(|v| v.public).unwrap_or(false);
+                let is_omitted = graph.get(argument_node_id).map(|v| v.omit).unwrap_or(true);
+
+                // remove argument node from release
+                if no_parents && ((!must_include && !is_public) || is_omitted) {
+                    release.remove(argument_node_id);
                 }
             }
         }

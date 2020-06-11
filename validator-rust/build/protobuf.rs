@@ -47,7 +47,7 @@ message Component {
     let proto_text_messages = components.iter()
         .map(|component| {
 
-            println!("component {:?}", component);
+            println!("{:?}", component);
             // code gen for options
             let text_options = component.options.iter().enumerate().map(|(id, (name, spec))| {
                 format!("{}\n    {} {} = {};",

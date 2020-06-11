@@ -35,6 +35,8 @@ impl Component for proto::Union {
             _ => None
         });
 
+        println!("union props {:?}", array_props);
+
         Ok(Warnable::new(if self.flatten {
             ValueProperties::Array(ArrayProperties {
                 num_records,
