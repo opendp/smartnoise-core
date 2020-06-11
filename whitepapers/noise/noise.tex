@@ -120,7 +120,7 @@ Let's first show that this procedure gives the correct expectation:
 		 &= \sum_{i=1}^{\infty} b_i \cdot \frac{1}{2^i} \\
 		 &= \sum_{i=1}^{\infty}\frac{b_i}{2^i}.
 \end{align*}
-This is consistent with the statement in Algorithm~\ref{alg:biasing_a_coin}, so we know that
+This is consistent with the statement in Algorithm~\ref{alg:biasing_a_coin_theory}, so we know that
 the process returns bits with the correct bias.
 In terms of efficiency, we know that we can stop coin flipping once we get a heads,
 so that part of the algorithm has $\E(\# flips) = 2$ because the probability of getting a heads 
