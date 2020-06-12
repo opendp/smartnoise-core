@@ -70,7 +70,7 @@ message ValueProperties {
 
 // derived properties for the Value::Indexmap type
 message IndexmapProperties {
-    IndexmapValueProperties value_properties = 1;
+    IndexmapValueProperties children = 1;
     enum Variant {
         DATAFRAME = 0;
         PARTITION = 1;

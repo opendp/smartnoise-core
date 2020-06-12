@@ -42,7 +42,7 @@ impl Component for proto::Resize {
 
             let num_columns = num_columns.first_i64()?;
             if num_columns < 1 {
-                return Err("n must be greater than zero".into());
+                return Err("number_columns must be greater than zero".into());
             }
             data_property.num_columns = Some(num_columns);
             data_property.nature = None;
@@ -53,7 +53,7 @@ impl Component for proto::Resize {
         if let Some(num_records) = public_arguments.get::<IndexKey>(&"number_rows".into()) {
             let num_records = num_records.first_i64()?;
             if num_records < 1 {
-                return Err("n must be greater than zero".into());
+                return Err("number_rows must be greater than zero".into());
             }
 
             data_property.num_records = Some(num_records);
@@ -64,7 +64,7 @@ impl Component for proto::Resize {
             if minimum_rows.first_i64()? > 0 {
                 data_property.is_not_empty = true;
             } else {
-                return Err("minimum number of records must be greater than zero".into())
+                return Err("minimum_rows must be greater than zero".into())
             }
         }
 

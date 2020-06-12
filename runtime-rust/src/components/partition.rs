@@ -1,9 +1,9 @@
 use whitenoise_validator::errors::*;
 
 use crate::NodeArguments;
-use whitenoise_validator::base::{Array, ReleaseNode, Value, Jagged, IndexKey};
-use whitenoise_validator::utilities::get_argument;
-use whitenoise_validator::components::partition::even_split_lengths;
+use whitenoise_validator::base::{Array, ReleaseNode, Value, IndexKey};
+use whitenoise_validator::utilities::{get_argument, get_common_value};
+use whitenoise_validator::components::partition::{even_split_lengths, make_dense_partition_keys};
 use crate::components::Evaluable;
 use ndarray::{ArrayD, Axis};
 
@@ -11,47 +11,39 @@ use whitenoise_validator::proto;
 
 use whitenoise_validator::utilities::array::slow_select;
 use indexmap::map::IndexMap;
-use std::hash::Hash;
 
 
 impl Evaluable for proto::Partition {
     fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        let data = get_argument(arguments, "data")?.array()?;
+        let data = get_argument(arguments, "data")?;
         Ok(ReleaseNode::new(match arguments.get::<IndexKey>(&"by".into()) {
-            Some(by) => match (by.array()?, get_argument(arguments, "categories")?.jagged()?) {
-                (Array::I64(by), Jagged::I64(categories)) =>
-                    Value::Indexmap(partition_by(data, &by, categories.get(0).ok_or_else(|| "categories may not be empty")?)?
-                        .into_iter().map(|(k, v)| (IndexKey::from(k), v)).collect()),
-                (Array::Bool(by), Jagged::Bool(categories)) =>
-                    Value::Indexmap(partition_by(data, &by, categories.get(0).ok_or_else(|| "categories may not be empty")?)?
-                        .into_iter().map(|(k, v)| (IndexKey::from(k), v)).collect()),
-                (Array::Str(by), Jagged::Str(categories)) =>
-                    Value::Indexmap(partition_by(data, &by, categories.get(0).ok_or_else(|| "categories may not be empty")?)?
-                        .into_iter().map(|(k, v)| (IndexKey::from(k), v)).collect()),
-                _ => return Err("by and categories must share the same type".into())
+            Some(by) => {
+                let categories = get_argument(arguments, "categories")?.jagged()?;
+                let partitions = make_dense_partition_keys(
+                    categories, Some(by.array()?.shape().len() as i64))?;
+
+                match by.array()? {
+                    Array::I64(by) =>
+                        Value::Indexmap(partition_by(data, by.mapv(IndexKey::from), partitions)?),
+                    Array::Bool(by) =>
+                        Value::Indexmap(partition_by(data, by.mapv(IndexKey::from), partitions)?),
+                    Array::Str(by) =>
+                        Value::Indexmap(partition_by(data, by.mapv(IndexKey::from), partitions)?),
+                    _ => return Err("by and categories must share the same type".into())
+                }
             },
             None => {
                 let num_partitions = get_argument(arguments, "num_partitions")?
                     .array()?.first_i64()?;
 
-                match data {
-                    Array::F64(data) =>
-                        Value::Indexmap(partition_evenly(data, num_partitions).into_iter()
-                            .map(|(idx, data)| (idx, data.into())).collect::<IndexMap<IndexKey, Value>>()),
-                    Array::I64(data) =>
-                        Value::Indexmap(partition_evenly(data, num_partitions).into_iter()
-                            .map(|(idx, data)| (idx, data.into())).collect::<IndexMap<IndexKey, Value>>()),
-                    Array::Bool(data) =>
-                        Value::Indexmap(partition_evenly(data, num_partitions).into_iter()
-                            .map(|(idx, data)| (idx, data.into())).collect::<IndexMap<IndexKey, Value>>()),
-                    Array::Str(data) =>
-                        Value::Indexmap(partition_evenly(data, num_partitions).into_iter()
-                            .map(|(idx, data)| (idx, data.into())).collect::<IndexMap<IndexKey, Value>>()),
-                }
+                Value::Indexmap(partition_evenly(data, num_partitions)?)
             }
         }))
     }
 }
+
+// to make the nested indexmaps more readable
+type ColName = IndexKey;
 
 /// Partitions data evenly into num_partitions partitions
 ///
@@ -67,15 +59,15 @@ impl Evaluable for proto::Partition {
 /// # Example
 /// ```
 /// use ndarray::{ArrayD, arr1, arr2};
-/// use whitenoise_runtime::components::partition::partition_evenly;
+/// use whitenoise_runtime::components::partition::partition_ndarray_evenly;
 ///
 /// let data = arr2(&[ [1, 2], [4, 5], [7, 8], [10, 11] ]).into_dyn();
-/// let partitioned = partition_evenly(&data, 3);
+/// let partitioned = partition_ndarray_evenly(&data, 3);
 /// assert_eq!(partitioned.get(&0).unwrap().clone(), arr2(&[ [1, 2], [4, 5] ]).into_dyn());
 /// assert_eq!(partitioned.get(&1).unwrap().clone(), arr2(&[ [7, 8] ]).into_dyn());
 /// assert_eq!(partitioned.get(&2).unwrap().clone(), arr2(&[ [10, 11] ]).into_dyn());
 /// ```
-pub fn partition_evenly<T: Clone + Default + std::fmt::Debug>(
+pub fn partition_ndarray_evenly<T: Clone + Default + std::fmt::Debug>(
     data: &ArrayD<T>, num_partitions: i64
 ) -> IndexMap<IndexKey, ArrayD<T>> {
 
@@ -94,30 +86,103 @@ pub fn partition_evenly<T: Clone + Default + std::fmt::Debug>(
         .collect::<IndexMap<IndexKey, ArrayD<T>>>()
 }
 
-pub fn partition_by<T: Clone + Hash + Eq>(
-    data: &Array, by: &ArrayD<T>, categories: &Vec<T>
-) -> Result<IndexMap<T, Value>> {
-    let mut indices = categories.iter()
-        .map(|cat| (cat.clone(), vec![]))
-        .collect::<IndexMap<T, Vec<usize>>>();
+pub fn partition_evenly(data: &Value, num_partitions: i64) -> Result<IndexMap<IndexKey, Value>> {
+    Ok(match data {
+        Value::Indexmap(data) => {
 
-    by.clone()
-        .into_dimensionality::<ndarray::Ix1>()?.iter().enumerate()
+            let columnar_partitions = data.into_iter()
+                .map(|(k, v)| Ok((
+                    k.clone(),
+                    partition_evenly(v, num_partitions)?
+                )))
+                .collect::<Result<IndexMap<ColName, IndexMap<IndexKey, Value>>>>()?;
+
+            let number_rows: usize = get_common_value(&data.values()
+                .map(|v| v.array()?.num_records())
+                .collect::<Result<Vec<usize>>>()?)
+                .ok_or_else(|| Error::from("columns of a dataframe must share the same length"))?;
+
+            even_split_lengths(number_rows as i64, num_partitions).into_iter()
+                .map(|idx| IndexKey::from(idx as i64))
+                .map(|idx| (
+                    idx.clone(),
+                    Value::Indexmap(columnar_partitions.iter().map(|(colname, partitions)|
+                        (colname.clone(), partitions.get(&idx).unwrap().clone())
+                    ).collect::<IndexMap<ColName, Value>>())
+                ))
+                .collect::<IndexMap<IndexKey, Value>>()
+        },
+        Value::Array(data) => match data {
+            Array::F64(data) =>
+                partition_ndarray_evenly(data, num_partitions).into_iter()
+                    .map(|(idx, data)| (idx, data.into())).collect::<IndexMap<IndexKey, Value>>(),
+            Array::I64(data) =>
+                partition_ndarray_evenly(data, num_partitions).into_iter()
+                    .map(|(idx, data)| (idx, data.into())).collect::<IndexMap<IndexKey, Value>>(),
+            Array::Bool(data) =>
+                partition_ndarray_evenly(data, num_partitions).into_iter()
+                    .map(|(idx, data)| (idx, data.into())).collect::<IndexMap<IndexKey, Value>>(),
+            Array::Str(data) =>
+                partition_ndarray_evenly(data, num_partitions).into_iter()
+                    .map(|(idx, data)| (idx, data.into())).collect::<IndexMap<IndexKey, Value>>(),
+        },
+        _ => return Err("data: must be a dataframe or array".into())
+    })
+
+}
+
+pub fn partition_by(
+    data: &Value, by: ArrayD<IndexKey>, partition_keys: Vec<IndexKey>
+) -> Result<IndexMap<IndexKey, Value>> {
+
+    let mut indices = partition_keys.into_iter()
+        .map(|key| (key, vec![]))
+        .collect::<IndexMap<IndexKey, Vec<usize>>>();
+
+    match by.ndim() {
+        0 => return Err("by: invalid dimensionality".into()),
+        1 => by.into_dimensionality::<ndarray::Ix1>()?,
+        _ => by.genrows().into_iter().map(|row| IndexKey::Tuple(row.to_vec())).collect()
+    }
+        .into_iter().enumerate()
         .for_each(|(idx, cat)| indices.entry(cat.clone())
             .or_insert_with(Vec::new).push(idx));
 
-    Ok(match data {
-        Array::I64(data) => indices.into_iter()
-            .map(|(cat, idxs)| (cat, data.select(ndarray::Axis(0), &idxs).into()))
-            .collect::<IndexMap<T, Value>>(),
-        Array::F64(data) => indices.into_iter()
-            .map(|(cat, idxs)| (cat, data.select(ndarray::Axis(0), &idxs).into()))
-            .collect::<IndexMap<T, Value>>(),
-        Array::Bool(data) => indices.into_iter()
-            .map(|(cat, idxs)| (cat, data.select(ndarray::Axis(0), &idxs).into()))
-            .collect::<IndexMap<T, Value>>(),
-        Array::Str(data) => indices.into_iter()
-            .map(|(cat, idxs)| (cat, slow_select(data, ndarray::Axis(0), &idxs).into()))
-            .collect::<IndexMap<T, Value>>()
-    })
+    // partition either an array or a dataframe
+    fn value_partitioner(data: &Value, indices: &IndexMap<IndexKey, Vec<usize>>) -> Result<IndexMap<IndexKey, Value>> {
+        Ok(match data {
+            Value::Array(data) => match data {
+                Array::I64(data) => indices.into_iter()
+                    .map(|(cat, idxs)| (cat.clone(), data.select(ndarray::Axis(0), idxs).into()))
+                    .collect::<IndexMap<IndexKey, Value>>(),
+                Array::F64(data) => indices.into_iter()
+                    .map(|(cat, idxs)| (cat.clone(), data.select(ndarray::Axis(0), idxs).into()))
+                    .collect::<IndexMap<IndexKey, Value>>(),
+                Array::Bool(data) => indices.into_iter()
+                    .map(|(cat, idxs)| (cat.clone(), data.select(ndarray::Axis(0), idxs).into()))
+                    .collect::<IndexMap<IndexKey, Value>>(),
+                Array::Str(data) => indices.into_iter()
+                    .map(|(cat, idxs)| (cat.clone(), slow_select(&data, ndarray::Axis(0), idxs).into()))
+                    .collect::<IndexMap<IndexKey, Value>>()
+            },
+
+            Value::Indexmap(data) => {
+                let columnar_partitions = data.into_iter().map(|(k, v)|
+                    Ok((k.clone(), value_partitioner(v, indices)?)))
+                    .collect::<Result<IndexMap<ColName, IndexMap<IndexKey, Value>>>>()?;
+
+                indices.iter()
+                    .map(|(cat, _)| (
+                        cat.clone(),
+                        Value::Indexmap(columnar_partitions.iter().map(|(colname, partitions)|
+                            (colname.clone(), partitions.get(&cat.clone()).unwrap().clone())
+                        ).collect::<IndexMap<ColName, Value>>())
+                    ))
+                    .collect::<IndexMap<IndexKey, Value>>()
+            },
+            _ => return Err("data: must be a dataframe or array".into())
+        })
+    };
+
+    value_partitioner(data, &indices)
 }

@@ -115,16 +115,6 @@ impl PartialEq for Array {
     }
 }
 
-impl From<IndexKey> for Array {
-    fn from(index: IndexKey) -> Self {
-        match index {
-            IndexKey::Str(v) => Array::Str(arr0(v).into_dyn()),
-            IndexKey::Bool(v) => Array::Bool(arr0(v).into_dyn()),
-            IndexKey::I64(v) => Array::I64(arr0(v).into_dyn()),
-        }
-    }
-}
-
 // build Value from other types with .into()
 impl From<bool> for Value {
     fn from(value: bool) -> Self {
@@ -147,16 +137,6 @@ impl From<i64> for Value {
 impl From<String> for Value {
     fn from(value: String) -> Self {
         Value::Array(Array::Str(arr0(value).into_dyn()))
-    }
-}
-
-impl From<IndexKey> for Value {
-    fn from(value: IndexKey) -> Self {
-        match value {
-            IndexKey::Str(v) => v.into(),
-            IndexKey::Bool(v) => v.into(),
-            IndexKey::I64(v) => v.into()
-        }
     }
 }
 
@@ -480,6 +460,24 @@ impl Jagged {
             Jagged::Str(_) => DataType::Str,
         }
     }
+
+    pub fn to_index_keys(&self) -> Result<Vec<Vec<IndexKey>>> {
+        Ok(match self {
+            Jagged::Bool(categories) =>
+                categories.into_iter()
+                    .map(|col| col.into_iter().cloned()
+                        .map(IndexKey::from).collect()).collect::<Vec<Vec<IndexKey>>>(),
+            Jagged::Str(categories) =>
+                categories.into_iter()
+                    .map(|col| col.into_iter().cloned()
+                        .map(IndexKey::from).collect()).collect(),
+            Jagged::I64(categories) =>
+                categories.into_iter()
+                    .map(|col| col.into_iter().cloned()
+                        .map(IndexKey::from).collect()).collect(),
+            _ => return Err("partitioning based on floats is not supported".into())
+        })
+    }
 }
 
 
@@ -570,7 +568,7 @@ impl From<JaggedProperties> for ValueProperties {
 #[derive(Clone, Debug)]
 pub struct IndexmapProperties {
     /// properties for each of the values in the indexmap
-    pub properties: IndexMap<IndexKey, ValueProperties>,
+    pub children: IndexMap<IndexKey, ValueProperties>,
     /// denote if the value is a Dataframe or Partition
     pub variant: proto::indexmap_properties::Variant,
 }
@@ -591,12 +589,12 @@ impl IndexmapProperties {
     pub fn num_records(&self) -> Result<Option<i64>> {
         match self.variant {
             proto::indexmap_properties::Variant::Dataframe =>
-                get_common_value(&self.properties.values()
+                get_common_value(&self.children.values()
                     .map(|v| Ok(v.array()?.num_records))
                     .collect::<Result<Vec<Option<i64>>>>()?)
                     .ok_or_else(|| "dataframe columns must share the same number of rows".into()),
             proto::indexmap_properties::Variant::Partition =>
-                Ok(self.properties.values()
+                Ok(self.children.values()
                     .map(|v: &ValueProperties| match v {
                         ValueProperties::Indexmap(v) => v.num_records(),
                         ValueProperties::Array(v) => Ok(v.num_records),
@@ -611,7 +609,7 @@ impl IndexmapProperties {
     }
 
     pub fn from_values(&self, values: Vec<ValueProperties>) -> IndexMap<IndexKey, ValueProperties> {
-        self.properties.keys().cloned()
+        self.children.keys().cloned()
             .zip(values).collect::<IndexMap<base::IndexKey, ValueProperties>>().into()
     }
 }
@@ -892,6 +890,7 @@ pub enum IndexKey {
     Str(String),
     I64(i64),
     Bool(bool),
+    Tuple(Vec<IndexKey>)
 }
 
 impl ToString for IndexKey {
@@ -899,7 +898,10 @@ impl ToString for IndexKey {
         match self {
             IndexKey::Str(v) => v.to_string(),
             IndexKey::I64(v) => v.to_string(),
-            IndexKey::Bool(v) => v.to_string()
+            IndexKey::Bool(v) => v.to_string(),
+            IndexKey::Tuple(v) => format!("({:?})", v.iter()
+                .map(|v| v.to_string())
+                .collect::<Vec<String>>().join(", "))
         }
     }
 }

@@ -187,7 +187,7 @@ pub fn parse_indexmap_value_properties(value: proto::IndexmapValueProperties) ->
 
 pub fn parse_indexmap_properties(value: proto::IndexmapProperties) -> IndexmapProperties {
     IndexmapProperties {
-        properties: parse_indexmap_value_properties(value.value_properties.unwrap()),
+        children: parse_indexmap_value_properties(value.children.unwrap()),
         variant: proto::indexmap_properties::Variant::from_i32(value.variant).unwrap(),
     }
 }
@@ -197,6 +197,7 @@ pub fn parse_index_key(value: proto::IndexKey) -> base::IndexKey {
         proto::index_key::Key::Str(key) => base::IndexKey::Str(key),
         proto::index_key::Key::Bool(key) => base::IndexKey::Bool(key),
         proto::index_key::Key::I64(key) => base::IndexKey::I64(key),
+        proto::index_key::Key::Tuple(key) => base::IndexKey::Tuple(key.values.into_iter().map(parse_index_key).collect())
     }
 }
 
@@ -475,9 +476,9 @@ pub fn serialize_indexmap_value_properties(value: IndexMap<IndexKey, ValueProper
 
 pub fn serialize_indexmap_properties(value: IndexmapProperties) -> proto::IndexmapProperties {
     proto::IndexmapProperties {
-        value_properties: Some(proto::IndexmapValueProperties {
-            keys: value.properties.keys().cloned().map(serialize_index_key).collect(),
-            values: value.properties.values().cloned().map(serialize_value_properties).collect()
+        children: Some(proto::IndexmapValueProperties {
+            keys: value.children.keys().cloned().map(serialize_index_key).collect(),
+            values: value.children.values().cloned().map(serialize_value_properties).collect()
         }),
         variant: value.variant as i32
     }
@@ -489,6 +490,10 @@ pub fn serialize_index_key(value: base::IndexKey) -> proto::IndexKey {
             base::IndexKey::Str(key) => proto::index_key::Key::Str(key),
             base::IndexKey::Bool(key) => proto::index_key::Key::Bool(key),
             base::IndexKey::I64(key) => proto::index_key::Key::I64(key),
+            base::IndexKey::Tuple(key) =>
+                proto::index_key::Key::Tuple(proto::index_key::Tuple {
+                    values: key.into_iter().map(serialize_index_key).collect()
+                })
         })
     }
 }

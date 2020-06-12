@@ -235,8 +235,8 @@ pub fn infer_property(value: &Value, prior_property: Option<&ValueProperties>, d
             match prior_property {
                 Some(prior_property) => IndexmapProperties {
                     variant: proto::indexmap_properties::Variant::Dataframe,
-                    properties: indexmap.iter()
-                        .zip(prior_property.indexmap()?.properties.values())
+                    children: indexmap.iter()
+                        .zip(prior_property.indexmap()?.children.values())
                         .map(|((name, value), prop)|
                             infer_property(value, Some(prop), dataset_id)
                                 .map(|v| (name.clone(), v)))
@@ -244,7 +244,7 @@ pub fn infer_property(value: &Value, prior_property: Option<&ValueProperties>, d
                 }.into(),
                 None => IndexmapProperties {
                     variant: proto::indexmap_properties::Variant::Dataframe,
-                    properties: indexmap.iter()
+                    children: indexmap.iter()
                         .map(|(name, value)| infer_property(value, None, dataset_id)
                             .map(|v| (name.clone(), v)))
                         .collect::<Result<IndexMap<IndexKey, ValueProperties>>>()?.into(),

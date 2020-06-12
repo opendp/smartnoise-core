@@ -104,8 +104,8 @@ mod test_bindings {
         analysis.mean(col_a).build();
 
         analysis.count(col_a).build();
-        println!("graph {:?}", analysis.components);
-        println!("release {:?}", analysis.release);
+        // println!("graph {:?}", analysis.components);
+        // println!("release {:?}", analysis.release);
         Ok(())
     }
 

@@ -9,6 +9,7 @@ use crate::components::{Component, Expandable};
 use crate::base::{IndexKey, Value, Jagged, ValueProperties, IndexmapProperties, ArrayProperties, NodeProperties};
 use crate::utilities::{prepend, get_literal};
 use indexmap::map::IndexMap;
+use itertools::Itertools;
 
 
 impl Component for proto::Partition {
@@ -19,41 +20,40 @@ impl Component for proto::Partition {
         properties: &base::NodeProperties,
         node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
-        let mut data_property = properties.get::<IndexKey>(&"data".into())
-            .ok_or("data: missing")?.array()
-            .map_err(prepend("data:"))?.clone();
+        let data_property = properties.get::<IndexKey>(&"data".into())
+            .ok_or("data: missing")?.clone();
 
         Ok(ValueProperties::Indexmap(match properties.get::<IndexKey>(&"by".into()) {
+
+            // propagate properties when partitioning "by" some array
             Some(by_property) => {
+                // TODO: pass non-homogeneously typed keys via indexmap (needs merge component)
                 let by_property = by_property.array()
                     .map_err(prepend("by:"))?.clone();
-                let by_num_columns = by_property.num_columns
+                by_property.num_columns
                     .ok_or_else(|| Error::from("number of columns must be known on by"))?;
-                if by_num_columns != 1 {
-                    return Err("Partition's by argument must contain a single column".into());
-                }
                 let categories = by_property.categories()
                     .map_err(prepend("by:"))?;
-                data_property.num_records = None;
+
+                let partition_keys = make_dense_partition_keys(&categories, by_property.dimensionality)?;
 
                 IndexmapProperties {
-                    properties: match categories {
-                        Jagged::Bool(categories) => broadcast_partitions(&categories, &data_property, node_id)?
-                            .into_iter().map(|(k, v)| (k.into(), v)).collect(),
-                        Jagged::Str(categories) => broadcast_partitions(&categories, &data_property, node_id)?
-                            .into_iter().map(|(k, v)| (k.into(), v)).collect(),
-                        Jagged::I64(categories) => broadcast_partitions(&categories, &data_property, node_id)?
-                            .into_iter().map(|(k, v)| (k.into(), v)).collect(),
-                        _ => return Err("partitioning based on floats is not supported".into())
-                    },
+                    children: broadcast_partitions(partition_keys, &data_property, node_id)?,
                     variant: proto::indexmap_properties::Variant::Partition,
                 }
             }
+
+            // propagate properties when partitioning evenly
             None => {
                 let num_partitions = public_arguments.get::<IndexKey>(&"num_partitions".into())
                     .ok_or("num_partitions or by must be passed to Partition")?.array()?.first_i64()?;
 
-                let lengths = match data_property.num_records {
+                let num_records = match &data_property {
+                    ValueProperties::Array(data_property) => data_property.num_records,
+                    ValueProperties::Indexmap(data_property) => data_property.num_records()?,
+                    _ => return Err("data: must be a dataframe or array".into())
+                };
+                let lengths = match num_records {
                     Some(num_records) => even_split_lengths(num_records, num_partitions)
                         .into_iter().map(Some).collect(),
                     None => (0..num_partitions)
@@ -62,16 +62,12 @@ impl Component for proto::Partition {
                 };
 
                 IndexmapProperties {
-                    properties: lengths.iter().enumerate().map(|(index, partition_num_records)| {
-                        let mut partition_property = data_property.clone();
-                        partition_property.num_records = *partition_num_records;
-                        partition_property.group_id.push(base::GroupId {
-                            partition_id: node_id,
-                            index: None
-                        });
-                        partition_property.dataset_id = Some(node_id as i64);
-                        (IndexKey::from(index as i64), ValueProperties::Array(partition_property))
-                    }).collect::<IndexMap<IndexKey, ValueProperties>>(),
+                    children: lengths.iter().enumerate()
+                        .map(|(index, partition_num_records)| Ok((
+                            IndexKey::from(index as i64),
+                            get_partition_properties(&data_property, partition_num_records.clone(), node_id)?
+                        )))
+                        .collect::<Result<IndexMap<IndexKey, ValueProperties>>>()?,
                     variant: proto::indexmap_properties::Variant::Partition,
                 }
             }
@@ -118,28 +114,72 @@ impl Expandable for proto::Partition {
     }
 }
 
+pub fn broadcast_partitions(
+    partition_keys: Vec<IndexKey>, properties: &ValueProperties, node_id: u32
+) -> Result<IndexMap<IndexKey, ValueProperties>> {
+    // create dense partitioning
+    partition_keys.into_iter()
+        .map(|v| Ok((v, get_partition_properties(properties, None, node_id)?)))
+        .collect()
+}
+
+fn get_partition_properties(
+    properties: &ValueProperties, num_records: Option<i64>, node_id: u32
+) -> Result<ValueProperties> {
+
+    let update_array_properties = |mut properties: ArrayProperties| -> ArrayProperties {
+        // update properties
+        properties.group_id.push(base::GroupId {
+            partition_id: node_id,
+            index: None
+        });
+        properties.num_records = num_records;
+        properties.dataset_id = Some(node_id as i64);
+        properties.is_not_empty = num_records.unwrap_or(0) != 0;
+
+        properties
+    };
+
+    Ok(match properties {
+        ValueProperties::Array(properties) => ValueProperties::Array(update_array_properties(properties.clone())),
+        ValueProperties::Indexmap(properties) => {
+            if properties.variant != proto::indexmap_properties::Variant::Dataframe {
+                return Err("data: indexmap must be dataframe".into())
+            }
+            let mut properties = properties.clone();
+            properties.children.values_mut()
+                .map(|v| {
+                    *v = ValueProperties::Array(update_array_properties(v.array()?.clone()));
+                    Ok(())
+                })
+                .collect::<Result<()>>()?;
+            ValueProperties::Indexmap(properties)
+        }
+        _ => return Err("data: must be a dataframe or array".into())
+    })
+}
+
+pub fn make_dense_partition_keys(categories: &Jagged, dimensionality: Option<i64>) -> Result<Vec<IndexKey>> {
+    let categories = categories.to_index_keys()?;
+
+    // TODO: sparse partitioning component
+    Ok(match dimensionality {
+        Some(0) => return Err("categories: must be defined for at least one column".into()),
+        Some(1) => {
+            if categories.len() != 1 {
+                return Err("categories: must be defined for exactly one column".into())
+            }
+            categories[0].clone()
+        }
+        _ => categories.clone().into_iter().multi_cartesian_product()
+            .map(IndexKey::Tuple).collect()
+    })
+}
+
 pub fn even_split_lengths(num_records: i64, num_partitions: i64) -> Vec<i64> {
     (0..num_partitions)
         .map(|index| num_records / num_partitions + (if index >= (num_records % num_partitions) { 0 } else { 1 }))
         .collect()
-}
-
-pub fn broadcast_partitions<T: Clone + Eq + std::hash::Hash + Ord>(
-    categories: &[Vec<T>], properties: &ArrayProperties, node_id: u32
-) -> Result<IndexMap<T, ValueProperties>> {
-    if categories.len() != 1 {
-        return Err("categories: must be defined for one column".into());
-    }
-    let mut properties = properties.clone();
-    properties.group_id.push(base::GroupId {
-        partition_id: node_id,
-        index: None
-    });
-    properties.dataset_id = Some(node_id as i64);
-    let partitions = categories[0].clone();
-    Ok(partitions.into_iter()
-        .map(|v| (v, ValueProperties::Array(properties.clone())))
-        .collect())
 }
 
 

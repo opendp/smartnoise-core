@@ -27,6 +27,7 @@ use crate::components::Evaluable;
 use itertools::Itertools;
 use std::iter::FromIterator;
 use indexmap::map::IndexMap;
+use crate::base::is_public;
 
 
 pub type NodeArguments<'a> = IndexMap<IndexKey, &'a Value>;
@@ -200,15 +201,9 @@ pub fn release(
 
         // println!("evaluation: {:?}", evaluation);
 
-        evaluation.public = match graph_properties.get(&component_id) {
-            Some(property) => match property.variant.clone().unwrap() {
-                proto::value_properties::Variant::Array(v) => v.releasable,
-                proto::value_properties::Variant::Jagged(v) => v.releasable,
-                proto::value_properties::Variant::Indexmap(_) => false,
-                proto::value_properties::Variant::Function(v) => v.releasable
-            },
-            None => false
-        };
+        evaluation.public = graph_properties.get(&component_id)
+            .map(is_public)
+            .unwrap_or(false);
 
         // store the evaluated `Value` enum in the release
         release.insert(component_id, evaluation);

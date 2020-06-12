@@ -23,7 +23,7 @@ impl Component for proto::Count {
             ValueProperties::Array(data_property) => data_property,
             ValueProperties::Indexmap(data_property) => {
                 data_property.assert_is_dataframe()?;
-                data_property.properties.get_index(0)
+                data_property.children.get_index(0)
                     .ok_or_else(|| Error::from("dataframe must have at least one column"))?
                     .1.array()?.to_owned()
             },
@@ -55,7 +55,7 @@ impl Component for proto::Count {
                 value.assert_is_dataframe()?;
 
                 // overall c_stability is the maximal c_stability of any column
-                vec![value.properties.values()
+                vec![value.children.values()
                     .map(|v| v.array().map(|v| v.c_stability.clone()))
                     .collect::<Result<Vec<Vec<f64>>>>()?.into_iter()
                     .flatten()
@@ -107,7 +107,7 @@ impl Sensitivity for proto::Count {
                 value.assert_is_dataframe()?;
 
                 // overall c_stability is the maximal c_stability of any column
-                let c_stability = value.properties.values()
+                let c_stability = value.children.values()
                     .map(|v| v.array().map(|v| v.c_stability.clone()))
                     .collect::<Result<Vec<Vec<f64>>>>()?.into_iter()
                     .flatten()

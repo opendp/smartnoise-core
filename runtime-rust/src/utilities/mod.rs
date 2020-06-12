@@ -193,7 +193,7 @@ pub fn get_bytes(n_bytes: usize) -> String {
     }
 
     // combine binary representations into single string and subset mantissa
-    let binary_string = new_buffer.join("");
+    let binary_string = new_buffer.concat();
 
     return binary_string;
 }
@@ -219,7 +219,7 @@ pub fn f64_to_binary(num: &f64) -> String {
     let exponent_string = format!("{:011b}", exponent);
 
     // join component strings
-    let binary_string = vec![sign_string, exponent_string, mantissa_string].join("");
+    let binary_string = vec![sign_string, exponent_string, mantissa_string].concat();
 
     // return string representation
     return binary_string;
@@ -281,7 +281,7 @@ pub fn split_ieee_into_components(binary_string: &String) -> (String, String, St
 /// # Return
 /// Concatenation of sign, exponent, and mantissa.
 pub fn combine_components_into_ieee(sign: &str, exponent: &str, mantissa: &str) -> String {
-    return vec![sign, exponent, mantissa].join("");
+    return vec![sign, exponent, mantissa].concat();
 }
 
 /// Samples a single element from a set according to provided weights.

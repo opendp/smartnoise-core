@@ -3,8 +3,17 @@
     "data": {
       "type_value": "Indexmap"
     },
-    "columns": {
-      "type_value": "Array"
+    "names": {
+      "type_value": "Array",
+      "default_python": "None"
+    },
+    "indices": {
+      "type_value": "Array",
+      "default_python": "None"
+    },
+    "mask": {
+      "type_value": "Array",
+      "default_python": "None"
     }
   },
   "id": "Index",

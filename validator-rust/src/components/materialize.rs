@@ -19,7 +19,7 @@ impl Component for proto::Materialize {
         let column_names = self.get_names(public_arguments, &IndexMap::new(), None)?;
 
         Ok(ValueProperties::Indexmap(IndexmapProperties {
-            properties: column_names.into_iter()
+            children: column_names.into_iter()
                 .map(|name| (name.into(), ValueProperties::Array(ArrayProperties {
                     num_records: None,
                     num_columns: Some(1),

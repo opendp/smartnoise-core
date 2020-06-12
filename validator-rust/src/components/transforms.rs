@@ -9,8 +9,9 @@ use crate::utilities::{prepend};
 use crate::components::{Component};
 
 use crate::base::{IndexKey, Value, NatureContinuous};
-use num::{CheckedAdd, CheckedSub};
+use num::{CheckedAdd, CheckedSub, Zero};
 use indexmap::map::IndexMap;
+use std::ops::{Mul, Div};
 
 
 impl Component for proto::Abs {
@@ -119,13 +120,13 @@ impl Component for proto::Add {
                 str: Some(Box::new(|l: &String, r: &String| Ok(format!("{}{}", l, r)))),
                 bool: None,
             }, &OptimizeBinaryOperators {
-                f64: Some(Box::new(|bounds| Ok((
+                f64: Some(&|bounds| Ok((
                     bounds.left_lower.and_then(|lmin| bounds.right_lower.and_then(|rmin|
                         Some(lmin + rmin))),
                     bounds.left_upper.and_then(|lmax| bounds.right_upper.and_then(|rmax|
                         Some(lmax + rmax))),
-                )))),
-                i64: Some(Box::new(|bounds| Ok((
+                ))),
+                i64: Some(&|bounds| Ok((
                     match (bounds.left_lower, bounds.right_lower) {
                         (Some(lmin), Some(rmin)) => Some(lmin.checked_add(rmin)
                             .ok_or_else(|| Error::from("addition may result in underflow or overflow"))?),
@@ -135,7 +136,7 @@ impl Component for proto::Add {
                         (Some(lmax), Some(rmax)) => Some(lmax.checked_add(rmax)
                             .ok_or_else(|| Error::from("addition may result in underflow or overflow"))?),
                         _ => None
-                    }))))
+                    })))
             }, &num_columns)?,
             c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
@@ -259,6 +260,86 @@ impl Component for proto::Divide {
             _ => true
         };
 
+        // minimize and maximize b / e when a <= b <= c and d <= e <= f
+        fn optimize<T: PartialOrd + Div<Output=T> + Zero + Copy>(
+            a: T, c: T, d: T, f: T
+        ) -> Result<(Option<T>, Option<T>)> {
+
+            let zero = T::zero();
+            // maximize {b * d | a <= b <= c && d <= e <= f}
+            let max = match (a, c, d, f) {
+
+                // if either interval is a point
+                (a, c, d, f) if a == c || d == f =>
+                    Some(c / f),
+
+                // if both intervals are not points
+                (a, c, d, f) if a > zero && a < c && ((f == zero && d < zero) && (d < f && f < zero)) =>
+                    Some(a / d),
+                (a, c, d, f) if d > zero && d < f && c > zero && a < c =>
+                    Some(c / d),
+                (a, c, d, f) if (a < c || c > zero) && d < f && f < zero && (a <= zero || c <= zero) =>
+                    Some(a / f),
+                (a, c, d, f) if f > zero && a < c && c <= zero && (d == zero || (d >= zero && d < f)) =>
+                    Some(c / f),
+
+                _ => return Err("potential division by zero".into())
+            };
+
+            // minimize {b * d | a <= b <= c && d <= e <= f}
+            let min = match (a, c, d, f) {
+                // if either interval is a point
+                (a, c, d, f) if a == c || d == f =>
+                    Some(a / d),
+
+                // if both intervals are not points
+                (a, c, d, f) if zero < d && d < f && (a < zero || c <= zero) && (a < c && c > zero) =>
+                    Some(a / d),
+                (a, c, d, f) if a < c && c <= zero && ((f == zero && d < zero) || (d < f && f < zero)) =>
+                    Some(c / d),
+                (a, c, d, f) if (d == zero || (zero < d && d < f)) && zero < a && a < c && f > zero =>
+                    Some(a / f),
+                (a, c, d, f) if f < zero && d < f && c > zero && a < c =>
+                    Some(c / f),
+
+                _ => return Err("potential division by zero".into())
+            };
+            Ok((min, max))
+        }
+
+        fn optimize_wrapper<T: PartialOrd + Div<Output=T> + Zero + Copy>(
+            bounds: BinaryBounds<T>
+        ) -> Result<(Option<T>, Option<T>)> {
+
+            let a = match bounds.left_lower {
+                Some(v) => v,
+                None => return Ok((None, None))
+            }.clone();
+            let c = match bounds.left_upper {
+                Some(v) => v,
+                None => return Ok((None, None))
+            }.clone();
+            let d = match bounds.right_lower {
+                Some(v) => v,
+                None => {
+                    if bounds.right_upper.map(|v| v >= T::zero()).unwrap_or(true) {
+                        return Err("potential division by zero".into())
+                    }
+                    return Ok((None, None))
+                }
+            }.clone();
+            let f = match bounds.right_upper {
+                Some(v) => v,
+                None => {
+                    if bounds.right_lower.map(|v| v <= T::zero()).unwrap_or(true) {
+                        return Err("potential division by zero".into())
+                    }
+                    return Ok((None, None))
+                }
+            }.clone();
+            optimize(a, c, d, f)
+        }
+
         Ok(ValueProperties::Array(ArrayProperties {
             nullity: left_property.nullity || right_property.nullity || float_denominator_may_span_zero,
             releasable: left_property.releasable && right_property.releasable,
@@ -275,76 +356,9 @@ impl Component for proto::Divide {
                 str: None,
                 bool: None,
             }, &OptimizeBinaryOperators {
-                f64: Some(Box::new(|bounds| {
-                    let a = match bounds.left_lower {
-                        Some(v) => v,
-                        None => return Ok((None, None))
-                    }.clone();
-                    let c = match bounds.left_upper {
-                        Some(v) => v,
-                        None => return Ok((None, None))
-                    }.clone();
-                    let d = match bounds.right_lower {
-                        Some(v) => v,
-                        None => {
-                            if bounds.right_upper.map(|v| v >= 0.).unwrap_or(true) {
-                                return Err("potential division by zero".into())
-                            }
-                            return Ok((None, None))
-                        }
-                    }.clone();
-                    let f = match bounds.right_upper {
-                        Some(v) => v,
-                        None => {
-                            if bounds.right_lower.map(|v| v <= 0.).unwrap_or(true) {
-                                return Err("potential division by zero".into())
-                            }
-                            return Ok((None, None))
-                        }
-                    }.clone();
-
-                    // maximize {b * d | a <= b <= c && d <= e <= f}
-                    let max = match (a, c, d, f) {
-
-                        // if either interval is a point
-                        (a, c, d, f) if a == c || d == f =>
-                            Some(c * f),
-
-                        // if both intervals are not points
-                        (a, c, d, f) if a > 0. && a < c && ((f == 0. && d < 0.) && (d < f && f < 0.)) =>
-                            Some(a / d),
-                        (a, c, d, f) if d > 0. && d < f && c > 0. && a < c =>
-                            Some(c / d),
-                        (a, c, d, f) if (a < c || c > 0.) && d < f && f < 0. && (a <= 0. || c <= 0.) =>
-                            Some(a / f),
-                        (a, c, d, f) if f > 0. && a < c && c <= 0. && (d == 0. || (d >= 0. && d < f)) =>
-                            Some(c / f),
-
-                        _ => return Err("potential division by zero".into())
-                    };
-
-                    // minimize {b * d | a <= b <= c && d <= e <= f}
-                    let min = match (a, c, d, f) {
-                        // if either interval is a point
-                        (a, c, d, f) if a == c || d == f =>
-                            Some(a * d),
-
-                        // if both intervals are not points
-                        (a, c, d, f) if 0. < d && d < f && (a < 0. || c <= 0.) && (a < c && c > 0.) =>
-                            Some(a / d),
-                        (a, c, d, f) if a < c && c <= 0. && ((f == 0. && d < 0.) || (d < f && f < 0.)) =>
-                            Some(c / d),
-                        (a, c, d, f) if (d == 0. || (0. < d && d < f)) && 0. < a && a < c && f > 0. =>
-                            Some(a / f),
-                        (a, c, d, f) if f < 0. && d < f && c > 0. && a < c =>
-                            Some(c / f),
-
-                        _ => return Err("potential division by zero".into())
-                    };
-                    Ok((min, max))
-                })),
-                // multiplicative bounds propagation for ints is not implemented
-                i64: None}, &num_columns)?,
+                f64: Some(&optimize_wrapper),
+                i64: Some(&optimize_wrapper)
+            }, &num_columns)?,
             c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
                 .map(|(l, r)| l.max(r)).collect(),
@@ -571,10 +585,10 @@ impl Component for proto::Log {
                 str: None,
             },
             &OptimizeBinaryOperators {
-                f64: Some(Box::new(|_bounds| {
+                f64: Some(&|_bounds| {
                     // TODO: derive data bounds for log transform
                     Ok((None, None))
-                })),
+                }),
                 i64: None
             }, &data_property.num_columns()?)?;
 
@@ -625,7 +639,7 @@ impl Component for proto::Modulo {
                     },
                     &OptimizeBinaryOperators {
                         // TODO: this could be tighter
-                        f64: Some(Box::new(|bounds| Ok((Some(0.), *bounds.right_upper)))),
+                        f64: Some(&|bounds| Ok((Some(0.), *bounds.right_upper))),
                         i64: None
                     }, &left_property.num_columns()?)?;
             },
@@ -643,7 +657,7 @@ impl Component for proto::Modulo {
                     },
                     &OptimizeBinaryOperators {
                         f64: None,
-                        i64: Some(Box::new(|bounds| Ok((Some(0), bounds.right_upper.map(|v| v - 1).clone())))),
+                        i64: Some(&|bounds| Ok((Some(0), bounds.right_upper.map(|v| v - 1).clone()))),
                     }, &left_property.num_columns()?)?;
             },
             _ => return Err("arguments for power must be numeric and homogeneously typed".into())
@@ -684,6 +698,83 @@ impl Component for proto::Multiply {
             return Err("left and right arguments must share the same data types".into())
         }
 
+        /// compute minimum and maximum of b * e when a <= b <= c and d <= e <= f
+        fn optimize<T: PartialOrd + Mul<Output=T> + Zero + Copy>(
+            a: T, c: T, d: T, f: T
+        ) -> Result<(Option<T>, Option<T>)> {
+
+            let zero = T::zero();
+            // maximize {b * d | a <= b <= c && d <= e <= f}
+            let max = match (a, c, d, f) {
+
+                // if either interval is a point
+                (a, c, d, f) if a == c || d == f =>
+                    Some(c * f),
+
+                // if both intervals are not points
+                (a, c, d, f) if (d < zero && ((c > zero && ((f == zero && a < zero) || (a * d > c * f && f > zero && d + f >= zero))) || (a < c && f >= zero && c <= zero)))
+                    || (a < c && c <= zero && ((d < f && f < zero) || (f > zero && d + f < zero)))
+                    || (c > zero && ((d < f && f < zero && a <= zero) || (f > zero && d + f < zero && a * d <= c * f))) =>
+                    Some(a * d),
+                (a, c, d, f) if zero <= d && d < f && c <= zero && a < c =>
+                    Some(c * d),
+                (a, c, d, f) if f < zero && d < f && zero < a && a < c =>
+                    Some(a * f),
+                (a, c, d, f) if c > zero && f > zero && a < c
+                    && ((a * d >= c * f && d + f >= zero && d < zero) || (d < f && d >= zero) || (c * f < a * d && d + f < zero)) =>
+                    Some(c * f),
+
+                // Prior cases should cover all
+                _ => None
+            };
+
+            // minimize {b * d | a <= b <= c && d <= e <= f}
+            let min = match (a, c, d, f) {
+                // if either interval is a point
+                (a, c, d, f) if a == c || d == f =>
+                    Some(a * d),
+
+                // if both intervals are not points
+                (a, c, d, f) if d > zero && d < f && a > zero && a < c =>
+                    Some(a * d),
+                (a, c, d, f) if c > zero && a < c && ((f > zero && a * f > c * d && d < zero)
+                    || (d < f && f <= zero)) =>
+                    Some(c * d),
+                (a, c, d, f) if f > zero && ((c > zero && ((a < zero && (d == zero || (d >= zero && d < f)
+                    || (d <= zero && a * f <= c * d))) || (d < zero && a * f <= c * d)))
+                    || (a < c && c <= zero && (d < f || d <= zero))) =>
+                    Some(a * f),
+                (a, c, d, f) if f <= zero && d < f && c <= zero && a < c =>
+                    Some(c * f),
+
+                // Prior cases should cover all
+                _ => None
+            };
+            Ok((min, max))
+        }
+
+        fn optimize_wrapper<T: PartialOrd + Mul<Output=T> + Zero + Copy>(
+            bounds: BinaryBounds<T>
+        ) -> Result<(Option<T>, Option<T>)> {
+            let a = match bounds.left_lower {
+                Some(v) => v,
+                None => return Ok((None, None))
+            }.clone();
+            let c = match bounds.left_upper {
+                Some(v) => v,
+                None => return Ok((None, None))
+            }.clone();
+            let d = match bounds.right_lower {
+                Some(v) => v,
+                None => return Ok((None, None))
+            }.clone();
+            let f = match bounds.right_upper {
+                Some(v) => v,
+                None => return Ok((None, None))
+            }.clone();
+            optimize(a, c, d, f)
+        }
+
         Ok(ValueProperties::Array(ArrayProperties {
             nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
@@ -700,74 +791,9 @@ impl Component for proto::Multiply {
                 str: None,
                 bool: None,
             }, &OptimizeBinaryOperators {
-                f64: Some(Box::new(|bounds| {
-                    let a = match bounds.left_lower {
-                        Some(v) => v,
-                        None => return Ok((None, None))
-                    }.clone();
-                    let c = match bounds.left_upper {
-                        Some(v) => v,
-                        None => return Ok((None, None))
-                    }.clone();
-                    let d = match bounds.right_lower {
-                        Some(v) => v,
-                        None => return Ok((None, None))
-                    }.clone();
-                    let f = match bounds.right_upper {
-                        Some(v) => v,
-                        None => return Ok((None, None))
-                    }.clone();
-
-                    // maximize {b * d | a <= b <= c && d <= e <= f}
-                    let max = match (a, c, d, f) {
-
-                        // if either interval is a point
-                        (a, c, d, f) if a == c || d == f =>
-                            Some(c * f),
-
-                        // if both intervals are not points
-                        (a, c, d, f) if (d < 0. && ((c > 0. && ((f == 0. && a < 0.) || (a * d > c * f && f > 0. && d + f >= 0.))) || (a < c && f >= 0. && c <= 0.)))
-                            || (a < c && c <= 0. && ((d < f && f < 0.) || (f > 0. && d + f < 0.)))
-                            || (c > 0. && ((d < f && f < 0. && a <= 0.) || (f > 0. && d + f < 0. && a * d <= c * f))) =>
-                            Some(a * d),
-                        (a, c, d, f) if 0. <= d && d < f && c <= 0. && a < c =>
-                            Some(c * d),
-                        (a, c, d, f) if f < 0. && d < f && 0. < a && a < c =>
-                            Some(a * f),
-                        (a, c, d, f) if c > 0. && f > 0. && a < c
-                            && ((a * d >= c * f && d + f >= 0. && d < 0.) || (d < f && d >= 0.) || (c * f < a * d && d + f < 0.)) =>
-                            Some(c * f),
-
-                        // Prior cases should cover all
-                        _ => None
-                    };
-
-                    // minimize {b * d | a <= b <= c && d <= e <= f}
-                    let min = match (a, c, d, f) {
-                        // if either interval is a point
-                        (a, c, d, f) if a == c || d == f =>
-                            Some(a * d),
-
-                        // if both intervals are not points
-                        (a, c, d, f) if d > 0. && d < f && a > 0. && a < c =>
-                            Some(a * d),
-                        (a, c, d, f) if c > 0. && a < c && ((f > 0. && a * f > c * d && d < 0.)
-                            || (d < f && f <= 0.)) =>
-                            Some(c * d),
-                        (a, c, d, f) if f > 0. && ((c > 0. && ((a < 0. && (d == 0. || (d >= 0. && d < f)
-                            || (d <= 0. && a * f <= c * d))) || (d < 0. && a * f <= c * d)))
-                            || (a < c && c <= 0. && (d < f || d <= 0.))) =>
-                            Some(a * f),
-                        (a, c, d, f) if f <= 0. && d < f && c <= 0. && a < c =>
-                            Some(c * f),
-
-                        // Prior cases should cover all
-                        _ => None
-                    };
-                    Ok((min, max))
-                })),
-                // multiplicative bounds propagation for ints is not implemented
-                i64: None}, &num_columns)?,
+                f64: Some(&optimize_wrapper),
+                i64: Some(&optimize_wrapper),
+            }, &num_columns)?,
             c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
                 .map(|(l, r)| l.max(r)).collect(),
@@ -938,7 +964,7 @@ impl Component for proto::Power {
                     },
                     // TODO: derive bounds
                     &OptimizeBinaryOperators {
-                        f64: Some(Box::new(|_bounds| Ok((None, None)))),
+                        f64: Some(&|_bounds| Ok((None, None))),
                         i64: None
                     }, &data_property.num_columns()?)?;
             },
@@ -959,7 +985,7 @@ impl Component for proto::Power {
                     // TODO: derive bounds and throw error if potential overflow
                     &OptimizeBinaryOperators {
                         f64: None,
-                        i64: Some(Box::new(|_bounds| Ok((None, None)))),
+                        i64: Some(&|_bounds| Ok((None, None))),
                     }, &data_property.num_columns()?)?;
             },
             _ => return Err("arguments for power must be numeric and homogeneously typed".into())
@@ -1011,7 +1037,7 @@ impl Component for proto::RowMax {
                 str: Some(Box::new(|l: &String, r: &String| Ok(format!("{}{}", l, r)))),
                 bool: None,
             }, &OptimizeBinaryOperators {
-                f64: Some(Box::new(|bounds| Ok((
+                f64: Some(&|bounds| Ok((
                     // min
                     match (bounds.left_lower, bounds.right_lower) {
                         (Some(left_lower), Some(right_lower)) => Some(left_lower.max(*right_lower)),
@@ -1022,8 +1048,8 @@ impl Component for proto::RowMax {
                         (Some(left_upper), Some(right_upper)) => Some(left_upper.max(*right_upper)),
                         _ => None
                     }
-                )))),
-                i64: Some(Box::new(|bounds| Ok((
+                ))),
+                i64: Some(&|bounds| Ok((
                     // min
                     match (bounds.left_lower, bounds.right_lower) {
                         (Some(left_lower), Some(right_lower)) => Some(*left_lower.max(right_lower)),
@@ -1034,7 +1060,7 @@ impl Component for proto::RowMax {
                         (Some(left_upper), Some(right_upper)) => Some(*left_upper.max(right_upper)),
                         _ => None
                     }
-                ))))
+                )))
             }, &num_columns)?,
             c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
@@ -1090,7 +1116,7 @@ impl Component for proto::RowMin {
                 str: Some(Box::new(|l: &String, r: &String| Ok(format!("{}{}", l, r)))),
                 bool: None,
             }, &OptimizeBinaryOperators {
-                f64: Some(Box::new(|bounds| Ok((
+                f64: Some(&|bounds| Ok((
                     // min
                     match (bounds.left_lower, bounds.right_lower) {
                         (Some(left_lower), Some(right_lower)) => Some(left_lower.min(*right_lower)),
@@ -1101,8 +1127,8 @@ impl Component for proto::RowMin {
                         (Some(left_upper), Some(right_upper)) => Some(left_upper.min(*right_upper)),
                         _ => None
                     }
-                )))),
-                i64: Some(Box::new(|bounds| Ok((
+                ))),
+                i64: Some(&|bounds| Ok((
                     // min
                     match (bounds.left_lower, bounds.right_lower) {
                         (Some(left_lower), Some(right_lower)) => Some(*left_lower.min(right_lower)),
@@ -1113,7 +1139,7 @@ impl Component for proto::RowMin {
                         (Some(left_upper), Some(right_upper)) => Some(*left_upper.min(right_upper)),
                         _ => None
                     }
-                ))))
+                )))
             }, &num_columns)?,
             c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
@@ -1169,13 +1195,13 @@ impl Component for proto::Subtract {
                 str: None,
                 bool: None,
             }, &OptimizeBinaryOperators {
-                f64: Some(Box::new(|bounds| Ok((
+                f64: Some(&|bounds| Ok((
                     bounds.left_lower.and_then(|lmin| bounds.right_lower.and_then(|rmin|
                         Some(lmin - rmin))),
                     bounds.left_upper.and_then(|lmax| bounds.right_upper.and_then(|rmax|
                         Some(lmax - rmax))),
-                )))),
-                i64: Some(Box::new(|bounds| Ok((
+                ))),
+                i64: Some(&|bounds| Ok((
                     match (bounds.left_lower, bounds.right_lower) {
                         (Some(lmin), Some(rmin)) => Some(lmin.checked_sub(rmin)
                             .ok_or_else(|| Error::from("subtraction may result in underflow or overflow"))?),
@@ -1185,7 +1211,7 @@ impl Component for proto::Subtract {
                         (Some(lmax), Some(rmax)) => Some(lmax.checked_sub(rmax)
                             .ok_or_else(|| Error::from("subtraction may result in underflow or overflow"))?),
                         _ => None
-                    }))))
+                    })))
             }, &num_columns)?,
             c_stability: broadcast(&left_property.c_stability, &num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, &num_columns)?)
@@ -1231,13 +1257,13 @@ pub struct BinaryBounds<'a, T> {
     pub right_lower: &'a Option<T>,
     pub right_upper: &'a Option<T>,
 }
-pub struct OptimizeBinaryOperators {
-    pub f64: Option<Box<dyn Fn(BinaryBounds<f64>) -> Result<(Option<f64>, Option<f64>)>>>,
-    pub i64: Option<Box<dyn Fn(BinaryBounds<i64>) -> Result<(Option<i64>, Option<i64>)>>>,
+pub struct OptimizeBinaryOperators<'a> {
+    pub f64: Option<&'a dyn Fn(BinaryBounds<f64>) -> Result<(Option<f64>, Option<f64>)>>,
+    pub i64: Option<&'a dyn Fn(BinaryBounds<i64>) -> Result<(Option<i64>, Option<i64>)>>,
 }
 
 pub fn propagate_binary_shape(left_property: &ArrayProperties, right_property: &ArrayProperties) -> Result<(i64, Option<i64>)> {
-    if left_property.group_id != right_property.group_id {
+    if !left_property.releasable && !right_property.releasable && left_property.group_id != right_property.group_id {
         return Err("data from separate partitions may not be mixed".into())
     }
 
@@ -1358,6 +1384,9 @@ pub fn propagate_unary_nature(
     })
 }
 
+/// Given properties from two arguments,
+/// and functions to maximize intervals and perform cartesian products,
+/// infer the nature (continuous bounds, category sets) of the output data
 pub fn propagate_binary_nature(
     left_property: &ArrayProperties, right_property: &ArrayProperties,
     operator: &BinaryOperators,
@@ -1365,120 +1394,146 @@ pub fn propagate_binary_nature(
     &output_num_columns: &i64
 ) -> Result<Option<Nature>> {
 
+    let (left_nature, right_nature) = match (&left_property.nature, &right_property.nature) {
+        (Some(l), Some(r)) => (l, r),
+        _ => return Ok(None)
+    };
 
-    Ok(match (left_property.nature.clone(), right_property.nature.clone()) {
-        (Some(left_nature), Some(right_nature)) => match (left_nature, right_nature) {
-            (Nature::Continuous(left_nature), Nature::Continuous(right_nature)) => {
-                match (left_nature.lower, left_nature.upper, right_nature.lower, right_nature.upper) {
-                    (Vector1DNull::F64(lmin), Vector1DNull::F64(lmax), Vector1DNull::F64(rmin), Vector1DNull::F64(rmax)) => {
-                        let lmin = broadcast(&lmin, &output_num_columns)?;
-                        let lmax = broadcast(&lmax, &output_num_columns)?;
-                        let rmin = broadcast(&rmin, &output_num_columns)?;
-                        let rmax = broadcast(&rmax, &output_num_columns)?;
+    match (&left_nature, &right_nature) {
+        (Nature::Continuous(left_nature), Nature::Continuous(right_nature)) =>
+            propagate_binary_continuous_nature(left_nature, right_nature, optimization_operator, output_num_columns),
 
-                        let mut min = Vec::new();
-                        let mut max = Vec::new();
-                        lmin.iter().zip(lmax.iter()).zip(rmin.iter().zip(rmax.iter()))
-                            .map(|((left_min, left_max), (right_min, right_max))| {
-                                match &optimization_operator.f64 {
-                                    Some(operator) => {
-                                        let (col_min, col_max) = operator(BinaryBounds { left_lower: left_min, left_upper: left_max, right_lower: right_min, right_upper: right_max })?;
-                                        min.push(col_min);
-                                        max.push(col_max);
-                                    },
-                                    None => {
-                                        min.push(None);
-                                        max.push(None);
-                                    }
-                                }
-                                Ok(())
-                            })
-                            .collect::<Result<()>>()?;
-                        Some(Nature::Continuous(NatureContinuous { lower: Vector1DNull::F64(min), upper: Vector1DNull::F64(max)}))
-                    },
-                    (Vector1DNull::I64(lmin), Vector1DNull::I64(lmax), Vector1DNull::I64(rmin), Vector1DNull::I64(rmax)) => {
-                        let lmin = broadcast(&lmin, &output_num_columns)?;
-                        let lmax = broadcast(&lmax, &output_num_columns)?;
-                        let rmin = broadcast(&rmin, &output_num_columns)?;
-                        let rmax = broadcast(&rmax, &output_num_columns)?;
+        (Nature::Categorical(left_nature), Nature::Categorical(right_nature)) =>
+            propagate_binary_categorical_nature(left_nature, right_nature, operator, output_num_columns),
+        _ => Ok(None)
+    }
+}
 
-                        let mut min = Vec::new();
-                        let mut max = Vec::new();
-                        lmin.iter().zip(lmax.iter()).zip(rmin.iter().zip(rmax.iter()))
-                            .map(|((left_min, left_max), (right_min, right_max))| {
-                                match &optimization_operator.i64 {
-                                    Some(operator) => {
-                                        let (col_min, col_max) = operator(BinaryBounds { left_lower: left_min, left_upper: left_max, right_lower: right_min, right_upper: right_max })?;
-                                        min.push(col_min);
-                                        max.push(col_max);
-                                    },
-                                    None => {
-                                        min.push(None);
-                                        max.push(None);
-                                    }
-                                }
-                                Ok(())
-                            })
-                            .collect::<Result<()>>()?;
-                        Some(Nature::Continuous(NatureContinuous { lower: Vector1DNull::I64(min), upper: Vector1DNull::I64(max)}))
-                    },
-                    _ => return Err("continuous bounds must be numeric and homogeneously typed".into())
-                }
-            }
+fn propagate_binary_continuous_nature(
+    left_nature: &NatureContinuous, right_nature: &NatureContinuous,
+    optimization_operator: &OptimizeBinaryOperators,
+    output_num_columns: i64
+) -> Result<Option<Nature>> {
+    let NatureContinuous {
+        lower: left_lower, upper: left_upper
+    } = left_nature;
 
-            (Nature::Categorical(left_nature), Nature::Categorical(right_nature)) => Some(Nature::Categorical(NatureCategorical {
-                categories: match (left_nature.categories.standardize(&output_num_columns)?, right_nature.categories.standardize(&output_num_columns)?) {
-                    (Jagged::F64(left), Jagged::F64(right)) =>
-                        Jagged::F64(left.iter().zip(right.iter()).map(|(left, right)|
-                            match &operator.f64 {
-                                Some(operator) => Ok(left.iter()
-                                    .map(|left| right.iter()
-                                        .map(|right| operator(left, right))
-                                        .collect::<Result<Vec<_>>>())
-                                    .collect::<Result<Vec<Vec<_>>>>()?
-                                    .into_iter().flatten().collect::<Vec<_>>()),
-                                None => Err("categories cannot be propagated for floats".into()),
-                            }).collect::<Result<Vec<Vec<_>>>>()?),
-                    (Jagged::I64(left), Jagged::I64(right)) =>
-                        Jagged::I64(left.iter().zip(right.iter()).map(|(left, right)|
-                            match &operator.i64 {
-                                Some(operator) => Ok(left.iter()
-                                    .map(|left| right.iter()
-                                        .map(|right| operator(left, right))
-                                        .collect::<Result<Vec<_>>>())
-                                    .collect::<Result<Vec<Vec<_>>>>()?
-                                    .into_iter().flatten().collect::<Vec<_>>()),
-                                None => Err("categories cannot be propagated for integers".into()),
-                            }).collect::<Result<Vec<Vec<_>>>>()?),
-                    (Jagged::Bool(left), Jagged::Bool(right)) =>
-                        Jagged::Bool(left.iter().zip(right.iter()).map(|(left, right)|
-                            match &operator.bool {
-                                Some(operator) => Ok(left.iter()
-                                    .map(|left| right.iter()
-                                        .map(|right| operator(left, right))
-                                        .collect::<Result<Vec<_>>>())
-                                    .collect::<Result<Vec<Vec<_>>>>()?
-                                    .into_iter().flatten().collect::<Vec<_>>()),
-                                None => Err("categories cannot be propagated for booleans".into()),
-                            }).collect::<Result<Vec<Vec<_>>>>()?),
-                    (Jagged::Str(left), Jagged::Str(right)) =>
-                        Jagged::Str(left.iter().zip(right.iter()).map(|(left, right)|
-                            match &operator.str {
-                                Some(operator) => Ok(left.iter()
-                                    .map(|left| right.iter()
-                                        .map(|right| operator(left, right))
-                                        .collect::<Result<Vec<_>>>())
-                                    .collect::<Result<Vec<Vec<_>>>>()?
-                                    .into_iter().flatten().collect::<Vec<_>>()),
-                                None => Err("categories cannot be propagated for strings".into()),
-                            }).collect::<Result<Vec<Vec<_>>>>()?),
-                    _ => return Err("natures must be homogeneously typed".into())
-                }.deduplicate()?
-            })),
-            _ => None
+    let NatureContinuous {
+        lower: right_lower, upper: right_upper
+    } = right_nature;
+
+    Ok(match (left_lower, left_upper, right_lower, right_upper) {
+        (Vector1DNull::F64(lmin), Vector1DNull::F64(lmax), Vector1DNull::F64(rmin), Vector1DNull::F64(rmax)) => {
+            let lmin = broadcast(&lmin, &output_num_columns)?;
+            let lmax = broadcast(&lmax, &output_num_columns)?;
+            let rmin = broadcast(&rmin, &output_num_columns)?;
+            let rmax = broadcast(&rmax, &output_num_columns)?;
+
+            let mut min = Vec::new();
+            let mut max = Vec::new();
+            lmin.iter().zip(lmax.iter()).zip(rmin.iter().zip(rmax.iter()))
+                .map(|((left_min, left_max), (right_min, right_max))| {
+                    match &optimization_operator.f64 {
+                        Some(operator) => {
+                            let (col_min, col_max) = operator(BinaryBounds { left_lower: left_min, left_upper: left_max, right_lower: right_min, right_upper: right_max })?;
+                            min.push(col_min);
+                            max.push(col_max);
+                        },
+                        None => {
+                            min.push(None);
+                            max.push(None);
+                        }
+                    }
+                    Ok(())
+                })
+                .collect::<Result<()>>()?;
+            Some(Nature::Continuous(NatureContinuous { lower: Vector1DNull::F64(min), upper: Vector1DNull::F64(max)}))
         },
-        _ => None
+        (Vector1DNull::I64(lmin), Vector1DNull::I64(lmax), Vector1DNull::I64(rmin), Vector1DNull::I64(rmax)) => {
+            let lmin = broadcast(&lmin, &output_num_columns)?;
+            let lmax = broadcast(&lmax, &output_num_columns)?;
+            let rmin = broadcast(&rmin, &output_num_columns)?;
+            let rmax = broadcast(&rmax, &output_num_columns)?;
+
+            let mut min = Vec::new();
+            let mut max = Vec::new();
+            lmin.iter().zip(lmax.iter()).zip(rmin.iter().zip(rmax.iter()))
+                .map(|((left_min, left_max), (right_min, right_max))| {
+                    match &optimization_operator.i64 {
+                        Some(operator) => {
+                            let (col_min, col_max) = operator(BinaryBounds { left_lower: left_min, left_upper: left_max, right_lower: right_min, right_upper: right_max })?;
+                            min.push(col_min);
+                            max.push(col_max);
+                        },
+                        None => {
+                            min.push(None);
+                            max.push(None);
+                        }
+                    }
+                    Ok(())
+                })
+                .collect::<Result<()>>()?;
+            Some(Nature::Continuous(NatureContinuous { lower: Vector1DNull::I64(min), upper: Vector1DNull::I64(max)}))
+        },
+        _ => return Err("continuous bounds must be numeric and homogeneously typed".into())
     })
+}
+
+
+fn propagate_binary_categorical_nature(
+    left_nature: &NatureCategorical, right_nature: &NatureCategorical,
+    operator: &BinaryOperators,
+    output_num_columns: i64
+) -> Result<Option<Nature>> {
+    Ok(Some(Nature::Categorical(NatureCategorical {
+        categories: match (left_nature.categories.clone().standardize(&output_num_columns)?, right_nature.categories.clone().standardize(&output_num_columns)?) {
+            (Jagged::F64(left), Jagged::F64(right)) =>
+                Jagged::F64(left.iter().zip(right.iter()).map(|(left, right)|
+                    match &operator.f64 {
+                        Some(operator) => Ok(left.iter()
+                            .map(|left| right.iter()
+                                .map(|right| operator(left, right))
+                                .collect::<Result<Vec<_>>>())
+                            .collect::<Result<Vec<Vec<_>>>>()?
+                            .into_iter().flatten().collect::<Vec<_>>()),
+                        None => Err("categories cannot be propagated for floats".into()),
+                    }).collect::<Result<Vec<Vec<_>>>>()?),
+            (Jagged::I64(left), Jagged::I64(right)) =>
+                Jagged::I64(left.iter().zip(right.iter()).map(|(left, right)|
+                    match &operator.i64 {
+                        Some(operator) => Ok(left.iter()
+                            .map(|left| right.iter()
+                                .map(|right| operator(left, right))
+                                .collect::<Result<Vec<_>>>())
+                            .collect::<Result<Vec<Vec<_>>>>()?
+                            .into_iter().flatten().collect::<Vec<_>>()),
+                        None => Err("categories cannot be propagated for integers".into()),
+                    }).collect::<Result<Vec<Vec<_>>>>()?),
+            (Jagged::Bool(left), Jagged::Bool(right)) =>
+                Jagged::Bool(left.iter().zip(right.iter()).map(|(left, right)|
+                    match &operator.bool {
+                        Some(operator) => Ok(left.iter()
+                            .map(|left| right.iter()
+                                .map(|right| operator(left, right))
+                                .collect::<Result<Vec<_>>>())
+                            .collect::<Result<Vec<Vec<_>>>>()?
+                            .into_iter().flatten().collect::<Vec<_>>()),
+                        None => Err("categories cannot be propagated for booleans".into()),
+                    }).collect::<Result<Vec<Vec<_>>>>()?),
+            (Jagged::Str(left), Jagged::Str(right)) =>
+                Jagged::Str(left.iter().zip(right.iter()).map(|(left, right)|
+                    match &operator.str {
+                        Some(operator) => Ok(left.iter()
+                            .map(|left| right.iter()
+                                .map(|right| operator(left, right))
+                                .collect::<Result<Vec<_>>>())
+                            .collect::<Result<Vec<Vec<_>>>>()?
+                            .into_iter().flatten().collect::<Vec<_>>()),
+                        None => Err("categories cannot be propagated for strings".into()),
+                    }).collect::<Result<Vec<Vec<_>>>>()?),
+            _ => return Err("natures must be homogeneously typed".into())
+        }.deduplicate()?
+    })))
 }
 
 fn broadcast<T: Clone>(data: &[T], length: &i64) -> Result<Vec<T>> {

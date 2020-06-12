@@ -79,7 +79,7 @@ message Component {
 //            };
             let component_returns = format!("\n\n# Returns\n{}", stringify_argument((&"Value".to_string(), &component.arg_return)));
 
-            let text_component_header = doc(&Some(vec![component_description, component_arguments, component_returns].join("")), "");
+            let text_component_header = doc(&Some(vec![component_description, component_arguments, component_returns].concat()), "");
 
             format!("{}\nmessage {} {{\n{}\n}}",
                     // code gen for the header

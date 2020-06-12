@@ -54,3 +54,16 @@ pub fn evaluate_function(
         )))
         .collect::<Result<HashMap<String, Value>>>()
 }
+
+
+pub fn is_public(properties: &proto::ValueProperties) -> bool {
+    match properties.variant.as_ref().unwrap() {
+        proto::value_properties::Variant::Array(v) => v.releasable,
+        proto::value_properties::Variant::Jagged(v) => v.releasable,
+        proto::value_properties::Variant::Indexmap(v) => match &v.children {
+            Some(v) => v.values.iter().all(is_public),
+            None => true
+        },
+        proto::value_properties::Variant::Function(v) => v.releasable
+    }
+}

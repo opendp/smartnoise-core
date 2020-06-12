@@ -3,7 +3,7 @@ use crate::errors::*;
 use itertools::Itertools;
 use std::cmp::Ordering;
 use crate::proto;
-use crate::base::{ValueProperties, Release, Value, GroupId, IndexKey};
+use crate::base::{ValueProperties, Release, GroupId, IndexKey};
 use crate::components::Mechanism;
 use crate::utilities::{get_input_properties, get_common_value, get_dependents};
 
@@ -81,7 +81,10 @@ fn batch_partition<'a>(
                 let node_id = blacklist_traversal.pop().unwrap();
                 blacklist.insert(node_id);
 
-                let component = graph.get(&node_id).unwrap();
+                let component = match graph.get(&node_id) {
+                    Some(component) => component,
+                    None => continue
+                };
                 component.arguments().values()
                     .filter(|id| !blacklist.contains(id))
                     .for_each(|id| blacklist_traversal.push(*id));
@@ -189,7 +192,7 @@ pub fn compute_graph_privacy_usage(
 
     // get all node ids that are indexed by a specific category
     let get_category_indexes = |
-        category: Value,
+        category: IndexKey,
         partition_id: u32,
     | -> Result<Vec<u32>> {
 
@@ -200,10 +203,10 @@ pub fn compute_graph_privacy_usage(
 
             // for each index, check if their column name (category) is the same as the category in the signature
             .map(|index_id| Ok((
-                *index_id, category == release.get(graph.get(index_id).unwrap()
+                *index_id, category == IndexKey::new(release.get(graph.get(index_id).unwrap()
                     .arguments().get(&IndexKey::from("names"))
                     .ok_or_else(|| "names argument must be specified on an index into partitions")?)
-                    .ok_or_else(|| "names value must be defined")?.value)))
+                    .ok_or_else(|| "names value must be defined")?.value.array()?.clone())?)))
 
             // return if an error was encountered
             .collect::<Result<Vec<(u32, bool)>>>()?.iter()
@@ -280,7 +283,7 @@ pub fn compute_graph_privacy_usage(
         let partition_properties = properties.get(&partition_node_id)
             .ok_or_else(|| "partition properties must be defined")?;
 
-        partition_properties.indexmap()?.properties.keys()
+        partition_properties.indexmap()?.children.keys()
             .map(|category| get_category_indexes(category.clone().into(), partition_node_id)?.iter()
                 .map(|index_id| {
                     let (batches, partition_ids) = batch_partition(

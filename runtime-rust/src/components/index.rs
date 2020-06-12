@@ -35,7 +35,7 @@ impl Evaluable for proto::Index {
                     }
 
                 } else if let Ok(indices) = get_argument(arguments, "indices") {
-                    dimensionality = indices.array()?.shape().len();
+                    dimensionality = indices.array()?.shape().len() + 1;
                     let column_names = dataframe.keys().cloned().collect::<Vec<IndexKey>>();
                     to_name_vec(indices.array()?.i64()?)?.iter()
                         .map(|index| column_names.get(*index as usize).cloned()
@@ -58,7 +58,7 @@ impl Evaluable for proto::Index {
             Value::Array(array) => {
                 let indices = if let Ok(indices) = get_argument(arguments, "indices") {
                     let indices = indices.array()?.i64()?;
-                    dimensionality = indices.shape().len();
+                    dimensionality = indices.shape().len() + 1;
                     to_name_vec(indices)?.into_iter()
                         .map(|v| v as usize).collect()
                 } else if let Ok(mask) = get_argument(arguments, "mask") {
@@ -109,8 +109,9 @@ fn column_stack(
     column_names: &Vec<IndexKey>,
 ) -> Result<Value> {
     if column_names.len() == 1 {
-        return dataframe.get(column_names.first().unwrap()).cloned()
-            .ok_or_else(|| Error::from("the provided column name does not exist"));
+        let column_name = column_names.first().unwrap();
+        return dataframe.get(column_name).cloned()
+            .ok_or_else(|| Error::from(format!("the provided column does not exist: {:?}", column_name)));
     }
 
     fn to_2d<T>(array: ArrayD<T>) -> Result<ArrayD<T>> {
