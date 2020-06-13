@@ -42,6 +42,20 @@ impl Expandable for proto::DpCount {
         });
 
         if self.mechanism.to_lowercase().as_str() == "simplegeometric" {
+
+            let count_min_id = match component.arguments().get::<IndexKey>(&"lower".into()) {
+                Some(id) => id.clone(),
+                None => {
+                    // count_max
+                    maximum_id += 1;
+                    let id_count_min = maximum_id;
+                    let (patch_node, count_min_release) = get_literal(0.into(), &component.submission)?;
+                    computation_graph.insert(id_count_min.clone(), patch_node);
+                    releases.insert(id_count_min.clone(), count_min_release);
+                    id_count_min
+                }
+            };
+
             let count_max_id = match component.arguments().get::<IndexKey>(&"upper".into()) {
                 Some(id) => id.clone(),
                 None => {
@@ -73,8 +87,7 @@ impl Expandable for proto::DpCount {
             computation_graph.insert(component_id.clone(), proto::Component {
                 arguments: Some(proto::IndexmapNodeIds::new(indexmap![
                     "data".into() => id_count,
-                    "lower".into() => *component.arguments().get::<IndexKey>(&"lower".into())
-                        .ok_or_else(|| Error::from("lower must be provided as an argument"))?,
+                    "lower".into() => count_min_id,
                     "upper".into() => count_max_id
                 ])),
                 variant: Some(proto::component::Variant::SimpleGeometricMechanism(proto::SimpleGeometricMechanism {
@@ -85,25 +98,23 @@ impl Expandable for proto::DpCount {
                 submission: component.submission,
             });
         } else {
-            return Err("mechanism: only `SimpleGeometric` is available".into())
+            // noising
+            computation_graph.insert(component_id.clone(), proto::Component {
+                arguments: Some(proto::IndexmapNodeIds::new(
+                    indexmap!["data".into() => id_count])),
+                variant: Some(match self.mechanism.to_lowercase().as_str() {
+                    "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
+                        privacy_usage: self.privacy_usage.clone()
+                    }),
+                    "gaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
+                        privacy_usage: self.privacy_usage.clone()
+                    }),
+                    _ => panic!("Unexpected invalid token {:?}", self.mechanism.as_str()),
+                }),
+                omit: false,
+                submission: component.submission,
+            });
         }
-        // else {
-        //     // noising
-        //     computation_graph.insert(component_id.clone(), proto::Component {
-        //         arguments: hashmap!["data".to_owned() => id_count],
-        //         variant: Some(match self.mechanism.to_lowercase().as_str() {
-        //             "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
-        //                 privacy_usage: self.privacy_usage.clone()
-        //             }),
-        //             "gaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
-        //                 privacy_usage: self.privacy_usage.clone()
-        //             }),
-        //             _ => panic!("Unexpected invalid token {:?}", self.mechanism.as_str()),
-        //         }),
-        //         omit: false,
-        //         submission: component.submission,
-        //     });
-        // }
 
         Ok(proto::ComponentExpansion {
             computation_graph,

@@ -30,8 +30,9 @@ impl Component for proto::Index {
             ValueProperties::Indexmap(data_property) => {
 
                 match data_property.variant {
-                    proto::indexmap_properties::Variant::Dataframe => {
 
+
+                    proto::indexmap_properties::Variant::Dataframe => {
                         if let Some(column_names) = public_arguments.get::<IndexKey>(&"names".into()) {
                             let column_names = column_names.array()?;
                             dimensionality = Some(column_names.shape().len() as i64 + 1);
@@ -74,6 +75,8 @@ impl Component for proto::Index {
                             return Err("one of names, indices or mask must be supplied".into())
                         }
                     }
+
+                    // index into a partitional indexmap
                     proto::indexmap_properties::Variant::Partition => {
                         let names = public_arguments.get::<IndexKey>(&"names".into())
                             .ok_or_else(|| Error::from("names: missing"))?.deref().to_owned().array()?.clone();
@@ -105,6 +108,8 @@ impl Component for proto::Index {
                     }
                 }
             },
+
+
             ValueProperties::Array(data_property) => {
                 if !data_property.releasable {
                     data_property.assert_is_not_aggregated()?;

@@ -21,12 +21,12 @@ impl Expandable for proto::DpMean {
     /// * `component` - component from prototypes/components.proto
     /// * `_properties` - NodeProperties
     /// * `component_id` - identifier for component from prototypes/components.proto
-    /// * `maximum_id` - last ID value created for sequence, increement used to define current ID
+    /// * `maximum_id` - last ID value created for sequence, increment used to define current ID
     fn expand_component(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
-        _properties: &base::NodeProperties,
+        properties: &base::NodeProperties,
         component_id: &u32,
         maximum_id: &u32,
     ) -> Result<proto::ComponentExpansion> {
@@ -34,7 +34,12 @@ impl Expandable for proto::DpMean {
         let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
 
         if self.implementation.to_lowercase().as_str() == "plug-in" {
-            // mean
+
+            let num_columns = properties.get::<base::IndexKey>(&"data".into())
+                .ok_or("data: missing")?.array()
+                .map_err(prepend("data:"))?.num_columns()? as f64;
+
+            // sum
             current_id += 1;
             let id_dp_sum = current_id;
             computation_graph.insert(id_dp_sum, proto::Component {
@@ -43,13 +48,15 @@ impl Expandable for proto::DpMean {
                         .ok_or_else(|| Error::from("data must be provided as an argument"))?])),
                 variant: Some(proto::component::Variant::DpSum(proto::DpSum {
                     mechanism: self.mechanism.clone(),
-                    privacy_usage: self.privacy_usage.iter().cloned().map(|v| v / 2.)
+                    privacy_usage: self.privacy_usage.iter().cloned()
+                        .map(|v| v / (num_columns + 1.))
                         .collect::<Result<Vec<proto::PrivacyUsage>>>()?
                 })),
                 omit: true,
                 submission: component.submission,
             });
 
+            // count
             current_id += 1;
             let id_dp_count = current_id;
             computation_graph.insert(id_dp_count, proto::Component {
@@ -59,16 +66,31 @@ impl Expandable for proto::DpMean {
                 variant: Some(proto::component::Variant::DpCount(proto::DpCount {
                     distinct: false,
                     enforce_constant_time: false,
-                    mechanism: self.mechanism.clone(),
-                    privacy_usage: self.privacy_usage.iter().cloned().map(|v| v / 2.)
+                    mechanism: "SimpleGeometric".to_string(),
+                    privacy_usage: self.privacy_usage.iter().cloned()
+                        .map(|v| v * (num_columns / (num_columns + 1.)))
                         .collect::<Result<Vec<proto::PrivacyUsage>>>()?
                 })),
                 omit: true,
                 submission: component.submission,
             });
 
+            // to float
+            current_id += 1;
+            let id_to_float = current_id;
+            computation_graph.insert(id_to_float, proto::Component {
+                arguments: Some(proto::IndexmapNodeIds::new(
+                    indexmap!["data".into() => id_dp_count])),
+                variant: Some(proto::component::Variant::ToFloat(proto::ToFloat {})),
+                omit: true,
+                submission: component.submission,
+            });
+
+            // divide
             computation_graph.insert(*component_id, proto::Component {
-                arguments: Some(proto::IndexmapNodeIds::new(indexmap!["left".into() => id_dp_sum, "right".into() => id_dp_count])),
+                arguments: Some(proto::IndexmapNodeIds::new(indexmap![
+                    "left".into() => id_dp_sum,
+                    "right".into() => id_to_float])),
                 variant: Some(proto::component::Variant::Divide(proto::Divide {})),
                 omit: true,
                 submission: component.submission,

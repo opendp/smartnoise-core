@@ -12,7 +12,7 @@ use ndarray::{ArrayD, arr0, Dimension};
 use crate::utilities::{standardize_categorical_argument, deduplicate, serial, get_common_value};
 use indexmap::IndexMap;
 use crate::utilities::serial::{parse_indexmap_node_ids, serialize_index_key};
-use std::ops::{Add, Div};
+use std::ops::{Add, Div, Mul};
 
 /// The universal data representation.
 ///
@@ -910,22 +910,28 @@ impl IndexKey {
     pub fn new(array: Array) -> Result<IndexKey> {
         match array {
             Array::I64(array) => {
-                if array.len() != 1 {
-                    return Err("Value must have one element".into())
+                match array.ndim() {
+                    0 => Ok(IndexKey::I64(*array.first().unwrap())),
+                    1 => Ok(IndexKey::Tuple(array.into_dimensionality::<ndarray::Ix1>()?
+                        .to_vec().into_iter().map(IndexKey::I64).collect())),
+                    _ => Err("Indexing keys may not be created from 2+ dimensional arrays.".into())
                 }
-                Ok(IndexKey::I64(*array.first().unwrap()))
             }
             Array::Str(array) => {
-                if array.len() != 1 {
-                    return Err("Value must have one element".into())
+                match array.ndim() {
+                    0 => Ok(IndexKey::Str(array.first().unwrap().to_string())),
+                    1 => Ok(IndexKey::Tuple(array.into_dimensionality::<ndarray::Ix1>()?
+                        .to_vec().into_iter().map(IndexKey::Str).collect())),
+                    _ => Err("Indexing keys may not be created from 2+ dimensional arrays.".into())
                 }
-                Ok(IndexKey::Str(array.first().unwrap().to_string()))
             }
             Array::Bool(array) => {
-                if array.len() != 1 {
-                    return Err("Value must have one element".into())
+                match array.ndim() {
+                    0 => Ok(IndexKey::Bool(*array.first().unwrap())),
+                    1 => Ok(IndexKey::Tuple(array.into_dimensionality::<ndarray::Ix1>()?
+                        .to_vec().into_iter().map(IndexKey::Bool).collect())),
+                    _ => Err("Indexing keys may not be created from 2+ dimensional arrays.".into())
                 }
-                Ok(IndexKey::Bool(*array.first().unwrap()))
             }
             Array::F64(_) => Err("Floats may not be index keys, because they are not comparable".into())
         }
@@ -1058,6 +1064,20 @@ impl Add<proto::PrivacyUsage> for proto::PrivacyUsage {
     }
 }
 
+
+impl Mul<f64> for proto::PrivacyUsage {
+    type Output = Result<proto::PrivacyUsage>;
+
+    fn mul(mut self, rhs: f64) -> Self::Output {
+        self.distance = Some(match self.distance.ok_or_else(|| "distance must be defined")? {
+            proto::privacy_usage::Distance::Approximate(approximate) => proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
+                epsilon: approximate.epsilon * rhs,
+                delta: approximate.delta * rhs,
+            })
+        });
+        Ok(self)
+    }
+}
 
 impl Div<f64> for proto::PrivacyUsage {
     type Output = Result<proto::PrivacyUsage>;

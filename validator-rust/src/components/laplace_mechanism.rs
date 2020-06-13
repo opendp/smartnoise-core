@@ -24,6 +24,10 @@ impl Component for proto::LaplaceMechanism {
         let privacy_definition = privacy_definition.as_ref()
             .ok_or_else(|| "privacy_definition must be defined")?;
 
+        if privacy_definition.protect_floating_point {
+            return Err("Floating-point protections are enabled. The laplace mechanism is susceptible to floating-point attacks.".into())
+        }
+
         if privacy_definition.group_size == 0 {
             return Err("group size must be greater than zero".into())
         }
