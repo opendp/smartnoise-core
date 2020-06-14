@@ -301,7 +301,7 @@ impl Expandable for proto::Component {
         //         variant: Some(proto::component::Variant::Map(Box::new(proto::Map {
         //             component: Some(Box::from(component.clone()))
         //         }))),
-        //         omit: false,
+        //         omit: component.omit,
         //         submission: component.submission,
         //     };
         //     return Ok(proto::ComponentExpansion {

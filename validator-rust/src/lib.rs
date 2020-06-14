@@ -334,12 +334,17 @@ pub fn get_properties(
             .collect();
     }
 
+    // don't return all properties- only those in the original graph
+    let keep_ids = HashSet::<u32>::from_iter(analysis.computation_graph.as_ref()
+        .ok_or_else(|| Error::from("computation_graph must be defined"))?.value.keys().cloned());
+
     let (properties, warnings) = utilities::propagate_properties(
         &mut analysis, &mut release, None, true,
     )?;
 
     Ok(proto::GraphProperties {
         properties: properties.into_iter()
+            .filter(|(node_id, _)| keep_ids.contains(node_id))
             .map(|(node_id, properties)| (node_id, serialize_value_properties(properties)))
             .collect::<HashMap<u32, proto::ValueProperties>>(),
         warnings,
@@ -377,8 +382,7 @@ pub fn expand_component(
         properties.insert(k.clone(),
                           utilities::inference::infer_property(
                               &v.value,
-                              properties.get(k),
-                              None)?);
+                              properties.get(k))?);
     }
 
     let component = component

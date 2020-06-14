@@ -92,14 +92,14 @@ impl Expandable for proto::DpCovariance {
         });
 
         // reshape into matrix
-        computation_graph.insert(component_id.clone(), proto::Component {
+        computation_graph.insert(*component_id, proto::Component {
             arguments: Some(proto::IndexmapNodeIds::new(indexmap!["data".into() => id_noise])),
             variant: Some(proto::component::Variant::Reshape(proto::Reshape {
                 symmetric,
                 layout: "row".to_string(),
                 shape
             })),
-            omit: false,
+            omit: component.omit,
             submission: component.submission
         });
 

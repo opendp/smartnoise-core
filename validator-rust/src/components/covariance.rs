@@ -15,7 +15,7 @@ impl Component for proto::Covariance {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &base::NodeProperties,
-        _node_id: u32
+        node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
         if properties.contains_key(&IndexKey::from("data")) {
             let mut data_property = properties.get::<IndexKey>(&"data".into())
@@ -52,6 +52,7 @@ impl Component for proto::Covariance {
             }
             // min/max of data is not known after computing covariance
             data_property.nature = None;
+            data_property.dataset_id = Some(node_id as i64);
             Ok(ValueProperties::Array(data_property).into())
         } else if properties.contains_key::<IndexKey>(&"left".into()) && properties.contains_key::<IndexKey>(&"right".into()) {
             let mut left_property = properties.get::<IndexKey>(&"left".into())
@@ -97,7 +98,7 @@ impl Component for proto::Covariance {
 
             left_property.num_records = Some(1);
             left_property.num_columns = Some(num_columns);
-
+            left_property.dataset_id = Some(node_id as i64);
             Ok(ValueProperties::Array(left_property).into())
         } else {
             Err("either \"data\" for covariance, or \"left\" and \"right\" for cross-covariance must be supplied".into())

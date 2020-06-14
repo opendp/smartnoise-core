@@ -17,7 +17,7 @@ impl Component for proto::Histogram {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &NodeProperties,
-        _node_id: u32
+        node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
         let mut data_property = properties.get::<base::IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
@@ -53,6 +53,7 @@ impl Component for proto::Histogram {
             upper: Vector1DNull::I64((0..num_columns).map(|_| None).collect()),
         }));
         data_property.data_type = DataType::I64;
+        data_property.dataset_id = Some(node_id as i64);
 
         Ok(ValueProperties::Array(data_property).into())
     }
@@ -159,7 +160,7 @@ impl Expandable for proto::Histogram {
             (Some(_), Some(_)) => return Err("either edges or categories must be supplied".into())
         }
 
-        computation_graph.insert(component_id.clone(), component);
+        computation_graph.insert(*component_id, component);
 
         Ok(proto::ComponentExpansion {
             computation_graph,

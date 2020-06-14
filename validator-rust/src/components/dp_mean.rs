@@ -39,13 +39,15 @@ impl Expandable for proto::DpMean {
                 .ok_or("data: missing")?.array()
                 .map_err(prepend("data:"))?.num_columns()? as f64;
 
-            // sum
+            let id_data = *component.arguments().get::<base::IndexKey>(&"data".into())
+                .ok_or_else(|| Error::from("data must be provided as an argument"))?;
+
+            // dp sum
             current_id += 1;
             let id_dp_sum = current_id;
             computation_graph.insert(id_dp_sum, proto::Component {
-                arguments: Some(proto::IndexmapNodeIds::new(indexmap![
-                    "data".into() => *component.arguments().get::<base::IndexKey>(&"data".into())
-                        .ok_or_else(|| Error::from("data must be provided as an argument"))?])),
+                arguments: Some(proto::IndexmapNodeIds::new(
+                    indexmap!["data".into() => id_data])),
                 variant: Some(proto::component::Variant::DpSum(proto::DpSum {
                     mechanism: self.mechanism.clone(),
                     privacy_usage: self.privacy_usage.iter().cloned()
@@ -56,13 +58,12 @@ impl Expandable for proto::DpMean {
                 submission: component.submission,
             });
 
-            // count
+            // dp count
             current_id += 1;
             let id_dp_count = current_id;
             computation_graph.insert(id_dp_count, proto::Component {
-                arguments: Some(proto::IndexmapNodeIds::new(indexmap![
-                    "data".into() => *component.arguments().get::<IndexKey>(&"data".into())
-                        .ok_or_else(|| Error::from("data must be provided as an argument"))?])),
+                arguments: Some(proto::IndexmapNodeIds::new(
+                    indexmap!["data".into() => id_data])),
                 variant: Some(proto::component::Variant::DpCount(proto::DpCount {
                     distinct: false,
                     enforce_constant_time: false,
@@ -92,7 +93,7 @@ impl Expandable for proto::DpMean {
                     "left".into() => id_dp_sum,
                     "right".into() => id_to_float])),
                 variant: Some(proto::component::Variant::Divide(proto::Divide {})),
-                omit: true,
+                omit: component.omit,
                 submission: component.submission,
             });
 
@@ -100,7 +101,7 @@ impl Expandable for proto::DpMean {
                 computation_graph,
                 properties: HashMap::new(),
                 releases: HashMap::new(),
-                traversal: vec![id_dp_count, id_dp_sum],
+                traversal: vec![id_dp_sum, id_dp_count, id_to_float],
                 warnings: vec![]
             })
         }
@@ -119,7 +120,7 @@ impl Expandable for proto::DpMean {
             });
 
             // noising
-            computation_graph.insert(component_id.clone(), proto::Component {
+            computation_graph.insert(*component_id, proto::Component {
                 arguments: Some(proto::IndexmapNodeIds::new(indexmap!["data".into() => id_mean])),
                 variant: Some(match self.mechanism.to_lowercase().as_str() {
                     "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
@@ -130,7 +131,7 @@ impl Expandable for proto::DpMean {
                     }),
                     _ => panic!("Unexpected invalid token {:?}", self.mechanism.as_str()),
                 }),
-                omit: false,
+                omit: component.omit,
                 submission: component.submission,
             });
 

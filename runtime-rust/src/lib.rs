@@ -24,7 +24,6 @@ use whitenoise_validator::utilities::{get_sinks, get_input_properties, get_depen
 
 use crate::components::Evaluable;
 
-use itertools::Itertools;
 use std::iter::FromIterator;
 use indexmap::map::IndexMap;
 use crate::base::is_public;
@@ -75,10 +74,7 @@ pub fn release(
         release.keys().copied().collect()
     )?;
 
-    let mut maximum_id = graph.keys()
-        .fold1(std::cmp::max)
-        .map(|x| x.clone())
-        .unwrap_or(0);
+    let mut maximum_id = graph.keys().max().cloned().unwrap_or(0);
 
     // for if the filtering level is set to retain values
     let original_ids: HashSet<u32> = HashSet::from_iter(release.keys().cloned());
@@ -97,8 +93,8 @@ pub fn release(
             continue;
         }
 
-        let component: proto::Component = graph.get(&component_id)
-            .ok_or_else(|| Error::from("attempted to retrieve a non-existent component id"))?.clone();
+        let component: &proto::Component = graph.get(&component_id)
+            .ok_or_else(|| Error::from("attempted to retrieve a non-existent component id"))?;
 
         // check if any dependencies of the current node remain unevaluated
         let mut evaluable = true;
@@ -126,15 +122,15 @@ pub fn release(
             .collect::<IndexMap<&IndexKey, &ReleaseNode>>();
 
         // expand the current node
-        let expansion: proto::ComponentExpansion = match whitenoise_validator::expand_component(proto::RequestExpandComponent {
+        let mut expansion: proto::ComponentExpansion = match whitenoise_validator::expand_component(proto::RequestExpandComponent {
             privacy_definition: privacy_definition.clone(),
-            component: Some(component),
+            component: Some(component.clone()),
             properties: Some(proto::IndexmapValueProperties {
                 keys: node_properties.keys().cloned().map(serialize_index_key).collect(),
-                values: node_properties.values().cloned().collect()
+                values: node_properties.into_iter().map(|v| v.1).collect()
             }),
             arguments: Some(proto::IndexmapReleaseNode {
-                keys: public_arguments.keys().cloned().cloned().map(serialize_index_key).collect(),
+                keys: public_arguments.keys().map(|&v| serialize_index_key(v.clone())).collect(),
                 values: public_arguments.into_iter().map(|(_, v)| serialize_release_node(v.clone())).collect()
             }),
             component_id,
@@ -162,17 +158,19 @@ pub fn release(
             }
         };
 
-        // extend the runtime state with the expansion
-        graph.extend(expansion.computation_graph.clone());
-        graph_properties.extend(expansion.properties.clone());
-        release.extend(parse_release(proto::Release{values: expansion.releases}));
-        traversal.extend(expansion.traversal.clone());
+        maximum_id = expansion.computation_graph.keys()
+            .max().cloned().unwrap_or(0).max(maximum_id);
 
-        maximum_id = *expansion.computation_graph.keys()
-            .max().map(|v| v.max(&maximum_id)).unwrap_or(&maximum_id);
+        // extend the runtime state with the expansion
+        graph.extend(expansion.computation_graph);
+        graph_properties.extend(expansion.properties);
+        release.extend(parse_release(proto::Release{values: expansion.releases}));
 
         // if nodes were added to the traversal, then evaluate the new nodes first
         if !expansion.traversal.is_empty() {
+            expansion.traversal.reverse();
+            traversal.extend(expansion.traversal);
+
             // TODO: this could be more optimized
             parents = get_dependents(&graph);
             continue;
@@ -192,10 +190,9 @@ pub fn release(
         // println!("node id:    {:?}", component_id);
         // println!("component:  {:?}", component.variant);
         // println!("arguments:  {:?}", node_arguments);
-        // println!("properties: {:?}", expansion.properties);
 
         // evaluate the component using the Evaluable trait, which is implemented on the proto::component::Variant enum
-        let mut evaluation = component.clone().variant
+        let mut evaluation = component.variant.as_ref()
             .ok_or_else(|| Error::from("variant of component must be known"))?
             .evaluate(&privacy_definition, &node_arguments)?;
 
@@ -230,25 +227,23 @@ pub fn release(
     }
 
     // remove all omitted nodes (temporarily added to the graph while executing)
-    for node_id in release.keys().cloned().collect::<Vec<u32>>() {
-        if graph.get(&node_id).map(|v| v.omit).unwrap_or(true) {
-            release.remove(&node_id);
-        }
-    }
+    release.retain(|node_id, _| !graph.get(node_id)
+        .map(|v| v.omit)
+        .unwrap_or(true));
 
     // apply the filtering level to the final release
-    Ok((match filter_level {
+    match filter_level {
 
-        proto::FilterLevel::Public => release.into_iter()
-            .filter(|(_node_id, release_node)|
-                release_node.public)
-            .collect::<HashMap<u32, ReleaseNode>>(),
+        proto::FilterLevel::Public =>
+            release.retain(|_, release_node|
+                release_node.public),
 
-        proto::FilterLevel::PublicAndPrior => release.into_iter()
-            .filter(|(node_id, release_node)|
-                release_node.public || original_ids.contains(node_id))
-            .collect::<HashMap<u32, ReleaseNode>>(),
+        proto::FilterLevel::PublicAndPrior =>
+            release.retain(|node_id, release_node|
+                release_node.public || original_ids.contains(node_id)),
 
-        proto::FilterLevel::All => release,
-    }, warnings))
+        proto::FilterLevel::All => (),
+    };
+
+    Ok((release, warnings))
 }

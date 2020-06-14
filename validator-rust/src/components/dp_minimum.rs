@@ -31,7 +31,7 @@ impl Expandable for proto::DpMinimum {
                 mechanism: self.mechanism.clone(),
                 privacy_usage: self.privacy_usage.clone()
             })),
-            omit: false,
+            omit: component.omit,
             submission: component.submission,
         };
 

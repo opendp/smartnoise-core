@@ -131,7 +131,7 @@ impl Expandable for proto::ExponentialMechanism {
         let mut noise_component = component.clone();
         noise_component.insert_argument(&"sensitivity".into(), id_sensitivity);
 
-        computation_graph.insert(component_id.clone(), noise_component);
+        computation_graph.insert(*component_id, noise_component);
 
         Ok(proto::ComponentExpansion {
             computation_graph,

@@ -145,7 +145,7 @@ impl Expandable for proto::Maximum {
                 alpha: 1.,
                 interpolation: "upper".to_string()
             })),
-            omit: false,
+            omit: component.omit,
             submission: component.submission,
         };
 
@@ -174,7 +174,7 @@ impl Expandable for proto::Minimum {
                 alpha: 0.,
                 interpolation: "lower".to_string()
             })),
-            omit: false,
+            omit: component.omit,
             submission: component.submission,
         };
 

@@ -14,7 +14,7 @@ impl Component for proto::Mean {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &base::NodeProperties,
-        _node_id: u32
+        node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
         let mut data_property = properties.get::<IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
@@ -38,6 +38,7 @@ impl Component for proto::Mean {
         }
 
         data_property.num_records = Some(1);
+        data_property.dataset_id = Some(node_id as i64);
 
         Ok(ValueProperties::Array(data_property).into())
     }

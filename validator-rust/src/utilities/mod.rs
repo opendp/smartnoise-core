@@ -80,16 +80,24 @@ pub fn propagate_properties(
     analysis: &mut proto::Analysis,
     release: &mut base::Release,
     properties: Option<HashMap<u32, base::ValueProperties>>,
-    dynamic: bool,
+    dynamic: bool
 ) -> Result<(HashMap<u32, ValueProperties>, Vec<proto::Error>)> {
     let ref mut graph = analysis.computation_graph.as_mut()
         .ok_or_else(|| Error::from("computation_graph must be defined"))?.value;
     let mut traversal: Vec<u32> = get_traversal(&graph)?;
 
+
     // extend and pop from the end of the traversal
     traversal.reverse();
 
     let mut graph_properties = properties.unwrap_or_else(HashMap::new);
+
+    let mut maximum_id = graph.keys().max().cloned().unwrap_or(0);
+    // println!("maximum node id: {:?}", maximum_id);
+    // let maximum_property_id = graph_properties.keys().max().cloned().unwrap_or(0);
+    // println!("maximum property id: {:?}", maximum_property_id);
+    // let maximum_release_id = release.keys().max().cloned().unwrap_or(0);
+    // println!("maximum release id: {:?}", maximum_release_id);
 
     // infer properties on public evaluations
     graph_properties.extend(release.iter()
@@ -97,12 +105,9 @@ pub fn propagate_properties(
         .map(|(node_id, release_node)|
             Ok((*node_id, infer_property(
                 &release_node.value,
-                graph_properties.get(node_id),
-                Some(*node_id as i64))?)))
+                graph_properties.get(node_id))?)))
         .collect::<Result<HashMap<u32, ValueProperties>>>()?);
 
-    let mut maximum_id = graph.keys().cloned()
-        .fold(0, std::cmp::max);
 
     let mut failed_ids = HashSet::new();
 
@@ -118,38 +123,41 @@ pub fn propagate_properties(
             continue;
         }
 
-        let input_properties = get_input_properties(&component, &graph_properties)?;
-        let public_arguments = get_public_arguments(&component, &release)?;
-
-        let mut expansion = match (dynamic, component.clone()
+        let mut expansion = match component.clone()
             .expand_component(
                 &analysis.privacy_definition,
                 &component,
-                &input_properties,
+                &get_input_properties(&component, &graph_properties)?,
                 &node_id,
                 &maximum_id,
-            )) {
-            (_, Ok(expansion)) => expansion,
-
-            (true, Err(err)) => {
+            ) {
+            Ok(expansion) => expansion,
+            Err(err) => if dynamic {
                 failed_ids.insert(traversal.pop().unwrap());
                 warnings.push(serialize_error(err));
                 continue;
-            }
-            (false, Err(err)) => return Err(err)
+            } else { return Err(err) }
         };
 
+        maximum_id = expansion.computation_graph.keys().max().cloned()
+            .unwrap_or(0).max(maximum_id);
+
         // patch the computation graph
-        graph.extend(expansion.computation_graph.clone());
-        graph_properties.extend(expansion.properties.into_iter()
+        graph
+            .extend(expansion.computation_graph);
+
+        graph_properties
+            .extend(expansion.properties.into_iter()
             .map(|(node_id, props)| (node_id, parse_value_properties(props)))
             .collect::<HashMap<u32, ValueProperties>>());
-        release.extend(expansion.releases.into_iter()
+
+        release
+            .extend(expansion.releases.into_iter()
             .map(|(node_id, release)| (node_id, parse_release_node(release)))
             .collect::<HashMap<u32, ReleaseNode>>());
 
-        maximum_id = *expansion.computation_graph.keys().max()
-            .map(|v| v.max(&maximum_id)).unwrap_or(&maximum_id);
+        warnings
+            .extend(expansion.warnings);
 
         // if patch added nodes, extend the traversal
         if !expansion.traversal.is_empty() {
@@ -159,33 +167,25 @@ pub fn propagate_properties(
         }
         traversal.pop();
 
-        let propagation_result = match release.get(&node_id) {
-            // if node has already been evaluated, infer properties directly from the public data
-            Some(release_node) => {
-                if release_node.public {
-                    Ok(Warnable(infer_property(
-                        &release_node.value,
-                        graph_properties.get(&node_id),
-                        Some(node_id as i64))?, vec![]))
-                } else {
-                    graph.get(&node_id).unwrap()
-                        .propagate_property(
-                            &analysis.privacy_definition, &public_arguments, &input_properties, node_id)
-                        .chain_err(|| format!("at node_id {:?}", node_id))
-                }
-            }
-
+        let release_node = release.get(&node_id);
+        let propagation_result = if release_node.map(|release_node| release_node.public).unwrap_or(false) {
+            // if node has already been evaluated and is public, infer properties directly from the public data
+            Ok(Warnable(infer_property(
+                &release_node.unwrap().value,
+                graph_properties.get(&node_id))?, vec![]))
+        } else {
             // if node has not been evaluated, propagate properties over it
-            None => {
-                graph.get(&node_id).unwrap()
-                    .propagate_property(
-                        &analysis.privacy_definition, &public_arguments, &input_properties, node_id)
-                    .chain_err(|| format!("at node_id {:?}", node_id))
-            }
+            graph.get(&node_id).unwrap()
+                .propagate_property(
+                    &analysis.privacy_definition,
+                    &get_public_arguments(&component, &release)?,
+                    &get_input_properties(&component, &graph_properties)?,
+                    node_id)
+                .chain_err(|| format!("at node_id {:?}", node_id))
         };
 
-        let component_properties = match (dynamic, propagation_result) {
-            (_, Ok(propagation_result)) => {
+        let component_properties = match propagation_result {
+            Ok(propagation_result) => {
                 let Warnable(component_properties, propagation_warnings) = propagation_result;
 
                 warnings.extend(propagation_warnings.into_iter()
@@ -194,16 +194,15 @@ pub fn propagate_properties(
 
                 component_properties
             },
-            (true, Err(err)) => {
+            Err(err) => if dynamic {
                 failed_ids.insert(node_id);
                 warnings.push(serialize_error(err));
                 continue;
-            }
-            (false, Err(err)) => return Err(err)
+            } else { return Err(err) }
         };
 
 //        println!("graph evaluation in prop {:?}", graph_evaluation);
-        graph_properties.insert(node_id.clone(), component_properties);
+        graph_properties.insert(node_id, component_properties);
     }
     Ok((graph_properties, warnings))
 }
@@ -562,7 +561,7 @@ pub fn expand_mechanism(
         proto::component::Variant::SimpleGeometricMechanism(variant) => variant.privacy_usage = effective_usages,
         _ => ()
     };
-    computation_graph.insert(component_id.clone(), noise_component);
+    computation_graph.insert(*component_id, noise_component);
 
     Ok(proto::ComponentExpansion {
         computation_graph,

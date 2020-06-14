@@ -124,7 +124,7 @@ impl Expandable for proto::Digitize {
             component.insert_argument(&"inclusive_left".into(), id_null_value);
         }
 
-        computation_graph.insert(component_id.clone(), component);
+        computation_graph.insert(*component_id, component);
 
         Ok(proto::ComponentExpansion {
             computation_graph,

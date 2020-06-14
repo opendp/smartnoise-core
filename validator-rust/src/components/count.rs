@@ -16,7 +16,7 @@ impl Component for proto::Count {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: &IndexMap<base::IndexKey, Value>,
         properties: &NodeProperties,
-        _node_id: u32
+        node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
 
         let mut data_property = match properties.get::<IndexKey>(&"data".into()).ok_or("data: missing")?.clone() {
@@ -79,6 +79,7 @@ impl Component for proto::Count {
             upper: Vector1DNull::I64(vec![data_num_records]),
         }));
         data_property.data_type = DataType::I64;
+        data_property.dataset_id = Some(node_id as i64);
 
         Ok(ValueProperties::Array(data_property).into())
     }

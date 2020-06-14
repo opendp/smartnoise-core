@@ -95,7 +95,7 @@ impl Expandable for proto::DpHistogram {
                     privacy_usage: self.privacy_usage.clone(),
                     enforce_constant_time: false
                 })),
-                omit: false,
+                omit: component.omit,
                 submission: component.submission,
             });
         } else {
@@ -114,7 +114,7 @@ impl Expandable for proto::DpHistogram {
                     }),
                     _ => panic!("Unexpected invalid token {:?}", self.mechanism.as_str()),
                 }),
-                omit: false,
+                omit: component.omit,
                 submission: component.submission,
             });
         }

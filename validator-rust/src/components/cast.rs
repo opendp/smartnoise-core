@@ -194,7 +194,7 @@ macro_rules! make_expandable {
                         variant: Some(proto::component::Variant::Cast(proto::Cast {
                             atomic_type: $var_type
                         })),
-                        omit: false,
+                        omit: component.omit,
                         submission: component.submission,
                     }],
                     properties: HashMap::new(),

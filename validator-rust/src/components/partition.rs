@@ -101,7 +101,7 @@ impl Expandable for proto::Partition {
             let mut categories_component = component.clone();
             categories_component.insert_argument(&"categories".into(), id_categories);
 
-            computation_graph.insert(component_id.clone(), categories_component);
+            computation_graph.insert(*component_id, categories_component);
         }
 
         Ok(proto::ComponentExpansion {

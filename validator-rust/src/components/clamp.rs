@@ -240,7 +240,7 @@ impl Expandable for proto::Clamp {
             component.insert_argument(&"upper".into(), id_upper);
         }
 
-        computation_graph.insert(component_id.clone(), component);
+        computation_graph.insert(*component_id, component);
 
         Ok(proto::ComponentExpansion {
             computation_graph,

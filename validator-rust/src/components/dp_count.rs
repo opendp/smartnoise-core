@@ -84,7 +84,7 @@ impl Expandable for proto::DpCount {
             };
 
             // noising
-            computation_graph.insert(component_id.clone(), proto::Component {
+            computation_graph.insert(*component_id, proto::Component {
                 arguments: Some(proto::IndexmapNodeIds::new(indexmap![
                     "data".into() => id_count,
                     "lower".into() => count_min_id,
@@ -94,12 +94,12 @@ impl Expandable for proto::DpCount {
                     privacy_usage: self.privacy_usage.clone(),
                     enforce_constant_time: false,
                 })),
-                omit: false,
+                omit: component.omit,
                 submission: component.submission,
             });
         } else {
             // noising
-            computation_graph.insert(component_id.clone(), proto::Component {
+            computation_graph.insert(*component_id, proto::Component {
                 arguments: Some(proto::IndexmapNodeIds::new(
                     indexmap!["data".into() => id_count])),
                 variant: Some(match self.mechanism.to_lowercase().as_str() {
@@ -111,7 +111,7 @@ impl Expandable for proto::DpCount {
                     }),
                     _ => panic!("Unexpected invalid token {:?}", self.mechanism.as_str()),
                 }),
-                omit: false,
+                omit: component.omit,
                 submission: component.submission,
             });
         }

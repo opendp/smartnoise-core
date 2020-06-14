@@ -2,37 +2,34 @@
 
 use crate::{proto, base};
 use std::collections::HashMap;
-use crate::base::{Release, Nature, Jagged, Vector1D, Value, Array, Vector1DNull, NatureCategorical, NatureContinuous, AggregatorProperties, ValueProperties, IndexmapProperties, JaggedProperties, DataType, ArrayProperties, ReleaseNode, GroupId, IndexKey};
+use crate::base::{
+    Release, Nature, Jagged, Vector1D, Value, Array, Vector1DNull,
+    NatureCategorical, NatureContinuous, AggregatorProperties, ValueProperties,
+    IndexmapProperties, JaggedProperties, DataType, ArrayProperties, ReleaseNode,
+    GroupId, IndexKey
+};
 use indexmap::IndexMap;
 use error_chain::ChainedError;
 
 // PARSERS
 pub fn parse_bool_null(value: proto::BoolNull) -> Option<bool> {
-    match value.data {
-        Some(elem_data) => match elem_data { proto::bool_null::Data::Option(x) => Some(x) },
-        None => None
-    }
+    value.data.map(|elem_data|
+        match elem_data { proto::bool_null::Data::Option(x) => x })
 }
 
 pub fn parse_i64_null(value: proto::I64Null) -> Option<i64> {
-    match value.data {
-        Some(elem_data) => match elem_data { proto::i64_null::Data::Option(x) => Some(x) },
-        None => None
-    }
+    value.data.map(|elem_data|
+        match elem_data { proto::i64_null::Data::Option(x) => x })
 }
 
 pub fn parse_f64_null(value: proto::F64Null) -> Option<f64> {
-    match value.data {
-        Some(elem_data) => match elem_data { proto::f64_null::Data::Option(x) => Some(x) },
-        None => None
-    }
+    value.data.map(|elem_data|
+        match elem_data { proto::f64_null::Data::Option(x) => x })
 }
 
 pub fn parse_str_null(value: proto::StrNull) -> Option<String> {
-    match value.data {
-        Some(elem_data) => match elem_data { proto::str_null::Data::Option(x) => Some(x) },
-        None => None
-    }
+    value.data.map(|elem_data|
+        match elem_data { proto::str_null::Data::Option(x) => x })
 }
 
 
@@ -92,9 +89,10 @@ pub fn parse_array(value: proto::Array) -> Array {
 }
 
 pub fn parse_indexmap(value: proto::Indexmap) -> IndexMap<IndexKey, Value> {
-    value.keys.iter()
-        .zip(value.values.into_iter())
-        .map(|(k, v)| (parse_index_key(k.clone()), parse_value(v)))
+    let proto::Indexmap { keys, values } = value;
+    keys.into_iter()
+        .zip(values.into_iter())
+        .map(|(k, v)| (parse_index_key(k), parse_value(v)))
         .collect()
 }
 
@@ -155,13 +153,13 @@ pub fn parse_release(release: proto::Release) -> Release {
 pub fn parse_release_node(release_node: proto::ReleaseNode) -> ReleaseNode {
     ReleaseNode {
         value: parse_value(release_node.value.unwrap()),
-        privacy_usages: release_node.privacy_usages.clone().map(|v| v.values),
+        privacy_usages: release_node.privacy_usages.map(|v| v.values),
         public: release_node.public
     }
 }
 
 pub fn parse_value_properties(value: proto::ValueProperties) -> ValueProperties {
-    match value.variant.clone().unwrap() {
+    match value.variant.unwrap() {
         proto::value_properties::Variant::Indexmap(value) =>
             ValueProperties::Indexmap(parse_indexmap_properties(value)),
         proto::value_properties::Variant::Array(value) =>
@@ -174,14 +172,15 @@ pub fn parse_value_properties(value: proto::ValueProperties) -> ValueProperties 
 }
 
 pub fn parse_indexmap_node_ids(value: proto::IndexmapNodeIds) -> IndexMap<IndexKey, u32> {
-    value.keys.iter().zip(value.values.into_iter())
-        .map(|(k, v)| (parse_index_key(k.clone()), v))
+    value.values.iter().zip(value.keys.into_iter())
+        .map(|(v, k)| (parse_index_key(k), *v))
         .collect()
 }
 
 pub fn parse_indexmap_value_properties(value: proto::IndexmapValueProperties) -> IndexMap<IndexKey, ValueProperties> {
-    value.keys.iter().zip(value.values.into_iter())
-        .map(|(k, v)| (parse_index_key(k.clone()), parse_value_properties(v)))
+    let proto::IndexmapValueProperties { keys, values } = value;
+    keys.into_iter().zip(values.into_iter())
+        .map(|(k, v)| (parse_index_key(k), parse_value_properties(v)))
         .collect()
 }
 
@@ -215,29 +214,23 @@ pub fn parse_array_properties(value: proto::ArrayProperties) -> ArrayProperties 
         nullity: value.nullity,
         releasable: value.releasable,
         c_stability: parse_array1d_f64(value.c_stability.to_owned().unwrap()),
-        aggregator: match value.aggregator.clone() {
-            Some(aggregator) => Some(AggregatorProperties {
-                component: aggregator.component.unwrap().variant.unwrap(),
-                properties: parse_indexmap_value_properties(aggregator.properties.unwrap()),
-                c_stability: parse_array1d_f64(aggregator.c_stability.unwrap()),
-                lipschitz_constant: parse_array1d_f64(aggregator.lipschitz_constant.unwrap())
-            }),
-            None => None
-        },
-        nature: match value.nature.to_owned() {
-            Some(nature) => match nature {
-                proto::array_properties::Nature::Continuous(continuous) =>
-                    Some(Nature::Continuous(NatureContinuous {
-                        lower: parse_array1d_null(continuous.minimum.unwrap()),
-                        upper: parse_array1d_null(continuous.maximum.unwrap()),
-                    })),
-                proto::array_properties::Nature::Categorical(categorical) =>
-                    Some(Nature::Categorical(NatureCategorical {
-                        categories: parse_jagged(categorical.categories.unwrap())
-                    }))
-            },
-            None => None,
-        },
+        aggregator: value.aggregator.map(|aggregator| AggregatorProperties {
+            component: aggregator.component.unwrap().variant.unwrap(),
+            properties: parse_indexmap_value_properties(aggregator.properties.unwrap()),
+            c_stability: parse_array1d_f64(aggregator.c_stability.unwrap()),
+            lipschitz_constant: parse_array1d_f64(aggregator.lipschitz_constant.unwrap())
+        }),
+        nature: value.nature.map(|nature| match nature {
+            proto::array_properties::Nature::Continuous(continuous) =>
+                Nature::Continuous(NatureContinuous {
+                    lower: parse_array1d_null(continuous.minimum.unwrap()),
+                    upper: parse_array1d_null(continuous.maximum.unwrap()),
+                }),
+            proto::array_properties::Nature::Categorical(categorical) =>
+                Nature::Categorical(NatureCategorical {
+                    categories: parse_jagged(categorical.categories.unwrap())
+                })
+        }),
         data_type: parse_data_type(proto::DataType::from_i32(value.data_type).unwrap()),
         dataset_id: value.dataset_id.and_then(parse_i64_null),
         is_not_empty: value.is_not_empty,
@@ -251,29 +244,23 @@ pub fn parse_jagged_properties(value: proto::JaggedProperties) -> JaggedProperti
         num_records: value.num_records.map(parse_array1d_i64),
         nullity: value.nullity,
         releasable: value.releasable,
-        aggregator: match value.aggregator.clone() {
-            Some(aggregator) => Some(AggregatorProperties {
-                component: aggregator.component.unwrap().variant.unwrap(),
-                properties: parse_indexmap_value_properties(aggregator.properties.unwrap()),
-                c_stability: parse_array1d_f64(aggregator.c_stability.unwrap()),
-                lipschitz_constant: parse_array1d_f64(aggregator.lipschitz_constant.unwrap())
-            }),
-            None => None
-        },
-        nature: match value.nature.to_owned() {
-            Some(nature) => match nature {
-                proto::jagged_properties::Nature::Continuous(continuous) =>
-                    Some(Nature::Continuous(NatureContinuous {
-                        lower: parse_array1d_null(continuous.minimum.unwrap()),
-                        upper: parse_array1d_null(continuous.maximum.unwrap()),
-                    })),
-                proto::jagged_properties::Nature::Categorical(categorical) =>
-                    Some(Nature::Categorical(NatureCategorical {
-                        categories: parse_jagged(categorical.categories.unwrap())
-                    }))
-            },
-            None => None,
-        },
+        aggregator: value.aggregator.map(|aggregator| AggregatorProperties {
+            component: aggregator.component.unwrap().variant.unwrap(),
+            properties: parse_indexmap_value_properties(aggregator.properties.unwrap()),
+            c_stability: parse_array1d_f64(aggregator.c_stability.unwrap()),
+            lipschitz_constant: parse_array1d_f64(aggregator.lipschitz_constant.unwrap())
+        }),
+        nature: value.nature.map(|nature| match nature {
+            proto::jagged_properties::Nature::Continuous(continuous) =>
+                Nature::Continuous(NatureContinuous {
+                    lower: parse_array1d_null(continuous.minimum.unwrap()),
+                    upper: parse_array1d_null(continuous.maximum.unwrap()),
+                }),
+            proto::jagged_properties::Nature::Categorical(categorical) =>
+                Nature::Categorical(NatureCategorical {
+                    categories: parse_jagged(categorical.categories.unwrap())
+                })
+        }),
         data_type: parse_data_type(proto::DataType::from_i32(value.data_type).unwrap()),
     }
 }
@@ -282,37 +269,25 @@ pub fn parse_jagged_properties(value: proto::JaggedProperties) -> JaggedProperti
 // SERIALIZERS
 pub fn serialize_bool_null(value: Option<bool>) -> proto::BoolNull {
     proto::BoolNull {
-        data: match value {
-            Some(elem_data) => Some(proto::bool_null::Data::Option(elem_data)),
-            None => None
-        }
+        data: value.map(|elem_data| proto::bool_null::Data::Option(elem_data))
     }
 }
 
 pub fn serialize_i64_null(value: Option<i64>) -> proto::I64Null {
     proto::I64Null {
-        data: match value {
-            Some(elem_data) => Some(proto::i64_null::Data::Option(elem_data)),
-            None => None
-        }
+        data: value.map(|elem_data| proto::i64_null::Data::Option(elem_data))
     }
 }
 
 pub fn serialize_f64_null(value: Option<f64>) -> proto::F64Null {
     proto::F64Null {
-        data: match value {
-            Some(elem_data) => Some(proto::f64_null::Data::Option(elem_data)),
-            None => None
-        }
+        data: value.map(|elem_data| proto::f64_null::Data::Option(elem_data))
     }
 }
 
 pub fn serialize_str_null(value: Option<String>) -> proto::StrNull {
     proto::StrNull {
-        data: match value {
-            Some(elem_data) => Some(proto::str_null::Data::Option(elem_data)),
-            None => None
-        }
+        data: value.map(|elem_data| proto::str_null::Data::Option(elem_data))
     }
 }
 
@@ -462,15 +437,15 @@ pub fn serialize_release_node(release_node: ReleaseNode) -> proto::ReleaseNode {
 
 pub fn serialize_indexmap_node_ids(value: IndexMap<IndexKey, u32>) -> proto::IndexmapNodeIds {
     proto::IndexmapNodeIds {
-        keys: value.keys().cloned().map(serialize_index_key).collect(),
-        values: value.values().cloned().collect()
+        values: value.values().cloned().collect(),
+        keys: value.into_iter().map(|v| v.0).map(serialize_index_key).collect(),
     }
 }
 
 pub fn serialize_indexmap_value_properties(value: IndexMap<IndexKey, ValueProperties>) -> proto::IndexmapValueProperties {
     proto::IndexmapValueProperties {
         keys: value.keys().cloned().map(serialize_index_key).collect(),
-        values: value.values().cloned().map(serialize_value_properties).collect()
+        values: value.into_iter().map(|v| v.1).map(serialize_value_properties).collect()
     }
 }
 
@@ -478,7 +453,7 @@ pub fn serialize_indexmap_properties(value: IndexmapProperties) -> proto::Indexm
     proto::IndexmapProperties {
         children: Some(proto::IndexmapValueProperties {
             keys: value.children.keys().cloned().map(serialize_index_key).collect(),
-            values: value.children.values().cloned().map(serialize_value_properties).collect()
+            values: value.children.into_iter().map(|v| v.1).map(serialize_value_properties).collect()
         }),
         variant: value.variant as i32
     }
@@ -520,32 +495,27 @@ pub fn serialize_array_properties(value: ArrayProperties) -> proto::ArrayPropert
         nullity,
         releasable,
         c_stability: Some(serialize_array1d_f64(c_stability)),
-        nature: match nature {
-            Some(nature) => match nature {
-                Nature::Categorical(categorical) => Some(proto::array_properties::Nature::Categorical(proto::NatureCategorical {
-                    categories: Some(serialize_jagged(categorical.categories))
-                })),
-                Nature::Continuous(x) => Some(proto::array_properties::Nature::Continuous(proto::NatureContinuous {
-                    minimum: Some(serialize_array1d_null(x.lower)),
-                    maximum: Some(serialize_array1d_null(x.upper)),
-                }))
-            },
-            None => None
-        },
-        aggregator: match aggregator.clone() {
-            Some(aggregator) => Some(proto::AggregatorProperties {
-                component: Some(proto::Component {
-                    variant: Some(aggregator.component),
-                    omit: true,
-                    submission: 0,
-                    arguments: Some(proto::IndexmapNodeIds::default()),
-                }),
-                properties: Some(serialize_indexmap_value_properties(aggregator.properties)),
-                lipschitz_constant: Some(serialize_array1d_f64(aggregator.lipschitz_constant)),
-                c_stability: Some(serialize_array1d_f64(aggregator.c_stability)),
+        nature: nature.map(|nature| match nature {
+            Nature::Categorical(categorical) => proto::array_properties::Nature::Categorical(proto::NatureCategorical {
+                categories: Some(serialize_jagged(categorical.categories))
             }),
-            None => None
-        },
+            Nature::Continuous(x) => proto::array_properties::Nature::Continuous(proto::NatureContinuous {
+                minimum: Some(serialize_array1d_null(x.lower)),
+                maximum: Some(serialize_array1d_null(x.upper)),
+            })
+        }),
+        aggregator: aggregator.map(|aggregator| proto::AggregatorProperties {
+            // the component here is just a vessel to serialize the variant
+            component: Some(proto::Component {
+                variant: Some(aggregator.component),
+                omit: true,
+                submission: 0,
+                arguments: Some(proto::IndexmapNodeIds::default()),
+            }),
+            properties: Some(serialize_indexmap_value_properties(aggregator.properties)),
+            lipschitz_constant: Some(serialize_array1d_f64(aggregator.lipschitz_constant)),
+            c_stability: Some(serialize_array1d_f64(aggregator.c_stability)),
+        }),
         data_type: serialize_data_type(data_type) as i32,
         dataset_id: Some(serialize_i64_null(dataset_id)),
         is_not_empty,
@@ -563,32 +533,26 @@ pub fn serialize_jagged_properties(value: JaggedProperties) -> proto::JaggedProp
         num_records: num_records.map(serialize_array1d_i64),
         nullity,
         releasable,
-        nature: match nature {
-            Some(nature) => match nature {
-                Nature::Categorical(categorical) => Some(proto::jagged_properties::Nature::Categorical(proto::NatureCategorical {
-                    categories: Some(serialize_jagged(categorical.categories))
-                })),
-                Nature::Continuous(x) => Some(proto::jagged_properties::Nature::Continuous(proto::NatureContinuous {
-                    minimum: Some(serialize_array1d_null(x.lower)),
-                    maximum: Some(serialize_array1d_null(x.upper)),
-                }))
-            },
-            None => None
-        },
-        aggregator: match aggregator.clone() {
-            Some(aggregator) => Some(proto::AggregatorProperties {
-                component: Some(proto::Component {
-                    variant: Some(aggregator.component),
-                    omit: true,
-                    submission: 0,
-                    arguments: Some(proto::IndexmapNodeIds::default()),
-                }),
-                properties: Some(serialize_indexmap_value_properties(aggregator.properties)),
-                c_stability: Some(serialize_array1d_f64(aggregator.c_stability)),
-                lipschitz_constant: Some(serialize_array1d_f64(aggregator.lipschitz_constant))
+        nature: nature.map(|nature| match nature {
+            Nature::Categorical(categorical) => proto::jagged_properties::Nature::Categorical(proto::NatureCategorical {
+                categories: Some(serialize_jagged(categorical.categories))
             }),
-            None => None
-        },
+            Nature::Continuous(x) => proto::jagged_properties::Nature::Continuous(proto::NatureContinuous {
+                minimum: Some(serialize_array1d_null(x.lower)),
+                maximum: Some(serialize_array1d_null(x.upper)),
+            })
+        }),
+        aggregator: aggregator.map(|aggregator| proto::AggregatorProperties {
+            component: Some(proto::Component {
+                variant: Some(aggregator.component),
+                omit: true,
+                submission: 0,
+                arguments: Some(proto::IndexmapNodeIds::default()),
+            }),
+            properties: Some(serialize_indexmap_value_properties(aggregator.properties)),
+            c_stability: Some(serialize_array1d_f64(aggregator.c_stability)),
+            lipschitz_constant: Some(serialize_array1d_f64(aggregator.lipschitz_constant))
+        }),
         data_type: serialize_data_type(data_type) as i32
     }
 }

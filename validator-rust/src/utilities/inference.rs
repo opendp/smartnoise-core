@@ -159,17 +159,35 @@ pub fn infer_categories(value: &Value) -> Result<Jagged> {
     }.deduplicate()
 }
 
-pub fn infer_nature(value: &Value) -> Result<Option<Nature>> {
+pub fn infer_nature(
+    value: &Value, prior_property: Option<&ValueProperties>
+) -> Result<Option<Nature>> {
     Ok(match value {
         Value::Array(array) => match array {
             Array::F64(array) => Some(Nature::Continuous(NatureContinuous {
                 lower: infer_lower(&array.clone().into())?,
                 upper: infer_upper(&array.clone().into())?,
             })),
-            Array::I64(array) => Some(Nature::Continuous(NatureContinuous {
-                lower: infer_lower(&array.clone().into())?,
-                upper: infer_upper(&array.clone().into())?,
-            })),
+            Array::I64(array) => {
+                let is_categorical = match prior_property {
+                    Some(p) => p.array()?.clone().nature.map(|nature| match nature {
+                        Nature::Categorical(_) => true,
+                        Nature::Continuous(_) => false
+                    }).unwrap_or(false),
+                    None => false
+                };
+                if is_categorical {
+                    Some(Nature::Categorical(NatureCategorical {
+                        categories: infer_categories(&array.clone().into())?
+                    }))
+                } else {
+                    Some(Nature::Continuous(NatureContinuous {
+                        lower: infer_lower(&array.clone().into())?,
+                        upper: infer_upper(&array.clone().into())?,
+                    }))
+                }
+
+            },
             Array::Bool(array) => Some(Nature::Categorical(NatureCategorical {
                 categories: infer_categories(&array.clone().into())?,
             })),
@@ -202,35 +220,42 @@ pub fn infer_c_stability(value: &Array) -> Result<Vec<f64>> {
     Ok((0..value.num_columns()?).map(|_| 1.).collect())
 }
 
-pub fn infer_property(value: &Value, prior_property: Option<&ValueProperties>, dataset_id: Option<i64>) -> Result<ValueProperties> {
+pub fn infer_property(
+    value: &Value, prior_property: Option<&ValueProperties>
+) -> Result<ValueProperties> {
+
     Ok(match value {
-        Value::Array(array) => ArrayProperties {
-            nullity: infer_nullity(&value)?,
-            releasable: true,
-            nature: infer_nature(&value)?,
-            c_stability: infer_c_stability(&array)?,
-            num_columns: Some(array.num_columns()? as i64),
-            num_records: Some(array.num_records()? as i64),
-            aggregator: None,
-            data_type: match array {
-                Array::Bool(_) => DataType::Bool,
-                Array::F64(_) => DataType::F64,
-                Array::I64(_) => DataType::I64,
-                Array::Str(_) => DataType::Str,
-            },
-            dataset_id,
-            is_not_empty: match array {
-                Array::Bool(array) => array.len(),
-                Array::F64(array) => array.len(),
-                Array::I64(array) => array.len(),
-                Array::Str(array) => array.len(),
-            } != 0,
-            dimensionality: Some(array.shape().len() as i64),
-            group_id: match prior_property {
-                Some(prior_property) => prior_property.array()?.group_id.clone(),
-                None => Vec::new()
-            }
-        }.into(),
+        Value::Array(array) => {
+            let prior_prop_arr = match prior_property {
+                Some(p) => Some(p.array()?),
+                None => None
+            };
+            ArrayProperties {
+                nullity: infer_nullity(&value)?,
+                releasable: true,
+                nature: infer_nature(&value, prior_property)?,
+                c_stability: match prior_prop_arr {
+                    Some(p) => p.c_stability.clone(),
+                    None => infer_c_stability(&array)?
+                },
+                num_columns: Some(array.num_columns()? as i64),
+                num_records: Some(array.num_records()? as i64),
+                aggregator: prior_prop_arr.and_then(|p| p.aggregator.clone()),
+                data_type: match array {
+                    Array::Bool(_) => DataType::Bool,
+                    Array::F64(_) => DataType::F64,
+                    Array::I64(_) => DataType::I64,
+                    Array::Str(_) => DataType::Str,
+                },
+                dataset_id: prior_prop_arr.and_then(|p| p.dataset_id.clone()),
+                is_not_empty: array.num_records()? != 0,
+                dimensionality: Some(array.shape().len() as i64),
+                group_id: match prior_prop_arr {
+                    Some(prior_property) => prior_property.group_id.clone(),
+                    None => Vec::new()
+                }
+            }.into()
+        },
         Value::Indexmap(indexmap) => {
             match prior_property {
                 Some(prior_property) => IndexmapProperties {
@@ -238,14 +263,14 @@ pub fn infer_property(value: &Value, prior_property: Option<&ValueProperties>, d
                     children: indexmap.iter()
                         .zip(prior_property.indexmap()?.children.values())
                         .map(|((name, value), prop)|
-                            infer_property(value, Some(prop), dataset_id)
+                            infer_property(value, Some(prop))
                                 .map(|v| (name.clone(), v)))
                         .collect::<Result<IndexMap<IndexKey, ValueProperties>>>()?.into(),
                 }.into(),
                 None => IndexmapProperties {
                     variant: proto::indexmap_properties::Variant::Dataframe,
                     children: indexmap.iter()
-                        .map(|(name, value)| infer_property(value, None, dataset_id)
+                        .map(|(name, value)| infer_property(value, None)
                             .map(|v| (name.clone(), v)))
                         .collect::<Result<IndexMap<IndexKey, ValueProperties>>>()?.into(),
                 }.into()
@@ -260,7 +285,7 @@ pub fn infer_property(value: &Value, prior_property: Option<&ValueProperties>, d
                 _ => false
             },
             aggregator: None,
-            nature: infer_nature(value)?,
+            nature: infer_nature(value, prior_property)?,
             data_type: match jagged {
                 Jagged::Bool(_) => DataType::Bool,
                 Jagged::F64(_) => DataType::F64,

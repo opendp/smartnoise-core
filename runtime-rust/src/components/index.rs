@@ -37,7 +37,7 @@ impl Evaluable for proto::Index {
                             .into_iter().map(IndexKey::from).collect(),
                         Array::F64(_) => return Err("cannot index by floats".into()),
                     };
-                    if is_partition {
+                    if is_partition && dimensionality == 2 {
                         indices = vec![IndexKey::Tuple(indices)]
                     }
                     indices

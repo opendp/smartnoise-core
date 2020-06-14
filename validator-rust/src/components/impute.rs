@@ -168,7 +168,7 @@ impl Expandable for proto::Impute {
             }
         }
 
-        computation_graph.insert(component_id.clone(), component);
+        computation_graph.insert(*component_id, component);
 
         Ok(proto::ComponentExpansion {
             computation_graph,

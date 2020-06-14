@@ -52,7 +52,7 @@ impl Expandable for proto::DpQuantile {
             sanitize_args.insert("candidates".into(), *component.arguments().get::<IndexKey>(&"candidates".into())
                 .ok_or_else(|| Error::from("candidates is a required argument to DPQuantile when the exponential mechanism is used."))?);
         }
-        computation_graph.insert(component_id.clone(), proto::Component {
+        computation_graph.insert(*component_id, proto::Component {
             arguments: Some(proto::IndexmapNodeIds::new(sanitize_args)),
             variant: Some(match self.mechanism.to_lowercase().as_str() {
                 "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
@@ -66,7 +66,7 @@ impl Expandable for proto::DpQuantile {
                 }),
                 _ => panic!("Unexpected invalid token {:?}", self.mechanism.as_str()),
             }),
-            omit: false,
+            omit: component.omit,
             submission: component.submission,
         });
 
