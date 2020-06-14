@@ -1,17 +1,17 @@
 
 use crate::errors::*;
 use crate::components::{Named, Component};
-use crate::utilities::get_ith_column;
+use crate::utilities::array::get_ith_column;
 use ndarray::ArrayD;
 use crate::{proto, base, Warnable};
-use crate::base::{Value, Array, ValueProperties, ArrayProperties, DataType};
+use crate::base::{Value, Array, ValueProperties, ArrayProperties, DataType, IndexKey};
 use indexmap::map::IndexMap;
 
 impl Component for proto::Literal {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &IndexMap<base::IndexKey, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, &Value>,
         _properties: &base::NodeProperties,
         node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
@@ -37,30 +37,50 @@ impl Component for proto::Literal {
 impl Named for proto::Literal {
     fn get_names(
         &self,
-        _public_arguments: &IndexMap<base::IndexKey, Value>,
-        _argument_variables: &IndexMap<base::IndexKey, Vec<String>>,
+        _public_arguments: &IndexMap<base::IndexKey, &Value>,
+        _argument_variables: &IndexMap<base::IndexKey, Vec<IndexKey>>,
         release: Option<&Value>
-    ) -> Result<Vec<String>> {
+    ) -> Result<Vec<IndexKey>> {
 
-        fn array_to_names<T: ToString + Clone + Default>(array: &ArrayD<T>, num_columns: usize) -> Result<Vec<String>> {
+        // annoying mini-trait to work around the generic from
+        trait ToIndexKey { fn to_index_key(self) -> IndexKey; }
+        impl ToIndexKey for f64 {
+            fn to_index_key(self) -> IndexKey {
+                self.to_string().into()
+            }
+        }
+        macro_rules! make_convertable {
+            ($var_type:ty) => {
+                impl ToIndexKey for $var_type {
+                    fn to_index_key(self) -> IndexKey {
+                        self.into()
+                    }
+                }
+            }
+        }
+        make_convertable!(i64);
+        make_convertable!(bool);
+        make_convertable!(String);
+
+        fn array_to_names<T: ToString + Clone + Default + ToIndexKey>(array: &ArrayD<T>, num_columns: usize) -> Result<Vec<IndexKey>> {
             (0..num_columns)
                 .map(|index| {
                     let array = get_ith_column(array, &index)?;
                     match array.ndim() {
                         0 => match array.first() {
-                            Some(value) => Ok(value.to_string()),
+                            Some(value) => Ok(value.clone().to_index_key()),
                             None => Err("array may not be empty".into())
                         },
                         1 => Ok("[Literal Column]".into()),
                         _ => Err("array has too great of a dimension".into())
                     }
                 })
-                .collect::<Result<Vec<String>>>()
+                .collect()
         }
 
         match release {
             Some(release) => match release {
-                Value::Jagged(jagged) => Ok((0..jagged.num_columns()).map(|_| "[Literal vector]".to_string()).collect()),
+                Value::Jagged(jagged) => Ok((0..jagged.num_columns()).map(|_| "[Literal vector]".into()).collect()),
                 Value::Indexmap(_) => Err("names for indexmap literals are not supported".into()),  // (or necessary)
                 Value::Array(value) => match value {
                     Array::F64(array) => array_to_names(array, value.num_columns()?),

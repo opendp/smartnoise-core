@@ -18,7 +18,7 @@ impl Component for proto::Abs {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &IndexMap<base::IndexKey, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
@@ -79,7 +79,7 @@ impl Component for proto::Add {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &IndexMap<base::IndexKey, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
@@ -158,7 +158,7 @@ impl Component for proto::And {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &IndexMap<base::IndexKey, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
@@ -209,7 +209,7 @@ impl Component for proto::Divide {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &IndexMap<base::IndexKey, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
@@ -379,7 +379,7 @@ impl Component for proto::Equal {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &IndexMap<base::IndexKey, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
@@ -429,7 +429,7 @@ impl Component for proto::GreaterThan {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &IndexMap<base::IndexKey, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
@@ -486,7 +486,7 @@ impl Component for proto::LessThan {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &IndexMap<base::IndexKey, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
@@ -543,7 +543,7 @@ impl Component for proto::Log {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &IndexMap<base::IndexKey, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
@@ -604,7 +604,7 @@ impl Component for proto::Modulo {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &IndexMap<base::IndexKey, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
@@ -675,7 +675,7 @@ impl Component for proto::Multiply {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &IndexMap<base::IndexKey, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
@@ -815,7 +815,7 @@ impl Component for proto::Negate {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &IndexMap<base::IndexKey, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
@@ -845,7 +845,7 @@ impl Component for proto::Negative {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &IndexMap<base::IndexKey, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
@@ -881,7 +881,7 @@ impl Component for proto::Or {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &IndexMap<base::IndexKey, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
@@ -933,7 +933,7 @@ impl Component for proto::Power {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &IndexMap<base::IndexKey, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
@@ -1003,7 +1003,7 @@ impl Component for proto::RowMax {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &IndexMap<base::IndexKey, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
@@ -1082,7 +1082,7 @@ impl Component for proto::RowMin {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &IndexMap<base::IndexKey, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
@@ -1161,7 +1161,7 @@ impl Component for proto::Subtract {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &IndexMap<base::IndexKey, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {

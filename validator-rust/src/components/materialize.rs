@@ -3,7 +3,7 @@ use crate::errors::*;
 use crate::{proto, base, Warnable};
 
 use crate::components::{Component, Named};
-use crate::base::{Value, ValueProperties, IndexmapProperties, ArrayProperties, DataType};
+use crate::base::{Value, ValueProperties, IndexmapProperties, ArrayProperties, DataType, IndexKey};
 use ndarray::prelude::*;
 use indexmap::map::IndexMap;
 
@@ -11,7 +11,7 @@ impl Component for proto::Materialize {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: &IndexMap<base::IndexKey, Value>,
+        public_arguments: &IndexMap<base::IndexKey, &Value>,
         _properties: &base::NodeProperties,
         node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
@@ -43,10 +43,10 @@ impl Component for proto::Materialize {
 impl Named for proto::Materialize {
     fn get_names(
         &self,
-        public_arguments: &IndexMap<base::IndexKey, Value>,
-        _argument_variables: &IndexMap<base::IndexKey, Vec<String>>,
+        public_arguments: &IndexMap<base::IndexKey, &Value>,
+        _argument_variables: &IndexMap<base::IndexKey, Vec<IndexKey>>,
         _release: Option<&Value>
-    ) -> Result<Vec<String>> {
+    ) -> Result<Vec<IndexKey>> {
 
         let column_names = public_arguments.get::<base::IndexKey>(&"column_names".into())
             .and_then(|column_names| column_names.array().ok()?.string().ok()).cloned();
@@ -55,8 +55,8 @@ impl Named for proto::Materialize {
 
         // standardize to vec of column names
         Ok(match (column_names, num_columns) {
-            (Some(column_names), None) => column_names.into_dimensionality::<Ix1>()?.to_vec(),
-            (None, Some(num_columns)) => (0..num_columns).map(|idx| idx.to_string()).collect(),
+            (Some(column_names), None) => column_names.into_dimensionality::<Ix1>()?.to_vec().iter().map(|v| v.as_str().into()).collect(),
+            (None, Some(num_columns)) => (0..num_columns).map(|idx| idx.into()).collect(),
             _ => return Err("either column_names or num_columns must be specified".into())
         })
     }

@@ -3,6 +3,7 @@ pub mod serial;
 pub mod inference;
 pub mod array;
 pub mod privacy;
+pub mod properties;
 
 use crate::errors::*;
 
@@ -19,37 +20,37 @@ use ndarray::prelude::*;
 
 // import all trait implementations
 use crate::components::*;
-use crate::utilities::array::slow_select;
 use noisy_float::prelude::n64;
 use std::iter::FromIterator;
 use crate::utilities::privacy::spread_privacy_usage;
 use indexmap::map::IndexMap;
 
-/// Retrieve the Values for each of the arguments of a component from the Release.
-pub fn get_public_arguments(
-    component: &proto::Component,
-    release: &Release,
-) -> Result<IndexMap<base::IndexKey, Value>> {
-    let mut arguments = IndexMap::<base::IndexKey, Value>::new();
-    for (arg_name, arg_node_id) in component.arguments() {
-        if let Some(evaluation) = release.get(&arg_node_id) {
-            if evaluation.public {
-                arguments.insert(arg_name.to_owned(), evaluation.to_owned().value.clone());
-            }
-        }
-    }
-    Ok(arguments)
-}
 
 /// Retrieve the specified Value from the arguments to a component.
 pub fn get_argument<'a>(
     arguments: &IndexMap<base::IndexKey, &'a Value>,
     name: &str,
 ) -> Result<&'a Value> {
-    match arguments.get::<IndexKey>(&name.into()) {
+    match arguments.get::<base::IndexKey>(&name.into()) {
         Some(argument) => Ok(argument),
         _ => Err((name.to_string() + " must be defined").into())
     }
+}
+
+/// Retrieve the Values for each of the arguments of a component from the Release.
+pub fn get_public_arguments<'a>(
+    component: &proto::Component,
+    release: &'a Release,
+) -> Result<IndexMap<base::IndexKey, &'a Value>> {
+    let mut arguments = IndexMap::<base::IndexKey, &'a Value>::new();
+    for (arg_name, arg_node_id) in component.arguments() {
+        if let Some(evaluation) = release.get(&arg_node_id) {
+            if evaluation.public {
+                arguments.insert(arg_name.to_owned(), &evaluation.value);
+            }
+        }
+    }
+    Ok(arguments)
 }
 
 /// Retrieve the ValueProperties for each of the arguments of a component from the Release.
@@ -290,6 +291,7 @@ pub fn get_sinks(computation_graph: &HashMap<u32, proto::Component>) -> HashSet<
     return node_ids;
 }
 
+
 /// Given an array, conduct well-formedness checks and broadcast
 ///
 /// Typically used by functions when standardizing numeric arguments, but generally applicable.
@@ -307,22 +309,7 @@ pub fn standardize_numeric_argument<T: Clone>(value: &ArrayD<T>, length: &i64) -
     }
 }
 
-#[doc(hidden)]
-pub fn uniform_density(length: usize) -> Vec<f64> {
-    (0..length).map(|_| 1. / (length as f64)).collect()
-}
-
-
-/// Convert weights to probabilities
-#[doc(hidden)]
-pub fn normalize_probabilities(weights: &[f64]) -> Result<Vec<f64>> {
-    if !weights.iter().all(|w| w >= &0.) {
-        return Err("all weights must be greater than zero".into());
-    }
-    let sum: f64 = weights.iter().sum();
-    Ok(weights.iter().map(|prob| prob / sum).collect())
-}
-
+/// Given a jagged float array, conduct well-formedness checks and broadcast
 pub fn standardize_float_argument(
     categories: &[Vec<f64>],
     length: &i64,
@@ -429,6 +416,18 @@ pub fn standardize_weight_argument(
 ) -> Result<Vec<Vec<f64>>> {
     let weights = weights.clone().unwrap_or_else(|| vec![]);
 
+    fn uniform_density(length: usize) -> Vec<f64> {
+        (0..length).map(|_| 1. / (length as f64)).collect()
+    }
+    /// Convert weights to probabilities
+    fn normalize_probabilities(weights: &[f64]) -> Result<Vec<f64>> {
+        if !weights.iter().all(|w| w >= &0.) {
+            return Err("all weights must be greater than zero".into());
+        }
+        let sum: f64 = weights.iter().sum();
+        Ok(weights.iter().map(|prob| prob / sum).collect())
+    }
+
     match weights.len() {
         0 => Ok(lengths.iter()
             .map(|length| uniform_density(*length as usize))
@@ -469,22 +468,8 @@ pub fn get_literal(value: Value, submission: &u32) -> Result<(proto::Component, 
     ))
 }
 
-
-pub fn broadcast_ndarray<T: Clone>(value: &ArrayD<T>, shape: &[usize]) -> Result<ArrayD<T>> {
-    if value.shape() == shape {
-        return Ok(value.clone());
-    }
-
-    if value.len() != 1 {
-        let length = shape.iter().cloned().fold1(|a, b| a * b).unwrap_or(0);
-        bail!("{} values passed when {} were required", value.len(), length);
-    }
-
-    let value = value.first().unwrap();
-
-    Ok(Array::from_shape_fn(shape, |_| value.clone()))
-}
-
+/// return a simple function that modifies the input string with the specified text
+/// part of a commonly used pattern to prepend the argument name to an error string
 #[doc(hidden)]
 pub fn prepend(text: &str) -> impl Fn(Error) -> Error + '_ {
     move |e| format!("{} {}", text, e).into()
@@ -572,32 +557,14 @@ pub fn expand_mechanism(
     })
 }
 
-pub fn get_ith_column<T: Clone + Default>(value: &ArrayD<T>, i: &usize) -> Result<ArrayD<T>> {
-    match value.ndim() {
-        0 => if i == &0 { Ok(value.clone()) } else { Err("ith release does not exist".into()) },
-        1 => Ok(value.clone()),
-        2 => {
-            let release = slow_select(value, Axis(1), &[*i]);
-            if release.len() == 1 {
-                // flatten singleton matrices to zero dimensions
-                Ok(Array::from_shape_vec(Vec::new(), vec![release.first()
-                    .ok_or_else(|| Error::from("release must contain at least one value"))?])?
-                    .mapv(|v| v.clone()))
-            } else {
-                Ok(release)
-            }
-        }
-        _ => Err("releases must be 2-dimensional or less".into())
-    }
-}
-
+/// given a vector of items, return the shared item, or None, if no item is shared
 pub fn get_common_value<T: Clone + Eq>(values: &Vec<T>) -> Option<T> {
     if values.windows(2).all(|w| w[0] == w[1]) {
         values.first().cloned()
     } else { None }
 }
 
-
+/// return the set of node ids that use each node id
 pub fn get_dependents(graph: &HashMap<u32, proto::Component>) -> HashMap<u32, HashSet<u32>> {
     let mut dependents = HashMap::<u32, HashSet<u32>>::new();
     graph.iter().for_each(|(node_id, component)| {
@@ -611,7 +578,8 @@ pub fn get_dependents(graph: &HashMap<u32, proto::Component>) -> HashMap<u32, Ha
     dependents
 }
 
-pub fn deduplicate<T: Eq + Hash + Ord + Clone>(values: Vec<T>) -> Vec<T> {
+
+pub fn deduplicate<T: Eq + Hash + Clone>(values: Vec<T>) -> Vec<T> {
     values.into_iter().unique().collect()
 }
 

@@ -11,6 +11,7 @@ use std::cmp::Ordering;
 use whitenoise_validator::utilities::array::{slow_select, slow_stack};
 use ndarray::prelude::IxDyn;
 
+
 ///  Accepts an ndarray and returns the number of columns.
 ///
 /// # Arguments

@@ -5,7 +5,7 @@ use std::collections::HashMap;
 
 use crate::{proto, base};
 use crate::components::{Expandable, Report};
-use crate::utilities::{prepend, get_ith_column};
+use crate::utilities::{prepend, array::get_ith_column};
 use crate::utilities::privacy::{spread_privacy_usage};
 
 use crate::base::{IndexKey, NodeProperties, Value, Array};
@@ -70,10 +70,10 @@ impl Report for proto::DpVariance {
         &self,
         node_id: &u32,
         component: &proto::Component,
-        _public_arguments: &IndexMap<base::IndexKey, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &NodeProperties,
         release: &Value,
-        variable_names: Option<&Vec<String>>,
+        variable_names: Option<&Vec<base::IndexKey>>,
     ) -> Result<Option<Vec<JSONRelease>>> {
         let data_property = properties.get(&IndexKey::from("data"))
             .ok_or("data: missing")?.array()
@@ -91,12 +91,12 @@ impl Report for proto::DpVariance {
         for column_number in 0..(num_columns as usize) {
             let variable_name = variable_names
                 .and_then(|names| names.get(column_number)).cloned()
-                .unwrap_or_else(|| "[Unknown]".to_string());
+                .unwrap_or_else(|| "[Unknown]".into());
 
             releases.push(JSONRelease {
                 description: "DP release information".to_string(),
                 statistic: "DPVariance".to_string(),
-                variables: serde_json::json!(variable_name),
+                variables: serde_json::json!(variable_name.to_string()),
                 release_info: match release.array()? {
                     Array::F64(v) => value_to_json(&get_ith_column(v, &column_number)?.into())?,
                     Array::I64(v) => value_to_json(&get_ith_column(v, &column_number)?.into())?,

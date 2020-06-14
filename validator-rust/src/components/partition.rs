@@ -7,7 +7,7 @@ use crate::{proto, base, Warnable};
 
 use crate::components::{Component, Expandable};
 use crate::base::{IndexKey, Value, Jagged, ValueProperties, IndexmapProperties, ArrayProperties, NodeProperties};
-use crate::utilities::{prepend, get_literal};
+use crate::utilities::{prepend, get_literal, get_argument};
 use indexmap::map::IndexMap;
 use itertools::Itertools;
 
@@ -16,7 +16,7 @@ impl Component for proto::Partition {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: &IndexMap<base::IndexKey, Value>,
+        public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &base::NodeProperties,
         node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
@@ -45,8 +45,8 @@ impl Component for proto::Partition {
 
             // propagate properties when partitioning evenly
             None => {
-                let num_partitions = public_arguments.get::<IndexKey>(&"num_partitions".into())
-                    .ok_or("num_partitions or by must be passed to Partition")?.array()?.first_i64()?;
+                let num_partitions = get_argument(public_arguments, "num_partitions")?
+                    .array()?.first_i64()?;
 
                 let num_records = match &data_property {
                     ValueProperties::Array(data_property) => data_property.num_records,

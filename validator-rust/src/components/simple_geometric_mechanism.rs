@@ -15,7 +15,7 @@ impl Component for proto::SimpleGeometricMechanism {
     fn propagate_property(
         &self,
         privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &IndexMap<base::IndexKey, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
@@ -25,6 +25,18 @@ impl Component for proto::SimpleGeometricMechanism {
 
         if privacy_definition.group_size == 0 {
             return Err("group size must be greater than zero".into())
+        }
+
+        if properties.get::<IndexKey>(&"lower".into())
+            .ok_or("lower: missing")?.array()
+            .map_err(prepend("lower:"))?.data_type != DataType::I64 {
+            return Err("lower: must be of integer atomic type".into());
+        }
+
+        if properties.get::<IndexKey>(&"upper".into())
+            .ok_or("upper: missing")?.array()
+            .map_err(prepend("upper:"))?.data_type != DataType::I64 {
+            return Err("upper: must be of integer atomic type".into());
         }
 
         let mut data_property = properties.get::<IndexKey>(&"data".into())

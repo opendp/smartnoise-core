@@ -18,7 +18,7 @@ impl Component for proto::Resize {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: &IndexMap<base::IndexKey, Value>,
+        public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &base::NodeProperties,
         _node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {

@@ -16,6 +16,7 @@ mod cast;
 mod clamp;
 mod count;
 mod covariance;
+mod dataframe;
 mod digitize;
 mod dp_count;
 mod dp_variance;
@@ -38,7 +39,6 @@ mod map;
 mod materialize;
 pub mod partition;
 mod quantile;
-// mod rename;
 mod reshape;
 mod mean;
 mod exponential_mechanism;
@@ -82,7 +82,7 @@ pub trait Component {
     fn propagate_property(
         &self,
         privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: &IndexMap<base::IndexKey, Value>,
+        public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &NodeProperties,
         _node_id: u32,
     ) -> Result<Warnable<ValueProperties>>;
@@ -199,10 +199,10 @@ pub trait Report {
         &self,
         node_id: &u32,
         component: &proto::Component,
-        public_arguments: &IndexMap<base::IndexKey, Value>,
+        public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &NodeProperties,
         release: &Value,
-        variable_names: Option<&Vec<String>>,
+        variable_names: Option<&Vec<base::IndexKey>>,
     ) -> Result<Option<Vec<JSONRelease>>>;
 }
 
@@ -214,10 +214,10 @@ pub trait Named {
     /// Propagate the human readable names of the variables associated with this component
     fn get_names(
         &self,
-        public_arguments: &IndexMap<base::IndexKey, Value>,
-        argument_variables: &IndexMap<base::IndexKey, Vec<String>>,
+        public_arguments: &IndexMap<base::IndexKey, &Value>,
+        argument_variables: &IndexMap<base::IndexKey, Vec<IndexKey>>,
         release: Option<&Value>,
-    ) -> Result<Vec<String>>;
+    ) -> Result<Vec<IndexKey>>;
 }
 
 
@@ -228,7 +228,7 @@ impl Component for proto::Component {
     fn propagate_property(
         &self,
         privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: &IndexMap<base::IndexKey, Value>,
+        public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &NodeProperties,
         node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
@@ -250,7 +250,7 @@ impl Component for proto::Component {
 
         propagate_property!(
             // INSERT COMPONENT LIST
-            Cast, Clamp, Count, Covariance, Digitize,
+            Cast, Clamp, Count, Covariance, Dataframe, Digitize,
             Filter, Histogram, Impute, Index, Literal, Materialize, Mean,
             Partition, Quantile, RawMoment, Reshape, Resize, Sum, Union, Variance,
 
@@ -314,7 +314,7 @@ impl Expandable for proto::Component {
 
         expand_component!(
             // INSERT COMPONENT LIST
-            Clamp, Digitize, Histogram, Impute, Index, Maximum, Minimum, Partition, Resize,
+            Clamp, Digitize, Histogram, Impute, Index, Maximum, Median, Minimum, Partition, Resize,
 
             DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMedian,
             DpMinimum, DpQuantile, DpRawMoment, DpSum, DpVariance,
@@ -480,10 +480,10 @@ impl Report for proto::Component {
         &self,
         node_id: &u32,
         component: &proto::Component,
-        public_arguments: &IndexMap<base::IndexKey, Value>,
+        public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &NodeProperties,
         release: &Value,
-        variable_names: Option<&Vec<String>>,
+        variable_names: Option<&Vec<base::IndexKey>>,
     ) -> Result<Option<Vec<JSONRelease>>> {
         let variant = self.variant.as_ref()
             .ok_or_else(|| "variant: must be defined")?;
@@ -518,10 +518,10 @@ impl Named for proto::Component {
     /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn get_names(
         &self,
-        public_arguments: &IndexMap<base::IndexKey, Value>,
-        argument_variables: &IndexMap<base::IndexKey, Vec<String>>,
+        public_arguments: &IndexMap<base::IndexKey, &Value>,
+        argument_variables: &IndexMap<base::IndexKey, Vec<IndexKey>>,
         release: Option<&Value>,
-    ) -> Result<Vec<String>> {
+    ) -> Result<Vec<IndexKey>> {
         let variant = self.variant.as_ref()
             .ok_or_else(|| "variant: must be defined")?;
 
@@ -541,7 +541,7 @@ impl Named for proto::Component {
         // TODO: transforms, covariance/cross-covariance, extended indexing
         get_names!(
             // INSERT COMPONENT LIST
-            Index, Literal, Materialize
+            Dataframe, Index, Literal, Materialize
         );
 
         // default implementation

@@ -111,7 +111,7 @@ pub fn quantile_utilities<T: Ord + Clone + Copy>(
                 .map(|_| column_len as f64).collect::<Vec<f64>>());
 
             let utilities = offsets.into_iter()
-                .map(|offset| constant - ((1. - alpha) * offset - alpha * (n - offset)).abs())
+                .map(|offset| constant * n - ((1. - alpha) * offset - alpha * (n - offset)).abs())
                 .collect::<Vec<f64>>();
 
             // order they utilities by the order of the candidates before they were sorted

@@ -131,15 +131,17 @@ impl Report for proto::DpCount {
         &self,
         node_id: &u32,
         component: &proto::Component,
-        _public_arguments: &IndexMap<base::IndexKey, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, &Value>,
         _properties: &NodeProperties,
         release: &Value,
-        variable_names: Option<&Vec<String>>,
+        variable_names: Option<&Vec<base::IndexKey>>,
     ) -> Result<Option<Vec<JSONRelease>>> {
         Ok(Some(vec![JSONRelease {
             description: "DP release information".to_string(),
             statistic: "DPCount".to_string(),
-            variables: serde_json::json!(variable_names.cloned().unwrap_or_else(Vec::new).clone()),
+            variables: serde_json::json!(variable_names.cloned()
+                .unwrap_or_else(Vec::new).iter()
+                .map(|v| v.to_string()).collect::<Vec<String>>()),
             release_info: value_to_json(&release)?,
             privacy_loss: privacy_usage_to_json(&self.privacy_usage[0].clone()),
             accuracy: None,

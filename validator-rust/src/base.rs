@@ -13,6 +13,7 @@ use crate::utilities::{standardize_categorical_argument, deduplicate, serial, ge
 use indexmap::IndexMap;
 use crate::utilities::serial::{parse_indexmap_node_ids, serialize_index_key};
 use std::ops::{Add, Div, Mul};
+use itertools::Itertools;
 
 /// The universal data representation.
 ///
@@ -428,7 +429,7 @@ impl Jagged {
             Jagged::F64(_) =>
                 Err("float data may not be categorical".into()),
             Jagged::I64(categories) => Ok(categories.into_iter()
-                .map(deduplicate)
+                .map(|v| v.into_iter().unique().collect())
                 .collect::<Vec<Vec<i64>>>().into()),
             Jagged::Bool(categories) => Ok(categories.into_iter()
                 .map(deduplicate)

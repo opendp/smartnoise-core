@@ -3,7 +3,7 @@ use whitenoise_validator::errors::*;
 use crate::NodeArguments;
 use whitenoise_validator::base::{ReleaseNode, Value, Jagged};
 use whitenoise_validator::utilities::{
-    get_argument, broadcast_ndarray,
+    get_argument, array::broadcast_ndarray,
     privacy::{get_epsilon, get_delta, spread_privacy_usage}};
 use crate::components::Evaluable;
 use crate::utilities;

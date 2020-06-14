@@ -8,7 +8,7 @@ use crate::hashmap;
 use crate::components::{Component, Expandable};
 
 use crate::base::{Value, NodeProperties, ValueProperties, DataType, Nature, NatureCategorical, Jagged, Vector1DNull, NatureContinuous, Array, IndexKey};
-use crate::utilities::prepend;
+use crate::utilities::{prepend, get_argument};
 use itertools::Itertools;
 use indexmap::map::IndexMap;
 
@@ -16,7 +16,7 @@ impl Component for proto::Cast {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: &IndexMap<base::IndexKey, Value>,
+        public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
@@ -42,8 +42,7 @@ impl Component for proto::Cast {
             DataType::Unknown => unreachable!(),
             DataType::Bool => {
                 // true label must be defined
-                let true_label = public_arguments.get::<IndexKey>(&"true_label".into())
-                    .ok_or_else(|| Error::from("true_label: missing, must be public"))?.array()?.clone();
+                let true_label = get_argument(public_arguments, "true_label")?.array()?.clone();
 
                 // check categories for equality with true_label
                 data_property.nature = match data_property.nature {
@@ -85,12 +84,10 @@ impl Component for proto::Cast {
             },
             DataType::I64 => {
                 // lower must be defined, for imputation of values that won't cast
-                public_arguments.get::<IndexKey>(&"lower".into())
-                    .ok_or_else(|| Error::from("lower: missing, must be public"))?.first_i64()
+                get_argument(public_arguments, "lower")?.first_i64()
                     .map_err(prepend("type:"))?;
                 // max must be defined
-                public_arguments.get::<IndexKey>(&"upper".into())
-                    .ok_or_else(|| Error::from("upper: missing, must be public"))?.first_i64()
+                get_argument(public_arguments, "upper")?.first_i64()
                     .map_err(prepend("type:"))?;
 
                 data_property.nature = None;

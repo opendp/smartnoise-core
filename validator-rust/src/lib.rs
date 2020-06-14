@@ -130,14 +130,14 @@ pub fn generate_report(
         .value;
 
     // variable names
-    let mut nodes_varnames: HashMap<u32, Vec<String>> = HashMap::new();
+    let mut nodes_varnames: HashMap<u32, Vec<IndexKey>> = HashMap::new();
 
     utilities::get_traversal(&graph)?.iter().map(|node_id| {
         let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
         let public_arguments = utilities::get_public_arguments(&component, &release)?;
 
         // variable names for argument nodes
-        let mut arguments_vars: IndexMap<base::IndexKey, Vec<String>> = IndexMap::new();
+        let mut arguments_vars: IndexMap<base::IndexKey, Vec<IndexKey>> = IndexMap::new();
 
         // iterate through argument nodes
         for (field_id, field) in &component.arguments() {
@@ -396,9 +396,9 @@ pub fn expand_component(
         &maximum_id,
     ).chain_err(|| format!("at node_id {:?}", component_id))?;
 
-    let public_values = public_arguments.into_iter()
-        .map(|(name, release_node)| (name.clone(), release_node.value.clone()))
-        .collect::<IndexMap<IndexKey, Value>>();
+    let public_values = public_arguments.iter()
+        .map(|(name, release_node)| (name.clone(), &release_node.value))
+        .collect::<IndexMap<IndexKey, &Value>>();
 
     if result.traversal.is_empty() {
         let Warnable(propagated_property, propagation_warnings) = component.clone()

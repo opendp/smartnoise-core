@@ -7,7 +7,7 @@ use whitenoise_validator::proto;
 use whitenoise_validator::utilities::array::{slow_stack, slow_select};
 use ndarray::prelude::*;
 
-use whitenoise_validator::components::index::{to_name_vec, mask_columns};
+use whitenoise_validator::components::index::{to_name_vec};
 use whitenoise_validator::utilities::get_argument;
 use crate::utilities::to_nd;
 use indexmap::map::IndexMap;
@@ -106,6 +106,16 @@ impl Evaluable for proto::Index {
 
         Ok(ReleaseNode::new(indexed))
     }
+}
+
+pub fn mask_columns(column_names: &[IndexKey], mask: &[bool]) -> Result<Vec<IndexKey>> {
+    if mask.len() != column_names.len() {
+        return Err("boolean mask must be the same length as the column names".into());
+    }
+    Ok(column_names.iter().zip(mask)
+        .filter(|(_, mask)| **mask)
+        .map(|(name, _)| name.to_owned())
+        .collect::<Vec<IndexKey>>())
 }
 
 fn column_stack(

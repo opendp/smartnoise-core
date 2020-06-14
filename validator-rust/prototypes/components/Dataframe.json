@@ -3,12 +3,12 @@
     "data": {
       "type_value": "Array"
     },
-    "column_names": {
+    "names": {
       "type_value": "Array"
     }
   },
-  "id": "Rename",
-  "name": "rename",
+  "id": "Dataframe",
+  "name": "dataframe",
   "options": {},
   "return": {
     "type_value": "Indexmap"

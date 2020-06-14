@@ -9,7 +9,7 @@ use crate::components::{Component, Expandable};
 
 use ndarray;
 use crate::base::{Vector1DNull, Nature, NatureContinuous, Value, Array, ValueProperties, DataType, IndexKey};
-use crate::utilities::{prepend, get_literal};
+use crate::utilities::{prepend, get_literal, get_argument};
 use indexmap::map::IndexMap;
 
 
@@ -17,7 +17,7 @@ impl Component for proto::Impute {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: &IndexMap<base::IndexKey, Value>,
+        public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
@@ -46,8 +46,7 @@ impl Component for proto::Impute {
                 return Err("categories and data must be homogeneously typed".into())
             }
 
-            let null_values = public_arguments.get::<IndexKey>(&"null_values".into())
-                .ok_or_else(|| Error::from("null_values: missing, must be public"))?.jagged()?;
+            let null_values = get_argument(public_arguments, "null_values")?.jagged()?;
 
             if null_values.data_type() != data_property.data_type {
                 return Err("null_values and data must be homogeneously typed".into())

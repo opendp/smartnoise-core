@@ -15,7 +15,7 @@ impl Component for proto::Histogram {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &IndexMap<base::IndexKey, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &NodeProperties,
         node_id: u32
     ) -> Result<Warnable<ValueProperties>> {

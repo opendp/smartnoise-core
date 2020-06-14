@@ -1,23 +1,25 @@
 use crate::errors::*;
 
-use crate::base::{Array, Value, ValueProperties, ArrayProperties, Nature, NatureContinuous, NatureCategorical, Vector1DNull, Jagged, IndexKey, NodeProperties, DataType};
+use crate::base::{
+    Array, Value, ValueProperties, ArrayProperties,
+    IndexKey, NodeProperties
+};
 
 use crate::{proto, base, Warnable};
 use crate::components::{Component, Named, Expandable};
 
-use std::ops::Deref;
 use ndarray::ArrayD;
 use ndarray::prelude::*;
-use crate::utilities::{get_common_value, get_literal};
+use crate::utilities::{get_literal, get_argument};
 use indexmap::map::IndexMap;
 use std::collections::HashMap;
-use itertools::Itertools;
+use crate::utilities::properties::{select_properties, stack_properties};
 
 impl Component for proto::Index {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: &IndexMap<base::IndexKey, Value>,
+        public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
@@ -78,8 +80,8 @@ impl Component for proto::Index {
 
                     // index into a partitional indexmap
                     proto::indexmap_properties::Variant::Partition => {
-                        let names = public_arguments.get::<IndexKey>(&"names".into())
-                            .ok_or_else(|| Error::from("names: missing"))?.deref().to_owned().array()?.clone();
+                        let names = get_argument(public_arguments, "names")?
+                            .to_owned().array()?.clone();
 
                         let partition_key = IndexKey::new(names)?;
                         let mut part_properties = data_property.children.get::<IndexKey>(&partition_key)
@@ -120,7 +122,7 @@ impl Component for proto::Index {
                     dimensionality = Some(indices.shape().len() as i64 + 1);
 
                     to_name_vec(indices)?.into_iter()
-                        .map(|idx| select_properties(&data_property, &(idx as usize)))
+                        .map(|idx| select_properties(&data_property, idx as usize))
                         .collect::<Result<Vec<ValueProperties>>>()
 
                 } else if let Some(mask) = public_arguments.get::<IndexKey>(&"mask".into()) {
@@ -134,7 +136,7 @@ impl Component for proto::Index {
                         return Err("mask: must be same length as the number of columns")?
                     }
                     mask.into_iter().enumerate().filter(|(_, mask)| *mask)
-                        .map(|(idx, _)| select_properties(&data_property, &idx))
+                        .map(|(idx, _)| select_properties(&data_property, idx))
                         .collect::<Result<Vec<ValueProperties>>>()
                 } else {
                     return Err("either indices or mask must be supplied".into())
@@ -191,27 +193,41 @@ impl Expandable for proto::Index {
 impl Named for proto::Index {
     fn get_names(
         &self,
-        public_arguments: &IndexMap<base::IndexKey, Value>,
-        argument_variables: &IndexMap<base::IndexKey, Vec<String>>,
+        public_arguments: &IndexMap<base::IndexKey, &Value>,
+        argument_variables: &IndexMap<base::IndexKey, Vec<IndexKey>>,
         _release: Option<&Value>
-    ) -> Result<Vec<String>> {
-        let input_names = argument_variables.get::<IndexKey>(&"data".into()).ok_or("data: missing")?;
-        Ok(match public_arguments.get::<IndexKey>(&"columns".into())
-            .ok_or_else(|| Error::from("columns: missing"))?.to_owned()
-            .array()? {
-            Array::Str(names) =>
-                names.iter().cloned().collect::<Vec<String>>(),
-            Array::I64(indices) => indices.iter()
+    ) -> Result<Vec<IndexKey>> {
+        if let Some(names) = public_arguments.get::<IndexKey>(&"names".into()) {
+            return Ok(match names.array()? {
+                Array::I64(names) => names.iter()
+                    .map(|n| n.clone().into())
+                    .collect(),
+                Array::Bool(names) => names.iter()
+                    .map(|n| n.clone().into())
+                    .collect(),
+                Array::Str(names) => names.iter()
+                    .map(|n| n.clone().into())
+                    .collect(),
+                _ => return Err("column names may not be floats".into())
+            })
+        }
+        let input_names = argument_variables.get::<IndexKey>(&"data".into())
+            .ok_or_else(|| Error::from("column names on data must be known"))?;
+
+        if let Some(indices) = public_arguments.get::<IndexKey>(&"indices".into()) {
+            indices.array()?.i64()?.iter()
                 .map(|idx| input_names.get(*idx as usize).cloned())
-                .collect::<Option<Vec<String>>>()
-                .ok_or_else(|| "attempted to retrieve an out-of-bounds name")?,
-            Array::Bool(mask) => mask.iter()
-                .zip(input_names.iter())
-                .filter(|(mask, _)| **mask)
+                .collect::<Option<Vec<IndexKey>>>()
+                .ok_or_else(|| Error::from("attempted to retrieve an out-of-bounds name"))
+        } else if let Some(mask) = public_arguments.get::<IndexKey>(&"mask".into()) {
+            Ok(mask.array()?.bool()?.iter()
+                .zip(input_names.into_iter())
+                .filter(|(&mask, _)| mask)
                 .map(|(_, name)| name.clone())
-                .collect::<Vec<String>>(),
-            _ => return Err("column names may not be floats".into())
-        })
+                .collect::<Vec<IndexKey>>())
+        } else {
+            return Err("one of names, indices or mask must be supplied".into())
+        }
     }
 }
 
@@ -225,176 +241,4 @@ pub fn to_name_vec<T: Clone>(columns: &ArrayD<T>) -> Result<Vec<T>> {
         },
         _ => Err("dimensionality of column names must be less than 2".into())
     }
-}
-
-pub fn mask_columns(column_names: &[IndexKey], mask: &[bool]) -> Result<Vec<IndexKey>> {
-    if mask.len() != column_names.len() {
-        return Err("boolean mask must be the same length as the column names".into());
-    }
-    Ok(column_names.iter().zip(mask)
-        .filter(|(_, mask)| **mask)
-        .map(|(name, _)| name.to_owned())
-        .collect::<Vec<IndexKey>>())
-}
-
-fn take<T: Clone>(vector: &[T], index: &usize) -> Result<T> {
-    match vector.get(*index) {
-        Some(value) => Ok(value.clone()),
-        None => Err("property column index is out of bounds".into())
-    }
-}
-
-fn select_properties(properties: &ArrayProperties, index: &usize) -> Result<ValueProperties> {
-    let mut properties = properties.clone();
-    properties.c_stability = vec![take(&properties.c_stability, index)?];
-    properties.num_columns = Some(1);
-    if let Some(nature) = &properties.nature {
-        properties.nature = Some(match nature {
-            Nature::Continuous(continuous) => Nature::Continuous(NatureContinuous {
-                lower: match &continuous.lower {
-                    Vector1DNull::F64(lower) => Vector1DNull::F64(vec![take(lower, index)?]),
-                    Vector1DNull::I64(lower) => Vector1DNull::I64(vec![take(lower, index)?]),
-                    _ => return Err("lower must be numeric".into())
-                },
-                upper: match &continuous.upper {
-                    Vector1DNull::F64(upper) => Vector1DNull::F64(vec![take(upper, index)?]),
-                    Vector1DNull::I64(upper) => Vector1DNull::I64(vec![take(upper, index)?]),
-                    _ => return Err("upper must be numeric".into())
-                },
-            }),
-            Nature::Categorical(categorical) => Nature::Categorical(NatureCategorical {
-                categories: match &categorical.categories {
-                    Jagged::F64(cats) => Jagged::F64(vec![take(&cats, index)?]),
-                    Jagged::I64(cats) => Jagged::I64(vec![take(&cats, index)?]),
-                    Jagged::Bool(cats) => Jagged::Bool(vec![take(&cats, index)?]),
-                    Jagged::Str(cats) => Jagged::Str(vec![take(&cats, index)?]),
-                }
-            })
-        })
-    }
-    Ok(ValueProperties::Array(properties))
-}
-
-fn stack_properties(all_properties: &Vec<ValueProperties>, dimensionality: Option<i64>) -> Result<ValueProperties> {
-    let all_properties = all_properties.into_iter()
-        .map(|property| Ok(property.array()?.clone()))
-        .collect::<Result<Vec<ArrayProperties>>>()?;
-
-    let num_records = get_common_value(&all_properties.iter()
-        .map(|prop| prop.num_records).collect()).unwrap_or(None);
-    let dataset_id = get_common_value(&all_properties.iter()
-        .map(|prop| prop.dataset_id).collect()).unwrap_or(None);
-
-    if num_records.is_none() && dataset_id.is_none() {
-        return Err("dataset may not be conformable".into())
-    }
-
-    if all_properties.iter().any(|prop| prop.aggregator.is_some()) {
-        return Err("indexing is not currently supported on aggregated data".into())
-    }
-
-    let data_type = get_common_value(&all_properties.iter().map(|prop| prop.data_type.clone()).collect())
-        .ok_or_else(|| Error::from("dataset must have homogeneous type"))?;
-
-    let group_id = get_common_value(&all_properties.iter()
-        .map(|v| v.group_id.clone()).collect())
-        .ok_or_else(|| "group_id: must be homogeneous")?;
-
-    // TODO: preserve nature when indexing
-    let natures = all_properties.iter()
-        .map(|prop| prop.nature.as_ref())
-        .collect::<Vec<Option<&Nature>>>();
-
-    let nature = get_common_continuous_nature(&natures, data_type.to_owned())
-        .or_else(|| get_common_categorical_nature(&natures));
-
-    Ok(ValueProperties::Array(ArrayProperties {
-        num_records,
-        num_columns: all_properties.iter()
-            .map(|prop| prop.num_columns)
-            .fold(Some(0), |total, num| match (total, num) {
-                (Some(total), Some(num)) => Some(total + num),
-                _ => None
-            }),
-        nullity: get_common_value(&all_properties.iter().map(|prop| prop.nullity).collect()).unwrap_or(true),
-        releasable: get_common_value(&all_properties.iter().map(|prop| prop.releasable).collect()).unwrap_or(true),
-        c_stability: all_properties.iter().flat_map(|prop| prop.c_stability.clone()).collect(),
-        aggregator: None,
-        nature,
-        data_type,
-        dataset_id: all_properties[0].dataset_id,
-        // this is a library-wide assumption - that datasets have more than zero rows
-        is_not_empty: all_properties.iter().all(|prop| prop.is_not_empty),
-        dimensionality,
-        group_id
-    }))
-}
-
-fn get_common_continuous_nature(natures: &Vec<Option<&Nature>>, data_type: DataType) -> Option<Nature> {
-    let lower: Vector1DNull = natures.into_iter().map(|nature| match nature {
-        Some(Nature::Continuous(nature)) => Some(nature.lower.clone()),
-        Some(Nature::Categorical(_)) => None,
-        _ => Some(match data_type {
-            DataType::F64 => Vector1DNull::F64(vec![None]),
-            DataType::I64 => Vector1DNull::I64(vec![None]),
-            _ => return None
-        })
-    }).collect::<Option<Vec<Vector1DNull>>>()?.into_iter()
-        .map(Ok).fold1(concat_vector1d_null)?.ok()?;
-
-    let upper: Vector1DNull = natures.into_iter().map(|nature| match nature {
-        Some(Nature::Continuous(nature)) => Some(nature.upper.clone()),
-        Some(Nature::Categorical(_)) => None,
-        None => Some(match data_type {
-            DataType::F64 => Vector1DNull::F64(vec![None]),
-            DataType::I64 => Vector1DNull::I64(vec![None]),
-            _ => return None
-        })
-    }).collect::<Option<Vec<Vector1DNull>>>()?.into_iter()
-        .map(Ok).fold1(concat_vector1d_null)?.ok()?;
-
-    Some(Nature::Continuous(NatureContinuous {
-        lower, upper
-    }))
-}
-
-fn get_common_categorical_nature(natures: &Vec<Option<&Nature>>) -> Option<Nature> {
-    let categories = natures.into_iter().map(|nature| match nature {
-        Some(Nature::Categorical(nature)) => Some(nature.categories.clone()),
-        Some(Nature::Continuous(_)) => None,
-        None => None
-    }).collect::<Option<Vec<Jagged>>>()?.into_iter()
-        .map(Ok).fold1(concat_jagged)?.ok()?;
-
-    Some(Nature::Categorical(NatureCategorical {
-        categories
-    }))
-}
-
-fn concat_vector1d_null(a: Result<Vector1DNull>, b: Result<Vector1DNull>) -> Result<Vector1DNull> {
-    Ok(match (a?, b?) {
-        (Vector1DNull::F64(a), Vector1DNull::F64(b)) =>
-            Vector1DNull::F64([&a[..], &b[..]].concat()),
-        (Vector1DNull::I64(a), Vector1DNull::I64(b)) =>
-            Vector1DNull::I64([&a[..], &b[..]].concat()),
-        (Vector1DNull::Bool(a), Vector1DNull::Bool(b)) =>
-            Vector1DNull::Bool([&a[..], &b[..]].concat()),
-        (Vector1DNull::Str(a), Vector1DNull::Str(b)) =>
-            Vector1DNull::Str([&a[..], &b[..]].concat()),
-        _ => return Err("attempt to concatenate non-homogenously typed vectors".into())
-    })
-}
-
-fn concat_jagged(a: Result<Jagged>, b: Result<Jagged>) -> Result<Jagged> {
-    Ok(match (a?, b?) {
-        (Jagged::F64(a), Jagged::F64(b)) =>
-            Jagged::F64([&a[..], &b[..]].concat()),
-        (Jagged::I64(a), Jagged::I64(b)) =>
-            Jagged::I64([&a[..], &b[..]].concat()),
-        (Jagged::Bool(a), Jagged::Bool(b)) =>
-            Jagged::Bool([&a[..], &b[..]].concat()),
-        (Jagged::Str(a), Jagged::Str(b)) =>
-            Jagged::Str([&a[..], &b[..]].concat()),
-        _ => return Err("attempt to concatenate non-homogenously typed vectors".into())
-    })
 }

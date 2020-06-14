@@ -8,7 +8,7 @@ use crate::components::{Expandable, Report};
 
 use crate::base::{IndexKey, NodeProperties, Value};
 use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, value_to_json};
-use crate::utilities::{prepend, privacy::spread_privacy_usage, get_ith_column};
+use crate::utilities::{prepend, privacy::spread_privacy_usage, array::get_ith_column};
 use serde_json;
 use indexmap::map::IndexMap;
 
@@ -163,10 +163,10 @@ impl Report for proto::DpMean {
         &self,
         node_id: &u32,
         component: &proto::Component,
-        _public_arguments: &IndexMap<base::IndexKey, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &NodeProperties,
         release: &Value,
-        variable_names: Option<&Vec<String>>,
+        variable_names: Option<&Vec<base::IndexKey>>,
     ) -> Result<Option<Vec<JSONRelease>>> {
 
         let data_property = properties.get::<base::IndexKey>(&"data".into())
@@ -185,12 +185,12 @@ impl Report for proto::DpMean {
         for column_number in 0..(num_columns as usize) {
             let variable_name = variable_names
                 .and_then(|names| names.get(column_number)).cloned()
-                .unwrap_or_else(|| "[Unknown]".to_string());
+                .unwrap_or_else(|| "[Unknown]".into());
 
             releases.push(JSONRelease {
                 description: "DP release information".to_string(),
                 statistic: "DPMean".to_string(),
-                variables: serde_json::json!(variable_name),
+                variables: serde_json::json!(variable_name.to_string()),
                 release_info: value_to_json(&get_ith_column(
                     release.array()?.f64()?,
                     &(column_number as usize)

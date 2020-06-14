@@ -10,7 +10,7 @@ use crate::components::{Expandable, Report};
 
 use crate::base::{NodeProperties, Value, Array};
 use crate::utilities::json::{JSONRelease, value_to_json, privacy_usage_to_json, AlgorithmInfo};
-use crate::utilities::{prepend, privacy::spread_privacy_usage, get_ith_column};
+use crate::utilities::{prepend, privacy::spread_privacy_usage, array::get_ith_column};
 use indexmap::map::IndexMap;
 
 
@@ -51,10 +51,10 @@ impl Report for proto::DpMinimum {
         &self,
         node_id: &u32,
         component: &proto::Component,
-        _public_arguments: &IndexMap<base::IndexKey, Value>,
+        _public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &NodeProperties,
         release: &Value,
-        variable_names: Option<&Vec<String>>,
+        variable_names: Option<&Vec<base::IndexKey>>,
     ) -> Result<Option<Vec<JSONRelease>>> {
         let data_property = properties.get::<base::IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
@@ -71,11 +71,11 @@ impl Report for proto::DpMinimum {
         for column_number in 0..(num_columns as usize) {
             let variable_name = variable_names
                 .and_then(|names| names.get(column_number)).cloned()
-                .unwrap_or_else(|| "[Unknown]".to_string());
+                .unwrap_or_else(|| "[Unknown]".into());
             releases.push(JSONRelease {
                 description: "DP release information".to_string(),
                 statistic: "DPMinimum".to_string(),
-                variables: serde_json::json!(variable_name),
+                variables: serde_json::json!(variable_name.to_string()),
                 release_info: match release.array()? {
                     Array::F64(v) => value_to_json(&get_ith_column(v, &column_number)?.into())?,
                     Array::I64(v) => value_to_json(&get_ith_column(v, &column_number)?.into())?,

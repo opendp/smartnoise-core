@@ -17,7 +17,7 @@ impl Component for proto::Quantile {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: &IndexMap<base::IndexKey, Value>,
+        public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
@@ -130,61 +130,41 @@ impl Sensitivity for proto::Quantile {
     }
 }
 
-impl Expandable for proto::Maximum {
-    fn expand_component(
-        &self,
-        _privacy_definition: &Option<proto::PrivacyDefinition>,
-        component: &proto::Component,
-        _properties: &base::NodeProperties,
-        component_id: &u32,
-        _maximum_id: &u32,
-    ) -> Result<proto::ComponentExpansion> {
-        let quantile_component = proto::Component {
-            arguments: component.arguments.clone(),
-            variant: Some(proto::component::Variant::Quantile(proto::Quantile {
-                alpha: 1.,
-                interpolation: "upper".to_string()
-            })),
-            omit: component.omit,
-            submission: component.submission,
-        };
 
-        Ok(proto::ComponentExpansion {
-            computation_graph: hashmap![*component_id => quantile_component],
-            properties: HashMap::new(),
-            releases: HashMap::new(),
-            traversal: vec![*component_id],
-            warnings: vec![]
-        })
+macro_rules! make_quantile {
+    ($variant:ident, $alpha:expr, $interpolation:expr) => {
+
+        impl Expandable for proto::$variant {
+            fn expand_component(
+                &self,
+                _privacy_definition: &Option<proto::PrivacyDefinition>,
+                component: &proto::Component,
+                _properties: &base::NodeProperties,
+                component_id: &u32,
+                _maximum_id: &u32,
+            ) -> Result<proto::ComponentExpansion> {
+                let quantile_component = proto::Component {
+                    arguments: component.arguments.clone(),
+                    variant: Some(proto::component::Variant::Quantile(proto::Quantile {
+                        alpha: $alpha,
+                        interpolation: $interpolation
+                    })),
+                    omit: component.omit,
+                    submission: component.submission,
+                };
+
+                Ok(proto::ComponentExpansion {
+                    computation_graph: hashmap![*component_id => quantile_component],
+                    properties: HashMap::new(),
+                    releases: HashMap::new(),
+                    traversal: vec![*component_id],
+                    warnings: vec![]
+                })
+            }
+        }
     }
 }
 
-impl Expandable for proto::Minimum {
-    fn expand_component(
-        &self,
-        _privacy_definition: &Option<proto::PrivacyDefinition>,
-        component: &proto::Component,
-        _properties: &base::NodeProperties,
-        component_id: &u32,
-        _maximum_id: &u32,
-    ) -> Result<proto::ComponentExpansion> {
-        let quantile_component = proto::Component {
-            arguments: component.arguments.clone(),
-            variant: Some(proto::component::Variant::Quantile(proto::Quantile {
-                alpha: 0.,
-                interpolation: "lower".to_string()
-            })),
-            omit: component.omit,
-            submission: component.submission,
-        };
-
-        Ok(proto::ComponentExpansion {
-            computation_graph: hashmap![*component_id => quantile_component],
-            properties: HashMap::new(),
-            releases: HashMap::new(),
-            traversal: vec![*component_id],
-            warnings: vec![]
-        })
-    }
-}
-
+make_quantile!(Minimum, 0.0, "lower".to_string());
+make_quantile!(Median, 0.5, "midpoint".to_string());
+make_quantile!(Maximum, 1.0, "upper".to_string());

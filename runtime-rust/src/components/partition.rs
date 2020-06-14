@@ -60,12 +60,13 @@ type ColName = IndexKey;
 /// ```
 /// use ndarray::{ArrayD, arr1, arr2};
 /// use whitenoise_runtime::components::partition::partition_ndarray_evenly;
+/// use whitenoise_validator::base::IndexKey;
 ///
 /// let data = arr2(&[ [1, 2], [4, 5], [7, 8], [10, 11] ]).into_dyn();
 /// let partitioned = partition_ndarray_evenly(&data, 3);
-/// assert_eq!(partitioned.get(&0).unwrap().clone(), arr2(&[ [1, 2], [4, 5] ]).into_dyn());
-/// assert_eq!(partitioned.get(&1).unwrap().clone(), arr2(&[ [7, 8] ]).into_dyn());
-/// assert_eq!(partitioned.get(&2).unwrap().clone(), arr2(&[ [10, 11] ]).into_dyn());
+/// assert_eq!(partitioned.get::<IndexKey>(&0.into()).unwrap().clone(), arr2(&[ [1, 2], [4, 5] ]).into_dyn());
+/// assert_eq!(partitioned.get::<IndexKey>(&1.into()).unwrap().clone(), arr2(&[ [7, 8] ]).into_dyn());
+/// assert_eq!(partitioned.get::<IndexKey>(&2.into()).unwrap().clone(), arr2(&[ [10, 11] ]).into_dyn());
 /// ```
 pub fn partition_ndarray_evenly<T: Clone + Default + std::fmt::Debug>(
     data: &ArrayD<T>, num_partitions: i64

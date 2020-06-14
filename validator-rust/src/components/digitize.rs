@@ -15,7 +15,7 @@ impl Component for proto::Digitize {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: &IndexMap<base::IndexKey, Value>,
+        public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
@@ -30,8 +30,10 @@ impl Component for proto::Digitize {
         let num_columns = data_property.num_columns()
             .map_err(prepend("data:"))?;
 
-        let null_value = public_arguments.get::<IndexKey>(&"null_value".into()).cloned()
-            .unwrap_or_else(|| Value::Array(Array::I64(arr0(-1).into_dyn())));
+        let null_value: base::Value = match public_arguments.get::<IndexKey>(&"null_value".into()) {
+            Some(&v) => v.to_owned(),
+            None => Value::Array(Array::I64(arr0(-1).into_dyn()))
+        };
         let null = null_value.array()?.i64()?;
 
         if !data_property.releasable {
