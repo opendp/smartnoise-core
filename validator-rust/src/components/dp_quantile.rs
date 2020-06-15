@@ -1,8 +1,5 @@
 use crate::errors::*;
 
-
-use std::collections::HashMap;
-
 use crate::{proto, base};
 use crate::components::{Expandable, Report};
 
@@ -21,9 +18,10 @@ impl Expandable for proto::DpQuantile {
         _properties: &base::NodeProperties,
         component_id: &u32,
         maximum_id: &u32,
-    ) -> Result<proto::ComponentExpansion> {
+    ) -> Result<base::ComponentExpansion> {
         let mut current_id = *maximum_id;
-        let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
+
+        let mut expansion = base::ComponentExpansion::default();
 
         let data_id = *component.arguments().get::<IndexKey>(&"data".into())
             .ok_or_else(|| Error::from("data is a required argument to DPQuantile"))?;
@@ -36,7 +34,7 @@ impl Expandable for proto::DpQuantile {
         }
         current_id += 1;
         let id_quantile = current_id;
-        computation_graph.insert(id_quantile, proto::Component {
+        expansion.computation_graph.insert(id_quantile, proto::Component {
             arguments: Some(proto::IndexmapNodeIds::new(quantile_args)),
             variant: Some(proto::component::Variant::Quantile(proto::Quantile {
                 alpha: self.alpha,
@@ -45,6 +43,7 @@ impl Expandable for proto::DpQuantile {
             omit: true,
             submission: component.submission,
         });
+        expansion.traversal.push(id_quantile);
 
         // sanitizing
         let mut sanitize_args = indexmap!["utilities".into() => id_quantile];
@@ -52,7 +51,7 @@ impl Expandable for proto::DpQuantile {
             sanitize_args.insert("candidates".into(), *component.arguments().get::<IndexKey>(&"candidates".into())
                 .ok_or_else(|| Error::from("candidates is a required argument to DPQuantile when the exponential mechanism is used."))?);
         }
-        computation_graph.insert(*component_id, proto::Component {
+        expansion.computation_graph.insert(*component_id, proto::Component {
             arguments: Some(proto::IndexmapNodeIds::new(sanitize_args)),
             variant: Some(match self.mechanism.to_lowercase().as_str() {
                 "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
@@ -70,13 +69,7 @@ impl Expandable for proto::DpQuantile {
             submission: component.submission,
         });
 
-        Ok(proto::ComponentExpansion {
-            computation_graph,
-            properties: HashMap::new(),
-            releases: HashMap::new(),
-            traversal: vec![id_quantile],
-            warnings: vec![]
-        })
+        Ok(expansion)
     }
 }
 

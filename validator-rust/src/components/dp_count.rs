@@ -1,8 +1,6 @@
 use crate::errors::*;
 
 
-use std::collections::HashMap;
-
 use crate::{proto, base};
 use crate::components::{Expandable, Report};
 use ndarray::arr0;
@@ -11,25 +9,28 @@ use crate::base::{IndexKey, NodeProperties, Value, ValueProperties};
 use crate::utilities::json::{JSONRelease, privacy_usage_to_json, AlgorithmInfo, value_to_json};
 use crate::utilities::get_literal;
 use indexmap::map::IndexMap;
+use crate::utilities::inference::infer_property;
 
 
 impl Expandable for proto::DpCount {
     fn expand_component(
         &self,
-        _privacy_definition: &Option<proto::PrivacyDefinition>,
+        privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         properties: &base::NodeProperties,
         component_id: &u32,
         maximum_id: &u32,
-    ) -> Result<proto::ComponentExpansion> {
+    ) -> Result<base::ComponentExpansion> {
         let mut maximum_id = *maximum_id;
-        let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
-        let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
+        let mut expansion = base::ComponentExpansion::default();
+
+        let privacy_definition = privacy_definition.as_ref()
+            .ok_or_else(|| Error::from("privacy_definition must be known"))?;
 
         // count
         maximum_id += 1;
         let id_count = maximum_id;
-        computation_graph.insert(id_count.clone(), proto::Component {
+        expansion.computation_graph.insert(id_count.clone(), proto::Component {
             arguments: Some(proto::IndexmapNodeIds::new(indexmap![
                 "data".into() => *component.arguments().get(&IndexKey::from("data"))
                     .ok_or_else(|| Error::from("data must be provided as an argument"))?
@@ -40,6 +41,7 @@ impl Expandable for proto::DpCount {
             omit: true,
             submission: component.submission,
         });
+        expansion.traversal.push(id_count);
 
         if self.mechanism.to_lowercase().as_str() == "simplegeometric" {
 
@@ -49,15 +51,15 @@ impl Expandable for proto::DpCount {
                     // count_max
                     maximum_id += 1;
                     let id_count_min = maximum_id;
-                    let (patch_node, count_min_release) = get_literal(0.into(), &component.submission)?;
-                    computation_graph.insert(id_count_min.clone(), patch_node);
-                    releases.insert(id_count_min.clone(), count_min_release);
+                    let (patch_node, count_min_release) = get_literal(0.into(), component.submission)?;
+                    expansion.computation_graph.insert(id_count_min, patch_node);
+                    expansion.properties.insert(id_count_min, infer_property(&count_min_release.value, None)?);
+                    expansion.releases.insert(id_count_min, count_min_release);
                     id_count_min
                 }
             };
 
             let count_max_id = match component.arguments().get::<IndexKey>(&"upper".into()) {
-                Some(id) => id.clone(),
                 None => {
                     let num_records = match properties.get::<IndexKey>(&"data".into())
                         .ok_or("data: missing")? {
@@ -68,38 +70,39 @@ impl Expandable for proto::DpCount {
 
                     let count_max = match num_records {
                         Some(num_records) => arr0(num_records).into_dyn(),
-                        None => match self.enforce_constant_time {
-                            true => return Err("upper must be set when enforcing constant time".into()),
+                        None => match privacy_definition.protect_elapsed_time {
+                            true => return Err("upper must be set when protecting elapsed time".into()),
                             false => arr0(std::i64::MAX).into_dyn()
                         }
                     };
                     // count_max
                     maximum_id += 1;
                     let id_count_max = maximum_id;
-                    let (patch_node, count_max_release) = get_literal(count_max.into(), &component.submission)?;
-                    computation_graph.insert(id_count_max.clone(), patch_node);
-                    releases.insert(id_count_max.clone(), count_max_release);
+                    let (patch_node, count_max_release) = get_literal(count_max.into(), component.submission)?;
+                    expansion.computation_graph.insert(id_count_max.clone(), patch_node);
+                    expansion.properties.insert(id_count_max, infer_property(&count_max_release.value, None)?);
+                    expansion.releases.insert(id_count_max.clone(), count_max_release);
                     id_count_max
                 }
+                Some(id) => id.clone(),
             };
 
             // noising
-            computation_graph.insert(*component_id, proto::Component {
+            expansion.computation_graph.insert(*component_id, proto::Component {
+                variant: Some(proto::component::Variant::SimpleGeometricMechanism(proto::SimpleGeometricMechanism {
+                    privacy_usage: self.privacy_usage.clone()
+                })),
                 arguments: Some(proto::IndexmapNodeIds::new(indexmap![
                     "data".into() => id_count,
                     "lower".into() => count_min_id,
                     "upper".into() => count_max_id
                 ])),
-                variant: Some(proto::component::Variant::SimpleGeometricMechanism(proto::SimpleGeometricMechanism {
-                    privacy_usage: self.privacy_usage.clone(),
-                    enforce_constant_time: false,
-                })),
                 omit: component.omit,
                 submission: component.submission,
             });
         } else {
             // noising
-            computation_graph.insert(*component_id, proto::Component {
+            expansion.computation_graph.insert(*component_id, proto::Component {
                 arguments: Some(proto::IndexmapNodeIds::new(
                     indexmap!["data".into() => id_count])),
                 variant: Some(match self.mechanism.to_lowercase().as_str() {
@@ -116,13 +119,7 @@ impl Expandable for proto::DpCount {
             });
         }
 
-        Ok(proto::ComponentExpansion {
-            computation_graph,
-            properties: HashMap::new(),
-            releases,
-            traversal: vec![id_count],
-            warnings: vec![]
-        })
+        Ok(expansion)
     }
 }
 

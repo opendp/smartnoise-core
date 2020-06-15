@@ -21,13 +21,14 @@ pub mod errors {
     error_chain! {}
 }
 
-pub struct Warnable<T>(T, Vec<Error>);
-impl<T> Warnable<T> {
+#[derive(Debug)]
+pub struct Warnable<T: std::fmt::Debug>(T, Vec<Error>);
+impl<T: std::fmt::Debug> Warnable<T> {
     pub fn new(value: T) -> Self {
         Warnable(value, Vec::new())
     }
 }
-impl<T> From<T> for Warnable<T> {
+impl<T: std::fmt::Debug> From<T> for Warnable<T> {
     fn from(value: T) -> Self {
         Warnable::new(value)
     }
@@ -46,8 +47,7 @@ pub mod docs;
 // import all trait implementations
 use crate::components::*;
 use std::collections::{HashMap, HashSet};
-use crate::utilities::serial::{serialize_value_properties, serialize_error, parse_index_key, parse_release_node, parse_indexmap_value_properties};
-use crate::base::{Value, IndexKey};
+use crate::base::{Value, IndexKey, ValueProperties};
 use std::iter::FromIterator;
 use crate::utilities::privacy::compute_graph_privacy_usage;
 use indexmap::map::IndexMap;
@@ -84,10 +84,16 @@ macro_rules! hashmap {
 /// The system may also be run dynamically- prior to expanding each node, calling the expand_component endpoint will also validate the component being expanded.
 /// NOTE: Evaluating the graph dynamically opens up additional potential timing attacks.
 pub fn validate_analysis(
-    mut analysis: proto::Analysis,
+    privacy_definition: Option<proto::PrivacyDefinition>,
+    mut computation_graph: HashMap<u32, proto::Component>,
     mut release: base::Release
 ) -> Result<()> {
-    utilities::propagate_properties(&mut analysis, &mut release, None, false)?;
+    utilities::propagate_properties(
+        &privacy_definition,
+        &mut computation_graph,
+        &mut release,
+        None,
+        false)?;
     Ok(())
 }
 
@@ -97,19 +103,18 @@ pub fn validate_analysis(
 /// The privacy usage is sum of the privacy usages for each node.
 /// The Release's actual privacy usage, if defined, takes priority over the maximum allowable privacy usage defined in the Analysis.
 pub fn compute_privacy_usage(
-    mut analysis: proto::Analysis,
+    privacy_definition: proto::PrivacyDefinition,
+    mut computation_graph: HashMap<u32, proto::Component>,
     mut release: base::Release
 ) -> Result<proto::PrivacyUsage> {
 
-    let properties = utilities::propagate_properties(&mut analysis, &mut release, None, false)?.0;
-    // this is mutated within propagate_properties
-    let graph = analysis.computation_graph
-        .ok_or_else(|| Error::from("computation_graph must be defined"))?.value;
-    let privacy_definition = analysis.privacy_definition
-        .ok_or_else(|| "privacy_definition must be defined")?;
+    let properties = utilities::propagate_properties(
+        &Some(privacy_definition.clone()),
+        &mut computation_graph,
+        &mut release, None, false)?.0;
 
     let privacy_usage = compute_graph_privacy_usage(
-        &graph, &privacy_definition, &properties, &release)?;
+        &computation_graph, &privacy_definition, &properties, &release)?;
 
     utilities::privacy::privacy_usage_check(&privacy_usage, None, false)?;
 
@@ -119,21 +124,21 @@ pub fn compute_privacy_usage(
 
 /// Generate a json string with a summary/report of the Analysis and Release
 pub fn generate_report(
-    mut analysis: proto::Analysis,
+    privacy_definition: proto::PrivacyDefinition,
+    mut computation_graph: HashMap<u32, proto::Component>,
     mut release: base::Release
 ) -> Result<String> {
 
-    let graph_properties = utilities::propagate_properties(&mut analysis, &mut release, None, false)?.0;
-
-    let graph = analysis.computation_graph
-        .ok_or("computation_graph must be defined")?
-        .value;
+    let graph_properties = utilities::propagate_properties(
+        &Some(privacy_definition),
+        &mut computation_graph,
+        &mut release, None, false)?.0;
 
     // variable names
     let mut nodes_varnames: HashMap<u32, Vec<IndexKey>> = HashMap::new();
 
-    utilities::get_traversal(&graph)?.iter().map(|node_id| {
-        let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
+    utilities::get_traversal(&computation_graph)?.iter().map(|node_id| {
+        let component: proto::Component = computation_graph.get(&node_id).unwrap().to_owned();
         let public_arguments = utilities::get_public_arguments(&component, &release)?;
 
         // variable names for argument nodes
@@ -161,7 +166,7 @@ pub fn generate_report(
         // ignore any error- still generate the report even if node names could not be derived
         .ok();
 
-    let release_schemas = graph.iter()
+    let release_schemas = computation_graph.iter()
         .map(|(node_id, component)| {
             let public_arguments = utilities::get_public_arguments(&component, &release)?;
             let input_properties = utilities::get_input_properties(&component, &graph_properties)?;
@@ -205,25 +210,19 @@ pub fn accuracy_to_privacy_usage(
         .filter_map(|(name, idx)| Some((idx.clone(), properties.get(name)?.clone())))
         .collect::<HashMap<u32, base::ValueProperties>>();
 
-    let mut analysis = proto::Analysis {
-        computation_graph: Some(proto::ComputationGraph {
-            value: hashmap![component.arguments().values().max().cloned().unwrap_or(0) + 1 => component.clone()]
-        }),
-        privacy_definition: Some(privacy_definition.clone()),
-    };
+    let mut computation_graph = hashmap![
+        component.arguments().values().max().cloned().unwrap_or(0) + 1 => component.clone()
+    ];
 
     let (properties, _) = utilities::propagate_properties(
-        &mut analysis,
+        &Some(privacy_definition.clone()),
+            &mut computation_graph,
         &mut HashMap::new(),
         Some(proto_properties),
         false,
     )?;
 
-    let graph = analysis.computation_graph
-        .ok_or("computation_graph must be defined")?
-        .value;
-
-    let privacy_usages = graph.iter().map(|(idx, component)| {
+    let privacy_usages = computation_graph.iter().map(|(idx, component)| {
         let component_properties = component.arguments().iter()
             .filter_map(|(name, idx)| Some((name.clone(), properties.get(idx)?.clone())))
             .collect::<IndexMap<base::IndexKey, base::ValueProperties>>();
@@ -260,25 +259,19 @@ pub fn privacy_usage_to_accuracy(
         .filter_map(|(name, idx)| Some((idx.clone(), properties.get(name)?.clone())))
         .collect::<HashMap<u32, base::ValueProperties>>();
 
-    let mut analysis = proto::Analysis {
-        computation_graph: Some(proto::ComputationGraph {
-            value: hashmap![component.arguments().values().max().cloned().unwrap_or(0) + 1 => component.clone()]
-        }),
-        privacy_definition: Some(privacy_definition.clone()),
-    };
+    let mut computation_graph = hashmap![
+        component.arguments().values().max().cloned().unwrap_or(0) + 1 => component.clone()
+    ];
 
     let (properties, _) = utilities::propagate_properties(
-        &mut analysis,
+        &Some(privacy_definition.clone()),
+        &mut computation_graph,
         &mut HashMap::new(),
         Some(proto_properties),
         false,
     )?;
 
-    let graph = analysis.computation_graph
-        .ok_or("computation_graph must be defined")?
-        .value;
-
-    let accuracies = graph.iter().map(|(idx, component)| {
+    let accuracies = computation_graph.iter().map(|(idx, component)| {
         let component_properties = component.arguments().iter()
             .filter_map(|(name, idx)| Some((name.clone(), properties.get(idx)?.clone())))
             .collect::<IndexMap<IndexKey, base::ValueProperties>>();
@@ -301,79 +294,18 @@ pub fn privacy_usage_to_accuracy(
     })
 }
 
-/// Retrieve the static properties from every reachable node on the graph.
-pub fn get_properties(
-    mut analysis: proto::Analysis,
-    mut release: base::Release,
-    node_ids: Vec<u32>
-) -> Result<proto::GraphProperties> {
-
-    if node_ids.len() > 0 {
-        let mut ancestors = HashSet::<u32>::new();
-        let mut traversal = Vec::from_iter(node_ids.into_iter());
-        let computation_graph = &analysis.computation_graph.as_ref().unwrap().value;
-        while !traversal.is_empty() {
-            let node_id = traversal.pop().unwrap();
-            computation_graph.get(&node_id)
-                .map(|component| component.arguments().values().for_each(|v| traversal.push(*v)));
-            ancestors.insert(node_id);
-        }
-        analysis = proto::Analysis {
-            computation_graph: Some(proto::ComputationGraph {
-                value: computation_graph.iter()
-                    .filter(|(idx, _)| ancestors.contains(idx))
-                    .map(|(idx, component)| (idx.clone(), component.clone()))
-                    .collect::<HashMap<u32, proto::Component>>()
-            }),
-            privacy_definition: analysis.privacy_definition,
-        };
-        release = release.iter()
-            .filter(|(idx, _)| ancestors.contains(idx))
-            .map(|(idx, release_node)|
-                (idx.clone(), release_node.clone()))
-            .collect();
-    }
-
-    // don't return all properties- only those in the original graph
-    let keep_ids = HashSet::<u32>::from_iter(analysis.computation_graph.as_ref()
-        .ok_or_else(|| Error::from("computation_graph must be defined"))?.value.keys().cloned());
-
-    let (properties, warnings) = utilities::propagate_properties(
-        &mut analysis, &mut release, None, true,
-    )?;
-
-    Ok(proto::GraphProperties {
-        properties: properties.into_iter()
-            .filter(|(node_id, _)| keep_ids.contains(node_id))
-            .map(|(node_id, properties)| (node_id, serialize_value_properties(properties)))
-            .collect::<HashMap<u32, proto::ValueProperties>>(),
-        warnings,
-    })
-}
-
-
 /// Expand a component that may be representable as smaller components, and propagate its properties.
 ///
 /// This is function may be called interactively from the runtime as the runtime executes the computational graph, to allow for dynamic graph validation.
 /// This is opposed to statically validating a graph, where the nodes in the graph that are dependent on the releases of mechanisms cannot be known and validated until the first release is made.
 pub fn expand_component(
-    request: proto::RequestExpandComponent
-) -> Result<proto::ComponentExpansion> {
-    let proto::RequestExpandComponent {
-        component, properties, arguments, privacy_definition, component_id, maximum_id,
-    } = request;
-
-    let public_arguments = match arguments {
-        Some(arguments) => arguments.keys.iter().zip(arguments.values.into_iter())
-            .map(|(k, v)| (parse_index_key(k.clone()), parse_release_node(v)))
-            .collect(),
-        None => IndexMap::new()
-    };
-
-    let mut properties: base::NodeProperties = match properties {
-        Some(properties) => parse_indexmap_value_properties(properties),
-        None => IndexMap::new()
-    };
+    component: proto::Component,
+    mut properties: IndexMap<IndexKey, ValueProperties>,
+    public_arguments: IndexMap<IndexKey, base::ReleaseNode>,
+    privacy_definition: Option<proto::PrivacyDefinition>,
+    component_id: u32,
+    maximum_id: u32,
+) -> Result<base::ComponentExpansion> {
 
     for (k, v) in &public_arguments {
         if !v.public {
@@ -384,9 +316,6 @@ pub fn expand_component(
                               &v.value,
                               properties.get(k))?);
     }
-
-    let component = component
-        .ok_or_else(|| Error::from("component must be defined"))?;
 
     let mut result = component.expand_component(
         &privacy_definition,
@@ -406,9 +335,50 @@ pub fn expand_component(
             .chain_err(|| format!("at node_id {:?}", component_id))?;
 
         result.warnings.extend(propagation_warnings.into_iter()
-            .map(|err| serialize_error(err.chain_err(|| format!("at node_id {:?}", component_id)))));
-        result.properties.insert(component_id.to_owned(), utilities::serial::serialize_value_properties(propagated_property));
+            .map(|err| err.chain_err(|| format!("at node_id {:?}", component_id))));
+        result.properties.insert(component_id.to_owned(), propagated_property);
     }
 
     Ok(result)
+}
+
+
+/// Retrieve the static properties from every reachable node on the graph.
+pub fn get_properties(
+    privacy_definition: Option<proto::PrivacyDefinition>,
+    mut computation_graph: HashMap<u32, proto::Component>,
+    mut release: base::Release,
+    node_ids: Vec<u32>
+) -> Result<(HashMap<u32, ValueProperties>, Vec<Error>)> {
+
+    if node_ids.len() > 0 {
+        let mut ancestors = HashSet::<u32>::new();
+        let mut traversal = Vec::from_iter(node_ids.into_iter());
+        while !traversal.is_empty() {
+            let node_id = traversal.pop().unwrap();
+            computation_graph.get(&node_id)
+                .map(|component| component.arguments().values().for_each(|v| traversal.push(*v)));
+            ancestors.insert(node_id);
+        }
+        computation_graph = computation_graph.iter()
+            .filter(|(idx, _)| ancestors.contains(idx))
+            .map(|(idx, component)| (idx.clone(), component.clone()))
+            .collect::<HashMap<u32, proto::Component>>();
+        release = release.iter()
+            .filter(|(idx, _)| ancestors.contains(idx))
+            .map(|(idx, release_node)|
+                (idx.clone(), release_node.clone()))
+            .collect();
+    }
+
+    // don't return all properties- only those in the original graph
+    let keep_ids = HashSet::<u32>::from_iter(computation_graph.keys().cloned());
+
+    let (mut properties, warnings) = utilities::propagate_properties(
+        &privacy_definition, &mut computation_graph,
+        &mut release, None, true,
+    )?;
+
+    properties.retain(|node_id, _| keep_ids.contains(node_id));
+    Ok((properties, warnings))
 }

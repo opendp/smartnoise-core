@@ -1,8 +1,6 @@
 use crate::errors::*;
 
 
-use std::collections::HashMap;
-
 use crate::{proto, base};
 use crate::components::{Expandable, Report};
 use ndarray::{arr0};
@@ -11,20 +9,21 @@ use crate::base::{NodeProperties, Value, IndexKey};
 use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, value_to_json};
 use crate::utilities::{prepend, array::get_ith_column, get_literal, privacy::spread_privacy_usage};
 use indexmap::map::IndexMap;
+use crate::utilities::inference::infer_property;
 
 
 impl Expandable for proto::DpHistogram {
     fn expand_component(
         &self,
-        _privacy_definition: &Option<proto::PrivacyDefinition>,
+        privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         properties: &base::NodeProperties,
         component_id: &u32,
         maximum_id: &u32,
-    ) -> Result<proto::ComponentExpansion> {
+    ) -> Result<base::ComponentExpansion> {
         let mut maximum_id = *maximum_id;
-        let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
-        let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
+
+        let mut expansion = base::ComponentExpansion::default();
 
         let data_id = component.arguments().get::<IndexKey>(&"data".into())
             .ok_or_else(|| Error::from("data is a required argument to DPHistogram"))?.to_owned();
@@ -32,6 +31,9 @@ impl Expandable for proto::DpHistogram {
         let data_property = properties.get::<IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?;
+
+        let privacy_definition = privacy_definition.as_ref()
+            .ok_or_else(|| Error::from("privacy_definition must be known"))?;
 
         // histogram
         maximum_id += 1;
@@ -43,12 +45,13 @@ impl Expandable for proto::DpHistogram {
             .for_each(|name| {arguments.get(&name)
                     .map(|v| histogram_arguments.insert(name, *v));});
 
-        computation_graph.insert(id_histogram, proto::Component {
+        expansion.computation_graph.insert(id_histogram, proto::Component {
             arguments: Some(proto::IndexmapNodeIds::new(histogram_arguments)),
             variant: Some(proto::component::Variant::Histogram(proto::Histogram {})),
             omit: true,
             submission: component.submission,
         });
+        expansion.traversal.push(id_histogram);
 
         if self.mechanism.to_lowercase().as_str() == "simplegeometric" {
 
@@ -58,9 +61,10 @@ impl Expandable for proto::DpHistogram {
                     // count_max
                     maximum_id += 1;
                     let id_count_min = maximum_id;
-                    let (patch_node, count_min_release) = get_literal(0.into(), &component.submission)?;
-                    computation_graph.insert(id_count_min.clone(), patch_node);
-                    releases.insert(id_count_min.clone(), count_min_release);
+                    let (patch_node, count_min_release) = get_literal(0.into(), component.submission)?;
+                    expansion.computation_graph.insert(id_count_min, patch_node);
+                    expansion.properties.insert(id_count_min, infer_property(&count_min_release.value, None)?);
+                    expansion.releases.insert(id_count_min, count_min_release);
                     id_count_min
                 }
             };
@@ -69,31 +73,31 @@ impl Expandable for proto::DpHistogram {
                 None => {
                     let count_max = match data_property.num_records {
                         Some(num_records) => arr0(num_records).into_dyn(),
-                        None => match self.enforce_constant_time {
-                            true => return Err("upper must be set when enforcing constant time".into()),
+                        None => match privacy_definition.protect_elapsed_time {
+                            true => return Err("upper must be set when protecting elapsed time".into()),
                             false => arr0(std::i64::MAX).into_dyn()
                         }
                     };
                     // count_max
                     maximum_id += 1;
-                    let max_id = maximum_id;
-                    let (patch_node, count_max_release) = get_literal(count_max.into(), &component.submission)?;
-                    computation_graph.insert(max_id.clone(), patch_node);
-                    releases.insert(max_id.clone(), count_max_release);
-                    max_id
+                    let id_count_max = maximum_id;
+                    let (patch_node, count_max_release) = get_literal(count_max.into(), component.submission)?;
+                    expansion.computation_graph.insert(id_count_max, patch_node);
+                    expansion.properties.insert(id_count_max, infer_property(&count_max_release.value, None)?);
+                    expansion.releases.insert(id_count_max, count_max_release);
+                    id_count_max
                 }
             };
 
             // noising
-            computation_graph.insert(*component_id, proto::Component {
+            expansion.computation_graph.insert(*component_id, proto::Component {
                 arguments: Some(proto::IndexmapNodeIds::new(indexmap![
                     "data".into() => id_histogram,
                     "lower".into() => count_min_id,
                     "upper".into() => count_max_id
                 ])),
                 variant: Some(proto::component::Variant::SimpleGeometricMechanism(proto::SimpleGeometricMechanism {
-                    privacy_usage: self.privacy_usage.clone(),
-                    enforce_constant_time: false
+                    privacy_usage: self.privacy_usage.clone()
                 })),
                 omit: component.omit,
                 submission: component.submission,
@@ -101,7 +105,7 @@ impl Expandable for proto::DpHistogram {
         } else {
 
             // noising
-            computation_graph.insert(*component_id, proto::Component {
+            expansion.computation_graph.insert(*component_id, proto::Component {
                 arguments: Some(proto::IndexmapNodeIds::new(indexmap![
                     "data".into() => id_histogram
                 ])),
@@ -119,14 +123,7 @@ impl Expandable for proto::DpHistogram {
             });
         }
 
-
-        Ok(proto::ComponentExpansion {
-            computation_graph,
-            properties: HashMap::new(),
-            releases,
-            traversal: vec![id_histogram],
-            warnings: vec![]
-        })
+        Ok(expansion)
     }
 }
 

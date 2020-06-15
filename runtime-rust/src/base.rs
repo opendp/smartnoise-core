@@ -4,6 +4,7 @@ use whitenoise_validator::proto;
 use whitenoise_validator::base::{ReleaseNode, Value};
 use std::collections::{HashMap};
 use whitenoise_validator::utilities::serial::{parse_release_node};
+use whitenoise_validator::base::ValueProperties;
 
 
 pub fn evaluate_function(
@@ -37,13 +38,11 @@ pub fn evaluate_function(
         })
         .collect::<Result<()>>()?;
 
-    let analysis = proto::Analysis {
-        privacy_definition: None,
-        computation_graph: Some(proto::ComputationGraph { value: computation_graph.value }),
-    };
-
     let (release, warnings) = crate::release(
-        analysis, release, proto::FilterLevel::All)?;
+        None,
+        computation_graph.value,
+        release,
+        proto::FilterLevel::All)?;
 
     outputs.into_iter()
         .map(|(name, id)| Ok((
@@ -56,14 +55,11 @@ pub fn evaluate_function(
 }
 
 
-pub fn is_public(properties: &proto::ValueProperties) -> bool {
-    match properties.variant.as_ref().unwrap() {
-        proto::value_properties::Variant::Array(v) => v.releasable,
-        proto::value_properties::Variant::Jagged(v) => v.releasable,
-        proto::value_properties::Variant::Indexmap(v) => match &v.children {
-            Some(v) => v.values.iter().all(is_public),
-            None => true
-        },
-        proto::value_properties::Variant::Function(v) => v.releasable
+pub fn is_public(properties: &ValueProperties) -> bool {
+    match properties {
+        ValueProperties::Array(v) => v.releasable,
+        ValueProperties::Jagged(v) => v.releasable,
+        ValueProperties::Indexmap(v) => v.children.values().all(is_public),
+        ValueProperties::Function(v) => v.releasable,
     }
 }

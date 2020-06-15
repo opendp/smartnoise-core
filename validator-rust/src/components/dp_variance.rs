@@ -1,8 +1,5 @@
 use crate::errors::*;
 
-
-use std::collections::HashMap;
-
 use crate::{proto, base};
 use crate::components::{Expandable, Report};
 use crate::utilities::{prepend, array::get_ith_column};
@@ -21,14 +18,15 @@ impl Expandable for proto::DpVariance {
         _properties: &base::NodeProperties,
         component_id: &u32,
         maximum_id: &u32,
-    ) -> Result<proto::ComponentExpansion> {
+    ) -> Result<base::ComponentExpansion> {
         let mut current_id = *maximum_id;
-        let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
+
+        let mut expansion = base::ComponentExpansion::default();
 
         // variance
         current_id += 1;
         let id_variance = current_id;
-        computation_graph.insert(id_variance, proto::Component {
+        expansion.computation_graph.insert(id_variance, proto::Component {
             arguments: Some(proto::IndexmapNodeIds::new(indexmap![
                 "data".into() => *component.arguments().get(&IndexKey::from("data"))
                     .ok_or_else(|| Error::from("data must be provided as an argument"))?])),
@@ -38,9 +36,10 @@ impl Expandable for proto::DpVariance {
             omit: true,
             submission: component.submission,
         });
+        expansion.traversal.push(id_variance);
 
         // noising
-        computation_graph.insert(*component_id, proto::Component {
+        expansion.computation_graph.insert(*component_id, proto::Component {
             arguments: Some(proto::IndexmapNodeIds::new(indexmap!["data".into() => id_variance])),
             variant: Some(match self.mechanism.to_lowercase().as_str() {
                 "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
@@ -55,13 +54,7 @@ impl Expandable for proto::DpVariance {
             submission: component.submission,
         });
 
-        Ok(proto::ComponentExpansion {
-            computation_graph,
-            properties: HashMap::new(),
-            releases: HashMap::new(),
-            traversal: vec![id_variance],
-            warnings: vec![]
-        })
+        Ok(expansion)
     }
 }
 

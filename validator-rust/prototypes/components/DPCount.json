@@ -30,20 +30,13 @@
       "type_rust": "String",
       "default_python": "\"SimpleGeometric\"",
       "default_rust": "String::from(\"SimpleGeometric\")",
-      "description": "Privatizing mechanism to use. One of [`SimpleGeometric`]"
+      "description": "Privatizing mechanism to use. One of [`SimpleGeometric`, `Laplace`, `Gaussian`]. Only `SimpleGeometric` is accepted if floating-point protections are enabled."
     },
     "privacy_usage": {
       "type_proto": "repeated PrivacyUsage",
       "type_rust": "Vec<proto::PrivacyUsage>",
       "default_python": "None",
       "description": "Object describing the type and amount of privacy to be used for the mechanism release."
-    },
-    "enforce_constant_time": {
-      "type_proto": "bool",
-      "type_rust": "bool",
-      "default_python": "False",
-      "default_rust": "false",
-      "description": "Whether or not to require Geometric mechanism to run in constant time."
     }
   },
   "return": {

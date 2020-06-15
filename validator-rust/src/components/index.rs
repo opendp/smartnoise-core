@@ -12,8 +12,8 @@ use ndarray::ArrayD;
 use ndarray::prelude::*;
 use crate::utilities::{get_literal, get_argument};
 use indexmap::map::IndexMap;
-use std::collections::HashMap;
 use crate::utilities::properties::{select_properties, stack_properties};
+use crate::utilities::inference::infer_property;
 
 impl Component for proto::Index {
     fn propagate_property(
@@ -158,10 +158,10 @@ impl Expandable for proto::Index {
         properties: &NodeProperties,
         component_id: &u32,
         maximum_id: &u32
-    ) -> Result<proto::ComponentExpansion> {
+    ) -> Result<base::ComponentExpansion> {
         let mut current_id = *maximum_id;
-        let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
-        let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
+
+        let mut expansion = base::ComponentExpansion::default();
 
         let data_property: ValueProperties = properties.get::<IndexKey>(&"data".into())
             .ok_or("data: missing")?.clone();
@@ -170,23 +170,18 @@ impl Expandable for proto::Index {
             if indexmap.variant == proto::indexmap_properties::Variant::Partition {
                 current_id += 1;
                 let id_is_partition = current_id;
-                let (patch_node, release) = get_literal(true.into(), &component.submission)?;
-                computation_graph.insert(id_is_partition.clone(), patch_node);
-                releases.insert(id_is_partition.clone(), release);
+                let (patch_node, release) = get_literal(true.into(), component.submission)?;
+                expansion.computation_graph.insert(id_is_partition, patch_node);
+                expansion.properties.insert(id_is_partition, infer_property(&release.value, None)?);
+                expansion.releases.insert(id_is_partition, release);
 
                 let mut component = component.clone();
                 component.insert_argument(&"is_partition".into(), id_is_partition);
-                computation_graph.insert(*component_id, component);
+                expansion.computation_graph.insert(*component_id, component);
             }
         }
 
-        Ok(proto::ComponentExpansion {
-            computation_graph,
-            properties: HashMap::new(),
-            releases,
-            traversal: Vec::new(),
-            warnings: vec![]
-        })
+        Ok(expansion)
     }
 }
 

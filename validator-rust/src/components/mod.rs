@@ -50,8 +50,6 @@ mod sum;
 mod union;
 mod variance;
 
-use std::collections::HashMap;
-
 use crate::base::{IndexKey, Value, NodeProperties, SensitivitySpace, ValueProperties};
 use crate::{proto, Warnable, base};
 use crate::utilities::json::{JSONRelease};
@@ -114,7 +112,7 @@ pub trait Expandable {
         properties: &NodeProperties,
         component_id: &u32,
         maximum_id: &u32,
-    ) -> Result<proto::ComponentExpansion>;
+    ) -> Result<base::ComponentExpansion>;
 }
 
 /// Mechanism component trait
@@ -275,7 +273,7 @@ impl Expandable for proto::Component {
         properties: &NodeProperties,
         component_id: &u32,
         maximum_id: &u32,
-    ) -> Result<proto::ComponentExpansion> {
+    ) -> Result<base::ComponentExpansion> {
         let variant = self.variant.as_ref()
             .ok_or_else(|| "variant: must be defined")?;
 
@@ -284,8 +282,11 @@ impl Expandable for proto::Component {
                 {
                     $(
                        if let proto::component::Variant::$variant(x) = variant {
-                            return x.expand_component(privacy_definition, component, properties, component_id, maximum_id)
-                                .chain_err(|| format!("node specification {:?}:", variant))
+                            let expansion = x.expand_component(privacy_definition, component, properties, component_id, maximum_id)
+                                .chain_err(|| format!("node specification {:?}:", variant))?;
+
+                            expansion.is_valid(*component_id)?;
+                            return Ok(expansion)
                        }
                     )*
                 }
@@ -325,14 +326,7 @@ impl Expandable for proto::Component {
         );
 
         // no expansion
-
-        Ok(proto::ComponentExpansion {
-            computation_graph: HashMap::new(),
-            properties: HashMap::new(),
-            releases: HashMap::new(),
-            traversal: Vec::new(),
-            warnings: vec![]
-        })
+        Ok(base::ComponentExpansion::default())
     }
 }
 

@@ -18,8 +18,7 @@ pub mod base;
 use std::collections::{HashMap, HashSet};
 use std::vec::Vec;
 
-use whitenoise_validator::base::{Value, ReleaseNode, Release, IndexKey};
-use whitenoise_validator::utilities::serial::{parse_release, serialize_release_node, serialize_error, serialize_index_key};
+use whitenoise_validator::base::{Value, ReleaseNode, Release, IndexKey, ComponentExpansion, ValueProperties};
 use whitenoise_validator::utilities::{get_sinks, get_input_properties, get_dependents};
 
 use crate::components::Evaluable;
@@ -49,38 +48,30 @@ pub type NodeArguments<'a> = IndexMap<IndexKey, &'a Value>;
 /// # Return
 /// a collection of computed values for components in the graph
 pub fn release(
-    analysis: proto::Analysis,
+    privacy_definition: Option<proto::PrivacyDefinition>,
+    mut computation_graph: HashMap<u32, proto::Component>,
     mut release: Release,
     filter_level: proto::FilterLevel
-) -> Result<(Release, Vec<proto::Error>)> {
-
-    let proto::Analysis {
-        computation_graph, privacy_definition
-    } = analysis.clone();
-
-    let mut graph: HashMap<u32, proto::Component> = computation_graph
-        .ok_or_else(|| Error::from("computation_graph must be defined to execute an analysis"))?.value;
+) -> Result<(Release, Vec<Error>)> {
 
     // core state for the graph execution algorithm
-    let mut traversal: Vec<u32> = get_sinks(&graph).into_iter().collect();
+    let mut traversal: Vec<u32> = get_sinks(&computation_graph).into_iter().collect();
 
     // derive properties for any private nodes in the release
-    let proto::GraphProperties {
-        properties: mut graph_properties,
-        mut warnings
-    } = whitenoise_validator::get_properties(
-        analysis,
+    let (mut properties, mut warnings) = whitenoise_validator::get_properties(
+        privacy_definition.clone(),
+        computation_graph.clone(),
         release.clone(),
         release.keys().copied().collect()
     )?;
 
-    let mut maximum_id = graph.keys().max().cloned().unwrap_or(0);
+    let mut maximum_id = computation_graph.keys().max().cloned().unwrap_or(0);
 
     // for if the filtering level is set to retain values
     let original_ids: HashSet<u32> = HashSet::from_iter(release.keys().cloned());
 
     // track node parents. Each key is a node id, and the value is the set of node ids that use it
-    let mut parents = get_dependents(&graph);
+    let mut parents = get_dependents(&computation_graph);
 
     // evaluate components until the traversal is empty
     while !traversal.is_empty() {
@@ -93,7 +84,7 @@ pub fn release(
             continue;
         }
 
-        let component: &proto::Component = graph.get(&component_id)
+        let component: &proto::Component = computation_graph.get(&component_id)
             .ok_or_else(|| Error::from("attempted to retrieve a non-existent component id"))?;
 
         // check if any dependencies of the current node remain unevaluated
@@ -113,32 +104,25 @@ pub fn release(
         // all dependencies are present in the graph. Begin node expansion
 
         // collect metadata about node inputs
-        let node_properties: IndexMap<IndexKey, proto::ValueProperties> =
-            get_input_properties(&component, &graph_properties)?;
-        let comp_arguments = component.arguments();
-        let public_arguments = comp_arguments.iter()
-            .map(|(name, node_id)| (name, release.get(node_id).unwrap()))
+        let node_properties: IndexMap<IndexKey, ValueProperties> =
+            get_input_properties(&component, &properties)?;
+        let public_arguments = component.arguments().into_iter()
+            .map(|(name, node_id)| (name, release.get(&node_id).unwrap()))
             .filter(|(_, release_node)| release_node.public)
-            .collect::<IndexMap<&IndexKey, &ReleaseNode>>();
+            .map(|(name, release_node)| (name, release_node.clone()))
+            .collect::<IndexMap<IndexKey, ReleaseNode>>();
 
         // expand the current node
-        let mut expansion: proto::ComponentExpansion = match whitenoise_validator::expand_component(proto::RequestExpandComponent {
-            privacy_definition: privacy_definition.clone(),
-            component: Some(component.clone()),
-            properties: Some(proto::IndexmapValueProperties {
-                keys: node_properties.keys().cloned().map(serialize_index_key).collect(),
-                values: node_properties.into_iter().map(|v| v.1).collect()
-            }),
-            arguments: Some(proto::IndexmapReleaseNode {
-                keys: public_arguments.keys().map(|&v| serialize_index_key(v.clone())).collect(),
-                values: public_arguments.into_iter().map(|(_, v)| serialize_release_node(v.clone())).collect()
-            }),
+        let mut expansion: ComponentExpansion = match whitenoise_validator::expand_component(
+            component.clone(),
+            node_properties,
+            public_arguments,
+            privacy_definition.clone(),
             component_id,
-            maximum_id
-        }) {
+            maximum_id) {
             Ok(expansion) => expansion,
             Err(err) => {
-                warnings.push(serialize_error(err));
+                warnings.push(err);
                 // continue without evaluating the faulty component or any parents
                 let mut descendant_traversal = Vec::new();
                 let mut descendants = HashSet::new();
@@ -162,9 +146,9 @@ pub fn release(
             .max().cloned().unwrap_or(0).max(maximum_id);
 
         // extend the runtime state with the expansion
-        graph.extend(expansion.computation_graph);
-        graph_properties.extend(expansion.properties);
-        release.extend(parse_release(proto::Release{values: expansion.releases}));
+        computation_graph.extend(expansion.computation_graph);
+        properties.extend(expansion.properties);
+        release.extend(expansion.releases);
 
         // if nodes were added to the traversal, then evaluate the new nodes first
         if !expansion.traversal.is_empty() {
@@ -172,7 +156,7 @@ pub fn release(
             traversal.extend(expansion.traversal);
 
             // TODO: this could be more optimized
-            parents = get_dependents(&graph);
+            parents = get_dependents(&computation_graph);
             continue;
         }
 
@@ -180,7 +164,7 @@ pub fn release(
         traversal.pop();
 
         // the expansion may have overwritten the current component
-        let component = graph.get(&component_id).unwrap();
+        let component = computation_graph.get(&component_id).unwrap();
 
         // collect arguments by string name to the component that will be executed
         let node_arguments = component.arguments().into_iter()
@@ -198,7 +182,7 @@ pub fn release(
 
         // println!("evaluation: {:?}", evaluation);
 
-        evaluation.public = graph_properties.get(&component_id)
+        evaluation.public = properties.get(&component_id)
             .map(is_public)
             .unwrap_or(false);
 
@@ -216,7 +200,7 @@ pub fn release(
 
                 let must_include = filter_level == proto::FilterLevel::PublicAndPrior && original_ids.contains(argument_node_id);
                 let is_public = release.get(argument_node_id).map(|v| v.public).unwrap_or(false);
-                let is_omitted = graph.get(argument_node_id).map(|v| v.omit).unwrap_or(true);
+                let is_omitted = computation_graph.get(argument_node_id).map(|v| v.omit).unwrap_or(true);
 
                 // remove argument node from release
                 if no_parents && ((!must_include && !is_public) || is_omitted) {
@@ -227,7 +211,7 @@ pub fn release(
     }
 
     // remove all omitted nodes (temporarily added to the graph while executing)
-    release.retain(|node_id, _| !graph.get(node_id)
+    release.retain(|node_id, _| !computation_graph.get(node_id)
         .map(|v| v.omit)
         .unwrap_or(true));
 

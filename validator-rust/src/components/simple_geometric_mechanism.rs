@@ -80,7 +80,7 @@ impl Expandable for proto::SimpleGeometricMechanism {
         properties: &base::NodeProperties,
         component_id: &u32,
         maximum_id: &u32,
-    ) -> Result<proto::ComponentExpansion> {
+    ) -> Result<base::ComponentExpansion> {
         expand_mechanism(
             &SensitivitySpace::KNorm(1),
             privacy_definition,

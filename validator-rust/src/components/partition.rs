@@ -1,8 +1,5 @@
 use crate::errors::*;
 
-
-use std::collections::HashMap;
-
 use crate::{proto, base, Warnable};
 
 use crate::components::{Component, Expandable};
@@ -10,6 +7,7 @@ use crate::base::{IndexKey, Value, Jagged, ValueProperties, IndexmapProperties, 
 use crate::utilities::{prepend, get_literal, get_argument};
 use indexmap::map::IndexMap;
 use itertools::Itertools;
+use crate::utilities::inference::infer_property;
 
 
 impl Component for proto::Partition {
@@ -83,34 +81,29 @@ impl Expandable for proto::Partition {
         properties: &NodeProperties,
         component_id: &u32,
         maximum_id: &u32
-    ) -> Result<proto::ComponentExpansion> {
+    ) -> Result<base::ComponentExpansion> {
 
         let mut current_id = *maximum_id;
-        let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
-        let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
+
+        let mut expansion = base::ComponentExpansion::default();
 
         if let Some(by) = properties.get::<IndexKey>(&"by".into()) {
-            let categories = by.array()?.categories()?;
-            current_id += 1;
-            let id_categories = current_id;
-            let (patch_node, release) = get_literal(Value::Jagged(categories), &component.submission)?;
+            if !properties.contains_key::<IndexKey>(&"categories".into()) {
+                let categories = by.array()?.categories()?;
+                current_id += 1;
+                let id_categories = current_id;
+                let (patch_node, release) = get_literal(Value::Jagged(categories), component.submission)?;
+                expansion.computation_graph.insert(id_categories, patch_node);
+                expansion.properties.insert(id_categories, infer_property(&release.value, None)?);
+                expansion.releases.insert(id_categories, release);
 
-            computation_graph.insert(id_categories.clone(), patch_node);
-            releases.insert(id_categories.clone(), release);
-
-            let mut categories_component = component.clone();
-            categories_component.insert_argument(&"categories".into(), id_categories);
-
-            computation_graph.insert(*component_id, categories_component);
+                let mut component = component.clone();
+                component.insert_argument(&"categories".into(), id_categories);
+                expansion.computation_graph.insert(*component_id, component);
+            }
         }
 
-        Ok(proto::ComponentExpansion {
-            computation_graph,
-            properties: HashMap::new(),
-            releases,
-            traversal: Vec::new(),
-            warnings: vec![],
-        })
+        Ok(expansion)
     }
 }
 

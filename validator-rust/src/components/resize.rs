@@ -1,8 +1,5 @@
 use crate::errors::*;
 
-
-use std::collections::HashMap;
-
 use crate::{base, Warnable};
 use crate::proto;
 
@@ -12,6 +9,7 @@ use ndarray;
 use crate::base::{Value, Array, Nature, NatureContinuous, Vector1DNull, ValueProperties, DataType, IndexKey};
 use crate::utilities::{prepend, get_literal};
 use indexmap::map::IndexMap;
+use crate::utilities::inference::infer_property;
 
 
 impl Component for proto::Resize {
@@ -226,10 +224,10 @@ impl Expandable for proto::Resize {
         properties: &base::NodeProperties,
         component_id: &u32,
         maximum_id: &u32,
-    ) -> Result<proto::ComponentExpansion> {
+    ) -> Result<base::ComponentExpansion> {
         let mut current_id = *maximum_id;
-        let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
-        let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
+
+        let mut expansion = base::ComponentExpansion::default();
 
         let mut component = component.clone();
 
@@ -243,9 +241,10 @@ impl Expandable for proto::Resize {
                 let id_lower = current_id;
                 let value = Value::Array(Array::F64(
                     ndarray::Array::from(data_property.lower_f64()?).into_dyn()));
-                let (patch_node, release) = get_literal(value, &component.submission)?;
-                computation_graph.insert(id_lower.clone(), patch_node);
-                releases.insert(id_lower.clone(), release);
+                let (patch_node, release) = get_literal(value, component.submission)?;
+                expansion.computation_graph.insert(id_lower, patch_node);
+                expansion.properties.insert(id_lower, infer_property(&release.value, None)?);
+                expansion.releases.insert(id_lower, release);
                 component.insert_argument(&"lower".into(), id_lower);
             }
 
@@ -254,22 +253,17 @@ impl Expandable for proto::Resize {
                 let id_upper = current_id;
                 let value = Value::Array(Array::F64(
                     ndarray::Array::from(data_property.upper_f64()?).into_dyn()));
-                let (patch_node, release) = get_literal(value, &component.submission)?;
-                computation_graph.insert(id_upper.clone(), patch_node);
-                releases.insert(id_upper.clone(), release);
+                let (patch_node, release) = get_literal(value, component.submission)?;
+                expansion.computation_graph.insert(id_upper, patch_node);
+                expansion.properties.insert(id_upper, infer_property(&release.value, None)?);
+                expansion.releases.insert(id_upper, release);
                 component.insert_argument(&"upper".into(), id_upper);
             }
         }
 
-        computation_graph.insert(*component_id, component);
+        expansion.computation_graph.insert(*component_id, component);
 
-        Ok(proto::ComponentExpansion {
-            computation_graph,
-            properties: HashMap::new(),
-            releases,
-            traversal: Vec::new(),
-            warnings: vec![]
-        })
+        Ok(expansion)
     }
 }
 

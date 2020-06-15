@@ -1,13 +1,8 @@
 //! Serialization and deserialization between prost protobuf structs and internal representations
 
-use crate::{proto, base};
+use crate::proto;
 use std::collections::HashMap;
-use crate::base::{
-    Release, Nature, Jagged, Vector1D, Value, Array, Vector1DNull,
-    NatureCategorical, NatureContinuous, AggregatorProperties, ValueProperties,
-    IndexmapProperties, JaggedProperties, DataType, ArrayProperties, ReleaseNode,
-    GroupId, IndexKey
-};
+use crate::base::{Release, Nature, Jagged, Vector1D, Value, Array, Vector1DNull, NatureCategorical, NatureContinuous, AggregatorProperties, ValueProperties, IndexmapProperties, JaggedProperties, DataType, ArrayProperties, ReleaseNode, GroupId, IndexKey, ComponentExpansion};
 use indexmap::IndexMap;
 use error_chain::ChainedError;
 
@@ -184,6 +179,13 @@ pub fn parse_indexmap_value_properties(value: proto::IndexmapValueProperties) ->
         .collect()
 }
 
+pub fn parse_indexmap_release_node(value: proto::IndexmapReleaseNode) -> IndexMap<IndexKey, ReleaseNode> {
+    value.keys.iter().zip(value.values.into_iter())
+        .map(|(k, v)|
+            (parse_index_key(k.clone()), parse_release_node(v)))
+        .collect()
+}
+
 pub fn parse_indexmap_properties(value: proto::IndexmapProperties) -> IndexmapProperties {
     IndexmapProperties {
         children: parse_indexmap_value_properties(value.children.unwrap()),
@@ -191,12 +193,12 @@ pub fn parse_indexmap_properties(value: proto::IndexmapProperties) -> IndexmapPr
     }
 }
 
-pub fn parse_index_key(value: proto::IndexKey) -> base::IndexKey {
+pub fn parse_index_key(value: proto::IndexKey) -> IndexKey {
     match value.key.unwrap() {
-        proto::index_key::Key::Str(key) => base::IndexKey::Str(key),
-        proto::index_key::Key::Bool(key) => base::IndexKey::Bool(key),
-        proto::index_key::Key::I64(key) => base::IndexKey::I64(key),
-        proto::index_key::Key::Tuple(key) => base::IndexKey::Tuple(key.values.into_iter().map(parse_index_key).collect())
+        proto::index_key::Key::Str(key) => IndexKey::Str(key),
+        proto::index_key::Key::Bool(key) => IndexKey::Bool(key),
+        proto::index_key::Key::I64(key) => IndexKey::I64(key),
+        proto::index_key::Key::Tuple(key) => IndexKey::Tuple(key.values.into_iter().map(parse_index_key).collect())
     }
 }
 
@@ -459,13 +461,13 @@ pub fn serialize_indexmap_properties(value: IndexmapProperties) -> proto::Indexm
     }
 }
 
-pub fn serialize_index_key(value: base::IndexKey) -> proto::IndexKey {
+pub fn serialize_index_key(value: IndexKey) -> proto::IndexKey {
     proto::IndexKey {
         key: Some(match value {
-            base::IndexKey::Str(key) => proto::index_key::Key::Str(key),
-            base::IndexKey::Bool(key) => proto::index_key::Key::Bool(key),
-            base::IndexKey::I64(key) => proto::index_key::Key::I64(key),
-            base::IndexKey::Tuple(key) =>
+            IndexKey::Str(key) => proto::index_key::Key::Str(key),
+            IndexKey::Bool(key) => proto::index_key::Key::Bool(key),
+            IndexKey::I64(key) => proto::index_key::Key::I64(key),
+            IndexKey::Tuple(key) =>
                 proto::index_key::Key::Tuple(proto::index_key::Tuple {
                     values: key.into_iter().map(serialize_index_key).collect()
                 })
@@ -568,6 +570,23 @@ pub fn serialize_value_properties(value: ValueProperties) -> proto::ValuePropert
                 proto::value_properties::Variant::Jagged(serialize_jagged_properties(value)),
             ValueProperties::Function(value) => proto::value_properties::Variant::Function(value)
         })
+    }
+}
+
+pub fn serialize_component_expansion(value: ComponentExpansion) -> proto::ComponentExpansion {
+    proto::ComponentExpansion {
+        computation_graph: value.computation_graph,
+        properties: value.properties.into_iter()
+            .map(|(node_id, property)|
+                (node_id, serialize_value_properties(property)))
+            .collect(),
+        releases: value.releases.into_iter()
+            .map(|(node_id, release)|
+                (node_id, serialize_release_node(release)))
+            .collect(),
+        traversal: value.traversal,
+        warnings: value.warnings.into_iter()
+            .map(serialize_error).collect()
     }
 }
 

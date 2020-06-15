@@ -9,7 +9,7 @@ use ndarray::prelude::Ix1;
 use std::collections::HashMap;
 use ndarray::{ArrayD, arr0, Dimension};
 
-use crate::utilities::{standardize_categorical_argument, deduplicate, serial, get_common_value};
+use crate::utilities::{standardize_categorical_argument, deduplicate, get_common_value};
 use indexmap::IndexMap;
 use crate::utilities::serial::{parse_indexmap_node_ids, serialize_index_key};
 use std::ops::{Add, Div, Mul};
@@ -980,10 +980,31 @@ impl ReleaseNode {
     }
 }
 
+#[derive(Default, Debug)]
+pub struct ComponentExpansion {
+    pub computation_graph: HashMap<u32, proto::Component>,
+    pub properties: HashMap<u32, ValueProperties>,
+    pub releases: HashMap<u32, ReleaseNode>,
+    pub traversal: Vec<u32>,
+    pub warnings: Vec<Error>
+}
+
+impl ComponentExpansion {
+    pub fn is_valid(&self, component_id: u32) -> Result<()> {
+        let offset = if self.computation_graph.contains_key(&component_id) { 1 } else { 0 };
+        let score = (self.computation_graph.len() as i64 - (self.properties.len() + self.traversal.len()) as i64).abs();
+
+        if score > offset {
+            println!("WARNING FOR: {:?}", self);
+            Err("computation graph patch must be same length as the number of properties".into())
+        } else { Ok(()) }
+    }
+}
+
 impl proto::Component {
     pub fn insert_argument(&mut self, key: &IndexKey, value: u32) {
 
-        let key = serial::serialize_index_key(key.clone());
+        let key = serialize_index_key(key.clone());
         match &mut self.arguments {
             Some(arguments) => match arguments.keys.iter()
                 .position(|idx| idx == &key) {

@@ -19,12 +19,6 @@
       "type_rust": "Vec<proto::PrivacyUsage>",
       "default_python": "None",
       "description": "Object describing the type and amount of privacy to be used for the mechanism release."
-    },
-    "enforce_constant_time": {
-      "type_proto": "bool",
-      "type_rust": "bool",
-      "default_python": "False",
-      "default_rust": "false"
     }
   },
   "return": {

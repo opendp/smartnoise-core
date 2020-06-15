@@ -1,9 +1,6 @@
 use crate::errors::*;
 
-
-use std::collections::HashMap;
-
-use crate::{proto, base, hashmap, Warnable};
+use crate::{proto, base, Warnable};
 
 use crate::components::{Component, Sensitivity, Expandable};
 use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType, JaggedProperties, IndexKey};
@@ -142,8 +139,10 @@ macro_rules! make_quantile {
                 _properties: &base::NodeProperties,
                 component_id: &u32,
                 _maximum_id: &u32,
-            ) -> Result<proto::ComponentExpansion> {
-                let quantile_component = proto::Component {
+            ) -> Result<base::ComponentExpansion> {
+                let mut expansion = base::ComponentExpansion::default();
+
+                expansion.computation_graph.insert(*component_id, proto::Component {
                     arguments: component.arguments.clone(),
                     variant: Some(proto::component::Variant::Quantile(proto::Quantile {
                         alpha: $alpha,
@@ -151,15 +150,10 @@ macro_rules! make_quantile {
                     })),
                     omit: component.omit,
                     submission: component.submission,
-                };
+                });
+                expansion.traversal.push(*component_id);
 
-                Ok(proto::ComponentExpansion {
-                    computation_graph: hashmap![*component_id => quantile_component],
-                    properties: HashMap::new(),
-                    releases: HashMap::new(),
-                    traversal: vec![*component_id],
-                    warnings: vec![]
-                })
+                Ok(expansion)
             }
         }
     }

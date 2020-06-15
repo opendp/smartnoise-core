@@ -1,6 +1,5 @@
 use crate::errors::*;
 
-use std::collections::HashMap;
 use crate::base::{IndexKey, Nature, NodeProperties, NatureCategorical, Jagged, ValueProperties, DataType, Array};
 
 use crate::{proto, base, Warnable};
@@ -10,6 +9,7 @@ use crate::components::{Component, Expandable};
 use crate::base::Value;
 use ndarray::arr0;
 use indexmap::map::IndexMap;
+use crate::utilities::inference::infer_property;
 
 impl Component for proto::Digitize {
     fn propagate_property(
@@ -100,40 +100,35 @@ impl Expandable for proto::Digitize {
         properties: &base::NodeProperties,
         component_id: &u32,
         maximum_id: &u32,
-    ) -> Result<proto::ComponentExpansion> {
+    ) -> Result<base::ComponentExpansion> {
         let mut current_id = *maximum_id;
-        let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
-        let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
-
         let mut component = component.clone();
+
+        let mut expansion = base::ComponentExpansion::default();
 
         if !properties.contains_key(&IndexKey::from("null_value")) {
             current_id += 1;
             let id_null_value = current_id;
             let value = Value::Array(Array::I64(arr0(-1).into_dyn()));
-            let (patch_node, release) = get_literal(value, &component.submission)?;
-            computation_graph.insert(id_null_value.clone(), patch_node);
-            releases.insert(id_null_value.clone(), release);
+            expansion.properties.insert(id_null_value, infer_property(&value, None)?);
+            let (patch_node, release) = get_literal(value, component.submission)?;
+            expansion.computation_graph.insert(id_null_value, patch_node);
+            expansion.releases.insert(id_null_value, release);
             component.insert_argument(&"null_value".into(), id_null_value);
         }
         if !properties.contains_key::<IndexKey>(&"inclusive_left".into()) {
             current_id += 1;
-            let id_null_value = current_id;
+            let id_inclusive_left = current_id;
             let value = Value::Array(Array::Bool(arr0(true).into_dyn()));
-            let (patch_node, release) = get_literal(value, &component.submission)?;
-            computation_graph.insert(id_null_value.clone(), patch_node);
-            releases.insert(id_null_value.clone(), release);
-            component.insert_argument(&"inclusive_left".into(), id_null_value);
+            expansion.properties.insert(id_inclusive_left, infer_property(&value, None)?);
+            let (patch_node, release) = get_literal(value, component.submission)?;
+            expansion.computation_graph.insert(id_inclusive_left, patch_node);
+            expansion.releases.insert(id_inclusive_left, release);
+            component.insert_argument(&"inclusive_left".into(), id_inclusive_left);
         }
 
-        computation_graph.insert(*component_id, component);
+        expansion.computation_graph.insert(*component_id, component);
 
-        Ok(proto::ComponentExpansion {
-            computation_graph,
-            properties: HashMap::new(),
-            releases,
-            traversal: Vec::new(),
-            warnings: vec![]
-        })
+        Ok(expansion)
     }
 }

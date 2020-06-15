@@ -1,7 +1,7 @@
 use whitenoise_validator::errors::*;
 
 use crate::NodeArguments;
-use whitenoise_validator::base::{ReleaseNode, Value, Jagged};
+use whitenoise_validator::base::{ReleaseNode, Value, Jagged, Array};
 use whitenoise_validator::utilities::{
     get_argument, array::broadcast_ndarray,
     privacy::{get_epsilon, get_delta, spread_privacy_usage}};
@@ -13,10 +13,19 @@ use ndarray::{Axis, arr1};
 use crate::utilities::mechanisms::exponential_mechanism;
 
 impl Evaluable for proto::LaplaceMechanism {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(
+        &self,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
+        arguments: &NodeArguments
+    ) -> Result<ReleaseNode> {
+
         let data = get_argument(arguments, "data")?.array()?;
         let num_columns = data.num_columns()?;
-        let mut data = data.f64()?.to_owned();
+        let mut data = match data {
+            Array::F64(data) => data.clone(),
+            Array::I64(data) => data.mapv(|v| v as f64),
+            _ => return Err("data must be numeric".into())
+        };
 
         let sensitivity = get_argument(arguments, "sensitivity")?.array()?.f64()?;
 
@@ -43,10 +52,19 @@ impl Evaluable for proto::LaplaceMechanism {
 }
 
 impl Evaluable for proto::GaussianMechanism {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(
+        &self,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
+        arguments: &NodeArguments
+    ) -> Result<ReleaseNode> {
+
         let data = get_argument(arguments, "data")?.array()?;
         let num_columns = data.num_columns()?;
-        let mut data = data.f64()?.to_owned();
+        let mut data = match data {
+            Array::F64(data) => data.clone(),
+            Array::I64(data) => data.mapv(|v| v as f64),
+            _ => return Err("data must be numeric".into())
+        };
 
         let sensitivity = get_argument(arguments, "sensitivity")?.array()?.f64()?;
 
@@ -75,10 +93,13 @@ impl Evaluable for proto::GaussianMechanism {
 }
 
 impl Evaluable for proto::SimpleGeometricMechanism {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         let data = get_argument(arguments, "data")?.array()?;
         let num_columns = data.num_columns()?;
         let mut data = data.i64()?.to_owned();
+
+        let privacy_definition = privacy_definition.as_ref()
+            .ok_or_else(|| Error::from("privacy_definition must be known"))?;
 
         let sensitivity = get_argument(arguments, "sensitivity")?.array()?.f64()?;
 
@@ -99,7 +120,7 @@ impl Evaluable for proto::SimpleGeometricMechanism {
                 .zip(lower.iter().zip(upper.iter()))
                 .map(|((v, sens), (c_min, c_max))| {
                     *v += utilities::mechanisms::simple_geometric_mechanism(
-                        epsilon, *sens, *c_min, *c_max, self.enforce_constant_time)?;
+                        epsilon, *sens, *c_min, *c_max, privacy_definition.protect_elapsed_time)?;
                     Ok(())
                 })
                 .collect::<Result<()>>())

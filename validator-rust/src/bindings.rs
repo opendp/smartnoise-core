@@ -58,23 +58,19 @@ impl Analysis {
         }
     }
 
-    pub fn properties(&self, id: u32) -> Result<proto::ValueProperties> {
-        let response = get_properties(
-            proto::Analysis {
-                computation_graph: Some(proto::ComputationGraph {
-                    value: self.components.clone()
-                }),
-                privacy_definition: Some(self.privacy_definition.clone())
-            },
+    pub fn properties(&self, id: u32) -> Result<base::ValueProperties> {
+        let (properties, warnings) = get_properties(
+            Some(self.privacy_definition.clone()),
+            self.components.clone(),
             self.release.clone(),
             vec![id]
         )?;
 
-        if response.warnings.len() > 0 {
-            bail!("{:?}", response.warnings)
+        if warnings.len() > 0 {
+            bail!("{:?}", warnings)
         }
 
-        response.properties.get(&id).cloned()
+        properties.get(&id).cloned()
             .ok_or_else(|| Error::from(format!("Failure to propagate properties to node {}", id)))
     }
 }

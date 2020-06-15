@@ -1,6 +1,6 @@
 pub mod json;
-pub mod serial;
 pub mod inference;
+pub mod serial;
 pub mod array;
 pub mod privacy;
 pub mod properties;
@@ -9,10 +9,9 @@ use crate::errors::*;
 
 use crate::{proto, base, Warnable};
 
-use crate::base::{Release, Value, ValueProperties, SensitivitySpace, NodeProperties, ReleaseNode, IndexKey};
+use crate::base::{Release, Value, ValueProperties, SensitivitySpace, NodeProperties, IndexKey};
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
-use crate::utilities::serial::{parse_value_properties, serialize_value, parse_release_node, serialize_error};
 use crate::utilities::inference::infer_property;
 
 use itertools::Itertools;
@@ -78,22 +77,19 @@ pub fn get_input_properties<T>(
 /// * `0` - Properties for every node in the expanded graph
 /// * `1` - The expanded graph
 pub fn propagate_properties(
-    analysis: &mut proto::Analysis,
+    privacy_definition: &Option<proto::PrivacyDefinition>,
+    computation_graph: &mut HashMap<u32, proto::Component>,
     release: &mut base::Release,
     properties: Option<HashMap<u32, base::ValueProperties>>,
     dynamic: bool
-) -> Result<(HashMap<u32, ValueProperties>, Vec<proto::Error>)> {
-    let ref mut graph = analysis.computation_graph.as_mut()
-        .ok_or_else(|| Error::from("computation_graph must be defined"))?.value;
-    let mut traversal: Vec<u32> = get_traversal(&graph)?;
-
-
+) -> Result<(HashMap<u32, ValueProperties>, Vec<Error>)> {
+    let mut traversal: Vec<u32> = get_traversal(&computation_graph)?;
     // extend and pop from the end of the traversal
     traversal.reverse();
 
-    let mut graph_properties = properties.unwrap_or_else(HashMap::new);
+    let mut properties = properties.unwrap_or_else(HashMap::new);
 
-    let mut maximum_id = graph.keys().max().cloned().unwrap_or(0);
+    let mut maximum_id = computation_graph.keys().max().cloned().unwrap_or(0);
     // println!("maximum node id: {:?}", maximum_id);
     // let maximum_property_id = graph_properties.keys().max().cloned().unwrap_or(0);
     // println!("maximum property id: {:?}", maximum_property_id);
@@ -101,12 +97,12 @@ pub fn propagate_properties(
     // println!("maximum release id: {:?}", maximum_release_id);
 
     // infer properties on public evaluations
-    graph_properties.extend(release.iter()
+    properties.extend(release.iter()
         .filter(|(_, release_node)| release_node.public)
         .map(|(node_id, release_node)|
             Ok((*node_id, infer_property(
                 &release_node.value,
-                graph_properties.get(node_id))?)))
+                properties.get(node_id))?)))
         .collect::<Result<HashMap<u32, ValueProperties>>>()?);
 
 
@@ -117,25 +113,27 @@ pub fn propagate_properties(
     while !traversal.is_empty() {
         let node_id = *traversal.last().unwrap();
 
-        let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
+        let component: &proto::Component = computation_graph.get(&node_id).unwrap();
+
+        // println!("component {:?}", component);
 
         if component.arguments().values().any(|v| failed_ids.contains(v)) {
             failed_ids.insert(traversal.pop().unwrap());
             continue;
         }
 
-        let mut expansion = match component.clone()
+        let mut expansion = match component
             .expand_component(
-                &analysis.privacy_definition,
+                privacy_definition,
                 &component,
-                &get_input_properties(&component, &graph_properties)?,
+                &get_input_properties(&component, &properties)?,
                 &node_id,
                 &maximum_id,
             ) {
             Ok(expansion) => expansion,
             Err(err) => if dynamic {
                 failed_ids.insert(traversal.pop().unwrap());
-                warnings.push(serialize_error(err));
+                warnings.push(err);
                 continue;
             } else { return Err(err) }
         };
@@ -144,21 +142,10 @@ pub fn propagate_properties(
             .unwrap_or(0).max(maximum_id);
 
         // patch the computation graph
-        graph
-            .extend(expansion.computation_graph);
-
-        graph_properties
-            .extend(expansion.properties.into_iter()
-            .map(|(node_id, props)| (node_id, parse_value_properties(props)))
-            .collect::<HashMap<u32, ValueProperties>>());
-
-        release
-            .extend(expansion.releases.into_iter()
-            .map(|(node_id, release)| (node_id, parse_release_node(release)))
-            .collect::<HashMap<u32, ReleaseNode>>());
-
-        warnings
-            .extend(expansion.warnings);
+        computation_graph.extend(expansion.computation_graph);
+        properties.extend(expansion.properties);
+        release.extend(expansion.releases);
+        warnings.extend(expansion.warnings);
 
         // if patch added nodes, extend the traversal
         if !expansion.traversal.is_empty() {
@@ -166,46 +153,65 @@ pub fn propagate_properties(
             traversal.extend(expansion.traversal);
             continue;
         }
+
+        //component may have changed since the last call, due to the expansion
+        let component: &proto::Component = computation_graph.get(&node_id).unwrap();
+
+        let mut input_properties = IndexMap::<base::IndexKey, ValueProperties>::new();
+        let mut missing_properties = Vec::new();
+        for (arg_name, arg_node_id) in component.arguments() {
+            if let Some(property) = properties.get(&arg_node_id) {
+                input_properties.insert(arg_name.to_owned(), property.clone());
+            } else {
+                missing_properties.push(arg_node_id);
+            }
+        }
+        if !missing_properties.is_empty() {
+            traversal.extend(missing_properties);
+            continue
+        }
+
         traversal.pop();
 
         let release_node = release.get(&node_id);
+        // println!("release node {:?}", release_node);
+
         let propagation_result = if release_node.map(|release_node| release_node.public).unwrap_or(false) {
             // if node has already been evaluated and is public, infer properties directly from the public data
+            // println!("inferring property");
             Ok(Warnable(infer_property(
                 &release_node.unwrap().value,
-                graph_properties.get(&node_id))?, vec![]))
+                properties.get(&node_id))?, vec![]))
         } else {
             // if node has not been evaluated, propagate properties over it
-            graph.get(&node_id).unwrap()
+            computation_graph.get(&node_id).unwrap()
                 .propagate_property(
-                    &analysis.privacy_definition,
-                    &get_public_arguments(&component, &release)?,
-                    &get_input_properties(&component, &graph_properties)?,
+                    privacy_definition,
+                    &get_public_arguments(component, &release)?,
+                    &input_properties,
                     node_id)
                 .chain_err(|| format!("at node_id {:?}", node_id))
         };
 
-        let component_properties = match propagation_result {
+        // println!("prop result: {:?}", propagation_result);
+        match propagation_result {
             Ok(propagation_result) => {
                 let Warnable(component_properties, propagation_warnings) = propagation_result;
 
                 warnings.extend(propagation_warnings.into_iter()
-                    .map(|err| serialize_error(err.chain_err(|| format!("at node_id {:?}", node_id))))
-                    .collect::<Vec<proto::Error>>());
+                    .map(|err| err.chain_err(|| format!("at node_id {:?}", node_id)))
+                    .collect::<Vec<Error>>());
 
-                component_properties
+                properties.insert(node_id, component_properties);
             },
             Err(err) => if dynamic {
                 failed_ids.insert(node_id);
-                warnings.push(serialize_error(err));
-                continue;
+                warnings.push(err);
             } else { return Err(err) }
         };
-
-//        println!("graph evaluation in prop {:?}", graph_evaluation);
-        graph_properties.insert(node_id, component_properties);
     }
-    Ok((graph_properties, warnings))
+    // println!("done propagating");
+    Ok((properties, warnings))
 }
 
 /// Given a computation graph, return an ordering of nodes that ensures all dependencies of any node have been visited
@@ -452,16 +458,16 @@ pub fn standardize_weight_argument(
 
 /// Utility for building extra Components to pass back when conducting expansions.
 #[doc(hidden)]
-pub fn get_literal(value: Value, submission: &u32) -> Result<(proto::Component, proto::ReleaseNode)> {
+pub fn get_literal(value: Value, submission: u32) -> Result<(proto::Component, base::ReleaseNode)> {
     Ok((
         proto::Component {
             arguments: None,
             variant: Some(proto::component::Variant::Literal(proto::Literal {})),
             omit: true,
-            submission: *submission,
+            submission,
         },
-        proto::ReleaseNode {
-            value: Some(serialize_value(value)),
+        base::ReleaseNode {
+            value,
             privacy_usages: None,
             public: true,
         }
@@ -484,13 +490,13 @@ pub fn expand_mechanism(
     properties: &NodeProperties,
     component_id: &u32,
     maximum_id: &u32,
-) -> Result<proto::ComponentExpansion> {
+) -> Result<base::ComponentExpansion> {
+    let mut current_id = *maximum_id;
+
+    let mut expansion = base::ComponentExpansion::default();
+
     let privacy_definition = privacy_definition.as_ref()
         .ok_or_else(|| "privacy definition must be defined")?;
-
-    let mut current_id = *maximum_id;
-    let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
-    let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
 
     // always overwrite sensitivity. This is not something a user may configure
     let data_property = properties.get::<IndexKey>(&"data".into())
@@ -517,9 +523,10 @@ pub fn expand_mechanism(
 
     current_id += 1;
     let id_sensitivity = current_id;
-    let (patch_node, release) = get_literal(sensitivity_value.clone(), &component.submission)?;
-    computation_graph.insert(id_sensitivity.clone(), patch_node);
-    releases.insert(id_sensitivity.clone(), release);
+    let (patch_node, release) = get_literal(sensitivity_value.clone(), component.submission)?;
+    expansion.computation_graph.insert(id_sensitivity, patch_node);
+    expansion.properties.insert(id_sensitivity, infer_property(&release.value, None)?);
+    expansion.releases.insert(id_sensitivity, release);
 
     // spread privacy usage over each column
     let spread_usages = spread_privacy_usage(
@@ -546,15 +553,9 @@ pub fn expand_mechanism(
         proto::component::Variant::SimpleGeometricMechanism(variant) => variant.privacy_usage = effective_usages,
         _ => ()
     };
-    computation_graph.insert(*component_id, noise_component);
+    expansion.computation_graph.insert(*component_id, noise_component);
 
-    Ok(proto::ComponentExpansion {
-        computation_graph,
-        properties: HashMap::new(),
-        releases,
-        traversal: Vec::new(),
-        warnings: vec![]
-    })
+    Ok(expansion)
 }
 
 /// given a vector of items, return the shared item, or None, if no item is shared

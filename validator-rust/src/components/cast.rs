@@ -184,8 +184,8 @@ macro_rules! make_expandable {
                 _properties: &base::NodeProperties,
                 component_id: &u32,
                 _maximum_id: &u32,
-            ) -> Result<proto::ComponentExpansion> {
-                Ok(proto::ComponentExpansion {
+            ) -> Result<base::ComponentExpansion> {
+                Ok(base::ComponentExpansion {
                     computation_graph: hashmap![component_id.clone() => proto::Component {
                         arguments: component.arguments.clone(),
                         variant: Some(proto::component::Variant::Cast(proto::Cast {
@@ -198,7 +198,7 @@ macro_rules! make_expandable {
                     releases: HashMap::new(),
                     // add the component_id, to force the node to be re-evaluated and the Cast to be expanded
                     traversal: vec![*component_id],
-                    warnings: vec![]
+                    warnings: Vec::new()
                 })
             }
         }

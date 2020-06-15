@@ -37,8 +37,8 @@ impl Component for proto::GaussianMechanism {
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
-        if data_property.data_type != DataType::F64 {
-            return Err("data: atomic type must be float".into());
+        if data_property.data_type != DataType::F64 && data_property.data_type != DataType::I64 {
+            return Err("data: atomic type must be numeric".into());
         }
         let aggregator = data_property.aggregator.clone()
             .ok_or_else(|| Error::from("aggregator: missing"))?;
@@ -100,7 +100,7 @@ impl Expandable for proto::GaussianMechanism {
         properties: &base::NodeProperties,
         component_id: &u32,
         maximum_id: &u32,
-    ) -> Result<proto::ComponentExpansion> {
+    ) -> Result<base::ComponentExpansion> {
         expand_mechanism(
             &SensitivitySpace::KNorm(2),
             privacy_definition,

@@ -1,8 +1,5 @@
 use crate::errors::*;
 
-
-use std::collections::HashMap;
-
 use crate::{proto, base, Warnable};
 
 use crate::components::{Component, Expandable, Sensitivity, Mechanism};
@@ -11,6 +8,7 @@ use crate::utilities::{prepend, get_literal, get_argument};
 use crate::utilities::privacy::{privacy_usage_check};
 use itertools::Itertools;
 use indexmap::map::IndexMap;
+use crate::utilities::inference::infer_property;
 
 impl Component for proto::ExponentialMechanism {
     fn propagate_property(
@@ -100,12 +98,13 @@ impl Expandable for proto::ExponentialMechanism {
         properties: &base::NodeProperties,
         component_id: &u32,
         maximum_id: &u32,
-    ) -> Result<proto::ComponentExpansion> {
+    ) -> Result<base::ComponentExpansion> {
+        let mut current_id = *maximum_id;
+
+        let mut expansion = base::ComponentExpansion::default();
+
         let privacy_definition = privacy_definition.as_ref()
             .ok_or_else(|| "privacy definition must be defined")?;
-        let mut current_id = *maximum_id;
-        let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
-        let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
 
         // always overwrite sensitivity. This is not something a user may configure
         let utilities_properties = properties.get::<IndexKey>(&"utilities".into())
@@ -122,23 +121,18 @@ impl Expandable for proto::ExponentialMechanism {
 
         current_id += 1;
         let id_sensitivity = current_id;
-        let (patch_node, release) = get_literal(sensitivity, &component.submission)?;
-        computation_graph.insert(id_sensitivity.clone(), patch_node);
-        releases.insert(id_sensitivity.clone(), release);
+        let (patch_node, release) = get_literal(sensitivity, component.submission)?;
+        expansion.computation_graph.insert(id_sensitivity, patch_node);
+        expansion.properties.insert(id_sensitivity, infer_property(&release.value, None)?);
+        expansion.releases.insert(id_sensitivity, release);
 
         // noising
         let mut noise_component = component.clone();
         noise_component.insert_argument(&"sensitivity".into(), id_sensitivity);
 
-        computation_graph.insert(*component_id, noise_component);
+        expansion.computation_graph.insert(*component_id, noise_component);
 
-        Ok(proto::ComponentExpansion {
-            computation_graph,
-            properties: HashMap::new(),
-            releases,
-            traversal: Vec::new(),
-            warnings: vec![],
-        })
+        Ok(expansion)
     }
 }
 

@@ -1,8 +1,5 @@
 use crate::errors::*;
 
-
-use std::collections::HashMap;
-
 use crate::{proto, base};
 use crate::components::{Expandable, Report};
 
@@ -29,9 +26,9 @@ impl Expandable for proto::DpMean {
         properties: &base::NodeProperties,
         component_id: &u32,
         maximum_id: &u32,
-    ) -> Result<proto::ComponentExpansion> {
+    ) -> Result<base::ComponentExpansion> {
         let mut current_id = *maximum_id;
-        let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
+        let mut expansion = base::ComponentExpansion::default();
 
         if self.implementation.to_lowercase().as_str() == "plug-in" {
 
@@ -45,7 +42,7 @@ impl Expandable for proto::DpMean {
             // dp sum
             current_id += 1;
             let id_dp_sum = current_id;
-            computation_graph.insert(id_dp_sum, proto::Component {
+            expansion.computation_graph.insert(id_dp_sum, proto::Component {
                 arguments: Some(proto::IndexmapNodeIds::new(
                     indexmap!["data".into() => id_data])),
                 variant: Some(proto::component::Variant::DpSum(proto::DpSum {
@@ -57,16 +54,16 @@ impl Expandable for proto::DpMean {
                 omit: true,
                 submission: component.submission,
             });
+            expansion.traversal.push(id_dp_sum);
 
             // dp count
             current_id += 1;
             let id_dp_count = current_id;
-            computation_graph.insert(id_dp_count, proto::Component {
+            expansion.computation_graph.insert(id_dp_count, proto::Component {
                 arguments: Some(proto::IndexmapNodeIds::new(
                     indexmap!["data".into() => id_data])),
                 variant: Some(proto::component::Variant::DpCount(proto::DpCount {
                     distinct: false,
-                    enforce_constant_time: false,
                     mechanism: "SimpleGeometric".to_string(),
                     privacy_usage: self.privacy_usage.iter().cloned()
                         .map(|v| v * (num_columns / (num_columns + 1.)))
@@ -75,20 +72,22 @@ impl Expandable for proto::DpMean {
                 omit: true,
                 submission: component.submission,
             });
+            expansion.traversal.push(id_dp_count);
 
             // to float
             current_id += 1;
             let id_to_float = current_id;
-            computation_graph.insert(id_to_float, proto::Component {
+            expansion.computation_graph.insert(id_to_float, proto::Component {
                 arguments: Some(proto::IndexmapNodeIds::new(
                     indexmap!["data".into() => id_dp_count])),
                 variant: Some(proto::component::Variant::ToFloat(proto::ToFloat {})),
                 omit: true,
                 submission: component.submission,
             });
+            expansion.traversal.push(id_to_float);
 
             // divide
-            computation_graph.insert(*component_id, proto::Component {
+            expansion.computation_graph.insert(*component_id, proto::Component {
                 arguments: Some(proto::IndexmapNodeIds::new(indexmap![
                     "left".into() => id_dp_sum,
                     "right".into() => id_to_float])),
@@ -97,20 +96,14 @@ impl Expandable for proto::DpMean {
                 submission: component.submission,
             });
 
-            Ok(proto::ComponentExpansion {
-                computation_graph,
-                properties: HashMap::new(),
-                releases: HashMap::new(),
-                traversal: vec![id_dp_sum, id_dp_count, id_to_float],
-                warnings: vec![]
-            })
+            Ok(expansion)
         }
 
         else if self.implementation.to_lowercase().as_str() == "resize" {
             // mean
             current_id += 1;
             let id_mean = current_id;
-            computation_graph.insert(id_mean, proto::Component {
+            expansion.computation_graph.insert(id_mean, proto::Component {
                 arguments: Some(proto::IndexmapNodeIds::new(indexmap![
                     "data".into() => *component.arguments().get::<IndexKey>(&"data".into())
                         .ok_or_else(|| Error::from("data must be provided as an argument"))?])),
@@ -118,9 +111,10 @@ impl Expandable for proto::DpMean {
                 omit: true,
                 submission: component.submission,
             });
+            expansion.traversal.push(id_mean);
 
             // noising
-            computation_graph.insert(*component_id, proto::Component {
+            expansion.computation_graph.insert(*component_id, proto::Component {
                 arguments: Some(proto::IndexmapNodeIds::new(indexmap!["data".into() => id_mean])),
                 variant: Some(match self.mechanism.to_lowercase().as_str() {
                     "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
@@ -135,13 +129,7 @@ impl Expandable for proto::DpMean {
                 submission: component.submission,
             });
 
-            Ok(proto::ComponentExpansion {
-                computation_graph,
-                properties: HashMap::new(),
-                releases: HashMap::new(),
-                traversal: vec![id_mean],
-                warnings: vec![]
-            })
+            Ok(expansion)
         }
 
         else {

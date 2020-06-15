@@ -1,8 +1,5 @@
 use crate::errors::*;
 
-
-use std::collections::HashMap;
-
 use crate::{proto, base};
 use crate::components::{Expandable, Report};
 
@@ -20,27 +17,30 @@ impl Expandable for proto::DpRawMoment {
         _properties: &base::NodeProperties,
         component_id: &u32,
         maximum_id: &u32,
-    ) -> Result<proto::ComponentExpansion> {
+    ) -> Result<base::ComponentExpansion> {
         let mut current_id = *maximum_id;
-        let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
+
+        let mut expansion = base::ComponentExpansion::default();
+
+        let data_id = *component.arguments().get::<base::IndexKey>(&"data".into())
+            .ok_or_else(|| Error::from("data must be provided as an argument"))?;
 
         // kth raw moment
         current_id += 1;
         let id_moment = current_id;
-        computation_graph.insert(id_moment, proto::Component {
+        expansion.computation_graph.insert(id_moment, proto::Component {
             arguments: Some(proto::IndexmapNodeIds::new(
-                indexmap![
-                "data".into() => *component.arguments().get::<base::IndexKey>(&"data".into())
-                    .ok_or_else(|| Error::from("data must be provided as an argument"))?])),
+                indexmap!["data".into() => data_id])),
             variant: Some(proto::component::Variant::RawMoment(proto::RawMoment {
                 order: self.order
             })),
             omit: true,
             submission: component.submission,
         });
+        expansion.traversal.push(id_moment);
 
         // noising
-        computation_graph.insert(*component_id, proto::Component {
+        expansion.computation_graph.insert(*component_id, proto::Component {
             arguments: Some(proto::IndexmapNodeIds::new(indexmap!["data".into() => id_moment])),
             variant: Some(match self.mechanism.to_lowercase().as_str() {
                 "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
@@ -55,13 +55,7 @@ impl Expandable for proto::DpRawMoment {
             submission: component.submission,
         });
 
-        Ok(proto::ComponentExpansion {
-            computation_graph,
-            properties: HashMap::new(),
-            releases: HashMap::new(),
-            traversal: vec![id_moment],
-            warnings: vec![]
-        })
+        Ok(expansion)
     }
 }
 

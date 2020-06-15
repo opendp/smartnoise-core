@@ -1,7 +1,5 @@
 use crate::errors::*;
 
-use std::collections::HashMap;
-
 use crate::{proto, Warnable, base};
 
 use crate::components::{Component, Sensitivity, Expandable};
@@ -9,6 +7,7 @@ use crate::base::{IndexKey, Value, NodeProperties, AggregatorProperties, Sensiti
 use crate::utilities::{prepend, get_literal};
 use ndarray::{arr1, Array};
 use indexmap::map::IndexMap;
+use crate::utilities::inference::infer_property;
 
 
 impl Component for proto::Histogram {
@@ -70,17 +69,16 @@ impl Expandable for proto::Histogram {
         properties: &NodeProperties,
         component_id: &u32,
         maximum_id: &u32,
-    ) -> Result<proto::ComponentExpansion> {
+    ) -> Result<base::ComponentExpansion> {
         let mut current_id = *maximum_id;
-        let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
-        let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
+
+        let mut expansion = base::ComponentExpansion::default();
 
         let data_id = component.arguments().get::<IndexKey>(&"data".into())
             .ok_or_else(|| Error::from("data is a required argument to Histogram"))?.to_owned();
 
         let mut component = component.clone();
 
-        let mut traversal = Vec::<u32>::new();
         match (
             component.arguments().get::<IndexKey>(&"edges".into()),
             component.arguments().get::<IndexKey>(&"categories".into())) {
@@ -100,14 +98,14 @@ impl Expandable for proto::Histogram {
 
                 current_id += 1;
                 let id_digitize = current_id;
-                computation_graph.insert(id_digitize, proto::Component {
+                expansion.computation_graph.insert(id_digitize, proto::Component {
                     arguments: Some(proto::IndexmapNodeIds::new(arguments)),
                     variant: Some(proto::component::Variant::Digitize(proto::Digitize {})),
                     omit: true,
                     submission: component.submission,
                 });
                 component.arguments = Some(proto::IndexmapNodeIds::new(indexmap!["data".into() => id_digitize]));
-                traversal.push(id_digitize);
+                expansion.traversal.push(id_digitize);
             }
 
             (None, Some(categories_id)) => {
@@ -117,7 +115,7 @@ impl Expandable for proto::Histogram {
                     .ok_or_else(|| Error::from("null_value is a required argument to Histogram when categories are not known"))?;
                 current_id += 1;
                 let id_clamp = current_id;
-                computation_graph.insert(id_clamp, proto::Component {
+                expansion.computation_graph.insert(id_clamp, proto::Component {
                     arguments: Some(proto::IndexmapNodeIds::new(indexmap![
                         "data".into() => data_id,
                         "categories".into() => *categories_id,
@@ -128,7 +126,7 @@ impl Expandable for proto::Histogram {
                     submission: component.submission,
                 });
                 component.arguments = Some(proto::IndexmapNodeIds::new(indexmap!["data".into() => id_clamp]));
-                traversal.push(id_clamp);
+                expansion.traversal.push(id_clamp);
             }
 
             (None, None) => {
@@ -150,25 +148,19 @@ impl Expandable for proto::Histogram {
                     Jagged::Bool(jagged) => arr1(&jagged[0]).into_dyn().into(),
                     Jagged::Str(jagged) => arr1(&jagged[0]).into_dyn().into(),
                 };
-                let (patch_node, categories_release) = get_literal(value, &component.submission)?;
-                computation_graph.insert(id_categories.clone(), patch_node);
-                releases.insert(id_categories.clone(), categories_release);
-
+                let (patch_node, categories_release) = get_literal(value, component.submission)?;
+                expansion.computation_graph.insert(id_categories, patch_node);
+                expansion.properties.insert(id_categories, infer_property(&categories_release.value, None)?);
+                expansion.releases.insert(id_categories, categories_release);
                 component.insert_argument(&"categories".into(), id_categories);
             }
 
             (Some(_), Some(_)) => return Err("either edges or categories must be supplied".into())
         }
 
-        computation_graph.insert(*component_id, component);
+        expansion.computation_graph.insert(*component_id, component);
 
-        Ok(proto::ComponentExpansion {
-            computation_graph,
-            properties: HashMap::new(),
-            releases,
-            traversal,
-            warnings: vec![]
-        })
+        Ok(expansion)
     }
 }
 

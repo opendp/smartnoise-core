@@ -1,10 +1,7 @@
 use crate::errors::*;
 
 
-use std::collections::HashMap;
-
 use crate::{proto, base};
-use crate::hashmap;
 use crate::components::{Expandable, Report};
 
 
@@ -22,8 +19,10 @@ impl Expandable for proto::DpMinimum {
         _properties: &base::NodeProperties,
         component_id: &u32,
         _maximum_id: &u32,
-    ) -> Result<proto::ComponentExpansion> {
-        let dp_quantile_component = proto::Component {
+    ) -> Result<base::ComponentExpansion> {
+        let mut expansion = base::ComponentExpansion::default();
+
+        expansion.computation_graph.insert(*component_id, proto::Component {
             arguments: component.arguments.clone(),
             variant: Some(proto::component::Variant::DpQuantile(proto::DpQuantile {
                 alpha: 0.,
@@ -33,15 +32,10 @@ impl Expandable for proto::DpMinimum {
             })),
             omit: component.omit,
             submission: component.submission,
-        };
+        });
+        expansion.traversal.push(*component_id);
 
-        Ok(proto::ComponentExpansion {
-            computation_graph: hashmap![*component_id => dp_quantile_component],
-            properties: HashMap::new(),
-            releases: HashMap::new(),
-            traversal: vec![*component_id],
-            warnings: vec![]
-        })
+        Ok(expansion)
     }
 }
 

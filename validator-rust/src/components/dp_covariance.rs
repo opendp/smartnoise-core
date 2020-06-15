@@ -1,8 +1,5 @@
 use crate::errors::*;
 
-
-use std::collections::HashMap;
-
 use crate::{proto, base};
 use crate::components::{Expandable, Report};
 
@@ -22,9 +19,10 @@ impl Expandable for proto::DpCovariance {
         properties: &base::NodeProperties,
         component_id: &u32,
         maximum_id: &u32,
-    ) -> Result<proto::ComponentExpansion> {
+    ) -> Result<base::ComponentExpansion> {
         let mut current_id = *maximum_id;
-        let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
+
+        let mut expansion = base::ComponentExpansion::default();
 
         let arguments;
         let shape;
@@ -64,7 +62,7 @@ impl Expandable for proto::DpCovariance {
         // covariance
         current_id += 1;
         let id_covariance = current_id;
-        computation_graph.insert(id_covariance, proto::Component {
+        expansion.computation_graph.insert(id_covariance, proto::Component {
             arguments: Some(proto::IndexmapNodeIds::new(arguments)),
             variant: Some(proto::component::Variant::Covariance(proto::Covariance {
                 finite_sample_correction: self.finite_sample_correction
@@ -72,11 +70,12 @@ impl Expandable for proto::DpCovariance {
             omit: true,
             submission: component.submission,
         });
+        expansion.traversal.push(id_covariance);
 
         // noise
         current_id += 1;
         let id_noise = current_id;
-        computation_graph.insert(id_noise, proto::Component {
+        expansion.computation_graph.insert(id_noise, proto::Component {
             arguments: Some(proto::IndexmapNodeIds::new(indexmap!["data".into() => id_covariance])),
             variant: Some(match self.mechanism.to_lowercase().as_str() {
                 "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
@@ -90,9 +89,10 @@ impl Expandable for proto::DpCovariance {
             omit: true,
             submission: component.submission,
         });
+        expansion.traversal.push(id_noise);
 
         // reshape into matrix
-        computation_graph.insert(*component_id, proto::Component {
+        expansion.computation_graph.insert(*component_id, proto::Component {
             arguments: Some(proto::IndexmapNodeIds::new(indexmap!["data".into() => id_noise])),
             variant: Some(proto::component::Variant::Reshape(proto::Reshape {
                 symmetric,
@@ -103,13 +103,7 @@ impl Expandable for proto::DpCovariance {
             submission: component.submission
         });
 
-        Ok(proto::ComponentExpansion {
-            computation_graph,
-            properties: HashMap::new(),
-            releases: HashMap::new(),
-            traversal: vec![id_covariance, id_noise],
-            warnings: vec![]
-        })
+        Ok(expansion)
     }
 }
 
