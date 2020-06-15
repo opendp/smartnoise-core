@@ -44,22 +44,20 @@ impl Component for proto::GaussianMechanism {
             .ok_or_else(|| Error::from("aggregator: missing"))?;
 
         // sensitivity must be computable
-        let mut sensitivity_values = aggregator.component.compute_sensitivity(
+        let mut sensitivity_value = aggregator.component.compute_sensitivity(
             privacy_definition,
             &aggregator.properties,
             &SensitivitySpace::KNorm(2))?;
 
-        if aggregator.lipschitz_constant.iter().any(|v| v != &1.) {
-            let mut sensitivity = sensitivity_values.array()?.f64()?.clone();
-            sensitivity.gencolumns_mut().into_iter()
-                .zip(aggregator.lipschitz_constant.iter())
-                .for_each(|(mut sens, cons)| sens.iter_mut()
-                    .for_each(|v| *v *= cons.powi(2)));
-            sensitivity_values = sensitivity.into();
+        let lipschitz = aggregator.lipschitz_constants.array()?.f64()?;
+        if lipschitz.iter().any(|v| v != &1.) {
+            let mut sensitivity = sensitivity_value.array()?.f64()?.clone();
+            sensitivity *= lipschitz;
+            sensitivity_value = sensitivity.into();
         }
 
         // check that sensitivity is an f64 array
-        sensitivity_values.array()?.f64()?;
+        sensitivity_value.array()?.f64()?;
 
         let privacy_usage = self.privacy_usage.iter().cloned().map(Ok)
             .fold1(|l, r| l? + r?).ok_or_else(|| "privacy_usage: must be defined")??;
@@ -150,13 +148,13 @@ impl Accuracy for proto::GaussianMechanism {
         let aggregator = data_property.aggregator.clone()
             .ok_or_else(|| Error::from("aggregator: missing"))?;
 
-        let sensitivity_values = aggregator.component.compute_sensitivity(
+        let sensitivity_value = aggregator.component.compute_sensitivity(
             &privacy_definition,
             &aggregator.properties,
             &SensitivitySpace::KNorm(2))?;
 
         // sensitivity must be computable
-        let sensitivities = sensitivity_values.array()?.f64()?;
+        let sensitivities = sensitivity_value.array()?.f64()?;
         let usages = spread_privacy_usage(&self.privacy_usage, sensitivities.len())?;
         let delta = usages.iter().map(get_delta).collect::<Result<Vec<f64>>>()?;
         let iter = izip!(sensitivities.into_iter(), accuracies.values.iter(), delta.into_iter());

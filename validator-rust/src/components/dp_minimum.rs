@@ -5,7 +5,7 @@ use crate::{proto, base};
 use crate::components::{Expandable, Report};
 
 
-use crate::base::{NodeProperties, Value, Array};
+use crate::base::{NodeProperties, Value, Array, IndexKey};
 use crate::utilities::json::{JSONRelease, value_to_json, privacy_usage_to_json, AlgorithmInfo};
 use crate::utilities::{prepend, privacy::spread_privacy_usage, array::get_ith_column};
 use indexmap::map::IndexMap;
@@ -16,18 +16,27 @@ impl Expandable for proto::DpMinimum {
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
-        _properties: &base::NodeProperties,
+        properties: &base::NodeProperties,
         component_id: &u32,
         _maximum_id: &u32,
     ) -> Result<base::ComponentExpansion> {
         let mut expansion = base::ComponentExpansion::default();
+
+        let mechanism = if self.mechanism.to_lowercase().as_str() == "automatic" {
+            match properties.contains_key::<IndexKey>(&"candidates".into()) {
+                true => "exponential",
+                false => "laplace"
+            }.to_string()
+        } else {
+            self.mechanism.to_lowercase()
+        };
 
         expansion.computation_graph.insert(*component_id, proto::Component {
             arguments: component.arguments.clone(),
             variant: Some(proto::component::Variant::DpQuantile(proto::DpQuantile {
                 alpha: 0.,
                 interpolation: "lower".to_string(),
-                mechanism: self.mechanism.clone(),
+                mechanism,
                 privacy_usage: self.privacy_usage.clone()
             })),
             omit: component.omit,

@@ -16,8 +16,8 @@
     "mechanism": {
       "type_proto": "string",
       "type_rust": "String",
-      "default_python": "'Exponential'",
-      "default_rust": "String::from(\"Exponential\")",
+      "default_python": "'Automatic'",
+      "default_rust": "String::from(\"Automatic\")",
       "description": "Privatizing mechanism to use."
     },
     "privacy_usage": {

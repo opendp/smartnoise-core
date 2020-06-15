@@ -405,7 +405,7 @@ pub fn spread_privacy_usage(usages: &[proto::PrivacyUsage], length: usize) -> Re
 
     if usages.len() != 1 {
         if length != 1 {
-            bail!("{} privacy parameters passed when either one or {} was required", usages.len(), length);
+            bail!("{} privacy parameters passed when either 1 or {} was required", usages.len(), length);
         } else {
             bail!("{} privacy parameters passed when one was required", usages.len());
         }

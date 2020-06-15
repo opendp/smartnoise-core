@@ -46,10 +46,13 @@ impl Expandable for proto::DpQuantile {
         expansion.traversal.push(id_quantile);
 
         // sanitizing
-        let mut sanitize_args = indexmap!["utilities".into() => id_quantile];
+        let mut sanitize_args = IndexMap::new();
         if self.mechanism.to_lowercase().as_str() == "exponential" {
+            sanitize_args.insert("utilities".into(), id_quantile);
             sanitize_args.insert("candidates".into(), *component.arguments().get::<IndexKey>(&"candidates".into())
                 .ok_or_else(|| Error::from("candidates is a required argument to DPQuantile when the exponential mechanism is used."))?);
+        } else {
+            sanitize_args.insert("data".into(), id_quantile);
         }
         expansion.computation_graph.insert(*component_id, proto::Component {
             arguments: Some(proto::IndexmapNodeIds::new(sanitize_args)),

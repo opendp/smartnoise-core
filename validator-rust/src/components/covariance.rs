@@ -31,17 +31,20 @@ impl Component for proto::Covariance {
             let num_columns = data_property.num_columns()?;
             let num_columns = num_columns * (num_columns + 1) / 2;
 
+            data_property.c_stability = data_property.c_stability.iter().enumerate()
+                .map(|(i, l_stab)| data_property.c_stability.iter().enumerate()
+                    .filter(|(j, _)| i <= *j)
+                    .map(|(_, r_stab)| l_stab * r_stab)
+                    .collect::<Vec<f64>>())
+                .flatten().collect::<Vec<f64>>();
+
             // save a snapshot of the state when aggregating
             data_property.aggregator = Some(AggregatorProperties {
                 component: proto::component::Variant::Covariance(self.clone()),
                 properties: properties.clone(),
-                c_stability: data_property.c_stability.iter().enumerate()
-                    .map(|(i, l_stab)| data_property.c_stability.iter().enumerate()
-                        .filter(|(j, _)| i <= *j)
-                        .map(|(_, r_stab)| l_stab * r_stab)
-                        .collect::<Vec<f64>>())
-                    .flatten().collect::<Vec<f64>>(),
-                lipschitz_constant: (0..num_columns).map(|_| 1.).collect()
+                lipschitz_constants: ndarray::Array::from_shape_vec(
+                    vec![1, num_columns as usize],
+                    (0..num_columns).map(|_| 1.).collect())?.into_dyn().into()
             });
 
             data_property.num_records = Some(1);
@@ -83,14 +86,17 @@ impl Component for proto::Covariance {
 
             let num_columns = left_property.num_columns()? * right_property.num_columns()?;
 
+            left_property.c_stability = left_property.c_stability.iter()
+                .zip(right_property.c_stability.iter())
+                .map(|(l, r)| l * r).collect();
+
             // save a snapshot of the state when aggregating
             left_property.aggregator = Some(AggregatorProperties {
                 component: proto::component::Variant::Covariance(self.clone()),
                 properties: properties.clone(),
-                c_stability: left_property.c_stability.iter()
-                    .zip(right_property.c_stability.iter())
-                    .map(|(l, r)| l * r).collect(),
-                lipschitz_constant: (0..num_columns).map(|_| 1.).collect()
+                lipschitz_constants: ndarray::Array::from_shape_vec(
+                    vec![1, num_columns as usize],
+                    (0..num_columns).map(|_| 1.).collect())?.into_dyn().into()
             });
 
             left_property.nature = None;

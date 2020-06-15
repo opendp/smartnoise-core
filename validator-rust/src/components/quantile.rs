@@ -39,14 +39,16 @@ impl Component for proto::Quantile {
                     return Err("data_type of data must match data_type of candidates".into())
                 }
 
+                let num_columns = data_property.num_columns()?;
                 ValueProperties::Jagged(JaggedProperties {
                     num_records: Some(candidates.num_records()),
                     nullity: false,
                     aggregator: Some(AggregatorProperties {
                         component: proto::component::Variant::Quantile(self.clone()),
                         properties: properties.clone(),
-                        c_stability: data_property.c_stability.clone(),
-                        lipschitz_constant: (0..data_property.num_columns()?).map(|_| 1.).collect()
+                        lipschitz_constants: ndarray::Array::from_shape_vec(
+                            vec![1, num_columns as usize],
+                            (0..num_columns).map(|_| 1.).collect())?.into_dyn().into()
                     }),
                     nature: None,
                     data_type: DataType::F64,
@@ -54,12 +56,14 @@ impl Component for proto::Quantile {
                 }).into()
             },
             None => {
+                let num_columns = data_property.num_columns()?;
                 // save a snapshot of the state when aggregating
                 data_property.aggregator = Some(AggregatorProperties {
                     component: proto::component::Variant::Quantile(self.clone()),
                     properties: properties.clone(),
-                    c_stability: data_property.c_stability.clone(),
-                    lipschitz_constant: (0..data_property.num_columns()?).map(|_| 1.).collect()
+                    lipschitz_constants: ndarray::Array::from_shape_vec(
+                        vec![1, num_columns as usize],
+                        (0..num_columns).map(|_| 1.).collect())?.into_dyn().into()
                 });
 
                 data_property.num_records = Some(1);

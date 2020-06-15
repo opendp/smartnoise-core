@@ -88,8 +88,7 @@ message IndexmapValueProperties {
 message AggregatorProperties {
     Component component = 1;
     IndexmapValueProperties properties = 2;
-    Array1dF64 lipschitz_constant = 3;
-    Array1dF64 c_stability = 4;
+    Value lipschitz_constants = 3;
 }
 
 /// derived properties for the Value::Array

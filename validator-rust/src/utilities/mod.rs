@@ -512,12 +512,10 @@ pub fn expand_mechanism(
         &aggregator.properties,
         &sensitivity_type)?;
 
-    if aggregator.lipschitz_constant.iter().any(|v| v != &1.) {
+    let lipschitz = aggregator.lipschitz_constants.array()?.f64()?;
+    if lipschitz.iter().any(|v| v != &1.) {
         let mut sensitivity = sensitivity_value.array()?.f64()?.clone();
-        sensitivity.gencolumns_mut().into_iter()
-            .zip(aggregator.lipschitz_constant.iter())
-            .for_each(|(mut sens, cons)| sens.iter_mut()
-                .for_each(|v| *v *= cons));
+        sensitivity *= lipschitz;
         sensitivity_value = sensitivity.into();
     }
 

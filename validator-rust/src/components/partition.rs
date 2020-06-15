@@ -13,13 +13,17 @@ use crate::utilities::inference::infer_property;
 impl Component for proto::Partition {
     fn propagate_property(
         &self,
-        _privacy_definition: &Option<proto::PrivacyDefinition>,
+        privacy_definition: &Option<proto::PrivacyDefinition>,
         public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &base::NodeProperties,
         node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
         let data_property = properties.get::<IndexKey>(&"data".into())
             .ok_or("data: missing")?.clone();
+
+        let neighboring = proto::privacy_definition::Neighboring::from_i32(privacy_definition.as_ref()
+            .ok_or_else(|| Error::from("privacy_definition must be defined"))?.neighboring)
+            .ok_or_else(|| Error::from("neighboring must be defined"))?;
 
         Ok(ValueProperties::Indexmap(match properties.get::<IndexKey>(&"by".into()) {
 
@@ -36,7 +40,7 @@ impl Component for proto::Partition {
                 let partition_keys = make_dense_partition_keys(&categories, by_property.dimensionality)?;
 
                 IndexmapProperties {
-                    children: broadcast_partitions(partition_keys, &data_property, node_id)?,
+                    children: broadcast_partitions(partition_keys, &data_property, node_id, neighboring)?,
                     variant: proto::indexmap_properties::Variant::Partition,
                 }
             }
@@ -63,7 +67,11 @@ impl Component for proto::Partition {
                     children: lengths.iter().enumerate()
                         .map(|(index, partition_num_records)| Ok((
                             IndexKey::from(index as i64),
-                            get_partition_properties(&data_property, partition_num_records.clone(), node_id)?
+                            get_partition_properties(
+                                &data_property,
+                                partition_num_records.clone(),
+                                node_id,
+                                neighboring)?
                         )))
                         .collect::<Result<IndexMap<IndexKey, ValueProperties>>>()?,
                     variant: proto::indexmap_properties::Variant::Partition,
@@ -108,16 +116,18 @@ impl Expandable for proto::Partition {
 }
 
 pub fn broadcast_partitions(
-    partition_keys: Vec<IndexKey>, properties: &ValueProperties, node_id: u32
+    partition_keys: Vec<IndexKey>, properties: &ValueProperties, node_id: u32,
+    neighboring_definition: proto::privacy_definition::Neighboring
 ) -> Result<IndexMap<IndexKey, ValueProperties>> {
     // create dense partitioning
     partition_keys.into_iter()
-        .map(|v| Ok((v, get_partition_properties(properties, None, node_id)?)))
+        .map(|v| Ok((v, get_partition_properties(properties, None, node_id, neighboring_definition)?)))
         .collect()
 }
 
 fn get_partition_properties(
-    properties: &ValueProperties, num_records: Option<i64>, node_id: u32
+    properties: &ValueProperties, num_records: Option<i64>, node_id: u32,
+    neighboring_definition: proto::privacy_definition::Neighboring
 ) -> Result<ValueProperties> {
 
     let update_array_properties = |mut properties: ArrayProperties| -> ArrayProperties {
@@ -129,6 +139,11 @@ fn get_partition_properties(
         properties.num_records = num_records;
         properties.dataset_id = Some(node_id as i64);
         properties.is_not_empty = num_records.unwrap_or(0) != 0;
+
+        if neighboring_definition == proto::privacy_definition::Neighboring::Substitute {
+            properties.c_stability = properties.c_stability
+                .into_iter().map(|v| v * 2.).collect();
+        }
 
         properties
     };

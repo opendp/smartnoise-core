@@ -26,12 +26,14 @@ impl Component for proto::Variance {
 
         data_property.assert_is_not_empty()?;
 
+        let num_columns = data_property.num_columns()?;
         // save a snapshot of the state when aggregating
         data_property.aggregator = Some(AggregatorProperties {
             component: proto::component::Variant::Variance(self.clone()),
             properties: properties.clone(),
-            c_stability: data_property.c_stability.clone(),
-            lipschitz_constant: (0..data_property.num_columns()?).map(|_| 1.).collect()
+            lipschitz_constants: ndarray::Array::from_shape_vec(
+                vec![1, num_columns as usize],
+                (0..num_columns).map(|_| 1.).collect())?.into_dyn().into()
         });
 
         if data_property.data_type != DataType::F64 {

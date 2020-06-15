@@ -43,8 +43,9 @@ impl Component for proto::Histogram {
         data_property.aggregator = Some(AggregatorProperties {
             component: proto::component::Variant::Histogram(self.clone()),
             properties: properties.clone(),
-            c_stability: data_property.c_stability.clone(),
-            lipschitz_constant: (0..num_columns).map(|_| 1.).collect()
+            lipschitz_constants: ndarray::Array::from_shape_vec(
+                vec![1, num_columns as usize],
+                (0..num_columns).map(|_| 1.).collect())?.into_dyn().into()
         });
 
         data_property.nature = Some(Nature::Continuous(NatureContinuous {

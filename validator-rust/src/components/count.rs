@@ -69,9 +69,9 @@ impl Component for proto::Count {
         data_property.aggregator = Some(AggregatorProperties {
             component: proto::component::Variant::Count(self.clone()),
             properties: properties.clone(),
-            c_stability,
-            lipschitz_constant: vec![1.]
+            lipschitz_constants: ndarray::Array::from_shape_vec(vec![1, 1], vec![1.0])?.into_dyn().into()
         });
+        data_property.c_stability = c_stability;
 
         let data_num_records = data_property.num_records;
         data_property.nature = Some(Nature::Continuous(NatureContinuous {

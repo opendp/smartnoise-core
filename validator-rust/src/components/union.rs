@@ -36,6 +36,9 @@ impl Component for proto::Union {
                 _ => None
             });
 
+            let releasable = get_common_value(&array_props.iter().map(|v| v.releasable).collect())
+                .ok_or_else(|| Error::from("arguments must all be releasable, or all be private"))?;
+
             let c_stab_mult = get_c_stability_multiplier(
                 array_props.iter().map(|prop| prop.group_id.clone()).collect())?;
 
@@ -44,19 +47,23 @@ impl Component for proto::Union {
                 num_columns,
                 nullity: get_common_value(&array_props.iter().map(|v| v.nullity).collect())
                     .unwrap_or(true),
-                releasable: get_common_value(&array_props.iter().map(|v| v.releasable).collect())
-                    .ok_or_else(|| Error::from("arguments must all be releasable, or all be private"))?,
-                // TODO: inflate this by group_id
+                releasable,
                 c_stability: array_props.iter().map(|v| v.c_stability.clone())
                     .fold1(|l, r| l.iter().zip(r).map(|(l, r)| l.max(r) * c_stab_mult).collect::<Vec<f64>>())
-                    .ok_or_else(|| "must have at least one partition when merging")?,
-                aggregator: Some(AggregatorProperties {
-                    component: proto::component::Variant::Union(self.clone()),
-                    properties: properties.clone(),
-                    // TODO: bring forth the constants from the parts
-                    c_stability: vec![],
-                    lipschitz_constant: vec![]
-                }),
+                    .ok_or_else(|| "must have at least one partition when unioning")?,
+                aggregator: if releasable { None } else {
+                    Some(AggregatorProperties {
+                        component: proto::component::Variant::Union(self.clone()),
+                        properties: properties.clone(),
+                        lipschitz_constants: stack(
+                            Axis(0),
+                            &array_props.iter().map(|prop| prop.aggregator.clone())
+                                .collect::<Option<Vec<AggregatorProperties>>>()
+                                .ok_or_else(|| Error::from("all arguments to union must be aggregated"))?
+                                .iter().map(|v| Ok(v.lipschitz_constants.array()?.f64()?.view()))
+                                .collect::<Result<Vec<ArrayViewD<f64>>>>()?)?.into(),
+                    })
+                },
                 // TODO: merge natures
                 nature: None,
                 data_type: get_common_value(&array_props.iter().map(|v| v.data_type.clone()).collect())

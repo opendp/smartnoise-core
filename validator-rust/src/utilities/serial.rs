@@ -219,8 +219,7 @@ pub fn parse_array_properties(value: proto::ArrayProperties) -> ArrayProperties 
         aggregator: value.aggregator.map(|aggregator| AggregatorProperties {
             component: aggregator.component.unwrap().variant.unwrap(),
             properties: parse_indexmap_value_properties(aggregator.properties.unwrap()),
-            c_stability: parse_array1d_f64(aggregator.c_stability.unwrap()),
-            lipschitz_constant: parse_array1d_f64(aggregator.lipschitz_constant.unwrap())
+            lipschitz_constants: parse_value(aggregator.lipschitz_constants.unwrap())
         }),
         nature: value.nature.map(|nature| match nature {
             proto::array_properties::Nature::Continuous(continuous) =>
@@ -249,8 +248,7 @@ pub fn parse_jagged_properties(value: proto::JaggedProperties) -> JaggedProperti
         aggregator: value.aggregator.map(|aggregator| AggregatorProperties {
             component: aggregator.component.unwrap().variant.unwrap(),
             properties: parse_indexmap_value_properties(aggregator.properties.unwrap()),
-            c_stability: parse_array1d_f64(aggregator.c_stability.unwrap()),
-            lipschitz_constant: parse_array1d_f64(aggregator.lipschitz_constant.unwrap())
+            lipschitz_constants: parse_value(aggregator.lipschitz_constants.unwrap())
         }),
         nature: value.nature.map(|nature| match nature {
             proto::jagged_properties::Nature::Continuous(continuous) =>
@@ -515,8 +513,7 @@ pub fn serialize_array_properties(value: ArrayProperties) -> proto::ArrayPropert
                 arguments: Some(proto::IndexmapNodeIds::default()),
             }),
             properties: Some(serialize_indexmap_value_properties(aggregator.properties)),
-            lipschitz_constant: Some(serialize_array1d_f64(aggregator.lipschitz_constant)),
-            c_stability: Some(serialize_array1d_f64(aggregator.c_stability)),
+            lipschitz_constants: Some(serialize_value(aggregator.lipschitz_constants)),
         }),
         data_type: serialize_data_type(data_type) as i32,
         dataset_id: Some(serialize_i64_null(dataset_id)),
@@ -552,8 +549,7 @@ pub fn serialize_jagged_properties(value: JaggedProperties) -> proto::JaggedProp
                 arguments: Some(proto::IndexmapNodeIds::default()),
             }),
             properties: Some(serialize_indexmap_value_properties(aggregator.properties)),
-            c_stability: Some(serialize_array1d_f64(aggregator.c_stability)),
-            lipschitz_constant: Some(serialize_array1d_f64(aggregator.lipschitz_constant))
+            lipschitz_constants: Some(serialize_value(aggregator.lipschitz_constants))
         }),
         data_type: serialize_data_type(data_type) as i32
     }
