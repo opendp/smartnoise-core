@@ -68,7 +68,7 @@ impl Component for proto::Index {
                             dimensionality = Some(2);
                             let mask = to_name_vec(mask)?;
                             if mask.len() != data_property.children.len() {
-                                return Err("mask: must be same length as the number of columns")?
+                                return Err("mask: must be same length as the number of columns".into())
                             }
                             Ok(data_property.children.into_iter().zip(mask)
                                 .filter(|(_, m)| *m).map(|(v, _)| v.1)
@@ -89,8 +89,10 @@ impl Component for proto::Index {
 
                         fn set_group_index(part_properties: &mut ArrayProperties, key: IndexKey) {
                             let last_idx = part_properties.group_id.len() - 1;
-                            part_properties.group_id.get_mut(last_idx)
-                                .map(|v| v.index = Some(key));
+
+                            if let Some(v) = part_properties.group_id.get_mut(last_idx) {
+                                v.index = Some(key)
+                            };
                         }
 
                         match &mut part_properties {
@@ -98,10 +100,10 @@ impl Component for proto::Index {
                                 set_group_index(part_properties, partition_key),
                             ValueProperties::Indexmap(part_properties) =>
                                 part_properties.children.values_mut()
-                                    .map(|mut v| match &mut v {
-                                        ValueProperties::Array(v) => Ok(set_group_index(v, partition_key.clone())),
-                                        _ => Err("dataframe columns must be arrays".into())
-                                    })
+                                    .map(|mut v| if let ValueProperties::Array(v) = &mut v {
+                                        set_group_index(v, partition_key.clone());
+                                        Ok(())
+                                    } else { Err("dataframe columns must be arrays".into()) })
                                     .collect::<Result<()>>()?,
                             _ => return Err("data: partition members must be either a dataframe or array".into())
                         }
@@ -133,7 +135,7 @@ impl Component for proto::Index {
                     dimensionality = Some(2);
                     let mask = to_name_vec(mask)?;
                     if mask.len() != data_property.num_columns()? as usize {
-                        return Err("mask: must be same length as the number of columns")?
+                        return Err("mask: must be same length as the number of columns".into())
                     }
                     mask.into_iter().enumerate().filter(|(_, mask)| *mask)
                         .map(|(idx, _)| select_properties(&data_property, idx))
@@ -156,10 +158,9 @@ impl Expandable for proto::Index {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         properties: &NodeProperties,
-        component_id: &u32,
-        maximum_id: &u32
+        component_id: u32,
+        mut maximum_id: u32
     ) -> Result<base::ComponentExpansion> {
-        let mut current_id = *maximum_id;
 
         let mut expansion = base::ComponentExpansion::default();
 
@@ -168,8 +169,8 @@ impl Expandable for proto::Index {
 
         if let Ok(indexmap) = data_property.indexmap() {
             if indexmap.variant == proto::indexmap_properties::Variant::Partition {
-                current_id += 1;
-                let id_is_partition = current_id;
+                maximum_id += 1;
+                let id_is_partition = maximum_id;
                 let (patch_node, release) = get_literal(true.into(), component.submission)?;
                 expansion.computation_graph.insert(id_is_partition, patch_node);
                 expansion.properties.insert(id_is_partition, infer_property(&release.value, None)?);
@@ -177,7 +178,7 @@ impl Expandable for proto::Index {
 
                 let mut component = component.clone();
                 component.insert_argument(&"is_partition".into(), id_is_partition);
-                expansion.computation_graph.insert(*component_id, component);
+                expansion.computation_graph.insert(component_id, component);
             }
         }
 
@@ -216,12 +217,12 @@ impl Named for proto::Index {
                 .ok_or_else(|| Error::from("attempted to retrieve an out-of-bounds name"))
         } else if let Some(mask) = public_arguments.get::<IndexKey>(&"mask".into()) {
             Ok(mask.array()?.bool()?.iter()
-                .zip(input_names.into_iter())
+                .zip(input_names.iter())
                 .filter(|(&mask, _)| mask)
                 .map(|(_, name)| name.clone())
                 .collect::<Vec<IndexKey>>())
         } else {
-            return Err("one of names, indices or mask must be supplied".into())
+            Err("one of names, indices or mask must be supplied".into())
         }
     }
 }

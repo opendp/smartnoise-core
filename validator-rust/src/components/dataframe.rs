@@ -36,7 +36,7 @@ impl Component for proto::Dataframe {
             variant: proto::indexmap_properties::Variant::Dataframe,
             children: column_names.into_iter().enumerate()
                 .map(|(idx, name)| Ok((
-                    name.into(),
+                    name,
                     select_properties(data_property, idx)?
                 )))
                 .collect::<Result<IndexMap<IndexKey, ValueProperties>>>()?,

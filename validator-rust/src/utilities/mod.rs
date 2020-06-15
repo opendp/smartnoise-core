@@ -127,8 +127,8 @@ pub fn propagate_properties(
                 privacy_definition,
                 &component,
                 &get_input_properties(&component, &properties)?,
-                &node_id,
-                &maximum_id,
+                node_id,
+                maximum_id,
             ) {
             Ok(expansion) => expansion,
             Err(err) => if dynamic {
@@ -294,7 +294,7 @@ pub fn get_sinks(computation_graph: &HashMap<u32, proto::Component>) -> HashSet<
                 node_ids.remove(source_node_id);
             }));
 
-    return node_ids;
+    node_ids
 }
 
 
@@ -302,13 +302,13 @@ pub fn get_sinks(computation_graph: &HashMap<u32, proto::Component>) -> HashSet<
 ///
 /// Typically used by functions when standardizing numeric arguments, but generally applicable.
 #[doc(hidden)]
-pub fn standardize_numeric_argument<T: Clone>(value: &ArrayD<T>, length: &i64) -> Result<ArrayD<T>> {
+pub fn standardize_numeric_argument<T: Clone>(value: &ArrayD<T>, length: i64) -> Result<ArrayD<T>> {
     match value.ndim() {
         0 => match value.first() {
-            Some(scalar) => Ok(Array::from((0..*length).map(|_| scalar.clone()).collect::<Vec<T>>()).into_dyn()),
+            Some(scalar) => Ok(Array::from((0..length).map(|_| scalar.clone()).collect::<Vec<T>>()).into_dyn()),
             None => Err("value must be non-empty".into())
         },
-        1 => if value.len() as i64 == *length {
+        1 => if value.len() as i64 == length {
             Ok(value.clone())
         } else { Err("value is of incompatible length".into()) },
         _ => Err("value must be a scalar or vector".into())
@@ -318,7 +318,7 @@ pub fn standardize_numeric_argument<T: Clone>(value: &ArrayD<T>, length: &i64) -
 /// Given a jagged float array, conduct well-formedness checks and broadcast
 pub fn standardize_float_argument(
     categories: &[Vec<f64>],
-    length: &i64,
+    length: i64,
 ) -> Result<Vec<Vec<f64>>> {
     let mut categories = categories.to_owned();
 
@@ -343,7 +343,7 @@ pub fn standardize_float_argument(
 
     // broadcast categories across all columns, if only one categories set is defined
     if categories.len() == 1 {
-        categories = (0..*length).map(|_| categories.first().unwrap().clone()).collect();
+        categories = (0..length).map(|_| categories.first().unwrap().clone()).collect();
     }
 
     Ok(categories)
@@ -353,7 +353,7 @@ pub fn standardize_float_argument(
 #[doc(hidden)]
 pub fn standardize_categorical_argument<T: Clone + Eq + Hash + Ord>(
     categories: Vec<Vec<T>>,
-    length: &i64,
+    length: i64,
 ) -> Result<Vec<Vec<T>>> {
     // deduplicate categories
     let mut categories = categories.into_iter()
@@ -364,7 +364,7 @@ pub fn standardize_categorical_argument<T: Clone + Eq + Hash + Ord>(
     }
     // broadcast categories across all columns, if only one categories set is defined
     if categories.len() == 1 {
-        categories = (0..*length).map(|_| categories.first().unwrap().clone()).collect();
+        categories = (0..length).map(|_| categories.first().unwrap().clone()).collect();
     }
 
     Ok(categories)
@@ -374,10 +374,10 @@ pub fn standardize_categorical_argument<T: Clone + Eq + Hash + Ord>(
 /// Given a jagged null values array, conduct well-formedness checks, broadcast along columns, and flatten along rows.
 #[doc(hidden)]
 pub fn standardize_null_candidates_argument<T: Clone>(
-    value: &Vec<Vec<T>>,
-    length: &i64,
+    value: &[Vec<T>],
+    length: i64,
 ) -> Result<Vec<Vec<T>>> {
-    let mut value = value.clone();
+    let mut value = value.to_owned();
 
     if value.is_empty() {
         return Err("null values cannot be an empty vector".into());
@@ -386,7 +386,7 @@ pub fn standardize_null_candidates_argument<T: Clone>(
     // broadcast nulls across all columns, if only one null set is defined
     if value.len() == 1 {
         let first_set = value.first().unwrap();
-        value = (0..*length).map(|_| first_set.clone()).collect();
+        value = (0..length).map(|_| first_set.clone()).collect();
     }
     Ok(value)
 }
@@ -395,20 +395,20 @@ pub fn standardize_null_candidates_argument<T: Clone>(
 #[doc(hidden)]
 pub fn standardize_null_target_argument<T: Clone>(
     value: &ArrayD<T>,
-    length: &i64,
+    length: i64,
 ) -> Result<Vec<T>> {
     if value.is_empty() {
         return Err("null values cannot be empty".into());
     }
 
-    if value.len() == *length as usize {
+    if value.len() == length as usize {
         return Ok(value.iter().cloned().collect());
     }
 
     // broadcast nulls across all columns, if only one null is defined
     if value.len() == 1 {
         let value = value.first().unwrap();
-        return Ok((0..*length).map(|_| value.clone()).collect());
+        return Ok((0..length).map(|_| value.clone()).collect());
     }
 
     bail!("length of null must be one, or {}", length)
@@ -482,16 +482,16 @@ pub fn prepend(text: &str) -> impl Fn(Error) -> Error + '_ {
 }
 
 /// Utility function for building component expansions for dp mechanisms
+#[allow(clippy::float_cmp)]
 pub fn expand_mechanism(
     sensitivity_type: &SensitivitySpace,
     privacy_definition: &Option<proto::PrivacyDefinition>,
-    privacy_usage: &Vec<proto::PrivacyUsage>,
+    privacy_usage: &[proto::PrivacyUsage],
     component: &proto::Component,
     properties: &NodeProperties,
-    component_id: &u32,
-    maximum_id: &u32,
+    component_id: u32,
+    mut maximum_id: u32,
 ) -> Result<base::ComponentExpansion> {
-    let mut current_id = *maximum_id;
 
     let mut expansion = base::ComponentExpansion::default();
 
@@ -519,8 +519,8 @@ pub fn expand_mechanism(
         sensitivity_value = sensitivity.into();
     }
 
-    current_id += 1;
-    let id_sensitivity = current_id;
+    maximum_id += 1;
+    let id_sensitivity = maximum_id;
     let (patch_node, release) = get_literal(sensitivity_value.clone(), component.submission)?;
     expansion.computation_graph.insert(id_sensitivity, patch_node);
     expansion.properties.insert(id_sensitivity, infer_property(&release.value, None)?);
@@ -551,12 +551,13 @@ pub fn expand_mechanism(
         proto::component::Variant::SimpleGeometricMechanism(variant) => variant.privacy_usage = effective_usages,
         _ => ()
     };
-    expansion.computation_graph.insert(*component_id, noise_component);
+    expansion.computation_graph.insert(component_id, noise_component);
 
     Ok(expansion)
 }
 
 /// given a vector of items, return the shared item, or None, if no item is shared
+#[allow(clippy::ptr_arg)]
 pub fn get_common_value<T: Clone + Eq>(values: &Vec<T>) -> Option<T> {
     if values.windows(2).all(|w| w[0] == w[1]) {
         values.first().cloned()

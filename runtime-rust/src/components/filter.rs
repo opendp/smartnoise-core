@@ -43,11 +43,11 @@ impl Evaluable for proto::Filter {
 /// let data = arr2(&[ [1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12] ]).into_dyn();
 /// let mask = arr1(&[true, false, true, false]).into_dyn();
 /// let filtered = filter(&data, &mask).unwrap();
-/// assert!(filtered == arr2(&[ [1, 2, 3], [7, 8, 9] ]).into_dyn());
+/// assert_eq!(filtered, arr2(&[ [1, 2, 3], [7, 8, 9] ]).into_dyn());
 /// ```
 pub fn filter<T: Clone + Default>(data: &ArrayD<T>, mask: &ArrayD<bool>) -> Result<ArrayD<T>> {
 
-    let columnar_mask: Array1<bool> = to_nd(mask.clone(), &1)?.into_dimensionality::<Ix1>()?;
+    let columnar_mask: Array1<bool> = to_nd(mask.clone(), 1)?.into_dimensionality::<Ix1>()?;
 
     let mask_indices: Vec<usize> = columnar_mask.iter().enumerate()
         .filter(|(_index, &v)| v)

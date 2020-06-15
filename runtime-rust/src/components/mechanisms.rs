@@ -20,7 +20,6 @@ impl Evaluable for proto::LaplaceMechanism {
     ) -> Result<ReleaseNode> {
 
         let data = get_argument(arguments, "data")?.array()?;
-        println!("data {:?}", data);
         let num_columns = data.num_columns()?;
         let mut data = match data {
             Array::F64(data) => data.clone(),

@@ -21,20 +21,20 @@ impl Evaluable for proto::Quantile {
         Ok(match arguments.get::<IndexKey>(&"candidates".into()) {
             Some(candidates) => match (candidates.jagged()?, data) {
                 (Jagged::F64(candidates), Array::F64(data)) => Value::Jagged(quantile_utilities(
-                    candidates.into_iter().map(|col| col.into_iter().copied().map(n64).collect()).collect(),
+                    candidates.iter().map(|col| col.iter().copied().map(n64).collect()).collect(),
                     &data.mapv(n64),
-                    &self.alpha)?.into()),
+                    self.alpha)?.into()),
                 (Jagged::I64(candidates), Array::I64(data)) => Value::Jagged(quantile_utilities(
                     candidates.clone(),
                     data,
-                    &self.alpha)?.into()),
+                    self.alpha)?.into()),
                 _ => return Err("data must be either f64 or i64".into())
             },
             None => match data {
                 Array::F64(data) =>
-                    quantile(data.mapv(n64), &self.alpha, &self.interpolation)?.mapv(|v| v.raw()).into(),
+                    quantile(data.mapv(n64), self.alpha, &self.interpolation)?.mapv(|v| v.raw()).into(),
                 Array::I64(data) =>
-                    quantile(data.clone(), &self.alpha, &self.interpolation)?.into(),
+                    quantile(data.clone(), self.alpha, &self.interpolation)?.into(),
                 _ => return Err("data must be either f64 or i64".into())
             }
         }).map(ReleaseNode::new)
@@ -57,23 +57,23 @@ impl Evaluable for proto::Quantile {
 /// use whitenoise_runtime::components::quantile::quantile;
 /// use noisy_float::types::n64;
 /// let data: ArrayD<f64> = arr2(&[ [0., 1., 2.], [2., 3., 4.] ]).into_dyn();
-/// let median = quantile(data.mapv(n64), &0.5, &"midpoint".to_string()).unwrap();
+/// let median = quantile(data.mapv(n64), 0.5, &"midpoint".to_string()).unwrap();
 /// println!("{:?}", median);
 /// assert_eq!(median, arr1(& [1.0, 2.0, 3.0] ).into_dyn().mapv(n64));
 /// ```
 pub fn quantile<T: FromPrimitive + Ord + Clone + Sub<Output=T> + Mul<Output=T> + Div<Output=T> + Add<Output=T> + Rem<Output=T> + ToPrimitive>(
-    mut data: ArrayD<T>, alpha: &f64, interpolation: &String
+    mut data: ArrayD<T>, alpha: f64, interpolation: &str
 ) -> Result<ArrayD<T>> {
-    if &0. > alpha || alpha > &1. {
+    if 0. > alpha || alpha > 1. {
         return Err("q must be within [0, 1]".into());
     }
 
     match match interpolation.to_lowercase().as_str() {
-        "lower" => data.quantile_axis_mut(Axis(0), n64(*alpha), &interpolate::Lower),
-        "upper" => data.quantile_axis_mut(Axis(0), n64(*alpha), &interpolate::Higher),
-        "midpoint" => data.quantile_axis_mut(Axis(0), n64(*alpha), &interpolate::Midpoint),
-        "nearest" => data.quantile_axis_mut(Axis(0), n64(*alpha), &interpolate::Nearest),
-        "linear" => data.quantile_axis_mut(Axis(0), n64(*alpha), &interpolate::Linear),
+        "lower" => data.quantile_axis_mut(Axis(0), n64(alpha), &interpolate::Lower),
+        "upper" => data.quantile_axis_mut(Axis(0), n64(alpha), &interpolate::Higher),
+        "midpoint" => data.quantile_axis_mut(Axis(0), n64(alpha), &interpolate::Midpoint),
+        "nearest" => data.quantile_axis_mut(Axis(0), n64(alpha), &interpolate::Nearest),
+        "linear" => data.quantile_axis_mut(Axis(0), n64(alpha), &interpolate::Linear),
         _ => return Err(format!("interpolation type not recognized: {}", interpolation).into())
     }  {
         Ok(quantiles) => Ok(quantiles),
@@ -84,7 +84,7 @@ pub fn quantile<T: FromPrimitive + Ord + Clone + Sub<Output=T> + Mul<Output=T> +
 
 pub fn quantile_utilities<T: Ord + Clone + Copy>(
     candidates: Vec<Vec<T>>,
-    data: &ArrayD<T>, alpha: &f64
+    data: &ArrayD<T>, alpha: f64
 ) -> Result<Vec<Vec<f64>>> {
     let n = data.len_of(Axis(0)) as f64;
     let constant = alpha.max(1. - alpha);

@@ -63,8 +63,8 @@ pub fn broadcast_map<T, U>(
 //    println!("left shape {:?}", left.shape());
 //    println!("right shape {:?}", right.shape());
     // TODO: switch to array views to prevent the clone()
-    let left = to_nd(left.clone(), &shape.len())?;
-    let right = to_nd(right.clone(), &shape.len())?;
+    let left = to_nd(left.clone(), shape.len())?;
+    let right = to_nd(right.clone(), shape.len())?;
 
 //    println!("shape {:?}", shape);
 //    println!("left shape {:?}", left.shape());
@@ -127,14 +127,17 @@ mod test_broadcast_map {
     }
 }
 
-pub fn to_nd<T>(mut array: ArrayD<T>, ndim: &usize) -> Result<ArrayD<T>> {
-    match (*ndim as i32) - (array.ndim() as i32) {
+pub fn to_nd<T>(mut array: ArrayD<T>, ndim: usize) -> Result<ArrayD<T>> {
+    match (ndim as i32) - (array.ndim() as i32) {
         0 => {}
         // must remove i axes
         i if i < 0 => {
             (0..-(i as i32)).map(|_| match array.shape().last()
                 .ok_or_else(|| Error::from("ndim may not be negative"))? {
-                1 => Ok(array.index_axis_inplace(Axis(array.ndim() - 1), 0)),
+                1 => {
+                    array.index_axis_inplace(Axis(array.ndim() - 1), 0);
+                    Ok(())
+                },
                 _ => Err("cannot remove non-singleton trailing axis".into())
             }).collect::<Result<()>>()?
         }
@@ -188,15 +191,12 @@ pub fn get_bytes(n_bytes: usize) -> String {
     rand_bytes(&mut buffer).unwrap();
 
     // create new buffer of binary representations, rather than u8
-    let mut new_buffer = Vec::new();
-    for i in 0..buffer.len() {
-        new_buffer.push(format!("{:08b}", buffer[i]));
-    }
+    let new_buffer = buffer.into_iter()
+        .map(|v| format!("{:08b}", v))
+        .collect::<Vec<String>>();
 
-    // combine binary representations into single string and subset mantissa
-    let binary_string = new_buffer.concat();
-
-    return binary_string;
+    // combine binary representations into single string and subset mantissa, and return
+    new_buffer.concat()
 }
 
 /// Converts an `f64` to `String` of length 64, yielding the IEEE-754 binary representation of the `f64`.
@@ -210,7 +210,7 @@ pub fn get_bytes(n_bytes: usize) -> String {
 ///
 /// # Return
 /// A string showing the IEEE-754 binary representation of `num`.
-pub fn f64_to_binary(num: &f64) -> String {
+pub fn f64_to_binary(num: f64) -> String {
     // decompose num into component parts
     let (sign, exponent, mantissa) = num.decompose_raw();
 
@@ -219,11 +219,8 @@ pub fn f64_to_binary(num: &f64) -> String {
     let mantissa_string = format!("{:052b}", mantissa);
     let exponent_string = format!("{:011b}", exponent);
 
-    // join component strings
-    let binary_string = vec![sign_string, exponent_string, mantissa_string].concat();
-
-    // return string representation
-    return binary_string;
+    // join component strings and return string representation
+    vec![sign_string, exponent_string, mantissa_string].concat()
 }
 
 /// Converts `String` of length 64 to `f64`, yielding the floating-point number represented by the `String`.
@@ -237,14 +234,10 @@ pub fn f64_to_binary(num: &f64) -> String {
 ///
 /// # Return
 /// * `num`: f64 version of the String
-pub fn binary_to_f64(binary_string: &String) -> f64 {
+pub fn binary_to_f64(binary_string: &str) -> f64 {
     // get sign and convert to bool as recompose expects
     let sign = &binary_string[0..1];
-    let sign_bool = if sign.parse::<i32>().unwrap() == 0 {
-        false
-    } else {
-        true
-    };
+    let sign_bool = sign.parse::<i32>().unwrap() != 0;
 
     // convert exponent to int
     let exponent = &binary_string[1..12];
@@ -255,8 +248,7 @@ pub fn binary_to_f64(binary_string: &String) -> f64 {
     let mantissa_int = u64::from_str_radix(mantissa, 2).unwrap();
 
     // combine elements into f64 and return
-    let num = f64::recompose_raw(sign_bool, exponent_int, mantissa_int);
-    return num;
+    f64::recompose_raw(sign_bool, exponent_int, mantissa_int)
 }
 
 /// Takes `String` of form `{0,1}^64` and splits it into a sign, exponent, and mantissa
@@ -267,8 +259,8 @@ pub fn binary_to_f64(binary_string: &String) -> f64 {
 ///
 /// # Return
 /// * `(sign, exponent, mantissa)` - where each is a `String`.
-pub fn split_ieee_into_components(binary_string: &String) -> (String, String, String) {
-    return (binary_string[0..1].to_string(), binary_string[1..12].to_string(), binary_string[12..].to_string());
+pub fn split_ieee_into_components(binary_string: &str) -> (String, String, String) {
+    (binary_string[0..1].to_string(), binary_string[1..12].to_string(), binary_string[12..].to_string())
 }
 
 /// Combines `String` versions of sign, exponent, and mantissa into
@@ -282,7 +274,7 @@ pub fn split_ieee_into_components(binary_string: &String) -> (String, String, St
 /// # Return
 /// Concatenation of sign, exponent, and mantissa.
 pub fn combine_components_into_ieee(sign: &str, exponent: &str, mantissa: &str) -> String {
-    return vec![sign, exponent, mantissa].concat();
+    vec![sign, exponent, mantissa].concat()
 }
 
 /// Samples a single element from a set according to provided weights.
@@ -294,7 +286,7 @@ pub fn combine_components_into_ieee(sign: &str, exponent: &str, mantissa: &str) 
 /// # Return
 /// Element from the candidate set
 #[cfg(feature="use-secure-noise")]
-pub fn sample_from_set<T>(candidate_set: &Vec<T>, weights: &Vec<f64>)
+pub fn sample_from_set<T>(candidate_set: &[T], weights: &[f64])
                           -> Result<T> where T: Clone {
 
     use rug::Float;
@@ -303,7 +295,7 @@ pub fn sample_from_set<T>(candidate_set: &Vec<T>, weights: &Vec<f64>)
     let unif: rug::Float = Float::with_val(53, noise::sample_uniform_mpfr(0., 1.)?);
 
     // generate sum of weights
-    let weights_rug: Vec<rug::Float> = weights.into_iter().map(|w| Float::with_val(53, w)).collect();
+    let weights_rug: Vec<rug::Float> = weights.iter().map(|w| Float::with_val(53, w)).collect();
     let weights_sum: rug::Float = Float::with_val(53, Float::sum(weights_rug.iter()));
 
     // NOTE: use this instead of the two lines above if we switch to accepting rug::Float rather than f64 weights
@@ -320,8 +312,8 @@ pub fn sample_from_set<T>(candidate_set: &Vec<T>, weights: &Vec<f64>)
 
     // sample an element relative to its probability
     let mut return_index: usize = 0;
-    for i in 0..cumulative_probability_vec.len() {
-        if unif <= cumulative_probability_vec[i] {
+    for (i, cum_prob) in cumulative_probability_vec.into_iter().enumerate() {
+        if unif <= cum_prob {
             return_index = i;
             break;
         }
@@ -366,18 +358,18 @@ pub fn sample_from_set<T>(candidate_set: &Vec<T>, weights: &Vec<f64>)
 /// let set = vec![1, 2, 3, 4, 5, 6];
 /// let weights = vec![1., 1., 1., 2., 2., 2.];
 /// let k = 3;
-/// let subset = create_subset(&set, &weights, &k);
+/// let subset = create_subset(&set, &weights, k);
 /// # subset.unwrap();
 /// ```
 #[cfg(feature="use-secure-noise")]
-pub fn create_subset<T>(set: &Vec<T>, weights: &Vec<f64>, k: &i64) -> Result<Vec<T>> where T: Clone {
-    if *k as usize > set.len() { return Err("k must be less than the set length".into()); }
+pub fn create_subset<T>(set: &[T], weights: &[f64], k: usize) -> Result<Vec<T>> where T: Clone {
+    if k > set.len() { return Err("k must be less than the set length".into()); }
 
     use rug::Float;
     use rug::ops::Pow;
 
     // generate sum of weights
-    let weights_rug: Vec<rug::Float> = weights.into_iter().map(|w| Float::with_val(53, w)).collect();
+    let weights_rug: Vec<rug::Float> = weights.iter().map(|w| Float::with_val(53, w)).collect();
     let weights_sum: rug::Float = Float::with_val(53, Float::sum(weights_rug.iter()));
 
     // convert weights to probabilities
@@ -387,20 +379,19 @@ pub fn create_subset<T>(set: &Vec<T>, weights: &Vec<f64>, k: &i64) -> Result<Vec
     //
 
     // generate key/index tuples
-    let mut key_vec: Vec<(rug::Float, usize)> = Vec::with_capacity(*k as usize);
-    for i in 0..set.len() {
-        key_vec.push((noise::sample_uniform_mpfr(0., 1.)?.pow(1. / probabilities[i as usize].clone()), i));
-    }
+    let mut key_vec = probabilities.into_iter()
+        .take(set.len()).enumerate()
+        .map(|(i, prob)| Ok((noise::sample_uniform_mpfr(0., 1.)?.pow(1. / prob), i)))
+        .collect::<Result<Vec<(rug::Float, usize)>>>()?;
 
     // sort key/index tuples by key and identify top k indices
-    let mut top_indices: Vec<usize> = Vec::with_capacity(*k as usize);
+    let mut top_indices: Vec<usize> = Vec::with_capacity(k);
     key_vec.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap());
-    for i in 0..(*k as usize) {
-        top_indices.push(key_vec[i].1);
-    }
+    top_indices.extend(key_vec.iter()
+        .take(k).map(|v| v.1));
 
     // subsample based on top k indices
-    let mut subset: Vec<T> = Vec::with_capacity(*k as usize);
+    let mut subset: Vec<T> = Vec::with_capacity(k);
     for value in top_indices.iter().map(|&index| set[index].clone()) {
         subset.push(value);
     }

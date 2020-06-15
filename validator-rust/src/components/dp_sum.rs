@@ -14,10 +14,9 @@ impl Expandable for proto::DpSum {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         properties: &base::NodeProperties,
-        component_id: &u32,
-        maximum_id: &u32,
+        component_id: u32,
+        mut maximum_id: u32,
     ) -> Result<base::ComponentExpansion> {
-        let mut maximum_id = *maximum_id;
 
         let mut expansion = base::ComponentExpansion::default();
 
@@ -48,7 +47,7 @@ impl Expandable for proto::DpSum {
                 .ok_or_else(|| Error::from("lower must be defined for geometric mechanism"))?;
 
             // noising
-            expansion.computation_graph.insert(*component_id, proto::Component {
+            expansion.computation_graph.insert(component_id, proto::Component {
                 arguments: Some(proto::IndexmapNodeIds::new(indexmap![
                     "data".into() => id_sum,
                     "lower".into() => sum_min_id,
@@ -63,7 +62,7 @@ impl Expandable for proto::DpSum {
         } else {
 
             // noising
-            expansion.computation_graph.insert(*component_id, proto::Component {
+            expansion.computation_graph.insert(component_id, proto::Component {
                 arguments: Some(proto::IndexmapNodeIds::new(indexmap![
                     "data".into() => id_sum
                 ])),
@@ -88,7 +87,7 @@ impl Expandable for proto::DpSum {
 impl Report for proto::DpSum {
     fn summarize(
         &self,
-        node_id: &u32,
+        node_id: u32,
         component: &proto::Component,
         _public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &NodeProperties,
@@ -119,14 +118,14 @@ impl Report for proto::DpSum {
                 statistic: "DPSum".to_string(),
                 variables: serde_json::json!(variable_name.to_string()),
                 release_info: match release.array()? {
-                    Array::F64(v) => value_to_json(&get_ith_column(v, &column_number)?.into())?,
-                    Array::I64(v) => value_to_json(&get_ith_column(v, &column_number)?.into())?,
+                    Array::F64(v) => value_to_json(&get_ith_column(v, column_number)?.into())?,
+                    Array::I64(v) => value_to_json(&get_ith_column(v, column_number)?.into())?,
                     _ => return Err("maximum must be numeric".into())
                 },
                 privacy_loss: privacy_usage_to_json(&privacy_usages[column_number].clone()),
                 accuracy: None,
-                submission: component.submission as u64,
-                node_id: *node_id as u64,
+                submission: component.submission,
+                node_id,
                 postprocess: false,
                 algorithm_info: AlgorithmInfo {
                     name: "".to_string(),
@@ -146,10 +145,10 @@ impl Report for proto::DpSum {
     }
 }
 
-fn get_mechanism(data_property: &ArrayProperties, mechanism: &String) -> Result<String> {
+fn get_mechanism(data_property: &ArrayProperties, mechanism: &str) -> Result<String> {
     let mechanism = mechanism.to_lowercase();
 
-    Ok(if mechanism.as_str() == "automatic" {
+    Ok(if mechanism == "automatic" {
         match data_property.data_type {
             DataType::I64 => "simplegeometric",
             DataType::F64 => "laplace",

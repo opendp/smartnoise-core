@@ -110,8 +110,8 @@ pub trait Expandable {
         privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         properties: &NodeProperties,
-        component_id: &u32,
-        maximum_id: &u32,
+        component_id: u32,
+        maximum_id: u32,
     ) -> Result<base::ComponentExpansion>;
 }
 
@@ -184,7 +184,7 @@ pub trait Accuracy {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
-        alpha: &f64,
+        alpha: f64,
     ) -> Result<Option<Vec<proto::Accuracy>>>;
 }
 
@@ -195,7 +195,7 @@ pub trait Report {
     /// Summarize the relevant metadata around a computation in a readable, JSON-serializable format.
     fn summarize(
         &self,
-        node_id: &u32,
+        node_id: u32,
         component: &proto::Component,
         public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &NodeProperties,
@@ -271,8 +271,8 @@ impl Expandable for proto::Component {
         privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         properties: &NodeProperties,
-        component_id: &u32,
-        maximum_id: &u32,
+        component_id: u32,
+        maximum_id: u32,
     ) -> Result<base::ComponentExpansion> {
         let variant = self.variant.as_ref()
             .ok_or_else(|| "variant: must be defined")?;
@@ -285,7 +285,7 @@ impl Expandable for proto::Component {
                             let expansion = x.expand_component(privacy_definition, component, properties, component_id, maximum_id)
                                 .chain_err(|| format!("node specification {:?}:", variant))?;
 
-                            expansion.is_valid(*component_id)?;
+                            expansion.is_valid(component_id)?;
                             return Ok(expansion)
                        }
                     )*
@@ -438,7 +438,7 @@ impl Accuracy for proto::Component {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
-        alpha: &f64,
+        alpha: f64,
     ) -> Result<Option<Vec<proto::Accuracy>>> {
         let variant = self.variant.as_ref()
             .ok_or_else(|| "variant: must be defined")?;
@@ -472,7 +472,7 @@ impl Report for proto::Component {
     /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn summarize(
         &self,
-        node_id: &u32,
+        node_id: u32,
         component: &proto::Component,
         public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &NodeProperties,

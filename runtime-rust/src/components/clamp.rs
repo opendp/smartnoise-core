@@ -76,8 +76,8 @@ pub fn clamp_numeric_float(
     // iterate over the generalized columns
     data.gencolumns_mut().into_iter()
         // pair generalized columns with arguments
-        .zip(standardize_numeric_argument(&lower, &num_columns)?.iter())
-        .zip(standardize_numeric_argument(&upper, &num_columns)?.iter())
+        .zip(standardize_numeric_argument(&lower, num_columns)?.iter())
+        .zip(standardize_numeric_argument(&upper, num_columns)?.iter())
         // for each pairing, iterate over the cells
         .for_each(|((mut column, min), max)| column.iter_mut()
             // ignore nan values
@@ -120,8 +120,8 @@ pub fn clamp_numeric_integer(
     // iterate over the generalized columns
     data.gencolumns_mut().into_iter()
         // pair generalized columns with arguments
-        .zip(standardize_numeric_argument(&lower, &num_columns)?.iter())
-        .zip(standardize_numeric_argument(&upper, &num_columns)?.iter())
+        .zip(standardize_numeric_argument(&lower, num_columns)?.iter())
+        .zip(standardize_numeric_argument(&upper, num_columns)?.iter())
         // for each pairing, iterate over the cells
         .for_each(|((mut column, min), max)| column.iter_mut()
             // mutate the cell via the operator
@@ -164,7 +164,7 @@ pub fn clamp_numeric_integer(
 /// assert_eq!(clamped_data, arr2(&[["a".to_string(), "b".to_string(), "not_a_letter".to_string()],
 ///                                ["a".to_string(), "not_a_letter".to_string(), "b".to_string()]]).into_dyn());
 /// ```
-pub fn clamp_categorical<T: Ord + Hash + Clone>(data: &ArrayD<T>, categories: &Vec<Vec<T>>, null_value: &ArrayD<T>)
+pub fn clamp_categorical<T: Ord + Hash + Clone>(data: &ArrayD<T>, categories: &[Vec<T>], null_value: &ArrayD<T>)
                             -> Result<ArrayD<T>> where T:Clone, T:PartialEq, T:Default {
 
     let mut data = data.clone();
@@ -174,8 +174,8 @@ pub fn clamp_categorical<T: Ord + Hash + Clone>(data: &ArrayD<T>, categories: &V
     // iterate over the generalized columns
     data.gencolumns_mut().into_iter()
         // pair generalized columns with arguments
-        .zip(standardize_categorical_argument(categories.clone(), &num_columns)?)
-        .zip(standardize_null_target_argument(&null_value, &num_columns)?)
+        .zip(standardize_categorical_argument(categories.to_vec(), num_columns)?)
+        .zip(standardize_null_target_argument(&null_value, num_columns)?)
         // for each pairing, iterate over the cells
         .for_each(|((mut column, categories), null)| column.iter_mut()
             // ignore known values

@@ -10,6 +10,9 @@
 //!
 //! - [Top-level documentation](https://opendifferentialprivacy.github.io/whitenoise-core/)
 
+#![warn(unused_extern_crates)]
+#![allow(clippy::implicit_hasher)]
+
 // `error_chain!` can recurse deeply
 #![recursion_limit = "1024"]
 #[macro_use]
@@ -51,9 +54,6 @@ use crate::base::{Value, IndexKey, ValueProperties};
 use std::iter::FromIterator;
 use crate::utilities::privacy::compute_graph_privacy_usage;
 use indexmap::map::IndexMap;
-
-// for accuracy guarantees
-extern crate statrs;
 
 // include protobuf-generated traits
 pub mod proto {
@@ -177,7 +177,7 @@ pub fn generate_report(
                 None => return Ok(None)
             };
             component.summarize(
-                &node_id,
+                *node_id,
                 &component,
                 &public_arguments,
                 &input_properties,
@@ -207,11 +207,11 @@ pub fn accuracy_to_privacy_usage(
 ) -> Result<proto::PrivacyUsages> {
 
     let proto_properties = component.arguments().iter()
-        .filter_map(|(name, idx)| Some((idx.clone(), properties.get(name)?.clone())))
+        .filter_map(|(name, idx)| Some((*idx, properties.get(name)?.clone())))
         .collect::<HashMap<u32, base::ValueProperties>>();
 
     let mut computation_graph = hashmap![
-        component.arguments().values().max().cloned().unwrap_or(0) + 1 => component.clone()
+        component.arguments().values().max().cloned().unwrap_or(0) + 1 => component
     ];
 
     let (properties, _) = utilities::propagate_properties(
@@ -229,7 +229,7 @@ pub fn accuracy_to_privacy_usage(
 
         Ok(match component.accuracy_to_privacy_usage(
             &privacy_definition, &component_properties, &accuracies)? {
-            Some(accuracies) => Some((idx.clone(), accuracies)),
+            Some(accuracies) => Some((*idx, accuracies)),
             None => None
         })
     })
@@ -256,11 +256,11 @@ pub fn privacy_usage_to_accuracy(
 ) -> Result<proto::Accuracies> {
 
     let proto_properties = component.arguments().iter()
-        .filter_map(|(name, idx)| Some((idx.clone(), properties.get(name)?.clone())))
+        .filter_map(|(name, idx)| Some((*idx, properties.get(name)?.clone())))
         .collect::<HashMap<u32, base::ValueProperties>>();
 
     let mut computation_graph = hashmap![
-        component.arguments().values().max().cloned().unwrap_or(0) + 1 => component.clone()
+        component.arguments().values().max().cloned().unwrap_or(0) + 1 => component
     ];
 
     let (properties, _) = utilities::propagate_properties(
@@ -277,8 +277,8 @@ pub fn privacy_usage_to_accuracy(
             .collect::<IndexMap<IndexKey, base::ValueProperties>>();
 
         Ok(match component.privacy_usage_to_accuracy(
-            &privacy_definition, &component_properties, &alpha)? {
-            Some(accuracies) => Some((idx.clone(), accuracies)),
+            &privacy_definition, &component_properties, alpha)? {
+            Some(accuracies) => Some((*idx, accuracies)),
             None => None
         })
     })
@@ -321,8 +321,8 @@ pub fn expand_component(
         &privacy_definition,
         &component,
         &properties,
-        &component_id,
-        &maximum_id,
+        component_id,
+        maximum_id,
     ).chain_err(|| format!("at node_id {:?}", component_id))?;
 
     let public_values = public_arguments.iter()
@@ -330,7 +330,7 @@ pub fn expand_component(
         .collect::<IndexMap<IndexKey, &Value>>();
 
     if result.traversal.is_empty() {
-        let Warnable(propagated_property, propagation_warnings) = component.clone()
+        let Warnable(propagated_property, propagation_warnings) = component
             .propagate_property(&privacy_definition, &public_values, &properties, component_id)
             .chain_err(|| format!("at node_id {:?}", component_id))?;
 
@@ -351,23 +351,24 @@ pub fn get_properties(
     node_ids: Vec<u32>
 ) -> Result<(HashMap<u32, ValueProperties>, Vec<Error>)> {
 
-    if node_ids.len() > 0 {
+    if !node_ids.is_empty() {
         let mut ancestors = HashSet::<u32>::new();
         let mut traversal = Vec::from_iter(node_ids.into_iter());
         while !traversal.is_empty() {
             let node_id = traversal.pop().unwrap();
-            computation_graph.get(&node_id)
-                .map(|component| component.arguments().values().for_each(|v| traversal.push(*v)));
+            if let Some(component) = computation_graph.get(&node_id){
+                component.arguments().values().for_each(|v| traversal.push(*v))
+            }
             ancestors.insert(node_id);
         }
         computation_graph = computation_graph.iter()
             .filter(|(idx, _)| ancestors.contains(idx))
-            .map(|(idx, component)| (idx.clone(), component.clone()))
+            .map(|(idx, component)| (*idx, component.clone()))
             .collect::<HashMap<u32, proto::Component>>();
         release = release.iter()
             .filter(|(idx, _)| ancestors.contains(idx))
             .map(|(idx, release_node)|
-                (idx.clone(), release_node.clone()))
+                (*idx, release_node.clone()))
             .collect();
     }
 

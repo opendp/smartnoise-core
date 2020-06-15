@@ -132,18 +132,17 @@ impl Expandable for proto::Impute {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         properties: &base::NodeProperties,
-        component_id: &u32,
-        maximum_id: &u32,
+        component_id: u32,
+        mut maximum_id: u32,
     ) -> Result<base::ComponentExpansion> {
-        let mut current_id = *maximum_id;
         let mut component = component.clone();
 
         let mut expansion = base::ComponentExpansion::default();
 
         if !properties.contains_key::<base::IndexKey>(&"categories".into()) {
             if !properties.contains_key::<IndexKey>(&"lower".into()) {
-                current_id += 1;
-                let id_lower = current_id;
+                maximum_id += 1;
+                let id_lower = maximum_id;
                 let value = Value::Array(Array::F64(
                     ndarray::Array::from(properties.get::<IndexKey>(&"data".into()).unwrap().to_owned().array()?.lower_f64()?).into_dyn()));
                 let (patch_node, release) = get_literal(value, component.submission)?;
@@ -154,8 +153,8 @@ impl Expandable for proto::Impute {
             }
 
             if !properties.contains_key::<IndexKey>(&"upper".into()) {
-                current_id += 1;
-                let id_upper = current_id;
+                maximum_id += 1;
+                let id_upper = maximum_id;
                 let value = Value::Array(Array::F64(
                     ndarray::Array::from(properties.get::<IndexKey>(&"data".into()).unwrap().to_owned().array()?.upper_f64()?).into_dyn()));
                 let (patch_node, release) = get_literal(value, component.submission)?;
@@ -166,7 +165,7 @@ impl Expandable for proto::Impute {
             }
         }
 
-        expansion.computation_graph.insert(*component_id, component);
+        expansion.computation_graph.insert(component_id, component);
 
         Ok(expansion)
     }

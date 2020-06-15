@@ -74,7 +74,7 @@ impl Component for proto::Union {
                 group_id: get_group_id_path(array_props.iter()
                     .map(|prop| prop.group_id.clone())
                     .collect())?
-            }).into()
+            })
         } else {
             ValueProperties::Indexmap(IndexmapProperties {
                 children: properties.clone(),

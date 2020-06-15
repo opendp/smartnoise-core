@@ -43,8 +43,8 @@ pub fn select_properties(properties: &ArrayProperties, index: usize) -> Result<V
     Ok(ValueProperties::Array(properties))
 }
 
-pub fn stack_properties(all_properties: &Vec<ValueProperties>, dimensionality: Option<i64>) -> Result<ValueProperties> {
-    let all_properties = all_properties.into_iter()
+pub fn stack_properties(all_properties: &[ValueProperties], dimensionality: Option<i64>) -> Result<ValueProperties> {
+    let all_properties = all_properties.iter()
         .map(|property| Ok(property.array()?.clone()))
         .collect::<Result<Vec<ArrayProperties>>>()?;
 
@@ -98,8 +98,8 @@ pub fn stack_properties(all_properties: &Vec<ValueProperties>, dimensionality: O
     }))
 }
 
-fn get_common_continuous_nature(natures: &Vec<Option<&Nature>>, data_type: DataType) -> Option<Nature> {
-    let lower: Vector1DNull = natures.into_iter().map(|nature| match nature {
+fn get_common_continuous_nature(natures: &[Option<&Nature>], data_type: DataType) -> Option<Nature> {
+    let lower: Vector1DNull = natures.iter().map(|nature| match nature {
         Some(Nature::Continuous(nature)) => Some(nature.lower.clone()),
         Some(Nature::Categorical(_)) => None,
         _ => Some(match data_type {
@@ -110,7 +110,7 @@ fn get_common_continuous_nature(natures: &Vec<Option<&Nature>>, data_type: DataT
     }).collect::<Option<Vec<Vector1DNull>>>()?.into_iter()
         .map(Ok).fold1(concat_vector1d_null)?.ok()?;
 
-    let upper: Vector1DNull = natures.into_iter().map(|nature| match nature {
+    let upper: Vector1DNull = natures.iter().map(|nature| match nature {
         Some(Nature::Continuous(nature)) => Some(nature.upper.clone()),
         Some(Nature::Categorical(_)) => None,
         None => Some(match data_type {
@@ -126,8 +126,8 @@ fn get_common_continuous_nature(natures: &Vec<Option<&Nature>>, data_type: DataT
     }))
 }
 
-fn get_common_categorical_nature(natures: &Vec<Option<&Nature>>) -> Option<Nature> {
-    let categories = natures.into_iter().map(|nature| match nature {
+fn get_common_categorical_nature(natures: &[Option<&Nature>]) -> Option<Nature> {
+    let categories = natures.iter().map(|nature| match nature {
         Some(Nature::Categorical(nature)) => Some(nature.categories.clone()),
         Some(Nature::Continuous(_)) => None,
         None => None

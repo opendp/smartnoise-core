@@ -16,10 +16,9 @@ impl Expandable for proto::DpQuantile {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         _properties: &base::NodeProperties,
-        component_id: &u32,
-        maximum_id: &u32,
+        component_id: u32,
+        mut maximum_id: u32,
     ) -> Result<base::ComponentExpansion> {
-        let mut current_id = *maximum_id;
 
         let mut expansion = base::ComponentExpansion::default();
 
@@ -32,8 +31,8 @@ impl Expandable for proto::DpQuantile {
             quantile_args.insert("candidates".into(), *component.arguments().get::<IndexKey>(&"candidates".into())
                 .ok_or_else(|| Error::from("candidates is a required argument to DPQuantile when the exponential mechanism is used."))?);
         }
-        current_id += 1;
-        let id_quantile = current_id;
+        maximum_id += 1;
+        let id_quantile = maximum_id;
         expansion.computation_graph.insert(id_quantile, proto::Component {
             arguments: Some(proto::IndexmapNodeIds::new(quantile_args)),
             variant: Some(proto::component::Variant::Quantile(proto::Quantile {
@@ -54,7 +53,7 @@ impl Expandable for proto::DpQuantile {
         } else {
             sanitize_args.insert("data".into(), id_quantile);
         }
-        expansion.computation_graph.insert(*component_id, proto::Component {
+        expansion.computation_graph.insert(component_id, proto::Component {
             arguments: Some(proto::IndexmapNodeIds::new(sanitize_args)),
             variant: Some(match self.mechanism.to_lowercase().as_str() {
                 "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
@@ -80,7 +79,7 @@ impl Expandable for proto::DpQuantile {
 impl Report for proto::DpQuantile {
     fn summarize(
         &self,
-        node_id: &u32,
+        node_id: u32,
         component: &proto::Component,
         _public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &NodeProperties,
@@ -109,14 +108,14 @@ impl Report for proto::DpQuantile {
                 statistic: "DPQuantile".to_string(),
                 variables: serde_json::json!(variable_name.to_string()),
                 release_info: match release.array()? {
-                    Array::F64(v) => value_to_json(&get_ith_column(v, &column_number)?.into())?,
-                    Array::I64(v) => value_to_json(&get_ith_column(v, &column_number)?.into())?,
+                    Array::F64(v) => value_to_json(&get_ith_column(v, column_number)?.into())?,
+                    Array::I64(v) => value_to_json(&get_ith_column(v, column_number)?.into())?,
                     _ => return Err("maximum must be numeric".into())
                 },
                 privacy_loss: privacy_usage_to_json(&privacy_usages[column_number].clone()),
                 accuracy: None,
-                submission: component.submission as u64,
-                node_id: *node_id as u64,
+                submission: component.submission,
+                node_id,
                 postprocess: false,
                 algorithm_info: AlgorithmInfo {
                     name: "".to_string(),

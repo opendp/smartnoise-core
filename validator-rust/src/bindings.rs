@@ -10,27 +10,27 @@
 //! use whitenoise_validator::bindings::Analysis;
 //! use ndarray::arr1;
 //! let mut analysis = Analysis::new();
-//! let lit_2 = analysis.literal().value(2.0.into()).enter();
-//! let lit_3 = analysis.literal().value(3.0.into()).enter();
-//! let _lit_5 = analysis.add(lit_2, lit_3).enter();
+//! let lit_2 = analysis.literal().value(2.0.into()).build();
+//! let lit_3 = analysis.literal().value(3.0.into()).build();
+//! let _lit_5 = analysis.add(lit_2, lit_3).build();
 //!
 //! let col_a = analysis.literal()
 //!     .value(arr1(&[1., 2., 3.]).into_dyn().into())
-//!     .enter();
-//! analysis.mean(col_a).enter();
+//!     .build();
+//! analysis.mean(col_a).build();
 //!
-//! analysis.count(col_a).enter();
+//! analysis.count(col_a).build();
 //! println!("graph {:?}", analysis.components);
 //! println!("release {:?}", analysis.release);
 //! ```
 
 use crate::{proto, get_properties};
-use crate::base::Release;
+use crate::base::{Release, ValueProperties};
 use std::collections::HashMap;
 use crate::errors::*;
 
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Analysis {
     pub privacy_definition: proto::PrivacyDefinition,
     pub components: HashMap<u32, proto::Component>,
@@ -58,7 +58,7 @@ impl Analysis {
         }
     }
 
-    pub fn properties(&self, id: u32) -> Result<base::ValueProperties> {
+    pub fn properties(&self, id: u32) -> Result<ValueProperties> {
         let (properties, warnings) = get_properties(
             Some(self.privacy_definition.clone()),
             self.components.clone(),
@@ -66,7 +66,7 @@ impl Analysis {
             vec![id]
         )?;
 
-        if warnings.len() > 0 {
+        if !warnings.is_empty() {
             bail!("{:?}", warnings)
         }
 

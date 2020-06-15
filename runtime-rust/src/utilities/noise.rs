@@ -15,7 +15,7 @@ struct GeneratorOpenSSL;
 #[cfg(feature="use-secure-noise")]
 impl ThreadRandGen for GeneratorOpenSSL {
     fn gen(&mut self) -> u32 {
-        return u32::from_str_radix(&utilities::get_bytes(4), 2).unwrap();
+        u32::from_str_radix(&utilities::get_bytes(4), 2).unwrap()
     }
 }
 
@@ -53,7 +53,7 @@ pub fn censored_specific_geom() -> Result<i16> {
 
 /// Sample a single bit with arbitrary probability of success
 ///
-/// Uses only an unbiased source of coin flips (sample_floating_point_probability_exponent).
+/// Uses only an unbiased source of coin flips.
 /// The strategy for doing this with 2 flips in expectation is described [here](https://amakelov.wordpress.com/2013/10/10/arbitrarily-biasing-a-coin-in-2-expected-tosses/).
 ///
 /// # Arguments
@@ -144,7 +144,7 @@ pub fn sample_uniform_int(min: i64, max: i64) -> Result<i64> {
     // and rejecting integers that are too large
     let mut valid_int: bool = false;
     let mut uniform_int: i64 = 0;
-    while valid_int == false {
+    while !valid_int {
         uniform_int = 0;
         // generate random bits and increase integer by appropriate power of 2
         for i in 0..n_bits {
@@ -256,7 +256,7 @@ pub fn sample_uniform_mpfr(min: f64, max: f64) -> Result<rug::Float> {
     unif = unif.mul_add(&mpfr_diff, &mpfr_min);
 
     // return uniform
-    return Ok(unif);
+    Ok(unif)
 }
 
 /// Generates a draw from a Gaussian distribution using the MPFR library.
@@ -299,7 +299,7 @@ pub fn sample_gaussian_mpfr(shift: f64, scale: f64) -> Result<rug::Float> {
     gauss = gauss.mul_add(&mpfr_scale, &mpfr_shift);
 
     // return gaussian
-    return Ok(gauss);
+    Ok(gauss)
 }
 
 /// Sample from Laplace distribution centered at shift and scaled by scale.
@@ -340,7 +340,7 @@ pub fn sample_laplace(shift: f64, scale: f64) -> f64 {
 /// ```
 pub fn sample_gaussian(shift: f64, scale: f64) -> f64 {
     let probability: f64 = sample_uniform(0., 1.).unwrap();
-    Gaussian::new(shift.clone(), scale.clone()).inverse(probability)
+    Gaussian::new(shift, scale).inverse(probability)
 }
 
 /// Sample from truncated Gaussian distribution.
@@ -412,7 +412,7 @@ pub fn sample_geometric_censored(prob: f64, max_trials: i64, enforce_constant_ti
             // If we haven't seen a 1 yet, set the return to the current number of trials
             if geom_return == 0 {
                 geom_return = n_trials;
-                if enforce_constant_time == false {
+                if !enforce_constant_time {
                     return Ok(geom_return);
                 }
             }
@@ -425,7 +425,7 @@ pub fn sample_geometric_censored(prob: f64, max_trials: i64, enforce_constant_ti
         geom_return = max_trials; // could also set this equal to n_trials - 1.
     }
 
-    return Ok(geom_return);
+    Ok(geom_return)
 }
 
 /// Sample noise according to geometric mechanism

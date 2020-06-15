@@ -1,15 +1,13 @@
-extern crate heck;
-
 use crate::ComponentJSON;
 use std::path::PathBuf;
 use std::fs;
 use std::fs::File;
 use std::io::Write;
-use self::heck::CamelCase;
+use heck::CamelCase;
 
 
 pub fn build_bindings(
-    components: &Vec<ComponentJSON>,
+    components: &[ComponentJSON],
     output_path_impls: PathBuf,
     output_path_builders: PathBuf
 ) {
@@ -32,7 +30,7 @@ pub fn build_bindings(
                 Some((name, if opt.default_rust.is_some() {return None} else {opt.type_rust.as_ref().unwrap()})))
             .map(|(name, opt_type)| format!("{}: {}", name, opt_type))
             .collect::<Vec<String>>();
-        let signature = &[vec!["&mut self".to_string()], positional_args, positional_opts.clone()]
+        let signature = &[vec!["&mut self".to_string()], positional_args, positional_opts]
             .iter().flatten().cloned().collect::<Vec<String>>().join(", ");
 
         let argument_insertion = component.arguments.iter()
@@ -46,12 +44,13 @@ pub fn build_bindings(
                 if meta.default_rust.is_some() {
                     format!("{}: {}", name, meta.default_rust.as_ref().unwrap())
                 } else {
-                    format!("{}", name)
+                    name.to_string()
                 }
             })
             .collect::<Vec<String>>().join(",\n                ");
 
         bindings_analysis.push(format!(r#"
+    #[allow(clippy::wrong_self_convention)]
     pub fn {name}({signature}) -> builders::{id}Builder {{
         #[allow(unused_mut)]
         let mut arguments = IndexMap::<base::IndexKey, u32>::new();
@@ -127,7 +126,9 @@ impl<'a> {id}Builder<'a> {{
     }}
 
     pub fn value_public(self, value: bool) -> Self {{
-        self.release.get_mut(&self.id).map(|v| v.public = value);
+        if let Some(v) = self.release.get_mut(&self.id) {{
+            v.public = value;
+        }}
         self
     }}
 
@@ -164,7 +165,7 @@ impl Analysis {{
     {
         fs::remove_file(output_path_impls.clone()).ok();
         let mut file = File::create(output_path_impls).unwrap();
-        file.write(bindings_analysis_text.as_bytes())
+        file.write_all(bindings_analysis_text.as_bytes())
             .expect("Unable to write bindings impls file.");
         file.flush().unwrap();
     }
@@ -172,7 +173,7 @@ impl Analysis {{
     {
         fs::remove_file(output_path_builders.clone()).ok();
         let mut file = File::create(output_path_builders).unwrap();
-        file.write(bindings_builders_text.as_bytes())
+        file.write_all(bindings_builders_text.as_bytes())
             .expect("Unable to write bindings builders file.");
         file.flush().unwrap();
     }

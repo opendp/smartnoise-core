@@ -17,10 +17,9 @@ impl Expandable for proto::DpCovariance {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         properties: &base::NodeProperties,
-        component_id: &u32,
-        maximum_id: &u32,
+        component_id: u32,
+        mut maximum_id: u32,
     ) -> Result<base::ComponentExpansion> {
-        let mut current_id = *maximum_id;
 
         let mut expansion = base::ComponentExpansion::default();
 
@@ -60,8 +59,8 @@ impl Expandable for proto::DpCovariance {
         };
 
         // covariance
-        current_id += 1;
-        let id_covariance = current_id;
+        maximum_id += 1;
+        let id_covariance = maximum_id;
         expansion.computation_graph.insert(id_covariance, proto::Component {
             arguments: Some(proto::IndexmapNodeIds::new(arguments)),
             variant: Some(proto::component::Variant::Covariance(proto::Covariance {
@@ -73,8 +72,8 @@ impl Expandable for proto::DpCovariance {
         expansion.traversal.push(id_covariance);
 
         // noise
-        current_id += 1;
-        let id_noise = current_id;
+        maximum_id += 1;
+        let id_noise = maximum_id;
         expansion.computation_graph.insert(id_noise, proto::Component {
             arguments: Some(proto::IndexmapNodeIds::new(indexmap!["data".into() => id_covariance])),
             variant: Some(match self.mechanism.to_lowercase().as_str() {
@@ -92,7 +91,7 @@ impl Expandable for proto::DpCovariance {
         expansion.traversal.push(id_noise);
 
         // reshape into matrix
-        expansion.computation_graph.insert(*component_id, proto::Component {
+        expansion.computation_graph.insert(component_id, proto::Component {
             arguments: Some(proto::IndexmapNodeIds::new(indexmap!["data".into() => id_noise])),
             variant: Some(proto::component::Variant::Reshape(proto::Reshape {
                 symmetric,
@@ -110,7 +109,7 @@ impl Expandable for proto::DpCovariance {
 impl Report for proto::DpCovariance {
     fn summarize(
         &self,
-        node_id: &u32,
+        node_id: u32,
         component: &proto::Component,
         _public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &NodeProperties,
@@ -168,8 +167,8 @@ impl Report for proto::DpCovariance {
             release_info: value_to_json(&release)?,
             privacy_loss: serde_json::json![privacy_usage],
             accuracy: None,
-            submission: component.submission as u64,
-            node_id: *node_id as u64,
+            submission: component.submission,
+            node_id,
             postprocess: false,
             algorithm_info: AlgorithmInfo {
                 name: "".to_string(),

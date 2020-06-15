@@ -14,7 +14,7 @@ impl Evaluable for proto::Variance {
         let delta_degrees_of_freedom = if self.finite_sample_correction { 1 } else { 0 } as usize;
         Ok(ReleaseNode::new(variance(
             &get_argument(arguments, "data")?.array()?.f64()?.clone(),
-            &delta_degrees_of_freedom
+            delta_degrees_of_freedom
         )?.into()))
     }
 }
@@ -33,17 +33,17 @@ impl Evaluable for proto::Variance {
 /// use ndarray::prelude::*;
 /// use whitenoise_runtime::components::variance::variance;
 /// let data = arr2(&[ [1.,10.], [2., 20.], [3., 30.] ]).into_dyn();
-/// let variances = variance(&data, &1).unwrap();
+/// let variances = variance(&data, 1).unwrap();
 /// assert!(variances == arr2(&[[1., 100.]]).into_dyn());
 /// ```
-pub fn variance(data: &ArrayD<f64>, delta_degrees_of_freedom: &usize) -> Result<ArrayD<f64>> {
+pub fn variance(data: &ArrayD<f64>, delta_degrees_of_freedom: usize) -> Result<ArrayD<f64>> {
 
-    let means: Vec<f64> = mean(&data)?.iter().map(|v| v.clone()).collect();
+    let means: Vec<f64> = mean(&data)?.iter().copied().collect();
 
     // iterate over the generalized columns
     let variances = data.gencolumns().into_iter().zip(means)
         .map(|(column, mean)| column.iter()
-                .fold(0., |sum, v| sum + (v - mean).powi(2)) / (column.len() - delta_degrees_of_freedom.clone()) as f64)
+                .fold(0., |sum, v| sum + (v - mean).powi(2)) / (column.len() - delta_degrees_of_freedom) as f64)
         .collect::<Vec<f64>>();
 
     let array = match data.ndim() {

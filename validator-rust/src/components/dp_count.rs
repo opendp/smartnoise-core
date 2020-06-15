@@ -18,10 +18,9 @@ impl Expandable for proto::DpCount {
         privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         properties: &base::NodeProperties,
-        component_id: &u32,
-        maximum_id: &u32,
+        component_id: u32,
+        mut maximum_id: u32,
     ) -> Result<base::ComponentExpansion> {
-        let mut maximum_id = *maximum_id;
         let mut expansion = base::ComponentExpansion::default();
 
         let privacy_definition = privacy_definition.as_ref()
@@ -46,7 +45,7 @@ impl Expandable for proto::DpCount {
         if self.mechanism.to_lowercase().as_str() == "simplegeometric" {
 
             let count_min_id = match component.arguments().get::<IndexKey>(&"lower".into()) {
-                Some(id) => id.clone(),
+                Some(id) => *id,
                 None => {
                     // count_max
                     maximum_id += 1;
@@ -70,9 +69,10 @@ impl Expandable for proto::DpCount {
 
                     let count_max = match num_records {
                         Some(num_records) => arr0(num_records).into_dyn(),
-                        None => match privacy_definition.protect_elapsed_time {
-                            true => return Err("upper must be set when protecting elapsed time".into()),
-                            false => arr0(std::i64::MAX).into_dyn()
+                        None => if privacy_definition.protect_elapsed_time {
+                            return Err("upper must be set when protecting elapsed time".into())
+                        } else {
+                            arr0(std::i64::MAX).into_dyn()
                         }
                     };
                     // count_max
@@ -84,11 +84,11 @@ impl Expandable for proto::DpCount {
                     expansion.releases.insert(id_count_max.clone(), count_max_release);
                     id_count_max
                 }
-                Some(id) => id.clone(),
+                Some(id) => *id,
             };
 
             // noising
-            expansion.computation_graph.insert(*component_id, proto::Component {
+            expansion.computation_graph.insert(component_id, proto::Component {
                 variant: Some(proto::component::Variant::SimpleGeometricMechanism(proto::SimpleGeometricMechanism {
                     privacy_usage: self.privacy_usage.clone()
                 })),
@@ -102,7 +102,7 @@ impl Expandable for proto::DpCount {
             });
         } else {
             // noising
-            expansion.computation_graph.insert(*component_id, proto::Component {
+            expansion.computation_graph.insert(component_id, proto::Component {
                 arguments: Some(proto::IndexmapNodeIds::new(
                     indexmap!["data".into() => id_count])),
                 variant: Some(match self.mechanism.to_lowercase().as_str() {
@@ -126,7 +126,7 @@ impl Expandable for proto::DpCount {
 impl Report for proto::DpCount {
     fn summarize(
         &self,
-        node_id: &u32,
+        node_id: u32,
         component: &proto::Component,
         _public_arguments: &IndexMap<base::IndexKey, &Value>,
         _properties: &NodeProperties,
@@ -142,8 +142,8 @@ impl Report for proto::DpCount {
             release_info: value_to_json(&release)?,
             privacy_loss: privacy_usage_to_json(&self.privacy_usage[0].clone()),
             accuracy: None,
-            submission: component.submission as u64,
-            node_id: *node_id as u64,
+            submission: component.submission,
+            node_id,
             postprocess: false,
             algorithm_info: AlgorithmInfo {
                 name: "".to_string(),

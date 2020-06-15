@@ -141,12 +141,12 @@ macro_rules! make_quantile {
                 _privacy_definition: &Option<proto::PrivacyDefinition>,
                 component: &proto::Component,
                 _properties: &base::NodeProperties,
-                component_id: &u32,
-                _maximum_id: &u32,
+                component_id: u32,
+                _maximum_id: u32,
             ) -> Result<base::ComponentExpansion> {
                 let mut expansion = base::ComponentExpansion::default();
 
-                expansion.computation_graph.insert(*component_id, proto::Component {
+                expansion.computation_graph.insert(component_id, proto::Component {
                     arguments: component.arguments.clone(),
                     variant: Some(proto::component::Variant::Quantile(proto::Quantile {
                         alpha: $alpha,
@@ -155,7 +155,7 @@ macro_rules! make_quantile {
                     omit: component.omit,
                     submission: component.submission,
                 });
-                expansion.traversal.push(*component_id);
+                expansion.traversal.push(component_id);
 
                 Ok(expansion)
             }

@@ -21,12 +21,12 @@ pub fn broadcast_ndarray<T: Clone>(value: &ArrayD<T>, shape: &[usize]) -> Result
 }
 
 
-pub fn get_ith_column<T: Clone + Default>(value: &ArrayD<T>, i: &usize) -> Result<ArrayD<T>> {
+pub fn get_ith_column<T: Clone + Default>(value: &ArrayD<T>, i: usize) -> Result<ArrayD<T>> {
     match value.ndim() {
-        0 => if i == &0 { Ok(value.clone()) } else { Err("ith release does not exist".into()) },
+        0 => if i == 0 { Ok(value.clone()) } else { Err("ith release does not exist".into()) },
         1 => Ok(value.clone()),
         2 => {
-            let release = slow_select(value, Axis(1), &[*i]);
+            let release = slow_select(value, Axis(1), &[i]);
             if release.len() == 1 {
                 // flatten singleton matrices to zero dimensions
                 Ok(Array::from_shape_vec(Vec::new(), vec![release.first()

@@ -18,11 +18,9 @@ impl Expandable for proto::DpHistogram {
         privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         properties: &base::NodeProperties,
-        component_id: &u32,
-        maximum_id: &u32,
+        component_id: u32,
+        mut maximum_id: u32,
     ) -> Result<base::ComponentExpansion> {
-        let mut maximum_id = *maximum_id;
-
         let mut expansion = base::ComponentExpansion::default();
 
         let data_id = component.arguments().get::<IndexKey>(&"data".into())
@@ -42,8 +40,10 @@ impl Expandable for proto::DpHistogram {
         let arguments = component.arguments();
         vec!["categories", "null_value", "edges", "inclusive_left"].into_iter()
             .map(|name| name.into())
-            .for_each(|name| {arguments.get(&name)
-                    .map(|v| histogram_arguments.insert(name, *v));});
+            .for_each(|name| {
+                arguments.get(&name)
+                    .map(|v| histogram_arguments.insert(name, *v));
+            });
 
         expansion.computation_graph.insert(id_histogram, proto::Component {
             arguments: Some(proto::IndexmapNodeIds::new(histogram_arguments)),
@@ -54,9 +54,8 @@ impl Expandable for proto::DpHistogram {
         expansion.traversal.push(id_histogram);
 
         if self.mechanism.to_lowercase().as_str() == "simplegeometric" {
-
             let count_min_id = match component.arguments().get::<IndexKey>(&"lower".into()) {
-                Some(id) => id.clone(),
+                Some(id) => *id,
                 None => {
                     // count_max
                     maximum_id += 1;
@@ -69,13 +68,14 @@ impl Expandable for proto::DpHistogram {
                 }
             };
             let count_max_id = match arguments.get::<IndexKey>(&"upper".into()) {
-                Some(id) => id.clone(),
+                Some(id) => *id,
                 None => {
                     let count_max = match data_property.num_records {
                         Some(num_records) => arr0(num_records).into_dyn(),
-                        None => match privacy_definition.protect_elapsed_time {
-                            true => return Err("upper must be set when protecting elapsed time".into()),
-                            false => arr0(std::i64::MAX).into_dyn()
+                        None => if privacy_definition.protect_elapsed_time {
+                            return Err("upper must be set when protecting elapsed time".into())
+                        } else {
+                            arr0(std::i64::MAX).into_dyn()
                         }
                     };
                     // count_max
@@ -90,7 +90,7 @@ impl Expandable for proto::DpHistogram {
             };
 
             // noising
-            expansion.computation_graph.insert(*component_id, proto::Component {
+            expansion.computation_graph.insert(component_id, proto::Component {
                 arguments: Some(proto::IndexmapNodeIds::new(indexmap![
                     "data".into() => id_histogram,
                     "lower".into() => count_min_id,
@@ -105,7 +105,7 @@ impl Expandable for proto::DpHistogram {
         } else {
 
             // noising
-            expansion.computation_graph.insert(*component_id, proto::Component {
+            expansion.computation_graph.insert(component_id, proto::Component {
                 arguments: Some(proto::IndexmapNodeIds::new(indexmap![
                     "data".into() => id_histogram
                 ])),
@@ -130,7 +130,7 @@ impl Expandable for proto::DpHistogram {
 impl Report for proto::DpHistogram {
     fn summarize(
         &self,
-        node_id: &u32,
+        node_id: u32,
         component: &proto::Component,
         _public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &NodeProperties,
@@ -141,40 +141,36 @@ impl Report for proto::DpHistogram {
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
-        let mut releases = Vec::new();
-
         let num_columns = data_property.num_columns()?;
         let privacy_usages = spread_privacy_usage(&self.privacy_usage, num_columns as usize)?;
 
-        for column_number in 0..(num_columns as usize) {
-            let variable_name = variable_names
-                .and_then(|names| names.get(column_number)).cloned()
-                .unwrap_or_else(|| "[Unknown]".into());
+        let variable_names = variable_names.cloned()
+            .unwrap_or_else(|| (0..num_columns).map(|_| "[Unknown]".into()).collect());
 
-            let release = JSONRelease {
-                description: "DP release information".to_string(),
-                statistic: "DPHistogram".to_string(),
-                variables: serde_json::json!(variable_name.to_string()),
-                // extract ith column of release
-                release_info: value_to_json(&get_ith_column(
-                    release.array()?.i64()?,
-                    &column_number
-                )?.into())?,
-                privacy_loss: privacy_usage_to_json(&privacy_usages[column_number].clone()),
-                accuracy: None,
-                submission: component.submission as u64,
-                node_id: *node_id as u64,
-                postprocess: false,
-                algorithm_info: AlgorithmInfo {
-                    name: "".to_string(),
-                    cite: "".to_string(),
-                    mechanism: self.mechanism.clone(),
-                    argument: serde_json::json!({}),
-                },
-            };
-
-            releases.push(release);
-        }
-        Ok(Some(releases))
+        Ok(Some(privacy_usages.into_iter()
+            .zip(variable_names.into_iter()).enumerate()
+            .map(|(column_number, (privacy_usage, variable_name))|
+                Ok(JSONRelease {
+                    description: "DP release information".to_string(),
+                    statistic: "DPHistogram".to_string(),
+                    variables: serde_json::json!(variable_name.to_string()),
+                    // extract ith column of release
+                    release_info: value_to_json(&get_ith_column(
+                        release.array()?.i64()?,
+                        column_number,
+                    )?.into())?,
+                    privacy_loss: privacy_usage_to_json(&privacy_usage),
+                    accuracy: None,
+                    submission: component.submission,
+                    node_id,
+                    postprocess: false,
+                    algorithm_info: AlgorithmInfo {
+                        name: "".to_string(),
+                        cite: "".to_string(),
+                        mechanism: self.mechanism.clone(),
+                        argument: serde_json::json!({}),
+                    },
+                }))
+            .collect::<Result<Vec<JSONRelease>>>()?))
     }
 }

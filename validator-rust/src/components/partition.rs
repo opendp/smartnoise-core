@@ -69,7 +69,7 @@ impl Component for proto::Partition {
                             IndexKey::from(index as i64),
                             get_partition_properties(
                                 &data_property,
-                                partition_num_records.clone(),
+                                *partition_num_records,
                                 node_id,
                                 neighboring)?
                         )))
@@ -87,19 +87,17 @@ impl Expandable for proto::Partition {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         properties: &NodeProperties,
-        component_id: &u32,
-        maximum_id: &u32
+        component_id: u32,
+        mut maximum_id: u32
     ) -> Result<base::ComponentExpansion> {
-
-        let mut current_id = *maximum_id;
 
         let mut expansion = base::ComponentExpansion::default();
 
         if let Some(by) = properties.get::<IndexKey>(&"by".into()) {
             if !properties.contains_key::<IndexKey>(&"categories".into()) {
                 let categories = by.array()?.categories()?;
-                current_id += 1;
-                let id_categories = current_id;
+                maximum_id += 1;
+                let id_categories = maximum_id;
                 let (patch_node, release) = get_literal(Value::Jagged(categories), component.submission)?;
                 expansion.computation_graph.insert(id_categories, patch_node);
                 expansion.properties.insert(id_categories, infer_property(&release.value, None)?);
@@ -107,7 +105,7 @@ impl Expandable for proto::Partition {
 
                 let mut component = component.clone();
                 component.insert_argument(&"categories".into(), id_categories);
-                expansion.computation_graph.insert(*component_id, component);
+                expansion.computation_graph.insert(component_id, component);
             }
         }
 
@@ -179,7 +177,7 @@ pub fn make_dense_partition_keys(categories: &Jagged, dimensionality: Option<i64
             }
             categories[0].clone()
         }
-        _ => categories.clone().into_iter().multi_cartesian_product()
+        _ => categories.into_iter().multi_cartesian_product()
             .map(IndexKey::Tuple).collect()
     })
 }

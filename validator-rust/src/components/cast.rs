@@ -50,19 +50,19 @@ impl Component for proto::Cast {
                         Nature::Categorical(cat_nature) => Some(Nature::Categorical(NatureCategorical {
                             categories: match (cat_nature.categories, true_label) {
                                 (Jagged::I64(cats), Array::I64(true_label)) => Jagged::Bool(cats.iter()
-                                    .map(|cats| cats.into_iter().map(|v| Some(v) == true_label.first())
+                                    .map(|cats| cats.iter().map(|v| Some(v) == true_label.first())
                                         .unique().collect::<Vec<_>>())
                                     .collect::<Vec<Vec<_>>>()),
                                 (Jagged::F64(cats), Array::F64(true_label)) => Jagged::Bool(cats.iter()
-                                    .map(|cats| cats.into_iter().map(|v| Some(v) == true_label.first())
+                                    .map(|cats| cats.iter().map(|v| Some(v) == true_label.first())
                                         .unique().collect::<Vec<_>>())
                                     .collect::<Vec<Vec<_>>>()),
                                 (Jagged::Bool(cats), Array::Bool(true_label)) => Jagged::Bool(cats.iter()
-                                    .map(|cats| cats.into_iter().map(|v| Some(v) == true_label.first())
+                                    .map(|cats| cats.iter().map(|v| Some(v) == true_label.first())
                                         .unique().collect::<Vec<_>>())
                                     .collect::<Vec<Vec<_>>>()),
                                 (Jagged::Str(cats), Array::Str(true_label)) => Jagged::Bool(cats.iter()
-                                    .map(|cats| cats.into_iter().map(|v| Some(v) == true_label.first())
+                                    .map(|cats| cats.iter().map(|v| Some(v) == true_label.first())
                                         .unique().collect::<Vec<_>>())
                                     .collect::<Vec<Vec<_>>>()),
                                 _ => return Err("type of true_label must match the data type".into())
@@ -96,7 +96,7 @@ impl Component for proto::Cast {
                         Nature::Categorical(cat_nature) => match cat_nature.categories {
                             // properties are lost because floats cannot be categorical
                             Jagged::F64(_) => None,
-                            Jagged::I64(_) => Some(nature.clone()),
+                            Jagged::I64(_) => Some(nature),
                             Jagged::Bool(cats) =>
                                 Some(Nature::Categorical(NatureCategorical {
                                     categories: Jagged::I64(cats.into_iter()
@@ -151,7 +151,7 @@ impl Component for proto::Cast {
                                         .collect::<Vec<Vec<String>>>())
                                 })),
                             Jagged::Str(jagged) => Some(Nature::Categorical(NatureCategorical {
-                                categories: Jagged::Str(jagged.clone())
+                                categories: Jagged::Str(jagged)
                             }))
                         },
                         _ => None
@@ -182,11 +182,11 @@ macro_rules! make_expandable {
                 _privacy_definition: &Option<proto::PrivacyDefinition>,
                 component: &proto::Component,
                 _properties: &base::NodeProperties,
-                component_id: &u32,
-                _maximum_id: &u32,
+                component_id: u32,
+                mut _maximum_id: u32,
             ) -> Result<base::ComponentExpansion> {
                 Ok(base::ComponentExpansion {
-                    computation_graph: hashmap![component_id.clone() => proto::Component {
+                    computation_graph: hashmap![component_id => proto::Component {
                         arguments: component.arguments.clone(),
                         variant: Some(proto::component::Variant::Cast(proto::Cast {
                             atomic_type: $var_type
@@ -197,7 +197,7 @@ macro_rules! make_expandable {
                     properties: HashMap::new(),
                     releases: HashMap::new(),
                     // add the component_id, to force the node to be re-evaluated and the Cast to be expanded
-                    traversal: vec![*component_id],
+                    traversal: vec![component_id],
                     warnings: Vec::new()
                 })
             }

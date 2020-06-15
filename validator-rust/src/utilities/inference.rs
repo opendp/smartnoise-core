@@ -247,7 +247,7 @@ pub fn infer_property(
                     Array::I64(_) => DataType::I64,
                     Array::Str(_) => DataType::Str,
                 },
-                dataset_id: prior_prop_arr.and_then(|p| p.dataset_id.clone()),
+                dataset_id: prior_prop_arr.and_then(|p| p.dataset_id),
                 is_not_empty: array.num_records()? != 0,
                 dimensionality: Some(array.shape().len() as i64),
                 group_id: match prior_prop_arr {
@@ -265,14 +265,14 @@ pub fn infer_property(
                         .map(|((name, value), prop)|
                             infer_property(value, Some(prop))
                                 .map(|v| (name.clone(), v)))
-                        .collect::<Result<IndexMap<IndexKey, ValueProperties>>>()?.into(),
+                        .collect::<Result<IndexMap<IndexKey, ValueProperties>>>()?,
                 }.into(),
                 None => IndexmapProperties {
                     variant: proto::indexmap_properties::Variant::Dataframe,
                     children: indexmap.iter()
                         .map(|(name, value)| infer_property(value, None)
                             .map(|v| (name.clone(), v)))
-                        .collect::<Result<IndexMap<IndexKey, ValueProperties>>>()?.into(),
+                        .collect::<Result<IndexMap<IndexKey, ValueProperties>>>()?,
                 }.into()
             }
         }

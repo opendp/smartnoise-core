@@ -41,12 +41,12 @@ pub fn histogram<T: Clone + Eq + Ord + std::hash::Hash>(data: &ArrayD<T>, catego
             categories.iter()
                 .map(|cat| counts.get(cat).unwrap())
                 .cloned().collect::<Vec<i64>>()
-        }).flat_map(|v| v).collect::<Vec<i64>>();
+        }).flatten().collect::<Vec<i64>>();
 
     // ensure histogram is of correct dimension
     Ok(match data.ndim() {
         1 => ndarray::Array::from_shape_vec(vec![zeros.len()], counts),
         2 => ndarray::Array::from_shape_vec(vec![zeros.len(), get_num_columns(&data)? as usize], counts),
         _ => return Err("invalid data shape for Histogram".into())
-    }?.into())
+    }?)
 }

@@ -6,7 +6,8 @@
 //!
 //! - [Top-level documentation](https://opendifferentialprivacy.github.io/whitenoise-core/)
 
-extern crate whitenoise_validator;
+#![warn(unused_extern_crates)]
+#![allow(clippy::implicit_hasher)]
 
 pub use whitenoise_validator::proto;
 use whitenoise_validator::errors::*;
@@ -129,10 +130,11 @@ pub fn release(
                 descendant_traversal.push(component_id);
                 while !descendant_traversal.is_empty() {
                     let descendant = descendant_traversal.pop().unwrap();
-                    parents.get(&descendant).map(|parents|
+                    if let Some(parents) = parents.get(&descendant) {
                         parents.iter().for_each(|parent| {
                             descendant_traversal.push(*parent);
-                        }));
+                        })
+                    }
                     descendants.insert(descendant);
                 }
                 traversal = traversal.into_iter()
@@ -194,8 +196,7 @@ pub fn release(
             for argument_node_id in component.arguments().values() {
                 let no_parents = if let Some(parent_node_ids) = parents.get_mut(argument_node_id) {
                     parent_node_ids.remove(&component_id);
-
-                    parent_node_ids.len() == 0
+                    parent_node_ids.is_empty()
                 } else {true};
 
                 let must_include = filter_level == proto::FilterLevel::PublicAndPrior && original_ids.contains(argument_node_id);

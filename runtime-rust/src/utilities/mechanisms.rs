@@ -141,7 +141,7 @@ pub fn simple_geometric_mechanism(
 pub fn exponential_mechanism<T>(
     epsilon: f64,
     sensitivity: f64,
-    candidate_set: &Vec<T>,
+    candidate_set: &[T],
     utilities: Vec<f64>,
 ) -> Result<T> where T: Clone, {
 

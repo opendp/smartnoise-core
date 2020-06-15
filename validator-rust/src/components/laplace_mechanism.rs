@@ -13,6 +13,7 @@ use indexmap::map::IndexMap;
 
 
 impl Component for proto::LaplaceMechanism {
+    #[allow(clippy::float_cmp)]
     fn propagate_property(
         &self,
         privacy_definition: &Option<proto::PrivacyDefinition>,
@@ -81,8 +82,8 @@ impl Expandable for proto::LaplaceMechanism {
         privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         properties: &base::NodeProperties,
-        component_id: &u32,
-        maximum_id: &u32,
+        component_id: u32,
+        maximum_id: u32,
     ) -> Result<base::ComponentExpansion> {
         expand_mechanism(
             &SensitivitySpace::KNorm(1),
@@ -129,7 +130,7 @@ impl Accuracy for proto::LaplaceMechanism {
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
-        let aggregator = data_property.aggregator.clone()
+        let aggregator = data_property.aggregator
             .ok_or_else(|| Error::from("aggregator: missing"))?;
 
         let sensitivity_values = aggregator.component.compute_sensitivity(
@@ -154,13 +155,13 @@ impl Accuracy for proto::LaplaceMechanism {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         properties: &base::NodeProperties,
-        alpha: &f64
+        alpha: f64
     ) -> Result<Option<Vec<proto::Accuracy>>> {
         let data_property = properties.get::<IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
-        let aggregator = data_property.aggregator.clone()
+        let aggregator = data_property.aggregator
             .ok_or_else(|| Error::from("aggregator: missing"))?;
 
         let sensitivity_values = aggregator.component.compute_sensitivity(
@@ -176,8 +177,8 @@ impl Accuracy for proto::LaplaceMechanism {
 
         Ok(Some(sensitivities.into_iter().zip(epsilons.into_iter())
             .map(|(sensitivity, epsilon)| proto::Accuracy {
-                value: (1. / *alpha).ln() * (sensitivity / epsilon),
-                alpha: *alpha,
+                value: (1. / alpha).ln() * (sensitivity / epsilon),
+                alpha,
             })
             .collect()))
     }

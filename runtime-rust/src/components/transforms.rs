@@ -69,6 +69,7 @@ impl Evaluable for proto::Divide {
 }
 
 impl Evaluable for proto::Equal {
+    #[allow(clippy::float_cmp)]
     fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         match (get_argument(arguments, "left")?, get_argument(arguments, "right")?) {
             (Value::Array(left), Value::Array(right)) => match (left, right) {

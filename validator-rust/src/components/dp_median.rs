@@ -16,21 +16,19 @@ impl Expandable for proto::DpMedian {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         properties: &base::NodeProperties,
-        component_id: &u32,
-        _maximum_id: &u32,
+        component_id: u32,
+        _maximum_id: u32,
     ) -> Result<base::ComponentExpansion> {
         let mut expansion = base::ComponentExpansion::default();
 
         let mechanism = if self.mechanism.to_lowercase().as_str() == "automatic" {
-            match properties.contains_key::<IndexKey>(&"candidates".into()) {
-                true => "exponential",
-                false => "laplace"
-            }.to_string()
+            if properties.contains_key::<IndexKey>(&"candidates".into())
+            { "exponential" } else { "laplace" }.to_string()
         } else {
             self.mechanism.to_lowercase()
         };
 
-        expansion.computation_graph.insert(*component_id, proto::Component {
+        expansion.computation_graph.insert(component_id, proto::Component {
             arguments: component.arguments.clone(),
             variant: Some(proto::component::Variant::DpQuantile(proto::DpQuantile {
                 alpha: 0.5,
@@ -41,7 +39,7 @@ impl Expandable for proto::DpMedian {
             omit: true,
             submission: component.submission,
         });
-        expansion.traversal.push(*component_id);
+        expansion.traversal.push(component_id);
 
         Ok(expansion)
     }
@@ -51,7 +49,7 @@ impl Expandable for proto::DpMedian {
 impl Report for proto::DpMedian {
     fn summarize(
         &self,
-        node_id: &u32,
+        node_id: u32,
         component: &proto::Component,
         _public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &NodeProperties,
@@ -80,14 +78,14 @@ impl Report for proto::DpMedian {
                 statistic: "DPMedian".to_string(),
                 variables: serde_json::json!(variable_name.to_string()),
                 release_info: match release.array()? {
-                    Array::F64(v) => value_to_json(&get_ith_column(v, &column_number)?.into())?,
-                    Array::I64(v) => value_to_json(&get_ith_column(v, &column_number)?.into())?,
+                    Array::F64(v) => value_to_json(&get_ith_column(v, column_number)?.into())?,
+                    Array::I64(v) => value_to_json(&get_ith_column(v, column_number)?.into())?,
                     _ => return Err("maximum must be numeric".into())
                 },
                 privacy_loss: privacy_usage_to_json(&privacy_usages[column_number].clone()),
                 accuracy: None,
-                submission: component.submission as u64,
-                node_id: *node_id as u64,
+                submission: component.submission,
+                node_id,
                 postprocess: false,
                 algorithm_info: AlgorithmInfo {
                     name: "".to_string(),

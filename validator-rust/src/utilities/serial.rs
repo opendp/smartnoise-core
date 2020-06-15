@@ -128,7 +128,7 @@ pub fn parse_jagged(value: proto::Jagged) -> Jagged {
 }
 
 pub fn parse_value(value: proto::Value) -> Value {
-    match value.data.to_owned().unwrap() {
+    match value.data.unwrap() {
         proto::value::Data::Function(function) =>
             Value::Function(function),
         proto::value::Data::Array(data) =>
@@ -205,7 +205,7 @@ pub fn parse_index_key(value: proto::IndexKey) -> IndexKey {
 pub fn parse_group_id(value: proto::GroupId) -> GroupId {
     GroupId {
         partition_id: value.partition_id,
-        index: value.index.map(|idx| parse_index_key(idx))
+        index: value.index.map(parse_index_key)
     }
 }
 
@@ -269,25 +269,25 @@ pub fn parse_jagged_properties(value: proto::JaggedProperties) -> JaggedProperti
 // SERIALIZERS
 pub fn serialize_bool_null(value: Option<bool>) -> proto::BoolNull {
     proto::BoolNull {
-        data: value.map(|elem_data| proto::bool_null::Data::Option(elem_data))
+        data: value.map(proto::bool_null::Data::Option)
     }
 }
 
 pub fn serialize_i64_null(value: Option<i64>) -> proto::I64Null {
     proto::I64Null {
-        data: value.map(|elem_data| proto::i64_null::Data::Option(elem_data))
+        data: value.map(proto::i64_null::Data::Option)
     }
 }
 
 pub fn serialize_f64_null(value: Option<f64>) -> proto::F64Null {
     proto::F64Null {
-        data: value.map(|elem_data| proto::f64_null::Data::Option(elem_data))
+        data: value.map(proto::f64_null::Data::Option)
     }
 }
 
 pub fn serialize_str_null(value: Option<String>) -> proto::StrNull {
     proto::StrNull {
-        data: value.map(|elem_data| proto::str_null::Data::Option(elem_data))
+        data: value.map(proto::str_null::Data::Option)
     }
 }
 
@@ -352,19 +352,19 @@ pub fn serialize_array1d(value: Vector1D) -> proto::Array1d {
 pub fn serialize_array(value: Array) -> proto::Array {
     match value {
         Array::Bool(array) => proto::Array {
-            flattened: Some(serialize_array1d(Vector1D::Bool(array.iter().map(|s| *s).collect()))),
+            flattened: Some(serialize_array1d(Vector1D::Bool(array.iter().copied().collect()))),
             shape: array.shape().iter().map(|y| { *y as u64 }).collect(),
         },
         Array::F64(array) => proto::Array {
-            flattened: Some(serialize_array1d(Vector1D::F64(array.iter().map(|s| *s).collect()))),
+            flattened: Some(serialize_array1d(Vector1D::F64(array.iter().copied().collect()))),
             shape: array.shape().iter().map(|y| { *y as u64 }).collect(),
         },
         Array::I64(array) => proto::Array {
-            flattened: Some(serialize_array1d(Vector1D::I64(array.iter().map(|s| *s).collect()))),
+            flattened: Some(serialize_array1d(Vector1D::I64(array.iter().copied().collect()))),
             shape: array.shape().iter().map(|y| { *y as u64 }).collect(),
         },
         Array::Str(array) => proto::Array {
-            flattened: Some(serialize_array1d(Vector1D::Str(array.iter().map(|s| s.to_owned()).collect()))),
+            flattened: Some(serialize_array1d(Vector1D::Str(array.iter().cloned().collect()))),
             shape: array.shape().iter().map(|y| { *y as u64 }).collect(),
         }
     }
@@ -476,7 +476,7 @@ pub fn serialize_index_key(value: IndexKey) -> proto::IndexKey {
 pub fn serialize_group_id(value: GroupId) -> proto::GroupId {
     proto::GroupId {
         partition_id: value.partition_id,
-        index: value.index.map(|idx| serialize_index_key(idx))
+        index: value.index.map(serialize_index_key)
     }
 }
 

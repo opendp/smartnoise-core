@@ -16,8 +16,8 @@ impl Evaluable for proto::Covariance {
         let delta_degrees_of_freedom = if self.finite_sample_correction {1} else {0} as usize;
         if arguments.contains_key::<IndexKey>(&"data".into()) {
             let data = get_argument(arguments, "data")?.array()?.f64()?;
-            let covariances = matrix_covariance(&data, &delta_degrees_of_freedom)?.into_iter()
-                .flat_map(|x| x)
+            let covariances = matrix_covariance(&data, delta_degrees_of_freedom)?.into_iter()
+                .flatten()
                 .collect::<Vec<f64>>();
 
             // flatten into a row vector, every column is a release
@@ -27,11 +27,11 @@ impl Evaluable for proto::Covariance {
             let left = get_argument(arguments, "left")?.array()?.f64()?;
             let right = get_argument(arguments, "right")?.array()?.f64()?;
 
-            let cross_covariances = matrix_cross_covariance(&left, &right, &delta_degrees_of_freedom)?;
+            let cross_covariances = matrix_cross_covariance(&left, &right, delta_degrees_of_freedom)?;
 
             // flatten into a row vector, every column is a release
             return Ok(ReleaseNode::new(Array::from_iter(cross_covariances.iter())
-                .insert_axis(Axis(0)).into_dyn().mapv(|v| v.clone()).into()));
+                .insert_axis(Axis(0)).into_dyn().mapv(|v| *v).into()));
         }
         Err("insufficient data supplied to Covariance".into())
     }
@@ -57,10 +57,10 @@ impl Evaluable for proto::Covariance {
 /// // [-7.5 -4.5  4.5]
 ///
 /// let data = arr2(&[ [0., 2., 9.], [5., 5., 6.] ]).into_dyn();
-/// let cov_mat = matrix_covariance(&data, &1).unwrap();
+/// let cov_mat = matrix_covariance(&data, 1).unwrap();
 /// assert!(cov_mat == vec![ vec![12.5, 7.5, -7.5], vec![4.5, -4.5], vec![4.5] ]);
 /// ```
-pub fn matrix_covariance(data: &ArrayD<f64>, delta_degrees_of_freedom: &usize) -> Result<Vec<Vec<f64>>> {
+pub fn matrix_covariance(data: &ArrayD<f64>, delta_degrees_of_freedom: usize) -> Result<Vec<Vec<f64>>> {
 
     let means: Vec<f64> = mean(&data)?.iter().cloned().collect();
 
@@ -73,7 +73,7 @@ pub fn matrix_covariance(data: &ArrayD<f64>, delta_degrees_of_freedom: &usize) -
                 .for_each(|(right_i, right_col)|
                     col_covariances.push(covariance(
                         &left_col, &right_col,
-                        &means[left_i].clone(), &means[right_i].clone(),
+                        means[left_i], means[right_i],
                         delta_degrees_of_freedom)));
             covariances.push(col_covariances);
         });
@@ -102,18 +102,18 @@ pub fn matrix_covariance(data: &ArrayD<f64>, delta_degrees_of_freedom: &usize) -
 /// let left = arr2(&[ [1., 3., 5.,], [2., 4., 6.] ]).into_dyn();
 /// let right = arr2(&[ [2., 4., 6.], [1., 3., 5.] ]).into_dyn();
 ///
-/// let cross_covar = matrix_cross_covariance(&left, &right, &(1 as usize)).unwrap();
-/// let left_covar = matrix_cross_covariance(&left, &left, &(1 as usize)).unwrap();
+/// let cross_covar = matrix_cross_covariance(&left, &right, 1).unwrap();
+/// let left_covar = matrix_cross_covariance(&left, &left, 1).unwrap();
 ///
 /// // cross-covariance of left and right matrices
-/// assert!(cross_covar == arr2(&[ [-0.5, -0.5, -0.5], [-0.5, -0.5, -0.5], [-0.5, -0.5, -0.5] ]).into_dyn());
+/// assert_eq!(cross_covar, arr2(&[ [-0.5, -0.5, -0.5], [-0.5, -0.5, -0.5], [-0.5, -0.5, -0.5] ]).into_dyn());
 ///
 /// // cross-covariance of left with itself is equivalent to the standard covariance matrix
-/// assert!(left_covar == arr2(&[ [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5] ]).into_dyn());
+/// assert_eq!(left_covar, arr2(&[ [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5] ]).into_dyn());
 /// ```
 pub fn matrix_cross_covariance(
     left: &ArrayD<f64>, right: &ArrayD<f64>,
-    delta_degrees_of_freedom: &usize
+    delta_degrees_of_freedom: usize
 ) -> Result<ArrayD<f64>> {
 
     let left_means: Vec<f64> = mean(&left)?.iter().cloned().collect();
@@ -126,8 +126,8 @@ pub fn matrix_cross_covariance(
                 .zip(right_means.iter())
                 .map(|(column_right, mean_right)| covariance(
                     &column_left, &column_right,
-                    &mean_left, &mean_right,
-                &delta_degrees_of_freedom))
+                    *mean_left, *mean_right,
+                delta_degrees_of_freedom))
                 .collect::<Vec<f64>>())
         .collect::<Vec<f64>>();
 
@@ -158,12 +158,12 @@ pub fn matrix_cross_covariance(
 /// let right = arr1(&[4.,5.,6.]);
 /// let mean_left = 2.;
 /// let mean_right = 5.;
-/// let cov = covariance(&left.view(), &right.view(), &mean_left, &mean_right, &1);
-/// assert!(cov == 1.);
+/// let cov = covariance(&left.view(), &right.view(), mean_left, mean_right, 1);
+/// assert_eq!(cov, 1.);
 /// ```
-pub fn covariance(left: &ArrayView1<f64>, right: &ArrayView1<f64>, mean_left: &f64, mean_right: &f64, delta_degrees_of_freedom: &usize) -> f64 {
+pub fn covariance(left: &ArrayView1<f64>, right: &ArrayView1<f64>, mean_left: f64, mean_right: f64, delta_degrees_of_freedom: usize) -> f64 {
     left.iter()
         .zip(right)
         .fold(0., |sum, (val_left, val_right)|
-            sum + ((val_left - mean_left) * (val_right - mean_right))) / ( (left.len() - delta_degrees_of_freedom.clone()) as f64)
+            sum + ((val_left - mean_left) * (val_right - mean_right))) / ( (left.len() - delta_degrees_of_freedom) as f64)
 }

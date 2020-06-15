@@ -40,28 +40,28 @@ impl Component for proto::Clamp {
             let mut categories = categories.jagged()?.clone();
             match (&mut categories, null) {
                 (Jagged::F64(jagged), Array::F64(null)) => {
-                    let null_target = standardize_null_target_argument(&null, &num_columns)?;
+                    let null_target = standardize_null_target_argument(&null, num_columns)?;
                     jagged.iter_mut().zip(null_target.into_iter())
                         .for_each(|(cats, null)| cats.push(null))
                 },
                 (Jagged::I64(jagged), Array::I64(null)) => {
-                    let null_target = standardize_null_target_argument(&null, &num_columns)?;
+                    let null_target = standardize_null_target_argument(&null, num_columns)?;
                     jagged.iter_mut().zip(null_target.into_iter())
                         .for_each(|(cats, null)| cats.push(null))
                 },
                 (Jagged::Str(jagged), Array::Str(null)) => {
-                    let null_target = standardize_null_target_argument(&null, &num_columns)?;
+                    let null_target = standardize_null_target_argument(&null, num_columns)?;
                     jagged.iter_mut().zip(null_target.into_iter())
                         .for_each(|(cats, null)| cats.push(null))
                 },
                 (Jagged::Bool(jagged), Array::Bool(null)) => {
-                    let null_target = standardize_null_target_argument(&null, &num_columns)?;
+                    let null_target = standardize_null_target_argument(&null, num_columns)?;
                     jagged.iter_mut().zip(null_target.into_iter())
                         .for_each(|(cats, null)| cats.push(null))
                 },
                 _ => return Err("categories and null_value must be homogeneously typed".into())
             };
-            categories = categories.standardize(&num_columns)?;
+            categories = categories.standardize(num_columns)?;
             data_property.nature = Some(Nature::Categorical(NatureCategorical { categories }));
 
             return Ok(ValueProperties::Array(data_property).into())
@@ -73,7 +73,7 @@ impl Component for proto::Clamp {
 
                 // 1. check public arguments (constant n)
                 let mut clamp_lower = match public_arguments.get::<IndexKey>(&"lower".into()) {
-                    Some(min) => min.clone().array()?.clone().vec_f64(Some(num_columns))
+                    Some(&min) => min.array()?.clone().vec_f64(Some(num_columns))
                         .map_err(prepend("lower:"))?,
 
                     // 2. then private arguments (for example from another clamped column)
@@ -135,7 +135,7 @@ impl Component for proto::Clamp {
             DataType::I64 => {
                 // 1. check public arguments (constant n)
                 let mut clamp_lower = match public_arguments.get::<IndexKey>(&"lower".into()) {
-                    Some(lower) => lower.clone().array()?.clone().vec_i64(Some(num_columns))
+                    Some(&lower) => lower.array()?.clone().vec_i64(Some(num_columns))
                         .map_err(prepend("lower:"))?,
 
                     // 2. then private arguments (for example from another clamped column)
@@ -208,10 +208,9 @@ impl Expandable for proto::Clamp {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         properties: &base::NodeProperties,
-        component_id: &u32,
-        maximum_id: &u32,
+        component_id: u32,
+        mut maximum_id: u32,
     ) -> Result<base::ComponentExpansion> {
-        let mut current_id = *maximum_id;
         let mut component = component.clone();
 
         let mut expansion = base::ComponentExpansion::default();
@@ -219,8 +218,8 @@ impl Expandable for proto::Clamp {
         let has_categorical = properties.contains_key(&IndexKey::from("categories"));
 
         if !has_categorical && !properties.contains_key::<IndexKey>(&"lower".into()) {
-            current_id += 1;
-            let id_lower = current_id.to_owned();
+            maximum_id += 1;
+            let id_lower = maximum_id.to_owned();
             let value = Value::Array(Array::F64(
                 ndarray::Array::from(properties.get::<IndexKey>(&"data".into()).unwrap().to_owned().array()?.lower_f64()?).into_dyn()));
             expansion.properties.insert(id_lower, infer_property(&value, None)?);
@@ -231,8 +230,8 @@ impl Expandable for proto::Clamp {
         }
 
         if !has_categorical && !properties.contains_key::<IndexKey>(&"upper".into()) {
-            current_id += 1;
-            let id_upper = current_id.to_owned();
+            maximum_id += 1;
+            let id_upper = maximum_id.to_owned();
             let value = Value::Array(Array::F64(
                 ndarray::Array::from(properties.get::<IndexKey>(&"data".into()).unwrap().to_owned().array()?.upper_f64()?).into_dyn()));
             expansion.properties.insert(id_upper, infer_property(&value, None)?);
@@ -242,7 +241,7 @@ impl Expandable for proto::Clamp {
             component.insert_argument(&"upper".into(), id_upper);
         }
 
-        expansion.computation_graph.insert(*component_id, component);
+        expansion.computation_graph.insert(component_id, component);
 
         Ok(expansion)
     }

@@ -29,25 +29,25 @@ impl Evaluable for proto::Dataframe {
             Array::F64(array) => {
                 let standardized = standardize_columns(array, num_columns)?;
                 column_names.into_iter().enumerate()
-                    .map(|(idx, name)| Ok((name.to_string().into(), get_ith_column(&standardized, &idx)?.into())))
+                    .map(|(idx, name)| Ok((name.to_string().into(), get_ith_column(&standardized, idx)?.into())))
                     .collect::<Result<IndexMap<IndexKey, Value>>>()?
             }
             Array::I64(array) => {
                 let standardized = standardize_columns(array, num_columns)?;
                 column_names.into_iter().enumerate()
-                    .map(|(idx, name)| Ok((name.to_string().into(), get_ith_column(&standardized, &idx)?.into())))
+                    .map(|(idx, name)| Ok((name.to_string().into(), get_ith_column(&standardized, idx)?.into())))
                     .collect::<Result<IndexMap<IndexKey, Value>>>()?
             }
             Array::Bool(array) => {
                 let standardized = standardize_columns(array, num_columns)?;
                 column_names.into_iter().enumerate()
-                    .map(|(idx, name)| Ok((name.to_string().into(), get_ith_column(&standardized, &idx)?.into())))
+                    .map(|(idx, name)| Ok((name.to_string().into(), get_ith_column(&standardized, idx)?.into())))
                     .collect::<Result<IndexMap<IndexKey, Value>>>()?
             }
             Array::Str(array) => {
                 let standardized = standardize_columns(array, num_columns)?;
                 column_names.into_iter().enumerate()
-                    .map(|(idx, name)| Ok((name.to_string().into(), get_ith_column(&standardized, &idx)?.into())))
+                    .map(|(idx, name)| Ok((name.to_string().into(), get_ith_column(&standardized, idx)?.into())))
                     .collect::<Result<IndexMap<IndexKey, Value>>>()?
             }
         })))

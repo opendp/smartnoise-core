@@ -222,10 +222,9 @@ impl Expandable for proto::Resize {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         properties: &base::NodeProperties,
-        component_id: &u32,
-        maximum_id: &u32,
+        component_id: u32,
+        mut maximum_id: u32,
     ) -> Result<base::ComponentExpansion> {
-        let mut current_id = *maximum_id;
 
         let mut expansion = base::ComponentExpansion::default();
 
@@ -237,8 +236,8 @@ impl Expandable for proto::Resize {
 
         if !properties.contains_key::<IndexKey>(&"categories".into()) {
             if !properties.contains_key::<IndexKey>(&"lower".into()) {
-                current_id += 1;
-                let id_lower = current_id;
+                maximum_id += 1;
+                let id_lower = maximum_id;
                 let value = Value::Array(Array::F64(
                     ndarray::Array::from(data_property.lower_f64()?).into_dyn()));
                 let (patch_node, release) = get_literal(value, component.submission)?;
@@ -249,8 +248,8 @@ impl Expandable for proto::Resize {
             }
 
             if !properties.contains_key::<IndexKey>(&"upper".into()) {
-                current_id += 1;
-                let id_upper = current_id;
+                maximum_id += 1;
+                let id_upper = maximum_id;
                 let value = Value::Array(Array::F64(
                     ndarray::Array::from(data_property.upper_f64()?).into_dyn()));
                 let (patch_node, release) = get_literal(value, component.submission)?;
@@ -261,7 +260,7 @@ impl Expandable for proto::Resize {
             }
         }
 
-        expansion.computation_graph.insert(*component_id, component);
+        expansion.computation_graph.insert(component_id, component);
 
         Ok(expansion)
     }

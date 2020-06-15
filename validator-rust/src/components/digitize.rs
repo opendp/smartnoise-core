@@ -45,8 +45,8 @@ impl Component for proto::Digitize {
             .and_then(|v| v.jagged())
             .and_then(|v| match v {
                 Jagged::F64(jagged) => {
-                    let null = standardize_null_target_argument(null, &num_columns)?;
-                    let edges = standardize_float_argument(jagged, &num_columns)?;
+                    let null = standardize_null_target_argument(null, num_columns)?;
+                    let edges = standardize_float_argument(&jagged, num_columns)?;
                     data_property.nature = Some(Nature::Categorical(NatureCategorical {
                         categories: Jagged::I64(edges.into_iter().zip(null.into_iter())
                             .map(|(col, null)| {
@@ -63,8 +63,8 @@ impl Component for proto::Digitize {
                     Ok(())
                 }
                 Jagged::I64(jagged) => {
-                    let null = standardize_null_target_argument(null, &num_columns)?;
-                    let edges = standardize_categorical_argument(jagged.clone(), &num_columns)?;
+                    let null = standardize_null_target_argument(null, num_columns)?;
+                    let edges = standardize_categorical_argument(jagged.clone(), num_columns)?;
                     data_property.nature = Some(Nature::Categorical(NatureCategorical {
                         categories: Jagged::I64(edges.into_iter().zip(null.into_iter())
                             .map(|(col, null)| {
@@ -98,17 +98,16 @@ impl Expandable for proto::Digitize {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         properties: &base::NodeProperties,
-        component_id: &u32,
-        maximum_id: &u32,
+        component_id: u32,
+        mut maximum_id: u32,
     ) -> Result<base::ComponentExpansion> {
-        let mut current_id = *maximum_id;
         let mut component = component.clone();
 
         let mut expansion = base::ComponentExpansion::default();
 
         if !properties.contains_key(&IndexKey::from("null_value")) {
-            current_id += 1;
-            let id_null_value = current_id;
+            maximum_id += 1;
+            let id_null_value = maximum_id;
             let value = Value::Array(Array::I64(arr0(-1).into_dyn()));
             expansion.properties.insert(id_null_value, infer_property(&value, None)?);
             let (patch_node, release) = get_literal(value, component.submission)?;
@@ -117,8 +116,8 @@ impl Expandable for proto::Digitize {
             component.insert_argument(&"null_value".into(), id_null_value);
         }
         if !properties.contains_key::<IndexKey>(&"inclusive_left".into()) {
-            current_id += 1;
-            let id_inclusive_left = current_id;
+            maximum_id += 1;
+            let id_inclusive_left = maximum_id;
             let value = Value::Array(Array::Bool(arr0(true).into_dyn()));
             expansion.properties.insert(id_inclusive_left, infer_property(&value, None)?);
             let (patch_node, release) = get_literal(value, component.submission)?;
@@ -127,7 +126,7 @@ impl Expandable for proto::Digitize {
             component.insert_argument(&"inclusive_left".into(), id_inclusive_left);
         }
 
-        expansion.computation_graph.insert(*component_id, component);
+        expansion.computation_graph.insert(component_id, component);
 
         Ok(expansion)
     }

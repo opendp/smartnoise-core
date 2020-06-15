@@ -19,7 +19,7 @@ impl Evaluable for proto::Index {
 
         let is_partition = get_argument(arguments, "is_partition")
             .map(|v| v.clone())
-            .unwrap_or(false.into()).first_bool()?;
+            .unwrap_or_else(|_| false.into()).first_bool()?;
 
         let dimensionality;
 
@@ -90,18 +90,15 @@ impl Evaluable for proto::Index {
         }?;
 
         // remove trailing singleton axis if a zero-dimensional index set was passed
-        match &mut indexed {
-            Value::Array(array) => {
-                if is_partition == false && dimensionality == 1 && array.shape().len() == 2 {
-                    match array {
-                        Array::F64(array) => array.index_axis_inplace(Axis(1), 0),
-                        Array::I64(array) => array.index_axis_inplace(Axis(1), 0),
-                        Array::Bool(array) => array.index_axis_inplace(Axis(1), 0),
-                        Array::Str(array) => array.index_axis_inplace(Axis(1), 0),
-                    }
+        if let Value::Array(array) = &mut indexed {
+            if !is_partition && dimensionality == 1 && array.shape().len() == 2 {
+                match array {
+                    Array::F64(array) => array.index_axis_inplace(Axis(1), 0),
+                    Array::I64(array) => array.index_axis_inplace(Axis(1), 0),
+                    Array::Bool(array) => array.index_axis_inplace(Axis(1), 0),
+                    Array::Str(array) => array.index_axis_inplace(Axis(1), 0),
                 }
             }
-            _ => ()
         };
 
         Ok(ReleaseNode::new(indexed))
@@ -120,7 +117,7 @@ pub fn mask_columns(column_names: &[IndexKey], mask: &[bool]) -> Result<Vec<Inde
 
 fn column_stack(
     dataframe: &IndexMap<IndexKey, Value>,
-    column_names: &Vec<IndexKey>,
+    column_names: &[IndexKey],
 ) -> Result<Value> {
     if column_names.len() == 1 {
         let column_name = column_names.first().unwrap();
@@ -129,12 +126,12 @@ fn column_stack(
     }
 
     fn to_2d<T>(array: ArrayD<T>) -> Result<ArrayD<T>> {
-        to_nd(array, &(2 as usize))
+        to_nd(array, 2)
     }
 
     let values = column_names.iter()
         .map(|column_name| dataframe.get(column_name)
-            .ok_or(format!("one of the provided column names does not exist: {:?}", column_name).into()))
+            .ok_or_else(|| Error::from(format!("one of the provided column names does not exist: {:?}", column_name))))
         .collect::<Result<Vec<&Value>>>()?;
 
     let data_type = match values.first() {
@@ -152,7 +149,7 @@ fn column_stack(
         DataType::F64 => {
             let chunks = column_names.iter()
                 .map(|column_name| dataframe.get(column_name)
-                    .ok_or(format!("one of the provided column names does not exist: {:?}", column_name).into())
+                    .ok_or_else(|| Error::from(format!("one of the provided column names does not exist: {:?}", column_name)))
                     .and_then(|array| to_2d(array.array()?.f64()?.clone())))
                 .collect::<Result<Vec<_>>>()?;
 
@@ -162,7 +159,7 @@ fn column_stack(
         DataType::I64 => {
             let chunks = column_names.iter()
                 .map(|column_name| dataframe.get(column_name)
-                    .ok_or(format!("one of the provided column names does not exist: {:?}", column_name).into())
+                    .ok_or_else(|| Error::from(format!("one of the provided column names does not exist: {:?}", column_name)))
                     .and_then(|array| to_2d(array.array()?.i64()?.clone())))
                 .collect::<Result<Vec<_>>>()?;
 
@@ -172,7 +169,7 @@ fn column_stack(
         DataType::Bool => {
             let chunks = column_names.iter()
                 .map(|column_name| dataframe.get(column_name)
-                    .ok_or(format!("one of the provided column names does not exist: {:?}", column_name).into())
+                    .ok_or_else(|| Error::from(format!("one of the provided column names does not exist: {:?}", column_name)))
                     .and_then(|array| to_2d(array.array()?.bool()?.clone())))
                 .collect::<Result<Vec<_>>>()?;
 
@@ -182,7 +179,7 @@ fn column_stack(
         DataType::Str => {
             let chunks = column_names.iter()
                 .map(|column_name| dataframe.get(column_name)
-                    .ok_or(format!("one of the provided column names does not exist: {:?}", column_name).into())
+                    .ok_or_else(|| Error::from(format!("one of the provided column names does not exist: {:?}", column_name)))
                     .and_then(|array| to_2d(array.array()?.string()?.clone())))
                 .collect::<Result<Vec<ArrayD<String>>>>()?;
 

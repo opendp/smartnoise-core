@@ -440,16 +440,16 @@ impl Jagged {
         }
     }
 
-    pub fn standardize(self, num_columns: &i64) -> Result<Jagged> {
+    pub fn standardize(self, num_columns: i64) -> Result<Jagged> {
         match self {
             Jagged::F64(_) =>
                 Err("float data may not be categorical".into()),
             Jagged::I64(categories) =>
-                Ok(standardize_categorical_argument(categories, &num_columns)?.into()),
+                Ok(standardize_categorical_argument(categories, num_columns)?.into()),
             Jagged::Bool(categories) =>
-                Ok(standardize_categorical_argument(categories, &num_columns)?.into()),
+                Ok(standardize_categorical_argument(categories, num_columns)?.into()),
             Jagged::Str(categories) =>
-                Ok(standardize_categorical_argument(categories, &num_columns)?.into()),
+                Ok(standardize_categorical_argument(categories, num_columns)?.into()),
         }
     }
 
@@ -465,16 +465,16 @@ impl Jagged {
     pub fn to_index_keys(&self) -> Result<Vec<Vec<IndexKey>>> {
         Ok(match self {
             Jagged::Bool(categories) =>
-                categories.into_iter()
-                    .map(|col| col.into_iter().cloned()
+                categories.iter()
+                    .map(|col| col.iter().cloned()
                         .map(IndexKey::from).collect()).collect::<Vec<Vec<IndexKey>>>(),
             Jagged::Str(categories) =>
-                categories.into_iter()
-                    .map(|col| col.into_iter().cloned()
+                categories.iter()
+                    .map(|col| col.iter().cloned()
                         .map(IndexKey::from).collect()).collect(),
             Jagged::I64(categories) =>
-                categories.into_iter()
-                    .map(|col| col.into_iter().cloned()
+                categories.iter()
+                    .map(|col| col.iter().cloned()
                         .map(IndexKey::from).collect()).collect(),
             _ => return Err("partitioning based on floats is not supported".into())
         })
@@ -510,6 +510,7 @@ impl From<Vec<Vec<String>>> for Jagged {
 /// Derived properties for the universal value.
 ///
 /// The ValueProperties has a one-to-one mapping to a protobuf ValueProperties.
+#[allow(clippy::large_enum_variant)]
 #[derive(Clone, Debug)]
 pub enum ValueProperties {
     Indexmap(IndexmapProperties),
@@ -611,7 +612,7 @@ impl IndexmapProperties {
 
     pub fn from_values(&self, values: Vec<ValueProperties>) -> IndexMap<IndexKey, ValueProperties> {
         self.children.keys().cloned()
-            .zip(values).collect::<IndexMap<base::IndexKey, ValueProperties>>().into()
+            .zip(values).collect::<IndexMap<base::IndexKey, ValueProperties>>()
     }
 }
 

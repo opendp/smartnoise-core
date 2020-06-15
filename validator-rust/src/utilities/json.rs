@@ -2,7 +2,6 @@
 
 use crate::errors::*;
 use serde::{Deserialize, Serialize};
-extern crate serde_json;
 
 use crate::proto;
 use crate::base;
@@ -29,10 +28,10 @@ pub struct JSONRelease {
     /// optional parameter. It is a combination of the accuracy and alpha value
     pub accuracy: Option<Accuracy>,
     /// which release the implemented statistic is originating from. This provides a tool to keep track of overall privacyLoss.
-    pub submission: u64,
+    pub submission: u32,
     /// For advanced users. Corresponds to the node of the graph this release originated from
     #[serde(rename(serialize = "nodeID", deserialize = "nodeID"))]
-    pub node_id: u64,
+    pub node_id: u32,
     /// true when the released value is derived from public/released data
     pub postprocess: bool,
     /// the name of the algorithm which is implemented for computation of the given statistic and the arguments of the algorithm such as n(number of observations),  range (upper and lower bound, etc.)

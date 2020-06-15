@@ -113,8 +113,8 @@ pub fn impute_float_uniform(data: &ArrayD<f64>, lower: &ArrayD<f64>, upper: &Arr
     // iterate over the generalized columns
     data.gencolumns_mut().into_iter()
         // pair generalized columns with arguments
-        .zip(standardize_numeric_argument(&lower, &num_columns)?.iter())
-        .zip(standardize_numeric_argument(&upper, &num_columns)?.iter())
+        .zip(standardize_numeric_argument(&lower, num_columns)?.iter())
+        .zip(standardize_numeric_argument(&upper, num_columns)?.iter())
         // for each pairing, iterate over the cells
         .map(|((mut column, min), max)| column.iter_mut()
             // ignore nan values
@@ -166,10 +166,10 @@ pub fn impute_float_gaussian(data: &ArrayD<f64>, lower: &ArrayD<f64>, upper: &Ar
     // iterate over the generalized columns
     data.gencolumns_mut().into_iter()
         // pair generalized columns with arguments
-        .zip(standardize_numeric_argument(&lower, &num_columns)?.iter()
-            .zip(standardize_numeric_argument(&upper, &num_columns)?.iter()))
-        .zip(standardize_numeric_argument(&shift, &num_columns)?.iter()
-            .zip(standardize_numeric_argument(&scale, &num_columns)?.iter()))
+        .zip(standardize_numeric_argument(&lower, num_columns)?.iter()
+            .zip(standardize_numeric_argument(&upper, num_columns)?.iter()))
+        .zip(standardize_numeric_argument(&shift, num_columns)?.iter()
+            .zip(standardize_numeric_argument(&scale, num_columns)?.iter()))
         // for each pairing, iterate over the cells
         .map(|((mut column, (min, max)), (shift, scale))| column.iter_mut()
             // ignore nan values
@@ -215,18 +215,18 @@ pub fn impute_float_gaussian(data: &ArrayD<f64>, lower: &ArrayD<f64>, upper: &Ar
 /// let imputed = impute_categorical(&data, &categories, &weights, &null_value);
 /// # imputed.unwrap();
 /// ```
-pub fn impute_categorical<T: Clone>(data: &ArrayD<T>, categories: &Vec<Vec<T>>,
-                             weights: &Option<Vec<Vec<f64>>>, null_value: &Vec<Vec<T>>)
+pub fn impute_categorical<T: Clone>(data: &ArrayD<T>, categories: &[Vec<T>],
+                             weights: &Option<Vec<Vec<f64>>>, null_value: &[Vec<T>])
                              -> Result<ArrayD<T>> where T:Clone, T:PartialEq, T:Default, T: Ord, T: Hash {
 
     let mut data = data.clone();
 
     let num_columns = get_num_columns(&data)?;
 
-    let categories = standardize_categorical_argument(categories.clone(), &num_columns)?;
+    let categories = standardize_categorical_argument(categories.to_vec(), num_columns)?;
     let lengths = categories.iter().map(|cats| cats.len() as i64).collect::<Vec<i64>>();
     let probabilities = standardize_weight_argument(&weights, &lengths)?;
-    let null_value = standardize_null_candidates_argument(null_value, &num_columns)?;
+    let null_value = standardize_null_candidates_argument(null_value, num_columns)?;
 
     // iterate over the generalized columns
     data.gencolumns_mut().into_iter()

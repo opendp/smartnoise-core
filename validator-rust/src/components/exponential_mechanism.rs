@@ -96,10 +96,9 @@ impl Expandable for proto::ExponentialMechanism {
         privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         properties: &base::NodeProperties,
-        component_id: &u32,
-        maximum_id: &u32,
+        component_id: u32,
+        mut maximum_id: u32,
     ) -> Result<base::ComponentExpansion> {
-        let mut current_id = *maximum_id;
 
         let mut expansion = base::ComponentExpansion::default();
 
@@ -119,8 +118,8 @@ impl Expandable for proto::ExponentialMechanism {
             &aggregator.properties,
             &SensitivitySpace::Exponential)?;
 
-        current_id += 1;
-        let id_sensitivity = current_id;
+        maximum_id += 1;
+        let id_sensitivity = maximum_id;
         let (patch_node, release) = get_literal(sensitivity, component.submission)?;
         expansion.computation_graph.insert(id_sensitivity, patch_node);
         expansion.properties.insert(id_sensitivity, infer_property(&release.value, None)?);
@@ -130,7 +129,7 @@ impl Expandable for proto::ExponentialMechanism {
         let mut noise_component = component.clone();
         noise_component.insert_argument(&"sensitivity".into(), id_sensitivity);
 
-        expansion.computation_graph.insert(*component_id, noise_component);
+        expansion.computation_graph.insert(component_id, noise_component);
 
         Ok(expansion)
     }

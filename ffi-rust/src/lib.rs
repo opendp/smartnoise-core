@@ -1,3 +1,5 @@
+#![warn(unused_extern_crates)]
+
 use whitenoise_validator::errors::*;
 
 use prost::Message;
@@ -20,6 +22,7 @@ use indexmap::map::IndexMap;
 /// # Returns
 /// a [ByteBufferValidator struct](struct.ByteBufferValidator.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseValidateAnalysis](../proto/struct.ResponseValidateAnalysis.html)
 #[no_mangle]
+#[allow(clippy::not_unsafe_ptr_arg_deref)]
 pub extern "C" fn validate_analysis(
     request_ptr: *const u8, request_length: i32,
 ) -> ffi_support::ByteBuffer {
@@ -72,6 +75,7 @@ pub extern "C" fn validate_analysis(
 /// # Returns
 /// a [ByteBufferValidator struct](struct.ByteBufferValidator.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseComputePrivacyUsage](../proto/struct.ResponseComputePrivacyUsage.html)
 #[no_mangle]
+#[allow(clippy::not_unsafe_ptr_arg_deref)]
 pub extern "C" fn compute_privacy_usage(
     request_ptr: *const u8, request_length: i32,
 ) -> ffi_support::ByteBuffer {
@@ -124,6 +128,7 @@ pub extern "C" fn compute_privacy_usage(
 /// # Returns
 /// a [ByteBufferValidator struct](struct.ByteBufferValidator.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseGenerateReport](../proto/struct.ResponseGenerateReport.html)
 #[no_mangle]
+#[allow(clippy::not_unsafe_ptr_arg_deref)]
 pub extern "C" fn generate_report(
     request_ptr: *const u8, request_length: i32,
 ) -> ffi_support::ByteBuffer {
@@ -171,6 +176,7 @@ pub extern "C" fn generate_report(
 /// # Returns
 /// a [ByteBufferValidator struct](struct.ByteBufferValidator.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseAccuracyToPrivacyUsage](../proto/struct.ResponseAccuracyToPrivacyUsage.html)
 #[no_mangle]
+#[allow(clippy::not_unsafe_ptr_arg_deref)]
 pub extern "C" fn accuracy_to_privacy_usage(
     request_ptr: *const u8, request_length: i32,
 ) -> ffi_support::ByteBuffer {
@@ -224,6 +230,7 @@ pub extern "C" fn accuracy_to_privacy_usage(
 /// # Returns
 /// a [ByteBufferValidator struct](struct.ByteBufferValidator.html) containing a pointer to and length of the serialized protobuf of [proto::ResponsePrivacyUsageToAccuracy](../proto/struct.ResponsePrivacyUsageToAccuracy.html)
 #[no_mangle]
+#[allow(clippy::not_unsafe_ptr_arg_deref)]
 pub extern "C" fn privacy_usage_to_accuracy(
     request_ptr: *const u8, request_length: i32,
 ) -> ffi_support::ByteBuffer {
@@ -271,6 +278,7 @@ pub extern "C" fn privacy_usage_to_accuracy(
 /// # Returns
 /// a [ByteBufferValidator struct](struct.ByteBufferValidator.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseGetProperties](../proto/struct.ResponseGetProperties.html)
 #[no_mangle]
+#[allow(clippy::not_unsafe_ptr_arg_deref)]
 pub extern "C" fn get_properties(
     request_ptr: *const u8, request_length: i32,
 ) -> ffi_support::ByteBuffer {
@@ -328,6 +336,7 @@ pub extern "C" fn get_properties(
 /// # Returns
 /// a [ByteBufferValidator struct](struct.ByteBufferValidator.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseExpandComponent](../proto/struct.ResponseExpandComponent.html)
 #[no_mangle]
+#[allow(clippy::not_unsafe_ptr_arg_deref)]
 pub extern "C" fn expand_component(
     request_ptr: *const u8, request_length: i32,
 ) -> ffi_support::ByteBuffer {
@@ -383,6 +392,7 @@ pub extern "C" fn expand_component(
 /// a [ByteBufferRuntime struct](struct.ByteBufferRuntime.html) containing a pointer to and length of the serialized protobuf of [proto::ResponseRelease](proto/struct.ResponseRelease.html)
 #[cfg(feature = "use-runtime")]
 #[no_mangle]
+#[allow(clippy::not_unsafe_ptr_arg_deref)]
 pub extern "C" fn release(
     request_ptr: *const u8, request_length: i32,
 ) -> ffi_support::ByteBuffer {
@@ -417,16 +427,12 @@ pub extern "C" fn release(
                 match run() {
                     Ok((release, warnings)) => Some(proto::response_release::Value::Data(proto::response_release::Success {
                         release: Some(serialize_release(release)),
-                        warnings: match stack_trace {
-                            true => warnings,
-                            false => Vec::new()
-                        },
+                        warnings: if stack_trace { warnings } else { Vec::new() },
                     })),
-                    Err(err) => match stack_trace {
-                        true =>
-                            Some(proto::response_release::Value::Error(serialize_error(err))),
-                        false =>
-                            Some(proto::response_release::Value::Error(serialize_error("unspecified error while executing analysis".into())))
+                    Err(err) => if stack_trace {
+                        Some(proto::response_release::Value::Error(serialize_error(err)))
+                    } else {
+                        Some(proto::response_release::Value::Error(serialize_error("unspecified error while executing analysis".into())))
                     }
                 }
             }

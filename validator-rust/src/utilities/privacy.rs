@@ -7,6 +7,8 @@ use crate::base::{ValueProperties, Release, GroupId, IndexKey};
 use crate::components::Mechanism;
 use crate::utilities::{get_input_properties, get_common_value, get_dependents};
 
+type BatchIdentifier = (u32, u32);
+type PartitionIds = Vec<u32>;
 
 fn compute_batch_privacy_usage(
     privacy_usages: Vec<&proto::PrivacyUsage>
@@ -18,7 +20,7 @@ fn compute_batch_privacy_usage(
         .unwrap_or_else(|| Ok(proto::PrivacyUsage {
             distance: Some(proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
                 epsilon: 0.,
-                delta: 0.
+                delta: 0.,
             }))
         }))
 }
@@ -26,7 +28,7 @@ fn compute_batch_privacy_usage(
 fn batch_partition<'a>(
     graph: &HashMap<u32, proto::Component>,
     privacy_usages: &'a HashMap<u32, Vec<proto::PrivacyUsage>>,
-) -> Result<(HashMap<(u32, u32), Vec<&'a proto::PrivacyUsage>>, Vec<u32>)> {
+) -> Result<(HashMap<BatchIdentifier, Vec<&'a proto::PrivacyUsage>>, PartitionIds)> {
 
     // contains the subgraph for each submission id
     let mut submissions = HashMap::<u32, HashMap<u32, proto::Component>>::new();
@@ -42,7 +44,7 @@ fn batch_partition<'a>(
 
     // each batch is identified by the (submission_id, dependency_id),
     //    where the dependency_id is the maximum number of releases prior to a node id in the batch
-    let mut batches = HashMap::<(u32, u32), Vec<&proto::PrivacyUsage>>::new();
+    let mut batches = HashMap::<BatchIdentifier, Vec<&proto::PrivacyUsage>>::new();
 
     // node ids of partitions - these will require special treatment, and are not yet counted
     let mut partition_ids = Vec::new();
@@ -66,7 +68,7 @@ fn batch_partition<'a>(
                     if let proto::component::Variant::Partition(_) = component.variant
                         .as_ref().unwrap() {
                         true
-                    } else {false})
+                    } else { false })
                 // insert partition components into blacklist and start traversal at the dependents
                 .map(|(id, _)| {
                     blacklist.insert(*id);
@@ -89,9 +91,11 @@ fn batch_partition<'a>(
                     .filter(|id| !blacklist.contains(id))
                     .for_each(|id| blacklist_traversal.push(*id));
 
-                parents.get(&node_id).map(|ids| ids.iter()
-                    .filter(|id| !blacklist.contains(id))
-                    .for_each(|id| blacklist_traversal.push(*id)));
+                if let Some(ids) = parents.get(&node_id) {
+                    ids.iter()
+                        .filter(|id| !blacklist.contains(id))
+                        .for_each(|id| blacklist_traversal.push(*id));
+                }
             }
 
             // start traversal from all source nodes in the submission
@@ -104,14 +108,14 @@ fn batch_partition<'a>(
                 )
                 // (node_id, dependency_id)
                 .map(|(id, _)| (*id, 0))
-                .collect::<Vec<(u32, u32)>>();
+                .collect::<Vec<BatchIdentifier>>();
 
             // determine how many releases are necessary to reach each node id in the submission
             while !traversal.is_empty() {
                 let (node_id, mut dependency_id) = traversal.pop().unwrap();
 
                 if blacklist.contains(&node_id) {
-                    continue
+                    continue;
                 }
                 blacklist.insert(node_id);
 
@@ -129,8 +133,9 @@ fn batch_partition<'a>(
                 }
 
                 // add all parents to the traversal, with the number of releases needed to reach this point
-                parents.get(&node_id).map(|pars| traversal.extend(pars.iter()
-                    .map(|v| (*v, dependency_id))));
+                if let Some(pars) = parents.get(&node_id) {
+                    traversal.extend(pars.iter().map(|v| (*v, dependency_id)));
+                }
             }
 
             // use the dependency structure discovered in the traversal to enumerate the batches present in this submission
@@ -191,11 +196,9 @@ pub fn compute_graph_privacy_usage(
     };
 
     // get all node ids that are indexed by a specific category
-    let get_category_indexes = |
-        category: IndexKey,
-        partition_id: u32,
+    let get_category_indexes = |category: IndexKey,
+                                partition_id: u32,
     | -> Result<Vec<u32>> {
-
         Ok(dependent_edges
             // retrieve the indexes into the partition
             .get(&partition_id)
@@ -217,33 +220,28 @@ pub fn compute_graph_privacy_usage(
     };
 
     // get all node ids that are dependents of a specific node_id
-    let get_downstream_ids = |
-        node_id: u32
-    | -> Result<HashSet<u32>> {
+    let get_downstream_ids = |node_id: u32| -> Result<HashSet<u32>> {
         let mut downstream_ids = HashSet::new();
         let mut traversal = vec![node_id];
         while !traversal.is_empty() {
             let node_id = traversal.pop().unwrap();
             downstream_ids.insert(node_id);
-            dependent_edges.get(&node_id)
-                .map(|dependents| traversal.extend(dependents));
+            if let Some(dependents) = dependent_edges.get(&node_id) {
+                traversal.extend(dependents);
+            }
         }
         Ok(downstream_ids)
     };
 
     // get the subset of a graph downstream of a specific node id
-    let get_downstream_graph = |
-        node_id: u32
-    | -> Result<HashMap<u32, proto::Component>> {
+    let get_downstream_graph = |node_id: u32| -> Result<HashMap<u32, proto::Component>> {
         Ok(get_downstream_ids(node_id)?.iter()
             .map(|node_id| (*node_id, graph.get(node_id).unwrap().clone()))
             .collect::<HashMap<u32, proto::Component>>())
     };
 
     // return the max of the left and right privacy usages
-    let max_usage = |
-        l: Result<proto::PrivacyUsage>, r: Result<proto::PrivacyUsage>
-    | -> Result<proto::PrivacyUsage> {
+    let max_usage = |l: Result<proto::PrivacyUsage>, r: Result<proto::PrivacyUsage>| -> Result<proto::PrivacyUsage> {
         let proto::privacy_usage::DistanceApproximate {
             epsilon: eps_l, delta: del_l
         } = match l?.distance {
@@ -260,16 +258,14 @@ pub fn compute_graph_privacy_usage(
         Ok(proto::PrivacyUsage {
             distance: Some(proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
                 epsilon: eps_l.max(eps_r),
-                delta: del_l.max(del_r)
+                delta: del_l.max(del_r),
             }))
         })
     };
 
     // compute privacy usage of a subset of the graph,
     //     where the subset is indicated by a collection of node ids
-    let compute_partition_usage = |
-        partition_ids: Vec<u32>
-    | -> Result<proto::PrivacyUsage> {
+    let compute_partition_usage = |partition_ids: Vec<u32>| -> Result<proto::PrivacyUsage> {
         partition_ids.iter()
             .map(|partition_id| compute_graph_privacy_usage(
                 &get_downstream_graph(*partition_id)?, privacy_definition, properties, release,
@@ -284,7 +280,7 @@ pub fn compute_graph_privacy_usage(
             .ok_or_else(|| "partition properties must be defined")?;
 
         partition_properties.indexmap()?.children.keys()
-            .map(|category| get_category_indexes(category.clone().into(), partition_node_id)?.iter()
+            .map(|category| get_category_indexes(category.clone(), partition_node_id)?.iter()
                 .map(|index_id| {
                     let (batches, partition_ids) = batch_partition(
                         &get_downstream_graph(*index_id)?, &release_privacy_usages)?;
@@ -429,7 +425,7 @@ pub fn get_group_id_path(arguments: Vec<Vec<GroupId>>) -> Result<Vec<GroupId>> {
         .ok_or_else(|| "all arguments must be parts of the same partition")?;
 
     if partition_depth == 0 {
-        return Err("arguments must come from a partition".into())
+        return Err("arguments must come from a partition".into());
     }
 
     (0..partition_depth - 1)
@@ -448,20 +444,18 @@ pub fn get_c_stability_multiplier(arguments: Vec<Vec<GroupId>>) -> Result<f64> {
         .ok_or_else(|| "all arguments must be parts of the same partition")?;
 
     if arguments.is_empty() {
-        return Err("c-stability cannot be determined on an empty argument set".into())
+        return Err("c-stability cannot be determined on an empty argument set".into());
     }
     if partition_depth == 0 {
-        return Ok(1.)
+        return Ok(1.);
     }
 
-    if partition_depth > 1 {
-        if !(0..partition_depth - 1).all(|depth|
-            get_common_value(&arguments.iter()
-                .map(|group_ids| group_ids[depth].clone())
-                .collect()
-            ).is_some()) {
-            return Err("all arguments must be parts of the same partition")?
-        }
+    if partition_depth > 1 && !(0..partition_depth - 1).all(|depth|
+        get_common_value(&arguments.iter()
+            .map(|group_ids| group_ids[depth].clone())
+            .collect()
+        ).is_some()) {
+        return Err("all arguments must be parts of the same partition".into());
     }
 
     let group_ids = arguments.into_iter()

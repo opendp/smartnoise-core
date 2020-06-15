@@ -20,7 +20,7 @@ impl Component for proto::Materialize {
 
         Ok(ValueProperties::Indexmap(IndexmapProperties {
             children: column_names.into_iter()
-                .map(|name| (name.into(), ValueProperties::Array(ArrayProperties {
+                .map(|name| (name, ValueProperties::Array(ArrayProperties {
                     num_records: None,
                     num_columns: Some(1),
                     nullity: true,

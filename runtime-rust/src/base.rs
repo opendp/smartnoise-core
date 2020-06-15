@@ -25,7 +25,7 @@ pub fn evaluate_function(
         .collect::<Result<HashMap<u32, ReleaseNode>>>()?;
 
     // insert arguments into function
-    arguments_names.into_iter()
+    arguments_names.iter()
         .map(|(name, id)| {
             let argument = arguments.get(name)
                 .ok_or_else(|| Error::from(format!("missing argument in function evaluation: {}", name)))?;
@@ -44,7 +44,7 @@ pub fn evaluate_function(
         release,
         proto::FilterLevel::All)?;
 
-    outputs.into_iter()
+    outputs.iter()
         .map(|(name, id)| Ok((
             name.clone(),
             release.get(id)

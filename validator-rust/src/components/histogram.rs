@@ -68,10 +68,9 @@ impl Expandable for proto::Histogram {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         properties: &NodeProperties,
-        component_id: &u32,
-        maximum_id: &u32,
+        component_id: u32,
+        mut maximum_id: u32,
     ) -> Result<base::ComponentExpansion> {
-        let mut current_id = *maximum_id;
 
         let mut expansion = base::ComponentExpansion::default();
 
@@ -97,8 +96,8 @@ impl Expandable for proto::Histogram {
                 prior_arguments.get::<IndexKey>(&"inclusive_left".into())
                     .map(|v| arguments.insert("inclusive_left".into(), *v));
 
-                current_id += 1;
-                let id_digitize = current_id;
+                maximum_id += 1;
+                let id_digitize = maximum_id;
                 expansion.computation_graph.insert(id_digitize, proto::Component {
                     arguments: Some(proto::IndexmapNodeIds::new(arguments)),
                     variant: Some(proto::component::Variant::Digitize(proto::Digitize {})),
@@ -114,8 +113,8 @@ impl Expandable for proto::Histogram {
                 let prior_arguments = component.arguments();
                 let null_id = prior_arguments.get::<IndexKey>(&"null_value".into())
                     .ok_or_else(|| Error::from("null_value is a required argument to Histogram when categories are not known"))?;
-                current_id += 1;
-                let id_clamp = current_id;
+                maximum_id += 1;
+                let id_clamp = maximum_id;
                 expansion.computation_graph.insert(id_clamp, proto::Component {
                     arguments: Some(proto::IndexmapNodeIds::new(indexmap![
                         "data".into() => data_id,
@@ -139,8 +138,8 @@ impl Expandable for proto::Histogram {
                     return Err("either edges or categories must be supplied".into())
                 }
 
-                current_id += 1;
-                let id_categories = current_id;
+                maximum_id += 1;
+                let id_categories = maximum_id;
                 let categories = properties.get::<IndexKey>(&"data".into())
                     .ok_or("data: missing")?.array()?.categories()?;
                 let value = match categories {
@@ -159,7 +158,7 @@ impl Expandable for proto::Histogram {
             (Some(_), Some(_)) => return Err("either edges or categories must be supplied".into())
         }
 
-        expansion.computation_graph.insert(*component_id, component);
+        expansion.computation_graph.insert(component_id, component);
 
         Ok(expansion)
     }

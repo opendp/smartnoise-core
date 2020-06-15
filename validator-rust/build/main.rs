@@ -1,5 +1,3 @@
-extern crate prost_build;
-//extern crate cbindgen;
 
 mod bindings;
 mod protobuf;
@@ -11,30 +9,20 @@ use std::fs;
 use std::env;
 use std::path::PathBuf;
 
-extern crate serde;
-extern crate serde_json;
-
 use serde::Deserialize;
 
 use std::fs::File;
 use std::io::Read;
-// BTreeMaps preserve the order of keys. HashMaps don't preserve the order of keys.
-// Since components.proto is rebuilt every time validator-rust is compiled,
-//     the proto field ids are shuffled if options are stored in a HashMap
-// Options are stored in a BTreeMap to prevent desynchronization of the proto ids
-//     between the validator build, and the validator build as a dependency of the runtime
-use std::collections::BTreeMap;
 use std::ffi::OsStr;
-
-extern crate build_deps;
+use indexmap::map::IndexMap;
 
 
 #[derive(Deserialize, Debug)]
 pub struct ComponentJSON {
     id: String,
     name: String,
-    arguments: BTreeMap<String, ArgumentJSON>,
-    options: BTreeMap<String, ArgumentJSON>,
+    arguments: IndexMap<String, ArgumentJSON>,
+    options: IndexMap<String, ArgumentJSON>,
     #[serde(rename(serialize = "return", deserialize = "return"))]
     arg_return: ArgumentJSON,
     description: Option<String>,

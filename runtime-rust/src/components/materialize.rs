@@ -51,7 +51,7 @@ impl Evaluable for proto::Materialize {
         }).collect::<Result<()>>()?;
 
         let num_nonempty_columns = response.iter()
-            .filter(|col| col.len() > 0).count();
+            .filter(|col| !col.is_empty()).count();
 
         if 0 < num_nonempty_columns && num_nonempty_columns < num_columns {
             (num_nonempty_columns..num_columns).for_each(|idx|

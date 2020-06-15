@@ -65,7 +65,7 @@ impl Named for proto::Literal {
         fn array_to_names<T: ToString + Clone + Default + ToIndexKey>(array: &ArrayD<T>, num_columns: usize) -> Result<Vec<IndexKey>> {
             (0..num_columns)
                 .map(|index| {
-                    let array = get_ith_column(array, &index)?;
+                    let array = get_ith_column(array, index)?;
                     match array.ndim() {
                         0 => match array.first() {
                             Some(value) => Ok(value.clone().to_index_key()),

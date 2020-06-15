@@ -24,10 +24,9 @@ impl Expandable for proto::DpMean {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         properties: &base::NodeProperties,
-        component_id: &u32,
-        maximum_id: &u32,
+        component_id: u32,
+        mut maximum_id: u32,
     ) -> Result<base::ComponentExpansion> {
-        let mut current_id = *maximum_id;
         let mut expansion = base::ComponentExpansion::default();
 
         if self.implementation.to_lowercase().as_str() == "plug-in" {
@@ -40,8 +39,8 @@ impl Expandable for proto::DpMean {
                 .ok_or_else(|| Error::from("data must be provided as an argument"))?;
 
             // dp sum
-            current_id += 1;
-            let id_dp_sum = current_id;
+            maximum_id += 1;
+            let id_dp_sum = maximum_id;
             expansion.computation_graph.insert(id_dp_sum, proto::Component {
                 arguments: Some(proto::IndexmapNodeIds::new(
                     indexmap!["data".into() => id_data])),
@@ -57,8 +56,8 @@ impl Expandable for proto::DpMean {
             expansion.traversal.push(id_dp_sum);
 
             // dp count
-            current_id += 1;
-            let id_dp_count = current_id;
+            maximum_id += 1;
+            let id_dp_count = maximum_id;
             expansion.computation_graph.insert(id_dp_count, proto::Component {
                 arguments: Some(proto::IndexmapNodeIds::new(
                     indexmap!["data".into() => id_data])),
@@ -75,8 +74,8 @@ impl Expandable for proto::DpMean {
             expansion.traversal.push(id_dp_count);
 
             // to float
-            current_id += 1;
-            let id_to_float = current_id;
+            maximum_id += 1;
+            let id_to_float = maximum_id;
             expansion.computation_graph.insert(id_to_float, proto::Component {
                 arguments: Some(proto::IndexmapNodeIds::new(
                     indexmap!["data".into() => id_dp_count])),
@@ -87,7 +86,7 @@ impl Expandable for proto::DpMean {
             expansion.traversal.push(id_to_float);
 
             // divide
-            expansion.computation_graph.insert(*component_id, proto::Component {
+            expansion.computation_graph.insert(component_id, proto::Component {
                 arguments: Some(proto::IndexmapNodeIds::new(indexmap![
                     "left".into() => id_dp_sum,
                     "right".into() => id_to_float])),
@@ -101,8 +100,8 @@ impl Expandable for proto::DpMean {
 
         else if self.implementation.to_lowercase().as_str() == "resize" {
             // mean
-            current_id += 1;
-            let id_mean = current_id;
+            maximum_id += 1;
+            let id_mean = maximum_id;
             expansion.computation_graph.insert(id_mean, proto::Component {
                 arguments: Some(proto::IndexmapNodeIds::new(indexmap![
                     "data".into() => *component.arguments().get::<IndexKey>(&"data".into())
@@ -114,7 +113,7 @@ impl Expandable for proto::DpMean {
             expansion.traversal.push(id_mean);
 
             // noising
-            expansion.computation_graph.insert(*component_id, proto::Component {
+            expansion.computation_graph.insert(component_id, proto::Component {
                 arguments: Some(proto::IndexmapNodeIds::new(indexmap!["data".into() => id_mean])),
                 variant: Some(match self.mechanism.to_lowercase().as_str() {
                     "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
@@ -149,7 +148,7 @@ impl Report for proto::DpMean {
     /// * `release` - JSONRelease containing DP release information
     fn summarize(
         &self,
-        node_id: &u32,
+        node_id: u32,
         component: &proto::Component,
         _public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &NodeProperties,
@@ -181,12 +180,12 @@ impl Report for proto::DpMean {
                 variables: serde_json::json!(variable_name.to_string()),
                 release_info: value_to_json(&get_ith_column(
                     release.array()?.f64()?,
-                    &(column_number as usize)
+                    column_number as usize
                 )?.into())?,
                 privacy_loss: privacy_usage_to_json(&privacy_usages[column_number].clone()),
                 accuracy: None,
-                submission: component.submission as u64,
-                node_id: *node_id as u64,
+                submission: component.submission,
+                node_id,
                 postprocess: false,
                 algorithm_info: AlgorithmInfo {
                     name: "".to_string(),

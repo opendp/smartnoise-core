@@ -15,10 +15,9 @@ impl Expandable for proto::DpRawMoment {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         _properties: &base::NodeProperties,
-        component_id: &u32,
-        maximum_id: &u32,
+        component_id: u32,
+        mut maximum_id: u32,
     ) -> Result<base::ComponentExpansion> {
-        let mut current_id = *maximum_id;
 
         let mut expansion = base::ComponentExpansion::default();
 
@@ -26,8 +25,8 @@ impl Expandable for proto::DpRawMoment {
             .ok_or_else(|| Error::from("data must be provided as an argument"))?;
 
         // kth raw moment
-        current_id += 1;
-        let id_moment = current_id;
+        maximum_id += 1;
+        let id_moment = maximum_id;
         expansion.computation_graph.insert(id_moment, proto::Component {
             arguments: Some(proto::IndexmapNodeIds::new(
                 indexmap!["data".into() => data_id])),
@@ -40,7 +39,7 @@ impl Expandable for proto::DpRawMoment {
         expansion.traversal.push(id_moment);
 
         // noising
-        expansion.computation_graph.insert(*component_id, proto::Component {
+        expansion.computation_graph.insert(component_id, proto::Component {
             arguments: Some(proto::IndexmapNodeIds::new(indexmap!["data".into() => id_moment])),
             variant: Some(match self.mechanism.to_lowercase().as_str() {
                 "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
@@ -63,7 +62,7 @@ impl Expandable for proto::DpRawMoment {
 impl Report for proto::DpRawMoment {
     fn summarize(
         &self,
-        node_id: &u32,
+        node_id: u32,
         component: &proto::Component,
         _public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &NodeProperties,
@@ -93,14 +92,14 @@ impl Report for proto::DpRawMoment {
                 statistic: "DPRawMoment".to_string(),
                 variables: serde_json::json!(variable_name.to_string()),
                 release_info: match release.array()? {
-                    Array::F64(v) => value_to_json(&get_ith_column(v, &column_number)?.into())?,
-                    Array::I64(v) => value_to_json(&get_ith_column(v, &column_number)?.into())?,
+                    Array::F64(v) => value_to_json(&get_ith_column(v, column_number)?.into())?,
+                    Array::I64(v) => value_to_json(&get_ith_column(v, column_number)?.into())?,
                     _ => return Err("maximum must be numeric".into())
                 },
                 privacy_loss: privacy_usage_to_json(&privacy_usages[column_number].clone()),
                 accuracy: None,
-                submission: component.submission as u64,
-                node_id: *node_id as u64,
+                submission: component.submission,
+                node_id,
                 postprocess: false,
                 algorithm_info: AlgorithmInfo {
                     name: "".to_string(),

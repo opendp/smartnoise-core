@@ -27,7 +27,7 @@ impl Evaluable for proto::Resize {
             .and_then(|v| v.first_i64().ok());
 
         if let Some(minimum_rows) = minimum_rows {
-            number_rows = Some(minimum_rows.clone())
+            number_rows = Some(minimum_rows)
         }
 
         // If "categories" constraint has been propagated, data are treated as categorical (regardless of atomic type)
@@ -76,7 +76,7 @@ impl Evaluable for proto::Resize {
                         Ok(scale) => Some(scale.array()?.f64()?),
                         Err(_) => None
                     };
-                    Ok(resize_float(data, number_rows, number_cols, &distribution, lower, upper, &shift, &scale, minimum_rows)?.into())
+                    Ok(resize_float(data, number_rows, number_cols, &distribution, lower, upper, shift, scale, minimum_rows)?.into())
                 }
                 (Array::I64(data), Array::I64(lower), Array::I64(upper)) =>
                     Ok(resize_integer(data, number_rows, number_cols, lower, upper, minimum_rows)?.into()),
@@ -108,9 +108,9 @@ pub fn resize_float(
     data: &ArrayD<f64>,
     number_rows: Option<i64>,
     number_cols: Option<i64>,
-    distribution: &String,
+    distribution: &str,
     lower: &ArrayD<f64>, upper: &ArrayD<f64>,
-    shift: &Option<&ArrayD<f64>>, scale: &Option<&ArrayD<f64>>,
+    shift: Option<&ArrayD<f64>>, scale: Option<&ArrayD<f64>>,
     minimum_rows: Option<i64>
 ) -> Result<ArrayD<f64>> {
     let mut data = data.clone();
@@ -147,7 +147,7 @@ pub fn resize_float(
                 }
             }
             Ordering::Greater =>
-                data.select(Axis(1), &create_sampling_indices(&number_cols, &real_n)?)
+                data.select(Axis(1), &create_sampling_indices(number_cols, real_n)?)
         }
     }
 
@@ -157,7 +157,7 @@ pub fn resize_float(
         let real_n: i64 = data.len_of(Axis(0)) as i64;
         if let Some(minimum_rows) = minimum_rows {
             if minimum_rows > real_n {
-                return Ok(data.into())
+                return Ok(data)
             }
         }
 
@@ -191,7 +191,7 @@ pub fn resize_float(
             }
             // if real n is greater than estimated n, return a subset of the real data
             Ordering::Greater =>
-                data.select(Axis(0), &create_sampling_indices(&number_rows, &real_n)?)
+                data.select(Axis(0), &create_sampling_indices(number_rows, real_n)?)
         }
     }
 
@@ -231,9 +231,9 @@ pub fn resize_integer(
                 let mut synthetic_shape = data.shape().to_vec();
                 synthetic_shape[1] = (number_cols - real_n) as usize;
 
-                let lower = standardize_numeric_argument(lower, &(number_cols - real_n))?
+                let lower = standardize_numeric_argument(lower, number_cols - real_n)?
                     .into_dimensionality::<Ix1>()?.to_vec();
-                let upper = standardize_numeric_argument(upper, &(number_cols - real_n))?
+                let upper = standardize_numeric_argument(upper, number_cols - real_n)?
                     .into_dimensionality::<Ix1>()?.to_vec();
 
                 let mut synthetic = ndarray::ArrayD::zeros(synthetic_shape);
@@ -253,7 +253,7 @@ pub fn resize_integer(
                 }
             }
             Ordering::Greater =>
-                data.select(Axis(1), &create_sampling_indices(&number_cols, &real_n)?)
+                data.select(Axis(1), &create_sampling_indices(number_cols, real_n)?)
         }
     }
 
@@ -262,7 +262,7 @@ pub fn resize_integer(
         let real_n = data.len_of(Axis(0)) as i64;
         if let Some(minimum_rows) = minimum_rows {
             if minimum_rows > real_n {
-                return Ok(data.into())
+                return Ok(data)
             }
         }
 
@@ -277,9 +277,9 @@ pub fn resize_integer(
                 synthetic_shape[0] = (number_rows - real_n) as usize;
                 let num_columns = get_num_columns(&data)?;
 
-                let lower = standardize_numeric_argument(lower, &num_columns)?
+                let lower = standardize_numeric_argument(lower, num_columns)?
                     .into_dimensionality::<Ix1>()?.to_vec();
-                let upper = standardize_numeric_argument(upper, &num_columns)?
+                let upper = standardize_numeric_argument(upper, num_columns)?
                     .into_dimensionality::<Ix1>()?.to_vec();
 
                 let mut synthetic = ndarray::ArrayD::zeros(synthetic_shape);
@@ -300,7 +300,7 @@ pub fn resize_integer(
             }
             // if real n is greater than estimated n, return a subset of the real data
             Ordering::Greater =>
-                data.select(Axis(0), &create_sampling_indices(&number_rows, &real_n)?)
+                data.select(Axis(0), &create_sampling_indices(number_rows, real_n)?)
         }
     }
 
@@ -322,7 +322,7 @@ pub fn resize_categorical<T>(
     data: &ArrayD<T>,
     number_rows: Option<i64>,
     number_cols: Option<i64>,
-    categories: &Vec<Vec<T>>,
+    categories: &[Vec<T>],
     weights: &Option<Vec<Vec<f64>>>,
     minimum_rows: Option<i64>
 ) -> Result<ArrayD<T>> where T: Clone, T: PartialEq, T: Default, T: Ord, T: Hash {
@@ -349,11 +349,11 @@ pub fn resize_categorical<T>(
                     .for_each(|mut col| col.iter_mut()
                         .for_each(|v| *v = T::default()));
 
-                let null_value = (0..num_columns).map(|_| vec![T::default()]).collect();
+                let null_value = (0..num_columns).map(|_| vec![T::default()]).collect::<Vec<Vec<T>>>();
 
                 // impute categorical data for each column of nulls to create synthetic data
                 synthetic = impute_categorical(
-                    &synthetic, &categories, weights, &null_value)?;
+                    &synthetic, categories, weights, &null_value)?;
 
                 // combine real and synthetic data
                 match slow_stack(Axis(0), &[data.view(), synthetic.view()]) {
@@ -362,7 +362,7 @@ pub fn resize_categorical<T>(
                 }
             }
             Ordering::Greater =>
-                slow_select(&data, Axis(0), &create_sampling_indices(&number_cols, &real_n)?).to_owned(),
+                slow_select(&data, Axis(0), &create_sampling_indices(number_cols, real_n)?).to_owned(),
         }
     }
 
@@ -371,7 +371,7 @@ pub fn resize_categorical<T>(
         let real_n: i64 = data.len_of(Axis(0)) as i64;
         if let Some(minimum_rows) = minimum_rows {
             if minimum_rows > real_n {
-                return Ok(data.into())
+                return Ok(data)
             }
         }
 
@@ -393,11 +393,11 @@ pub fn resize_categorical<T>(
                     .for_each(|mut col| col.iter_mut()
                         .for_each(|v| *v = T::default()));
 
-                let null_value = (0..num_columns).map(|_| vec![T::default()]).collect();
+                let null_value = (0..num_columns).map(|_| vec![T::default()]).collect::<Vec<Vec<T>>>();
 
                 // impute categorical data for each column of nulls to create synthetic data
                 synthetic = impute_categorical(
-                    &synthetic, &categories, weights, &null_value)?;
+                    &synthetic, categories, weights, &null_value)?;
 
                 // combine real and synthetic data
                 match slow_stack(Axis(0), &[data.view(), synthetic.view()]) {
@@ -407,7 +407,7 @@ pub fn resize_categorical<T>(
             }
             // if real n is greater than estimated n, return a subset of the real data
             Ordering::Greater =>
-                slow_select(&data, Axis(0), &create_sampling_indices(&number_rows, &real_n)?).to_owned(),
+                slow_select(&data, Axis(0), &create_sampling_indices(number_rows, real_n)?).to_owned(),
         }
     }
 
@@ -431,16 +431,16 @@ pub fn resize_categorical<T>(
 /// # Example
 /// ```
 /// use whitenoise_runtime::components::resize::create_sampling_indices;
-/// let subset_indices = create_sampling_indices(&5, &10);
+/// let subset_indices = create_sampling_indices(5, 10);
 /// # subset_indices.unwrap();
 /// ```
-pub fn create_sampling_indices(k: &i64, n: &i64) -> Result<Vec<usize>> {
+pub fn create_sampling_indices(k: i64, n: i64) -> Result<Vec<usize>> {
     // create set of all indices
-    let index_vec: Vec<usize> = (0..(*n as usize)).collect();
+    let index_vec: Vec<usize> = (0..(n as usize)).collect();
 
     // create uniform selection weights
-    let weight_vec: Vec<f64> = vec![1.; *n as usize];
+    let weight_vec: Vec<f64> = vec![1.; n as usize];
 
     // create set of sampling indices
-    create_subset(&index_vec, &weight_vec, k)
+    create_subset(&index_vec, &weight_vec, k as usize)
 }
