@@ -1,23 +1,23 @@
 [![Build Status](https://travis-ci.com/opendifferentialprivacy/whitenoise-core.svg?branch=develop)](https://travis-ci.com/opendifferentialprivacy/whitenoise-core)
 
 
-<a href="http://opendp.io"><img src="images/WhiteNoise Logo/SVG/Full_color.svg" align="left" height="70" vspace="8" hspace="18"></a>
+<a href="http://opendp.io"><img src="images/WhiteNoise Logo/SVG/LogoMark_color.svg" align="left" height="70" vspace="8" hspace="18"></a>
 
 
-## WhiteNoise Core <br/> Differential Privacy Library <br/>
+## <br/>Core Differential Privacy Library <br/>
 
-See also the accompanying [WhiteNoise-System](https://github.com/opendifferentialprivacy/whitenoise-system) and [WhiteNoise-Samples](https://github.com/opendifferentialprivacy/whitenoise-samples) repositories for this system.
+See also the accompanying [system repository](https://github.com/opendifferentialprivacy/whitenoise-system) and [samples repository](https://github.com/opendifferentialprivacy/whitenoise-samples) accompanying repositories for this system.
 
 ---
 
-Differential privacy is the gold standard definition of privacy protection.  The WhiteNoise project aims to connect theoretical solutions from the academic community with the practical lessons learned from real-world deployments, to make differential privacy broadly accessible to future deployments.  Specifically, we provide several basic building blocks that can be used by people involved with sensitive data, with implementations based on vetted and mature differential privacy research.  In WhiteNoise Core, we provide a pluggable open source library of differentially private algorithms and mechanisms for releasing privacy preserving queries and statistics, as well as APIs for defining an analysis and a validator for evaluating these analyses and composing the total privacy loss on a dataset.
+Differential privacy is the gold standard definition of privacy protection.  This project aims to connect theoretical solutions from the academic community with the practical lessons learned from real-world deployments, to make differential privacy broadly accessible to future deployments.  Specifically, we provide several basic building blocks that can be used by people involved with sensitive data, with implementations based on vetted and mature differential privacy research.  Here in the Core, we provide a pluggable open source library of differentially private algorithms and mechanisms for releasing privacy preserving queries and statistics, as well as APIs for defining an analysis and a validator for evaluating these analyses and composing the total privacy loss on a dataset.
 
 The mechanisms library provides a fast, memory-safe native runtime for validating and running differentially private analyses.  The runtime and validator are built in Rust, while Python support is available and R support is forthcoming.
 
 Differentially private computations are specified as an analysis graph that can be validated and executed to produce differentially private releases of data.  Releases include metadata about accuracy of outputs and the complete privacy cost of the analysis.
 
 
-- [More about WhiteNoise Core](#more-about-whitenoise-core)
+- [More about the Core Repository](#more-about-core)
   - [Components](#components)
   - [Architecture](#architecture)
 - [Installation](#installation)
@@ -25,14 +25,14 @@ Differentially private computations are specified as an analysis graph that can 
   - [From Source](#from-source)
 - [Getting Started](#getting-started)
   - [Jupyter Notebook Examples](#jupyter-notebook-examples)
-  - [WhiteNoise Rust Documentation](#whitenoise-rust-documentation)
+  - [Core Rust Documentation](#core-rust-documentation)
 - [Communication](#communication)
 - [Releases and Contributing](#releases-and-contributing)
 - [Contributing Team](#contributing-team)
 
 ---
 
-## More about WhiteNoise Core
+## More about the Core
 
 ### Components
 
@@ -66,9 +66,9 @@ The core library, is the `validator`, which provides a suite of utilities for ch
 There must also be a medium to execute the analysis, called a `runtime`. There is a reference runtime written in Rust, but runtimes may be written using any computation framework--be it SQL, Spark or Dask--to address your individual data needs.
 
 #### 3. Bindings
-  - Python Bindings: [whitenoise-core-python](https://github.com/opendifferentialprivacy/whitenoise-core-python)
-  - R Bindings (in progress): [whitenoise-core-R](https://github.com/opendifferentialprivacy/whitenoise-core-R)
-  - Rust Bindings (in progress): [whitenoise-core-Rust](https://opendifferentialprivacy.github.io/whitenoise-core/doc/whitenoise_validator/bindings/index.html)
+  - Python Bindings: [core-python](https://github.com/opendifferentialprivacy/whitenoise-core-python)
+  - R Bindings (in progress): [core-R](https://github.com/opendifferentialprivacy/whitenoise-core-R)
+  - Rust Bindings (in progress): [core-Rust](https://opendifferentialprivacy.github.io/whitenoise-core/doc/whitenoise_validator/bindings/index.html)
 
 Finally, there are helper libraries for building analyses, called `bindings`. Bindings may be written for any language, and are thin wrappers over the validator and/or runtime(s). Language bindings are currently available for Python, with support for at minimum R, Rust and SQL forthcoming.
 
@@ -89,21 +89,21 @@ At some point the projects have compiled cross-platform (more testing needed). T
 Refer to [troubleshooting.md](troubleshooting.md) for install problems.
 
 #### PyPi packages
-Refer to [whitenoise-core-python](https://github.com/opendifferentialprivacy/whitenoise-core-python) which contains python bindings, including links to PyPi packages.
+Refer to [core-python](https://github.com/opendifferentialprivacy/whitenoise-core-python) which contains python bindings, including links to PyPi packages.
 
 #### Crates.io
 The crates are intended for library consumers.
 
 The Rust Validator and Runtime are available as crates:
-- Validator: [whitenoise_validator](https://crates.io/crates/whitenoise_validator) on crates.io
-- Runtime: [whitenoise_runtime](https://crates.io/crates/whitenoise_runtime) on crates.io
+- Validator: [validator](https://crates.io/crates/whitenoise_validator) on crates.io
+- Runtime: [runtime](https://crates.io/crates/whitenoise_runtime) on crates.io
 
 ### From Source
 The source install is intended for library developers.
 
 You may find it easier to use the library with this repository set up as a submodule of some set of language bindings. 
 In this case, switch to the language bindings setup.
-You can still push commits and branches from the whitenoise-core submodule of whatever bindings language you prefer.
+You can still push commits and branches from the core submodule of whatever bindings language you prefer.
 - [Python](https://github.com/opendifferentialprivacy/whitenoise-core-python#from-source)
 - [R (WIP)](https://github.com/opendifferentialprivacy/whitenoise-core-R#installation)
 - [Rust (WIP)](https://opendifferentialprivacy.github.io/whitenoise-core/doc/whitenoise_validator/bindings/index.html)
@@ -154,7 +154,7 @@ Switch between crates via `cd`, or by setting the manifest path `--manifest-path
 
 ### Jupyter Notebook Examples
 
-We have [numerous Jupyter notebooks](https://github.com/opendifferentialprivacy/whitenoise-samples/tree/master/analysis) demonstrating the use of the WhiteNoise library and validator through our Python bindings.  These are in our accompanying [WhiteNoise-Samples repository](https://github.com/opendifferentialprivacy/whitenoise-samples) which has exemplars, notebooks and sample code demonstrating most facets of this project.
+We have [numerous Jupyter notebooks](https://github.com/opendifferentialprivacy/whitenoise-samples/tree/master/analysis) demonstrating the use of the Core library and validator through our Python bindings.  These are in our accompanying [samples repository](https://github.com/opendifferentialprivacy/whitenoise-samples) which has exemplars, notebooks and sample code demonstrating most facets of this project.
 
 [<img src="images/figs/plugin_mean_comparison.png" alt="Relative error distributions" height="100">](https://github.com/opendifferentialprivacy/whitenoise-samples/tree/master/analysis)
 [<img src="images/figs/example_size.png" alt="Release box plots" height="100">](https://github.com/opendifferentialprivacy/whitenoise-samples/tree/master/analysis)
@@ -162,7 +162,7 @@ We have [numerous Jupyter notebooks](https://github.com/opendifferentialprivacy/
 [<img src="images/figs/example_utility.png" alt="Utility simulations" height="100">](https://github.com/opendifferentialprivacy/whitenoise-samples/tree/master/analysis)
 [<img src="images/figs/example_simulations.png" alt="Bias simulations" height="100">](https://github.com/opendifferentialprivacy/whitenoise-samples/tree/master/analysis)
 
-### WhiteNoise Rust Documentation
+### Core Rust Documentation
 
 The [Rust documentation](https://opendifferentialprivacy.github.io/whitenoise-core/) includes full documentation on all pieces of the library and validator, including extensive [component by component descriptions with examples](https://opendifferentialprivacy.github.io/whitenoise-core/doc/whitenoise_runtime/components/index.html).
 
