@@ -1,3 +1,7 @@
+[**Please note that we are renaming the toolkit and will be introducing the new name in the coming weeks.**](https://projects.iq.harvard.edu/opendp/blog/building-inclusive-community)
+
+---
+
 [![Build Status](https://travis-ci.com/opendifferentialprivacy/whitenoise-core.svg?branch=develop)](https://travis-ci.com/opendifferentialprivacy/whitenoise-core)
 
 
@@ -17,7 +21,7 @@ The mechanisms library provides a fast, memory-safe native runtime for validatin
 Differentially private computations are specified as an analysis graph that can be validated and executed to produce differentially private releases of data.  Releases include metadata about accuracy of outputs and the complete privacy cost of the analysis.
 
 
-- [More about the Core Repository](#more-about-core)
+- [More about the Core Repository](#more-about-the-core)
   - [Components](#components)
   - [Architecture](#architecture)
 - [Installation](#installation)
