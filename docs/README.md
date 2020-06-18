@@ -1,8 +1,10 @@
-# WhiteNoise Core Differential Privacy
+# Core Differential Privacy
+
+[**Please note that we are renaming the toolkit and will be introducing the new name in the coming weeks.**](https://projects.iq.harvard.edu/opendp/blog/building-inclusive-community)
 
 ## Documentation
 
-The WhiteNoise Core is built around a data representation for a statistical analysis.
+The Core is built around a data representation for a statistical analysis.
 
 These pages contain Rust-generated documentation for the Validator and Runtime
 
