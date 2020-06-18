@@ -29,5 +29,4 @@ ALIASES["random"] = {};
 ALIASES["rawpointer"] = {};
 ALIASES["rustc_demangle"] = {};
 ALIASES["ryu"] = {};
-ALIASES["special"] = {};
 ALIASES["unicode_xid"] = {};

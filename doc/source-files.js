@@ -29,6 +29,5 @@ sourcesIndex["random"] = {"name":"","files":["default.rs","lib.rs","sequence.rs"
 sourcesIndex["rawpointer"] = {"name":"","files":["lib.rs"]};
 sourcesIndex["rustc_demangle"] = {"name":"","files":["legacy.rs","lib.rs","v0.rs"]};
 sourcesIndex["ryu"] = {"name":"","dirs":[{"name":"buffer","files":["mod.rs"]},{"name":"pretty","files":["exponent.rs","mantissa.rs","mod.rs"]}],"files":["common.rs","d2s.rs","d2s_full_table.rs","d2s_intrinsics.rs","digit_table.rs","f2s.rs","f2s_intrinsics.rs","lib.rs"]};
-sourcesIndex["special"] = {"name":"","files":["beta.rs","consts.rs","error.rs","gamma.rs","lib.rs","math.rs"]};
 sourcesIndex["unicode_xid"] = {"name":"","files":["lib.rs","tables.rs"]};
 createSourceSidebar();
