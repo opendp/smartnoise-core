@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/addr2line-0.12.0/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../addr2line/index.html'><div class='logo-container'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/addr2line-0.12.1/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../addr2line/index.html'><div class='logo-container'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -1064,6 +1064,64 @@
 <span id="1064">1064</span>
 <span id="1065">1065</span>
 <span id="1066">1066</span>
+<span id="1067">1067</span>
+<span id="1068">1068</span>
+<span id="1069">1069</span>
+<span id="1070">1070</span>
+<span id="1071">1071</span>
+<span id="1072">1072</span>
+<span id="1073">1073</span>
+<span id="1074">1074</span>
+<span id="1075">1075</span>
+<span id="1076">1076</span>
+<span id="1077">1077</span>
+<span id="1078">1078</span>
+<span id="1079">1079</span>
+<span id="1080">1080</span>
+<span id="1081">1081</span>
+<span id="1082">1082</span>
+<span id="1083">1083</span>
+<span id="1084">1084</span>
+<span id="1085">1085</span>
+<span id="1086">1086</span>
+<span id="1087">1087</span>
+<span id="1088">1088</span>
+<span id="1089">1089</span>
+<span id="1090">1090</span>
+<span id="1091">1091</span>
+<span id="1092">1092</span>
+<span id="1093">1093</span>
+<span id="1094">1094</span>
+<span id="1095">1095</span>
+<span id="1096">1096</span>
+<span id="1097">1097</span>
+<span id="1098">1098</span>
+<span id="1099">1099</span>
+<span id="1100">1100</span>
+<span id="1101">1101</span>
+<span id="1102">1102</span>
+<span id="1103">1103</span>
+<span id="1104">1104</span>
+<span id="1105">1105</span>
+<span id="1106">1106</span>
+<span id="1107">1107</span>
+<span id="1108">1108</span>
+<span id="1109">1109</span>
+<span id="1110">1110</span>
+<span id="1111">1111</span>
+<span id="1112">1112</span>
+<span id="1113">1113</span>
+<span id="1114">1114</span>
+<span id="1115">1115</span>
+<span id="1116">1116</span>
+<span id="1117">1117</span>
+<span id="1118">1118</span>
+<span id="1119">1119</span>
+<span id="1120">1120</span>
+<span id="1121">1121</span>
+<span id="1122">1122</span>
+<span id="1123">1123</span>
+<span id="1124">1124</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! This crate provides a cross-platform library and binary for translating addresses into</span>
 <span class="doccomment">//! function names, file names and line numbers. Given an address in an executable or an</span>
@@ -1142,9 +1200,15 @@
 <span class="kw">where</span>
     <span class="ident">R</span>: <span class="ident">gimli</span>::<span class="ident">Reader</span>,
 {
-    <span class="ident">unit_ranges</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">gimli</span>::<span class="ident">Range</span>, <span class="ident">usize</span>)<span class="op">&gt;</span>,
+    <span class="ident">unit_ranges</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">UnitRange</span><span class="op">&gt;</span>,
     <span class="ident">units</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ResUnit</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     <span class="ident">sections</span>: <span class="ident">gimli</span>::<span class="ident">Dwarf</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>,
+}
+
+<span class="kw">struct</span> <span class="ident">UnitRange</span> {
+    <span class="ident">unit_id</span>: <span class="ident">usize</span>,
+    <span class="ident">max_end</span>: <span class="ident">u64</span>,
+    <span class="ident">range</span>: <span class="ident">gimli</span>::<span class="ident">Range</span>,
 }
 
 <span class="doccomment">/// The type of `Context` that supports the `new` method.</span>
@@ -1295,7 +1359,11 @@
 
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">add_range</span> <span class="op">=</span> <span class="op">|</span><span class="ident">range</span>: <span class="ident">gimli</span>::<span class="ident">Range</span><span class="op">|</span> {
                     <span class="kw">if</span> <span class="ident">range</span>.<span class="ident">begin</span> <span class="op">&lt;</span> <span class="ident">range</span>.<span class="ident">end</span> {
-                        <span class="ident">unit_ranges</span>.<span class="ident">push</span>((<span class="ident">range</span>, <span class="ident">unit_id</span>));
+                        <span class="ident">unit_ranges</span>.<span class="ident">push</span>(<span class="ident">UnitRange</span> {
+                            <span class="ident">range</span>,
+                            <span class="ident">unit_id</span>,
+                            <span class="ident">max_end</span>: <span class="number">0</span>,
+                        });
                     }
                 };
                 <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">offset</span>) <span class="op">=</span> <span class="ident">ranges</span> {
@@ -1321,23 +1389,16 @@
             });
         }
 
-        <span class="ident">unit_ranges</span>.<span class="ident">sort_by_key</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>.<span class="number">0</span>.<span class="ident">begin</span>);
+        <span class="comment">// Sort this for faster lookup in `find_unit_id_and_address` below.</span>
+        <span class="ident">unit_ranges</span>.<span class="ident">sort_by_key</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">i</span>.<span class="ident">range</span>.<span class="ident">begin</span>);
 
-        <span class="comment">// Ranges need to be disjoint so that we can binary search, but weak symbols can</span>
-        <span class="comment">// cause overlap. In this case, we don&#39;t care which unit is used, so ignore the</span>
-        <span class="comment">// beginning of the subseqent range to avoid overlap.</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">prev_end</span> <span class="op">=</span> <span class="number">0</span>;
-        <span class="kw">for</span> <span class="ident">range</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">unit_ranges</span> {
-            <span class="kw">if</span> <span class="ident">range</span>.<span class="number">0</span>.<span class="ident">begin</span> <span class="op">&lt;</span> <span class="ident">prev_end</span> {
-                <span class="ident">range</span>.<span class="number">0</span>.<span class="ident">begin</span> <span class="op">=</span> <span class="ident">prev_end</span>;
-            }
-            <span class="kw">if</span> <span class="ident">range</span>.<span class="number">0</span>.<span class="ident">end</span> <span class="op">&lt;</span> <span class="ident">prev_end</span> {
-                <span class="ident">range</span>.<span class="number">0</span>.<span class="ident">end</span> <span class="op">=</span> <span class="ident">prev_end</span>;
-            } <span class="kw">else</span> {
-                <span class="ident">prev_end</span> <span class="op">=</span> <span class="ident">range</span>.<span class="number">0</span>.<span class="ident">end</span>;
-            }
+        <span class="comment">// Calculate the `max_end` field now that we&#39;ve determined the order of</span>
+        <span class="comment">// CUs.</span>
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">max</span> <span class="op">=</span> <span class="number">0</span>;
+        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="ident">unit_ranges</span>.<span class="ident">iter_mut</span>() {
+            <span class="ident">max</span> <span class="op">=</span> <span class="ident">max</span>.<span class="ident">max</span>(<span class="ident">i</span>.<span class="ident">range</span>.<span class="ident">end</span>);
+            <span class="ident">i</span>.<span class="ident">max_end</span> <span class="op">=</span> <span class="ident">max</span>;
         }
-        <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">unit_ranges</span>.<span class="ident">windows</span>(<span class="number">2</span>).<span class="ident">all</span>(<span class="op">|</span><span class="ident">w</span><span class="op">|</span> <span class="ident">w</span>[<span class="number">0</span>].<span class="number">0</span>.<span class="ident">end</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">w</span>[<span class="number">1</span>].<span class="number">0</span>.<span class="ident">begin</span>));
 
         <span class="prelude-val">Ok</span>(<span class="ident">Context</span> {
             <span class="ident">units</span>: <span class="ident">res_units</span>,
@@ -1351,35 +1412,79 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">sections</span>
     }
 
-    <span class="kw">fn</span> <span class="ident">find_unit_id</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">probe</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">idx</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">unit_ranges</span>.<span class="ident">binary_search_by</span>(<span class="op">|</span><span class="ident">r</span><span class="op">|</span> {
-            <span class="kw">if</span> <span class="ident">probe</span> <span class="op">&lt;</span> <span class="ident">r</span>.<span class="number">0</span>.<span class="ident">begin</span> {
-                <span class="ident">Ordering</span>::<span class="ident">Greater</span>
-            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">probe</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">r</span>.<span class="number">0</span>.<span class="ident">end</span> {
-                <span class="ident">Ordering</span>::<span class="ident">Less</span>
-            } <span class="kw">else</span> {
-                <span class="ident">Ordering</span>::<span class="ident">Equal</span>
-            }
-        });
-        <span class="kw">let</span> <span class="ident">idx</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">idx</span> {
-            <span class="prelude-val">Ok</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">x</span>,
-            <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">None</span>,
+    <span class="comment">// Finds the CU id (index in `self.units`) for the function address given.</span>
+    <span class="comment">// The index of the address in the CU&#39;s address table is also returned</span>
+    <span class="comment">// because this is calculated here to ensure the function address actually</span>
+    <span class="comment">// resides in the functions of the CU.</span>
+    <span class="kw">fn</span> <span class="ident">find_unit_id_and_address</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">probe</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> {
+        <span class="comment">// First up find the position in the array which could have our function</span>
+        <span class="comment">// address.</span>
+        <span class="kw">let</span> <span class="ident">pos</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>
+            .<span class="ident">unit_ranges</span>
+            .<span class="ident">binary_search_by_key</span>(<span class="kw-2">&amp;</span><span class="ident">probe</span>, <span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">i</span>.<span class="ident">range</span>.<span class="ident">begin</span>)
+        {
+            <span class="comment">// Although unlikely, we could find an exact match.</span>
+            <span class="prelude-val">Ok</span>(<span class="ident">i</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">i</span> <span class="op">+</span> <span class="number">1</span>,
+            <span class="comment">// No exact match was found, but this probe would fit at slot `i`.</span>
+            <span class="comment">// This means that slot `i` is bigger than `probe`, along with all</span>
+            <span class="comment">// indices greater than `i`, so we need to search all previous</span>
+            <span class="comment">// entries.</span>
+            <span class="prelude-val">Err</span>(<span class="ident">i</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">i</span>,
         };
 
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">unit_id</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">unit_ranges</span>[<span class="ident">idx</span>];
-        <span class="prelude-val">Some</span>(<span class="ident">unit_id</span>)
+        <span class="comment">// Once we have our index we iterate backwards from that position</span>
+        <span class="comment">// looking for a matching CU.</span>
+        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">unit_ranges</span>[..<span class="ident">pos</span>].<span class="ident">iter</span>().<span class="ident">rev</span>() {
+            <span class="comment">// We know that this CU&#39;s start is beneath the probe already because</span>
+            <span class="comment">// of our sorted array.</span>
+            <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">i</span>.<span class="ident">range</span>.<span class="ident">begin</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">probe</span>);
+
+            <span class="comment">// Each entry keeps track of the maximum end address seen so far,</span>
+            <span class="comment">// starting from the beginning of the array of unit ranges. We&#39;re</span>
+            <span class="comment">// iterating in reverse so if our probe is beyond the maximum range</span>
+            <span class="comment">// of this entry, then it&#39;s guaranteed to not fit in any prior</span>
+            <span class="comment">// entries, so we break out.</span>
+            <span class="kw">if</span> <span class="ident">probe</span> <span class="op">&gt;</span> <span class="ident">i</span>.<span class="ident">max_end</span> {
+                <span class="kw">break</span>;
+            }
+
+            <span class="comment">// If this CU doesn&#39;t actually contain this address, move to the</span>
+            <span class="comment">// next CU.</span>
+            <span class="kw">if</span> <span class="ident">probe</span> <span class="op">&gt;</span> <span class="ident">i</span>.<span class="ident">range</span>.<span class="ident">end</span> {
+                <span class="kw">continue</span>;
+            }
+
+            <span class="comment">// There might be multiple CUs whose range contains this address.</span>
+            <span class="comment">// Weak symbols have shown up in the wild which cause this to happen</span>
+            <span class="comment">// but otherwise this happened in rust-lang/backtrace-rs#327 too. In</span>
+            <span class="comment">// any case we assume that might happen, and as a result we need to</span>
+            <span class="comment">// find a CU which actually contains this function.</span>
+            <span class="comment">//</span>
+            <span class="comment">// Consequently we consult the function address table here, and only</span>
+            <span class="comment">// if there&#39;s actually a function in this CU which contains this</span>
+            <span class="comment">// address do we return this unit.</span>
+            <span class="kw">let</span> <span class="ident">funcs</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">units</span>[<span class="ident">i</span>.<span class="ident">unit_id</span>].<span class="ident">parse_functions</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">sections</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">units</span>) {
+                <span class="prelude-val">Ok</span>(<span class="ident">func</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">func</span>,
+                <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">continue</span>,
+            };
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">addr</span>) <span class="op">=</span> <span class="ident">funcs</span>.<span class="ident">find_address</span>(<span class="ident">probe</span>) {
+                <span class="kw">return</span> <span class="prelude-val">Some</span>((<span class="ident">i</span>.<span class="ident">unit_id</span>, <span class="ident">addr</span>));
+            }
+        }
+
+        <span class="prelude-val">None</span>
     }
 
     <span class="doccomment">/// Find the DWARF unit corresponding to the given virtual memory address.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">find_dwarf_unit</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">probe</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">gimli</span>::<span class="ident">Unit</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">find_unit_id</span>(<span class="ident">probe</span>)
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">unit_id</span><span class="op">|</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">units</span>[<span class="ident">unit_id</span>].<span class="ident">dw_unit</span>)
+        <span class="self">self</span>.<span class="ident">find_unit_id_and_address</span>(<span class="ident">probe</span>)
+            .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">unit_id</span>, <span class="kw">_</span>)<span class="op">|</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">units</span>[<span class="ident">unit_id</span>].<span class="ident">dw_unit</span>)
     }
 
     <span class="doccomment">/// Find the source file and line corresponding to the given virtual memory address.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">find_location</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">probe</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Location</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">find_unit_id</span>(<span class="ident">probe</span>) {
-            <span class="prelude-val">Some</span>(<span class="ident">unit_id</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">units</span>[<span class="ident">unit_id</span>].<span class="ident">find_location</span>(<span class="ident">probe</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">sections</span>),
+        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">find_unit_id_and_address</span>(<span class="ident">probe</span>) {
+            <span class="prelude-val">Some</span>((<span class="ident">unit_id</span>, <span class="kw">_</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">units</span>[<span class="ident">unit_id</span>].<span class="ident">find_location</span>(<span class="ident">probe</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">sections</span>),
             <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
         }
     }
@@ -1394,21 +1499,13 @@
     <span class="doccomment">/// to the innermost inline function.  Subsequent frames contain the caller and call</span>
     <span class="doccomment">/// location, until an non-inline caller is reached.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">find_frames</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">probe</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">FrameIter</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> (<span class="ident">unit_id</span>, <span class="ident">loc</span>, <span class="ident">funcs</span>) <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">find_unit_id</span>(<span class="ident">probe</span>) {
-            <span class="prelude-val">Some</span>(<span class="ident">unit_id</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="kw">let</span> <span class="ident">unit</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">units</span>[<span class="ident">unit_id</span>];
-                <span class="kw">let</span> <span class="ident">loc</span> <span class="op">=</span> <span class="ident">unit</span>.<span class="ident">find_location</span>(<span class="ident">probe</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">sections</span>)<span class="question-mark">?</span>;
-                <span class="kw">let</span> <span class="ident">functions</span> <span class="op">=</span> <span class="ident">unit</span>.<span class="ident">parse_functions</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">sections</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">units</span>)<span class="question-mark">?</span>;
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">maybe_small</span>::<span class="ident">Vec</span>::<span class="ident">new</span>();
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">address</span>) <span class="op">=</span> <span class="ident">functions</span>.<span class="ident">addresses</span>.<span class="ident">binary_search_by</span>(<span class="op">|</span><span class="ident">address</span><span class="op">|</span> {
-                    <span class="kw">if</span> <span class="ident">probe</span> <span class="op">&lt;</span> <span class="ident">address</span>.<span class="ident">range</span>.<span class="ident">begin</span> {
-                        <span class="ident">Ordering</span>::<span class="ident">Greater</span>
-                    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">probe</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">address</span>.<span class="ident">range</span>.<span class="ident">end</span> {
-                        <span class="ident">Ordering</span>::<span class="ident">Less</span>
-                    } <span class="kw">else</span> {
-                        <span class="ident">Ordering</span>::<span class="ident">Equal</span>
-                    }
-                }) {
+        <span class="kw">let</span> (<span class="ident">unit_id</span>, <span class="ident">loc</span>, <span class="ident">funcs</span>) <span class="op">=</span>
+            <span class="kw">match</span> <span class="self">self</span>.<span class="ident">find_unit_id_and_address</span>(<span class="ident">probe</span>) {
+                <span class="prelude-val">Some</span>((<span class="ident">unit_id</span>, <span class="ident">address</span>)) <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="kw">let</span> <span class="ident">unit</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">units</span>[<span class="ident">unit_id</span>];
+                    <span class="kw">let</span> <span class="ident">loc</span> <span class="op">=</span> <span class="ident">unit</span>.<span class="ident">find_location</span>(<span class="ident">probe</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">sections</span>)<span class="question-mark">?</span>;
+                    <span class="kw">let</span> <span class="ident">functions</span> <span class="op">=</span> <span class="ident">unit</span>.<span class="ident">parse_functions</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">sections</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">units</span>)<span class="question-mark">?</span>;
+                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">maybe_small</span>::<span class="ident">Vec</span>::<span class="ident">new</span>();
                     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">function_index</span> <span class="op">=</span> <span class="ident">functions</span>.<span class="ident">addresses</span>[<span class="ident">address</span>].<span class="ident">function</span>;
                     <span class="kw">loop</span> {
                         <span class="kw">let</span> <span class="ident">function</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">functions</span>.<span class="ident">functions</span>[<span class="ident">function_index</span>];
@@ -1422,11 +1519,10 @@
                             <span class="kw">break</span>;
                         }
                     }
+                    (<span class="ident">unit_id</span>, <span class="ident">loc</span>, <span class="ident">res</span>)
                 }
-                (<span class="ident">unit_id</span>, <span class="ident">loc</span>, <span class="ident">res</span>)
-            }
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="number">0</span>, <span class="prelude-val">None</span>, <span class="ident">maybe_small</span>::<span class="ident">Vec</span>::<span class="ident">new</span>()),
-        };
+                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="number">0</span>, <span class="prelude-val">None</span>, <span class="ident">maybe_small</span>::<span class="ident">Vec</span>::<span class="ident">new</span>()),
+            };
 
         <span class="prelude-val">Ok</span>(<span class="ident">FrameIter</span> {
             <span class="ident">unit_id</span>,
@@ -1805,15 +1901,35 @@
                 }
             }
         }
+
+        <span class="comment">// The binary search requires the addresses to be sorted.</span>
+        <span class="comment">//</span>
+        <span class="comment">// It also requires them to be non-overlapping.  In practice, overlapping</span>
+        <span class="comment">// function ranges are unlikely, so we don&#39;t try to handle that yet.</span>
+        <span class="comment">//</span>
+        <span class="comment">// It&#39;s possible for multiple functions to have the same address range if the</span>
+        <span class="comment">// compiler can detect and remove functions with identical code.  In that case</span>
+        <span class="comment">// we&#39;ll nondeterministically return one of them.</span>
         <span class="ident">addresses</span>.<span class="ident">sort_by_key</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>.<span class="ident">range</span>.<span class="ident">begin</span>);
-        <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">addresses</span>
-            .<span class="ident">windows</span>(<span class="number">2</span>)
-            .<span class="ident">all</span>(<span class="op">|</span><span class="ident">w</span><span class="op">|</span> <span class="ident">w</span>[<span class="number">0</span>].<span class="ident">range</span>.<span class="ident">end</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">w</span>[<span class="number">1</span>].<span class="ident">range</span>.<span class="ident">begin</span>));
 
         <span class="prelude-val">Ok</span>(<span class="ident">Functions</span> {
             <span class="ident">functions</span>: <span class="ident">functions</span>.<span class="ident">into_boxed_slice</span>(),
             <span class="ident">addresses</span>: <span class="ident">addresses</span>.<span class="ident">into_boxed_slice</span>(),
         })
+    }
+
+    <span class="kw">fn</span> <span class="ident">find_address</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">probe</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">addresses</span>
+            .<span class="ident">binary_search_by</span>(<span class="op">|</span><span class="ident">address</span><span class="op">|</span> {
+                <span class="kw">if</span> <span class="ident">probe</span> <span class="op">&lt;</span> <span class="ident">address</span>.<span class="ident">range</span>.<span class="ident">begin</span> {
+                    <span class="ident">Ordering</span>::<span class="ident">Greater</span>
+                } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">probe</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">address</span>.<span class="ident">range</span>.<span class="ident">end</span> {
+                    <span class="ident">Ordering</span>::<span class="ident">Less</span>
+                } <span class="kw">else</span> {
+                    <span class="ident">Ordering</span>::<span class="ident">Equal</span>
+                }
+            })
+            .<span class="ident">ok</span>()
     }
 }
 

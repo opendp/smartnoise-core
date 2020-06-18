@@ -1,1 +1,0 @@
-initSidebarItems({"fn":[["bin_index","Given datum and bin definition, finds index of appropriate bin."],["digitize","Maps data in bins to digits."]]});

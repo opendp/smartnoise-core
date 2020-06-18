@@ -1,20 +1,264 @@
-# Core Differential Privacy
+<meta charset="utf-8"></meta>
 
-[**Please note that we are renaming the toolkit and will be introducing the new name in the coming weeks.**](https://projects.iq.harvard.edu/opendp/blog/building-inclusive-community)
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0">
+</meta>
 
-## Documentation
+<meta
+  name="generator"
+  content="rustdoc">
+</meta>
 
-The Core is built around a data representation for a statistical analysis.
+<meta
+  name="description"
+  content="API documentation for the Rust `whitenoise_validator` crate.">
+</meta>
 
-These pages contain Rust-generated documentation for the Validator and Runtime
+<meta
+  name="keywords"
+  content="rust, rustlang, rust-lang, whitenoise_validator">
+</meta>
+<!-- <meta http-equiv="Refresh" content="0; url=https://opendifferentialprivacy.github.io/whitenoise-core/doc/whitenoise_validator/docs/components/index.html" /> -->
 
-- Validator: [whitenoise_validator](https://opendifferentialprivacy.github.io/whitenoise-core/doc/whitenoise_validator/index.html)
-- Runtime: [whitenoise_runtime](https://opendifferentialprivacy.github.io/whitenoise-core/doc/whitenoise_runtime/index.html)
+<title>whitenoise_validator - Rust</title>
+<link
+  href="doc/normalize.css"
+  rel="stylesheet"
+  type="text/css">
+</link>
 
----
+<link
+  id="mainThemeStyle"
+  href="doc/rustdoc.css"
+  rel="stylesheet"
+  type="text/css">
+</link>
 
-GitHub pages site: https://opendifferentialprivacy.github.io/whitenoise-core/
+<link
+  href="doc/dark.css"
+  rel="stylesheet"
+  type="text/css">
+</link>
 
----
+<link
+  id="themeStyle"
+  href="doc/light.css"
+  rel="stylesheet"
+  type="text/css">
+</link>
 
-Note: [CI generated documentation](https://github.com/opendifferentialprivacy/whitenoise-core/blob/develop/.travis.yml)
+<script src="doc/storage.js"></script>
+
+<noscript><link rel="stylesheet" href="doc/noscript.css"></noscript>
+
+<link
+  href="doc/favicon.ico"
+  rel="shortcut icon">
+</link>
+
+<!--
+  [if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display
+  funky things.</div><![endif]
+-->
+
+<nav class="sidebar">
+  <div class="sidebar-menu">☰</div>
+<!--
+  <a href="doc/whitenoise_validator/index.html">
+    <div class="logo-container">
+      <img
+        alt="logo"
+        src="doc/rust-logo.png"/>
+    </div>
+  </a>
+
+
+  <div class="sidebar-elems">
+    <a
+      id="all-types"
+      href="all.html">
+      <p>See all whitenoise_validator's items</p>
+    </a>
+
+    <div class="block items">
+      <ul>
+        <li><a href="#modules">Modules</a></li>
+
+        <li><a href="#structs">Structs</a></li>
+
+        <li><a href="#functions">Functions</a></li>
+      </ul>
+    </div>
+
+    <p class="location"></p>
+
+    <script>
+      window.sidebarCurrent = {name: 'whitenoise_validator', ty: 'mod', relpath: '../'};
+    </script>
+  </div>-->
+</nav>
+
+
+
+
+<script src="doc/theme.js"></script>
+
+
+
+<section
+  id="main"
+  class="content">
+  <h1 class="fqn">
+
+    <span class="in-band">
+      Core Documentation
+    </span>
+  </h1>
+
+ <h4>
+   &gt; <a href="https://projects.iq.harvard.edu/opendp/blog/building-inclusive-community" style="color:#006699; text-decoration:underline">
+     <span style="color:#ff0000;">Please note</span> that we are renaming the toolkit and will be introducing the new name in the coming weeks.</a>
+
+ </h4>
+  <h2
+          id="Core"
+          class="section-header">
+    <a href="#core">Core</a>
+  </h2>
+
+  <table>
+    <tbody>
+
+<!--    <tr class="module-item">-->
+<!--      <td colspan="2"> <p>Links to the Rust auto-generated documentation</p></td>-->
+<!--    </tr>-->
+    <tr class="module-item">
+      <td>
+        <a
+                class="mod"
+                href="doc/whitenoise_validator/index.html"
+                title="Rust Validator">
+           Validator
+        </a>
+      </td>
+
+
+      <td class="docblock-short">
+        <p>Crate
+          <a href="https://crates.io/crates/whitenoise_validator" title="Rust Runtime">whitenoise_validator</a>,
+          from Rust docstrings.</p>
+      </td>
+
+    </tr>
+
+    <tr class="module-item">
+      <td>
+        <a
+                class="mod"
+                href="doc/whitenoise_runtime/index.html"
+                title="Rust Runtime">
+           Runtime
+        </a>
+      </td>
+
+      <td class="docblock-short"><p>Crate
+        <a href="https://crates.io/crates/whitenoise_runtime" title="Rust Runtime">whitenoise_runtime</a>,
+        from Rust docstrings.</p></td>
+    </tr>
+
+    </tbody>
+  </table>
+
+
+  <h2
+          id="bindings"
+          class="section-header">
+    <a href="#bindings">Language Bindings</a>
+  </h2>
+
+  <table>
+    <tbody>
+    <tr class="module-item">
+      <td>
+
+        <a
+                class="mod"
+                href="https://opendifferentialprivacy.github.io/whitenoise-core-python/"
+                title="Python Bindings">
+          Python Bindings
+        </a>
+      </td>
+
+
+      <td class="docblock-short">
+        <p>ReadTheDocs documentation for python language bindings.</p>
+      </td>
+
+    </tr>
+    </tbody>
+  </table>
+
+
+  <h2
+          id="miscellaneous"
+          class="section-header">
+    <a href="#miscellaneous">Miscellaneous</a>
+  </h2>
+
+  <table>
+    <tbody>
+    <tr class="module-item">
+
+      <td>
+
+        <a
+                class="mod"
+                href="doc/whitenoise_validator/docs/components/index.html"
+                title="Components">
+          Components
+        </a>
+      </td>
+
+
+      <td class="docblock-short">
+        <p>Summary table of the components available in all projects.</p>
+      </td>
+    </tr>
+    <tr class="module-item">
+      <td>
+
+        <a
+                class="mod"
+                href="https://github.com/opendifferentialprivacy/whitenoise-samples/tree/master/analysis"
+                title="Jupyter Samples">
+          Jupyter Samples
+        </a>
+      </td>
+
+
+      <td class="docblock-short">
+        <p>Demonstrations and example usages of the library.</p>
+      </td>
+
+    </tr>
+    </tbody>
+  </table>
+</section>
+
+<section
+  id="search"
+  class="content hidden">
+</section>
+
+<section class="footer"></section>
+
+
+<script src="doc/aliases.js"></script>
+
+<script src="doc/main.js"></script>
+
+<script
+  src="doc/search-index.js"
+  defer>
+</script>

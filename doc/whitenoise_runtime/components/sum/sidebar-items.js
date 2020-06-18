@@ -1,1 +1,0 @@
-initSidebarItems({"fn":[["sum","Calculates sum for each column of the data."]]});

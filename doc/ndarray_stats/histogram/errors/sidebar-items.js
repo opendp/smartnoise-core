@@ -1,1 +1,0 @@
-initSidebarItems({"enum":[["BinsBuildError","Error computing the set of histogram bins."]],"struct":[["BinNotFound","Error to denote that no bin has been found for a certain observation."]]});

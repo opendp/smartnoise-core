@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/backtrace-0.3.48/src/symbolize/gimli.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>gimli.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../backtrace/index.html'><div class='logo-container'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/backtrace-0.3.49/src/symbolize/gimli.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>gimli.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../backtrace/index.html'><div class='logo-container'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -570,6 +570,67 @@
 <span id="570">570</span>
 <span id="571">571</span>
 <span id="572">572</span>
+<span id="573">573</span>
+<span id="574">574</span>
+<span id="575">575</span>
+<span id="576">576</span>
+<span id="577">577</span>
+<span id="578">578</span>
+<span id="579">579</span>
+<span id="580">580</span>
+<span id="581">581</span>
+<span id="582">582</span>
+<span id="583">583</span>
+<span id="584">584</span>
+<span id="585">585</span>
+<span id="586">586</span>
+<span id="587">587</span>
+<span id="588">588</span>
+<span id="589">589</span>
+<span id="590">590</span>
+<span id="591">591</span>
+<span id="592">592</span>
+<span id="593">593</span>
+<span id="594">594</span>
+<span id="595">595</span>
+<span id="596">596</span>
+<span id="597">597</span>
+<span id="598">598</span>
+<span id="599">599</span>
+<span id="600">600</span>
+<span id="601">601</span>
+<span id="602">602</span>
+<span id="603">603</span>
+<span id="604">604</span>
+<span id="605">605</span>
+<span id="606">606</span>
+<span id="607">607</span>
+<span id="608">608</span>
+<span id="609">609</span>
+<span id="610">610</span>
+<span id="611">611</span>
+<span id="612">612</span>
+<span id="613">613</span>
+<span id="614">614</span>
+<span id="615">615</span>
+<span id="616">616</span>
+<span id="617">617</span>
+<span id="618">618</span>
+<span id="619">619</span>
+<span id="620">620</span>
+<span id="621">621</span>
+<span id="622">622</span>
+<span id="623">623</span>
+<span id="624">624</span>
+<span id="625">625</span>
+<span id="626">626</span>
+<span id="627">627</span>
+<span id="628">628</span>
+<span id="629">629</span>
+<span id="630">630</span>
+<span id="631">631</span>
+<span id="632">632</span>
+<span id="633">633</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Support for symbolication using the `gimli` crate on crates.io</span>
 <span class="doccomment">//!</span>
@@ -580,6 +641,7 @@
 <span class="kw">use</span> <span class="self">self</span>::<span class="ident">gimli</span>::<span class="ident">read</span>::<span class="ident">EndianSlice</span>;
 <span class="kw">use</span> <span class="self">self</span>::<span class="ident">gimli</span>::<span class="ident">LittleEndian</span> <span class="kw">as</span> <span class="ident">Endian</span>;
 <span class="kw">use</span> <span class="self">self</span>::<span class="ident">mmap</span>::<span class="ident">Mmap</span>;
+<span class="kw">use</span> <span class="self">self</span>::<span class="ident">stash</span>::<span class="ident">Stash</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">symbolize</span>::<span class="ident">ResolveWhat</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">types</span>::<span class="ident">BytesOrWideString</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">SymbolName</span>;
@@ -599,6 +661,7 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
 <span class="attribute">#[<span class="ident">path</span> <span class="op">=</span> <span class="string">&quot;gimli/mmap_unix.rs&quot;</span>]</span>
 <span class="kw">mod</span> <span class="ident">mmap</span>;
+<span class="kw">mod</span> <span class="ident">stash</span>;
 
 <span class="kw">const</span> <span class="ident">MAPPINGS_CACHE_SIZE</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">4</span>;
 
@@ -611,27 +674,28 @@
     <span class="comment">// &#39;static lifetime is a lie to hack around lack of support for self-referential structs.</span>
     <span class="ident">cx</span>: <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span>,
     <span class="ident">_map</span>: <span class="ident">Mmap</span>,
+    <span class="ident">_stash</span>: <span class="ident">Stash</span>,
 }
 
-<span class="kw">fn</span> <span class="ident">cx</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span>(<span class="ident">object</span>: <span class="ident">Object</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">load_section</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">obj</span>: <span class="kw-2">&amp;</span><span class="ident">Object</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">S</span>
+<span class="kw">fn</span> <span class="ident">cx</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span>(<span class="ident">stash</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;data</span> <span class="ident">Stash</span>, <span class="ident">object</span>: <span class="ident">Object</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">load_section</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">stash</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;data</span> <span class="ident">Stash</span>, <span class="ident">obj</span>: <span class="kw-2">&amp;</span><span class="ident">Object</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">S</span>
     <span class="kw">where</span>
         <span class="ident">S</span>: <span class="ident">gimli</span>::<span class="ident">Section</span><span class="op">&lt;</span><span class="ident">gimli</span>::<span class="ident">EndianSlice</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="ident">Endian</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     {
-        <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">obj</span>.<span class="ident">section</span>(<span class="ident">S</span>::<span class="ident">section_name</span>()).<span class="ident">unwrap_or</span>(<span class="kw-2">&amp;</span>[]);
+        <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">obj</span>.<span class="ident">section</span>(<span class="ident">stash</span>, <span class="ident">S</span>::<span class="ident">section_name</span>()).<span class="ident">unwrap_or</span>(<span class="kw-2">&amp;</span>[]);
         <span class="ident">S</span>::<span class="ident">from</span>(<span class="ident">EndianSlice</span>::<span class="ident">new</span>(<span class="ident">data</span>, <span class="ident">Endian</span>))
     }
 
     <span class="kw">let</span> <span class="ident">dwarf</span> <span class="op">=</span> <span class="ident">addr2line</span>::<span class="ident">Context</span>::<span class="ident">from_sections</span>(
-        <span class="ident">load_section</span>(<span class="kw-2">&amp;</span><span class="ident">object</span>),
-        <span class="ident">load_section</span>(<span class="kw-2">&amp;</span><span class="ident">object</span>),
-        <span class="ident">load_section</span>(<span class="kw-2">&amp;</span><span class="ident">object</span>),
-        <span class="ident">load_section</span>(<span class="kw-2">&amp;</span><span class="ident">object</span>),
-        <span class="ident">load_section</span>(<span class="kw-2">&amp;</span><span class="ident">object</span>),
-        <span class="ident">load_section</span>(<span class="kw-2">&amp;</span><span class="ident">object</span>),
-        <span class="ident">load_section</span>(<span class="kw-2">&amp;</span><span class="ident">object</span>),
-        <span class="ident">load_section</span>(<span class="kw-2">&amp;</span><span class="ident">object</span>),
-        <span class="ident">load_section</span>(<span class="kw-2">&amp;</span><span class="ident">object</span>),
+        <span class="ident">load_section</span>(<span class="ident">stash</span>, <span class="kw-2">&amp;</span><span class="ident">object</span>),
+        <span class="ident">load_section</span>(<span class="ident">stash</span>, <span class="kw-2">&amp;</span><span class="ident">object</span>),
+        <span class="ident">load_section</span>(<span class="ident">stash</span>, <span class="kw-2">&amp;</span><span class="ident">object</span>),
+        <span class="ident">load_section</span>(<span class="ident">stash</span>, <span class="kw-2">&amp;</span><span class="ident">object</span>),
+        <span class="ident">load_section</span>(<span class="ident">stash</span>, <span class="kw-2">&amp;</span><span class="ident">object</span>),
+        <span class="ident">load_section</span>(<span class="ident">stash</span>, <span class="kw-2">&amp;</span><span class="ident">object</span>),
+        <span class="ident">load_section</span>(<span class="ident">stash</span>, <span class="kw-2">&amp;</span><span class="ident">object</span>),
+        <span class="ident">load_section</span>(<span class="ident">stash</span>, <span class="kw-2">&amp;</span><span class="ident">object</span>),
+        <span class="ident">load_section</span>(<span class="ident">stash</span>, <span class="kw-2">&amp;</span><span class="ident">object</span>),
         <span class="ident">gimli</span>::<span class="ident">EndianSlice</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span>[], <span class="ident">Endian</span>),
     )
     .<span class="ident">ok</span>()<span class="question-mark">?</span>;
@@ -639,16 +703,17 @@
 }
 
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">mk</span> {
-    (<span class="ident">Mapping</span> { <span class="macro-nonterminal">$</span><span class="macro-nonterminal">map</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">inner</span>:<span class="ident">expr</span> }) <span class="op">=</span><span class="op">&gt;</span> {{
+    (<span class="ident">Mapping</span> { <span class="macro-nonterminal">$</span><span class="macro-nonterminal">map</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">inner</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">stash</span>:<span class="ident">expr</span> }) <span class="op">=</span><span class="op">&gt;</span> {{
         <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">symbolize</span>::<span class="ident">gimli</span>::{<span class="ident">Context</span>, <span class="ident">Mapping</span>, <span class="ident">Mmap</span>};
 
-        <span class="kw">fn</span> <span class="ident">assert_lifetimes</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="kw">_</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Mmap</span>, <span class="kw">_</span>: <span class="kw-2">&amp;</span><span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>) {}
-        <span class="ident">assert_lifetimes</span>(<span class="kw-2">&amp;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">map</span>, <span class="kw-2">&amp;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">inner</span>);
+        <span class="kw">fn</span> <span class="ident">assert_lifetimes</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="kw">_</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Mmap</span>, <span class="kw">_</span>: <span class="kw-2">&amp;</span><span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>, <span class="kw">_</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Stash</span>) {}
+        <span class="ident">assert_lifetimes</span>(<span class="kw-2">&amp;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">map</span>, <span class="kw-2">&amp;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">inner</span>, <span class="kw-2">&amp;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">stash</span>);
         <span class="ident">Mapping</span> {
             <span class="comment">// Convert to &#39;static lifetimes since the symbols should</span>
-            <span class="comment">// only borrow `map` and we&#39;re preserving `map` below.</span>
+            <span class="comment">// only borrow `map` and `stash` and we&#39;re preserving them below.</span>
             <span class="ident">cx</span>: <span class="kw">unsafe</span> { <span class="ident">core</span>::<span class="ident">mem</span>::<span class="ident">transmute</span>::<span class="op">&lt;</span><span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>, <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">inner</span>) },
             <span class="ident">_map</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">map</span>,
+            <span class="ident">_stash</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">stash</span>,
         }
     }};
 }
@@ -661,35 +726,92 @@
 
 <span class="ident">cfg_if</span>::<span class="macro">cfg_if</span><span class="macro">!</span> {
     <span class="kw">if</span> <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span> {
-        <span class="comment">// Windows uses COFF object files and currently doesn&#39;t implement</span>
-        <span class="comment">// functionality to load a list of native libraries. This seems to work</span>
-        <span class="comment">// well enough for the main executable but seems pretty likely to not</span>
-        <span class="comment">// work for loaded DLLs. For now this seems sufficient, but we may have</span>
-        <span class="comment">// to extend this over time.</span>
-        <span class="comment">//</span>
-        <span class="comment">// Note that the native_libraries loading here simply returns one</span>
-        <span class="comment">// library encompassing the entire address space. This works naively</span>
-        <span class="comment">// but likely indicates something about ASLR is busted. Let&#39;s try to</span>
-        <span class="comment">// fix this over time if necessary!</span>
+        <span class="kw">use</span> <span class="ident">core</span>::<span class="ident">mem</span>::<span class="ident">MaybeUninit</span>;
+        <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">windows</span>::<span class="kw-2">*</span>;
+        <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">os</span>::<span class="ident">windows</span>::<span class="ident">prelude</span>::<span class="kw-2">*</span>;
 
         <span class="kw">mod</span> <span class="ident">coff</span>;
         <span class="kw">use</span> <span class="self">self</span>::<span class="ident">coff</span>::<span class="ident">Object</span>;
 
+        <span class="comment">// For loading native libraries on Windows, see some discussion on</span>
+        <span class="comment">// rust-lang/rust#71060 for the various strategies here.</span>
         <span class="kw">fn</span> <span class="ident">native_libraries</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Library</span><span class="op">&gt;</span> {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">path</span>) <span class="op">=</span> <span class="ident">std</span>::<span class="ident">env</span>::<span class="ident">current_exe</span>() {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">segments</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
-                <span class="ident">segments</span>.<span class="ident">push</span>(<span class="ident">LibrarySegment</span> {
-                    <span class="ident">stated_virtual_memory_address</span>: <span class="number">0</span>,
-                    <span class="ident">len</span>: <span class="ident">usize</span>::<span class="ident">max_value</span>(),
-                });
-                <span class="ident">ret</span>.<span class="ident">push</span>(<span class="ident">Library</span> {
-                    <span class="ident">name</span>: <span class="ident">path</span>.<span class="ident">into</span>(),
-                    <span class="ident">segments</span>,
-                    <span class="ident">bias</span>: <span class="number">0</span>,
-                });
-            }
+            <span class="kw">unsafe</span> { <span class="ident">add_loaded_images</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ret</span>); }
             <span class="kw">return</span> <span class="ident">ret</span>;
+        }
+
+        <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">add_loaded_images</span>(<span class="ident">ret</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Library</span><span class="op">&gt;</span>) {
+            <span class="kw">let</span> <span class="ident">snap</span> <span class="op">=</span> <span class="ident">CreateToolhelp32Snapshot</span>(<span class="ident">TH32CS_SNAPMODULE</span>, <span class="number">0</span>);
+            <span class="kw">if</span> <span class="ident">snap</span> <span class="op">=</span><span class="op">=</span> <span class="ident">INVALID_HANDLE_VALUE</span> {
+                <span class="kw">return</span>;
+            }
+
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">me</span> <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="op">&lt;</span><span class="ident">MODULEENTRY32W</span><span class="op">&gt;</span>::<span class="ident">zeroed</span>().<span class="ident">assume_init</span>();
+            <span class="ident">me</span>.<span class="ident">dwSize</span> <span class="op">=</span> <span class="ident">mem</span>::<span class="ident">size_of_val</span>(<span class="kw-2">&amp;</span><span class="ident">me</span>) <span class="kw">as</span> <span class="ident">DWORD</span>;
+            <span class="kw">if</span> <span class="ident">Module32FirstW</span>(<span class="ident">snap</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">me</span>) <span class="op">=</span><span class="op">=</span> <span class="ident">TRUE</span> {
+                <span class="kw">loop</span> {
+                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">lib</span>) <span class="op">=</span> <span class="ident">load_library</span>(<span class="kw-2">&amp;</span><span class="ident">me</span>) {
+                        <span class="ident">ret</span>.<span class="ident">push</span>(<span class="ident">lib</span>);
+                    }
+
+                    <span class="kw">if</span> <span class="ident">Module32NextW</span>(<span class="ident">snap</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">me</span>) <span class="op">!</span><span class="op">=</span> <span class="ident">TRUE</span> {
+                        <span class="kw">break</span>;
+                    }
+                }
+
+            }
+
+            <span class="ident">CloseHandle</span>(<span class="ident">snap</span>);
+        }
+
+        <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">load_library</span>(<span class="ident">me</span>: <span class="kw-2">&amp;</span><span class="ident">MODULEENTRY32W</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Library</span><span class="op">&gt;</span> {
+            <span class="kw">let</span> <span class="ident">pos</span> <span class="op">=</span> <span class="ident">me</span>
+                .<span class="ident">szExePath</span>
+                .<span class="ident">iter</span>()
+                .<span class="ident">position</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">i</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span>)
+                .<span class="ident">unwrap_or</span>(<span class="ident">me</span>.<span class="ident">szExePath</span>.<span class="ident">len</span>());
+            <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">OsString</span>::<span class="ident">from_wide</span>(<span class="kw-2">&amp;</span><span class="ident">me</span>.<span class="ident">szExePath</span>[..<span class="ident">pos</span>]);
+
+            <span class="comment">// MinGW libraries currently don&#39;t support ASLR</span>
+            <span class="comment">// (rust-lang/rust#16514), but DLLs can still be relocated around in</span>
+            <span class="comment">// the address space. It appears that addresses in debug info are</span>
+            <span class="comment">// all as-if this library was loaded at its &quot;image base&quot;, which is a</span>
+            <span class="comment">// field in its COFF file headers. Since this is what debuginfo</span>
+            <span class="comment">// seems to list we parse the symbol table and store addresses as if</span>
+            <span class="comment">// the library was loaded at &quot;image base&quot; as well.</span>
+            <span class="comment">//</span>
+            <span class="comment">// The library may not be loaded at &quot;image base&quot;, however.</span>
+            <span class="comment">// (presumably something else may be loaded there?) This is where</span>
+            <span class="comment">// the `bias` field comes into play, and we need to figure out the</span>
+            <span class="comment">// value of `bias` here. Unfortunately though it&#39;s not clear how to</span>
+            <span class="comment">// acquire this from a loaded module. What we do have, however, is</span>
+            <span class="comment">// the actual load address (`modBaseAddr`).</span>
+            <span class="comment">//</span>
+            <span class="comment">// As a bit of a cop-out for now we mmap the file, read the file</span>
+            <span class="comment">// header information, then drop the mmap. This is wasteful because</span>
+            <span class="comment">// we&#39;ll probably reopen the mmap later, but this should work well</span>
+            <span class="comment">// enough for now.</span>
+            <span class="comment">//</span>
+            <span class="comment">// Once we have the `image_base` (desired load location) and the</span>
+            <span class="comment">// `base_addr` (actual load location) we can fill in the `bias`</span>
+            <span class="comment">// (difference between the actual and desired) and then the stated</span>
+            <span class="comment">// address of each segment is the `image_base` since that&#39;s what the</span>
+            <span class="comment">// file says.</span>
+            <span class="comment">//</span>
+            <span class="comment">// For now it appears that unlike ELF/MachO we can make do with one</span>
+            <span class="comment">// segment per library, using `modBaseSize` as the whole size.</span>
+            <span class="kw">let</span> <span class="ident">mmap</span> <span class="op">=</span> <span class="ident">mmap</span>(<span class="ident">name</span>.<span class="ident">as_ref</span>())<span class="question-mark">?</span>;
+            <span class="kw">let</span> <span class="ident">image_base</span> <span class="op">=</span> <span class="ident">coff</span>::<span class="ident">get_image_base</span>(<span class="kw-2">&amp;</span><span class="ident">mmap</span>)<span class="question-mark">?</span>;
+            <span class="kw">let</span> <span class="ident">base_addr</span> <span class="op">=</span> <span class="ident">me</span>.<span class="ident">modBaseAddr</span> <span class="kw">as</span> <span class="ident">usize</span>;
+            <span class="prelude-val">Some</span>(<span class="ident">Library</span> {
+                <span class="ident">name</span>,
+                <span class="ident">bias</span>: <span class="ident">base_addr</span>.<span class="ident">wrapping_sub</span>(<span class="ident">image_base</span>),
+                <span class="ident">segments</span>: <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">LibrarySegment</span> {
+                    <span class="ident">stated_virtual_memory_address</span>: <span class="ident">image_base</span>,
+                    <span class="ident">len</span>: <span class="ident">me</span>.<span class="ident">modBaseSize</span> <span class="kw">as</span> <span class="ident">usize</span>,
+                }],
+            })
         }
     } <span class="kw">else</span> <span class="kw">if</span> <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span> {
         <span class="comment">// macOS uses the Mach-O file format and uses DYLD-specific APIs to</span>
@@ -1040,13 +1162,13 @@
     }
 }
 
-<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">resolve</span>(<span class="ident">what</span>: <span class="ident">ResolveWhat</span>, <span class="ident">cb</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw">dyn</span> <span class="ident">FnMut</span>(<span class="kw-2">&amp;</span><span class="kw">super</span>::<span class="ident">Symbol</span>)) {
+<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">resolve</span>(<span class="ident">what</span>: <span class="ident">ResolveWhat</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>, <span class="ident">cb</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw">dyn</span> <span class="ident">FnMut</span>(<span class="kw-2">&amp;</span><span class="kw">super</span>::<span class="ident">Symbol</span>)) {
     <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">what</span>.<span class="ident">address_or_ip</span>();
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">call</span> <span class="op">=</span> <span class="op">|</span><span class="ident">sym</span>: <span class="ident">Symbol</span><span class="op">|</span> {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">call</span> <span class="op">=</span> <span class="op">|</span><span class="ident">sym</span>: <span class="ident">Symbol</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span><span class="op">|</span> {
         <span class="comment">// Extend the lifetime of `sym` to `&#39;static` since we are unfortunately</span>
         <span class="comment">// required to here, but it&#39;s ony ever going out as a reference so no</span>
         <span class="comment">// reference to it should be persisted beyond this frame anyway.</span>
-        <span class="kw">let</span> <span class="ident">sym</span> <span class="op">=</span> <span class="ident">mem</span>::<span class="ident">transmute</span>::<span class="op">&lt;</span><span class="ident">Symbol</span>, <span class="ident">Symbol</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">sym</span>);
+        <span class="kw">let</span> <span class="ident">sym</span> <span class="op">=</span> <span class="ident">mem</span>::<span class="ident">transmute</span>::<span class="op">&lt;</span><span class="ident">Symbol</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>, <span class="ident">Symbol</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">sym</span>);
         (<span class="ident">cb</span>)(<span class="kw-2">&amp;</span><span class="kw">super</span>::<span class="ident">Symbol</span> { <span class="ident">inner</span>: <span class="ident">sym</span> });
     };
 
@@ -1099,7 +1221,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Symbol</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SymbolName</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SymbolName</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="ident">Symbol</span>::<span class="ident">Frame</span> { <span class="ident">name</span>, .. } <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">name</span>.<span class="ident">as_ref</span>()<span class="question-mark">?</span>;
@@ -1116,7 +1238,7 @@
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">filename_raw</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">BytesOrWideString</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">filename_raw</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">BytesOrWideString</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="ident">Symbol</span>::<span class="ident">Frame</span> { <span class="ident">location</span>, .. } <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">file</span> <span class="op">=</span> <span class="ident">location</span>.<span class="ident">as_ref</span>()<span class="question-mark">?</span>.<span class="ident">file</span><span class="question-mark">?</span>;
