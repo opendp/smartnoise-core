@@ -221,7 +221,7 @@ pub fn accuracy_to_privacy_usage(
             &mut computation_graph,
         &mut HashMap::new(),
         Some(proto_properties),
-        false,
+        true,
     )?;
 
     let privacy_usages = computation_graph.iter().map(|(idx, component)| {
