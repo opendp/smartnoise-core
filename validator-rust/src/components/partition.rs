@@ -1,6 +1,6 @@
 use crate::errors::*;
 
-use crate::{proto, base, Warnable};
+use crate::{proto, base, Warnable, Integer};
 
 use crate::components::{Component, Expandable};
 use crate::base::{IndexKey, Value, Jagged, ValueProperties, IndexmapProperties, ArrayProperties, NodeProperties};
@@ -48,7 +48,7 @@ impl Component for proto::Partition {
             // propagate properties when partitioning evenly
             None => {
                 let num_partitions = get_argument(public_arguments, "num_partitions")?
-                    .array()?.first_i64()?;
+                    .array()?.first_int()?;
 
                 let num_records = match &data_property {
                     ValueProperties::Array(data_property) => data_property.num_records,
@@ -56,7 +56,7 @@ impl Component for proto::Partition {
                     _ => return Err("data: must be a dataframe or array".into())
                 };
                 let lengths = match num_records {
-                    Some(num_records) => even_split_lengths(num_records, num_partitions)
+                    Some(num_records) => even_split_lengths(num_records, num_partitions as i64)
                         .into_iter().map(Some).collect(),
                     None => (0..num_partitions)
                         .map(|_| None)
@@ -66,7 +66,7 @@ impl Component for proto::Partition {
                 IndexmapProperties {
                     children: lengths.iter().enumerate()
                         .map(|(index, partition_num_records)| Ok((
-                            IndexKey::from(index as i64),
+                            IndexKey::from(index as Integer),
                             get_partition_properties(
                                 &data_property,
                                 *partition_num_records,
@@ -154,11 +154,10 @@ fn get_partition_properties(
             }
             let mut properties = properties.clone();
             properties.children.values_mut()
-                .map(|v| {
+                .try_for_each(|v| {
                     *v = ValueProperties::Array(update_array_properties(v.array()?.clone()));
-                    Ok(())
-                })
-                .collect::<Result<()>>()?;
+                    Ok::<_, Error>(())
+                })?;
             ValueProperties::Indexmap(properties)
         }
         _ => return Err("data: must be a dataframe or array".into())

@@ -69,8 +69,8 @@ pub struct AlgorithmInfo {
 pub fn value_to_json(value: &base::Value) -> Result<serde_json::Value> {
     match value {
         base::Value::Array(array) => match array {
-            base::Array::F64(value) => arraynd_to_json(value),
-            base::Array::I64(value) => arraynd_to_json(value),
+            base::Array::Float(value) => arraynd_to_json(value),
+            base::Array::Int(value) => arraynd_to_json(value),
             base::Array::Str(value) => arraynd_to_json(value),
             base::Array::Bool(value) => arraynd_to_json(value)
         },

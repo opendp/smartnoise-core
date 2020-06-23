@@ -1,5 +1,5 @@
 use whitenoise_validator::errors::*;
-use whitenoise_validator::proto;
+use whitenoise_validator::{proto, Float, Integer};
 use whitenoise_validator::base::{Value, Array, Jagged, ReleaseNode, IndexKey};
 use whitenoise_validator::utilities::{get_argument, standardize_numeric_argument};
 
@@ -19,12 +19,12 @@ use std::hash::Hash;
 impl Evaluable for proto::Resize {
     fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         let mut number_rows = arguments.get::<IndexKey>(&"number_rows".into())
-            .and_then(|v| v.first_i64().ok());
+            .and_then(|v| v.first_int().ok()).map(|v| v as i64);
         let number_cols = arguments.get::<IndexKey>(&"number_columns".into())
-            .and_then(|v| v.first_i64().ok());
+            .and_then(|v| v.first_int().ok()).map(|v| v as i64);
 
         let minimum_rows = arguments.get::<IndexKey>(&"minimum_rows".into())
-            .and_then(|v| v.first_i64().ok());
+            .and_then(|v| v.first_int().ok()).map(|v| v as i64);
 
         if let Some(minimum_rows) = minimum_rows {
             number_rows = Some(minimum_rows)
@@ -34,16 +34,16 @@ impl Evaluable for proto::Resize {
         // and imputation (if necessary) is done by sampling from "categories" using the "probabilities" as sampling probabilities for each element.
         if arguments.contains_key::<IndexKey>(&"categories".into()) {
             let weights = get_argument(arguments, "weights")
-                .and_then(|v| v.jagged()).and_then(|v| v.f64()).ok();
+                .and_then(|v| v.jagged()).and_then(|v| v.float()).ok();
 
             match (get_argument(arguments, "data")?, get_argument(arguments, "categories")?) {
                 // match on types of various arguments and ensure they are consistent with each other
                 (Value::Array(data), Value::Jagged(categories)) =>
                     Ok(match (data, categories) {
-                        (Array::F64(_), Jagged::F64(_)) =>
+                        (Array::Float(_), Jagged::Float(_)) =>
                             return Err("categorical resizing over floats in not currently supported- try continuous imputation instead".into()),
 //                            resize_categorical(&data, &n, &categories, &probabilities)?.into(),
-                        (Array::I64(data), Jagged::I64(categories)) =>
+                        (Array::Int(data), Jagged::Int(categories)) =>
                             resize_categorical(&data, number_rows, number_cols, &categories, &weights, minimum_rows)?.into(),
                         (Array::Bool(data), Jagged::Bool(categories)) =>
                             resize_categorical(&data, number_rows, number_cols, &categories, &weights, minimum_rows)?.into(),
@@ -62,23 +62,23 @@ impl Evaluable for proto::Resize {
                 get_argument(arguments, "lower")?.array()?,
                 get_argument(arguments, "upper")?.array()?
             ) {
-                (Array::F64(data), Array::F64(lower), Array::F64(upper)) => {
+                (Array::Float(data), Array::Float(lower), Array::Float(upper)) => {
                     // If there is no valid distribution argument provided, generate uniform by default
                     let distribution = match get_argument(&arguments, "distribution") {
                         Ok(distribution) => distribution.first_string()?,
                         Err(_) => "uniform".to_string()
                     };
                     let shift = match get_argument(arguments, "shift") {
-                        Ok(shift) => Some(shift.array()?.f64()?),
+                        Ok(shift) => Some(shift.array()?.float()?),
                         Err(_) => None
                     };
                     let scale = match get_argument(arguments, "scale") {
-                        Ok(scale) => Some(scale.array()?.f64()?),
+                        Ok(scale) => Some(scale.array()?.float()?),
                         Err(_) => None
                     };
                     Ok(resize_float(data, number_rows, number_cols, &distribution, lower, upper, shift, scale, minimum_rows)?.into())
                 }
-                (Array::I64(data), Array::I64(lower), Array::I64(upper)) =>
+                (Array::Int(data), Array::Int(lower), Array::Int(upper)) =>
                     Ok(resize_integer(data, number_rows, number_cols, lower, upper, minimum_rows)?.into()),
                 _ => Err("data, lower, and upper must be of a homogeneous numeric type".into())
             }
@@ -105,14 +105,14 @@ impl Evaluable for proto::Resize {
 /// # Return
 /// A resized version of data consistent with the provided `n`
 pub fn resize_float(
-    data: &ArrayD<f64>,
+    data: &ArrayD<Float>,
     number_rows: Option<i64>,
     number_cols: Option<i64>,
     distribution: &str,
-    lower: &ArrayD<f64>, upper: &ArrayD<f64>,
-    shift: Option<&ArrayD<f64>>, scale: Option<&ArrayD<f64>>,
+    lower: &ArrayD<Float>, upper: &ArrayD<Float>,
+    shift: Option<&ArrayD<Float>>, scale: Option<&ArrayD<Float>>,
     minimum_rows: Option<i64>
-) -> Result<ArrayD<f64>> {
+) -> Result<ArrayD<Float>> {
     let mut data = data.clone();
 
     if let Some(number_cols) = number_cols {
@@ -127,7 +127,7 @@ pub fn resize_float(
                 // initialize synthetic data with correct shape
                 let mut synthetic_shape = data.shape().to_vec();
                 synthetic_shape[1] = (number_cols - real_n) as usize;
-                let synthetic_base = ndarray::ArrayD::from_elem(synthetic_shape, std::f64::NAN).into_dyn();
+                let synthetic_base = ndarray::ArrayD::from_elem(synthetic_shape, Float::NAN).into_dyn();
 
                 // generate synthetic data
                 // NOTE: only uniform and gaussian supported at this time
@@ -170,7 +170,7 @@ pub fn resize_float(
                 // initialize synthetic data with correct shape
                 let mut synthetic_shape = data.shape().to_vec();
                 synthetic_shape[0] = (number_rows - real_n) as usize;
-                let synthetic_base = ndarray::ArrayD::from_elem(synthetic_shape, std::f64::NAN).into_dyn();
+                let synthetic_base = ndarray::ArrayD::from_elem(synthetic_shape, Float::NAN).into_dyn();
 
                 // generate synthetic data
                 // NOTE: only uniform and gaussian supported at this time
@@ -210,12 +210,12 @@ pub fn resize_float(
 /// # Return
 /// A resized version of data consistent with the provided `n`
 pub fn resize_integer(
-    data: &ArrayD<i64>,
+    data: &ArrayD<Integer>,
     number_rows: Option<i64>,
     number_cols: Option<i64>,
-    lower: &ArrayD<i64>, upper: &ArrayD<i64>,
+    lower: &ArrayD<Integer>, upper: &ArrayD<Integer>,
     minimum_rows: Option<i64>
-) -> Result<ArrayD<i64>> {
+) -> Result<ArrayD<Integer>> {
     let mut data = data.clone();
 
     if let Some(number_cols) = number_cols {
@@ -323,7 +323,7 @@ pub fn resize_categorical<T>(
     number_rows: Option<i64>,
     number_cols: Option<i64>,
     categories: &[Vec<T>],
-    weights: &Option<Vec<Vec<f64>>>,
+    weights: &Option<Vec<Vec<Float>>>,
     minimum_rows: Option<i64>
 ) -> Result<ArrayD<T>> where T: Clone, T: PartialEq, T: Default, T: Ord, T: Hash {
     let mut data = data.clone();

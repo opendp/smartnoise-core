@@ -37,7 +37,7 @@ impl Component for proto::LaplaceMechanism {
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
-        if data_property.data_type != DataType::F64 && data_property.data_type != DataType::I64 {
+        if data_property.data_type != DataType::Float && data_property.data_type != DataType::Int {
             return Err("data: atomic type must be numeric".into());
         }
 
@@ -50,15 +50,15 @@ impl Component for proto::LaplaceMechanism {
             &aggregator.properties,
             &SensitivitySpace::KNorm(1))?;
 
-        let lipschitz = aggregator.lipschitz_constants.array()?.f64()?;
+        let lipschitz = aggregator.lipschitz_constants.array()?.float()?;
         if lipschitz.iter().any(|v| v != &1.) {
-            let mut sensitivity = sensitivity_value.array()?.f64()?.clone();
+            let mut sensitivity = sensitivity_value.array()?.float()?.clone();
             sensitivity *= lipschitz;
             sensitivity_value = sensitivity.into();
         }
 
         // make sure sensitivities are an f64 array
-        sensitivity_value.array()?.f64()?;
+        sensitivity_value.array()?.float()?;
 
         let privacy_usage = self.privacy_usage.iter().cloned().map(Ok)
             .fold1(|l, r| l? + r?).ok_or_else(|| "privacy_usage: must be defined")??;
@@ -111,7 +111,7 @@ impl Mechanism for proto::LaplaceMechanism {
             Some(release_usage) => release_usage.iter()
                 .zip(data_property.c_stability.iter())
                 .map(|(usage, c_stab)|
-                    usage.effective_to_actual(1., *c_stab, privacy_definition.group_size))
+                    usage.effective_to_actual(1., *c_stab as f64, privacy_definition.group_size))
                 .collect::<Result<Vec<proto::PrivacyUsage>>>()?,
             None => self.privacy_usage.clone()
         }))
@@ -139,12 +139,12 @@ impl Accuracy for proto::LaplaceMechanism {
             &SensitivitySpace::KNorm(1))?;
 
         // sensitivity must be computable
-        let sensitivities = sensitivity_values.array()?.f64()?;
+        let sensitivities = sensitivity_values.array()?.float()?;
 
         Ok(Some(sensitivities.into_iter().zip(accuracies.values.iter())
             .map(|(sensitivity, accuracy)| proto::PrivacyUsage {
                 distance: Some(proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
-                    epsilon: (1. / accuracy.alpha).ln() * (sensitivity / accuracy.value),
+                    epsilon: (1. / accuracy.alpha).ln() * (*sensitivity as f64 / accuracy.value),
                     delta: 0.,
                 }))
             })
@@ -170,14 +170,14 @@ impl Accuracy for proto::LaplaceMechanism {
             &SensitivitySpace::KNorm(1))?;
 
         // sensitivity must be computable
-        let sensitivities = sensitivity_values.array()?.f64()?;
+        let sensitivities = sensitivity_values.array()?.float()?;
 
         let usages = spread_privacy_usage(&self.privacy_usage, sensitivities.len())?;
         let epsilons = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
 
         Ok(Some(sensitivities.into_iter().zip(epsilons.into_iter())
             .map(|(sensitivity, epsilon)| proto::Accuracy {
-                value: (1. / alpha).ln() * (sensitivity / epsilon),
+                value: (1. / alpha).ln() * (*sensitivity as f64 / epsilon),
                 alpha,
             })
             .collect()))

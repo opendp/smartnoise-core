@@ -2,7 +2,7 @@ use crate::errors::*;
 
 use crate::base::{Nature, NatureCategorical, Vector1DNull, Jagged, ArrayProperties, ValueProperties, DataType};
 
-use crate::{proto, base, Warnable};
+use crate::{proto, base, Warnable, Integer, Float};
 
 use crate::utilities::{prepend};
 
@@ -32,19 +32,19 @@ impl Component for proto::Abs {
         data_property.nature = propagate_unary_nature(
             &data_property,
             &UnaryOperators {
-                f64: Some(Box::new(|v| Ok(v.abs()))),
-                i64: Some(Box::new(|v| Ok(v.abs()))),
+                float: Some(Box::new(|v| Ok(v.abs()))),
+                int: Some(Box::new(|v| Ok(v.abs()))),
                 bool: None,
                 str: None,
             },
             &OptimizeUnaryOperators {
-                f64: Some(Box::new(|bounds| match (bounds.lower, bounds.upper) {
+                float: Some(Box::new(|bounds| match (bounds.lower, bounds.upper) {
                     (Some(lower), Some(upper)) => Ok((
                         Some(if lower > &0. { *lower } else { -*upper }),
                         Some(if lower + upper > 0. { *upper } else { -*lower }))),
                     _ => Ok((None, None))
                 })),
-                i64: Some(Box::new(|bounds| match (bounds.lower, bounds.upper) {
+                int: Some(Box::new(|bounds| match (bounds.lower, bounds.upper) {
                     (Some(lower), Some(upper)) => Ok((
                         Some(if lower > &0 { *lower } else { -*upper }),
                         Some(if lower + upper > 0 { *upper } else { -*lower }))),
@@ -94,20 +94,20 @@ impl Component for proto::Add {
             nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
             nature: propagate_binary_nature(&left_property, &right_property, &BinaryOperators {
-                f64: Some(Box::new(|l: &f64, r: &f64|
+                float: Some(Box::new(|l: &Float, r: &Float|
                     Ok(l + r))),
-                i64: Some(Box::new(|l: &i64, r: &i64|
+                int: Some(Box::new(|l: &Integer, r: &Integer|
                     l.checked_add(r).ok_or_else(|| Error::from("addition may result in underflow or overflow")))),
                 str: Some(Box::new(|l: &String, r: &String| Ok(format!("{}{}", l, r)))),
                 bool: None,
             }, &OptimizeBinaryOperators {
-                f64: Some(&|bounds| Ok((
+                float: Some(&|bounds| Ok((
                     bounds.left_lower.and_then(|lmin| bounds.right_lower.and_then(|rmin|
                         Some(lmin + rmin))),
                     bounds.left_upper.and_then(|lmax| bounds.right_upper.and_then(|rmax|
                         Some(lmax + rmax))),
                 ))),
-                i64: Some(&|bounds| Ok((
+                int: Some(&|bounds| Ok((
                     match (bounds.left_lower, bounds.right_lower) {
                         (Some(lmin), Some(rmin)) => Some(lmin.checked_add(rmin)
                             .ok_or_else(|| Error::from("addition may result in underflow or overflow"))?),
@@ -166,11 +166,11 @@ impl Component for proto::And {
         left_property.nature = propagate_binary_nature(
             &left_property, &right_property,
             &BinaryOperators {
-                f64: None,
-                i64: None,
+                float: None,
+                int: None,
                 str: None,
                 bool: Some(Box::new(|l: &bool, r: &bool| Ok(*l && *r))),
-            }, &OptimizeBinaryOperators { f64: None, i64: None },
+            }, &OptimizeBinaryOperators { float: None, int: None },
             num_columns)?;
         left_property.c_stability = broadcast(&left_property.c_stability, num_columns)?.iter()
             .zip(broadcast(&right_property.c_stability, num_columns)?)
@@ -216,8 +216,8 @@ impl Component for proto::Divide {
 
         let float_denominator_may_span_zero = match right_property.clone().nature {
             Some(nature) => match nature {
-                Nature::Continuous(nature) => nature.lower.f64()
-                    .map(|min| nature.upper.f64()
+                Nature::Continuous(nature) => nature.lower.float()
+                    .map(|min| nature.upper.float()
                         .map(|max| min.iter().zip(max.iter())
                             .any(|(min, max)| min
                                 .map(|min| max
@@ -231,7 +231,7 @@ impl Component for proto::Divide {
                         .unwrap_or(false))
                     // if min is not float
                     .unwrap_or(false),
-                Nature::Categorical(nature) => nature.categories.f64()
+                Nature::Categorical(nature) => nature.categories.float()
                     .map(|categories| categories.iter()
                         .any(|column| column.iter()
                             .any(|category| category.is_nan() || category == &0.)))
@@ -326,20 +326,20 @@ impl Component for proto::Divide {
             nullity: left_property.nullity || right_property.nullity || float_denominator_may_span_zero,
             releasable: left_property.releasable && right_property.releasable,
             nature: propagate_binary_nature(&left_property, &right_property, &BinaryOperators {
-                f64: Some(Box::new(|l: &f64, r: &f64| {
+                float: Some(Box::new(|l: &Float, r: &Float| {
                     let category = l / r;
                     if !category.is_finite() {
                         return Err("either division by zero, underflow or overflow".into())
                     }
                     Ok(category)
                 })),
-                i64: Some(Box::new(|l: &i64, r: &i64|
+                int: Some(Box::new(|l: &Integer, r: &Integer|
                     l.checked_div(*r).ok_or_else(|| Error::from("either division by zero, or underflow or overflow")))),
                 str: None,
                 bool: None,
             }, &OptimizeBinaryOperators {
-                f64: Some(&optimize_wrapper),
-                i64: Some(&optimize_wrapper)
+                float: Some(&optimize_wrapper),
+                int: Some(&optimize_wrapper)
             }, num_columns)?,
             c_stability: broadcast(&left_property.c_stability, num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, num_columns)?)
@@ -432,10 +432,10 @@ impl Component for proto::GreaterThan {
         if left_property.data_type != right_property.data_type {
             return Err("left and right must be homogeneously typed".into())
         }
-        if left_property.data_type != DataType::I64 && left_property.data_type != DataType::F64 {
+        if left_property.data_type != DataType::Int && left_property.data_type != DataType::Float {
             return Err("left must be numeric".into())
         }
-        if right_property.data_type != DataType::I64 && right_property.data_type != DataType::F64 {
+        if right_property.data_type != DataType::Int && right_property.data_type != DataType::Float {
             return Err("right must be numeric".into())
         }
 
@@ -489,10 +489,10 @@ impl Component for proto::LessThan {
         if left_property.data_type != right_property.data_type {
             return Err("left and right must be homogeneously typed".into())
         }
-        if left_property.data_type != DataType::I64 && left_property.data_type != DataType::F64 {
+        if left_property.data_type != DataType::Int && left_property.data_type != DataType::Float {
             return Err("left must be numeric".into())
         }
-        if right_property.data_type != DataType::I64 && right_property.data_type != DataType::F64 {
+        if right_property.data_type != DataType::Int && right_property.data_type != DataType::Float {
             return Err("right must be numeric".into())
         }
 
@@ -543,17 +543,17 @@ impl Component for proto::Log {
             base_property.assert_is_not_aggregated()?;
         }
 
-        if data_property.data_type != DataType::F64 {
+        if data_property.data_type != DataType::Float {
             return Err("arguments for log must be float and homogeneously typed".into());
         }
 
-        if !base_property.lower_f64()?.iter()
-            .zip(base_property.upper_f64()?.iter())
+        if !base_property.lower_float()?.iter()
+            .zip(base_property.upper_float()?.iter())
             .all(|(min, max)| min > &0. && max < &1. || min > &1.) {
             return Err("base must be in [0, 1) U (1, inf) and not span zero".into())
         }
 
-        if !data_property.lower_f64()?.iter()
+        if !data_property.lower_float()?.iter()
             .all(|min| min > &0.) {
             return Err("data may potentially be less than zero".into())
         }
@@ -561,17 +561,17 @@ impl Component for proto::Log {
         data_property.nature = propagate_binary_nature(
             &data_property, &base_property,
             &BinaryOperators {
-                f64: Some(Box::new(|v, base| Ok(v.log(*base)))),
-                i64: None,
+                float: Some(Box::new(|v, base| Ok(v.log(*base)))),
+                int: None,
                 bool: None,
                 str: None,
             },
             &OptimizeBinaryOperators {
-                f64: Some(&|_bounds| {
+                float: Some(&|_bounds| {
                     // TODO: derive data bounds for log transform
                     Ok((None, None))
                 }),
-                i64: None
+                int: None
             }, data_property.num_columns()?)?;
 
         data_property.is_not_empty = data_property.is_not_empty && base_property.is_not_empty;
@@ -605,41 +605,41 @@ impl Component for proto::Modulo {
         }
 
         match (left_property.data_type.clone(), right_property.data_type.clone()) {
-            (DataType::F64, DataType::F64) => {
+            (DataType::Float, DataType::Float) => {
 
-                if !right_property.lower_f64()?.iter().all(|v| v > &0.) {
+                if !right_property.lower_float()?.iter().all(|v| v > &0.) {
                     return Err("divisor must be greater than zero".into())
                 }
 
                 left_property.nature = propagate_binary_nature(
                     &left_property, &right_property,
                     &BinaryOperators {
-                        f64: Some(Box::new(|l, r| Ok(l.rem_euclid(*r)))),
-                        i64: None,
+                        float: Some(Box::new(|l, r| Ok(l.rem_euclid(*r)))),
+                        int: None,
                         bool: None,
                         str: None,
                     },
                     &OptimizeBinaryOperators {
                         // TODO: this could be tighter
-                        f64: Some(&|bounds| Ok((Some(0.), *bounds.right_upper))),
-                        i64: None
+                        float: Some(&|bounds| Ok((Some(0.), *bounds.right_upper))),
+                        int: None
                     }, left_property.num_columns()?)?;
             },
-            (DataType::I64, DataType::I64) => {
-                if !right_property.lower_i64()?.iter().all(|v| v > &0) {
+            (DataType::Int, DataType::Int) => {
+                if !right_property.lower_int()?.iter().all(|v| v > &0) {
                     return Err("divisor must be greater than zero".into())
                 }
                 left_property.nature = propagate_binary_nature(
                     &left_property, &right_property,
                     &BinaryOperators {
-                        f64: None,
-                        i64: Some(Box::new(|l, r| Ok(l.rem_euclid(*r)))),
+                        float: None,
+                        int: Some(Box::new(|l, r| Ok(l.rem_euclid(*r)))),
                         bool: None,
                         str: None,
                     },
                     &OptimizeBinaryOperators {
-                        f64: None,
-                        i64: Some(&|bounds| Ok((Some(0), bounds.right_upper.map(|v| v - 1)))),
+                        float: None,
+                        int: Some(&|bounds| Ok((Some(0), bounds.right_upper.map(|v| v - 1)))),
                     }, left_property.num_columns()?)?;
             },
             _ => return Err("arguments for power must be numeric and homogeneously typed".into())
@@ -761,20 +761,20 @@ impl Component for proto::Multiply {
             nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
             nature: propagate_binary_nature(&left_property, &right_property, &BinaryOperators {
-                f64: Some(Box::new(|l: &f64, r: &f64| {
+                float: Some(Box::new(|l: &Float, r: &Float| {
                     let category = l * r;
                     if !category.is_finite() {
                         return Err("multiplication may result in underflow or overflow".into())
                     }
                     Ok(category)
                 })),
-                i64: Some(Box::new(|l: &i64, r: &i64|
+                int: Some(Box::new(|l: &Integer, r: &Integer|
                     l.checked_mul(*r).ok_or_else(|| Error::from("multiplication may result in underflow or overflow")))),
                 str: None,
                 bool: None,
             }, &OptimizeBinaryOperators {
-                f64: Some(&optimize_wrapper),
-                i64: Some(&optimize_wrapper),
+                float: Some(&optimize_wrapper),
+                int: Some(&optimize_wrapper),
             }, num_columns)?,
             c_stability: broadcast(&left_property.c_stability, num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, num_columns)?)
@@ -812,11 +812,11 @@ impl Component for proto::Negate {
         data_property.nature = propagate_unary_nature(
             &data_property,
             &UnaryOperators {
-                f64: None,
-                i64: None,
+                float: None,
+                int: None,
                 str: None,
                 bool: Some(Box::new(|v| Ok(!*v))),
-            }, &OptimizeUnaryOperators { f64: None, i64: None },
+            }, &OptimizeUnaryOperators { float: None, int: None },
             data_property.num_columns()?)?;
 
         Ok(ValueProperties::Array(data_property).into())
@@ -842,15 +842,15 @@ impl Component for proto::Negative {
         data_property.nature = propagate_unary_nature(
             &data_property,
             &UnaryOperators {
-                f64: Some(Box::new(|v| Ok(-*v))),
-                i64: Some(Box::new(|v| Ok(-*v))),
+                float: Some(Box::new(|v| Ok(-*v))),
+                int: Some(Box::new(|v| Ok(-*v))),
                 bool: None,
                 str: None,
             },
             &OptimizeUnaryOperators {
-                f64: Some(Box::new(|bounds|
+                float: Some(Box::new(|bounds|
                     Ok((bounds.upper.map(|v| -v), bounds.lower.map(|v| -v))))),
-                i64: Some(Box::new(|bounds|
+                int: Some(Box::new(|bounds|
                     Ok((bounds.upper.map(|v| -v), bounds.lower.map(|v| -v))))),
             }, data_property.num_columns()?)?;
 
@@ -890,11 +890,11 @@ impl Component for proto::Or {
         left_property.nature = propagate_binary_nature(
             &left_property, &right_property,
             &BinaryOperators {
-                f64: None,
-                i64: None,
+                float: None,
+                int: None,
                 str: None,
                 bool: Some(Box::new(|l: &bool, r: &bool| Ok(*l || *r))),
-            }, &OptimizeBinaryOperators { f64: None, i64: None },
+            }, &OptimizeBinaryOperators { float: None, int: None },
             num_columns)?;
         left_property.c_stability = broadcast(&left_property.c_stability, num_columns)?.iter()
             .zip(broadcast(&right_property.c_stability, num_columns)?)
@@ -934,40 +934,40 @@ impl Component for proto::Power {
         }
 
         match (data_property.data_type.clone(), radical_property.data_type.clone()) {
-            (DataType::F64, DataType::F64) => {
+            (DataType::Float, DataType::Float) => {
 
                 data_property.nature = propagate_binary_nature(
                     &data_property, &radical_property,
                     &BinaryOperators {
-                        f64: Some(Box::new(|l, r| Ok(l.powf(*r)))),
-                        i64: None,
+                        float: Some(Box::new(|l, r| Ok(l.powf(*r)))),
+                        int: None,
                         bool: None,
                         str: None,
                     },
                     // TODO: derive bounds
                     &OptimizeBinaryOperators {
-                        f64: Some(&|_bounds| Ok((None, None))),
-                        i64: None
+                        float: Some(&|_bounds| Ok((None, None))),
+                        int: None
                     }, data_property.num_columns()?)?;
             },
-            (DataType::I64, DataType::I64) => {
-                if !radical_property.lower_i64()?.iter().all(|min| min >= &0) {
+            (DataType::Int, DataType::Int) => {
+                if !radical_property.lower_int()?.iter().all(|min| min >= &0) {
                     return Err("integer power must not be negative".into())
                 }
 
                 data_property.nature = propagate_binary_nature(
                     &data_property, &radical_property,
                     &BinaryOperators {
-                        f64: None,
-                        i64: Some(Box::new(|l, r| l.checked_pow(*r as u32)
+                        float: None,
+                        int: Some(Box::new(|l, r| l.checked_pow(*r as u32)
                             .ok_or_else(|| Error::from("power may result in overflow")))),
                         bool: None,
                         str: None,
                     },
                     // TODO: derive bounds and throw error if potential overflow
                     &OptimizeBinaryOperators {
-                        f64: None,
-                        i64: Some(&|_bounds| Ok((None, None))),
+                        float: None,
+                        int: Some(&|_bounds| Ok((None, None))),
                     }, data_property.num_columns()?)?;
             },
             _ => return Err("arguments for power must be numeric and homogeneously typed".into())
@@ -1012,14 +1012,14 @@ impl Component for proto::RowMax {
             nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
             nature: propagate_binary_nature(&left_property, &right_property, &BinaryOperators {
-                f64: Some(Box::new(|l: &f64, r: &f64|
+                float: Some(Box::new(|l: &Float, r: &Float|
                     Ok(l.max(*r)))),
-                i64: Some(Box::new(|l: &i64, r: &i64|
+                int: Some(Box::new(|l: &Integer, r: &Integer|
                     Ok(*l.max(r)))),
                 str: Some(Box::new(|l: &String, r: &String| Ok(format!("{}{}", l, r)))),
                 bool: None,
             }, &OptimizeBinaryOperators {
-                f64: Some(&|bounds| Ok((
+                float: Some(&|bounds| Ok((
                     // min
                     match (bounds.left_lower, bounds.right_lower) {
                         (Some(left_lower), Some(right_lower)) => Some(left_lower.max(*right_lower)),
@@ -1031,7 +1031,7 @@ impl Component for proto::RowMax {
                         _ => None
                     }
                 ))),
-                i64: Some(&|bounds| Ok((
+                int: Some(&|bounds| Ok((
                     // min
                     match (bounds.left_lower, bounds.right_lower) {
                         (Some(left_lower), Some(right_lower)) => Some(*left_lower.max(right_lower)),
@@ -1091,14 +1091,14 @@ impl Component for proto::RowMin {
             nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
             nature: propagate_binary_nature(&left_property, &right_property, &BinaryOperators {
-                f64: Some(Box::new(|l: &f64, r: &f64|
+                float: Some(Box::new(|l: &Float, r: &Float|
                     Ok(l.min(*r)))),
-                i64: Some(Box::new(|l: &i64, r: &i64|
+                int: Some(Box::new(|l: &Integer, r: &Integer|
                     Ok(*l.min(r)))),
                 str: Some(Box::new(|l: &String, r: &String| Ok(format!("{}{}", l, r)))),
                 bool: None,
             }, &OptimizeBinaryOperators {
-                f64: Some(&|bounds| Ok((
+                float: Some(&|bounds| Ok((
                     // min
                     match (bounds.left_lower, bounds.right_lower) {
                         (Some(left_lower), Some(right_lower)) => Some(left_lower.min(*right_lower)),
@@ -1110,7 +1110,7 @@ impl Component for proto::RowMin {
                         _ => None
                     }
                 ))),
-                i64: Some(&|bounds| Ok((
+                int: Some(&|bounds| Ok((
                     // min
                     match (bounds.left_lower, bounds.right_lower) {
                         (Some(left_lower), Some(right_lower)) => Some(*left_lower.min(right_lower)),
@@ -1170,20 +1170,20 @@ impl Component for proto::Subtract {
             nullity: left_property.nullity || right_property.nullity,
             releasable: left_property.releasable && right_property.releasable,
             nature: propagate_binary_nature(&left_property, &right_property, &BinaryOperators {
-                f64: Some(Box::new(|l: &f64, r: &f64|
+                float: Some(Box::new(|l: &Float, r: &Float|
                     Ok(l - r))),
-                i64: Some(Box::new(|l: &i64, r: &i64|
+                int: Some(Box::new(|l: &Integer, r: &Integer|
                     l.checked_sub(r).ok_or_else(|| Error::from("subtraction may result in underflow or overflow")))),
                 str: None,
                 bool: None,
             }, &OptimizeBinaryOperators {
-                f64: Some(&|bounds| Ok((
+                float: Some(&|bounds| Ok((
                     bounds.left_lower.and_then(|lmin| bounds.right_lower.and_then(|rmin|
                         Some(lmin - rmin))),
                     bounds.left_upper.and_then(|lmax| bounds.right_upper.and_then(|rmax|
                         Some(lmax - rmax))),
                 ))),
-                i64: Some(&|bounds| Ok((
+                int: Some(&|bounds| Ok((
                     match (bounds.left_lower, bounds.right_lower) {
                         (Some(lmin), Some(rmin)) => Some(lmin.checked_sub(rmin)
                             .ok_or_else(|| Error::from("subtraction may result in underflow or overflow"))?),
@@ -1213,8 +1213,8 @@ impl Component for proto::Subtract {
 
 type UnaryOperator<T> = Option<Box<dyn Fn(&T) -> Result<T>>>;
 pub struct UnaryOperators {
-    pub f64: UnaryOperator<f64>,
-    pub i64: UnaryOperator<i64>,
+    pub float: UnaryOperator<Float>,
+    pub int: UnaryOperator<Integer>,
     pub str: UnaryOperator<String>,
     pub bool: UnaryOperator<bool>,
 }
@@ -1225,14 +1225,14 @@ pub struct UnaryBounds<'a, T> {
 
 type UnaryOptimizer<T> = Option<Box<dyn Fn(UnaryBounds<T>) -> Result<(Option<T>, Option<T>)>>>;
 pub struct OptimizeUnaryOperators {
-    pub f64: UnaryOptimizer<f64>,
-    pub i64: UnaryOptimizer<i64>,
+    pub float: UnaryOptimizer<Float>,
+    pub int: UnaryOptimizer<Integer>,
 }
 
 type BinaryOperator<T> = Option<Box<dyn Fn(&T, &T) -> Result<T>>>;
 pub struct BinaryOperators {
-    pub f64: BinaryOperator<f64>,
-    pub i64: BinaryOperator<i64>,
+    pub float: BinaryOperator<Float>,
+    pub int: BinaryOperator<Integer>,
     pub str: BinaryOperator<String>,
     pub bool: BinaryOperator<bool>,
 }
@@ -1245,8 +1245,8 @@ pub struct BinaryBounds<'a, T> {
 
 type BinaryOptimizer<'a, T> = Option<&'a dyn Fn(BinaryBounds<T>) -> Result<(Option<T>, Option<T>)>>;
 pub struct OptimizeBinaryOperators<'a> {
-    pub f64: BinaryOptimizer<'a, f64>,
-    pub i64: BinaryOptimizer<'a, i64>,
+    pub float: BinaryOptimizer<'a, Float>,
+    pub int: BinaryOptimizer<'a, Integer>,
 }
 
 pub fn propagate_binary_shape(left_property: &ArrayProperties, right_property: &ArrayProperties) -> Result<(i64, Option<i64>)> {
@@ -1294,13 +1294,13 @@ pub fn propagate_unary_nature(
     Ok(match data_property.nature.clone() {
         Some(nature) => match nature {
             Nature::Continuous(nature) => match (nature.lower, nature.upper) {
-                (Vector1DNull::F64(min), Vector1DNull::F64(max)) => {
+                (Vector1DNull::Float(min), Vector1DNull::Float(max)) => {
                     let mut output_min = Vec::new();
                     let mut output_max = Vec::new();
                     broadcast(&min, output_num_columns)?.iter()
                         .zip(broadcast(&max, output_num_columns)?.iter())
-                        .map(|(min, max)| {
-                            match &optimization_operator.f64 {
+                        .try_for_each(|(min, max)| {
+                            match &optimization_operator.float {
                                 Some(operator) => {
                                     let (min, max) = operator(UnaryBounds{ lower: min, upper: max })?;
                                     output_min.push(min);
@@ -1311,18 +1311,17 @@ pub fn propagate_unary_nature(
                                     output_max.push(None);
                                 }
                             };
-                            Ok(())
-                        })
-                        .collect::<Result<()>>()?;
-                    Some(Nature::Continuous(NatureContinuous { lower: Vector1DNull::F64(output_min), upper: Vector1DNull::F64(output_max)}))
+                            Ok::<_, Error>(())
+                        })?;
+                    Some(Nature::Continuous(NatureContinuous { lower: Vector1DNull::Float(output_min), upper: Vector1DNull::Float(output_max)}))
                 }
-                (Vector1DNull::I64(min), Vector1DNull::I64(max)) => {
+                (Vector1DNull::Int(min), Vector1DNull::Int(max)) => {
                     let mut output_min = Vec::new();
                     let mut output_max = Vec::new();
                     broadcast(&min, output_num_columns)?.iter()
                         .zip(broadcast(&max, output_num_columns)?.iter())
-                        .map(|(min, max)| {
-                            match &optimization_operator.i64 {
+                        .try_for_each(|(min, max)| {
+                            match &optimization_operator.int {
                                 Some(operator) => {
                                     let (min, max) = operator(UnaryBounds{ lower: min, upper: max })?;
                                     output_min.push(min);
@@ -1333,22 +1332,21 @@ pub fn propagate_unary_nature(
                                     output_max.push(None);
                                 }
                             };
-                            Ok(())
-                        })
-                        .collect::<Result<()>>()?;
-                    Some(Nature::Continuous(NatureContinuous { lower: Vector1DNull::I64(output_min), upper: Vector1DNull::I64(output_max)}))
+                            Ok::<_, Error>(())
+                        })?;
+                    Some(Nature::Continuous(NatureContinuous { lower: Vector1DNull::Int(output_min), upper: Vector1DNull::Int(output_max)}))
                 },
                 _ => return Err("continuous bounds must be numeric and homogeneously typed".into())
             }
             Nature::Categorical(nature) => Some(Nature::Categorical(NatureCategorical { categories: match nature.categories.standardize(output_num_columns)? {
-                Jagged::F64(categories) => Jagged::F64(categories.iter().map(|cats|
-                    match &operator.f64 {
+                Jagged::Float(categories) => Jagged::Float(categories.iter().map(|cats|
+                    match &operator.float {
                         Some(operator) =>
                             Ok(cats.iter().map(operator).collect::<Result<Vec<_>>>()?),
                         None => Err("categories cannot be propagated for floats".into()),
                     }).collect::<Result<Vec<Vec<_>>>>()?),
-                Jagged::I64(categories) => Jagged::I64(categories.iter().map(|cats|
-                    match &operator.i64 {
+                Jagged::Int(categories) => Jagged::Int(categories.iter().map(|cats|
+                    match &operator.int {
                         Some(operator) =>
                             Ok(cats.iter().map(operator).collect::<Result<Vec<_>>>()?),
                         None => Err("categories cannot be propagated for integers".into()),
@@ -1410,7 +1408,7 @@ fn propagate_binary_continuous_nature(
     } = right_nature;
 
     Ok(match (left_lower, left_upper, right_lower, right_upper) {
-        (Vector1DNull::F64(lmin), Vector1DNull::F64(lmax), Vector1DNull::F64(rmin), Vector1DNull::F64(rmax)) => {
+        (Vector1DNull::Float(lmin), Vector1DNull::Float(lmax), Vector1DNull::Float(rmin), Vector1DNull::Float(rmax)) => {
             let lmin = broadcast(&lmin, output_num_columns)?;
             let lmax = broadcast(&lmax, output_num_columns)?;
             let rmin = broadcast(&rmin, output_num_columns)?;
@@ -1419,8 +1417,8 @@ fn propagate_binary_continuous_nature(
             let mut min = Vec::new();
             let mut max = Vec::new();
             lmin.iter().zip(lmax.iter()).zip(rmin.iter().zip(rmax.iter()))
-                .map(|((left_min, left_max), (right_min, right_max))| {
-                    match &optimization_operator.f64 {
+                .try_for_each(|((left_min, left_max), (right_min, right_max))| {
+                    match &optimization_operator.float {
                         Some(operator) => {
                             let (col_min, col_max) = operator(BinaryBounds { left_lower: left_min, left_upper: left_max, right_lower: right_min, right_upper: right_max })?;
                             min.push(col_min);
@@ -1431,12 +1429,11 @@ fn propagate_binary_continuous_nature(
                             max.push(None);
                         }
                     }
-                    Ok(())
-                })
-                .collect::<Result<()>>()?;
-            Some(Nature::Continuous(NatureContinuous { lower: Vector1DNull::F64(min), upper: Vector1DNull::F64(max)}))
+                    Ok::<_, Error>(())
+                })?;
+            Some(Nature::Continuous(NatureContinuous { lower: Vector1DNull::Float(min), upper: Vector1DNull::Float(max)}))
         },
-        (Vector1DNull::I64(lmin), Vector1DNull::I64(lmax), Vector1DNull::I64(rmin), Vector1DNull::I64(rmax)) => {
+        (Vector1DNull::Int(lmin), Vector1DNull::Int(lmax), Vector1DNull::Int(rmin), Vector1DNull::Int(rmax)) => {
             let lmin = broadcast(&lmin, output_num_columns)?;
             let lmax = broadcast(&lmax, output_num_columns)?;
             let rmin = broadcast(&rmin, output_num_columns)?;
@@ -1445,8 +1442,8 @@ fn propagate_binary_continuous_nature(
             let mut min = Vec::new();
             let mut max = Vec::new();
             lmin.iter().zip(lmax.iter()).zip(rmin.iter().zip(rmax.iter()))
-                .map(|((left_min, left_max), (right_min, right_max))| {
-                    match &optimization_operator.i64 {
+                .try_for_each(|((left_min, left_max), (right_min, right_max))| {
+                    match &optimization_operator.int {
                         Some(operator) => {
                             let (col_min, col_max) = operator(BinaryBounds { left_lower: left_min, left_upper: left_max, right_lower: right_min, right_upper: right_max })?;
                             min.push(col_min);
@@ -1457,10 +1454,9 @@ fn propagate_binary_continuous_nature(
                             max.push(None);
                         }
                     }
-                    Ok(())
-                })
-                .collect::<Result<()>>()?;
-            Some(Nature::Continuous(NatureContinuous { lower: Vector1DNull::I64(min), upper: Vector1DNull::I64(max)}))
+                    Ok::<_, Error>(())
+                })?;
+            Some(Nature::Continuous(NatureContinuous { lower: Vector1DNull::Int(min), upper: Vector1DNull::Int(max)}))
         },
         _ => return Err("continuous bounds must be numeric and homogeneously typed".into())
     })
@@ -1474,9 +1470,9 @@ fn propagate_binary_categorical_nature(
 ) -> Result<Option<Nature>> {
     Ok(Some(Nature::Categorical(NatureCategorical {
         categories: match (left_nature.categories.clone().standardize(output_num_columns)?, right_nature.categories.clone().standardize(output_num_columns)?) {
-            (Jagged::F64(left), Jagged::F64(right)) =>
-                Jagged::F64(left.iter().zip(right.iter()).map(|(left, right)|
-                    match &operator.f64 {
+            (Jagged::Float(left), Jagged::Float(right)) =>
+                Jagged::Float(left.iter().zip(right.iter()).map(|(left, right)|
+                    match &operator.float {
                         Some(operator) => Ok(left.iter()
                             .map(|left| right.iter()
                                 .map(|right| operator(left, right))
@@ -1485,9 +1481,9 @@ fn propagate_binary_categorical_nature(
                             .into_iter().flatten().collect::<Vec<_>>()),
                         None => Err("categories cannot be propagated for floats".into()),
                     }).collect::<Result<Vec<Vec<_>>>>()?),
-            (Jagged::I64(left), Jagged::I64(right)) =>
-                Jagged::I64(left.iter().zip(right.iter()).map(|(left, right)|
-                    match &operator.i64 {
+            (Jagged::Int(left), Jagged::Int(right)) =>
+                Jagged::Int(left.iter().zip(right.iter()).map(|(left, right)|
+                    match &operator.int {
                         Some(operator) => Ok(left.iter()
                             .map(|left| right.iter()
                                 .map(|right| operator(left, right))

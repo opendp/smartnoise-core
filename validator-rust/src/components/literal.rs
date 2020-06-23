@@ -3,7 +3,7 @@ use crate::errors::*;
 use crate::components::{Named, Component};
 use crate::utilities::array::get_ith_column;
 use ndarray::ArrayD;
-use crate::{proto, base, Warnable};
+use crate::{proto, base, Warnable, Float, Integer};
 use crate::base::{Value, Array, ValueProperties, ArrayProperties, DataType, IndexKey};
 use indexmap::map::IndexMap;
 
@@ -44,7 +44,7 @@ impl Named for proto::Literal {
 
         // annoying mini-trait to work around the generic from
         trait ToIndexKey { fn to_index_key(self) -> IndexKey; }
-        impl ToIndexKey for f64 {
+        impl ToIndexKey for Float {
             fn to_index_key(self) -> IndexKey {
                 self.to_string().into()
             }
@@ -58,7 +58,7 @@ impl Named for proto::Literal {
                 }
             }
         }
-        make_convertable!(i64);
+        make_convertable!(Integer);
         make_convertable!(bool);
         make_convertable!(String);
 
@@ -83,8 +83,8 @@ impl Named for proto::Literal {
                 Value::Jagged(jagged) => Ok((0..jagged.num_columns()).map(|_| "[Literal vector]".into()).collect()),
                 Value::Indexmap(_) => Err("names for indexmap literals are not supported".into()),  // (or necessary)
                 Value::Array(value) => match value {
-                    Array::F64(array) => array_to_names(array, value.num_columns()?),
-                    Array::I64(array) => array_to_names(array, value.num_columns()?),
+                    Array::Float(array) => array_to_names(array, value.num_columns()?),
+                    Array::Int(array) => array_to_names(array, value.num_columns()?),
                     Array::Str(array) => array_to_names(array, value.num_columns()?),
                     Array::Bool(array) => array_to_names(array, value.num_columns()?),
                 },

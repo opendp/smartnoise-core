@@ -4,7 +4,7 @@ use crate::NodeArguments;
 use whitenoise_validator::base::ReleaseNode;
 use whitenoise_validator::utilities::get_argument;
 use crate::components::Evaluable;
-use whitenoise_validator::proto;
+use whitenoise_validator::{proto, Float};
 use ndarray::ArrayD;
 use crate::components::mean::mean;
 
@@ -12,7 +12,7 @@ use std::convert::TryFrom;
 
 impl Evaluable for proto::RawMoment {
     fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        let data = get_argument(arguments, "data")?.array()?.f64()?;
+        let data = get_argument(arguments, "data")?.array()?.float()?;
         Ok(ReleaseNode::new(raw_moment(data, self.order)?.into()))
     }
 }
@@ -31,17 +31,17 @@ impl Evaluable for proto::RawMoment {
 /// ```
 /// use ndarray::{ArrayD, arr2, arr1};
 /// use whitenoise_runtime::components::raw_moment::raw_moment;
-/// let data: ArrayD<f64> = arr2(&[ [1., 1., 1.], [2., 4., 6.] ]).into_dyn();
+/// use whitenoise_validator::Float;
+/// let data: ArrayD<Float> = arr2(&[ [1., 1., 1.], [2., 4., 6.] ]).into_dyn();
 /// let second_moments = raw_moment(&data, 2).unwrap();
 /// assert_eq!(second_moments, arr2(&[[2.5, 8.5, 18.5]]).into_dyn());
 /// ```
-pub fn raw_moment(data: &ArrayD<f64>, order: u32) -> Result<ArrayD<f64>> {
+pub fn raw_moment(data: &ArrayD<Float>, order: u32) -> Result<ArrayD<Float>> {
     let mut data = data.clone();
 
-    let k = match i32::try_from(order) {
-        Ok(v) => v,
-        Err(_) => return Err("order: invalid size".into())
-    };
+    let k = i32::try_from(order)
+        .map_err(|_| Error::from("order: invalid size"))?;
+
     // iterate over the generalized columns
     data.gencolumns_mut().into_iter()
         // for each pairing, iterate over the cells

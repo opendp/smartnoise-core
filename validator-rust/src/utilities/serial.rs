@@ -1,6 +1,6 @@
 //! Serialization and deserialization between prost protobuf structs and internal representations
 
-use crate::proto;
+use crate::{proto, Integer, Float};
 use std::collections::HashMap;
 use crate::base::{Release, Nature, Jagged, Vector1D, Value, Array, Vector1DNull, NatureCategorical, NatureContinuous, AggregatorProperties, ValueProperties, IndexmapProperties, JaggedProperties, DataType, ArrayProperties, ReleaseNode, GroupId, IndexKey, ComponentExpansion};
 use indexmap::IndexMap;
@@ -47,15 +47,18 @@ pub fn parse_array1d_str_null(value: proto::Array1dStrNull) -> Vec<Option<String
 pub fn parse_array1d_null(value: proto::Array1dNull) -> Vector1DNull {
     match value.data.unwrap() {
         proto::array1d_null::Data::Bool(vector) => Vector1DNull::Bool(parse_array1d_bool_null(vector)),
-        proto::array1d_null::Data::I64(vector) => Vector1DNull::I64(parse_array1d_i64_null(vector)),
-        proto::array1d_null::Data::F64(vector) => Vector1DNull::F64(parse_array1d_f64_null(vector)),
         proto::array1d_null::Data::String(vector) => Vector1DNull::Str(parse_array1d_str_null(vector)),
+        proto::array1d_null::Data::I64(vector) => Vector1DNull::Int(parse_array1d_i64_null(vector)
+            .into_iter().map(|v| v.map(|v| v as Integer)).collect()),
+        proto::array1d_null::Data::F64(vector) => Vector1DNull::Float(parse_array1d_f64_null(vector)
+            .into_iter().map(|v| v.map(|v| v as Float)).collect()),
     }
 }
 
 
 pub fn parse_array1d_bool(value: proto::Array1dBool) -> Vec<bool> { value.data }
 
+// PERF: can use conditional compilation to remove the loop when type matches proto
 pub fn parse_array1d_i64(value: proto::Array1dI64) -> Vec<i64> { value.data }
 
 pub fn parse_array1d_f64(value: proto::Array1dF64) -> Vec<f64> { value.data }
@@ -66,9 +69,11 @@ pub fn parse_array1d_str(value: proto::Array1dStr) -> Vec<String> { value.data }
 pub fn parse_array1d(value: proto::Array1d) -> Vector1D {
     match value.data.unwrap() {
         proto::array1d::Data::Bool(vector) => Vector1D::Bool(parse_array1d_bool(vector)),
-        proto::array1d::Data::I64(vector) => Vector1D::I64(parse_array1d_i64(vector)),
-        proto::array1d::Data::F64(vector) => Vector1D::F64(parse_array1d_f64(vector)),
         proto::array1d::Data::String(vector) => Vector1D::Str(parse_array1d_str(vector)),
+        proto::array1d::Data::I64(vector) => Vector1D::Int(parse_array1d_i64(vector)
+            .into_iter().map(|v| v as Integer).collect()),
+        proto::array1d::Data::F64(vector) => Vector1D::Float(parse_array1d_f64(vector)
+            .into_iter().map(|v| v as Float).collect()),
     }
 }
 
@@ -77,8 +82,8 @@ pub fn parse_array(value: proto::Array) -> Array {
     let shape: Vec<usize> = value.shape.into_iter().map(|x| x as usize).collect();
     match parse_array1d(value.flattened.unwrap()) {
         Vector1D::Bool(vector) => Array::Bool(ndarray::Array::from_shape_vec(shape, vector).unwrap().into_dyn()),
-        Vector1D::I64(vector) => Array::I64(ndarray::Array::from_shape_vec(shape, vector).unwrap().into_dyn()),
-        Vector1D::F64(vector) => Array::F64(ndarray::Array::from_shape_vec(shape, vector).unwrap().into_dyn()),
+        Vector1D::Int(vector) => Array::Int(ndarray::Array::from_shape_vec(shape, vector).unwrap().into_dyn()),
+        Vector1D::Float(vector) => Array::Float(ndarray::Array::from_shape_vec(shape, vector).unwrap().into_dyn()),
         Vector1D::Str(vector) => Array::Str(ndarray::Array::from_shape_vec(shape, vector).unwrap().into_dyn()),
     }
 }
@@ -95,8 +100,8 @@ pub fn parse_data_type(value: proto::DataType) -> DataType {
     match value {
         proto::DataType::Unknown => DataType::Unknown,
         proto::DataType::Bool => DataType::Bool,
-        proto::DataType::F64 => DataType::F64,
-        proto::DataType::I64 => DataType::I64,
+        proto::DataType::F64 => DataType::Float,
+        proto::DataType::I64 => DataType::Int,
         proto::DataType::String => DataType::Str,
     }
 }
@@ -109,16 +114,16 @@ pub fn parse_jagged(value: proto::Jagged) -> Jagged {
                 Vector1D::Bool(vector) => vector,
                 _ => panic!()
             }).collect::<Vec<Vec<bool>>>()),
-        proto::DataType::F64 => Jagged::F64(value.data.into_iter()
+        proto::DataType::F64 => Jagged::Float(value.data.into_iter()
             .map(|column| match parse_array1d(column) {
-                Vector1D::F64(vector) => vector,
+                Vector1D::Float(vector) => vector,
                 _ => panic!()
-            }).collect::<Vec<Vec<f64>>>()),
-        proto::DataType::I64 => Jagged::I64(value.data.into_iter()
+            }).collect::<Vec<Vec<Float>>>()),
+        proto::DataType::I64 => Jagged::Int(value.data.into_iter()
             .map(|column| match parse_array1d(column) {
-                Vector1D::I64(vector) => vector,
+                Vector1D::Int(vector) => vector,
                 _ => panic!()
-            }).collect::<Vec<Vec<i64>>>()),
+            }).collect::<Vec<Vec<Integer>>>()),
         proto::DataType::String => Jagged::Str(value.data.into_iter()
             .map(|column| match parse_array1d(column) {
                 Vector1D::Str(vector) => vector,
@@ -197,7 +202,7 @@ pub fn parse_index_key(value: proto::IndexKey) -> IndexKey {
     match value.key.unwrap() {
         proto::index_key::Key::Str(key) => IndexKey::Str(key),
         proto::index_key::Key::Bool(key) => IndexKey::Bool(key),
-        proto::index_key::Key::I64(key) => IndexKey::I64(key),
+        proto::index_key::Key::I64(key) => IndexKey::Int(key as Integer),
         proto::index_key::Key::Tuple(key) => IndexKey::Tuple(key.values.into_iter().map(parse_index_key).collect())
     }
 }
@@ -215,7 +220,8 @@ pub fn parse_array_properties(value: proto::ArrayProperties) -> ArrayProperties 
         num_columns: value.num_columns.and_then(parse_i64_null),
         nullity: value.nullity,
         releasable: value.releasable,
-        c_stability: parse_array1d_f64(value.c_stability.to_owned().unwrap()),
+        c_stability: parse_array1d_f64(value.c_stability.to_owned().unwrap())
+            .into_iter().map(|v| v as Float).collect(),
         aggregator: value.aggregator.map(|aggregator| AggregatorProperties {
             component: aggregator.component.unwrap().variant.unwrap(),
             properties: parse_indexmap_value_properties(aggregator.properties.unwrap()),
@@ -321,9 +327,11 @@ pub fn serialize_array1d_null(value: Vector1DNull) -> proto::Array1dNull {
     proto::Array1dNull {
         data: Some(match value {
             Vector1DNull::Bool(vector) => proto::array1d_null::Data::Bool(serialize_array1d_bool_null(vector)),
-            Vector1DNull::I64(vector) => proto::array1d_null::Data::I64(serialize_array1d_i64_null(vector)),
-            Vector1DNull::F64(vector) => proto::array1d_null::Data::F64(serialize_array1d_f64_null(vector)),
             Vector1DNull::Str(vector) => proto::array1d_null::Data::String(serialize_array1d_str_null(vector)),
+            Vector1DNull::Int(vector) => proto::array1d_null::Data::I64(serialize_array1d_i64_null(vector
+                .into_iter().map(|v| v.map(|v| v as i64)).collect())),
+            Vector1DNull::Float(vector) => proto::array1d_null::Data::F64(serialize_array1d_f64_null(vector
+                .into_iter().map(|v| v.map(|v| v as f64)).collect())),
         })
     }
 }
@@ -342,9 +350,11 @@ pub fn serialize_array1d(value: Vector1D) -> proto::Array1d {
     proto::Array1d {
         data: Some(match value {
             Vector1D::Bool(vector) => proto::array1d::Data::Bool(serialize_array1d_bool(vector)),
-            Vector1D::I64(vector) => proto::array1d::Data::I64(serialize_array1d_i64(vector)),
-            Vector1D::F64(vector) => proto::array1d::Data::F64(serialize_array1d_f64(vector)),
             Vector1D::Str(vector) => proto::array1d::Data::String(serialize_array1d_str(vector)),
+            Vector1D::Int(vector) => proto::array1d::Data::I64(serialize_array1d_i64(vector
+                .into_iter().map(|v| v as i64).collect())),
+            Vector1D::Float(vector) => proto::array1d::Data::F64(serialize_array1d_f64(vector
+                .into_iter().map(|v| v as f64).collect())),
         })
     }
 }
@@ -355,12 +365,12 @@ pub fn serialize_array(value: Array) -> proto::Array {
             flattened: Some(serialize_array1d(Vector1D::Bool(array.iter().copied().collect()))),
             shape: array.shape().iter().map(|y| { *y as u64 }).collect(),
         },
-        Array::F64(array) => proto::Array {
-            flattened: Some(serialize_array1d(Vector1D::F64(array.iter().copied().collect()))),
+        Array::Float(array) => proto::Array {
+            flattened: Some(serialize_array1d(Vector1D::Float(array.iter().copied().collect()))),
             shape: array.shape().iter().map(|y| { *y as u64 }).collect(),
         },
-        Array::I64(array) => proto::Array {
-            flattened: Some(serialize_array1d(Vector1D::I64(array.iter().copied().collect()))),
+        Array::Int(array) => proto::Array {
+            flattened: Some(serialize_array1d(Vector1D::Int(array.iter().copied().collect()))),
             shape: array.shape().iter().map(|y| { *y as u64 }).collect(),
         },
         Array::Str(array) => proto::Array {
@@ -381,8 +391,8 @@ pub fn serialize_data_type(value: DataType) -> proto::DataType {
     match value {
         DataType::Unknown => proto::DataType::Unknown,
         DataType::Bool => proto::DataType::Bool,
-        DataType::F64 => proto::DataType::F64,
-        DataType::I64 => proto::DataType::I64,
+        DataType::Float => proto::DataType::F64,
+        DataType::Int => proto::DataType::I64,
         DataType::Str => proto::DataType::String,
     }
 }
@@ -391,14 +401,14 @@ pub fn serialize_jagged(value: Jagged) -> proto::Jagged {
     proto::Jagged {
         data_type: match &value {
             Jagged::Bool(_x) => proto::DataType::Bool as i32,
-            Jagged::F64(_x) => proto::DataType::F64 as i32,
-            Jagged::I64(_x) => proto::DataType::I64 as i32,
+            Jagged::Float(_x) => proto::DataType::F64 as i32,
+            Jagged::Int(_x) => proto::DataType::I64 as i32,
             Jagged::Str(_x) => proto::DataType::String as i32,
         },
         data: match value {
             Jagged::Bool(data) => data.into_iter().map(Vector1D::Bool).map(serialize_array1d).collect(),
-            Jagged::F64(data) => data.into_iter().map(Vector1D::F64).map(serialize_array1d).collect(),
-            Jagged::I64(data) => data.into_iter().map(Vector1D::I64).map(serialize_array1d).collect(),
+            Jagged::Float(data) => data.into_iter().map(Vector1D::Float).map(serialize_array1d).collect(),
+            Jagged::Int(data) => data.into_iter().map(Vector1D::Int).map(serialize_array1d).collect(),
             Jagged::Str(data) => data.into_iter().map(Vector1D::Str).map(serialize_array1d).collect(),
         },
     }
@@ -464,7 +474,7 @@ pub fn serialize_index_key(value: IndexKey) -> proto::IndexKey {
         key: Some(match value {
             IndexKey::Str(key) => proto::index_key::Key::Str(key),
             IndexKey::Bool(key) => proto::index_key::Key::Bool(key),
-            IndexKey::I64(key) => proto::index_key::Key::I64(key),
+            IndexKey::Int(key) => proto::index_key::Key::I64(key as i64),
             IndexKey::Tuple(key) =>
                 proto::index_key::Key::Tuple(proto::index_key::Tuple {
                     values: key.into_iter().map(serialize_index_key).collect()
@@ -494,7 +504,7 @@ pub fn serialize_array_properties(value: ArrayProperties) -> proto::ArrayPropert
         num_columns: Some(serialize_i64_null(num_columns)),
         nullity,
         releasable,
-        c_stability: Some(serialize_array1d_f64(c_stability)),
+        c_stability: Some(serialize_array1d_f64(c_stability.into_iter().map(|v| v as f64).collect())),
         nature: nature.map(|nature| match nature {
             Nature::Categorical(categorical) => proto::array_properties::Nature::Categorical(proto::NatureCategorical {
                 categories: Some(serialize_jagged(categorical.categories))

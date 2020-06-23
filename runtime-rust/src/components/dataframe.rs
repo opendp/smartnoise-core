@@ -26,13 +26,13 @@ impl Evaluable for proto::Dataframe {
 
         // split each column name into its own column
         Ok(ReleaseNode::new(Value::Indexmap(match data {
-            Array::F64(array) => {
+            Array::Float(array) => {
                 let standardized = standardize_columns(array, num_columns)?;
                 column_names.into_iter().enumerate()
                     .map(|(idx, name)| Ok((name.to_string().into(), get_ith_column(&standardized, idx)?.into())))
                     .collect::<Result<IndexMap<IndexKey, Value>>>()?
             }
-            Array::I64(array) => {
+            Array::Int(array) => {
                 let standardized = standardize_columns(array, num_columns)?;
                 column_names.into_iter().enumerate()
                     .map(|(idx, name)| Ok((name.to_string().into(), get_ith_column(&standardized, idx)?.into())))

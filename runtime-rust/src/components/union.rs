@@ -4,7 +4,7 @@ use crate::NodeArguments;
 use whitenoise_validator::base::{ReleaseNode, Array, IndexKey, Value};
 use crate::components::Evaluable;
 
-use whitenoise_validator::proto;
+use whitenoise_validator::{proto, Float, Integer};
 use whitenoise_validator::utilities::array::slow_stack;
 use ndarray::{Axis, ArrayViewD, stack};
 use indexmap::map::IndexMap;
@@ -25,29 +25,33 @@ impl Evaluable for proto::Union {
             .map(|v| v.array()).collect::<Result<Vec<&Array>>>()?;
 
         Ok(ReleaseNode::new(match arrays.first().ok_or_else(|| "must have at least one partition")? {
-            Array::F64(_) => {
+            Array::Float(_) => {
                 let inputs = arrays.iter()
-                    .map(|v| v.f64().and_then(|v| to_nd(v.clone(), 2)))
-                    .collect::<Result<Vec<ndarray::ArrayD<f64>>>>()?;
-                stack(Axis(0), &inputs.iter().map(|v| v.view()).collect::<Vec<ArrayViewD<f64>>>())?.into()
+                    .map(|v| v.float().and_then(|v| to_nd(v.clone(), 2)))
+                    .collect::<Result<Vec<ndarray::ArrayD<Float>>>>()?;
+                stack(Axis(0), &inputs.iter().map(|v| v.view())
+                    .collect::<Vec<ArrayViewD<Float>>>())?.into()
             },
-            Array::I64(_) => {
+            Array::Int(_) => {
                 let inputs = arrays.iter()
-                    .map(|v| v.i64().and_then(|v| to_nd(v.clone(), 2)))
-                    .collect::<Result<Vec<ndarray::ArrayD<i64>>>>()?;
-                stack(Axis(0), &inputs.iter().map(|v| v.view()).collect::<Vec<ArrayViewD<i64>>>())?.into()
+                    .map(|v| v.int().and_then(|v| to_nd(v.clone(), 2)))
+                    .collect::<Result<Vec<ndarray::ArrayD<Integer>>>>()?;
+                stack(Axis(0), &inputs.iter().map(|v| v.view())
+                    .collect::<Vec<ArrayViewD<Integer>>>())?.into()
             },
             Array::Bool(_) => {
                 let inputs = arrays.iter()
                     .map(|v| v.bool().and_then(|v| to_nd(v.clone(), 2)))
                     .collect::<Result<Vec<ndarray::ArrayD<bool>>>>()?;
-                stack(Axis(0), &inputs.iter().map(|v| v.view()).collect::<Vec<ArrayViewD<bool>>>())?.into()
+                stack(Axis(0), &inputs.iter().map(|v| v.view())
+                    .collect::<Vec<ArrayViewD<bool>>>())?.into()
             },
             Array::Str(_) => {
                 let inputs = arrays.iter()
                     .map(|v| v.string().and_then(|v| to_nd(v.clone(), 2)))
                     .collect::<Result<Vec<ndarray::ArrayD<String>>>>()?;
-                slow_stack(Axis(0), &inputs.iter().map(|v| v.view()).collect::<Vec<ArrayViewD<String>>>())?.into()
+                slow_stack(Axis(0), &inputs.iter().map(|v| v.view())
+                    .collect::<Vec<ArrayViewD<String>>>())?.into()
             }
         }))
     }

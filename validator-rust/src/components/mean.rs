@@ -1,6 +1,6 @@
 use crate::errors::*;
 
-use crate::{proto, base, Warnable};
+use crate::{proto, base, Warnable, Float};
 
 use crate::components::{Component, Sensitivity};
 use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType, IndexKey};
@@ -35,7 +35,7 @@ impl Component for proto::Mean {
                 (0..num_columns).map(|_| 1.).collect())?.into_dyn().into()
         });
 
-        if data_property.data_type != DataType::F64 {
+        if data_property.data_type != DataType::Float {
             return Err("data: atomic type must be float".into())
         }
 
@@ -64,9 +64,9 @@ impl Sensitivity for proto::Mean {
 
                 data_property.assert_non_null()?;
                 data_property.assert_is_not_aggregated()?;
-                let data_lower = data_property.lower_f64()?;
-                let data_upper = data_property.upper_f64()?;
-                let data_n = data_property.num_records()? as f64;
+                let data_lower = data_property.lower_float()?;
+                let data_upper = data_property.upper_float()?;
+                let data_n = data_property.num_records()? as Float;
 
                 // AddRemove vs. Substitute share the same bounds
 
@@ -74,7 +74,7 @@ impl Sensitivity for proto::Mean {
                     1 | 2 => data_lower.iter()
                         .zip(data_upper.iter())
                         .map(|(min, max)| (max - min) / data_n)
-                        .collect::<Vec<f64>>(),
+                        .collect::<Vec<Float>>(),
                     _ => return Err("KNorm sensitivity is only supported in L1 and L2 spaces".into())
                 };
 

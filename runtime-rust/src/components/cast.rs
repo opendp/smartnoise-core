@@ -4,7 +4,7 @@ use crate::NodeArguments;
 use whitenoise_validator::base::{Value, Array, ReleaseNode};
 use crate::components::Evaluable;
 use ndarray::ArrayD;
-use whitenoise_validator::proto;
+use whitenoise_validator::{proto, Float, Integer};
 use crate::utilities::noise;
 use whitenoise_validator::utilities::get_argument;
 
@@ -18,12 +18,12 @@ impl Evaluable for proto::Cast {
                 let true_label = get_argument(arguments, "true_label")?.array()?;
                 Ok(cast_bool(&data, &true_label)?.into())
             },
-            "float" | "real" => Ok(Value::Array(Array::F64(cast_f64(&data)?))),
+            "float" | "real" => Ok(Value::Array(Array::Float(cast_float(&data)?))),
             "int" | "integer" => {
                 // TODO: handle different bounds on each column
-                let lower = get_argument(arguments, "lower")?.first_i64()?;
-                let upper = get_argument(arguments, "upper")?.first_i64()?;
-                Ok(cast_i64(&data, lower, upper)?.into())
+                let lower = get_argument(arguments, "lower")?.first_int()?;
+                let upper = get_argument(arguments, "upper")?.first_int()?;
+                Ok(cast_int(&data, lower, upper)?.into())
             },
             "string" | "str" =>
                 Ok(cast_str(&data)?.into()),
@@ -52,8 +52,8 @@ pub fn cast_bool(data: &Array, positive: &Array) -> Result<ArrayD<bool>> {
     match (data, positive) {
         (Array::Str(data), Array::Str(label)) => compare(&data, &label),
         (Array::Bool(data), Array::Bool(label)) => compare(&data, &label),
-        (Array::I64(data), Array::I64(label)) => compare(&data, &label),
-        (Array::F64(data), Array::F64(label)) => compare(&data, &label),
+        (Array::Int(data), Array::Int(label)) => compare(&data, &label),
+        (Array::Float(data), Array::Float(label)) => compare(&data, &label),
         _ => Err("data and positive class must share the same type".into())
     }
 }
@@ -70,15 +70,15 @@ pub fn cast_bool(data: &Array, positive: &Array) -> Result<ArrayD<bool>> {
 /// * `data` - Data to be cast to `f64`.
 ///
 /// # Return
-/// Data cast to `f64`.
-pub fn cast_f64(data: &Array) -> Result<ArrayD<f64>> {
+/// Data cast to `Float`.
+pub fn cast_float(data: &Array) -> Result<ArrayD<Float>> {
     Ok(match data {
-        Array::Str(data) => data.mapv(|v| match v.parse::<f64>() {
-            Ok(v) => v, Err(_) => std::f64::NAN
+        Array::Str(data) => data.mapv(|v| match v.parse::<Float>() {
+            Ok(v) => v, Err(_) => Float::NAN
         }),
         Array::Bool(data) => data.mapv(|v| if v {1.} else {0.}),
-        Array::I64(data) => data.mapv(|v| v as f64),
-        Array::F64(data) => data.clone(),
+        Array::Int(data) => data.mapv(|v| v as Float),
+        Array::Float(data) => data.clone(),
     })
 }
 
@@ -98,14 +98,14 @@ pub fn cast_f64(data: &Array) -> Result<ArrayD<f64>> {
 ///
 /// # Return
 /// Data cast to `i64`.
-pub fn cast_i64(data: &Array, lower: i64, upper: i64) -> Result<ArrayD<i64>> {
+pub fn cast_int(data: &Array, lower: Integer, upper: Integer) -> Result<ArrayD<Integer>> {
     Ok(match data {
         Array::Str(data) => data
-            .mapv(|v| v.parse::<i64>().unwrap_or_else(|_| noise::sample_uniform_int(lower, upper).unwrap())),
-        Array::F64(data) => data
-            .mapv(|v| if !v.is_nan() {v.round() as i64} else {noise::sample_uniform_int(lower, upper).unwrap()}),
+            .mapv(|v| v.parse::<Integer>().unwrap_or_else(|_| noise::sample_uniform_int(lower, upper).unwrap())),
+        Array::Float(data) => data
+            .mapv(|v| if !v.is_nan() {v.round() as Integer} else {noise::sample_uniform_int(lower, upper).unwrap()}),
         Array::Bool(data) => data.mapv(|v| if v {1} else {0}),
-        Array::I64(data) => data.clone()
+        Array::Int(data) => data.clone()
     })
 }
 
@@ -121,8 +121,8 @@ pub fn cast_i64(data: &Array, lower: i64, upper: i64) -> Result<ArrayD<i64>> {
 pub fn cast_str(data: &Array) -> Result<ArrayD<String>> {
     Ok(match data {
         Array::Str(data) => data.clone(),
-        Array::F64(data) => data.mapv(|v| v.to_string()),
+        Array::Float(data) => data.mapv(|v| v.to_string()),
         Array::Bool(data) => data.mapv(|v| v.to_string()),
-        Array::I64(data) => data.mapv(|v| v.to_string())
+        Array::Int(data) => data.mapv(|v| v.to_string())
     })
 }

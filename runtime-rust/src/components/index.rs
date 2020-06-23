@@ -18,8 +18,8 @@ impl Evaluable for proto::Index {
         let data = get_argument(arguments, "data")?;
 
         let is_partition = get_argument(arguments, "is_partition")
-            .map(|v| v.clone())
-            .unwrap_or_else(|_| false.into()).first_bool()?;
+            .map_or_else(|_| false.into(), |v| v.clone())
+            .first_bool()?;
 
         let dimensionality;
 
@@ -31,11 +31,11 @@ impl Evaluable for proto::Index {
                     let mut indices = match names.array()? {
                         Array::Str(names) => to_name_vec(names)?
                             .into_iter().map(IndexKey::from).collect(),
-                        Array::I64(names) => to_name_vec(names)?
+                        Array::Int(names) => to_name_vec(names)?
                             .into_iter().map(IndexKey::from).collect(),
                         Array::Bool(names) => to_name_vec(names)?
                             .into_iter().map(IndexKey::from).collect(),
-                        Array::F64(_) => return Err("cannot index by floats".into()),
+                        Array::Float(_) => return Err("cannot index by floats".into()),
                     };
                     if is_partition && dimensionality == 2 {
                         indices = vec![IndexKey::Tuple(indices)]
@@ -45,7 +45,7 @@ impl Evaluable for proto::Index {
                 } else if let Ok(indices) = get_argument(arguments, "indices") {
                     dimensionality = indices.array()?.shape().len() + 1;
                     let column_names = dataframe.keys().cloned().collect::<Vec<IndexKey>>();
-                    to_name_vec(indices.array()?.i64()?)?.iter()
+                    to_name_vec(indices.array()?.int()?)?.iter()
                         .map(|index| column_names.get(*index as usize).cloned()
                             .ok_or_else(|| Error::from("column index out of bounds"))).collect::<Result<Vec<IndexKey>>>()?
 
@@ -65,7 +65,7 @@ impl Evaluable for proto::Index {
             // if the value is an array, we'll be selecting columns
             Value::Array(array) => {
                 let indices = if let Ok(indices) = get_argument(arguments, "indices") {
-                    let indices = indices.array()?.i64()?;
+                    let indices = indices.array()?.int()?;
                     dimensionality = indices.shape().len() + 1;
                     to_name_vec(indices)?.into_iter()
                         .map(|v| v as usize).collect()
@@ -79,8 +79,8 @@ impl Evaluable for proto::Index {
                     return Err("indices or mask must be supplied when indexing on arrays".into())
                 };
                 Ok(match array {
-                    Array::I64(data) => data.select(Axis(1), &indices).into(),
-                    Array::F64(data) => data.select(Axis(1), &indices).into(),
+                    Array::Int(data) => data.select(Axis(1), &indices).into(),
+                    Array::Float(data) => data.select(Axis(1), &indices).into(),
                     Array::Bool(data) => data.select(Axis(1), &indices).into(),
                     Array::Str(data) => slow_select(data, Axis(1), &indices).into(),
                 })
@@ -93,8 +93,8 @@ impl Evaluable for proto::Index {
         if let Value::Array(array) = &mut indexed {
             if !is_partition && dimensionality == 1 && array.shape().len() == 2 {
                 match array {
-                    Array::F64(array) => array.index_axis_inplace(Axis(1), 0),
-                    Array::I64(array) => array.index_axis_inplace(Axis(1), 0),
+                    Array::Float(array) => array.index_axis_inplace(Axis(1), 0),
+                    Array::Int(array) => array.index_axis_inplace(Axis(1), 0),
                     Array::Bool(array) => array.index_axis_inplace(Axis(1), 0),
                     Array::Str(array) => array.index_axis_inplace(Axis(1), 0),
                 }
@@ -136,8 +136,8 @@ fn column_stack(
 
     let data_type = match values.first() {
         Some(value) => match value.array()? {
-            Array::F64(_) => DataType::F64,
-            Array::I64(_) => DataType::I64,
+            Array::Float(_) => DataType::Float,
+            Array::Int(_) => DataType::Int,
             Array::Bool(_) => DataType::Bool,
             Array::Str(_) => DataType::Str,
         },
@@ -146,21 +146,21 @@ fn column_stack(
 
     match data_type {
         DataType::Unknown => unreachable!(),
-        DataType::F64 => {
+        DataType::Float => {
             let chunks = column_names.iter()
                 .map(|column_name| dataframe.get(column_name)
                     .ok_or_else(|| Error::from(format!("one of the provided column names does not exist: {:?}", column_name)))
-                    .and_then(|array| to_2d(array.array()?.f64()?.clone())))
+                    .and_then(|array| to_2d(array.array()?.float()?.clone())))
                 .collect::<Result<Vec<_>>>()?;
 
             Ok(ndarray::stack(Axis(1), &chunks.iter()
                 .map(|chunk| chunk.view()).collect::<Vec<ArrayViewD<_>>>())?.into())
         }
-        DataType::I64 => {
+        DataType::Int => {
             let chunks = column_names.iter()
                 .map(|column_name| dataframe.get(column_name)
                     .ok_or_else(|| Error::from(format!("one of the provided column names does not exist: {:?}", column_name)))
-                    .and_then(|array| to_2d(array.array()?.i64()?.clone())))
+                    .and_then(|array| to_2d(array.array()?.int()?.clone())))
                 .collect::<Result<Vec<_>>>()?;
 
             Ok(ndarray::stack(Axis(1), &chunks.iter()

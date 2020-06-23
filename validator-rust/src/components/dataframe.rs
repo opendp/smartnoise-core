@@ -56,7 +56,7 @@ impl Named for proto::Dataframe {
                 names.iter().map(|v| IndexKey::from(v.to_string())).collect(),
             base::Array::Bool(names) =>
                 names.iter().map(|v| IndexKey::from(*v)).collect(),
-            base::Array::I64(names) =>
+            base::Array::Int(names) =>
                 names.iter().map(|v| IndexKey::from(*v)).collect(),
             _ => return Err("floats may not be used for column names".into())
         })

@@ -5,7 +5,7 @@ use whitenoise_validator::base::{Value, Array, ReleaseNode, IndexKey};
 use whitenoise_validator::utilities::get_argument;
 use crate::components::Evaluable;
 use ndarray::ArrayD;
-use whitenoise_validator::proto;
+use whitenoise_validator::{proto, Integer};
 use indexmap::map::IndexMap;
 
 
@@ -24,27 +24,30 @@ impl Evaluable for proto::Reshape {
                     0 => Err("at least one record is required to reshape".into()),
                     1 => Ok(reshaped.remove(0).into()),
                     _ => Ok(reshaped.into_iter().enumerate()
-                        .map(|(idx, data)| (IndexKey::from(idx as i64), data.into()))
+                        .map(|(idx, data)|
+                            (IndexKey::from(idx as Integer), data.into()))
                         .collect::<IndexMap<IndexKey, Value>>().into())
                 }
             }
-            Array::I64(data) => {
+            Array::Int(data) => {
                 let mut reshaped = reshape(&data, self.symmetric, &layout, &self.shape)?;
                 match reshaped.len() {
                     0 => Err("at least one record is required to reshape".into()),
                     1 => Ok(reshaped.remove(0).into()),
                     _ => Ok(reshaped.into_iter().enumerate()
-                        .map(|(idx, data)| (IndexKey::from(idx as i64), data.into()))
+                        .map(|(idx, data)|
+                            (IndexKey::from(idx as Integer), data.into()))
                         .collect::<IndexMap<IndexKey, Value>>().into())
                 }
             }
-            Array::F64(data) => {
+            Array::Float(data) => {
                 let mut reshaped = reshape(&data, self.symmetric, &layout, &self.shape)?;
                 match reshaped.len() {
                     0 => Err("at least one record is required to reshape".into()),
                     1 => Ok(reshaped.remove(0).into()),
                     _ => Ok(reshaped.into_iter().enumerate()
-                        .map(|(idx, data)| (IndexKey::from(idx as i64), data.into()))
+                        .map(|(idx, data)|
+                            (IndexKey::from(idx as Integer), data.into()))
                         .collect::<IndexMap<IndexKey, Value>>().into())
                 }
             }
@@ -54,7 +57,8 @@ impl Evaluable for proto::Reshape {
                     0 => Err("at least one record is required to reshape".into()),
                     1 => Ok(reshaped.remove(0).into()),
                     _ => Ok(reshaped.into_iter().enumerate()
-                        .map(|(idx, data)| (IndexKey::from(idx as i64), data.into()))
+                        .map(|(idx, data)|
+                            (IndexKey::from(idx as Integer), data.into()))
                         .collect::<IndexMap<IndexKey, Value>>().into())
                 }
             }

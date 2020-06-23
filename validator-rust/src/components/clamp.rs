@@ -39,12 +39,12 @@ impl Component for proto::Clamp {
 
             let mut categories = categories.jagged()?.clone();
             match (&mut categories, null) {
-                (Jagged::F64(jagged), Array::F64(null)) => {
+                (Jagged::Float(jagged), Array::Float(null)) => {
                     let null_target = standardize_null_target_argument(&null, num_columns)?;
                     jagged.iter_mut().zip(null_target.into_iter())
                         .for_each(|(cats, null)| cats.push(null))
                 },
-                (Jagged::I64(jagged), Array::I64(null)) => {
+                (Jagged::Int(jagged), Array::Int(null)) => {
                     let null_target = standardize_null_target_argument(&null, num_columns)?;
                     jagged.iter_mut().zip(null_target.into_iter())
                         .for_each(|(cats, null)| cats.push(null))
@@ -69,37 +69,37 @@ impl Component for proto::Clamp {
 
         // else handle numerical clamping
         match data_property.data_type {
-            DataType::F64 => {
+            DataType::Float => {
 
                 // 1. check public arguments (constant n)
                 let mut clamp_lower = match public_arguments.get::<IndexKey>(&"lower".into()) {
-                    Some(&min) => min.array()?.clone().vec_f64(Some(num_columns))
+                    Some(&min) => min.array()?.clone().vec_float(Some(num_columns))
                         .map_err(prepend("lower:"))?,
 
                     // 2. then private arguments (for example from another clamped column)
                     None => match properties.get::<IndexKey>(&"lower".into()) {
-                        Some(min) => min.array()?.lower_f64()
+                        Some(min) => min.array()?.lower_float()
                             .map_err(prepend("lower:"))?,
 
                         // 3. then data properties (propagated from prior clamping/min/max)
                         None => data_property
-                            .lower_f64().map_err(prepend("lower:"))?
+                            .lower_float().map_err(prepend("lower:"))?
                     }
                 };
 
                 // 1. check public arguments (constant n)
                 let mut clamp_upper = match public_arguments.get::<IndexKey>(&"upper".into()) {
-                    Some(upper) => upper.array()?.clone().vec_f64(Some(num_columns))
+                    Some(upper) => upper.array()?.clone().vec_float(Some(num_columns))
                         .map_err(prepend("upper:"))?,
 
                     // 2. then private arguments (for example from another clamped column)
                     None => match properties.get::<IndexKey>(&"upper".into()) {
-                        Some(upper) => upper.array()?.upper_f64()
+                        Some(upper) => upper.array()?.upper_float()
                             .map_err(prepend("upper:"))?,
 
                         // 3. then data properties (propagated from prior clamping/min/max)
                         None => data_property
-                            .upper_f64().map_err(prepend("upper:"))?
+                            .upper_float().map_err(prepend("upper:"))?
                     }
                 };
 
@@ -108,7 +108,7 @@ impl Component for proto::Clamp {
                 }
 
                 // the actual data bound (if it exists) may be tighter than the clamping parameters
-                if let Ok(data_minimum) = data_property.lower_f64_option() {
+                if let Ok(data_minimum) = data_property.lower_float_option() {
                     clamp_lower = clamp_lower.into_iter().zip(data_minimum)
                         // match on if the actual bound exists for each column, and remain conservative if not
                         .map(|(clamp_lower, optional_data_lower)| match optional_data_lower {
@@ -116,7 +116,7 @@ impl Component for proto::Clamp {
                             None => clamp_lower
                         }).collect()
                 }
-                if let Ok(data_upper) = data_property.upper_f64_option() {
+                if let Ok(data_upper) = data_property.upper_float_option() {
                     clamp_upper = clamp_upper.into_iter().zip(data_upper)
                         .map(|(clamp_upper, optional_data_upper)| match optional_data_upper {
                             Some(data_upper) => clamp_upper.min(data_upper),
@@ -126,42 +126,42 @@ impl Component for proto::Clamp {
 
                 // save revised bounds
                 data_property.nature = Some(Nature::Continuous(NatureContinuous {
-                    lower: Vector1DNull::F64(clamp_lower.into_iter().map(Some).collect()),
-                    upper: Vector1DNull::F64(clamp_upper.into_iter().map(Some).collect()),
+                    lower: Vector1DNull::Float(clamp_lower.into_iter().map(Some).collect()),
+                    upper: Vector1DNull::Float(clamp_upper.into_iter().map(Some).collect()),
                 }));
 
-            },
+            }
 
-            DataType::I64 => {
+            DataType::Int => {
                 // 1. check public arguments (constant n)
                 let mut clamp_lower = match public_arguments.get::<IndexKey>(&"lower".into()) {
-                    Some(&lower) => lower.array()?.clone().vec_i64(Some(num_columns))
+                    Some(&lower) => lower.array()?.clone().vec_int(Some(num_columns))
                         .map_err(prepend("lower:"))?,
 
                     // 2. then private arguments (for example from another clamped column)
                     None => match properties.get::<IndexKey>(&"lower".into()) {
-                        Some(lower) => lower.array()?.lower_i64()
+                        Some(lower) => lower.array()?.lower_int()
                             .map_err(prepend("lower:"))?,
 
                         // 3. then data properties (propagated from prior clamping/lower/upper)
                         None => data_property
-                            .lower_i64().map_err(prepend("lower:"))?
+                            .lower_int().map_err(prepend("lower:"))?
                     }
                 };
 
                 // 1. check public arguments (constant n)
                 let mut clamp_upper = match public_arguments.get::<IndexKey>(&"upper".into()) {
-                    Some(upper) => upper.array()?.clone().vec_i64(Some(num_columns))
+                    Some(upper) => upper.array()?.clone().vec_int(Some(num_columns))
                         .map_err(prepend("upper:"))?,
 
                     // 2. then private arguments (for example from another clamped column)
                     None => match properties.get::<IndexKey>(&"upper".into()) {
-                        Some(upper) => upper.array()?.upper_i64()
+                        Some(upper) => upper.array()?.upper_int()
                             .map_err(prepend("upper:"))?,
 
                         // 3. then data properties (propagated from prior clamping/min/max)
                         None => data_property
-                            .upper_i64().map_err(prepend("upper:"))?
+                            .upper_int().map_err(prepend("upper:"))?
                     }
                 };
 
@@ -170,7 +170,7 @@ impl Component for proto::Clamp {
                 }
 
                 // the actual data bound (if it exists) may be tighter than the clamping parameters
-                if let Ok(data_lower) = data_property.lower_i64_option() {
+                if let Ok(data_lower) = data_property.lower_int_option() {
                     clamp_lower = clamp_lower.into_iter().zip(data_lower)
                         // match on if the actual bound exists for each column, and remain conservative if not
                         .map(|(clamp_lower, optional_data_lower)| match optional_data_lower {
@@ -178,7 +178,7 @@ impl Component for proto::Clamp {
                             None => clamp_lower
                         }).collect()
                 }
-                if let Ok(data_upper) = data_property.upper_i64_option() {
+                if let Ok(data_upper) = data_property.upper_int_option() {
                     clamp_upper = clamp_upper.into_iter().zip(data_upper)
                         .map(|(clamp_upper, optional_data_upper)| match optional_data_upper {
                             Some(data_upper) => clamp_upper.min(data_upper),
@@ -188,11 +188,11 @@ impl Component for proto::Clamp {
 
                 // save revised bounds
                 data_property.nature = Some(Nature::Continuous(NatureContinuous {
-                    lower: Vector1DNull::I64(clamp_lower.into_iter().map(Some).collect()),
-                    upper: Vector1DNull::I64(clamp_upper.into_iter().map(Some).collect()),
+                    lower: Vector1DNull::Int(clamp_lower.into_iter().map(Some).collect()),
+                    upper: Vector1DNull::Int(clamp_upper.into_iter().map(Some).collect()),
                 }));
 
-            },
+            }
             _ => return Err("numeric clamping requires numeric data".into())
         }
 
@@ -220,8 +220,8 @@ impl Expandable for proto::Clamp {
         if !has_categorical && !properties.contains_key::<IndexKey>(&"lower".into()) {
             maximum_id += 1;
             let id_lower = maximum_id.to_owned();
-            let value = Value::Array(Array::F64(
-                ndarray::Array::from(properties.get::<IndexKey>(&"data".into()).unwrap().to_owned().array()?.lower_f64()?).into_dyn()));
+            let value = Value::Array(Array::Float(
+                ndarray::Array::from(properties.get::<IndexKey>(&"data".into()).unwrap().to_owned().array()?.lower_float()?).into_dyn()));
             expansion.properties.insert(id_lower, infer_property(&value, None)?);
             let (patch_node, release) = get_literal(value, component.submission)?;
             expansion.computation_graph.insert(id_lower, patch_node);
@@ -232,8 +232,8 @@ impl Expandable for proto::Clamp {
         if !has_categorical && !properties.contains_key::<IndexKey>(&"upper".into()) {
             maximum_id += 1;
             let id_upper = maximum_id.to_owned();
-            let value = Value::Array(Array::F64(
-                ndarray::Array::from(properties.get::<IndexKey>(&"data".into()).unwrap().to_owned().array()?.upper_f64()?).into_dyn()));
+            let value = Value::Array(Array::Float(
+                ndarray::Array::from(properties.get::<IndexKey>(&"data".into()).unwrap().to_owned().array()?.upper_float()?).into_dyn()));
             expansion.properties.insert(id_upper, infer_property(&value, None)?);
             let (patch_node, release) = get_literal(value, component.submission)?;
             expansion.computation_graph.insert(id_upper, patch_node);

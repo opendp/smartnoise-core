@@ -3,7 +3,7 @@ use crate::errors::*;
 use std::collections::HashMap;
 
 
-use crate::{proto, base, Warnable};
+use crate::{proto, base, Warnable, Integer};
 use crate::hashmap;
 use crate::components::{Component, Expandable};
 
@@ -28,10 +28,10 @@ impl Component for proto::Cast {
         let prior_datatype = data_property.data_type.clone();
 
         data_property.data_type = match self.atomic_type.to_lowercase().as_str() {
-            "float" => DataType::F64,
-            "real" => DataType::F64,
-            "int" => DataType::I64,
-            "integer" => DataType::I64,
+            "float" => DataType::Float,
+            "real" => DataType::Float,
+            "int" => DataType::Int,
+            "integer" => DataType::Int,
             "bool" => DataType::Bool,
             "string" => DataType::Str,
             "str" => DataType::Str,
@@ -49,11 +49,11 @@ impl Component for proto::Cast {
                     Some(nature) => match nature {
                         Nature::Categorical(cat_nature) => Some(Nature::Categorical(NatureCategorical {
                             categories: match (cat_nature.categories, true_label) {
-                                (Jagged::I64(cats), Array::I64(true_label)) => Jagged::Bool(cats.iter()
+                                (Jagged::Int(cats), Array::Int(true_label)) => Jagged::Bool(cats.iter()
                                     .map(|cats| cats.iter().map(|v| Some(v) == true_label.first())
                                         .unique().collect::<Vec<_>>())
                                     .collect::<Vec<Vec<_>>>()),
-                                (Jagged::F64(cats), Array::F64(true_label)) => Jagged::Bool(cats.iter()
+                                (Jagged::Float(cats), Array::Float(true_label)) => Jagged::Bool(cats.iter()
                                     .map(|cats| cats.iter().map(|v| Some(v) == true_label.first())
                                         .unique().collect::<Vec<_>>())
                                     .collect::<Vec<Vec<_>>>()),
@@ -82,12 +82,12 @@ impl Component for proto::Cast {
 
                 data_property.nullity = false;
             },
-            DataType::I64 => {
+            DataType::Int => {
                 // lower must be defined, for imputation of values that won't cast
-                get_argument(public_arguments, "lower")?.first_i64()
+                get_argument(public_arguments, "lower")?.first_int()
                     .map_err(prepend("type:"))?;
                 // max must be defined
-                get_argument(public_arguments, "upper")?.first_i64()
+                get_argument(public_arguments, "upper")?.first_int()
                     .map_err(prepend("type:"))?;
 
                 data_property.nature = None;
@@ -95,14 +95,14 @@ impl Component for proto::Cast {
                     Some(nature) => match nature.clone() {
                         Nature::Categorical(cat_nature) => match cat_nature.categories {
                             // properties are lost because floats cannot be categorical
-                            Jagged::F64(_) => None,
-                            Jagged::I64(_) => Some(nature),
+                            Jagged::Float(_) => None,
+                            Jagged::Int(_) => Some(nature),
                             Jagged::Bool(cats) =>
                                 Some(Nature::Categorical(NatureCategorical {
-                                    categories: Jagged::I64(cats.into_iter()
+                                    categories: Jagged::Int(cats.into_iter()
                                         .map(|cats| cats.into_iter()
                                             .map(|v| if v { 1 } else { 0 })
-                                            .unique().collect::<Vec<i64>>())
+                                            .unique().collect::<Vec<Integer>>())
                                         .collect())
                                 })),
 
@@ -110,16 +110,16 @@ impl Component for proto::Cast {
                             Jagged::Str(_) => None
                         },
                         Nature::Continuous(bounds) => match (bounds.lower.clone(), bounds.upper.clone()) {
-                            (Vector1DNull::F64(lower), Vector1DNull::F64(upper)) =>
+                            (Vector1DNull::Float(lower), Vector1DNull::Float(upper)) =>
                                 Some(Nature::Continuous(NatureContinuous {
-                                    lower: Vector1DNull::I64(lower.into_iter()
-                                        .map(|v| v.map(|v| v.round() as i64))
+                                    lower: Vector1DNull::Int(lower.into_iter()
+                                        .map(|v| v.map(|v| v.round() as Integer))
                                         .collect()),
-                                    upper: Vector1DNull::I64(upper.into_iter()
-                                        .map(|v| v.map(|v| v.round() as i64))
+                                    upper: Vector1DNull::Int(upper.into_iter()
+                                        .map(|v| v.map(|v| v.round() as Integer))
                                         .collect())
                                 })),
-                            (Vector1DNull::I64(_), Vector1DNull::I64(_)) =>
+                            (Vector1DNull::Int(_), Vector1DNull::Int(_)) =>
                                 Some(Nature::Continuous(NatureContinuous { lower: bounds.lower, upper: bounds.upper })),
                             _ => None
                         }
@@ -133,7 +133,7 @@ impl Component for proto::Cast {
                 data_property.nature = match data_property.nature {
                     Some(nature) => match nature {
                         Nature::Categorical(nature) => match nature.categories {
-                            Jagged::F64(_) => None,
+                            Jagged::Float(_) => None,
                             Jagged::Bool(jagged) =>
                                 Some(Nature::Categorical(NatureCategorical {
                                     categories: Jagged::Str(jagged.into_iter()
@@ -142,7 +142,7 @@ impl Component for proto::Cast {
                                             .unique().collect())
                                         .collect::<Vec<Vec<String>>>())
                                 })),
-                            Jagged::I64(jagged) =>
+                            Jagged::Int(jagged) =>
                                 Some(Nature::Categorical(NatureCategorical {
                                     categories: Jagged::Str(jagged.into_iter()
                                         .map(|cats| cats.into_iter()
@@ -159,10 +159,10 @@ impl Component for proto::Cast {
                     None => None
                 }
             },
-            DataType::F64 => {
+            DataType::Float => {
                 data_property.nature = None;
                 data_property.nullity = match prior_datatype {
-                    DataType::F64 => data_property.nullity,
+                    DataType::Float => data_property.nullity,
                     DataType::Bool => false,
                     _ => true
                 }

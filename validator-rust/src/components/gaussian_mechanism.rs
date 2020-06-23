@@ -38,7 +38,7 @@ impl Component for proto::GaussianMechanism {
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
-        if data_property.data_type != DataType::F64 && data_property.data_type != DataType::I64 {
+        if data_property.data_type != DataType::Float && data_property.data_type != DataType::Int {
             return Err("data: atomic type must be numeric".into());
         }
         let aggregator = data_property.aggregator.clone()
@@ -50,15 +50,15 @@ impl Component for proto::GaussianMechanism {
             &aggregator.properties,
             &SensitivitySpace::KNorm(2))?;
 
-        let lipschitz = aggregator.lipschitz_constants.array()?.f64()?;
+        let lipschitz = aggregator.lipschitz_constants.array()?.float()?;
         if lipschitz.iter().any(|v| v != &1.) {
-            let mut sensitivity = sensitivity_value.array()?.f64()?.clone();
+            let mut sensitivity = sensitivity_value.array()?.float()?.clone();
             sensitivity *= lipschitz;
             sensitivity_value = sensitivity.into();
         }
 
         // check that sensitivity is an f64 array
-        sensitivity_value.array()?.f64()?;
+        sensitivity_value.array()?.float()?;
 
         let privacy_usage = self.privacy_usage.iter().cloned().map(Ok)
             .fold1(|l, r| l? + r?).ok_or_else(|| "privacy_usage: must be defined")??;
@@ -127,7 +127,7 @@ impl Mechanism for proto::GaussianMechanism {
             Some(release_usage) => release_usage.iter()
                 .zip(data_property.c_stability.iter())
                 .map(|(usage, c_stab)|
-                    usage.effective_to_actual(1., *c_stab, privacy_definition.group_size))
+                    usage.effective_to_actual(1., *c_stab as f64, privacy_definition.group_size))
                 .collect::<Result<Vec<proto::PrivacyUsage>>>()?,
             None => self.privacy_usage.clone()
         }))
@@ -155,7 +155,7 @@ impl Accuracy for proto::GaussianMechanism {
             &SensitivitySpace::KNorm(2))?;
 
         // sensitivity must be computable
-        let sensitivities = sensitivity_value.array()?.f64()?;
+        let sensitivities = sensitivity_value.array()?.float()?;
         let usages = spread_privacy_usage(&self.privacy_usage, sensitivities.len())?;
         let delta = usages.iter().map(get_delta).collect::<Result<Vec<f64>>>()?;
         let iter = izip!(sensitivities.into_iter(), accuracies.values.iter(), delta.into_iter());
@@ -165,7 +165,7 @@ impl Accuracy for proto::GaussianMechanism {
         Ok(Some(
             iter.map(|(sensitivity, accuracy, delta)| {
                 let c: f64 = 2.0_f64 * (1.25_f64 / delta).ln();
-                let sigma: f64 = c.sqrt() * sensitivity / accuracy.value;
+                let sigma: f64 = c.sqrt() * *sensitivity as f64 / accuracy.value;
                 proto::PrivacyUsage {
                     distance: Some(Distance::Approximate(DistanceApproximate {
                         epsilon: sigma * 2.0_f64.sqrt() * erf::erf_inv(1.0_f64 - accuracy.alpha),
@@ -194,7 +194,7 @@ impl Accuracy for proto::GaussianMechanism {
             &SensitivitySpace::KNorm(1))?;
 
         // sensitivity must be computable
-        let sensitivities = sensitivities_value.array()?.f64()?;
+        let sensitivities = sensitivities_value.array()?.float()?;
 
         let usages = spread_privacy_usage(&self.privacy_usage, sensitivities.len())?;
         let epsilons = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
@@ -204,7 +204,7 @@ impl Accuracy for proto::GaussianMechanism {
         Ok(Some(
             iter.map(|(sensitivity, epsilon, delta)| {
                 let c: f64 = 2.0_f64 * (1.25_f64 / delta).ln();
-                let sigma: f64 = c.sqrt() * sensitivity / epsilon;
+                let sigma: f64 = c.sqrt() * *sensitivity as f64 / epsilon;
 
                 proto::Accuracy {
                     value: sigma * 2.0_f64.sqrt() * erf::erf_inv(1.0_f64 - alpha),

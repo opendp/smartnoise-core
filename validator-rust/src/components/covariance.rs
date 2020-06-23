@@ -1,7 +1,7 @@
 use crate::errors::*;
 
 
-use crate::{proto, base, Warnable};
+use crate::{proto, base, Warnable, Float};
 
 use crate::components::{Component, Sensitivity};
 use crate::base::{IndexKey, Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType};
@@ -35,8 +35,8 @@ impl Component for proto::Covariance {
                 .map(|(i, l_stab)| data_property.c_stability.iter().enumerate()
                     .filter(|(j, _)| i <= *j)
                     .map(|(_, r_stab)| l_stab * r_stab)
-                    .collect::<Vec<f64>>())
-                .flatten().collect::<Vec<f64>>();
+                    .collect::<Vec<Float>>())
+                .flatten().collect::<Vec<Float>>();
 
             // save a snapshot of the state when aggregating
             data_property.aggregator = Some(AggregatorProperties {
@@ -50,7 +50,7 @@ impl Component for proto::Covariance {
             data_property.num_records = Some(1);
             data_property.num_columns = Some(num_columns);
 
-            if data_property.data_type != DataType::F64 {
+            if data_property.data_type != DataType::Float {
                 return Err("data: atomic type must be float".into());
             }
             // min/max of data is not known after computing covariance
@@ -67,10 +67,10 @@ impl Component for proto::Covariance {
                 .map_err(prepend("right:"))?.clone();
 
 
-            if left_property.data_type != DataType::F64 {
+            if left_property.data_type != DataType::Float {
                 return Err("left: atomic type must be float".into());
             }
-            if right_property.data_type != DataType::F64 {
+            if right_property.data_type != DataType::Float {
                 return Err("right: atomic type must be float".into());
             }
             left_property.assert_is_not_empty()?;
@@ -131,8 +131,8 @@ impl Sensitivity for proto::Covariance {
                             .map_err(prepend("data:"))?.clone();
                         data_property.assert_is_not_aggregated()?;
                         data_property.assert_non_null()?;
-                        let data_lower = data_property.lower_f64()?;
-                        let data_upper = data_property.upper_f64()?;
+                        let data_lower = data_property.lower_float()?;
+                        let data_upper = data_property.upper_float()?;
                         data_n = data_property.num_records()? as f64;
 
                         // collect bound differences for upper triangle of matrix
@@ -142,7 +142,7 @@ impl Sensitivity for proto::Covariance {
                                     .filter(|(j, _)| i <= *j)
                                     .map(|(_, (right_min, right_max))|
                                         (*left_max - *left_min) * (*right_max - *right_min))
-                                    .collect::<Vec<f64>>()).flatten().collect::<Vec<f64>>()
+                                    .collect::<Vec<Float>>()).flatten().collect::<Vec<Float>>()
                     }
                     (None, Some(left_property), Some(right_property)) => {
 
@@ -152,8 +152,8 @@ impl Sensitivity for proto::Covariance {
                         left_property.assert_is_not_aggregated()?;
                         left_property.assert_non_null()?;
                         let left_n = left_property.num_records()?;
-                        let left_lower = left_property.lower_f64()?;
-                        let left_upper = left_property.upper_f64()?;
+                        let left_lower = left_property.lower_float()?;
+                        let left_upper = left_property.upper_float()?;
 
                         // right side: perform checks and prepare parameters
                         let right_property = right_property.array()
@@ -161,8 +161,8 @@ impl Sensitivity for proto::Covariance {
                         right_property.assert_is_not_aggregated()?;
                         right_property.assert_non_null()?;
                         let right_n = right_property.num_records()?;
-                        let right_lower = right_property.lower_f64()?;
-                        let right_upper = right_property.upper_f64()?;
+                        let right_lower = right_property.lower_float()?;
+                        let right_upper = right_property.upper_float()?;
 
                         // ensure conformability
                         if left_n != right_n {
@@ -176,8 +176,8 @@ impl Sensitivity for proto::Covariance {
                                 right_lower.iter().zip(right_upper.iter())
                                 .map(|(right_min, right_max)|
                                     (left_max - *left_min) * (right_max - *right_min))
-                                .collect::<Vec<f64>>())
-                            .flatten().collect::<Vec<f64>>()
+                                .collect::<Vec<Float>>())
+                            .flatten().collect::<Vec<Float>>()
                     }
                     _ => return Err("either \"data\" or \"left\" and \"right\" must be supplied".into())
                 };
@@ -189,17 +189,17 @@ impl Sensitivity for proto::Covariance {
                 let neighboring_type = Neighboring::from_i32(privacy_definition.neighboring)
                     .ok_or_else(|| Error::from("neighboring definition must be either \"AddRemove\" or \"Substitute\""))?;
 
-                let scaling_constant: f64 = match k {
+                let scaling_constant = match k {
                     1 | 2 => match neighboring_type {
                         Neighboring::AddRemove => data_n / (data_n + 1.) / normalization,
                         Neighboring::Substitute => 2. * (data_n - 1.) / data_n / normalization
                     },
                     _ => return Err("KNorm sensitivity is only supported in L1 and L2 spaces".into())
-                };
+                } as Float;
 
                 let row_sensitivity = differences.iter()
                     .map(|difference| (difference * scaling_constant))
-                    .collect::<Vec<f64>>();
+                    .collect::<Vec<Float>>();
 
                 let mut array_sensitivity = Array::from(row_sensitivity).into_dyn();
                 array_sensitivity.insert_axis_inplace(Axis(0));

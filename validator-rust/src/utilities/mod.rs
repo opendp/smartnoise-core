@@ -7,7 +7,7 @@ pub mod properties;
 
 use crate::errors::*;
 
-use crate::{proto, base, Warnable};
+use crate::{proto, base, Warnable, Float};
 
 use crate::base::{Release, Value, ValueProperties, SensitivitySpace, NodeProperties, IndexKey};
 use std::collections::{HashMap, HashSet};
@@ -317,16 +317,16 @@ pub fn standardize_numeric_argument<T: Clone>(value: &ArrayD<T>, length: i64) ->
 
 /// Given a jagged float array, conduct well-formedness checks and broadcast
 pub fn standardize_float_argument(
-    categories: &[Vec<f64>],
+    categories: &[Vec<Float>],
     length: i64,
-) -> Result<Vec<Vec<f64>>> {
+) -> Result<Vec<Vec<Float>>> {
     let mut categories = categories.to_owned();
 
     if categories.is_empty() {
         return Err("no categories are defined".into());
     }
 
-    categories.clone().into_iter().map(|mut col| {
+    categories.clone().into_iter().try_for_each(|mut col| {
         if !col.iter().all(|v| v.is_finite()) {
             return Err("all floats must be finite".into());
         }
@@ -335,11 +335,12 @@ pub fn standardize_float_argument(
 
         let original_length = col.len();
 
-        if deduplicate(col.into_iter().map(n64).collect()).len() < original_length {
+        // TODO cfg conditional compilation to n32
+        if deduplicate(col.into_iter().map(|v| n64(v as f64)).collect()).len() < original_length {
             return Err("floats must not contain duplicates".into());
         }
-        Ok(())
-    }).collect::<Result<()>>()?;
+        Ok::<_, Error>(())
+    })?;
 
     // broadcast categories across all columns, if only one categories set is defined
     if categories.len() == 1 {
@@ -417,27 +418,27 @@ pub fn standardize_null_target_argument<T: Clone>(
 /// Given categories and a jagged categories weights array, conduct well-formedness checks and return a standardized set of probabilities.
 #[doc(hidden)]
 pub fn standardize_weight_argument(
-    weights: &Option<Vec<Vec<f64>>>,
+    weights: &Option<Vec<Vec<Float>>>,
     lengths: &[i64],
-) -> Result<Vec<Vec<f64>>> {
+) -> Result<Vec<Vec<Float>>> {
     let weights = weights.clone().unwrap_or_else(|| vec![]);
 
-    fn uniform_density(length: usize) -> Vec<f64> {
-        (0..length).map(|_| 1. / (length as f64)).collect()
+    fn uniform_density(length: usize) -> Vec<Float> {
+        (0..length).map(|_| 1. / (length as Float)).collect()
     }
     /// Convert weights to probabilities
-    fn normalize_probabilities(weights: &[f64]) -> Result<Vec<f64>> {
+    fn normalize_probabilities(weights: &[Float]) -> Result<Vec<Float>> {
         if !weights.iter().all(|w| w >= &0.) {
             return Err("all weights must be greater than zero".into());
         }
-        let sum: f64 = weights.iter().sum();
+        let sum: Float = weights.iter().sum();
         Ok(weights.iter().map(|prob| prob / sum).collect())
     }
 
     match weights.len() {
         0 => Ok(lengths.iter()
             .map(|length| uniform_density(*length as usize))
-            .collect::<Vec<Vec<f64>>>()),
+            .collect::<Vec<Vec<Float>>>()),
         1 => {
             let probabilities = normalize_probabilities(&weights[0])?;
 
@@ -446,10 +447,10 @@ pub fn standardize_weight_argument(
                     Ok(probabilities.clone())
                 } else {
                     Err("length of weights does not match number of categories".into())
-                }).collect::<Result<Vec<Vec<f64>>>>()
+                }).collect::<Result<Vec<Vec<Float>>>>()
         }
         _ => if lengths.len() == weights.len() {
-            weights.iter().map(|v| normalize_probabilities(v)).collect::<Result<Vec<Vec<f64>>>>()
+            weights.iter().map(|v| normalize_probabilities(v)).collect::<Result<Vec<Vec<Float>>>>()
         } else {
             Err("category weights must be the same length as categories, or none".into())
         }
@@ -512,9 +513,9 @@ pub fn expand_mechanism(
         &aggregator.properties,
         &sensitivity_type)?;
 
-    let lipschitz = aggregator.lipschitz_constants.array()?.f64()?;
+    let lipschitz = aggregator.lipschitz_constants.array()?.float()?;
     if lipschitz.iter().any(|v| v != &1.) {
-        let mut sensitivity = sensitivity_value.array()?.f64()?.clone();
+        let mut sensitivity = sensitivity_value.array()?.float()?.clone();
         sensitivity *= lipschitz;
         sensitivity_value = sensitivity.into();
     }
@@ -536,7 +537,7 @@ pub fn expand_mechanism(
         .zip(data_property.c_stability.iter())
         // reduce epsilon allowed to algorithm based on c-stability and group size
         .map(|(usage, c_stab)|
-            usage.actual_to_effective(1., *c_stab, privacy_definition.group_size))
+            usage.actual_to_effective(1., *c_stab as f64, privacy_definition.group_size))
         .collect::<Result<Vec<proto::PrivacyUsage>>>()?;
 
     // insert sensitivity and usage

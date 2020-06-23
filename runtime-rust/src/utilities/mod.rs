@@ -132,14 +132,14 @@ pub fn to_nd<T>(mut array: ArrayD<T>, ndim: usize) -> Result<ArrayD<T>> {
         0 => {}
         // must remove i axes
         i if i < 0 => {
-            (0..-(i as i32)).map(|_| match array.shape().last()
+            (0..-(i as i32)).try_for_each(|_| match array.shape().last()
                 .ok_or_else(|| Error::from("ndim may not be negative"))? {
                 1 => {
                     array.index_axis_inplace(Axis(array.ndim() - 1), 0);
                     Ok(())
                 },
-                _ => Err("cannot remove non-singleton trailing axis".into())
-            }).collect::<Result<()>>()?
+                _ => Err(Error::from("cannot remove non-singleton trailing axis"))
+            })?
         }
         // must add i axes
         i if i > 0 => (0..i).for_each(|_| array.insert_axis_inplace(Axis(array.ndim()))),
@@ -286,7 +286,7 @@ pub fn combine_components_into_ieee(sign: &str, exponent: &str, mantissa: &str) 
 /// # Return
 /// Element from the candidate set
 #[cfg(feature="use-secure-noise")]
-pub fn sample_from_set<T>(candidate_set: &[T], weights: &[f64])
+pub fn sample_from_set<T>(candidate_set: &[T], weights: &[whitenoise_validator::Float])
                           -> Result<T> where T: Clone {
 
     use rug::Float;
@@ -322,7 +322,7 @@ pub fn sample_from_set<T>(candidate_set: &[T], weights: &[f64])
 }
 
 #[cfg(not(feature="use-secure-noise"))]
-pub fn sample_from_set<T>(candidate_set: &Vec<T>, weights: &Vec<f64>)
+pub fn sample_from_set<T>(candidate_set: &Vec<T>, weights: &Vec<whitenoise_validator::Float>)
                           -> Result<T> where T: Clone {
 
     // generate uniform random number on [0,sum(weights))

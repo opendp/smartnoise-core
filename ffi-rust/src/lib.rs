@@ -7,7 +7,13 @@ use whitenoise_validator::proto;
 
 mod utilities;
 
-use whitenoise_validator::utilities::serial::{serialize_error, parse_release, serialize_release, parse_indexmap_value_properties, serialize_value_properties, parse_indexmap_release_node, serialize_component_expansion};
+#[cfg(feature = "use-direct-api")]
+mod direct_api;
+
+use whitenoise_validator::utilities::serial::{
+    serialize_error, parse_release, serialize_release, parse_indexmap_value_properties,
+    serialize_value_properties, parse_indexmap_release_node, serialize_component_expansion
+};
 use crate::utilities::{ptr_to_buffer, buffer_to_ptr};
 use whitenoise_validator::base::Release;
 use std::collections::HashMap;
@@ -354,10 +360,10 @@ pub extern "C" fn expand_component(
                         .ok_or_else(|| Error::from("component must be defined"))?;
 
                     let public_arguments = arguments
-                        .map(parse_indexmap_release_node).unwrap_or_else(IndexMap::new);
+                        .map_or_else(IndexMap::new, parse_indexmap_release_node);
 
                     let properties = properties
-                        .map(parse_indexmap_value_properties).unwrap_or_else(IndexMap::new);
+                        .map_or_else(IndexMap::new, parse_indexmap_value_properties);
 
                     Ok(serialize_component_expansion(whitenoise_validator::expand_component(
                         component,

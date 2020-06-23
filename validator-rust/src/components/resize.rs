@@ -1,6 +1,6 @@
 use crate::errors::*;
 
-use crate::{base, Warnable};
+use crate::{base, Warnable, Float};
 use crate::proto;
 
 use crate::components::{Component, Expandable};
@@ -38,28 +38,28 @@ impl Component for proto::Resize {
                 return Err("cannot resize number of columns when number of columns is known".into())
             }
 
-            let num_columns = num_columns.first_i64()?;
+            let num_columns = num_columns.first_int()? as i64;
             if num_columns < 1 {
                 return Err("number_columns must be greater than zero".into());
             }
             data_property.num_columns = Some(num_columns);
             data_property.nature = None;
-            data_property.c_stability = (0..num_columns).map(|_| 1.).collect::<Vec<f64>>();
+            data_property.c_stability = (0..num_columns).map(|_| 1.).collect::<Vec<Float>>();
             data_property.dimensionality = Some(2);
         }
 
         if let Some(num_records) = public_arguments.get::<IndexKey>(&"number_rows".into()) {
-            let num_records = num_records.first_i64()?;
+            let num_records = num_records.first_int()?;
             if num_records < 1 {
                 return Err("number_rows must be greater than zero".into());
             }
 
-            data_property.num_records = Some(num_records);
+            data_property.num_records = Some(num_records as i64);
             data_property.is_not_empty = num_records > 0;
         }
 
         if let Some(minimum_rows) = public_arguments.get::<IndexKey>(&"minimum_rows".into()) {
-            if minimum_rows.first_i64()? > 0 {
+            if minimum_rows.first_int()? > 0 {
                 data_property.is_not_empty = true;
             } else {
                 return Err("minimum_rows must be greater than zero".into())
@@ -78,37 +78,37 @@ impl Component for proto::Resize {
         let num_columns = data_property.num_columns()?;
 
         match data_property.data_type {
-            DataType::F64 => {
+            DataType::Float => {
 
                 // 1. check public arguments (constant n)
                 let impute_lower = match public_arguments.get::<IndexKey>(&"lower".into()) {
-                    Some(lower) => lower.array()?.clone().vec_f64(Some(num_columns))
+                    Some(lower) => lower.array()?.clone().vec_float(Some(num_columns))
                         .map_err(prepend("lower:"))?,
 
                     // 2. then private arguments (for example from another clamped column)
                     None => match properties.get::<IndexKey>(&"lower".into()) {
-                        Some(lower) => lower.array()?.lower_f64()
+                        Some(lower) => lower.array()?.lower_float()
                             .map_err(prepend("lower:"))?,
 
                         // 3. then data properties (propagated from prior clamping/min/max)
                         None => data_property
-                            .lower_f64().map_err(prepend("min:"))?
+                            .lower_float().map_err(prepend("min:"))?
                     }
                 };
 
                 // 1. check public arguments (constant n)
                 let impute_upper = match public_arguments.get::<IndexKey>(&"upper".into()) {
-                    Some(upper) => upper.array()?.clone().vec_f64(Some(num_columns))
+                    Some(upper) => upper.array()?.clone().vec_float(Some(num_columns))
                         .map_err(prepend("upper:"))?,
 
                     // 2. then private arguments (for example from another clamped column)
                     None => match properties.get::<IndexKey>(&"upper".into()) {
-                        Some(upper) => upper.array()?.upper_f64()
+                        Some(upper) => upper.array()?.upper_float()
                             .map_err(prepend("upper:"))?,
 
                         // 3. then data properties (propagated from prior clamping/min/max)
                         None => data_property
-                            .upper_f64().map_err(prepend("upper:"))?
+                            .upper_float().map_err(prepend("upper:"))?
                     }
                 };
 
@@ -117,7 +117,7 @@ impl Component for proto::Resize {
                 }
 
                 // the actual data bound (if it exists) may be wider than the imputation parameters
-                let impute_lower = match data_property.lower_f64_option() {
+                let impute_lower = match data_property.lower_float_option() {
                     Ok(data_lower) => impute_lower.iter().zip(data_lower)
                         .map(|(impute_lower, optional_data_lower)| match optional_data_lower {
                             Some(data_lower) => Some(impute_lower.min(data_lower)),
@@ -127,7 +127,7 @@ impl Component for proto::Resize {
                     Err(_) => (0..num_columns).map(|_| None).collect()
                 };
 
-                let impute_upper = match data_property.upper_f64_option() {
+                let impute_upper = match data_property.upper_float_option() {
                     Ok(data_upper) => impute_upper.iter().zip(data_upper)
                         .map(|(impute_upper, optional_data_upper)| match optional_data_upper {
                             Some(data_upper) => Some(impute_upper.max(data_upper)),
@@ -139,42 +139,42 @@ impl Component for proto::Resize {
 
                 // impute may only ever widen prior existing bounds
                 data_property.nature = Some(Nature::Continuous(NatureContinuous {
-                    lower: Vector1DNull::F64(impute_lower),
-                    upper: Vector1DNull::F64(impute_upper),
+                    lower: Vector1DNull::Float(impute_lower),
+                    upper: Vector1DNull::Float(impute_upper),
                 }));
             }
 
-            DataType::I64 => {
+            DataType::Int => {
 
                 // 1. check public arguments (constant n)
                 let impute_lower = match public_arguments.get::<IndexKey>(&"lower".into()) {
-                    Some(lower) => lower.array()?.clone().vec_i64(Some(num_columns))
+                    Some(lower) => lower.array()?.clone().vec_int(Some(num_columns))
                         .map_err(prepend("lower:"))?,
 
                     // 2. then private arguments (for example from another clamped column)
                     None => match properties.get::<IndexKey>(&"lower".into()) {
-                        Some(lower) => lower.array()?.lower_i64()
+                        Some(lower) => lower.array()?.lower_int()
                             .map_err(prepend("lower:"))?,
 
                         // 3. then data properties (propagated from prior clamping/lower/upper)
                         None => data_property
-                            .lower_i64().map_err(prepend("lower:"))?
+                            .lower_int().map_err(prepend("lower:"))?
                     }
                 };
 
                 // 1. check public arguments (constant n)
                 let impute_upper = match public_arguments.get::<IndexKey>(&"upper".into()) {
-                    Some(upper) => upper.array()?.clone().vec_i64(Some(num_columns))
+                    Some(upper) => upper.array()?.clone().vec_int(Some(num_columns))
                         .map_err(prepend("upper:"))?,
 
                     // 2. then private arguments (for example from another clamped column)
                     None => match properties.get::<IndexKey>(&"upper".into()) {
-                        Some(upper) => upper.array()?.upper_i64()
+                        Some(upper) => upper.array()?.upper_int()
                             .map_err(prepend("upper:"))?,
 
                         // 3. then data properties (propagated from prior clamping/lower/upper)
                         None => data_property
-                            .upper_i64().map_err(prepend("upper:"))?
+                            .upper_int().map_err(prepend("upper:"))?
                     }
                 };
 
@@ -183,7 +183,7 @@ impl Component for proto::Resize {
                 }
 
                 // the actual data bound (if it exists) may be wider than the imputation parameters
-                let impute_lower = match data_property.lower_i64_option() {
+                let impute_lower = match data_property.lower_int_option() {
                     Ok(data_lower) => impute_lower.into_iter().zip(data_lower.into_iter())
                         .map(|(impute_lower, optional_data_lower)| match optional_data_lower {
                             Some(data_lower) => Some(impute_lower.min(data_lower)),
@@ -193,7 +193,7 @@ impl Component for proto::Resize {
                     Err(_) => (0..num_columns).map(|_| None).collect()
                 };
 
-                let impute_upper = match data_property.upper_i64_option() {
+                let impute_upper = match data_property.upper_int_option() {
                     Ok(data_upper) => impute_upper.into_iter().zip(data_upper.into_iter())
                         .map(|(impute_upper, optional_data_upper)| match optional_data_upper {
                             Some(data_upper) => Some(impute_upper.max(data_upper)),
@@ -205,8 +205,8 @@ impl Component for proto::Resize {
 
                 // impute may only ever widen prior existing bounds
                 data_property.nature = Some(Nature::Continuous(NatureContinuous {
-                    lower: Vector1DNull::I64(impute_lower),
-                    upper: Vector1DNull::I64(impute_upper),
+                    lower: Vector1DNull::Int(impute_lower),
+                    upper: Vector1DNull::Int(impute_upper),
                 }));
             }
             _ => return Err("bounds for imputation must be numeric".into())
@@ -238,8 +238,8 @@ impl Expandable for proto::Resize {
             if !properties.contains_key::<IndexKey>(&"lower".into()) {
                 maximum_id += 1;
                 let id_lower = maximum_id;
-                let value = Value::Array(Array::F64(
-                    ndarray::Array::from(data_property.lower_f64()?).into_dyn()));
+                let value = Value::Array(Array::Float(
+                    ndarray::Array::from(data_property.lower_float()?).into_dyn()));
                 let (patch_node, release) = get_literal(value, component.submission)?;
                 expansion.computation_graph.insert(id_lower, patch_node);
                 expansion.properties.insert(id_lower, infer_property(&release.value, None)?);
@@ -250,8 +250,8 @@ impl Expandable for proto::Resize {
             if !properties.contains_key::<IndexKey>(&"upper".into()) {
                 maximum_id += 1;
                 let id_upper = maximum_id;
-                let value = Value::Array(Array::F64(
-                    ndarray::Array::from(data_property.upper_f64()?).into_dyn()));
+                let value = Value::Array(Array::Float(
+                    ndarray::Array::from(data_property.upper_float()?).into_dyn()));
                 let (patch_node, release) = get_literal(value, component.submission)?;
                 expansion.computation_graph.insert(id_upper, patch_node);
                 expansion.properties.insert(id_upper, infer_property(&release.value, None)?);

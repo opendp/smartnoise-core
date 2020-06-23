@@ -92,8 +92,8 @@ impl Report for proto::DpQuantile {
 
         let mut releases = Vec::new();
 
-        let minimums = data_property.lower_f64().unwrap();
-        let maximums = data_property.upper_f64().unwrap();
+        let minimums = data_property.lower_float().unwrap();
+        let maximums = data_property.upper_float().unwrap();
 
         let num_columns = data_property.num_columns()?;
         let privacy_usages = spread_privacy_usage(&self.privacy_usage, num_columns as usize)?;
@@ -108,8 +108,8 @@ impl Report for proto::DpQuantile {
                 statistic: "DPQuantile".to_string(),
                 variables: serde_json::json!(variable_name.to_string()),
                 release_info: match release.array()? {
-                    Array::F64(v) => value_to_json(&get_ith_column(v, column_number)?.into())?,
-                    Array::I64(v) => value_to_json(&get_ith_column(v, column_number)?.into())?,
+                    Array::Float(v) => value_to_json(&get_ith_column(v, column_number)?.into())?,
+                    Array::Int(v) => value_to_json(&get_ith_column(v, column_number)?.into())?,
                     _ => return Err("maximum must be numeric".into())
                 },
                 privacy_loss: privacy_usage_to_json(&privacy_usages[column_number].clone()),

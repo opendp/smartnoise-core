@@ -29,7 +29,7 @@ impl Component for proto::ExponentialMechanism {
             .ok_or("utilities: missing")?.jagged()
             .map_err(prepend("utilities:"))?.clone();
 
-        if utilities_property.data_type != DataType::F64 {
+        if utilities_property.data_type != DataType::Float {
             return Err("utilities: data_type must be float".into());
         }
 
@@ -55,7 +55,7 @@ impl Component for proto::ExponentialMechanism {
             &SensitivitySpace::Exponential)?;
 
         // make sure sensitivities are an f64 array
-        sensitivity_values.array()?.f64()?;
+        sensitivity_values.array()?.float()?;
 
         let num_columns = utilities_property.num_columns()?;
         let mut output_property = ArrayProperties {
@@ -149,7 +149,7 @@ impl Mechanism for proto::ExponentialMechanism {
             Some(release_usage) => release_usage.iter()
                 .zip(data_property.c_stability.iter())
                 .map(|(usage, c_stab)|
-                    usage.effective_to_actual(1., *c_stab, privacy_definition.group_size))
+                    usage.effective_to_actual(1., *c_stab as f64, privacy_definition.group_size))
                 .collect::<Result<Vec<proto::PrivacyUsage>>>()?,
             None => self.privacy_usage.clone()
         }))

@@ -26,7 +26,7 @@ pub fn evaluate_function(
 
     // insert arguments into function
     arguments_names.iter()
-        .map(|(name, id)| {
+        .try_for_each(|(name, id)| {
             let argument = arguments.get(name)
                 .ok_or_else(|| Error::from(format!("missing argument in function evaluation: {}", name)))?;
             release.insert(*id, ReleaseNode {
@@ -34,9 +34,8 @@ pub fn evaluate_function(
                 privacy_usages: None,
                 public: true,
             });
-            Ok(())
-        })
-        .collect::<Result<()>>()?;
+            Ok::<_, Error>(())
+        })?;
 
     let (release, warnings) = crate::release(
         None,

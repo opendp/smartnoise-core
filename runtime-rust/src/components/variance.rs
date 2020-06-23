@@ -6,14 +6,14 @@ use whitenoise_validator::utilities::get_argument;
 use crate::components::Evaluable;
 use ndarray::{ArrayD, Array};
 use crate::utilities::get_num_columns;
-use whitenoise_validator::proto;
+use whitenoise_validator::{proto, Float};
 use crate::components::mean::mean;
 
 impl Evaluable for proto::Variance {
     fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         let delta_degrees_of_freedom = if self.finite_sample_correction { 1 } else { 0 } as usize;
         Ok(ReleaseNode::new(variance(
-            &get_argument(arguments, "data")?.array()?.f64()?.clone(),
+            &get_argument(arguments, "data")?.array()?.float()?.clone(),
             delta_degrees_of_freedom
         )?.into()))
     }
@@ -34,17 +34,17 @@ impl Evaluable for proto::Variance {
 /// use whitenoise_runtime::components::variance::variance;
 /// let data = arr2(&[ [1.,10.], [2., 20.], [3., 30.] ]).into_dyn();
 /// let variances = variance(&data, 1).unwrap();
-/// assert!(variances == arr2(&[[1., 100.]]).into_dyn());
+/// assert_eq!(variances, arr2(&[[1., 100.]]).into_dyn());
 /// ```
-pub fn variance(data: &ArrayD<f64>, delta_degrees_of_freedom: usize) -> Result<ArrayD<f64>> {
+pub fn variance(data: &ArrayD<Float>, delta_degrees_of_freedom: usize) -> Result<ArrayD<Float>> {
 
-    let means: Vec<f64> = mean(&data)?.iter().copied().collect();
+    let means: Vec<Float> = mean(&data)?.iter().copied().collect();
 
     // iterate over the generalized columns
     let variances = data.gencolumns().into_iter().zip(means)
         .map(|(column, mean)| column.iter()
-                .fold(0., |sum, v| sum + (v - mean).powi(2)) / (column.len() - delta_degrees_of_freedom) as f64)
-        .collect::<Vec<f64>>();
+                .fold(0., |sum, v| sum + (v - mean).powi(2)) / (column.len() - delta_degrees_of_freedom) as Float)
+        .collect::<Vec<Float>>();
 
     let array = match data.ndim() {
         1 => Array::from_shape_vec(vec![], variances),

@@ -102,8 +102,8 @@ impl Report for proto::DpSum {
 
         let mechanism = get_mechanism(&data_property, &self.mechanism)?;
 
-        let minimums = data_property.lower_f64()?;
-        let maximums = data_property.upper_f64()?;
+        let minimums = data_property.lower_float()?;
+        let maximums = data_property.upper_float()?;
 
         let num_columns = data_property.num_columns()?;
         let privacy_usages = spread_privacy_usage(&self.privacy_usage, num_columns as usize)?;
@@ -118,8 +118,8 @@ impl Report for proto::DpSum {
                 statistic: "DPSum".to_string(),
                 variables: serde_json::json!(variable_name.to_string()),
                 release_info: match release.array()? {
-                    Array::F64(v) => value_to_json(&get_ith_column(v, column_number)?.into())?,
-                    Array::I64(v) => value_to_json(&get_ith_column(v, column_number)?.into())?,
+                    Array::Float(v) => value_to_json(&get_ith_column(v, column_number)?.into())?,
+                    Array::Int(v) => value_to_json(&get_ith_column(v, column_number)?.into())?,
                     _ => return Err("maximum must be numeric".into())
                 },
                 privacy_loss: privacy_usage_to_json(&privacy_usages[column_number].clone()),
@@ -150,8 +150,8 @@ fn get_mechanism(data_property: &ArrayProperties, mechanism: &str) -> Result<Str
 
     Ok(if mechanism == "automatic" {
         match data_property.data_type {
-            DataType::I64 => "simplegeometric",
-            DataType::F64 => "laplace",
+            DataType::Int => "simplegeometric",
+            DataType::Float => "laplace",
             _ => return Err("cannot sum non-integer data".into())
         }.to_string()
     } else {

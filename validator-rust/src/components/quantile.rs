@@ -1,6 +1,6 @@
 use crate::errors::*;
 
-use crate::{proto, base, Warnable};
+use crate::{proto, base, Warnable, Float};
 
 use crate::components::{Component, Sensitivity, Expandable};
 use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType, JaggedProperties, IndexKey};
@@ -27,7 +27,7 @@ impl Component for proto::Quantile {
         }
         data_property.assert_is_not_empty()?;
 
-        if data_property.data_type != DataType::F64 && data_property.data_type != DataType::I64 {
+        if data_property.data_type != DataType::Float && data_property.data_type != DataType::Int {
             return Err("data: atomic type must be numeric".into());
         }
 
@@ -51,7 +51,7 @@ impl Component for proto::Quantile {
                             (0..num_columns).map(|_| 1.).collect())?.into_dyn().into()
                     }),
                     nature: None,
-                    data_type: DataType::F64,
+                    data_type: DataType::Float,
                     releasable: false
                 }).into()
             },
@@ -94,13 +94,13 @@ impl Sensitivity for proto::Quantile {
                 if k != &1 {
                     return Err("Quantile sensitivity is only implemented for KNorm of 1".into());
                 }
-                let lower = data_property.lower_f64()?;
-                let upper = data_property.upper_f64()?;
+                let lower = data_property.lower_float()?;
+                let upper = data_property.upper_float()?;
 
                 let row_sensitivity = lower.iter()
                     .zip(upper.iter())
                     .map(|(min, max)| max - min)
-                    .collect::<Vec<f64>>();
+                    .collect::<Vec<Float>>();
 
                 let mut array_sensitivity = Array::from(row_sensitivity).into_dyn();
                 array_sensitivity.insert_axis_inplace(Axis(0));
@@ -115,11 +115,11 @@ impl Sensitivity for proto::Quantile {
                 let cell_sensitivity = match neighboring_type {
                     Neighboring::AddRemove => self.alpha.max(1. - self.alpha),
                     Neighboring::Substitute => 1.
-                };
+                } as Float;
 
                 let row_sensitivity = (0..data_property.num_columns()?)
                     .map(|_| cell_sensitivity)
-                    .collect::<Vec<f64>>();
+                    .collect::<Vec<Float>>();
 
                 let array_sensitivity = Array::from(row_sensitivity).into_dyn();
                 // array_sensitivity.insert_axis_inplace(Axis(0));

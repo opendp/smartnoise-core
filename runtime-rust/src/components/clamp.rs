@@ -6,7 +6,7 @@ use whitenoise_validator::utilities::{standardize_numeric_argument, standardize_
 use crate::components::Evaluable;
 use ndarray::ArrayD;
 use crate::utilities::get_num_columns;
-use whitenoise_validator::proto;
+use whitenoise_validator::{proto, Float, Integer};
 use std::hash::Hash;
 
 impl Evaluable for proto::Clamp {
@@ -17,10 +17,10 @@ impl Evaluable for proto::Clamp {
                 (Value::Array(data), Value::Jagged(categories), Value::Array(nulls)) => Ok(match (data, categories, nulls) {
                     (Array::Bool(data), Jagged::Bool(categories), Array::Bool(nulls)) =>
                         clamp_categorical(&data, &categories, &nulls)?.into(),
-                    (Array::F64(_), Jagged::F64(_), Array::F64(_)) =>
+                    (Array::Float(_), Jagged::Float(_), Array::Float(_)) =>
                         return Err("float clamping is not supported".into()),
 //                        clamp_categorical(&data, &categories, &nulls)?.into(),
-                    (Array::I64(data), Jagged::I64(categories), Array::I64(nulls)) =>
+                    (Array::Int(data), Jagged::Int(categories), Array::Int(nulls)) =>
                         clamp_categorical(&data, &categories, &nulls)?.into(),
                     (Array::Str(data), Jagged::Str(categories), Array::Str(nulls)) =>
                         clamp_categorical(&data, &categories, &nulls)?.into(),
@@ -33,9 +33,9 @@ impl Evaluable for proto::Clamp {
         else {
             match (get_argument(arguments, "data")?, get_argument(arguments, "lower")?, get_argument(arguments, "upper")?) {
                 (Value::Array(data), Value::Array(lower), Value::Array(upper)) => Ok(match (data, lower, upper) {
-                    (Array::F64(data), Array::F64(lower), Array::F64(upper)) =>
+                    (Array::Float(data), Array::Float(lower), Array::Float(upper)) =>
                         clamp_numeric_float(&data, &lower, &upper)?.into(),
-                    (Array::I64(data), Array::I64(lower), Array::I64(upper)) =>
+                    (Array::Int(data), Array::Int(lower), Array::Int(upper)) =>
                         clamp_numeric_integer(&data, &lower, &upper)?.into(),
                     _ => return Err("data, lower, and upper must all have type f64".into())
                 }),
@@ -59,16 +59,17 @@ impl Evaluable for proto::Clamp {
 /// ```
 /// use ndarray::{ArrayD, arr2, arr1};
 /// use whitenoise_runtime::components::clamp::clamp_numeric_float;
+/// use whitenoise_validator::Float;
 /// let data = arr2(&[ [1.,2.,3.], [7.,11.,9.] ]).into_dyn();
-/// let lower: ArrayD<f64> = arr1(&[0.5, 8., 4.]).into_dyn();
-/// let upper: ArrayD<f64> = arr1(&[2.5, 10., 12.]).into_dyn();
+/// let lower: ArrayD<Float> = arr1(&[0.5, 8., 4.]).into_dyn();
+/// let upper: ArrayD<Float> = arr1(&[2.5, 10., 12.]).into_dyn();
 ///
 /// let clamped_data = clamp_numeric_float(&data, &lower, &upper).unwrap();
-/// assert!(clamped_data == arr2(&[ [1., 8., 4.], [2.5, 10., 9.] ]).into_dyn());
+/// assert_eq!(clamped_data, arr2(&[ [1., 8., 4.], [2.5, 10., 9.] ]).into_dyn());
 /// ```
 pub fn clamp_numeric_float(
-    data: &ArrayD<f64>, lower: &ArrayD<f64>, upper: &ArrayD<f64>
-)-> Result<ArrayD<f64>> {
+    data: &ArrayD<Float>, lower: &ArrayD<Float>, upper: &ArrayD<Float>
+)-> Result<ArrayD<Float>> {
     let mut data = data.clone();
 
     let num_columns = get_num_columns(&data)?;
@@ -103,16 +104,17 @@ pub fn clamp_numeric_float(
 /// ```
 /// use ndarray::{ArrayD, arr2, arr1};
 /// use whitenoise_runtime::components::clamp::clamp_numeric_integer;
+/// use whitenoise_validator::Integer;
 /// let data = arr2(&[ [1, 2, 3], [7, 11, 9] ]).into_dyn();
-/// let lower: ArrayD<i64> = arr1(&[0, 8, 4]).into_dyn();
-/// let upper: ArrayD<i64> = arr1(&[2, 10, 12]).into_dyn();
+/// let lower: ArrayD<Integer> = arr1(&[0, 8, 4]).into_dyn();
+/// let upper: ArrayD<Integer> = arr1(&[2, 10, 12]).into_dyn();
 ///
 /// let clamped_data = clamp_numeric_integer(&data, &lower, &upper).unwrap();
-/// assert!(clamped_data == arr2(&[ [1, 8, 4], [2, 10, 9] ]).into_dyn());
+/// assert_eq!(clamped_data, arr2(&[ [1, 8, 4], [2, 10, 9] ]).into_dyn());
 /// ```
 pub fn clamp_numeric_integer(
-    data: &ArrayD<i64>, lower: &ArrayD<i64>, upper: &ArrayD<i64>
-)-> Result<ArrayD<i64>> {
+    data: &ArrayD<Integer>, lower: &ArrayD<Integer>, upper: &ArrayD<Integer>
+)-> Result<ArrayD<Integer>> {
     let mut data = data.clone();
 
     let num_columns = get_num_columns(&data)?;
@@ -164,8 +166,11 @@ pub fn clamp_numeric_integer(
 /// assert_eq!(clamped_data, arr2(&[["a".to_string(), "b".to_string(), "not_a_letter".to_string()],
 ///                                ["a".to_string(), "not_a_letter".to_string(), "b".to_string()]]).into_dyn());
 /// ```
-pub fn clamp_categorical<T: Ord + Hash + Clone>(data: &ArrayD<T>, categories: &[Vec<T>], null_value: &ArrayD<T>)
-                            -> Result<ArrayD<T>> where T:Clone, T:PartialEq, T:Default {
+pub fn clamp_categorical<T: Ord + Hash + Clone>(
+    data: &ArrayD<T>,
+    categories: &[Vec<T>],
+    null_value: &ArrayD<T>
+) -> Result<ArrayD<T>> where T:Clone, T:PartialEq, T:Default {
 
     let mut data = data.clone();
 

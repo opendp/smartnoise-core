@@ -1,7 +1,7 @@
 use crate::errors::*;
 
 
-use crate::{proto, base, Warnable};
+use crate::{proto, base, Warnable, Float};
 
 use crate::components::{Component, Sensitivity};
 use crate::base::{Value, ValueProperties, ArrayProperties, AggregatorProperties, NodeProperties, SensitivitySpace, IndexKey, IndexmapProperties};
@@ -31,10 +31,7 @@ impl Component for proto::Union {
                 .map(|v| Some(v.num_columns)).collect())
                 .unwrap_or(None).ok_or_else(|| "num_columns must be known when unioning")?;
 
-            let num_records = array_props.iter().fold(Some(0), |sum, v| match (sum, v.num_records) {
-                (Some(l), Some(r)) => Some(l + r),
-                _ => None
-            });
+            let num_records = array_props.iter().try_fold(0, |sum, v| v.num_records.map(|v| sum + v));
 
             let releasable = get_common_value(&array_props.iter().map(|v| v.releasable).collect())
                 .ok_or_else(|| Error::from("arguments must all be releasable, or all be private"))?;
@@ -49,7 +46,7 @@ impl Component for proto::Union {
                     .unwrap_or(true),
                 releasable,
                 c_stability: array_props.iter().map(|v| v.c_stability.clone())
-                    .fold1(|l, r| l.iter().zip(r).map(|(l, r)| l.max(r) * c_stab_mult).collect::<Vec<f64>>())
+                    .fold1(|l, r| l.iter().zip(r).map(|(l, r)| l.max(r) * c_stab_mult).collect::<Vec<Float>>())
                     .ok_or_else(|| "must have at least one partition when unioning")?,
                 aggregator: if releasable { None } else {
                     Some(AggregatorProperties {
@@ -60,8 +57,8 @@ impl Component for proto::Union {
                             &array_props.iter().map(|prop| prop.aggregator.clone())
                                 .collect::<Option<Vec<AggregatorProperties>>>()
                                 .ok_or_else(|| Error::from("all arguments to union must be aggregated"))?
-                                .iter().map(|v| Ok(v.lipschitz_constants.array()?.f64()?.view()))
-                                .collect::<Result<Vec<ArrayViewD<f64>>>>()?)?.into(),
+                                .iter().map(|v| Ok(v.lipschitz_constants.array()?.float()?.view()))
+                                .collect::<Result<Vec<ArrayViewD<Float>>>>()?)?.into(),
                     })
                 },
                 // TODO: merge natures
@@ -104,8 +101,8 @@ impl Sensitivity for proto::Union {
 
         Ok(if self.flatten {
             stack(Axis(0), &partition_sensitivities.iter()
-                .map(|v| Ok(v.array()?.f64()?.view()))
-                .collect::<Result<Vec<ArrayViewD<f64>>>>()?)?.into()
+                .map(|v| Ok(v.array()?.float()?.view()))
+                .collect::<Result<Vec<ArrayViewD<Float>>>>()?)?.into()
         } else {
             properties.keys()
                 .cloned().zip(partition_sensitivities)

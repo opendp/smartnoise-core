@@ -1,6 +1,6 @@
 use crate::errors::*;
 
-use crate::{proto, base, Warnable};
+use crate::{proto, base, Warnable, Float};
 
 use crate::components::{Component, Sensitivity};
 use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType, IndexKey};
@@ -35,7 +35,7 @@ impl Component for proto::Sum {
                 (0..num_columns).map(|_| 1.).collect())?.into_dyn().into()
         });
 
-        if data_property.data_type != DataType::F64 && data_property.data_type != DataType::I64 {
+        if data_property.data_type != DataType::Float && data_property.data_type != DataType::Int {
             return Err("data: atomic type must be numeric".into())
         }
 
@@ -66,8 +66,8 @@ impl Sensitivity for proto::Sum {
 
                 data_property.assert_is_not_aggregated()?;
                 data_property.assert_non_null()?;
-                let data_lower = data_property.lower_f64()?;
-                let data_upper = data_property.upper_f64()?;
+                let data_lower = data_property.lower_float()?;
+                let data_upper = data_property.upper_float()?;
 
                 use proto::privacy_definition::Neighboring;
                 let neighboring_type = Neighboring::from_i32(privacy_definition.neighboring)
@@ -78,11 +78,11 @@ impl Sensitivity for proto::Sum {
                         Neighboring::AddRemove => data_lower.iter()
                             .zip(data_upper.iter())
                             .map(|(min, max)| min.abs().max(max.abs()))
-                            .collect::<Vec<f64>>(),
+                            .collect::<Vec<Float>>(),
                         Neighboring::Substitute => data_lower.iter()
                             .zip(data_upper.iter())
                             .map(|(min, max)| (max - min))
-                            .collect::<Vec<f64>>()
+                            .collect::<Vec<Float>>()
                     }
                     _ => return Err("KNorm sensitivity is only supported in L1 and L2 spaces".into())
                 };

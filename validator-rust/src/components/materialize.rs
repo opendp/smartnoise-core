@@ -51,7 +51,7 @@ impl Named for proto::Materialize {
         let column_names = public_arguments.get::<base::IndexKey>(&"column_names".into())
             .and_then(|column_names| column_names.array().ok()?.string().ok()).cloned();
         let num_columns = public_arguments.get::<base::IndexKey>(&"num_columns".into())
-            .and_then(|num_columns| num_columns.array().ok()?.first_i64().ok());
+            .and_then(|num_columns| num_columns.array().ok()?.first_int().ok());
 
         // standardize to vec of column names
         Ok(match (column_names, num_columns) {

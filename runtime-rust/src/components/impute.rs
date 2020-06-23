@@ -8,7 +8,7 @@ use crate::utilities::{noise};
 use crate::utilities;
 use ndarray::{ArrayD};
 use crate::utilities::get_num_columns;
-use whitenoise_validator::proto;
+use whitenoise_validator::{proto, Float};
 use std::hash::Hash;
 
 
@@ -18,7 +18,7 @@ impl Evaluable for proto::Impute {
         // if categories argument is not None, treat data as categorical (regardless of atomic type)
         if arguments.contains_key::<IndexKey>(&"categories".into()) {
             let weights = get_argument(arguments, "weights")
-                .and_then(|v| v.jagged()).and_then(|v| v.f64()).ok();
+                .and_then(|v| v.jagged()).and_then(|v| v.float()).ok();
 
             Ok(ReleaseNode::new(match (
                 get_argument(arguments, "data")?.array()?,
@@ -28,11 +28,11 @@ impl Evaluable for proto::Impute {
                 (Array::Bool(data), Jagged::Bool(categories), Jagged::Bool(nulls)) =>
                     impute_categorical(&data, &categories, &weights, &nulls)?.into(),
 
-                (Array::F64(_), Jagged::F64(_), Jagged::F64(_)) =>
+                (Array::Float(_), Jagged::Float(_), Jagged::Float(_)) =>
                     return Err("categorical imputation over floats is not currently supported".into()),
 //                        impute_categorical(&data, &categories, &weights, &nulls)?.into(),
 
-                (Array::I64(data), Jagged::I64(categories), Jagged::I64(nulls)) =>
+                (Array::Int(data), Jagged::Int(categories), Jagged::Int(nulls)) =>
                     impute_categorical(&data, &categories, &weights, &nulls)?.into(),
 
                 (Array::Str(data), Jagged::Str(categories), Jagged::Str(nulls)) =>
@@ -55,9 +55,9 @@ impl Evaluable for proto::Impute {
                 "uniform" => {
                     Ok(match (get_argument(arguments, "data")?, get_argument(arguments, "lower")?, get_argument(arguments, "upper")?) {
                         (Value::Array(data), Value::Array(lower), Value::Array(upper)) => match (data, lower, upper) {
-                            (Array::F64(data), Array::F64(lower), Array::F64(upper)) =>
+                            (Array::Float(data), Array::Float(lower), Array::Float(upper)) =>
                                 impute_float_uniform(&data, &lower, &upper)?.into(),
-                            (Array::I64(data), Array::I64(_lower), Array::I64(_upper)) =>
+                            (Array::Int(data), Array::Int(_lower), Array::Int(_upper)) =>
                                 // continuous integers are already non-null
                                 data.clone().into(),
                             _ => return Err("data, lower, and upper must all be the same type".into())
@@ -67,11 +67,11 @@ impl Evaluable for proto::Impute {
                 },
                 // if specified distribution is Gaussian, get necessary arguments and impute
                 "gaussian" => {
-                    let data = get_argument(arguments, "data")?.array()?.f64()?;
-                    let lower = get_argument(arguments, "lower")?.array()?.f64()?;
-                    let upper = get_argument(arguments, "upper")?.array()?.f64()?;
-                    let scale = get_argument(arguments, "scale")?.array()?.f64()?;
-                    let shift = get_argument(arguments, "shift")?.array()?.f64()?;
+                    let data = get_argument(arguments, "data")?.array()?.float()?;
+                    let lower = get_argument(arguments, "lower")?.array()?.float()?;
+                    let upper = get_argument(arguments, "upper")?.array()?.float()?;
+                    let scale = get_argument(arguments, "scale")?.array()?.float()?;
+                    let shift = get_argument(arguments, "shift")?.array()?.float()?;
 
                     Ok(impute_float_gaussian(&data, &lower, &upper, &shift, &scale)?.into())
                 },
@@ -96,16 +96,20 @@ impl Evaluable for proto::Impute {
 /// ```
 /// use ndarray::prelude::*;
 /// use whitenoise_runtime::components::impute::impute_float_uniform;
-/// use core::f64::NAN;
+/// use whitenoise_validator::Float;
 ///
-/// let data: ArrayD<f64> = arr2(&[ [1., NAN, 3., NAN], [2., 2., NAN, NAN] ]).into_dyn();
-/// let lower: ArrayD<f64> = arr1(&[0., 2., 3., 4.]).into_dyn();
-/// let upper: ArrayD<f64> = arr1(&[10., 2., 5., 5.]).into_dyn();
+/// let data: ArrayD<Float> = arr2(&[ [1., Float::NAN, 3., Float::NAN], [2., 2., Float::NAN, Float::NAN] ]).into_dyn();
+/// let lower: ArrayD<Float> = arr1(&[0., 2., 3., 4.]).into_dyn();
+/// let upper: ArrayD<Float> = arr1(&[10., 2., 5., 5.]).into_dyn();
 /// let imputed = impute_float_uniform(&data, &lower, &upper);
 /// # imputed.unwrap();
 /// ```
 
-pub fn impute_float_uniform(data: &ArrayD<f64>, lower: &ArrayD<f64>, upper: &ArrayD<f64>) -> Result<ArrayD<f64>> {
+pub fn impute_float_uniform(
+    data: &ArrayD<Float>,
+    lower: &ArrayD<Float>, upper: &ArrayD<Float>
+) -> Result<ArrayD<Float>> {
+
     let mut data = data.clone();
 
     let num_columns = get_num_columns(&data)?;
@@ -116,17 +120,14 @@ pub fn impute_float_uniform(data: &ArrayD<f64>, lower: &ArrayD<f64>, upper: &Arr
         .zip(standardize_numeric_argument(&lower, num_columns)?.iter())
         .zip(standardize_numeric_argument(&upper, num_columns)?.iter())
         // for each pairing, iterate over the cells
-        .map(|((mut column, min), max)| column.iter_mut()
+        .try_for_each(|((mut column, min), max)| column.iter_mut()
             // ignore nan values
             .filter(|v| v.is_nan())
             // mutate the cell via the operator
-            .map(|v| {
-                *v = noise::sample_uniform(*min, *max)?;
-                Ok(())
-            })
-            // pool errors
-            .collect::<Result<()>>())
-        .collect::<Result<()>>()?;
+            .try_for_each(|v| {
+                *v = noise::sample_uniform(*min as f64, *max as f64)? as Float;
+                Ok::<_, Error>(())
+            }))?;
 
     Ok(data)
 }
@@ -148,16 +149,20 @@ pub fn impute_float_uniform(data: &ArrayD<f64>, lower: &ArrayD<f64>, upper: &Arr
 /// ```
 /// use ndarray::prelude::*;
 /// use whitenoise_runtime::components::impute::impute_float_gaussian;
-/// use core::f64::NAN;
-/// let data: ArrayD<f64> = arr1(&[1., NAN, 3., NAN]).into_dyn();
-/// let lower: ArrayD<f64> = arr1(&[0.0]).into_dyn();
-/// let upper: ArrayD<f64> = arr1(&[10.0]).into_dyn();
-/// let shift: ArrayD<f64> = arr1(&[5.0]).into_dyn();
-/// let scale: ArrayD<f64> = arr1(&[7.0]).into_dyn();
+/// use whitenoise_validator::Float;
+/// let data: ArrayD<Float> = arr1(&[1., Float::NAN, 3., Float::NAN]).into_dyn();
+/// let lower: ArrayD<Float> = arr1(&[0.0]).into_dyn();
+/// let upper: ArrayD<Float> = arr1(&[10.0]).into_dyn();
+/// let shift: ArrayD<Float> = arr1(&[5.0]).into_dyn();
+/// let scale: ArrayD<Float> = arr1(&[7.0]).into_dyn();
 /// let imputed = impute_float_gaussian(&data, &lower, &upper, &shift, &scale);
 /// # imputed.unwrap();
 /// ```
-pub fn impute_float_gaussian(data: &ArrayD<f64>, lower: &ArrayD<f64>, upper: &ArrayD<f64>, shift: &ArrayD<f64>, scale: &ArrayD<f64>) -> Result<ArrayD<f64>> {
+pub fn impute_float_gaussian(
+    data: &ArrayD<Float>,
+    lower: &ArrayD<Float>, upper: &ArrayD<Float>,
+    shift: &ArrayD<Float>, scale: &ArrayD<Float>
+) -> Result<ArrayD<Float>> {
 
     let mut data = data.clone();
 
@@ -171,16 +176,15 @@ pub fn impute_float_gaussian(data: &ArrayD<f64>, lower: &ArrayD<f64>, upper: &Ar
         .zip(standardize_numeric_argument(&shift, num_columns)?.iter()
             .zip(standardize_numeric_argument(&scale, num_columns)?.iter()))
         // for each pairing, iterate over the cells
-        .map(|((mut column, (min, max)), (shift, scale))| column.iter_mut()
+        .try_for_each(|((mut column, (min, max)), (shift, scale))| column.iter_mut()
             // ignore nan values
             .filter(|v| v.is_nan())
             // mutate the cell via the operator
-            .map(|v| {
-                *v = noise::sample_gaussian_truncated(*min, *max, *shift, *scale)?;
-                Ok(())
-            })
-            .collect::<Result<()>>())
-        .collect::<Result<()>>()?;
+            .try_for_each(|v| {
+                *v = noise::sample_gaussian_truncated(
+                    *min as f64, *max as f64, *shift as f64, *scale as f64)? as Float;
+                Ok::<_, Error>(())
+            }))?;
 
     Ok(data)
 }
@@ -215,10 +219,10 @@ pub fn impute_float_gaussian(data: &ArrayD<f64>, lower: &ArrayD<f64>, upper: &Ar
 /// let imputed = impute_categorical(&data, &categories, &weights, &null_value);
 /// # imputed.unwrap();
 /// ```
-pub fn impute_categorical<T: Clone>(data: &ArrayD<T>, categories: &[Vec<T>],
-                             weights: &Option<Vec<Vec<f64>>>, null_value: &[Vec<T>])
-                             -> Result<ArrayD<T>> where T:Clone, T:PartialEq, T:Default, T: Ord, T: Hash {
-
+pub fn impute_categorical<T: Clone>(
+    data: &ArrayD<T>, categories: &[Vec<T>],
+    weights: &Option<Vec<Vec<Float>>>, null_value: &[Vec<T>]
+) -> Result<ArrayD<T>> where T: Clone, T: PartialEq, T: Default, T: Ord, T: Hash {
     let mut data = data.clone();
 
     let num_columns = get_num_columns(&data)?;
@@ -235,16 +239,14 @@ pub fn impute_categorical<T: Clone>(data: &ArrayD<T>, categories: &[Vec<T>],
         .zip(probabilities.iter())
         .zip(null_value.iter())
         // for each pairing, iterate over the cells
-        .map(|(((mut column, cats), probs), null)| column.iter_mut()
+        .try_for_each(|(((mut column, cats), probs), null)| column.iter_mut()
             // ignore non null values
             .filter(|v| null.contains(v))
             // mutate the cell via the operator
-            .map(|v| {
+            .try_for_each(|v| {
                 *v = utilities::sample_from_set(&cats, &probs)?;
-                Ok(())
-            })
-            .collect::<Result<()>>())
-        .collect::<Result<()>>()?;
+                Ok::<_, Error>(())
+            }))?;
 
     Ok(data)
 }

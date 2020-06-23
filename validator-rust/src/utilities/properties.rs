@@ -20,20 +20,20 @@ pub fn select_properties(properties: &ArrayProperties, index: usize) -> Result<V
         properties.nature = Some(match nature {
             Nature::Continuous(continuous) => Nature::Continuous(NatureContinuous {
                 lower: match &continuous.lower {
-                    Vector1DNull::F64(lower) => Vector1DNull::F64(vec![take(lower, index)?]),
-                    Vector1DNull::I64(lower) => Vector1DNull::I64(vec![take(lower, index)?]),
+                    Vector1DNull::Float(lower) => Vector1DNull::Float(vec![take(lower, index)?]),
+                    Vector1DNull::Int(lower) => Vector1DNull::Int(vec![take(lower, index)?]),
                     _ => return Err("lower must be numeric".into())
                 },
                 upper: match &continuous.upper {
-                    Vector1DNull::F64(upper) => Vector1DNull::F64(vec![take(upper, index)?]),
-                    Vector1DNull::I64(upper) => Vector1DNull::I64(vec![take(upper, index)?]),
+                    Vector1DNull::Float(upper) => Vector1DNull::Float(vec![take(upper, index)?]),
+                    Vector1DNull::Int(upper) => Vector1DNull::Int(vec![take(upper, index)?]),
                     _ => return Err("upper must be numeric".into())
                 },
             }),
             Nature::Categorical(categorical) => Nature::Categorical(NatureCategorical {
                 categories: match &categorical.categories {
-                    Jagged::F64(cats) => Jagged::F64(vec![take(&cats, index)?]),
-                    Jagged::I64(cats) => Jagged::I64(vec![take(&cats, index)?]),
+                    Jagged::Float(cats) => Jagged::Float(vec![take(&cats, index)?]),
+                    Jagged::Int(cats) => Jagged::Int(vec![take(&cats, index)?]),
                     Jagged::Bool(cats) => Jagged::Bool(vec![take(&cats, index)?]),
                     Jagged::Str(cats) => Jagged::Str(vec![take(&cats, index)?]),
                 }
@@ -80,10 +80,7 @@ pub fn stack_properties(all_properties: &[ValueProperties], dimensionality: Opti
         num_records,
         num_columns: all_properties.iter()
             .map(|prop| prop.num_columns)
-            .fold(Some(0), |total, num| match (total, num) {
-                (Some(total), Some(num)) => Some(total + num),
-                _ => None
-            }),
+            .try_fold(0, |total, num| num.map(|v| total + v)),
         nullity: get_common_value(&all_properties.iter().map(|prop| prop.nullity).collect()).unwrap_or(true),
         releasable: get_common_value(&all_properties.iter().map(|prop| prop.releasable).collect()).unwrap_or(true),
         c_stability: all_properties.iter().flat_map(|prop| prop.c_stability.clone()).collect(),
@@ -103,8 +100,8 @@ fn get_common_continuous_nature(natures: &[Option<&Nature>], data_type: DataType
         Some(Nature::Continuous(nature)) => Some(nature.lower.clone()),
         Some(Nature::Categorical(_)) => None,
         _ => Some(match data_type {
-            DataType::F64 => Vector1DNull::F64(vec![None]),
-            DataType::I64 => Vector1DNull::I64(vec![None]),
+            DataType::Float => Vector1DNull::Float(vec![None]),
+            DataType::Int => Vector1DNull::Int(vec![None]),
             _ => return None
         })
     }).collect::<Option<Vec<Vector1DNull>>>()?.into_iter()
@@ -114,8 +111,8 @@ fn get_common_continuous_nature(natures: &[Option<&Nature>], data_type: DataType
         Some(Nature::Continuous(nature)) => Some(nature.upper.clone()),
         Some(Nature::Categorical(_)) => None,
         None => Some(match data_type {
-            DataType::F64 => Vector1DNull::F64(vec![None]),
-            DataType::I64 => Vector1DNull::I64(vec![None]),
+            DataType::Float => Vector1DNull::Float(vec![None]),
+            DataType::Int => Vector1DNull::Int(vec![None]),
             _ => return None
         })
     }).collect::<Option<Vec<Vector1DNull>>>()?.into_iter()
@@ -141,10 +138,10 @@ fn get_common_categorical_nature(natures: &[Option<&Nature>]) -> Option<Nature> 
 
 fn concat_vector1d_null(a: Result<Vector1DNull>, b: Result<Vector1DNull>) -> Result<Vector1DNull> {
     Ok(match (a?, b?) {
-        (Vector1DNull::F64(a), Vector1DNull::F64(b)) =>
-            Vector1DNull::F64([&a[..], &b[..]].concat()),
-        (Vector1DNull::I64(a), Vector1DNull::I64(b)) =>
-            Vector1DNull::I64([&a[..], &b[..]].concat()),
+        (Vector1DNull::Float(a), Vector1DNull::Float(b)) =>
+            Vector1DNull::Float([&a[..], &b[..]].concat()),
+        (Vector1DNull::Int(a), Vector1DNull::Int(b)) =>
+            Vector1DNull::Int([&a[..], &b[..]].concat()),
         (Vector1DNull::Bool(a), Vector1DNull::Bool(b)) =>
             Vector1DNull::Bool([&a[..], &b[..]].concat()),
         (Vector1DNull::Str(a), Vector1DNull::Str(b)) =>
@@ -155,10 +152,10 @@ fn concat_vector1d_null(a: Result<Vector1DNull>, b: Result<Vector1DNull>) -> Res
 
 fn concat_jagged(a: Result<Jagged>, b: Result<Jagged>) -> Result<Jagged> {
     Ok(match (a?, b?) {
-        (Jagged::F64(a), Jagged::F64(b)) =>
-            Jagged::F64([&a[..], &b[..]].concat()),
-        (Jagged::I64(a), Jagged::I64(b)) =>
-            Jagged::I64([&a[..], &b[..]].concat()),
+        (Jagged::Float(a), Jagged::Float(b)) =>
+            Jagged::Float([&a[..], &b[..]].concat()),
+        (Jagged::Int(a), Jagged::Int(b)) =>
+            Jagged::Int([&a[..], &b[..]].concat()),
         (Jagged::Bool(a), Jagged::Bool(b)) =>
             Jagged::Bool([&a[..], &b[..]].concat()),
         (Jagged::Str(a), Jagged::Str(b)) =>

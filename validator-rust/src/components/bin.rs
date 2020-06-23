@@ -56,7 +56,7 @@ impl Component for proto::Bin {
                                 col = nature_from_edges(&self.side, col)?;
                                 col.push(null);
 
-                                Ok(Some(deduplicate(col.into_iter().map(n64).collect())
+                                Ok(Some(deduplicate(col.into_iter().map(|v| n64(v as f64)).collect())
                                     .into_iter().map(|v| v.raw()).collect()))
                             }).collect::<Result<_>>()?),
                     }));

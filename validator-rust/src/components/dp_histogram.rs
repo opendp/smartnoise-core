@@ -1,7 +1,7 @@
 use crate::errors::*;
 
 
-use crate::{proto, base};
+use crate::{proto, base, Integer};
 use crate::components::{Expandable, Report};
 use ndarray::{arr0};
 
@@ -71,11 +71,11 @@ impl Expandable for proto::DpHistogram {
                 Some(id) => *id,
                 None => {
                     let count_max = match data_property.num_records {
-                        Some(num_records) => arr0(num_records).into_dyn(),
+                        Some(num_records) => arr0(num_records as Integer).into_dyn(),
                         None => if privacy_definition.protect_elapsed_time {
                             return Err("upper must be set when protecting elapsed time".into())
                         } else {
-                            arr0(std::i64::MAX).into_dyn()
+                            arr0(Integer::MAX).into_dyn()
                         }
                     };
                     // count_max
@@ -156,7 +156,7 @@ impl Report for proto::DpHistogram {
                     variables: serde_json::json!(variable_name.to_string()),
                     // extract ith column of release
                     release_info: value_to_json(&get_ith_column(
-                        release.array()?.i64()?,
+                        release.array()?.int()?,
                         column_number,
                     )?.into())?,
                     privacy_loss: privacy_usage_to_json(&privacy_usage),

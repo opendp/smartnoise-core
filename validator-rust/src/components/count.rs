@@ -1,7 +1,7 @@
 use crate::errors::*;
 
 
-use crate::{proto, Warnable, base};
+use crate::{proto, Warnable, base, Float, Integer};
 
 use crate::components::{Component, Sensitivity};
 use crate::base::{IndexKey, Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType, NatureContinuous, Nature, Vector1DNull};
@@ -31,7 +31,7 @@ impl Component for proto::Count {
             ValueProperties::Function(_) => return Err("Count is not implemented for functions".into())
         };
 
-        if self.distinct && data_property.data_type == DataType::F64 && data_property.nullity {
+        if self.distinct && data_property.data_type == DataType::Float && data_property.nullity {
             return Err("distinct counts on floats require non-nullity".into())
         }
 
@@ -57,7 +57,7 @@ impl Component for proto::Count {
                 // overall c_stability is the maximal c_stability of any column
                 vec![value.children.values()
                     .map(|v| v.array().map(|v| v.c_stability.clone()))
-                    .collect::<Result<Vec<Vec<f64>>>>()?.into_iter()
+                    .collect::<Result<Vec<Vec<Float>>>>()?.into_iter()
                     .flatten()
                     .fold1(|l, r| l.max(r))
                     .ok_or_else(|| "c_stability must be defined for each column")?]
@@ -73,12 +73,12 @@ impl Component for proto::Count {
         });
         data_property.c_stability = c_stability;
 
-        let data_num_records = data_property.num_records;
+        let data_num_records = data_property.num_records.map(|v| v as Integer);
         data_property.nature = Some(Nature::Continuous(NatureContinuous {
-            lower: Vector1DNull::I64(vec![data_num_records.or(Some(0))]),
-            upper: Vector1DNull::I64(vec![data_num_records]),
+            lower: Vector1DNull::Int(vec![data_num_records.or(Some(0))]),
+            upper: Vector1DNull::Int(vec![data_num_records]),
         }));
-        data_property.data_type = DataType::I64;
+        data_property.data_type = DataType::Int;
         data_property.dataset_id = Some(node_id as i64);
 
         Ok(ValueProperties::Array(data_property).into())
@@ -110,7 +110,7 @@ impl Sensitivity for proto::Count {
                 // overall c_stability is the maximal c_stability of any column
                 let c_stability = value.children.values()
                     .map(|v| v.array().map(|v| v.c_stability.clone()))
-                    .collect::<Result<Vec<Vec<f64>>>>()?.into_iter()
+                    .collect::<Result<Vec<Vec<Float>>>>()?.into_iter()
                     .flatten()
                     .fold1(|l, r| l.max(r))
                     .ok_or_else(|| "c_stability must be defined for each column")?;
@@ -129,7 +129,7 @@ impl Sensitivity for proto::Count {
                     .ok_or_else(|| Error::from("neighboring definition must be either \"AddRemove\" or \"Substitute\""))?;
 
                 // SENSITIVITY DERIVATIONS
-                let sensitivity: f64 = match (neighboring_type, num_records) {
+                let sensitivity: Float = match (neighboring_type, num_records) {
                     // known N. Applies to any neighboring type.
                     (_, Some(_)) => 0.,
 

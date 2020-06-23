@@ -162,8 +162,8 @@ impl Report for proto::DpMean {
 
         let mut releases = Vec::new();
 
-        let lower = data_property.lower_f64()?;
-        let upper = data_property.upper_f64()?;
+        let lower = data_property.lower_float()?;
+        let upper = data_property.upper_float()?;
         let num_records = data_property.num_records()?;
 
         let num_columns = data_property.num_columns()?;
@@ -179,7 +179,7 @@ impl Report for proto::DpMean {
                 statistic: "DPMean".to_string(),
                 variables: serde_json::json!(variable_name.to_string()),
                 release_info: value_to_json(&get_ith_column(
-                    release.array()?.f64()?,
+                    release.array()?.float()?,
                     column_number as usize
                 )?.into())?,
                 privacy_loss: privacy_usage_to_json(&privacy_usages[column_number].clone()),

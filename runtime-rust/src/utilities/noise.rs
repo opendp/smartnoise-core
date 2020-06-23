@@ -7,6 +7,7 @@ use crate::utilities;
 
 #[cfg(feature="use-secure-noise")]
 use rug::{Float, rand::{ThreadRandGen, ThreadRandState}};
+use whitenoise_validator::Integer;
 
 // Give MPFR ability to draw randomness from OpenSSL
 #[cfg(feature="use-secure-noise")]
@@ -129,27 +130,27 @@ pub fn sample_bit(prob: f64) -> Result<i64> {
 /// let n = sample_uniform_int(2, 0);
 /// # n.unwrap();
 /// ```
-pub fn sample_uniform_int(min: i64, max: i64) -> Result<i64> {
+pub fn sample_uniform_int(min: Integer, max: Integer) -> Result<Integer> {
 
     if min > max {return Err("min may not be greater than max".into());}
 
     // define number of possible integers we could sample and the maximum
     // number of bits it would take to represent them
 
-    let n_ints: i64 = max - min + 1;
-    let n_bits: i64 = ( (n_ints as f64).log2() ).ceil() as i64;
+    let n_ints: Integer = max - min + 1;
+    let n_bits: Integer = ( (n_ints as f64).log2() ).ceil() as Integer;
 
     // uniformly sample integers from the set {0, 1, ..., n_ints-1}
     // by uniformly creating binary strings of length "n_bits"
     // and rejecting integers that are too large
     let mut valid_int: bool = false;
-    let mut uniform_int: i64 = 0;
+    let mut uniform_int: Integer = 0;
     while !valid_int {
         uniform_int = 0;
         // generate random bits and increase integer by appropriate power of 2
         for i in 0..n_bits {
             let bit: i64 = sample_bit(0.5)?;
-            uniform_int += bit * 2_i64.pow(i as u32);
+            uniform_int += (bit * 2_i64.pow(i as u32)) as Integer;
         }
         if uniform_int < n_ints {
             valid_int = true;

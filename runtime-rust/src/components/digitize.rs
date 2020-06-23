@@ -4,7 +4,7 @@ use crate::NodeArguments;
 use whitenoise_validator::base::{Array, Jagged, ReleaseNode};
 use crate::components::Evaluable;
 use ndarray::ArrayD;
-use whitenoise_validator::proto;
+use whitenoise_validator::{proto, Integer};
 use crate::utilities::get_num_columns;
 use std::ops::{Div, Add};
 use whitenoise_validator::utilities::{get_argument, standardize_categorical_argument, standardize_numeric_argument, standardize_float_argument};
@@ -15,17 +15,17 @@ impl Evaluable for proto::Digitize {
 
         let data = get_argument(arguments, "data")?.array()?;
         let edges = get_argument(arguments, "edges")?.jagged()?;
-        let null = get_argument(arguments, "null_value")?.array()?.i64()?;
+        let null = get_argument(arguments, "null_value")?.array()?.int()?;
         let num_columns = data.num_columns()? as i64;
 
         Ok(ReleaseNode::new(match (data, edges) {
-            (Array::F64(data), Jagged::F64(edges)) =>
+            (Array::Float(data), Jagged::Float(edges)) =>
                 digitize(&data, &standardize_float_argument(edges, num_columns)?, &inclusive_left, &null)?.into(),
 
-            (Array::I64(data), Jagged::I64(edges)) =>
+            (Array::Int(data), Jagged::Int(edges)) =>
                 digitize(&data, &standardize_categorical_argument(edges.clone(), num_columns)?, &inclusive_left, &null)?.into(),
 
-            _ => return Err("data and edges must both be f64 or i64".into())
+            _ => return Err("data and edges must both be float or integer".into())
         }))
     }
 }
@@ -49,8 +49,9 @@ impl Evaluable for proto::Digitize {
 /// use whitenoise_runtime::components::digitize::{bin_index, digitize};
 /// use whitenoise_validator::utilities::standardize_float_argument;
 /// use whitenoise_runtime::utilities::get_num_columns;
+/// use whitenoise_validator::Float;
 ///
-/// let data = arr1(&[1.1, 2., 2.9, 4.1, 6.4]).into_dyn();
+/// let data: ArrayD<Float> = arr1(&[1.1, 2., 2.9, 4.1, 6.4]).into_dyn();
 /// let edges = vec![vec![0., 1., 2., 3., 4., 5.]];
 /// let inclusive_left = arr1(&[true]).into_dyn();
 /// let null = arr1(&[-1]).into_dyn();
@@ -61,14 +62,14 @@ impl Evaluable for proto::Digitize {
 ///
 /// let digitization = digitize(&data, &edges, &inclusive_left, &null).unwrap();
 /// println!("digitize {:?}", digitization);
-/// assert!(digitization == arr1(&[1, 2, 2, 4, -1]).into_dyn());
+/// assert_eq!(digitization, arr1(&[1, 2, 2, 4, -1]).into_dyn());
 /// ```
-pub fn digitize<T: std::cmp::PartialOrd + Clone + Div<T, Output=T> + Add<T, Output=T> + From<i32> + Copy + Default>(
+pub fn digitize<T: std::cmp::PartialOrd + Clone + Div<T, Output=T> + Add<T, Output=T> + Copy + Default>(
     data: &ArrayD<T>,
     edges: &[Vec<T>],
     inclusive_left: &ArrayD<bool>,
-    null: &ArrayD<i64>,
-) -> Result<ArrayD<i64>> {
+    null: &ArrayD<Integer>,
+) -> Result<ArrayD<Integer>> {
     let mut digitization = ArrayD::default(data.shape());
 
     let num_columns = get_num_columns(&data)?;
@@ -87,7 +88,7 @@ pub fn digitize<T: std::cmp::PartialOrd + Clone + Div<T, Output=T> + Add<T, Outp
             col_dig.iter_mut().zip(col_data.iter()).for_each(|(digit, datum)|
                 // mutate the cell via the operator
                 *digit = bin_index(datum, &edges, *inclusive_left)
-                    .map(|v| v as i64)
+                    .map(|v| v as Integer)
                     .unwrap_or(*null)));
 
     Ok(digitization)

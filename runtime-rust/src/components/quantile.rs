@@ -4,7 +4,7 @@ use crate::NodeArguments;
 use whitenoise_validator::base::{Array, ReleaseNode, Jagged, Value, IndexKey};
 use whitenoise_validator::utilities::get_argument;
 use crate::components::Evaluable;
-use whitenoise_validator::proto;
+use whitenoise_validator::{proto, Float};
 use ndarray::{ArrayD, Axis};
 
 use ndarray_stats::QuantileExt;
@@ -20,20 +20,20 @@ impl Evaluable for proto::Quantile {
 
         Ok(match arguments.get::<IndexKey>(&"candidates".into()) {
             Some(candidates) => match (candidates.jagged()?, data) {
-                (Jagged::F64(candidates), Array::F64(data)) => Value::Jagged(quantile_utilities(
-                    candidates.iter().map(|col| col.iter().copied().map(n64).collect()).collect(),
-                    &data.mapv(n64),
-                    self.alpha)?.into()),
-                (Jagged::I64(candidates), Array::I64(data)) => Value::Jagged(quantile_utilities(
+                (Jagged::Float(candidates), Array::Float(data)) => Value::Jagged(quantile_utilities(
+                    candidates.iter().map(|col| col.iter().copied().map(|v| n64(v as f64)).collect()).collect(),
+                    &data.mapv(|v| n64(v as f64)),
+                    self.alpha as Float)?.into()),
+                (Jagged::Int(candidates), Array::Int(data)) => Value::Jagged(quantile_utilities(
                     candidates.clone(),
                     data,
-                    self.alpha)?.into()),
+                    self.alpha as Float)?.into()),
                 _ => return Err("data must be either f64 or i64".into())
             },
             None => match data {
-                Array::F64(data) =>
-                    quantile(data.mapv(n64), self.alpha, &self.interpolation)?.mapv(|v| v.raw()).into(),
-                Array::I64(data) =>
+                Array::Float(data) =>
+                    quantile(data.mapv(|v| n64(v as f64)), self.alpha, &self.interpolation)?.mapv(|v| v.raw() as Float).into(),
+                Array::Int(data) =>
                     quantile(data.clone(), self.alpha, &self.interpolation)?.into(),
                 _ => return Err("data must be either f64 or i64".into())
             }
@@ -56,10 +56,11 @@ impl Evaluable for proto::Quantile {
 /// use ndarray::prelude::*;
 /// use whitenoise_runtime::components::quantile::quantile;
 /// use noisy_float::types::n64;
-/// let data: ArrayD<f64> = arr2(&[ [0., 1., 2.], [2., 3., 4.] ]).into_dyn();
-/// let median = quantile(data.mapv(n64), 0.5, &"midpoint".to_string()).unwrap();
+/// use whitenoise_validator::Float;
+/// let data: ArrayD<Float> = arr2(&[ [0., 1., 2.], [2., 3., 4.] ]).into_dyn();
+/// let median = quantile(data.mapv(|v| n64(v as f64)), 0.5, &"midpoint".to_string()).unwrap();
 /// println!("{:?}", median);
-/// assert_eq!(median, arr1(& [1.0, 2.0, 3.0] ).into_dyn().mapv(n64));
+/// assert_eq!(median, arr1(& [1.0, 2.0, 3.0] ).into_dyn().mapv(|v| n64(v as f64)));
 /// ```
 pub fn quantile<T: FromPrimitive + Ord + Clone + Sub<Output=T> + Mul<Output=T> + Div<Output=T> + Add<Output=T> + Rem<Output=T> + ToPrimitive>(
     mut data: ArrayD<T>, alpha: f64, interpolation: &str
@@ -84,9 +85,9 @@ pub fn quantile<T: FromPrimitive + Ord + Clone + Sub<Output=T> + Mul<Output=T> +
 
 pub fn quantile_utilities<T: Ord + Clone + Copy>(
     candidates: Vec<Vec<T>>,
-    data: &ArrayD<T>, alpha: f64
-) -> Result<Vec<Vec<f64>>> {
-    let n = data.len_of(Axis(0)) as f64;
+    data: &ArrayD<T>, alpha: Float
+) -> Result<Vec<Vec<Float>>> {
+    let n = data.len_of(Axis(0)) as Float;
     let constant = alpha.max(1. - alpha);
 
     Ok(data.gencolumns().into_iter().zip(candidates.into_iter())
@@ -101,21 +102,21 @@ pub fn quantile_utilities<T: Ord + Clone + Copy>(
             let mut index = 0;
             column.into_iter().enumerate().for_each(|(offset, v)| {
                 while index < candidates.len() && v > candidates[index].1 {
-                    offsets.push(offset as f64);
+                    offsets.push(offset as Float);
                     index += 1;
                 }
             });
 
             // ensure offsets and candidates have the same length by appending offsets for candidates greater than the maximum value of the dataset
             offsets.extend((0..candidates.len() - offsets.len())
-                .map(|_| column_len as f64).collect::<Vec<f64>>());
+                .map(|_| column_len as Float).collect::<Vec<Float>>());
 
             let utilities = offsets.into_iter()
                 .map(|offset| constant * n - ((1. - alpha) * offset - alpha * (n - offset)).abs())
-                .collect::<Vec<f64>>();
+                .collect::<Vec<Float>>();
 
             // order they utilities by the order of the candidates before they were sorted
             candidates.into_iter().map(|(idx, _)| utilities[idx]).collect()
         })
-        .collect::<Vec<Vec<f64>>>())
+        .collect::<Vec<Vec<Float>>>())
 }

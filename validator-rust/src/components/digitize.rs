@@ -2,7 +2,7 @@ use crate::errors::*;
 
 use crate::base::{IndexKey, Nature, NodeProperties, NatureCategorical, Jagged, ValueProperties, DataType, Array};
 
-use crate::{proto, base, Warnable};
+use crate::{proto, base, Warnable, Integer};
 use crate::utilities::{prepend, standardize_categorical_argument, standardize_null_target_argument, deduplicate, standardize_float_argument, get_literal};
 use crate::components::{Component, Expandable};
 
@@ -28,13 +28,13 @@ impl Component for proto::Digitize {
         }
 
         let num_columns = data_property.num_columns()
-            .map_err(prepend("data:"))?;
+            .map_err(prepend("data:"))? as i64;
 
         let null_value: base::Value = match public_arguments.get::<IndexKey>(&"null_value".into()) {
             Some(&v) => v.to_owned(),
-            None => Value::Array(Array::I64(arr0(-1).into_dyn()))
+            None => Value::Array(Array::Int(arr0(-1).into_dyn()))
         };
-        let null = null_value.array()?.i64()?;
+        let null = null_value.array()?.int()?;
 
         if !data_property.releasable {
             data_property.assert_is_not_aggregated()?;
@@ -44,29 +44,29 @@ impl Component for proto::Digitize {
             .ok_or_else(|| Error::from("edges: missing, must be public"))
             .and_then(|v| v.jagged())
             .and_then(|v| match v {
-                Jagged::F64(jagged) => {
+                Jagged::Float(jagged) => {
                     let null = standardize_null_target_argument(null, num_columns)?;
                     let edges = standardize_float_argument(&jagged, num_columns)?;
                     data_property.nature = Some(Nature::Categorical(NatureCategorical {
-                        categories: Jagged::I64(edges.into_iter().zip(null.into_iter())
+                        categories: Jagged::Int(edges.into_iter().zip(null.into_iter())
                             .map(|(col, null)| {
                                 // mandate that edges be sorted
                                 if !col.windows(2).all(|w| w[0] <= w[1]) {
                                     return Err("edges must be sorted".into());
                                 }
 
-                                let mut categories = (0..(col.len() - 1) as i64).collect::<Vec<i64>>();
+                                let mut categories = (0..(col.len() - 1) as Integer).collect::<Vec<Integer>>();
                                 categories.push(null);
                                 Ok(deduplicate(categories))
                             }).collect::<Result<_>>()?),
                     }));
                     Ok(())
                 }
-                Jagged::I64(jagged) => {
+                Jagged::Int(jagged) => {
                     let null = standardize_null_target_argument(null, num_columns)?;
                     let edges = standardize_categorical_argument(jagged.clone(), num_columns)?;
                     data_property.nature = Some(Nature::Categorical(NatureCategorical {
-                        categories: Jagged::I64(edges.into_iter().zip(null.into_iter())
+                        categories: Jagged::Int(edges.into_iter().zip(null.into_iter())
                             .map(|(col, null)| {
                                 if !col.windows(2).all(|w| w[0] <= w[1]) {
                                     return Err("edges must be sorted".into());
@@ -77,7 +77,7 @@ impl Component for proto::Digitize {
                                     return Err("edges must not contain duplicates".into())
                                 }
 
-                                let mut categories = (0..(original_length - 1) as i64).collect::<Vec<i64>>();
+                                let mut categories = (0..(original_length - 1) as Integer).collect::<Vec<Integer>>();
                                 categories.push(null);
                                 Ok(deduplicate(categories))
                             }).collect::<Result<_>>()?),
@@ -87,7 +87,7 @@ impl Component for proto::Digitize {
                 _ => Err("edges: must be numeric".into())
             })?;
 
-        data_property.data_type = DataType::I64;
+        data_property.data_type = DataType::Int;
         Ok(ValueProperties::Array(data_property).into())
     }
 }
@@ -108,7 +108,7 @@ impl Expandable for proto::Digitize {
         if !properties.contains_key(&IndexKey::from("null_value")) {
             maximum_id += 1;
             let id_null_value = maximum_id;
-            let value = Value::Array(Array::I64(arr0(-1).into_dyn()));
+            let value = Value::Array(Array::Int(arr0(-1).into_dyn()));
             expansion.properties.insert(id_null_value, infer_property(&value, None)?);
             let (patch_node, release) = get_literal(value, component.submission)?;
             expansion.computation_graph.insert(id_null_value, patch_node);

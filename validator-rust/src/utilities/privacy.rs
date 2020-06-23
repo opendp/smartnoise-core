@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 use crate::errors::*;
 use itertools::Itertools;
 use std::cmp::Ordering;
-use crate::proto;
+use crate::{proto, Float};
 use crate::base::{ValueProperties, Release, GroupId, IndexKey};
 use crate::components::Mechanism;
 use crate::utilities::{get_input_properties, get_common_value, get_dependents};
@@ -51,7 +51,7 @@ fn batch_partition<'a>(
 
     // populate/create the batches partitioning
     submissions.into_iter()
-        .map(|(submission_id, subgraph)| {
+        .try_for_each(|(submission_id, subgraph)| {
             // for any node id in the submission, list all nodes that use it
             //    we are traversing backwards through the graph, starting from materialize/literal nodes
             let parents = get_dependents(&subgraph);
@@ -65,10 +65,7 @@ fn batch_partition<'a>(
             let mut blacklist_traversal = graph.iter()
                 // filter to partition components
                 .filter(|(_, component)|
-                    if let proto::component::Variant::Partition(_) = component.variant
-                        .as_ref().unwrap() {
-                        true
-                    } else { false })
+                    matches!(component.variant.as_ref().unwrap(), proto::component::Variant::Partition(_)))
                 // insert partition components into blacklist and start traversal at the dependents
                 .map(|(id, _)| {
                     blacklist.insert(*id);
@@ -155,8 +152,8 @@ fn batch_partition<'a>(
                     .flatten().flatten()
                     .collect::<Vec<&'a proto::PrivacyUsage>>());
             });
-            Ok(())
-        }).collect::<Result<()>>()?;
+            Ok::<_, Error>(())
+        })?;
 
     Ok((batches, partition_ids))
 }
@@ -437,7 +434,7 @@ pub fn get_group_id_path(arguments: Vec<Vec<GroupId>>) -> Result<Vec<GroupId>> {
         .ok_or_else(|| "partition paths of all arguments must match".into())
 }
 
-pub fn get_c_stability_multiplier(arguments: Vec<Vec<GroupId>>) -> Result<f64> {
+pub fn get_c_stability_multiplier(arguments: Vec<Vec<GroupId>>) -> Result<Float> {
     let partition_depth = get_common_value(&arguments.iter()
         .map(|group_ids| group_ids.len())
         .collect())
@@ -470,5 +467,5 @@ pub fn get_c_stability_multiplier(arguments: Vec<Vec<GroupId>>) -> Result<f64> {
     group_ids.into_iter().for_each(|group_id|
         *counts.entry(group_id.index.unwrap()).or_insert(0) += 1);
 
-    Ok(*counts.values().max().unwrap() as f64)
+    Ok(*counts.values().max().unwrap() as Float)
 }

@@ -1,6 +1,6 @@
 use crate::errors::*;
 
-use crate::{proto, Warnable, base};
+use crate::{proto, Warnable, base, Float};
 
 use crate::components::{Component, Sensitivity, Expandable};
 use crate::base::{IndexKey, Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType, NatureContinuous, Nature, Vector1DNull, Jagged};
@@ -49,10 +49,10 @@ impl Component for proto::Histogram {
         });
 
         data_property.nature = Some(Nature::Continuous(NatureContinuous {
-            lower: Vector1DNull::I64((0..num_columns).map(|_| Some(0)).collect()),
-            upper: Vector1DNull::I64((0..num_columns).map(|_| None).collect()),
+            lower: Vector1DNull::Int((0..num_columns).map(|_| Some(0)).collect()),
+            upper: Vector1DNull::Int((0..num_columns).map(|_| None).collect()),
         }));
-        data_property.data_type = DataType::I64;
+        data_property.data_type = DataType::Int;
         data_property.dataset_id = Some(node_id as i64);
 
         Ok(ValueProperties::Array(data_property).into())
@@ -143,8 +143,8 @@ impl Expandable for proto::Histogram {
                 let categories = properties.get::<IndexKey>(&"data".into())
                     .ok_or("data: missing")?.array()?.categories()?;
                 let value = match categories {
-                    Jagged::I64(jagged) => arr1(&jagged[0]).into_dyn().into(),
-                    Jagged::F64(jagged) => arr1(&jagged[0]).into_dyn().into(),
+                    Jagged::Int(jagged) => arr1(&jagged[0]).into_dyn().into(),
+                    Jagged::Float(jagged) => arr1(&jagged[0]).into_dyn().into(),
                     Jagged::Bool(jagged) => arr1(&jagged[0]).into_dyn().into(),
                     Jagged::Str(jagged) => arr1(&jagged[0]).into_dyn().into(),
                 };
@@ -193,7 +193,7 @@ impl Sensitivity for proto::Histogram {
                 let num_records = data_property.num_records;
 
                 // SENSITIVITY DERIVATIONS
-                let sensitivity: f64 = match (neighboring_type, categories_length, num_records) {
+                let sensitivity: Float = match (neighboring_type, categories_length, num_records) {
                     // one category, known N. Applies to any neighboring type.
                     (_, 1, Some(_)) => 0.,
 
@@ -225,9 +225,9 @@ impl Sensitivity for proto::Histogram {
                     (0..num_records)
                         .map(|_| (0..num_columns)
                             .map(|_| sensitivity)
-                            .collect::<Vec<f64>>())
+                            .collect::<Vec<Float>>())
                         .flatten()
-                        .collect::<Vec<f64>>())?.into())
+                        .collect::<Vec<Float>>())?.into())
             },
             _ => Err("Histogram sensitivity is only implemented for KNorm".into())
         }

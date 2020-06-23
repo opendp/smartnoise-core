@@ -1,6 +1,6 @@
 use crate::errors::*;
 
-use crate::{proto, base, Warnable};
+use crate::{proto, base, Warnable, Float};
 
 use crate::components::{Component, Sensitivity};
 use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType};
@@ -21,7 +21,7 @@ impl Component for proto::RawMoment {
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
-        if data_property.data_type != DataType::F64 {
+        if data_property.data_type != DataType::Float {
             return Err("data: atomic type must be float".into())
         }
 
@@ -59,15 +59,15 @@ impl Sensitivity for proto::RawMoment {
         match sensitivity_type {
             SensitivitySpace::KNorm(k) => {
                 let k = i32::try_from(*k)?;
-                let lower = data_property.lower_f64()?;
-                let upper = data_property.upper_f64()?;
+                let lower = data_property.lower_float()?;
+                let upper = data_property.upper_float()?;
                 let num_records = data_property.num_records()?;
 
                 let row_sensitivity = lower.iter()
                     .zip(upper.iter())
                     .map(|(min, max)|
-                        ((max - min).powi(self.order as i32) / (num_records as f64)).powi(k))
-                    .collect::<Vec<f64>>();
+                        ((max - min).powi(self.order as i32) / (num_records as Float)).powi(k))
+                    .collect::<Vec<Float>>();
 
                 let mut array_sensitivity = Array::from(row_sensitivity).into_dyn();
                 array_sensitivity.insert_axis_inplace(Axis(0));

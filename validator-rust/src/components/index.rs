@@ -39,8 +39,8 @@ impl Component for proto::Index {
                             let column_names = column_names.array()?;
                             dimensionality = Some(column_names.shape().len() as i64 + 1);
                             match column_names.to_owned() {
-                                Array::F64(_) => return Err("floats are not valid indexes".into()),
-                                Array::I64(names) => to_name_vec(&names)?.into_iter()
+                                Array::Float(_) => return Err("floats are not valid indexes".into()),
+                                Array::Int(names) => to_name_vec(&names)?.into_iter()
                                     .map(|v| data_property.children.get::<IndexKey>(&v.into()).cloned())
                                     .collect::<Option<Vec<ValueProperties>>>(),
                                 Array::Str(names) => to_name_vec(&names)?.into_iter()
@@ -53,7 +53,7 @@ impl Component for proto::Index {
                                 .ok_or_else(|| Error::from("columns: unknown column in index"))
 
                         } else if let Some(indices) = public_arguments.get::<IndexKey>(&"indices".into()) {
-                            let indices = indices.array()?.i64()?;
+                            let indices = indices.array()?.int()?;
                             dimensionality = Some(indices.shape().len() as i64 + 1);
                             to_name_vec(indices)?.into_iter()
                                 .map(|idx| data_property.children.get_index(idx as usize).map(|v| v.1.clone()))
@@ -100,11 +100,10 @@ impl Component for proto::Index {
                                 set_group_index(part_properties, partition_key),
                             ValueProperties::Indexmap(part_properties) =>
                                 part_properties.children.values_mut()
-                                    .map(|mut v| if let ValueProperties::Array(v) = &mut v {
+                                    .try_for_each(|mut v| if let ValueProperties::Array(v) = &mut v {
                                         set_group_index(v, partition_key.clone());
                                         Ok(())
-                                    } else { Err("dataframe columns must be arrays".into()) })
-                                    .collect::<Result<()>>()?,
+                                    } else { Err(Error::from("dataframe columns must be arrays")) })?,
                             _ => return Err("data: partition members must be either a dataframe or array".into())
                         }
 
@@ -120,7 +119,7 @@ impl Component for proto::Index {
                 }
 
                 if let Some(indices) = public_arguments.get::<IndexKey>(&"indices".into()) {
-                    let indices = indices.array()?.i64()?;
+                    let indices = indices.array()?.int()?;
                     dimensionality = Some(indices.shape().len() as i64 + 1);
 
                     to_name_vec(indices)?.into_iter()
@@ -195,7 +194,7 @@ impl Named for proto::Index {
     ) -> Result<Vec<IndexKey>> {
         if let Some(names) = public_arguments.get::<IndexKey>(&"names".into()) {
             return Ok(match names.array()? {
-                Array::I64(names) => names.iter()
+                Array::Int(names) => names.iter()
                     .map(|n| n.clone().into())
                     .collect(),
                 Array::Bool(names) => names.iter()
@@ -211,7 +210,7 @@ impl Named for proto::Index {
             .ok_or_else(|| Error::from("column names on data must be known"))?;
 
         if let Some(indices) = public_arguments.get::<IndexKey>(&"indices".into()) {
-            indices.array()?.i64()?.iter()
+            indices.array()?.int()?.iter()
                 .map(|idx| input_names.get(*idx as usize).cloned())
                 .collect::<Option<Vec<IndexKey>>>()
                 .ok_or_else(|| Error::from("attempted to retrieve an out-of-bounds name"))

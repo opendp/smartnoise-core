@@ -1,7 +1,7 @@
 use crate::errors::*;
 
 
-use crate::{proto, base};
+use crate::{proto, base, Integer};
 use crate::components::{Expandable, Report};
 use ndarray::arr0;
 
@@ -68,11 +68,11 @@ impl Expandable for proto::DpCount {
                     };
 
                     let count_max = match num_records {
-                        Some(num_records) => arr0(num_records).into_dyn(),
+                        Some(num_records) => arr0(num_records as Integer).into_dyn(),
                         None => if privacy_definition.protect_elapsed_time {
                             return Err("upper must be set when protecting elapsed time".into())
                         } else {
-                            arr0(std::i64::MAX).into_dyn()
+                            arr0(Integer::MAX).into_dyn()
                         }
                     };
                     // count_max

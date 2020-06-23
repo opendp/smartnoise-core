@@ -6,12 +6,12 @@ use whitenoise_validator::utilities::get_argument;
 use crate::components::Evaluable;
 use ndarray::{ArrayD, Array};
 use crate::utilities::get_num_columns;
-use whitenoise_validator::proto;
+use whitenoise_validator::{proto, Float};
 
 impl Evaluable for proto::Mean {
     fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
         Ok(ReleaseNode::new(mean(
-            get_argument(arguments, "data")?.array()?.f64()?
+            get_argument(arguments, "data")?.array()?.float()?
         )?.into()))
     }
 }
@@ -30,12 +30,12 @@ impl Evaluable for proto::Mean {
 /// use whitenoise_runtime::components::mean::mean;
 /// let data = arr2(&[ [1.,10.], [2., 20.], [3., 30.] ]).into_dyn();
 /// let means = mean(&data).unwrap();
-/// assert!(means == arr2(&[[2., 20.]]).into_dyn());
+/// assert_eq!(means, arr2(&[[2., 20.]]).into_dyn());
 /// ```
-pub fn mean(data: &ArrayD<f64>) -> Result<ArrayD<f64>> {
+pub fn mean(data: &ArrayD<Float>) -> Result<ArrayD<Float>> {
     // iterate over the generalized columns
     let means = data.gencolumns().into_iter()
-        .map(|column| column.mean()).collect::<Option<Vec<f64>>>()
+        .map(|column| column.mean()).collect::<Option<Vec<Float>>>()
         .ok_or_else(|| Error::from("attempted mean of an empty column"))?;
 
     // ensure means are of correct dimension

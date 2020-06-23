@@ -6,7 +6,7 @@ use whitenoise_validator::base::{Value, ReleaseNode, IndexKey};
 use indexmap::IndexMap;
 use crate::components::Evaluable;
 use ndarray;
-use whitenoise_validator::proto;
+use whitenoise_validator::{proto, Integer};
 
 impl Evaluable for proto::Materialize {
     fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
@@ -14,7 +14,7 @@ impl Evaluable for proto::Materialize {
             .and_then(|column_names| column_names.array().ok()?.string().ok()).cloned();
 
         let num_columns = arguments.get::<IndexKey>(& "num_columns".into())
-            .and_then(|num_columns| num_columns.first_i64().ok());
+            .and_then(|num_columns| num_columns.first_int().ok());
 
         // num columns is sufficient shared information to build the dataframes
         let num_columns = match (column_names.clone(), num_columns) {
@@ -38,7 +38,7 @@ impl Evaluable for proto::Materialize {
         };
 
         // parse from csv into response
-        reader.deserialize().map(|result: std::result::Result<Vec<String>, _>| {
+        reader.deserialize().try_for_each(|result: std::result::Result<Vec<String>, _>| {
 
             // parse each record into the whitenoise internal format
             match result {
@@ -47,8 +47,8 @@ impl Evaluable for proto::Materialize {
                     .for_each(|(idx, value)| response[idx].push(value)),
                 Err(e) => return Err(format!("{:?}", e).into())
             };
-            Ok(())
-        }).collect::<Result<()>>()?;
+            Ok::<_, Error>(())
+        })?;
 
         let num_nonempty_columns = response.iter()
             .filter(|col| !col.is_empty()).count();
@@ -72,7 +72,7 @@ impl Evaluable for proto::Materialize {
                 // convert indexmap of vecs into arrays
                 Ok(ReleaseNode::new(Value::Indexmap(response.into_iter().enumerate()
                     .map(|(k, v): (usize, Vec<String>)|
-                        (IndexKey::from(k as i64), ndarray::Array::from(v).into_dyn().into()))
+                        (IndexKey::from(k as Integer), ndarray::Array::from(v).into_dyn().into()))
                     .collect::<IndexMap<IndexKey, Value>>())))
             }
         }

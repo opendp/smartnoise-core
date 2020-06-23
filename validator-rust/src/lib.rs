@@ -73,6 +73,9 @@ macro_rules! hashmap {
     }}
 }
 
+pub type Float = f64;
+pub type Integer = i64;
+
 /// Validate if an analysis is well-formed.
 ///
 /// Checks that the graph is a DAG.
@@ -137,9 +140,11 @@ pub fn generate_report(
     // variable names
     let mut nodes_varnames: HashMap<u32, Vec<IndexKey>> = HashMap::new();
 
-    utilities::get_traversal(&computation_graph)?.iter().map(|node_id| {
+    utilities::get_traversal(&computation_graph)?.iter().for_each(|node_id| {
         let component: proto::Component = computation_graph.get(&node_id).unwrap().to_owned();
-        let public_arguments = utilities::get_public_arguments(&component, &release)?;
+        let public_arguments = match utilities::get_public_arguments(&component, &release) {
+            Ok(v) => v, Err(_) => return
+        };
 
         // variable names for argument nodes
         let mut arguments_vars: IndexMap<base::IndexKey, Vec<IndexKey>> = IndexMap::new();
@@ -161,10 +166,7 @@ pub fn generate_report(
         // update names in indexmap
         node_vars.map(|v| nodes_varnames.insert(node_id.clone(), v)).ok();
 
-        Ok(())
-    }).collect::<Result<()>>()
-        // ignore any error- still generate the report even if node names could not be derived
-        .ok();
+    });
 
     let release_schemas = computation_graph.iter()
         .map(|(node_id, component)| {

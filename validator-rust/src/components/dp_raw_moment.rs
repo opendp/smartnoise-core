@@ -75,8 +75,8 @@ impl Report for proto::DpRawMoment {
 
         let mut releases = Vec::new();
 
-        let minimums = data_property.lower_f64()?;
-        let maximums = data_property.upper_f64()?;
+        let minimums = data_property.lower_float()?;
+        let maximums = data_property.upper_float()?;
         let num_records = data_property.num_records()?;
 
         let num_columns = data_property.num_columns()?;
@@ -92,8 +92,8 @@ impl Report for proto::DpRawMoment {
                 statistic: "DPRawMoment".to_string(),
                 variables: serde_json::json!(variable_name.to_string()),
                 release_info: match release.array()? {
-                    Array::F64(v) => value_to_json(&get_ith_column(v, column_number)?.into())?,
-                    Array::I64(v) => value_to_json(&get_ith_column(v, column_number)?.into())?,
+                    Array::Float(v) => value_to_json(&get_ith_column(v, column_number)?.into())?,
+                    Array::Int(v) => value_to_json(&get_ith_column(v, column_number)?.into())?,
                     _ => return Err("maximum must be numeric".into())
                 },
                 privacy_loss: privacy_usage_to_json(&privacy_usages[column_number].clone()),

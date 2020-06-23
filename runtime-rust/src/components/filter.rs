@@ -19,8 +19,8 @@ impl Evaluable for proto::Filter {
 
         Ok(ReleaseNode::new(match get_argument(arguments, "data")?.array()? {
             Array::Str(data) => filter(data, mask)?.into(),
-            Array::F64(data) => filter(data, mask)?.into(),
-            Array::I64(data) => filter(data, mask)?.into(),
+            Array::Float(data) => filter(data, mask)?.into(),
+            Array::Int(data) => filter(data, mask)?.into(),
             Array::Bool(data) => filter(data, mask)?.into(),
         }))
     }

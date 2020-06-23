@@ -2,7 +2,7 @@
 
 use crate::errors::*;
 
-use crate::{proto, base};
+use crate::{proto, base, Integer, Float};
 
 use ndarray::prelude::Ix1;
 
@@ -66,17 +66,17 @@ impl Value {
         }
     }
 
-    /// Retrieve the first f64 from a Value, assuming a Value contains an ArrayND of type f64
-    pub fn first_f64(&self) -> Result<f64> {
+    /// Retrieve the first float from a Value, assuming a Value contains an ArrayND of type float
+    pub fn first_float(&self) -> Result<Float> {
         match self {
-            Value::Array(array) => array.first_f64(),
+            Value::Array(array) => array.first_float(),
             _ => Err("cannot retrieve first float".into())
         }
     }
-    /// Retrieve the first i64 from a Value, assuming a Value contains an ArrayND of type i64
-    pub fn first_i64(&self) -> Result<i64> {
+    /// Retrieve the first integer from a Value, assuming a Value contains an ArrayND of type integer
+    pub fn first_int(&self) -> Result<Integer> {
         match self {
-            Value::Array(array) => array.first_i64(),
+            Value::Array(array) => array.first_int(),
             _ => Err("cannot retrieve integer".into())
         }
     }
@@ -109,8 +109,8 @@ impl PartialEq for Array {
     fn eq(&self, other: &Self) -> bool {
         match (self, other) {
             (Array::Bool(lhs), Array::Bool(rhs)) => lhs == rhs,
-            (Array::F64(lhs), Array::F64(rhs)) => lhs == rhs,
-            (Array::I64(lhs), Array::I64(rhs)) => lhs == rhs,
+            (Array::Float(lhs), Array::Float(rhs)) => lhs == rhs,
+            (Array::Int(lhs), Array::Int(rhs)) => lhs == rhs,
             _ => false
         }
     }
@@ -123,15 +123,15 @@ impl From<bool> for Value {
     }
 }
 
-impl From<f64> for Value {
-    fn from(value: f64) -> Self {
-        Value::Array(Array::F64(arr0(value).into_dyn()))
+impl From<Float> for Value {
+    fn from(value: Float) -> Self {
+        Value::Array(Array::Float(arr0(value).into_dyn()))
     }
 }
 
-impl From<i64> for Value {
-    fn from(value: i64) -> Self {
-        Value::Array(Array::I64(arr0(value).into_dyn()))
+impl From<Integer> for Value {
+    fn from(value: Integer) -> Self {
+        Value::Array(Array::Int(arr0(value).into_dyn()))
     }
 }
 
@@ -148,17 +148,17 @@ impl<T> From<ndarray::Array<bool, ndarray::Dim<T>>> for Value
     }
 }
 
-impl<T> From<ndarray::Array<i64, ndarray::Dim<T>>> for Value
+impl<T> From<ndarray::Array<Integer, ndarray::Dim<T>>> for Value
     where ndarray::Dim<T>: Dimension {
-    fn from(value: ndarray::Array<i64, ndarray::Dim<T>>) -> Self {
-        Value::Array(Array::I64(value.into_dyn()))
+    fn from(value: ndarray::Array<Integer, ndarray::Dim<T>>) -> Self {
+        Value::Array(Array::Int(value.into_dyn()))
     }
 }
 
-impl<T> From<ndarray::Array<f64, ndarray::Dim<T>>> for Value
+impl<T> From<ndarray::Array<Float, ndarray::Dim<T>>> for Value
     where ndarray::Dim<T>: Dimension {
-    fn from(value: ndarray::Array<f64, ndarray::Dim<T>>) -> Self {
-        Value::Array(Array::F64(value.into_dyn()))
+    fn from(value: ndarray::Array<Float, ndarray::Dim<T>>) -> Self {
+        Value::Array(Array::Float(value.into_dyn()))
     }
 }
 
@@ -204,47 +204,35 @@ impl From<ndarray::ShapeError> for Error {
 #[derive(Clone, Debug)]
 pub enum Array {
     Bool(ArrayD<bool>),
-    I64(ArrayD<i64>),
-    F64(ArrayD<f64>),
+    Int(ArrayD<Integer>),
+    Float(ArrayD<Float>),
     Str(ArrayD<String>),
 }
 
 impl Array {
-    /// Retrieve the f64 ndarray, assuming the data type of the ArrayND is f64
-    pub fn f64(&self) -> Result<&ArrayD<f64>> {
+    /// Retrieve the float ndarray, assuming the data type of the ArrayND is float
+    pub fn float(&self) -> Result<&ArrayD<Float>> {
         match self {
-            Array::F64(x) => Ok(x),
-            Array::I64(_) => Err("atomic type: expected float, got integer".into()),
+            Array::Float(x) => Ok(x),
+            Array::Int(_) => Err("atomic type: expected float, got integer".into()),
             Array::Bool(_) => Err("atomic type: expected float, got bool".into()),
             Array::Str(_) => Err("atomic type: expected float, got string".into()),
         }
     }
-    pub fn first_f64(&self) -> Result<f64> {
+    pub fn first_float(&self) -> Result<Float> {
         match self {
-            Array::Bool(x) => {
-                if x.len() != 1 {
-                    return Err("non-singleton array passed for an argument that must be scalar".into());
-                }
-                Ok(if *x.first().unwrap() { 1. } else { 0. })
-            }
-            Array::I64(x) => {
-                if x.len() != 1 {
-                    return Err("non-singleton array passed for an argument that must be scalar".into());
-                }
-                Ok(f64::from(*x.first().unwrap() as i32))
-            }
-            Array::F64(x) => {
+            Array::Float(x) => {
                 if x.len() != 1 {
                     return Err("non-singleton array passed for an argument that must be scalar".into());
                 }
                 Ok(x.first().unwrap().to_owned())
             }
-            _ => Err("value must be numeric".into())
+            _ => Err("value must be float".into())
         }
     }
-    pub fn vec_f64(&self, optional_length: Option<i64>) -> Result<Vec<f64>> {
-        let data = self.f64()?;
-        let err_msg = "failed attempt to cast f64 ArrayD to vector".into();
+    pub fn vec_float(&self, optional_length: Option<i64>) -> Result<Vec<Float>> {
+        let data = self.float()?;
+        let err_msg = "failed attempt to cast float ArrayD to vector".into();
         match data.ndim() {
             0 => match (optional_length, data.first()) {
                 (Some(length), Some(v)) => Ok((0..length).map(|_| *v).collect()),
@@ -255,33 +243,27 @@ impl Array {
         }
     }
     /// Retrieve the i64 ndarray, assuming the data type of the ArrayND is i64
-    pub fn i64(&self) -> Result<&ArrayD<i64>> {
+    pub fn int(&self) -> Result<&ArrayD<Integer>> {
         match self {
-            Array::I64(x) => Ok(x),
-            Array::F64(_) => Err("atomic type: expected integer, got float".into()),
+            Array::Int(x) => Ok(x),
+            Array::Float(_) => Err("atomic type: expected integer, got float".into()),
             Array::Bool(_) => Err("atomic type: expected integer, got bool".into()),
             Array::Str(_) => Err("atomic type: expected integer, got string".into()),
         }
     }
-    pub fn first_i64(&self) -> Result<i64> {
+    pub fn first_int(&self) -> Result<Integer> {
         match self {
-            Array::Bool(x) => {
-                if x.len() != 1 {
-                    return Err("non-singleton array passed for an argument that must be scalar".into());
-                }
-                Ok(if *x.first().unwrap() { 1 } else { 0 })
-            }
-            Array::I64(x) => {
+            Array::Int(x) => {
                 if x.len() != 1 {
                     return Err("non-singleton array passed for an argument that must be scalar".into());
                 }
                 Ok(x.first().unwrap().to_owned())
             }
-            _ => Err("value must be numeric".into())
+            _ => Err("value must be an integer".into())
         }
     }
-    pub fn vec_i64(&self, optional_length: Option<i64>) -> Result<Vec<i64>> {
-        let data = self.i64()?;
+    pub fn vec_int(&self, optional_length: Option<i64>) -> Result<Vec<Integer>> {
+        let data = self.int()?;
         let err_msg = "failed attempt to cast i64 ArrayD to vector".into();
         match data.ndim() {
             0 => match (optional_length, data.first()) {
@@ -296,9 +278,9 @@ impl Array {
     pub fn string(&self) -> Result<&ArrayD<String>> {
         match self {
             Array::Str(x) => Ok(x),
-            Array::I64(_) => Err("atomic type: expected string, got integer".into()),
+            Array::Int(_) => Err("atomic type: expected string, got integer".into()),
             Array::Bool(_) => Err("atomic type: expected string, got bool".into()),
-            Array::F64(_) => Err("atomic type: expected string, got float".into()),
+            Array::Float(_) => Err("atomic type: expected string, got float".into()),
         }
     }
     pub fn first_string(&self) -> Result<String> {
@@ -316,9 +298,9 @@ impl Array {
     pub fn bool(&self) -> Result<&ArrayD<bool>> {
         match self {
             Array::Bool(x) => Ok(x),
-            Array::I64(_) => Err("atomic type: expected bool, got integer".into()),
+            Array::Int(_) => Err("atomic type: expected bool, got integer".into()),
             Array::Str(_) => Err("atomic type: expected bool, got string".into()),
-            Array::F64(_) => Err("atomic type: expected bool, got float".into()),
+            Array::Float(_) => Err("atomic type: expected bool, got float".into()),
         }
     }
     pub fn first_bool(&self) -> Result<bool> {
@@ -336,8 +318,8 @@ impl Array {
     pub fn shape(&self) -> Vec<usize> {
         match self {
             Array::Bool(array) => array.shape().to_owned(),
-            Array::F64(array) => array.shape().to_owned(),
-            Array::I64(array) => array.shape().to_owned(),
+            Array::Float(array) => array.shape().to_owned(),
+            Array::Int(array) => array.shape().to_owned(),
             Array::Str(array) => array.shape().to_owned()
         }
     }
@@ -369,23 +351,23 @@ impl Array {
 #[derive(Clone, Debug)]
 pub enum Jagged {
     Bool(Vec<Vec<bool>>),
-    I64(Vec<Vec<i64>>),
-    F64(Vec<Vec<f64>>),
+    Int(Vec<Vec<Integer>>),
+    Float(Vec<Vec<Float>>),
     Str(Vec<Vec<String>>),
 }
 
 impl Jagged {
     /// Retrieve the f64 jagged matrix, assuming the data type of the jagged matrix is f64, and assuming all columns are defined
-    pub fn f64(&self) -> Result<Vec<Vec<f64>>> {
+    pub fn float(&self) -> Result<Vec<Vec<Float>>> {
         match self {
-            Jagged::F64(data) => Ok(data.clone()),
+            Jagged::Float(data) => Ok(data.clone()),
             _ => Err("expected float type on a non-float Jagged matrix".into())
         }
     }
     /// Retrieve the i64 jagged matrix, assuming the data type of the jagged matrix is i64
-    pub fn i64(&self) -> Result<Vec<Vec<i64>>> {
+    pub fn int(&self) -> Result<Vec<Vec<Integer>>> {
         match self {
-            Jagged::I64(data) => Ok(data.clone()),
+            Jagged::Int(data) => Ok(data.clone()),
             _ => Err("expected int type on a non-int Jagged matrix".into())
         }
     }
@@ -406,8 +388,8 @@ impl Jagged {
     pub fn num_columns(&self) -> i64 {
         match self {
             Jagged::Bool(vector) => vector.len() as i64,
-            Jagged::F64(vector) => vector.len() as i64,
-            Jagged::I64(vector) => vector.len() as i64,
+            Jagged::Float(vector) => vector.len() as i64,
+            Jagged::Int(vector) => vector.len() as i64,
             Jagged::Str(vector) => vector.len() as i64,
         }
     }
@@ -415,9 +397,9 @@ impl Jagged {
         match self {
             Jagged::Bool(value) => value.iter()
                 .map(|column| column.len() as i64).collect(),
-            Jagged::F64(value) => value.iter()
+            Jagged::Float(value) => value.iter()
                 .map(|column| column.len() as i64).collect(),
-            Jagged::I64(value) => value.iter()
+            Jagged::Int(value) => value.iter()
                 .map(|column| column.len() as i64).collect(),
             Jagged::Str(value) => value.iter()
                 .map(|column| column.len() as i64).collect(),
@@ -426,11 +408,11 @@ impl Jagged {
 
     pub fn deduplicate(&self) -> Result<Jagged> {
         match self.to_owned() {
-            Jagged::F64(_) =>
+            Jagged::Float(_) =>
                 Err("float data may not be categorical".into()),
-            Jagged::I64(categories) => Ok(categories.into_iter()
+            Jagged::Int(categories) => Ok(categories.into_iter()
                 .map(|v| v.into_iter().unique().collect())
-                .collect::<Vec<Vec<i64>>>().into()),
+                .collect::<Vec<Vec<Integer>>>().into()),
             Jagged::Bool(categories) => Ok(categories.into_iter()
                 .map(deduplicate)
                 .collect::<Vec<Vec<bool>>>().into()),
@@ -442,9 +424,9 @@ impl Jagged {
 
     pub fn standardize(self, num_columns: i64) -> Result<Jagged> {
         match self {
-            Jagged::F64(_) =>
+            Jagged::Float(_) =>
                 Err("float data may not be categorical".into()),
-            Jagged::I64(categories) =>
+            Jagged::Int(categories) =>
                 Ok(standardize_categorical_argument(categories, num_columns)?.into()),
             Jagged::Bool(categories) =>
                 Ok(standardize_categorical_argument(categories, num_columns)?.into()),
@@ -455,8 +437,8 @@ impl Jagged {
 
     pub fn data_type(&self) -> DataType {
         match self {
-            Jagged::I64(_) => DataType::I64,
-            Jagged::F64(_) => DataType::F64,
+            Jagged::Int(_) => DataType::Int,
+            Jagged::Float(_) => DataType::Float,
             Jagged::Bool(_) => DataType::Bool,
             Jagged::Str(_) => DataType::Str,
         }
@@ -472,7 +454,7 @@ impl Jagged {
                 categories.iter()
                     .map(|col| col.iter().cloned()
                         .map(IndexKey::from).collect()).collect(),
-            Jagged::I64(categories) =>
+            Jagged::Int(categories) =>
                 categories.iter()
                     .map(|col| col.iter().cloned()
                         .map(IndexKey::from).collect()).collect(),
@@ -482,15 +464,15 @@ impl Jagged {
 }
 
 
-impl From<Vec<Vec<f64>>> for Jagged {
-    fn from(value: Vec<Vec<f64>>) -> Self {
-        Jagged::F64(value)
+impl From<Vec<Vec<Float>>> for Jagged {
+    fn from(value: Vec<Vec<Float>>) -> Self {
+        Jagged::Float(value)
     }
 }
 
-impl From<Vec<Vec<i64>>> for Jagged {
-    fn from(value: Vec<Vec<i64>>) -> Self {
-        Jagged::I64(value)
+impl From<Vec<Vec<Integer>>> for Jagged {
+    fn from(value: Vec<Vec<Integer>>) -> Self {
+        Jagged::Int(value)
     }
 }
 
@@ -603,10 +585,7 @@ impl IndexmapProperties {
                         _ => Err("invalid Value type for counting records".into())
                     })
                     .collect::<Result<Vec<Option<i64>>>>()?.into_iter()
-                    .fold(Some(0), |sum, v| match (sum, v) {
-                        (Some(l), Some(r)) => Some(l + r),
-                        _ => None
-                    }))
+                    .try_fold(0, |sum, v| v.map(|v| sum + v)))
         }
     }
 
@@ -630,7 +609,7 @@ pub struct ArrayProperties {
     /// set to true by the mechanisms. Acts as a filter on the values in the release
     pub releasable: bool,
     /// amplification of privacy usage by unstable data transformations, or possibility of duplicated records
-    pub c_stability: Vec<f64>,
+    pub c_stability: Vec<Float>,
     /// set when data is aggregated, used to help compute sensitivity from the mechanisms
     pub aggregator: Option<AggregatorProperties>,
     /// either min/max or categories
@@ -678,11 +657,11 @@ impl JaggedProperties {
 }
 
 impl ArrayProperties {
-    pub fn lower_f64_option(&self) -> Result<Vec<Option<f64>>> {
+    pub fn lower_float_option(&self) -> Result<Vec<Option<Float>>> {
         match self.nature.to_owned() {
             Some(value) => match value {
                 Nature::Continuous(continuous) => match continuous.lower {
-                    Vector1DNull::F64(bound) => Ok(bound),
+                    Vector1DNull::Float(bound) => Ok(bound),
                     _ => Err("lower must be composed of floats".into())
                 },
                 _ => Err("lower must be an array".into())
@@ -690,16 +669,16 @@ impl ArrayProperties {
             None => Err("continuous nature for lower is not defined".into())
         }
     }
-    pub fn lower_f64(&self) -> Result<Vec<f64>> {
-        let bound = self.lower_f64_option()?;
-        let value = bound.iter().filter_map(|v| v.to_owned()).collect::<Vec<f64>>();
+    pub fn lower_float(&self) -> Result<Vec<Float>> {
+        let bound = self.lower_float_option()?;
+        let value = bound.iter().filter_map(|v| v.to_owned()).collect::<Vec<Float>>();
         if bound.len() == value.len() { Ok(value) } else { Err("not all lower bounds are known".into()) }
     }
-    pub fn upper_f64_option(&self) -> Result<Vec<Option<f64>>> {
+    pub fn upper_float_option(&self) -> Result<Vec<Option<Float>>> {
         match self.nature.to_owned() {
             Some(value) => match value {
                 Nature::Continuous(continuous) => match continuous.upper {
-                    Vector1DNull::F64(bound) => Ok(bound),
+                    Vector1DNull::Float(bound) => Ok(bound),
                     _ => Err("upper must be composed of floats".into())
                 },
                 _ => Err("upper must be an array".into())
@@ -707,17 +686,17 @@ impl ArrayProperties {
             None => Err("continuous nature for upper is not defined".into())
         }
     }
-    pub fn upper_f64(&self) -> Result<Vec<f64>> {
-        let bound = self.upper_f64_option()?;
-        let value = bound.iter().filter_map(|v| v.to_owned()).collect::<Vec<f64>>();
+    pub fn upper_float(&self) -> Result<Vec<Float>> {
+        let bound = self.upper_float_option()?;
+        let value = bound.iter().filter_map(|v| v.to_owned()).collect::<Vec<Float>>();
         if bound.len() == value.len() { Ok(value) } else { Err("not all upper bounds are known".into()) }
     }
 
-    pub fn lower_i64_option(&self) -> Result<Vec<Option<i64>>> {
+    pub fn lower_int_option(&self) -> Result<Vec<Option<Integer>>> {
         match self.nature.to_owned() {
             Some(value) => match value {
                 Nature::Continuous(continuous) => match continuous.lower {
-                    Vector1DNull::I64(bound) => Ok(bound),
+                    Vector1DNull::Int(bound) => Ok(bound),
                     _ => Err("lower must be composed of integers".into())
                 },
                 _ => Err("lower must be an array".into())
@@ -725,16 +704,16 @@ impl ArrayProperties {
             None => Err("continuous nature for lower is not defined".into())
         }
     }
-    pub fn lower_i64(&self) -> Result<Vec<i64>> {
-        let bound = self.lower_i64_option()?;
-        let value = bound.iter().filter_map(|v| v.to_owned()).collect::<Vec<i64>>();
+    pub fn lower_int(&self) -> Result<Vec<Integer>> {
+        let bound = self.lower_int_option()?;
+        let value = bound.iter().filter_map(|v| v.to_owned()).collect::<Vec<Integer>>();
         if bound.len() == value.len() { Ok(value) } else { Err("not all lower bounds are known".into()) }
     }
-    pub fn upper_i64_option(&self) -> Result<Vec<Option<i64>>> {
+    pub fn upper_int_option(&self) -> Result<Vec<Option<Integer>>> {
         match self.nature.to_owned() {
             Some(value) => match value {
                 Nature::Continuous(continuous) => match continuous.upper {
-                    Vector1DNull::I64(bound) => Ok(bound),
+                    Vector1DNull::Int(bound) => Ok(bound),
                     _ => Err("upper must be composed of integers".into())
                 },
                 _ => Err("upper must be an array".into())
@@ -742,9 +721,9 @@ impl ArrayProperties {
             None => Err("continuous nature for upper is not defined".into())
         }
     }
-    pub fn upper_i64(&self) -> Result<Vec<i64>> {
-        let bound = self.upper_i64_option()?;
-        let value = bound.iter().filter_map(|v| v.to_owned()).collect::<Vec<i64>>();
+    pub fn upper_int(&self) -> Result<Vec<Integer>> {
+        let bound = self.upper_int_option()?;
+        let value = bound.iter().filter_map(|v| v.to_owned()).collect::<Vec<Integer>>();
         if bound.len() == value.len() { Ok(value) } else { Err("not all upper bounds are known".into()) }
     }
 
@@ -783,8 +762,8 @@ pub enum DataType {
     Unknown,
     Bool,
     Str,
-    F64,
-    I64,
+    Float,
+    Int,
 }
 
 
@@ -837,23 +816,23 @@ pub struct NatureContinuous {
 #[derive(Clone, Debug)]
 pub enum Vector1DNull {
     Bool(Vec<Option<bool>>),
-    I64(Vec<Option<i64>>),
-    F64(Vec<Option<f64>>),
+    Int(Vec<Option<Integer>>),
+    Float(Vec<Option<Float>>),
     Str(Vec<Option<String>>),
 }
 
 impl Vector1DNull {
     /// Retrieve the f64 vec, assuming the data type of the ArrayND is f64
-    pub fn f64(&self) -> Result<&Vec<Option<f64>>> {
+    pub fn float(&self) -> Result<&Vec<Option<Float>>> {
         match self {
-            Vector1DNull::F64(x) => Ok(x),
+            Vector1DNull::Float(x) => Ok(x),
             _ => Err("expected a float on a non-float Vector1DNull".into())
         }
     }
     /// Retrieve the i64 vec, assuming the data type of the ArrayND is i64
-    pub fn i64(&self) -> Result<&Vec<Option<i64>>> {
+    pub fn int(&self) -> Result<&Vec<Option<Integer>>> {
         match self {
-            Vector1DNull::I64(x) => Ok(x),
+            Vector1DNull::Int(x) => Ok(x),
             _ => Err("expected an integer on a non-integer Vector1DNull".into())
         }
     }
@@ -862,8 +841,8 @@ impl Vector1DNull {
 #[derive(Clone, Debug)]
 pub enum Vector1D {
     Bool(Vec<bool>),
-    I64(Vec<i64>),
-    F64(Vec<f64>),
+    Int(Vec<Integer>),
+    Float(Vec<Float>),
     Str(Vec<String>),
 }
 
@@ -889,7 +868,7 @@ pub struct GroupId {
 #[derive(PartialEq, Eq, Clone, Debug, Hash)]
 pub enum IndexKey {
     Str(String),
-    I64(i64),
+    Int(Integer),
     Bool(bool),
     Tuple(Vec<IndexKey>)
 }
@@ -898,7 +877,7 @@ impl ToString for IndexKey {
     fn to_string(&self) -> String {
         match self {
             IndexKey::Str(v) => v.to_string(),
-            IndexKey::I64(v) => v.to_string(),
+            IndexKey::Int(v) => v.to_string(),
             IndexKey::Bool(v) => v.to_string(),
             IndexKey::Tuple(v) => format!("({:?})", v.iter()
                 .map(|v| v.to_string())
@@ -910,11 +889,11 @@ impl ToString for IndexKey {
 impl IndexKey {
     pub fn new(array: Array) -> Result<IndexKey> {
         match array {
-            Array::I64(array) => {
+            Array::Int(array) => {
                 match array.ndim() {
-                    0 => Ok(IndexKey::I64(*array.first().unwrap())),
+                    0 => Ok(IndexKey::Int(*array.first().unwrap())),
                     1 => Ok(IndexKey::Tuple(array.into_dimensionality::<ndarray::Ix1>()?
-                        .to_vec().into_iter().map(IndexKey::I64).collect())),
+                        .to_vec().into_iter().map(IndexKey::Int).collect())),
                     _ => Err("Indexing keys may not be created from 2+ dimensional arrays.".into())
                 }
             }
@@ -934,7 +913,7 @@ impl IndexKey {
                     _ => Err("Indexing keys may not be created from 2+ dimensional arrays.".into())
                 }
             }
-            Array::F64(_) => Err("Floats may not be index keys, because they are not comparable".into())
+            Array::Float(_) => Err("Floats may not be index keys, because they are not comparable".into())
         }
     }
 }
@@ -957,9 +936,9 @@ impl From<bool> for IndexKey {
     }
 }
 
-impl From<i64> for IndexKey {
-    fn from(value: i64) -> Self {
-        IndexKey::I64(value)
+impl From<Integer> for IndexKey {
+    fn from(value: Integer) -> Self {
+        IndexKey::Int(value)
     }
 }
 
