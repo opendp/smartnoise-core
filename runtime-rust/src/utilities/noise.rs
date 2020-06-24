@@ -211,7 +211,7 @@ pub fn sample_uniform(min: f64, max: f64) -> Result<f64> {
     let mantissa_int = u64::from_str_radix(mantissa, 2).unwrap();
 
     // Generate exponent
-    let exponent: i16 = -sample_geometric_censored(&0.5, &1023, &true)? as i16;
+    let exponent: i16 = -sample_geometric_censored(0.5, 1023, true)? as i16;
 
     // Generate uniform random number from [0,1)
     let uniform_rand = f64::recompose(false, exponent, mantissa_int);
