@@ -13,7 +13,10 @@ use std::hash::Hash;
 
 
 impl Evaluable for proto::Impute {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
+
+        let enforce_constant_time = privacy_definition.as_ref()
+            .map(|v| v.protect_elapsed_time).unwrap_or(false);
 
         // if categories argument is not None, treat data as categorical (regardless of atomic type)
         if arguments.contains_key::<IndexKey>(&"categories".into()) {
@@ -26,17 +29,17 @@ impl Evaluable for proto::Impute {
                 get_argument(arguments, "null_values")?.jagged()?) {
 
                 (Array::Bool(data), Jagged::Bool(categories), Jagged::Bool(nulls)) =>
-                    impute_categorical(&data, &categories, &weights, &nulls)?.into(),
+                    impute_categorical(&data, &categories, &weights, &nulls, enforce_constant_time)?.into(),
 
                 (Array::Float(_), Jagged::Float(_), Jagged::Float(_)) =>
                     return Err("categorical imputation over floats is not currently supported".into()),
 //                        impute_categorical(&data, &categories, &weights, &nulls)?.into(),
 
                 (Array::Int(data), Jagged::Int(categories), Jagged::Int(nulls)) =>
-                    impute_categorical(&data, &categories, &weights, &nulls)?.into(),
+                    impute_categorical(&data, &categories, &weights, &nulls, enforce_constant_time)?.into(),
 
                 (Array::Str(data), Jagged::Str(categories), Jagged::Str(nulls)) =>
-                    impute_categorical(&data, &categories, &weights, &nulls)?.into(),
+                    impute_categorical(&data, &categories, &weights, &nulls, enforce_constant_time)?.into(),
                 _ => return Err("types of data, categories, and null must be consistent and probabilities must be f64".into()),
             }))
         }
@@ -56,7 +59,7 @@ impl Evaluable for proto::Impute {
                     Ok(match (get_argument(arguments, "data")?, get_argument(arguments, "lower")?, get_argument(arguments, "upper")?) {
                         (Value::Array(data), Value::Array(lower), Value::Array(upper)) => match (data, lower, upper) {
                             (Array::Float(data), Array::Float(lower), Array::Float(upper)) =>
-                                impute_float_uniform(&data, &lower, &upper)?.into(),
+                                impute_float_uniform(&data, &lower, &upper, enforce_constant_time)?.into(),
                             (Array::Int(data), Array::Int(_lower), Array::Int(_upper)) =>
                                 // continuous integers are already non-null
                                 data.clone().into(),
@@ -73,7 +76,7 @@ impl Evaluable for proto::Impute {
                     let scale = get_argument(arguments, "scale")?.array()?.float()?;
                     let shift = get_argument(arguments, "shift")?.array()?.float()?;
 
-                    Ok(impute_float_gaussian(&data, &lower, &upper, &shift, &scale)?.into())
+                    Ok(impute_float_gaussian(&data, &lower, &upper, &shift, &scale, enforce_constant_time)?.into())
                 },
                 _ => return Err("Distribution not supported".into())
             }.map(ReleaseNode::new)
@@ -101,13 +104,14 @@ impl Evaluable for proto::Impute {
 /// let data: ArrayD<Float> = arr2(&[ [1., Float::NAN, 3., Float::NAN], [2., 2., Float::NAN, Float::NAN] ]).into_dyn();
 /// let lower: ArrayD<Float> = arr1(&[0., 2., 3., 4.]).into_dyn();
 /// let upper: ArrayD<Float> = arr1(&[10., 2., 5., 5.]).into_dyn();
-/// let imputed = impute_float_uniform(&data, &lower, &upper);
+/// let imputed = impute_float_uniform(&data, &lower, &upper, false);
 /// # imputed.unwrap();
 /// ```
 
 pub fn impute_float_uniform(
     data: &ArrayD<Float>,
-    lower: &ArrayD<Float>, upper: &ArrayD<Float>
+    lower: &ArrayD<Float>, upper: &ArrayD<Float>,
+    enforce_constant_time: bool
 ) -> Result<ArrayD<Float>> {
 
     let mut data = data.clone();
@@ -125,7 +129,8 @@ pub fn impute_float_uniform(
             .filter(|v| v.is_nan())
             // mutate the cell via the operator
             .try_for_each(|v| {
-                *v = noise::sample_uniform(*min as f64, *max as f64)? as Float;
+                *v = noise::sample_uniform(
+                    *min as f64, *max as f64, enforce_constant_time)? as Float;
                 Ok::<_, Error>(())
             }))?;
 
@@ -155,13 +160,14 @@ pub fn impute_float_uniform(
 /// let upper: ArrayD<Float> = arr1(&[10.0]).into_dyn();
 /// let shift: ArrayD<Float> = arr1(&[5.0]).into_dyn();
 /// let scale: ArrayD<Float> = arr1(&[7.0]).into_dyn();
-/// let imputed = impute_float_gaussian(&data, &lower, &upper, &shift, &scale);
+/// let imputed = impute_float_gaussian(&data, &lower, &upper, &shift, &scale, false);
 /// # imputed.unwrap();
 /// ```
 pub fn impute_float_gaussian(
     data: &ArrayD<Float>,
     lower: &ArrayD<Float>, upper: &ArrayD<Float>,
-    shift: &ArrayD<Float>, scale: &ArrayD<Float>
+    shift: &ArrayD<Float>, scale: &ArrayD<Float>,
+    enforce_constant_time: bool
 ) -> Result<ArrayD<Float>> {
 
     let mut data = data.clone();
@@ -182,7 +188,9 @@ pub fn impute_float_gaussian(
             // mutate the cell via the operator
             .try_for_each(|v| {
                 *v = noise::sample_gaussian_truncated(
-                    *min as f64, *max as f64, *shift as f64, *scale as f64)? as Float;
+                    *min as f64, *max as f64, *shift as f64, *scale as f64,
+                    enforce_constant_time
+                )? as Float;
                 Ok::<_, Error>(())
             }))?;
 
@@ -216,12 +224,13 @@ pub fn impute_float_gaussian(
 ///                                         vec!["null_2".to_string()],
 ///                                         vec!["null_3".to_string()]];
 ///
-/// let imputed = impute_categorical(&data, &categories, &weights, &null_value);
+/// let imputed = impute_categorical(&data, &categories, &weights, &null_value, false);
 /// # imputed.unwrap();
 /// ```
 pub fn impute_categorical<T: Clone>(
     data: &ArrayD<T>, categories: &[Vec<T>],
-    weights: &Option<Vec<Vec<Float>>>, null_value: &[Vec<T>]
+    weights: &Option<Vec<Vec<Float>>>, null_value: &[Vec<T>],
+    enforce_constant_time: bool
 ) -> Result<ArrayD<T>> where T: Clone, T: PartialEq, T: Default, T: Ord, T: Hash {
     let mut data = data.clone();
 
@@ -244,7 +253,7 @@ pub fn impute_categorical<T: Clone>(
             .filter(|v| null.contains(v))
             // mutate the cell via the operator
             .try_for_each(|v| {
-                *v = utilities::sample_from_set(&cats, &probs)?;
+                *v = utilities::sample_from_set(&cats, &probs, enforce_constant_time)?;
                 Ok::<_, Error>(())
             }))?;
 

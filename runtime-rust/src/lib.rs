@@ -88,6 +88,8 @@ pub fn release(
         let component: &proto::Component = computation_graph.get(&component_id)
             .ok_or_else(|| Error::from("attempted to retrieve a non-existent component id"))?;
 
+        println!("{:?}", component);
+
         // check if any dependencies of the current node remain unevaluated
         let mut evaluable = true;
         for source_node_id in component.arguments().values() {

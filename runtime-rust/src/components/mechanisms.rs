@@ -15,9 +15,12 @@ use crate::utilities::mechanisms::exponential_mechanism;
 impl Evaluable for proto::LaplaceMechanism {
     fn evaluate(
         &self,
-        _privacy_definition: &Option<proto::PrivacyDefinition>,
+        privacy_definition: &Option<proto::PrivacyDefinition>,
         arguments: &NodeArguments
     ) -> Result<ReleaseNode> {
+
+        let enforce_constant_time = privacy_definition.as_ref()
+            .map(|v| v.protect_elapsed_time).unwrap_or(false);
 
         let data = get_argument(arguments, "data")?.array()?;
         let num_columns = data.num_columns()?;
@@ -37,7 +40,8 @@ impl Evaluable for proto::LaplaceMechanism {
             .try_for_each(|(mut data_column, (sensitivity, epsilon))|
                 data_column.iter_mut().zip(sensitivity.iter())
                     .try_for_each(|(v, sens)| {
-                        *v += utilities::mechanisms::laplace_mechanism(epsilon, *sens as f64)? as Float;
+                        *v += utilities::mechanisms::laplace_mechanism(
+                            epsilon, *sens as f64, enforce_constant_time)? as Float;
                         Ok::<_, Error>(())
                     }))?;
 
@@ -52,9 +56,12 @@ impl Evaluable for proto::LaplaceMechanism {
 impl Evaluable for proto::GaussianMechanism {
     fn evaluate(
         &self,
-        _privacy_definition: &Option<proto::PrivacyDefinition>,
+        privacy_definition: &Option<proto::PrivacyDefinition>,
         arguments: &NodeArguments
     ) -> Result<ReleaseNode> {
+
+        let enforce_constant_time = privacy_definition.as_ref()
+            .map(|v| v.protect_elapsed_time).unwrap_or(false);
 
         let data = get_argument(arguments, "data")?.array()?;
         let num_columns = data.num_columns()?;
@@ -77,7 +84,8 @@ impl Evaluable for proto::GaussianMechanism {
             .try_for_each(|((mut data_column, sensitivity), (epsilon, delta))| data_column.iter_mut()
                 .zip(sensitivity.iter())
                 .try_for_each(|(v, sens)| {
-                    *v += utilities::mechanisms::gaussian_mechanism(epsilon, delta, *sens as f64)? as Float;
+                    *v += utilities::mechanisms::gaussian_mechanism(
+                        epsilon, delta, *sens as f64, enforce_constant_time)? as Float;
                     Ok::<_, Error>(())
                 }))?;
 
@@ -91,12 +99,13 @@ impl Evaluable for proto::GaussianMechanism {
 
 impl Evaluable for proto::SimpleGeometricMechanism {
     fn evaluate(&self, privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
+
+        let enforce_constant_time = privacy_definition.as_ref()
+            .map(|v| v.protect_elapsed_time).unwrap_or(false);
+
         let data = get_argument(arguments, "data")?.array()?;
         let num_columns = data.num_columns()?;
         let mut data = data.int()?.to_owned();
-
-        let privacy_definition = privacy_definition.as_ref()
-            .ok_or_else(|| Error::from("privacy_definition must be known"))?;
 
         let sensitivity = get_argument(arguments, "sensitivity")?.array()?.float()?;
 
@@ -119,7 +128,7 @@ impl Evaluable for proto::SimpleGeometricMechanism {
                     *v += utilities::mechanisms::simple_geometric_mechanism(
                         epsilon, *sens as f64,
                         *c_min as i64, *c_max as i64,
-                        privacy_definition.protect_elapsed_time)? as Integer;
+                        enforce_constant_time)? as Integer;
                     Ok::<_, Error>(())
                 }))?;
 
@@ -132,7 +141,11 @@ impl Evaluable for proto::SimpleGeometricMechanism {
 }
 
 impl Evaluable for proto::ExponentialMechanism {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
+
+        let enforce_constant_time = privacy_definition.as_ref()
+            .map(|v| v.protect_elapsed_time).unwrap_or(false);
+
         let candidates = get_argument(arguments, "candidates")?.jagged()?;
 
         let sensitivity = get_argument(arguments, "sensitivity")?.array()?.float()?
@@ -150,7 +163,8 @@ impl Evaluable for proto::ExponentialMechanism {
                     .map(|((cands, utils), (sens, eps))|
                         exponential_mechanism(
                             *eps, *sens as f64, cands,
-                            utils.into_iter().map(|v| v as f64).collect()))
+                            utils.into_iter().map(|v| v as f64).collect(),
+                            enforce_constant_time))
                     .collect::<Result<Vec<Float>>>()?;
 
                 let mut release_array = arr1(&release_vec).into_dyn();
@@ -164,7 +178,8 @@ impl Evaluable for proto::ExponentialMechanism {
                     .map(|((cands, utils), (sens, eps))|
                         exponential_mechanism(
                             *eps, *sens as f64, cands,
-                            utils.into_iter().map(|v| v as f64).collect()))
+                            utils.into_iter().map(|v| v as f64).collect(),
+                            enforce_constant_time))
                     .collect::<Result<Vec<Integer>>>()?;
 
                 let mut release_array = arr1(&release_vec).into_dyn();
@@ -178,7 +193,8 @@ impl Evaluable for proto::ExponentialMechanism {
                     .map(|((cands, utils), (sens, eps))|
                         exponential_mechanism(
                             *eps, *sens as f64, cands,
-                            utils.into_iter().map(|v| v as f64).collect()))
+                            utils.into_iter().map(|v| v as f64).collect(),
+                            enforce_constant_time))
                     .collect::<Result<Vec<String>>>()?;
 
                 let mut release_array = arr1(&release_vec).into_dyn();
@@ -192,7 +208,8 @@ impl Evaluable for proto::ExponentialMechanism {
                     .map(|((cands, utils), (sens, eps))|
                         exponential_mechanism(
                             *eps, *sens as f64, cands,
-                            utils.into_iter().map(|v| v as f64).collect()))
+                            utils.into_iter().map(|v| v as f64).collect(),
+                            enforce_constant_time))
                     .collect::<Result<Vec<bool>>>()?;
 
                 let mut release_array = arr1(&release_vec).into_dyn();

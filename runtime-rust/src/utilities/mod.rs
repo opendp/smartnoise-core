@@ -199,6 +199,11 @@ pub fn get_bytes(n_bytes: usize) -> String {
     new_buffer.concat()
 }
 
+// TODO: substitute implementation with different generators
+pub fn fill_bytes(mut buffer: &mut [u8]) {
+    rand_bytes(&mut buffer).ok();
+}
+
 /// Converts an `f64` to `String` of length 64, yielding the IEEE-754 binary representation of the `f64`.
 ///
 /// The first bit of the string is the sign, the next 11 are the exponent, and the last 52 are the mantissa.
@@ -286,8 +291,10 @@ pub fn combine_components_into_ieee(sign: &str, exponent: &str, mantissa: &str) 
 /// # Return
 /// Element from the candidate set
 #[cfg(feature="use-secure-noise")]
-pub fn sample_from_set<T>(candidate_set: &[T], weights: &[whitenoise_validator::Float])
-                          -> Result<T> where T: Clone {
+pub fn sample_from_set<T>(
+    candidate_set: &[T], weights: &[whitenoise_validator::Float],
+    _enforce_constant_time: bool
+) -> Result<T> where T: Clone {
 
     use rug::Float;
 
@@ -322,11 +329,13 @@ pub fn sample_from_set<T>(candidate_set: &[T], weights: &[whitenoise_validator::
 }
 
 #[cfg(not(feature="use-secure-noise"))]
-pub fn sample_from_set<T>(candidate_set: &Vec<T>, weights: &Vec<whitenoise_validator::Float>)
-                          -> Result<T> where T: Clone {
+pub fn sample_from_set<T>(
+    candidate_set: &Vec<T>, weights: &Vec<whitenoise_validator::Float>,
+    enforce_constant_time: bool
+) -> Result<T> where T: Clone {
 
     // generate uniform random number on [0,sum(weights))
-    let sample: f64 = noise::sample_uniform(0., weights.iter().sum())?;
+    let sample: f64 = noise::sample_uniform(0., weights.iter().sum(), enforce_constant_time)?;
 
     // return once the cumulative weight reaches the uniform sample
     let mut cumulative = 0.;
@@ -358,11 +367,14 @@ pub fn sample_from_set<T>(candidate_set: &Vec<T>, weights: &Vec<whitenoise_valid
 /// let set = vec![1, 2, 3, 4, 5, 6];
 /// let weights = vec![1., 1., 1., 2., 2., 2.];
 /// let k = 3;
-/// let subset = create_subset(&set, &weights, k);
+/// let subset = create_subset(&set, &weights, k, false);
 /// # subset.unwrap();
 /// ```
 #[cfg(feature="use-secure-noise")]
-pub fn create_subset<T>(set: &[T], weights: &[f64], k: usize) -> Result<Vec<T>> where T: Clone {
+pub fn create_subset<T>(
+    set: &[T], weights: &[f64], k: usize,
+    _enforce_constant_time: bool
+) -> Result<Vec<T>> where T: Clone {
     if k > set.len() { return Err("k must be less than the set length".into()); }
 
     use rug::Float;
@@ -400,7 +412,10 @@ pub fn create_subset<T>(set: &[T], weights: &[f64], k: usize) -> Result<Vec<T>> 
 }
 
 #[cfg(not(feature="use-secure-noise"))]
-pub fn create_subset<T>(set: &Vec<T>, weights: &Vec<f64>, k: &i64) -> Result<Vec<T>> where T: Clone {
+pub fn create_subset<T>(
+    set: &Vec<T>, weights: &Vec<f64>, k: &i64,
+    enforce_constant_time: bool
+) -> Result<Vec<T>> where T: Clone {
     if *k as usize > set.len() { return Err("k must be less than the set length".into()); }
 
     // generate sum of weights
@@ -414,7 +429,7 @@ pub fn create_subset<T>(set: &Vec<T>, weights: &Vec<f64>, k: &i64) -> Result<Vec
 
     // generate key/index tuples
     let mut key_vec = (0..set.len())
-        .map(|i| Ok((noise::sample_uniform(0., 1.)?.powf(1. / probabilities[i]), i)))
+        .map(|i| Ok((noise::sample_uniform(0., 1., enforce_constant_time)?.powf(1. / probabilities[i]), i)))
         .collect::<Result<Vec<(f64, usize)>>>()?;
 
     // sort key/index tuples by key and identify top k indices

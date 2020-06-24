@@ -1,7 +1,7 @@
 use whitenoise_validator::errors::*;
 use probability::distribution::{Gaussian, Laplace, Inverse, Distribution};
 use ieee754::Ieee754;
-use std::{cmp, f64::consts};
+use std::{cmp, f64::consts, mem};
 
 use crate::utilities;
 
@@ -16,7 +16,9 @@ struct GeneratorOpenSSL;
 #[cfg(feature="use-secure-noise")]
 impl ThreadRandGen for GeneratorOpenSSL {
     fn gen(&mut self) -> u32 {
-        u32::from_str_radix(&utilities::get_bytes(4), 2).unwrap()
+        let mut buffer = [0u8; 4];
+        utilities::fill_bytes(&mut buffer);
+        u32::from_ne_bytes(buffer)
     }
 }
 
@@ -36,18 +38,15 @@ pub fn censored_specific_geom() -> Result<i16> {
     for i in 0..128 {
         // read random bytes
         let binary_string = utilities::get_bytes(1);
-        let binary_char_vec: Vec<char> = binary_string.chars().collect();
+        let first_one_idx: Option<usize> = binary_string.chars().position(|x| x == '1');
 
         // find first element that is '1' and mark its overall index
-        let first_one_index = binary_char_vec.iter().position(|&x| x == '1');
-        let first_one_overall_index: i16;
-        if first_one_index.is_some() {
-            let first_one_index_int = first_one_index.unwrap() as i16;
-            first_one_overall_index = 8*i + first_one_index_int;
+        let first_one_idx = if let Some(first_one_idx) = first_one_idx {
+            8 * i + first_one_idx as i16
         } else {
-            first_one_overall_index = geom;
-        }
-        geom = cmp::min(geom, first_one_overall_index+1);
+            geom
+        };
+        geom = cmp::min(geom, first_one_idx + 1);
     }
     return Ok(geom);
 }
@@ -67,23 +66,23 @@ pub fn censored_specific_geom() -> Result<i16> {
 ///
 /// ```
 /// // returns a bit with Pr(bit = 1) = 0.7
-/// use whitenoise_runtime::utilities::noise::sample_bit;
-/// let n = sample_bit(0.7);
+/// use whitenoise_runtime::utilities::noise::sample_bit_prob;
+/// let n = sample_bit_prob(0.7);
 /// # n.unwrap();
 /// ```
 /// ```should_panic
 /// // fails because 1.3 not a valid probability
-/// use whitenoise_runtime::utilities::noise::sample_bit;
-/// let n = sample_bit(1.3);
+/// use whitenoise_runtime::utilities::noise::sample_bit_prob;
+/// let n = sample_bit_prob(1.3);
 /// # n.unwrap();
 /// ```
 /// ```should_panic
 /// // fails because -0.3 is not a valid probability
-/// use whitenoise_runtime::utilities::noise::sample_bit;
-/// let n = sample_bit(-0.3);
+/// use whitenoise_runtime::utilities::noise::sample_bit_prob;
+/// let n = sample_bit_prob(-0.3);
 /// # n.unwrap();
 /// ```
-pub fn sample_bit(prob: f64) -> Result<i64> {
+pub fn sample_bit_prob(prob: f64) -> Result<i64> {
 
     // ensure that prob is a valid probability
     assert!(prob >= 0.0 && prob <= 1.0);
@@ -103,6 +102,25 @@ pub fn sample_bit(prob: f64) -> Result<i64> {
     } else {
         let index: usize = (num_leading_zeros + first_heads_index) as usize;
         Ok(mantissa_vec[index])
+    }
+}
+
+pub fn sample_bit() -> bool {
+    let mut buffer = [0u8; 1];
+    utilities::fill_bytes(&mut buffer);
+    buffer[0] & 1 == 1
+}
+
+
+#[cfg(test)]
+mod test_sample_bit {
+    use crate::utilities::noise::sample_bit;
+
+    #[test]
+    fn test_sample_bit() {
+        (0..100).for_each(|_| {
+            dbg!(sample_bit());
+        });
     }
 }
 
@@ -136,30 +154,20 @@ pub fn sample_uniform_int(min: Integer, max: Integer) -> Result<Integer> {
 
     // define number of possible integers we could sample and the maximum
     // number of bits it would take to represent them
-
     let n_ints: Integer = max - min + 1;
-    let n_bits: Integer = ( (n_ints as f64).log2() ).ceil() as Integer;
+    let n_bytes = ((n_ints as f64).log2()).ceil() as usize / 8 + 1;
 
     // uniformly sample integers from the set {0, 1, ..., n_ints-1}
     // by uniformly creating binary strings of length "n_bits"
     // and rejecting integers that are too large
-    let mut valid_int: bool = false;
-    let mut uniform_int: Integer = 0;
-    while !valid_int {
-        uniform_int = 0;
-        // generate random bits and increase integer by appropriate power of 2
-        for i in 0..n_bits {
-            let bit: i64 = sample_bit(0.5)?;
-            uniform_int += (bit * 2_i64.pow(i as u32)) as Integer;
-        }
+    let mut buffer = [0u8; mem::size_of::<Integer>()];
+    loop {
+        utilities::fill_bytes(&mut buffer[..n_bytes]);
+        let uniform_int = i64::from_le_bytes(buffer);
         if uniform_int < n_ints {
-            valid_int = true;
+            return Ok(uniform_int + min)
         }
     }
-
-    // return successfully generated integer, scaled to be within
-    // the correct range
-    Ok(uniform_int + min)
 }
 
 /// Returns random sample from Uniform[min,max).
@@ -191,32 +199,60 @@ pub fn sample_uniform_int(min: Integer, max: Integer) -> Result<Integer> {
 /// ```
 /// // valid draw from Unif[0,2)
 /// use whitenoise_runtime::utilities::noise::sample_uniform;
-/// let unif = sample_uniform(0.0, 2.0);
+/// let unif = sample_uniform(0.0, 2.0, false);
 /// # unif.unwrap();
 /// ```
 /// ``` should_panic
 /// // fails because min > max
 /// use whitenoise_runtime::utilities::noise::sample_uniform;
-/// let unif = sample_uniform(2.0, 0.0);
+/// let unif = sample_uniform(2.0, 0.0, false);
 /// # unif.unwrap();
 /// ```
-pub fn sample_uniform(min: f64, max: f64) -> Result<f64> {
+pub fn sample_uniform(min: f64, max: f64, enforce_constant_time: bool) -> Result<f64> {
     if min > max {return Err("lower may not be greater than upper".into());}
 
     // Generate mantissa
-    let binary_string = utilities::get_bytes(7);
-    let mantissa = &binary_string[0..52];
+    let mut mantissa_buffer = [0u8; 8];
+    utilities::fill_bytes(&mut mantissa_buffer[1..]);
+    // limit the buffer to 52 bits
+    mantissa_buffer[1] = mantissa_buffer[1] % 16;
 
     // convert mantissa to integer
-    let mantissa_int = u64::from_str_radix(mantissa, 2).unwrap();
+    let mantissa_int = u64::from_be_bytes(mantissa_buffer);
 
     // Generate exponent
-    let exponent: i16 = -sample_geometric_censored(0.5, 1023, true)? as i16;
+    let exponent: i16 = -sample_geometric_censored(0.5, 1023, enforce_constant_time)? as i16;
 
     // Generate uniform random number from [0,1)
     let uniform_rand = f64::recompose(false, exponent, mantissa_int);
-
+    println!("{:?}", uniform_rand);
     Ok(uniform_rand * (max - min) + min)
+}
+
+
+#[cfg(test)]
+mod test_bin_index {
+    use crate::utilities::noise::sample_uniform;
+    use ieee754::Ieee754;
+
+    #[test]
+    fn test_uniform() {
+        (1..=100).for_each(|idx| println!("{:?}", (1. / 100. * idx as f64).decompose()));
+        // println!("{:?}", 1.0f64.decompose());
+
+        let min = 0.;
+        let max = 1.;
+        if !(0..10).all(|_| {
+            let sample = sample_uniform(min, max, false).unwrap();
+            let within = min <= sample && max >= sample;
+            if !within {
+                println!("value outside of range: {:?}", sample);
+            }
+            within
+        }) {
+            panic!("not all numbers are within the range")
+        }
+    }
 }
 
 /// Generates a draw from Unif[min, max] using the MPFR library.
@@ -316,11 +352,11 @@ pub fn sample_gaussian_mpfr(shift: f64, scale: f64) -> Result<rug::Float> {
 /// # Example
 /// ```
 /// use whitenoise_runtime::utilities::noise::sample_laplace;
-/// let n = sample_laplace(0.0, 2.0);
+/// let n = sample_laplace(0.0, 2.0, false);
 /// ```
-pub fn sample_laplace(shift: f64, scale: f64) -> f64 {
+pub fn sample_laplace(shift: f64, scale: f64, enforce_constant_time: bool) -> f64 {
     // nothing in sample_uniform can throw an error
-    let probability: f64 = sample_uniform(0., 1.).unwrap();
+    let probability: f64 = sample_uniform(0., 1., enforce_constant_time).unwrap();
     Laplace::new(shift, scale).inverse(probability)
 }
 
@@ -337,10 +373,10 @@ pub fn sample_laplace(shift: f64, scale: f64) -> f64 {
 /// # Example
 /// ```
 /// use whitenoise_runtime::utilities::noise::sample_gaussian;
-/// let n = sample_gaussian(0.0, 2.0);
+/// let n = sample_gaussian(0.0, 2.0, false);
 /// ```
-pub fn sample_gaussian(shift: f64, scale: f64) -> f64 {
-    let probability: f64 = sample_uniform(0., 1.).unwrap();
+pub fn sample_gaussian(shift: f64, scale: f64, enforce_constant_time: bool) -> f64 {
+    let probability: f64 = sample_uniform(0., 1., enforce_constant_time).unwrap();
     Gaussian::new(shift, scale).inverse(probability)
 }
 
@@ -364,16 +400,19 @@ pub fn sample_gaussian(shift: f64, scale: f64) -> f64 {
 /// # Example
 /// ```
 /// use whitenoise_runtime::utilities::noise::sample_gaussian_truncated;
-/// let n= sample_gaussian_truncated(1.0, 1.0, 0.0, 2.0);
+/// let n= sample_gaussian_truncated(1.0, 1.0, 0.0, 2.0, false);
 /// # n.unwrap();
 /// ```
-pub fn sample_gaussian_truncated(min: f64, max: f64, shift: f64, scale: f64) -> Result<f64> {
+pub fn sample_gaussian_truncated(
+    min: f64, max: f64, shift: f64, scale: f64,
+    enforce_constant_time: bool
+) -> Result<f64> {
     if min > max {return Err("lower may not be greater than upper".into());}
     if scale <= 0.0 {return Err("scale must be greater than zero".into());}
 
     let unif_min: f64 = Gaussian::new(shift, scale).distribution(min);
     let unif_max: f64 = Gaussian::new(shift, scale).distribution(max);
-    let unif: f64 = sample_uniform(unif_min, unif_max)?;
+    let unif: f64 = sample_uniform(unif_min, unif_max, enforce_constant_time)?;
     Ok(Gaussian::new(shift, scale).inverse(unif))
 }
 
@@ -401,24 +440,23 @@ pub fn sample_geometric_censored(prob: f64, max_trials: i64, enforce_constant_ti
     if prob < 0.0 || prob > 1.0 {return Err("probability is not within [0, 1]".into())}
 
     let mut bit: i64;
-    let mut n_trials: i64 = 1;
+    let mut n_trials: i64 = 0;
     let mut geom_return: i64 = 0;
 
     // generate bits until we find a 1
     // if enforcing the runtime of the algorithm to be constant, the while loop
     // continues after the 1 is found and just stores the first location of a 1 bit.
-    while n_trials <= max_trials {
-        bit = sample_bit(prob)?;
-        if bit == 1 {
-            // If we haven't seen a 1 yet, set the return to the current number of trials
-            if geom_return == 0 {
-                geom_return = n_trials;
-                if !enforce_constant_time {
-                    return Ok(geom_return);
-                }
+    while n_trials < max_trials {
+        bit = sample_bit_prob(prob)?;
+        n_trials += 1;
+
+        // If we haven't seen a 1 yet, set the return to the current number of trials
+        if bit == 1 && geom_return == 0 {
+            geom_return = n_trials;
+            if !enforce_constant_time {
+                return Ok(geom_return);
             }
         }
-        n_trials += 1;
     }
 
     // set geom_return to max if we never saw a bit equaling 1
@@ -459,12 +497,12 @@ pub fn sample_simple_geometric_mechanism(scale: f64, min: i64, max: i64, enforce
     let max_trials: i64 = max - min;
 
     // return 0 noise with probability (1-alpha) / (1+alpha), otherwise sample from geometric
-    let unif: f64 = sample_uniform(0., 1.).unwrap();
+    let unif: f64 = sample_uniform(0., 1., enforce_constant_time).unwrap();
     if unif < (1. - alpha) / (1. + alpha) {
         0
     } else {
         // get random sign
-        let sign: i64 = 2 * sample_bit(0.5).unwrap() - 1;
+        let sign: i64 = 2 * sample_bit() as i64 - 1;
         // sample from censored geometric. Unwrap is safe because (1. - alpha) is bounded by 1.
         let geom: i64 = sample_geometric_censored(1. - alpha, max_trials, enforce_constant_time).unwrap();
         sign * geom

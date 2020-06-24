@@ -17,7 +17,11 @@ use ndarray::prelude::*;
 use std::hash::Hash;
 
 impl Evaluable for proto::Resize {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
+
+        let enforce_constant_time = privacy_definition.as_ref()
+            .map(|v| v.protect_elapsed_time).unwrap_or(false);
+
         let mut number_rows = arguments.get::<IndexKey>(&"number_rows".into())
             .and_then(|v| v.first_int().ok()).map(|v| v as i64);
         let number_cols = arguments.get::<IndexKey>(&"number_columns".into())
@@ -44,11 +48,17 @@ impl Evaluable for proto::Resize {
                             return Err("categorical resizing over floats in not currently supported- try continuous imputation instead".into()),
 //                            resize_categorical(&data, &n, &categories, &probabilities)?.into(),
                         (Array::Int(data), Jagged::Int(categories)) =>
-                            resize_categorical(&data, number_rows, number_cols, &categories, &weights, minimum_rows)?.into(),
+                            resize_categorical(
+                                &data, number_rows, number_cols, &categories, &weights,
+                                minimum_rows, enforce_constant_time)?.into(),
                         (Array::Bool(data), Jagged::Bool(categories)) =>
-                            resize_categorical(&data, number_rows, number_cols, &categories, &weights, minimum_rows)?.into(),
+                            resize_categorical(
+                                &data, number_rows, number_cols, &categories, &weights,
+                                minimum_rows, enforce_constant_time)?.into(),
                         (Array::Str(data), Jagged::Str(categories)) =>
-                            resize_categorical(&data, number_rows, number_cols, &categories, &weights, minimum_rows)?.into(),
+                            resize_categorical(
+                                &data, number_rows, number_cols, &categories, &weights,
+                                minimum_rows, enforce_constant_time)?.into(),
                         _ => return Err("types of data, categories, and nulls must be homogeneous, weights must be f64".into())
                     }),
                 _ => return Err("data and nulls must be arrays, categories must be a jagged matrix".into())
@@ -76,10 +86,16 @@ impl Evaluable for proto::Resize {
                         Ok(scale) => Some(scale.array()?.float()?),
                         Err(_) => None
                     };
-                    Ok(resize_float(data, number_rows, number_cols, &distribution, lower, upper, shift, scale, minimum_rows)?.into())
+                    Ok(resize_float(
+                        data, number_rows, number_cols, &distribution,
+                        lower, upper, shift, scale, minimum_rows,
+                        enforce_constant_time)?.into())
                 }
                 (Array::Int(data), Array::Int(lower), Array::Int(upper)) =>
-                    Ok(resize_integer(data, number_rows, number_cols, lower, upper, minimum_rows)?.into()),
+                    Ok(resize_integer(
+                        data, number_rows, number_cols,
+                        lower, upper, minimum_rows,
+                        enforce_constant_time)?.into()),
                 _ => Err("data, lower, and upper must be of a homogeneous numeric type".into())
             }
         }.map(ReleaseNode::new)
@@ -111,7 +127,8 @@ pub fn resize_float(
     distribution: &str,
     lower: &ArrayD<Float>, upper: &ArrayD<Float>,
     shift: Option<&ArrayD<Float>>, scale: Option<&ArrayD<Float>>,
-    minimum_rows: Option<i64>
+    minimum_rows: Option<i64>,
+    enforce_constant_time: bool
 ) -> Result<ArrayD<Float>> {
     let mut data = data.clone();
 
@@ -132,11 +149,12 @@ pub fn resize_float(
                 // generate synthetic data
                 // NOTE: only uniform and gaussian supported at this time
                 let synthetic = match distribution.to_lowercase().as_str() {
-                    "uniform" => impute_float_uniform(&synthetic_base, &lower, &upper),
+                    "uniform" => impute_float_uniform(&synthetic_base, &lower, &upper, enforce_constant_time),
                     "gaussian" => impute_float_gaussian(
                         &synthetic_base, &lower, &upper,
                         &shift.cloned().ok_or_else(|| Error::from("shift must be defined for gaussian imputation"))?,
-                        &scale.cloned().ok_or_else(|| Error::from("scale must be defined for gaussian imputation"))?),
+                        &scale.cloned().ok_or_else(|| Error::from("scale must be defined for gaussian imputation"))?,
+                        enforce_constant_time),
                     _ => Err("unrecognized distribution".into())
                 }?;
 
@@ -147,7 +165,7 @@ pub fn resize_float(
                 }
             }
             Ordering::Greater =>
-                data.select(Axis(1), &create_sampling_indices(number_cols, real_n)?)
+                data.select(Axis(1), &create_sampling_indices(number_cols, real_n, enforce_constant_time)?)
         }
     }
 
@@ -175,11 +193,12 @@ pub fn resize_float(
                 // generate synthetic data
                 // NOTE: only uniform and gaussian supported at this time
                 let synthetic = match distribution.to_lowercase().as_str() {
-                    "uniform" => impute_float_uniform(&synthetic_base, &lower, &upper),
+                    "uniform" => impute_float_uniform(&synthetic_base, &lower, &upper, enforce_constant_time),
                     "gaussian" => impute_float_gaussian(
                         &synthetic_base, &lower, &upper,
                         &shift.cloned().ok_or_else(|| Error::from("shift must be defined for gaussian imputation"))?,
-                        &scale.cloned().ok_or_else(|| Error::from("scale must be defined for gaussian imputation"))?),
+                        &scale.cloned().ok_or_else(|| Error::from("scale must be defined for gaussian imputation"))?,
+                        enforce_constant_time),
                     _ => Err("unrecognized distribution".into())
                 }?;
 
@@ -191,7 +210,7 @@ pub fn resize_float(
             }
             // if real n is greater than estimated n, return a subset of the real data
             Ordering::Greater =>
-                data.select(Axis(0), &create_sampling_indices(number_rows, real_n)?)
+                data.select(Axis(0), &create_sampling_indices(number_rows, real_n, enforce_constant_time)?)
         }
     }
 
@@ -214,7 +233,8 @@ pub fn resize_integer(
     number_rows: Option<i64>,
     number_cols: Option<i64>,
     lower: &ArrayD<Integer>, upper: &ArrayD<Integer>,
-    minimum_rows: Option<i64>
+    minimum_rows: Option<i64>,
+    enforce_constant_time: bool
 ) -> Result<ArrayD<Integer>> {
     let mut data = data.clone();
 
@@ -253,7 +273,7 @@ pub fn resize_integer(
                 }
             }
             Ordering::Greater =>
-                data.select(Axis(1), &create_sampling_indices(number_cols, real_n)?)
+                data.select(Axis(1), &create_sampling_indices(number_cols, real_n, enforce_constant_time)?)
         }
     }
 
@@ -300,7 +320,7 @@ pub fn resize_integer(
             }
             // if real n is greater than estimated n, return a subset of the real data
             Ordering::Greater =>
-                data.select(Axis(0), &create_sampling_indices(number_rows, real_n)?)
+                data.select(Axis(0), &create_sampling_indices(number_rows, real_n, enforce_constant_time)?)
         }
     }
 
@@ -324,7 +344,8 @@ pub fn resize_categorical<T>(
     number_cols: Option<i64>,
     categories: &[Vec<T>],
     weights: &Option<Vec<Vec<Float>>>,
-    minimum_rows: Option<i64>
+    minimum_rows: Option<i64>,
+    enforce_constant_time: bool
 ) -> Result<ArrayD<T>> where T: Clone, T: PartialEq, T: Default, T: Ord, T: Hash {
     let mut data = data.clone();
 
@@ -353,7 +374,7 @@ pub fn resize_categorical<T>(
 
                 // impute categorical data for each column of nulls to create synthetic data
                 synthetic = impute_categorical(
-                    &synthetic, categories, weights, &null_value)?;
+                    &synthetic, categories, weights, &null_value, enforce_constant_time)?;
 
                 // combine real and synthetic data
                 match slow_stack(Axis(0), &[data.view(), synthetic.view()]) {
@@ -362,7 +383,7 @@ pub fn resize_categorical<T>(
                 }
             }
             Ordering::Greater =>
-                slow_select(&data, Axis(0), &create_sampling_indices(number_cols, real_n)?).to_owned(),
+                slow_select(&data, Axis(0), &create_sampling_indices(number_cols, real_n, enforce_constant_time)?).to_owned(),
         }
     }
 
@@ -397,7 +418,7 @@ pub fn resize_categorical<T>(
 
                 // impute categorical data for each column of nulls to create synthetic data
                 synthetic = impute_categorical(
-                    &synthetic, categories, weights, &null_value)?;
+                    &synthetic, categories, weights, &null_value, enforce_constant_time)?;
 
                 // combine real and synthetic data
                 match slow_stack(Axis(0), &[data.view(), synthetic.view()]) {
@@ -407,7 +428,8 @@ pub fn resize_categorical<T>(
             }
             // if real n is greater than estimated n, return a subset of the real data
             Ordering::Greater =>
-                slow_select(&data, Axis(0), &create_sampling_indices(number_rows, real_n)?).to_owned(),
+                slow_select(&data, Axis(0), &create_sampling_indices(
+                    number_rows, real_n, enforce_constant_time)?).to_owned(),
         }
     }
 
@@ -431,10 +453,10 @@ pub fn resize_categorical<T>(
 /// # Example
 /// ```
 /// use whitenoise_runtime::components::resize::create_sampling_indices;
-/// let subset_indices = create_sampling_indices(5, 10);
+/// let subset_indices = create_sampling_indices(5, 10, false);
 /// # subset_indices.unwrap();
 /// ```
-pub fn create_sampling_indices(k: i64, n: i64) -> Result<Vec<usize>> {
+pub fn create_sampling_indices(k: i64, n: i64, enforce_constant_time: bool) -> Result<Vec<usize>> {
     // create set of all indices
     let index_vec: Vec<usize> = (0..(n as usize)).collect();
 
@@ -442,5 +464,5 @@ pub fn create_sampling_indices(k: i64, n: i64) -> Result<Vec<usize>> {
     let weight_vec: Vec<f64> = vec![1.; n as usize];
 
     // create set of sampling indices
-    create_subset(&index_vec, &weight_vec, k as usize)
+    create_subset(&index_vec, &weight_vec, k as usize, enforce_constant_time)
 }
