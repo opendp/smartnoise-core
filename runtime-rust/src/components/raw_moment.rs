@@ -2,7 +2,7 @@ use whitenoise_validator::errors::*;
 
 use crate::NodeArguments;
 use whitenoise_validator::base::ReleaseNode;
-use whitenoise_validator::utilities::get_argument;
+use whitenoise_validator::utilities::take_argument;
 use crate::components::Evaluable;
 use whitenoise_validator::{proto, Float};
 use ndarray::ArrayD;
@@ -11,9 +11,9 @@ use crate::components::mean::mean;
 use std::convert::TryFrom;
 
 impl Evaluable for proto::RawMoment {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        let data = get_argument(arguments, "data")?.array()?.float()?;
-        Ok(ReleaseNode::new(raw_moment(data, self.order)?.into()))
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
+        let data = take_argument(&mut arguments, "data")?.array()?.float()?;
+        Ok(ReleaseNode::new(raw_moment(&data, self.order)?.into()))
     }
 }
 

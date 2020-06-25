@@ -52,8 +52,8 @@ impl Report for proto::DpMinimum {
         &self,
         node_id: u32,
         component: &proto::Component,
-        _public_arguments: &IndexMap<base::IndexKey, &Value>,
-        properties: &NodeProperties,
+        _public_arguments: IndexMap<base::IndexKey, &Value>,
+        properties: NodeProperties,
         release: &Value,
         variable_names: Option<&Vec<base::IndexKey>>,
     ) -> Result<Option<Vec<JSONRelease>>> {
@@ -77,7 +77,7 @@ impl Report for proto::DpMinimum {
                 description: "DP release information".to_string(),
                 statistic: "DPMinimum".to_string(),
                 variables: serde_json::json!(variable_name.to_string()),
-                release_info: match release.array()? {
+                release_info: match release.ref_array()? {
                     Array::Float(v) => value_to_json(&get_ith_column(v, column_number)?.into())?,
                     Array::Int(v) => value_to_json(&get_ith_column(v, column_number)?.into())?,
                     _ => return Err("mean must be numeric".into())

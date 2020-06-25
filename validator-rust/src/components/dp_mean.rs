@@ -6,7 +6,6 @@ use crate::components::{Expandable, Report};
 use crate::base::{IndexKey, NodeProperties, Value};
 use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, value_to_json};
 use crate::utilities::{prepend, privacy::spread_privacy_usage, array::get_ith_column};
-use serde_json;
 use indexmap::map::IndexMap;
 
 
@@ -150,8 +149,8 @@ impl Report for proto::DpMean {
         &self,
         node_id: u32,
         component: &proto::Component,
-        _public_arguments: &IndexMap<base::IndexKey, &Value>,
-        properties: &NodeProperties,
+        _public_arguments: IndexMap<base::IndexKey, &Value>,
+        properties: NodeProperties,
         release: &Value,
         variable_names: Option<&Vec<base::IndexKey>>,
     ) -> Result<Option<Vec<JSONRelease>>> {
@@ -169,6 +168,8 @@ impl Report for proto::DpMean {
         let num_columns = data_property.num_columns()?;
         let privacy_usages = spread_privacy_usage(&self.privacy_usage, num_columns as usize)?;
 
+        let release = release.ref_array()?.ref_float()?;
+
         for column_number in 0..(num_columns as usize) {
             let variable_name = variable_names
                 .and_then(|names| names.get(column_number)).cloned()
@@ -179,7 +180,7 @@ impl Report for proto::DpMean {
                 statistic: "DPMean".to_string(),
                 variables: serde_json::json!(variable_name.to_string()),
                 release_info: value_to_json(&get_ith_column(
-                    release.array()?.float()?,
+                    release,
                     column_number as usize
                 )?.into())?,
                 privacy_loss: privacy_usage_to_json(&privacy_usages[column_number].clone()),

@@ -29,7 +29,7 @@ impl Expandable for proto::DpCount {
         // count
         maximum_id += 1;
         let id_count = maximum_id;
-        expansion.computation_graph.insert(id_count.clone(), proto::Component {
+        expansion.computation_graph.insert(id_count, proto::Component {
             arguments: Some(proto::IndexmapNodeIds::new(indexmap![
                 "data".into() => *component.arguments().get(&IndexKey::from("data"))
                     .ok_or_else(|| Error::from("data must be provided as an argument"))?
@@ -79,9 +79,9 @@ impl Expandable for proto::DpCount {
                     maximum_id += 1;
                     let id_count_max = maximum_id;
                     let (patch_node, count_max_release) = get_literal(count_max.into(), component.submission)?;
-                    expansion.computation_graph.insert(id_count_max.clone(), patch_node);
+                    expansion.computation_graph.insert(id_count_max, patch_node);
                     expansion.properties.insert(id_count_max, infer_property(&count_max_release.value, None)?);
-                    expansion.releases.insert(id_count_max.clone(), count_max_release);
+                    expansion.releases.insert(id_count_max, count_max_release);
                     id_count_max
                 }
                 Some(id) => *id,
@@ -128,8 +128,8 @@ impl Report for proto::DpCount {
         &self,
         node_id: u32,
         component: &proto::Component,
-        _public_arguments: &IndexMap<base::IndexKey, &Value>,
-        _properties: &NodeProperties,
+        _public_arguments: IndexMap<base::IndexKey, &Value>,
+        _properties: NodeProperties,
         release: &Value,
         variable_names: Option<&Vec<base::IndexKey>>,
     ) -> Result<Option<Vec<JSONRelease>>> {

@@ -2,7 +2,7 @@ use whitenoise_validator::errors::*;
 
 use crate::NodeArguments;
 use whitenoise_validator::base::ReleaseNode;
-use whitenoise_validator::utilities::get_argument;
+use whitenoise_validator::utilities::take_argument;
 use crate::components::Evaluable;
 use ndarray::{ArrayD, Array};
 use crate::utilities::get_num_columns;
@@ -10,10 +10,10 @@ use whitenoise_validator::{proto, Float};
 use crate::components::mean::mean;
 
 impl Evaluable for proto::Variance {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
         let delta_degrees_of_freedom = if self.finite_sample_correction { 1 } else { 0 } as usize;
         Ok(ReleaseNode::new(variance(
-            &get_argument(arguments, "data")?.array()?.float()?.clone(),
+            &take_argument(&mut arguments, "data")?.array()?.float()?,
             delta_degrees_of_freedom
         )?.into()))
     }
@@ -38,7 +38,7 @@ impl Evaluable for proto::Variance {
 /// ```
 pub fn variance(data: &ArrayD<Float>, delta_degrees_of_freedom: usize) -> Result<ArrayD<Float>> {
 
-    let means: Vec<Float> = mean(&data)?.iter().copied().collect();
+    let means: Vec<Float> = mean(data)?.iter().copied().collect();
 
     // iterate over the generalized columns
     let variances = data.gencolumns().into_iter().zip(means)

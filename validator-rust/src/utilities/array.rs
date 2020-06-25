@@ -5,9 +5,9 @@ use ndarray::{RemoveAxis, Axis, Ix, Array, ArrayView, ArrayD};
 use itertools::{zip, Itertools};
 
 
-pub fn broadcast_ndarray<T: Clone>(value: &ArrayD<T>, shape: &[usize]) -> Result<ArrayD<T>> {
+pub fn broadcast_ndarray<T: Clone>(value: ArrayD<T>, shape: &[usize]) -> Result<ArrayD<T>> {
     if value.shape() == shape {
-        return Ok(value.clone());
+        return Ok(value);
     }
 
     if value.len() != 1 {

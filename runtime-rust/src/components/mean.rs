@@ -2,16 +2,16 @@ use whitenoise_validator::errors::*;
 
 use crate::NodeArguments;
 use whitenoise_validator::base::{ReleaseNode};
-use whitenoise_validator::utilities::get_argument;
+use whitenoise_validator::utilities::take_argument;
 use crate::components::Evaluable;
 use ndarray::{ArrayD, Array};
 use crate::utilities::get_num_columns;
 use whitenoise_validator::{proto, Float};
 
 impl Evaluable for proto::Mean {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
         Ok(ReleaseNode::new(mean(
-            get_argument(arguments, "data")?.array()?.float()?
+            &take_argument(&mut arguments, "data")?.array()?.float()?
         )?.into()))
     }
 }

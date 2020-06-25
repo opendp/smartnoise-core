@@ -2,7 +2,7 @@ use whitenoise_validator::errors::*;
 
 use crate::NodeArguments;
 use whitenoise_validator::base::{Value, Array, ReleaseNode, IndexKey};
-use whitenoise_validator::utilities::get_argument;
+use whitenoise_validator::utilities::take_argument;
 use crate::components::Evaluable;
 use ndarray::ArrayD;
 use whitenoise_validator::{proto, Integer};
@@ -10,14 +10,14 @@ use indexmap::map::IndexMap;
 
 
 impl Evaluable for proto::Reshape {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
         let layout = match self.layout.to_lowercase().as_str() {
             "row" => Layout::Row,
             "column" => Layout::Column,
             _ => return Err("layout: unrecognized format. Must be either row or column".into())
         };
 
-        match get_argument(arguments, "data")?.array()? {
+        match take_argument(&mut arguments, "data")?.array()? {
             Array::Bool(data) => {
                 let mut reshaped = reshape(&data, self.symmetric, &layout, &self.shape)?;
                 match reshaped.len() {

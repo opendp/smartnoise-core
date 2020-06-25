@@ -53,7 +53,7 @@ pub trait Evaluable {
     fn evaluate(
         &self,
         privacy_definition: &Option<proto::PrivacyDefinition>,
-        arguments: &NodeArguments
+        arguments: NodeArguments
     ) -> Result<ReleaseNode>;
 }
 
@@ -64,7 +64,7 @@ impl Evaluable for proto::component::Variant {
     fn evaluate(
         &self,
         privacy_definition: &Option<proto::PrivacyDefinition>,
-        arguments: &NodeArguments
+        arguments: NodeArguments
     ) -> Result<ReleaseNode> {
         macro_rules! evaluate {
             ($( $variant:ident ),*) => {

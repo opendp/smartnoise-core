@@ -14,8 +14,8 @@ impl Component for proto::Partition {
     fn propagate_property(
         &self,
         privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: &IndexMap<base::IndexKey, &Value>,
-        properties: &base::NodeProperties,
+        public_arguments: IndexMap<base::IndexKey, &Value>,
+        properties: base::NodeProperties,
         node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
         let data_property = properties.get::<IndexKey>(&"data".into())
@@ -37,7 +37,7 @@ impl Component for proto::Partition {
                 let categories = by_property.categories()
                     .map_err(prepend("by:"))?;
 
-                let partition_keys = make_dense_partition_keys(&categories, by_property.dimensionality)?;
+                let partition_keys = make_dense_partition_keys(categories, by_property.dimensionality)?;
 
                 IndexmapProperties {
                     children: broadcast_partitions(partition_keys, &data_property, node_id, neighboring)?,
@@ -47,8 +47,8 @@ impl Component for proto::Partition {
 
             // propagate properties when partitioning evenly
             None => {
-                let num_partitions = get_argument(public_arguments, "num_partitions")?
-                    .array()?.first_int()?;
+                let num_partitions = get_argument(&public_arguments, "num_partitions")?
+                    .ref_array()?.first_int()?;
 
                 let num_records = match &data_property {
                     ValueProperties::Array(data_property) => data_property.num_records,
@@ -164,7 +164,7 @@ fn get_partition_properties(
     })
 }
 
-pub fn make_dense_partition_keys(categories: &Jagged, dimensionality: Option<i64>) -> Result<Vec<IndexKey>> {
+pub fn make_dense_partition_keys(categories: Jagged, dimensionality: Option<i64>) -> Result<Vec<IndexKey>> {
     let categories = categories.to_index_keys()?;
 
     // TODO: sparse partitioning component

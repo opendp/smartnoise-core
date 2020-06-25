@@ -6,7 +6,6 @@ use crate::{proto, base, Warnable};
 use crate::utilities::{prepend, get_literal, standardize_null_target_argument};
 use crate::components::{Component, Expandable};
 
-use ndarray;
 use crate::base::{IndexKey, Value, NatureContinuous};
 use indexmap::map::IndexMap;
 use crate::utilities::inference::infer_property;
@@ -16,8 +15,8 @@ impl Component for proto::Clamp {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: &IndexMap<base::IndexKey, &Value>,
-        properties: &base::NodeProperties,
+        public_arguments: IndexMap<base::IndexKey, &Value>,
+        properties: base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
         let mut data_property = properties.get::<IndexKey>(&"data".into())
@@ -35,27 +34,27 @@ impl Component for proto::Clamp {
         if let Some(categories) = public_arguments.get::<IndexKey>(&"categories".into()) {
             let null = public_arguments.get::<IndexKey>(&"null_value".into())
                 .ok_or_else(|| Error::from("null value must be defined when clamping by categories"))?
-                .array()?;
+                .ref_array()?;
 
-            let mut categories = categories.jagged()?.clone();
+            let mut categories = categories.ref_jagged()?.clone();
             match (&mut categories, null) {
                 (Jagged::Float(jagged), Array::Float(null)) => {
-                    let null_target = standardize_null_target_argument(&null, num_columns)?;
+                    let null_target = standardize_null_target_argument(null.clone(), num_columns)?;
                     jagged.iter_mut().zip(null_target.into_iter())
                         .for_each(|(cats, null)| cats.push(null))
                 },
                 (Jagged::Int(jagged), Array::Int(null)) => {
-                    let null_target = standardize_null_target_argument(&null, num_columns)?;
+                    let null_target = standardize_null_target_argument(null.clone(), num_columns)?;
                     jagged.iter_mut().zip(null_target.into_iter())
                         .for_each(|(cats, null)| cats.push(null))
                 },
                 (Jagged::Str(jagged), Array::Str(null)) => {
-                    let null_target = standardize_null_target_argument(&null, num_columns)?;
+                    let null_target = standardize_null_target_argument(null.clone(), num_columns)?;
                     jagged.iter_mut().zip(null_target.into_iter())
                         .for_each(|(cats, null)| cats.push(null))
                 },
                 (Jagged::Bool(jagged), Array::Bool(null)) => {
-                    let null_target = standardize_null_target_argument(&null, num_columns)?;
+                    let null_target = standardize_null_target_argument(null.clone(), num_columns)?;
                     jagged.iter_mut().zip(null_target.into_iter())
                         .for_each(|(cats, null)| cats.push(null))
                 },
@@ -73,12 +72,12 @@ impl Component for proto::Clamp {
 
                 // 1. check public arguments (constant n)
                 let mut clamp_lower = match public_arguments.get::<IndexKey>(&"lower".into()) {
-                    Some(&min) => min.array()?.clone().vec_float(Some(num_columns))
+                    Some(&lower) => lower.ref_array()?.clone().vec_float(Some(num_columns))
                         .map_err(prepend("lower:"))?,
 
                     // 2. then private arguments (for example from another clamped column)
                     None => match properties.get::<IndexKey>(&"lower".into()) {
-                        Some(min) => min.array()?.lower_float()
+                        Some(lower) => lower.array()?.lower_float()
                             .map_err(prepend("lower:"))?,
 
                         // 3. then data properties (propagated from prior clamping/min/max)
@@ -89,7 +88,7 @@ impl Component for proto::Clamp {
 
                 // 1. check public arguments (constant n)
                 let mut clamp_upper = match public_arguments.get::<IndexKey>(&"upper".into()) {
-                    Some(upper) => upper.array()?.clone().vec_float(Some(num_columns))
+                    Some(&upper) => upper.ref_array()?.clone().vec_float(Some(num_columns))
                         .map_err(prepend("upper:"))?,
 
                     // 2. then private arguments (for example from another clamped column)
@@ -135,7 +134,7 @@ impl Component for proto::Clamp {
             DataType::Int => {
                 // 1. check public arguments (constant n)
                 let mut clamp_lower = match public_arguments.get::<IndexKey>(&"lower".into()) {
-                    Some(&lower) => lower.array()?.clone().vec_int(Some(num_columns))
+                    Some(&lower) => lower.ref_array()?.clone().vec_int(Some(num_columns))
                         .map_err(prepend("lower:"))?,
 
                     // 2. then private arguments (for example from another clamped column)
@@ -151,7 +150,7 @@ impl Component for proto::Clamp {
 
                 // 1. check public arguments (constant n)
                 let mut clamp_upper = match public_arguments.get::<IndexKey>(&"upper".into()) {
-                    Some(upper) => upper.array()?.clone().vec_int(Some(num_columns))
+                    Some(&upper) => upper.ref_array()?.clone().vec_int(Some(num_columns))
                         .map_err(prepend("upper:"))?,
 
                     // 2. then private arguments (for example from another clamped column)

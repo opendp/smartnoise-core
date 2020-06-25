@@ -4,7 +4,6 @@ use crate::{base, Warnable, Float};
 use crate::proto;
 
 use crate::components::{Component, Expandable};
-use ndarray;
 
 use crate::base::{Value, Array, Nature, NatureContinuous, Vector1DNull, ValueProperties, DataType, IndexKey};
 use crate::utilities::{prepend, get_literal};
@@ -16,8 +15,8 @@ impl Component for proto::Resize {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: &IndexMap<base::IndexKey, &Value>,
-        properties: &base::NodeProperties,
+        public_arguments: IndexMap<base::IndexKey, &Value>,
+        properties: base::NodeProperties,
         _node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
         let mut data_property = properties.get::<IndexKey>(&"data".into())
@@ -38,7 +37,7 @@ impl Component for proto::Resize {
                 return Err("cannot resize number of columns when number of columns is known".into())
             }
 
-            let num_columns = num_columns.first_int()? as i64;
+            let num_columns = num_columns.ref_array()?.first_int()? as i64;
             if num_columns < 1 {
                 return Err("number_columns must be greater than zero".into());
             }
@@ -49,7 +48,7 @@ impl Component for proto::Resize {
         }
 
         if let Some(num_records) = public_arguments.get::<IndexKey>(&"number_rows".into()) {
-            let num_records = num_records.first_int()?;
+            let num_records = num_records.ref_array()?.first_int()?;
             if num_records < 1 {
                 return Err("number_rows must be greater than zero".into());
             }
@@ -59,7 +58,7 @@ impl Component for proto::Resize {
         }
 
         if let Some(minimum_rows) = public_arguments.get::<IndexKey>(&"minimum_rows".into()) {
-            if minimum_rows.first_int()? > 0 {
+            if minimum_rows.ref_array()?.first_int()? > 0 {
                 data_property.is_not_empty = true;
             } else {
                 return Err("minimum_rows must be greater than zero".into())
@@ -67,7 +66,7 @@ impl Component for proto::Resize {
         }
 
         if let Some(categories) = public_arguments.get::<IndexKey>(&"categories".into()) {
-            if data_property.data_type != categories.jagged()?.data_type() {
+            if data_property.data_type != categories.ref_jagged()?.data_type() {
                 return Err("data's data_type must match categories' data_type".into());
             }
             // TODO: propagation of categories through imputation and resize
@@ -82,7 +81,7 @@ impl Component for proto::Resize {
 
                 // 1. check public arguments (constant n)
                 let impute_lower = match public_arguments.get::<IndexKey>(&"lower".into()) {
-                    Some(lower) => lower.array()?.clone().vec_float(Some(num_columns))
+                    Some(lower) => lower.ref_array()?.clone().vec_float(Some(num_columns))
                         .map_err(prepend("lower:"))?,
 
                     // 2. then private arguments (for example from another clamped column)
@@ -98,7 +97,7 @@ impl Component for proto::Resize {
 
                 // 1. check public arguments (constant n)
                 let impute_upper = match public_arguments.get::<IndexKey>(&"upper".into()) {
-                    Some(upper) => upper.array()?.clone().vec_float(Some(num_columns))
+                    Some(upper) => upper.ref_array()?.clone().vec_float(Some(num_columns))
                         .map_err(prepend("upper:"))?,
 
                     // 2. then private arguments (for example from another clamped column)
@@ -148,7 +147,7 @@ impl Component for proto::Resize {
 
                 // 1. check public arguments (constant n)
                 let impute_lower = match public_arguments.get::<IndexKey>(&"lower".into()) {
-                    Some(lower) => lower.array()?.clone().vec_int(Some(num_columns))
+                    Some(lower) => lower.ref_array()?.clone().vec_int(Some(num_columns))
                         .map_err(prepend("lower:"))?,
 
                     // 2. then private arguments (for example from another clamped column)
@@ -164,7 +163,7 @@ impl Component for proto::Resize {
 
                 // 1. check public arguments (constant n)
                 let impute_upper = match public_arguments.get::<IndexKey>(&"upper".into()) {
-                    Some(upper) => upper.array()?.clone().vec_int(Some(num_columns))
+                    Some(upper) => upper.ref_array()?.clone().vec_int(Some(num_columns))
                         .map_err(prepend("upper:"))?,
 
                     // 2. then private arguments (for example from another clamped column)

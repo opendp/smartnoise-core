@@ -3,12 +3,11 @@ use whitenoise_validator::errors::*;
 use crate::NodeArguments;
 use whitenoise_validator::base::{ReleaseNode, Value, Jagged, Array};
 use whitenoise_validator::utilities::{
-    get_argument, array::broadcast_ndarray,
+    take_argument, array::broadcast_ndarray,
     privacy::{get_epsilon, get_delta, spread_privacy_usage}};
 use crate::components::Evaluable;
 use crate::utilities;
 use whitenoise_validator::{proto, Float, Integer};
-use ndarray;
 use ndarray::{Axis, arr1};
 use crate::utilities::mechanisms::exponential_mechanism;
 
@@ -16,21 +15,21 @@ impl Evaluable for proto::LaplaceMechanism {
     fn evaluate(
         &self,
         privacy_definition: &Option<proto::PrivacyDefinition>,
-        arguments: &NodeArguments
+        mut arguments: NodeArguments
     ) -> Result<ReleaseNode> {
 
         let enforce_constant_time = privacy_definition.as_ref()
             .map(|v| v.protect_elapsed_time).unwrap_or(false);
 
-        let data = get_argument(arguments, "data")?.array()?;
+        let data = take_argument(&mut arguments, "data")?.array()?;
         let num_columns = data.num_columns()?;
         let mut data = match data {
-            Array::Float(data) => data.clone(),
+            Array::Float(data) => data,
             Array::Int(data) => data.mapv(|v| v as Float),
             _ => return Err("data must be numeric".into())
         };
 
-        let sensitivity = get_argument(arguments, "sensitivity")?.array()?.float()?;
+        let sensitivity = take_argument(&mut arguments, "sensitivity")?.array()?.float()?;
 
         let usages = spread_privacy_usage(&self.privacy_usage, num_columns)?;
         let epsilon = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
@@ -57,21 +56,21 @@ impl Evaluable for proto::GaussianMechanism {
     fn evaluate(
         &self,
         privacy_definition: &Option<proto::PrivacyDefinition>,
-        arguments: &NodeArguments
+        mut arguments: NodeArguments
     ) -> Result<ReleaseNode> {
 
         let enforce_constant_time = privacy_definition.as_ref()
             .map(|v| v.protect_elapsed_time).unwrap_or(false);
 
-        let data = get_argument(arguments, "data")?.array()?;
+        let data = take_argument(&mut arguments, "data")?.array()?;
         let num_columns = data.num_columns()?;
         let mut data = match data {
-            Array::Float(data) => data.clone(),
+            Array::Float(data) => data,
             Array::Int(data) => data.mapv(|v| v as Float),
             _ => return Err("data must be numeric".into())
         };
 
-        let sensitivity = get_argument(arguments, "sensitivity")?.array()?.float()?;
+        let sensitivity = take_argument(&mut arguments, "sensitivity")?.array()?.float()?;
 
         let usages = spread_privacy_usage(&self.privacy_usage, num_columns)?;
 
@@ -98,25 +97,25 @@ impl Evaluable for proto::GaussianMechanism {
 }
 
 impl Evaluable for proto::SimpleGeometricMechanism {
-    fn evaluate(&self, privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
 
         let enforce_constant_time = privacy_definition.as_ref()
             .map(|v| v.protect_elapsed_time).unwrap_or(false);
 
-        let data = get_argument(arguments, "data")?.array()?;
+        let data = take_argument(&mut arguments, "data")?.array()?;
         let num_columns = data.num_columns()?;
         let mut data = data.int()?.to_owned();
 
-        let sensitivity = get_argument(arguments, "sensitivity")?.array()?.float()?;
+        let sensitivity = take_argument(&mut arguments, "sensitivity")?.array()?.float()?;
 
         let usages = spread_privacy_usage(&self.privacy_usage, num_columns)?;
         let epsilon = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
 
         let lower = broadcast_ndarray(
-            get_argument(arguments, "lower")?.array()?.int()?, data.shape())?;
+            take_argument(&mut arguments, "lower")?.array()?.int()?, data.shape())?;
 
         let upper = broadcast_ndarray(
-            get_argument(arguments, "upper")?.array()?.int()?, data.shape())?;
+            take_argument(&mut arguments, "upper")?.array()?.int()?, data.shape())?;
 
         data.gencolumns_mut().into_iter()
             .zip(sensitivity.gencolumns().into_iter().zip(epsilon.into_iter()))
@@ -141,20 +140,20 @@ impl Evaluable for proto::SimpleGeometricMechanism {
 }
 
 impl Evaluable for proto::ExponentialMechanism {
-    fn evaluate(&self, privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
 
         let enforce_constant_time = privacy_definition.as_ref()
             .map(|v| v.protect_elapsed_time).unwrap_or(false);
 
-        let candidates = get_argument(arguments, "candidates")?.jagged()?;
+        let candidates = take_argument(&mut arguments, "candidates")?.jagged()?;
 
-        let sensitivity = get_argument(arguments, "sensitivity")?.array()?.float()?
+        let sensitivity = take_argument(&mut arguments, "sensitivity")?.array()?.float()?
             .iter().cloned().collect::<Vec<Float>>();
 
         let usages = spread_privacy_usage(&self.privacy_usage, sensitivity.len())?;
         let epsilon = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
 
-        let utilities = get_argument(arguments, "utilities")?.jagged()?.float()?;
+        let utilities = take_argument(&mut arguments, "utilities")?.jagged()?.float()?;
 
         let value = match candidates {
             Jagged::Float(candidates) => {

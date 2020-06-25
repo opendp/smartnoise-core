@@ -14,8 +14,8 @@ impl Component for proto::ExponentialMechanism {
     fn propagate_property(
         &self,
         privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: &IndexMap<base::IndexKey, &Value>,
-        properties: &base::NodeProperties,
+        public_arguments: IndexMap<base::IndexKey, &Value>,
+        properties: base::NodeProperties,
         _node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
         let privacy_definition = privacy_definition.as_ref()
@@ -33,7 +33,7 @@ impl Component for proto::ExponentialMechanism {
             return Err("utilities: data_type must be float".into());
         }
 
-        let candidates = get_argument(public_arguments, "candidates")?.jagged()?;
+        let candidates = get_argument(&public_arguments, "candidates")?.ref_jagged()?;
 
         let utilities_num_records = utilities_property.num_records()?;
         let candidates_num_records = candidates.num_records();

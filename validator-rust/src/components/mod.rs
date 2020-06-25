@@ -80,8 +80,8 @@ pub trait Component {
     fn propagate_property(
         &self,
         privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: &IndexMap<base::IndexKey, &Value>,
-        properties: &NodeProperties,
+        public_arguments: IndexMap<base::IndexKey, &Value>,
+        properties: NodeProperties,
         _node_id: u32,
     ) -> Result<Warnable<ValueProperties>>;
 }
@@ -197,8 +197,8 @@ pub trait Report {
         &self,
         node_id: u32,
         component: &proto::Component,
-        public_arguments: &IndexMap<base::IndexKey, &Value>,
-        properties: &NodeProperties,
+        public_arguments: IndexMap<base::IndexKey, &Value>,
+        properties: NodeProperties,
         release: &Value,
         variable_names: Option<&Vec<base::IndexKey>>,
     ) -> Result<Option<Vec<JSONRelease>>>;
@@ -212,8 +212,8 @@ pub trait Named {
     /// Propagate the human readable names of the variables associated with this component
     fn get_names(
         &self,
-        public_arguments: &IndexMap<base::IndexKey, &Value>,
-        argument_variables: &IndexMap<base::IndexKey, Vec<IndexKey>>,
+        public_arguments: IndexMap<base::IndexKey, &Value>,
+        argument_variables: IndexMap<base::IndexKey, Vec<IndexKey>>,
         release: Option<&Value>,
     ) -> Result<Vec<IndexKey>>;
 }
@@ -226,8 +226,8 @@ impl Component for proto::Component {
     fn propagate_property(
         &self,
         privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: &IndexMap<base::IndexKey, &Value>,
-        properties: &NodeProperties,
+        public_arguments: IndexMap<base::IndexKey, &Value>,
+        properties: NodeProperties,
         node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
         let variant = self.variant.as_ref()
@@ -474,8 +474,8 @@ impl Report for proto::Component {
         &self,
         node_id: u32,
         component: &proto::Component,
-        public_arguments: &IndexMap<base::IndexKey, &Value>,
-        properties: &NodeProperties,
+        public_arguments: IndexMap<base::IndexKey, &Value>,
+        properties: NodeProperties,
         release: &Value,
         variable_names: Option<&Vec<base::IndexKey>>,
     ) -> Result<Option<Vec<JSONRelease>>> {
@@ -512,8 +512,8 @@ impl Named for proto::Component {
     /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn get_names(
         &self,
-        public_arguments: &IndexMap<base::IndexKey, &Value>,
-        argument_variables: &IndexMap<base::IndexKey, Vec<IndexKey>>,
+        public_arguments: IndexMap<base::IndexKey, &Value>,
+        argument_variables: IndexMap<base::IndexKey, Vec<IndexKey>>,
         release: Option<&Value>,
     ) -> Result<Vec<IndexKey>> {
         let variant = self.variant.as_ref()

@@ -4,19 +4,18 @@ use crate::{proto, base, Warnable};
 
 use crate::components::{Component, Named};
 use crate::base::{Value, ValueProperties, IndexmapProperties, ArrayProperties, DataType, IndexKey};
-use ndarray::prelude::*;
 use indexmap::map::IndexMap;
 
 impl Component for proto::Materialize {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: &IndexMap<base::IndexKey, &Value>,
-        _properties: &base::NodeProperties,
+        public_arguments: IndexMap<base::IndexKey, &Value>,
+        _properties: base::NodeProperties,
         node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
 
-        let column_names = self.get_names(public_arguments, &IndexMap::new(), None)?;
+        let column_names = self.get_names(public_arguments, IndexMap::new(), None)?;
 
         Ok(ValueProperties::Indexmap(IndexmapProperties {
             children: column_names.into_iter()
@@ -43,19 +42,39 @@ impl Component for proto::Materialize {
 impl Named for proto::Materialize {
     fn get_names(
         &self,
-        public_arguments: &IndexMap<base::IndexKey, &Value>,
-        _argument_variables: &IndexMap<base::IndexKey, Vec<IndexKey>>,
+        public_arguments: IndexMap<base::IndexKey, &Value>,
+        _argument_variables: IndexMap<base::IndexKey, Vec<IndexKey>>,
         _release: Option<&Value>
     ) -> Result<Vec<IndexKey>> {
 
         let column_names = public_arguments.get::<base::IndexKey>(&"column_names".into())
-            .and_then(|column_names| column_names.array().ok()?.string().ok()).cloned();
+            .and_then(|column_names| column_names.ref_array().ok());
         let num_columns = public_arguments.get::<base::IndexKey>(&"num_columns".into())
-            .and_then(|num_columns| num_columns.array().ok()?.first_int().ok());
+            .and_then(|num_columns| num_columns.ref_array().ok()?.first_int().ok());
 
         // standardize to vec of column names
         Ok(match (column_names, num_columns) {
-            (Some(column_names), None) => column_names.into_dimensionality::<Ix1>()?.to_vec().iter().map(|v| v.as_str().into()).collect(),
+            (Some(column_names), None) => match column_names {
+                base::Array::Int(keys) => {
+                    if keys.ndim() > 1 {
+                        return Err("column_names: dimensionality may not be greater than one".into())
+                    }
+                    keys.iter().copied().map(IndexKey::from).collect()
+                },
+                base::Array::Bool(keys) => {
+                    if keys.ndim() > 1 {
+                        return Err("column_names: dimensionality may not be greater than one".into())
+                    }
+                    keys.into_iter().copied().map(IndexKey::from).collect()
+                },
+                base::Array::Str(keys) => {
+                    if keys.ndim() > 1 {
+                        return Err("column_names: dimensionality may not be greater than one".into())
+                    }
+                    keys.iter().map(|v| v.as_str().into()).collect()
+                },
+                _ => return Err("names: unhashable type".into())
+            },
             (None, Some(num_columns)) => (0..num_columns).map(|idx| idx.into()).collect(),
             _ => return Err("either column_names or num_columns must be specified".into())
         })

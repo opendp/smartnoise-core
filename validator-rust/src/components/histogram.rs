@@ -14,8 +14,8 @@ impl Component for proto::Histogram {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &IndexMap<base::IndexKey, &Value>,
-        properties: &NodeProperties,
+        _public_arguments: IndexMap<base::IndexKey, &Value>,
+        properties: NodeProperties,
         node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
         let mut data_property = properties.get::<base::IndexKey>(&"data".into())
@@ -42,7 +42,7 @@ impl Component for proto::Histogram {
         // save a snapshot of the state when aggregating
         data_property.aggregator = Some(AggregatorProperties {
             component: proto::component::Variant::Histogram(self.clone()),
-            properties: properties.clone(),
+            properties,
             lipschitz_constants: ndarray::Array::from_shape_vec(
                 vec![1, num_columns as usize],
                 (0..num_columns).map(|_| 1.).collect())?.into_dyn().into()

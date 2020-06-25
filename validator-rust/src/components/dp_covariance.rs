@@ -111,8 +111,8 @@ impl Report for proto::DpCovariance {
         &self,
         node_id: u32,
         component: &proto::Component,
-        _public_arguments: &IndexMap<base::IndexKey, &Value>,
-        properties: &NodeProperties,
+        _public_arguments: IndexMap<base::IndexKey, &Value>,
+        properties: NodeProperties,
         release: &Value,
         variable_names: Option<&Vec<base::IndexKey>>,
     ) -> Result<Option<Vec<JSONRelease>>> {

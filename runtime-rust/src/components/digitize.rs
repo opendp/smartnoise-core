@@ -7,23 +7,23 @@ use ndarray::ArrayD;
 use whitenoise_validator::{proto, Integer};
 use crate::utilities::get_num_columns;
 use std::ops::{Div, Add};
-use whitenoise_validator::utilities::{get_argument, standardize_categorical_argument, standardize_numeric_argument, standardize_float_argument};
+use whitenoise_validator::utilities::{take_argument, standardize_categorical_argument, standardize_numeric_argument, standardize_float_argument};
 
 impl Evaluable for proto::Digitize {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        let inclusive_left: &ArrayD<bool> = get_argument(arguments, "inclusive_left")?.array()?.bool()?;
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
+        let inclusive_left: ArrayD<bool> = take_argument(&mut arguments, "inclusive_left")?.array()?.bool()?;
 
-        let data = get_argument(arguments, "data")?.array()?;
-        let edges = get_argument(arguments, "edges")?.jagged()?;
-        let null = get_argument(arguments, "null_value")?.array()?.int()?;
+        let data = take_argument(&mut arguments, "data")?.array()?;
+        let edges = take_argument(&mut arguments, "edges")?.jagged()?;
+        let null = take_argument(&mut arguments, "null_value")?.array()?.int()?;
         let num_columns = data.num_columns()? as i64;
 
         Ok(ReleaseNode::new(match (data, edges) {
             (Array::Float(data), Jagged::Float(edges)) =>
-                digitize(&data, &standardize_float_argument(edges, num_columns)?, &inclusive_left, &null)?.into(),
+                digitize(data, standardize_float_argument(edges, num_columns)?, inclusive_left, null)?.into(),
 
             (Array::Int(data), Jagged::Int(edges)) =>
-                digitize(&data, &standardize_categorical_argument(edges.clone(), num_columns)?, &inclusive_left, &null)?.into(),
+                digitize(data, standardize_categorical_argument(edges, num_columns)?, inclusive_left, null)?.into(),
 
             _ => return Err("data and edges must both be float or integer".into())
         }))
@@ -58,24 +58,24 @@ impl Evaluable for proto::Digitize {
 ///
 ///
 /// let num_columns = get_num_columns(&data).unwrap();
-/// let edges = standardize_float_argument(&edges, num_columns).unwrap();
+/// let edges = standardize_float_argument(edges, num_columns).unwrap();
 ///
-/// let digitization = digitize(&data, &edges, &inclusive_left, &null).unwrap();
+/// let digitization = digitize(data, edges, inclusive_left, null).unwrap();
 /// println!("digitize {:?}", digitization);
 /// assert_eq!(digitization, arr1(&[1, 2, 2, 4, -1]).into_dyn());
 /// ```
 pub fn digitize<T: std::cmp::PartialOrd + Clone + Div<T, Output=T> + Add<T, Output=T> + Copy + Default>(
-    data: &ArrayD<T>,
-    edges: &[Vec<T>],
-    inclusive_left: &ArrayD<bool>,
-    null: &ArrayD<Integer>,
+    data: ArrayD<T>,
+    edges: Vec<Vec<T>>,
+    inclusive_left: ArrayD<bool>,
+    null: ArrayD<Integer>,
 ) -> Result<ArrayD<Integer>> {
     let mut digitization = ArrayD::default(data.shape());
 
     let num_columns = get_num_columns(&data)?;
 
-    let inclusive_left = standardize_numeric_argument(&inclusive_left, num_columns)?;
-    let null = standardize_numeric_argument(&null, num_columns)?;
+    let inclusive_left = standardize_numeric_argument(inclusive_left, num_columns)?;
+    let null = standardize_numeric_argument(null, num_columns)?;
 
     // iterate over the generalized columns
     digitization.gencolumns_mut().into_iter()

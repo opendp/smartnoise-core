@@ -14,8 +14,8 @@ impl Component for proto::Count {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &IndexMap<base::IndexKey, &Value>,
-        properties: &NodeProperties,
+        _public_arguments: IndexMap<base::IndexKey, &Value>,
+        properties: NodeProperties,
         node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
 
@@ -68,7 +68,7 @@ impl Component for proto::Count {
         // save a snapshot of the state when aggregating
         data_property.aggregator = Some(AggregatorProperties {
             component: proto::component::Variant::Count(self.clone()),
-            properties: properties.clone(),
+            properties,
             lipschitz_constants: ndarray::Array::from_shape_vec(vec![1, 1], vec![1.0])?.into_dyn().into()
         });
         data_property.c_stability = c_stability;

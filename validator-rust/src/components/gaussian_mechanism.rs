@@ -19,8 +19,8 @@ impl Component for proto::GaussianMechanism {
     fn propagate_property(
         &self,
         privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &IndexMap<base::IndexKey, &Value>,
-        properties: &base::NodeProperties,
+        _public_arguments: IndexMap<base::IndexKey, &Value>,
+        properties: base::NodeProperties,
         _node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
         let privacy_definition = privacy_definition.as_ref()
@@ -52,8 +52,8 @@ impl Component for proto::GaussianMechanism {
 
         let lipschitz = aggregator.lipschitz_constants.array()?.float()?;
         if lipschitz.iter().any(|v| v != &1.) {
-            let mut sensitivity = sensitivity_value.array()?.float()?.clone();
-            sensitivity *= lipschitz;
+            let mut sensitivity = sensitivity_value.array()?.float()?;
+            sensitivity *= &lipschitz;
             sensitivity_value = sensitivity.into();
         }
 

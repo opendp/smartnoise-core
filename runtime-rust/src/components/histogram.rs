@@ -4,25 +4,25 @@ use crate::NodeArguments;
 use whitenoise_validator::base::{Array, ReleaseNode};
 use crate::components::Evaluable;
 use ndarray::ArrayD;
-use ndarray;
+
 use whitenoise_validator::{proto, Integer};
-use whitenoise_validator::utilities::get_argument;
+use whitenoise_validator::utilities::take_argument;
 use crate::utilities::get_num_columns;
 use noisy_float::types::n64;
 use indexmap::map::IndexMap;
 
 
 impl Evaluable for proto::Histogram {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        Ok(ReleaseNode::new(match (get_argument(arguments, "data")?.array()?, get_argument(arguments, "categories")?.array()?) {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
+        Ok(ReleaseNode::new(match (take_argument(&mut arguments, "data")?.array()?, take_argument(&mut arguments, "categories")?.array()?) {
             (Array::Bool(data), Array::Bool(categories)) =>
-                histogram(data, categories)?.into(),
+                histogram(&data, &categories)?.into(),
             (Array::Float(data), Array::Float(categories)) =>
                 histogram(&data.mapv(|v| n64(v as f64)), &categories.mapv(|v| n64(v as f64)))?.into(),
             (Array::Int(data), Array::Int(categories)) =>
-                histogram(data, categories)?.into(),
+                histogram(&data, &categories)?.into(),
             (Array::Str(data), Array::Str(categories)) =>
-                histogram(data, categories)?.into(),
+                histogram(&data, &categories)?.into(),
             _ => return Err("data and categories must be homogeneously typed".into())
         }))
     }

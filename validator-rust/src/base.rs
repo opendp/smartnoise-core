@@ -38,60 +38,43 @@ pub enum Value {
 
 impl Value {
     /// Retrieve an Array from a Value, assuming the Value contains an Array
-    pub fn array(&self) -> Result<&Array> {
+    pub fn array(self) -> Result<Array> {
+        match self {
+            Value::Array(array) => Ok(array),
+            _ => Err("value must be an Array".into())
+        }
+    }
+    pub fn ref_array(&self) -> Result<&Array> {
         match self {
             Value::Array(array) => Ok(array),
             _ => Err("value must be an Array".into())
         }
     }
     /// Retrieve Jagged from a Value, assuming the Value contains Jagged
-    pub fn jagged(&self) -> Result<&Jagged> {
+    pub fn jagged(self) -> Result<Jagged> {
         match self {
             Value::Jagged(jagged) => Ok(jagged),
             _ => Err("value must be Jagged".into())
         }
     }
+    pub fn ref_jagged(&self) -> Result<&Jagged> {
+        match self {
+            Value::Jagged(array) => Ok(array),
+            _ => Err("value must be Jaggd".into())
+        }
+    }
     /// Retrieve Jagged from a Value, assuming the Value contains Jagged
-    pub fn indexmap(&self) -> Result<&IndexMap<IndexKey, Value>> {
+    pub fn indexmap(self) -> Result<IndexMap<IndexKey, Value>> {
         match self {
             Value::Indexmap(indexmap) => Ok(indexmap),
             _ => Err("value must be Jagged".into())
         }
     }
 
-    pub fn function(&self) -> Result<&proto::Function> {
+    pub fn function(self) -> Result<proto::Function> {
         match self {
             Value::Function(function) => Ok(function),
             _ => Err("value must be a function".into())
-        }
-    }
-
-    /// Retrieve the first float from a Value, assuming a Value contains an ArrayND of type float
-    pub fn first_float(&self) -> Result<Float> {
-        match self {
-            Value::Array(array) => array.first_float(),
-            _ => Err("cannot retrieve first float".into())
-        }
-    }
-    /// Retrieve the first integer from a Value, assuming a Value contains an ArrayND of type integer
-    pub fn first_int(&self) -> Result<Integer> {
-        match self {
-            Value::Array(array) => array.first_int(),
-            _ => Err("cannot retrieve integer".into())
-        }
-    }
-    /// Retrieve the first String from a Value, assuming a Value contains an ArrayND of type String
-    pub fn first_string(&self) -> Result<String> {
-        match self {
-            Value::Array(array) => array.first_string(),
-            _ => Err("cannot retrieve string".into())
-        }
-    }
-    /// Retrieve the first bool from a Value, assuming a Value contains an ArrayND of type bool
-    pub fn first_bool(&self) -> Result<bool> {
-        match self {
-            Value::Array(array) => array.first_bool(),
-            _ => Err("cannot retrieve bool".into())
         }
     }
 }
@@ -211,7 +194,15 @@ pub enum Array {
 
 impl Array {
     /// Retrieve the float ndarray, assuming the data type of the ArrayND is float
-    pub fn float(&self) -> Result<&ArrayD<Float>> {
+    pub fn float(self) -> Result<ArrayD<Float>> {
+        match self {
+            Array::Float(x) => Ok(x),
+            Array::Int(_) => Err("atomic type: expected float, got integer".into()),
+            Array::Bool(_) => Err("atomic type: expected float, got bool".into()),
+            Array::Str(_) => Err("atomic type: expected float, got string".into()),
+        }
+    }
+    pub fn ref_float(&self) -> Result<&ArrayD<Float>> {
         match self {
             Array::Float(x) => Ok(x),
             Array::Int(_) => Err("atomic type: expected float, got integer".into()),
@@ -230,7 +221,7 @@ impl Array {
             _ => Err("value must be float".into())
         }
     }
-    pub fn vec_float(&self, optional_length: Option<i64>) -> Result<Vec<Float>> {
+    pub fn vec_float(self, optional_length: Option<i64>) -> Result<Vec<Float>> {
         let data = self.float()?;
         let err_msg = "failed attempt to cast float ArrayD to vector".into();
         match data.ndim() {
@@ -238,12 +229,21 @@ impl Array {
                 (Some(length), Some(v)) => Ok((0..length).map(|_| *v).collect()),
                 _ => Err(err_msg)
             },
-            1 => Ok(data.clone().into_dimensionality::<Ix1>()?.to_vec()),
+            1 => Ok(data.into_dimensionality::<Ix1>()?.to_vec()),
             _ => Err(err_msg)
         }
     }
     /// Retrieve the i64 ndarray, assuming the data type of the ArrayND is i64
-    pub fn int(&self) -> Result<&ArrayD<Integer>> {
+    pub fn int(self) -> Result<ArrayD<Integer>> {
+        match self {
+            Array::Int(x) => Ok(x),
+            Array::Float(_) => Err("atomic type: expected integer, got float".into()),
+            Array::Bool(_) => Err("atomic type: expected integer, got bool".into()),
+            Array::Str(_) => Err("atomic type: expected integer, got string".into()),
+        }
+    }
+    /// Retrieve the i64 ndarray, assuming the data type of the ArrayND is i64
+    pub fn ref_int(&self) -> Result<&ArrayD<Integer>> {
         match self {
             Array::Int(x) => Ok(x),
             Array::Float(_) => Err("atomic type: expected integer, got float".into()),
@@ -262,7 +262,7 @@ impl Array {
             _ => Err("value must be an integer".into())
         }
     }
-    pub fn vec_int(&self, optional_length: Option<i64>) -> Result<Vec<Integer>> {
+    pub fn vec_int(self, optional_length: Option<i64>) -> Result<Vec<Integer>> {
         let data = self.int()?;
         let err_msg = "failed attempt to cast i64 ArrayD to vector".into();
         match data.ndim() {
@@ -270,12 +270,20 @@ impl Array {
                 (Some(length), Some(v)) => Ok((0..length).map(|_| *v).collect()),
                 _ => Err(err_msg)
             },
-            1 => Ok(data.clone().into_dimensionality::<Ix1>()?.to_vec()),
+            1 => Ok(data.into_dimensionality::<Ix1>()?.to_vec()),
             _ => Err(err_msg)
         }
     }
     /// Retrieve the String ndarray, assuming the data type of the ArrayND is String
-    pub fn string(&self) -> Result<&ArrayD<String>> {
+    pub fn string(self) -> Result<ArrayD<String>> {
+        match self {
+            Array::Str(x) => Ok(x),
+            Array::Int(_) => Err("atomic type: expected string, got integer".into()),
+            Array::Bool(_) => Err("atomic type: expected string, got bool".into()),
+            Array::Float(_) => Err("atomic type: expected string, got float".into()),
+        }
+    }
+    pub fn ref_string(&self) -> Result<&ArrayD<String>> {
         match self {
             Array::Str(x) => Ok(x),
             Array::Int(_) => Err("atomic type: expected string, got integer".into()),
@@ -295,7 +303,15 @@ impl Array {
         }
     }
     /// Retrieve the bool ndarray, assuming the data type of the ArrayND is bool
-    pub fn bool(&self) -> Result<&ArrayD<bool>> {
+    pub fn bool(self) -> Result<ArrayD<bool>> {
+        match self {
+            Array::Bool(x) => Ok(x),
+            Array::Int(_) => Err("atomic type: expected bool, got integer".into()),
+            Array::Str(_) => Err("atomic type: expected bool, got string".into()),
+            Array::Float(_) => Err("atomic type: expected bool, got float".into()),
+        }
+    }
+    pub fn ref_bool(&self) -> Result<&ArrayD<bool>> {
         match self {
             Array::Bool(x) => Ok(x),
             Array::Int(_) => Err("atomic type: expected bool, got integer".into()),

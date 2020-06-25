@@ -2,7 +2,7 @@ use whitenoise_validator::errors::*;
 
 use crate::NodeArguments;
 use whitenoise_validator::base::{Array, ReleaseNode, Value, IndexKey};
-use whitenoise_validator::utilities::{get_argument, get_common_value};
+use whitenoise_validator::utilities::{take_argument, get_common_value};
 use whitenoise_validator::components::partition::{even_split_lengths, make_dense_partition_keys};
 use crate::components::Evaluable;
 use ndarray::{ArrayD, Axis};
@@ -14,29 +14,29 @@ use indexmap::map::IndexMap;
 
 
 impl Evaluable for proto::Partition {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        let data = get_argument(arguments, "data")?;
-        Ok(ReleaseNode::new(match arguments.get::<IndexKey>(&"by".into()) {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
+        let data = take_argument(&mut arguments, "data")?;
+        Ok(ReleaseNode::new(match arguments.remove::<IndexKey>(&"by".into()) {
             Some(by) => {
-                let categories = get_argument(arguments, "categories")?.jagged()?;
+                let categories = take_argument(&mut arguments, "categories")?.jagged()?;
                 let partitions = make_dense_partition_keys(
-                    categories, Some(by.array()?.shape().len() as i64))?;
+                    categories, Some(by.ref_array()?.shape().len() as i64))?;
 
                 match by.array()? {
                     Array::Int(by) =>
-                        Value::Indexmap(partition_by(data, by.mapv(IndexKey::from), partitions)?),
+                        Value::Indexmap(partition_by(&data, by.mapv(IndexKey::from), partitions)?),
                     Array::Bool(by) =>
-                        Value::Indexmap(partition_by(data, by.mapv(IndexKey::from), partitions)?),
+                        Value::Indexmap(partition_by(&data, by.mapv(IndexKey::from), partitions)?),
                     Array::Str(by) =>
-                        Value::Indexmap(partition_by(data, by.mapv(IndexKey::from), partitions)?),
+                        Value::Indexmap(partition_by(&data, by.mapv(IndexKey::from), partitions)?),
                     _ => return Err("by and categories must share the same type".into())
                 }
             },
             None => {
-                let num_partitions = get_argument(arguments, "num_partitions")?
+                let num_partitions = take_argument(&mut arguments, "num_partitions")?
                     .array()?.first_int()?;
 
-                Value::Indexmap(partition_evenly(data, num_partitions as i64)?)
+                Value::Indexmap(partition_evenly(&data, num_partitions as i64)?)
             }
         }))
     }
@@ -99,7 +99,7 @@ pub fn partition_evenly(data: &Value, num_partitions: i64) -> Result<IndexMap<In
                 .collect::<Result<IndexMap<ColName, IndexMap<IndexKey, Value>>>>()?;
 
             let number_rows: usize = get_common_value(&data.values()
-                .map(|v| v.array()?.num_records())
+                .map(|v| v.ref_array()?.num_records())
                 .collect::<Result<Vec<usize>>>()?)
                 .ok_or_else(|| Error::from("columns of a dataframe must share the same length"))?;
 

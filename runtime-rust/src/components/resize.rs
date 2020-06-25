@@ -1,7 +1,7 @@
 use whitenoise_validator::errors::*;
 use whitenoise_validator::{proto, Float, Integer};
 use whitenoise_validator::base::{Value, Array, Jagged, ReleaseNode, IndexKey};
-use whitenoise_validator::utilities::{get_argument, standardize_numeric_argument};
+use whitenoise_validator::utilities::{take_argument, standardize_numeric_argument};
 
 use ndarray::{ArrayD, Axis};
 
@@ -17,18 +17,18 @@ use ndarray::prelude::*;
 use std::hash::Hash;
 
 impl Evaluable for proto::Resize {
-    fn evaluate(&self, privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
 
         let enforce_constant_time = privacy_definition.as_ref()
             .map(|v| v.protect_elapsed_time).unwrap_or(false);
 
-        let mut number_rows = arguments.get::<IndexKey>(&"number_rows".into())
-            .and_then(|v| v.first_int().ok()).map(|v| v as i64);
-        let number_cols = arguments.get::<IndexKey>(&"number_columns".into())
-            .and_then(|v| v.first_int().ok()).map(|v| v as i64);
+        let mut number_rows = arguments.remove::<IndexKey>(&"number_rows".into())
+            .and_then(|v| v.array().ok()?.first_int().ok()).map(|v| v as i64);
+        let number_cols = arguments.remove::<IndexKey>(&"number_columns".into())
+            .and_then(|v| v.array().ok()?.first_int().ok()).map(|v| v as i64);
 
-        let minimum_rows = arguments.get::<IndexKey>(&"minimum_rows".into())
-            .and_then(|v| v.first_int().ok()).map(|v| v as i64);
+        let minimum_rows = arguments.remove::<IndexKey>(&"minimum_rows".into())
+            .and_then(|v| v.array().ok()?.first_int().ok()).map(|v| v as i64);
 
         if let Some(minimum_rows) = minimum_rows {
             number_rows = Some(minimum_rows)
@@ -37,10 +37,10 @@ impl Evaluable for proto::Resize {
         // If "categories" constraint has been propagated, data are treated as categorical (regardless of atomic type)
         // and imputation (if necessary) is done by sampling from "categories" using the "probabilities" as sampling probabilities for each element.
         if arguments.contains_key::<IndexKey>(&"categories".into()) {
-            let weights = get_argument(arguments, "weights")
+            let weights = take_argument(&mut arguments, "weights")
                 .and_then(|v| v.jagged()).and_then(|v| v.float()).ok();
 
-            match (get_argument(arguments, "data")?, get_argument(arguments, "categories")?) {
+            match (take_argument(&mut arguments, "data")?, take_argument(&mut arguments, "categories")?) {
                 // match on types of various arguments and ensure they are consistent with each other
                 (Value::Array(data), Value::Jagged(categories)) =>
                     Ok(match (data, categories) {
@@ -49,15 +49,15 @@ impl Evaluable for proto::Resize {
 //                            resize_categorical(&data, &n, &categories, &probabilities)?.into(),
                         (Array::Int(data), Jagged::Int(categories)) =>
                             resize_categorical(
-                                &data, number_rows, number_cols, &categories, &weights,
+                                data, number_rows, number_cols, categories, weights,
                                 minimum_rows, enforce_constant_time)?.into(),
                         (Array::Bool(data), Jagged::Bool(categories)) =>
                             resize_categorical(
-                                &data, number_rows, number_cols, &categories, &weights,
+                                data, number_rows, number_cols, categories, weights,
                                 minimum_rows, enforce_constant_time)?.into(),
                         (Array::Str(data), Jagged::Str(categories)) =>
                             resize_categorical(
-                                &data, number_rows, number_cols, &categories, &weights,
+                                data, number_rows, number_cols, categories, weights,
                                 minimum_rows, enforce_constant_time)?.into(),
                         _ => return Err("types of data, categories, and nulls must be homogeneous, weights must be f64".into())
                     }),
@@ -68,21 +68,21 @@ impl Evaluable for proto::Resize {
         // is done according to a continuous distribution.
         else {
             match (
-                get_argument(arguments, "data")?.array()?,
-                get_argument(arguments, "lower")?.array()?,
-                get_argument(arguments, "upper")?.array()?
+                take_argument(&mut arguments, "data")?.array()?,
+                take_argument(&mut arguments, "lower")?.array()?,
+                take_argument(&mut arguments, "upper")?.array()?
             ) {
                 (Array::Float(data), Array::Float(lower), Array::Float(upper)) => {
                     // If there is no valid distribution argument provided, generate uniform by default
-                    let distribution = match get_argument(&arguments, "distribution") {
-                        Ok(distribution) => distribution.first_string()?,
+                    let distribution = match take_argument(&mut arguments, "distribution") {
+                        Ok(distribution) => distribution.array()?.first_string()?,
                         Err(_) => "uniform".to_string()
                     };
-                    let shift = match get_argument(arguments, "shift") {
+                    let shift = match take_argument(&mut arguments, "shift") {
                         Ok(shift) => Some(shift.array()?.float()?),
                         Err(_) => None
                     };
-                    let scale = match get_argument(arguments, "scale") {
+                    let scale = match take_argument(&mut arguments, "scale") {
                         Ok(scale) => Some(scale.array()?.float()?),
                         Err(_) => None
                     };
@@ -121,16 +121,15 @@ impl Evaluable for proto::Resize {
 /// # Return
 /// A resized version of data consistent with the provided `n`
 pub fn resize_float(
-    data: &ArrayD<Float>,
+    mut data: ArrayD<Float>,
     number_rows: Option<i64>,
     number_cols: Option<i64>,
     distribution: &str,
-    lower: &ArrayD<Float>, upper: &ArrayD<Float>,
-    shift: Option<&ArrayD<Float>>, scale: Option<&ArrayD<Float>>,
+    lower: ArrayD<Float>, upper: ArrayD<Float>,
+    shift: Option<ArrayD<Float>>, scale: Option<ArrayD<Float>>,
     minimum_rows: Option<i64>,
     enforce_constant_time: bool
 ) -> Result<ArrayD<Float>> {
-    let mut data = data.clone();
 
     if let Some(number_cols) = number_cols {
 
@@ -149,11 +148,11 @@ pub fn resize_float(
                 // generate synthetic data
                 // NOTE: only uniform and gaussian supported at this time
                 let synthetic = match distribution.to_lowercase().as_str() {
-                    "uniform" => impute_float_uniform(&synthetic_base, &lower, &upper, enforce_constant_time),
+                    "uniform" => impute_float_uniform(synthetic_base, lower.clone(), upper.clone(), enforce_constant_time),
                     "gaussian" => impute_float_gaussian(
-                        &synthetic_base, &lower, &upper,
-                        &shift.cloned().ok_or_else(|| Error::from("shift must be defined for gaussian imputation"))?,
-                        &scale.cloned().ok_or_else(|| Error::from("scale must be defined for gaussian imputation"))?,
+                        synthetic_base, lower.clone(), upper.clone(),
+                        shift.clone().ok_or_else(|| Error::from("shift must be defined for gaussian imputation"))?,
+                        scale.clone().ok_or_else(|| Error::from("scale must be defined for gaussian imputation"))?,
                         enforce_constant_time),
                     _ => Err("unrecognized distribution".into())
                 }?;
@@ -193,11 +192,11 @@ pub fn resize_float(
                 // generate synthetic data
                 // NOTE: only uniform and gaussian supported at this time
                 let synthetic = match distribution.to_lowercase().as_str() {
-                    "uniform" => impute_float_uniform(&synthetic_base, &lower, &upper, enforce_constant_time),
+                    "uniform" => impute_float_uniform(synthetic_base, lower, upper, enforce_constant_time),
                     "gaussian" => impute_float_gaussian(
-                        &synthetic_base, &lower, &upper,
-                        &shift.cloned().ok_or_else(|| Error::from("shift must be defined for gaussian imputation"))?,
-                        &scale.cloned().ok_or_else(|| Error::from("scale must be defined for gaussian imputation"))?,
+                        synthetic_base, lower, upper,
+                        shift.ok_or_else(|| Error::from("shift must be defined for gaussian imputation"))?,
+                        scale.ok_or_else(|| Error::from("scale must be defined for gaussian imputation"))?,
                         enforce_constant_time),
                     _ => Err("unrecognized distribution".into())
                 }?;
@@ -229,14 +228,13 @@ pub fn resize_float(
 /// # Return
 /// A resized version of data consistent with the provided `n`
 pub fn resize_integer(
-    data: &ArrayD<Integer>,
+    mut data: ArrayD<Integer>,
     number_rows: Option<i64>,
     number_cols: Option<i64>,
-    lower: &ArrayD<Integer>, upper: &ArrayD<Integer>,
+    lower: ArrayD<Integer>, upper: ArrayD<Integer>,
     minimum_rows: Option<i64>,
     enforce_constant_time: bool
 ) -> Result<ArrayD<Integer>> {
-    let mut data = data.clone();
 
     if let Some(number_cols) = number_cols {
 
@@ -251,9 +249,9 @@ pub fn resize_integer(
                 let mut synthetic_shape = data.shape().to_vec();
                 synthetic_shape[1] = (number_cols - real_n) as usize;
 
-                let lower = standardize_numeric_argument(lower, number_cols - real_n)?
+                let lower = standardize_numeric_argument(lower.clone(), number_cols - real_n)?
                     .into_dimensionality::<Ix1>()?.to_vec();
-                let upper = standardize_numeric_argument(upper, number_cols - real_n)?
+                let upper = standardize_numeric_argument(upper.clone(), number_cols - real_n)?
                     .into_dimensionality::<Ix1>()?.to_vec();
 
                 let mut synthetic = ndarray::ArrayD::zeros(synthetic_shape);
@@ -289,7 +287,7 @@ pub fn resize_integer(
         data = match &real_n.cmp(&number_rows) {
             // if estimated n is correct, return real data
             Ordering::Equal =>
-                data.clone(),
+                data,
             // if real n is less than estimated n, augment real data with synthetic data
             Ordering::Less => {
                 // initialize synthetic data with correct shape
@@ -339,15 +337,14 @@ pub fn resize_integer(
 /// # Return
 /// A resized version of data consistent with the provided `n`
 pub fn resize_categorical<T>(
-    data: &ArrayD<T>,
+    mut data: ArrayD<T>,
     number_rows: Option<i64>,
     number_cols: Option<i64>,
-    categories: &[Vec<T>],
-    weights: &Option<Vec<Vec<Float>>>,
+    categories: Vec<Vec<T>>,
+    weights: Option<Vec<Vec<Float>>>,
     minimum_rows: Option<i64>,
     enforce_constant_time: bool
 ) -> Result<ArrayD<T>> where T: Clone, T: PartialEq, T: Default, T: Ord, T: Hash {
-    let mut data = data.clone();
 
     if let Some(number_cols) = number_cols {
 
@@ -374,7 +371,7 @@ pub fn resize_categorical<T>(
 
                 // impute categorical data for each column of nulls to create synthetic data
                 synthetic = impute_categorical(
-                    &synthetic, categories, weights, &null_value, enforce_constant_time)?;
+                    synthetic, categories.clone(), weights.clone(), null_value, enforce_constant_time)?;
 
                 // combine real and synthetic data
                 match slow_stack(Axis(0), &[data.view(), synthetic.view()]) {
@@ -399,7 +396,7 @@ pub fn resize_categorical<T>(
         data = match &real_n.cmp(&number_rows) {
             // if estimated n is correct, return real data
             Ordering::Equal =>
-                data.clone(),
+                data,
             // if real n is less than estimated n, augment real data with synthetic data
             Ordering::Less => {
                 // set synthetic data shape
@@ -418,7 +415,7 @@ pub fn resize_categorical<T>(
 
                 // impute categorical data for each column of nulls to create synthetic data
                 synthetic = impute_categorical(
-                    &synthetic, categories, weights, &null_value, enforce_constant_time)?;
+                    synthetic, categories, weights, null_value, enforce_constant_time)?;
 
                 // combine real and synthetic data
                 match slow_stack(Axis(0), &[data.view(), synthetic.view()]) {

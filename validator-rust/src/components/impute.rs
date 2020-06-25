@@ -4,7 +4,6 @@ use crate::{base, Warnable};
 use crate::proto;
 use crate::components::{Component, Expandable};
 
-use ndarray;
 use crate::base::{Vector1DNull, Nature, NatureContinuous, Value, Array, ValueProperties, DataType, IndexKey};
 use crate::utilities::{prepend, get_literal, get_argument};
 use indexmap::map::IndexMap;
@@ -15,8 +14,8 @@ impl Component for proto::Impute {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: &IndexMap<base::IndexKey, &Value>,
-        properties: &base::NodeProperties,
+        public_arguments: IndexMap<base::IndexKey, &Value>,
+        properties: base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
         let mut data_property = properties.get::<base::IndexKey>(&"data".into())
@@ -40,11 +39,11 @@ impl Component for proto::Impute {
         }
 
         if let Some(categories) = public_arguments.get::<IndexKey>(&"categories".into()) {
-            if data_property.data_type != categories.jagged()?.data_type() {
+            if data_property.data_type != categories.ref_jagged()?.data_type() {
                 return Err("categories and data must be homogeneously typed".into())
             }
 
-            let null_values = get_argument(public_arguments, "null_values")?.jagged()?;
+            let null_values = get_argument(&public_arguments, "null_values")?.ref_jagged()?;
 
             if null_values.data_type() != data_property.data_type {
                 return Err("null_values and data must be homogeneously typed".into())
@@ -59,12 +58,12 @@ impl Component for proto::Impute {
             .ok_or("data: number of columns missing")?;
         // 1. check public arguments (constant n)
         let impute_lower = match public_arguments.get::<IndexKey>(&"lower".into()) {
-            Some(min) => min.array()?.clone().vec_float(Some(num_columns))
+            Some(lower) => lower.ref_array()?.clone().vec_float(Some(num_columns))
                 .map_err(prepend("lower:"))?,
 
             // 2. then private arguments (for example from another clamped column)
             None => match properties.get::<IndexKey>(&"lower".into()) {
-                Some(min) => min.array()?.lower_float()
+                Some(lower) => lower.array()?.lower_float()
                     .map_err(prepend("lower:"))?,
 
                 // 3. then data properties (propagated from prior clamping/min/max)
@@ -75,7 +74,7 @@ impl Component for proto::Impute {
 
         // 1. check public arguments (constant n)
         let impute_upper = match public_arguments.get::<IndexKey>(&"upper".into()) {
-            Some(max) => max.array()?.clone().vec_float(Some(num_columns))
+            Some(max) => max.ref_array()?.clone().vec_float(Some(num_columns))
                 .map_err(prepend("upper:"))?,
 
             // 2. then private arguments (for example from another clamped column)

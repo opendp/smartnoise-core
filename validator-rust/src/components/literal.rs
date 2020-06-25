@@ -11,8 +11,8 @@ impl Component for proto::Literal {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &IndexMap<base::IndexKey, &Value>,
-        _properties: &base::NodeProperties,
+        _public_arguments: IndexMap<base::IndexKey, &Value>,
+        _properties: base::NodeProperties,
         node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
         Ok(ValueProperties::Array(ArrayProperties {
@@ -37,8 +37,8 @@ impl Component for proto::Literal {
 impl Named for proto::Literal {
     fn get_names(
         &self,
-        _public_arguments: &IndexMap<base::IndexKey, &Value>,
-        _argument_variables: &IndexMap<base::IndexKey, Vec<IndexKey>>,
+        _public_arguments: IndexMap<base::IndexKey, &Value>,
+        _argument_variables: IndexMap<base::IndexKey, Vec<IndexKey>>,
         release: Option<&Value>
     ) -> Result<Vec<IndexKey>> {
 

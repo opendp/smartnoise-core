@@ -159,12 +159,12 @@ pub fn generate_report(
 
         // get variable names for this node
         let node_vars = component.get_names(
-            &public_arguments,
-            &arguments_vars,
+            public_arguments,
+            arguments_vars,
             release.get(node_id).map(|v| v.value.clone()).as_ref());
 
         // update names in indexmap
-        node_vars.map(|v| nodes_varnames.insert(node_id.clone(), v)).ok();
+        node_vars.map(|v| nodes_varnames.insert(*node_id, v)).ok();
 
     });
 
@@ -181,8 +181,8 @@ pub fn generate_report(
             component.summarize(
                 *node_id,
                 &component,
-                &public_arguments,
-                &input_properties,
+                public_arguments,
+                input_properties,
                 &node_release,
                 variable_names,
             )
@@ -333,7 +333,7 @@ pub fn expand_component(
 
     if result.traversal.is_empty() {
         let Warnable(propagated_property, propagation_warnings) = component
-            .propagate_property(&privacy_definition, &public_values, &properties, component_id)
+            .propagate_property(&privacy_definition, public_values, properties, component_id)
             .chain_err(|| format!("at node_id {:?}", component_id))?;
 
         result.warnings.extend(propagation_warnings.into_iter()

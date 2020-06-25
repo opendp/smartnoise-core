@@ -121,7 +121,7 @@ impl<'a> {id}Builder<'a> {{
     {arg_builders}
     {option_builders}
     pub fn value(self, value: Value) -> Self {{
-        self.release.insert(self.id.clone(), ReleaseNode::new(value));
+        self.release.insert(self.id, ReleaseNode::new(value));
         self
     }}
 

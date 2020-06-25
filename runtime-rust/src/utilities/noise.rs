@@ -48,7 +48,7 @@ pub fn censored_specific_geom() -> Result<i16> {
         };
         geom = cmp::min(geom, first_one_idx + 1);
     }
-    return Ok(geom);
+    Ok(geom)
 }
 
 /// Sample a single bit with arbitrary probability of success
@@ -215,7 +215,7 @@ pub fn sample_uniform(min: f64, max: f64, enforce_constant_time: bool) -> Result
     let mut mantissa_buffer = [0u8; 8];
     utilities::fill_bytes(&mut mantissa_buffer[1..]);
     // limit the buffer to 52 bits
-    mantissa_buffer[1] = mantissa_buffer[1] % 16;
+    mantissa_buffer[1] %= 16;
 
     // convert mantissa to integer
     let mantissa_int = u64::from_be_bytes(mantissa_buffer);
@@ -231,7 +231,7 @@ pub fn sample_uniform(min: f64, max: f64, enforce_constant_time: bool) -> Result
 
 
 #[cfg(test)]
-mod test_bin_index {
+mod test_uniform {
     use crate::utilities::noise::sample_uniform;
     use ieee754::Ieee754;
 
@@ -252,6 +252,27 @@ mod test_bin_index {
         }) {
             panic!("not all numbers are within the range")
         }
+    }
+
+    #[test]
+    fn test_endian() {
+
+        use ieee754::Ieee754;
+        let old_mantissa = 0.192f64.decompose().2;
+        let mut buffer = old_mantissa.to_be_bytes();
+        // from str_radix ignores these extra bits, but reconstruction from_be_bytes uses them
+        buffer[1] = buffer[1] + 32;
+        println!("{:?}", buffer);
+
+        let new_buffer = buffer.into_iter()
+            .map(|v| format!("{:08b}", v))
+            .collect::<Vec<String>>();
+        println!("{:?}", new_buffer);
+        let new_mantissa = u64::from_str_radix(&new_buffer.concat(), 2).unwrap();
+        println!("{:?} {:?}", old_mantissa, new_mantissa);
+
+        let int_bytes = 12i64.to_le_bytes();
+        println!("{:?}", int_bytes);
     }
 }
 

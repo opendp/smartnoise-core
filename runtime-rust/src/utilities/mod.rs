@@ -46,34 +46,34 @@ pub fn get_num_columns<T>(data: &ArrayD<T>) -> Result<i64> {
 /// use whitenoise_runtime::utilities::broadcast_map;
 /// let left: ArrayD<f64> = arr1(&[1., -2., 3., 5.]).into_dyn();
 /// let right: ArrayD<f64> = arr1(&[2.]).into_dyn();
-/// let mapped: Result<ArrayD<f64>> = broadcast_map(&left, &right, &|l, r| l.max(r.clone()));
+/// let mapped: Result<ArrayD<f64>> = broadcast_map(left, right, &|l, r| l.max(r.clone()));
 /// println!("{:?}", mapped); // [2., 2., 3., 5.]
 /// ```
 pub fn broadcast_map<T, U>(
-    left: &ArrayD<T>,
-    right: &ArrayD<T>,
+    left: ArrayD<T>,
+    right: ArrayD<T>,
     operator: &dyn Fn(&T, &T) -> U) -> Result<ArrayD<U>> where T: std::clone::Clone, U: Default {
     let shape = match left.ndim().cmp(&right.ndim()) {
         Ordering::Less => right.shape(),
         Ordering::Equal => if left.len() > right.len() { left.shape() } else { right.shape() },
         Ordering::Greater => left.shape()
-    };
+    }.to_vec();
 
 //    println!("shape {:?}", shape);
 //    println!("left shape {:?}", left.shape());
 //    println!("right shape {:?}", right.shape());
-    // TODO: switch to array views to prevent the clone()
-    let left = to_nd(left.clone(), shape.len())?;
-    let right = to_nd(right.clone(), shape.len())?;
+
+    let left = to_nd(left, shape.len())?;
+    let right = to_nd(right, shape.len())?;
 
 //    println!("shape {:?}", shape);
 //    println!("left shape {:?}", left.shape());
 //    println!("right shape {:?}", right.shape());
 //    println!();
 
-    let mut output: ArrayD<U> = ndarray::Array::default(shape);
+    let mut output: ArrayD<U> = ndarray::Array::default(shape.clone());
     Zip::from(&mut output)
-        .and(left.broadcast(shape).ok_or("could not broadcast left argument")?)
+        .and(left.broadcast(shape.clone()).ok_or("could not broadcast left argument")?)
         .and(right.broadcast(shape).ok_or("could not broadcast right argument")?)
         .apply(|acc, l, r| *acc = operator(&l, &r));
 
@@ -93,15 +93,15 @@ mod test_broadcast_map {
         let data2d = arr2(&[[2., 4.], [3., 7.], [5., 2.]]).into_dyn();
 
         assert_eq!(
-            broadcast_map(&data0d, &data1d, &|l, r| l * r).unwrap(),
+            broadcast_map(data0d.clone(), data1d.clone(), &|l, r| l * r).unwrap(),
             arr1(&[4., 6., 10.]).into_dyn());
 
         assert_eq!(
-            broadcast_map(&data1d, &data2d, &|l, r| l / r).unwrap(),
+            broadcast_map(data1d.clone(), data2d.clone(), &|l, r| l / r).unwrap(),
             arr2(&[[1., 2. / 4.], [1., 3. / 7.], [1., 5. / 2.]]).into_dyn());
 
         assert_eq!(
-            broadcast_map(&data2d, &data0d, &|l, r| l + r).unwrap(),
+            broadcast_map(data2d, data0d, &|l, r| l + r).unwrap(),
             arr2(&[[4., 6.], [5., 9.], [7., 4.]]).into_dyn());
     }
 
@@ -111,7 +111,7 @@ mod test_broadcast_map {
         let right = arr1(&[2., 3., 5., 6.]).into_dyn();
 
         assert!(broadcast_map(
-            &left, &right, &|l, r| l * r,
+            left, right, &|l, r| l * r,
         ).is_err());
     }
 
@@ -150,12 +150,12 @@ pub fn to_nd<T>(mut array: ArrayD<T>, ndim: usize) -> Result<ArrayD<T>> {
 }
 
 
-pub fn standardize_columns<T: Default + Clone>(array: &ArrayD<T>, column_len: usize) -> Result<ArrayD<T>> {
+pub fn standardize_columns<T: Default + Clone>(array: ArrayD<T>, column_len: usize) -> Result<ArrayD<T>> {
     Ok(match array.ndim() {
         0 => return Err("dataset may not be a scalar".into()),
         1 => match column_len {
-            0 => slow_select(array, Axis(1), &[]),
-            1 => array.clone(),
+            0 => slow_select(&array, Axis(1), &[]),
+            1 => array,
             _ => slow_stack(
                 Axis(1),
                 &[array.view(), ndarray::Array::<T, IxDyn>::default(IxDyn(&[array.len(), column_len])).view()])?
@@ -167,8 +167,8 @@ pub fn standardize_columns<T: Default + Clone>(array: &ArrayD<T>, column_len: us
                     array.len_of(Axis(0)),
                     column_len - array.len_of(Axis(1))])).view()],
             )?,
-            Ordering::Equal => array.clone(),
-            Ordering::Greater => slow_select(array, Axis(1), &(0..column_len).collect::<Vec<_>>())
+            Ordering::Equal => array,
+            Ordering::Greater => slow_select(&array, Axis(1), &(0..column_len).collect::<Vec<_>>())
         },
         _ => return Err("array must be 1 or 2-dimensional".into())
     })

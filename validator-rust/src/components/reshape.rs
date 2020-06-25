@@ -12,8 +12,8 @@ impl Component for proto::Reshape {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &IndexMap<base::IndexKey, &Value>,
-        properties: &base::NodeProperties,
+        _public_arguments: IndexMap<base::IndexKey, &Value>,
+        properties: base::NodeProperties,
         node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
         let mut data_property = properties.get::<IndexKey>(&"data".into())

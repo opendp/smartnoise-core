@@ -2,7 +2,7 @@ use whitenoise_validator::errors::*;
 
 use crate::NodeArguments;
 use whitenoise_validator::base::{ReleaseNode, IndexKey};
-use whitenoise_validator::utilities::get_argument;
+use whitenoise_validator::utilities::take_argument;
 use crate::components::Evaluable;
 use ndarray::{ArrayD, Array};
 
@@ -12,10 +12,10 @@ use ndarray::prelude::*;
 use std::iter::FromIterator;
 
 impl Evaluable for proto::Covariance {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
         let delta_degrees_of_freedom = if self.finite_sample_correction {1} else {0} as usize;
         if arguments.contains_key::<IndexKey>(&"data".into()) {
-            let data = get_argument(arguments, "data")?.array()?.float()?;
+            let data = take_argument(&mut arguments, "data")?.array()?.float()?;
             let covariances = matrix_covariance(&data, delta_degrees_of_freedom)?.into_iter()
                 .flatten()
                 .collect::<Vec<Float>>();
@@ -24,8 +24,8 @@ impl Evaluable for proto::Covariance {
             return Ok(ReleaseNode::new(arr1(&covariances).insert_axis(Axis(0)).into_dyn().into()));
         }
         if arguments.contains_key::<IndexKey>(&"left".into()) && arguments.contains_key::<IndexKey>(&"right".into()) {
-            let left = get_argument(arguments, "left")?.array()?.float()?;
-            let right = get_argument(arguments, "right")?.array()?.float()?;
+            let left = take_argument(&mut arguments, "left")?.array()?.float()?;
+            let right = take_argument(&mut arguments, "right")?.array()?.float()?;
 
             let cross_covariances = matrix_cross_covariance(&left, &right, delta_degrees_of_freedom)?;
 

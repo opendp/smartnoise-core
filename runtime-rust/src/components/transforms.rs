@@ -3,14 +3,14 @@ use whitenoise_validator::errors::*;
 use crate::components::Evaluable;
 use crate::NodeArguments;
 use whitenoise_validator::base::{Value, Array, ReleaseNode};
-use whitenoise_validator::utilities::get_argument;
+use whitenoise_validator::utilities::take_argument;
 use whitenoise_validator::{proto, Integer, Float};
 use crate::utilities::broadcast_map;
 
 
 impl Evaluable for proto::Abs {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        match get_argument(arguments, "data")? {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
+        match take_argument(&mut arguments, "data")? {
             Value::Array(data) => match data {
                 Array::Float(data) =>
                     Ok(data.mapv(|v| v.abs()).into()),
@@ -24,8 +24,8 @@ impl Evaluable for proto::Abs {
 }
 
 impl Evaluable for proto::Add {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        match (get_argument(arguments, "left")?, get_argument(arguments, "right")?) {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
+        match (take_argument(&mut arguments, "left")?, take_argument(&mut arguments, "right")?) {
             (Value::Array(left), Value::Array(right)) => match (left, right) {
                 (Array::Float(x), Array::Float(y)) =>
                     Ok(broadcast_map(x, y, &|l, r| l + r)?.into()),
@@ -41,11 +41,11 @@ impl Evaluable for proto::Add {
 }
 
 impl Evaluable for proto::And {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        match (get_argument(arguments, "left")?, get_argument(arguments, "right")?) {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
+        match (take_argument(&mut arguments, "left")?, take_argument(&mut arguments, "right")?) {
             (Value::Array(left), Value::Array(right)) => match (left, right) {
                 (Array::Bool(x), Array::Bool(y)) =>
-                    Ok(broadcast_map(&x, &y, &|l: &bool, r: &bool| *l && *r)?.into()),
+                    Ok(broadcast_map(x, y, &|l: &bool, r: &bool| *l && *r)?.into()),
                 _ => Err("And: Either the argument types are mismatched or non-numeric.".into())
             },
             _ => Err("And: Both arguments must be arrays.".into())
@@ -54,8 +54,8 @@ impl Evaluable for proto::And {
 }
 
 impl Evaluable for proto::Divide {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        match (get_argument(arguments, "left")?, get_argument(arguments, "right")?) {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
+        match (take_argument(&mut arguments, "left")?, take_argument(&mut arguments, "right")?) {
             (Value::Array(left), Value::Array(right)) => match (left, right) {
                 (Array::Float(x), Array::Float(y)) =>
                     Ok(broadcast_map(x, y, &|l, r| l / r)?.into()),
@@ -70,17 +70,17 @@ impl Evaluable for proto::Divide {
 
 impl Evaluable for proto::Equal {
     #[allow(clippy::float_cmp)]
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        match (get_argument(arguments, "left")?, get_argument(arguments, "right")?) {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
+        match (take_argument(&mut arguments, "left")?, take_argument(&mut arguments, "right")?) {
             (Value::Array(left), Value::Array(right)) => match (left, right) {
                 (Array::Bool(x), Array::Bool(y)) =>
-                    Ok(broadcast_map(&x, &y, &|l: &bool, r: &bool| l == r)?.into()),
+                    Ok(broadcast_map(x, y, &|l: &bool, r: &bool| l == r)?.into()),
                 (Array::Int(x), Array::Int(y)) =>
-                    Ok(broadcast_map(&x, &y, &|l: &Integer, r: &Integer| l == r)?.into()),
+                    Ok(broadcast_map(x, y, &|l: &Integer, r: &Integer| l == r)?.into()),
                 (Array::Float(x), Array::Float(y)) =>
-                    Ok(broadcast_map(&x, &y, &|l: &Float, r: &Float| l == r)?.into()),
+                    Ok(broadcast_map(x, y, &|l: &Float, r: &Float| l == r)?.into()),
                 (Array::Str(x), Array::Str(y)) =>
-                    Ok(broadcast_map(&x, &y, &|l: &String, r: &String| l == r)?.into()),
+                    Ok(broadcast_map(x, y, &|l: &String, r: &String| l == r)?.into()),
                 _ => Err("Equal: Argument types are mismatched.".into())
             },
             _ => Err("Equal: Both arguments must be arrays.".into())
@@ -89,13 +89,13 @@ impl Evaluable for proto::Equal {
 }
 
 impl Evaluable for proto::GreaterThan {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        match (get_argument(arguments, "left")?, get_argument(arguments, "right")?) {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
+        match (take_argument(&mut arguments, "left")?, take_argument(&mut arguments, "right")?) {
             (Value::Array(left), Value::Array(right)) => match (left, right) {
                 (Array::Int(x), Array::Int(y)) =>
-                    Ok(broadcast_map(&x, &y, &|l: &Integer, r: &Integer| l > r)?.into()),
+                    Ok(broadcast_map(x, y, &|l: &Integer, r: &Integer| l > r)?.into()),
                 (Array::Float(x), Array::Float(y)) =>
-                    Ok(broadcast_map(&x, &y, &|l: &Float, r: &Float| l > r)?.into()),
+                    Ok(broadcast_map(x, y, &|l: &Float, r: &Float| l > r)?.into()),
                 _ => Err("LessThan: Either the argument types are mismatched or non-numeric.".into())
             },
             _ => Err("LessThan: Both arguments must be arrays.".into())
@@ -104,13 +104,13 @@ impl Evaluable for proto::GreaterThan {
 }
 
 impl Evaluable for proto::LessThan {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        match (get_argument(arguments, "left")?, get_argument(arguments, "right")?) {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
+        match (take_argument(&mut arguments, "left")?, take_argument(&mut arguments, "right")?) {
             (Value::Array(left), Value::Array(right)) => match (left, right) {
                 (Array::Int(x), Array::Int(y)) =>
-                    Ok(broadcast_map(&x, &y, &|l: &Integer, r: &Integer| l < r)?.into()),
+                    Ok(broadcast_map(x, y, &|l: &Integer, r: &Integer| l < r)?.into()),
                 (Array::Float(x), Array::Float(y)) =>
-                    Ok(broadcast_map(&x, &y, &|l: &Float, r: &Float| l < r)?.into()),
+                    Ok(broadcast_map(x, y, &|l: &Float, r: &Float| l < r)?.into()),
                 _ => Err("LessThan: Either the argument types are mismatched or non-numeric.".into())
             },
             _ => Err("LessThan: Both arguments must be arrays.".into())
@@ -119,23 +119,23 @@ impl Evaluable for proto::LessThan {
 }
 
 impl Evaluable for proto::Log {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        let base = get_argument(arguments, "base")?.array()?.float()?;
-        let data = get_argument(arguments, "data")?.array()?.float()?;
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
+        let base = take_argument(&mut arguments, "base")?.array()?.float()?;
+        let data = take_argument(&mut arguments, "data")?.array()?.float()?;
         Ok(ReleaseNode::new(broadcast_map(base, data, &|base, x| x.log(*base))?.into()))
     }
 }
 
 
 impl Evaluable for proto::Modulo {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        match (get_argument(arguments, "left")?, get_argument(arguments, "right")?) {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
+        match (take_argument(&mut arguments, "left")?, take_argument(&mut arguments, "right")?) {
             (Value::Array(left), Value::Array(right)) => match (left, right) {
                 (Array::Float(x), Array::Float(y)) =>
-                    Ok(broadcast_map(&x, &y, &|l: &Float, r: &Float| l.rem_euclid(*r))?.into()),
+                    Ok(broadcast_map(x, y, &|l: &Float, r: &Float| l.rem_euclid(*r))?.into()),
                 (Array::Int(x), Array::Int(y)) => {
-                    Ok(broadcast_map(&x, &y, &|l: &Integer, r: &Integer| l.rem_euclid(*r))?.into())
-                },
+                    Ok(broadcast_map(x, y, &|l: &Integer, r: &Integer| l.rem_euclid(*r))?.into())
+                }
                 _ => Err("Modulo: Either the argument types are mismatched or non-numeric.".into())
             },
             _ => Err("Modulo: Both arguments must be arrays.".into())
@@ -144,13 +144,13 @@ impl Evaluable for proto::Modulo {
 }
 
 impl Evaluable for proto::Multiply {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        match (get_argument(arguments, "left")?, get_argument(arguments, "right")?) {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
+        match (take_argument(&mut arguments, "left")?, take_argument(&mut arguments, "right")?) {
             (Value::Array(left), Value::Array(right)) => match (left, right) {
                 (Array::Float(x), Array::Float(y)) =>
-                    Ok(broadcast_map(x,  &y, &|l, r| l * r)?.into()),
+                    Ok(broadcast_map(x, y, &|l, r| l * r)?.into()),
                 (Array::Int(x), Array::Int(y)) =>
-                    Ok(broadcast_map(x,  &y, &|l, r| l * r)?.into()),
+                    Ok(broadcast_map(x, y, &|l, r| l * r)?.into()),
                 _ => Err("Multiply: Either the argument types are mismatched or non-numeric.".into())
             },
             _ => Err("Multiply: Both arguments must be arrays.".into())
@@ -159,8 +159,8 @@ impl Evaluable for proto::Multiply {
 }
 
 impl Evaluable for proto::Negate {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        match get_argument(arguments, "data")? {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
+        match take_argument(&mut arguments, "data")? {
             Value::Array(data) => match data {
                 Array::Bool(data) =>
                     Ok(data.mapv(|v| !v).into()),
@@ -172,8 +172,8 @@ impl Evaluable for proto::Negate {
 }
 
 impl Evaluable for proto::Negative {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        match get_argument(arguments, "data")? {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
+        match take_argument(&mut arguments, "data")? {
             Value::Array(data) => match data {
                 Array::Float(x) => Ok((-x).into()),
                 Array::Int(x) => Ok((-x).into()),
@@ -185,11 +185,11 @@ impl Evaluable for proto::Negative {
 }
 
 impl Evaluable for proto::Or {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        match (get_argument(arguments, "left")?, get_argument(arguments, "right")?) {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
+        match (take_argument(&mut arguments, "left")?, take_argument(&mut arguments, "right")?) {
             (Value::Array(left), Value::Array(right)) => match (left, right) {
                 (Array::Bool(x), Array::Bool(y)) =>
-                    Ok(broadcast_map(&x, &y, &|l: &bool, r: &bool| *l || *r)?.into()),
+                    Ok(broadcast_map(x, y, &|l: &bool, r: &bool| *l || *r)?.into()),
                 _ => Err("Or: Either the argument types are mismatched or non-numeric.".into())
             },
             _ => Err("Or: Both arguments must be arrays.".into())
@@ -198,13 +198,13 @@ impl Evaluable for proto::Or {
 }
 
 impl Evaluable for proto::Power {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        match (get_argument(arguments, "data")?, get_argument(arguments, "radical")?) {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
+        match (take_argument(&mut arguments, "data")?, take_argument(&mut arguments, "radical")?) {
             (Value::Array(left), Value::Array(right)) => match (left, right) {
                 (Array::Float(x), Array::Float(y)) =>
-                    Ok(broadcast_map(x,  y, &|l, r| l.powf(*r))?.into()),
+                    Ok(broadcast_map(x, y, &|l, r| l.powf(*r))?.into()),
                 (Array::Int(x), Array::Int(y)) =>
-                    Ok(broadcast_map(x,  y, &|l, r| l.pow(*r as u32))?.into()),
+                    Ok(broadcast_map(x, y, &|l, r| l.pow(*r as u32))?.into()),
                 _ => Err("Power: Either the argument types are mismatched or non-numeric.".into())
             },
             _ => Err("Power: Both arguments must be arrays.".into())
@@ -213,13 +213,13 @@ impl Evaluable for proto::Power {
 }
 
 impl Evaluable for proto::RowMax {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        match (get_argument(arguments, "left")?, get_argument(arguments, "right")?) {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
+        match (take_argument(&mut arguments, "left")?, take_argument(&mut arguments, "right")?) {
             (Value::Array(left), Value::Array(right)) => match (left, right) {
                 (Array::Float(x), Array::Float(y)) =>
-                    Ok(broadcast_map(&x, &y, &|l: &Float, r: &Float| l.max(*r))?.into()),
+                    Ok(broadcast_map(x, y, &|l: &Float, r: &Float| l.max(*r))?.into()),
                 (Array::Int(x), Array::Int(y)) =>
-                    Ok(broadcast_map(&x, &y, &|l: &Integer, r: &Integer| *l.max(r))?.into()),
+                    Ok(broadcast_map(x, y, &|l: &Integer, r: &Integer| *l.max(r))?.into()),
                 _ => Err("RowMax: Either the argument types are mismatched or non-numeric.".into())
             },
             _ => Err("RowMax: Both arguments must be arrays.".into())
@@ -228,13 +228,13 @@ impl Evaluable for proto::RowMax {
 }
 
 impl Evaluable for proto::RowMin {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        match (get_argument(arguments, "left")?, get_argument(arguments, "right")?) {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
+        match (take_argument(&mut arguments, "left")?, take_argument(&mut arguments, "right")?) {
             (Value::Array(left), Value::Array(right)) => match (left, right) {
                 (Array::Float(x), Array::Float(y)) =>
-                    Ok(broadcast_map(&x, &y, &|l: &Float, r: &Float| l.min(*r))?.into()),
+                    Ok(broadcast_map(x, y, &|l: &Float, r: &Float| l.min(*r))?.into()),
                 (Array::Int(x), Array::Int(y)) =>
-                    Ok(broadcast_map(&x, &y, &|l: &Integer, r: &Integer| *l.max(r))?.into()),
+                    Ok(broadcast_map(x, y, &|l: &Integer, r: &Integer| *l.max(r))?.into()),
                 _ => Err("RowMin: Either the argument types are mismatched or non-numeric.".into())
             },
             _ => Err("RowMin: Both arguments must be arrays.".into())
@@ -243,8 +243,8 @@ impl Evaluable for proto::RowMin {
 }
 
 impl Evaluable for proto::Subtract {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        match (get_argument(arguments, "left")?, get_argument(arguments, "right")?) {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
+        match (take_argument(&mut arguments, "left")?, take_argument(&mut arguments, "right")?) {
             (Value::Array(left), Value::Array(right)) => match (left, right) {
                 (Array::Float(x), Array::Float(y)) =>
                     Ok(broadcast_map(x, y, &|l, r| l - r)?.into()),

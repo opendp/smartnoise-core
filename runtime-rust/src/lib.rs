@@ -29,7 +29,7 @@ use indexmap::map::IndexMap;
 use crate::base::is_public;
 
 
-pub type NodeArguments<'a> = IndexMap<IndexKey, &'a Value>;
+pub type NodeArguments = IndexMap<IndexKey, Value>;
 
 
 /// Given a description of computation, and some computed values, execute the computation and return computed values
@@ -87,8 +87,6 @@ pub fn release(
 
         let component: &proto::Component = computation_graph.get(&component_id)
             .ok_or_else(|| Error::from("attempted to retrieve a non-existent component id"))?;
-
-        println!("{:?}", component);
 
         // check if any dependencies of the current node remain unevaluated
         let mut evaluable = true;
@@ -170,19 +168,55 @@ pub fn release(
         // the expansion may have overwritten the current component
         let component = computation_graph.get(&component_id).unwrap();
 
-        // collect arguments by string name to the component that will be executed
-        let node_arguments = component.arguments().into_iter()
-            .map(|(name, node_id)| (name, &release.get(&node_id).unwrap().value))
-            .collect::<IndexMap<IndexKey, &Value>>();
-
         // println!("node id:    {:?}", component_id);
         // println!("component:  {:?}", component.variant);
         // println!("arguments:  {:?}", node_arguments);
 
+        let mut node_arguments = IndexMap::<IndexKey, Value>::new();
+        for (name, argument_node_id) in component.arguments().into_iter() {
+
+            // if keeping all, then all arguments must be copied because all arguments are retained
+            if filter_level == proto::FilterLevel::All {
+                release.get(&argument_node_id)
+                    .map(|v| v.clone().value)
+                    .or_else(|| node_arguments.get(&name).cloned())
+                    .map(|release_node|
+                        node_arguments.insert(name, release_node));
+                continue
+            }
+
+            // all parent nodes have been evaluated, so orphans are no longer needed for further calculation
+            let is_orphan = if let Some(parent_node_ids) = parents.get_mut(&argument_node_id) {
+                parent_node_ids.remove(&component_id);
+                parent_node_ids.is_empty()
+            } else {true};
+
+            // true if the node was in the prior release, and we are retaining prior nodes
+            let must_include = filter_level == proto::FilterLevel::PublicAndPrior
+                && original_ids.contains(&argument_node_id);
+
+            // public nodes are always kept in the release
+            let is_public = release.get(&argument_node_id).map(|v| v.public).unwrap_or(false);
+
+            // omitted nodes are side-effects of graph expansions that may be removed
+            let is_omitted = computation_graph.get(&argument_node_id)
+                .map(|v| v.omit).unwrap_or(true);
+
+            // remove argument node from release
+            if is_orphan && ((!must_include && !is_public) || is_omitted) {
+                release.remove(&argument_node_id)
+            } else {
+                release.get(&argument_node_id).cloned()
+            }
+                .map(|v| v.value)
+                .or_else(|| node_arguments.get(&name).cloned())
+                .map(|v| node_arguments.insert(name, v));
+        }
+
         // evaluate the component using the Evaluable trait, which is implemented on the proto::component::Variant enum
         let mut evaluation = component.variant.as_ref()
             .ok_or_else(|| Error::from("variant of component must be known"))?
-            .evaluate(&privacy_definition, &node_arguments)?;
+            .evaluate(&privacy_definition, node_arguments)?;
 
         // println!("evaluation: {:?}", evaluation);
 
@@ -192,25 +226,6 @@ pub fn release(
 
         // store the evaluated `Value` enum in the release
         release.insert(component_id, evaluation);
-
-        if filter_level != proto::FilterLevel::All {
-            // prune evaluations from the release. Private nodes that have no unevaluated parents do not need be stored anymore
-            for argument_node_id in component.arguments().values() {
-                let no_parents = if let Some(parent_node_ids) = parents.get_mut(argument_node_id) {
-                    parent_node_ids.remove(&component_id);
-                    parent_node_ids.is_empty()
-                } else {true};
-
-                let must_include = filter_level == proto::FilterLevel::PublicAndPrior && original_ids.contains(argument_node_id);
-                let is_public = release.get(argument_node_id).map(|v| v.public).unwrap_or(false);
-                let is_omitted = computation_graph.get(argument_node_id).map(|v| v.omit).unwrap_or(true);
-
-                // remove argument node from release
-                if no_parents && ((!must_include && !is_public) || is_omitted) {
-                    release.remove(argument_node_id);
-                }
-            }
-        }
     }
 
     // remove all omitted nodes (temporarily added to the graph while executing)

@@ -2,7 +2,7 @@ use whitenoise_validator::errors::*;
 
 use crate::NodeArguments;
 use whitenoise_validator::base::{Array, ReleaseNode, Jagged, Value, IndexKey};
-use whitenoise_validator::utilities::get_argument;
+use whitenoise_validator::utilities::take_argument;
 use crate::components::Evaluable;
 use whitenoise_validator::{proto, Float};
 use ndarray::{ArrayD, Axis};
@@ -15,18 +15,18 @@ use std::ops::{Sub, Div, Add, Mul, Rem};
 
 
 impl Evaluable for proto::Quantile {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        let data = get_argument(arguments, "data")?.array()?;
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
+        let data = take_argument(&mut arguments, "data")?.array()?;
 
-        Ok(match arguments.get::<IndexKey>(&"candidates".into()) {
+        Ok(match arguments.remove::<IndexKey>(&"candidates".into()) {
             Some(candidates) => match (candidates.jagged()?, data) {
                 (Jagged::Float(candidates), Array::Float(data)) => Value::Jagged(quantile_utilities(
                     candidates.iter().map(|col| col.iter().copied().map(|v| n64(v as f64)).collect()).collect(),
                     &data.mapv(|v| n64(v as f64)),
                     self.alpha as Float)?.into()),
                 (Jagged::Int(candidates), Array::Int(data)) => Value::Jagged(quantile_utilities(
-                    candidates.clone(),
-                    data,
+                    candidates,
+                    &data,
                     self.alpha as Float)?.into()),
                 _ => return Err("data must be either f64 or i64".into())
             },
@@ -34,7 +34,7 @@ impl Evaluable for proto::Quantile {
                 Array::Float(data) =>
                     quantile(data.mapv(|v| n64(v as f64)), self.alpha, &self.interpolation)?.mapv(|v| v.raw() as Float).into(),
                 Array::Int(data) =>
-                    quantile(data.clone(), self.alpha, &self.interpolation)?.into(),
+                    quantile(data, self.alpha, &self.interpolation)?.into(),
                 _ => return Err("data must be either f64 or i64".into())
             }
         }).map(ReleaseNode::new)

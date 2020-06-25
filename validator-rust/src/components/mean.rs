@@ -12,8 +12,8 @@ impl Component for proto::Mean {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &IndexMap<base::IndexKey, &Value>,
-        properties: &base::NodeProperties,
+        _public_arguments: IndexMap<base::IndexKey, &Value>,
+        properties: base::NodeProperties,
         node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
         let mut data_property = properties.get::<IndexKey>(&"data".into())
@@ -29,7 +29,7 @@ impl Component for proto::Mean {
         // save a snapshot of the state when aggregating
         data_property.aggregator = Some(AggregatorProperties {
             component: proto::component::Variant::Mean(self.clone()),
-            properties: properties.clone(),
+            properties,
             lipschitz_constants: ndarray::Array::from_shape_vec(
                 vec![1, num_columns as usize],
                 (0..num_columns).map(|_| 1.).collect())?.into_dyn().into()

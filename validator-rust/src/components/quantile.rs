@@ -14,8 +14,8 @@ impl Component for proto::Quantile {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: &IndexMap<base::IndexKey, &Value>,
-        properties: &base::NodeProperties,
+        public_arguments: IndexMap<base::IndexKey, &Value>,
+        properties: base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
         let mut data_property = properties.get::<IndexKey>(&"data".into())
@@ -33,7 +33,7 @@ impl Component for proto::Quantile {
 
         Ok(match public_arguments.get::<IndexKey>(&"candidates".into()) {
             Some(candidates) => {
-                let candidates = candidates.jagged()?;
+                let candidates = candidates.ref_jagged()?;
 
                 if data_property.data_type != candidates.data_type() {
                     return Err("data_type of data must match data_type of candidates".into())
@@ -45,7 +45,7 @@ impl Component for proto::Quantile {
                     nullity: false,
                     aggregator: Some(AggregatorProperties {
                         component: proto::component::Variant::Quantile(self.clone()),
-                        properties: properties.clone(),
+                        properties,
                         lipschitz_constants: ndarray::Array::from_shape_vec(
                             vec![1, num_columns as usize],
                             (0..num_columns).map(|_| 1.).collect())?.into_dyn().into()
@@ -60,7 +60,7 @@ impl Component for proto::Quantile {
                 // save a snapshot of the state when aggregating
                 data_property.aggregator = Some(AggregatorProperties {
                     component: proto::component::Variant::Quantile(self.clone()),
-                    properties: properties.clone(),
+                    properties,
                     lipschitz_constants: ndarray::Array::from_shape_vec(
                         vec![1, num_columns as usize],
                         (0..num_columns).map(|_| 1.).collect())?.into_dyn().into()

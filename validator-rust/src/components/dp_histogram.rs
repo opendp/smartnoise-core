@@ -132,8 +132,8 @@ impl Report for proto::DpHistogram {
         &self,
         node_id: u32,
         component: &proto::Component,
-        _public_arguments: &IndexMap<base::IndexKey, &Value>,
-        properties: &NodeProperties,
+        _public_arguments: IndexMap<base::IndexKey, &Value>,
+        properties: NodeProperties,
         release: &Value,
         variable_names: Option<&Vec<base::IndexKey>>,
     ) -> Result<Option<Vec<JSONRelease>>> {
@@ -147,6 +147,8 @@ impl Report for proto::DpHistogram {
         let variable_names = variable_names.cloned()
             .unwrap_or_else(|| (0..num_columns).map(|_| "[Unknown]".into()).collect());
 
+        let release = release.ref_array()?.ref_int()?;
+
         Ok(Some(privacy_usages.into_iter()
             .zip(variable_names.into_iter()).enumerate()
             .map(|(column_number, (privacy_usage, variable_name))|
@@ -156,7 +158,7 @@ impl Report for proto::DpHistogram {
                     variables: serde_json::json!(variable_name.to_string()),
                     // extract ith column of release
                     release_info: value_to_json(&get_ith_column(
-                        release.array()?.int()?,
+                        release,
                         column_number,
                     )?.into())?,
                     privacy_loss: privacy_usage_to_json(&privacy_usage),

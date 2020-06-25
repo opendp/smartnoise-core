@@ -6,23 +6,23 @@ use crate::components::Evaluable;
 use ndarray::ArrayD;
 use whitenoise_validator::{proto, Float, Integer};
 use crate::utilities::noise;
-use whitenoise_validator::utilities::get_argument;
+use whitenoise_validator::utilities::take_argument;
 
 
 impl Evaluable for proto::Cast {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        let data = get_argument(arguments, "data")?.array()?;
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
+        let data = take_argument(&mut arguments, "data")?.array()?;
         match self.atomic_type.to_lowercase().as_str() {
             // if casting to bool, identify what value should map to true, then cast
             "bool" => {
-                let true_label = get_argument(arguments, "true_label")?.array()?;
+                let true_label = take_argument(&mut arguments, "true_label")?.array()?;
                 Ok(cast_bool(&data, &true_label)?.into())
             },
             "float" | "real" => Ok(Value::Array(Array::Float(cast_float(&data)?))),
             "int" | "integer" => {
                 // TODO: handle different bounds on each column
-                let lower = get_argument(arguments, "lower")?.first_int()?;
-                let upper = get_argument(arguments, "upper")?.first_int()?;
+                let lower = take_argument(&mut arguments, "lower")?.array()?.first_int()?;
+                let upper = take_argument(&mut arguments, "upper")?.array()?.first_int()?;
                 Ok(cast_int(&data, lower, upper)?.into())
             },
             "string" | "str" =>

@@ -19,8 +19,8 @@ impl Component for proto::Index {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: &IndexMap<base::IndexKey, &Value>,
-        properties: &base::NodeProperties,
+        mut public_arguments: IndexMap<base::IndexKey, &Value>,
+        properties: base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
         let data_property = properties.get::<IndexKey>(&"data".into())
@@ -36,32 +36,32 @@ impl Component for proto::Index {
 
                     proto::indexmap_properties::Variant::Dataframe => {
                         if let Some(column_names) = public_arguments.get::<IndexKey>(&"names".into()) {
-                            let column_names = column_names.array()?;
+                            let column_names = column_names.ref_array()?;
                             dimensionality = Some(column_names.shape().len() as i64 + 1);
                             match column_names.to_owned() {
                                 Array::Float(_) => return Err("floats are not valid indexes".into()),
-                                Array::Int(names) => to_name_vec(&names)?.into_iter()
+                                Array::Int(names) => to_name_vec(names)?.into_iter()
                                     .map(|v| data_property.children.get::<IndexKey>(&v.into()).cloned())
                                     .collect::<Option<Vec<ValueProperties>>>(),
-                                Array::Str(names) => to_name_vec(&names)?.into_iter()
+                                Array::Str(names) => to_name_vec(names)?.into_iter()
                                     .map(|v| data_property.children.get::<IndexKey>(&v.into()).cloned())
                                     .collect::<Option<Vec<ValueProperties>>>(),
-                                Array::Bool(names) => to_name_vec(&names)?.into_iter()
+                                Array::Bool(names) => to_name_vec(names)?.into_iter()
                                     .map(|v| data_property.children.get::<IndexKey>(&v.into()).cloned())
                                     .collect::<Option<Vec<ValueProperties>>>(),
                             }
                                 .ok_or_else(|| Error::from("columns: unknown column in index"))
 
-                        } else if let Some(indices) = public_arguments.get::<IndexKey>(&"indices".into()) {
-                            let indices = indices.array()?.int()?;
+                        } else if let Some(indices) = public_arguments.remove::<IndexKey>(&"indices".into()) {
+                            let indices = indices.clone().array()?.int()?;
                             dimensionality = Some(indices.shape().len() as i64 + 1);
                             to_name_vec(indices)?.into_iter()
                                 .map(|idx| data_property.children.get_index(idx as usize).map(|v| v.1.clone()))
                                 .collect::<Option<Vec<ValueProperties>>>()
                                 .ok_or_else(|| Error::from("index does not exist"))
 
-                        } else if let Some(mask) = public_arguments.get::<IndexKey>(&"mask".into()) {
-                            let mask = mask.array()?.bool()?;
+                        } else if let Some(mask) = public_arguments.remove::<IndexKey>(&"mask".into()) {
+                            let mask = mask.clone().array()?.bool()?;
                             if mask.shape().len() != 1 {
                                 return Err("mask: must be 1-dimensional".into())
                             }
@@ -80,8 +80,8 @@ impl Component for proto::Index {
 
                     // index into a partitional indexmap
                     proto::indexmap_properties::Variant::Partition => {
-                        let names = get_argument(public_arguments, "names")?
-                            .to_owned().array()?.clone();
+                        let names = get_argument(&public_arguments, "names")?
+                            .to_owned().array()?;
 
                         let partition_key = IndexKey::new(names)?;
                         let mut part_properties = data_property.children.get::<IndexKey>(&partition_key)
@@ -118,16 +118,16 @@ impl Component for proto::Index {
                     data_property.assert_is_not_aggregated()?;
                 }
 
-                if let Some(indices) = public_arguments.get::<IndexKey>(&"indices".into()) {
-                    let indices = indices.array()?.int()?;
+                if let Some(indices) = public_arguments.remove::<IndexKey>(&"indices".into()) {
+                    let indices = indices.clone().array()?.int()?;
                     dimensionality = Some(indices.shape().len() as i64 + 1);
 
                     to_name_vec(indices)?.into_iter()
                         .map(|idx| select_properties(&data_property, idx as usize))
                         .collect::<Result<Vec<ValueProperties>>>()
 
-                } else if let Some(mask) = public_arguments.get::<IndexKey>(&"mask".into()) {
-                    let mask = mask.array()?.bool()?;
+                } else if let Some(mask) = public_arguments.remove::<IndexKey>(&"mask".into()) {
+                    let mask = mask.clone().array()?.bool()?;
                     if mask.shape().len() != 1 {
                         return Err("mask: must be 1-dimensional".into())
                     }
@@ -188,12 +188,12 @@ impl Expandable for proto::Index {
 impl Named for proto::Index {
     fn get_names(
         &self,
-        public_arguments: &IndexMap<base::IndexKey, &Value>,
-        argument_variables: &IndexMap<base::IndexKey, Vec<IndexKey>>,
+        public_arguments: IndexMap<base::IndexKey, &Value>,
+        argument_variables: IndexMap<base::IndexKey, Vec<IndexKey>>,
         _release: Option<&Value>
     ) -> Result<Vec<IndexKey>> {
         if let Some(names) = public_arguments.get::<IndexKey>(&"names".into()) {
-            return Ok(match names.array()? {
+            return Ok(match names.ref_array()? {
                 Array::Int(names) => names.iter()
                     .map(|n| n.clone().into())
                     .collect(),
@@ -210,12 +210,12 @@ impl Named for proto::Index {
             .ok_or_else(|| Error::from("column names on data must be known"))?;
 
         if let Some(indices) = public_arguments.get::<IndexKey>(&"indices".into()) {
-            indices.array()?.int()?.iter()
+            indices.ref_array()?.ref_int()?.iter()
                 .map(|idx| input_names.get(*idx as usize).cloned())
                 .collect::<Option<Vec<IndexKey>>>()
                 .ok_or_else(|| Error::from("attempted to retrieve an out-of-bounds name"))
         } else if let Some(mask) = public_arguments.get::<IndexKey>(&"mask".into()) {
-            Ok(mask.array()?.bool()?.iter()
+            Ok(mask.ref_array()?.ref_bool()?.iter()
                 .zip(input_names.iter())
                 .filter(|(&mask, _)| mask)
                 .map(|(_, name)| name.clone())
@@ -226,11 +226,11 @@ impl Named for proto::Index {
     }
 }
 
-pub fn to_name_vec<T: Clone>(columns: &ArrayD<T>) -> Result<Vec<T>> {
+pub fn to_name_vec<T: Clone>(columns: ArrayD<T>) -> Result<Vec<T>> {
     match columns.ndim() {
         0 => Ok(vec![columns.first()
             .ok_or_else(|| Error::from("At least one column name must be supplied"))?.clone()]),
-        1 => match columns.clone().into_dimensionality::<Ix1>() {
+        1 => match columns.into_dimensionality::<Ix1>() {
             Ok(columns) => Ok(columns.to_vec()),
             Err(_) => Err("column names must be 1-dimensional".into())
         },

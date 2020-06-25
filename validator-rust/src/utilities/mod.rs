@@ -26,14 +26,20 @@ use indexmap::map::IndexMap;
 
 
 /// Retrieve the specified Value from the arguments to a component.
+pub fn take_argument(
+    arguments: &mut IndexMap<base::IndexKey, Value>,
+    name: &str,
+) -> Result<Value> {
+    arguments.remove::<base::IndexKey>(&name.into())
+        .ok_or_else(|| Error::from(name.to_string() + " must be defined"))
+}
+
 pub fn get_argument<'a>(
     arguments: &IndexMap<base::IndexKey, &'a Value>,
     name: &str,
 ) -> Result<&'a Value> {
-    match arguments.get::<base::IndexKey>(&name.into()) {
-        Some(argument) => Ok(argument),
-        _ => Err((name.to_string() + " must be defined").into())
-    }
+    arguments.get::<base::IndexKey>(&name.into()).cloned()
+        .ok_or_else(|| Error::from(name.to_string() + " must be defined"))
 }
 
 /// Retrieve the Values for each of the arguments of a component from the Release.
@@ -187,8 +193,8 @@ pub fn propagate_properties(
             computation_graph.get(&node_id).unwrap()
                 .propagate_property(
                     privacy_definition,
-                    &get_public_arguments(component, &release)?,
-                    &input_properties,
+                    get_public_arguments(component, &release)?,
+                    input_properties,
                     node_id)
                 .chain_err(|| format!("at node_id {:?}", node_id))
         };
@@ -302,14 +308,14 @@ pub fn get_sinks(computation_graph: &HashMap<u32, proto::Component>) -> HashSet<
 ///
 /// Typically used by functions when standardizing numeric arguments, but generally applicable.
 #[doc(hidden)]
-pub fn standardize_numeric_argument<T: Clone>(value: &ArrayD<T>, length: i64) -> Result<ArrayD<T>> {
+pub fn standardize_numeric_argument<T: Clone>(value: ArrayD<T>, length: i64) -> Result<ArrayD<T>> {
     match value.ndim() {
         0 => match value.first() {
             Some(scalar) => Ok(Array::from((0..length).map(|_| scalar.clone()).collect::<Vec<T>>()).into_dyn()),
             None => Err("value must be non-empty".into())
         },
         1 => if value.len() as i64 == length {
-            Ok(value.clone())
+            Ok(value)
         } else { Err("value is of incompatible length".into()) },
         _ => Err("value must be a scalar or vector".into())
     }
@@ -317,10 +323,9 @@ pub fn standardize_numeric_argument<T: Clone>(value: &ArrayD<T>, length: i64) ->
 
 /// Given a jagged float array, conduct well-formedness checks and broadcast
 pub fn standardize_float_argument(
-    categories: &[Vec<Float>],
+    mut categories: Vec<Vec<Float>>,
     length: i64,
 ) -> Result<Vec<Vec<Float>>> {
-    let mut categories = categories.to_owned();
 
     if categories.is_empty() {
         return Err("no categories are defined".into());
@@ -375,7 +380,7 @@ pub fn standardize_categorical_argument<T: Clone + Eq + Hash + Ord>(
 /// Given a jagged null values array, conduct well-formedness checks, broadcast along columns, and flatten along rows.
 #[doc(hidden)]
 pub fn standardize_null_candidates_argument<T: Clone>(
-    value: &[Vec<T>],
+    value: Vec<Vec<T>>,
     length: i64,
 ) -> Result<Vec<Vec<T>>> {
     let mut value = value.to_owned();
@@ -395,7 +400,7 @@ pub fn standardize_null_candidates_argument<T: Clone>(
 /// Given a jagged null values array, conduct well-formedness checks, broadcast along columns, and flatten along rows.
 #[doc(hidden)]
 pub fn standardize_null_target_argument<T: Clone>(
-    value: &ArrayD<T>,
+    value: ArrayD<T>,
     length: i64,
 ) -> Result<Vec<T>> {
     if value.is_empty() {
@@ -421,7 +426,7 @@ pub fn standardize_weight_argument(
     weights: &Option<Vec<Vec<Float>>>,
     lengths: &[i64],
 ) -> Result<Vec<Vec<Float>>> {
-    let weights = weights.clone().unwrap_or_else(|| vec![]);
+    let weights = weights.clone().unwrap_or_else(Vec::new);
 
     fn uniform_density(length: usize) -> Vec<Float> {
         (0..length).map(|_| 1. / (length as Float)).collect()
@@ -515,8 +520,8 @@ pub fn expand_mechanism(
 
     let lipschitz = aggregator.lipschitz_constants.array()?.float()?;
     if lipschitz.iter().any(|v| v != &1.) {
-        let mut sensitivity = sensitivity_value.array()?.float()?.clone();
-        sensitivity *= lipschitz;
+        let mut sensitivity = sensitivity_value.array()?.float()?;
+        sensitivity *= &lipschitz;
         sensitivity_value = sensitivity.into();
     }
 

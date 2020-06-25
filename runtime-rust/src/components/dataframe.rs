@@ -4,18 +4,18 @@ use ndarray::prelude::*;
 use crate::NodeArguments;
 use whitenoise_validator::base::{Value, Array, ReleaseNode, IndexKey};
 use crate::components::Evaluable;
-use ndarray;
+
 use whitenoise_validator::proto;
-use whitenoise_validator::utilities::{array::get_ith_column, get_argument};
+use whitenoise_validator::utilities::{array::get_ith_column, take_argument};
 use crate::utilities::standardize_columns;
 use indexmap::map::IndexMap;
 
 impl Evaluable for proto::Dataframe {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
         // force the input to be an array- reject indexmap and jagged
-        let data = get_argument(arguments, "data")?.array()?;
+        let data = take_argument(&mut arguments, "data")?.array()?;
 
-        let column_names  = get_argument(arguments, "names")?
+        let column_names  = take_argument(&mut arguments, "names")?
             .array()?.string()?;
 
         // num columns is sufficient shared information to build the dataframe

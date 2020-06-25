@@ -13,8 +13,8 @@ impl Component for proto::Covariance {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        _public_arguments: &IndexMap<base::IndexKey, &Value>,
-        properties: &base::NodeProperties,
+        _public_arguments: IndexMap<base::IndexKey, &Value>,
+        properties: base::NodeProperties,
         node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
         if properties.contains_key(&IndexKey::from("data")) {
@@ -41,7 +41,7 @@ impl Component for proto::Covariance {
             // save a snapshot of the state when aggregating
             data_property.aggregator = Some(AggregatorProperties {
                 component: proto::component::Variant::Covariance(self.clone()),
-                properties: properties.clone(),
+                properties,
                 lipschitz_constants: ndarray::Array::from_shape_vec(
                     vec![1, num_columns as usize],
                     (0..num_columns).map(|_| 1.).collect())?.into_dyn().into()
@@ -93,7 +93,7 @@ impl Component for proto::Covariance {
             // save a snapshot of the state when aggregating
             left_property.aggregator = Some(AggregatorProperties {
                 component: proto::component::Variant::Covariance(self.clone()),
-                properties: properties.clone(),
+                properties,
                 lipschitz_constants: ndarray::Array::from_shape_vec(
                     vec![1, num_columns as usize],
                     (0..num_columns).map(|_| 1.).collect())?.into_dyn().into()

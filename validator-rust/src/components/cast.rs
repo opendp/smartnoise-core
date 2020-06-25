@@ -16,8 +16,8 @@ impl Component for proto::Cast {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: &IndexMap<base::IndexKey, &Value>,
-        properties: &NodeProperties,
+        public_arguments: IndexMap<base::IndexKey, &Value>,
+        properties: NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
         let mut data_property = properties.get::<IndexKey>(&"data".into())
@@ -42,7 +42,7 @@ impl Component for proto::Cast {
             DataType::Unknown => unreachable!(),
             DataType::Bool => {
                 // true label must be defined
-                let true_label = get_argument(public_arguments, "true_label")?.array()?.clone();
+                let true_label = get_argument(&public_arguments, "true_label")?.clone().array()?;
 
                 // check categories for equality with true_label
                 data_property.nature = match data_property.nature {
@@ -84,10 +84,10 @@ impl Component for proto::Cast {
             },
             DataType::Int => {
                 // lower must be defined, for imputation of values that won't cast
-                get_argument(public_arguments, "lower")?.first_int()
+                get_argument(&public_arguments, "lower")?.ref_array()?.first_int()
                     .map_err(prepend("type:"))?;
                 // max must be defined
-                get_argument(public_arguments, "upper")?.first_int()
+                get_argument(&public_arguments, "upper")?.ref_array()?.first_int()
                     .map_err(prepend("type:"))?;
 
                 data_property.nature = None;

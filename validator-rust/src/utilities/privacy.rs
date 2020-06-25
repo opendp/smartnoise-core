@@ -206,7 +206,7 @@ pub fn compute_graph_privacy_usage(
                 *index_id, category == IndexKey::new(release.get(graph.get(index_id).unwrap()
                     .arguments().get(&IndexKey::from("names"))
                     .ok_or_else(|| "names argument must be specified on an index into partitions")?)
-                    .ok_or_else(|| "names value must be defined")?.value.array()?.clone())?)))
+                    .ok_or_else(|| "names value must be defined")?.value.clone().array()?)?)))
 
             // return if an error was encountered
             .collect::<Result<Vec<(u32, bool)>>>()?.iter()

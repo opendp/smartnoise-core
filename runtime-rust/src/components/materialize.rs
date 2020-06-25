@@ -1,30 +1,22 @@
 use whitenoise_validator::errors::*;
+use whitenoise_validator::components::Named;
 
-use ndarray::prelude::*;
 use crate::NodeArguments;
 use whitenoise_validator::base::{Value, ReleaseNode, IndexKey};
 use indexmap::IndexMap;
 use crate::components::Evaluable;
-use ndarray;
-use whitenoise_validator::{proto, Integer};
+
+use whitenoise_validator::{proto};
 
 impl Evaluable for proto::Materialize {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        let column_names = arguments.get::<IndexKey>(&"column_names".into())
-            .and_then(|column_names| column_names.array().ok()?.string().ok()).cloned();
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: NodeArguments) -> Result<ReleaseNode> {
 
-        let num_columns = arguments.get::<IndexKey>(& "num_columns".into())
-            .and_then(|num_columns| num_columns.first_int().ok());
+        let column_names = self.get_names(
+            arguments.iter().map(|(k, v)| (k.clone(), v)).collect(),
+            IndexMap::new(), None)?;
 
         // num columns is sufficient shared information to build the dataframes
-        let num_columns = match (column_names.clone(), num_columns) {
-            (Some(column_names), None) => match column_names.into_dimensionality::<Ix1>() {
-                Ok(column_names) => column_names,
-                Err(_) => return Err("column names must be one-dimensional".into())
-            }.to_vec().len(),
-            (None, Some(num_columns)) => num_columns as usize,
-            _ => return Err("either column_names or num_columns must be provided".into())
-        };
+        let num_columns = column_names.len();
 
         let mut response = (0..num_columns)
             .map(|_| Vec::new())
@@ -58,23 +50,10 @@ impl Evaluable for proto::Materialize {
                 response[idx] = (0..response[0].len()).map(|_| "".to_string()).collect::<Vec<String>>())
         }
 
-        match column_names {
-            Some(column_names) => {
-                let column_names = column_names.into_dimensionality::<Ix1>()?.to_vec();
-                // convert indexmap of vecs into arrays
-                Ok(ReleaseNode::new(Value::Indexmap(response.into_iter().enumerate()
-                    .map(|(k, v): (usize, Vec<String>)|
-                        (IndexKey::from(column_names[k].clone()), ndarray::Array::from(v).into_dyn().into()))
-                    .collect::<IndexMap<IndexKey, Value>>())))
-            }
-            None => {
-
-                // convert indexmap of vecs into arrays
-                Ok(ReleaseNode::new(Value::Indexmap(response.into_iter().enumerate()
-                    .map(|(k, v): (usize, Vec<String>)|
-                        (IndexKey::from(k as Integer), ndarray::Array::from(v).into_dyn().into()))
-                    .collect::<IndexMap<IndexKey, Value>>())))
-            }
-        }
+        Ok(ReleaseNode::new(Value::Indexmap(column_names.into_iter()
+            .zip(response.into_iter())
+            .map(|(key, value): (IndexKey, Vec<String>)|
+                (key, ndarray::Array::from(value).into_dyn().into()))
+            .collect::<IndexMap<IndexKey, Value>>())))
     }
 }

@@ -12,8 +12,8 @@ impl Component for proto::Dataframe {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: &IndexMap<base::IndexKey, &Value>,
-        properties: &base::NodeProperties,
+        public_arguments: IndexMap<base::IndexKey, &Value>,
+        properties: base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
 
@@ -26,7 +26,7 @@ impl Component for proto::Dataframe {
         }
 
         let column_names = self.get_names(
-            public_arguments, &IndexMap::new(), None)?;
+            public_arguments, IndexMap::new(), None)?;
 
         if column_names.len() != data_property.num_columns()? as usize {
             return Err("Column names must be the same length as the number of columns.".into())
@@ -47,11 +47,11 @@ impl Component for proto::Dataframe {
 impl Named for proto::Dataframe {
     fn get_names(
         &self,
-        public_arguments: &IndexMap<base::IndexKey, &Value>,
-        _argument_variables: &IndexMap<base::IndexKey, Vec<IndexKey>>,
+        public_arguments: IndexMap<base::IndexKey, &Value>,
+        _argument_variables: IndexMap<base::IndexKey, Vec<IndexKey>>,
         _release: Option<&Value>
     ) -> Result<Vec<IndexKey>> {
-        Ok(match get_argument(public_arguments, "names")?.array()? {
+        Ok(match get_argument(&public_arguments, "names")?.ref_array()? {
             base::Array::Str(names) =>
                 names.iter().map(|v| IndexKey::from(v.to_string())).collect(),
             base::Array::Bool(names) =>

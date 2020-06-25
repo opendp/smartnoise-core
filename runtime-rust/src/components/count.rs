@@ -4,9 +4,8 @@ use crate::NodeArguments;
 use whitenoise_validator::base::{Value, Array, ReleaseNode};
 use crate::components::Evaluable;
 use ndarray::{ArrayD, Axis, arr0};
-use ndarray;
 use whitenoise_validator::{proto, Integer};
-use whitenoise_validator::utilities::get_argument;
+use whitenoise_validator::utilities::take_argument;
 use std::collections::HashSet;
 use crate::utilities::get_num_columns;
 use std::iter::FromIterator;
@@ -15,24 +14,24 @@ use noisy_float::types::n64;
 
 
 impl Evaluable for proto::Count {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: &NodeArguments) -> Result<ReleaseNode> {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
         Ok(ReleaseNode::new(if self.distinct {
-            match get_argument(arguments, "data")?.array()? {
-                Array::Bool(data) => count_distinct(data)?.into(),
+            match take_argument(&mut arguments, "data")?.array()? {
+                Array::Bool(data) => count_distinct(&data)?.into(),
                 Array::Float(data) => count_distinct(&data.mapv(|v| n64(v as f64)))?.into(),
-                Array::Int(data) => count_distinct(data)?.into(),
-                Array::Str(data) => count_distinct(data)?.into()
+                Array::Int(data) => count_distinct(&data)?.into(),
+                Array::Str(data) => count_distinct(&data)?.into()
             }
         } else {
-            match get_argument(arguments, "data")? {
+            match take_argument(&mut arguments, "data")? {
                 Value::Array(array) => match array {
-                    Array::Bool(data) => count(data)?.into(),
-                    Array::Float(data) => count(data)?.into(),
-                    Array::Int(data) => count(data)?.into(),
-                    Array::Str(data) => count(data)?.into()
+                    Array::Bool(data) => count(&data)?.into(),
+                    Array::Float(data) => count(&data)?.into(),
+                    Array::Int(data) => count(&data)?.into(),
+                    Array::Str(data) => count(&data)?.into()
                 },
                 Value::Indexmap(indexmap) => match indexmap.get_index(0) {
-                    Some(value) => arr0(value.1.array()?.num_records()? as Integer).into_dyn().into(),
+                    Some(value) => arr0(value.1.ref_array()?.num_records()? as Integer).into_dyn().into(),
                     None => return Err("indexmap may not be empty".into())
                 },
                 Value::Jagged(_) => return Err("Count is not implemented on Jagged arrays".into()),

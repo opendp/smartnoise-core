@@ -15,8 +15,8 @@ impl Component for proto::Digitize {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: &IndexMap<base::IndexKey, &Value>,
-        properties: &NodeProperties,
+        mut public_arguments: IndexMap<base::IndexKey, &Value>,
+        properties: NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
         let mut data_property = properties.get(&IndexKey::from("data"))
@@ -40,13 +40,13 @@ impl Component for proto::Digitize {
             data_property.assert_is_not_aggregated()?;
         }
 
-        public_arguments.get::<IndexKey>(&"edges".into())
+        public_arguments.remove::<IndexKey>(&"edges".into())
             .ok_or_else(|| Error::from("edges: missing, must be public"))
-            .and_then(|v| v.jagged())
+            .and_then(|v| v.clone().jagged())
             .and_then(|v| match v {
-                Jagged::Float(jagged) => {
+                Jagged::Float(edges) => {
                     let null = standardize_null_target_argument(null, num_columns)?;
-                    let edges = standardize_float_argument(&jagged, num_columns)?;
+                    let edges = standardize_float_argument(edges, num_columns)?;
                     data_property.nature = Some(Nature::Categorical(NatureCategorical {
                         categories: Jagged::Int(edges.into_iter().zip(null.into_iter())
                             .map(|(col, null)| {
@@ -62,9 +62,9 @@ impl Component for proto::Digitize {
                     }));
                     Ok(())
                 }
-                Jagged::Int(jagged) => {
+                Jagged::Int(edges) => {
                     let null = standardize_null_target_argument(null, num_columns)?;
-                    let edges = standardize_categorical_argument(jagged.clone(), num_columns)?;
+                    let edges = standardize_categorical_argument(edges, num_columns)?;
                     data_property.nature = Some(Nature::Categorical(NatureCategorical {
                         categories: Jagged::Int(edges.into_iter().zip(null.into_iter())
                             .map(|(col, null)| {
