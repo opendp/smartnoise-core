@@ -35,6 +35,8 @@ use-runtime = ["whitenoise_runtime"]
 use-secure-noise = ["use-runtime", "whitenoise_runtime/use-secure-noise"]
 # re-export use-system-libs from whitenoise_runtime (feature is dependent on use-runtime and use-secure-noise)
 use-system-libs = ["use-runtime", "use-secure-noise", "whitenoise_runtime/use-system-libs"]
+# direct access to mechanisms
+use-direct-api = []
 
 [lib]
 name = "whitenoise_ffi"

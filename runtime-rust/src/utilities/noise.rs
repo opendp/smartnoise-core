@@ -225,7 +225,6 @@ pub fn sample_uniform(min: f64, max: f64, enforce_constant_time: bool) -> Result
 
     // Generate uniform random number from [0,1)
     let uniform_rand = f64::recompose(false, exponent, mantissa_int);
-    println!("{:?}", uniform_rand);
     Ok(uniform_rand * (max - min) + min)
 }
 
