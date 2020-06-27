@@ -41,7 +41,7 @@ impl Expandable for proto::DpMean {
             maximum_id += 1;
             let id_dp_sum = maximum_id;
             expansion.computation_graph.insert(id_dp_sum, proto::Component {
-                arguments: Some(proto::IndexmapNodeIds::new(
+                arguments: Some(proto::ArgumentNodeIds::new(
                     indexmap!["data".into() => id_data])),
                 variant: Some(proto::component::Variant::DpSum(proto::DpSum {
                     mechanism: self.mechanism.clone(),
@@ -58,7 +58,7 @@ impl Expandable for proto::DpMean {
             maximum_id += 1;
             let id_dp_count = maximum_id;
             expansion.computation_graph.insert(id_dp_count, proto::Component {
-                arguments: Some(proto::IndexmapNodeIds::new(
+                arguments: Some(proto::ArgumentNodeIds::new(
                     indexmap!["data".into() => id_data])),
                 variant: Some(proto::component::Variant::DpCount(proto::DpCount {
                     distinct: false,
@@ -76,7 +76,7 @@ impl Expandable for proto::DpMean {
             maximum_id += 1;
             let id_to_float = maximum_id;
             expansion.computation_graph.insert(id_to_float, proto::Component {
-                arguments: Some(proto::IndexmapNodeIds::new(
+                arguments: Some(proto::ArgumentNodeIds::new(
                     indexmap!["data".into() => id_dp_count])),
                 variant: Some(proto::component::Variant::ToFloat(proto::ToFloat {})),
                 omit: true,
@@ -86,7 +86,7 @@ impl Expandable for proto::DpMean {
 
             // divide
             expansion.computation_graph.insert(component_id, proto::Component {
-                arguments: Some(proto::IndexmapNodeIds::new(indexmap![
+                arguments: Some(proto::ArgumentNodeIds::new(indexmap![
                     "left".into() => id_dp_sum,
                     "right".into() => id_to_float])),
                 variant: Some(proto::component::Variant::Divide(proto::Divide {})),
@@ -102,7 +102,7 @@ impl Expandable for proto::DpMean {
             maximum_id += 1;
             let id_mean = maximum_id;
             expansion.computation_graph.insert(id_mean, proto::Component {
-                arguments: Some(proto::IndexmapNodeIds::new(indexmap![
+                arguments: Some(proto::ArgumentNodeIds::new(indexmap![
                     "data".into() => *component.arguments().get::<IndexKey>(&"data".into())
                         .ok_or_else(|| Error::from("data must be provided as an argument"))?])),
                 variant: Some(proto::component::Variant::Mean(proto::Mean {})),
@@ -113,7 +113,7 @@ impl Expandable for proto::DpMean {
 
             // noising
             expansion.computation_graph.insert(component_id, proto::Component {
-                arguments: Some(proto::IndexmapNodeIds::new(indexmap!["data".into() => id_mean])),
+                arguments: Some(proto::ArgumentNodeIds::new(indexmap!["data".into() => id_mean])),
                 variant: Some(match self.mechanism.to_lowercase().as_str() {
                     "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
                         privacy_usage: self.privacy_usage.clone()

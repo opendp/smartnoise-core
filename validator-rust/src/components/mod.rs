@@ -16,7 +16,7 @@ mod cast;
 mod clamp;
 mod count;
 mod covariance;
-mod dataframe;
+mod column_bind;
 mod digitize;
 mod dp_count;
 mod dp_variance;
@@ -248,7 +248,7 @@ impl Component for proto::Component {
 
         propagate_property!(
             // INSERT COMPONENT LIST
-            Cast, Clamp, Count, Covariance, Dataframe, Digitize,
+            Cast, Clamp, ColumnBind, Count, Covariance, Digitize,
             Filter, Histogram, Impute, Index, Literal, Materialize, Mean,
             Partition, Quantile, RawMoment, Reshape, Resize, Sum, Union, Variance,
 
@@ -293,29 +293,34 @@ impl Expandable for proto::Component {
             }
         }
 
-        // expand_component!(Map, Union);
-        //
-        // if properties.values().any(|props| props.indexmap()
-        //     .and_then(IndexmapProperties::assert_is_partition).is_ok()) {
-        //     let map_component = proto::Component {
-        //         arguments: component.arguments.clone(),
-        //         variant: Some(proto::component::Variant::Map(Box::new(proto::Map {
-        //             component: Some(Box::from(component.clone()))
-        //         }))),
-        //         omit: component.omit,
-        //         submission: component.submission,
-        //     };
-        //     return Ok(proto::ComponentExpansion {
-        //         computation_graph: hashmap![*component_id => map_component],
-        //         properties: HashMap::new(),
-        //         releases: HashMap::new(),
-        //         traversal: vec![*component_id],
-        //     })
-        // }
+        // indexes and unions accept partitioned data as an argument- don't expand with map
+        if let proto::component::Variant::Index(_) = variant {
+            return Ok(base::ComponentExpansion::default())
+        }
+        if let proto::component::Variant::Union(_) = variant {
+            return Ok(base::ComponentExpansion::default())
+        }
+
+        // list all components that accept partitioned data as arguments
+        expand_component!(Map);
+
+        if properties.values().any(|props| props.partition().is_ok()) {
+            let mut component_expansion = base::ComponentExpansion::default();
+            component_expansion.computation_graph.insert(component_id, proto::Component {
+                arguments: component.arguments.clone(),
+                variant: Some(proto::component::Variant::Map(Box::new(proto::Map {
+                    component: Some(Box::from(component.clone()))
+                }))),
+                omit: component.omit,
+                submission: component.submission,
+            });
+            component_expansion.traversal.push(component_id);
+            return Ok(component_expansion);
+        }
 
         expand_component!(
             // INSERT COMPONENT LIST
-            Clamp, Digitize, Histogram, Impute, Index, Maximum, Median, Minimum, Partition, Resize,
+            Clamp, Digitize, Histogram, Impute, Map, Maximum, Median, Minimum, Partition, Resize,
 
             DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMedian,
             DpMinimum, DpQuantile, DpRawMoment, DpSum, DpVariance,
@@ -535,7 +540,7 @@ impl Named for proto::Component {
         // TODO: transforms, covariance/cross-covariance, extended indexing
         get_names!(
             // INSERT COMPONENT LIST
-            Dataframe, Index, Literal, Materialize
+            ColumnBind, Index, Literal, Materialize
         );
 
         // default implementation

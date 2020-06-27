@@ -28,7 +28,7 @@ impl Expandable for proto::DpRawMoment {
         maximum_id += 1;
         let id_moment = maximum_id;
         expansion.computation_graph.insert(id_moment, proto::Component {
-            arguments: Some(proto::IndexmapNodeIds::new(
+            arguments: Some(proto::ArgumentNodeIds::new(
                 indexmap!["data".into() => data_id])),
             variant: Some(proto::component::Variant::RawMoment(proto::RawMoment {
                 order: self.order
@@ -40,7 +40,7 @@ impl Expandable for proto::DpRawMoment {
 
         // noising
         expansion.computation_graph.insert(component_id, proto::Component {
-            arguments: Some(proto::IndexmapNodeIds::new(indexmap!["data".into() => id_moment])),
+            arguments: Some(proto::ArgumentNodeIds::new(indexmap!["data".into() => id_moment])),
             variant: Some(match self.mechanism.to_lowercase().as_str() {
                 "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
                     privacy_usage: self.privacy_usage.clone()

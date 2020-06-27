@@ -61,7 +61,7 @@ pub fn build_bindings(
             }})),
             omit: false,
             submission: self.submission_count,
-            arguments: Some(proto::IndexmapNodeIds::new(arguments)),
+            arguments: Some(proto::ArgumentNodeIds::new(arguments)),
         }};
 
         self.component_count += 1;

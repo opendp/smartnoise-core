@@ -26,7 +26,7 @@ impl Expandable for proto::DpVariance {
         maximum_id += 1;
         let id_variance = maximum_id;
         expansion.computation_graph.insert(id_variance, proto::Component {
-            arguments: Some(proto::IndexmapNodeIds::new(indexmap![
+            arguments: Some(proto::ArgumentNodeIds::new(indexmap![
                 "data".into() => *component.arguments().get(&IndexKey::from("data"))
                     .ok_or_else(|| Error::from("data must be provided as an argument"))?])),
             variant: Some(proto::component::Variant::Variance(proto::Variance {
@@ -39,7 +39,7 @@ impl Expandable for proto::DpVariance {
 
         // noising
         expansion.computation_graph.insert(component_id, proto::Component {
-            arguments: Some(proto::IndexmapNodeIds::new(indexmap!["data".into() => id_variance])),
+            arguments: Some(proto::ArgumentNodeIds::new(indexmap!["data".into() => id_variance])),
             variant: Some(match self.mechanism.to_lowercase().as_str() {
                 "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
                     privacy_usage: self.privacy_usage.clone()

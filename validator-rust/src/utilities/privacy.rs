@@ -276,7 +276,7 @@ pub fn compute_graph_privacy_usage(
         let partition_properties = properties.get(&partition_node_id)
             .ok_or_else(|| "partition properties must be defined")?;
 
-        partition_properties.indexmap()?.children.keys()
+        partition_properties.partition()?.children.keys()
             .map(|category| get_category_indexes(category.clone(), partition_node_id)?.iter()
                 .map(|index_id| {
                     let (batches, partition_ids) = batch_partition(

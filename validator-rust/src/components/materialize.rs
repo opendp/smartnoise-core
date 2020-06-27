@@ -3,7 +3,7 @@ use crate::errors::*;
 use crate::{proto, base, Warnable};
 
 use crate::components::{Component, Named};
-use crate::base::{Value, ValueProperties, IndexmapProperties, ArrayProperties, DataType, IndexKey};
+use crate::base::{Value, ValueProperties, ArrayProperties, DataType, IndexKey, DataframeProperties};
 use indexmap::map::IndexMap;
 
 impl Component for proto::Materialize {
@@ -17,7 +17,7 @@ impl Component for proto::Materialize {
 
         let column_names = self.get_names(public_arguments, IndexMap::new(), None)?;
 
-        Ok(ValueProperties::Indexmap(IndexmapProperties {
+        Ok(ValueProperties::Dataframe(DataframeProperties {
             children: column_names.into_iter()
                 .map(|name| (name, ValueProperties::Array(ArrayProperties {
                     num_records: None,
@@ -34,7 +34,6 @@ impl Component for proto::Materialize {
                     dimensionality: Some(1),
                     group_id: vec![]
                 }))).collect(),
-            variant: proto::indexmap_properties::Variant::Dataframe
         }).into())
     }
 }

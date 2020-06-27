@@ -62,7 +62,7 @@ impl Expandable for proto::DpCovariance {
         maximum_id += 1;
         let id_covariance = maximum_id;
         expansion.computation_graph.insert(id_covariance, proto::Component {
-            arguments: Some(proto::IndexmapNodeIds::new(arguments)),
+            arguments: Some(proto::ArgumentNodeIds::new(arguments)),
             variant: Some(proto::component::Variant::Covariance(proto::Covariance {
                 finite_sample_correction: self.finite_sample_correction
             })),
@@ -75,7 +75,7 @@ impl Expandable for proto::DpCovariance {
         maximum_id += 1;
         let id_noise = maximum_id;
         expansion.computation_graph.insert(id_noise, proto::Component {
-            arguments: Some(proto::IndexmapNodeIds::new(indexmap!["data".into() => id_covariance])),
+            arguments: Some(proto::ArgumentNodeIds::new(indexmap!["data".into() => id_covariance])),
             variant: Some(match self.mechanism.to_lowercase().as_str() {
                 "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
                     privacy_usage: self.privacy_usage.clone()
@@ -92,7 +92,7 @@ impl Expandable for proto::DpCovariance {
 
         // reshape into matrix
         expansion.computation_graph.insert(component_id, proto::Component {
-            arguments: Some(proto::IndexmapNodeIds::new(indexmap!["data".into() => id_noise])),
+            arguments: Some(proto::ArgumentNodeIds::new(indexmap!["data".into() => id_noise])),
             variant: Some(proto::component::Variant::Reshape(proto::Reshape {
                 symmetric,
                 layout: "row".to_string(),

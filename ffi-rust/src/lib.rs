@@ -11,7 +11,7 @@ mod utilities;
 mod direct_api;
 
 use whitenoise_validator::utilities::serial::{
-    serialize_error, parse_release, serialize_release, parse_indexmap_value_properties,
+    serialize_error, parse_release, serialize_release, parse_argument_properties,
     serialize_value_properties, parse_indexmap_release_node, serialize_component_expansion
 };
 use crate::utilities::{ptr_to_buffer, buffer_to_ptr};
@@ -202,7 +202,7 @@ pub extern "C" fn accuracy_to_privacy_usage(
                         .ok_or_else(|| Error::from("component must be defined"))?;
                     let privacy_definition: proto::PrivacyDefinition = privacy_definition
                         .ok_or_else(|| Error::from("privacy definition must be defined"))?;
-                    let properties = parse_indexmap_value_properties(properties
+                    let properties = parse_argument_properties(properties
                         .ok_or_else(|| Error::from("properties must be defined"))?);
                     let accuracies: proto::Accuracies = accuracies
                         .ok_or_else(|| Error::from("accuracies must be defined"))?;
@@ -254,7 +254,7 @@ pub extern "C" fn privacy_usage_to_accuracy(
                         .ok_or_else(|| Error::from("component must be defined"))?;
                     let privacy_definition: proto::PrivacyDefinition = privacy_definition
                         .ok_or_else(|| Error::from("privacy definition must be defined"))?;
-                    let properties = parse_indexmap_value_properties(properties
+                    let properties = parse_argument_properties(properties
                         .ok_or_else(|| Error::from("properties must be defined"))?);
 
                     whitenoise_validator::privacy_usage_to_accuracy(
@@ -363,7 +363,7 @@ pub extern "C" fn expand_component(
                         .map_or_else(IndexMap::new, parse_indexmap_release_node);
 
                     let properties = properties
-                        .map_or_else(IndexMap::new, parse_indexmap_value_properties);
+                        .map_or_else(IndexMap::new, parse_argument_properties);
 
                     Ok(serialize_component_expansion(whitenoise_validator::expand_component(
                         component,

@@ -1,6 +1,6 @@
 use crate::errors::*;
 
-use crate::base::{Nature, NatureCategorical, Vector1DNull, Jagged, ArrayProperties, ValueProperties, DataType};
+use crate::base::{Nature, NatureCategorical, Vector1DNull, Jagged, ArrayProperties, ValueProperties, DataType, GroupId};
 
 use crate::{proto, base, Warnable, Integer, Float};
 
@@ -125,12 +125,12 @@ impl Component for proto::Add {
             num_columns: Some(num_columns),
             num_records,
             aggregator: None,
+            group_id: propagate_binary_group_id(&left_property, &right_property)?,
             data_type: left_property.data_type,
             dataset_id: left_property.dataset_id,
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality),
-            group_id: left_property.group_id
         }).into())
     }
 }
@@ -181,6 +181,8 @@ impl Component for proto::And {
         left_property.is_not_empty = left_property.is_not_empty && right_property.is_not_empty;
         left_property.dimensionality = left_property.dimensionality
             .max(right_property.dimensionality);
+
+        left_property.group_id = propagate_binary_group_id(&left_property, &right_property)?;
 
         Ok(ValueProperties::Array(left_property).into())
     }
@@ -347,12 +349,12 @@ impl Component for proto::Divide {
             num_columns: Some(num_columns),
             num_records,
             aggregator: None,
+            group_id: propagate_binary_group_id(&left_property, &right_property)?,
             data_type: left_property.data_type,
             dataset_id: left_property.dataset_id,
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality),
-            group_id: left_property.group_id
         }).into())
     }
 }
@@ -401,7 +403,7 @@ impl Component for proto::Equal {
             dataset_id: left_property.dataset_id,
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality.max(right_property.dimensionality),
-            group_id: left_property.group_id
+            group_id: propagate_binary_group_id(&left_property, &right_property)?
         }).into())
     }
 }
@@ -458,7 +460,7 @@ impl Component for proto::GreaterThan {
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality),
-            group_id: left_property.group_id
+            group_id: propagate_binary_group_id(&left_property, &right_property)?
         }).into())
     }
 }
@@ -515,7 +517,7 @@ impl Component for proto::LessThan {
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality),
-            group_id: left_property.group_id
+            group_id: propagate_binary_group_id(&left_property, &right_property)?
         }).into())
     }
 }
@@ -577,6 +579,8 @@ impl Component for proto::Log {
         data_property.is_not_empty = data_property.is_not_empty && base_property.is_not_empty;
         data_property.dimensionality = data_property.dimensionality
             .max(base_property.dimensionality);
+
+        data_property.group_id = propagate_binary_group_id(&data_property, &base_property)?;
         Ok(ValueProperties::Array(data_property).into())
     }
 }
@@ -648,6 +652,7 @@ impl Component for proto::Modulo {
         left_property.is_not_empty = left_property.is_not_empty && right_property.is_not_empty;
         left_property.dimensionality = left_property.dimensionality
             .max(right_property.dimensionality);
+        left_property.group_id = propagate_binary_group_id(&left_property, &right_property)?;
         Ok(ValueProperties::Array(left_property).into())
     }
 }
@@ -780,6 +785,7 @@ impl Component for proto::Multiply {
                 .zip(broadcast(&right_property.c_stability, num_columns)?)
                 .map(|(l, r)| l.max(r)).collect(),
             num_columns: Some(num_columns),
+            group_id: propagate_binary_group_id(&left_property, &right_property)?,
             data_type: left_property.data_type,
             num_records,
             aggregator: None,
@@ -787,7 +793,6 @@ impl Component for proto::Multiply {
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality),
-            group_id: left_property.group_id
         }).into())
     }
 }
@@ -906,6 +911,8 @@ impl Component for proto::Or {
         left_property.dimensionality = left_property.dimensionality
             .max(right_property.dimensionality);
 
+        left_property.group_id = propagate_binary_group_id(&left_property, &right_property)?;
+
         Ok(ValueProperties::Array(left_property).into())
     }
 }
@@ -976,6 +983,7 @@ impl Component for proto::Power {
         data_property.is_not_empty = data_property.is_not_empty && radical_property.is_not_empty;
         data_property.dimensionality = data_property.dimensionality
             .max(radical_property.dimensionality);
+        data_property.group_id = propagate_binary_group_id(&data_property, &radical_property)?;
         Ok(ValueProperties::Array(data_property).into())
     }
 }
@@ -1050,12 +1058,12 @@ impl Component for proto::RowMax {
             num_columns: Some(num_columns),
             num_records,
             aggregator: None,
+            group_id: propagate_binary_group_id(&left_property, &right_property)?,
             data_type: left_property.data_type,
             dataset_id: left_property.dataset_id,
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality),
-            group_id: left_property.group_id
         }).into())
     }
 }
@@ -1129,12 +1137,12 @@ impl Component for proto::RowMin {
             num_columns: Some(num_columns),
             num_records,
             aggregator: None,
+            group_id: propagate_binary_group_id(&left_property, &right_property)?,
             data_type: left_property.data_type,
             dataset_id: left_property.dataset_id,
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality),
-            group_id: left_property.group_id
         }).into())
     }
 }
@@ -1201,12 +1209,12 @@ impl Component for proto::Subtract {
             num_columns: Some(num_columns),
             num_records,
             aggregator: None,
+            group_id: propagate_binary_group_id(&left_property, &right_property)?,
             data_type: left_property.data_type,
             dataset_id: left_property.dataset_id,
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality),
-            group_id: left_property.group_id
         }).into())
     }
 }
@@ -1517,6 +1525,22 @@ fn propagate_binary_categorical_nature(
             _ => return Err("natures must be homogeneously typed".into())
         }.deduplicate()?
     })))
+}
+
+
+fn propagate_binary_group_id(
+    left_property: &ArrayProperties, right_property: &ArrayProperties
+) -> Result<Vec<GroupId>> {
+    if left_property.releasable {
+        return Ok(right_property.group_id.clone())
+    }
+    if right_property.releasable {
+        return Ok(left_property.group_id.clone())
+    }
+    if left_property.group_id != right_property.group_id {
+        return Err("arguments to a binary operation come from different partitions".into())
+    }
+    Ok(left_property.group_id.clone())
 }
 
 fn broadcast<T: Clone>(data: &[T], length: i64) -> Result<Vec<T>> {

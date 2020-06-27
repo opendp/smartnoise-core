@@ -30,7 +30,7 @@ package whitenoise;
 import "value.proto";
 
 message Component {
-    IndexmapNodeIds arguments = 1;
+    ArgumentNodeIds arguments = 1;
 
     // if true, then don't include the evaluation for this component in the release
     bool omit = 2;

@@ -3,12 +3,12 @@ use crate::errors::*;
 use crate::{proto, base, Warnable};
 
 use crate::components::{Component, Named};
-use crate::base::{Value, ValueProperties, IndexmapProperties, IndexKey};
+use crate::base::{Value, ValueProperties, IndexKey, DataframeProperties};
 use crate::utilities::{prepend, get_argument};
 use indexmap::map::IndexMap;
 use crate::utilities::properties::select_properties;
 
-impl Component for proto::Dataframe {
+impl Component for proto::ColumnBind {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
@@ -32,8 +32,7 @@ impl Component for proto::Dataframe {
             return Err("Column names must be the same length as the number of columns.".into())
         }
 
-        Ok(ValueProperties::Indexmap(IndexmapProperties {
-            variant: proto::indexmap_properties::Variant::Dataframe,
+        Ok(ValueProperties::Dataframe(DataframeProperties {
             children: column_names.into_iter().enumerate()
                 .map(|(idx, name)| Ok((
                     name,
@@ -44,7 +43,7 @@ impl Component for proto::Dataframe {
     }
 }
 
-impl Named for proto::Dataframe {
+impl Named for proto::ColumnBind {
     fn get_names(
         &self,
         public_arguments: IndexMap<base::IndexKey, &Value>,

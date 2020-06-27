@@ -10,7 +10,7 @@ use whitenoise_validator::utilities::{array::get_ith_column, take_argument};
 use crate::utilities::standardize_columns;
 use indexmap::map::IndexMap;
 
-impl Evaluable for proto::Dataframe {
+impl Evaluable for proto::ColumnBind {
     fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
         // force the input to be an array- reject indexmap and jagged
         let data = take_argument(&mut arguments, "data")?.array()?;
@@ -25,7 +25,7 @@ impl Evaluable for proto::Dataframe {
         }.to_vec().len();
 
         // split each column name into its own column
-        Ok(ReleaseNode::new(Value::Indexmap(match data {
+        Ok(ReleaseNode::new(Value::Dataframe(match data {
             Array::Float(array) => {
                 let standardized = standardize_columns(array, num_columns)?;
                 column_names.into_iter().enumerate()

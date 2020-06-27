@@ -2,7 +2,7 @@
 
 use crate::{proto, Integer, Float};
 use std::collections::HashMap;
-use crate::base::{Release, Nature, Jagged, Vector1D, Value, Array, Vector1DNull, NatureCategorical, NatureContinuous, AggregatorProperties, ValueProperties, IndexmapProperties, JaggedProperties, DataType, ArrayProperties, ReleaseNode, GroupId, IndexKey, ComponentExpansion};
+use crate::base::{Release, Nature, Jagged, Vector1D, Value, Array, Vector1DNull, NatureCategorical, NatureContinuous, AggregatorProperties, ValueProperties, JaggedProperties, DataType, ArrayProperties, ReleaseNode, GroupId, IndexKey, ComponentExpansion, DataframeProperties, PartitionsProperties};
 use indexmap::IndexMap;
 use error_chain::ChainedError;
 
@@ -88,8 +88,16 @@ pub fn parse_array(value: proto::Array) -> Array {
     }
 }
 
-pub fn parse_indexmap(value: proto::Indexmap) -> IndexMap<IndexKey, Value> {
-    let proto::Indexmap { keys, values } = value;
+pub fn parse_dataframe(value: proto::Dataframe) -> IndexMap<IndexKey, Value> {
+    let proto::Dataframe { keys, values } = value;
+    keys.into_iter()
+        .zip(values.into_iter())
+        .map(|(k, v)| (parse_index_key(k), parse_value(v)))
+        .collect()
+}
+
+pub fn parse_partitions(value: proto::Partitions) -> IndexMap<IndexKey, Value> {
+    let proto::Partitions { keys, values } = value;
     keys.into_iter()
         .zip(values.into_iter())
         .map(|(k, v)| (parse_index_key(k), parse_value(v)))
@@ -138,8 +146,10 @@ pub fn parse_value(value: proto::Value) -> Value {
             Value::Function(function),
         proto::value::Data::Array(data) =>
             Value::Array(parse_array(data)),
-        proto::value::Data::Indexmap(data) =>
-            Value::Indexmap(parse_indexmap(data)),
+        proto::value::Data::Dataframe(data) =>
+            Value::Dataframe(parse_dataframe(data)),
+        proto::value::Data::Partitions(data) =>
+            Value::Partitions(parse_partitions(data)),
         proto::value::Data::Jagged(data) =>
             Value::Jagged(parse_jagged(data))
     }
@@ -160,8 +170,10 @@ pub fn parse_release_node(release_node: proto::ReleaseNode) -> ReleaseNode {
 
 pub fn parse_value_properties(value: proto::ValueProperties) -> ValueProperties {
     match value.variant.unwrap() {
-        proto::value_properties::Variant::Indexmap(value) =>
-            ValueProperties::Indexmap(parse_indexmap_properties(value)),
+        proto::value_properties::Variant::Dataframe(value) =>
+            ValueProperties::Dataframe(parse_dataframe_properties(value)),
+        proto::value_properties::Variant::Partitions(value) =>
+            ValueProperties::Partitions(parse_partitions_properties(value)),
         proto::value_properties::Variant::Array(value) =>
             ValueProperties::Array(parse_array_properties(value)),
         proto::value_properties::Variant::Jagged(value) =>
@@ -171,16 +183,9 @@ pub fn parse_value_properties(value: proto::ValueProperties) -> ValueProperties 
     }
 }
 
-pub fn parse_indexmap_node_ids(value: proto::IndexmapNodeIds) -> IndexMap<IndexKey, u32> {
+pub fn parse_argument_node_ids(value: proto::ArgumentNodeIds) -> IndexMap<IndexKey, u32> {
     value.values.iter().zip(value.keys.into_iter())
         .map(|(v, k)| (parse_index_key(k), *v))
-        .collect()
-}
-
-pub fn parse_indexmap_value_properties(value: proto::IndexmapValueProperties) -> IndexMap<IndexKey, ValueProperties> {
-    let proto::IndexmapValueProperties { keys, values } = value;
-    keys.into_iter().zip(values.into_iter())
-        .map(|(k, v)| (parse_index_key(k), parse_value_properties(v)))
         .collect()
 }
 
@@ -191,11 +196,29 @@ pub fn parse_indexmap_release_node(value: proto::IndexmapReleaseNode) -> IndexMa
         .collect()
 }
 
-pub fn parse_indexmap_properties(value: proto::IndexmapProperties) -> IndexmapProperties {
-    IndexmapProperties {
-        children: parse_indexmap_value_properties(value.children.unwrap()),
-        variant: proto::indexmap_properties::Variant::from_i32(value.variant).unwrap(),
+pub fn parse_partitions_properties(value: proto::PartitionsProperties) -> PartitionsProperties {
+    let proto::PartitionsProperties { keys, values } = value;
+    PartitionsProperties {
+        children: keys.into_iter().zip(values.into_iter())
+            .map(|(k, v)| (parse_index_key(k), parse_value_properties(v)))
+            .collect(),
     }
+}
+
+pub fn parse_dataframe_properties(value: proto::DataframeProperties) -> DataframeProperties {
+    let proto::DataframeProperties { keys, values } = value;
+    DataframeProperties {
+        children: keys.into_iter().zip(values.into_iter())
+            .map(|(k, v)| (parse_index_key(k), parse_value_properties(v)))
+            .collect(),
+    }
+}
+
+pub fn parse_argument_properties(value: proto::ArgumentProperties) -> IndexMap<IndexKey, ValueProperties> {
+    let proto::ArgumentProperties { keys, values } = value;
+    keys.into_iter().zip(values.into_iter())
+        .map(|(k, v)| (parse_index_key(k), parse_value_properties(v)))
+        .collect()
 }
 
 pub fn parse_index_key(value: proto::IndexKey) -> IndexKey {
@@ -224,7 +247,7 @@ pub fn parse_array_properties(value: proto::ArrayProperties) -> ArrayProperties 
             .into_iter().map(|v| v as Float).collect(),
         aggregator: value.aggregator.map(|aggregator| AggregatorProperties {
             component: aggregator.component.unwrap().variant.unwrap(),
-            properties: parse_indexmap_value_properties(aggregator.properties.unwrap()),
+            properties: parse_argument_properties(aggregator.properties.unwrap()),
             lipschitz_constants: parse_value(aggregator.lipschitz_constants.unwrap())
         }),
         nature: value.nature.map(|nature| match nature {
@@ -253,7 +276,7 @@ pub fn parse_jagged_properties(value: proto::JaggedProperties) -> JaggedProperti
         releasable: value.releasable,
         aggregator: value.aggregator.map(|aggregator| AggregatorProperties {
             component: aggregator.component.unwrap().variant.unwrap(),
-            properties: parse_indexmap_value_properties(aggregator.properties.unwrap()),
+            properties: parse_argument_properties(aggregator.properties.unwrap()),
             lipschitz_constants: parse_value(aggregator.lipschitz_constants.unwrap())
         }),
         nature: value.nature.map(|nature| match nature {
@@ -380,8 +403,15 @@ pub fn serialize_array(value: Array) -> proto::Array {
     }
 }
 
-pub fn serialize_indexmap(value: IndexMap<IndexKey, Value>) -> proto::Indexmap {
-    proto::Indexmap {
+pub fn serialize_partitions(value: IndexMap<IndexKey, Value>) -> proto::Partitions {
+    proto::Partitions {
+        keys: value.keys().map(|k| serialize_index_key(k.clone())).collect(),
+        values: value.into_iter().map(|(_, v)| serialize_value(v)).collect()
+    }
+}
+
+pub fn serialize_dataframe(value: IndexMap<IndexKey, Value>) -> proto::Dataframe {
+    proto::Dataframe {
         keys: value.keys().map(|k| serialize_index_key(k.clone())).collect(),
         values: value.into_iter().map(|(_, v)| serialize_value(v)).collect()
     }
@@ -421,8 +451,10 @@ pub fn serialize_value(value: Value) -> proto::Value {
                 proto::value::Data::Function(data),
             Value::Array(data) =>
                 proto::value::Data::Array(serialize_array(data)),
-            Value::Indexmap(data) =>
-                proto::value::Data::Indexmap(serialize_indexmap(data)),
+            Value::Partitions(data) =>
+                proto::value::Data::Partitions(serialize_partitions(data)),
+            Value::Dataframe(data) =>
+                proto::value::Data::Dataframe(serialize_dataframe(data)),
             Value::Jagged(data) =>
                 proto::value::Data::Jagged(serialize_jagged(data))
         })
@@ -445,27 +477,31 @@ pub fn serialize_release_node(release_node: ReleaseNode) -> proto::ReleaseNode {
     }
 }
 
-pub fn serialize_indexmap_node_ids(value: IndexMap<IndexKey, u32>) -> proto::IndexmapNodeIds {
-    proto::IndexmapNodeIds {
+pub fn serialize_argument_node_ids(value: IndexMap<IndexKey, u32>) -> proto::ArgumentNodeIds {
+    proto::ArgumentNodeIds {
         values: value.values().cloned().collect(),
         keys: value.into_iter().map(|v| v.0).map(serialize_index_key).collect(),
     }
 }
 
-pub fn serialize_indexmap_value_properties(value: IndexMap<IndexKey, ValueProperties>) -> proto::IndexmapValueProperties {
-    proto::IndexmapValueProperties {
+pub fn serialize_argument_properties(value: IndexMap<IndexKey, ValueProperties>) -> proto::ArgumentProperties {
+    proto::ArgumentProperties {
         keys: value.keys().cloned().map(serialize_index_key).collect(),
         values: value.into_iter().map(|v| v.1).map(serialize_value_properties).collect()
     }
 }
 
-pub fn serialize_indexmap_properties(value: IndexmapProperties) -> proto::IndexmapProperties {
-    proto::IndexmapProperties {
-        children: Some(proto::IndexmapValueProperties {
-            keys: value.children.keys().cloned().map(serialize_index_key).collect(),
-            values: value.children.into_iter().map(|v| v.1).map(serialize_value_properties).collect()
-        }),
-        variant: value.variant as i32
+pub fn serialize_dataframe_properties(value: DataframeProperties) -> proto::DataframeProperties {
+    proto::DataframeProperties {
+        keys: value.children.keys().cloned().map(serialize_index_key).collect(),
+        values: value.children.into_iter().map(|v| v.1).map(serialize_value_properties).collect()
+    }
+}
+
+pub fn serialize_partitions_properties(value: PartitionsProperties) -> proto::PartitionsProperties {
+    proto::PartitionsProperties {
+        keys: value.children.keys().cloned().map(serialize_index_key).collect(),
+        values: value.children.into_iter().map(|v| v.1).map(serialize_value_properties).collect()
     }
 }
 
@@ -520,9 +556,9 @@ pub fn serialize_array_properties(value: ArrayProperties) -> proto::ArrayPropert
                 variant: Some(aggregator.component),
                 omit: true,
                 submission: 0,
-                arguments: Some(proto::IndexmapNodeIds::default()),
+                arguments: Some(proto::ArgumentNodeIds::default()),
             }),
-            properties: Some(serialize_indexmap_value_properties(aggregator.properties)),
+            properties: Some(serialize_argument_properties(aggregator.properties)),
             lipschitz_constants: Some(serialize_value(aggregator.lipschitz_constants)),
         }),
         data_type: serialize_data_type(data_type) as i32,
@@ -556,9 +592,9 @@ pub fn serialize_jagged_properties(value: JaggedProperties) -> proto::JaggedProp
                 variant: Some(aggregator.component),
                 omit: true,
                 submission: 0,
-                arguments: Some(proto::IndexmapNodeIds::default()),
+                arguments: Some(proto::ArgumentNodeIds::default()),
             }),
-            properties: Some(serialize_indexmap_value_properties(aggregator.properties)),
+            properties: Some(serialize_argument_properties(aggregator.properties)),
             lipschitz_constants: Some(serialize_value(aggregator.lipschitz_constants))
         }),
         data_type: serialize_data_type(data_type) as i32
@@ -568,8 +604,10 @@ pub fn serialize_jagged_properties(value: JaggedProperties) -> proto::JaggedProp
 pub fn serialize_value_properties(value: ValueProperties) -> proto::ValueProperties {
     proto::ValueProperties {
         variant: Some(match value {
-            ValueProperties::Indexmap(value) =>
-                proto::value_properties::Variant::Indexmap(serialize_indexmap_properties(value)),
+            ValueProperties::Partitions(value) =>
+                proto::value_properties::Variant::Partitions(serialize_partitions_properties(value)),
+            ValueProperties::Dataframe(value) =>
+                proto::value_properties::Variant::Dataframe(serialize_dataframe_properties(value)),
             ValueProperties::Array(value) =>
                 proto::value_properties::Variant::Array(serialize_array_properties(value)),
             ValueProperties::Jagged(value) =>

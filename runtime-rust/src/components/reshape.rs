@@ -23,10 +23,10 @@ impl Evaluable for proto::Reshape {
                 match reshaped.len() {
                     0 => Err("at least one record is required to reshape".into()),
                     1 => Ok(reshaped.remove(0).into()),
-                    _ => Ok(reshaped.into_iter().enumerate()
+                    _ => Ok(Value::Partitions(reshaped.into_iter().enumerate()
                         .map(|(idx, data)|
                             (IndexKey::from(idx as Integer), data.into()))
-                        .collect::<IndexMap<IndexKey, Value>>().into())
+                        .collect::<IndexMap<IndexKey, Value>>()))
                 }
             }
             Array::Int(data) => {
@@ -34,10 +34,10 @@ impl Evaluable for proto::Reshape {
                 match reshaped.len() {
                     0 => Err("at least one record is required to reshape".into()),
                     1 => Ok(reshaped.remove(0).into()),
-                    _ => Ok(reshaped.into_iter().enumerate()
+                    _ => Ok(Value::Partitions(reshaped.into_iter().enumerate()
                         .map(|(idx, data)|
                             (IndexKey::from(idx as Integer), data.into()))
-                        .collect::<IndexMap<IndexKey, Value>>().into())
+                        .collect::<IndexMap<IndexKey, Value>>()))
                 }
             }
             Array::Float(data) => {
@@ -45,10 +45,10 @@ impl Evaluable for proto::Reshape {
                 match reshaped.len() {
                     0 => Err("at least one record is required to reshape".into()),
                     1 => Ok(reshaped.remove(0).into()),
-                    _ => Ok(reshaped.into_iter().enumerate()
+                    _ => Ok(Value::Partitions(reshaped.into_iter().enumerate()
                         .map(|(idx, data)|
                             (IndexKey::from(idx as Integer), data.into()))
-                        .collect::<IndexMap<IndexKey, Value>>().into())
+                        .collect::<IndexMap<IndexKey, Value>>()))
                 }
             }
             Array::Str(data) => {
@@ -56,10 +56,10 @@ impl Evaluable for proto::Reshape {
                 match reshaped.len() {
                     0 => Err("at least one record is required to reshape".into()),
                     1 => Ok(reshaped.remove(0).into()),
-                    _ => Ok(reshaped.into_iter().enumerate()
+                    _ => Ok(Value::Partitions(reshaped.into_iter().enumerate()
                         .map(|(idx, data)|
                             (IndexKey::from(idx as Integer), data.into()))
-                        .collect::<IndexMap<IndexKey, Value>>().into())
+                        .collect::<IndexMap<IndexKey, Value>>()))
                 }
             }
         }.map(ReleaseNode::new)
@@ -72,7 +72,8 @@ pub enum Layout {
     Column,
 }
 
-/// Gets number of rows of data.
+/// Reshape an upper triangular matrix or dense matrix represented in one row, to a square matrix.
+/// One matrix is returned per row.
 ///
 /// # Arguments
 /// * `data` - Data for which you want a count.
@@ -81,7 +82,7 @@ pub enum Layout {
 /// * `shape` - shape of output matrix
 ///
 /// # Return
-/// Reshaped matrices, one matrix per row.
+/// A vector of reshaped matrices, one matrix per row.
 ///
 /// # Example
 /// ```
@@ -89,7 +90,7 @@ pub enum Layout {
 /// use whitenoise_runtime::components::reshape::{reshape, Layout};
 /// let data = arr2(&[ [false, false, true] ]).into_dyn();
 /// let n = reshape(&data, true, &Layout::Row, &vec![2, 2]).unwrap();
-/// assert!(n[0] == arr2(&[ [false, false], [false, true] ]).into_dyn());
+/// assert_eq!(n[0], arr2(&[ [false, false], [false, true] ]).into_dyn());
 /// ```
 pub fn reshape<T: Clone>(data: &ArrayD<T>, symmetric: bool, layout: &Layout, shape: &[u32]) -> Result<Vec<ArrayD<T>>> {
     data.genrows().into_iter()

@@ -5,13 +5,13 @@
 
 use crate::errors::*;
 
-use crate::{proto, Float, Integer};
+use crate::{Float, Integer};
 use ndarray::Axis;
 use ndarray::prelude::*;
 use ndarray_stats::QuantileExt;
 
 use itertools::Itertools;
-use crate::base::{Array, Value, Jagged, Nature, Vector1DNull, NatureContinuous, NatureCategorical, ValueProperties, ArrayProperties, DataType, IndexmapProperties, JaggedProperties, IndexKey};
+use crate::base::{Array, Value, Jagged, Nature, Vector1DNull, NatureContinuous, NatureCategorical, ValueProperties, ArrayProperties, DataType, JaggedProperties, IndexKey, DataframeProperties, PartitionsProperties};
 
 use crate::utilities::deduplicate;
 use indexmap::map::IndexMap;
@@ -22,11 +22,11 @@ pub fn infer_lower(value: &Value) -> Result<Vector1DNull> {
             match array.shape().len() as i64 {
                 0 => match array {
                     Array::Float(array) =>
-                        Vector1DNull::Float(vec![
-                            Some(array.first().ok_or_else(|| Error::from("lower bounds may not be length zero"))?.to_owned())]),
+                        Vector1DNull::Float(vec![Some(array.first()
+                            .ok_or_else(|| Error::from("lower bounds may not be length zero"))?.to_owned())]),
                     Array::Int(array) =>
-                        Vector1DNull::Int(vec![
-                            Some(array.first().ok_or_else(|| Error::from("lower bounds may not be length zero"))?.to_owned())]),
+                        Vector1DNull::Int(vec![Some(array.first()
+                            .ok_or_else(|| Error::from("lower bounds may not be length zero"))?.to_owned())]),
                     _ => return Err("Cannot infer numeric lower bounds on a non-numeric vector".into())
                 },
                 1 => match array {
@@ -52,7 +52,6 @@ pub fn infer_lower(value: &Value) -> Result<Vector1DNull> {
                 _ => return Err("arrays may have max dimensionality of 2".into())
             }
         }
-        Value::Indexmap(_) => return Err("constraint inference is not implemented for indexmaps".into()),
         Value::Jagged(jagged) => {
             match jagged {
                 Jagged::Float(jagged) => Vector1DNull::Float(jagged.iter()
@@ -66,7 +65,7 @@ pub fn infer_lower(value: &Value) -> Result<Vector1DNull> {
                 _ => return Err("Cannot infer numeric lower bounds on a non-numeric vector".into())
             }
         }
-        Value::Function(_function) => return Err("constraint inference is not implemented for functions".into())
+        _ => return Err("bounds inference is only implemented for arrays and jagged arrays".into())
     })
 }
 
@@ -106,7 +105,6 @@ pub fn infer_upper(value: &Value) -> Result<Vector1DNull> {
                 _ => return Err("arrays may have max dimensionality of 2".into())
             }
         }
-        Value::Indexmap(_) => return Err("constraint inference is not implemented for indexmaps".into()),
         Value::Jagged(jagged) => {
             match jagged {
                 Jagged::Float(jagged) => Vector1DNull::Float(jagged.iter()
@@ -120,7 +118,7 @@ pub fn infer_upper(value: &Value) -> Result<Vector1DNull> {
                 _ => return Err("Cannot infer numeric upper bounds on a non-numeric vector".into())
             }
         }
-        Value::Function(_function) => return Err("constraint inference is not implemented for functions".into())
+        _ => return Err("bounds inference is only implemented for arrays and jagged arrays".into())
     })
 }
 
@@ -143,8 +141,7 @@ pub fn infer_categories(value: &Value) -> Result<Jagged> {
                 Jagged::Str(array.gencolumns().into_iter().map(|col|
                     Ok(col.into_dyn().into_dimensionality::<Ix1>()?.to_vec()))
                     .collect::<Result<Vec<_>>>()?),
-        },
-        Value::Indexmap(_) => return Err("category inference is not implemented for indexmaps".into()),
+        }
         Value::Jagged(jagged) => match jagged {
             Jagged::Bool(array) =>
                 Jagged::Bool(array.iter().cloned().map(deduplicate).collect()),
@@ -155,7 +152,7 @@ pub fn infer_categories(value: &Value) -> Result<Jagged> {
             Jagged::Str(array) =>
                 Jagged::Str(array.iter().cloned().map(deduplicate).collect()),
         }
-        Value::Function(_function) => return Err("category inference is not implemented for functions".into())
+        _ => return Err("category inference is only implemented for arrays and jagged arrays".into()),
     }.deduplicate()
 }
 
@@ -195,14 +192,13 @@ pub fn infer_nature(
                 categories: infer_categories(&array.clone().into())?,
             })),
         },
-        Value::Indexmap(_) => unreachable!(),
         Value::Jagged(jagged) => match jagged {
             Jagged::Float(_) => None,
             _ => Some(Nature::Categorical(NatureCategorical {
                 categories: infer_categories(value)?,
             }))
         },
-        Value::Function(_function) => return Err("nature inference is not implemented for functions".into())
+        _ => return Err("nature inference is only implemented for arrays and jagged arrays".into())
     })
 }
 
@@ -250,31 +246,48 @@ pub fn infer_property(
                 dataset_id: prior_prop_arr.and_then(|p| p.dataset_id),
                 is_not_empty: array.num_records()? != 0,
                 dimensionality: Some(array.shape().len() as i64),
-                group_id: match prior_prop_arr {
-                    Some(prior_property) => prior_property.group_id.clone(),
-                    None => Vec::new()
-                }
+                group_id: prior_prop_arr
+                    .map(|v| v.group_id.clone())
+                    .unwrap_or_else(Vec::new)
             }.into()
         },
-        Value::Indexmap(indexmap) => {
-            match prior_property {
-                Some(prior_property) => IndexmapProperties {
-                    variant: proto::indexmap_properties::Variant::Dataframe,
-                    children: indexmap.iter()
-                        .zip(prior_property.indexmap()?.children.values())
+        Value::Dataframe(dataframe) => match prior_property {
+            Some(ValueProperties::Dataframe(prior_property)) =>
+                DataframeProperties {
+                    children: dataframe.iter()
+                        .zip(prior_property.children.values())
                         .map(|((name, value), prop)|
                             infer_property(value, Some(prop))
                                 .map(|v| (name.clone(), v)))
                         .collect::<Result<IndexMap<IndexKey, ValueProperties>>>()?,
                 }.into(),
-                None => IndexmapProperties {
-                    variant: proto::indexmap_properties::Variant::Dataframe,
-                    children: indexmap.iter()
+            Some(_) => return Err("the prior properties for the dataframe do not match the actual data".into()),
+            None =>
+                DataframeProperties {
+                    children: dataframe.iter()
                         .map(|(name, value)| infer_property(value, None)
                             .map(|v| (name.clone(), v)))
                         .collect::<Result<IndexMap<IndexKey, ValueProperties>>>()?,
                 }.into()
-            }
+        }
+        Value::Partitions(partitions) => match prior_property {
+            Some(ValueProperties::Partitions(prior_property)) =>
+                PartitionsProperties {
+                    children: partitions.iter()
+                        .zip(prior_property.children.values())
+                        .map(|((name, value), prop)|
+                            infer_property(value, Some(prop))
+                                .map(|v| (name.clone(), v)))
+                        .collect::<Result<IndexMap<IndexKey, ValueProperties>>>()?,
+                }.into(),
+            Some(_) => return Err("the prior properties for the partitions do not match the actual data".into()),
+            None =>
+                PartitionsProperties {
+                    children: partitions.iter()
+                        .map(|(name, value)| infer_property(value, None)
+                            .map(|v| (name.clone(), v)))
+                        .collect::<Result<IndexMap<IndexKey, ValueProperties>>>()?,
+                }.into()
         }
         Value::Jagged(jagged) => JaggedProperties {
             num_records: Some(jagged.num_records()),

@@ -3,7 +3,7 @@ use crate::errors::*;
 use crate::{proto, base, Warnable, Integer};
 
 use crate::components::{Component, Expandable};
-use crate::base::{IndexKey, Value, Jagged, ValueProperties, IndexmapProperties, ArrayProperties, NodeProperties};
+use crate::base::{IndexKey, Value, Jagged, ValueProperties, ArrayProperties, NodeProperties, PartitionsProperties};
 use crate::utilities::{prepend, get_literal, get_argument};
 use indexmap::map::IndexMap;
 use itertools::Itertools;
@@ -25,7 +25,7 @@ impl Component for proto::Partition {
             .ok_or_else(|| Error::from("privacy_definition must be defined"))?.neighboring)
             .ok_or_else(|| Error::from("neighboring must be defined"))?;
 
-        Ok(ValueProperties::Indexmap(match properties.get::<IndexKey>(&"by".into()) {
+        Ok(ValueProperties::Partitions(match properties.get::<IndexKey>(&"by".into()) {
 
             // propagate properties when partitioning "by" some array
             Some(by_property) => {
@@ -39,9 +39,8 @@ impl Component for proto::Partition {
 
                 let partition_keys = make_dense_partition_keys(categories, by_property.dimensionality)?;
 
-                IndexmapProperties {
+                PartitionsProperties {
                     children: broadcast_partitions(partition_keys, &data_property, node_id, neighboring)?,
-                    variant: proto::indexmap_properties::Variant::Partition,
                 }
             }
 
@@ -52,7 +51,7 @@ impl Component for proto::Partition {
 
                 let num_records = match &data_property {
                     ValueProperties::Array(data_property) => data_property.num_records,
-                    ValueProperties::Indexmap(data_property) => data_property.num_records()?,
+                    ValueProperties::Dataframe(data_property) => data_property.num_records()?,
                     _ => return Err("data: must be a dataframe or array".into())
                 };
                 let lengths = match num_records {
@@ -63,7 +62,7 @@ impl Component for proto::Partition {
                         .collect::<Vec<Option<i64>>>()
                 };
 
-                IndexmapProperties {
+                PartitionsProperties {
                     children: lengths.iter().enumerate()
                         .map(|(index, partition_num_records)| Ok((
                             IndexKey::from(index as Integer),
@@ -74,7 +73,6 @@ impl Component for proto::Partition {
                                 neighboring)?
                         )))
                         .collect::<Result<IndexMap<IndexKey, ValueProperties>>>()?,
-                    variant: proto::indexmap_properties::Variant::Partition,
                 }
             }
         }).into())
@@ -148,17 +146,14 @@ fn get_partition_properties(
 
     Ok(match properties {
         ValueProperties::Array(properties) => ValueProperties::Array(update_array_properties(properties.clone())),
-        ValueProperties::Indexmap(properties) => {
-            if properties.variant != proto::indexmap_properties::Variant::Dataframe {
-                return Err("data: indexmap must be dataframe".into())
-            }
+        ValueProperties::Dataframe(properties) => {
             let mut properties = properties.clone();
             properties.children.values_mut()
                 .try_for_each(|v| {
                     *v = ValueProperties::Array(update_array_properties(v.array()?.clone()));
                     Ok::<_, Error>(())
                 })?;
-            ValueProperties::Indexmap(properties)
+            ValueProperties::Dataframe(properties)
         }
         _ => return Err("data: must be a dataframe or array".into())
     })

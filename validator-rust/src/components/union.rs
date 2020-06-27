@@ -4,7 +4,7 @@ use crate::errors::*;
 use crate::{proto, base, Warnable, Float};
 
 use crate::components::{Component, Sensitivity};
-use crate::base::{Value, ValueProperties, ArrayProperties, AggregatorProperties, NodeProperties, SensitivitySpace, IndexKey, IndexmapProperties};
+use crate::base::{Value, ValueProperties, ArrayProperties, AggregatorProperties, NodeProperties, SensitivitySpace, IndexKey, PartitionsProperties};
 use crate::utilities::{get_common_value};
 
 use itertools::Itertools;
@@ -73,10 +73,7 @@ impl Component for proto::Union {
                     .collect())?
             })
         } else {
-            ValueProperties::Indexmap(IndexmapProperties {
-                children: properties,
-                variant: proto::indexmap_properties::Variant::Partition
-            })
+            ValueProperties::Partitions(PartitionsProperties { children: properties })
         }))
     }
 }
@@ -104,9 +101,9 @@ impl Sensitivity for proto::Union {
                 .map(|v| Ok(v.ref_array()?.ref_float()?.view()))
                 .collect::<Result<Vec<ArrayViewD<Float>>>>()?)?.into()
         } else {
-            properties.keys()
+            Value::Partitions(properties.keys()
                 .cloned().zip(partition_sensitivities)
-                .collect::<IndexMap<IndexKey, Value>>().into()
+                .collect::<IndexMap<IndexKey, Value>>())
         })
     }
 }

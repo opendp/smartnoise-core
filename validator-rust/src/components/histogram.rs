@@ -99,12 +99,12 @@ impl Expandable for proto::Histogram {
                 maximum_id += 1;
                 let id_digitize = maximum_id;
                 expansion.computation_graph.insert(id_digitize, proto::Component {
-                    arguments: Some(proto::IndexmapNodeIds::new(arguments)),
+                    arguments: Some(proto::ArgumentNodeIds::new(arguments)),
                     variant: Some(proto::component::Variant::Digitize(proto::Digitize {})),
                     omit: true,
                     submission: component.submission,
                 });
-                component.arguments = Some(proto::IndexmapNodeIds::new(indexmap!["data".into() => id_digitize]));
+                component.arguments = Some(proto::ArgumentNodeIds::new(indexmap!["data".into() => id_digitize]));
                 expansion.traversal.push(id_digitize);
             }
 
@@ -116,7 +116,7 @@ impl Expandable for proto::Histogram {
                 maximum_id += 1;
                 let id_clamp = maximum_id;
                 expansion.computation_graph.insert(id_clamp, proto::Component {
-                    arguments: Some(proto::IndexmapNodeIds::new(indexmap![
+                    arguments: Some(proto::ArgumentNodeIds::new(indexmap![
                         "data".into() => data_id,
                         "categories".into() => *categories_id,
                         "null_value".into() => *null_id
@@ -125,7 +125,7 @@ impl Expandable for proto::Histogram {
                     omit: true,
                     submission: component.submission,
                 });
-                component.arguments = Some(proto::IndexmapNodeIds::new(indexmap!["data".into() => id_clamp]));
+                component.arguments = Some(proto::ArgumentNodeIds::new(indexmap!["data".into() => id_clamp]));
                 expansion.traversal.push(id_clamp);
             }
 

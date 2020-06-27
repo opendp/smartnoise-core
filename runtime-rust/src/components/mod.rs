@@ -19,7 +19,7 @@ pub mod cast;
 pub mod clamp;
 pub mod count;
 pub mod covariance;
-pub mod dataframe;
+pub mod column_bind;
 pub mod digitize;
 pub mod filter;
 pub mod histogram;
@@ -81,7 +81,7 @@ impl Evaluable for proto::component::Variant {
 
         evaluate!(
             // INSERT COMPONENT LIST
-            Cast, Clamp, Count, Covariance, Dataframe, Digitize, Filter, Histogram, Impute, Index,
+            Cast, Clamp, ColumnBind, Count, Covariance, Digitize, Filter, Histogram, Impute, Index,
             Materialize, Mean, Partition,
             Quantile, RawMoment, Reshape, Resize, Sum, Union, Variance,
 

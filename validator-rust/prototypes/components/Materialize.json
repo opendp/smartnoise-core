@@ -27,7 +27,7 @@
     }
   },
   "return": {
-    "type_value": "Indexmap"
+    "type_value": "Dataframe"
   },
   "description": "Load a tabular frame from a data source",
   "proto_id": 35

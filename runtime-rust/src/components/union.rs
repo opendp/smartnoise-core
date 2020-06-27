@@ -1,7 +1,7 @@
 use whitenoise_validator::errors::*;
 
 use crate::NodeArguments;
-use whitenoise_validator::base::{ReleaseNode, Array};
+use whitenoise_validator::base::{ReleaseNode, Array, Value};
 use crate::components::Evaluable;
 
 use whitenoise_validator::{proto, Float, Integer};
@@ -14,7 +14,7 @@ impl Evaluable for proto::Union {
     fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: NodeArguments) -> Result<ReleaseNode> {
 
         if !self.flatten {
-            return Ok(ReleaseNode::new(arguments.into()))
+            return Ok(ReleaseNode::new(Value::Partitions(arguments.into())))
         }
 
         let arrays = arguments.into_iter()

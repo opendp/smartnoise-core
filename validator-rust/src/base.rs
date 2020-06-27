@@ -7,11 +7,11 @@ use crate::{proto, base, Integer, Float};
 use ndarray::prelude::Ix1;
 
 use std::collections::HashMap;
-use ndarray::{ArrayD, arr0, Dimension};
+use ndarray::{ArrayD, arr0, Dimension, arr1};
 
 use crate::utilities::{standardize_categorical_argument, deduplicate, get_common_value};
 use indexmap::IndexMap;
-use crate::utilities::serial::{parse_indexmap_node_ids, serialize_index_key};
+use crate::utilities::serial::{parse_argument_node_ids, serialize_index_key};
 use std::ops::{Add, Div, Mul};
 use itertools::Itertools;
 
@@ -29,7 +29,9 @@ pub enum Value {
     /// An arbitrary-dimensional homogeneously typed array
     Array(Array),
     /// An index-map, where the keys are enum-typed and the values are of type Value
-    Indexmap(IndexMap<IndexKey, Value>),
+    Dataframe(IndexMap<IndexKey, Value>),
+    /// An index-map, where the keys are enum-typed and the values are of type Value
+    Partitions(IndexMap<IndexKey, Value>),
     /// A 2D homogeneously typed matrix, where the columns may be unknown and the column lengths may be inconsistent
     Jagged(Jagged),
     /// An arbitrary function expressed in the graph language
@@ -63,10 +65,16 @@ impl Value {
             _ => Err("value must be Jaggd".into())
         }
     }
-    /// Retrieve Jagged from a Value, assuming the Value contains Jagged
-    pub fn indexmap(self) -> Result<IndexMap<IndexKey, Value>> {
+
+    pub fn dataframe(self) -> Result<IndexMap<IndexKey, Value>> {
         match self {
-            Value::Indexmap(indexmap) => Ok(indexmap),
+            Value::Dataframe(dataframe) => Ok(dataframe),
+            _ => Err("value must be Jagged".into())
+        }
+    }
+    pub fn partitions(self) -> Result<IndexMap<IndexKey, Value>> {
+        match self {
+            Value::Partitions(partitions) => Ok(partitions),
             _ => Err("value must be Jagged".into())
         }
     }
@@ -76,6 +84,34 @@ impl Value {
             Value::Function(function) => Ok(function),
             _ => Err("value must be a function".into())
         }
+    }
+
+    pub fn from_index_key(key: IndexKey) -> Result<Self> {
+        Ok(match key {
+            IndexKey::Int(key) => key.into(),
+            IndexKey::Str(key) => key.into(),
+            IndexKey::Bool(key) => key.into(),
+            IndexKey::Tuple(key) => match get_common_value(&key.iter().map(|v| Ok(match v {
+                IndexKey::Int(_) => DataType::Int,
+                IndexKey::Str(_) => DataType::Str,
+                IndexKey::Bool(_) => DataType::Bool,
+                _ => return Err("index keys may not be nested".into())
+            })).collect::<Result<Vec<DataType>>>()?) {
+                Some(DataType::Int) => arr1(&key.into_iter().map(|v| match v {
+                    IndexKey::Int(v) => v,
+                    _ => unreachable!()
+                }).collect::<Vec<_>>()).into_dyn().into(),
+                Some(DataType::Bool) => arr1(&key.into_iter().map(|v| match v {
+                    IndexKey::Bool(v) => v,
+                    _ => unreachable!()
+                }).collect::<Vec<_>>()).into_dyn().into(),
+                Some(DataType::Str) => arr1(&key.into_iter().map(|v| match v {
+                    IndexKey::Str(v) => v,
+                    _ => unreachable!()
+                }).collect::<Vec<_>>()).into_dyn().into(),
+                _ => return Err("index key tuples may not currently have mixed types".into())
+            }
+        })
     }
 }
 
@@ -149,13 +185,6 @@ impl<T> From<ndarray::Array<String, ndarray::Dim<T>>> for Value
     where ndarray::Dim<T>: Dimension {
     fn from(value: ndarray::Array<String, ndarray::Dim<T>>) -> Self {
         Value::Array(Array::Str(value.into_dyn()))
-    }
-}
-
-
-impl From<IndexMap<IndexKey, Value>> for Value {
-    fn from(value: IndexMap<IndexKey, Value>) -> Self {
-        Value::Indexmap(value)
     }
 }
 
@@ -511,7 +540,8 @@ impl From<Vec<Vec<String>>> for Jagged {
 #[allow(clippy::large_enum_variant)]
 #[derive(Clone, Debug)]
 pub enum ValueProperties {
-    Indexmap(IndexmapProperties),
+    Dataframe(DataframeProperties),
+    Partitions(PartitionsProperties),
     Array(ArrayProperties),
     Jagged(JaggedProperties),
     Function(proto::FunctionProperties),
@@ -527,12 +557,19 @@ impl ValueProperties {
         }
     }
     /// Retrieve properties corresponding to an Indexmap, assuming the corresponding data value is actually the Indexmap variant
-    pub fn indexmap(&self) -> Result<&IndexmapProperties> {
+    pub fn dataframe(&self) -> Result<&DataframeProperties> {
         match self {
-            ValueProperties::Indexmap(value) => Ok(value),
-            _ => Err("value must be an indexmap".into())
+            ValueProperties::Dataframe(value) => Ok(value),
+            _ => Err("value must be a dataframe".into())
         }
     }
+    pub fn partition(&self) -> Result<&PartitionsProperties> {
+        match self {
+            ValueProperties::Partitions(value) => Ok(value),
+            _ => Err("value must be a partition".into())
+        }
+    }
+
     /// Retrieve properties corresponding to an Vector2DJagged, assuming the corresponding data value is actually the Vector2DJagged variant
     pub fn jagged(&self) -> Result<&JaggedProperties> {
         match self {
@@ -549,9 +586,15 @@ impl From<ArrayProperties> for ValueProperties {
     }
 }
 
-impl From<IndexmapProperties> for ValueProperties {
-    fn from(value: IndexmapProperties) -> Self {
-        ValueProperties::Indexmap(value)
+impl From<DataframeProperties> for ValueProperties {
+    fn from(value: DataframeProperties) -> Self {
+        ValueProperties::Dataframe(value)
+    }
+}
+
+impl From<PartitionsProperties> for ValueProperties {
+    fn from(value: PartitionsProperties) -> Self {
+        ValueProperties::Partitions(value)
     }
 }
 
@@ -561,48 +604,45 @@ impl From<JaggedProperties> for ValueProperties {
     }
 }
 
-
-/// Derived properties for the universal Indexmap.
-///
-/// The IndexmapProperties has a one-to-one mapping to a protobuf IndexmapProperties.
+/// Derived properties for a dataframe.
 #[derive(Clone, Debug)]
-pub struct IndexmapProperties {
-    /// properties for each of the values in the indexmap
+pub struct DataframeProperties {
+    /// properties for each of the columns in the dataframe
     pub children: IndexMap<IndexKey, ValueProperties>,
-    /// denote if the value is a Dataframe or Partition
-    pub variant: proto::indexmap_properties::Variant,
 }
 
-impl IndexmapProperties {
-    pub fn assert_is_dataframe(&self) -> Result<()> {
-        if self.variant != proto::indexmap_properties::Variant::Dataframe {
-            return Err("indexmap must be a dataframe".into());
-        }
-        Ok(())
-    }
-    pub fn assert_is_partition(&self) -> Result<()> {
-        if self.variant != proto::indexmap_properties::Variant::Partition {
-            return Err("indexmap must be a partition".into());
-        }
-        Ok(())
-    }
+/// Derived properties for a partition.
+#[derive(Clone, Debug)]
+pub struct PartitionsProperties {
+    /// properties for each of the partitions in the indexmap
+    pub children: IndexMap<IndexKey, ValueProperties>,
+}
+
+impl PartitionsProperties {
     pub fn num_records(&self) -> Result<Option<i64>> {
-        match self.variant {
-            proto::indexmap_properties::Variant::Dataframe =>
-                get_common_value(&self.children.values()
-                    .map(|v| Ok(v.array()?.num_records))
-                    .collect::<Result<Vec<Option<i64>>>>()?)
-                    .ok_or_else(|| "dataframe columns must share the same number of rows".into()),
-            proto::indexmap_properties::Variant::Partition =>
-                Ok(self.children.values()
-                    .map(|v: &ValueProperties| match v {
-                        ValueProperties::Indexmap(v) => v.num_records(),
-                        ValueProperties::Array(v) => Ok(v.num_records),
-                        _ => Err("invalid Value type for counting records".into())
-                    })
-                    .collect::<Result<Vec<Option<i64>>>>()?.into_iter()
-                    .try_fold(0, |sum, v| v.map(|v| sum + v)))
-        }
+        Ok(self.children.values()
+            .map(|v: &ValueProperties| match v {
+                ValueProperties::Partitions(v) => v.num_records(),
+                ValueProperties::Dataframe(v) => v.num_records(),
+                ValueProperties::Array(v) => Ok(v.num_records),
+                _ => Err("invalid Value type for counting records".into())
+            })
+            .collect::<Result<Vec<Option<i64>>>>()?.into_iter()
+            .try_fold(0, |sum, v| v.map(|v| sum + v)))
+    }
+
+    pub fn from_values(&self, values: Vec<ValueProperties>) -> IndexMap<IndexKey, ValueProperties> {
+        self.children.keys().cloned()
+            .zip(values).collect::<IndexMap<base::IndexKey, ValueProperties>>()
+    }
+}
+
+impl DataframeProperties {
+    pub fn num_records(&self) -> Result<Option<i64>> {
+        get_common_value(&self.children.values()
+            .map(|v| Ok(v.array()?.num_records))
+            .collect::<Result<Vec<Option<i64>>>>()?)
+            .ok_or_else(|| "dataframe columns must share the same number of rows".into())
     }
 
     pub fn from_values(&self, values: Vec<ValueProperties>) -> IndexMap<IndexKey, ValueProperties> {
@@ -1009,7 +1049,7 @@ impl proto::Component {
                     arguments.values.push(value)
                 }
             },
-            None => self.arguments = Some(proto::IndexmapNodeIds {
+            None => self.arguments = Some(proto::ArgumentNodeIds {
                 keys: vec![key],
                 values: vec![value]
             })
@@ -1018,15 +1058,15 @@ impl proto::Component {
 
     pub fn arguments(&self) -> IndexMap<IndexKey, u32> {
         match &self.arguments {
-            Some(arguments) => parse_indexmap_node_ids(arguments.clone()),
+            Some(arguments) => parse_argument_node_ids(arguments.clone()),
             None => IndexMap::new()
         }
     }
 }
 
-impl proto::IndexmapNodeIds {
+impl proto::ArgumentNodeIds {
     pub fn new(arguments: IndexMap<base::IndexKey, u32>) -> Self {
-        proto::IndexmapNodeIds {
+        proto::ArgumentNodeIds {
             keys: arguments.keys().map(|k| serialize_index_key(k.clone())).collect(),
             values: arguments.values().cloned().collect()
         }

@@ -17,15 +17,13 @@ impl Evaluable for proto::Index {
     fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
         let data = take_argument(&mut arguments, "data")?;
 
-        let is_partition = take_argument(&mut arguments, "is_partition")
-            .unwrap_or_else(|_| false.into())
-            .array()?.first_bool()?;
-
         let dimensionality;
+
+        let is_partition = if let Value::Partitions(_) = &data {true} else {false};
 
         let mut indexed = match data {
             // if value is an indexmap, we'll be stacking arrays column-wise
-            Value::Indexmap(dataframe) => {
+            Value::Dataframe(indexmap) | Value::Partitions(indexmap) => {
                 let column_names = if let Ok(names) = take_argument(&mut arguments, "names") {
                     dimensionality = names.ref_array()?.shape().len() + 1;
                     let mut indices = match names.array()? {
@@ -44,7 +42,7 @@ impl Evaluable for proto::Index {
 
                 } else if let Ok(indices) = take_argument(&mut arguments, "indices") {
                     dimensionality = indices.ref_array()?.shape().len() + 1;
-                    let column_names = dataframe.keys().cloned().collect::<Vec<IndexKey>>();
+                    let column_names = indexmap.keys().cloned().collect::<Vec<IndexKey>>();
                     to_name_vec(indices.array()?.int()?)?.iter()
                         .map(|index| column_names.get(*index as usize).cloned()
                             .ok_or_else(|| Error::from("column index out of bounds"))).collect::<Result<Vec<IndexKey>>>()?
@@ -52,15 +50,15 @@ impl Evaluable for proto::Index {
                 } else if let Ok(mask) = take_argument(&mut arguments, "mask") {
                     dimensionality = 2;
                     mask_columns(
-                        &dataframe.keys().cloned().collect::<Vec<IndexKey>>(),
+                        &indexmap.keys().cloned().collect::<Vec<IndexKey>>(),
                         &to_name_vec(mask.array()?.bool()?)?)?
 
                 } else {
                     return Err("names, indices, or mask must be supplied when indexing on partitions or dataframes".into())
                 };
 
-                column_stack(dataframe, &column_names)
-            },
+                column_stack(indexmap, &column_names)
+            }
 
             // if the value is an array, we'll be selecting columns
             Value::Array(array) => {

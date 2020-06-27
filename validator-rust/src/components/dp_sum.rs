@@ -28,7 +28,7 @@ impl Expandable for proto::DpSum {
         maximum_id += 1;
         let id_sum = maximum_id;
         expansion.computation_graph.insert(id_sum, proto::Component {
-            arguments: Some(proto::IndexmapNodeIds::new(indexmap![
+            arguments: Some(proto::ArgumentNodeIds::new(indexmap![
                 "data".into() => *component.arguments().get::<base::IndexKey>(&"data".into())
                     .ok_or_else(|| Error::from("data must be provided as an argument"))?])),
             variant: Some(proto::component::Variant::Sum(proto::Sum {})),
@@ -48,7 +48,7 @@ impl Expandable for proto::DpSum {
 
             // noising
             expansion.computation_graph.insert(component_id, proto::Component {
-                arguments: Some(proto::IndexmapNodeIds::new(indexmap![
+                arguments: Some(proto::ArgumentNodeIds::new(indexmap![
                     "data".into() => id_sum,
                     "lower".into() => sum_min_id,
                     "upper".into() => sum_max_id
@@ -63,7 +63,7 @@ impl Expandable for proto::DpSum {
 
             // noising
             expansion.computation_graph.insert(component_id, proto::Component {
-                arguments: Some(proto::IndexmapNodeIds::new(indexmap![
+                arguments: Some(proto::ArgumentNodeIds::new(indexmap![
                     "data".into() => id_sum
                 ])),
                 variant: Some(match mechanism.as_str() {

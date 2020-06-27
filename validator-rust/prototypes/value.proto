@@ -86,7 +86,7 @@ message PrivacyUsages {
     repeated PrivacyUsage values = 1;
 }
 
-message IndexmapNodeIds {
+message ArgumentNodeIds {
     repeated IndexKey keys = 1;
     repeated uint32 values = 2;
 }

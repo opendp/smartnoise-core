@@ -50,7 +50,7 @@ impl Evaluable for proto::Materialize {
                 response[idx] = (0..response[0].len()).map(|_| "".to_string()).collect::<Vec<String>>())
         }
 
-        Ok(ReleaseNode::new(Value::Indexmap(column_names.into_iter()
+        Ok(ReleaseNode::new(Value::Dataframe(column_names.into_iter()
             .zip(response.into_iter())
             .map(|(key, value): (IndexKey, Vec<String>)|
                 (key, ndarray::Array::from(value).into_dyn().into()))

@@ -2,18 +2,17 @@ use crate::errors::*;
 
 use crate::base::{
     Array, Value, ValueProperties, ArrayProperties,
-    IndexKey, NodeProperties
+    IndexKey
 };
 
 use crate::{proto, base, Warnable};
-use crate::components::{Component, Named, Expandable};
+use crate::components::{Component, Named};
 
 use ndarray::ArrayD;
 use ndarray::prelude::*;
-use crate::utilities::{get_literal, get_argument};
+use crate::utilities::{get_argument};
 use indexmap::map::IndexMap;
 use crate::utilities::properties::{select_properties, stack_properties};
-use crate::utilities::inference::infer_property;
 
 impl Component for proto::Index {
     fn propagate_property(
@@ -29,87 +28,77 @@ impl Component for proto::Index {
         let mut dimensionality = None;
 
         let properties = match data_property {
-            ValueProperties::Indexmap(data_property) => {
-
-                match data_property.variant {
-
-
-                    proto::indexmap_properties::Variant::Dataframe => {
-                        if let Some(column_names) = public_arguments.get::<IndexKey>(&"names".into()) {
-                            let column_names = column_names.ref_array()?;
-                            dimensionality = Some(column_names.shape().len() as i64 + 1);
-                            match column_names.to_owned() {
-                                Array::Float(_) => return Err("floats are not valid indexes".into()),
-                                Array::Int(names) => to_name_vec(names)?.into_iter()
-                                    .map(|v| data_property.children.get::<IndexKey>(&v.into()).cloned())
-                                    .collect::<Option<Vec<ValueProperties>>>(),
-                                Array::Str(names) => to_name_vec(names)?.into_iter()
-                                    .map(|v| data_property.children.get::<IndexKey>(&v.into()).cloned())
-                                    .collect::<Option<Vec<ValueProperties>>>(),
-                                Array::Bool(names) => to_name_vec(names)?.into_iter()
-                                    .map(|v| data_property.children.get::<IndexKey>(&v.into()).cloned())
-                                    .collect::<Option<Vec<ValueProperties>>>(),
-                            }
-                                .ok_or_else(|| Error::from("columns: unknown column in index"))
-
-                        } else if let Some(indices) = public_arguments.remove::<IndexKey>(&"indices".into()) {
-                            let indices = indices.clone().array()?.int()?;
-                            dimensionality = Some(indices.shape().len() as i64 + 1);
-                            to_name_vec(indices)?.into_iter()
-                                .map(|idx| data_property.children.get_index(idx as usize).map(|v| v.1.clone()))
-                                .collect::<Option<Vec<ValueProperties>>>()
-                                .ok_or_else(|| Error::from("index does not exist"))
-
-                        } else if let Some(mask) = public_arguments.remove::<IndexKey>(&"mask".into()) {
-                            let mask = mask.clone().array()?.bool()?;
-                            if mask.shape().len() != 1 {
-                                return Err("mask: must be 1-dimensional".into())
-                            }
-                            dimensionality = Some(2);
-                            let mask = to_name_vec(mask)?;
-                            if mask.len() != data_property.children.len() {
-                                return Err("mask: must be same length as the number of columns".into())
-                            }
-                            Ok(data_property.children.into_iter().zip(mask)
-                                .filter(|(_, m)| *m).map(|(v, _)| v.1)
-                                .collect::<Vec<ValueProperties>>())
-                        } else {
-                            return Err("one of names, indices or mask must be supplied".into())
-                        }
-                    }
-
-                    // index into a partitional indexmap
-                    proto::indexmap_properties::Variant::Partition => {
-                        let names = get_argument(&public_arguments, "names")?
-                            .to_owned().array()?;
-
-                        let partition_key = IndexKey::new(names)?;
-                        let mut part_properties = data_property.children.get::<IndexKey>(&partition_key)
-                            .ok_or_else(|| format!("unknown partition index: {:?}", partition_key))?.clone();
-
-                        fn set_group_index(part_properties: &mut ArrayProperties, key: IndexKey) {
-                            let last_idx = part_properties.group_id.len() - 1;
-
-                            if let Some(v) = part_properties.group_id.get_mut(last_idx) {
-                                v.index = Some(key)
-                            };
-                        }
-
-                        match &mut part_properties {
-                            ValueProperties::Array(part_properties) =>
-                                set_group_index(part_properties, partition_key),
-                            ValueProperties::Indexmap(part_properties) =>
-                                part_properties.children.values_mut()
-                                    .try_for_each(|mut v| if let ValueProperties::Array(v) = &mut v {
-                                        set_group_index(v, partition_key.clone());
-                                        Ok(())
-                                    } else { Err(Error::from("dataframe columns must be arrays")) })?,
-                            _ => return Err("data: partition members must be either a dataframe or array".into())
-                        }
-
-                        return Ok(Warnable::new(part_properties))
-                    }
+            ValueProperties::Dataframe(data_property) => if let Some(column_names) = public_arguments.get::<IndexKey>(&"names".into()) {
+                let column_names = column_names.ref_array()?;
+                dimensionality = Some(column_names.shape().len() as i64 + 1);
+                match column_names.to_owned() {
+                    Array::Float(_) => return Err("floats are not valid indexes".into()),
+                    Array::Int(names) => to_name_vec(names)?.into_iter()
+                        .map(|v| data_property.children.get::<IndexKey>(&v.into()).cloned())
+                        .collect::<Option<Vec<ValueProperties>>>(),
+                    Array::Str(names) => to_name_vec(names)?.into_iter()
+                        .map(|v| data_property.children.get::<IndexKey>(&v.into()).cloned())
+                        .collect::<Option<Vec<ValueProperties>>>(),
+                    Array::Bool(names) => to_name_vec(names)?.into_iter()
+                        .map(|v| data_property.children.get::<IndexKey>(&v.into()).cloned())
+                        .collect::<Option<Vec<ValueProperties>>>(),
                 }
+                    .ok_or_else(|| Error::from("columns: unknown column in index"))
+
+            } else if let Some(indices) = public_arguments.remove::<IndexKey>(&"indices".into()) {
+                let indices = indices.clone().array()?.int()?;
+                dimensionality = Some(indices.shape().len() as i64 + 1);
+                to_name_vec(indices)?.into_iter()
+                    .map(|idx| data_property.children.get_index(idx as usize).map(|v| v.1.clone()))
+                    .collect::<Option<Vec<ValueProperties>>>()
+                    .ok_or_else(|| Error::from("index does not exist"))
+
+            } else if let Some(mask) = public_arguments.remove::<IndexKey>(&"mask".into()) {
+                let mask = mask.clone().array()?.bool()?;
+                if mask.shape().len() != 1 {
+                    return Err("mask: must be 1-dimensional".into())
+                }
+                dimensionality = Some(2);
+                let mask = to_name_vec(mask)?;
+                if mask.len() != data_property.children.len() {
+                    return Err("mask: must be same length as the number of columns".into())
+                }
+                Ok(data_property.children.into_iter().zip(mask)
+                    .filter(|(_, m)| *m).map(|(v, _)| v.1)
+                    .collect::<Vec<ValueProperties>>())
+            } else {
+                return Err("one of names, indices or mask must be supplied".into())
+            }
+
+            ValueProperties::Partitions(data_property) => {
+                let names = get_argument(&public_arguments, "names")?
+                    .to_owned().array()?;
+
+                let partition_key = IndexKey::new(names)?;
+                let mut part_properties = data_property.children.get::<IndexKey>(&partition_key)
+                    .ok_or_else(|| format!("unknown partition index: {:?}", partition_key))?.clone();
+
+                fn set_group_index(part_properties: &mut ArrayProperties, key: IndexKey) {
+                    let last_idx = part_properties.group_id.len() - 1;
+
+                    if let Some(v) = part_properties.group_id.get_mut(last_idx) {
+                        v.index = Some(key)
+                    };
+                }
+
+                match &mut part_properties {
+                    ValueProperties::Array(part_properties) =>
+                        set_group_index(part_properties, partition_key),
+                    ValueProperties::Dataframe(part_properties) =>
+                        part_properties.children.values_mut()
+                            .try_for_each(|mut v| if let ValueProperties::Array(v) = &mut v {
+                                set_group_index(v, partition_key.clone());
+                                Ok(())
+                            } else { Err(Error::from("dataframe columns must be arrays")) })?,
+                    _ => return Err("data: partition members must be either a dataframe or array".into())
+                }
+
+                return Ok(Warnable::new(part_properties))
             },
 
 
@@ -148,40 +137,6 @@ impl Component for proto::Index {
         }?;
 
         stack_properties(&properties, dimensionality).map(Warnable::new)
-    }
-}
-
-impl Expandable for proto::Index {
-    fn expand_component(
-        &self,
-        _privacy_definition: &Option<proto::PrivacyDefinition>,
-        component: &proto::Component,
-        properties: &NodeProperties,
-        component_id: u32,
-        mut maximum_id: u32
-    ) -> Result<base::ComponentExpansion> {
-
-        let mut expansion = base::ComponentExpansion::default();
-
-        let data_property: ValueProperties = properties.get::<IndexKey>(&"data".into())
-            .ok_or("data: missing")?.clone();
-
-        if let Ok(indexmap) = data_property.indexmap() {
-            if indexmap.variant == proto::indexmap_properties::Variant::Partition {
-                maximum_id += 1;
-                let id_is_partition = maximum_id;
-                let (patch_node, release) = get_literal(true.into(), component.submission)?;
-                expansion.computation_graph.insert(id_is_partition, patch_node);
-                expansion.properties.insert(id_is_partition, infer_property(&release.value, None)?);
-                expansion.releases.insert(id_is_partition, release);
-
-                let mut component = component.clone();
-                component.insert_argument(&"is_partition".into(), id_is_partition);
-                expansion.computation_graph.insert(component_id, component);
-            }
-        }
-
-        Ok(expansion)
     }
 }
 

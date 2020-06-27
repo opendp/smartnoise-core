@@ -21,14 +21,12 @@ impl Component for proto::Count {
 
         let mut data_property = match properties.get::<IndexKey>(&"data".into()).ok_or("data: missing")?.clone() {
             ValueProperties::Array(data_property) => data_property,
-            ValueProperties::Indexmap(data_property) => {
-                data_property.assert_is_dataframe()?;
+            ValueProperties::Dataframe(data_property) => {
                 data_property.children.get_index(0)
                     .ok_or_else(|| Error::from("dataframe must have at least one column"))?
                     .1.array()?.to_owned()
             },
-            ValueProperties::Jagged(_) => return Err("Count is not implemented on jagged arrays".into()),
-            ValueProperties::Function(_) => return Err("Count is not implemented for functions".into())
+            _ => return Err("Count is only implemented on arrays and dataframes".into())
         };
 
         if self.distinct && data_property.data_type == DataType::Float && data_property.nullity {
@@ -51,8 +49,7 @@ impl Component for proto::Count {
                 vec![value.c_stability.iter().copied().fold1(|l, r| l.max(r))
                     .ok_or_else(|| "c_stability must be defined for each column")?]
             },
-            ValueProperties::Indexmap(value) => {
-                value.assert_is_dataframe()?;
+            ValueProperties::Dataframe(value) => {
 
                 // overall c_stability is the maximal c_stability of any column
                 vec![value.children.values()
@@ -62,7 +59,7 @@ impl Component for proto::Count {
                     .fold1(|l, r| l.max(r))
                     .ok_or_else(|| "c_stability must be defined for each column")?]
             },
-            _ => return Err("data: must be an array or indexmap".into())
+            _ => return Err("data: must be an array or dataframe".into())
         };
 
         // save a snapshot of the state when aggregating
@@ -104,8 +101,7 @@ impl Sensitivity for proto::Count {
                     .ok_or_else(|| "c_stability must be defined for each column")?;
                 (value.num_records, c_stability)
             },
-            ValueProperties::Indexmap(value) => {
-                value.assert_is_dataframe()?;
+            ValueProperties::Dataframe(value) => {
 
                 // overall c_stability is the maximal c_stability of any column
                 let c_stability = value.children.values()
@@ -116,7 +112,7 @@ impl Sensitivity for proto::Count {
                     .ok_or_else(|| "c_stability must be defined for each column")?;
                 (value.num_records()?, c_stability)
             },
-            _ => return Err("data: must be an array or indexmap".into())
+            _ => return Err("data: must be an array or dataframe".into())
         };
 
         match sensitivity_type {

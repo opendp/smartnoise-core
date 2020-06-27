@@ -1,7 +1,7 @@
 use crate::errors::*;
 
 use crate::components::Component;
-use crate::base::{Value, ValueProperties, IndexKey};
+use crate::base::{Value, ValueProperties, IndexKey, PartitionsProperties};
 use crate::{base, Warnable};
 use crate::proto;
 use crate::utilities::prepend;
@@ -25,8 +25,16 @@ impl Component for proto::Reshape {
         }
         data_property.assert_is_releasable()?;
 
+        let partition_count = match data_property.num_records {
+            Some(0) | None => return Err("number of records must be one or more".into()),
+            Some(1) => None,
+            Some(x) => Some(x)
+        };
+
         data_property.num_records = match self.shape.len() {
+            // target is 0-d, so there will be one record in output
             0 => Some(1),
+            // target is 1-d or 2-d, so there will be as many rows as the value in the first axis
             1 | 2 => Some(self.shape[0] as i64),
             _ => return Err("dimensionality may not be greater than 2".into())
         };
@@ -48,8 +56,17 @@ impl Component for proto::Reshape {
         // This exists to prevent binary ops on non-conformable arrays from being approved
         data_property.dataset_id = Some(node_id as i64);
 
-        Ok(ValueProperties::Array(data_property).into())
+        let matrix_properties = ValueProperties::Array(data_property);
+
+
+        // multi-row inputs are reshaped to partitional outputs, one matrix per partition
+        Ok(match partition_count {
+            Some(x) => ValueProperties::Partitions(PartitionsProperties {
+                children: (0..x)
+                    .map(|idx| (idx.into(), matrix_properties.clone()))
+                    .collect::<IndexMap<IndexKey, ValueProperties>>()
+            }),
+            None => matrix_properties
+        }.into())
     }
-
-
 }

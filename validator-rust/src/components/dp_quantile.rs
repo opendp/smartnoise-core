@@ -34,7 +34,7 @@ impl Expandable for proto::DpQuantile {
         maximum_id += 1;
         let id_quantile = maximum_id;
         expansion.computation_graph.insert(id_quantile, proto::Component {
-            arguments: Some(proto::IndexmapNodeIds::new(quantile_args)),
+            arguments: Some(proto::ArgumentNodeIds::new(quantile_args)),
             variant: Some(proto::component::Variant::Quantile(proto::Quantile {
                 alpha: self.alpha,
                 interpolation: self.interpolation.clone(),
@@ -54,7 +54,7 @@ impl Expandable for proto::DpQuantile {
             sanitize_args.insert("data".into(), id_quantile);
         }
         expansion.computation_graph.insert(component_id, proto::Component {
-            arguments: Some(proto::IndexmapNodeIds::new(sanitize_args)),
+            arguments: Some(proto::ArgumentNodeIds::new(sanitize_args)),
             variant: Some(match self.mechanism.to_lowercase().as_str() {
                 "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
                     privacy_usage: self.privacy_usage.clone()

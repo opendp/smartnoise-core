@@ -30,7 +30,7 @@ impl Expandable for proto::DpCount {
         maximum_id += 1;
         let id_count = maximum_id;
         expansion.computation_graph.insert(id_count, proto::Component {
-            arguments: Some(proto::IndexmapNodeIds::new(indexmap![
+            arguments: Some(proto::ArgumentNodeIds::new(indexmap![
                 "data".into() => *component.arguments().get(&IndexKey::from("data"))
                     .ok_or_else(|| Error::from("data must be provided as an argument"))?
             ])),
@@ -63,8 +63,8 @@ impl Expandable for proto::DpCount {
                     let num_records = match properties.get::<IndexKey>(&"data".into())
                         .ok_or("data: missing")? {
                         ValueProperties::Array(value) => value.num_records,
-                        ValueProperties::Indexmap(value) => value.num_records()?,
-                        _ => return Err("data: must not be hashmap".into())
+                        ValueProperties::Dataframe(value) => value.num_records()?,
+                        _ => return Err("data: must be an array or dataframe".into())
                     };
 
                     let count_max = match num_records {
@@ -92,7 +92,7 @@ impl Expandable for proto::DpCount {
                 variant: Some(proto::component::Variant::SimpleGeometricMechanism(proto::SimpleGeometricMechanism {
                     privacy_usage: self.privacy_usage.clone()
                 })),
-                arguments: Some(proto::IndexmapNodeIds::new(indexmap![
+                arguments: Some(proto::ArgumentNodeIds::new(indexmap![
                     "data".into() => id_count,
                     "lower".into() => count_min_id,
                     "upper".into() => count_max_id
@@ -103,7 +103,7 @@ impl Expandable for proto::DpCount {
         } else {
             // noising
             expansion.computation_graph.insert(component_id, proto::Component {
-                arguments: Some(proto::IndexmapNodeIds::new(
+                arguments: Some(proto::ArgumentNodeIds::new(
                     indexmap!["data".into() => id_count])),
                 variant: Some(match self.mechanism.to_lowercase().as_str() {
                     "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {

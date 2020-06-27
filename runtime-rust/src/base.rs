@@ -58,7 +58,8 @@ pub fn is_public(properties: &ValueProperties) -> bool {
     match properties {
         ValueProperties::Array(v) => v.releasable,
         ValueProperties::Jagged(v) => v.releasable,
-        ValueProperties::Indexmap(v) => v.children.values().all(is_public),
+        ValueProperties::Dataframe(v) => v.children.values().all(is_public),
+        ValueProperties::Partitions(v) => v.children.values().all(is_public),
         ValueProperties::Function(v) => v.releasable,
     }
 }

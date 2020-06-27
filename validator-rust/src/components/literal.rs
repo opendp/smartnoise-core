@@ -81,14 +81,13 @@ impl Named for proto::Literal {
         match release {
             Some(release) => match release {
                 Value::Jagged(jagged) => Ok((0..jagged.num_columns()).map(|_| "[Literal vector]".into()).collect()),
-                Value::Indexmap(_) => Err("names for indexmap literals are not supported".into()),  // (or necessary)
                 Value::Array(value) => match value {
                     Array::Float(array) => array_to_names(array, value.num_columns()?),
                     Array::Int(array) => array_to_names(array, value.num_columns()?),
                     Array::Str(array) => array_to_names(array, value.num_columns()?),
                     Array::Bool(array) => array_to_names(array, value.num_columns()?),
                 },
-                Value::Function(_function) => Ok(vec![])
+                _ => Err("names are only supported for arrays and jagged arrays".into()),  // (other types are not necessary)
             },
             None => Err("Literals must always be accompanied by a release".into())
         }

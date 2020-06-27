@@ -24,11 +24,11 @@ impl Evaluable for proto::Partition {
 
                 match by.array()? {
                     Array::Int(by) =>
-                        Value::Indexmap(partition_by(&data, by.mapv(IndexKey::from), partitions)?),
+                        Value::Partitions(partition_by(&data, by.mapv(IndexKey::from), partitions)?),
                     Array::Bool(by) =>
-                        Value::Indexmap(partition_by(&data, by.mapv(IndexKey::from), partitions)?),
+                        Value::Partitions(partition_by(&data, by.mapv(IndexKey::from), partitions)?),
                     Array::Str(by) =>
-                        Value::Indexmap(partition_by(&data, by.mapv(IndexKey::from), partitions)?),
+                        Value::Partitions(partition_by(&data, by.mapv(IndexKey::from), partitions)?),
                     _ => return Err("by and categories must share the same type".into())
                 }
             },
@@ -36,7 +36,7 @@ impl Evaluable for proto::Partition {
                 let num_partitions = take_argument(&mut arguments, "num_partitions")?
                     .array()?.first_int()?;
 
-                Value::Indexmap(partition_evenly(&data, num_partitions as i64)?)
+                Value::Partitions(partition_evenly(&data, num_partitions as i64)?)
             }
         }))
     }
@@ -89,7 +89,7 @@ pub fn partition_ndarray_evenly<T: Clone + Default + std::fmt::Debug>(
 
 pub fn partition_evenly(data: &Value, num_partitions: i64) -> Result<IndexMap<IndexKey, Value>> {
     Ok(match data {
-        Value::Indexmap(data) => {
+        Value::Dataframe(data) => {
 
             let columnar_partitions = data.into_iter()
                 .map(|(k, v)| Ok((
@@ -107,7 +107,7 @@ pub fn partition_evenly(data: &Value, num_partitions: i64) -> Result<IndexMap<In
                 .map(|idx| IndexKey::from(idx as Integer))
                 .map(|idx| (
                     idx.clone(),
-                    Value::Indexmap(columnar_partitions.iter().map(|(colname, partitions)|
+                    Value::Dataframe(columnar_partitions.iter().map(|(colname, partitions)|
                         (colname.clone(), partitions.get(&idx).unwrap().clone())
                     ).collect::<IndexMap<ColName, Value>>())
                 ))
@@ -167,7 +167,7 @@ pub fn partition_by(
                     .collect::<IndexMap<IndexKey, Value>>()
             },
 
-            Value::Indexmap(data) => {
+            Value::Dataframe(data) => {
                 let columnar_partitions = data.into_iter().map(|(k, v)|
                     Ok((k.clone(), value_partitioner(v, indices)?)))
                     .collect::<Result<IndexMap<ColName, IndexMap<IndexKey, Value>>>>()?;
@@ -175,7 +175,7 @@ pub fn partition_by(
                 indices.iter()
                     .map(|(cat, _)| (
                         cat.clone(),
-                        Value::Indexmap(columnar_partitions.iter().map(|(colname, partitions)|
+                        Value::Dataframe(columnar_partitions.iter().map(|(colname, partitions)|
                             (colname.clone(), partitions.get(&cat.clone()).unwrap().clone())
                         ).collect::<IndexMap<ColName, Value>>())
                     ))

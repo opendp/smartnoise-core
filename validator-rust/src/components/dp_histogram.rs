@@ -46,7 +46,7 @@ impl Expandable for proto::DpHistogram {
             });
 
         expansion.computation_graph.insert(id_histogram, proto::Component {
-            arguments: Some(proto::IndexmapNodeIds::new(histogram_arguments)),
+            arguments: Some(proto::ArgumentNodeIds::new(histogram_arguments)),
             variant: Some(proto::component::Variant::Histogram(proto::Histogram {})),
             omit: true,
             submission: component.submission,
@@ -91,7 +91,7 @@ impl Expandable for proto::DpHistogram {
 
             // noising
             expansion.computation_graph.insert(component_id, proto::Component {
-                arguments: Some(proto::IndexmapNodeIds::new(indexmap![
+                arguments: Some(proto::ArgumentNodeIds::new(indexmap![
                     "data".into() => id_histogram,
                     "lower".into() => count_min_id,
                     "upper".into() => count_max_id
@@ -106,7 +106,7 @@ impl Expandable for proto::DpHistogram {
 
             // noising
             expansion.computation_graph.insert(component_id, proto::Component {
-                arguments: Some(proto::IndexmapNodeIds::new(indexmap![
+                arguments: Some(proto::ArgumentNodeIds::new(indexmap![
                     "data".into() => id_histogram
                 ])),
                 variant: Some(match self.mechanism.to_lowercase().as_str() {

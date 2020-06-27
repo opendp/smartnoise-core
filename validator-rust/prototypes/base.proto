@@ -61,24 +61,25 @@ enum FilterLevel {
 // derived properties for the top-level Value type
 message ValueProperties {
     oneof variant {
-        IndexmapProperties indexmap = 1;
-        ArrayProperties array = 2;
-        JaggedProperties jagged = 3;
-        FunctionProperties function = 4;
+        DataframeProperties dataframe = 1;
+        PartitionsProperties partitions = 2;
+        ArrayProperties array = 3;
+        JaggedProperties jagged = 4;
+        FunctionProperties function = 5;
     }
 }
 
-// derived properties for the Value::Indexmap type
-message IndexmapProperties {
-    IndexmapValueProperties children = 1;
-    enum Variant {
-        DATAFRAME = 0;
-        PARTITION = 1;
-    }
-    Variant variant = 2;
+message ArgumentProperties {
+    repeated IndexKey keys = 1;
+    repeated ValueProperties values = 2;
 }
 
-message IndexmapValueProperties {
+message DataframeProperties {
+    repeated IndexKey keys = 1;
+    repeated ValueProperties values = 2;
+}
+
+message PartitionsProperties {
     repeated IndexKey keys = 1;
     repeated ValueProperties values = 2;
 }
@@ -87,7 +88,7 @@ message IndexmapValueProperties {
 // sub-properties for Value::* types that may be aggregated
 message AggregatorProperties {
     Component component = 1;
-    IndexmapValueProperties properties = 2;
+    ArgumentProperties properties = 2;
     Value lipschitz_constants = 3;
 }
 
@@ -219,17 +220,23 @@ message Value {
         Array array = 2;
 
         // Key-Value pairs
-        Indexmap indexmap = 3;
+        Dataframe dataframe = 3;
+        Partitions partitions = 4;
 
         // Data structure with mixed column lengths
-        Jagged jagged = 4;
+        Jagged jagged = 5;
 
         // Evaluable function
-        Function function = 5;
+        Function function = 6;
     }
 }
 
-message Indexmap {
+message Dataframe {
+    repeated IndexKey keys = 1;
+    repeated Value values = 2;
+}
+
+message Partitions {
     repeated IndexKey keys = 1;
     repeated Value values = 2;
 }

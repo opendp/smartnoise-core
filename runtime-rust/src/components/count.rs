@@ -30,12 +30,11 @@ impl Evaluable for proto::Count {
                     Array::Int(data) => count(&data)?.into(),
                     Array::Str(data) => count(&data)?.into()
                 },
-                Value::Indexmap(indexmap) => match indexmap.get_index(0) {
+                Value::Dataframe(dataframe) => match dataframe.get_index(0) {
                     Some(value) => arr0(value.1.ref_array()?.num_records()? as Integer).into_dyn().into(),
                     None => return Err("indexmap may not be empty".into())
                 },
-                Value::Jagged(_) => return Err("Count is not implemented on Jagged arrays".into()),
-                Value::Function(_) => return Err("Count is not implemented on Functions".into())
+                _ => return Err("Count is only implemented on arrays and dataframes".into())
             }
         }))
     }
