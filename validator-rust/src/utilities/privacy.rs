@@ -25,6 +25,11 @@ fn compute_batch_privacy_usage(
         }))
 }
 
+/// Use a computation graph to partition privacy usages into batches.
+///
+/// This algorithm takes into account dynamic graph submissions that require multiple batches to compute.
+/// This algorithm traverses up to and stops at partition ids.
+///     The partition ids are returned as a second argument.
 fn batch_partition<'a>(
     graph: &HashMap<u32, proto::Component>,
     privacy_usages: &'a HashMap<u32, Vec<proto::PrivacyUsage>>,
@@ -158,12 +163,16 @@ fn batch_partition<'a>(
     Ok((batches, partition_ids))
 }
 
+/// Compute the privacy usage of a graph,
+///     based on the privacy definition
+///     and actual usages reported by any computed values.
 pub fn compute_graph_privacy_usage(
     graph: &HashMap<u32, proto::Component>,
     privacy_definition: &proto::PrivacyDefinition,
     properties: &HashMap<u32, ValueProperties>,
     release: &Release,
 ) -> Result<proto::PrivacyUsage> {
+
     // compute the privacy usage for every node in the graph
     //    include updated privacy usages for nodes that have already been released and may have actually consumed a different amount
     let release_privacy_usages = graph.iter()
@@ -193,14 +202,15 @@ pub fn compute_graph_privacy_usage(
     };
 
     // get all node ids that are indexed by a specific category
-    let get_category_indexes = |category: IndexKey,
-                                partition_id: u32,
+    let get_category_indexes = |
+        category: IndexKey, partition_id: u32,
     | -> Result<Vec<u32>> {
-        Ok(dependent_edges
-            // retrieve the indexes into the partition
-            .get(&partition_id)
-            .ok_or_else(|| "partition dependencies not found")?.iter()
-
+        let dependents = match dependent_edges.get(&partition_id) {
+            Some(dependents) => dependents,
+            None => return Ok(vec![])
+        };
+        // retrieve the indexes into the partition
+        Ok(dependents.iter()
             // for each index, check if their column name (category) is the same as the category in the signature
             .map(|index_id| Ok((
                 *index_id, category == IndexKey::new(release.get(graph.get(index_id).unwrap()
@@ -217,22 +227,38 @@ pub fn compute_graph_privacy_usage(
     };
 
     // get all node ids that are dependents of a specific node_id
-    let get_downstream_ids = |node_id: u32| -> Result<HashSet<u32>> {
+    let get_downstream_ids = |
+        category: Option<IndexKey>, node_id: u32
+    | -> Result<HashSet<u32>> {
         let mut downstream_ids = HashSet::new();
         let mut traversal = vec![node_id];
         while !traversal.is_empty() {
             let node_id = traversal.pop().unwrap();
-            downstream_ids.insert(node_id);
-            if let Some(dependents) = dependent_edges.get(&node_id) {
+
+            if let Some(category) = &category {
+                if let Some(proto::component::Variant::Union(x)) = graph.get(&node_id).and_then(|v| v.variant.as_ref()) {
+                    if !x.flatten {
+                        // the only downstream nodes from the partition are the ones that match the same partition
+                        traversal.extend(get_category_indexes(category.clone(), node_id)?);
+                        downstream_ids.insert(node_id);
+                        continue
+                    }
+                }
+            }
+
+            if let Some(dependents) = dependent_edges.get(&node_id)  {
                 traversal.extend(dependents);
             }
+            downstream_ids.insert(node_id);
         }
         Ok(downstream_ids)
     };
 
     // get the subset of a graph downstream of a specific node id
-    let get_downstream_graph = |node_id: u32| -> Result<HashMap<u32, proto::Component>> {
-        Ok(get_downstream_ids(node_id)?.iter()
+    let get_downstream_graph = |
+        category: Option<IndexKey>, node_id: u32
+    | -> Result<HashMap<u32, proto::Component>> {
+        Ok(get_downstream_ids(category, node_id)?.iter()
             .map(|node_id| (*node_id, graph.get(node_id).unwrap().clone()))
             .collect::<HashMap<u32, proto::Component>>())
     };
@@ -262,38 +288,45 @@ pub fn compute_graph_privacy_usage(
 
     // compute privacy usage of a subset of the graph,
     //     where the subset is indicated by a collection of node ids
-    let compute_partition_usage = |partition_ids: Vec<u32>| -> Result<proto::PrivacyUsage> {
+    let compute_all_partitions_usage = |
+        partition_ids: Vec<u32>
+    | -> Result<proto::PrivacyUsage> {
         partition_ids.iter()
             .map(|partition_id| compute_graph_privacy_usage(
-                &get_downstream_graph(*partition_id)?, privacy_definition, properties, release,
-            ))
+                &get_downstream_graph(None, *partition_id)?,
+                privacy_definition, properties, release))
             .fold1(max_usage)
             .unwrap_or_else(|| Ok(zero_usage()))
     };
 
     // compute the overall privacy usage
-    let partitions_usage: proto::PrivacyUsage = partition_ids.into_iter().map(|partition_node_id| {
-        let partition_properties = properties.get(&partition_node_id)
-            .ok_or_else(|| "partition properties must be defined")?;
+    let partitions_usage: proto::PrivacyUsage = partition_ids.into_iter()
+        // for each partition component...
+        .map(|partition_node_id| {
+            let partition_properties = properties.get(&partition_node_id)
+                .ok_or_else(|| "partition properties must be defined")?;
 
-        partition_properties.partitions()?.children.keys()
-            .map(|category| get_category_indexes(category.clone(), partition_node_id)?.iter()
-                .map(|index_id| {
+            partition_properties.partitions()?.children.keys()
+                // for each category/part in the partition...
+                .map(|category| {
+                    let unioned_downstream_graph = get_category_indexes(category.clone(), partition_node_id)?.iter()
+                        // for each index into the category...
+                        .map(|index_id| get_downstream_graph(Some(category.clone()), *index_id))
+                        .collect::<Result<Vec<_>>>()?.into_iter().flatten()
+                        .collect::<HashMap<u32, proto::Component>>();
+
                     let (batches, partition_ids) = batch_partition(
-                        &get_downstream_graph(*index_id)?, &release_privacy_usages)?;
+                        &unioned_downstream_graph, &release_privacy_usages)?;
                     let batch_usages = batches.into_iter()
                         .map(|(_, batch)| compute_batch_privacy_usage(batch))
                         .fold1(|l, r| l? + r?)
                         .unwrap_or_else(|| Ok(zero_usage()))?;
 
-                    batch_usages + compute_partition_usage(partition_ids)?
+                    batch_usages + compute_all_partitions_usage(partition_ids)?
                 })
-                // sum all indexes into the category
-                .fold1(|l, r| l? + r?)
-                .unwrap_or_else(|| Ok(zero_usage())))
-            .fold1(max_usage)
-            .unwrap_or_else(|| Ok(zero_usage()))
-    })
+                .fold1(max_usage)
+                .unwrap_or_else(|| Ok(zero_usage()))
+        })
         .fold1(|l, r| l? + r?)
         .unwrap_or_else(|| Ok(zero_usage()))?;
 

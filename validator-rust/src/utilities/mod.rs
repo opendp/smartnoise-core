@@ -519,6 +519,7 @@ pub fn expand_mechanism(
         &aggregator.properties,
         &sensitivity_type)?;
 
+    // TODO: debug axes in lipschitz constant arrays
     let lipschitz = aggregator.lipschitz_constants.array()?.float()?;
     if lipschitz.iter().any(|v| v != &1.) {
         let mut sensitivity = sensitivity_value.array()?.float()?;

@@ -13,7 +13,6 @@ use indexmap::map::IndexMap;
 
 
 impl Component for proto::LaplaceMechanism {
-    #[allow(clippy::float_cmp)]
     fn propagate_property(
         &self,
         privacy_definition: &Option<proto::PrivacyDefinition>,
@@ -45,20 +44,13 @@ impl Component for proto::LaplaceMechanism {
             .ok_or_else(|| Error::from("aggregator: missing"))?;
 
         // sensitivity must be computable
-        let mut sensitivity_value = aggregator.component.compute_sensitivity(
+        aggregator.component.compute_sensitivity(
             privacy_definition,
             &aggregator.properties,
-            &SensitivitySpace::KNorm(1))?;
+            &SensitivitySpace::KNorm(1))?.array()?.float()?;
 
-        let lipschitz = aggregator.lipschitz_constants.array()?.float()?;
-        if lipschitz.iter().any(|v| v != &1.) {
-            let mut sensitivity = sensitivity_value.array()?.float()?;
-            sensitivity *= &lipschitz;
-            sensitivity_value = sensitivity.into();
-        }
-
-        // make sure sensitivities are an f64 array
-        sensitivity_value.array()?.float()?;
+        // make sure lipschitz constants is available as a float array
+        aggregator.lipschitz_constants.array()?.float()?;
 
         let privacy_usage = self.privacy_usage.iter().cloned().map(Ok)
             .fold1(|l, r| l? + r?).ok_or_else(|| "privacy_usage: must be defined")??;
@@ -108,14 +100,12 @@ impl Mechanism for proto::LaplaceMechanism {
         let data_property = properties.get::<IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?;
-        Ok(Some(match release_usage {
-            Some(release_usage) => release_usage.iter()
-                .zip(data_property.c_stability.iter())
-                .map(|(usage, c_stab)|
-                    usage.effective_to_actual(1., *c_stab as f64, privacy_definition.group_size))
-                .collect::<Result<Vec<proto::PrivacyUsage>>>()?,
-            None => self.privacy_usage.clone()
-        }))
+
+        Some(release_usage.unwrap_or_else(|| &self.privacy_usage).iter()
+            .zip(data_property.c_stability.iter())
+            .map(|(usage, c_stab)|
+                usage.effective_to_actual(1., *c_stab as f64, privacy_definition.group_size))
+            .collect::<Result<Vec<proto::PrivacyUsage>>>()).transpose()
     }
 }
 
