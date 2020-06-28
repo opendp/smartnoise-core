@@ -140,6 +140,7 @@ macro_rules! make_quantile {
                 &self,
                 _privacy_definition: &Option<proto::PrivacyDefinition>,
                 component: &proto::Component,
+                _public_arguments: &IndexMap<IndexKey, &Value>,
                 _properties: &base::NodeProperties,
                 component_id: u32,
                 _maximum_id: u32,

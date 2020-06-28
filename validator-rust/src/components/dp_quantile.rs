@@ -15,6 +15,7 @@ impl Expandable for proto::DpQuantile {
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
+        _public_arguments: &IndexMap<IndexKey, &Value>,
         _properties: &base::NodeProperties,
         component_id: u32,
         mut maximum_id: u32,

@@ -1,9 +1,6 @@
 use crate::errors::*;
 
-use crate::base::{
-    Array, Value, ValueProperties, ArrayProperties,
-    IndexKey
-};
+use crate::base::{Array, Value, ValueProperties, IndexKey};
 
 use crate::{proto, base, Warnable};
 use crate::components::{Component, Named};
@@ -75,28 +72,8 @@ impl Component for proto::Index {
                     .to_owned().array()?;
 
                 let partition_key = IndexKey::new(names)?;
-                let mut part_properties = data_property.children.get::<IndexKey>(&partition_key)
+                let part_properties = data_property.children.get::<IndexKey>(&partition_key)
                     .ok_or_else(|| format!("unknown partition index: {:?}", partition_key))?.clone();
-
-                fn set_group_index(part_properties: &mut ArrayProperties, key: IndexKey) {
-                    let last_idx = part_properties.group_id.len() - 1;
-
-                    if let Some(v) = part_properties.group_id.get_mut(last_idx) {
-                        v.index = Some(key)
-                    };
-                }
-
-                match &mut part_properties {
-                    ValueProperties::Array(part_properties) =>
-                        set_group_index(part_properties, partition_key),
-                    ValueProperties::Dataframe(part_properties) =>
-                        part_properties.children.values_mut()
-                            .try_for_each(|mut v| if let ValueProperties::Array(v) = &mut v {
-                                set_group_index(v, partition_key.clone());
-                                Ok(())
-                            } else { Err(Error::from("dataframe columns must be arrays")) })?,
-                    _ => return Err("data: partition members must be either a dataframe or array".into())
-                }
 
                 return Ok(Warnable::new(part_properties))
             },

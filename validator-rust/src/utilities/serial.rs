@@ -233,7 +233,7 @@ pub fn parse_index_key(value: proto::IndexKey) -> IndexKey {
 pub fn parse_group_id(value: proto::GroupId) -> GroupId {
     GroupId {
         partition_id: value.partition_id,
-        index: value.index.map(parse_index_key)
+        index: parse_index_key(value.index.unwrap())
     }
 }
 
@@ -522,7 +522,7 @@ pub fn serialize_index_key(value: IndexKey) -> proto::IndexKey {
 pub fn serialize_group_id(value: GroupId) -> proto::GroupId {
     proto::GroupId {
         partition_id: value.partition_id,
-        index: value.index.map(serialize_index_key)
+        index: Some(serialize_index_key(value.index))
     }
 }
 

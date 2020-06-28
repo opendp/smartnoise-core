@@ -19,6 +19,7 @@ impl Component for proto::Resize {
         properties: base::NodeProperties,
         _node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
+
         let mut data_property = properties.get::<IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
@@ -220,6 +221,7 @@ impl Expandable for proto::Resize {
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
+        _public_arguments: &IndexMap<IndexKey, &Value>,
         properties: &base::NodeProperties,
         component_id: u32,
         mut maximum_id: u32,

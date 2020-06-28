@@ -43,39 +43,45 @@ impl Value {
     pub fn array(self) -> Result<Array> {
         match self {
             Value::Array(array) => Ok(array),
-            _ => Err("value must be an Array".into())
+            _ => Err("value must be an array".into())
         }
     }
     pub fn ref_array(&self) -> Result<&Array> {
         match self {
             Value::Array(array) => Ok(array),
-            _ => Err("value must be an Array".into())
+            _ => Err("value must be an array".into())
         }
     }
     /// Retrieve Jagged from a Value, assuming the Value contains Jagged
     pub fn jagged(self) -> Result<Jagged> {
         match self {
             Value::Jagged(jagged) => Ok(jagged),
-            _ => Err("value must be Jagged".into())
+            _ => Err("value must be a jagged array".into())
         }
     }
     pub fn ref_jagged(&self) -> Result<&Jagged> {
         match self {
             Value::Jagged(array) => Ok(array),
-            _ => Err("value must be Jaggd".into())
+            _ => Err("value must be a jagged array".into())
         }
     }
 
     pub fn dataframe(self) -> Result<IndexMap<IndexKey, Value>> {
         match self {
             Value::Dataframe(dataframe) => Ok(dataframe),
-            _ => Err("value must be Jagged".into())
+            _ => Err("value must be a dataframe".into())
         }
     }
     pub fn partitions(self) -> Result<IndexMap<IndexKey, Value>> {
         match self {
             Value::Partitions(partitions) => Ok(partitions),
-            _ => Err("value must be Jagged".into())
+            _ => Err("value must be partitions".into())
+        }
+    }
+    pub fn ref_partitions(&self) -> Result<&IndexMap<IndexKey, Value>> {
+        match self {
+            Value::Partitions(array) => Ok(array),
+            _ => Err("value must be partitions".into())
         }
     }
 
@@ -563,7 +569,7 @@ impl ValueProperties {
             _ => Err("value must be a dataframe".into())
         }
     }
-    pub fn partition(&self) -> Result<&PartitionsProperties> {
+    pub fn partitions(&self) -> Result<&PartitionsProperties> {
         match self {
             ValueProperties::Partitions(value) => Ok(value),
             _ => Err("value must be a partition".into())
@@ -575,6 +581,16 @@ impl ValueProperties {
         match self {
             ValueProperties::Jagged(value) => Ok(value),
             _ => Err("value must be jagged".into())
+        }
+    }
+
+    pub fn is_public(&self) -> bool {
+        match self {
+            ValueProperties::Array(v) => v.releasable,
+            ValueProperties::Jagged(v) => v.releasable,
+            ValueProperties::Dataframe(v) => v.children.values().all(Self::is_public),
+            ValueProperties::Partitions(v) => v.children.values().all(Self::is_public),
+            ValueProperties::Function(v) => v.releasable,
         }
     }
 }
@@ -918,7 +934,7 @@ pub type Release = HashMap<u32, ReleaseNode>;
 #[derive(PartialEq, Eq, Clone, Debug, Hash)]
 pub struct GroupId {
     pub partition_id: u32,
-    pub index: Option<IndexKey>
+    pub index: IndexKey
 }
 
 #[derive(PartialEq, Eq, Clone, Debug, Hash)]

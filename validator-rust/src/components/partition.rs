@@ -68,6 +68,7 @@ impl Component for proto::Partition {
                             IndexKey::from(index as Integer),
                             get_partition_properties(
                                 &data_property,
+                                IndexKey::from(index as Integer),
                                 *partition_num_records,
                                 node_id,
                                 neighboring)?
@@ -84,6 +85,7 @@ impl Expandable for proto::Partition {
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
+        _public_arguments: &IndexMap<IndexKey, &Value>,
         properties: &NodeProperties,
         component_id: u32,
         mut maximum_id: u32
@@ -117,12 +119,18 @@ pub fn broadcast_partitions(
 ) -> Result<IndexMap<IndexKey, ValueProperties>> {
     // create dense partitioning
     partition_keys.into_iter()
-        .map(|v| Ok((v, get_partition_properties(properties, None, node_id, neighboring_definition)?)))
+        .map(|v| Ok((v.clone(), get_partition_properties(
+            properties,
+            v,
+            None,
+            node_id,
+            neighboring_definition)?)))
         .collect()
 }
 
 fn get_partition_properties(
-    properties: &ValueProperties, num_records: Option<i64>, node_id: u32,
+    properties: &ValueProperties,
+    index: IndexKey, num_records: Option<i64>, node_id: u32,
     neighboring_definition: proto::privacy_definition::Neighboring
 ) -> Result<ValueProperties> {
 
@@ -130,7 +138,7 @@ fn get_partition_properties(
         // update properties
         properties.group_id.push(base::GroupId {
             partition_id: node_id,
-            index: None
+            index: index.clone()
         });
         properties.num_records = num_records;
         properties.dataset_id = Some(node_id as i64);

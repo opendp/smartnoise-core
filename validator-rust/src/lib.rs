@@ -319,17 +319,18 @@ pub fn expand_component(
                               properties.get(k))?);
     }
 
+    let public_values = public_arguments.iter()
+        .map(|(name, release_node)| (name.clone(), &release_node.value))
+        .collect::<IndexMap<IndexKey, &Value>>();
+
     let mut result = component.expand_component(
         &privacy_definition,
         &component,
+        &public_values,
         &properties,
         component_id,
         maximum_id,
     ).chain_err(|| format!("at node_id {:?}", component_id))?;
-
-    let public_values = public_arguments.iter()
-        .map(|(name, release_node)| (name.clone(), &release_node.value))
-        .collect::<IndexMap<IndexKey, &Value>>();
 
     if result.traversal.is_empty() {
         let Warnable(propagated_property, propagation_warnings) = component

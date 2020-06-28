@@ -3,7 +3,7 @@ use crate::errors::*;
 use crate::{proto, base};
 
 use crate::components::{Expandable};
-use crate::base::{ValueProperties, IndexKey, Value};
+use crate::base::{ValueProperties, IndexKey, Value, ReleaseNode};
 use crate::utilities::{get_literal};
 use crate::utilities::inference::infer_property;
 use indexmap::set::IndexSet;
@@ -15,6 +15,7 @@ impl Expandable for proto::Map {
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
+        public_arguments: &IndexMap<IndexKey, &Value>,
         properties: &base::NodeProperties,
         component_id: u32,
         mut maximum_id: u32
@@ -28,10 +29,10 @@ impl Expandable for proto::Map {
             IndexMap<IndexKey, ValueProperties>,
             IndexMap<IndexKey, ValueProperties>
         ) = properties.clone().into_iter()
-            .partition(|(_, props)| props.partition().is_ok());
+            .partition(|(_, props)| props.partitions().is_ok());
 
         let indexes = props_partitioned.values()
-            .map(|v| Ok(v.partition()?.children.keys().collect()))
+            .map(|v| Ok(v.partitions()?.children.keys().collect()))
             .collect::<Result<Vec<Vec<&IndexKey>>>>()?.into_iter().flatten()
             .collect::<IndexSet<&IndexKey>>();
 
@@ -61,7 +62,24 @@ impl Expandable for proto::Map {
                             submission: component.submission,
                             variant: Some(proto::component::Variant::Index(proto::Index {})),
                         });
-                        expansion.traversal.push(id_index);
+
+                        match (public_arguments.get(name), properties.get(name)) {
+                            (Some(release_node), Some(properties)) => match (
+                                release_node.ref_partitions()?.get(partition_idx),
+                                properties.partitions()?.children.get(partition_idx)
+                            ) {
+                                (Some(partition_value), Some(partition_properties)) => {
+                                    expansion.releases.insert(id_index, ReleaseNode {
+                                        value: partition_value.clone(),
+                                        privacy_usages: None,
+                                        public: partition_properties.is_public()
+                                    });
+                                    expansion.properties.insert(id_index, partition_properties.clone());
+                                },
+                                _ => expansion.traversal.push(id_index)
+                            },
+                            _ => expansion.traversal.push(id_index)
+                        }
 
                         Ok((name.clone(), id_index))
                     })

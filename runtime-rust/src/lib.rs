@@ -26,7 +26,6 @@ use crate::components::Evaluable;
 
 use std::iter::FromIterator;
 use indexmap::map::IndexMap;
-use crate::base::is_public;
 
 
 pub type NodeArguments = IndexMap<IndexKey, Value>;
@@ -221,7 +220,7 @@ pub fn release(
         // println!("evaluation: {:?}", evaluation);
 
         evaluation.public = properties.get(&component_id)
-            .map(is_public)
+            .map(ValueProperties::is_public)
             .unwrap_or(false);
 
         // store the evaluated `Value` enum in the release

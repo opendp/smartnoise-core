@@ -4,7 +4,6 @@ use whitenoise_validator::proto;
 use whitenoise_validator::base::{ReleaseNode, Value};
 use std::collections::{HashMap};
 use whitenoise_validator::utilities::serial::{parse_release_node};
-use whitenoise_validator::base::ValueProperties;
 
 
 pub fn evaluate_function(
@@ -51,15 +50,4 @@ pub fn evaluate_function(
                 .value.clone()
         )))
         .collect::<Result<HashMap<String, Value>>>()
-}
-
-
-pub fn is_public(properties: &ValueProperties) -> bool {
-    match properties {
-        ValueProperties::Array(v) => v.releasable,
-        ValueProperties::Jagged(v) => v.releasable,
-        ValueProperties::Dataframe(v) => v.children.values().all(is_public),
-        ValueProperties::Partitions(v) => v.children.values().all(is_public),
-        ValueProperties::Function(v) => v.releasable,
-    }
 }

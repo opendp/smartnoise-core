@@ -132,6 +132,7 @@ pub fn propagate_properties(
             .expand_component(
                 privacy_definition,
                 &component,
+                &get_public_arguments(component, &release)?,
                 &get_input_properties(&component, &properties)?,
                 node_id,
                 maximum_id,

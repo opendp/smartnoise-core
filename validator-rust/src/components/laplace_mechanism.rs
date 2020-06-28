@@ -81,6 +81,7 @@ impl Expandable for proto::LaplaceMechanism {
         &self,
         privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
+        _public_arguments: &IndexMap<IndexKey, &Value>,
         properties: &base::NodeProperties,
         component_id: u32,
         maximum_id: u32,

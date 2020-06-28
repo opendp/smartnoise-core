@@ -109,6 +109,7 @@ pub trait Expandable {
         &self,
         privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
+        public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &NodeProperties,
         component_id: u32,
         maximum_id: u32,
@@ -270,6 +271,7 @@ impl Expandable for proto::Component {
         &self,
         privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
+        public_arguments: &IndexMap<base::IndexKey, &Value>,
         properties: &NodeProperties,
         component_id: u32,
         maximum_id: u32,
@@ -282,7 +284,9 @@ impl Expandable for proto::Component {
                 {
                     $(
                        if let proto::component::Variant::$variant(x) = variant {
-                            let expansion = x.expand_component(privacy_definition, component, properties, component_id, maximum_id)
+                            let expansion = x.expand_component(
+                                privacy_definition, component, public_arguments,
+                                properties, component_id, maximum_id)
                                 .chain_err(|| format!("node specification {:?}:", variant))?;
 
                             expansion.is_valid(component_id)?;
@@ -304,7 +308,7 @@ impl Expandable for proto::Component {
         // list all components that accept partitioned data as arguments
         expand_component!(Map);
 
-        if properties.values().any(|props| props.partition().is_ok()) {
+        if properties.values().any(|props| props.partitions().is_ok()) {
             let mut component_expansion = base::ComponentExpansion::default();
             component_expansion.computation_graph.insert(component_id, proto::Component {
                 arguments: component.arguments.clone(),
