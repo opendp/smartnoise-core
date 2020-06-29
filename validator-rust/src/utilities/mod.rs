@@ -381,10 +381,9 @@ pub fn standardize_categorical_argument<T: Clone + Eq + Hash + Ord>(
 /// Given a jagged null values array, conduct well-formedness checks, broadcast along columns, and flatten along rows.
 #[doc(hidden)]
 pub fn standardize_null_candidates_argument<T: Clone>(
-    value: Vec<Vec<T>>,
+    mut value: Vec<Vec<T>>,
     length: i64,
 ) -> Result<Vec<Vec<T>>> {
-    let mut value = value.to_owned();
 
     if value.is_empty() {
         return Err("null values cannot be an empty vector".into());

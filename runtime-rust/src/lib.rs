@@ -54,6 +54,12 @@ pub fn release(
     filter_level: proto::FilterLevel
 ) -> Result<(Release, Vec<Error>)> {
 
+    if let Some(privacy_definition) = &privacy_definition {
+        if !cfg!(feature="use-mpfr") && privacy_definition.protect_floating_point {
+            return Err("runtime has been compiled without mpfr, and floating point protections have been enabled".into())
+        }
+    }
+
     // core state for the graph execution algorithm
     let mut traversal: Vec<u32> = get_sinks(&computation_graph).into_iter().collect();
 
