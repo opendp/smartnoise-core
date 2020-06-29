@@ -67,7 +67,7 @@ pub fn gaussian_mechanism(epsilon: f64, delta: f64, sensitivity: f64, enforce_co
         return Err(format!("epsilon ({}), delta ({}) and sensitivity ({}) must all be positive", epsilon, delta, sensitivity).into());
     }
     let scale: f64 = sensitivity * (2. * (1.25 / delta).ln()).sqrt() / epsilon;
-    let noise: f64 = noise::sample_gaussian(0., scale, enforce_constant_time);
+    let noise: f64 = noise::sample_gaussian_mpfr(0., scale)?.to_f64();
     Ok(noise)
 }
 

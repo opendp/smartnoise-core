@@ -281,9 +281,6 @@ mod test_uniform {
 /// Otherwise, the return will be the result of a composition of two operations that
 /// respect exact rounding (though the result will not necessarily).
 ///
-/// We are working through what exactly exact rounding buys us from a privacy perspective --
-/// for more information, see the whitepapers/noise document in the CC_add_mpfr branch.
-///
 /// # Arguments
 /// * `min` - Lower bound of uniform distribution.
 /// * `max` - Upper bound of uniform distribution.
@@ -322,10 +319,6 @@ pub fn sample_uniform_mpfr(min: f64, max: f64) -> Result<rug::Float> {
 /// Otherwise, the return will be the result of a composition of two operations that
 /// respect exact rounding (though the result will not necessarily).
 ///
-/// We are working through what exactly exact rounding buys us from a privacy perspective --
-/// for more information, see the whitepapers/noise document in the CC_add_mpfr branch.
-///
-///
 /// # Arguments
 /// * `shift` - The expectation of the Gaussian distribution.
 /// * `scale` - The scaling parameter (standard deviation) of the Gaussian distribution.
@@ -360,7 +353,7 @@ pub fn sample_gaussian_mpfr(shift: f64, scale: f64) -> Result<rug::Float> {
 }
 
 /// Sample from Laplace distribution centered at shift and scaled by scale.
-///
+/// 
 /// # Arguments
 ///
 /// * `shift` - The expectation of the Laplace distribution.
@@ -380,7 +373,7 @@ pub fn sample_laplace(shift: f64, scale: f64, enforce_constant_time: bool) -> f6
     Laplace::new(shift, scale).inverse(probability)
 }
 
-/// Sample from Gaussian distribution.
+/// Sample from Gaussian distribution centered at shift and scaled by scale.
 ///
 /// # Arguments
 ///
@@ -402,8 +395,7 @@ pub fn sample_gaussian(shift: f64, scale: f64, enforce_constant_time: bool) -> f
 
 /// Sample from truncated Gaussian distribution.
 ///
-/// This function uses inverse transform sampling for sampling, but only between the CDF
-/// probabilities associated with the stated min/max truncation values.
+/// This function uses a rejection sampling approach.
 /// This means that values outside of the truncation bounds are ignored, rather
 /// than pushed to the bounds (as they would be for a censored distribution).
 ///
@@ -424,16 +416,23 @@ pub fn sample_gaussian(shift: f64, scale: f64, enforce_constant_time: bool) -> f
 /// # n.unwrap();
 /// ```
 pub fn sample_gaussian_truncated(
-    min: f64, max: f64, shift: f64, scale: f64,
+    min: &f64, max: &f64, shift: &f64, scale: &f64,
     enforce_constant_time: bool
 ) -> Result<f64> {
     if min > max {return Err("lower may not be greater than upper".into());}
-    if scale <= 0.0 {return Err("scale must be greater than zero".into());}
+    if scale <= &0.0 {return Err("scale must be greater than zero".into());}
 
-    let unif_min: f64 = Gaussian::new(shift, scale).distribution(min);
-    let unif_max: f64 = Gaussian::new(shift, scale).distribution(max);
-    let unif: f64 = sample_uniform(unif_min, unif_max, enforce_constant_time)?;
-    Ok(Gaussian::new(shift, scale).inverse(unif))
+    let mut trunc_gauss = 0.;
+    let mut returnable = false;
+
+    // return draw from distribution only if it is in correct range
+    while (returnable == false) {
+        trunc_gauss = sample_gaussian_mpfr(*shift, *scale)?.to_f64();
+        if trunc_gauss >= *min && trunc_gauss <= *max {
+            returnable = true;
+        }
+    }
+    Ok(trunc_gauss)
 }
 
 /// Sample from the censored geometric distribution with parameter "prob" and maximum

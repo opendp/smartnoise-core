@@ -184,7 +184,7 @@ pub fn impute_float_gaussian(
             // mutate the cell via the operator
             .try_for_each(|v| {
                 *v = noise::sample_gaussian_truncated(
-                    *min as f64, *max as f64, *shift as f64, *scale as f64,
+                    min as &f64, max as &f64, shift as &f64, scale as &f64,
                     enforce_constant_time
                 )? as Float;
                 Ok::<_, Error>(())
