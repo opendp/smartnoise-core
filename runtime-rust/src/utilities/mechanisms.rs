@@ -137,7 +137,7 @@ pub fn simple_geometric_mechanism(
 /// let ans = exponential_mechanism(1.0, 1.0, &xs, utilities, false);
 /// # ans.unwrap();
 /// ```
-#[cfg(feature = "use-secure-noise")]
+#[cfg(feature = "use-mpfr")]
 pub fn exponential_mechanism<T>(
     epsilon: f64,
     sensitivity: f64,
@@ -161,7 +161,7 @@ pub fn exponential_mechanism<T>(
     utilities::sample_from_set(candidate_set, &probability_vec, enforce_constant_time)
 }
 
-#[cfg(not(feature = "use-secure-noise"))]
+#[cfg(not(feature = "use-mpfr"))]
 pub fn exponential_mechanism<T>(
     epsilon: f64,
     sensitivity: f64,

@@ -14,7 +14,7 @@ impl Evaluable for proto::Union {
     fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: NodeArguments) -> Result<ReleaseNode> {
 
         if !self.flatten {
-            return Ok(ReleaseNode::new(Value::Partitions(arguments.into())))
+            return Ok(ReleaseNode::new(Value::Partitions(arguments)))
         }
 
         let arrays = arguments.into_iter()

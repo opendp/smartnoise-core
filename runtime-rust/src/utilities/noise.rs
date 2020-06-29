@@ -5,15 +5,15 @@ use std::{cmp, f64::consts, mem};
 
 use crate::utilities;
 
-#[cfg(feature="use-secure-noise")]
+#[cfg(feature="use-mpfr")]
 use rug::{Float, rand::{ThreadRandGen, ThreadRandState}};
 use whitenoise_validator::Integer;
 
 // Give MPFR ability to draw randomness from OpenSSL
-#[cfg(feature="use-secure-noise")]
+#[cfg(feature="use-mpfr")]
 struct GeneratorOpenSSL;
 
-#[cfg(feature="use-secure-noise")]
+#[cfg(feature="use-mpfr")]
 impl ThreadRandGen for GeneratorOpenSSL {
     fn gen(&mut self) -> u32 {
         let mut buffer = [0u8; 4];
@@ -297,7 +297,7 @@ mod test_uniform {
 /// let unif = sample_uniform_mpfr(0.0, 1.0);
 /// # unif.unwrap();
 /// ```
-#[cfg(feature = "use-secure-noise")]
+#[cfg(feature = "use-mpfr")]
 pub fn sample_uniform_mpfr(min: f64, max: f64) -> Result<rug::Float> {
     // initialize 64-bit floats within mpfr/rug
     let mpfr_min = Float::with_val(53, min);
@@ -339,7 +339,7 @@ pub fn sample_uniform_mpfr(min: f64, max: f64) -> Result<rug::Float> {
 /// let gaussian = sample_gaussian_mpfr(0.0, 1.0);
 /// # gaussian.unwrap();
 /// ```
-#[cfg(feature = "use-secure-noise")]
+#[cfg(feature = "use-mpfr")]
 pub fn sample_gaussian_mpfr(shift: f64, scale: f64) -> Result<rug::Float> {
     // initialize 64-bit floats within mpfr/rug
     // NOTE: We square the scale here because we ask for the standard deviation as the function input, but

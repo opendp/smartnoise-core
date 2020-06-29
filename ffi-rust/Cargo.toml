@@ -27,14 +27,14 @@ default-features = false
 
 [features]
 # by default, include runtime with secure noise
-default = ["use-runtime", "use-secure-noise"]
+default = ["use-runtime", "use-mpfr"]
 
 # runtime is dependent on the whitenoise_runtime crate
 use-runtime = ["whitenoise_runtime"]
-# re-export use-secure-noise from whitenoise_runtime (feature is dependent on use-runtime)
-use-secure-noise = ["use-runtime", "whitenoise_runtime/use-secure-noise"]
-# re-export use-system-libs from whitenoise_runtime (feature is dependent on use-runtime and use-secure-noise)
-use-system-libs = ["use-runtime", "use-secure-noise", "whitenoise_runtime/use-system-libs"]
+# re-export use-mpfr from whitenoise_runtime (feature is dependent on use-runtime)
+use-mpfr = ["use-runtime", "whitenoise_runtime/use-mpfr"]
+# re-export use-system-libs from whitenoise_runtime (feature is dependent on use-runtime and use-mpfr)
+use-system-libs = ["use-runtime", "use-mpfr", "whitenoise_runtime/use-system-libs"]
 # direct access to mechanisms
 use-direct-api = []
 

@@ -43,10 +43,10 @@ noisy_float = "0.1.12"
     path = "../validator-rust/"
 
 [features]
-default = ["use-secure-noise"]
+default = ["use-mpfr"]
 # re-export use-system-libs from mpfr
-use-secure-noise = ["gmp-mpfr-sys", "rug"]
-use-system-libs = ["use-secure-noise", "gmp-mpfr-sys/use-system-libs"]
+use-mpfr = ["gmp-mpfr-sys", "rug"]
+use-system-libs = ["use-mpfr", "gmp-mpfr-sys/use-system-libs"]
 
 [lib]
 name = "whitenoise_runtime"

@@ -290,7 +290,7 @@ pub fn combine_components_into_ieee(sign: &str, exponent: &str, mantissa: &str) 
 ///
 /// # Return
 /// Element from the candidate set
-#[cfg(feature="use-secure-noise")]
+#[cfg(feature="use-mpfr")]
 pub fn sample_from_set<T>(
     candidate_set: &[T], weights: &[whitenoise_validator::Float],
     _enforce_constant_time: bool
@@ -328,7 +328,7 @@ pub fn sample_from_set<T>(
     Ok(candidate_set[return_index].clone())
 }
 
-#[cfg(not(feature="use-secure-noise"))]
+#[cfg(not(feature="use-mpfr"))]
 pub fn sample_from_set<T>(
     candidate_set: &Vec<T>, weights: &Vec<whitenoise_validator::Float>,
     enforce_constant_time: bool
@@ -370,7 +370,7 @@ pub fn sample_from_set<T>(
 /// let subset = create_subset(&set, &weights, k, false);
 /// # subset.unwrap();
 /// ```
-#[cfg(feature="use-secure-noise")]
+#[cfg(feature="use-mpfr")]
 pub fn create_subset<T>(
     set: &[T], weights: &[f64], k: usize,
     _enforce_constant_time: bool
@@ -411,7 +411,7 @@ pub fn create_subset<T>(
     Ok(subset)
 }
 
-#[cfg(not(feature="use-secure-noise"))]
+#[cfg(not(feature="use-mpfr"))]
 pub fn create_subset<T>(
     set: &Vec<T>, weights: &Vec<f64>, k: &i64,
     enforce_constant_time: bool

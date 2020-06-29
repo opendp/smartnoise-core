@@ -22,7 +22,7 @@ To build without the runtime:
     
 To build with the runtime and secure noise:
 
-    cargo build --no-default-features --features use-secure-noise
+    cargo build --no-default-features --features use-mpfr
     
 To build with the runtime and secure noise, where GMP and MPFR are provided by the operating system:
 
