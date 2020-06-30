@@ -1,0 +1,186 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `gmp_mpfr_sys` crate."><meta name="keywords" content="rust, rustlang, rust-lang, gmp_mpfr_sys"><title>gmp_mpfr_sys - Rust</title><link rel="stylesheet" type="text/css" href="../normalize.css"><link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../dark.css"><link rel="stylesheet" type="text/css" href="../light.css" id="themeStyle"><script src="../storage.js"></script><noscript><link rel="stylesheet" href="../noscript.css"></noscript><link rel="shortcut icon" href="../favicon.ico"><style type="text/css">#crate-search{background-image:url("../down-arrow.svg");}</style></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../gmp_mpfr_sys/index.html'><div class='logo-container'><img src='https://tspiteri.gitlab.io/gmp-mpfr-sys/rug.svg' alt='logo'></div></a><p class='location'>Crate gmp_mpfr_sys</p><div class="sidebar-elems"><a id='all-types' href='all.html'><p>See all gmp_mpfr_sys's items</p></a><div class="block items"><ul><li><a href="#modules">Modules</a></li><li><a href="#macros">Macros</a></li></ul></div><p class='location'></p><script>window.sidebarCurrent = {name: 'gmp_mpfr_sys', ty: 'mod', relpath: '../'};</script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../settings.html"><img src="../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../src/gmp_mpfr_sys/lib.rs.html#17-289' title='goto source code'>[src]</a></span><span class='in-band'>Crate <a class="mod" href=''>gmp_mpfr_sys</a></span></h1><div class='docblock'><h1 id="rust-low-level-bindings-for-gmp-mpfr-and-mpc" class="section-header"><a href="#rust-low-level-bindings-for-gmp-mpfr-and-mpc">Rust low-level bindings for GMP, MPFR and MPC</a></h1>
+<p>The gmp-mpfr-sys crate provides Rust FFI bindings to the following
+<a href="https://www.gnu.org/">GNU</a> arbitrary-precision libraries:</p>
+<ul>
+<li><a href="https://gmplib.org/">GMP</a> for integers and rational numbers,</li>
+<li><a href="https://www.mpfr.org/">MPFR</a> for floating-point numbers, and</li>
+<li><a href="http://www.multiprecision.org/mpc/">MPC</a> for complex numbers.</li>
+</ul>
+<p>The source of the three libraries is included in the package.</p>
+<p>The gmp-mpfr-sys crate is free software: you can redistribute it
+and/or modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation, either version 3
+of the License, or (at your option) any later version. See the full
+text of the <a href="https://www.gnu.org/licenses/lgpl-3.0.en.html">GNU LGPL</a> and <a href="https://www.gnu.org/licenses/gpl-3.0.html">GNU GPL</a> for details.</p>
+<h2 id="basic-features" class="section-header"><a href="#basic-features">Basic features</a></h2>
+<p>This crate contains three modules:</p>
+<ul>
+<li><a href="gmp/index.html"><code>gmp</code></a> provides external FFI bindings to <a href="https://gmplib.org/">GMP</a>.</li>
+<li><a href="mpfr/index.html"><code>mpfr</code></a> provides external FFI bindings to <a href="https://www.mpfr.org/">MPFR</a>.</li>
+<li><a href="mpc/index.html"><code>mpc</code></a> provides external FFI bindings to <a href="http://www.multiprecision.org/mpc/">MPC</a>.</li>
+</ul>
+<p>The versions provided by this crate release are <a href="https://gmplib.org/">GMP</a> version 6.2.0,
+<a href="https://www.mpfr.org/">MPFR</a> version 4.0.2-p1, and <a href="http://www.multiprecision.org/mpc/">MPC</a> version 1.1.0.</p>
+<p>If you want a high-level API, consider using <a href="https://crates.io/crates/rug">Rug</a>, a crate
+which provides integers and floating-point numbers with arbitrary
+precision and correct rounding:</p>
+<ul>
+<li><a href="https://docs.rs/rug/*/rug/struct.Integer.html"><code>Integer</code></a> is a bignum integer with arbitrary precision,</li>
+<li><a href="https://docs.rs/rug/*/rug/struct.Rational.html"><code>Rational</code></a> is a bignum rational number with arbitrary precision,</li>
+<li><a href="https://docs.rs/rug/*/rug/struct.Float.html"><code>Float</code></a> is a multi-precision floating-point number with correct
+rounding, and</li>
+<li><a href="https://docs.rs/rug/*/rug/struct.Complex.html"><code>Complex</code></a> is a multi-precision complex number with correct
+rounding.</li>
+</ul>
+<h3 id="name-prefixes" class="section-header"><a href="#name-prefixes">Name prefixes</a></h3>
+<p>Since modules and enumerated types provide namespacing, most prefixes
+in the C names are removed. However, when the prefix is not a whole
+word it is not removed. For example <a href="https://tspiteri.gitlab.io/gmp-mpfr-sys/gmp/Custom-Allocation.html#index-mp_005fset_005fmemory_005ffunctions"><code>mp_set_memory_functions</code></a>
+becomes <a href="gmp/fn.set_memory_functions.html"><code>gmp::set_memory_functions</code></a>, but <a href="https://tspiteri.gitlab.io/gmp-mpfr-sys/gmp/Integer-Functions.html#index-mpz_005finit"><code>mpz_init</code></a> becomes
+<a href="gmp/fn.mpz_init.html"><code>gmp::mpz_init</code></a> not <code>gmp::z_init</code>, and <a href="https://tspiteri.gitlab.io/gmp-mpfr-sys/mpfr/MPFR-Basics.html#Rounding-Modes"><code>MPFR_RNDN</code></a> in
+<a href="https://tspiteri.gitlab.io/gmp-mpfr-sys/mpfr/MPFR-Basics.html#index-mpfr_005frnd_005ft"><code>enum MPFR_RND_T</code></a> becomes <a href="mpfr/enum.rnd_t.html#variant.RNDN"><code>mpfr::rnd_t::RNDN</code></a> not
+<code>mpfr::rnd_t::N</code>. Also, the types <a href="mpfr/struct.mpfr_t.html"><code>mpfr::mpfr_t</code></a> and <a href="mpc/struct.mpc_t.html"><code>mpc::mpc_t</code></a>
+are <em>not</em> shortened to <code>mpfr::t</code> or <code>mpc::t</code>.</p>
+<h3 id="types" class="section-header"><a href="#types">Types</a></h3>
+<p>Unlike in the C libraries, the types <a href="gmp/struct.mpz_t.html"><code>gmp::mpz_t</code></a>, <a href="gmp/struct.mpq_t.html"><code>gmp::mpq_t</code></a>,
+<a href="gmp/struct.mpf_t.html"><code>gmp::mpf_t</code></a>, <a href="gmp/struct.randstate_t.html"><code>gmp::randstate_t</code></a>, <a href="mpfr/struct.mpfr_t.html"><code>mpfr::mpfr_t</code></a> and
+<a href="mpc/struct.mpc_t.html"><code>mpc::mpc_t</code></a> are defined directly as structs, not as single-element
+arrays.</p>
+<h3 id="undocumented-or-obsolete-functions" class="section-header"><a href="#undocumented-or-obsolete-functions">Undocumented or obsolete functions</a></h3>
+<p>The bindings do not cover undocumented or obsolete functions and
+macros.</p>
+<h2 id="using-gmp-mpfr-sys" class="section-header"><a href="#using-gmp-mpfr-sys">Using gmp-mpfr-sys</a></h2>
+<p>The gmp-mpfr-sys crate is available on <a href="https://crates.io/crates/gmp-mpfr-sys">crates.io</a>. To use
+gmp-mpfr-sys in your crate, add it as a dependency inside
+<a href="https://doc.rust-lang.org/cargo/guide/dependencies.html"><em>Cargo.toml</em></a>:</p>
+<pre><code class="language-toml">[dependencies]
+gmp-mpfr-sys = &quot;1.2&quot;
+</code></pre>
+<p>This crate required rustc version 1.37.0 or later.</p>
+<p>If the C libraries have a major version bump with some deprecated
+functions removed, but no features are removed in the Rust bindings,
+then gmp-mpfr-sys will have a minor version bump rather than a major
+version bump. This allows more compatiblity across crates that use the
+Rust bindings but do not use the C libraries directly.</p>
+<p>If on the other hand a dependent crate makes use of internal
+implementation details, or includes a C library that directly uses the
+header (<em>.h</em>) and library (<em>.a</em>) files built using C, it can be a good
+idea to depend on version <code>&quot;~1.2&quot;</code> instead of version <code>&quot;1.2&quot;</code> in order
+to ensure backwards compatibility at the C level as well.</p>
+<h2 id="optional-features" class="section-header"><a href="#optional-features">Optional features</a></h2>
+<p>The gmp-mpfr-sys crate has two optional features:</p>
+<ol>
+<li><code>mpfr</code>, enabled by default. Required to include the <a href="https://www.mpfr.org/">MPFR</a>
+library.</li>
+<li><code>mpc</code>, enabled by default. Required to include the <a href="http://www.multiprecision.org/mpc/">MPC</a> library.
+This feature requires the <code>mpfr</code> feature.</li>
+</ol>
+<p>The <a href="https://gmplib.org/">GMP</a> library is always included.</p>
+<p>The two optional features are enabled by default; to use features
+selectively, you can add the dependency like this to <a href="https://doc.rust-lang.org/cargo/guide/dependencies.html"><em>Cargo.toml</em></a>:</p>
+<pre><code class="language-toml">[dependencies.gmp-mpfr-sys]
+version = &quot;1.2&quot;
+default-features = false
+features = [&quot;mpfr&quot;]
+</code></pre>
+<p>Here only the <code>mpfr</code> feature is selected.</p>
+<h2 id="experimental-optional-features" class="section-header"><a href="#experimental-optional-features">Experimental optional features</a></h2>
+<p>It is not considered a breaking change if experimental features are
+removed. The removal of experimental features would however require a
+minor version bump.</p>
+<p>Experimental features may also not work on all platforms.</p>
+<p>There is one experimental feature:</p>
+<ol>
+<li><code>use-system-libs</code>, disabled by default. Using this feature, the
+system libraries for <a href="https://gmplib.org/">GMP</a>, and <a href="https://www.mpfr.org/">MPFR</a> and <a href="http://www.multiprecision.org/mpc/">MPC</a> if enabled, will
+be used instead of building them from source. The versions must be
+compatible with the versions provided by the crate.</li>
+</ol>
+<h2 id="metadata" class="section-header"><a href="#metadata">Metadata</a></h2>
+<p>The gmp-mpfr-sys crate passes some metadata to its dependents:</p>
+<ol>
+<li><code>DEP_GMP_LIMB_BITS</code> contains the number of bits per limb, which is
+32 or 64.</li>
+<li><code>DEP_GMP_OUT_DIR</code> contains the path of a directory that contains
+two subdirectories: the first subdirectory is named <em>lib</em> and
+contains the generated library (<em>.a</em>) files, and the second
+subdirectory is named <em>include</em> and contains the corresponding
+header (<em>.h</em>) files.</li>
+<li><code>DEP_GMP_LIB_DIR</code> contains the path of the <em>lib</em> subdirectory of
+the <code>DEP_GMP_OUT_DIR</code> directory.</li>
+<li><code>DEP_GMP_INCLUDE_DIR</code> contains the path of the <em>include</em>
+subdirectory of the <code>DEP_GMP_OUT_DIR</code> directory.</li>
+</ol>
+<p>A dependent crate can use these environment variables in its build
+script.</p>
+<h2 id="building-on-gnulinux" class="section-header"><a href="#building-on-gnulinux">Building on GNU/Linux</a></h2>
+<p>To build on GNU/Linux, simply make sure you have <code>diffutils</code>, <code>gcc</code>,
+<code>make</code> and <code>m4</code> installed on your system. For example on Fedora:</p>
+<pre><code class="language-sh">sudo dnf install diffutils gcc make m4
+</code></pre>
+<h2 id="building-on-macos" class="section-header"><a href="#building-on-macos">Building on macOS</a></h2>
+<p>To build on macOS, you need the command-line developer tools. To
+install them, run the following command in a terminal:</p>
+<pre><code class="language-sh">xcode-select --install
+</code></pre>
+<h2 id="building-on-windows" class="section-header"><a href="#building-on-windows">Building on Windows</a></h2>
+<p>You can build on Windows with the Rust GNU toolchain and an up-to-date
+MSYS2 installation. Some steps for a 64-bit environment are listed
+below. (32-bit: Changes for a 32-bit environment are written in
+brackets like this comment.)</p>
+<p>To install MSYS2:</p>
+<ol>
+<li>
+<p>Install MSYS2 using the <a href="https://msys2.github.io/">installer</a>.</p>
+</li>
+<li>
+<p>Launch the MSYS2 MinGW 64-bit terminal from the start
+menu. (32-bit: Launch the MSYS2 MinGW 32-bit terminal instead.)</p>
+</li>
+<li>
+<p>Install the required tools.</p>
+<pre><code class="language-sh">pacman -S pacman-mirrors
+pacman -S diffutils make mingw-w64-x86_64-gcc
+</code></pre>
+<p>(32-bit: Install <code>mingw-w64-i686-gcc</code> instead of
+<code>mingw-w64-x86_64-gcc</code>.)</p>
+</li>
+</ol>
+<p>Then, to build a crate with a dependency on this crate:</p>
+<ol>
+<li>
+<p>Launch the MSYS MinGW 64-bit terminal from the start menu.
+(32-bit: Launch the MSYS2 MinGW 32-bit terminal instead.)</p>
+</li>
+<li>
+<p>Change to the crate directory.</p>
+</li>
+<li>
+<p>Build the crate using <code>cargo</code>.</p>
+</li>
+</ol>
+<h2 id="cross-compilation" class="section-header"><a href="#cross-compilation">Cross compilation</a></h2>
+<p>While some cross compilation is possible, it is not tested
+automatically, and may not work. Merge requests that improve cross
+compilation are accepted.</p>
+<h2 id="caching-the-built-c-libraries" class="section-header"><a href="#caching-the-built-c-libraries">Caching the built C libraries</a></h2>
+<p>Building the C libraries can take some time. In order to save
+compilation time, the built libraries are cached in the user’s cache
+directory as follows:</p>
+<ul>
+<li>on GNU/Linux: inside <code>$XDG_CACHE_HOME/gmp-mpfr-sys</code> or
+<code>$HOME/.cache/gmp-mpfr-sys</code></li>
+<li>on macOS: inside <code>$HOME/Library/Caches/gmp-mpfr-sys</code></li>
+<li>on Windows: inside <code>{FOLDERID_LocalAppData}\gmp-mpfr-sys</code></li>
+</ul>
+<p>To use a different directory, you can set the environment variable
+<code>GMP_MPFR_SYS_CACHE</code> to the desired cache directory. Setting the
+<code>GMP_MPFR_SYS_CACHE</code> variable to an empty string will disable caching.</p>
+</div><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table><tr class='module-item'><td><a class="mod" href="gmp/index.html" title='gmp_mpfr_sys::gmp mod'>gmp</a></td><td class='docblock-short'><p>Function and type bindings for the <a href="https://gmplib.org/">GMP</a> library.</p>
+</td></tr><tr class='module-item'><td><a class="mod" href="mpc/index.html" title='gmp_mpfr_sys::mpc mod'>mpc</a></td><td class='docblock-short'><p>Function and type bindings for the <a href="http://www.multiprecision.org/mpc/">MPC</a> library.</p>
+</td></tr><tr class='module-item'><td><a class="mod" href="mpfr/index.html" title='gmp_mpfr_sys::mpfr mod'>mpfr</a></td><td class='docblock-short'><p>Function and type bindings for the <a href="https://www.mpfr.org/">MPFR</a> library.</p>
+</td></tr></table><h2 id='macros' class='section-header'><a href="#macros">Macros</a></h2>
+<table><tr class='module-item'><td><a class="macro" href="macro.MPFR_DECL_INIT.html" title='gmp_mpfr_sys::MPFR_DECL_INIT macro'>MPFR_DECL_INIT</a></td><td class='docblock-short'><p>See: <a href="https://tspiteri.gitlab.io/gmp-mpfr-sys/mpfr/MPFR-Interface.html#index-MPFR_005fDECL_005fINIT"><code>MPFR_DECL_INIT</code></a></p>
+</td></tr><tr class='module-item'><td><a class="macro" href="macro.mpfr_round_nearest_away.html" title='gmp_mpfr_sys::mpfr_round_nearest_away macro'>mpfr_round_nearest_away</a></td><td class='docblock-short'><p>See: <a href="https://tspiteri.gitlab.io/gmp-mpfr-sys/mpfr/MPFR-Interface.html#index-mpfr_005fround_005fnearest_005faway"><code>mpfr_round_nearest_away</code></a></p>
+</td></tr></table></section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../";window.currentCrate = "gmp_mpfr_sys";</script><script src="../aliases.js"></script><script src="../main.js"></script><script defer src="../search-index.js"></script></body></html>

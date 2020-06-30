@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["mean","Calculates the arithmetic mean of each column in the provided data."]]});

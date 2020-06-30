@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["release","FFI wrapper for release"],["whitenoise_runtime_destroy_bytebuffer",""]],"mod":[["proto",""]],"struct":[["ByteBufferRuntime","Container for responses over FFI."]]});

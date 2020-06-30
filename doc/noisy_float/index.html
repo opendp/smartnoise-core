@@ -1,0 +1,74 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `noisy_float` crate."><meta name="keywords" content="rust, rustlang, rust-lang, noisy_float"><title>noisy_float - Rust</title><link rel="stylesheet" type="text/css" href="../normalize.css"><link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../dark.css"><link rel="stylesheet" type="text/css" href="../light.css" id="themeStyle"><script src="../storage.js"></script><noscript><link rel="stylesheet" href="../noscript.css"></noscript><link rel="shortcut icon" href="../favicon.ico"><style type="text/css">#crate-search{background-image:url("../down-arrow.svg");}</style></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../noisy_float/index.html'><div class='logo-container'><img src='../rust-logo.png' alt='logo'></div></a><p class='location'>Crate noisy_float</p><div class="sidebar-elems"><a id='all-types' href='all.html'><p>See all noisy_float's items</p></a><div class="block items"><ul><li><a href="#modules">Modules</a></li><li><a href="#structs">Structs</a></li><li><a href="#traits">Traits</a></li></ul></div><p class='location'></p><script>window.sidebarCurrent = {name: 'noisy_float', ty: 'mod', relpath: '../'};</script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../settings.html"><img src="../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../src/noisy_float/lib.rs.html#15-510' title='goto source code'>[src]</a></span><span class='in-band'>Crate <a class="mod" href=''>noisy_float</a></span></h1><div class='docblock'><p>This crate contains floating point types that panic if they are set
+to an illegal value, such as NaN.</p>
+<p>The name &quot;Noisy Float&quot; comes from
+the terms &quot;quiet NaN&quot; and &quot;signaling NaN&quot;; &quot;signaling&quot; was too long
+to put in a struct/crate name, so &quot;noisy&quot; is used instead, being the opposite
+of &quot;quiet.&quot;</p>
+<p>The standard types defined in <code>noisy_float::types</code> follow the principle
+demonstrated by Rust's handling of integer overflow:
+a bad arithmetic operation is considered an error,
+but it is too costly to check everywhere in optimized builds.
+For each floating point number that is created, a <code>debug_assert!</code> invocation is used
+to check if it is valid or not.
+This way, there are guarantees when developing code that floating point
+numbers have valid values,
+but during a release run there is <em>no overhead</em> for using these floating
+point types compared to using <code>f32</code> or <code>f64</code> directly.</p>
+<p>This crate makes use of the num, bounded, signed and floating point traits 
+in the popular <code>num_traits</code> crate.
+This crate can be compiled with no_std.</p>
+<h1 id="examples" class="section-header"><a href="#examples">Examples</a></h1>
+<p>An example using the <code>R64</code> type, which corresponds to <em>finite</em> <code>f64</code> values.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">noisy_float</span>::<span class="ident">prelude</span>::<span class="kw-2">*</span>;
+
+<span class="kw">fn</span> <span class="ident">geometric_mean</span>(<span class="ident">a</span>: <span class="ident">R64</span>, <span class="ident">b</span>: <span class="ident">R64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">R64</span> {
+    (<span class="ident">a</span> <span class="op">*</span> <span class="ident">b</span>).<span class="ident">sqrt</span>() <span class="comment">//used just like regular floating point numbers</span>
+}
+
+<span class="kw">fn</span> <span class="ident">mean</span>(<span class="ident">a</span>: <span class="ident">R64</span>, <span class="ident">b</span>: <span class="ident">R64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">R64</span> {
+    (<span class="ident">a</span> <span class="op">+</span> <span class="ident">b</span>) <span class="op">*</span> <span class="number">0.5</span> <span class="comment">//the RHS of ops can be the underlying float type</span>
+}
+
+<span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;geometric_mean(10.0, 20.0) = {}&quot;</span>, <span class="ident">geometric_mean</span>(<span class="ident">r64</span>(<span class="number">10.0</span>), <span class="ident">r64</span>(<span class="number">20.0</span>)));
+<span class="comment">//prints 14.142...</span>
+<span class="macro">assert</span><span class="macro">!</span>(<span class="ident">mean</span>(<span class="ident">r64</span>(<span class="number">10.0</span>), <span class="ident">r64</span>(<span class="number">20.0</span>)) <span class="op">=</span><span class="op">=</span> <span class="number">15.0</span>);</pre></div>
+<p>An example using the <code>N32</code> type, which corresponds to <em>non-NaN</em> <code>f32</code> values.
+The float types in this crate are able to implement <code>Eq</code> and <code>Ord</code> properly,
+since NaN is not allowed.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">noisy_float</span>::<span class="ident">prelude</span>::<span class="kw-2">*</span>;
+
+<span class="kw">let</span> <span class="ident">values</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">n32</span>(<span class="number">3.0</span>), <span class="ident">n32</span>(<span class="op">-</span><span class="number">1.5</span>), <span class="ident">n32</span>(<span class="number">71.3</span>), <span class="ident">N32</span>::<span class="ident">infinity</span>()];
+<span class="macro">assert</span><span class="macro">!</span>(<span class="ident">values</span>.<span class="ident">iter</span>().<span class="ident">cloned</span>().<span class="ident">min</span>() <span class="op">=</span><span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">n32</span>(<span class="op">-</span><span class="number">1.5</span>)));
+<span class="macro">assert</span><span class="macro">!</span>(<span class="ident">values</span>.<span class="ident">iter</span>().<span class="ident">cloned</span>().<span class="ident">max</span>() <span class="op">=</span><span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">N32</span>::<span class="ident">infinity</span>()));</pre></div>
+<p>An example converting from R64 to primitive types.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">noisy_float</span>::<span class="ident">prelude</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="ident">num_traits</span>::<span class="ident">cast</span>::<span class="ident">ToPrimitive</span>;
+
+<span class="kw">let</span> <span class="ident">value_r64</span>: <span class="ident">R64</span> <span class="op">=</span> <span class="ident">r64</span>(<span class="number">1.0</span>);
+<span class="kw">let</span> <span class="ident">value_f64_a</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="ident">value_r64</span>.<span class="ident">into</span>();
+<span class="kw">let</span> <span class="ident">value_f64_b</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="ident">value_r64</span>.<span class="ident">raw</span>();
+<span class="kw">let</span> <span class="ident">value_u64</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="ident">value_r64</span>.<span class="ident">to_u64</span>().<span class="ident">unwrap</span>();
+
+<span class="macro">assert</span><span class="macro">!</span>(<span class="ident">value_f64_a</span> <span class="op">=</span><span class="op">=</span> <span class="ident">value_f64_b</span>);
+<span class="macro">assert</span><span class="macro">!</span>(<span class="ident">value_f64_a</span> <span class="kw">as</span> <span class="ident">u64</span> <span class="op">=</span><span class="op">=</span> <span class="ident">value_u64</span>);</pre></div>
+<h1 id="features" class="section-header"><a href="#features">Features</a></h1>
+<p>This crate has the following cargo features:</p>
+<ul>
+<li><code>serde-1</code>: Enable serialization for all <code>NoisyFloats</code> using serde 1.0 and
+will transparently serialize then as floats</li>
+</ul>
+</div><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table><tr class='module-item'><td><a class="mod" href="checkers/index.html" title='noisy_float::checkers mod'>checkers</a></td><td class='docblock-short'><p>Standard implementations of <code>FloatChecker</code>.</p>
+</td></tr><tr class='module-item'><td><a class="mod" href="prelude/index.html" title='noisy_float::prelude mod'>prelude</a></td><td class='docblock-short'><p>Prelude for the <code>noisy_float</code> crate.</p>
+</td></tr><tr class='module-item'><td><a class="mod" href="types/index.html" title='noisy_float::types mod'>types</a></td><td class='docblock-short'><p>Standard definitions of <code>NoisyFloat</code>.</p>
+</td></tr></table><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table><tr class='module-item'><td><a class="struct" href="struct.NoisyFloat.html" title='noisy_float::NoisyFloat struct'>NoisyFloat</a></td><td class='docblock-short'><p>A floating point number with a restricted set of legal values.</p>
+</td></tr></table><h2 id='traits' class='section-header'><a href="#traits">Traits</a></h2>
+<table><tr class='module-item'><td><a class="trait" href="trait.FloatChecker.html" title='noisy_float::FloatChecker trait'>FloatChecker</a></td><td class='docblock-short'><p>Trait for checking whether a floating point number is <em>valid</em>.</p>
+</td></tr></table></section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../";window.currentCrate = "noisy_float";</script><script src="../aliases.js"></script><script src="../main.js"></script><script defer src="../search-index.js"></script></body></html>

@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["clamp_categorical","Clamps each column of categorical data to desired set."],["clamp_numeric_float","Clamps each column of float data to within desired range."],["clamp_numeric_integer","Clamps each column of integral data to within desired range."]]});
