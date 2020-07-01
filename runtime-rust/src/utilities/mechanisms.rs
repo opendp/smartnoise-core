@@ -62,12 +62,23 @@ pub fn laplace_mechanism(epsilon: f64, sensitivity: f64, enforce_constant_time: 
 /// use whitenoise_runtime::utilities::mechanisms::gaussian_mechanism;
 /// let n = gaussian_mechanism(0.1, 0.0001, 2.0, false);
 /// ```
+#[cfg(feature = "use-mpfr")]
 pub fn gaussian_mechanism(epsilon: f64, delta: f64, sensitivity: f64, enforce_constant_time: bool) -> Result<f64> {
     if epsilon <= 0. || delta <= 0. || sensitivity <= 0. {
         return Err(format!("epsilon ({}), delta ({}) and sensitivity ({}) must all be positive", epsilon, delta, sensitivity).into());
     }
     let scale: f64 = sensitivity * (2. * (1.25 / delta).ln()).sqrt() / epsilon;
     let noise: f64 = noise::sample_gaussian_mpfr(0., scale)?.to_f64();
+    Ok(noise)
+}
+
+#[cfg(not(feature = "use-mpfr"))]
+pub fn gaussian_mechanism(epsilon: f64, delta: f64, sensitivity: f64, enforce_constant_time: bool) -> Result<f64> {
+    if epsilon <= 0. || delta <= 0. || sensitivity <= 0. {
+        return Err(format!("epsilon ({}), delta ({}) and sensitivity ({}) must all be positive", epsilon, delta, sensitivity).into());
+    }
+    let scale: f64 = sensitivity * (2. * (1.25 / delta).ln()).sqrt() / epsilon;
+    let noise: f64 = noise::sample_gaussian(0., scale, enforce_constant_time);
     Ok(noise)
 }
 
@@ -149,9 +160,12 @@ pub fn exponential_mechanism<T>(
     // get vector of e^(util), then use to find probabilities
     use rug::{float::Constant, Float, ops::Pow};
 
+    // establish rug versions of values
     let rug_e = Float::with_val(53, Constant::Euler);
     let rug_eps = Float::with_val(53, epsilon);
     let rug_sens = Float::with_val(53, sensitivity);
+
+    // establish selection probabilities for each element
     let e_util_vec: Vec<rug::Float> = utilities.iter()
         .map(|x| rug_e.clone().pow(rug_eps.clone() * Float::with_val(53, x) / (2.0 * rug_sens.clone()))).collect();
     let sum_e_util_vec: rug::Float = Float::with_val(53, Float::sum(e_util_vec.iter()));

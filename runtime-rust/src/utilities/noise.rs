@@ -415,6 +415,7 @@ pub fn sample_gaussian(shift: f64, scale: f64, enforce_constant_time: bool) -> f
 /// let n= sample_gaussian_truncated(1.0, 1.0, 0.0, 2.0, false);
 /// # n.unwrap();
 /// ```
+#[cfg(feature = "use-mpfr")]
 pub fn sample_gaussian_truncated(
     min: &f64, max: &f64, shift: &f64, scale: &f64,
     enforce_constant_time: bool
@@ -428,6 +429,27 @@ pub fn sample_gaussian_truncated(
     // return draw from distribution only if it is in correct range
     while (returnable == false) {
         trunc_gauss = sample_gaussian_mpfr(*shift, *scale)?.to_f64();
+        if trunc_gauss >= *min && trunc_gauss <= *max {
+            returnable = true;
+        }
+    }
+    Ok(trunc_gauss)
+}
+
+#[cfg(not(feature = "use-mpfr"))]
+pub fn sample_gaussian_truncated(
+    min: &f64, max: &f64, shift: &f64, scale: &f64,
+    enforce_constant_time: bool
+) -> Result<f64> {
+    if min > max {return Err("lower may not be greater than upper".into());}
+    if scale <= &0.0 {return Err("scale must be greater than zero".into());}
+
+    let mut trunc_gauss = 0.;
+    let mut returnable = false;
+
+    // return draw from distribution only if it is in correct range
+    while (returnable == false) {
+        trunc_gauss = sample_gaussian(*shift, *scale, enforce_constant_time);
         if trunc_gauss >= *min && trunc_gauss <= *max {
             returnable = true;
         }
