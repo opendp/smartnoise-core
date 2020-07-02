@@ -412,7 +412,7 @@ pub fn sample_gaussian(shift: f64, scale: f64, enforce_constant_time: bool) -> f
 /// # Example
 /// ```
 /// use whitenoise_runtime::utilities::noise::sample_gaussian_truncated;
-/// let n= sample_gaussian_truncated(1.0, 1.0, 0.0, 2.0, false);
+/// let n= sample_gaussian_truncated(&1.0, &1.0, &0.0, &2.0, false);
 /// # n.unwrap();
 /// ```
 #[cfg(feature = "use-mpfr")]
