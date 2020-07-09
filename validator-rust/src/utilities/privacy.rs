@@ -58,7 +58,7 @@ fn batch_partition<'a>(
     submissions.into_iter()
         .try_for_each(|(submission_id, subgraph)| {
             // for any node id in the submission, list all nodes that use it
-            //    we are traversing backwards through the graph, starting from materialize/literal nodes
+            //    we are traversing starting from materialize/literal nodes
             let parents = get_dependents(&subgraph);
 
             // contains a record of how many releases are present before any given node id within the submission
@@ -89,6 +89,12 @@ fn batch_partition<'a>(
                     Some(component) => component,
                     None => continue
                 };
+
+                // only keep the first layer of partitions in the returned partition set
+                if let Some(proto::component::Variant::Partition(_)) = component.variant {
+                    partition_ids.retain(|v| v != &node_id);
+                }
+
                 component.arguments().values()
                     .filter(|id| !blacklist.contains(id))
                     .for_each(|id| blacklist_traversal.push(*id));
@@ -209,14 +215,27 @@ pub fn compute_graph_privacy_usage(
             Some(dependents) => dependents,
             None => return Ok(vec![])
         };
-        // retrieve the indexes into the partition
+        // for each node that uses the partition...
         Ok(dependents.iter()
-            // for each index, check if their column name (category) is the same as the category in the signature
-            .map(|index_id| Ok((
-                *index_id, category == IndexKey::new(release.get(graph.get(index_id).unwrap()
-                    .arguments().get(&IndexKey::from("names"))
-                    .ok_or_else(|| "names argument must be specified on an index into partitions")?)
-                    .ok_or_else(|| "names value must be defined")?.value.clone().array()?)?)))
+            .map(|index_id| {
+                let node = graph.get(index_id).unwrap().clone();
+                // if an index, only keep the index if the partition name (category) is the same as the category (passed in the signature)
+                if let Some(proto::component::Variant::Index(_)) = node.variant {
+                    let node_id = node.arguments().remove(&IndexKey::from("names"))
+                        .ok_or_else(|| "names argument must be specified on an index into partitions")?;
+                    Ok((
+                        *index_id,
+                        category == IndexKey::new(release.get(&node_id)
+                            .ok_or_else(|| "names value must be defined")?.value.clone().array()?)?
+                    ))
+                }
+                // if a union, always keep it- the output of the union will always contain data from the partition
+                else if let Some(proto::component::Variant::Union(_)) = node.variant {
+                    Ok((*index_id, true))
+                } else {
+                    Err("dependent must be either an index or union".into())
+                }
+            })
 
             // return if an error was encountered
             .collect::<Result<Vec<(u32, bool)>>>()?.iter()
@@ -236,7 +255,8 @@ pub fn compute_graph_privacy_usage(
             let node_id = traversal.pop().unwrap();
 
             if let Some(category) = &category {
-                if let Some(proto::component::Variant::Union(x)) = graph.get(&node_id).and_then(|v| v.variant.as_ref()) {
+                if let Some(proto::component::Variant::Union(x)) = graph.get(&node_id)
+                    .and_then(|v| v.variant.as_ref()) {
                     if !x.flatten {
                         // the only downstream nodes from the partition are the ones that match the same partition
                         traversal.extend(get_category_indexes(category.clone(), node_id)?);

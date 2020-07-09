@@ -1,5 +1,5 @@
 use whitenoise_validator::errors::*;
-use probability::distribution::{Gaussian, Laplace, Inverse, Distribution};
+use probability::distribution::{Laplace, Inverse};
 use ieee754::Ieee754;
 use std::{cmp, f64::consts, mem};
 
@@ -7,7 +7,11 @@ use crate::utilities;
 
 #[cfg(feature="use-mpfr")]
 use rug::{Float, rand::{ThreadRandGen, ThreadRandState}};
+
 use whitenoise_validator::Integer;
+
+#[cfg(not(feature="use-mpfr"))]
+use probability::prelude::Gaussian;
 
 // Give MPFR ability to draw randomness from OpenSSL
 #[cfg(feature="use-mpfr")]
@@ -263,7 +267,7 @@ mod test_uniform {
         buffer[1] = buffer[1] + 32;
         println!("{:?}", buffer);
 
-        let new_buffer = buffer.into_iter()
+        let new_buffer = buffer.iter()
             .map(|v| format!("{:08b}", v))
             .collect::<Vec<String>>();
         println!("{:?}", new_buffer);
@@ -330,10 +334,9 @@ pub fn sample_uniform_mpfr(min: f64, max: f64) -> Result<rug::Float> {
 /// ```
 /// use whitenoise_runtime::utilities::noise::sample_gaussian_mpfr;
 /// let gaussian = sample_gaussian_mpfr(0.0, 1.0);
-/// # gaussian.unwrap();
 /// ```
 #[cfg(feature = "use-mpfr")]
-pub fn sample_gaussian_mpfr(shift: f64, scale: f64) -> Result<rug::Float> {
+pub fn sample_gaussian_mpfr(shift: f64, scale: f64) -> rug::Float {
     // initialize 64-bit floats within mpfr/rug
     // NOTE: We square the scale here because we ask for the standard deviation as the function input, but
     //       the mpfr library wants the variance. We ask for std. dev. to be consistent with the rest of the library.
@@ -345,11 +348,8 @@ pub fn sample_gaussian_mpfr(shift: f64, scale: f64) -> Result<rug::Float> {
     let mut state = ThreadRandState::new_custom(&mut rng);
 
     // generate Gaussian(0,1) according to mpfr standard, then convert to correct scale
-    let mut gauss = Float::with_val(64, Float::random_normal(&mut state));
-    gauss = gauss.mul_add(&mpfr_scale, &mpfr_shift);
-
-    // return gaussian
-    Ok(gauss)
+    let gauss = Float::with_val(64, Float::random_normal(&mut state));
+    gauss.mul_add(&mpfr_scale, &mpfr_shift)
 }
 
 /// Sample from Laplace distribution centered at shift and scaled by scale.
@@ -388,9 +388,15 @@ pub fn sample_laplace(shift: f64, scale: f64, enforce_constant_time: bool) -> f6
 /// use whitenoise_runtime::utilities::noise::sample_gaussian;
 /// let n = sample_gaussian(0.0, 2.0, false);
 /// ```
+#[cfg(not(feature = "use-mpfr"))]
 pub fn sample_gaussian(shift: f64, scale: f64, enforce_constant_time: bool) -> f64 {
     let probability: f64 = sample_uniform(0., 1., enforce_constant_time).unwrap();
     Gaussian::new(shift, scale).inverse(probability)
+}
+
+#[cfg(feature = "use-mpfr")]
+pub fn sample_gaussian(shift: f64, scale: f64, _enforce_constant_time: bool) -> f64 {
+    sample_gaussian_mpfr(shift, scale).to_f64()
 }
 
 /// Sample from truncated Gaussian distribution.
@@ -412,49 +418,23 @@ pub fn sample_gaussian(shift: f64, scale: f64, enforce_constant_time: bool) -> f
 /// # Example
 /// ```
 /// use whitenoise_runtime::utilities::noise::sample_gaussian_truncated;
-/// let n= sample_gaussian_truncated(&1.0, &1.0, &0.0, &2.0, false);
+/// let n= sample_gaussian_truncated(0.0, 1.0, 0.0, 2.0, false);
 /// # n.unwrap();
 /// ```
-#[cfg(feature = "use-mpfr")]
 pub fn sample_gaussian_truncated(
-    min: &f64, max: &f64, shift: &f64, scale: &f64,
+    min: f64, max: f64, shift: f64, scale: f64,
     enforce_constant_time: bool
 ) -> Result<f64> {
     if min > max {return Err("lower may not be greater than upper".into());}
-    if scale <= &0.0 {return Err("scale must be greater than zero".into());}
-
-    let mut trunc_gauss = 0.;
-    let mut returnable = false;
+    if scale <= 0.0 {return Err("scale must be greater than zero".into());}
 
     // return draw from distribution only if it is in correct range
-    while (returnable == false) {
-        trunc_gauss = sample_gaussian_mpfr(*shift, *scale)?.to_f64();
-        if trunc_gauss >= *min && trunc_gauss <= *max {
-            returnable = true;
+    loop {
+        let trunc_gauss = sample_gaussian(shift, scale, enforce_constant_time);
+        if trunc_gauss >= min && trunc_gauss <= max {
+            return Ok(trunc_gauss)
         }
     }
-    Ok(trunc_gauss)
-}
-
-#[cfg(not(feature = "use-mpfr"))]
-pub fn sample_gaussian_truncated(
-    min: &f64, max: &f64, shift: &f64, scale: &f64,
-    enforce_constant_time: bool
-) -> Result<f64> {
-    if min > max {return Err("lower may not be greater than upper".into());}
-    if scale <= &0.0 {return Err("scale must be greater than zero".into());}
-
-    let mut trunc_gauss = 0.;
-    let mut returnable = false;
-
-    // return draw from distribution only if it is in correct range
-    while (returnable == false) {
-        trunc_gauss = sample_gaussian(*shift, *scale, enforce_constant_time);
-        if trunc_gauss >= *min && trunc_gauss <= *max {
-            returnable = true;
-        }
-    }
-    Ok(trunc_gauss)
 }
 
 /// Sample from the censored geometric distribution with parameter "prob" and maximum

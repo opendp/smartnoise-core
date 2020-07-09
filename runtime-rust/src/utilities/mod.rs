@@ -330,7 +330,7 @@ pub fn sample_from_set<T>(
 
 #[cfg(not(feature="use-mpfr"))]
 pub fn sample_from_set<T>(
-    candidate_set: &Vec<T>, weights: &Vec<whitenoise_validator::Float>,
+    candidate_set: &[T], weights: &[whitenoise_validator::Float],
     enforce_constant_time: bool
 ) -> Result<T> where T: Clone {
 
@@ -413,10 +413,10 @@ pub fn create_subset<T>(
 
 #[cfg(not(feature="use-mpfr"))]
 pub fn create_subset<T>(
-    set: &Vec<T>, weights: &Vec<f64>, k: &i64,
+    set: &[T], weights: &[f64], k: usize,
     enforce_constant_time: bool
 ) -> Result<Vec<T>> where T: Clone {
-    if *k as usize > set.len() { return Err("k must be less than the set length".into()); }
+    if k > set.len() { return Err("k must be less than the set length".into()); }
 
     // generate sum of weights
     let weights_sum: f64 = weights.iter().sum();
@@ -435,16 +435,6 @@ pub fn create_subset<T>(
     // sort key/index tuples by key and identify top k indices
     key_vec.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap());
 
-    let mut top_indices: Vec<usize> = Vec::with_capacity(*k as usize);
-    for i in 0..(*k as usize) {
-        top_indices.push(key_vec[i].1);
-    }
-    
     // subsample based on top k indices
-    let mut subset: Vec<T> = Vec::with_capacity(*k as usize);
-    for value in top_indices.iter().map(|&index| set[index].clone()) {
-        subset.push(value);
-    }
-
-    Ok(subset)
+    Ok(key_vec.iter().take(k).map(|v| set[v.1].clone()).collect())
 }

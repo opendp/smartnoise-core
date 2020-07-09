@@ -63,13 +63,12 @@ pub fn laplace_mechanism(epsilon: f64, sensitivity: f64, enforce_constant_time: 
 /// let n = gaussian_mechanism(0.1, 0.0001, 2.0, false);
 /// ```
 #[cfg(feature = "use-mpfr")]
-pub fn gaussian_mechanism(epsilon: f64, delta: f64, sensitivity: f64, enforce_constant_time: bool) -> Result<f64> {
+pub fn gaussian_mechanism(epsilon: f64, delta: f64, sensitivity: f64, _enforce_constant_time: bool) -> Result<f64> {
     if epsilon <= 0. || delta <= 0. || sensitivity <= 0. {
         return Err(format!("epsilon ({}), delta ({}) and sensitivity ({}) must all be positive", epsilon, delta, sensitivity).into());
     }
     let scale: f64 = sensitivity * (2. * (1.25 / delta).ln()).sqrt() / epsilon;
-    let noise: f64 = noise::sample_gaussian_mpfr(0., scale)?.to_f64();
-    Ok(noise)
+    Ok(noise::sample_gaussian_mpfr(0., scale).to_f64())
 }
 
 #[cfg(not(feature = "use-mpfr"))]
@@ -179,8 +178,9 @@ pub fn exponential_mechanism<T>(
 pub fn exponential_mechanism<T>(
     epsilon: f64,
     sensitivity: f64,
-    candidate_set: &Vec<T>,
+    candidate_set: &[T],
     utilities: Vec<f64>,
+    enforce_constant_time: bool
 ) -> Result<T> where T: Clone, {
 
     // get vector of e^(util), and sample_from_set accepts weights
@@ -188,5 +188,5 @@ pub fn exponential_mechanism<T>(
         .map(|x| (epsilon * x / (2. * sensitivity)).exp()).collect();
 
     // sample element relative to probability
-    utilities::sample_from_set(candidate_set, &weight_vec)
+    utilities::sample_from_set(candidate_set, &weight_vec, enforce_constant_time)
 }
