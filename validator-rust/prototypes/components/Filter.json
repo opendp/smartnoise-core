@@ -15,5 +15,6 @@
     "type_value": "Array",
     "description": "Data with only the desired rows."
   },
-  "description": "Filters data down into only the desired rows."
+  "description": "Filters data down into only the desired rows.",
+  "proto_id": 23
 }

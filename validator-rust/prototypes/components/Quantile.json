@@ -2,6 +2,12 @@
   "arguments": {
     "data": {
       "type_value": "Array"
+    },
+    "candidates": {
+      "type_value": "Jagged",
+      "default_python": "None",
+      "default_rust": "None",
+      "description": "Set from which the Exponential mechanism will return an element."
     }
   },
   "id": "Quantile",
@@ -24,5 +30,6 @@
     "type_value": "Array",
     "description": "Quantile values for each column."
   },
-  "description": "Get values corresponding to specified quantiles for each column of the data."
+  "description": "Get values corresponding to specified quantiles for each column of the data.",
+  "proto_id": 47
 }

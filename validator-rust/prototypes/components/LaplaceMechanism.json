@@ -19,5 +19,6 @@
     "type_value": "Array",
     "description": "Original data perturbed with Laplace noise."
   },
-  "description": "Privatizes a result by returning it perturbed with Laplace noise."
+  "description": "Privatizes a result by returning it perturbed with Laplace noise.",
+  "proto_id": 30
 }

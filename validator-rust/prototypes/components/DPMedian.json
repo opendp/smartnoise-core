@@ -2,6 +2,12 @@
   "arguments": {
     "data": {
       "type_value": "Array"
+    },
+    "candidates": {
+      "type_value": "Jagged",
+      "default_python": "None",
+      "default_rust": "None",
+      "description": "Set from which the Exponential mechanism will return an element."
     }
   },
   "id": "DPMedian",
@@ -10,8 +16,8 @@
     "mechanism": {
       "type_proto": "string",
       "type_rust": "String",
-      "default_python": "'Laplace'",
-      "default_rust": "String::from(\"Laplace\")",
+      "default_python": "'Automatic'",
+      "default_rust": "String::from(\"Automatic\")",
       "description": "Privatizing mechanism to use."
     },
     "privacy_usage": {
@@ -32,5 +38,6 @@
     "type_value": "Array",
     "description": "Differentially private estimates of the median of each column of the data."
   },
-  "description": "Returns differentially private estimates of the median of each column of the data."
+  "description": "Returns differentially private estimates of the median of each column of the data.",
+  "proto_id": 13
 }

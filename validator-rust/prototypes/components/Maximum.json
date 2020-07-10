@@ -3,6 +3,12 @@
     "data": {
       "type_value": "Array",
       "description": "Data for which you want the maximum value in each column."
+    },
+    "candidates": {
+      "type_value": "Jagged",
+      "default_python": "None",
+      "default_rust": "None",
+      "description": "Set from which the Exponential mechanism will return an element."
     }
   },
   "id": "Maximum",
@@ -12,5 +18,6 @@
     "type_value": "Array",
     "description": "Maximum of each column in the data."
   },
-  "description": "Find the maximum value of each column in the data."
+  "description": "Find the maximum value of each column in the data.",
+  "proto_id": 36
 }

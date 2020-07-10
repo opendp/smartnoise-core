@@ -1,12 +1,47 @@
 use crate::errors::*;
 
+use ndarray::{RemoveAxis, Axis, Ix, Array, ArrayView, ArrayD};
+
+use itertools::{zip, Itertools};
+
+
+pub fn broadcast_ndarray<T: Clone>(value: ArrayD<T>, shape: &[usize]) -> Result<ArrayD<T>> {
+    if value.shape() == shape {
+        return Ok(value);
+    }
+
+    if value.len() != 1 {
+        let length = shape.iter().cloned().fold1(|a, b| a * b).unwrap_or(0);
+        bail!("{} values passed when {} were required", value.len(), length);
+    }
+
+    let value = value.first().unwrap();
+
+    Ok(Array::from_shape_fn(shape, |_| value.clone()))
+}
+
+
+pub fn get_ith_column<T: Clone + Default>(value: &ArrayD<T>, i: usize) -> Result<ArrayD<T>> {
+    match value.ndim() {
+        0 => if i == 0 { Ok(value.clone()) } else { Err("ith release does not exist".into()) },
+        1 => Ok(value.clone()),
+        2 => {
+            let release = slow_select(value, Axis(1), &[i]);
+            if release.len() == 1 {
+                // flatten singleton matrices to zero dimensions
+                Ok(Array::from_shape_vec(Vec::new(), vec![release.first()
+                    .ok_or_else(|| Error::from("release must contain at least one value"))?])?
+                    .mapv(|v| v.clone()))
+            } else {
+                Ok(release)
+            }
+        }
+        _ => Err("releases must be 2-dimensional or less".into())
+    }
+}
+
 // Requiring the Copy trait on stack makes strings un-stackable/un-selectable
 // Pulled from the ndarray library, and tweaked to remove the Copy trait requirement
-
-use ndarray::{RemoveAxis, Axis, Ix, Array, ArrayView};
-
-use itertools::zip;
-
 pub fn slow_stack<A, D>(
     axis: Axis,
     arrays: &[ArrayView<A, D>],
@@ -53,6 +88,9 @@ pub fn slow_stack<A, D>(
     Ok(res)
 }
 
+
+// Requiring the Copy trait on stack makes strings un-stackable/un-selectable
+// Pulled from the ndarray library, and tweaked to remove the Copy trait requirement
 pub fn slow_select<A, D>(data: &Array<A, D>, axis: Axis, indices: &[Ix]) -> Array<A, D>
     where
         A: Default,

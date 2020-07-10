@@ -1,11 +1,11 @@
 {
   "arguments": {
-    "data": {
-      "type_value": "Array",
-      "description": "Result to be released privately via the Gaussian mechanism."
+    "utilities": {
+      "type_value": "Jagged",
+      "description": "Respective scores for each candidate."
     },
     "candidates": {
-      "type_value": "Array",
+      "type_value": "Jagged",
       "description": "Set from which the Exponential mechanism will return an element."
     }
   },
@@ -21,7 +21,8 @@
   },
   "return": {
     "type_value": "Array",
-    "description": "Element from the data selected via the Exponential mechanism."
+    "description": "Element from the candidate set selected via the Exponential mechanism."
   },
-  "description": "Returns an element from a finite set with probability relative to its utility."
+  "description": "Returns an element from a finite set with probability relative to its utility.",
+  "proto_id": 22
 }

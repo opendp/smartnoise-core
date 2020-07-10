@@ -4,33 +4,34 @@ use crate::NodeArguments;
 use whitenoise_validator::base::{Array, ReleaseNode};
 use crate::components::Evaluable;
 use ndarray::ArrayD;
-use ndarray;
-use whitenoise_validator::proto;
-use whitenoise_validator::utilities::get_argument;
-use std::collections::BTreeMap;
+
+use whitenoise_validator::{proto, Integer};
+use whitenoise_validator::utilities::take_argument;
 use crate::utilities::get_num_columns;
 use noisy_float::types::n64;
+use indexmap::map::IndexMap;
 
 
 impl Evaluable for proto::Histogram {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        Ok(ReleaseNode::new(match (get_argument(arguments, "data")?.array()?, get_argument(arguments, "categories")?.array()?) {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
+        Ok(ReleaseNode::new(match (take_argument(&mut arguments, "data")?.array()?, take_argument(&mut arguments, "categories")?.array()?) {
             (Array::Bool(data), Array::Bool(categories)) =>
-                histogram(data, categories)?.into(),
-            (Array::F64(data), Array::F64(categories)) =>
-                histogram(&data.mapv(n64), &categories.mapv(n64))?.into(),
-            (Array::I64(data), Array::I64(categories)) =>
-                histogram(data, categories)?.into(),
+                histogram(&data, &categories)?.into(),
+            (Array::Float(data), Array::Float(categories)) =>
+                histogram(&data.mapv(|v| n64(v as f64)), &categories.mapv(|v| n64(v as f64)))?.into(),
+            (Array::Int(data), Array::Int(categories)) =>
+                histogram(&data, &categories)?.into(),
             (Array::Str(data), Array::Str(categories)) =>
-                histogram(data, categories)?.into(),
+                histogram(&data, &categories)?.into(),
             _ => return Err("data and categories must be homogeneously typed".into())
         }))
     }
 }
 
-pub fn histogram<T: Clone + Eq + Ord + std::hash::Hash>(data: &ArrayD<T>, categories: &ArrayD<T>) -> Result<ArrayD<i64>> {
+pub fn histogram<T: Clone + Eq + Ord + std::hash::Hash>(
+    data: &ArrayD<T>, categories: &ArrayD<T>) -> Result<ArrayD<Integer>> {
     let zeros = categories.iter()
-        .map(|cat| (cat, 0)).collect::<BTreeMap<&T, i64>>();
+        .map(|cat| (cat, 0)).collect::<IndexMap<&T, Integer>>();
 
     let counts = data.gencolumns().into_iter()
         .map(|column| {
@@ -40,13 +41,13 @@ pub fn histogram<T: Clone + Eq + Ord + std::hash::Hash>(data: &ArrayD<T>, catego
             });
             categories.iter()
                 .map(|cat| counts.get(cat).unwrap())
-                .cloned().collect::<Vec<i64>>()
-        }).flat_map(|v| v).collect::<Vec<i64>>();
+                .cloned().collect::<Vec<Integer>>()
+        }).flatten().collect::<Vec<Integer>>();
 
     // ensure histogram is of correct dimension
     Ok(match data.ndim() {
         1 => ndarray::Array::from_shape_vec(vec![zeros.len()], counts),
         2 => ndarray::Array::from_shape_vec(vec![zeros.len(), get_num_columns(&data)? as usize], counts),
         _ => return Err("invalid data shape for Histogram".into())
-    }?.into())
+    }?)
 }

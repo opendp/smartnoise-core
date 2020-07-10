@@ -19,5 +19,6 @@
     "type_value": "Array",
     "description": "Sample variance for each column of the data."
   },
-  "description": "Calculates the sample variance for each column of the data."
+  "description": "Calculates the sample variance for each column of the data.",
+  "proto_id": 61
 }
