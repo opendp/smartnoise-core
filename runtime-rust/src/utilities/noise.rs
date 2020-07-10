@@ -1,17 +1,28 @@
 use whitenoise_validator::errors::*;
-use probability::distribution::{Gaussian, Laplace, Inverse, Distribution};
+use probability::distribution::{Laplace, Inverse};
 use ieee754::Ieee754;
-use std::{cmp, f64::consts};
-use rug::rand::{ThreadRandGen, ThreadRandState};
-use rug::Float;
+use std::{cmp, f64::consts, mem};
 
 use crate::utilities;
 
+#[cfg(feature="use-mpfr")]
+use rug::{Float, rand::{ThreadRandGen, ThreadRandState}};
+
+use whitenoise_validator::Integer;
+
+#[cfg(not(feature="use-mpfr"))]
+use probability::prelude::Gaussian;
+
 // Give MPFR ability to draw randomness from OpenSSL
+#[cfg(feature="use-mpfr")]
 struct GeneratorOpenSSL;
+
+#[cfg(feature="use-mpfr")]
 impl ThreadRandGen for GeneratorOpenSSL {
     fn gen(&mut self) -> u32 {
-        return u32::from_str_radix(&utilities::get_bytes(4), 2).unwrap();
+        let mut buffer = [0u8; 4];
+        utilities::fill_bytes(&mut buffer);
+        u32::from_ne_bytes(buffer)
     }
 }
 
@@ -31,25 +42,22 @@ pub fn censored_specific_geom() -> Result<i16> {
     for i in 0..128 {
         // read random bytes
         let binary_string = utilities::get_bytes(1);
-        let binary_char_vec: Vec<char> = binary_string.chars().collect();
+        let first_one_idx: Option<usize> = binary_string.chars().position(|x| x == '1');
 
         // find first element that is '1' and mark its overall index
-        let first_one_index = binary_char_vec.iter().position(|&x| x == '1');
-        let first_one_overall_index: i16;
-        if first_one_index.is_some() {
-            let first_one_index_int = first_one_index.unwrap() as i16;
-            first_one_overall_index = 8*i + first_one_index_int;
+        let first_one_idx = if let Some(first_one_idx) = first_one_idx {
+            8 * i + first_one_idx as i16
         } else {
-            first_one_overall_index = geom;
-        }
-        geom = cmp::min(geom, first_one_overall_index+1);
+            geom
+        };
+        geom = cmp::min(geom, first_one_idx + 1);
     }
-    return Ok(geom);
+    Ok(geom)
 }
 
 /// Sample a single bit with arbitrary probability of success
 ///
-/// Uses only an unbiased source of coin flips (sample_floating_point_probability_exponent).
+/// Uses only an unbiased source of coin flips.
 /// The strategy for doing this with 2 flips in expectation is described [here](https://amakelov.wordpress.com/2013/10/10/arbitrarily-biasing-a-coin-in-2-expected-tosses/).
 ///
 /// # Arguments
@@ -62,26 +70,26 @@ pub fn censored_specific_geom() -> Result<i16> {
 ///
 /// ```
 /// // returns a bit with Pr(bit = 1) = 0.7
-/// use whitenoise_runtime::utilities::noise::sample_bit;
-/// let n = sample_bit(&0.7);
+/// use whitenoise_runtime::utilities::noise::sample_bit_prob;
+/// let n = sample_bit_prob(0.7);
 /// # n.unwrap();
 /// ```
 /// ```should_panic
 /// // fails because 1.3 not a valid probability
-/// use whitenoise_runtime::utilities::noise::sample_bit;
-/// let n = sample_bit(&1.3);
+/// use whitenoise_runtime::utilities::noise::sample_bit_prob;
+/// let n = sample_bit_prob(1.3);
 /// # n.unwrap();
 /// ```
 /// ```should_panic
 /// // fails because -0.3 is not a valid probability
-/// use whitenoise_runtime::utilities::noise::sample_bit;
-/// let n = sample_bit(&-0.3);
+/// use whitenoise_runtime::utilities::noise::sample_bit_prob;
+/// let n = sample_bit_prob(-0.3);
 /// # n.unwrap();
 /// ```
-pub fn sample_bit(prob: &f64) -> Result<i64> {
+pub fn sample_bit_prob(prob: f64) -> Result<i64> {
 
     // ensure that prob is a valid probability
-    assert!(prob >= &0.0 && prob <= &1.0);
+    assert!(prob >= 0.0 && prob <= 1.0);
 
     // repeatedly flip fair coin (up to 1023 times) and identify index (0-based) of first heads
     let first_heads_index: i16 = censored_specific_geom()? - 1;
@@ -94,10 +102,29 @@ pub fn sample_bit(prob: &f64) -> Result<i64> {
 
     // return value at index of interest
     if first_heads_index < num_leading_zeros {
-        return Ok(0);
+        Ok(0)
     } else {
         let index: usize = (num_leading_zeros + first_heads_index) as usize;
-        return Ok(mantissa_vec[index]);
+        Ok(mantissa_vec[index])
+    }
+}
+
+pub fn sample_bit() -> bool {
+    let mut buffer = [0u8; 1];
+    utilities::fill_bytes(&mut buffer);
+    buffer[0] & 1 == 1
+}
+
+
+#[cfg(test)]
+mod test_sample_bit {
+    use crate::utilities::noise::sample_bit;
+
+    #[test]
+    fn test_sample_bit() {
+        (0..100).for_each(|_| {
+            dbg!(sample_bit());
+        });
     }
 }
 
@@ -115,46 +142,36 @@ pub fn sample_bit(prob: &f64) -> Result<i64> {
 /// ```
 /// // returns a uniform draw from the set {0,1,2}
 /// use whitenoise_runtime::utilities::noise::sample_uniform_int;
-/// let n = sample_uniform_int(&0, &2);
+/// let n = sample_uniform_int(0, 2);
 /// # n.unwrap();
 /// ```
 ///
 /// ```should_panic
 /// // fails because min > max
 /// use whitenoise_runtime::utilities::noise::sample_uniform_int;
-/// let n = sample_uniform_int(&2, &0);
+/// let n = sample_uniform_int(2, 0);
 /// # n.unwrap();
 /// ```
-pub fn sample_uniform_int(min: &i64, max: &i64) -> Result<i64> {
+pub fn sample_uniform_int(min: Integer, max: Integer) -> Result<Integer> {
 
-    if min > max {return Err("lower may not be greater than higher".into());}
+    if min > max {return Err("min may not be greater than max".into());}
 
     // define number of possible integers we could sample and the maximum
     // number of bits it would take to represent them
-
-    let n_ints: i64 = max - min + 1;
-    let n_bits: i64 = ( (n_ints as f64).log2() ).ceil() as i64;
+    let n_ints: Integer = max - min + 1;
+    let n_bytes = ((n_ints as f64).log2()).ceil() as usize / 8 + 1;
 
     // uniformly sample integers from the set {0, 1, ..., n_ints-1}
     // by uniformly creating binary strings of length "n_bits"
     // and rejecting integers that are too large
-    let mut valid_int: bool = false;
-    let mut uniform_int: i64 = 0;
-    while valid_int == false {
-        uniform_int = 0;
-        // generate random bits and increase integer by appropriate power of 2
-        for i in 0..n_bits {
-            let bit: i64 = sample_bit(&0.5)?;
-            uniform_int += bit * 2_i64.pow(i as u32);
-        }
+    let mut buffer = [0u8; mem::size_of::<Integer>()];
+    loop {
+        utilities::fill_bytes(&mut buffer[..n_bytes]);
+        let uniform_int = i64::from_le_bytes(buffer);
         if uniform_int < n_ints {
-            valid_int = true;
+            return Ok(uniform_int + min)
         }
     }
-
-    // return successfully generated integer, scaled to be within
-    // the correct range
-    Ok(uniform_int + min)
 }
 
 /// Returns random sample from Uniform[min,max).
@@ -186,32 +203,80 @@ pub fn sample_uniform_int(min: &i64, max: &i64) -> Result<i64> {
 /// ```
 /// // valid draw from Unif[0,2)
 /// use whitenoise_runtime::utilities::noise::sample_uniform;
-/// let unif = sample_uniform(&0.0, &2.0);
+/// let unif = sample_uniform(0.0, 2.0, false);
 /// # unif.unwrap();
 /// ```
 /// ``` should_panic
 /// // fails because min > max
 /// use whitenoise_runtime::utilities::noise::sample_uniform;
-/// let unif = sample_uniform(&2.0, &0.0);
+/// let unif = sample_uniform(2.0, 0.0, false);
 /// # unif.unwrap();
 /// ```
-pub fn sample_uniform(min: &f64, max: &f64) -> Result<f64> {
-    if min > max {return Err("higher cannot be less than lower".into());}
+pub fn sample_uniform(min: f64, max: f64, enforce_constant_time: bool) -> Result<f64> {
+    if min > max {return Err("lower may not be greater than upper".into());}
 
     // Generate mantissa
-    let binary_string = utilities::get_bytes(7);
-    let mantissa = &binary_string[0..52];
+    let mut mantissa_buffer = [0u8; 8];
+    utilities::fill_bytes(&mut mantissa_buffer[1..]);
+    // limit the buffer to 52 bits
+    mantissa_buffer[1] %= 16;
 
     // convert mantissa to integer
-    let mantissa_int = u64::from_str_radix(mantissa, 2).unwrap();
+    let mantissa_int = u64::from_be_bytes(mantissa_buffer);
 
     // Generate exponent
-    let exponent: i16 = -sample_geometric_censored(&0.5, &1023, &true)? as i16;
+    let exponent: i16 = -sample_geometric_censored(0.5, 1023, enforce_constant_time)? as i16;
 
     // Generate uniform random number from [0,1)
     let uniform_rand = f64::recompose(false, exponent, mantissa_int);
-
     Ok(uniform_rand * (max - min) + min)
+}
+
+
+#[cfg(test)]
+mod test_uniform {
+    use crate::utilities::noise::sample_uniform;
+    use ieee754::Ieee754;
+
+    #[test]
+    fn test_uniform() {
+        (1..=100).for_each(|idx| println!("{:?}", (1. / 100. * idx as f64).decompose()));
+        // println!("{:?}", 1.0f64.decompose());
+
+        let min = 0.;
+        let max = 1.;
+        if !(0..10).all(|_| {
+            let sample = sample_uniform(min, max, false).unwrap();
+            let within = min <= sample && max >= sample;
+            if !within {
+                println!("value outside of range: {:?}", sample);
+            }
+            within
+        }) {
+            panic!("not all numbers are within the range")
+        }
+    }
+
+    #[test]
+    fn test_endian() {
+
+        use ieee754::Ieee754;
+        let old_mantissa = 0.192f64.decompose().2;
+        let mut buffer = old_mantissa.to_be_bytes();
+        // from str_radix ignores these extra bits, but reconstruction from_be_bytes uses them
+        buffer[1] = buffer[1] + 32;
+        println!("{:?}", buffer);
+
+        let new_buffer = buffer.iter()
+            .map(|v| format!("{:08b}", v))
+            .collect::<Vec<String>>();
+        println!("{:?}", new_buffer);
+        let new_mantissa = u64::from_str_radix(&new_buffer.concat(), 2).unwrap();
+        println!("{:?} {:?}", old_mantissa, new_mantissa);
+
+        let int_bytes = 12i64.to_le_bytes();
+        println!("{:?}", int_bytes);
+    }
 }
 
 /// Generates a draw from Unif[min, max] using the MPFR library.
@@ -219,9 +284,6 @@ pub fn sample_uniform(min: &f64, max: &f64) -> Result<f64> {
 /// If [min, max] == [0, 1],then this is done in a way that respects exact rounding.
 /// Otherwise, the return will be the result of a composition of two operations that
 /// respect exact rounding (though the result will not necessarily).
-///
-/// We are working through what exactly exact rounding buys us from a privacy perspective --
-/// for more information, see the whitepapers/noise document in the CC_add_mpfr branch.
 ///
 /// # Arguments
 /// * `min` - Lower bound of uniform distribution.
@@ -236,6 +298,7 @@ pub fn sample_uniform(min: &f64, max: &f64) -> Result<f64> {
 /// let unif = sample_uniform_mpfr(0.0, 1.0);
 /// # unif.unwrap();
 /// ```
+#[cfg(feature = "use-mpfr")]
 pub fn sample_uniform_mpfr(min: f64, max: f64) -> Result<rug::Float> {
     // initialize 64-bit floats within mpfr/rug
     let mpfr_min = Float::with_val(53, min);
@@ -251,7 +314,7 @@ pub fn sample_uniform_mpfr(min: f64, max: f64) -> Result<rug::Float> {
     unif = unif.mul_add(&mpfr_diff, &mpfr_min);
 
     // return uniform
-    return Ok(unif);
+    Ok(unif)
 }
 
 /// Generates a draw from a Gaussian distribution using the MPFR library.
@@ -259,10 +322,6 @@ pub fn sample_uniform_mpfr(min: f64, max: f64) -> Result<rug::Float> {
 /// If [min, max] == [0, 1],then this is done in a way that respects exact rounding.
 /// Otherwise, the return will be the result of a composition of two operations that
 /// respect exact rounding (though the result will not necessarily).
-///
-/// We are working through what exactly exact rounding buys us from a privacy perspective --
-/// for more information, see the whitepapers/noise document in the CC_add_mpfr branch.
-///
 ///
 /// # Arguments
 /// * `shift` - The expectation of the Gaussian distribution.
@@ -275,9 +334,9 @@ pub fn sample_uniform_mpfr(min: f64, max: f64) -> Result<rug::Float> {
 /// ```
 /// use whitenoise_runtime::utilities::noise::sample_gaussian_mpfr;
 /// let gaussian = sample_gaussian_mpfr(0.0, 1.0);
-/// # gaussian.unwrap();
 /// ```
-pub fn sample_gaussian_mpfr(shift: f64, scale: f64) -> Result<rug::Float> {
+#[cfg(feature = "use-mpfr")]
+pub fn sample_gaussian_mpfr(shift: f64, scale: f64) -> rug::Float {
     // initialize 64-bit floats within mpfr/rug
     // NOTE: We square the scale here because we ask for the standard deviation as the function input, but
     //       the mpfr library wants the variance. We ask for std. dev. to be consistent with the rest of the library.
@@ -289,15 +348,12 @@ pub fn sample_gaussian_mpfr(shift: f64, scale: f64) -> Result<rug::Float> {
     let mut state = ThreadRandState::new_custom(&mut rng);
 
     // generate Gaussian(0,1) according to mpfr standard, then convert to correct scale
-    let mut gauss = Float::with_val(64, Float::random_normal(&mut state));
-    gauss = gauss.mul_add(&mpfr_scale, &mpfr_shift);
-
-    // return gaussian
-    return Ok(gauss);
+    let gauss = Float::with_val(64, Float::random_normal(&mut state));
+    gauss.mul_add(&mpfr_scale, &mpfr_shift)
 }
 
 /// Sample from Laplace distribution centered at shift and scaled by scale.
-///
+/// 
 /// # Arguments
 ///
 /// * `shift` - The expectation of the Laplace distribution.
@@ -309,15 +365,15 @@ pub fn sample_gaussian_mpfr(shift: f64, scale: f64) -> Result<rug::Float> {
 /// # Example
 /// ```
 /// use whitenoise_runtime::utilities::noise::sample_laplace;
-/// let n = sample_laplace(0.0, 2.0);
+/// let n = sample_laplace(0.0, 2.0, false);
 /// ```
-pub fn sample_laplace(shift: f64, scale: f64) -> f64 {
+pub fn sample_laplace(shift: f64, scale: f64, enforce_constant_time: bool) -> f64 {
     // nothing in sample_uniform can throw an error
-    let probability: f64 = sample_uniform(&0., &1.).unwrap();
+    let probability: f64 = sample_uniform(0., 1., enforce_constant_time).unwrap();
     Laplace::new(shift, scale).inverse(probability)
 }
 
-/// Sample from Gaussian distribution.
+/// Sample from Gaussian distribution centered at shift and scaled by scale.
 ///
 /// # Arguments
 ///
@@ -330,17 +386,22 @@ pub fn sample_laplace(shift: f64, scale: f64) -> f64 {
 /// # Example
 /// ```
 /// use whitenoise_runtime::utilities::noise::sample_gaussian;
-/// let n = sample_gaussian(&0.0, &2.0);
+/// let n = sample_gaussian(0.0, 2.0, false);
 /// ```
-pub fn sample_gaussian(shift: &f64, scale: &f64) -> f64 {
-    let probability: f64 = sample_uniform(&0., &1.).unwrap();
-    Gaussian::new(shift.clone(), scale.clone()).inverse(probability)
+#[cfg(not(feature = "use-mpfr"))]
+pub fn sample_gaussian(shift: f64, scale: f64, enforce_constant_time: bool) -> f64 {
+    let probability: f64 = sample_uniform(0., 1., enforce_constant_time).unwrap();
+    Gaussian::new(shift, scale).inverse(probability)
+}
+
+#[cfg(feature = "use-mpfr")]
+pub fn sample_gaussian(shift: f64, scale: f64, _enforce_constant_time: bool) -> f64 {
+    sample_gaussian_mpfr(shift, scale).to_f64()
 }
 
 /// Sample from truncated Gaussian distribution.
 ///
-/// This function uses inverse transform sampling for sampling, but only between the CDF
-/// probabilities associated with the stated min/max truncation values.
+/// This function uses a rejection sampling approach.
 /// This means that values outside of the truncation bounds are ignored, rather
 /// than pushed to the bounds (as they would be for a censored distribution).
 ///
@@ -357,20 +418,23 @@ pub fn sample_gaussian(shift: &f64, scale: &f64) -> f64 {
 /// # Example
 /// ```
 /// use whitenoise_runtime::utilities::noise::sample_gaussian_truncated;
-/// let n= sample_gaussian_truncated(&1.0, &1.0, &0.0, &2.0);
+/// let n= sample_gaussian_truncated(0.0, 1.0, 0.0, 2.0, false);
 /// # n.unwrap();
 /// ```
-pub fn sample_gaussian_truncated(min: &f64, max: &f64, shift: &f64, scale: &f64) -> Result<f64> {
-    // TODO: why can't probability take a ref? perhaps need to drop the dependency
-    let shift = shift.clone();
-    let scale = scale.clone();
-    if min > max {return Err("higher cannot be less than lower".into());}
+pub fn sample_gaussian_truncated(
+    min: f64, max: f64, shift: f64, scale: f64,
+    enforce_constant_time: bool
+) -> Result<f64> {
+    if min > max {return Err("lower may not be greater than upper".into());}
     if scale <= 0.0 {return Err("scale must be greater than zero".into());}
 
-    let unif_min: f64 = Gaussian::new(shift, scale).distribution(*min);
-    let unif_max: f64 = Gaussian::new(shift, scale).distribution(*max);
-    let unif: f64 = sample_uniform(&unif_min, &unif_max)?;
-    Ok(Gaussian::new(shift, scale).inverse(unif))
+    // return draw from distribution only if it is in correct range
+    loop {
+        let trunc_gauss = sample_gaussian(shift, scale, enforce_constant_time);
+        if trunc_gauss >= min && trunc_gauss <= max {
+            return Ok(trunc_gauss)
+        }
+    }
 }
 
 /// Sample from the censored geometric distribution with parameter "prob" and maximum
@@ -388,41 +452,40 @@ pub fn sample_gaussian_truncated(min: &f64, max: &f64, shift: &f64, scale: &f64)
 /// # Example
 /// ```
 /// use whitenoise_runtime::utilities::noise::sample_geometric_censored;
-/// let geom = sample_geometric_censored(&0.1, &20, &false);
+/// let geom = sample_geometric_censored(0.1, 20, false);
 /// # geom.unwrap();
 /// ```
-pub fn sample_geometric_censored(prob: &f64, max_trials: &i64, enforce_constant_time: &bool) -> Result<i64> {
+pub fn sample_geometric_censored(prob: f64, max_trials: i64, enforce_constant_time: bool) -> Result<i64> {
 
     // ensure that prob is a valid probability
-    if prob < &0.0 || prob > &1.0 {return Err("probability is not within [0, 1]".into())}
+    if prob < 0.0 || prob > 1.0 {return Err("probability is not within [0, 1]".into())}
 
     let mut bit: i64;
-    let mut n_trials: i64 = 1;
+    let mut n_trials: i64 = 0;
     let mut geom_return: i64 = 0;
 
     // generate bits until we find a 1
     // if enforcing the runtime of the algorithm to be constant, the while loop
     // continues after the 1 is found and just stores the first location of a 1 bit.
-    while n_trials <= *max_trials {
-        bit = sample_bit(prob)?;
-        if bit == 1 {
-            // If we haven't seen a 1 yet, set the return to the current number of trials
-            if geom_return == 0 {
-                geom_return = n_trials;
-                if enforce_constant_time == &false {
-                    return Ok(geom_return);
-                }
+    while n_trials < max_trials {
+        bit = sample_bit_prob(prob)?;
+        n_trials += 1;
+
+        // If we haven't seen a 1 yet, set the return to the current number of trials
+        if bit == 1 && geom_return == 0 {
+            geom_return = n_trials;
+            if !enforce_constant_time {
+                return Ok(geom_return);
             }
         }
-        n_trials += 1;
     }
 
     // set geom_return to max if we never saw a bit equaling 1
     if geom_return == 0 {
-        geom_return = *max_trials; // could also set this equal to n_trials - 1.
+        geom_return = max_trials; // could also set this equal to n_trials - 1.
     }
 
-    return Ok(geom_return);
+    Ok(geom_return)
 }
 
 /// Sample noise according to geometric mechanism
@@ -447,22 +510,22 @@ pub fn sample_geometric_censored(prob: &f64, max_trials: &i64, enforce_constant_
 /// ```
 /// use ndarray::prelude::*;
 /// use whitenoise_runtime::utilities::noise::sample_simple_geometric_mechanism;
-/// let geom_noise = sample_simple_geometric_mechanism(&1., &0, &100, &false);
+/// let geom_noise = sample_simple_geometric_mechanism(1., 0, 100, false);
 /// ```
-pub fn sample_simple_geometric_mechanism(scale: &f64, min: &i64, max: &i64, enforce_constant_time: &bool) -> i64 {
+pub fn sample_simple_geometric_mechanism(scale: f64, min: i64, max: i64, enforce_constant_time: bool) -> i64 {
 
-    let alpha: f64 = consts::E.powf(-1. / *scale);
+    let alpha: f64 = consts::E.powf(-1. / scale);
     let max_trials: i64 = max - min;
 
     // return 0 noise with probability (1-alpha) / (1+alpha), otherwise sample from geometric
-    let unif: f64 = sample_uniform(&0., &1.).unwrap();
+    let unif: f64 = sample_uniform(0., 1., enforce_constant_time).unwrap();
     if unif < (1. - alpha) / (1. + alpha) {
-        return 0;
+        0
     } else {
         // get random sign
-        let sign: i64 = 2 * sample_bit(&0.5).unwrap() - 1;
+        let sign: i64 = 2 * sample_bit() as i64 - 1;
         // sample from censored geometric. Unwrap is safe because (1. - alpha) is bounded by 1.
-        let geom: i64 = sample_geometric_censored(&(1. - alpha), &max_trials, enforce_constant_time).unwrap();
-        return sign * geom;
+        let geom: i64 = sample_geometric_censored(1. - alpha, max_trials, enforce_constant_time).unwrap();
+        sign * geom
     }
 }

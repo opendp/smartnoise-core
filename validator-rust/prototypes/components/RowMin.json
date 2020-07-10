@@ -13,5 +13,6 @@
   "return": {
     "type_value": "Array"
   },
-  "description": "Returns the minimum of the left and right arguments, per row."
+  "description": "Returns the minimum of the left and right arguments, per row.",
+  "proto_id": 52
 }

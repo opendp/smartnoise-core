@@ -47,5 +47,6 @@
     "type_value": "Array",
     "description": "Flattened covariance or cross-covariance matrix."
   },
-  "description": "Calculate differentially private covariance.\n\nIf `data` argument is provided as a 2D array, calculate covariance matrix. Otherwise, `left` and `right` 1D arrays are used to calculate a cross-covariance matrix between elements of the two arrays."
+  "description": "Calculate differentially private covariance.\n\nIf `data` argument is provided as a 2D array, calculate covariance matrix. Otherwise, `left` and `right` 1D arrays are used to calculate a cross-covariance matrix between elements of the two arrays.",
+  "proto_id": 9
 }

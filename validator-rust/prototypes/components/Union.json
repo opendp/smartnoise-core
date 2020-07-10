@@ -1,0 +1,19 @@
+{
+  "any_argument": true,
+  "arguments": {},
+  "id": "Union",
+  "name": "union",
+  "options": {
+    "flatten": {
+      "type_proto": "bool",
+      "type_rust": "bool",
+      "default_python": "True",
+      "description": "When set, the output is an array. When unset, the output is an indexmap of arrays."
+    }
+  },
+  "return": {
+    "type_value": "Array"
+  },
+  "description": "Union the arrays in the arguments into one array.",
+  "proto_id": 62
+}

@@ -1,16 +1,17 @@
 pub mod json;
-pub mod serial;
 pub mod inference;
+pub mod serial;
 pub mod array;
+pub mod privacy;
+pub mod properties;
 
 use crate::errors::*;
 
-use crate::proto;
+use crate::{proto, base, Warnable, Float};
 
-use crate::base::{Release, Value, ValueProperties, SensitivitySpace, NodeProperties, ReleaseNode};
+use crate::base::{Release, Value, ValueProperties, SensitivitySpace, NodeProperties, IndexKey};
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
-use crate::utilities::serial::{parse_release, parse_value_properties, serialize_value, parse_release_node};
 use crate::utilities::inference::infer_property;
 
 use itertools::Itertools;
@@ -18,47 +19,54 @@ use ndarray::prelude::*;
 
 // import all trait implementations
 use crate::components::*;
-use crate::utilities::array::slow_select;
 use noisy_float::prelude::n64;
 use std::iter::FromIterator;
-use crate::ffi::serialize_error;
+use crate::utilities::privacy::spread_privacy_usage;
+use indexmap::map::IndexMap;
+
+
+/// Retrieve the specified Value from the arguments to a component.
+pub fn take_argument(
+    arguments: &mut IndexMap<base::IndexKey, Value>,
+    name: &str,
+) -> Result<Value> {
+    arguments.remove::<base::IndexKey>(&name.into())
+        .ok_or_else(|| Error::from(name.to_string() + " must be defined"))
+}
+
+pub fn get_argument<'a>(
+    arguments: &IndexMap<base::IndexKey, &'a Value>,
+    name: &str,
+) -> Result<&'a Value> {
+    arguments.get::<base::IndexKey>(&name.into()).cloned()
+        .ok_or_else(|| Error::from(name.to_string() + " must be defined"))
+}
 
 /// Retrieve the Values for each of the arguments of a component from the Release.
-pub fn get_public_arguments(
+pub fn get_public_arguments<'a>(
     component: &proto::Component,
-    graph_evaluation: &Release,
-) -> Result<HashMap<String, Value>> {
-    let mut arguments = HashMap::<String, Value>::new();
-    for (field_id, field) in component.arguments.clone() {
-        if let Some(evaluation) = graph_evaluation.get(&field) {
+    release: &'a Release,
+) -> Result<IndexMap<base::IndexKey, &'a Value>> {
+    let mut arguments = IndexMap::<base::IndexKey, &'a Value>::new();
+    for (arg_name, arg_node_id) in component.arguments() {
+        if let Some(evaluation) = release.get(&arg_node_id) {
             if evaluation.public {
-                arguments.insert(field_id.to_owned(), evaluation.to_owned().value.clone());
+                arguments.insert(arg_name.to_owned(), &evaluation.value);
             }
         }
     }
     Ok(arguments)
 }
 
-/// Retrieve the specified Value from the arguments to a component.
-pub fn get_argument<'a>(
-    arguments: &HashMap<String, &'a Value>,
-    name: &str,
-) -> Result<&'a Value> {
-    match arguments.get(name) {
-        Some(argument) => Ok(argument),
-        _ => Err((name.to_string() + " is not defined").into())
-    }
-}
-
 /// Retrieve the ValueProperties for each of the arguments of a component from the Release.
 pub fn get_input_properties<T>(
     component: &proto::Component,
     graph_properties: &HashMap<u32, T>,
-) -> Result<HashMap<String, T>> where T: std::clone::Clone {
-    let mut properties = HashMap::<String, T>::new();
-    for (field_id, field) in component.arguments.clone() {
-        if let Some(property) = graph_properties.get(&field) {
-            properties.insert(field_id.to_owned(), property.clone());
+) -> Result<IndexMap<base::IndexKey, T>> where T: std::clone::Clone {
+    let mut properties = IndexMap::<base::IndexKey, T>::new();
+    for (arg_name, arg_node_id) in component.arguments() {
+        if let Some(property) = graph_properties.get(&arg_node_id) {
+            properties.insert(arg_name.to_owned(), property.clone());
         }
     }
     Ok(properties)
@@ -75,39 +83,34 @@ pub fn get_input_properties<T>(
 /// * `0` - Properties for every node in the expanded graph
 /// * `1` - The expanded graph
 pub fn propagate_properties(
-    analysis: &proto::Analysis,
-    release: &proto::Release,
-    properties: Option<&HashMap<u32, proto::ValueProperties>>,
+    privacy_definition: &Option<proto::PrivacyDefinition>,
+    computation_graph: &mut HashMap<u32, proto::Component>,
+    release: &mut base::Release,
+    properties: Option<HashMap<u32, base::ValueProperties>>,
     dynamic: bool
-
-) -> Result<(HashMap<u32, ValueProperties>, HashMap<u32, proto::Component>, Vec<proto::Error>)> {
-
-    let privacy_definition = analysis.privacy_definition.to_owned()
-        .ok_or_else(|| Error::from("privacy definition must be defined"))?;
-    let mut graph: HashMap<u32, proto::Component> = analysis.computation_graph.to_owned()
-        .ok_or_else(|| Error::from("computation graph be defined"))?.value;
-    let mut traversal: Vec<u32> = get_traversal(&graph)?;
-
+) -> Result<(HashMap<u32, ValueProperties>, Vec<Error>)> {
+    let mut traversal: Vec<u32> = get_traversal(&computation_graph)?;
     // extend and pop from the end of the traversal
     traversal.reverse();
 
-    let mut graph_evaluation: Release = parse_release(&release)?;
+    let mut properties = properties.unwrap_or_else(HashMap::new);
 
-    let mut graph_properties = match properties {
-        Some(properties) => properties.iter()
-            .map(|(idx, props)| (idx.clone(), parse_value_properties(props)))
-            .collect::<HashMap<u32, ValueProperties>>(),
-        None => HashMap::new()
-    };
+    let mut maximum_id = computation_graph.keys().max().cloned().unwrap_or(0);
+    // println!("maximum node id: {:?}", maximum_id);
+    // let maximum_property_id = graph_properties.keys().max().cloned().unwrap_or(0);
+    // println!("maximum property id: {:?}", maximum_property_id);
+    // let maximum_release_id = release.keys().max().cloned().unwrap_or(0);
+    // println!("maximum release id: {:?}", maximum_release_id);
 
     // infer properties on public evaluations
-    graph_properties.extend(graph_evaluation.iter()
+    properties.extend(release.iter()
         .filter(|(_, release_node)| release_node.public)
-        .map(|(node_id, release_node)| Ok((*node_id, infer_property(&release_node.value)?)))
+        .map(|(node_id, release_node)|
+            Ok((*node_id, infer_property(
+                &release_node.value,
+                properties.get(node_id))?)))
         .collect::<Result<HashMap<u32, ValueProperties>>>()?);
 
-    let mut maximum_id = graph.keys().cloned()
-        .fold(0, std::cmp::max);
 
     let mut failed_ids = HashSet::new();
 
@@ -116,46 +119,40 @@ pub fn propagate_properties(
     while !traversal.is_empty() {
         let node_id = *traversal.last().unwrap();
 
-        let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
+        let component: &proto::Component = computation_graph.get(&node_id).unwrap();
 
-        if component.arguments.values().any(|v| failed_ids.contains(v)) {
+        // println!("component {:?}", component);
+
+        if component.arguments().values().any(|v| failed_ids.contains(v)) {
             failed_ids.insert(traversal.pop().unwrap());
-            continue
+            continue;
         }
 
-        let input_properties = get_input_properties(&component, &graph_properties)?;
-        let public_arguments = get_public_arguments(&component, &graph_evaluation)?;
-
-        let mut expansion = match (dynamic, component.clone().variant
-            .ok_or_else(|| Error::from("component variant must be defined"))?
+        let mut expansion = match component
             .expand_component(
-                &privacy_definition,
+                privacy_definition,
                 &component,
-                &input_properties,
-                &node_id,
-                &maximum_id,
-            )) {
-            (_, Ok(expansion)) => expansion,
-
-            (true, Err(err)) => {
+                &get_public_arguments(component, &release)?,
+                &get_input_properties(&component, &properties)?,
+                node_id,
+                maximum_id,
+            ) {
+            Ok(expansion) => expansion,
+            Err(err) => if dynamic {
                 failed_ids.insert(traversal.pop().unwrap());
-                warnings.push(serialize_error(err));
-                continue
-            },
-            (false, Err(err)) => return Err(err)
+                warnings.push(err);
+                continue;
+            } else { return Err(err) }
         };
 
-        // patch the computation graph
-        graph.extend(expansion.computation_graph.clone());
-        graph_properties.extend(expansion.properties.iter()
-            .map(|(node_id, props)| (*node_id, parse_value_properties(props)))
-            .collect::<HashMap<u32, ValueProperties>>());
-        graph_evaluation.extend(expansion.releases.iter()
-            .map(|(node_id, release)| Ok((*node_id, parse_release_node(&release)?)))
-            .collect::<Result<HashMap<u32, ReleaseNode>>>()?);
+        maximum_id = expansion.computation_graph.keys().max().cloned()
+            .unwrap_or(0).max(maximum_id);
 
-        maximum_id = *expansion.computation_graph.keys().max()
-            .map(|v| v.max(&maximum_id)).unwrap_or(&maximum_id);
+        // patch the computation graph
+        computation_graph.extend(expansion.computation_graph);
+        properties.extend(expansion.properties);
+        release.extend(expansion.releases);
+        warnings.extend(expansion.warnings);
 
         // if patch added nodes, extend the traversal
         if !expansion.traversal.is_empty() {
@@ -163,46 +160,65 @@ pub fn propagate_properties(
             traversal.extend(expansion.traversal);
             continue;
         }
+
+        //component may have changed since the last call, due to the expansion
+        let component: &proto::Component = computation_graph.get(&node_id).unwrap();
+
+        let mut input_properties = IndexMap::<base::IndexKey, ValueProperties>::new();
+        let mut missing_properties = Vec::new();
+        for (arg_name, arg_node_id) in component.arguments() {
+            if let Some(property) = properties.get(&arg_node_id) {
+                input_properties.insert(arg_name.to_owned(), property.clone());
+            } else {
+                missing_properties.push(arg_node_id);
+            }
+        }
+        if !missing_properties.is_empty() {
+            traversal.extend(missing_properties);
+            continue
+        }
+
         traversal.pop();
 
-        let component_properties = match graph_evaluation.get(&node_id) {
-            // if node has already been evaluated, infer properties directly from the public data
-            Some(release_node) => {
-                if release_node.public {
-                    infer_property(&release_node.value)
-                } else {
-                    let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
-                    component.clone().variant
-                        .ok_or_else(|| Error::from("privacy definition must be defined"))?
-                        .propagate_property(
-                            &privacy_definition, &public_arguments, &input_properties)
-                        .chain_err(|| format!("at node_id {:?}", node_id))
-                }
-            }
+        let release_node = release.get(&node_id);
+        // println!("release node {:?}", release_node);
 
+        let propagation_result = if release_node.map(|release_node| release_node.public).unwrap_or(false) {
+            // if node has already been evaluated and is public, infer properties directly from the public data
+            // println!("inferring property");
+            Ok(Warnable(infer_property(
+                &release_node.unwrap().value,
+                properties.get(&node_id))?, vec![]))
+        } else {
             // if node has not been evaluated, propagate properties over it
-            None => {
-                let component: proto::Component = graph.get(&node_id).unwrap().to_owned();
-                component.clone().variant.unwrap().propagate_property(
-                    &privacy_definition, &public_arguments, &input_properties)
-                    .chain_err(|| format!("at node_id {:?}", node_id))
-            }
+            computation_graph.get(&node_id).unwrap()
+                .propagate_property(
+                    privacy_definition,
+                    get_public_arguments(component, &release)?,
+                    input_properties,
+                    node_id)
+                .chain_err(|| format!("at node_id {:?}", node_id))
         };
 
-        let component_properties = match (dynamic, component_properties) {
-            (_, Ok(properties)) => properties,
-            (true, Err(err)) => {
-                failed_ids.insert(node_id);
-                warnings.push(serialize_error(err));
-                continue
+        // println!("prop result: {:?}", propagation_result);
+        match propagation_result {
+            Ok(propagation_result) => {
+                let Warnable(component_properties, propagation_warnings) = propagation_result;
+
+                warnings.extend(propagation_warnings.into_iter()
+                    .map(|err| err.chain_err(|| format!("at node_id {:?}", node_id)))
+                    .collect::<Vec<Error>>());
+
+                properties.insert(node_id, component_properties);
             },
-            (false, Err(err)) => return Err(err)
+            Err(err) => if dynamic {
+                failed_ids.insert(node_id);
+                warnings.push(err);
+            } else { return Err(err) }
         };
-
-//        println!("graph evaluation in prop {:?}", graph_evaluation);
-        graph_properties.insert(node_id.clone(), component_properties);
     }
-    Ok((graph_properties, graph, warnings))
+    // println!("done propagating");
+    Ok((properties, warnings))
 }
 
 /// Given a computation graph, return an ordering of nodes that ensures all dependencies of any node have been visited
@@ -219,7 +235,7 @@ pub fn get_traversal(
         parents.entry(*node_id)
             .or_insert_with(HashSet::<u32>::new);
 
-        component.arguments.values().for_each(|argument_node_id| {
+        component.arguments().values().for_each(|argument_node_id| {
             parents.entry(*argument_node_id)
                 .or_insert_with(HashSet::<u32>::new)
                 .insert(*node_id);
@@ -231,8 +247,8 @@ pub fn get_traversal(
 
     // collect all sources (nodes with zero arguments)
     let mut queue: Vec<u32> = graph.iter()
-        .filter(|(_node_id, component)| component.arguments.is_empty()
-            || component.arguments.values().all(|arg_idx| !graph.contains_key(arg_idx)))
+        .filter(|(_node_id, component)| component.arguments().is_empty()
+            || component.arguments().values().all(|arg_idx| !graph.contains_key(arg_idx)))
         .map(|(node_id, _component)| node_id.to_owned()).collect();
 
     let mut visited = HashMap::new();
@@ -245,7 +261,7 @@ pub fn get_traversal(
         let mut is_cyclic = false;
 
         parents.get(&queue_node_id).unwrap().iter().for_each(|parent_node_id| {
-            let parent_arguments = graph.get(parent_node_id).unwrap().to_owned().arguments;
+            let parent_arguments = graph.get(parent_node_id).unwrap().to_owned().arguments();
 
             // if parent has been reached more times than it has arguments, then it is cyclic
             let count = visited.entry(*parent_node_id).or_insert(0);
@@ -280,77 +296,61 @@ pub fn get_sinks(computation_graph: &HashMap<u32, proto::Component>) -> HashSet<
 
     // remove nodes that are referenced in arguments
     computation_graph.values()
-        .for_each(|component| component.arguments.values()
+        .for_each(|component| component.arguments().values()
             .for_each(|source_node_id| {
                 node_ids.remove(source_node_id);
             }));
 
-    return node_ids;
+    node_ids
 }
+
 
 /// Given an array, conduct well-formedness checks and broadcast
 ///
 /// Typically used by functions when standardizing numeric arguments, but generally applicable.
 #[doc(hidden)]
-pub fn standardize_numeric_argument<T: Clone>(value: &ArrayD<T>, length: &i64) -> Result<ArrayD<T>> {
+pub fn standardize_numeric_argument<T: Clone>(value: ArrayD<T>, length: i64) -> Result<ArrayD<T>> {
     match value.ndim() {
         0 => match value.first() {
-            Some(scalar) => Ok(Array::from((0..*length).map(|_| scalar.clone()).collect::<Vec<T>>()).into_dyn()),
+            Some(scalar) => Ok(Array::from((0..length).map(|_| scalar.clone()).collect::<Vec<T>>()).into_dyn()),
             None => Err("value must be non-empty".into())
         },
-        1 => if value.len() as i64 == *length {
-            Ok(value.clone())
+        1 => if value.len() as i64 == length {
+            Ok(value)
         } else { Err("value is of incompatible length".into()) },
         _ => Err("value must be a scalar or vector".into())
     }
 }
 
-#[doc(hidden)]
-pub fn uniform_density(length: usize) -> Vec<f64> {
-    (0..length).map(|_| 1. / (length as f64)).collect()
-}
-
-
-/// Convert weights to probabilities
-#[doc(hidden)]
-pub fn normalize_probabilities(weights: &[f64]) -> Result<Vec<f64>> {
-    if !weights.iter().all(|w| w >= &0.) {
-        return Err("all weights must be greater than zero".into())
-    }
-    let sum: f64 = weights.iter().sum();
-    Ok(weights.iter().map(|prob| prob / sum).collect())
-}
-
+/// Given a jagged float array, conduct well-formedness checks and broadcast
 pub fn standardize_float_argument(
-    categories: &[Option<Vec<f64>>],
-    length: &i64
-) -> Result<Vec<Vec<f64>>> {
-    // check that no categories are explicitly None
-    let mut categories = categories.iter().cloned().collect::<Option<Vec<Vec<f64>>>>()
-        .ok_or_else(|| Error::from("categories must be defined for all columns"))?;
+    mut categories: Vec<Vec<Float>>,
+    length: i64,
+) -> Result<Vec<Vec<Float>>> {
 
     if categories.is_empty() {
         return Err("no categories are defined".into());
     }
 
-    categories.clone().into_iter().map(|mut col| {
+    categories.clone().into_iter().try_for_each(|mut col| {
         if !col.iter().all(|v| v.is_finite()) {
-            return Err("all floats must be finite".into())
+            return Err("all floats must be finite".into());
         }
 
         col.sort_unstable_by(|l, r| l.partial_cmp(r).unwrap());
 
         let original_length = col.len();
 
-        if deduplicate(col.into_iter().map(n64).collect()).len() < original_length {
-            return Err("floats must not contain duplicates".into())
+        // TODO cfg conditional compilation to n32
+        if deduplicate(col.into_iter().map(|v| n64(v as f64)).collect()).len() < original_length {
+            return Err("floats must not contain duplicates".into());
         }
-        Ok(())
-    }).collect::<Result<()>>()?;
+        Ok::<_, Error>(())
+    })?;
 
     // broadcast categories across all columns, if only one categories set is defined
     if categories.len() == 1 {
-        categories = (0..*length).map(|_| categories.first().unwrap().clone()).collect();
+        categories = (0..length).map(|_| categories.first().unwrap().clone()).collect();
     }
 
     Ok(categories)
@@ -359,12 +359,11 @@ pub fn standardize_float_argument(
 /// Given a jagged categories array, conduct well-formedness checks and broadcast
 #[doc(hidden)]
 pub fn standardize_categorical_argument<T: Clone + Eq + Hash + Ord>(
-    categories: &[Option<Vec<T>>],
-    length: &i64,
+    categories: Vec<Vec<T>>,
+    length: i64,
 ) -> Result<Vec<Vec<T>>> {
-    // check that no categories are explicitly None
-    let mut categories = categories.iter().cloned().collect::<Option<Vec<Vec<T>>>>()
-        .ok_or_else(|| Error::from("categories must be defined for all columns"))?.into_iter()
+    // deduplicate categories
+    let mut categories = categories.into_iter()
         .map(deduplicate).collect::<Vec<Vec<T>>>();
 
     if categories.is_empty() {
@@ -372,7 +371,7 @@ pub fn standardize_categorical_argument<T: Clone + Eq + Hash + Ord>(
     }
     // broadcast categories across all columns, if only one categories set is defined
     if categories.len() == 1 {
-        categories = (0..*length).map(|_| categories.first().unwrap().clone()).collect();
+        categories = (0..length).map(|_| categories.first().unwrap().clone()).collect();
     }
 
     Ok(categories)
@@ -382,12 +381,9 @@ pub fn standardize_categorical_argument<T: Clone + Eq + Hash + Ord>(
 /// Given a jagged null values array, conduct well-formedness checks, broadcast along columns, and flatten along rows.
 #[doc(hidden)]
 pub fn standardize_null_candidates_argument<T: Clone>(
-    value: &[Option<Vec<T>>],
-    length: &i64,
+    mut value: Vec<Vec<T>>,
+    length: i64,
 ) -> Result<Vec<Vec<T>>> {
-    let mut value = value.iter().cloned()
-        .collect::<Option<Vec<Vec<T>>>>()
-        .ok_or_else(|| Error::from("null must be defined for all columns"))?;
 
     if value.is_empty() {
         return Err("null values cannot be an empty vector".into());
@@ -396,7 +392,7 @@ pub fn standardize_null_candidates_argument<T: Clone>(
     // broadcast nulls across all columns, if only one null set is defined
     if value.len() == 1 {
         let first_set = value.first().unwrap();
-        value = (0..*length).map(|_| first_set.clone()).collect();
+        value = (0..length).map(|_| first_set.clone()).collect();
     }
     Ok(value)
 }
@@ -404,21 +400,21 @@ pub fn standardize_null_candidates_argument<T: Clone>(
 /// Given a jagged null values array, conduct well-formedness checks, broadcast along columns, and flatten along rows.
 #[doc(hidden)]
 pub fn standardize_null_target_argument<T: Clone>(
-    value: &ArrayD<T>,
-    length: &i64,
+    value: ArrayD<T>,
+    length: i64,
 ) -> Result<Vec<T>> {
     if value.is_empty() {
         return Err("null values cannot be empty".into());
     }
 
-    if value.len() == *length as usize {
-        return Ok(value.iter().cloned().collect())
+    if value.len() == length as usize {
+        return Ok(value.iter().cloned().collect());
     }
 
     // broadcast nulls across all columns, if only one null is defined
     if value.len() == 1 {
         let value = value.first().unwrap();
-        return Ok((0..*length).map(|_| value.clone()).collect())
+        return Ok((0..length).map(|_| value.clone()).collect());
     }
 
     bail!("length of null must be one, or {}", length)
@@ -427,15 +423,27 @@ pub fn standardize_null_target_argument<T: Clone>(
 /// Given categories and a jagged categories weights array, conduct well-formedness checks and return a standardized set of probabilities.
 #[doc(hidden)]
 pub fn standardize_weight_argument(
-    weights: &Option<Vec<Vec<f64>>>,
+    weights: &Option<Vec<Vec<Float>>>,
     lengths: &[i64],
-) -> Result<Vec<Vec<f64>>> {
-    let weights = weights.clone().unwrap_or_else(|| vec![]);
+) -> Result<Vec<Vec<Float>>> {
+    let weights = weights.clone().unwrap_or_else(Vec::new);
+
+    fn uniform_density(length: usize) -> Vec<Float> {
+        (0..length).map(|_| 1. / (length as Float)).collect()
+    }
+    /// Convert weights to probabilities
+    fn normalize_probabilities(weights: &[Float]) -> Result<Vec<Float>> {
+        if !weights.iter().all(|w| w >= &0.) {
+            return Err("all weights must be greater than zero".into());
+        }
+        let sum: Float = weights.iter().sum();
+        Ok(weights.iter().map(|prob| prob / sum).collect())
+    }
 
     match weights.len() {
         0 => Ok(lengths.iter()
             .map(|length| uniform_density(*length as usize))
-            .collect::<Vec<Vec<f64>>>()),
+            .collect::<Vec<Vec<Float>>>()),
         1 => {
             let probabilities = normalize_probabilities(&weights[0])?;
 
@@ -444,10 +452,10 @@ pub fn standardize_weight_argument(
                     Ok(probabilities.clone())
                 } else {
                     Err("length of weights does not match number of categories".into())
-                }).collect::<Result<Vec<Vec<f64>>>>()
-        },
+                }).collect::<Result<Vec<Vec<Float>>>>()
+        }
         _ => if lengths.len() == weights.len() {
-            weights.iter().map(|v| normalize_probabilities(v)).collect::<Result<Vec<Vec<f64>>>>()
+            weights.iter().map(|v| normalize_probabilities(v)).collect::<Result<Vec<Vec<Float>>>>()
         } else {
             Err("category weights must be the same length as categories, or none".into())
         }
@@ -456,230 +464,129 @@ pub fn standardize_weight_argument(
 
 /// Utility for building extra Components to pass back when conducting expansions.
 #[doc(hidden)]
-pub fn get_literal(value: &Value, batch: &u32) -> Result<(proto::Component, proto::ReleaseNode)> {
-    Ok((proto::Component {
-        arguments: HashMap::new(),
-        variant: Some(proto::component::Variant::Literal(proto::Literal {})),
-        omit: true,
-        batch: *batch,
-    },
-        proto::ReleaseNode {
-            value: Some(serialize_value(value)?),
-            privacy_usages: None,
-            public: true
-        }))
-}
-
-
-pub fn get_component_privacy_usage(
-    component: &proto::Component,
-    release_node: Option<&proto::ReleaseNode>,
-) -> Option<proto::PrivacyUsage> {
-
-    // get the maximum possible usage allowed to the component
-    let mut privacy_usage: Vec<proto::PrivacyUsage> = match component.to_owned().variant? {
-        proto::component::Variant::LaplaceMechanism(x) => x.privacy_usage,
-        proto::component::Variant::GaussianMechanism(x) => x.privacy_usage,
-//        proto::component::Variant::ExponentialMechanism(x) => x.privacy_usage,
-        proto::component::Variant::SimpleGeometricMechanism(x) => x.privacy_usage,
-        _ => return None
-    };
-
-    // if release usage is defined, then use the actual eps, etc. from the release
-    release_node.map(|v| if let Some(release_privacy_usage) = v.privacy_usages.clone() {
-        privacy_usage = release_privacy_usage.values
-    });
-
-    // sum privacy usage within the node
-    privacy_usage.into_iter()
-        .fold1(|usage_a, usage_b|
-            privacy_usage_reducer(&usage_a, &usage_b, &|a, b| a + b))
-}
-
-pub fn privacy_usage_reducer(
-    left: &proto::PrivacyUsage,
-    right: &proto::PrivacyUsage,
-    operator: &dyn Fn(f64, f64) -> f64,
-) -> proto::PrivacyUsage {
-    use proto::privacy_usage::Distance as Distance;
-
-    proto::PrivacyUsage {
-        distance: match (left.distance.to_owned().unwrap(), right.distance.to_owned().unwrap()) {
-            (Distance::Pure(x), Distance::Pure(y)) => Some(Distance::Pure(proto::privacy_usage::DistancePure {
-                epsilon: operator(x.epsilon, y.epsilon)
-            })),
-            (Distance::Approximate(x), Distance::Approximate(y)) => Some(Distance::Approximate(proto::privacy_usage::DistanceApproximate {
-                epsilon: operator(x.epsilon, y.epsilon),
-                delta: operator(x.delta, y.delta),
-            })),
-            _ => None
-        }
-    }
-}
-
-pub fn privacy_usage_check(
-    privacy : &proto::PrivacyUsage
-) -> Result<()> {
-    use proto::privacy_usage::Distance as Distance;
-    // helper functions that check that privacy parameters lie in reasonable ranges
-    let check_epsilon = |privacy_param: f64| -> Result<()> {
-        if privacy_param <= 0.0 {
-            return Err("Privacy parameter epsilon must be greater than 0.".into())
-        } else if privacy_param > 1.0{
-            println!("Large value of privacy parameter epsilon in use.");
-        }
-        Ok(())
-    };
-    let check_delta = |privacy_param: f64| -> Result<()> {
-        if privacy_param < 0.0 {
-            return Err("Privacy parameter delta must be non-negative.".into())
-        } else if privacy_param > 1.0{
-            return Err("Privacy parameter delta must be at most 1.".into())
-        }
-        Ok(())
-    };
-    match privacy.distance.as_ref()
-        .ok_or_else(|| Error::from("distance must be defined"))? {
-        Distance::Pure(x) => {
-            check_epsilon(x.epsilon)?;
+pub fn get_literal(value: Value, submission: u32) -> Result<(proto::Component, base::ReleaseNode)> {
+    Ok((
+        proto::Component {
+            arguments: None,
+            variant: Some(proto::component::Variant::Literal(proto::Literal {})),
+            omit: true,
+            submission,
         },
-        Distance::Approximate(x) => {
-            check_epsilon(x.epsilon)?;
-            check_delta(x.delta)?;
+        base::ReleaseNode {
+            value,
+            privacy_usages: None,
+            public: true,
         }
-    };
-    Ok(())
+    ))
 }
 
-pub fn get_epsilon(usage: &proto::PrivacyUsage) -> Result<f64> {
-    match usage.distance.clone()
-        .ok_or_else(|| Error::from("distance must be defined on a PrivacyUsage"))? {
-        proto::privacy_usage::Distance::Pure(distance) => Ok(distance.epsilon),
-        proto::privacy_usage::Distance::Approximate(distance) => Ok(distance.epsilon),
-//        _ => Err("epsilon is not defined".into())
-    }
-}
-
-pub fn get_delta(usage: &proto::PrivacyUsage) -> Result<f64> {
-    match usage.distance.clone()
-        .ok_or_else(|| Error::from("distance must be defined on a PrivacyUsage"))? {
-        proto::privacy_usage::Distance::Approximate(distance) => Ok(distance.delta),
-        _ => Err("delta is not defined".into())
-    }
-}
-
-pub fn broadcast_privacy_usage(usages: &[proto::PrivacyUsage], length: usize) -> Result<Vec<proto::PrivacyUsage>> {
-    if usages.len() == length {
-        return Ok(usages.to_owned());
-    }
-
-    if usages.len() != 1 {
-        bail!("{} privacy parameters passed when {} were required", usages.len(), length);
-    }
-
-    Ok(match usages[0].distance.clone().ok_or("distance must be defined on a privacy usage")? {
-        proto::privacy_usage::Distance::Pure(pure) => (0..length)
-            .map(|_| proto::PrivacyUsage {
-                distance: Some(proto::privacy_usage::Distance::Pure(proto::privacy_usage::DistancePure {
-                    epsilon: pure.epsilon / (length as f64)
-                }))
-            }).collect(),
-        proto::privacy_usage::Distance::Approximate(approx) => (0..length)
-            .map(|_| proto::PrivacyUsage {
-                distance: Some(proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
-                    epsilon: approx.epsilon / (length as f64),
-                    delta: approx.delta / (length as f64),
-                }))
-            }).collect()
-    })
-}
-
-pub fn broadcast_ndarray<T: Clone>(value: &ArrayD<T>, shape: &[usize]) -> Result<ArrayD<T>> {
-    if value.shape() == shape {
-        return Ok(value.clone())
-    }
-
-    if value.len() != 1 {
-        let length = shape.iter().cloned().fold1(|a, b| a * b).unwrap_or(0);
-        bail!("{} values passed when {} were required", value.len(), length);
-    }
-
-    let value = value.first().unwrap();
-
-    Ok(Array::from_shape_fn(shape, |_| value.clone()))
-}
-
+/// return a simple function that modifies the input string with the specified text
+/// part of a commonly used pattern to prepend the argument name to an error string
 #[doc(hidden)]
 pub fn prepend(text: &str) -> impl Fn(Error) -> Error + '_ {
     move |e| format!("{} {}", text, e).into()
 }
 
-
 /// Utility function for building component expansions for dp mechanisms
+#[allow(clippy::float_cmp)]
 pub fn expand_mechanism(
     sensitivity_type: &SensitivitySpace,
-    privacy_definition: &proto::PrivacyDefinition,
+    privacy_definition: &Option<proto::PrivacyDefinition>,
+    privacy_usage: &[proto::PrivacyUsage],
     component: &proto::Component,
     properties: &NodeProperties,
-    component_id: &u32,
-    maximum_id: &u32,
-) -> Result<proto::ComponentExpansion> {
-    let mut current_id = *maximum_id;
-    let mut computation_graph: HashMap<u32, proto::Component> = HashMap::new();
-    let mut releases: HashMap<u32, proto::ReleaseNode> = HashMap::new();
+    component_id: u32,
+    mut maximum_id: u32,
+) -> Result<base::ComponentExpansion> {
+
+    let mut expansion = base::ComponentExpansion::default();
+
+    let privacy_definition = privacy_definition.as_ref()
+        .ok_or_else(|| "privacy definition must be defined")?;
 
     // always overwrite sensitivity. This is not something a user may configure
-    let data_property = properties.get("data")
+    let data_property = properties.get::<IndexKey>(&"data".into())
         .ok_or("data: missing")?.array()
         .map_err(prepend("data:"))?.clone();
 
     let aggregator = data_property.aggregator
         .ok_or_else(|| Error::from("aggregator: missing"))?;
 
-    let sensitivity = aggregator.component.compute_sensitivity(
+    // sensitivity scaling
+    let mut sensitivity_value = aggregator.component.compute_sensitivity(
         privacy_definition,
         &aggregator.properties,
         &sensitivity_type)?;
 
-    current_id += 1;
-    let id_sensitivity = current_id;
-    let (patch_node, release) = get_literal(&sensitivity, &component.batch)?;
-    computation_graph.insert(id_sensitivity.clone(), patch_node);
-    releases.insert(id_sensitivity.clone(), release);
-
-    // noising
-    let mut noise_component = component.clone();
-    noise_component.arguments.insert("sensitivity".to_string(), id_sensitivity);
-    computation_graph.insert(component_id.clone(), noise_component);
-
-    Ok(proto::ComponentExpansion {
-        computation_graph,
-        properties: HashMap::new(),
-        releases,
-        traversal: Vec::new()
-    })
-}
-
-pub fn get_ith_column<T: Clone + Default>(value: &ArrayD<T>, i: &usize) -> Result<ArrayD<T>> {
-    match value.ndim() {
-        0 => if i == &0 {Ok(value.clone())} else {Err("ith release does not exist".into())},
-        1 => Ok(value.clone()),
-        2 => {
-            let release = slow_select(value, Axis(1), &[*i]);
-            if release.len() == 1 {
-                // flatten singleton matrices to zero dimensions
-                Ok(Array::from_shape_vec(Vec::new(), vec![release.first()
-                    .ok_or_else(|| Error::from("release must contain at least one value"))?])?
-                    .mapv(|v| v.clone()))
-            } else {
-                Ok(release)
-            }
-        },
-        _ => Err("releases must be 2-dimensional or less".into())
+    // TODO: debug axes in lipschitz constant arrays
+    let lipschitz = aggregator.lipschitz_constants.array()?.float()?;
+    if lipschitz.iter().any(|v| v != &1.) {
+        let mut sensitivity = sensitivity_value.array()?.float()?;
+        sensitivity *= &lipschitz;
+        sensitivity_value = sensitivity.into();
     }
+
+    maximum_id += 1;
+    let id_sensitivity = maximum_id;
+    let (patch_node, release) = get_literal(sensitivity_value.clone(), component.submission)?;
+    expansion.computation_graph.insert(id_sensitivity, patch_node);
+    expansion.properties.insert(id_sensitivity, infer_property(&release.value, None)?);
+    expansion.releases.insert(id_sensitivity, release);
+
+    // spread privacy usage over each column
+    let spread_usages = spread_privacy_usage(
+        // spread usage over each column
+        privacy_usage, sensitivity_value.array()?.num_columns()? as usize)?;
+
+    // convert to effective usage
+    let effective_usages = spread_usages.into_iter()
+        .zip(data_property.c_stability.iter())
+        // reduce epsilon allowed to algorithm based on c-stability and group size
+        .map(|(usage, c_stab)|
+            usage.actual_to_effective(1., *c_stab as f64, privacy_definition.group_size))
+        .collect::<Result<Vec<proto::PrivacyUsage>>>()?;
+
+    // insert sensitivity and usage
+    let mut noise_component = component.clone();
+    noise_component.insert_argument(&"sensitivity".into(), id_sensitivity);
+
+    match noise_component.variant
+        .as_mut().ok_or_else(|| "variant must be defined")? {
+        proto::component::Variant::LaplaceMechanism(variant) => variant.privacy_usage = effective_usages,
+        proto::component::Variant::GaussianMechanism(variant) => variant.privacy_usage = effective_usages,
+        proto::component::Variant::ExponentialMechanism(variant) => variant.privacy_usage = effective_usages,
+        proto::component::Variant::SimpleGeometricMechanism(variant) => variant.privacy_usage = effective_usages,
+        _ => ()
+    };
+    expansion.computation_graph.insert(component_id, noise_component);
+
+    Ok(expansion)
 }
 
-pub fn deduplicate<T: Eq + Hash + Ord + Clone>(values: Vec<T>) -> Vec<T> {
+/// given a vector of items, return the shared item, or None, if no item is shared
+#[allow(clippy::ptr_arg)]
+pub fn get_common_value<T: Clone + Eq>(values: &Vec<T>) -> Option<T> {
+    if values.windows(2).all(|w| w[0] == w[1]) {
+        values.first().cloned()
+    } else { None }
+}
+
+/// return the set of node ids that use each node id
+pub fn get_dependents(graph: &HashMap<u32, proto::Component>) -> HashMap<u32, HashSet<u32>> {
+    let mut dependents = HashMap::<u32, HashSet<u32>>::new();
+    graph.iter().for_each(|(node_id, component)| {
+        component.arguments().values().for_each(|source_node_id| {
+            dependents
+                .entry(*source_node_id)
+                .or_insert_with(HashSet::<u32>::new)
+                .insert(*node_id);
+        })
+    });
+    dependents
+}
+
+
+pub fn deduplicate<T: Eq + Hash + Clone>(values: Vec<T>) -> Vec<T> {
     values.into_iter().unique().collect()
 }
 
@@ -687,6 +594,7 @@ pub fn deduplicate<T: Eq + Hash + Ord + Clone>(values: Vec<T>) -> Vec<T> {
 #[cfg(test)]
 mod test_utilities {
     use crate::utilities;
+
     #[test]
     fn test_deduplicate() {
         let values = vec![2, 0, 1, 0];

@@ -18,30 +18,31 @@
   "id": "DPCount",
   "name": "dp_count",
   "options": {
+    "distinct": {
+      "type_proto": "bool",
+      "type_rust": "bool",
+      "default_python": "False",
+      "default_rust": "false",
+      "description": "Set to true for the number of unique members in the data."
+    },
     "mechanism": {
       "type_proto": "string",
       "type_rust": "String",
       "default_python": "\"SimpleGeometric\"",
       "default_rust": "String::from(\"SimpleGeometric\")",
-      "description": "Privatizing mechanism to use. One of [`SimpleGeometric`, `Laplace`, `Gaussian`]"
+      "description": "Privatizing mechanism to use. One of [`SimpleGeometric`, `Laplace`, `Gaussian`]. Only `SimpleGeometric` is accepted if floating-point protections are enabled."
     },
     "privacy_usage": {
       "type_proto": "repeated PrivacyUsage",
       "type_rust": "Vec<proto::PrivacyUsage>",
       "default_python": "None",
       "description": "Object describing the type and amount of privacy to be used for the mechanism release."
-    },
-    "enforce_constant_time": {
-      "type_proto": "bool",
-      "type_rust": "bool",
-      "default_python": "False",
-      "default_rust": "false",
-      "description": "Whether or not to require Geometric mechanism to run in constant time."
     }
   },
   "return": {
     "type_value": "Array",
     "description": "Differentially private row count."
   },
-  "description": "Returns a differentially private row count."
+  "description": "Returns a differentially private row count.",
+  "proto_id": 8
 }

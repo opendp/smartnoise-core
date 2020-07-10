@@ -1,0 +1,11 @@
+[version]
+# version to update to
+major = 0
+minor = 1
+patch = 3
+
+[paths]
+# locations of repositories to update
+core = "/Users/michael/whitenoise/python/whitenoise-core"
+python = "/Users/michael/whitenoise/python"
+R = "/Users/michael/whitenoise/R"

@@ -10,8 +10,8 @@ use std::ops::{Div, Add};
 use whitenoise_validator::utilities::{get_argument, standardize_categorical_argument, standardize_numeric_argument, standardize_float_argument};
 
 impl Evaluable for proto::Bin {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<Value> {
-        let inclusive_left: &ArrayD<bool> = get_argument(&arguments, "inclusive_left")?.array()?.bool()?;
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<Value> {
+        let inclusive_left: &ArrayD<bool> = get_argument(&mut arguments, "inclusive_left")?.array()?.bool()?;
 
         let side = match self.side.as_str() {
             "lower" => BinSide::Lower,
@@ -20,9 +20,9 @@ impl Evaluable for proto::Bin {
             _ => return Err("bin side must be lower, midpoint or upper".into())
         };
 
-        let data = get_argument(&arguments, "data")?.array()?;
-        let edges = get_argument(&arguments, "edges")?.jagged()?;
-        let null = get_argument(&arguments, "null_value")?.array()?;
+        let data = get_argument(&mut arguments, "data")?.array()?;
+        let edges = get_argument(&mut arguments, "edges")?.jagged()?;
+        let null = get_argument(&mut arguments, "null_value")?.array()?;
 
         let num_columns = data.num_columns()?;
 

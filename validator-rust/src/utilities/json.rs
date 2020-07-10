@@ -2,7 +2,6 @@
 
 use crate::errors::*;
 use serde::{Deserialize, Serialize};
-extern crate serde_json;
 
 use crate::proto;
 use crate::base;
@@ -18,7 +17,7 @@ pub struct JSONRelease {
     pub description: String,
     /// array of string that is column/s in the dataset
     pub variables: Value,
-    /// User provide a value for either epsilon (epsilon>0), delta (0<delta<1>), or rho depending on the type of dp definitions (i.e. pure, approximated and concerted).
+    /// User provide a value for either epsilon (epsilon>0), delta (0<delta<1>), or rho depending on the type of dp definitions (i.e. approximate or concentrated).
     pub statistic: String,
     /// The value released by the system
     #[serde(rename(serialize = "releaseInfo", deserialize = "releaseInfo"))]
@@ -29,10 +28,10 @@ pub struct JSONRelease {
     /// optional parameter. It is a combination of the accuracy and alpha value
     pub accuracy: Option<Accuracy>,
     /// which release the implemented statistic is originating from. This provides a tool to keep track of overall privacyLoss.
-    pub batch: u64,
+    pub submission: u32,
     /// For advanced users. Corresponds to the node of the graph this release originated from
     #[serde(rename(serialize = "nodeID", deserialize = "nodeID"))]
-    pub node_id: u64,
+    pub node_id: u32,
     /// true when the released value is derived from public/released data
     pub postprocess: bool,
     /// the name of the algorithm which is implemented for computation of the given statistic and the arguments of the algorithm such as n(number of observations),  range (upper and lower bound, etc.)
@@ -70,8 +69,8 @@ pub struct AlgorithmInfo {
 pub fn value_to_json(value: &base::Value) -> Result<serde_json::Value> {
     match value {
         base::Value::Array(array) => match array {
-            base::Array::F64(value) => arraynd_to_json(value),
-            base::Array::I64(value) => arraynd_to_json(value),
+            base::Array::Float(value) => arraynd_to_json(value),
+            base::Array::Int(value) => arraynd_to_json(value),
             base::Array::Str(value) => arraynd_to_json(value),
             base::Array::Bool(value) => arraynd_to_json(value)
         },
@@ -91,11 +90,9 @@ pub fn arraynd_to_json<T: Serialize + Clone>(array: &ArrayD<T>) -> Result<serde_
 
 /// Converts the prost Protobuf PrivacyLoss into a json representation.
 ///
-/// User provide a value for either epsilon, delta, or rho depending on the type of dp definitions (i.e. pure, approximated and concentrated).
+/// User provide a value for either epsilon, delta, or rho depending on the type of dp definitions (i.e. approximate and concentrated).
 pub fn privacy_usage_to_json(privacy_usage: &proto::PrivacyUsage) -> serde_json::Value {
     match privacy_usage.distance.clone().unwrap() {
-        proto::privacy_usage::Distance::Pure(distance) =>
-            serde_json::json!({"name": "pure", "epsilon": distance.epsilon}),
         proto::privacy_usage::Distance::Approximate(distance) =>
             serde_json::json!({"name": "approximate", "epsilon": distance.epsilon, "delta": distance.delta})
     }
