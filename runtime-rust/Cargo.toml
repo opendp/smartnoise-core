@@ -21,6 +21,9 @@ ieee754 = "0.2.6"
 itertools = "0.9.0"
 error-chain = "0.12.2"
 noisy_float = "0.1.12"
+num-traits = "0.2"
+displaydoc = "0.1"
+conv = "0.3.3"
 
     [dependencies.openssl]
     version = "0.10.29"
