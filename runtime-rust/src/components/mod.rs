@@ -25,6 +25,7 @@ pub mod filter;
 pub mod histogram;
 pub mod impute;
 pub mod index;
+pub mod least_squares;
 pub mod materialize;
 pub mod mean;
 pub mod mechanisms;

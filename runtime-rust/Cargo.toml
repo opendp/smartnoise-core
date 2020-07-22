@@ -23,6 +23,9 @@ error-chain = "0.12.2"
 noisy_float = "0.1.12"
 libmath = "0.2.1"
 statrs = "0.12.0"
+num-traits = "0.2"
+displaydoc = "0.1"
+conv = "0.3.3"
 
     [dependencies.openssl]
     version = "0.10.29"
