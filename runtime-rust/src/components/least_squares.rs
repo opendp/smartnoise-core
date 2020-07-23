@@ -154,7 +154,7 @@ pub fn noisy_stats<I>(xys: I, x_mean: f64, y_mean: f64, epsilon: f64) -> Result<
 
     let L3: f64 = laplace_mechanism(epsilon, 3.0f64*delta_2, false).unwrap();
 
-    let intercept = y_mean - slope * x_mean;
+    let intercept = y_mean - slope * x_mean + L3;
 
     let p_25 = 0.25f64 * slope + intercept;
     let p_75 = 0.75f64 * slope + intercept;
