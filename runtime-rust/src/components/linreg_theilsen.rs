@@ -8,7 +8,7 @@ use crate::components::clamp::clamp_numeric_float;
 // use gmp_mpfr_sys::mpfr::log;
 use crate::utilities::{noise};
 
-pub fn all_permutations(mut vec: Vec<Integer>, n: Integer) -> Vec<Vec<Integer>> {
+pub fn all_permutations(vec: Vec<Integer>, n: Integer) -> Vec<Vec<Integer>> {
     let mut permutations = Vec::new();
     let mut rng = rand::thread_rng();
     let mut vec_sample: Vec<Integer> = vec.choose_multiple(&mut rng, n as usize).cloned().collect();
@@ -19,14 +19,14 @@ pub fn all_permutations(mut vec: Vec<Integer>, n: Integer) -> Vec<Vec<Integer>> 
 }
 
 pub fn permute_range(n: Integer, k: Integer) -> Vec<Integer> {
-    let mut range = (1..n).map(Integer::from).collect::<Vec<Integer>>();
+    let range = (1..n).map(Integer::from).collect::<Vec<Integer>>();
     let mut rng = rand::thread_rng();
     let mut vec_sample: Vec<Integer> = range.choose_multiple(&mut rng, k as usize).cloned().collect();
     vec_sample.shuffle(&mut rng);
     vec_sample
 }
 
-pub fn dp_med(z: Vec<Float>, mut epsilon: Float, n: Integer, k: Integer, r_lower: Float, r_upper: Float, enforce_constant_time: bool) -> Float {
+pub fn dp_med(z: Vec<Float>, epsilon: Float, n: Integer, k: Integer, r_lower: Float, r_upper: Float, enforce_constant_time: bool) -> Float {
     let epsilon = epsilon / k as Float;
     let lower: ArrayD<Float> = arr1(&[r_lower]).into_dyn();
     let upper: ArrayD<Float> = arr1(&[r_upper]).into_dyn();
@@ -50,10 +50,10 @@ pub fn dp_med(z: Vec<Float>, mut epsilon: Float, n: Integer, k: Integer, r_lower
         let dist_from_median = (i as Float - n as Float / 2.0).abs().ceil();
 
         // This term makes the score *very* sensitive to changes in epsilon
-        let mut score = log_interval_length - (epsilon / 2.0) * dist_from_median;
+        let score = log_interval_length - (epsilon / 2.0) * dist_from_median;
 
         // TODO: This needs to sample from Gumbel distribution
-        let noise_term = noise::sample_uniform(0.0, 0.0001, enforce_constant_time).unwrap(); // gumbel1(&rng, 0.0, 1.0);
+        let noise_term = noise::sample_gumbel(0.0, 1.0); // gumbel1(&rng, 0.0, 1.0);
         let noisy_score: Float = score + noise_term;
         // println!("score: {} max: {} argmax: {}", noisy_score, max_noisy_score, arg_max_noisy_score);
 
@@ -74,7 +74,7 @@ pub fn dp_theil_sen_k_match(x: Vec<Float>, y: Vec<Float>, n: Integer, k: Integer
     let mut z_75 = Vec::new();
 
     // let tau = permute_range(n, k);
-    let mut range = (0..n).map(Integer::from).collect::<Vec<Integer>>();
+    let range = (0..n).map(Integer::from).collect::<Vec<Integer>>();
     let tau = all_permutations(range, n);
 
 
@@ -93,7 +93,7 @@ pub fn dp_theil_sen_k_match(x: Vec<Float>, y: Vec<Float>, n: Integer, k: Integer
             z_25.push(slope * (0.25 - (x[l] + x[j])/2.0) + (y[l] + y[j])/2.0);
             z_75.push(slope * (0.75 - (x[l] + x[j])/2.0) + (y[l] + y[j])/2.0);
         } else {
-            Error::TooSteep;
+            return Err(Error::TooSteep);
         }
     }
 
@@ -129,12 +129,24 @@ mod tests {
         let n = 10;
         let k = n - 1;
         let tau = permute_range(n, k);
-        assert_eq!(tau.len() as Integer, n)
+        assert_eq!(tau.len() as Integer, k)
+    }
+
+    #[test]
+    fn gumbel_test() {
+        let u: Vec<Float> = (0..100000).map(|_| noise::sample_gumbel(0.0, 1.0)).collect();
+        let mean = u.iter().sum::<Float>() as Float / u.len() as Float;
+        println!("{}", mean);
+        // Mean should be approx. mu + beta*gamma (location + scale * Euler-Mascheroni Const.)
+        // Where gamma = 0.5772....
+        let gamma = 0.5772;
+        let tol = 0.01;
+        assert!((mean - gamma).abs() < tol);
     }
 
     #[test]
     fn dp_median_test() {
-        let mut z = vec![0.0, 2.50, 5.0, 7.50, 10.0];
+        let z = vec![0.0, 2.50, 5.0, 7.50, 10.0];
         let true_median = 5.0;
         let median = dp_med(z, 1e-6 as Float, 5, 5, 0.0, 10.0, true);
         assert!((true_median - median).abs() / true_median < 1.0);

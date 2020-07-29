@@ -722,3 +722,25 @@ pub fn snapping_mechanism(
 ) -> Result<f64> {
     Err(Error::from("Crate must be compiled with gmp-mpfr to use the snapping mechanism."))
 }
+
+/// Sample noise from the Gumbel Distribution
+///
+/// Based on C implementation from https://github.com/numpy/numpy/blob/d329a66dbb9710aefd03cce6a8b0f46da51490ca/numpy/random/src/distributions/distributions.c
+///
+/// # Arguments
+/// * `loc` - location parameter
+/// * `scale` - scale parameter
+///
+/// # Return
+///  Noise according to the Gumbel Distribution
+pub fn sample_gumbel(loc: f64, scale: f64) -> f64 {
+    let u = 1.0 - sample_uniform_mpfr(0.0, 1.0).unwrap().to_f64();
+    // Accept if less than 1, otherwise reject and call function again
+    if u < 1.0 {
+        let negative_log = -(u.ln());
+        let log_term = negative_log.ln();
+        loc - scale * log_term
+    } else {
+        sample_gumbel(loc, scale)
+    }
+}
