@@ -26,33 +26,60 @@ pub fn permute_range(n: Integer, k: Integer) -> Vec<Integer> {
     vec_sample
 }
 
-pub fn dp_med(z: Vec<Float>, epsilon: Float, n: Integer, k: Integer, r_lower: Float, r_upper: Float, enforce_constant_time: bool) -> Float {
-    let epsilon = epsilon / k as Float;
+pub fn compute_all_ests(x: Vec<Float>, y: Vec<Float>, n: Integer) -> Vec<Vec<Float>> {
+    let mut estimates: Vec<Vec<Float>> = Vec::new();
+    estimates.push(Vec::new());
+    estimates.push(Vec::new());
+
+    for p in 0..n {
+        for q in p+1..n {
+            let p: usize = p as usize;
+            let q: usize = q as usize;
+            let x_delta = x[q] - x[p];
+            if x_delta != 0.0 {
+                let slope = (y[q] - y[p]) / x_delta;
+                let x_mean = (x[q] + x[p]) / 2.0;
+                let y_mean = (y[q] + y[p]) / 2.0;
+                estimates[0].push(slope * 0.25 + y_mean - slope * x_mean);
+                estimates[1].push(slope * 0.75 + y_mean - slope * x_mean);
+            }
+        }
+    }
+    estimates
+}
+
+pub fn dp_med(z: &Vec<Float>, epsilon: Float, r_lower: Float, r_upper: Float, enforce_constant_time: bool) -> Float {
     let lower: ArrayD<Float> = arr1(&[r_lower]).into_dyn();
     let upper: ArrayD<Float> = arr1(&[r_upper]).into_dyn();
-    let mut z_clipped = clamp_numeric_float(arr1(&z).into_dyn(), lower, upper).unwrap().into_raw_vec();
+    let n = (*z).len() as Integer;
 
-    // Make sure we are only dealing with n entries?
-    if z_clipped.len() > n as usize {
-        let mut rng = rand::thread_rng();
-        z_clipped = z_clipped.choose_multiple(&mut rng, n as usize).cloned().collect();
+    let mut z_clipped = Vec::new();
+    for i in 0..n {
+        let i: usize = i as usize;
+        if z[i] >= r_lower {
+            if z[i] <= r_upper {
+                z_clipped.push(z[i]);
+            }
+        }
     }
+    // let mut z_clipped: Vec<Float> = (*z).into_iter().filter(|x| (r_lower <= x)).copied().collect::<Vec<Float>>();  // clamp_numeric_float(arr1(z).into_dyn(), lower, upper).unwrap().into_raw_vec();
     z_clipped.push(r_lower);
     z_clipped.push(r_upper);
     z_clipped.sort_by(|a, b| a.partial_cmp(b).unwrap());
-    let n = z_clipped.len() as Integer;
+
     let mut max_noisy_score = std::f64::NEG_INFINITY;
     let mut arg_max_noisy_score: Integer = -1;
 
-    for i in 1..n {
-        // println!("median: {}", i);
-        let log_interval_length = (z_clipped[i as usize] - z_clipped[i as usize - 1 as usize]).ln();
+    let limit = z_clipped.len() as Integer;
+
+    for i in 1..limit {
+        let length = z_clipped[i as usize] - z_clipped[i as usize - 1 as usize];
+        let log_interval_length: Float = if length <= 0.0 { std::f64::NEG_INFINITY } else { length.ln()};
         let dist_from_median = (i as Float - n as Float / 2.0).abs().ceil();
 
         // This term makes the score *very* sensitive to changes in epsilon
         let score = log_interval_length - (epsilon / 2.0) * dist_from_median;
 
-        // TODO: This needs to sample from Gumbel distribution
         let noise_term = noise::sample_gumbel(0.0, 1.0); // gumbel1(&rng, 0.0, 1.0);
         let noisy_score: Float = score + noise_term;
         // println!("score: {} max: {} argmax: {}", noisy_score, max_noisy_score, arg_max_noisy_score);
@@ -69,40 +96,37 @@ pub fn dp_med(z: Vec<Float>, epsilon: Float, n: Integer, k: Integer, r_lower: Fl
     return median;
 }
 
-pub fn dp_theil_sen_k_match(x: Vec<Float>, y: Vec<Float>, n: Integer, k: Integer, epsilon: Float, enforce_constant_time: bool) -> Result<(Float, Float), Error> {
-    let mut z_25 = Vec::new();
-    let mut z_75 = Vec::new();
+pub fn dp_theil_sen_k_match(x: Vec<Float>, y: Vec<Float>, n: Integer, k: Integer, epsilon: Float, r_lower: Float, r_upper: Float, enforce_constant_time: bool) -> Result<(Float, Float), Error> {
 
     // let tau = permute_range(n, k);
-    let range = (0..n).map(Integer::from).collect::<Vec<Integer>>();
-    let tau = all_permutations(range, n);
-
-
+    // let range = (0..n).map(Integer::from).collect::<Vec<Integer>>();
+    // let tau = all_permutations(range, n);
+    // *Previous method before seeing Python source*
     // For sampling without replacement, shuffle this list and draw first (or last) element
-    let mut h_vec = (0..n).map(Integer::from).collect::<Vec<Integer>>();
-    let mut rng = thread_rng();
-    h_vec.shuffle(&mut rng);
+    // let mut z_25 = Vec::new();
+    // let mut z_75 = Vec::new();
+    // let mut h_vec = (0..n).map(Integer::from).collect::<Vec<Integer>>();
+    // let mut rng = thread_rng();
+    // h_vec.shuffle(&mut rng);
+    //
+    // for i in (0..n-1).step_by(2) {
+    //     // println!("theil sen: {}", i);
+    //     let h = h_vec.pop().unwrap() as usize;
+    //     let j = tau[h][i as usize] as usize;
+    //     let l = tau[h][i as usize + 1 as usize] as usize;
+    //     if x[l] - x[j] != 0.0 {
+    //         let slope = (y[l] - y[j]) / (x[l] - x[j]);
+    //         z_25.push(slope * (0.25 - (x[l] + x[j])/2.0) + (y[l] + y[j])/2.0);
+    //         z_75.push(slope * (0.75 - (x[l] + x[j])/2.0) + (y[l] + y[j])/2.0);
+    //     } else {
+    //         return Err(Error::TooSteep);
+    //     }
+    // }
 
-    for i in (0..n-1).step_by(2) {
-        // println!("theil sen: {}", i);
-        let h = h_vec.pop().unwrap() as usize;
-        let j = tau[h][i as usize] as usize;
-        let l = tau[h][i as usize + 1 as usize] as usize;
-        if x[l] - x[j] != 0.0 {
-            let slope = (y[l] - y[j]) / (x[l] - x[j]);
-            z_25.push(slope * (0.25 - (x[l] + x[j])/2.0) + (y[l] + y[j])/2.0);
-            z_75.push(slope * (0.75 - (x[l] + x[j])/2.0) + (y[l] + y[j])/2.0);
-        } else {
-            return Err(Error::TooSteep);
-        }
-    }
+    let estimates: Vec<Vec<Float>> = compute_all_ests(x, y, n);
 
-    // TODO: Should these be params?
-    let r_lower = -1e6;
-    let r_upper = 1e6;
-
-    let pfinal_25 = dp_med(z_25, epsilon, n, k, r_lower, r_upper, enforce_constant_time);
-    let pfinal_75 = dp_med(z_75, epsilon, n, k, r_lower, r_upper, enforce_constant_time);
+    let pfinal_25 = dp_med(&estimates[0], epsilon / k as Float, r_lower, r_upper, enforce_constant_time);
+    let pfinal_75 = dp_med(&estimates[1], epsilon / k as Float, r_lower, r_upper, enforce_constant_time);
 
     Ok((pfinal_25, pfinal_75))
 
@@ -145,10 +169,28 @@ mod tests {
     }
 
     #[test]
+    fn compute_estimates_test() {
+        let x = vec![1.0, 2.0, 3.0];
+        let y = vec![1.0, 4.0, 9.0];
+        let n = 3;
+        let estimates = compute_all_ests(x, y, n);
+        let expected: Vec<Vec<Float>> = vec![vec![-1.25, -2.0, -4.75], vec![0.25, 0.0, -2.25]];
+        assert_eq!(expected, estimates);
+    }
+
+    #[test]
+    fn dp_median_from_estimates_test() {
+        let estimates: Vec<Vec<Float>> = vec![vec![-1.25, -2.0, -4.75], vec![0.25, 0.0, -2.25]];
+        let true_median = 5.0;
+        let median = dp_med(&estimates[0], 1e-6 as Float, 0.0, 10.0, true);
+        assert!((true_median - median).abs() / true_median < 1.0);
+    }
+
+    #[test]
     fn dp_median_test() {
         let z = vec![0.0, 2.50, 5.0, 7.50, 10.0];
         let true_median = 5.0;
-        let median = dp_med(z, 1e-6 as Float, 5, 5, 0.0, 10.0, true);
+        let median = dp_med(&z, 1e-6 as Float, 0.0, 10.0, true);
         assert!((true_median - median).abs() / true_median < 1.0);
     }
 
@@ -158,6 +200,6 @@ mod tests {
         let y: Vec<Float> = (0..10).map(|x| 2 * x).map(Float::from).collect::<Vec<Float>>();
         let n = x.len() as Integer;
         let k = n - 1;
-        assert_eq!((2.0, 0.0), dp_theil_sen_k_match(x, y, n, k, 1e-6 as Float, true).unwrap());
+        assert_eq!((2.0, 0.0), dp_theil_sen_k_match(x, y, n, k, 1.0,  0.0, 10.0, true).unwrap());
     }
 }
