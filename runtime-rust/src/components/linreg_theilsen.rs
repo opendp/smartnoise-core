@@ -151,7 +151,6 @@ mod tests {
     fn gumbel_test() {
         let u: Vec<Float> = (0..100000).map(|_| noise::sample_gumbel(0.0, 1.0)).collect();
         let mean = u.iter().sum::<Float>() as Float / u.len() as Float;
-        println!("{}", mean);
         // Mean should be approx. mu + beta*gamma (location + scale * Euler-Mascheroni Const.)
         // Where gamma = 0.5772....
         let gamma = 0.5772;
@@ -191,7 +190,8 @@ mod tests {
         let y: Vec<Float> = (0..1000).map(|x| 2 * x).map(Float::from).collect::<Vec<Float>>();
         let n = x.len() as Integer;
         let k = n - 1;
-        let theilsen_estimate = dp_theil_sen_k_match(x, y, n, k, 1000000.0,  0.0, 100.0, true).unwrap();
-        assert!((2.0 - theilsen_estimate).abs() <= 2.0);
+        let theilsen_estimate = dp_theil_sen_k_match(x, y, n, k, 1000000.0,  0.0, 1000.0, true).unwrap();
+        println!("Theil-Sen Slope Estimate: {}", theilsen_estimate);
+        assert!((2.0 - theilsen_estimate).abs() <= 0.1);
     }
 }
