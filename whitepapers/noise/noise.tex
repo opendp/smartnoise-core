@@ -147,7 +147,7 @@ We end up with the following algorithm:
 		\State We know that $p$ is respresentable as an IEEE-754 64-bit floating point number.
 		\State $m, x \gets $ mantissa and exponent of the floating-point representation of $p$. 
 		We ensure that the mantissa gets the implicit leading 1 and the exponent is the ``unbiased'' version.
-		So $m \in \{1\} \bigcup \{0, 1\}^{52}$ and $x \in \{0, 1, \hdots, 2047\}$
+		So $m \in \{1\} \bigcup \{0, 1\}^{52}$ and $x \in \{0, 1, \hdots, 1022\}$
 		\State Toss an unbiased coin until the first instance of ``heads''. Call the (0-based) index where this occurred $k$.
 		\State n\_leading\_zeros $\gets \max(0, 1022 - x)$
 		\If{$k <$ n\_leading\_zeros}
@@ -162,6 +162,8 @@ We end up with the following algorithm:
 		\EndIf
 	\end{algorithmic}
 \end{algorithm}
+Note that $x \in \{0, 1, \hdots, 1022\}$ above because these are the biased exponent values that correspond to $p \in [0,1]$.
+When $x=0$, $p$ is subnormal.
 
 \subsection{Sampling from censored Geometric}
 The Geometric distribution is a building block for many of our other mechanism, either as the basis of the 
