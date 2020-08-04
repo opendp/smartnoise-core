@@ -102,13 +102,13 @@ pub fn sample_bit_prob(prob: f64) -> Result<i64> {
 
     // return value at index of interest
     if first_heads_index < num_leading_zeros {
-        Ok(0);
+        Ok(0)
     } else {
         let index: usize = (first_heads_index - num_leading_zeros) as usize;
         if index > mantissa_vec.len() {
-            Ok(0);
+            Ok(0)
         } else {
-            Ok(mantissa_vec[index]);
+            Ok(mantissa_vec[index])
         }
     }
 }
