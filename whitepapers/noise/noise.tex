@@ -153,8 +153,12 @@ We end up with the following algorithm:
 		\If{$k <$ n\_leading\_zeros}
 			\State return 0
 		\Else
-			\State $i \gets$ n\_leading\_zeros $+ k$
-			\State return $i^{th}$ element of $m$ (using 0-based indexing)
+			\State $i \gets k -$ n\_leading\_zeros 
+			\If{$i > \text{len}(m)$}
+				\State return 0
+			\Else
+				\State return $i^{th}$ element of $m$ (using 0-based indexing)
+			\EndIf
 		\EndIf
 	\end{algorithmic}
 \end{algorithm}
