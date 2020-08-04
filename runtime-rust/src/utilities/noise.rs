@@ -26,18 +26,18 @@ impl ThreadRandGen for GeneratorOpenSSL {
     }
 }
 
-/// Return sample from a censored Geometric distribution with parameter p=0.5 without calling to sample_bit.
+/// Return sample from a censored Geometric distribution with parameter p=0.5 without calling to sample_bit_prob.
 /// 
 /// The algorithm generates 1023 bits uniformly at random and returns the
 /// index of the first bit with value 1. If all 1023 bits are 0, then
 /// the algorithm acts as if the last bit was a 1 and returns 1023.
 /// 
 /// This is a less general version of the sample_geometric_censored function, designed to be used
-/// only inside of the sample_bit function. The major difference is that this function does not 
-/// call sample_bit itself (whereas sample_geometric_censored does), so having this more specialized
+/// only inside of the sample_bit_prob function. The major difference is that this function does not 
+/// call sample_bit_prob itself (whereas sample_geometric_censored does), so having this more specialized
 /// version allows us to avoid an infinite dependence loop. 
 pub fn censored_specific_geom() -> Result<i16> {
-    let mut geom: i16 = 1023;
+    let mut geom: i16 = 1022;
     // read bytes in one at a time, need 128 to fully generate geometric
     for i in 0..128 {
         // read random bytes
@@ -50,7 +50,7 @@ pub fn censored_specific_geom() -> Result<i16> {
         } else {
             geom
         };
-        geom = cmp::min(geom, first_one_idx + 1);
+        geom = cmp::min(geom, first_one_idx);
     }
     Ok(geom)
 }
