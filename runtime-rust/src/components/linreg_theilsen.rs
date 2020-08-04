@@ -93,15 +93,15 @@ pub fn dp_med(z: &Vec<Float>, epsilon: Float, r_lower: Float, r_upper: Float, en
     for i in 1..limit {
         let length = z_clipped[i as usize] - z_clipped[i as usize - 1 as usize];
         let log_interval_length: Float = if length <= 0.0 { std::f64::NEG_INFINITY } else { length.ln()};
-        let dist_from_median = (i as Float - n as Float / 2.0).abs().ceil();
+        let dist_from_median = (i as Float - (n as Float / 2.0)).abs().ceil();
 
         // This term makes the score *very* sensitive to changes in epsilon
         let score = log_interval_length - (epsilon / 2.0) * dist_from_median;
 
         let noise_term = noise::sample_gumbel(0.0, 1.0); // gumbel1(&rng, 0.0, 1.0);
-        let noisy_score: Float = score + noise_term;
+        let noisy_score: Float = score;  //  + noise_term;
 
-        if noisy_score > max_noisy_score{
+        if noisy_score > max_noisy_score {
             max_noisy_score = noisy_score;
             arg_max_noisy_score = i;
         }
@@ -112,14 +112,51 @@ pub fn dp_med(z: &Vec<Float>, epsilon: Float, r_lower: Float, r_upper: Float, en
     return median;
 }
 
-pub fn dp_theil_sen_k_match(x: &Vec<Float>, y: &Vec<Float>, n: Integer, k: Integer, epsilon: Float, r_lower: Float, r_upper: Float, enforce_constant_time: bool) -> Result<(Float), Error> {
+/// Look at points with "max_value" of 0, and calculate DP-Median
+/// as estimate of intercept.
+/// (I am making this up as an experiment)
+pub fn _dp_calc_intercept(x: &Vec<Float>, y: &Vec<Float>, epsilon: Float, max_value: Float, enforce_constant_time: bool) -> Float {
+    let mut y_clipped = Vec::new();
+    // Add any y values where x is sufficiently close to 0
+    for i in 0..x.len() {
+        if x[i].abs() <= max_value {
+                y_clipped.push(y[i]);
+        }
+    }
+    y_clipped.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
+    let intercept_estimate = dp_med(&y_clipped, epsilon, y_clipped[0], y_clipped[y_clipped.len()-1], enforce_constant_time);
+
+    intercept_estimate
+}
+
+pub fn dp_theil_sen_k_match(x: &Vec<Float>, y: &Vec<Float>, n: Integer, k: Integer, epsilon: Float, r_lower: Float, r_upper: Float, enforce_constant_time: bool) -> Result<(Float, Float), Error> {
     let estimates: Vec<Float> = compute_all_ests(x, y, n);
 
     // Paper outlines scaling epsilon as epsilon / k, leaving unchanged for now
     let scaled_epsilon = epsilon;  // epsilon / k as Float;
-    let pfinal = dp_med(&estimates, scaled_epsilon, r_lower, r_upper, enforce_constant_time);
+    let slope = dp_med(&estimates, scaled_epsilon, r_lower, r_upper, enforce_constant_time);
 
-    Ok(pfinal)
+    let mut diffs: Vec<Float> = Vec::new();
+    for i in 0..x.len() as Integer {
+        diffs.push(y[i as usize] - slope*x[i as usize]);
+    }
+
+    // Even using the non-DP median for the intercept, the difference between "true" slope
+    // and DP-slope is enough that the intercept value tends to blow up (e.g. DP-slope of 1.75
+    // for y = 2x leads to intercept value of 124.78)
+    // let intercept = dp_med(&diffs, scaled_epsilon, r_lower, r_upper, enforce_constant_time);
+    // let intercept = median(&diffs);
+
+    // For now, by default look at the smallest 10% of values
+    // Note: this doesn't work when all values are positive or negative, it expects
+    // values on both sides of the y axis
+    let mut x_sort = x.clone();
+    x_sort.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    let max_value = (x_sort[x_sort.len()-1] / 10.0).ceil();
+    let intercept = _dp_calc_intercept(&x, &y, epsilon, max_value, enforce_constant_time);
+
+    Ok((slope, intercept))
 
 }
 
@@ -191,8 +228,8 @@ mod tests {
 
     #[test]
     fn compute_estimates_test() {
-        let mut x = vec![1.0, 2.0, 3.0];
-        let mut y = vec![1.0, 4.0, 9.0];
+        let x = vec![1.0, 2.0, 3.0];
+        let y = vec![1.0, 4.0, 9.0];
         let n = 3;
         let estimates = compute_all_ests(&x, &y, n);
         let expected: Vec<Float> = vec![3.0, 4.0, 5.0];
@@ -203,11 +240,9 @@ mod tests {
     fn theilsen_test() {
         // Ensure non-DP version gives y = 2x for this data
         let x: Vec<Float> = (0..1000).map(Float::from).collect::<Vec<Float>>();
-        let mut x_mut = x.clone();
-        let mut y: Vec<Float> = (0..1000).map(|x| 2 * x).map(Float::from).collect::<Vec<Float>>();
-        let mut y_mut = y.clone();
+        let y: Vec<Float> = (0..1000).map(|x| 2 * x).map(Float::from).collect::<Vec<Float>>();
         let n = x.len() as Integer;
-        let theilsen_estimate = theil_sen(&x_mut, &y_mut, n);
+        let theilsen_estimate = theil_sen(&x, &y, n);
         assert_eq!((2.0, 0.0), theilsen_estimate);
     }
 
@@ -228,15 +263,25 @@ mod tests {
     }
 
     #[test]
+    fn intercept_estimation_test() {
+        let x: Vec<Float> = (0..1000).map(Float::from).collect::<Vec<Float>>();
+        let y: Vec<Float> = (0..1000).map(|x| 2 * x).map(Float::from).collect::<Vec<Float>>();
+        let intercept = _dp_calc_intercept(&x, &y, 1000.0, 5.0, true);
+        println!("Estimated Intercept: {}", intercept);
+        assert!(intercept.abs() <= 5.0);
+    }
+
+    #[test]
     fn dp_theilsen_test() {
         let x: Vec<Float> = (0..1000).map(Float::from).collect::<Vec<Float>>();
-        let mut x_mut = x.clone();
-        let mut y: Vec<Float> = (0..1000).map(|x| 2 * x).map(Float::from).collect::<Vec<Float>>();
-        let mut y_mut = y.clone();
+        let x_mut = x.clone();
+        let y: Vec<Float> = (0..1000).map(|x| 2 * x).map(Float::from).collect::<Vec<Float>>();
+        let y_mut = y.clone();
         let n = x.len() as Integer;
         let k = n - 1;
-        let theilsen_estimate = dp_theil_sen_k_match(&x_mut, &y_mut, n, k, 0.0,  0.0, 1000.0, true).unwrap();
-        println!("Theil-Sen Slope Estimate: {}", theilsen_estimate);
-        assert!((2.0 - theilsen_estimate).abs() <= 0.1);
+        let (slope, intercept) = dp_theil_sen_k_match(&x_mut, &y_mut, n, k, 1000000.0,  0.0, 1000.0, true).unwrap();
+        println!("Theil-Sen Slope Estimate: {}, {}", slope, intercept);
+        assert!((2.0 - slope).abs() <= 0.1);
+        assert!(intercept.abs() <= 0.1);
     }
 }
