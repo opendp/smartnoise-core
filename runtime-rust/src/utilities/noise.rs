@@ -42,7 +42,7 @@ pub fn censored_specific_geom(enforce_constant_time: bool) -> i16 {
         let mut buffer = vec!(0_u8; 128);
         utilities::fill_bytes(&mut buffer);
 
-        buffer.into_iter().enumerate()
+        cmp::min(buffer.into_iter().enumerate()
             // ignore samples that contain no events
             .filter(|(_, sample)| sample > &0)
             // compute the index of the smallest event in the batch
@@ -50,7 +50,7 @@ pub fn censored_specific_geom(enforce_constant_time: bool) -> i16 {
             // retrieve the smallest index
             .min()
             // return 1022 if no events occurred (slight dp violation w.p. ~2^-52)
-            .unwrap_or(1022) as i16
+            .unwrap_or(1022) as i16, 1022)
 
     } else {
         // retrieve up to 128 bytes, each containing 8 trials
@@ -59,7 +59,7 @@ pub fn censored_specific_geom(enforce_constant_time: bool) -> i16 {
             utilities::fill_bytes(&mut buffer);
 
             if buffer[0] > 0 {
-                return i * 8 + buffer[0].leading_zeros() as i16
+                return cmp::min(i * 8 + buffer[0].leading_zeros() as i16, 1022)
             }
         }
         1022
@@ -106,7 +106,6 @@ pub fn sample_bit_prob(prob: f64, enforce_constant_time: bool) -> Result<bool> {
     let (_sign, exponent, mantissa) = prob.decompose_raw();
 
     // repeatedly flip fair coin (up to 1023 times) and identify index (0-based) of first heads
-    //    cast is non-saturating because geom only uses first 11 bits, for values within [0, 1022]
     let first_heads_index = censored_specific_geom(enforce_constant_time);
 
     // if prob == 1., return after retrieving censored_specific_geom, to protect constant time
@@ -114,17 +113,17 @@ pub fn sample_bit_prob(prob: f64, enforce_constant_time: bool) -> Result<bool> {
 
     // number of leading zeros in binary representation of prob
     //    cast is non-saturating because exponent only uses first 11 bits
-    //    exponent is bounded within [0, 1022]
+    //    exponent is bounded within [0, 1022] by check for valid probability
     let num_leading_zeros = 1022_i16 - exponent as i16;
 
-    // 0 is the most significant/leftmost bit in the mantissa/fraction/significand
+    // 0 is the most significant/leftmost implicit bit in the mantissa/fraction/significand
     // 52 is the least significant/rightmost
     Ok(match first_heads_index - num_leading_zeros {
         // index into the leading zeros of the binary representation
         i if i < 0 => false,
-        // bit index 0 is implicitly set in ieee-754
-        i if i == 0 => true,
-        // all other digits out-of-bounds are not float-approximated/are implicitly-zero
+        // bit index 0 is implicitly set in ieee-754 when the exponent is nonzero
+        i if i == 0 => exponent != 0,
+        // all other digits out-of-bounds are not float-approximated/are-implicitly-zero
         i if i > 52 => false,
         // retrieve the bit at `i` slots shifted from the left
         i => mantissa & (1_u64 << (52 - i as usize)) != 0
@@ -164,9 +163,31 @@ mod test_sample_bit_prob {
 
     #[test]
     fn random_bit_vs_string() {
-        for _ in 0..1 {
+        for _ in 0..1000 {
             let prob = sample_uniform(0., 1., false).unwrap();
             check_bit_vs_string_equal(prob)
+        }
+    }
+
+    #[test]
+    fn sample_bit_prob_random() {
+        let trials = 10_000;
+        (0..=100)
+            .map(|i| 0.01 * i as f64)
+            .map(|prob| (prob, (0..trials)
+                .fold(1, |sum, _|
+                    sum + sample_bit_prob(prob, false).unwrap() as i32) as f64
+                / trials as f64))
+            .map(|(prob, actual)| (prob, actual - prob))
+            .filter(|(_, bias)| bias.abs() > 0.01)
+            .for_each(|(prob, bias)| println!("expected: {:?}, bias: {:?}", prob, bias));
+    }
+
+    #[test]
+    fn sample_bit_prob_edge() {
+        for _ in 0..10_000 {
+            assert!(!sample_bit_prob(0., false).unwrap());
+            assert!(sample_bit_prob(1., false).unwrap());
         }
     }
 
@@ -176,12 +197,6 @@ mod test_sample_bit_prob {
         check_bit_vs_string_equal(1.);
         check_bit_vs_string_equal(f64::MAX);
         check_bit_vs_string_equal(f64::MIN)
-    }
-
-    #[test]
-    fn check_sample_bit_prob_edge() {
-        assert!(sample_bit_prob(1., false).unwrap());
-        assert!(!sample_bit_prob(0., false).unwrap());
     }
 }
 
@@ -312,7 +327,6 @@ pub fn sample_uniform(min: f64, max: f64, enforce_constant_time: bool) -> Result
 #[cfg(test)]
 mod test_uniform {
     use crate::utilities::noise::sample_uniform;
-    use ieee754::Ieee754;
 
     #[test]
     fn test_uniform() {
