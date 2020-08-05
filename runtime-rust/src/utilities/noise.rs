@@ -105,13 +105,17 @@ pub fn sample_bit_prob(prob: f64, enforce_constant_time: bool) -> Result<bool> {
     // decompose probability into mantissa and exponent integers to quickly identify the value in the first_heads_index
     let (_sign, exponent, mantissa) = prob.decompose_raw();
 
+    // repeatedly flip fair coin (up to 1023 times) and identify index (0-based) of first heads
+    //    cast is non-saturating because geom only uses first 11 bits, for values within [0, 1022]
+    let first_heads_index = censored_specific_geom(enforce_constant_time);
+
+    // if prob == 1., return after retrieving censored_specific_geom, to protect constant time
+    if exponent == 1023 { return Ok(true) }
+
     // number of leading zeros in binary representation of prob
     //    cast is non-saturating because exponent only uses first 11 bits
-    let num_leading_zeros = cmp::max(1022_u16 - exponent, 0) as i16;
-
-    // repeatedly flip fair coin (up to 1023 times) and identify index (0-based) of first heads
-    //    cast is non-saturating because geom only uses first 11 bits
-    let first_heads_index = censored_specific_geom(enforce_constant_time);
+    //    exponent is bounded within [0, 1022]
+    let num_leading_zeros = 1022_i16 - exponent as i16;
 
     // 0 is the most significant/leftmost bit in the mantissa/fraction/significand
     // 52 is the least significant/rightmost
@@ -131,7 +135,7 @@ pub fn sample_bit_prob(prob: f64, enforce_constant_time: bool) -> Result<bool> {
 mod test_sample_bit_prob {
     use ieee754::Ieee754;
     use itertools::Itertools;
-    use crate::utilities::noise::sample_uniform;
+    use crate::utilities::noise::{sample_uniform, sample_bit_prob};
 
     fn check_bit_vs_string_equal(value: f64) {
         let (_sign, _exponent, mut mantissa) = value.decompose_raw();
@@ -172,6 +176,12 @@ mod test_sample_bit_prob {
         check_bit_vs_string_equal(1.);
         check_bit_vs_string_equal(f64::MAX);
         check_bit_vs_string_equal(f64::MIN)
+    }
+
+    #[test]
+    fn check_sample_bit_prob_edge() {
+        assert!(sample_bit_prob(1., false).unwrap());
+        assert!(!sample_bit_prob(0., false).unwrap());
     }
 }
 
