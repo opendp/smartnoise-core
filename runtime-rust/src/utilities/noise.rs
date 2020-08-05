@@ -30,29 +30,40 @@ impl ThreadRandGen for GeneratorOpenSSL {
 /// 
 /// The algorithm generates 1023 bits uniformly at random and returns the
 /// index of the first bit with value 1. If all 1023 bits are 0, then
-/// the algorithm acts as if the last bit was a 1 and returns 1023.
+/// the algorithm acts as if the last bit was a 1 and returns 1022.
 /// 
 /// This is a less general version of the sample_geometric_censored function, designed to be used
 /// only inside of the sample_bit_prob function. The major difference is that this function does not 
 /// call sample_bit_prob itself (whereas sample_geometric_censored does), so having this more specialized
-/// version allows us to avoid an infinite dependence loop. 
-pub fn censored_specific_geom() -> Result<i16> {
-    let mut geom: i16 = 1022;
-    // read bytes in one at a time, need 128 to fully generate geometric
-    for i in 0..128 {
-        // read random bytes
-        let binary_string = utilities::get_bytes(1);
-        let first_one_idx: Option<usize> = binary_string.chars().position(|x| x == '1');
+/// version allows us to avoid an infinite dependence loop.
+pub fn censored_specific_geom(enforce_constant_time: bool) -> i16 {
 
-        // find first element that is '1' and mark its overall index
-        let first_one_idx = if let Some(first_one_idx) = first_one_idx {
-            8 * i + first_one_idx as i16
-        } else {
-            geom
-        };
-        geom = cmp::min(geom, first_one_idx);
+    if enforce_constant_time {
+        let mut buffer = vec!(0_u8; 128);
+        utilities::fill_bytes(&mut buffer);
+
+        buffer.into_iter().enumerate()
+            // ignore samples that contain no events
+            .filter(|(_, sample)| sample > &0)
+            // compute the index of the smallest event in the batch
+            .map(|(i, sample)| 8 * i + sample.leading_zeros() as usize)
+            // retrieve the smallest index
+            .min()
+            // return 1022 if no events occurred
+            .unwrap_or(1022) as i16
+
+    } else {
+        // retrieve up to 128 bytes, each containing 8 trials
+        for i in 0..128 {
+            let mut buffer = vec!(0_u8; 1);
+            utilities::fill_bytes(&mut buffer);
+
+            if buffer[0] > 0 {
+                return i * 8 + buffer[0].leading_zeros() as i16
+            }
+        }
+        1022
     }
-    Ok(geom)
 }
 
 /// Sample a single bit with arbitrary probability of success
@@ -71,45 +82,94 @@ pub fn censored_specific_geom() -> Result<i16> {
 /// ```
 /// // returns a bit with Pr(bit = 1) = 0.7
 /// use whitenoise_runtime::utilities::noise::sample_bit_prob;
-/// let n = sample_bit_prob(0.7);
+/// let n = sample_bit_prob(0.7, false);
 /// # n.unwrap();
 /// ```
 /// ```should_panic
 /// // fails because 1.3 not a valid probability
 /// use whitenoise_runtime::utilities::noise::sample_bit_prob;
-/// let n = sample_bit_prob(1.3);
+/// let n = sample_bit_prob(1.3, false);
 /// # n.unwrap();
 /// ```
 /// ```should_panic
 /// // fails because -0.3 is not a valid probability
 /// use whitenoise_runtime::utilities::noise::sample_bit_prob;
-/// let n = sample_bit_prob(-0.3);
+/// let n = sample_bit_prob(-0.3, false);
 /// # n.unwrap();
 /// ```
-pub fn sample_bit_prob(prob: f64) -> Result<i64> {
+pub fn sample_bit_prob(prob: f64, enforce_constant_time: bool) -> Result<bool> {
 
     // ensure that prob is a valid probability
-    assert!(prob >= 0.0 && prob <= 1.0);
+    if prob < 0.0 || prob > 1.0 {return Err("probability is not within [0, 1]".into())}
+
+    // decompose probability into mantissa and exponent integers to quickly identify the value in the first_heads_index
+    let (_sign, exponent, mantissa) = prob.decompose_raw();
+
+    // number of leading zeros in binary representation of prob
+    let num_leading_zeros = cmp::max(1022_u16 - exponent, 0) as i16;
 
     // repeatedly flip fair coin (up to 1023 times) and identify index (0-based) of first heads
-    let first_heads_index: i16 = censored_specific_geom()? - 1;
+    let first_heads_index: i16 = censored_specific_geom(enforce_constant_time);
 
-    // decompose probability into mantissa (string of bits) and exponent integer to quickly identify the value in the first_heads_index
-    let (_sign, exponent, mantissa) = prob.decompose_raw();
-    let mantissa_string = format!("1{:052b}", mantissa); // add implicit 1 to mantissa
-    let mantissa_vec: Vec<i64> = mantissa_string.chars().map(|x| x.to_digit(2).unwrap() as i64).collect();
-    let num_leading_zeros = cmp::max(1022_i16 - exponent as i16, 0); // number of leading zeros in binary representation of prob
+    // 0 is the most significant/leftmost bit in the mantissa/fraction/significand
+    // 52 is the least significant/rightmost
+    Ok(match first_heads_index - num_leading_zeros {
+        // index into the leading zeros of the binary representation
+        i if i < 0 => false,
+        // bit index 0 is implicitly set in ieee-754
+        i if i == 0 => true,
+        // all other digits out-of-bounds are not float-approximated/are implicitly-zero
+        i if i > 52 => false,
+        // retrieve the bit at `i` slots shifted from the left
+        i => mantissa & (1_u64 << (52 - i as usize)) != 0
+    })
+}
 
-    // return value at index of interest
-    if first_heads_index < num_leading_zeros {
-        Ok(0)
-    } else {
-        let index: usize = (first_heads_index - num_leading_zeros) as usize;
-        if index >= mantissa_vec.len() {
-            Ok(0)
-        } else {
-            Ok(mantissa_vec[index])
+#[cfg(test)]
+mod test_sample_bit_prob {
+    use ieee754::Ieee754;
+    use itertools::Itertools;
+    use crate::utilities::noise::sample_uniform;
+
+    fn check_bit_vs_string_equal(value: f64) {
+        let (_sign, _exponent, mut mantissa) = value.decompose_raw();
+        let mantissa_string = format!("1{:052b}", mantissa); // add implicit 1 to mantissa
+        let mantissa_vec: Vec<i64> = mantissa_string.chars()
+            .map(|x| x.to_digit(2).unwrap() as i64).collect();
+
+        let to_str = |v| if v {"1"} else {"0"};
+
+        let vec_bits = (0..mantissa_string.len())
+            .map(|idx| mantissa_vec[idx] != 0)
+            .map(to_str).join("");
+
+        // set the implicit 1
+        mantissa |= 1u64 << 52;
+
+        let log_bits = (0..mantissa_string.len())
+            .map(|idx| mantissa & (1u64 << (52 - idx)) != 0u64)
+            .map(to_str).join("");
+
+        // println!("vec_bits: {:?}", vec_bits);
+        // println!("log_bits: {:?}", log_bits);
+
+        assert_eq!(vec_bits, log_bits);
+    }
+
+    #[test]
+    fn random_bit_vs_string() {
+        for _ in 0..1 {
+            let prob = sample_uniform(0., 1., false).unwrap();
+            check_bit_vs_string_equal(prob)
         }
+    }
+
+    #[test]
+    fn edge_cases_bit_vs_string() {
+        check_bit_vs_string_equal(0.);
+        check_bit_vs_string_equal(1.);
+        check_bit_vs_string_equal(f64::MAX);
+        check_bit_vs_string_equal(f64::MIN)
     }
 }
 
@@ -229,7 +289,7 @@ pub fn sample_uniform(min: f64, max: f64, enforce_constant_time: bool) -> Result
     let mantissa_int = u64::from_be_bytes(mantissa_buffer);
 
     // Generate exponent
-    let exponent: i16 = -sample_geometric_censored(0.5, 1023, enforce_constant_time)? as i16;
+    let exponent: i16 = -censored_specific_geom(enforce_constant_time);
 
     // Generate uniform random number from [0,1)
     let uniform_rand = f64::recompose(false, exponent, mantissa_int);
@@ -464,7 +524,7 @@ pub fn sample_geometric_censored(prob: f64, max_trials: i64, enforce_constant_ti
     // ensure that prob is a valid probability
     if prob < 0.0 || prob > 1.0 {return Err("probability is not within [0, 1]".into())}
 
-    let mut bit: i64;
+    let mut bit: bool;
     let mut n_trials: i64 = 0;
     let mut geom_return: i64 = 0;
 
@@ -472,11 +532,11 @@ pub fn sample_geometric_censored(prob: f64, max_trials: i64, enforce_constant_ti
     // if enforcing the runtime of the algorithm to be constant, the while loop
     // continues after the 1 is found and just stores the first location of a 1 bit.
     while n_trials < max_trials {
-        bit = sample_bit_prob(prob)?;
+        bit = sample_bit_prob(prob, enforce_constant_time)?;
         n_trials += 1;
 
         // If we haven't seen a 1 yet, set the return to the current number of trials
-        if bit == 1 && geom_return == 0 {
+        if bit && geom_return == 0 {
             geom_return = n_trials;
             if !enforce_constant_time {
                 return Ok(geom_return);
