@@ -25,11 +25,8 @@ pub fn permute_range(n: Integer, k: Integer) -> Vec<Integer> {
 
 pub fn compute_all_ests(x: &Vec<Float>, y: &Vec<Float>, n: Integer) -> Vec<Float> {
     let mut estimates: Vec<Float> = Vec::new();
-
-    for p in 0..n {
-        for q in p+1..n {
-            let p: usize = p as usize;
-            let q: usize = q as usize;
+    for p in 0..n as usize {
+        for q in p+1..n as usize {
             let x_delta = x[q] - x[p];
             if x_delta != 0.0 {
                 let slope = (y[q] - y[p]) / x_delta;
@@ -44,7 +41,7 @@ pub fn compute_all_ests(x: &Vec<Float>, y: &Vec<Float>, n: Integer) -> Vec<Float
 /// Leaving this here for now, though not in use.
 pub fn _tau_permutations(x: Vec<Float>, y: Vec<Float>, n: Integer) -> Result<(Vec<Float>, Vec<Float>), Error> {
     // let tau = permute_range(n, k);
-    let range = (0..n).map(Integer::from).collect::<Vec<Integer>>();
+    let range = (0..n).collect::<Vec<Integer>>();
     let tau = all_permutations(range, n);
     // *Previous method before seeing Python source*
     // For sampling without replacement, shuffle this list and draw first (or last) element
@@ -70,11 +67,9 @@ pub fn _tau_permutations(x: Vec<Float>, y: Vec<Float>, n: Integer) -> Result<(Ve
 }
 
 pub fn dp_med(z: &Vec<Float>, epsilon: Float, r_lower: Float, r_upper: Float, enforce_constant_time: bool) -> Float {
-    let n = (*z).len() as Integer;
-
+    let n = (*z).len();
     let mut z_clipped = Vec::new();
     for i in 0..n {
-        let i: usize = i as usize;
         if z[i] >= r_lower {
             if z[i] <= r_upper {
                 z_clipped.push(z[i]);
@@ -88,10 +83,10 @@ pub fn dp_med(z: &Vec<Float>, epsilon: Float, r_lower: Float, r_upper: Float, en
     let mut max_noisy_score = std::f64::NEG_INFINITY;
     let mut arg_max_noisy_score: Integer = -1;
 
-    let limit = z_clipped.len() as Integer;
+    let limit = z_clipped.len();
 
     for i in 1..limit {
-        let length = z_clipped[i as usize] - z_clipped[i as usize - 1 as usize];
+        let length = z_clipped[i] - z_clipped[i - 1 as usize];
         let log_interval_length: Float = if length <= 0.0 { std::f64::NEG_INFINITY } else { length.ln()};
         let dist_from_median = (i as Float - (n as Float / 2.0)).abs().ceil();
 
@@ -99,11 +94,11 @@ pub fn dp_med(z: &Vec<Float>, epsilon: Float, r_lower: Float, r_upper: Float, en
         let score = log_interval_length - (epsilon / 2.0) * dist_from_median;
 
         let noise_term = noise::sample_gumbel(0.0, 1.0); // gumbel1(&rng, 0.0, 1.0);
-        let noisy_score: Float = score;  //  + noise_term;
+        let noisy_score: Float = score + noise_term;
 
         if noisy_score > max_noisy_score {
             max_noisy_score = noisy_score;
-            arg_max_noisy_score = i;
+            arg_max_noisy_score = i as Integer;
         }
     }
     let left = z_clipped[arg_max_noisy_score as usize - 1 as usize];
@@ -112,34 +107,41 @@ pub fn dp_med(z: &Vec<Float>, epsilon: Float, r_lower: Float, r_upper: Float, en
     return median;
 }
 
-/// Look at points with "max_value" of 0, and calculate DP-Median
-/// as estimate of intercept.
-/// (I am making this up as an experiment)
-pub fn _dp_calc_intercept(x: &Vec<Float>, y: &Vec<Float>, epsilon: Float, max_value: Float, enforce_constant_time: bool) -> Float {
-    let mut y_clipped = Vec::new();
-    // Add any y values where x is sufficiently close to 0
-    for i in 0..x.len() {
-        if x[i].abs() <= max_value {
-                y_clipped.push(y[i]);
-        }
-    }
-    y_clipped.sort_by(|a, b| a.partial_cmp(b).unwrap());
-
-    let intercept_estimate = dp_med(&y_clipped, epsilon, y_clipped[0], y_clipped[y_clipped.len()-1], enforce_constant_time);
-
+/// Estimate y intercept
+/// Question: is it valid to use non-DP mean here, if the slope is already DP?
+pub fn _dp_calc_intercept(x: &Vec<Float>, y: &Vec<Float>, slope: Float) -> Float {
+    // let intercept_estimate = dp_med(&y_clipped, epsilon, y_clipped[0], y_clipped[y_clipped.len()-1], enforce_constant_time);
+    let y_mean = y.iter().sum::<Float>() as Float / x.len() as Float;
+    let x_mean = x.iter().sum::<Float>() as Float / x.len() as Float;
+    let intercept_estimate = y_mean  - slope * x_mean;
     intercept_estimate
 }
 
+/// Randomly select k points from x and y (k < n) and then perform DP-TheilSen.
+/// Useful for larger datasets where calculating on n^2 points is less than ideal.
 pub fn dp_theil_sen_k_match(x: &Vec<Float>, y: &Vec<Float>, n: Integer, k: Integer, epsilon: Float, r_lower: Float, r_upper: Float, enforce_constant_time: bool) -> Result<(Float, Float), Error> {
+    let indices: Vec<usize> = permute_range(n, k).iter().map(|x| *x as usize).collect::<Vec<usize>>();
+    let mut x_kmatch: Vec<Float> = Vec::new();
+    let mut y_kmatch: Vec<Float> = Vec::new();
+    let scaled_epsilon = epsilon / (k as Float);
+    for i in indices {
+        // let index: usize = indices[i] as usize;
+        x_kmatch.push(x[i]);
+        y_kmatch.push(y[i]);
+    }
+    dp_theil_sen(&x_kmatch, &y_kmatch, k, scaled_epsilon, r_lower, r_upper, enforce_constant_time)
+}
+
+/// DP-TheilSen over all n points in data
+///
+pub fn dp_theil_sen(x: &Vec<Float>, y: &Vec<Float>, n: Integer, epsilon: Float, r_lower: Float, r_upper: Float, enforce_constant_time: bool) -> Result<(Float, Float), Error> {
     let estimates: Vec<Float> = compute_all_ests(x, y, n);
 
-    // Paper outlines scaling epsilon as epsilon / k, leaving unchanged for now
-    let scaled_epsilon = epsilon;  // epsilon / k as Float;
-    let slope = dp_med(&estimates, scaled_epsilon, r_lower, r_upper, enforce_constant_time);
+    let slope = dp_med(&estimates, epsilon, r_lower, r_upper, enforce_constant_time);
 
     let mut diffs: Vec<Float> = Vec::new();
-    for i in 0..x.len() as Integer {
-        diffs.push(y[i as usize] - slope*x[i as usize]);
+    for i in 0..x.len() {
+        diffs.push(y[i] - slope*x[i]);
     }
 
     // Even using the non-DP median for the intercept, the difference between "true" slope
@@ -153,8 +155,8 @@ pub fn dp_theil_sen_k_match(x: &Vec<Float>, y: &Vec<Float>, n: Integer, k: Integ
     // values on both sides of the y axis
     let mut x_sort = x.clone();
     x_sort.sort_by(|a, b| a.partial_cmp(b).unwrap());
-    let max_value = (x_sort[x_sort.len()-1] / 10.0).ceil();
-    let intercept = _dp_calc_intercept(&x, &y, epsilon, max_value, enforce_constant_time);
+    // let max_value = (x_sort[x_sort.len()-1] / 10.0).ceil();
+    let intercept = _dp_calc_intercept(&x, &y, slope);
 
     Ok((slope, intercept))
 
@@ -266,7 +268,7 @@ mod tests {
     fn intercept_estimation_test() {
         let x: Vec<Float> = (0..1000).map(Float::from).collect::<Vec<Float>>();
         let y: Vec<Float> = (0..1000).map(|x| 2 * x).map(Float::from).collect::<Vec<Float>>();
-        let intercept = _dp_calc_intercept(&x, &y, 1000.0, 5.0, true);
+        let intercept = _dp_calc_intercept(&x, &y, 2.0);
         println!("Estimated Intercept: {}", intercept);
         assert!(intercept.abs() <= 5.0);
     }
@@ -275,13 +277,36 @@ mod tests {
     fn dp_theilsen_test() {
         let x: Vec<Float> = (0..1000).map(Float::from).collect::<Vec<Float>>();
         let x_mut = x.clone();
-        let y: Vec<Float> = (0..1000).map(|x| 2 * x).map(Float::from).collect::<Vec<Float>>();
+        let y: Vec<Float> = (0..1000).map(|x| 2 * x).map(Float::from).map(|x| x + noise::sample_gaussian(0.0, 0.1, true)).collect::<Vec<Float>>();
         let y_mut = y.clone();
         let n = x.len() as Integer;
         let k = n - 1;
-        let (slope, intercept) = dp_theil_sen_k_match(&x_mut, &y_mut, n, k, 1000000.0,  0.0, 1000.0, true).unwrap();
-        println!("Theil-Sen Slope Estimate: {}, {}", slope, intercept);
-        assert!((2.0 - slope).abs() <= 0.1);
-        assert!(intercept.abs() <= 0.1);
+        let epsilon = 1000000.0;
+        let (slope, intercept) = theil_sen(&x, &y, 1000);
+        let (dp_slope, dp_intercept) = dp_theil_sen_k_match(&x_mut, &y_mut, n, k, epsilon,  0.0, 2.0, true).unwrap();
+
+        // println!("Theil-Sen Slope Estimate: {}, {}", slope, intercept);
+        // println!("DP Theil-Sen Slope Estimate: {}, {}", dp_slope, dp_intercept);
+
+        assert!((dp_slope - slope).abs() <= 1.0 / epsilon);
+        assert!((dp_intercept - intercept).abs() <= (n as Float) * (1.0 / epsilon));
+    }
+
+    #[test]
+    fn dp_theilsen_epsilon_test() {
+        let mut results: Vec<(Float, Float)> = Vec::new();
+        for epsilon in vec![0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 1e4 as Float, 1e5 as Float, 1e6 as Float] {
+            println!("Epsilon: {}", epsilon);
+            let n = 100;
+            let x: Vec<Float> = (0..n).map(Float::from).collect::<Vec<Float>>();
+            let y: Vec<Float> = (0..n).map(|x| 2 * x).map(Float::from).map(|x| x + noise::sample_gaussian(0.0, 0.0001, true)).collect::<Vec<Float>>();
+            let k = n - 1;
+            let (slope, intercept) = theil_sen(&x, &y, 100);
+            let (dp_slope, dp_intercept) = dp_theil_sen_k_match(&x, &y, n as Integer, k as Integer, epsilon,  0.0, 2.0, true).unwrap();
+            results.push(((dp_slope-slope).abs(), (dp_intercept-intercept).abs()));
+            println!("Theil-Sen Estimate Difference: {}, {}", (dp_slope-slope).abs(), (dp_intercept-intercept).abs());
+            assert!((dp_slope - slope).abs() <= 1.0 / epsilon);
+            assert!((dp_intercept - intercept).abs() <= (n as Float) * (1.0 / epsilon));
+        }
     }
 }
