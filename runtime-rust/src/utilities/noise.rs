@@ -49,7 +49,7 @@ pub fn censored_specific_geom(enforce_constant_time: bool) -> i16 {
             .map(|(i, sample)| 8 * i + sample.leading_zeros() as usize)
             // retrieve the smallest index
             .min()
-            // return 1022 if no events occurred
+            // return 1022 if no events occurred (slight dp violation w.p. ~2^-52)
             .unwrap_or(1022) as i16
 
     } else {
@@ -106,10 +106,12 @@ pub fn sample_bit_prob(prob: f64, enforce_constant_time: bool) -> Result<bool> {
     let (_sign, exponent, mantissa) = prob.decompose_raw();
 
     // number of leading zeros in binary representation of prob
+    //    cast is non-saturating because exponent only uses first 11 bits
     let num_leading_zeros = cmp::max(1022_u16 - exponent, 0) as i16;
 
     // repeatedly flip fair coin (up to 1023 times) and identify index (0-based) of first heads
-    let first_heads_index: i16 = censored_specific_geom(enforce_constant_time);
+    //    cast is non-saturating because geom only uses first 11 bits
+    let first_heads_index = censored_specific_geom(enforce_constant_time);
 
     // 0 is the most significant/leftmost bit in the mantissa/fraction/significand
     // 52 is the least significant/rightmost
@@ -288,8 +290,8 @@ pub fn sample_uniform(min: f64, max: f64, enforce_constant_time: bool) -> Result
     // convert mantissa to integer
     let mantissa_int = u64::from_be_bytes(mantissa_buffer);
 
-    // Generate exponent
-    let exponent: i16 = -censored_specific_geom(enforce_constant_time);
+    // Generate exponent. A saturated mantissa with implicit bit is ~2
+    let exponent: i16 = -(1 + censored_specific_geom(enforce_constant_time));
 
     // Generate uniform random number from [0,1)
     let uniform_rand = f64::recompose(false, exponent, mantissa_int);
@@ -304,12 +306,12 @@ mod test_uniform {
 
     #[test]
     fn test_uniform() {
-        (1..=100).for_each(|idx| println!("{:?}", (1. / 100. * idx as f64).decompose()));
+        // (1..=100).for_each(|idx| println!("{:?}", (1. / 100. * idx as f64).decompose()));
         // println!("{:?}", 1.0f64.decompose());
 
         let min = 0.;
         let max = 1.;
-        if !(0..10).all(|_| {
+        if !(0..1000).all(|_| {
             let sample = sample_uniform(min, max, false).unwrap();
             let within = min <= sample && max >= sample;
             if !within {
