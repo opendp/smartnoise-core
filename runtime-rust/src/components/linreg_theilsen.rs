@@ -4,17 +4,12 @@ use crate::components::linreg_error::Error;
 use rand::prelude::*;
 use rand::thread_rng;
 use crate::utilities::{noise};
+// use whitenoise_runtime::utilities::noise::sample_bit_prob;
+use crate::utilities::noise::sample_bit_prob;
+// use std::ptr::null;
 
-pub fn all_permutations(vec: Vec<Integer>, n: Integer) -> Vec<Vec<Integer>> {
-    let mut permutations = Vec::new();
-    let mut rng = rand::thread_rng();
-    let mut vec_sample: Vec<Integer> = vec.choose_multiple(&mut rng, n as usize).cloned().collect();
-    heap_recursive(&mut vec_sample, |permutation| {
-        permutations.push(permutation.to_vec())
-    });
-    permutations
-}
-
+/// Select k random values from range 1 to n
+///
 pub fn permute_range(n: Integer, k: Integer) -> Vec<Integer> {
     let range = (1..n).map(Integer::from).collect::<Vec<Integer>>();
     let mut rng = rand::thread_rng();
@@ -23,18 +18,42 @@ pub fn permute_range(n: Integer, k: Integer) -> Vec<Integer> {
     vec_sample
 }
 
-pub fn compute_all_ests(x: &Vec<Float>, y: &Vec<Float>, n: Integer) -> Vec<Float> {
+
+pub fn _compute_slope(x: &Vec<Float>, y: &Vec<Float>) -> Float {
+    let x_delta = x[1] - x[0];
+    if x_delta != 0.0 {
+        (y[1] - y[0]) / x_delta
+    } else {
+        Float::INFINITY
+    }
+}
+
+
+/// Compute slope between all pairs of points where defined
+///
+pub fn compute_all_slope_estimates(x: &Vec<Float>, y: &Vec<Float>, n: Integer) -> Vec<Float> {
     let mut estimates: Vec<Float> = Vec::new();
     for p in 0..n as usize {
-        for q in p+1..n as usize {
-            let x_delta = x[q] - x[p];
-            if x_delta != 0.0 {
-                let slope = (y[q] - y[p]) / x_delta;
+        for _q in p+1..n as usize {
+            let slope = _compute_slope(&x, &y);
+            if slope != Float::INFINITY {
                 estimates.push(slope);
             }
         }
     }
     estimates
+}
+
+/// Marked for deletion
+///
+pub fn all_permutations(vec: Vec<Integer>, n: Integer) -> Vec<Vec<Integer>> {
+    let mut permutations = Vec::new();
+    let mut rng = rand::thread_rng();
+    let mut vec_sample: Vec<Integer> = vec.choose_multiple(&mut rng, n as usize).cloned().collect();
+    heap_recursive(&mut vec_sample, |permutation| {
+        permutations.push(permutation.to_vec())
+    });
+    permutations
 }
 
 /// My implementation of permutations of the paper
@@ -107,14 +126,93 @@ pub fn dp_med(z: &Vec<Float>, epsilon: Float, r_lower: Float, r_upper: Float, en
     return median;
 }
 
-/// Estimate y intercept
-/// Question: is it valid to use non-DP mean here, if the slope is already DP?
-pub fn _dp_calc_intercept(x: &Vec<Float>, y: &Vec<Float>, slope: Float) -> Float {
-    // let intercept_estimate = dp_med(&y_clipped, epsilon, y_clipped[0], y_clipped[y_clipped.len()-1], enforce_constant_time);
-    let y_mean = y.iter().sum::<Float>() as Float / x.len() as Float;
-    let x_mean = x.iter().sum::<Float>() as Float / x.len() as Float;
-    let intercept_estimate = y_mean  - slope * x_mean;
-    intercept_estimate
+/// Return the index of the median value
+/// If even, randomly return one nearby index
+pub fn median_arg(x: &Vec<Float>) -> usize {
+    if x.len() % 2 == 0 {
+        let n = sample_bit_prob(0.5).unwrap();
+        if n == 1 {
+            ((x.len() as Integer / 2) + 1) as usize
+        } else {
+            x.len() / (2 as usize)
+        }
+    } else {
+        ((x.len() as Integer / 2) + 1) as usize
+    }
+}
+
+/// Non-DP pairwise regression
+///
+pub fn pairwise_regression(x: &Vec<Float>, y: &Vec<Float>, k: Integer) -> (Float, Float) {
+    let mut lines: Vec<(Float, Float)> = Vec::new();
+    let indices = permute_range(k, k);
+    for i in (0..indices.len()).step_by(2) {
+        let slope = _compute_slope(&x[i..i+2].to_vec(), &y[i..i+2].to_vec());
+        let intercept = ordinary_least_squares_intercept(&x, &y, slope);
+        lines.push((slope, intercept));
+    }
+    lines.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+    let mut lines_sorted_by_intercept: Vec<(Float, Float)> = lines.clone();
+    lines_sorted_by_intercept.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
+    let median_slope_index = median_arg(&lines.iter().map(|x| x.0).collect::<Vec<Float>>());
+    let median_intercept_index = median_arg(&lines_sorted_by_intercept.iter().map(|x| x.1).collect::<Vec<Float>>());
+
+    // Get the index in lines containing the median intercept
+    let mut intercept_index: usize = 0;
+    for i in 0..lines.len()-1 {
+        if lines[i].1 == lines_sorted_by_intercept[median_intercept_index].1 {
+            intercept_index = i;
+        }
+    }
+
+    let mut candidates: Vec<(Float, Float)> = Vec::new();
+    if intercept_index < median_slope_index {
+        candidates = lines[intercept_index..median_slope_index+1].to_vec();
+    } else if median_slope_index < intercept_index {
+        candidates = lines[median_slope_index..intercept_index+1].to_vec();
+    } else {
+        candidates = lines[median_slope_index..median_slope_index+1].to_vec();
+    }
+    (candidates.iter().map(|x| x.0).sum::<Float>() as Float / candidates.len() as Float,
+     candidates.iter().map(|x| x.1).sum::<Float>() as Float / candidates.len() as Float)
+}
+
+/// DP pairwise regression
+///
+pub fn dp_pairwise_regression(x: &Vec<Float>, y: &Vec<Float>, k: Integer, epsilon: Float, r_lower: Float, r_upper: Float, enforce_constant_time: bool) -> (Float, Float) {
+    let mut lines: Vec<(Float, Float)> = Vec::new();
+    let indices = permute_range(k, k);
+    for i in (0..indices.len()).step_by(2) {
+        let slope = _compute_slope(&x[i..i+2].to_vec(), &y[i..i+2].to_vec());
+        let intercept = ordinary_least_squares_intercept(&x, &y, slope);
+        lines.push((slope, intercept));
+    }
+    lines.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+    let mut lines_sorted_by_intercept: Vec<(Float, Float)> = lines.clone();
+    lines_sorted_by_intercept.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
+    let median_slope_index = median_arg(&lines.iter().map(|x| x.0).collect::<Vec<Float>>());
+    let median_intercept_index = median_arg(&lines_sorted_by_intercept.iter().map(|x| x.1).collect::<Vec<Float>>());
+
+    // Get the index in lines containing the median intercept
+    let mut intercept_index: usize = 0;
+    for i in 0..lines.len()-1 {
+        if lines[i].1 == lines_sorted_by_intercept[median_intercept_index].1 {
+            intercept_index = i;
+        }
+    }
+
+    let mut candidates: Vec<(Float, Float)> = Vec::new();
+    if intercept_index < median_slope_index {
+        candidates = lines[intercept_index..median_slope_index+1].to_vec();
+    } else if median_slope_index < intercept_index {
+        candidates = lines[median_slope_index..intercept_index+1].to_vec();
+    } else {
+        candidates = lines[median_slope_index..median_slope_index+1].to_vec();
+    }
+    let median_slope = dp_med(&candidates.iter().map(|x| x.0).collect::<Vec<Float>>(), epsilon, r_lower, r_upper, enforce_constant_time);
+    let median_intercept = dp_med(&candidates.iter().map(|x| x.1).collect::<Vec<Float>>(), epsilon, r_lower, r_upper, enforce_constant_time);
+
+    (median_slope, median_intercept)
 }
 
 /// Randomly select k points from x and y (k < n) and then perform DP-TheilSen.
@@ -135,7 +233,7 @@ pub fn dp_theil_sen_k_match(x: &Vec<Float>, y: &Vec<Float>, n: Integer, k: Integ
 /// DP-TheilSen over all n points in data
 ///
 pub fn dp_theil_sen(x: &Vec<Float>, y: &Vec<Float>, n: Integer, epsilon: Float, r_lower: Float, r_upper: Float, enforce_constant_time: bool) -> Result<(Float, Float), Error> {
-    let estimates: Vec<Float> = compute_all_ests(x, y, n);
+    let estimates: Vec<Float> = compute_all_slope_estimates(x, y, n);
 
     let slope = dp_med(&estimates, epsilon, r_lower, r_upper, enforce_constant_time);
 
@@ -144,19 +242,10 @@ pub fn dp_theil_sen(x: &Vec<Float>, y: &Vec<Float>, n: Integer, epsilon: Float, 
         diffs.push(y[i] - slope*x[i]);
     }
 
-    // Even using the non-DP median for the intercept, the difference between "true" slope
-    // and DP-slope is enough that the intercept value tends to blow up (e.g. DP-slope of 1.75
-    // for y = 2x leads to intercept value of 124.78)
-    // let intercept = dp_med(&diffs, scaled_epsilon, r_lower, r_upper, enforce_constant_time);
-    // let intercept = median(&diffs);
-
-    // For now, by default look at the smallest 10% of values
-    // Note: this doesn't work when all values are positive or negative, it expects
-    // values on both sides of the y axis
     let mut x_sort = x.clone();
     x_sort.sort_by(|a, b| a.partial_cmp(b).unwrap());
     // let max_value = (x_sort[x_sort.len()-1] / 10.0).ceil();
-    let intercept = _dp_calc_intercept(&x, &y, slope);
+    let intercept = ordinary_least_squares_intercept(&x, &y, slope);
 
     Ok((slope, intercept))
 
@@ -173,13 +262,23 @@ pub fn median(x: &Vec<Float>) -> Float {
     }
 }
 
+/// Non-DP Estimate for y intercept,
+/// using x_mean and y_mean
+pub fn ordinary_least_squares_intercept(x: &Vec<Float>, y: &Vec<Float>, slope: Float) -> Float {
+    // let intercept_estimate = dp_med(&y_clipped, epsilon, y_clipped[0], y_clipped[y_clipped.len()-1], enforce_constant_time);
+    let y_mean = y.iter().sum::<Float>() as Float / x.len() as Float;
+    let x_mean = x.iter().sum::<Float>() as Float / x.len() as Float;
+    let intercept_estimate = y_mean  - slope * x_mean;
+    intercept_estimate
+}
+
 /// Non-DP implementation of Theil-Sen to test DP version against
 ///
 pub fn theil_sen(x: &Vec<Float>, y: &Vec<Float>, n: Integer) -> (Float, Float) {
 
     // Slope m is median of slope calculated between all pairs of
     // non-identical points
-    let slope_estimates: Vec<Float> = compute_all_ests(x, y, n);
+    let slope_estimates: Vec<Float> = compute_all_slope_estimates(x, y, n);
     let slope = median(&slope_estimates);
 
     // Intercept is median of set of points y_i - m * x_i
@@ -233,7 +332,7 @@ mod tests {
         let x = vec![1.0, 2.0, 3.0];
         let y = vec![1.0, 4.0, 9.0];
         let n = 3;
-        let estimates = compute_all_ests(&x, &y, n);
+        let estimates = compute_all_slope_estimates(&x, &y, n);
         let expected: Vec<Float> = vec![3.0, 4.0, 5.0];
         assert_eq!(expected, estimates);
     }
@@ -268,7 +367,7 @@ mod tests {
     fn intercept_estimation_test() {
         let x: Vec<Float> = (0..1000).map(Float::from).collect::<Vec<Float>>();
         let y: Vec<Float> = (0..1000).map(|x| 2 * x).map(Float::from).collect::<Vec<Float>>();
-        let intercept = _dp_calc_intercept(&x, &y, 2.0);
+        let intercept = ordinary_least_squares_intercept(&x, &y, 2.0);
         println!("Estimated Intercept: {}", intercept);
         assert!(intercept.abs() <= 5.0);
     }
@@ -307,6 +406,49 @@ mod tests {
             println!("Theil-Sen Estimate Difference: {}, {}", (dp_slope-slope).abs(), (dp_intercept-intercept).abs());
             assert!((dp_slope - slope).abs() <= 1.0 / epsilon);
             assert!((dp_intercept - intercept).abs() <= (n as Float) * (1.0 / epsilon));
+        }
+    }
+
+    #[test]
+    fn pairwise_test() {
+        let x: Vec<Float> = (0..1000).map(Float::from).collect::<Vec<Float>>();
+        let y: Vec<Float> = (0..1000).map(|x| 2 * x).map(Float::from).map(|x| x + noise::sample_gaussian(0.0, 0.1, true)).collect::<Vec<Float>>();
+        let n = x.len() as Integer;
+        let (slope, intercept) = pairwise_regression(&x, &y, n);
+        println!("Pairwise Estimate: {} {}", slope, intercept);
+
+        let x: Vec<Float> = (0..1000).map(Float::from).collect::<Vec<Float>>();
+        let y: Vec<Float> = (0..1000).map(|x| 2 * x).map(Float::from).map(|x| x + noise::sample_gaussian(0.0, 0.1, true)).collect::<Vec<Float>>();
+        let n = x.len() as Integer;
+
+        let (ts_slope, ts_intercept) = theil_sen(&x, &y, n);
+        println!("Theil-Sen Estimate: {} {}", ts_slope, ts_intercept);
+
+        assert!((ts_slope - slope).abs() < 0.01);
+        // Intercept estimates tend to differ more sharply
+        assert!((ts_intercept - intercept).abs() < 10.0);
+    }
+
+    #[test]
+    fn dp_pairwise_test() {
+        for epsilon in vec![0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 1e4 as Float, 1e5 as Float, 1e6 as Float] {
+            println!("Epsilon: {}", epsilon);
+            let x: Vec<Float> = (0..1000).map(Float::from).collect::<Vec<Float>>();
+            let y: Vec<Float> = (0..1000).map(|x| 2 * x).map(Float::from).map(|x| x + noise::sample_gaussian(0.0, 0.1, true)).collect::<Vec<Float>>();
+            let n = x.len() as Integer;
+            let (slope, intercept) = dp_pairwise_regression(&x, &y, n, epsilon, 1.0, 3.0, true);
+            println!("DP Pairwise Estimate: {} {}", slope, intercept);
+
+            let x_ts: Vec<Float> = x.clone();
+            let y_ts: Vec<Float> = y.clone();
+            let n_ts = x_ts.len() as Integer;
+
+            let (ts_slope, ts_intercept) = theil_sen(&x_ts, &y_ts, n_ts);
+            println!("Theil-Sen Estimate: {} {}", ts_slope, ts_intercept);
+
+            assert!((ts_slope - slope).abs() < n as Float);
+            // Intercept estimates tend to differ more sharply
+            assert!((ts_intercept - intercept).abs() < n as Float);
         }
     }
 }
