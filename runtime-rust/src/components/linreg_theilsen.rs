@@ -4,9 +4,8 @@ use crate::components::linreg_error::Error;
 use rand::prelude::*;
 use rand::thread_rng;
 use crate::utilities::{noise};
-// use whitenoise_runtime::utilities::noise::sample_bit_prob;
 use crate::utilities::noise::sample_bit_prob;
-// use std::ptr::null;
+use crate::utilities::mechanisms::laplace_mechanism;
 
 /// Select k random values from range 1 to n
 ///
@@ -213,6 +212,27 @@ pub fn dp_pairwise_regression(x: &Vec<Float>, y: &Vec<Float>, k: Integer, epsilo
     let median_intercept = dp_med(&candidates.iter().map(|x| x.1).collect::<Vec<Float>>(), epsilon, r_lower, r_upper, enforce_constant_time);
 
     (median_slope, median_intercept)
+}
+
+/// DP mean for testing
+///
+pub fn dp_mean(x: &Vec<Float>, epsilon: Float, trial_size: Integer, r_lower: Float, r_upper: Float, enforce_constant_time: bool) -> Float {
+    let mut means: Vec<Float> = Vec::new();
+    for _ in 0..trial_size {
+        let mut tmp = x.clone();
+        let laplace: Float = laplace_mechanism(epsilon, 1.0 - 1.0 / x.len() as Float, enforce_constant_time).unwrap();
+        for j in 0..x.len() {
+            tmp[j] += laplace;
+        }
+        means.push(tmp.iter().sum::<Float>() as Float / x.len() as Float);
+    }
+    dp_med(&means, epsilon, r_lower, r_upper, enforce_constant_time)
+}
+
+pub fn dp_mean_intercept(x: &Vec<Float>, y: &Vec<Float>, slope: Float, epsilon: Float, trial_size: Integer, r_lower: Float, r_upper: Float, enforce_constant_time: bool) -> Float {
+    let x_mean = dp_mean(x, epsilon, trial_size, r_lower, r_upper, enforce_constant_time);
+    let y_mean = dp_mean(y, epsilon, trial_size, r_lower, r_upper, enforce_constant_time);
+    y_mean - slope * x_mean
 }
 
 /// Randomly select k points from x and y (k < n) and then perform DP-TheilSen.
@@ -450,5 +470,31 @@ mod tests {
             // Intercept estimates tend to differ more sharply
             assert!((ts_intercept - intercept).abs() < n as Float);
         }
+    }
+
+    #[test]
+    fn dp_mean_test() {
+        let x: Vec<Float> = (0..1000).map(Float::from).collect::<Vec<Float>>();
+        let epsilon = 10.0;
+        let trial_size = 10;
+        let true_mean = 499.5;
+        let m = dp_mean(&x, epsilon, trial_size, 0.0, 1000.0, true);
+        println!("DP Mean: {}", m);
+        assert!((m-true_mean).abs() <= (x.len() as Float) / epsilon);
+    }
+
+    #[test]
+    fn dp_mean_intercept_test() {
+        let x: Vec<Float> = (0..1000).map(Float::from).collect::<Vec<Float>>();
+        let y: Vec<Float> = (0..1000).map(|x| 2 * x).map(Float::from).map(|x| x + noise::sample_gaussian(0.0, 0.1, true)).collect::<Vec<Float>>();
+        let epsilon = 0.1;
+        let r_lower = 0.0;
+        let r_upper = 2.0;
+        let slope = 1.99;
+        let trial_size = 10;
+        let true_intercept = 0.0;
+        let dp_intercept = dp_mean_intercept(&x, &y, slope, epsilon, trial_size, r_lower, r_upper, true);
+        println!("DP Intercept: {}", dp_intercept);
+        assert!((true_intercept - dp_intercept).abs() <= (x.len() as Float) / epsilon);
     }
 }
