@@ -34,7 +34,8 @@ impl Component for proto::Digitize {
             Some(&v) => v.to_owned(),
             None => Value::Array(Array::Int(arr0(-1).into_dyn()))
         };
-        let null = null_value.array()?.int()?;
+        let null = null_value.array()?.int()
+            .map_err(prepend("null_value:"))?;
 
         if !data_property.releasable {
             data_property.assert_is_not_aggregated()?;
