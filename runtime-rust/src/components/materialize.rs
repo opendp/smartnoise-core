@@ -26,7 +26,7 @@ impl Evaluable for proto::Materialize {
             .has_headers(self.skip_row)
             .from_path(self.file_path.clone()) {
             Ok(reader) => reader,
-            Err(_) => return Err("provided file path could not be found".into())
+            Err(_) => return Err("the provided file path could not be found".into())
         };
 
         // parse from csv into response
