@@ -87,8 +87,8 @@ impl Component for proto::Covariance {
             let num_columns = left_property.num_columns()? * right_property.num_columns()?;
 
             left_property.c_stability = left_property.c_stability.iter()
-                .zip(right_property.c_stability.iter())
-                .map(|(l, r)| l * r).collect();
+                .map(|l| right_property.c_stability.iter()
+                    .map(|r| l * r).collect::<Vec<_>>()).flatten().collect();
 
             // save a snapshot of the state when aggregating
             left_property.aggregator = Some(AggregatorProperties {

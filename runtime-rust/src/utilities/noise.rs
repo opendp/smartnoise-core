@@ -253,7 +253,8 @@ pub fn sample_uniform_int(min: Integer, max: Integer) -> Result<Integer> {
     let n_bytes = ((n_ints as f64).log2()).ceil() as usize / 8 + 1;
 
     // uniformly sample integers from the set {0, 1, ..., n_ints-1}
-    // by uniformly creating binary strings of length "n_bits"
+    // by filling the first n_bytes of a buffer with noise,
+    // interpreting the buffer as an i64,
     // and rejecting integers that are too large
     let mut buffer = [0u8; mem::size_of::<Integer>()];
     loop {
@@ -264,6 +265,20 @@ pub fn sample_uniform_int(min: Integer, max: Integer) -> Result<Integer> {
         }
     }
 }
+
+
+#[cfg(test)]
+mod test_sample_uniform_int {
+    use crate::utilities::noise::sample_uniform_int;
+
+    #[test]
+    fn test_sample_bit() {
+        (0..1_000).for_each(|_| {
+            println!("{:?}", sample_uniform_int(0, 100).unwrap());
+        });
+    }
+}
+
 
 /// Returns random sample from Uniform[min,max).
 ///
@@ -304,10 +319,12 @@ pub fn sample_uniform_int(min: Integer, max: Integer) -> Result<Integer> {
 /// # unif.unwrap();
 /// ```
 pub fn sample_uniform(min: f64, max: f64, enforce_constant_time: bool) -> Result<f64> {
-    if min > max {return Err("lower may not be greater than upper".into());}
+
+    if min > max {return Err("min may not be greater than max".into());}
 
     // Generate mantissa
     let mut mantissa_buffer = [0u8; 8];
+    // mantissa bit index zero is implicit
     utilities::fill_bytes(&mut mantissa_buffer[1..]);
     // limit the buffer to 52 bits
     mantissa_buffer[1] %= 16;
