@@ -16,18 +16,11 @@ impl Expandable for proto::DpMedian {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         _public_arguments: &IndexMap<IndexKey, &Value>,
-        properties: &base::NodeProperties,
+        _properties: &base::NodeProperties,
         component_id: u32,
         _maximum_id: u32,
     ) -> Result<base::ComponentExpansion> {
         let mut expansion = base::ComponentExpansion::default();
-
-        let mechanism = if self.mechanism.to_lowercase().as_str() == "automatic" {
-            if properties.contains_key::<IndexKey>(&"candidates".into())
-            { "exponential" } else { "laplace" }.to_string()
-        } else {
-            self.mechanism.to_lowercase()
-        };
 
         expansion.computation_graph.insert(component_id, proto::Component {
             arguments: component.arguments.clone(),
@@ -35,7 +28,7 @@ impl Expandable for proto::DpMedian {
                 alpha: 0.5,
                 interpolation: self.interpolation.clone(),
                 privacy_usage: self.privacy_usage.clone(),
-                mechanism
+                mechanism: self.mechanism.clone()
             })),
             omit: component.omit,
             submission: component.submission,

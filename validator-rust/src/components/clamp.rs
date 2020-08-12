@@ -233,7 +233,8 @@ impl Expandable for proto::Clamp {
             maximum_id += 1;
             let id_upper = maximum_id.to_owned();
             let value = Value::Array(Array::Float(
-                ndarray::Array::from(properties.get::<IndexKey>(&"data".into()).unwrap().to_owned().array()?.upper_float()?).into_dyn()));
+                ndarray::Array::from(properties.get::<IndexKey>(&"data".into())
+                    .unwrap().to_owned().array()?.upper_float()?).into_dyn()));
             expansion.properties.insert(id_upper, infer_property(&value, None)?);
             let (patch_node, release) = get_literal(value, component.submission)?;
             expansion.computation_graph.insert(id_upper, patch_node);

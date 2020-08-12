@@ -1,22 +1,20 @@
-use crate::errors::*;
-
-use crate::{proto, base};
-use crate::components::{Expandable, Report};
-use crate::utilities::{prepend, array::get_ith_column};
-use crate::utilities::privacy::{spread_privacy_usage};
-
-use crate::base::{IndexKey, NodeProperties, Value, Array};
-use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, value_to_json};
 use indexmap::map::IndexMap;
 
+use crate::{base, proto};
+use crate::base::{Array, IndexKey, NodeProperties, Value};
+use crate::components::{Expandable, Report};
+use crate::errors::*;
+use crate::utilities::{array::get_ith_column, prepend};
+use crate::utilities::json::{AlgorithmInfo, JSONRelease, privacy_usage_to_json, value_to_json};
+use crate::utilities::privacy::spread_privacy_usage;
 
 impl Expandable for proto::DpVariance {
     fn expand_component(
         &self,
-        _privacy_definition: &Option<proto::PrivacyDefinition>,
+        privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         _public_arguments: &IndexMap<IndexKey, &Value>,
-        _properties: &base::NodeProperties,
+        properties: &base::NodeProperties,
         component_id: u32,
         mut maximum_id: u32,
     ) -> Result<base::ComponentExpansion> {
@@ -39,9 +37,16 @@ impl Expandable for proto::DpVariance {
         expansion.traversal.push(id_variance);
 
         // noising
+        let mechanism = if self.mechanism.to_lowercase().as_str() == "automatic" {
+            let privacy_definition = privacy_definition.as_ref()
+                .ok_or_else(|| Error::from("privacy_definition must be known"))?;
+            if privacy_definition.protect_floating_point
+            { "snapping" } else { "laplace" }.to_string()
+        } else { self.mechanism.to_lowercase() };
+
         expansion.computation_graph.insert(component_id, proto::Component {
             arguments: Some(proto::ArgumentNodeIds::new(indexmap!["data".into() => id_variance])),
-            variant: Some(match self.mechanism.to_lowercase().as_str() {
+            variant: Some(match mechanism.as_str() {
                 "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
                     privacy_usage: self.privacy_usage.clone()
                 }),
@@ -53,7 +58,21 @@ impl Expandable for proto::DpVariance {
                     privacy_usage: self.privacy_usage.clone(),
                     analytic: true
                 }),
-                _ => panic!("Unexpected invalid token {:?}", self.mechanism.as_str()),
+                "snapping" => {
+                    let data_property = properties.get::<base::IndexKey>(&"data".into())
+                        .ok_or("data: missing")?.array()
+                        .map_err(prepend("data:"))?;
+
+                    let b: Vec<f64> = data_property.upper_float()
+                        .or_else(|_| data_property.upper_int()
+                            .map(|upper| upper.into_iter().map(|v| v as f64).collect()))?;
+
+                    proto::component::Variant::SnappingMechanism(proto::SnappingMechanism {
+                        privacy_usage: self.privacy_usage.clone(),
+                        b,
+                    })
+                },
+                _ => bail!("Unexpected invalid token {:?}", self.mechanism.as_str()),
             }),
             omit: component.omit,
             submission: component.submission,

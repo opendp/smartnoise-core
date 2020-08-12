@@ -1,17 +1,16 @@
-use crate::errors::*;
-
-use crate::{proto, base};
-use crate::components::{Expandable, Report};
-
-use crate::base::{NodeProperties, Value, Array, IndexKey, DataType, ArrayProperties};
-use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, value_to_json};
-use crate::utilities::{prepend, privacy::spread_privacy_usage, array::get_ith_column};
 use indexmap::map::IndexMap;
+
+use crate::{base, proto};
+use crate::base::{Array, ArrayProperties, DataType, IndexKey, NodeProperties, Value};
+use crate::components::{Expandable, Report};
+use crate::errors::*;
+use crate::utilities::{array::get_ith_column, prepend, privacy::spread_privacy_usage};
+use crate::utilities::json::{AlgorithmInfo, JSONRelease, privacy_usage_to_json, value_to_json};
 
 impl Expandable for proto::DpSum {
     fn expand_component(
         &self,
-        _privacy_definition: &Option<proto::PrivacyDefinition>,
+        privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         _public_arguments: &IndexMap<IndexKey, &Value>,
         properties: &base::NodeProperties,
@@ -38,7 +37,10 @@ impl Expandable for proto::DpSum {
         });
         expansion.traversal.push(id_sum);
 
-        let mechanism = get_mechanism(&data_property, &self.mechanism)?;
+        let privacy_definition = privacy_definition.as_ref()
+            .ok_or_else(|| Error::from("privacy_definition must be known"))?;
+        let mechanism = get_mechanism(
+            &data_property, &self.mechanism, privacy_definition.protect_floating_point)?;
 
         if mechanism.as_str() == "simplegeometric" {
             let arguments = component.arguments();
@@ -79,7 +81,21 @@ impl Expandable for proto::DpSum {
                         privacy_usage: self.privacy_usage.clone(),
                         analytic: true
                     }),
-                    _ => panic!("Unexpected invalid token {:?}", mechanism.as_str()),
+                    "snapping" => {
+                        let data_property = properties.get::<base::IndexKey>(&"data".into())
+                            .ok_or("data: missing")?.array()
+                            .map_err(prepend("data:"))?;
+
+                        let b: Vec<f64> = data_property.upper_float()
+                            .or_else(|_| data_property.upper_int()
+                                .map(|upper| upper.into_iter().map(|v| v as f64).collect()))?;
+
+                        proto::component::Variant::SnappingMechanism(proto::SnappingMechanism {
+                            privacy_usage: self.privacy_usage.clone(),
+                            b,
+                        })
+                    },
+                    _ => bail!("Unexpected invalid token {:?}", mechanism.as_str()),
                 }),
                 omit: component.omit,
                 submission: component.submission,
@@ -105,8 +121,6 @@ impl Report for proto::DpSum {
             .map_err(prepend("data:"))?.clone();
 
         let mut releases = Vec::new();
-
-        let mechanism = get_mechanism(&data_property, &self.mechanism)?;
 
         let minimums = data_property.lower_float()?;
         let maximums = data_property.upper_float()?;
@@ -136,7 +150,7 @@ impl Report for proto::DpSum {
                 algorithm_info: AlgorithmInfo {
                     name: "".to_string(),
                     cite: "".to_string(),
-                    mechanism: mechanism.clone(),
+                    mechanism: self.mechanism.clone(),
                     argument: serde_json::json!({
                             "constraint": {
                                 "lowerbound": minimums[column_number],
@@ -151,13 +165,13 @@ impl Report for proto::DpSum {
     }
 }
 
-fn get_mechanism(data_property: &ArrayProperties, mechanism: &str) -> Result<String> {
+fn get_mechanism(data_property: &ArrayProperties, mechanism: &str, protect_floating_point: bool) -> Result<String> {
     let mechanism = mechanism.to_lowercase();
 
     Ok(if mechanism == "automatic" {
         match data_property.data_type {
             DataType::Int => "simplegeometric",
-            DataType::Float => "laplace",
+            DataType::Float => if protect_floating_point { "snapping" } else { "laplace" },
             _ => return Err("cannot sum non-integer data".into())
         }.to_string()
     } else {

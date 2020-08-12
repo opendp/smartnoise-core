@@ -1,14 +1,12 @@
-use crate::errors::*;
+use indexmap::map::IndexMap;
 
 use crate::{base, Warnable};
-use crate::proto;
+use crate::base::{Array, DataType, IndexKey, Nature, NatureContinuous, Value, ValueProperties, Vector1DNull};
 use crate::components::{Component, Expandable};
-
-use crate::base::{Vector1DNull, Nature, NatureContinuous, Value, Array, ValueProperties, DataType, IndexKey};
-use crate::utilities::{prepend, get_literal, get_argument};
-use indexmap::map::IndexMap;
+use crate::errors::*;
+use crate::proto;
+use crate::utilities::{get_argument, get_literal, prepend};
 use crate::utilities::inference::infer_property;
-
 
 impl Component for proto::Impute {
     fn propagate_property(
@@ -16,7 +14,7 @@ impl Component for proto::Impute {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        _node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
         let mut data_property = properties.get::<base::IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
@@ -144,7 +142,8 @@ impl Expandable for proto::Impute {
                 maximum_id += 1;
                 let id_lower = maximum_id;
                 let value = Value::Array(Array::Float(
-                    ndarray::Array::from(properties.get::<IndexKey>(&"data".into()).unwrap().to_owned().array()?.lower_float()?).into_dyn()));
+                    ndarray::Array::from(properties.get::<IndexKey>(&"data".into())
+                        .unwrap().to_owned().array()?.lower_float()?).into_dyn()));
                 let (patch_node, release) = get_literal(value, component.submission)?;
                 expansion.computation_graph.insert(id_lower, patch_node);
                 expansion.properties.insert(id_lower, infer_property(&release.value, None)?);
@@ -156,7 +155,8 @@ impl Expandable for proto::Impute {
                 maximum_id += 1;
                 let id_upper = maximum_id;
                 let value = Value::Array(Array::Float(
-                    ndarray::Array::from(properties.get::<IndexKey>(&"data".into()).unwrap().to_owned().array()?.upper_float()?).into_dyn()));
+                    ndarray::Array::from(properties.get::<IndexKey>(&"data".into())
+                        .unwrap().to_owned().array()?.upper_float()?).into_dyn()));
                 let (patch_node, release) = get_literal(value, component.submission)?;
                 expansion.computation_graph.insert(id_upper, patch_node);
                 expansion.properties.insert(id_upper, infer_property(&release.value, None)?);
@@ -177,20 +177,21 @@ pub mod test_impute {
     use crate::base::test_data;
 
     pub mod utilities {
-        use crate::components::clamp::test_clamp;
-        use crate::bindings::Analysis;
         use crate::base::Value;
+        use crate::bindings::Analysis;
+        use crate::components::clamp::test_clamp;
 
         pub fn analysis_f64_cont(value: Value, lower: Option<Value>, upper: Option<Value>) -> (Analysis, u32) {
             let (mut analysis, clamped) = test_clamp::utilities::analysis_f64_cont(
                 value, lower.clone(), upper.clone());
 
-            let lower = analysis.literal().value(match lower {
-                Some(lower) => lower, None => 0.0.into()
-            }).value_public(true).build();
-            let upper = analysis.literal().value(match upper {
-                Some(upper) => upper, None => 10.0.into()
-            }).value_public(true).build();
+            let lower = analysis.literal()
+                .value(lower.unwrap_or_else(|| 0.0.into()))
+                .value_public(true).build();
+
+            let upper = analysis.literal()
+                .value(upper.unwrap_or_else(|| 10.0.into()))
+                .value_public(true).build();
 
             let imputed = analysis.impute(clamped)
                 .lower(lower).upper(upper)

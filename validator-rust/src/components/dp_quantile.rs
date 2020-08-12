@@ -1,22 +1,19 @@
-use crate::errors::*;
-
-use crate::{proto, base};
-use crate::components::{Expandable, Report};
-
-
-use crate::base::{IndexKey, NodeProperties, Value, Array};
-use crate::utilities::json::{JSONRelease, value_to_json, privacy_usage_to_json, AlgorithmInfo};
-use crate::utilities::{prepend, privacy::spread_privacy_usage, array::get_ith_column};
 use indexmap::map::IndexMap;
 
+use crate::{base, proto};
+use crate::base::{Array, IndexKey, NodeProperties, Value};
+use crate::components::{Expandable, Report};
+use crate::errors::*;
+use crate::utilities::{array::get_ith_column, prepend, privacy::spread_privacy_usage};
+use crate::utilities::json::{AlgorithmInfo, JSONRelease, privacy_usage_to_json, value_to_json};
 
 impl Expandable for proto::DpQuantile {
     fn expand_component(
         &self,
-        _privacy_definition: &Option<proto::PrivacyDefinition>,
+        privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         _public_arguments: &IndexMap<IndexKey, &Value>,
-        _properties: &base::NodeProperties,
+        properties: &base::NodeProperties,
         component_id: u32,
         mut maximum_id: u32,
     ) -> Result<base::ComponentExpansion> {
@@ -26,9 +23,21 @@ impl Expandable for proto::DpQuantile {
         let data_id = *component.arguments().get::<IndexKey>(&"data".into())
             .ok_or_else(|| Error::from("data is a required argument to DPQuantile"))?;
 
+        let mechanism = if self.mechanism.to_lowercase().as_str() == "automatic" {
+            if properties.contains_key::<IndexKey>(&"candidates".into()) {
+                "exponential"
+            } else {
+                let privacy_definition = privacy_definition.as_ref()
+                    .ok_or_else(|| Error::from("privacy_definition must be known"))?;
+                if privacy_definition.protect_floating_point { "snapping" } else { "laplace" }
+            }.to_string()
+        } else {
+            self.mechanism.to_lowercase()
+        };
+
         // quantile
         let mut quantile_args = indexmap![IndexKey::from("data") => data_id];
-        if self.mechanism.to_lowercase().as_str() == "exponential" {
+        if mechanism.as_str() == "exponential" {
             quantile_args.insert("candidates".into(), *component.arguments().get::<IndexKey>(&"candidates".into())
                 .ok_or_else(|| Error::from("candidates is a required argument to DPQuantile when the exponential mechanism is used."))?);
         }
@@ -56,7 +65,7 @@ impl Expandable for proto::DpQuantile {
         }
         expansion.computation_graph.insert(component_id, proto::Component {
             arguments: Some(proto::ArgumentNodeIds::new(sanitize_args)),
-            variant: Some(match self.mechanism.to_lowercase().as_str() {
+            variant: Some(match mechanism.as_str() {
                 "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
                     privacy_usage: self.privacy_usage.clone()
                 }),
@@ -71,7 +80,21 @@ impl Expandable for proto::DpQuantile {
                 "exponential" => proto::component::Variant::ExponentialMechanism(proto::ExponentialMechanism {
                     privacy_usage: self.privacy_usage.clone()
                 }),
-                _ => panic!("Unexpected invalid token {:?}", self.mechanism.as_str()),
+                "snapping" => {
+                    let data_property = properties.get::<base::IndexKey>(&"data".into())
+                        .ok_or("data: missing")?.array()
+                        .map_err(prepend("data:"))?;
+
+                    let b: Vec<f64> = data_property.upper_float()
+                        .or_else(|_| data_property.upper_int()
+                            .map(|upper| upper.into_iter().map(|v| v as f64).collect()))?;
+
+                    proto::component::Variant::SnappingMechanism(proto::SnappingMechanism {
+                        privacy_usage: self.privacy_usage.clone(),
+                        b,
+                    })
+                },
+                _ => bail!("Unexpected invalid token {:?}", self.mechanism.as_str()),
             }),
             omit: component.omit,
             submission: component.submission,

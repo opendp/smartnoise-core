@@ -36,6 +36,10 @@ impl Component for proto::SnappingMechanism {
             return Err("data: atomic type must be numeric".into());
         }
 
+        if privacy_definition.protect_floating_point && data_property.data_type == DataType::Int {
+            return Err("data: snapping may not operate on integers when floating-point protections are enabled. Use the geometric mechanism instead.".into())
+        }
+
         let aggregator = data_property.aggregator.clone()
             .ok_or_else(|| Error::from("aggregator: missing"))?;
 

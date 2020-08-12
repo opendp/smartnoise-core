@@ -1,16 +1,13 @@
-use crate::errors::*;
-
-
-use crate::{proto, base, Integer};
-use crate::components::{Expandable, Report};
+use indexmap::map::IndexMap;
 use ndarray::arr0;
 
+use crate::{base, Integer, proto};
 use crate::base::{IndexKey, NodeProperties, Value, ValueProperties};
-use crate::utilities::json::{JSONRelease, privacy_usage_to_json, AlgorithmInfo, value_to_json};
-use crate::utilities::get_literal;
-use indexmap::map::IndexMap;
+use crate::components::{Expandable, Report};
+use crate::errors::*;
+use crate::utilities::{get_literal, prepend};
 use crate::utilities::inference::infer_property;
-
+use crate::utilities::json::{AlgorithmInfo, JSONRelease, privacy_usage_to_json, value_to_json};
 
 impl Expandable for proto::DpCount {
     fn expand_component(
@@ -26,6 +23,11 @@ impl Expandable for proto::DpCount {
 
         let privacy_definition = privacy_definition.as_ref()
             .ok_or_else(|| Error::from("privacy_definition must be known"))?;
+
+        let mechanism = if self.mechanism.to_lowercase().as_str() == "automatic" {
+            if privacy_definition.protect_floating_point
+            { "snapping" } else { "laplace" }.to_string()
+        } else { self.mechanism.to_lowercase() };
 
         // count
         maximum_id += 1;
@@ -43,7 +45,7 @@ impl Expandable for proto::DpCount {
         });
         expansion.traversal.push(id_count);
 
-        if self.mechanism.to_lowercase().as_str() == "simplegeometric" {
+        if mechanism.as_str() == "simplegeometric" {
 
             let count_min_id = match component.arguments().get::<IndexKey>(&"lower".into()) {
                 Some(id) => *id,
@@ -106,7 +108,7 @@ impl Expandable for proto::DpCount {
             expansion.computation_graph.insert(component_id, proto::Component {
                 arguments: Some(proto::ArgumentNodeIds::new(
                     indexmap!["data".into() => id_count])),
-                variant: Some(match self.mechanism.to_lowercase().as_str() {
+                variant: Some(match mechanism.as_str() {
                     "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
                         privacy_usage: self.privacy_usage.clone()
                     }),
@@ -118,7 +120,17 @@ impl Expandable for proto::DpCount {
                         privacy_usage: self.privacy_usage.clone(),
                         analytic: true
                     }),
-                    _ => panic!("Unexpected invalid token {:?}", self.mechanism.as_str()),
+                    "snapping" => {
+                        let data_property = properties.get::<base::IndexKey>(&"data".into())
+                            .ok_or("data: missing")?.array()
+                            .map_err(prepend("data:"))?;
+
+                        proto::component::Variant::SnappingMechanism(proto::SnappingMechanism {
+                            privacy_usage: self.privacy_usage.clone(),
+                            b: data_property.upper_int()?.into_iter().map(|v| v as f64).collect()
+                        })
+                    },
+                    _ => bail!("Unexpected invalid token {:?}", self.mechanism.as_str()),
                 }),
                 omit: component.omit,
                 submission: component.submission,
