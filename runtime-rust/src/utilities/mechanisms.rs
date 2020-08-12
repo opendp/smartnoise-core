@@ -1,8 +1,8 @@
 use whitenoise_validator::errors::*;
 
-use crate::utilities::{noise, analytic_gaussian};
 use crate::utilities;
 use whitenoise_validator::Float;
+use crate::utilities::{noise, analytic_gaussian};
 
 /// Returns noise drawn according to the Laplace mechanism
 ///
@@ -53,13 +53,13 @@ pub fn laplace_mechanism(epsilon: f64, sensitivity: f64, enforce_constant_time: 
 /// # Examples
 /// ```
 /// use whitenoise_runtime::utilities::mechanisms::snapping_mechanism;
-/// let n = snapping_mechanism(&50., &1., &100., &0.1, &128.);
+/// let n = snapping_mechanism(&50., &1., &100., &0.1);
 /// ```
-pub fn snapping_mechanism(mechanism_input: &f64, epsilon: &f64, B: &f64, sensitivity: &f64) -> Result<f64> {
+pub fn snapping_mechanism(mechanism_input: &f64, epsilon: &f64, b: &f64, sensitivity: &f64) -> Result<f64> {
     if epsilon < &0. || sensitivity < &0. {
         return Err(format!("epsilon ({}) and sensitivity ({}) must be positive", epsilon, sensitivity).into());
     }
-    let noise: f64 = noise::sample_snapping_noise(mechanism_input, epsilon, B, sensitivity);
+    let noise: f64 = noise::sample_snapping_noise(mechanism_input, epsilon, b, sensitivity);
 
     Ok(noise)
 }

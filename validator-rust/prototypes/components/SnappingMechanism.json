@@ -1,29 +1,30 @@
 {
-    "arguments": {
-      "data": {
-        "type_value": "Array",
-        "description": "Result to be released privately via the Snapping mechanism."
-      }
-    },
-    "id": "SnappingMechanism",
-    "name": "snapping_mechanism",
-    "options": {
-      "privacy_usage": {
-        "type_proto": "repeated PrivacyUsage",
-        "type_rust": "Vec<proto::PrivacyUsage>",
-        "default_python": "None",
-        "description": "Object describing the type and amount of privacy to be used for the mechanism release."
-      }, 
-      "b": {
-        "type_proto": "repeated double",
-        "type_rust": "Vec<f64>",
-        "default_python": "None",
-        "description": "An upper bound on the absolute value of the quantity of interest being privatized."
-      }
-    },
-    "return": {
+  "arguments": {
+    "data": {
       "type_value": "Array",
-      "description": "Original data perturbed via the Snapping mechanism."
+      "description": "Result to be released privately via the Snapping mechanism."
+    }
+  },
+  "id": "SnappingMechanism",
+  "name": "snapping_mechanism",
+  "options": {
+    "privacy_usage": {
+      "type_proto": "repeated PrivacyUsage",
+      "type_rust": "Vec<proto::PrivacyUsage>",
+      "default_python": "None",
+      "description": "Object describing the type and amount of privacy to be used for the mechanism release."
     },
-    "description": "Privatizes a result by returning it perturbed via the Snapping mechanism."
-  }
+    "b": {
+      "type_proto": "repeated double",
+      "type_rust": "Vec<f64>",
+      "default_python": "None",
+      "description": "An upper bound on the absolute value of the quantity of interest being privatized."
+    }
+  },
+  "return": {
+    "type_value": "Array",
+    "description": "Original data perturbed via the Snapping mechanism."
+  },
+  "description": "Privatizes a result by returning it perturbed via the Snapping mechanism.",
+  "proto_id": 64
+}

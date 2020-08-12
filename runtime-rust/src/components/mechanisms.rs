@@ -2,9 +2,7 @@ use whitenoise_validator::errors::*;
 
 use crate::NodeArguments;
 use whitenoise_validator::base::{ReleaseNode, Value, Jagged, Array};
-use whitenoise_validator::utilities::{
-    take_argument, array::broadcast_ndarray,
-    privacy::{get_epsilon, get_delta, spread_privacy_usage}};
+use whitenoise_validator::utilities::{take_argument, array::broadcast_ndarray, privacy::{get_epsilon, get_delta, spread_privacy_usage}};
 use crate::components::Evaluable;
 use crate::utilities;
 use whitenoise_validator::{proto, Float, Integer};
@@ -227,29 +225,30 @@ impl Evaluable for proto::ExponentialMechanism {
 }
 
 impl Evaluable for proto::SnappingMechanism {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        let mut data = match get_argument(&arguments, "data")?.array()? {
-            Array::F64(data) => data.clone(),
-            Array::I64(data) => data.mapv(|v| v as f64),
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
+        let mut data = match take_argument(&mut arguments, "data")?.array()? {
+            Array::Float(data) => data.clone(),
+            Array::Int(data) => data.mapv(|v| v as f64),
             _ => return Err("data must be numeric".into())
         };
 
-        let sensitivity = get_argument(&arguments, "sensitivity")?.array()?.f64()?;
+        let sensitivity = take_argument(&mut arguments, "sensitivity")?
+            .array()?.float()?;
 
-        let usages = broadcast_privacy_usage(&self.privacy_usage, sensitivity.len())?;
+        let usages = spread_privacy_usage(
+            &self.privacy_usage, sensitivity.len())?;
 
         let epsilon = ndarray::Array::from_shape_vec(
             data.shape(), usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?)?;
 
         data.gencolumns_mut().into_iter()
             .zip(sensitivity.gencolumns().into_iter().zip(epsilon.gencolumns().into_iter()))
-            .zip(B.gencolumns().into_iter())
-            .map(|((mut data_column, (sensitivity, epsilon)), B)| data_column.iter_mut()
+            .zip(self.b.iter())
+            .map(|((mut data_column, (sensitivity, epsilon)), b)| data_column.iter_mut()
                 .zip(sensitivity.iter().zip(epsilon.iter()))
-                .zip(B.iter())
-                .map(|((v, (sens, eps)), B)| {
+                .map(|(v, (sens, eps))| {
                     *v += utilities::mechanisms::snapping_mechanism(
-                        &v, &eps, &self.b, &sens)?;
+                        &v, &eps, b, &sens)?;
                     Ok(())
                 })
                 .collect::<Result<()>>())

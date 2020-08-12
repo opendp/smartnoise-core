@@ -1,17 +1,16 @@
-use whitenoise_validator::errors::*;
-use probability::distribution::{Laplace, Inverse};
-use ieee754::Ieee754;
 use std::{cmp, f64::consts, mem};
 
-use crate::utilities;
-
+use ieee754::Ieee754;
+use probability::distribution::{Inverse, Laplace};
+#[cfg(not(feature="use-mpfr"))]
+use probability::prelude::Gaussian;
 #[cfg(feature="use-mpfr")]
 use rug::{Float, rand::{ThreadRandGen, ThreadRandState}};
 
+use whitenoise_validator::errors::*;
 use whitenoise_validator::Integer;
 
-#[cfg(not(feature="use-mpfr"))]
-use probability::prelude::Gaussian;
+use crate::utilities;
 use crate::utilities::snapping;
 
 // Give MPFR ability to draw randomness from OpenSSL
@@ -142,7 +141,8 @@ pub fn sample_bit_prob(prob: f64, enforce_constant_time: bool) -> Result<bool> {
 mod test_sample_bit_prob {
     use ieee754::Ieee754;
     use itertools::Itertools;
-    use crate::utilities::noise::{sample_uniform, sample_bit_prob};
+
+    use crate::utilities::noise::{sample_bit_prob, sample_uniform};
 
     fn check_bit_vs_string_equal(value: f64) {
         let (_sign, _exponent, mut mantissa) = value.decompose_raw();
@@ -666,12 +666,16 @@ pub fn sample_simple_geometric_mechanism(
 /// let snapping_noise = sampling_snapping_noise(&mechanism_input, &epsilon, &B, &sensitivity, &precision);
 /// println!("snapping noise: {}", snapping_noise);
 /// ```
-pub fn sample_snapping_noise(mechanism_input: &f64, epsilon: &f64, B: &f64, sensitivity: &f64) -> f64 {
+pub fn sample_snapping_noise(mechanism_input: &f64, epsilon: &f64, b: &f64, sensitivity: &f64) -> f64 {
     // scale mechanism input by sensitivity
     let mechanism_input_scaled = mechanism_input / sensitivity;
 
     // get parameters
-    let (B_scaled, epsilon_prime, Lambda_prime, Lambda_prime_scaled, m, precision) = snapping::parameter_setup(&epsilon, &B, &sensitivity);
+    let (
+        b_scaled, epsilon_prime,
+        _lambda_prime, _lambda_prime_scaled,
+        m, precision
+    ) = snapping::parameter_setup(&epsilon, &b, &sensitivity);
 
     // ensure that precision is supported by the OS
     let u32_precision = precision as u32;
@@ -688,12 +692,12 @@ pub fn sample_snapping_noise(mechanism_input: &f64, epsilon: &f64, B: &f64, sens
     let sign_precise = rug::Float::with_val(u32_precision, sign);
     let scale_precise = rug::Float::with_val(u32_precision, 1.0 / epsilon_prime);
     let log_unif_precise = rug::Float::with_val(u32_precision, u_star_sample.ln());
-    let inner_result: f64 = rug::Float::with_val(u32_precision, num::clamp(mechanism_input_scaled, -B_scaled.abs(), B_scaled.abs()) +
+    let inner_result: f64 = rug::Float::with_val(u32_precision, num::clamp(mechanism_input_scaled, -b_scaled.abs(), b_scaled.abs()) +
         (sign_precise * scale_precise * log_unif_precise)).to_f64();
 
     // perform rounding and snapping
-    let inner_result_rounded = snapping::get_closest_multiple_of_Lambda(&inner_result, &m);
-    let private_estimate = num::clamp(Float::with_val(u32_precision, sensitivity * inner_result_rounded).to_f64(), -B.abs(), B.abs());
+    let inner_result_rounded = snapping::get_closest_multiple_of_lambda(&inner_result, &m);
+    let private_estimate = num::clamp(Float::with_val(u32_precision, sensitivity * inner_result_rounded).to_f64(), -b.abs(), b.abs());
     let snapping_mech_noise = private_estimate - mechanism_input;
 
     return snapping_mech_noise;

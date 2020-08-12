@@ -128,7 +128,8 @@ impl Expandable for proto::DpMean {
                         analytic: true
                     }),
                     "snapping" => proto::component::Variant::SnappingMechanism(proto::SnappingMechanism {
-                        privacy_usage: self.privacy_usage.clone()
+                        privacy_usage: self.privacy_usage.clone(),
+                        b: vec![0.]
                     }),
                     _ => bail!("Unexpected invalid token {:?}", self.mechanism.as_str())
                 }),
