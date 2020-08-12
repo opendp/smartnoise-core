@@ -12,6 +12,7 @@ use whitenoise_validator::Integer;
 
 use crate::utilities;
 use crate::utilities::snapping;
+use crate::utilities::snapping::SnappingConfig;
 
 // Give MPFR ability to draw randomness from OpenSSL
 #[cfg(feature="use-mpfr")]
@@ -652,6 +653,7 @@ pub fn sample_simple_geometric_mechanism(
 /// * `epsilon` - Desired privacy guarantee.
 /// * `B` - Upper bound on function value being privatized.
 /// * `sensitivity` - l1 Sensitivity of function to which mechanism is being applied.
+/// * `enforce_constant_time` - Whether or not to enforce the algorithm to run in constant time;
 ///
 /// # Returns
 /// Noise according to the Snapping mechanism.
@@ -660,45 +662,49 @@ pub fn sample_simple_geometric_mechanism(
 /// ```
 /// let mechanism_input: f64 = 50.0;
 /// let epsilon: f64 = 1.0;
-/// let B: f64 = 100.0;
+/// let b: f64 = 100.0;
 /// let sensitivity: f64 = 1.0/1000.0;
 /// let precision: i64 = 118;
-/// let snapping_noise = sampling_snapping_noise(&mechanism_input, &epsilon, &B, &sensitivity, &precision);
+/// let snapping_noise = sampling_snapping_noise(&mechanism_input, &epsilon, &b, &sensitivity, &precision);
 /// println!("snapping noise: {}", snapping_noise);
 /// ```
-pub fn sample_snapping_noise(mechanism_input: &f64, epsilon: &f64, b: &f64, sensitivity: &f64) -> f64 {
+#[cfg(feature = "use-mpfr")]
+pub fn sample_snapping_noise(
+    mechanism_input: f64, epsilon: f64, b: f64, sensitivity: f64, enforce_constant_time: bool
+) -> Result<f64> {
+    // get parameters
+    let SnappingConfig {
+        b_scaled, epsilon_prime, m, precision, ..
+    } = snapping::parameter_setup(epsilon, b, sensitivity);
+
+    // ensure that precision is supported by the OS
+    if precision > rug::float::prec_max() {
+        return Err("Operating system does not support sufficient precision to use the Snapping Mechanism".into());
+    }
+
     // scale mechanism input by sensitivity
     let mechanism_input_scaled = mechanism_input / sensitivity;
 
-    // get parameters
-    let (
-        b_scaled, epsilon_prime,
-        _lambda_prime, _lambda_prime_scaled,
-        m, precision
-    ) = snapping::parameter_setup(&epsilon, &b, &sensitivity);
-
-    // ensure that precision is supported by the OS
-    let u32_precision = precision as u32;
-    if u32_precision > rug::float::prec_max() {
-        panic!("Operating system does not support sufficient precision to use the Snapping Mechanism");
-    }
-
     // generate random sign and draw from Unif(0,1)
-    let bit: i64 = utilities::get_bytes(1)[0..1].parse().unwrap();
-    let sign = (2 * bit - 1) as f64;
-    let u_star_sample = sample_uniform(0., 1., true).unwrap();
+    let sign = if sample_bit() {-1.} else {1.};
+    let u_star_sample = sample_uniform(0., 1., enforce_constant_time).unwrap();
 
     // clamp to get inner result
-    let sign_precise = rug::Float::with_val(u32_precision, sign);
-    let scale_precise = rug::Float::with_val(u32_precision, 1.0 / epsilon_prime);
-    let log_unif_precise = rug::Float::with_val(u32_precision, u_star_sample.ln());
-    let inner_result: f64 = rug::Float::with_val(u32_precision, num::clamp(mechanism_input_scaled, -b_scaled.abs(), b_scaled.abs()) +
+    let sign_precise = rug::Float::with_val(precision, sign);
+    let scale_precise = rug::Float::with_val(precision, 1.0 / epsilon_prime);
+    let log_unif_precise = rug::Float::with_val(precision, u_star_sample.ln());
+    let inner_result: f64 = rug::Float::with_val(precision, num::clamp(mechanism_input_scaled, -b_scaled.abs(), b_scaled.abs()) +
         (sign_precise * scale_precise * log_unif_precise)).to_f64();
 
     // perform rounding and snapping
     let inner_result_rounded = snapping::get_closest_multiple_of_lambda(&inner_result, &m);
-    let private_estimate = num::clamp(Float::with_val(u32_precision, sensitivity * inner_result_rounded).to_f64(), -b.abs(), b.abs());
-    let snapping_mech_noise = private_estimate - mechanism_input;
+    let private_estimate = num::clamp(Float::with_val(precision, sensitivity * inner_result_rounded).to_f64(), -b.abs(), b.abs());
+    Ok(private_estimate - mechanism_input)
+}
 
-    return snapping_mech_noise;
+#[cfg(not(feature = "use-mpfr"))]
+pub fn sample_snapping_noise(
+    mechanism_input: &f64, epsilon: &f64, b: &f64, sensitivity: &f64
+) -> Result<f64> {
+    Err(Error::from("Crate must be compiled with gmp-mpfr to use the snapping mechanism."))
 }

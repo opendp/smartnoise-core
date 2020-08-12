@@ -285,7 +285,9 @@ pub fn split_ieee_into_components(binary_string: &String) -> (String, String, St
 ///
 /// # Return
 /// Concatenation of sign, exponent, and mantissa.
-pub fn combine_components_into_ieee(sign: &str, exponent: &str, mantissa: &str) -> String {
+pub fn combine_components_into_ieee(
+    (sign, exponent, mantissa): (String, String, String)
+) -> String {
     vec![sign, exponent, mantissa].concat()
 }
 

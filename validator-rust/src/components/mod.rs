@@ -45,6 +45,7 @@ mod exponential_mechanism;
 mod gaussian_mechanism;
 mod laplace_mechanism;
 mod simple_geometric_mechanism;
+mod snapping_mechanism;
 mod resize;
 mod sum;
 mod union;
@@ -253,7 +254,8 @@ impl Component for proto::Component {
             Filter, Histogram, Impute, Index, Literal, Materialize, Mean,
             Partition, Quantile, RawMoment, Reshape, Resize, Sum, Union, Variance,
 
-            ExponentialMechanism, GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism,
+            ExponentialMechanism, GaussianMechanism, LaplaceMechanism,
+            SimpleGeometricMechanism, SnappingMechanism,
 
             Abs, Add, LogicalAnd, Divide, Equal, GreaterThan, LessThan, Log, Modulo, Multiply,
             Negate, Negative, LogicalOr, Power, RowMax, RowMin, Subtract
@@ -329,7 +331,8 @@ impl Expandable for proto::Component {
             DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMedian,
             DpMinimum, DpQuantile, DpRawMoment, DpSum, DpVariance,
 
-            ExponentialMechanism, GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism,
+            ExponentialMechanism, GaussianMechanism, LaplaceMechanism,
+            SimpleGeometricMechanism, SnappingMechanism,
 
             ToBool, ToFloat, ToInt, ToString
         );
@@ -365,7 +368,8 @@ impl Mechanism for proto::Component {
 
         get_privacy_usage!(
             // INSERT COMPONENT LIST
-            ExponentialMechanism, GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism
+            ExponentialMechanism, GaussianMechanism, LaplaceMechanism,
+            SimpleGeometricMechanism, SnappingMechanism
         );
 
         Ok(None)
