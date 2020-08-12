@@ -1,5 +1,4 @@
 use std::cmp::Ordering;
-pub mod snapping;
 
 use whitenoise_validator::errors::*;
 use ieee754::Ieee754;
@@ -13,6 +12,7 @@ pub mod mechanisms;
 pub mod noise;
 
 pub mod analytic_gaussian;
+pub mod snapping;
 
 ///  Accepts an ndarray and returns the number of columns.
 ///
