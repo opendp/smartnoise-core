@@ -1,0 +1,43 @@
+[package]
+name = "whitenoise_ffi"
+version = "0.1.3"
+authors = ["OpenDP-WhiteNoise <whitenoise@opendp.io>"]
+description = "A wrapper library for interfacing with the Whitenoise over ffi."
+readme = "README.md"
+keywords = ["differential-privacy", "data-privacy", "privacy"]
+categories = ["cryptography", "science"] # up to 5 allowed, must match those listed at https://crates.io/category_slugs
+repository = "https://github.com/opendifferentialprivacy/whitenoise-core"
+edition = "2018"
+license = "MIT"
+
+[dependencies]
+prost = "0.6.1"
+ffi-support = "0.4.0"
+indexmap = "1.4.0"
+
+[dependencies.whitenoise_validator]
+path = "../validator-rust/"
+version = "0.1.3"
+
+[dependencies.whitenoise_runtime]
+path = "../runtime-rust/"
+version = "0.1.3"
+optional = true
+default-features = false
+
+[features]
+# by default, include runtime with secure noise
+default = ["use-runtime", "use-mpfr"]
+
+# runtime is dependent on the whitenoise_runtime crate
+use-runtime = ["whitenoise_runtime"]
+# re-export use-mpfr from whitenoise_runtime (feature is dependent on use-runtime)
+use-mpfr = ["use-runtime", "whitenoise_runtime/use-mpfr"]
+# re-export use-system-libs from whitenoise_runtime (feature is dependent on use-runtime and use-mpfr)
+use-system-libs = ["use-runtime", "use-mpfr", "whitenoise_runtime/use-system-libs"]
+# direct access to mechanisms
+use-direct-api = []
+
+[lib]
+name = "whitenoise_ffi"
+crate-type = ["rlib", "cdylib", "staticlib"]

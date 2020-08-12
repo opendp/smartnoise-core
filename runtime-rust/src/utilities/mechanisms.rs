@@ -1,10 +1,5 @@
 use whitenoise_validator::errors::*;
 
-
-use ndarray::prelude::*;
-
-use rug::{float::Constant, Float, ops::Pow};
-
 use crate::utilities::noise;
 use crate::utilities::analytic_gaussian;
 use crate::utilities;
@@ -30,14 +25,14 @@ use crate::utilities;
 /// # Examples
 /// ```
 /// use whitenoise_runtime::utilities::mechanisms::laplace_mechanism;
-/// let n = laplace_mechanism(&0.1, &2.0);
+/// let n = laplace_mechanism(0.1, 2.0, false);
 /// ```
-pub fn laplace_mechanism(epsilon: &f64, sensitivity: &f64) -> Result<f64> {
-    if epsilon < &0. || sensitivity < &0. {
+pub fn laplace_mechanism(epsilon: f64, sensitivity: f64, enforce_constant_time: bool) -> Result<f64> {
+    if epsilon < 0. || sensitivity < 0. {
         return Err(format!("epsilon ({}) and sensitivity ({}) must be positive", epsilon, sensitivity).into());
     }
     let scale: f64 = sensitivity / epsilon;
-    let noise: f64 = noise::sample_laplace(0., scale);
+    let noise: f64 = noise::sample_laplace(0., scale, enforce_constant_time);
 
     Ok(noise)
 }
@@ -66,25 +61,43 @@ pub fn laplace_mechanism(epsilon: &f64, sensitivity: &f64) -> Result<f64> {
 /// # Examples
 /// ```
 /// use whitenoise_runtime::utilities::mechanisms::gaussian_mechanism;
-/// let n = gaussian_mechanism(&0.1, &0.0001, &2.0);
+/// let n = gaussian_mechanism(0.1, 0.0001, 2.0, false);
 /// ```
-pub fn gaussian_mechanism(epsilon: &f64, delta: &f64, sensitivity: &f64) -> Result<f64> {
-    if epsilon < &0. || delta < &0. || sensitivity < &0. {
+#[cfg(feature = "use-mpfr")]
+pub fn gaussian_mechanism(epsilon: f64, delta: f64, sensitivity: f64, _enforce_constant_time: bool) -> Result<f64> {
+    if epsilon <= 0. || delta <= 0. || sensitivity <= 0. {
         return Err(format!("epsilon ({}), delta ({}) and sensitivity ({}) must all be positive", epsilon, delta, sensitivity).into());
     }
     let scale: f64 = sensitivity * (2. * (1.25 / delta).ln()).sqrt() / epsilon;
-    let noise: f64 = noise::sample_gaussian(&0., &scale);
+    Ok(noise::sample_gaussian_mpfr(0., scale).to_f64())
+}
+
+#[cfg(not(feature = "use-mpfr"))]
+pub fn gaussian_mechanism(epsilon: f64, delta: f64, sensitivity: f64, enforce_constant_time: bool) -> Result<f64> {
+    if epsilon <= 0. || delta <= 0. || sensitivity <= 0. {
+        return Err(format!("epsilon ({}), delta ({}) and sensitivity ({}) must all be positive", epsilon, delta, sensitivity).into());
+    }
+    let scale: f64 = sensitivity * (2. * (1.25 / delta).ln()).sqrt() / epsilon;
+    let noise: f64 = noise::sample_gaussian(0., scale, enforce_constant_time);
     Ok(noise)
 }
 
-///TODO: TESTING
-pub fn analytic_gaussian_mechanism(epsilon: &f64, delta: &f64, sensitivity: &f64) -> Result<f64> {
-    if epsilon < &0. || delta < &0. || sensitivity < &0. {
+#[cfg(feature = "use-mpfr")]
+pub fn analytic_gaussian_mechanism(epsilon: f64, delta: f64, sensitivity: f64, _enforce_constant_time: bool) -> Result<f64> {
+    if epsilon <= 0. || delta <= 0. || sensitivity <= 0. {
         return Err(format!("epsilon ({}), delta ({}) and sensitivity ({}) must all be positive", epsilon, delta, sensitivity).into());
     }
+    let scale: f64 = sensitivity * (2. * (1.25 / delta).ln()).sqrt() / epsilon;
+    Ok(noise::sample_gaussian_mpfr(0., scale).to_f64())
+}
 
+#[cfg(not(feature = "use-mpfr"))]
+pub fn analytic_gaussian_mechanism(epsilon: f64, delta: f64, sensitivity: f64, enforce_constant_time: bool) -> Result<f64> {
+    if epsilon <= 0. || delta <= 0. || sensitivity <= 0. {
+        return Err(format!("epsilon ({}), delta ({}) and sensitivity ({}) must all be positive", epsilon, delta, sensitivity).into());
+    }
     let scale: f64 = analytic_gaussian::get_analytic_gaussian_sigma(epsilon, delta, sensitivity);
-    let noise: f64 = noise::sample_gaussian(&0., &scale);
+    let noise: f64 = noise::sample_gaussian(0., scale, enforce_constant_time);
     Ok(noise)
 }
 
@@ -109,18 +122,18 @@ pub fn analytic_gaussian_mechanism(epsilon: &f64, delta: &f64, sensitivity: &f64
 /// # Examples
 /// ```
 /// use whitenoise_runtime::utilities::mechanisms::simple_geometric_mechanism;
-/// let n = simple_geometric_mechanism(&0.1, &1., &0, &10, &true);
+/// let n = simple_geometric_mechanism(0.1, 1., 0, 10, true);
 /// ```
 pub fn simple_geometric_mechanism(
-    epsilon: &f64, sensitivity: &f64,
-    min: &i64, max: &i64,
-    enforce_constant_time: &bool
+    epsilon: f64, sensitivity: f64,
+    min: i64, max: i64,
+    enforce_constant_time: bool
 ) -> Result<i64> {
-    if epsilon < &0. || sensitivity < &0. {
+    if epsilon < 0. || sensitivity < 0. {
         return Err(format!("epsilon ({}) and sensitivity ({}) must be positive", epsilon, sensitivity).into());
     }
     let scale: f64 = sensitivity / epsilon;
-    let noise: i64 = noise::sample_simple_geometric_mechanism(&scale, &min, &max, &enforce_constant_time);
+    let noise: i64 = noise::sample_simple_geometric_mechanism(scale, min, max, enforce_constant_time);
     Ok(noise)
 }
 
@@ -147,30 +160,53 @@ pub fn simple_geometric_mechanism(
 ///     return util;
 /// }
 ///
+///
 /// // create sample data
-/// let xs: ArrayD<f64> = arr1(&[1., 2., 3., 4., 5.]).into_dyn();
-/// let ans = exponential_mechanism(&1.0, &1.0, xs, &utility);
+/// let xs: Vec<f64> = vec![1., 2., 3., 4., 5.];
+/// let utilities: Vec<f64> = xs.iter().map(utility).collect();
+/// let ans = exponential_mechanism(1.0, 1.0, &xs, utilities, false);
 /// # ans.unwrap();
 /// ```
+#[cfg(feature = "use-mpfr")]
 pub fn exponential_mechanism<T>(
-                         epsilon: &f64,
-                         sensitivity: &f64,
-                         candidate_set: ArrayD<T>,
-                         utility: &dyn Fn(&T) -> f64
-                         ) -> Result<T> where T: Copy, {
+    epsilon: f64,
+    sensitivity: f64,
+    candidate_set: &[T],
+    utilities: Vec<f64>,
+    enforce_constant_time: bool
+) -> Result<T> where T: Clone, {
 
     // get vector of e^(util), then use to find probabilities
+    use rug::{float::Constant, Float, ops::Pow};
+
+    // establish rug versions of values
     let rug_e = Float::with_val(53, Constant::Euler);
     let rug_eps = Float::with_val(53, epsilon);
     let rug_sens = Float::with_val(53, sensitivity);
-    let e_util_vec: Vec<rug::Float> = candidate_set.iter()
-        .map(|x| rug_e.clone().pow(rug_eps.clone() * Float::with_val(53, utility(x)) / (2.0 * rug_sens.clone()))).collect();
+
+    // establish selection probabilities for each element
+    let e_util_vec: Vec<rug::Float> = utilities.iter()
+        .map(|x| rug_e.clone().pow(rug_eps.clone() * Float::with_val(53, x) / (2.0 * rug_sens.clone()))).collect();
     let sum_e_util_vec: rug::Float = Float::with_val(53, Float::sum(e_util_vec.iter()));
-    let probability_vec: Vec<f64> = e_util_vec.iter().map(|x| (x / sum_e_util_vec.clone()).to_f64()).collect();
+    let probability_vec: Vec<whitenoise_validator::Float> = e_util_vec.iter().map(|x| (x / sum_e_util_vec.clone()).to_f64() as whitenoise_validator::Float).collect();
 
     // sample element relative to probability
-    let candidate_vec: Vec<T> = candidate_set.clone().into_dimensionality::<Ix1>()?.to_vec();
-    let elem: T = utilities::sample_from_set(&candidate_vec, &probability_vec)?;
+    utilities::sample_from_set(candidate_set, &probability_vec, enforce_constant_time)
+}
 
-    Ok(elem)
+#[cfg(not(feature = "use-mpfr"))]
+pub fn exponential_mechanism<T>(
+    epsilon: f64,
+    sensitivity: f64,
+    candidate_set: &[T],
+    utilities: Vec<f64>,
+    enforce_constant_time: bool
+) -> Result<T> where T: Clone, {
+
+    // get vector of e^(util), and sample_from_set accepts weights
+    let weight_vec: Vec<f64> = utilities.into_iter()
+        .map(|x| (epsilon * x / (2. * sensitivity)).exp()).collect();
+
+    // sample element relative to probability
+    utilities::sample_from_set(candidate_set, &weight_vec, enforce_constant_time)
 }

@@ -17,36 +17,36 @@ message Analysis {
 // The definition of privacy determines parameters for sensitivity derivations and the set of available algorithms.
 message PrivacyDefinition {
     // Privacy leakage with respect `group_size` number of rows. This is typically one.
-    uint32 group_size = 4;
-
-    enum Distance {
-        // (e, 0)-differential privacy
-        PURE = 0;
-
-        // (e, d)-differential privacy
-        APPROXIMATE = 1;
-    }
-    // Define how to measure distance between probability distributions.
-    Distance distance = 5;
+    uint32 group_size = 1;
 
     enum Neighboring {
         SUBSTITUTE = 0;
         ADD_REMOVE = 1;
     }
-    // Define what kind of perturbation may be applied to a dataset to create a neighboring dataset.
-    Neighboring neighboring = 6;
+    // Define the kind of perturbation that may be applied to a dataset to create a neighboring dataset.
+    Neighboring neighboring = 2;
+
+    // enable to reject the use of algorithms using delta when n is not known
+    // enable to reject the use of algorithms when some soft violations of assumptions are observed
+    // - epsilon greater than one with the gaussian mechanism
+    bool strict_parameter_checks = 3;
+
+    // enable for tighter bounds checking to prevent leaks via overflow/underflow
+    bool protect_overflow = 4;
+    // enable if side-channel elapsed execution time is considered part of the release
+    bool protect_elapsed_time = 5;
+    // enable if side-channel memory usage is considered part of the release
+    bool protect_memory_utilization = 6;
+    // enable to block mechanisms known to be vulnerable to floating point attacks
+    bool protect_floating_point = 7;
 }
+
 message ComputationGraph {
     map<uint32, Component> value = 1;
 }
 
 message Release {
     map<uint32, ReleaseNode> values = 1;
-}
-message ReleaseNode {
-    Value value = 1;
-    PrivacyUsages privacy_usages = 2;
-    bool public = 3;
 }
 
 enum FilterLevel {
@@ -58,83 +58,143 @@ enum FilterLevel {
     ALL = 2;
 }
 
+// derived properties for the top-level Value type
 message ValueProperties {
     oneof variant {
-        HashmapProperties hashmap = 1;
-        ArrayNDProperties array = 2;
-        Vector2DJaggedProperties jagged = 3;
+        DataframeProperties dataframe = 1;
+        PartitionsProperties partitions = 2;
+        ArrayProperties array = 3;
+        JaggedProperties jagged = 4;
+        FunctionProperties function = 5;
     }
 }
 
-message HashmapProperties {
+message ArgumentProperties {
+    repeated IndexKey keys = 1;
+    repeated ValueProperties values = 2;
+}
+
+message DataframeProperties {
+    repeated IndexKey keys = 1;
+    repeated ValueProperties values = 2;
+}
+
+message PartitionsProperties {
+    repeated IndexKey keys = 1;
+    repeated ValueProperties values = 2;
+}
+
+
+// sub-properties for Value::* types that may be aggregated
+message AggregatorProperties {
+    Component component = 1;
+    ArgumentProperties properties = 2;
+    Value lipschitz_constants = 3;
+}
+
+/// derived properties for the Value::Array
+///    a homogeneously-typed (0, 1, 2)-dimensional array
+message ArrayProperties {
+
+    /// length of axis zero. May be unknown
     I64Null num_records = 1;
-    bool disjoint = 2;
-    HashmapValueProperties value_properties = 3;
-    bool columnar = 4;
-}
 
-message HashmapValueProperties {
-    oneof variant {
-        HashmapValuePropertiesStr string = 1;
-        HashmapValuePropertiesBool bool = 2;
-        HashmapValuePropertiesI64 i64 = 3;
-    }
-}
-
-message HashmapValuePropertiesStr {
-    map<string, ValueProperties> data = 1;
-}
-message HashmapValuePropertiesBool {
-    map<bool, ValueProperties> data = 1;
-}
-message HashmapValuePropertiesI64 {
-    map<int64, ValueProperties> data = 1;
-}
-
-message ArrayNDProperties {
-    I64Null num_records = 1;
+    /// length of axis one. If dimensionality is one, then one. May be unknown
     I64Null num_columns = 2;
+
+    /// true if data may contain null values
     bool nullity = 3;
+
+    /// multiplier on epsilon usage
     Array1dF64 c_stability = 4;
 
-    message AggregatorProperties {
-        Component component = 1;
-        map<string, ValueProperties> properties = 2;
-    }
+    /// description of the aggregation that has been applied to the data
+    /// used to help compute sensitivity in the mechanisms
     AggregatorProperties aggregator = 5;
-    
+
+    /// atomic type
     DataType data_type = 6;
+
+    /// true if the data has been sanitized
     bool releasable = 7;
 
+    /// node_id of the dataset this observation originated from
+    /// used to check for conformability, is erased upon resize, is reset upon filter
+    I64Null dataset_id = 8;
+
+    /// true if the row length is known to be greater than zero
+    bool is_not_empty = 9;
+
+    /// number of axes in the array
+    I64Null dimensionality = 10;
+
+    /// used for tracking subpartitions
+    repeated GroupId group_id = 11;
+
     oneof nature {
+        /// numerical bounds of each column
         NatureContinuous continuous = 100;
+        /// categories of each column
         NatureCategorical categorical = 101;
     }
-    I64Null dataset_id = 8;
-    bool is_not_empty = 9;
-    uint32 dimensionality = 10;
 }
+
 message NatureContinuous {
     Array1dNull minimum = 1;
     Array1dNull maximum = 2;
 }
+
 message NatureCategorical {
-    Array2dJagged categories = 1;
+    Jagged categories = 1;
 }
 
-message Vector2DJaggedProperties {
+message GroupId {
+    /// node id of partition
+    uint32 partition_id = 1;
+    /// indexes referenced in the partition
+    IndexKey index = 2;
+}
+
+/// derived properties for the Value::Jagged type
+///   a homogeneously-typed vector of vectors
+///   each vector represents a column
+message JaggedProperties {
+
+    /// number of records per column
+    Array1dI64 num_records = 1;
+
+    /// true if the data may contain null values
+    bool nullity = 2;
+
+    /// description of the aggregation that has been applied to the data
+    /// used to help compute sensitivity in the mechanisms
+    AggregatorProperties aggregator = 3;
+
+    /// atomic type
+    DataType data_type = 4;
+
+    /// true if the data has been sanitized
+    bool releasable = 5;
+
+    oneof nature {
+        /// numerical bounds of each column
+        NatureContinuous continuous = 100;
+        /// categories of each column
+        NatureCategorical categorical = 101;
+    }
+}
+
+// derived properties for the Value::Function type
+message FunctionProperties {
     bool releasable = 1;
 }
 
-
+// properties for each node on a graph
 message GraphProperties {
     map<uint32, ValueProperties> properties = 1;
     repeated Error warnings = 2;
 }
 
-message PrivacyUsages {
-    repeated PrivacyUsage values = 1;
-}
 message Accuracies {
     repeated Accuracy values = 1;
 }
@@ -148,11 +208,54 @@ message ComponentExpansion {
     map<uint32, ValueProperties> properties = 2;
     map<uint32, ReleaseNode> releases = 3;
     repeated uint32 traversal = 4;
+    repeated Error warnings = 5;
 }
 
-message Utility {
-    map<uint32, Component> computation_graph = 1;
-    map<uint32, ReleaseNode> releases = 2;
-    uint32 candidate_id = 3;
-    uint32 output_id = 4;
+// literals
+message Value {
+    oneof data {
+        // bytes bytes = 1;
+
+        // N-dimensional homogeneously typed array
+        Array array = 2;
+
+        // Key-Value pairs
+        Dataframe dataframe = 3;
+        Partitions partitions = 4;
+
+        // Data structure with mixed column lengths
+        Jagged jagged = 5;
+
+        // Evaluable function
+        Function function = 6;
+    }
+}
+
+message Dataframe {
+    repeated IndexKey keys = 1;
+    repeated Value values = 2;
+}
+
+message Partitions {
+    repeated IndexKey keys = 1;
+    repeated Value values = 2;
+}
+
+message Function {
+    ComputationGraph computation_graph = 1;
+    Release release = 2;
+    map<string, uint32> arguments = 3;
+    map<string, uint32> outputs = 4;
+}
+
+message ReleaseNode {
+    Value value = 1;
+    PrivacyUsages privacy_usages = 2;
+    bool public = 3;
+}
+
+
+message IndexmapReleaseNode {
+    repeated IndexKey keys = 1;
+    repeated ReleaseNode values = 2;
 }

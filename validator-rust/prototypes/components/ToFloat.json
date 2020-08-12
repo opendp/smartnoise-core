@@ -11,5 +11,6 @@
   "return": {
     "type_value": "Array"
   },
-  "description": "Cast data to a float atomic type."
+  "description": "Cast data to a float atomic type.",
+  "proto_id": 58
 }

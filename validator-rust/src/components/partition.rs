@@ -1,99 +1,193 @@
 use crate::errors::*;
 
+use crate::{proto, base, Warnable, Integer};
 
-use std::collections::{HashMap, BTreeMap};
-
-use crate::{proto, base};
-
-use crate::components::{Component};
-use crate::base::{Value, Jagged, ValueProperties, HashmapProperties, ArrayProperties};
-use crate::utilities::prepend;
+use crate::components::{Component, Expandable};
+use crate::base::{IndexKey, Value, Jagged, ValueProperties, ArrayProperties, NodeProperties, PartitionsProperties};
+use crate::utilities::{prepend, get_literal, get_argument};
+use indexmap::map::IndexMap;
+use itertools::Itertools;
+use crate::utilities::inference::infer_property;
 
 
 impl Component for proto::Partition {
     fn propagate_property(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
-        public_arguments: &HashMap<String, Value>,
-        properties: &base::NodeProperties,
-    ) -> Result<ValueProperties> {
-        let mut data_property = properties.get("data")
-            .ok_or("data: missing")?.array()
-            .map_err(prepend("data:"))?.clone();
+        privacy_definition: &Option<proto::PrivacyDefinition>,
+        public_arguments: IndexMap<base::IndexKey, &Value>,
+        properties: base::NodeProperties,
+        node_id: u32,
+    ) -> Result<Warnable<ValueProperties>> {
+        let data_property = properties.get::<IndexKey>(&"data".into())
+            .ok_or("data: missing")?.clone();
 
-        Ok(match properties.get("by") {
+        let neighboring = proto::privacy_definition::Neighboring::from_i32(privacy_definition.as_ref()
+            .ok_or_else(|| Error::from("privacy_definition must be defined"))?.neighboring)
+            .ok_or_else(|| Error::from("neighboring must be defined"))?;
+
+        Ok(ValueProperties::Partitions(match properties.get::<IndexKey>(&"by".into()) {
+
+            // propagate properties when partitioning "by" some array
             Some(by_property) => {
+                // TODO: pass non-homogeneously typed keys via indexmap (needs merge component)
                 let by_property = by_property.array()
                     .map_err(prepend("by:"))?.clone();
-                let by_num_columns= by_property.num_columns
+                by_property.num_columns
                     .ok_or_else(|| Error::from("number of columns must be known on by"))?;
-                if by_num_columns != 1 {
-                    return Err("Partition's by argument must contain a single column".into());
-                }
                 let categories = by_property.categories()
                     .map_err(prepend("by:"))?;
-                data_property.num_records = None;
 
-                HashmapProperties {
-                    num_records: data_property.num_records,
-                    disjoint: true,
-                    properties: match categories {
-                        Jagged::Bool(categories) => broadcast_partitions(&categories, &data_property)?.into(),
-                        Jagged::Str(categories) => broadcast_partitions(&categories, &data_property)?.into(),
-                        Jagged::I64(categories) => broadcast_partitions(&categories, &data_property)?.into(),
-                        _ => return Err("partitioning based on floats is not supported".into())
-                    },
-                    columnar: false
+                let partition_keys = make_dense_partition_keys(categories, by_property.dimensionality)?;
+
+                PartitionsProperties {
+                    children: broadcast_partitions(partition_keys, &data_property, node_id, neighboring)?,
                 }
-            },
+            }
+
+            // propagate properties when partitioning evenly
             None => {
+                let num_partitions = get_argument(&public_arguments, "num_partitions")?
+                    .ref_array()?.first_int()?;
 
-                let num_partitions = public_arguments.get("num_partitions")
-                    .ok_or("num_partitions or by must be passed to Partition")?.array()?.first_i64()?;
-
-                let lengths = match data_property.num_records {
-                    Some(num_records) => even_split_lengths(num_records, num_partitions)
+                let num_records = match &data_property {
+                    ValueProperties::Array(data_property) => data_property.num_records,
+                    ValueProperties::Dataframe(data_property) => data_property.num_records()?,
+                    _ => return Err("data: must be a dataframe or array".into())
+                };
+                let lengths = match num_records {
+                    Some(num_records) => even_split_lengths(num_records, num_partitions as i64)
                         .into_iter().map(Some).collect(),
                     None => (0..num_partitions)
                         .map(|_| None)
                         .collect::<Vec<Option<i64>>>()
                 };
 
-                HashmapProperties {
-                    num_records: data_property.num_records,
-                    disjoint: false,
-                    properties: lengths.iter().enumerate().map(|(index, partition_num_records)| {
-                        let mut partition_property = data_property.clone();
-                        partition_property.num_records = *partition_num_records;
-                        (index as i64, ValueProperties::Array(partition_property))
-                    }).collect::<BTreeMap<i64, ValueProperties>>().into(),
-                    columnar: false
+                PartitionsProperties {
+                    children: lengths.iter().enumerate()
+                        .map(|(index, partition_num_records)| Ok((
+                            IndexKey::from(index as Integer),
+                            get_partition_properties(
+                                &data_property,
+                                IndexKey::from(index as Integer),
+                                *partition_num_records,
+                                node_id,
+                                neighboring)?
+                        )))
+                        .collect::<Result<IndexMap<IndexKey, ValueProperties>>>()?,
                 }
             }
-        }.into())
+        }).into())
     }
+}
 
+impl Expandable for proto::Partition {
+    fn expand_component(
+        &self,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
+        component: &proto::Component,
+        _public_arguments: &IndexMap<IndexKey, &Value>,
+        properties: &NodeProperties,
+        component_id: u32,
+        mut maximum_id: u32
+    ) -> Result<base::ComponentExpansion> {
 
+        let mut expansion = base::ComponentExpansion::default();
+
+        if let Some(by) = properties.get::<IndexKey>(&"by".into()) {
+            if !properties.contains_key::<IndexKey>(&"categories".into()) {
+                let categories = by.array()?.categories()?;
+                maximum_id += 1;
+                let id_categories = maximum_id;
+                let (patch_node, release) = get_literal(Value::Jagged(categories), component.submission)?;
+                expansion.computation_graph.insert(id_categories, patch_node);
+                expansion.properties.insert(id_categories, infer_property(&release.value, None)?);
+                expansion.releases.insert(id_categories, release);
+
+                let mut component = component.clone();
+                component.insert_argument(&"categories".into(), id_categories);
+                expansion.computation_graph.insert(component_id, component);
+            }
+        }
+
+        Ok(expansion)
+    }
+}
+
+pub fn broadcast_partitions(
+    partition_keys: Vec<IndexKey>, properties: &ValueProperties, node_id: u32,
+    neighboring_definition: proto::privacy_definition::Neighboring
+) -> Result<IndexMap<IndexKey, ValueProperties>> {
+    // create dense partitioning
+    partition_keys.into_iter()
+        .map(|v| Ok((v.clone(), get_partition_properties(
+            properties,
+            v,
+            None,
+            node_id,
+            neighboring_definition)?)))
+        .collect()
+}
+
+fn get_partition_properties(
+    properties: &ValueProperties,
+    index: IndexKey, num_records: Option<i64>, node_id: u32,
+    neighboring_definition: proto::privacy_definition::Neighboring
+) -> Result<ValueProperties> {
+
+    let update_array_properties = |mut properties: ArrayProperties| -> ArrayProperties {
+        // update properties
+        properties.group_id.push(base::GroupId {
+            partition_id: node_id,
+            index: index.clone()
+        });
+        properties.num_records = num_records;
+        properties.dataset_id = Some(node_id as i64);
+        properties.is_not_empty = num_records.unwrap_or(0) != 0;
+
+        if neighboring_definition == proto::privacy_definition::Neighboring::Substitute {
+            properties.c_stability = properties.c_stability
+                .into_iter().map(|v| v * 2.).collect();
+        }
+
+        properties
+    };
+
+    Ok(match properties {
+        ValueProperties::Array(properties) => ValueProperties::Array(update_array_properties(properties.clone())),
+        ValueProperties::Dataframe(properties) => {
+            let mut properties = properties.clone();
+            properties.children.values_mut()
+                .try_for_each(|v| {
+                    *v = ValueProperties::Array(update_array_properties(v.array()?.clone()));
+                    Ok::<_, Error>(())
+                })?;
+            ValueProperties::Dataframe(properties)
+        }
+        _ => return Err("data: must be a dataframe or array".into())
+    })
+}
+
+pub fn make_dense_partition_keys(categories: Jagged, dimensionality: Option<i64>) -> Result<Vec<IndexKey>> {
+    let categories = categories.to_index_keys()?;
+
+    // TODO: sparse partitioning component
+    Ok(match dimensionality {
+        Some(0) => return Err("categories: must be defined for at least one column".into()),
+        Some(1) => {
+            if categories.len() != 1 {
+                return Err("categories: must be defined for exactly one column".into())
+            }
+            categories[0].clone()
+        }
+        _ => categories.into_iter().multi_cartesian_product()
+            .map(IndexKey::Tuple).collect()
+    })
 }
 
 pub fn even_split_lengths(num_records: i64, num_partitions: i64) -> Vec<i64> {
     (0..num_partitions)
-        .map(|index| num_records / num_partitions + (if index >= (num_records % num_partitions) {0} else {1}))
+        .map(|index| num_records / num_partitions + (if index >= (num_records % num_partitions) { 0 } else { 1 }))
         .collect()
-}
-
-pub fn broadcast_partitions<T: Clone + Eq + std::hash::Hash + Ord>(
-    categories: &[Option<Vec<T>>], properties: &ArrayProperties
-) -> Result<BTreeMap<T, ValueProperties>> {
-
-    if categories.len() != 1 {
-        return Err("categories: must be defined for one column".into())
-    }
-    let partitions = categories[0].clone()
-        .ok_or_else(|| Error::from("categories: must be defined"))?;
-    Ok(partitions.iter()
-        .map(|v| (v.clone(), ValueProperties::Array(properties.clone())))
-        .collect())
 }
 
 

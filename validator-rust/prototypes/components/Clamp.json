@@ -36,5 +36,6 @@
     "type_value": "Array",
     "description": "Clamped data."
   },
-  "description": "Clamps data to the provided bounds.\n\nIf data are numeric, clamping maps elements outside of an interval `[lower, upper]` to the closer endpoint.\nIf data are categorical, clamping maps elements outside of the `categories` argument to the associated `null`.\nUsing clamp sets the `categories` property for the analysis with value `categories` plus `null_value` in the last position."
+  "description": "Clamps data to the provided bounds.\n\nIf data are numeric, clamping maps elements outside of an interval `[lower, upper]` to the closer endpoint.\nIf data are categorical, clamping maps elements outside of the `categories` argument to the associated `null`.\nUsing clamp sets the `categories` property for the analysis with value `categories` plus `null_value` in the last position.",
+  "proto_id": 5
 }

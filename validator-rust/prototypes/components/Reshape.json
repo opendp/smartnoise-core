@@ -2,7 +2,7 @@
   "arguments": {
     "data": {
       "type_value": "Array",
-      "description": "Vector of data to stack into a matrix. A Hashmap of matrices will be emitted if multiple rows are provided."
+      "description": "Vector of data to stack into a matrix. A Indexmap of matrices will be emitted if multiple rows are provided."
     }
   },
   "id": "Reshape",
@@ -32,5 +32,6 @@
     "type_value": "Array",
     "description": "Reshape of data."
   },
-  "description": "Reshapes a row vector into a matrix."
+  "description": "Reshapes a row vector into a matrix.",
+  "proto_id": 49
 }
