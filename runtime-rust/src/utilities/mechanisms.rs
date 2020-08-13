@@ -54,14 +54,22 @@ pub fn laplace_mechanism(epsilon: f64, sensitivity: f64, enforce_constant_time: 
 /// # Examples
 /// ```
 /// use whitenoise_runtime::utilities::mechanisms::snapping_mechanism;
-/// let n = snapping_mechanism(50., 1., 100., 0.1, false);
+/// let n = snapping_mechanism(50., 1., 0.1, 0., 100., false);
 /// ```
 pub fn snapping_mechanism(
-    mechanism_input: f64, epsilon: f64, b: f64, sensitivity: f64, enforce_constant_time: bool
+    mut mechanism_input: f64, epsilon: f64, sensitivity: f64,
+    lower: f64, upper: f64,
+    enforce_constant_time: bool
 ) -> Result<f64> {
     if epsilon < 0. || sensitivity < 0. {
         return Err(format!("epsilon ({}) and sensitivity ({}) must be positive", epsilon, sensitivity).into());
     }
+    if lower > upper {
+        return Err("lower may not be greater than upper".into())
+    }
+
+    let b = (upper - lower) / 2.;
+    mechanism_input -= lower + b;
     noise::sample_snapping_noise(mechanism_input, epsilon, b, sensitivity, enforce_constant_time)
 }
 

@@ -9,6 +9,7 @@ use crate::components::Evaluable;
 use crate::NodeArguments;
 use crate::utilities;
 use crate::utilities::mechanisms::exponential_mechanism;
+use crate::utilities::get_num_columns;
 
 impl Evaluable for proto::LaplaceMechanism {
     fn evaluate(
@@ -247,15 +248,30 @@ impl Evaluable for proto::SnappingMechanism {
         let epsilon = ndarray::Array::from_shape_vec(
             data.shape(), usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?)?;
 
+        let num_columns = get_num_columns(&data)? as usize;
+
+        let lower = take_argument(&mut arguments, "lower")?.array()?.float()?
+            .into_dimensionality::<ndarray::Ix1>()?.to_vec();
+        if num_columns != lower.len()  {
+            return Err("lower must share the same number of columns as data".into())
+        }
+
+        let upper = take_argument(&mut arguments, "upper")?.array()?.float()?
+            .into_dimensionality::<ndarray::Ix1>()?.to_vec();
+        if num_columns != upper.len() {
+            return Err("upper must share the same number of columns as data".into())
+        }
+
         data.gencolumns_mut().into_iter()
             .zip(sensitivity.gencolumns().into_iter().zip(epsilon.gencolumns().into_iter()))
-            .zip(self.b.iter())
-            .try_for_each(|((mut data_column, (sensitivity, epsilon)), b)| data_column.iter_mut()
+            .zip(lower.into_iter().zip(upper.into_iter()))
+            .try_for_each(|((mut data_column, (sensitivity, epsilon)), (lower, upper))| data_column.iter_mut()
                 .zip(sensitivity.into_iter().zip(epsilon.into_iter()))
                 .try_for_each(|(v, (sens, eps))|
 
                     utilities::mechanisms::snapping_mechanism(
-                        *v, *eps, *b, *sens as f64,
+                        *v, *eps, *sens as f64,
+                        lower, upper,
                         enforce_constant_time
                     ).map(|noise| *v += noise)))?;
 

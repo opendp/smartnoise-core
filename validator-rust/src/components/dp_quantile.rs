@@ -19,8 +19,9 @@ impl Expandable for proto::DpQuantile {
     ) -> Result<base::ComponentExpansion> {
 
         let mut expansion = base::ComponentExpansion::default();
+        let argument_ids = component.arguments();
 
-        let data_id = *component.arguments().get::<IndexKey>(&"data".into())
+        let data_id = *argument_ids.get::<IndexKey>(&"data".into())
             .ok_or_else(|| Error::from("data is a required argument to DPQuantile"))?;
 
         let mechanism = if self.mechanism.to_lowercase().as_str() == "automatic" {
@@ -38,7 +39,7 @@ impl Expandable for proto::DpQuantile {
         // quantile
         let mut quantile_args = indexmap![IndexKey::from("data") => data_id];
         if mechanism.as_str() == "exponential" {
-            quantile_args.insert("candidates".into(), *component.arguments().get::<IndexKey>(&"candidates".into())
+            quantile_args.insert("candidates".into(), *argument_ids.get::<IndexKey>(&"candidates".into())
                 .ok_or_else(|| Error::from("candidates is a required argument to DPQuantile when the exponential mechanism is used."))?);
         }
         maximum_id += 1;
@@ -58,44 +59,41 @@ impl Expandable for proto::DpQuantile {
         let mut sanitize_args = IndexMap::new();
         if self.mechanism.to_lowercase().as_str() == "exponential" {
             sanitize_args.insert("utilities".into(), id_quantile);
-            sanitize_args.insert("candidates".into(), *component.arguments().get::<IndexKey>(&"candidates".into())
+            sanitize_args.insert("candidates".into(), *argument_ids.get::<IndexKey>(&"candidates".into())
                 .ok_or_else(|| Error::from("candidates is a required argument to DPQuantile when the exponential mechanism is used."))?);
         } else {
             sanitize_args.insert("data".into(), id_quantile);
         }
+
+        let variant = Some(match mechanism.as_str() {
+            "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
+                privacy_usage: self.privacy_usage.clone()
+            }),
+            "analyticgaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
+                privacy_usage: self.privacy_usage.clone(),
+                analytic: true
+            }),
+            "exponential" => proto::component::Variant::ExponentialMechanism(proto::ExponentialMechanism {
+                privacy_usage: self.privacy_usage.clone()
+            }),
+            "exponential" => proto::component::Variant::ExponentialMechanism(proto::ExponentialMechanism {
+                privacy_usage: self.privacy_usage.clone()
+            }),
+            "snapping" => {
+                argument_ids.get::<IndexKey>(&"lower".into())
+                    .map(|lower| sanitize_args.insert("lower".into(), *lower));
+                argument_ids.get::<IndexKey>(&"upper".into())
+                    .map(|upper| sanitize_args.insert("upper".into(), *upper));
+
+                proto::component::Variant::SnappingMechanism(proto::SnappingMechanism {
+                    privacy_usage: self.privacy_usage.clone()
+                })
+            },
+            _ => bail!("Unexpected invalid token {:?}", self.mechanism.as_str()),
+        });
         expansion.computation_graph.insert(component_id, proto::Component {
             arguments: Some(proto::ArgumentNodeIds::new(sanitize_args)),
-            variant: Some(match mechanism.as_str() {
-                "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
-                    privacy_usage: self.privacy_usage.clone()
-                }),
-                "gaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
-                    privacy_usage: self.privacy_usage.clone(),
-                    analytic: false
-                }),
-                "analyticgaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
-                    privacy_usage: self.privacy_usage.clone(),
-                    analytic: true
-                }),
-                "exponential" => proto::component::Variant::ExponentialMechanism(proto::ExponentialMechanism {
-                    privacy_usage: self.privacy_usage.clone()
-                }),
-                "snapping" => {
-                    let data_property = properties.get::<base::IndexKey>(&"data".into())
-                        .ok_or("data: missing")?.array()
-                        .map_err(prepend("data:"))?;
-
-                    let b: Vec<f64> = data_property.upper_float()
-                        .or_else(|_| data_property.upper_int()
-                            .map(|upper| upper.into_iter().map(|v| v as f64).collect()))?;
-
-                    proto::component::Variant::SnappingMechanism(proto::SnappingMechanism {
-                        privacy_usage: self.privacy_usage.clone(),
-                        b,
-                    })
-                },
-                _ => bail!("Unexpected invalid token {:?}", self.mechanism.as_str()),
-            }),
+            variant,
             omit: component.omit,
             submission: component.submission,
         });

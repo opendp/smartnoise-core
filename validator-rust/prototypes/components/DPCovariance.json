@@ -17,6 +17,18 @@
       "default_python": "None",
       "default_rust": "None",
       "description": "2D data array used to construct covariance matrix."
+    },
+    "lower": {
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
+      "description": "Estimated minimum possible value of the statistic. Only useful for the snapping mechanism."
+    },
+    "upper": {
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
+      "description": "Estimated maximum possible value of the statistic. Only useful for the snapping mechanism."
     }
   },
   "id": "DPCovariance",

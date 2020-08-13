@@ -21,7 +21,9 @@ impl Expandable for proto::DpHistogram {
     ) -> Result<base::ComponentExpansion> {
         let mut expansion = base::ComponentExpansion::default();
 
-        let data_id = component.arguments().get::<IndexKey>(&"data".into())
+        let argument_ids = component.arguments();
+
+        let data_id = argument_ids.get::<IndexKey>(&"data".into())
             .ok_or_else(|| Error::from("data is a required argument to DPHistogram"))?.to_owned();
 
         let data_property = properties.get::<IndexKey>(&"data".into())
@@ -42,11 +44,10 @@ impl Expandable for proto::DpHistogram {
         maximum_id += 1;
         let id_histogram = maximum_id;
         let mut histogram_arguments = indexmap!["data".into() => data_id];
-        let arguments = component.arguments();
         vec!["categories", "null_value", "edges", "inclusive_left"].into_iter()
             .map(|name| name.into())
             .for_each(|name| {
-                arguments.get(&name)
+                argument_ids.get(&name)
                     .map(|v| histogram_arguments.insert(name, *v));
             });
 
@@ -59,7 +60,7 @@ impl Expandable for proto::DpHistogram {
         expansion.traversal.push(id_histogram);
 
         if mechanism.as_str() == "simplegeometric" {
-            let count_min_id = match component.arguments().get::<IndexKey>(&"lower".into()) {
+            let count_min_id = match argument_ids.get::<IndexKey>(&"lower".into()) {
                 Some(id) => *id,
                 None => {
                     // count_max
@@ -72,7 +73,7 @@ impl Expandable for proto::DpHistogram {
                     id_count_min
                 }
             };
-            let count_max_id = match arguments.get::<IndexKey>(&"upper".into()) {
+            let count_max_id = match argument_ids.get::<IndexKey>(&"upper".into()) {
                 Some(id) => *id,
                 None => {
                     let count_max = match data_property.num_records {
@@ -110,31 +111,34 @@ impl Expandable for proto::DpHistogram {
         } else {
 
             // noising
-            expansion.computation_graph.insert(component_id, proto::Component {
-                arguments: Some(proto::ArgumentNodeIds::new(indexmap![
-                    "data".into() => id_histogram
-                ])),
-                variant: Some(match mechanism.as_str() {
-                    "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
-                        privacy_usage: self.privacy_usage.clone()
-                    }),
-                    "gaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
-                        privacy_usage: self.privacy_usage.clone(),
-                        analytic: false
-                    }),
-                    "analyticgaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
-                        privacy_usage: self.privacy_usage.clone(),
-                        analytic: true
-                    }),
-                    "snapping" => proto::component::Variant::SnappingMechanism(proto::SnappingMechanism {
-                        privacy_usage: self.privacy_usage.clone(),
-                        b: properties.get::<base::IndexKey>(&"data".into())
-                            .ok_or("data: missing")?.array()
-                            .map_err(prepend("data:"))?.upper_int()?
-                            .into_iter().map(|v| v as f64).collect(),
-                    }),
-                    _ => bail!("Unexpected invalid token {:?}", self.mechanism.as_str()),
+            let mut arguments = indexmap!["data".into() => id_histogram];
+            let variant = Some(match mechanism.as_str() {
+                "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
+                    privacy_usage: self.privacy_usage.clone()
                 }),
+                "gaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
+                    privacy_usage: self.privacy_usage.clone(),
+                    analytic: false
+                }),
+                "analyticgaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
+                    privacy_usage: self.privacy_usage.clone(),
+                    analytic: true
+                }),
+                "snapping" => {
+                    argument_ids.get::<IndexKey>(&"lower".into())
+                        .map(|lower| arguments.insert("lower".into(), *lower));
+                    argument_ids.get::<IndexKey>(&"upper".into())
+                        .map(|upper| arguments.insert("upper".into(), *upper));
+
+                    proto::component::Variant::SnappingMechanism(proto::SnappingMechanism {
+                        privacy_usage: self.privacy_usage.clone()
+                    })
+                },
+                _ => bail!("Unexpected invalid token {:?}", self.mechanism.as_str()),
+            });
+            expansion.computation_graph.insert(component_id, proto::Component {
+                arguments: Some(proto::ArgumentNodeIds::new(arguments)),
+                variant,
                 omit: component.omit,
                 submission: component.submission,
             });

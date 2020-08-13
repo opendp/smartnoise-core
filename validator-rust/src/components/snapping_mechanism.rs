@@ -1,16 +1,14 @@
-use crate::errors::*;
-
-
-use crate::components::{Sensitivity, Mechanism};
-use crate::{proto, base, Warnable};
-
-use crate::components::{Component, Expandable};
-use crate::base::{Value, SensitivitySpace, ValueProperties, DataType, NodeProperties, IndexKey};
-use crate::utilities::{prepend, expand_mechanism};
-use crate::utilities::privacy::{privacy_usage_check};
-use itertools::Itertools;
 use indexmap::map::IndexMap;
+use itertools::Itertools;
 
+use crate::{base, proto, Warnable};
+use crate::base::{DataType, IndexKey, NodeProperties, SensitivitySpace, Value, ValueProperties};
+use crate::components::{Mechanism, Sensitivity};
+use crate::components::{Component, Expandable};
+use crate::errors::*;
+use crate::utilities::{expand_mechanism, prepend, get_literal};
+use crate::utilities::privacy::privacy_usage_check;
+use crate::utilities::inference::infer_property;
 
 impl Component for proto::SnappingMechanism {
     fn propagate_property(
@@ -74,12 +72,26 @@ impl Expandable for proto::SnappingMechanism {
         &self,
         privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
-        _public_arguments: &IndexMap<IndexKey, &Value>,
+        public_arguments: &IndexMap<IndexKey, &Value>,
         properties: &base::NodeProperties,
         component_id: u32,
-        maximum_id: u32,
+        mut maximum_id: u32,
     ) -> Result<base::ComponentExpansion> {
-        expand_mechanism(
+        let lower_id = if public_arguments.contains_key::<IndexKey>(&"lower".into()) {
+            None
+        } else {
+            maximum_id += 1;
+            Some(maximum_id)
+        };
+
+        let upper_id = if public_arguments.contains_key::<IndexKey>(&"upper".into()) {
+            None
+        } else {
+            maximum_id += 1;
+            Some(maximum_id)
+        };
+
+        let mut expansion = expand_mechanism(
             &SensitivitySpace::KNorm(1),
             privacy_definition,
             self.privacy_usage.as_ref(),
@@ -87,7 +99,28 @@ impl Expandable for proto::SnappingMechanism {
             properties,
             component_id,
             maximum_id
-        )
+        )?;
+
+        let data_property = properties.get::<IndexKey>(&"data".into())
+            .ok_or("data: missing")?.array()?.clone();
+
+        if let Some(lower_id) = lower_id {
+            let lower_value: Value = ndarray::arr1(&data_property.lower_float()?).into_dyn().into();
+            let (patch_node, release) = get_literal(lower_value, component.submission)?;
+            expansion.computation_graph.insert(lower_id, patch_node);
+            expansion.properties.insert(lower_id, infer_property(&release.value, None)?);
+            expansion.releases.insert(lower_id, release);
+        }
+
+        if let Some(upper_id) = upper_id {
+            let upper_value: Value = ndarray::arr1(&data_property.upper_float()?).into_dyn().into();
+            let (patch_node, release) = get_literal(upper_value, component.submission)?;
+            expansion.computation_graph.insert(upper_id, patch_node);
+            expansion.properties.insert(upper_id, infer_property(&release.value, None)?);
+            expansion.releases.insert(upper_id, release);
+        }
+
+        Ok(expansion)
     }
 }
 

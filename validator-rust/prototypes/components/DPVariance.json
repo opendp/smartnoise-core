@@ -2,6 +2,18 @@
   "arguments": {
     "data": {
       "type_value": "Array"
+    },
+    "lower": {
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
+      "description": "Estimated minimum possible value of the statistic. Only useful for the snapping mechanism."
+    },
+    "upper": {
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
+      "description": "Estimated maximum possible value of the statistic. Only useful for the snapping mechanism."
     }
   },
   "id": "DPVariance",

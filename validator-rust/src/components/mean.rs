@@ -44,8 +44,6 @@ impl Component for proto::Mean {
 
         Ok(ValueProperties::Array(data_property).into())
     }
-
-
 }
 
 impl Sensitivity for proto::Mean {

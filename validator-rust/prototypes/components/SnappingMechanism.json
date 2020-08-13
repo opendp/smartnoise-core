@@ -3,6 +3,18 @@
     "data": {
       "type_value": "Array",
       "description": "Result to be released privately via the Snapping mechanism."
+    },
+    "lower": {
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
+      "description": "Estimated minimum possible value of the data. Only useful for the snapping mechanism."
+    },
+    "upper": {
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
+      "description": "Estimated maximum possible value of the statistic. Only useful for the snapping mechanism."
     }
   },
   "id": "SnappingMechanism",
@@ -13,12 +25,6 @@
       "type_rust": "Vec<proto::PrivacyUsage>",
       "default_python": "None",
       "description": "Object describing the type and amount of privacy to be used for the mechanism release."
-    },
-    "b": {
-      "type_proto": "repeated double",
-      "type_rust": "Vec<f64>",
-      "default_python": "None",
-      "description": "An upper bound on the absolute value of the quantity of interest being privatized."
     }
   },
   "return": {

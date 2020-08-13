@@ -1,12 +1,14 @@
-use crate::errors::*;
-
-use crate::{proto, base, Warnable, Float};
-
-use crate::components::{Component, Sensitivity};
-use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType, IndexKey};
-use crate::utilities::prepend;
-use ndarray::prelude::*;
 use indexmap::map::IndexMap;
+use ndarray::prelude::*;
+
+use crate::{base, Float, proto, Warnable};
+use crate::base::{
+    AggregatorProperties, DataType, IndexKey, Nature, NatureContinuous,
+    NodeProperties, SensitivitySpace, Value, ValueProperties, Vector1DNull,
+};
+use crate::components::{Component, Sensitivity};
+use crate::errors::*;
+use crate::utilities::prepend;
 
 impl Component for proto::Variance {
     fn propagate_property(
@@ -40,8 +42,16 @@ impl Component for proto::Variance {
             return Err("data: atomic type must be float".into())
         }
 
+        data_property.nature = match (data_property.lower_float(), data_property.upper_float()) {
+            (Ok(lower), Ok(upper)) => Some(Nature::Continuous(NatureContinuous {
+                lower: Vector1DNull::Float((0..num_columns).map(|_| Some(0.)).collect()),
+                upper: Vector1DNull::Float(lower.iter().zip(upper)
+                    // Popoviciu's inequality
+                    .map(|(l, u)| Some((u - l).powi(2) / 4.)).collect()),
+            })),
+            _ => None
+        };
         data_property.num_records = Some(1);
-        data_property.nature = None;
         data_property.dataset_id = Some(node_id as i64);
 
         Ok(ValueProperties::Array(data_property).into())
