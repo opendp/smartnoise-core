@@ -3,6 +3,7 @@ use crate::components::linreg_error::Error;
 use rand::prelude::*;
 use crate::utilities::{noise};
 use crate::utilities::noise::sample_bit_prob;
+use itertools::zip;
 
 /// Select k random values from range 1 to n
 ///
@@ -112,32 +113,19 @@ pub fn dp_theil_sen(x: &Vec<Float>, y: &Vec<Float>, n: Integer, epsilon: Float, 
 
 /// Implementation from paper
 /// Separate data into two bins, match members of each bin to form pairs
+/// Note: k is number of trials here
 pub fn dp_theil_sen_k_match(x: &Vec<Float>, y: &Vec<Float>, n: Integer, k: Integer, epsilon: Float, r_lower: Float, r_upper: Float, enforce_constant_time: bool) -> Result<(Float, Float), Error> {
     let mut slopes: Vec<Float> = Vec::new();
     let mut intercepts: Vec<Float> = Vec::new();
     for _iteration in 0..k {
-        let mut bin_a: Vec<(Float, Float)> = Vec::new();
-        let mut bin_b: Vec<(Float, Float)> = Vec::new();
-        for i in 0..n as usize {
-            let sample = sample_bit_prob(0.5).unwrap();
-            // Ensure bins stay same size
-            if bin_a.len() == (n as Float/2.0).floor() as usize {
-                bin_b.push((x[i], y[i]));
-            }
-            else if bin_b.len() == (n as Float/2.0).floor() as usize {
-                bin_a.push((x[i], y[i]));
-            } else {
-                if sample == 1 {
-                    bin_a.push((x[i], y[i]));
-                } else {
-                    bin_b.push((x[i], y[i]));
-                }
-            }
-        }
+        let mut shuffled: Vec<(Float, Float)> = x.iter().map(|a| (*a)).zip(y.iter().map(|a| (*a))).collect();
         let mut rng = rand::thread_rng();
-        bin_a.shuffle(&mut rng);
-        bin_b.shuffle(&mut rng);
+        shuffled.shuffle(&mut rng);
 
+        // For n odd, the last data point in "shuffled" will be ignored
+        let midpoint = (n as Float/2.0).floor() as usize;
+        let bin_a: Vec<(Float, Float)> = shuffled[0..midpoint].to_vec();
+        let bin_b: Vec<(Float, Float)> = shuffled[midpoint..midpoint*(2 as usize)].to_vec();
         assert_eq!(bin_a.len(), bin_b.len());
 
         for i in 0..bin_a.len() {
