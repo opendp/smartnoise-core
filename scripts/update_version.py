@@ -2,7 +2,7 @@ import tomlkit
 import os
 
 self_dir = os.path.dirname(__file__)
-config_path = os.path.join(self_dir, "update_version_config.toml")
+config_path = os.path.join(self_dir, "update_version.toml")
 
 with open(config_path, 'r') as config_file:
     config = tomlkit.loads(config_file.read())
