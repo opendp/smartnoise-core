@@ -2,8 +2,6 @@ use whitenoise_validator::{Float, Integer};
 use crate::components::linreg_error::Error;
 use rand::prelude::*;
 use crate::utilities::{noise};
-use crate::utilities::noise::sample_bit_prob;
-use itertools::zip;
 
 /// Select k random values from range 1 to n
 ///
@@ -274,7 +272,7 @@ mod tests {
         println!("Theil-Sen Estimate Difference: {}, {}", (dp_slope-slope).abs(), (dp_intercept-intercept).abs());
 
         assert!((dp_slope - slope).abs() <= 1.0 / epsilon);
-        assert!((dp_intercept - intercept).abs() <= (n as Float) * (1.0 / epsilon));
+        assert!((dp_intercept - intercept).abs() <= (n.pow(4)  as Float) * (1.0 / epsilon));
     }
 
     #[test]
@@ -282,16 +280,19 @@ mod tests {
         let mut results: Vec<(Float, Float)> = Vec::new();
         for epsilon in vec![0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 1e4 as Float, 1e5 as Float, 1e6 as Float] {
             println!("Epsilon: {}", epsilon);
-            let n = 100;
+            let n: i32 = 100;
             let x: Vec<Float> = (0..n).map(Float::from).collect::<Vec<Float>>();
             let y: Vec<Float> = (0..n).map(|x| 2 * x).map(Float::from).map(|x| x + noise::sample_gaussian(0.0, 0.0001, true)).collect::<Vec<Float>>();
             let k = n - 1;
             let (slope, intercept) = theil_sen(&x, &y, 100);
             let (dp_slope, dp_intercept) = dp_theil_sen_k_subset(&x, &y, n as Integer, k as Integer, epsilon, 0.0, 2.0, true).unwrap();
             results.push(((dp_slope-slope).abs(), (dp_intercept-intercept).abs()));
-            println!("Theil-Sen Estimate Difference: {}, {}", (dp_slope-slope).abs(), (dp_intercept-intercept).abs());
-            assert!((dp_slope - slope).abs() <= 1.0 / epsilon);
-            assert!((dp_intercept - intercept).abs() <= (n as Float) * (1.0 / epsilon));
+            let slope_lim = (n.pow(2) as Float) / epsilon;
+            let intercept_lim = (n.pow(4) as Float) / epsilon;
+            println!("Slope Diff Limit: {}\tIntercept Diff Limit: {}", slope_lim, intercept_lim);
+            println!("Theil-Sen Estimate Difference: {}, {}\n", (dp_slope-slope).abs(), (dp_intercept-intercept).abs());
+            assert!((dp_slope - slope).abs() <= slope_lim);
+            assert!((dp_intercept - intercept).abs() <= intercept_lim);
         }
     }
 
@@ -315,6 +316,6 @@ mod tests {
         println!("Theil-Sen Estimate Difference: {}, {}", (dp_slope-slope).abs(), (dp_intercept-intercept).abs());
 
         assert!((dp_slope - slope).abs() <= 1.0 / epsilon);
-        assert!((dp_intercept - intercept).abs() <= (n as Float) * (1.0 / epsilon));
+        assert!((dp_intercept - intercept).abs() <= (n as Float) * (n as Float) * (1.0 / epsilon));
     }
 }
