@@ -1,8 +1,8 @@
 [version]
 # version to update to
 major = 0
-minor = 1
-patch = 3
+minor = 2
+patch = 0
 
 [paths]
 # locations of repositories to update
