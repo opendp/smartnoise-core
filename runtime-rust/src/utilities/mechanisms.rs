@@ -31,9 +31,7 @@ pub fn laplace_mechanism(epsilon: f64, sensitivity: f64, enforce_constant_time: 
         return Err(format!("epsilon ({}) and sensitivity ({}) must be positive", epsilon, sensitivity).into());
     }
     let scale: f64 = sensitivity / epsilon;
-    let noise: f64 = noise::sample_laplace(0., scale, enforce_constant_time);
-
-    Ok(noise)
+    noise::sample_laplace(0., scale, enforce_constant_time)
 }
 
 /// Returns noise drawn according to the Gaussian mechanism.
@@ -67,7 +65,8 @@ pub fn gaussian_mechanism(epsilon: f64, delta: f64, sensitivity: f64, enforce_co
         return Err(format!("epsilon ({}), delta ({}) and sensitivity ({}) must all be positive", epsilon, delta, sensitivity).into());
     }
     let scale: f64 = sensitivity * (2. * (1.25 / delta).ln()).sqrt() / epsilon;
-    Ok(noise::sample_gaussian(0., scale, enforce_constant_time))
+    // this uses mpfr noise if available
+    noise::sample_gaussian(0., scale, enforce_constant_time)
 }
 
 pub fn analytic_gaussian_mechanism(epsilon: f64, delta: f64, sensitivity: f64, enforce_constant_time: bool) -> Result<f64> {
@@ -76,7 +75,7 @@ pub fn analytic_gaussian_mechanism(epsilon: f64, delta: f64, sensitivity: f64, e
     }
     let scale: f64 = analytic_gaussian::get_analytic_gaussian_sigma(epsilon, delta, sensitivity);
     // this uses mpfr noise if available
-    Ok(noise::sample_gaussian(0., scale, enforce_constant_time))
+    noise::sample_gaussian(0., scale, enforce_constant_time)
 }
 
 /// Returns noise drawn according to the Geometric mechanism.
@@ -111,8 +110,7 @@ pub fn simple_geometric_mechanism(
         return Err(format!("epsilon ({}) and sensitivity ({}) must be positive", epsilon, sensitivity).into());
     }
     let scale: f64 = sensitivity / epsilon;
-    let noise: i64 = noise::sample_simple_geometric_mechanism(scale, min, max, enforce_constant_time);
-    Ok(noise)
+    noise::sample_simple_geometric_mechanism(scale, min, max, enforce_constant_time)
 }
 
 /// Returns data element according to the Exponential mechanism.

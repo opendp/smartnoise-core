@@ -1,17 +1,16 @@
+use std::cmp::Ordering;
+
+use ieee754::Ieee754;
+use ndarray::{ArrayD, Axis, Zip};
+use ndarray::prelude::IxDyn;
+use openssl::rand::rand_bytes;
+
+use whitenoise_validator::errors::*;
+use whitenoise_validator::utilities::array::{slow_select, slow_stack};
+
 pub mod mechanisms;
 pub mod noise;
 pub mod analytic_gaussian;
-
-use whitenoise_validator::errors::*;
-
-use openssl::rand::rand_bytes;
-use ieee754::Ieee754;
-
-use ndarray::{ArrayD, Zip, Axis};
-use std::cmp::Ordering;
-use whitenoise_validator::utilities::array::{slow_select, slow_stack};
-use ndarray::prelude::IxDyn;
-
 
 ///  Accepts an ndarray and returns the number of columns.
 ///
@@ -60,17 +59,17 @@ pub fn broadcast_map<T, U>(
         Ordering::Greater => left.shape()
     }.to_vec();
 
-//    println!("shape {:?}", shape);
-//    println!("left shape {:?}", left.shape());
-//    println!("right shape {:?}", right.shape());
+   // println!("shape {:?}", shape);
+   // println!("left shape {:?}", left.shape());
+   // println!("right shape {:?}", right.shape());
 
     let left = to_nd(left, shape.len())?;
     let right = to_nd(right, shape.len())?;
 
-//    println!("shape {:?}", shape);
-//    println!("left shape {:?}", left.shape());
-//    println!("right shape {:?}", right.shape());
-//    println!();
+   // println!("shape {:?}", shape);
+   // println!("left shape {:?}", left.shape());
+   // println!("right shape {:?}", right.shape());
+   // println!();
 
     let mut output: ArrayD<U> = ndarray::Array::default(shape.clone());
     Zip::from(&mut output)
@@ -85,6 +84,7 @@ pub fn broadcast_map<T, U>(
 #[cfg(test)]
 mod test_broadcast_map {
     use ndarray::{arr0, arr1, arr2};
+
     use crate::utilities::broadcast_map;
 
     #[test]
@@ -186,10 +186,10 @@ pub fn standardize_columns<T: Default + Clone>(array: ArrayD<T>, column_len: usi
 ///
 /// # Return
 /// The `String` representation of the bytes.
-pub fn get_bytes(n_bytes: usize) -> String {
+pub fn get_bytes(n_bytes: usize) -> Result<String> {
     // read random bytes from OpenSSL
     let mut buffer = vec!(0_u8; n_bytes);
-    rand_bytes(&mut buffer).unwrap();
+    fill_bytes(&mut buffer)?;
 
     // create new buffer of binary representations, rather than u8
     let new_buffer = buffer.into_iter()
@@ -197,13 +197,16 @@ pub fn get_bytes(n_bytes: usize) -> String {
         .collect::<Vec<String>>();
 
     // combine binary representations into single string and subset mantissa, and return
-    new_buffer.concat()
+    Ok(new_buffer.concat())
 }
 
 // TODO: substitute implementation with different generators
-pub fn fill_bytes(mut buffer: &mut [u8]) {
-    rand_bytes(&mut buffer).ok();
+pub fn fill_bytes(mut buffer: &mut [u8]) -> Result<()> {
+    if let Err(e) = rand_bytes(&mut buffer) {
+        Err(format!("OpenSSL Error: {}", e).into())
+    } else { Ok(()) }
 }
+
 
 /// Converts an `f64` to `String` of length 64, yielding the IEEE-754 binary representation of the `f64`.
 ///
@@ -240,21 +243,21 @@ pub fn f64_to_binary(num: f64) -> String {
 ///
 /// # Return
 /// * `num`: f64 version of the String
-pub fn binary_to_f64(binary_string: &str) -> f64 {
+pub fn binary_to_f64(binary_string: &str) -> Result<f64> {
     // get sign and convert to bool as recompose expects
     let sign = &binary_string[0..1];
-    let sign_bool = sign.parse::<i32>().unwrap() != 0;
+    let sign_bool = sign.parse::<i32>()? != 0;
 
     // convert exponent to int
     let exponent = &binary_string[1..12];
-    let exponent_int = u16::from_str_radix(exponent, 2).unwrap();
+    let exponent_int = u16::from_str_radix(exponent, 2)?;
 
     // convert mantissa to int
     let mantissa = &binary_string[12..];
-    let mantissa_int = u64::from_str_radix(mantissa, 2).unwrap();
+    let mantissa_int = u64::from_str_radix(mantissa, 2)?;
 
     // combine elements into f64 and return
-    f64::recompose_raw(sign_bool, exponent_int, mantissa_int)
+    Ok(f64::recompose_raw(sign_bool, exponent_int, mantissa_int))
 }
 
 /// Takes `String` of form `{0,1}^64` and splits it into a sign, exponent, and mantissa
@@ -399,7 +402,8 @@ pub fn create_subset<T>(
 
     // sort key/index tuples by key and identify top k indices
     let mut top_indices: Vec<usize> = Vec::with_capacity(k);
-    key_vec.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap());
+    key_vec.sort_by(|a, b|
+        b.0.partial_cmp(&a.0).unwrap_or(std::cmp::Ordering::Equal));
     top_indices.extend(key_vec.iter()
         .take(k).map(|v| v.1));
 
@@ -430,11 +434,16 @@ pub fn create_subset<T>(
 
     // generate key/index tuples
     let mut key_vec = (0..set.len())
-        .map(|i| Ok((noise::sample_uniform(0., 1., enforce_constant_time)?.powf(1. / probabilities[i]), i)))
+        .map(|i| Ok((
+            noise::sample_uniform(0., 1., enforce_constant_time)?
+                .powf(1. / probabilities[i]),
+            i
+        )))
         .collect::<Result<Vec<(f64, usize)>>>()?;
 
     // sort key/index tuples by key and identify top k indices
-    key_vec.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap());
+    key_vec.sort_by(|a, b|
+        b.0.partial_cmp(&a.0).unwrap_or(std::cmp::Ordering::Equal));
 
     // subsample based on top k indices
     Ok(key_vec.iter().take(k).map(|v| set[v.1].clone()).collect())
