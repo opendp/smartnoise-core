@@ -1,106 +1,77 @@
-use whitenoise_validator::errors::*;
-
-use ndarray::prelude::*;
-
-use rug::{float::Constant, Float, ops::Pow};
 use statrs::function::erf;
 
-use crate::utilities::noise;
-use crate::utilities;
+pub fn phi(t: f64) -> f64 {
+    0.5 * (1. + erf::erf(t / 2.0_f64.sqrt()))
+}
 
-pub fn predicate_stop_DT(epsilon: &f64, s: &f64, delta: &f64, delta_thr: &f64) -> bool {
-    let pred: bool;
-    if (delta > delta_thr) {
-        pred = caseA(&epsilon, &s) >= *delta;
+pub fn case_a(epsilon: f64, s: f64) -> f64 {
+    phi((epsilon * s).sqrt()) - epsilon.exp() * phi(-(epsilon * (s + 2.)).sqrt())
+}
+
+pub fn case_b(epsilon: f64, s: f64) -> f64 {
+    phi(-(epsilon * s).sqrt()) - epsilon.exp() * phi(-(epsilon * (s + 2.)).sqrt())
+}
+
+pub fn doubling_trick(
+    mut s_inf: f64, mut s_sup: f64, epsilon: f64, delta: f64, delta_thr: f64,
+) -> (f64, f64) {
+    let predicate = |s: f64| if delta > delta_thr {
+        case_a(epsilon, s) < delta
     } else {
-        pred = caseB(&epsilon, &s) <= *delta;
+        case_b(epsilon, s) > delta
+    };
+
+    while predicate(s_sup) {
+        s_inf = s_sup;
+        s_sup = 2.0 * s_inf;
     }
-    return(pred);
+    (s_inf, s_sup)
 }
 
-pub fn function_s_to_delta(epsilon: &f64, s: &f64, delta: &f64, delta_thr: &f64) -> f64 {
-    let ans: f64;
-    if (delta > delta_thr) {
-        ans = caseA(&epsilon, &s);
+pub fn binary_search(
+    mut s_inf: f64, mut s_sup: f64, epsilon: f64, delta: f64, delta_thr: f64, tol: f64,
+) -> f64 {
+    let mut s_mid: f64 = s_inf + (s_sup - s_inf) / 2.;
+
+    let s_to_delta = |s: f64| if delta > delta_thr {
+        case_a(epsilon, s)
     } else {
-        ans = caseB(&epsilon, &s);
-    }
-    return(ans);
-}
+        case_b(epsilon, s)
+    };
 
-pub fn predicate_left_BS(epsilon: &f64, s: &f64, delta: &f64, delta_thr: &f64) -> bool {
-    let pred: bool;
-    if (delta > delta_thr) {
-        pred = function_s_to_delta(&epsilon, &s, &delta, &delta_thr) > *delta;
-    } else {
-        pred = function_s_to_delta(&epsilon, &s, &delta, &delta_thr) < *delta;
-    }
-    return(pred);
-}
+    loop {
+        let delta_prime = s_to_delta(s_mid);
 
-pub fn function_s_to_alpha(epsilon: &f64, s: &f64, delta: &f64, delta_thr: &f64) -> f64 {
-    let ans: f64;
-    if (delta > delta_thr) {
-        ans = (1. + s/2.).sqrt() - (s/2.).sqrt();
-    } else {
-        ans = (1. + s/2.).sqrt() + (s/2.).sqrt();
-    }
-    return(ans);
-}
+        let diff = delta_prime - delta;
+        if (diff.abs() <= tol) && (diff <= 0.) { break }
 
-pub fn predicate_stop_BS(epsilon: &f64, s: &f64, delta: &f64, delta_thr: &f64, tol: &f64) -> bool {
-    let pred_1: bool = (function_s_to_delta(epsilon, s, delta, delta_thr) - *delta).abs() <= *tol;
-    let pred_2: bool = function_s_to_delta(epsilon, s, delta, delta_thr) <= *delta;
-    return(pred_1 & pred_2);
-}
-
-pub fn Phi(t: &f64) -> f64 {
-    return( 0.5*(1. + erf::erf(t/2.0_f64.sqrt())) );
-}
-
-pub fn caseA(epsilon: &f64, s: &f64) -> f64 {
-    return( Phi( &(epsilon*s).sqrt() ) - epsilon.exp() * Phi( &(-(epsilon*(s+2.)).sqrt()) ) );
-}
-
-pub fn caseB(epsilon: &f64, s: &f64) -> f64 {
-    return( Phi( &(-(epsilon*s).sqrt() )) - epsilon.exp() * Phi( &(-(epsilon*(s+2.)).sqrt()) ) );
-}
-
-pub fn doubling_trick(s_inf: &f64, s_sup: &f64, epsilon: &f64, delta: &f64, delta_thr: &f64) -> (f64, f64) {
-    let mut s_inf_mut = *s_inf;
-    let mut s_sup_mut = *s_sup;
-    while ( predicate_stop_DT(epsilon, &s_sup_mut, delta, delta_thr) == false ) {
-        s_inf_mut = s_sup_mut;
-        s_sup_mut = 2.0 * s_inf_mut;
-    }
-    return(s_inf_mut, s_sup_mut);
-}
-
-pub fn binary_search(s_inf: &f64, s_sup: &f64, epsilon: &f64, delta: &f64, delta_thr: &f64, tol: &f64) -> f64 {
-    let mut s_inf_mut: f64 = *s_inf;
-    let mut s_sup_mut: f64 = *s_sup;
-    let mut s_mid: f64 = s_inf_mut + (s_sup_mut - s_inf_mut)/2.;
-    while ( predicate_stop_BS(epsilon, &s_mid, delta, delta_thr, tol) == false ) {
-        if ( predicate_left_BS(epsilon, &s_mid, delta, delta_thr) == true ) {
-            s_sup_mut = s_mid;
+        let is_left = if delta > delta_thr {
+            delta_prime > delta
         } else {
-            s_inf_mut = s_mid;
+            delta_prime < delta
+        };
+
+        if is_left {
+            s_sup = s_mid;
+        } else {
+            s_inf = s_mid;
         }
-        s_mid = s_inf_mut + (s_sup_mut - s_inf_mut)/2.;
+        s_mid = s_inf + (s_sup - s_inf) / 2.;
     }
-    return(s_mid);
+    s_mid
 }
 
-pub fn get_analytic_gaussian_sigma(epsilon: &f64, delta: &f64, sensitivity: &f64) -> f64 {
-    let delta_thr = caseA(epsilon, &0.);
-    let mut alpha: f64 = 0.;
-    if (delta == &delta_thr) {
-        alpha = 1.;
+pub fn get_analytic_gaussian_sigma(epsilon: f64, delta: f64, sensitivity: f64) -> f64 {
+    let delta_thr = case_a(epsilon, 0.);
+
+    let alpha = if delta == delta_thr {
+        1.
     } else {
-        let (s_inf, s_sup) = doubling_trick(&0., &1., epsilon, delta, &delta_thr);
+        let (s_inf, s_sup) = doubling_trick(0., 1., epsilon, delta, delta_thr);
         let tol: f64 = 10_f64.powf(-12.);
-        let s_final = binary_search(&s_inf, &s_sup, epsilon, delta, &delta_thr, &tol);
-        alpha = function_s_to_alpha(epsilon, &s_final, delta, &delta_thr);
-    }
-    return( alpha * *sensitivity / (2. * *epsilon).sqrt() );
+        let s_final = binary_search(s_inf, s_sup, epsilon, delta, delta_thr, tol);
+        (1. + s_final / 2.).sqrt() - (s_final / 2.).sqrt()
+    };
+
+    alpha * sensitivity / (2. * epsilon).sqrt()
 }

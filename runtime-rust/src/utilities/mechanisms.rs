@@ -1,7 +1,6 @@
 use whitenoise_validator::errors::*;
 
-use crate::utilities::noise;
-use crate::utilities::analytic_gaussian;
+use crate::utilities::{noise, analytic_gaussian};
 use crate::utilities;
 
 /// Returns noise drawn according to the Laplace mechanism
@@ -63,42 +62,21 @@ pub fn laplace_mechanism(epsilon: f64, sensitivity: f64, enforce_constant_time: 
 /// use whitenoise_runtime::utilities::mechanisms::gaussian_mechanism;
 /// let n = gaussian_mechanism(0.1, 0.0001, 2.0, false);
 /// ```
-#[cfg(feature = "use-mpfr")]
-pub fn gaussian_mechanism(epsilon: f64, delta: f64, sensitivity: f64, _enforce_constant_time: bool) -> Result<f64> {
-    if epsilon <= 0. || delta <= 0. || sensitivity <= 0. {
-        return Err(format!("epsilon ({}), delta ({}) and sensitivity ({}) must all be positive", epsilon, delta, sensitivity).into());
-    }
-    let scale: f64 = sensitivity * (2. * (1.25 / delta).ln()).sqrt() / epsilon;
-    Ok(noise::sample_gaussian_mpfr(0., scale).to_f64())
-}
-
-#[cfg(not(feature = "use-mpfr"))]
 pub fn gaussian_mechanism(epsilon: f64, delta: f64, sensitivity: f64, enforce_constant_time: bool) -> Result<f64> {
     if epsilon <= 0. || delta <= 0. || sensitivity <= 0. {
         return Err(format!("epsilon ({}), delta ({}) and sensitivity ({}) must all be positive", epsilon, delta, sensitivity).into());
     }
     let scale: f64 = sensitivity * (2. * (1.25 / delta).ln()).sqrt() / epsilon;
-    let noise: f64 = noise::sample_gaussian(0., scale, enforce_constant_time);
-    Ok(noise)
+    Ok(noise::sample_gaussian(0., scale, enforce_constant_time))
 }
 
-#[cfg(feature = "use-mpfr")]
-pub fn analytic_gaussian_mechanism(epsilon: f64, delta: f64, sensitivity: f64, _enforce_constant_time: bool) -> Result<f64> {
-    if epsilon <= 0. || delta <= 0. || sensitivity <= 0. {
-        return Err(format!("epsilon ({}), delta ({}) and sensitivity ({}) must all be positive", epsilon, delta, sensitivity).into());
-    }
-    let scale: f64 = sensitivity * (2. * (1.25 / delta).ln()).sqrt() / epsilon;
-    Ok(noise::sample_gaussian_mpfr(0., scale).to_f64())
-}
-
-#[cfg(not(feature = "use-mpfr"))]
 pub fn analytic_gaussian_mechanism(epsilon: f64, delta: f64, sensitivity: f64, enforce_constant_time: bool) -> Result<f64> {
     if epsilon <= 0. || delta <= 0. || sensitivity <= 0. {
         return Err(format!("epsilon ({}), delta ({}) and sensitivity ({}) must all be positive", epsilon, delta, sensitivity).into());
     }
     let scale: f64 = analytic_gaussian::get_analytic_gaussian_sigma(epsilon, delta, sensitivity);
-    let noise: f64 = noise::sample_gaussian(0., scale, enforce_constant_time);
-    Ok(noise)
+    // this uses mpfr noise if available
+    Ok(noise::sample_gaussian(0., scale, enforce_constant_time))
 }
 
 /// Returns noise drawn according to the Geometric mechanism.

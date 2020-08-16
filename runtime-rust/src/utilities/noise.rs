@@ -424,41 +424,6 @@ pub fn sample_uniform_mpfr(min: f64, max: f64) -> Result<rug::Float> {
     Ok(unif)
 }
 
-/// Generates a draw from a Gaussian distribution using the MPFR library.
-///
-/// If [min, max] == [0, 1],then this is done in a way that respects exact rounding.
-/// Otherwise, the return will be the result of a composition of two operations that
-/// respect exact rounding (though the result will not necessarily).
-///
-/// # Arguments
-/// * `shift` - The expectation of the Gaussian distribution.
-/// * `scale` - The scaling parameter (standard deviation) of the Gaussian distribution.
-///
-/// # Return
-/// Draw from Gaussian(min, max)
-///
-/// # Example
-/// ```
-/// use whitenoise_runtime::utilities::noise::sample_gaussian_mpfr;
-/// let gaussian = sample_gaussian_mpfr(0.0, 1.0);
-/// ```
-#[cfg(feature = "use-mpfr")]
-pub fn sample_gaussian_mpfr(shift: f64, scale: f64) -> rug::Float {
-    // initialize 64-bit floats within mpfr/rug
-    // NOTE: We square the scale here because we ask for the standard deviation as the function input, but
-    //       the mpfr library wants the variance. We ask for std. dev. to be consistent with the rest of the library.
-    let mpfr_shift = Float::with_val(53, shift);
-    let mpfr_scale = Float::with_val(53, Float::with_val(53, scale).square());
-
-    // initialize randomness
-    let mut rng = GeneratorOpenSSL {};
-    let mut state = ThreadRandState::new_custom(&mut rng);
-
-    // generate Gaussian(0,1) according to mpfr standard, then convert to correct scale
-    let gauss = Float::with_val(64, Float::random_normal(&mut state));
-    gauss.mul_add(&mpfr_scale, &mpfr_shift)
-}
-
 /// Sample from Laplace distribution centered at shift and scaled by scale.
 /// 
 /// # Arguments
@@ -501,9 +466,39 @@ pub fn sample_gaussian(shift: f64, scale: f64, enforce_constant_time: bool) -> f
     Gaussian::new(shift, scale).inverse(probability)
 }
 
+/// Generates a draw from a Gaussian distribution using the MPFR library.
+///
+/// If [min, max] == [0, 1],then this is done in a way that respects exact rounding.
+/// Otherwise, the return will be the result of a composition of two operations that
+/// respect exact rounding (though the result will not necessarily).
+///
+/// # Arguments
+/// * `shift` - The expectation of the Gaussian distribution.
+/// * `scale` - The scaling parameter (standard deviation) of the Gaussian distribution.
+///
+/// # Return
+/// Draw from Gaussian(min, max)
+///
+/// # Example
+/// ```
+/// use whitenoise_runtime::utilities::noise::sample_gaussian_mpfr;
+/// let gaussian = sample_gaussian_mpfr(0.0, 1.0);
+/// ```
 #[cfg(feature = "use-mpfr")]
 pub fn sample_gaussian(shift: f64, scale: f64, _enforce_constant_time: bool) -> f64 {
-    sample_gaussian_mpfr(shift, scale).to_f64()
+    // initialize 64-bit floats within mpfr/rug
+    // NOTE: We square the scale here because we ask for the standard deviation as the function input, but
+    //       the mpfr library wants the variance. We ask for std. dev. to be consistent with the rest of the library.
+    let mpfr_shift = Float::with_val(53, shift);
+    let mpfr_scale = Float::with_val(53, Float::with_val(53, scale).square());
+
+    // initialize randomness
+    let mut rng = GeneratorOpenSSL {};
+    let mut state = ThreadRandState::new_custom(&mut rng);
+
+    // generate Gaussian(0,1) according to mpfr standard, then convert to correct scale
+    let gauss = Float::with_val(64, Float::random_normal(&mut state));
+    gauss.mul_add(&mpfr_scale, &mpfr_shift).to_f64()
 }
 
 /// Sample from truncated Gaussian distribution.
