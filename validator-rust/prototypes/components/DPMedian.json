@@ -18,7 +18,7 @@
       "type_rust": "String",
       "default_python": "'Automatic'",
       "default_rust": "String::from(\"Automatic\")",
-      "description": "Privatizing mechanism to use."
+      "description": "Privatizing mechanism to use. One of [`Exponential`, `Laplace`, `Gaussian`, `AnalyticGaussian`]."
     },
     "privacy_usage": {
       "type_proto": "repeated PrivacyUsage",

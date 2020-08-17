@@ -83,8 +83,8 @@ impl Evaluable for proto::GaussianMechanism {
             .try_for_each(|((mut data_column, sensitivity), (epsilon, delta))| data_column.iter_mut()
                 .zip(sensitivity.iter())
                 .try_for_each(|(v, sens)| {
-                    *v += utilities::mechanisms::analytic_gaussian_mechanism(
-                        epsilon, delta, *sens as f64, enforce_constant_time)? as Float;
+                    *v += utilities::mechanisms::gaussian_mechanism(
+                        epsilon, delta, *sens as f64, self.analytic, enforce_constant_time)? as Float;
                     Ok::<_, Error>(())
                 }))?;
 

@@ -72,7 +72,12 @@ impl Expandable for proto::DpSum {
                         privacy_usage: self.privacy_usage.clone()
                     }),
                     "gaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
-                        privacy_usage: self.privacy_usage.clone()
+                        privacy_usage: self.privacy_usage.clone(),
+                        analytic: false
+                    }),
+                    "analyticgaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
+                        privacy_usage: self.privacy_usage.clone(),
+                        analytic: true
                     }),
                     _ => panic!("Unexpected invalid token {:?}", mechanism.as_str()),
                 }),

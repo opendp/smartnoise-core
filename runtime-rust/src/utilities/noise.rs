@@ -632,7 +632,7 @@ pub fn sample_simple_geometric_mechanism(
     } else {
         // get random sign
         let sign: i64 = 2 * sample_bit()? as i64 - 1;
-        // sample from censored geometric. Unwrap is safe because (1. - alpha) is bounded by 1.
+        // sample from censored geometric
         let geom: i64 = sample_geometric_censored(1. - alpha, max_trials, enforce_constant_time)?;
         sign * geom
     })
