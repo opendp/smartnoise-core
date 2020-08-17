@@ -79,17 +79,6 @@ pub fn gaussian_mechanism(
     noise::sample_gaussian(0., scale, enforce_constant_time)
 }
 
-///TODO: TESTING
-pub fn analytic_gaussian_mechanism(epsilon: &f64, delta: &f64, sensitivity: &f64) -> Result<f64> {
-    if epsilon < &0. || delta < &0. || sensitivity < &0. {
-        return Err(format!("epsilon ({}), delta ({}) and sensitivity ({}) must all be positive", epsilon, delta, sensitivity).into());
-    }
-
-    let scale: f64 = analytic_gaussian::get_analytic_gaussian_sigma(epsilon, delta, sensitivity);
-    // this uses mpfr noise if available
-    noise::sample_gaussian(0., scale, enforce_constant_time)
-}
-
 /// Returns noise drawn according to the Geometric mechanism.
 ///
 /// Uses the Geometric mechanism as originally proposed in
