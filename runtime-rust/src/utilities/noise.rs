@@ -485,8 +485,8 @@ pub fn sample_gaussian(shift: f64, scale: f64, enforce_constant_time: bool) -> R
 ///
 /// # Example
 /// ```
-/// use whitenoise_runtime::utilities::noise::sample_gaussian_mpfr;
-/// let gaussian = sample_gaussian_mpfr(0.0, 1.0);
+/// use whitenoise_runtime::utilities::noise::sample_gaussian;
+/// let gaussian = sample_gaussian(0.0, 1.0, false);
 /// ```
 #[cfg(feature = "use-mpfr")]
 pub fn sample_gaussian(shift: f64, scale: f64, _enforce_constant_time: bool) -> Result<f64> {

@@ -90,10 +90,7 @@ impl Sensitivity for proto::Quantile {
         data_property.assert_non_null()?;
 
         match sensitivity_type {
-            SensitivitySpace::KNorm(k) => {
-                if k != &1 {
-                    return Err("Quantile sensitivity is only implemented for KNorm of 1".into());
-                }
+            SensitivitySpace::KNorm(_k) => {
                 let lower = data_property.lower_float()?;
                 let upper = data_property.upper_float()?;
 
