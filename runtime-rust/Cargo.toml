@@ -1,6 +1,6 @@
 [package]
 name = "whitenoise_runtime"
-version = "0.1.3"
+version = "0.2.0"
 authors = ["OpenDP-WhiteNoise <whitenoise@opendp.io>"]
 description = "A library of algorithms for differentially private data analysis."
 readme = "README.md"
@@ -33,13 +33,13 @@ noisy_float = "0.1.12"
     optional = true
 
     [dependencies.gmp-mpfr-sys]
-    version = "1.2.4"
+    version = "=1.3.1"
     default-features = false
     features = ["mpfr"]
     optional = true
 
     [dependencies.whitenoise_validator]
-        version = "0.1.3"
+    version = "0.2.0"
     path = "../validator-rust/"
 
 [features]
