@@ -6,7 +6,6 @@ use ndarray::{ArrayD, Axis, Zip};
 use ndarray::prelude::IxDyn;
 use openssl::rand::rand_bytes;
 
-use whitenoise_validator::errors::*;
 use whitenoise_validator::utilities::array::{slow_select, slow_stack};
 
 pub mod mechanisms;
@@ -24,8 +23,7 @@ pub mod snapping;
 /// Number of columns in data.
 pub fn get_num_columns<T>(data: &ArrayD<T>) -> Result<i64> {
     match data.ndim() {
-        0 => Err("data is a scalar".into()),
-        1 => Ok(1),
+        0 | 1 => Ok(1),
         2 => Ok(data.len_of(Axis(1)) as i64),
         _ => Err("data may be at most 2-dimensional".into())
     }

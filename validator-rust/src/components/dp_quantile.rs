@@ -69,12 +69,13 @@ impl Expandable for proto::DpQuantile {
             "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
                 privacy_usage: self.privacy_usage.clone()
             }),
+            "gaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
+                privacy_usage: self.privacy_usage.clone(),
+                analytic: false
+            }),
             "analyticgaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
                 privacy_usage: self.privacy_usage.clone(),
                 analytic: true
-            }),
-            "exponential" => proto::component::Variant::ExponentialMechanism(proto::ExponentialMechanism {
-                privacy_usage: self.privacy_usage.clone()
             }),
             "exponential" => proto::component::Variant::ExponentialMechanism(proto::ExponentialMechanism {
                 privacy_usage: self.privacy_usage.clone()
@@ -119,8 +120,8 @@ impl Report for proto::DpQuantile {
 
         let mut releases = Vec::new();
 
-        let minimums = data_property.lower_float().unwrap();
-        let maximums = data_property.upper_float().unwrap();
+        let minimums = data_property.lower_float()?;
+        let maximums = data_property.upper_float()?;
 
         let num_columns = data_property.num_columns()?;
         let privacy_usages = spread_privacy_usage(&self.privacy_usage, num_columns as usize)?;

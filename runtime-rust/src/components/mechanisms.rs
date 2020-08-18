@@ -8,8 +8,8 @@ use whitenoise_validator::utilities::{array::broadcast_ndarray, privacy::{get_de
 use crate::components::Evaluable;
 use crate::NodeArguments;
 use crate::utilities;
+use crate::utilities::{get_num_columns, to_nd};
 use crate::utilities::mechanisms::exponential_mechanism;
-use crate::utilities::get_num_columns;
 
 impl Evaluable for proto::LaplaceMechanism {
     fn evaluate(
@@ -250,14 +250,22 @@ impl Evaluable for proto::SnappingMechanism {
 
         let num_columns = get_num_columns(&data)? as usize;
 
-        let lower = take_argument(&mut arguments, "lower")?.array()?.float()?
-            .into_dimensionality::<ndarray::Ix1>()?.to_vec();
-        if num_columns != lower.len()  {
+        let lower = to_nd(match take_argument(&mut arguments, "lower")?.array()? {
+            Array::Float(l) => l,
+            Array::Int(l) => l.mapv(|v| v as Float),
+            _ => return Err("lower: must be numeric".into())
+        }, 1)?.into_dimensionality::<ndarray::Ix1>()?.to_vec();
+
+        if num_columns != lower.len() {
             return Err("lower must share the same number of columns as data".into())
         }
 
-        let upper = take_argument(&mut arguments, "upper")?.array()?.float()?
-            .into_dimensionality::<ndarray::Ix1>()?.to_vec();
+        let upper = to_nd(match take_argument(&mut arguments, "upper")?.array()? {
+            Array::Float(u) => u,
+            Array::Int(u) => u.mapv(|v| v as Float),
+            _ => return Err("upper: must be numeric".into())
+        }, 1)?.into_dimensionality::<ndarray::Ix1>()?.to_vec();
+
         if num_columns != upper.len() {
             return Err("upper must share the same number of columns as data".into())
         }

@@ -223,7 +223,7 @@ mod test_sample_bit {
     #[test]
     fn test_sample_bit() {
         (0..100).for_each(|_| {
-            dbg!(sample_bit());
+            dbg!(sample_bit().unwrap());
         });
     }
 }
@@ -243,7 +243,7 @@ mod test_sample_bit {
 /// ```
 /// // returns a uniform draw from the set {0,1,2}
 /// use whitenoise_runtime::utilities::noise::sample_uniform_int;
-/// let n = sample_uniform_int(0, 2)?;
+/// let n = sample_uniform_int(0, 2).unwrap();
 /// assert!(n == 0 || n == 1 || n == 2);
 /// ```
 ///
@@ -660,13 +660,14 @@ pub fn sample_simple_geometric_mechanism(
 ///
 /// # Example
 /// ```
+/// use whitenoise_runtime::utilities::noise::sample_snapping_noise;
 /// let mechanism_input: f64 = 50.0;
 /// let epsilon: f64 = 1.0;
 /// let b: f64 = 100.0;
 /// let sensitivity: f64 = 1.0/1000.0;
 /// let precision: i64 = 118;
-/// let snapping_noise = sampling_snapping_noise(&mechanism_input, &epsilon, &b, &sensitivity, &precision);
-/// println!("snapping noise: {}", snapping_noise);
+/// let snapping_noise = sample_snapping_noise(mechanism_input, epsilon, b, sensitivity, false);
+/// println!("snapping noise: {}", snapping_noise.unwrap());
 /// ```
 #[cfg(feature = "use-mpfr")]
 pub fn sample_snapping_noise(
@@ -675,7 +676,7 @@ pub fn sample_snapping_noise(
     // get parameters
     let SnappingConfig {
         b_scaled, epsilon_prime, m, precision, ..
-    } = snapping::parameter_setup(epsilon, b, sensitivity);
+    } = snapping::parameter_setup(epsilon, b, sensitivity)?;
 
     // ensure that precision is supported by the OS
     if precision > rug::float::prec_max() {
@@ -686,7 +687,7 @@ pub fn sample_snapping_noise(
     let mechanism_input_scaled = mechanism_input / sensitivity;
 
     // generate random sign and draw from Unif(0,1)
-    let sign = if sample_bit() {-1.} else {1.};
+    let sign = if sample_bit()? {-1.} else {1.};
     let u_star_sample = sample_uniform(0., 1., enforce_constant_time).unwrap();
 
     // clamp to get inner result
@@ -697,7 +698,7 @@ pub fn sample_snapping_noise(
         (sign_precise * scale_precise * log_unif_precise)).to_f64();
 
     // perform rounding and snapping
-    let inner_result_rounded = snapping::get_closest_multiple_of_lambda(&inner_result, &m);
+    let inner_result_rounded = snapping::get_closest_multiple_of_lambda(&inner_result, &m)?;
     let private_estimate = num::clamp(Float::with_val(precision, sensitivity * inner_result_rounded).to_f64(), -b.abs(), b.abs());
     Ok(private_estimate - mechanism_input)
 }

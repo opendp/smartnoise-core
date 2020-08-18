@@ -332,6 +332,20 @@ pub fn expand_component(
         maximum_id,
     ).chain_err(|| format!("at node_id {:?}", component_id))?;
 
+    // annoying block to ensure that
+    //    component, properties and public values are updated after the expansion
+    let component = if let Some(v) = result.computation_graph
+        .get(&component_id) { v.clone() } else { component };
+    let argument_indices = component.arguments();
+    let properties = argument_indices.iter()
+        .filter_map(|(k, id)| Some((k.clone(), result.properties.get(&id).or_else(|| properties.get(k))?.clone())))
+        .collect::<IndexMap<_, _>>();
+    let public_values = argument_indices.iter()
+        .filter_map(|(k, id)| Some((k.clone(), result.releases.get(&id)
+            .or_else(|| public_arguments.get(k))
+            .map(|v| &v.value)?)))
+        .collect::<IndexMap<IndexKey, &Value>>();
+
     if result.traversal.is_empty() {
         let Warnable(propagated_property, propagation_warnings) = component
             .propagate_property(&privacy_definition, public_values, properties, component_id)

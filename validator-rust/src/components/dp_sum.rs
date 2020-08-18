@@ -88,7 +88,7 @@ impl Expandable for proto::DpSum {
                         privacy_usage: self.privacy_usage.clone()
                     })
                 },
-                _ => bail!("Unexpected invalid token {:?}", mechanism.as_str()),
+                _ => bail!("Unexpected invalid token {:?}", self.mechanism.as_str()),
             });
 
             expansion.computation_graph.insert(component_id, proto::Component {

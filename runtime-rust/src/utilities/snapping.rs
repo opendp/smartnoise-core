@@ -1,4 +1,4 @@
-
+use whitenoise_validator::errors::*;
 
 use crate::utilities;
 
@@ -9,14 +9,14 @@ use crate::utilities;
 ///
 /// # Returns
 /// The number greater than x and the power of two it represents.
-pub fn get_smallest_greater_or_eq_power_of_two(x: f64) -> (f64, i64) {
+pub fn get_smallest_greater_or_eq_power_of_two(x: f64) -> Result<(f64, i64)> {
     // convert x to binary and split it into its component parts
     let x_binary = utilities::f64_to_binary(x);
     let (sign, exponent, mantissa) = utilities::split_ieee_into_components(&x_binary);
 
     // build string of all zeros to be used later
     let all_zeros = "0".repeat(52);
-    if mantissa == all_zeros {
+    Ok(if mantissa == all_zeros {
         // if mantissa is all zeros, then x is already a power of two
         (x, i64::from_str_radix(&exponent, 2).unwrap() - 1023)
     } else {
@@ -24,9 +24,9 @@ pub fn get_smallest_greater_or_eq_power_of_two(x: f64) -> (f64, i64) {
         let exponent_plus_one_int = i64::from_str_radix(&exponent, 2).unwrap() + 1;
         let exponent_plus_one_bin = format!("{:011b}", exponent_plus_one_int);
         let greater_or_eq_power_of_two_bin = utilities::combine_components_into_ieee((sign, exponent_plus_one_bin, all_zeros));
-        let greater_or_eq_power_of_two_f64 = utilities::binary_to_f64(&greater_or_eq_power_of_two_bin);
+        let greater_or_eq_power_of_two_f64 = utilities::binary_to_f64(&greater_or_eq_power_of_two_bin)?;
         (greater_or_eq_power_of_two_f64, exponent_plus_one_int - 1023)
-    }
+    })
 }
 
 /// Accepts components of IEEE string and `power`, divides the exponent by `power`, and returns the updated components.
@@ -140,7 +140,7 @@ pub fn round_components_to_nearest_int(
 ///
 /// # Returns
 /// Closest multiple of Lambda to x.
-pub fn get_closest_multiple_of_lambda(x: &f64, m: &i64) -> f64 {
+pub fn get_closest_multiple_of_lambda(x: &f64, m: &i64) -> Result<f64> {
     let x_binary = utilities::f64_to_binary(*x);
     let components = utilities::split_ieee_into_components(&x_binary);
     let components = divide_components_by_power_of_two(components, &m);
@@ -203,17 +203,17 @@ pub fn get_snapping_epsilon(accuracy: &f64, alpha: &f64, sensitivity: &f64, b: &
 /// Finds precision necessary to run Snapping mechanism.
 /// 
 /// # Arguments
-/// * `B` - Upper bound on function value being privatized.
+/// * `b` - Upper bound on function value being privatized.
 /// 
 /// # Returns
 /// Gets necessary precision for Snapping mechanism.
-pub fn get_precision(b: f64) -> u32 {
-    if b <= 2_u32.pow(66) as f64 {
+pub fn get_precision(b: f64) -> Result<u32> {
+    Ok(if b <= 2_u128.pow(66) as f64 {
         118
     } else {
-        let (_t, k) = get_smallest_greater_or_eq_power_of_two(b);
+        let (_t, k) = get_smallest_greater_or_eq_power_of_two(b)?;
         118 + (k as u32) - 66
-    }
+    })
 }
 
 pub struct SnappingConfig {
@@ -235,9 +235,9 @@ pub struct SnappingConfig {
 ///
 /// # Returns
 /// Updated parameters for the Snapping mechanism.
-pub fn parameter_setup(epsilon: f64, b: f64, sensitivity: f64) -> SnappingConfig {
+pub fn parameter_setup(epsilon: f64, b: f64, sensitivity: f64) -> Result<SnappingConfig> {
     // find sufficient precision
-    let precision = get_precision(b);
+    let precision = get_precision(b)?;
 
     // scale clamping bound by sensitivity
     let b_scaled = b / sensitivity;
@@ -245,15 +245,15 @@ pub fn parameter_setup(epsilon: f64, b: f64, sensitivity: f64) -> SnappingConfig
 
     // NOTE: this Lambda is calculated relative to lambda = 1/epsilon' rather than sensitivity/epsilon'
     //    because we have already scaled by the sensitivity
-    let (lambda_prime_scaled, m) = get_smallest_greater_or_eq_power_of_two(1.0 / epsilon_prime);
+    let (lambda_prime_scaled, m) = get_smallest_greater_or_eq_power_of_two(1.0 / epsilon_prime)?;
     let lambda_prime = lambda_prime_scaled * sensitivity;
 
-    SnappingConfig {
+    Ok(SnappingConfig {
         b_scaled,
         epsilon_prime,
         lambda_prime,
         lambda_prime_scaled,
         m,
         precision
-    }
+    })
 }

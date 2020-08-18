@@ -26,6 +26,11 @@ impl Component for proto::SnappingMechanism {
             return Err("group size must be greater than zero".into())
         }
 
+        properties.get(&IndexKey::from("lower"))
+            .ok_or_else(|| Error::from("lower: missing"))?;
+        properties.get(&IndexKey::from("upper"))
+            .ok_or_else(|| Error::from("upper: missing"))?;
+
         let mut data_property = properties.get::<IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
@@ -101,25 +106,29 @@ impl Expandable for proto::SnappingMechanism {
             maximum_id
         )?;
 
-        let data_property = properties.get::<IndexKey>(&"data".into())
-            .ok_or("data: missing")?.array()?.clone();
+        if lower_id.is_some() || upper_id.is_some() {
+            let mut component = expansion.computation_graph.get(&component_id).unwrap().clone();
 
-        if let Some(lower_id) = lower_id {
-            let lower_value: Value = ndarray::arr1(&data_property.lower_float()?).into_dyn().into();
-            let (patch_node, release) = get_literal(lower_value, component.submission)?;
-            expansion.computation_graph.insert(lower_id, patch_node);
-            expansion.properties.insert(lower_id, infer_property(&release.value, None)?);
-            expansion.releases.insert(lower_id, release);
+            let data_property = properties.get::<IndexKey>(&"data".into())
+                .ok_or("data: missing")?.array()?.clone();
+
+            if let Some(lower_id) = lower_id {
+                let (patch_node, release) = get_literal(Value::Array(data_property.lower()?), component.submission)?;
+                expansion.computation_graph.insert(lower_id, patch_node);
+                expansion.properties.insert(lower_id, infer_property(&release.value, None)?);
+                expansion.releases.insert(lower_id, release);
+                component.insert_argument(&"lower".into(), lower_id);
+            }
+
+            if let Some(upper_id) = upper_id {
+                let (patch_node, release) = get_literal(Value::Array(data_property.upper()?), component.submission)?;
+                expansion.computation_graph.insert(upper_id, patch_node);
+                expansion.properties.insert(upper_id, infer_property(&release.value, None)?);
+                expansion.releases.insert(upper_id, release);
+                component.insert_argument(&"upper".into(), upper_id);
+            }
+            expansion.computation_graph.insert(component_id, component);
         }
-
-        if let Some(upper_id) = upper_id {
-            let upper_value: Value = ndarray::arr1(&data_property.upper_float()?).into_dyn().into();
-            let (patch_node, release) = get_literal(upper_value, component.submission)?;
-            expansion.computation_graph.insert(upper_id, patch_node);
-            expansion.properties.insert(upper_id, infer_property(&release.value, None)?);
-            expansion.releases.insert(upper_id, release);
-        }
-
         Ok(expansion)
     }
 }

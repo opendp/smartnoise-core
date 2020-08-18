@@ -1,11 +1,11 @@
 use indexmap::map::IndexMap;
 
 use crate::{base, Warnable};
-use crate::base::{Array, DataType, IndexKey, Nature, NatureContinuous, Value, ValueProperties, Vector1DNull};
+use crate::base::{Array, DataType, IndexKey, Nature, NatureContinuous, Value, ValueProperties, Vector1DNull, NatureCategorical, Jagged};
 use crate::components::{Component, Expandable};
 use crate::errors::*;
 use crate::proto;
-use crate::utilities::{get_argument, get_literal, prepend};
+use crate::utilities::{get_argument, get_literal, prepend, standardize_categorical_argument, standardize_null_candidates_argument};
 use crate::utilities::inference::infer_property;
 
 impl Component for proto::Impute {
@@ -27,33 +27,61 @@ impl Component for proto::Impute {
         // integers may not be null
         if data_property.data_type == DataType::Int {
             if data_property.nullity {
-                return Err("impossible state: integers contain nullity".into())
+                return Err("data: integers may not contain nullity".into())
             }
             return Ok(ValueProperties::Array(data_property).into())
         }
 
         if data_property.data_type == DataType::Unknown {
-            return Err("data_type must be known".into())
+            return Err("data: data_type must be known".into())
         }
 
-        if let Some(categories) = public_arguments.get::<IndexKey>(&"categories".into()) {
+        let num_columns = data_property.num_columns
+            .ok_or("data: number of columns missing")?;
+
+        if let Some(&categories) = public_arguments.get::<IndexKey>(&"categories".into()) {
             if data_property.data_type != categories.ref_jagged()?.data_type() {
                 return Err("categories and data must be homogeneously typed".into())
             }
 
-            let null_values = get_argument(&public_arguments, "null_values")?.ref_jagged()?;
+            let null_values = get_argument(&public_arguments, "null_values")?.clone().jagged()?;
 
             if null_values.data_type() != data_property.data_type {
                 return Err("null_values and data must be homogeneously typed".into())
             }
 
-            // TODO: propagation of categories through imputation and resize
-            data_property.nature = None;
+            data_property.nature = match data_property.nature {
+                Some(Nature::Categorical(NatureCategorical { categories: prior })) => Some(Nature::Categorical(NatureCategorical {
+                    categories: match (prior, categories.clone().jagged()?, null_values) {
+                        (Jagged::Int(prior), Jagged::Int(categories), Jagged::Int(nulls)) =>
+                            standardize_categorical_argument(prior, num_columns)?.into_iter()
+                                .zip(standardize_categorical_argument(categories, num_columns)?.into_iter())
+                                .zip(standardize_null_candidates_argument(nulls, num_columns)?.into_iter())
+                                .map(|((prior, cands), nulls)| prior.into_iter()
+                                    .filter(|p| !nulls.contains(p)).chain(cands).collect::<Vec<_>>())
+                                .collect::<Vec<_>>().into(),
+                        (Jagged::Bool(prior), Jagged::Bool(categories), Jagged::Bool(nulls)) =>
+                            standardize_categorical_argument(prior, num_columns)?.into_iter()
+                                .zip(standardize_categorical_argument(categories, num_columns)?.into_iter())
+                                .zip(standardize_null_candidates_argument(nulls, num_columns)?.into_iter())
+                                .map(|((prior, cands), nulls)| prior.into_iter()
+                                    .filter(|p| !nulls.contains(p)).chain(cands).collect::<Vec<_>>())
+                                .collect::<Vec<_>>().into(),
+                        (Jagged::Str(prior), Jagged::Str(categories), Jagged::Str(nulls)) =>
+                            standardize_categorical_argument(prior, num_columns)?.into_iter()
+                                .zip(standardize_categorical_argument(categories, num_columns)?.into_iter())
+                                .zip(standardize_null_candidates_argument(nulls, num_columns)?.into_iter())
+                                .map(|((prior, cands), nulls)| prior.into_iter()
+                                    .filter(|p| !nulls.contains(p)).chain(cands).collect::<Vec<_>>())
+                                .collect::<Vec<_>>().into(),
+                        _ => return Err("categories may not be float".into())
+                    }
+                })),
+                _ => None
+            };
             return Ok(ValueProperties::Array(data_property).into())
         }
 
-        let num_columns = data_property.num_columns
-            .ok_or("data: number of columns missing")?;
         // 1. check public arguments (constant n)
         let impute_lower = match public_arguments.get::<IndexKey>(&"lower".into()) {
             Some(lower) => lower.ref_array()?.clone().vec_float(Some(num_columns))
