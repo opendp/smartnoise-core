@@ -269,7 +269,7 @@ pub fn binary_to_f64(binary_string: &str) -> Result<f64> {
 ///
 /// # Return
 /// (sign, exponent, mantissa) - where each is a `String`.
-pub fn split_ieee_into_components(binary_string: &String) -> (String, String, String) {
+pub fn split_ieee_into_components(binary_string: String) -> (String, String, String) {
     return (binary_string[0..1].to_string(), binary_string[1..12].to_string(), binary_string[12..].to_string());
 }
 

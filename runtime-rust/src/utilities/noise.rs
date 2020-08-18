@@ -698,7 +698,7 @@ pub fn sample_snapping_noise(
         (sign_precise * scale_precise * log_unif_precise)).to_f64();
 
     // perform rounding and snapping
-    let inner_result_rounded = snapping::get_closest_multiple_of_lambda(&inner_result, &m)?;
+    let inner_result_rounded = snapping::get_closest_multiple_of_lambda(inner_result, m)?;
     let private_estimate = num::clamp(Float::with_val(precision, sensitivity * inner_result_rounded).to_f64(), -b.abs(), b.abs());
     Ok(private_estimate - mechanism_input)
 }

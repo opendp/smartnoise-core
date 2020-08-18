@@ -12,7 +12,7 @@ use crate::utilities;
 pub fn get_smallest_greater_or_eq_power_of_two(x: f64) -> Result<(f64, i64)> {
     // convert x to binary and split it into its component parts
     let x_binary = utilities::f64_to_binary(x);
-    let (sign, exponent, mantissa) = utilities::split_ieee_into_components(&x_binary);
+    let (sign, exponent, mantissa) = utilities::split_ieee_into_components(x_binary);
 
     // build string of all zeros to be used later
     let all_zeros = "0".repeat(52);
@@ -40,15 +40,14 @@ pub fn get_smallest_greater_or_eq_power_of_two(x: f64) -> Result<(f64, i64)> {
 /// # Return
 /// Updated components - sign, updated exponent, and mantissa.
 pub fn divide_components_by_power_of_two(
-    (sign, exponent, mantissa): (String, String, String), power: &i64,
+    (sign, exponent, mantissa): (String, String, String), power: i64,
 ) -> (String, String, String) {
 
     // update exponent by subtracting power, then convert back to binary
     let updated_exponent_int = i64::from_str_radix(&exponent, 2).unwrap() - power;
-    let updated_exponent_bin = format!("{:011b}", updated_exponent_int);
 
     // return components
-    return (sign.to_string(), updated_exponent_bin.to_string(), mantissa.to_string());
+    (sign.to_string(), format!("{:011b}", updated_exponent_int.max(0)), mantissa.to_string())
 }
 
 /// Accepts components of IEEE string and `power`, multiplies the exponent by `power`, and returns the updated components.
@@ -62,13 +61,12 @@ pub fn divide_components_by_power_of_two(
 /// # Return
 /// Updated components: sign, updated exponent, and mantissa.
 pub fn multiply_components_by_power_of_two(
-    (sign, exponent, mantissa): (String, String, String), power: &i64
+    (sign, exponent, mantissa): (String, String, String), power: i64
 ) -> (String, String, String) {
     // update exponent by adding power, then convert back to binary
     let updated_exponent_int = i64::from_str_radix(&exponent, 2).unwrap() + power;
-
     // return components
-    return (sign.to_string(), format!("{:011b}", updated_exponent_int).to_string(), mantissa.to_string());
+    (sign.to_string(), format!("{:011b}", updated_exponent_int.max(0)), mantissa.to_string())
 }
 
 /// Accepts components of IEEE representation, rounds to the nearest integer, and returns updated components.
@@ -140,14 +138,23 @@ pub fn round_components_to_nearest_int(
 ///
 /// # Returns
 /// Closest multiple of Lambda to x.
-pub fn get_closest_multiple_of_lambda(x: &f64, m: &i64) -> Result<f64> {
-    let x_binary = utilities::f64_to_binary(*x);
-    let components = utilities::split_ieee_into_components(&x_binary);
-    let components = divide_components_by_power_of_two(components, &m);
+pub fn get_closest_multiple_of_lambda(x: f64, m: i64) -> Result<f64> {
+    let x_binary = utilities::f64_to_binary(x);
+    let components = utilities::split_ieee_into_components(x_binary);
+    let components = divide_components_by_power_of_two(components, m);
     let components = round_components_to_nearest_int(components);
-    let components = multiply_components_by_power_of_two(components, &m);
+    let components = multiply_components_by_power_of_two(components, m);
     let lambda_mult_binary = utilities::combine_components_into_ieee(components);
     utilities::binary_to_f64(&lambda_mult_binary)
+}
+
+
+#[test]
+fn test_get_closest_multiple_of_lambda() {
+    (0..100).for_each(|i| {
+        let x = 1. - 0.01 * (i as f64);
+        println!("{}: {}", x, get_closest_multiple_of_lambda(x, -1).unwrap())
+    });
 }
 
 /// Gets functional epsilon for Snapping mechanism such that privacy loss does not exceed the user's proposed budget.
@@ -155,7 +162,7 @@ pub fn get_closest_multiple_of_lambda(x: &f64, m: &i64) -> Result<f64> {
 /// 
 /// # Arguments
 /// * `epsilon` - Desired privacy guarantee.
-/// * `B` - Upper bound on function value being privatized.
+/// * `b` - Upper bound on function value being privatized.
 /// * `precision` - Number of bits of precision to which arithmetic inside the mechanism has access.
 ///
 /// # Returns
