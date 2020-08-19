@@ -5,6 +5,11 @@
     },
     "data_y": {
       "type_value": "Array"
+    },
+    "k": {
+      "type_value": "Integer",
+      "default_python": "None",
+      "default_rust": "None"
     }
   },
   "id": "DPLinearRegression",

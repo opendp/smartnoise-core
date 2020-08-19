@@ -23,8 +23,7 @@ impl Evaluable for proto::TheilSenKMatch {
         Ok(ReleaseNode::new(dp_theil_sen_k_match(
             &take_argument(&mut arguments, "data_x")?.array()?.float()?,
             &take_argument(&mut arguments, "data_y")?.array()?.float()?,
-            // Q: What is a better way to do this?
-            take_argument(&mut arguments, "k")?.array()?.int()?[0]
+            take_argument(&mut arguments, "k")?.array()?.first_int()?
         )?.into()))
     }
 }

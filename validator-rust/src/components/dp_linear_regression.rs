@@ -28,37 +28,44 @@ impl Expandable for proto::DpLinearRegression {
             .ok_or_else(|| Error::from("data must be provided as an argument"))?;
         let id_y = *component.arguments().get::<base::IndexKey>(&"data_y".into())
             .ok_or_else(|| Error::from("data must be provided as an argument"))?;
+        let mut arguments = indexmap!["data_x".into() => id_data_x, "data_y".into() => id_data_y];
 
-        // Question: Why do we increment this?
+        match self.implementation.to_lowercase().as_str() {
+            "theil-sen" => (),
+            "theil-sen-k-match" => {
+                arguments.insert("k".into(), *component.arguments().get::<base::IndexKey>(&"k".into())
+                    .ok_or_else(|| Error::from("k must be provided as an argument to k-match"))?);
+            }
+            _ => return Err(Error::from("Invalid implementation argument"))
+        }
+
         maximum_id += 1;
         let id_lin_reg = maximum_id;
 
-        if self.implementation.to_lowercase().as_str() == "theil-sen" {
-            expansion.computation_graph.insert(id_lin_reg, proto::Component {
-                arguments: Some(proto::ArgumentNodeIds::new(
-                    indexmap!["data_x".into() => id_data_x, "data_y".into() => id_data_y])),
-                variant: Some(proto::component::Variant::TheilSen {
-                    privacy_usage: self.privacy_usage.clone()
-                }),
-                omit: true,
-                submission: component.submission,
-            });
-        } else if self.mechanism.to_lowercase().as_str() == "theil-sen-k-match" {
-            let k = *component.arguments().get::<base::IndexKey>(&"k".into())
-                .ok_or_else(|| Error::from("k must be provided as an argument to k-match"))?;
-            expansion.computation_graph.insert(id_lin_reg, proto::Component {
-                arguments: Some(proto::ArgumentNodeIds::new(
-                    indexmap!["data_x".into() => id_data_x, "data_y".into() => id_data_y, "k".into() => id_k])),
-                variant: Some(proto::component::Variant::TheilSenKMatch {
-                    privacy_usage: self.privacy_usage.clone()
-                }),
-                omit: true,
-                submission: component.submission,
-            });
-        } else {
-            Error("Invalid implementation argument")
-        }
-    Ok(expansion)
+        expansion.computation_graph.insert(id_lin_reg, proto::Component {
+            arguments: Some(proto::ArgumentNodeIds::new(
+                arguments)),
+            variant: Some(proto::component::Variant::TheilSen {
+                privacy_usage: self.privacy_usage.clone()
+            }),
+            omit: true,
+            submission: component.submission,
+        });
+
+        expansion.traversal.push(id_lin_reg);
+
+        expansion.computation_graph.insert(component_id, proto::Component {
+            arguments: Some(proto::ArgumentNodeIds::new(indexmap!["data".into() => id_lin_reg])),
+            variant: Some(proto::component::Variant::DpMedian(proto::DpMedian {
+                mechanism: self.median_implementation.clone(),
+                privacy_usage: self.privacy_usage.clone(),
+                interpolation: "midpoint".to_string()
+            })),
+            omit: component.omit,
+            submission: component.submission,
+        });
+
+        Ok(expansion)
     }
 }
 
