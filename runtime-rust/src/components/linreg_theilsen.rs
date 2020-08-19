@@ -1,4 +1,5 @@
 use whitenoise_validator::{Float, Integer};
+use whitenoise_validator::errors::*;
 use crate::components::linreg_error::Error;
 use rand::prelude::*;
 use crate::utilities::{noise};
@@ -10,21 +11,16 @@ use crate::NodeArguments;
 
 
 impl Evaluable for proto::TheilSen {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode, E> {
-        Ok(ReleaseNode::new(compute_all_estimates(
-            &take_argument(&mut arguments, "data_x")?.array()?.float()?,
-            &take_argument(&mut arguments, "data_y")?.array()?.float()?
-        )?.into()))
-    }
-}
-
-impl Evaluable for proto::TheilSenKMatch {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode, E> {
-        Ok(ReleaseNode::new(dp_theil_sen_k_match(
-            &take_argument(&mut arguments, "data_x")?.array()?.float()?,
-            &take_argument(&mut arguments, "data_y")?.array()?.float()?,
-            take_argument(&mut arguments, "k")?.array()?.first_int()?
-        )?.into()))
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
+        let x = take_argument(&mut arguments, "data_x")?.array()?.float()?;
+        let y = take_argument(&mut arguments, "data_y")?.array()?.float()?;
+        match self.implementation.to_lowercase().as_str() {
+            "theil-sen" => Ok(ReleaseNode::new(compute_all_estimates(&x, &y)?.into())),
+            "theil-sen-k-match" => Ok(ReleaseNode::new(dp_theil_sen_k_match(
+                &x, &y,
+                take_argument(&mut arguments, "k")?.array()?.first_int()?,
+            )?.into()))
+        }
     }
 }
 
