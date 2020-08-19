@@ -22,7 +22,6 @@ impl Expandable for proto::DpLinearRegression {
         component_id: u32,
         mut maximum_id: u32,
     ) -> Result<base::ComponentExpansion> {
-
         let mut expansion = base::ComponentExpansion::default();
         let id_x = *component.arguments().get::<base::IndexKey>(&"data_x".into())
             .ok_or_else(|| Error::from("data must be provided as an argument"))?;
@@ -33,8 +32,16 @@ impl Expandable for proto::DpLinearRegression {
         match self.implementation.to_lowercase().as_str() {
             "theil-sen" => (),
             "theil-sen-k-match" => {
-                arguments.insert("k".into(), *component.arguments().get::<base::IndexKey>(&"k".into())
-                    .ok_or_else(|| Error::from("k must be provided as an argument to k-match"))?);
+                arguments.insert("k".into(), component.arguments().get::<base::IndexKey>(&"k".into()).copied().unwrap_or_else(|| {
+                    maximum_id += 1;
+                    let id_k = maximum_id.to_owned();
+                    let value = Value::from(100);
+                    expansion.properties.insert(id_k, infer_property(&value, None)?);
+                    let (patch_node, release) = get_literal(value, component.submission)?;
+                    expansion.computation_graph.insert(id_k, patch_node);
+                    expansion.releases.insert(id_k, release);
+                    maximum_id
+                }));
             }
             _ => return Err(Error::from("Invalid implementation argument"))
         }
@@ -59,7 +66,7 @@ impl Expandable for proto::DpLinearRegression {
             variant: Some(proto::component::Variant::DpMedian(proto::DpMedian {
                 mechanism: self.median_implementation.clone(),
                 privacy_usage: self.privacy_usage.clone(),
-                interpolation: "midpoint".to_string()
+                interpolation: "midpoint".to_string(),
             })),
             omit: component.omit,
             submission: component.submission,
