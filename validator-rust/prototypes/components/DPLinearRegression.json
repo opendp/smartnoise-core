@@ -1,0 +1,33 @@
+{
+  "arguments": {
+    "data_x": {
+      "type_value": "Array"
+    },
+    "data_y": {
+      "type_value": "Array"
+    }
+  },
+  "id": "DPLinearRegression",
+  "name": "dp_linear_regression",
+  "options": {
+    "implementation": {
+      "type_proto": "string",
+      "type_rust": "String",
+      "default_python": "\"theil-sen-k-match\"",
+      "default_rust": "String::from(\"theil-sen-k-match\")",
+      "description": "Theil-Sen implementation to use. One of [`theil-sen`, `theil-sen-k-match`]"
+    },
+    "privacy_usage": {
+      "type_proto": "repeated PrivacyUsage",
+      "type_rust": "Vec<proto::PrivacyUsage>",
+      "default_python": "None",
+      "description": "Object describing the type and amount of privacy to be used for the mechanism release."
+    }
+  },
+  "return": {
+    "type_value": "Array",
+    "description": "Differentially private estimate of the slope and intercept of the line fit to the data."
+  },
+  "description": "Returns differentially private estimates of the slope and intercept.",
+  "proto_id": 64
+}

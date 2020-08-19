@@ -2,6 +2,33 @@ use whitenoise_validator::{Float, Integer};
 use crate::components::linreg_error::Error;
 use rand::prelude::*;
 use crate::utilities::{noise};
+use whitenoise_validator::base::{ReleaseNode};
+use crate::components::Evaluable;
+use whitenoise_validator::utilities::take_argument;
+use ndarray::ArrayD;
+use crate::NodeArguments;
+
+
+impl Evaluable for proto::TheilSen {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode, E> {
+        Ok(ReleaseNode::new(compute_all_estimates(
+            &take_argument(&mut arguments, "data_x")?.array()?.float()?,
+            &take_argument(&mut arguments, "data_y")?.array()?.float()?
+        )?.into()))
+    }
+}
+
+impl Evaluable for proto::TheilSenKMatch {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode, E> {
+        Ok(ReleaseNode::new(dp_theil_sen_k_match(
+            &take_argument(&mut arguments, "data_x")?.array()?.float()?,
+            &take_argument(&mut arguments, "data_y")?.array()?.float()?,
+            // Q: What is a better way to do this?
+            take_argument(&mut arguments, "k")?.array()?.int()?[0]
+        )?.into()))
+    }
+}
+
 
 /// Select k random values from range 1 to n
 ///
@@ -36,9 +63,12 @@ pub fn _compute_intercept(x: &Vec<Float>, y: &Vec<Float>, slope: Float) -> Float
 
 /// Compute slope between all pairs of points where defined
 ///
-pub fn compute_all_estimates(x: &Vec<Float>, y: &Vec<Float>, n: Integer) -> (Vec<Float>, Vec<Float>) {
+pub fn compute_all_estimates(x: &ArrayD<Float>, y: &ArrayD<Float>) -> (Vec<Float>, Vec<Float>) {
     let mut slopes: Vec<Float> = Vec::new();
     let mut intercepts: Vec<Float> = Vec::new();
+    let n = x.len();
+    assert_eq!(x.len(), y.len());
+
     for p in 0..n as usize {
         for q in p+1..n as usize {
             let mut x_pair: Vec<Float> = Vec::new();
@@ -112,9 +142,13 @@ pub fn dp_theil_sen(x: &Vec<Float>, y: &Vec<Float>, n: Integer, epsilon: Float, 
 /// Implementation from paper
 /// Separate data into two bins, match members of each bin to form pairs
 /// Note: k is number of trials here
-pub fn dp_theil_sen_k_match(x: &Vec<Float>, y: &Vec<Float>, n: Integer, k: Integer, epsilon: Float, r_lower: Float, r_upper: Float, enforce_constant_time: bool) -> Result<(Float, Float), Error> {
+pub fn dp_theil_sen_k_match(x: &ArrayD<Float>, y: &ArrayD<Float>, k: Integer) -> Result<(Vec<Float>, Vec<Float>), Error> {
     let mut slopes: Vec<Float> = Vec::new();
     let mut intercepts: Vec<Float> = Vec::new();
+
+    let n = x.len();
+    assert_eq!(x.len(), y.len());
+
     for _iteration in 0..k {
         let mut shuffled: Vec<(Float, Float)> = x.iter().map(|a| (*a)).zip(y.iter().map(|a| (*a))).collect();
         let mut rng = rand::thread_rng();
@@ -137,10 +171,12 @@ pub fn dp_theil_sen_k_match(x: &Vec<Float>, y: &Vec<Float>, n: Integer, k: Integ
             }
         }
     }
-    let slope = dp_med(&slopes, epsilon, r_lower, r_upper, enforce_constant_time);
-    let intercept = dp_med(&intercepts, epsilon, r_lower, r_upper, enforce_constant_time);
 
-    Ok((slope, intercept))
+    // Try to do this as one call to multidimensional median
+    // let slope = dp_med(&slopes, epsilon, r_lower, r_upper, enforce_constant_time);
+    // let intercept = dp_med(&intercepts, epsilon, r_lower, r_upper, enforce_constant_time);
+
+    Ok((slopes, intercepts))
 
 }
 
