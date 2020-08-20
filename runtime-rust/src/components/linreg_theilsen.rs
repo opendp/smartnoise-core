@@ -5,16 +5,16 @@ use crate::utilities::{noise};
 use whitenoise_validator::base::{ReleaseNode};
 use crate::components::Evaluable;
 use whitenoise_validator::utilities::take_argument;
-use ndarray::{array, Array, ArrayD, Axis, IxDyn, stack};
+use ndarray::{Array, ArrayD, Axis, IxDyn, stack};
 use crate::NodeArguments;
 
 
 impl Evaluable for proto::TheilSen {
+
     fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
         let x = take_argument(&mut arguments, "data_x")?.array()?.float()?;
         let y = take_argument(&mut arguments, "data_y")?.array()?.float()?;
-        // TODO
-        let epsilon = 1.0;
+
         match self.implementation.to_lowercase().as_str() {
             "theil-sen" => {
                 let (slopes, intercepts) = compute_all_estimates(&x, &y);
@@ -133,7 +133,7 @@ pub fn dp_med(z: &ArrayD<Float>, epsilon: Float, r_lower: Float, r_upper: Float,
 
 /// DP-TheilSen over all n points in data
 ///
-pub fn dp_theil_sen(x: &ArrayD<Float>, y: &ArrayD<Float>, n: Integer, epsilon: Float, r_lower: Float, r_upper: Float, enforce_constant_time: bool) -> Result<(Float, Float)> {
+pub fn dp_theil_sen(x: &ArrayD<Float>, y: &ArrayD<Float>, epsilon: Float, r_lower: Float, r_upper: Float, enforce_constant_time: bool) -> Result<(Float, Float)> {
     let (slopes, intercepts) = compute_all_estimates(x, y);
 
     let slope = dp_med(&slopes, epsilon, r_lower, r_upper, enforce_constant_time);
@@ -197,12 +197,13 @@ pub fn dp_theil_sen_k_subset(x: &ArrayD<Float>, y: &ArrayD<Float>, n: Integer, k
         y_kmatch[j] = y[i];
         j+=1;
     }
-    dp_theil_sen(&x_kmatch, &y_kmatch, k, scaled_epsilon, r_lower, r_upper, enforce_constant_time)
+    dp_theil_sen(&x_kmatch, &y_kmatch, scaled_epsilon, r_lower, r_upper, enforce_constant_time)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use ndarray::array;
 
     pub fn median(x: &Vec<Float>) -> Float {
         let mut tmp: Vec<Float> = x.clone();
