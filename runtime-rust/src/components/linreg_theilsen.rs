@@ -1,12 +1,11 @@
-use whitenoise_validator::{Float, Integer};
+use whitenoise_validator::{proto, Float, Integer};
 use whitenoise_validator::errors::*;
-use crate::components::linreg_error::Error;
 use rand::prelude::*;
 use crate::utilities::{noise};
 use whitenoise_validator::base::{ReleaseNode};
 use crate::components::Evaluable;
 use whitenoise_validator::utilities::take_argument;
-use ndarray::ArrayD;
+use ndarray::{array, Array, ArrayD, Axis, IxDyn, stack};
 use crate::NodeArguments;
 
 
@@ -14,12 +13,20 @@ impl Evaluable for proto::TheilSen {
     fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
         let x = take_argument(&mut arguments, "data_x")?.array()?.float()?;
         let y = take_argument(&mut arguments, "data_y")?.array()?.float()?;
+        // TODO
+        let epsilon = 1.0;
         match self.implementation.to_lowercase().as_str() {
-            "theil-sen" => Ok(ReleaseNode::new(compute_all_estimates(&x, &y)?.into())),
-            "theil-sen-k-match" => Ok(ReleaseNode::new(dp_theil_sen_k_match(
-                &x, &y,
-                take_argument(&mut arguments, "k")?.array()?.first_int()?,
-            )?.into()))
+            "theil-sen" => {
+                let (slopes, intercepts) = compute_all_estimates(&x, &y);
+                Ok(ReleaseNode::new(stack![Axis(1), slopes, intercepts].into()))
+            },
+            "theil-sen-k-match" => {
+                let (slopes, intercepts) = dp_theil_sen_k_match(&x, &y, take_argument(&mut arguments, "k")?.array()?.first_int()?).unwrap();
+                Ok(ReleaseNode::new(stack![Axis(1), slopes, intercepts].into()))
+            }
+            _ => {
+                panic!("Invalid implementation: {}", self.implementation.to_lowercase().as_str());
+            }
         }
     }
 }
@@ -58,10 +65,11 @@ pub fn _compute_intercept(x: &Vec<Float>, y: &Vec<Float>, slope: Float) -> Float
 
 /// Compute slope between all pairs of points where defined
 ///
-pub fn compute_all_estimates(x: &ArrayD<Float>, y: &ArrayD<Float>) -> (Vec<Float>, Vec<Float>) {
-    let mut slopes: Vec<Float> = Vec::new();
-    let mut intercepts: Vec<Float> = Vec::new();
+pub fn compute_all_estimates(x: &ArrayD<Float>, y: &ArrayD<Float>) -> (ArrayD<Float>, ArrayD<Float>) {
     let n = x.len();
+    let mut slopes: Vec<Float> = Vec::new(); // ArrayD::<Float>::zeros(IxDyn(&[n])) = ();
+    let mut intercepts: Vec<Float> = Vec::new();
+
     assert_eq!(x.len(), y.len());
 
     for p in 0..n as usize {
@@ -79,10 +87,10 @@ pub fn compute_all_estimates(x: &ArrayD<Float>, y: &ArrayD<Float>) -> (Vec<Float
             }
         }
     }
-    (slopes, intercepts)
+    (Array::from(slopes).into_dyn(), Array::from(intercepts).into_dyn())
 }
 
-pub fn dp_med(z: &Vec<Float>, epsilon: Float, r_lower: Float, r_upper: Float, enforce_constant_time: bool) -> Float {
+pub fn dp_med(z: &ArrayD<Float>, epsilon: Float, r_lower: Float, r_upper: Float, enforce_constant_time: bool) -> Float {
     let n = (*z).len();
     let mut z_clipped = Vec::new();
     for i in 0..n {
@@ -125,8 +133,8 @@ pub fn dp_med(z: &Vec<Float>, epsilon: Float, r_lower: Float, r_upper: Float, en
 
 /// DP-TheilSen over all n points in data
 ///
-pub fn dp_theil_sen(x: &Vec<Float>, y: &Vec<Float>, n: Integer, epsilon: Float, r_lower: Float, r_upper: Float, enforce_constant_time: bool) -> Result<(Float, Float), Error> {
-    let (slopes, intercepts) = compute_all_estimates(x, y, n);
+pub fn dp_theil_sen(x: &ArrayD<Float>, y: &ArrayD<Float>, n: Integer, epsilon: Float, r_lower: Float, r_upper: Float, enforce_constant_time: bool) -> Result<(Float, Float)> {
+    let (slopes, intercepts) = compute_all_estimates(x, y);
 
     let slope = dp_med(&slopes, epsilon, r_lower, r_upper, enforce_constant_time);
     let intercept = dp_med(&intercepts, epsilon, r_lower, r_upper, enforce_constant_time);
@@ -137,7 +145,7 @@ pub fn dp_theil_sen(x: &Vec<Float>, y: &Vec<Float>, n: Integer, epsilon: Float, 
 /// Implementation from paper
 /// Separate data into two bins, match members of each bin to form pairs
 /// Note: k is number of trials here
-pub fn dp_theil_sen_k_match(x: &ArrayD<Float>, y: &ArrayD<Float>, k: Integer) -> Result<(Vec<Float>, Vec<Float>), Error> {
+pub fn dp_theil_sen_k_match(x: &ArrayD<Float>, y: &ArrayD<Float>, k: Integer) -> Result<(ArrayD<Float>, ArrayD<Float>)> {
     let mut slopes: Vec<Float> = Vec::new();
     let mut intercepts: Vec<Float> = Vec::new();
 
@@ -171,21 +179,23 @@ pub fn dp_theil_sen_k_match(x: &ArrayD<Float>, y: &ArrayD<Float>, k: Integer) ->
     // let slope = dp_med(&slopes, epsilon, r_lower, r_upper, enforce_constant_time);
     // let intercept = dp_med(&intercepts, epsilon, r_lower, r_upper, enforce_constant_time);
 
-    Ok((slopes, intercepts))
+    Ok((Array::from(slopes).into_dyn(), Array::from(intercepts).into_dyn()))
 
 }
 
 /// Randomly select k points from x and y (k < n) and then perform DP-TheilSen.
 /// Useful for larger datasets where calculating on n^2 points is less than ideal.
-pub fn dp_theil_sen_k_subset(x: &Vec<Float>, y: &Vec<Float>, n: Integer, k: Integer, epsilon: Float, r_lower: Float, r_upper: Float, enforce_constant_time: bool) -> Result<(Float, Float), Error> {
+pub fn dp_theil_sen_k_subset(x: &ArrayD<Float>, y: &ArrayD<Float>, n: Integer, k: Integer, epsilon: Float, r_lower: Float, r_upper: Float, enforce_constant_time: bool) -> Result<(Float, Float)> {
     let indices: Vec<usize> = permute_range(n, k).iter().map(|x| *x as usize).collect::<Vec<usize>>();
-    let mut x_kmatch: Vec<Float> = Vec::new();
-    let mut y_kmatch: Vec<Float> = Vec::new();
+    let mut x_kmatch = ArrayD::<f64>::zeros(IxDyn(&[n as usize, 1, 1]));
+    let mut y_kmatch = ArrayD::<f64>::zeros(IxDyn(&[n as usize, 1, 1]));
     let scaled_epsilon = epsilon / (k as Float);
+    let mut j = 0;
     for i in indices {
         // let index: usize = indices[i] as usize;
-        x_kmatch.push(x[i]);
-        y_kmatch.push(y[i]);
+        x_kmatch[j] = x[i];
+        y_kmatch[j] = y[i];
+        j+=1;
     }
     dp_theil_sen(&x_kmatch, &y_kmatch, k, scaled_epsilon, r_lower, r_upper, enforce_constant_time)
 }
@@ -207,13 +217,13 @@ mod tests {
 
     /// Non-DP implementation of Theil-Sen to test DP version against
     ///
-    pub fn theil_sen(x: &Vec<Float>, y: &Vec<Float>, n: Integer) -> (Float, Float) {
+    pub fn theil_sen(x: &ArrayD<Float>, y: &ArrayD<Float>) -> (Float, Float) {
 
         // Slope m is median of slope calculated between all pairs of
         // non-identical points
-        let (slopes, intercepts) = compute_all_estimates(x, y, n);
-        let slope = median(&slopes);
-        let intercept = median(&intercepts);
+        let (slopes, intercepts) = compute_all_estimates(x, y);
+        let slope = median(&slopes.into_raw_vec());
+        let intercept = median(&intercepts.into_raw_vec());
 
         return (slope, intercept)
 
@@ -234,44 +244,43 @@ mod tests {
         // Mean should be approx. mu + beta*gamma (location + scale * Euler-Mascheroni Const.)
         // Where gamma = 0.5772....
         let gamma = 0.5772;
-        let tol = 0.01;
+        let tol = 0.1;
         assert!((mean - gamma).abs() < tol);
     }
 
     #[test]
     fn compute_estimates_test() {
-        let x = vec![1.0, 2.0, 3.0];
-        let y = vec![1.0, 4.0, 9.0];
-        let n = 3;
-        let (slopes, intercepts) = compute_all_estimates(&x, &y, n);
-        let expected_slopes: Vec<Float> = vec![3.0, 4.0, 5.0];
-        let expected_intercepts: Vec<Float> = vec![-2.0, -3.0, -6.0];
+        let x = Array::range(0., 11., 1.).mapv(|a: f64| a + noise::sample_gaussian(0.0, 0.1, true)).into_dyn();
+        let y = Array::range(0., 11., 1.).mapv(|a: f64| 2.0 * a).mapv(|a: f64| a + noise::sample_gaussian(0.0, 0.1, true)).into_dyn();
+        let (slopes, intercepts) = compute_all_estimates(&x, &y);
 
-        assert_eq!(slopes, expected_slopes);
-        assert_eq!(intercepts, expected_intercepts);
+        let n = x.len() as Integer;
+        assert_eq!(slopes.len() as Integer, n * (n-1) / 2);
+        assert_eq!(intercepts.len() as Integer, n * (n-1) / 2);
+
     }
 
     #[test]
     fn theilsen_test() {
         // Ensure non-DP version gives y = 2x for this data
-        let x: Vec<Float> = (0..1000).map(Float::from).collect::<Vec<Float>>();
-        let y: Vec<Float> = (0..1000).map(|x| 2 * x).map(Float::from).collect::<Vec<Float>>();
-        let n = x.len() as Integer;
-        let theilsen_estimate = theil_sen(&x, &y, n);
-        assert_eq!((2.0, 0.0), theilsen_estimate);
+        let x = Array::range(0., 10., 1.).mapv(|a: f64| a + noise::sample_gaussian(0.0, 0.1, true)).into_dyn();
+        let y = Array::range(0., 10., 1.).mapv(|a: f64| 2.0 * a).mapv(|a: f64| a + noise::sample_gaussian(0.0, 0.1, true)).into_dyn();
+        let (slope, intercept) = theil_sen(&x, &y);
+        assert!((2.0 - slope).abs() <= 0.1);
+        assert!((0.0 - intercept).abs() <= 0.1);
     }
 
     #[test]
     fn dp_median_from_estimates_test() {
-        let estimates: Vec<Vec<Float>> = vec![vec![-1.25, -2.0, -4.75], vec![0.25, 0.0, -2.25]];
+        let estimates = array![-1.25, -2.0, -4.75].into_dyn();
         let true_median = 5.0;
-        let median = dp_med(&estimates[0], 1e-6 as Float, 0.0, 10.0, true);
+        let median = dp_med(&estimates, 1e-6 as Float, 0.0, 10.0, true);
         assert!((true_median - median).abs() / true_median < 1.0);
     }
 
     #[test]
     fn dp_median_test() {
-        let z = vec![0.0, 2.50, 5.0, 7.50, 10.0];
+        let z =  array![0.0, 2.50, 5.0, 7.50, 10.0].into_dyn();
         let true_median = 5.0;
         let median = dp_med(&z, 1e-6 as Float, 0.0, 10.0, true);
         assert!((true_median - median).abs() / true_median < 1.0);
@@ -288,65 +297,27 @@ mod tests {
 
     #[test]
     fn dp_theilsen_test() {
-        let x: Vec<Float> = (0..1000).map(Float::from).collect::<Vec<Float>>();
+        let x = Array::range(0., 10., 1.).mapv(|a: f64| a + noise::sample_gaussian(0.0, 0.1, true)).into_dyn();
         let x_mut = x.clone();
-        let y: Vec<Float> = (0..1000).map(|x| 2 * x).map(Float::from).map(|x| x + noise::sample_gaussian(0.0, 0.1, true)).collect::<Vec<Float>>();
+        let y = Array::range(0., 10., 1.).mapv(|a: f64| 2.0 * a).mapv(|a: f64| a + noise::sample_gaussian(0.0, 0.1, true)).into_dyn();
         let y_mut = y.clone();
         let n = x.len() as Integer;
         let k = n - 1;
-        let epsilon = 1000000.0;
-        let (slope, intercept) = theil_sen(&x, &y, 1000);
-        let (dp_slope, dp_intercept) = dp_theil_sen_k_subset(&x_mut, &y_mut, n, k, epsilon, 0.0, 2.0, true).unwrap();
+        let epsilon = 1.0;
+        let (slope, intercept) = theil_sen(&x, &y);
+        let (dp_slope_candidates, dp_intercept_candidates) = dp_theil_sen_k_match(&x_mut, &y_mut, k).unwrap();
 
+        assert_eq!(dp_slope_candidates.len() as Integer, k * (n / 2));
+        assert_eq!(dp_intercept_candidates.len() as Integer, k * (n / 2));
+
+        let dp_slope = dp_med(&dp_slope_candidates, epsilon, 0.0, 2.0, true);
+        let dp_intercept = dp_med(&dp_intercept_candidates, epsilon, 0.0, 2.0, true);
         // println!("Theil-Sen Slope Estimate: {}, {}", slope, intercept);
         // println!("DP Theil-Sen Slope Estimate: {}, {}", dp_slope, dp_intercept);
         println!("Theil-Sen Estimate Difference: {}, {}", (dp_slope-slope).abs(), (dp_intercept-intercept).abs());
 
-        assert!((dp_slope - slope).abs() <= 1.0 / epsilon);
+        assert!((dp_slope - slope).abs() <= (n.pow(4) as Float) / epsilon);
         assert!((dp_intercept - intercept).abs() <= (n.pow(4)  as Float) * (1.0 / epsilon));
-    }
 
-    #[test]
-    fn dp_theilsen_epsilon_test() {
-        let mut results: Vec<(Float, Float)> = Vec::new();
-        for epsilon in vec![0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 1e4 as Float, 1e5 as Float, 1e6 as Float] {
-            println!("Epsilon: {}", epsilon);
-            let n: i32 = 100;
-            let x: Vec<Float> = (0..n).map(Float::from).collect::<Vec<Float>>();
-            let y: Vec<Float> = (0..n).map(|x| 2 * x).map(Float::from).map(|x| x + noise::sample_gaussian(0.0, 0.0001, true)).collect::<Vec<Float>>();
-            let k = n - 1;
-            let (slope, intercept) = theil_sen(&x, &y, 100);
-            let (dp_slope, dp_intercept) = dp_theil_sen_k_subset(&x, &y, n as Integer, k as Integer, epsilon, 0.0, 2.0, true).unwrap();
-            results.push(((dp_slope-slope).abs(), (dp_intercept-intercept).abs()));
-            let slope_lim = (n.pow(2) as Float) / epsilon;
-            let intercept_lim = (n.pow(4) as Float) / epsilon;
-            println!("Slope Diff Limit: {}\tIntercept Diff Limit: {}", slope_lim, intercept_lim);
-            println!("Theil-Sen Estimate Difference: {}, {}\n", (dp_slope-slope).abs(), (dp_intercept-intercept).abs());
-            assert!((dp_slope - slope).abs() <= slope_lim);
-            assert!((dp_intercept - intercept).abs() <= intercept_lim);
-        }
-    }
-
-    #[test]
-    fn dp_theilsen_k_match_test() {
-        let x: Vec<Float> = (0..1000).map(Float::from).collect::<Vec<Float>>();
-        let x_mut = x.clone();
-        let y: Vec<Float> = (0..1000).map(|x| 2 * x).map(Float::from).map(|x| x + noise::sample_gaussian(0.0, 0.1, true)).collect::<Vec<Float>>();
-        let y_mut = y.clone();
-        let n = x.len() as Integer;
-
-        // Number of trials
-        let k = 10;
-
-        let epsilon = 1000000.0;
-        let (slope, intercept) = theil_sen(&x, &y, 1000);
-        let (dp_slope, dp_intercept) = dp_theil_sen_k_match(&x_mut, &y_mut, n, k, epsilon, 0.0, 2.0, true).unwrap();
-
-        // println!("Theil-Sen Slope Estimate: {}, {}", slope, intercept);
-        // println!("DP Theil-Sen Slope Estimate: {}, {}", dp_slope, dp_intercept);
-        println!("Theil-Sen Estimate Difference: {}, {}", (dp_slope-slope).abs(), (dp_intercept-intercept).abs());
-
-        assert!((dp_slope - slope).abs() <= 1.0 / epsilon);
-        assert!((dp_intercept - intercept).abs() <= (n as Float) * (n as Float) * (1.0 / epsilon));
     }
 }
