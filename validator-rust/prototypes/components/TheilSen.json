@@ -5,9 +5,6 @@
     },
     "data_y": {
       "type_value": "Array"
-    },
-    "implementation": {
-      "type_value": "String"
     }
   },
   "id": "TheilSen",
@@ -21,10 +18,10 @@
       "description": "Theil-Sen implementation to use. One of [`theil-sen`, `theil-sen-k-match`]"
     },
     "k": {
-      "type_proto": "integer",
-      "type_rust": "Integer",
-      "default_python": "-1",
-      "default_rust": "-1",
+      "type_proto": "uint32",
+      "type_rust": "u32",
+      "default_python": "0",
+      "default_rust": "0",
       "description": "Number of trials to run for Theil-Sen K Match."
     }
   },
