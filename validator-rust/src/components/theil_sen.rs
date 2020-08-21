@@ -20,7 +20,7 @@ impl Component for proto::TheilSen {
     ) -> Result<Warnable<ValueProperties>> {
         let output_properties = ArrayProperties {
             num_records,
-            num_columns: Some(1),
+            num_columns: Some(2),
             nullity: false,
             releasable: x.releasable && y.releasable,
             c_stability: x.c_stability.iter().zip(y.c_stability.iter()).map(|(l, r)| l * r).collect(),
