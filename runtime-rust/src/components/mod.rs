@@ -91,7 +91,7 @@ impl Evaluable for proto::component::Variant {
             ExponentialMechanism, GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism,
 
             Abs, Add, LogicalAnd, Divide, Equal, GreaterThan, LessThan, Log, Modulo, Multiply,
-            Negate, Negative, LogicalOr, Power, RowMax, RowMin, Subtract
+            Negate, Negative, LogicalOr, Power, RowMax, RowMin, Subtract, TheilSen
         );
 
         Err(format!("Component type not implemented: {:?}", self).into())

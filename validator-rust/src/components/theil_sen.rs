@@ -37,11 +37,11 @@ impl Component for proto::TheilSen {
             group_id: Vec::new(),
         };
 
-        let mut data_property_x = properties.get::<IndexKey>(&"data_x".into())
+        let data_property_x = properties.get::<IndexKey>(&"data_x".into())
             .ok_or("data x: missing")?.array()
             .map_err(prepend("data x:"))?.clone();
 
-        let mut data_property_y = properties.get::<IndexKey>(&"data_y".into())
+        let data_property_y = properties.get::<IndexKey>(&"data_y".into())
             .ok_or("data y: missing")?.array()
             .map_err(prepend("data y:"))?.clone();
 
