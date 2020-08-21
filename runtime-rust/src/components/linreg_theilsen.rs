@@ -2,11 +2,12 @@ use whitenoise_validator::{proto, Float, Integer};
 use whitenoise_validator::errors::*;
 use rand::prelude::*;
 use crate::utilities::{noise};
-use whitenoise_validator::base::{ReleaseNode};
+use whitenoise_validator::base::{ReleaseNode, Value};
 use crate::components::Evaluable;
 use whitenoise_validator::utilities::take_argument;
-use ndarray::{Array, ArrayD, Axis, IxDyn, stack};
+use ndarray::{Array, ArrayD, IxDyn};
 use crate::NodeArguments;
+use indexmap::indexmap;
 
 
 impl Evaluable for proto::TheilSen {
@@ -18,14 +19,20 @@ impl Evaluable for proto::TheilSen {
         match self.implementation.to_lowercase().as_str() {
             "theil-sen" => {
                 let (slopes, intercepts) = compute_all_estimates(&x, &y);
-                Ok(ReleaseNode::new(stack![Axis(1), slopes, intercepts].into()))
+                Ok(ReleaseNode::new(Value::Dataframe(indexmap![
+                    "slopes".into() => slopes.into(),
+                    "intercepts".into() => intercepts.into()
+                ])))
             },
             "theil-sen-k-match" => {
-                let (slopes, intercepts) = dp_theil_sen_k_match(&x, &y, take_argument(&mut arguments, "k")?.array()?.first_int()?).unwrap();
-                Ok(ReleaseNode::new(stack![Axis(1), slopes, intercepts].into()))
+                let (slopes, intercepts) = theil_sen_k_match(&x, &y, take_argument(&mut arguments, "k")?.array()?.first_int()?).unwrap();
+                Ok(ReleaseNode::new(Value::Dataframe(indexmap![
+                    "slopes".into() => slopes.into(),
+                    "intercepts".into() => intercepts.into()
+                ])))
             }
             _ => {
-                panic!("Invalid implementation: {}", self.implementation.to_lowercase().as_str());
+                return Err(Error::from("Invalid implementation"));
             }
         }
     }
@@ -145,7 +152,7 @@ pub fn dp_theil_sen(x: &ArrayD<Float>, y: &ArrayD<Float>, epsilon: Float, r_lowe
 /// Implementation from paper
 /// Separate data into two bins, match members of each bin to form pairs
 /// Note: k is number of trials here
-pub fn dp_theil_sen_k_match(x: &ArrayD<Float>, y: &ArrayD<Float>, k: Integer) -> Result<(ArrayD<Float>, ArrayD<Float>)> {
+pub fn theil_sen_k_match(x: &ArrayD<Float>, y: &ArrayD<Float>, k: Integer) -> Result<(ArrayD<Float>, ArrayD<Float>)> {
     let mut slopes: Vec<Float> = Vec::new();
     let mut intercepts: Vec<Float> = Vec::new();
 
@@ -153,12 +160,12 @@ pub fn dp_theil_sen_k_match(x: &ArrayD<Float>, y: &ArrayD<Float>, k: Integer) ->
     assert_eq!(x.len(), y.len());
 
     for _iteration in 0..k {
-        let mut shuffled: Vec<(Float, Float)> = x.iter().map(|a| (*a)).zip(y.iter().map(|a| (*a))).collect();
+        let mut shuffled: Vec<(Float, Float)> = x.iter().copied().zip(y.iter().copied()).collect();
         let mut rng = rand::thread_rng();
         shuffled.shuffle(&mut rng);
 
         // For n odd, the last data point in "shuffled" will be ignored
-        let midpoint = (n as Float/2.0).floor() as usize;
+        let midpoint = (n/2) as usize;
         let bin_a: Vec<(Float, Float)> = shuffled[0..midpoint].to_vec();
         let bin_b: Vec<(Float, Float)> = shuffled[midpoint..midpoint*(2 as usize)].to_vec();
         assert_eq!(bin_a.len(), bin_b.len());
@@ -306,7 +313,7 @@ mod tests {
         let k = n - 1;
         let epsilon = 1.0;
         let (slope, intercept) = theil_sen(&x, &y);
-        let (dp_slope_candidates, dp_intercept_candidates) = dp_theil_sen_k_match(&x_mut, &y_mut, k).unwrap();
+        let (dp_slope_candidates, dp_intercept_candidates) = theil_sen_k_match(&x_mut, &y_mut, k).unwrap();
 
         assert_eq!(dp_slope_candidates.len() as Integer, k * (n / 2));
         assert_eq!(dp_intercept_candidates.len() as Integer, k * (n / 2));
