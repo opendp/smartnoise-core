@@ -46,6 +46,7 @@ mod gaussian_mechanism;
 mod laplace_mechanism;
 mod simple_geometric_mechanism;
 mod resize;
+mod theil_sen;
 mod sum;
 mod union;
 mod variance;
@@ -256,7 +257,7 @@ impl Component for proto::Component {
             ExponentialMechanism, GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism,
 
             Abs, Add, LogicalAnd, Divide, Equal, GreaterThan, LessThan, Log, Modulo, Multiply,
-            Negate, Negative, LogicalOr, Power, RowMax, RowMin, Subtract
+            Negate, Negative, LogicalOr, Power, RowMax, RowMin, Subtract, TheilSen
         );
 
         Err(format!("proto component {:?} is missing its Component trait", variant).into())

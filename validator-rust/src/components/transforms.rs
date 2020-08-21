@@ -1528,7 +1528,7 @@ fn propagate_binary_categorical_nature(
 }
 
 
-fn propagate_binary_group_id(
+pub fn propagate_binary_group_id(
     left_property: &ArrayProperties, right_property: &ArrayProperties
 ) -> Result<Vec<GroupId>> {
     if left_property.releasable {
