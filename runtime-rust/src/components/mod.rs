@@ -93,7 +93,7 @@ impl Evaluable for proto::component::Variant {
             SimpleGeometricMechanism,
 
             Abs, Add, LogicalAnd, Divide, Equal, GreaterThan, LessThan, Log, Modulo, Multiply,
-            Negate, Negative, LogicalOr, Power, RowMax, RowMin, Subtract, TheilSen
+            Negate, Negative, LogicalOr, Power, RowMax, RowMin, Subtract, TheilSen, DpGumbelMedian
         );
 
         Err(format!("Component type not implemented: {:?}", self).into())

@@ -10,34 +10,24 @@ use crate::utilities::{prepend, privacy::spread_privacy_usage, array::get_ith_co
 use indexmap::map::IndexMap;
 
 
-impl Expandable for proto::DpMedian {
+impl Expandable for proto::DpGumbelMedian {
     fn expand_component(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         _public_arguments: &IndexMap<IndexKey, &Value>,
-        _properties: &base::NodeProperties,
+        properties: &base::NodeProperties,
         component_id: u32,
         _maximum_id: u32,
     ) -> Result<base::ComponentExpansion> {
         let mut expansion = base::ComponentExpansion::default();
 
-        let mechanism = if self.mechanism.to_lowercase().as_str() == "automatic" {
-            if properties.contains_key::<IndexKey>(&"candidates".into())
-            { "exponential" } else { "laplace" }.to_string()
-        } else {
-            self.mechanism.to_lowercase()
-        };
-
         expansion.computation_graph.insert(component_id, proto::Component {
             arguments: component.arguments.clone(),
-            variant: Some(proto::component::Variant::DpQuantile(proto::DpQuantile {
-                alpha: 0.5,
-                interpolation: self.interpolation.clone(),
-                privacy_usage: self.privacy_usage.clone(),
-                mechanism
+            variant: Some(proto::component::Variant::DpGumbelMedian(proto::DpGumbelMedian {
+                privacy_usage: self.privacy_usage.clone()
             })),
-            omit: component.omit,
+            omit: true,
             submission: component.submission,
         });
         expansion.traversal.push(component_id);
@@ -47,7 +37,7 @@ impl Expandable for proto::DpMedian {
 }
 
 
-impl Report for proto::DpMedian {
+impl Report for proto::DpGumbelMedian {
     fn summarize(
         &self,
         node_id: u32,
@@ -76,7 +66,7 @@ impl Report for proto::DpMedian {
 
             releases.push(JSONRelease {
                 description: "DP release information".to_string(),
-                statistic: "DPMedian".to_string(),
+                statistic: "DPGumbelMedian".to_string(),
                 variables: serde_json::json!(variable_name.to_string()),
                 release_info: match release.ref_array()? {
                     Array::Float(v) => value_to_json(&get_ith_column(v, column_number)?.into())?,
