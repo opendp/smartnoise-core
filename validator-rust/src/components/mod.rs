@@ -262,7 +262,7 @@ impl Component for proto::Component {
             SimpleGeometricMechanism, SnappingMechanism,
 
             Abs, Add, LogicalAnd, Divide, Equal, GreaterThan, LessThan, Log, Modulo, Multiply,
-            Negate, Negative, LogicalOr, Power, RowMax, RowMin, Subtract, TheilSen
+            Negate, Negative, LogicalOr, Power, RowMax, RowMin, Subtract, TheilSen, DpGumbelMedian
         );
 
         Err(format!("proto component {:?} is missing its Component trait", variant).into())
