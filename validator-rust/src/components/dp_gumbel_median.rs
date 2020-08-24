@@ -3,7 +3,7 @@ use crate::errors::*;
 use crate::{proto, base, Warnable};
 use crate::components::{Expandable, Report, Component};
 
-use crate::base::{NodeProperties, Value, ValueProperties, DataType, IndexKey, ArrayProperties, DataframeProperties, Array};
+use crate::base::{NodeProperties, Value, ValueProperties, DataType, IndexKey, Array};
 use crate::utilities::json::{JSONRelease, value_to_json, privacy_usage_to_json, AlgorithmInfo};
 use crate::utilities::{prepend, privacy::spread_privacy_usage, array::get_ith_column};
 use indexmap::map::IndexMap;
@@ -12,11 +12,11 @@ use indexmap::map::IndexMap;
 impl Component for proto::DpGumbelMedian {
     fn propagate_property(&self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        mut public_arguments: IndexMap<base::IndexKey, &Value>,
+        _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let mut data_property = properties.get(&IndexKey::from("data"))
+        let data_property = properties.get(&IndexKey::from("data"))
             .ok_or_else(|| Error::from("data: missing"))?.clone().array()
             .map_err(prepend("data:"))?.clone();
 
@@ -38,7 +38,7 @@ impl Expandable for proto::DpGumbelMedian {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         _public_arguments: &IndexMap<IndexKey, &Value>,
-        properties: &base::NodeProperties,
+        _properties: &base::NodeProperties,
         component_id: u32,
         _maximum_id: u32,
     ) -> Result<base::ComponentExpansion> {
