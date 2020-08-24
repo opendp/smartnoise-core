@@ -8,6 +8,7 @@ use whitenoise_validator::utilities::take_argument;
 use ndarray::{Array, ArrayD, IxDyn};
 use crate::NodeArguments;
 use indexmap::indexmap;
+use crate::utilities::get_num_columns;
 
 
 impl Evaluable for proto::TheilSen {
@@ -38,6 +39,18 @@ impl Evaluable for proto::TheilSen {
     }
 }
 
+// impl Evaluable for proto::GumbelMedian {
+//
+//         fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
+//             let data = take_argument(&mut arguments, "data")?.array()?.float()?;
+//             let median = dp_med(&data, epsilon, r_lower, r_uppser, enforce_constant_time);
+//
+//             Ok(ReleaseNode::new(Value::Dataframe(indexmap![
+//                 "slope".into() => "",
+//                 "intercept".into() => ""
+//                 ])))
+//         }
+// }
 
 /// Select k random values from range 1 to n
 ///
@@ -97,7 +110,29 @@ pub fn compute_all_estimates(x: &ArrayD<Float>, y: &ArrayD<Float>) -> (ArrayD<Fl
     (Array::from(slopes).into_dyn(), Array::from(intercepts).into_dyn())
 }
 
-pub fn dp_med(z: &ArrayD<Float>, epsilon: Float, r_lower: Float, r_upper: Float, enforce_constant_time: bool) -> Float {
+
+/// Wraps dp_med_column to call on each column in an ArrayD
+///
+pub fn dp_med(data: &ArrayD<Float>, epsilon: Float, r_lower: Float, r_upper: Float, enforce_constant_time: bool) -> Result<ArrayD<Float>> {
+    let medians = data.gencolumns().into_iter()
+        .map(|column| dp_med_column(&column.to_owned().into_dyn(), epsilon, r_lower, r_upper, enforce_constant_time)).collect::<Vec<Float>>();
+        // .ok_or_else(|| Error::from("attempted mean of an empty column"))?;
+
+    let array = match data.ndim() {
+        1 => Array::from_shape_vec(vec![], medians),
+        2 => Array::from_shape_vec(vec![1 as usize, get_num_columns(&data)? as usize], medians),
+        _ => return Err("invalid data shape for Median".into())
+    };
+
+    match array {
+        Ok(array) => Ok(array),
+        Err(_) => Err("unable to package Variance result into an array".into())
+    }
+}
+
+/// This follows closely the DP Median implementation from the paper, including notation
+///
+fn dp_med_column(z: &ArrayD<Float>, epsilon: Float, r_lower: Float, r_upper: Float, enforce_constant_time: bool) -> Float {
     let n = (*z).len();
     let mut z_clipped = Vec::new();
     for i in 0..n {
@@ -143,8 +178,8 @@ pub fn dp_med(z: &ArrayD<Float>, epsilon: Float, r_lower: Float, r_upper: Float,
 pub fn dp_theil_sen(x: &ArrayD<Float>, y: &ArrayD<Float>, epsilon: Float, r_lower: Float, r_upper: Float, enforce_constant_time: bool) -> Result<(Float, Float)> {
     let (slopes, intercepts) = compute_all_estimates(x, y);
 
-    let slope = dp_med(&slopes, epsilon, r_lower, r_upper, enforce_constant_time);
-    let intercept = dp_med(&intercepts, epsilon, r_lower, r_upper, enforce_constant_time);
+    let slope = dp_med_column(&slopes, epsilon, r_lower, r_upper, enforce_constant_time);
+    let intercept = dp_med_column(&intercepts, epsilon, r_lower, r_upper, enforce_constant_time);
 
     Ok((slope, intercept))
 }
@@ -282,16 +317,26 @@ mod tests {
     fn dp_median_from_estimates_test() {
         let estimates = array![-1.25, -2.0, -4.75].into_dyn();
         let true_median = 5.0;
-        let median = dp_med(&estimates, 1e-6 as Float, 0.0, 10.0, true);
+        let median = dp_med_column(&estimates, 1e-6 as Float, 0.0, 10.0, true);
+        assert!((true_median - median).abs() / true_median < 1.0);
+    }
+
+    #[test]
+    fn dp_median_column_test() {
+        let z =  array![0.0, 2.50, 5.0, 7.50, 10.0].into_dyn();
+        let true_median = 5.0;
+        let median = dp_med_column(&z, 1e-6 as Float, 0.0, 10.0, true);
         assert!((true_median - median).abs() / true_median < 1.0);
     }
 
     #[test]
     fn dp_median_test() {
-        let z =  array![0.0, 2.50, 5.0, 7.50, 10.0].into_dyn();
+        let z =  array![[0.0, 2.50], [5.0, 7.50], [10.0, 12.5]].into_dyn();
         let true_median = 5.0;
-        let median = dp_med(&z, 1e-6 as Float, 0.0, 10.0, true);
-        assert!((true_median - median).abs() / true_median < 1.0);
+        let median = dp_med(&z, 1e-6 as Float, 0.0, 10.0, true).unwrap();
+        let shape = median.shape();
+        assert_eq!(shape[0], 1);
+        assert_eq!(shape[1], 2);
     }
 
     #[test]
@@ -318,8 +363,8 @@ mod tests {
         assert_eq!(dp_slope_candidates.len() as Integer, k * (n / 2));
         assert_eq!(dp_intercept_candidates.len() as Integer, k * (n / 2));
 
-        let dp_slope = dp_med(&dp_slope_candidates, epsilon, 0.0, 2.0, true);
-        let dp_intercept = dp_med(&dp_intercept_candidates, epsilon, 0.0, 2.0, true);
+        let dp_slope = dp_med_column(&dp_slope_candidates, epsilon, 0.0, 2.0, true);
+        let dp_intercept = dp_med_column(&dp_intercept_candidates, epsilon, 0.0, 2.0, true);
         // println!("Theil-Sen Slope Estimate: {}, {}", slope, intercept);
         // println!("DP Theil-Sen Slope Estimate: {}, {}", dp_slope, dp_intercept);
         println!("Theil-Sen Estimate Difference: {}, {}", (dp_slope-slope).abs(), (dp_intercept-intercept).abs());
