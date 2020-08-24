@@ -25,27 +25,24 @@ impl Expandable for proto::DpMedian {
         let mechanism = if self.mechanism.to_lowercase().as_str() == "automatic" {
             if properties.contains_key::<IndexKey>(&"candidates".into())
             { "exponential" } else { "laplace" }.to_string()
-        } else if self.mechanism.to_lowercase().as_str() == "gumbel" {
-            "gumbel".to_string()
         } else {
             self.mechanism.to_lowercase()
         };
 
-            expansion.computation_graph.insert(component_id, proto::Component {
-                arguments: component.arguments.clone(),
-                variant: Some(proto::component::Variant::DpQuantile(proto::DpQuantile {
-                    alpha: 0.5,
-                    interpolation: self.interpolation.clone(),
-                    privacy_usage: self.privacy_usage.clone(),
-                    mechanism,
-                })),
-                omit: true,
-                submission: component.submission,
-            });
-            expansion.traversal.push(component_id);
+        expansion.computation_graph.insert(component_id, proto::Component {
+            arguments: component.arguments.clone(),
+            variant: Some(proto::component::Variant::DpQuantile(proto::DpQuantile {
+                alpha: 0.5,
+                interpolation: self.interpolation.clone(),
+                privacy_usage: self.privacy_usage.clone(),
+                mechanism
+            })),
+            omit: true,
+            submission: component.submission,
+        });
+        expansion.traversal.push(component_id);
 
-            Ok(expansion)
-
+        Ok(expansion)
     }
 }
 

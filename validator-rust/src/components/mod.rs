@@ -21,6 +21,7 @@ mod digitize;
 mod dp_count;
 mod dp_variance;
 mod dp_covariance;
+mod dp_gumbel_median;
 mod dp_histogram;
 mod dp_maximum;
 mod dp_median;
