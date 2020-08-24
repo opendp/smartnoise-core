@@ -1,14 +1,36 @@
 use crate::errors::*;
 
-use crate::{proto, base};
-use crate::components::{Expandable, Report};
+use crate::{proto, base, Warnable};
+use crate::components::{Expandable, Report, Component};
 
-
-use crate::base::{NodeProperties, Value, Array, IndexKey};
+use crate::base::{NodeProperties, Value, ValueProperties, DataType, IndexKey, ArrayProperties, DataframeProperties, Array};
 use crate::utilities::json::{JSONRelease, value_to_json, privacy_usage_to_json, AlgorithmInfo};
 use crate::utilities::{prepend, privacy::spread_privacy_usage, array::get_ith_column};
 use indexmap::map::IndexMap;
 
+
+impl Component for proto::DpGumbelMedian {
+    fn propagate_property(&self,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
+        mut public_arguments: IndexMap<base::IndexKey, &Value>,
+        properties: NodeProperties,
+        _node_id: u32
+    ) -> Result<Warnable<ValueProperties>> {
+        let mut data_property = properties.get(&IndexKey::from("data"))
+            .ok_or_else(|| Error::from("data: missing"))?.clone().array()
+            .map_err(prepend("data:"))?.clone();
+
+        if data_property.data_type == DataType::Unknown {
+            return Err("data_type must be known".into())
+        }
+
+        if !data_property.releasable {
+            data_property.assert_is_not_aggregated()?;
+        }
+        Ok(ValueProperties::Array(data_property).into())
+
+    }
+}
 
 impl Expandable for proto::DpGumbelMedian {
     fn expand_component(
@@ -81,7 +103,7 @@ impl Report for proto::DpGumbelMedian {
                 algorithm_info: AlgorithmInfo {
                     name: "".to_string(),
                     cite: "".to_string(),
-                    mechanism: self.mechanism.clone(),
+                    mechanism: "exponential".into(),
                     argument: serde_json::json!({
                         "constraint": {
                             "lowerbound": minimums[column_number],
