@@ -9,6 +9,7 @@ use ndarray::{Array, ArrayD, IxDyn};
 use crate::NodeArguments;
 use indexmap::indexmap;
 use crate::utilities::get_num_columns;
+use whitenoise_validator::utilities::privacy::{spread_privacy_usage, get_epsilon};
 
 
 impl Evaluable for proto::TheilSen {
@@ -39,18 +40,22 @@ impl Evaluable for proto::TheilSen {
     }
 }
 
-// impl Evaluable for proto::GumbelMedian {
-//
-//         fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
-//             let data = take_argument(&mut arguments, "data")?.array()?.float()?;
-//             let median = dp_med(&data, epsilon, r_lower, r_uppser, enforce_constant_time);
-//
-//             Ok(ReleaseNode::new(Value::Dataframe(indexmap![
-//                 "slope".into() => "",
-//                 "intercept".into() => ""
-//                 ])))
-//         }
-// }
+impl Evaluable for proto::DpGumbelMedian {
+
+        fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
+            let data = take_argument(&mut arguments, "data")?.array()?.float()?;
+            let num_columns = get_num_columns(&data)? as usize;
+            let usages = spread_privacy_usage(&self.privacy_usage, num_columns)?;
+            let epsilon = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?[0];
+            let r_upper = take_argument(&mut arguments, "r_upper")?.array()?.first_float()?;
+            let r_lower = take_argument(&mut arguments, "r_lower")?.array()?.first_float()?;
+            let enforce_constant_time = take_argument(&mut arguments, "enforce_constant_time")?.array()?.first_bool()?;
+
+            let median = dp_med(&data, epsilon, r_lower, r_upper, enforce_constant_time).unwrap();
+
+            Ok(ReleaseNode::new(Value::Dataframe(indexmap!["median".into() => median.into()])))
+        }
+}
 
 /// Select k random values from range 1 to n
 ///
@@ -332,7 +337,7 @@ mod tests {
     #[test]
     fn dp_median_test() {
         let z =  array![[0.0, 2.50], [5.0, 7.50], [10.0, 12.5]].into_dyn();
-        let true_median = 5.0;
+        // let true_median = 5.0;
         let median = dp_med(&z, 1e-6 as Float, 0.0, 10.0, true).unwrap();
         let shape = median.shape();
         assert_eq!(shape[0], 1);

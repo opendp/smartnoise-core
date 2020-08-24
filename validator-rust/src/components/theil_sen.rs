@@ -73,7 +73,7 @@ impl Component for proto::TheilSen {
              _ => return Err("Invalid implementation passed. \
                      Valid values are theil-sen and theil-sen-k-match".into())
         };
-        let num_records = 1;
+        // let num_records = 1;
         output_properties.num_records = Some(num_records);
         output_properties.dataset_id = Some(node_id as i64);
         output_properties.releasable = data_property_x.releasable && data_property_y.releasable;
