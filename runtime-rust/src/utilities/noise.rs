@@ -12,7 +12,7 @@ use whitenoise_validator::Integer;
 
 use crate::utilities;
 use crate::utilities::snapping;
-use crate::utilities::snapping::SnappingConfig;
+use crate::utilities::snapping::{get_smallest_greater_or_eq_power_of_two, redefine_epsilon};
 
 // Give MPFR ability to draw randomness from OpenSSL
 #[cfg(feature="use-mpfr")]
@@ -647,64 +647,65 @@ pub fn sample_simple_geometric_mechanism(
 }
 
 /// Get noise according to the Snapping mechanism.
+/// Sensitivity is assumed to be 1 in L1 space.
 ///
 /// # Arguments
-/// * `mechanism_input` - Non-private value of the statistic to be privatized.
+/// * `value` - Non-private value of the statistic to be privatized.
 /// * `epsilon` - Desired privacy guarantee.
-/// * `B` - Upper bound on function value being privatized.
-/// * `sensitivity` - l1 Sensitivity of function to which mechanism is being applied.
+/// * `b` - Upper bound on function value being privatized.
 /// * `enforce_constant_time` - Whether or not to enforce the algorithm to run in constant time;
 ///
 /// # Returns
-/// Noise according to the Snapping mechanism.
+/// Value of statistic with noise applied according to the Snapping mechanism.
 ///
 /// # Example
 /// ```
-/// use whitenoise_runtime::utilities::noise::sample_snapping_noise;
-/// let mechanism_input: f64 = 50.0;
+/// use whitenoise_runtime::utilities::noise::apply_snapping_noise;
+/// let value: f64 = 50.0;
 /// let epsilon: f64 = 1.0;
 /// let b: f64 = 100.0;
-/// let sensitivity: f64 = 1.0/1000.0;
-/// let precision: i64 = 118;
-/// let snapping_noise = sample_snapping_noise(mechanism_input, epsilon, b, sensitivity, false);
-/// println!("snapping noise: {}", snapping_noise.unwrap());
+/// let value = apply_snapping_noise(value, epsilon, b, false);
+/// println!("snapped value: {}", value.unwrap());
 /// ```
 #[cfg(feature = "use-mpfr")]
-pub fn sample_snapping_noise(
-    mechanism_input: f64, epsilon: f64, b: f64, sensitivity: f64, enforce_constant_time: bool
+pub fn apply_snapping_noise(
+    mut value: f64, mut epsilon: f64, b: f64,
+    enforce_constant_time: bool
 ) -> Result<f64> {
-    // get parameters
-    let SnappingConfig {
-        b_scaled, epsilon_prime, m, precision, ..
-    } = snapping::parameter_setup(epsilon, b, sensitivity)?;
+
+    // 118 bits required for LN; Floating-point-exponent + 2 bits required for non-zero epsilon
+    let precision = 118.max(get_smallest_greater_or_eq_power_of_two(epsilon) + 2) as u32;
 
     // ensure that precision is supported by the OS
     if precision > rug::float::prec_max() {
         return Err("Operating system does not support sufficient precision to use the Snapping Mechanism".into());
     }
+    macro_rules! to_rug {($v:expr) => {rug::Float::with_val(precision, $v)}};
 
-    // scale mechanism input by sensitivity
-    let mechanism_input_scaled = mechanism_input / sensitivity;
+    // effective epsilon is reduced due to snapping mechanism
+    epsilon = redefine_epsilon(epsilon, b, precision);
+    if epsilon == 0.0 {
+        return Err("epsilon is zero due to floating-point round-off".into())
+    }
 
-    // generate random sign and draw from Unif(0,1)
     let sign = if sample_bit()? {-1.} else {1.};
-    let u_star_sample = sample_uniform(0., 1., enforce_constant_time).unwrap();
+    // 1.0 because sensitivity has been scaled to one
+    let lambda = 1.0 / epsilon;
+    // draw from {d: d in Doubles && d in (0, 1)} with probability based on unit of least precision
+    let u_star_sample = to_rug!(sample_uniform(0., 1., enforce_constant_time)?);
 
-    // clamp to get inner result
-    let sign_precise = rug::Float::with_val(precision, sign);
-    let scale_precise = rug::Float::with_val(precision, 1.0 / epsilon_prime);
-    let log_unif_precise = rug::Float::with_val(precision, u_star_sample.ln());
-    let inner_result: f64 = rug::Float::with_val(precision, num::clamp(mechanism_input_scaled, -b_scaled.abs(), b_scaled.abs()) +
-        (sign_precise * scale_precise * log_unif_precise)).to_f64();
+    // add noise
+    //    rug is mandatory for ln
+    //    rug is optional for sign * lambda
+    value += (to_rug!(sign * lambda) * u_star_sample.ln()).to_f64();
 
-    // perform rounding and snapping
-    let inner_result_rounded = snapping::get_closest_multiple_of_lambda(inner_result, m)?;
-    let private_estimate = num::clamp(Float::with_val(precision, sensitivity * inner_result_rounded).to_f64(), -b.abs(), b.abs());
-    Ok(private_estimate - mechanism_input)
+    // snap to lambda
+    let m = get_smallest_greater_or_eq_power_of_two(lambda);
+    snapping::get_closest_multiple_of_lambda(value, m)
 }
 
 #[cfg(not(feature = "use-mpfr"))]
-pub fn sample_snapping_noise(
+pub fn snapping_mechanism(
     mechanism_input: &f64, epsilon: &f64, b: &f64, sensitivity: &f64
 ) -> Result<f64> {
     Err(Error::from("Crate must be compiled with gmp-mpfr to use the snapping mechanism."))

@@ -2,7 +2,12 @@
 
 use crate::{proto, Integer, Float};
 use std::collections::HashMap;
-use crate::base::{Release, Nature, Jagged, Vector1D, Value, Array, Vector1DNull, NatureCategorical, NatureContinuous, AggregatorProperties, ValueProperties, JaggedProperties, DataType, ArrayProperties, ReleaseNode, GroupId, IndexKey, ComponentExpansion, DataframeProperties, PartitionsProperties};
+use crate::base::{
+    Release, Nature, Jagged, Vector1D, Value, Array, Vector1DNull,
+    NatureCategorical, NatureContinuous, AggregatorProperties, ValueProperties,
+    JaggedProperties, DataType, ArrayProperties, ReleaseNode, GroupId,
+    IndexKey, ComponentExpansion, DataframeProperties, PartitionsProperties
+};
 use indexmap::IndexMap;
 use error_chain::ChainedError;
 

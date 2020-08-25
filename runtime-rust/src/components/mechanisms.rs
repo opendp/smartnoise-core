@@ -281,7 +281,7 @@ impl Evaluable for proto::SnappingMechanism {
                         *v, *eps, *sens as f64,
                         lower, upper,
                         enforce_constant_time
-                    ).map(|noise| *v += noise)))?;
+                    ).map(|privatized| *v = privatized as Float)))?;
 
         Ok(ReleaseNode {
             value: data.into(),
