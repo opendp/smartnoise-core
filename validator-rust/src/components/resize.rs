@@ -47,8 +47,8 @@ impl Component for proto::Resize {
         }
 
         if let Some(num_records) = public_arguments.get::<IndexKey>(&"number_rows".into()) {
-            let num_records = num_records.ref_array()?.first_int()?
-                .map_err(prepend("number_rows:"));
+            let num_records = num_records.ref_array()?.first_int()
+                .map_err(prepend("number_rows:"))?;
             if num_records < 1 {
                 return Err("number_rows: must be greater than zero".into());
             }
