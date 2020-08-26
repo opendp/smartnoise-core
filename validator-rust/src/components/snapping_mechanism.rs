@@ -10,6 +10,7 @@ use crate::errors::*;
 use crate::utilities::{expand_mechanism, get_literal, prepend, standardize_numeric_argument};
 use crate::utilities::inference::infer_property;
 use crate::utilities::privacy::{privacy_usage_check, spread_privacy_usage, get_epsilon};
+use ieee754::Ieee754;
 
 impl Component for proto::SnappingMechanism {
     fn propagate_property(
@@ -224,13 +225,13 @@ impl Accuracy for proto::SnappingMechanism {
             data_property.num_columns()?)?
             .into_dimensionality::<ndarray::Ix1>()?.to_vec();
 
-        Ok(Some(sensitivities.into_iter().zip(epsilons.into_iter())
+        Some(sensitivities.into_iter().zip(epsilons.into_iter())
             .zip(lower.into_iter().zip(upper.into_iter()))
-            .map(|((sensitivity, epsilon), (lower, upper))| proto::Accuracy {
-                value: epsilon_to_accuracy(alpha, epsilon, *sensitivity, (upper - lower) / 2.),
+            .map(|((sensitivity, epsilon), (lower, upper))| Ok(proto::Accuracy {
+                value: epsilon_to_accuracy(alpha, epsilon, *sensitivity, (upper - lower) / 2.)?,
                 alpha,
-            })
-            .collect()))
+            }))
+            .collect::<Result<Vec<_>>>()).transpose()
     }
 }
 
@@ -241,8 +242,12 @@ impl Accuracy for proto::SnappingMechanism {
 ///
 /// # Returns
 /// The found power of two
-pub fn get_smallest_greater_or_eq_power_of_two(x: f64) -> i16 {
-    x.log2().ceil() as i16
+pub fn get_smallest_greater_or_eq_power_of_two(x: f64) -> Result<i16> {
+    if x <= 0. {
+        return Err(Error::from("get_smallest_greater_or_equal_power_of_two must have a positive argument"))
+    }
+    let (_sign, exponent, mantissa) = x.decompose();
+    Ok(exponent + if mantissa > 0 { 1 } else { 0 })
 }
 
 /// Gets functional epsilon for Snapping mechanism such that privacy loss does not exceed the user's proposed budget.
@@ -274,11 +279,11 @@ pub fn redefine_epsilon(epsilon: f64, b: f64, precision: u32) -> f64 {
 /// Epsilon use for the Snapping mechanism.
 pub fn epsilon_to_accuracy(
     alpha: f64, epsilon: f64, sensitivity: f64, b: f64
-) -> f64 {
-    let precision = compute_precision(epsilon);
+) -> Result<f64> {
+    let precision = compute_precision(epsilon)?;
     let epsilon = redefine_epsilon(epsilon, b, precision);
-    let lambda = 2f64.powi(get_smallest_greater_or_eq_power_of_two(1.0 / epsilon) as i32); // 2^m
-    ((1.0 / alpha).ln() / epsilon + lambda / 2.) * sensitivity
+    let lambda = 2f64.powi(get_smallest_greater_or_eq_power_of_two(1.0 / epsilon)? as i32); // 2^m
+    Ok(((1.0 / alpha).ln() / epsilon + lambda / 2.) * sensitivity)
 }
 
 /// Finds epsilon that will achieve desired accuracy and confidence requirements. Described in
@@ -303,31 +308,6 @@ pub fn accuracy_to_epsilon(
 /// Floating-point-exponent + 2 bits required for non-zero epsilon
 /// # Arguments
 /// * `epsilon` - privacy usage before redefinition
-pub fn compute_precision(epsilon: f64) -> u32 {
-    118.max(get_smallest_greater_or_eq_power_of_two(epsilon) + 2) as u32
-}
-
-
-
-
-
-
-#[cfg(test)]
-pub mod test_get_smallest_greater_or_eq_power_of_two {
-    use crate::components::snapping_mechanism::get_smallest_greater_or_eq_power_of_two;
-
-    pub fn ieee754_crate_get_smallest_geq_pow2(x: f64) -> i16 {
-        use ieee754::Ieee754;
-        let (_sign, exponent, mantissa) = x.decompose();
-        exponent + if mantissa == 0 {0} else {1}
-    }
-
-    #[test]
-    fn test() {
-        (1..1000)
-            .map(|i| i as f64 / 100.)
-            .for_each(|v| assert_eq!(
-                get_smallest_greater_or_eq_power_of_two(v),
-                ieee754_crate_get_smallest_geq_pow2(v)))
-    }
+pub fn compute_precision(epsilon: f64) -> Result<u32> {
+    Ok(118.max(get_smallest_greater_or_eq_power_of_two(epsilon)? + 2) as u32)
 }

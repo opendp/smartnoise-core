@@ -673,7 +673,7 @@ pub fn apply_snapping_noise(
     enforce_constant_time: bool
 ) -> Result<(f64, f64)> {
     // must be computed before redefining epsilon
-    let precision = compute_precision(epsilon);
+    let precision = compute_precision(epsilon)?;
 
     // ensure that precision is supported by the OS
     if precision > rug::float::prec_max() {
@@ -699,7 +699,7 @@ pub fn apply_snapping_noise(
     value += (to_rug!(sign * lambda) * u_star_sample.ln()).to_f64();
 
     // snap to lambda
-    let m = get_smallest_greater_or_eq_power_of_two(lambda);
+    let m = get_smallest_greater_or_eq_power_of_two(lambda)?;
     value = get_closest_multiple_of_lambda(value, m)?;
 
     Ok((value, epsilon))
