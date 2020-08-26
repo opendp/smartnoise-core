@@ -665,7 +665,7 @@ pub fn sample_simple_geometric_mechanism(
 /// let epsilon: f64 = 1.0;
 /// let b: f64 = 100.0;
 /// let value = apply_snapping_noise(value, epsilon, b, false);
-/// println!("snapped value: {}", value.unwrap());
+/// println!("snapped value: {:?}", value.unwrap());
 /// ```
 #[cfg(feature = "use-mpfr")]
 pub fn apply_snapping_noise(
