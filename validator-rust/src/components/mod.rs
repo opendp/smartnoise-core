@@ -442,7 +442,8 @@ impl Accuracy for proto::Component {
         accuracy_to_privacy_usage!(
              LaplaceMechanism,
              GaussianMechanism,
-             SimpleGeometricMechanism
+             SimpleGeometricMechanism,
+             SnappingMechanism
         );
 
         Ok(None)
@@ -478,7 +479,8 @@ impl Accuracy for proto::Component {
         privacy_usage_to_accuracy!(
             LaplaceMechanism,
             GaussianMechanism,
-            SimpleGeometricMechanism
+            SimpleGeometricMechanism,
+            SnappingMechanism
         );
 
         Ok(None)
