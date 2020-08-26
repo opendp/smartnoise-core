@@ -35,9 +35,6 @@ prost-build = "0.6.1"
 build-deps = "0.1.4"
 indexmap = { version = "1.4.0", features = ["serde-1"] }
 
-[dev-dependencies]
-ieee754 = "0.2.6"
-
 [lib]
 name = "whitenoise_validator"
 crate-type = ["rlib"]
