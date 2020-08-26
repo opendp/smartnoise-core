@@ -19,5 +19,6 @@
     "type_value": "Array",
     "description": "Original data perturbed with Gaussian noise."
   },
-  "description": "Privatizes a result by returning it perturbed with Gaussian noise."
+  "description": "Privatizes a result by returning it perturbed with Gaussian noise.",
+  "proto_id": 24
 }

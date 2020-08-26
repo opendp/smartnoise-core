@@ -1,23 +1,22 @@
 use crate::errors::*;
 
-
-use std::collections::HashMap;
-
-use crate::{proto, base};
+use crate::{proto, base, Warnable, Float};
 
 use crate::components::{Component, Sensitivity};
-use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType};
+use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType, IndexKey};
 use crate::utilities::prepend;
 use ndarray::prelude::*;
+use indexmap::map::IndexMap;
 
 impl Component for proto::Mean {
     fn propagate_property(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
-        _public_arguments: &HashMap<String, Value>,
-        properties: &base::NodeProperties,
-    ) -> Result<ValueProperties> {
-        let mut data_property = properties.get("data")
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
+        _public_arguments: IndexMap<base::IndexKey, &Value>,
+        properties: base::NodeProperties,
+        node_id: u32
+    ) -> Result<Warnable<ValueProperties>> {
+        let mut data_property = properties.get::<IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
@@ -26,19 +25,24 @@ impl Component for proto::Mean {
         }
         data_property.assert_is_not_empty()?;
 
+        let num_columns = data_property.num_columns()?;
         // save a snapshot of the state when aggregating
         data_property.aggregator = Some(AggregatorProperties {
             component: proto::component::Variant::Mean(self.clone()),
-            properties: properties.clone(),
+            properties,
+            lipschitz_constants: ndarray::Array::from_shape_vec(
+                vec![1, num_columns as usize],
+                (0..num_columns).map(|_| 1.).collect())?.into_dyn().into()
         });
 
-        if data_property.data_type != DataType::F64 {
+        if data_property.data_type != DataType::Float {
             return Err("data: atomic type must be float".into())
         }
 
         data_property.num_records = Some(1);
+        data_property.dataset_id = Some(node_id as i64);
 
-        Ok(data_property.into())
+        Ok(ValueProperties::Array(data_property).into())
     }
 
 
@@ -54,22 +58,23 @@ impl Sensitivity for proto::Mean {
     ) -> Result<Value> {
         match sensitivity_type {
             SensitivitySpace::KNorm(k) => {
-                let data_property = properties.get("data")
+                let data_property = properties.get::<IndexKey>(&"data".into())
                     .ok_or("data: missing")?.array()
                     .map_err(prepend("data:"))?.clone();
 
                 data_property.assert_non_null()?;
                 data_property.assert_is_not_aggregated()?;
-                let data_lower = data_property.lower_f64()?;
-                let data_upper = data_property.upper_f64()?;
-                let data_n = data_property.num_records()? as f64;
+                let data_lower = data_property.lower_float()?;
+                let data_upper = data_property.upper_float()?;
+                let data_n = data_property.num_records()? as Float;
 
                 // AddRemove vs. Substitute share the same bounds
 
                 let row_sensitivity = match k {
-                    1 | 2 => data_lower.iter().zip(data_upper.iter())
-                        .map(|(min, max)| ((max - min) / data_n).powi(*k as i32))
-                        .collect::<Vec<f64>>(),
+                    1 | 2 => data_lower.iter()
+                        .zip(data_upper.iter())
+                        .map(|(min, max)| (max - min) / data_n)
+                        .collect::<Vec<Float>>(),
                     _ => return Err("KNorm sensitivity is only supported in L1 and L2 spaces".into())
                 };
 

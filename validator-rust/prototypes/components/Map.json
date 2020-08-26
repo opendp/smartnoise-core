@@ -1,0 +1,17 @@
+{
+  "any_argument": true,
+  "arguments": {},
+  "id": "Map",
+  "name": "map",
+  "options": {
+    "component": {
+      "type_proto": "Component",
+      "type_rust": "proto::Component"
+    }
+  },
+  "return": {
+    "type_value": "Indexmap"
+  },
+  "description": "Apply Component to each data partition.",
+  "proto_id": 34
+}

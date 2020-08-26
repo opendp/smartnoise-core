@@ -11,5 +11,6 @@
     "type_value": "Array",
     "description": "Arithmetic mean for each column of the data in question."
   },
-  "description": "Calculates the arithmetic mean of each column in the provided data."
+  "description": "Calculates the arithmetic mean of each column in the provided data.",
+  "proto_id": 37
 }

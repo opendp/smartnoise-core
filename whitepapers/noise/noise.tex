@@ -17,30 +17,18 @@
 	\vspace{12pt} % Whitespace
 }
 
-\author{\LARGE Christian Covington} % Your name
+\author{} % Your name
 
-\date{\normalsize\today} % Today's date (\today) or a custom date
+\date{} % Today's date (\today) or a custom date
 
 \begin{document}
 
 \maketitle
 
+\tableofcontents
+
 \section{Overview}
 This document describes the strategies the library uses for generation of randomness and noise.
-I believe there will need to be ongoing discussions about how best to perform randomized computations
-in the library, as properly doing so is more complicated in practice than in theory.
-
-% TODO: talk about exact rounding as post-processing of true DP
-
-% TODO: note high variance in timing of mpfr (https://cseweb.ucsd.edu/~mandrysc/pub/subnormal.pdf)
-
-% TODO: note that "precision" in mpfr is number of bits used in the mantissa (including the implicit leading 1)
-%       and that calculations are run to ensure exact rounding regardless of the precision of the input/output
-
-\section{Source of Randomness}
-% TODO: make notes here on different models of noise generation?
-All of our random number generation involves uniform random sampling of bits via OpenSSL.
-We will take as given that OpenSSL is cryptographically secure.
 
 \section{Preliminaries}
 \begin{definition}
@@ -54,22 +42,21 @@ We will take as given that OpenSSL is cryptographically secure.
 \end{definition}
 If $\delta = 0$, we call this \emph{Pure DP}. If $\delta > 0$, we call this \emph{Approximate DP}.
 Note that, in practice, differential privacy could be thought of a bit more broadly -- as a bounded
-distance between joint distributions over the mechanism output and runtime.\footnote{Conceivably, this idea
-could be extended further to talk about distributions over all quantities related in any way to the underlying data.
-For example, imagine that the US government uses $\epsilon = 1$ if the President is in the data and $\epsilon = 10$
+distance between joint distributions over all entities that could be observable to an adversary.\footnote{For example, imagine that the 
+US government uses $\epsilon = 1$ if the President is in the data and $\epsilon = 10$
 if not -- if anyone knew about this rule, the choice of epsilon would leak information not accounted for in the
-traditional definition of DP.
-We will focus only on mechanism output and runtime, as they seem to be by far the most plausible
-channels of information leakage.} We will focus mostly on the distribution over mechanism output, as this
-is really the core idea of DP, but will touch on runtime when it seems appropriate.
+traditional definition of DP.} The primary focus of this library is to respect the traditional notion of 
+differential privacy as defined in~\ref{defn:differential_privacy}. However, we are also working to
+reduce the possibility of information leakage via differences in computational runtime. We will touch on this when relevant 
+during throughout the document.
 
 \begin{definition}
 	\label{defn:exact_rounding}
 	Exact Rounding \newline
 	Let $S \subset \R$ be some set.
-	Let $\phi: \R^n \rightarrow \R$ be a function on the reals and $\phi': S^n \rightarrow S$ be its implementation over $S$.
-	Then, $\phi'$ respects \emph{exact rounding} for $(\phi, S)$ if
-	\[ \forall s \in S: \phi'(s) = round_{S}[\phi(s)], \]
+	Let $\phi: \R^n \rightarrow \R$ be a function on the reals and $\phi_{S}: S^n \rightarrow S$ be its implementation over $S$.
+	Then, $\phi_{S}$ respects \emph{exact rounding} for $(\phi, S)$ if
+	\[ \forall s \in S: \phi_{S}(s) = round_{S}[\phi(s)], \]
 	where $round_{S}(\cdot)$ rounds a real number to a member of $S$ according to some rounding rule.
 \end{definition}
 For our purposes, we will care only about the case where $S = \F$, the set of IEEE-754 floating-point numbers.
@@ -93,32 +80,31 @@ For our purposes, we will care only about the case where $S = \F$, the set of IE
 	inside your bounds.
 \end{definition}
 
-\section{Current Random Number Generation}
-We have a set of fairly standard procedures for generating draws from various noise distributions.
+\section{Randomness}
+Nearly all of our random number generation involves uniform random sampling of bits via OpenSSL. 
+The exception is when we use methods from MPFR (see below) to sample from a probability distribution.
+In this case, we feed the state of then OpenSSL RNG directly into the method. \newline 
+
+We will take as given that OpenSSL is cryptographically secure. We intend to support a broader set 
+of cryptographically secure sources of randomness at a later date.
+
+\section{Noise Generation}
 
 \subsection{Introduction to MPFR}
 The \href{https://www.mpfr.org/}{GNU MPFR Library}\cite{FHL+07} is a C library with methods for carrying out a number
-of floating-point operations with \emph{exact rounding}.
-MPFR has methods for, among other things, performing basic arithmetic operations and generating samples
-from basic noise distributions. \newline 
+of floating-point operations with \emph{exact rounding}(see Definition~\ref{defn:exact_rounding}).
+Among these are basic arithmetic operations and means of generating samples from basic probability distributions. \newline 
 
-\subsubsection{Use in the library}
-We use MPFR to sample from Uniform[0,1] and Gaussian(0,1) with exact rounding. We are currently thinking about what exact rounding can buy us in terms 
-of ensuring differential privacy in practice, but for now are using these only as accurate sampling mechanisms. \newline 
-
-\subsection{Biased Bit Sampling}
+\subsection{Biased bit sampling}
 Recall that we are taking as given that we are able to sample uniform bits from OpenSSL.
 For many applications, however, we want to be able to sample bits non-uniformly,
 i.e. where $\Pr(bit = 1) \neq \frac{1}{2}$. To do so, we use the $sample\_bit$ function.
-
-\subsubsection{$sample\_bit(prob: f64)$}
-This function uses the unbiased bit generation from OpenSSL to return a single bit, where $\Pr(bit = 1) = prob$.
-I was introduced to the method for biasing an unbiased coin from a homework assignment given by Michael Mitzenmacher,
-and I later found a write-up online \href{https://amakelov.wordpress.com/2013/10/10/arbitrarily-biasing-a-coin-in-2-expected-tosses/}{here}.
+This function uses the unbiased bit generation from OpenSSL to return a single bit, where $\Pr(bit = 1) = prob$ --
+there is a nice write-up of the algorithm \href{https://amakelov.wordpress.com/2013/10/10/arbitrarily-biasing-a-coin-in-2-expected-tosses/}{here}.
 We will give a general form of the algorithm, and then talk about implementation details.
 \begin{algorithm}[H]
-	\caption{Biasing an unbiased coin}
-	\label{alg:biasing_a_coin}
+	\caption{Biasing an unbiased coin (in theory)}
+	\label{alg:biasing_a_coin_theory}
 	\begin{algorithmic}[1]
 		\State $p \gets \Pr(bit = 1)$
 		\State Find the infinite binary expansion of $p$, which we call $b = (b_1, b_2, \hdots,)_2$.
@@ -134,12 +120,13 @@ Let's first show that this procedure gives the correct expectation:
 		 &= \sum_{i=1}^{\infty} b_i \cdot \frac{1}{2^i} \\
 		 &= \sum_{i=1}^{\infty}\frac{b_i}{2^i}.
 \end{align*}
-This is consistent with the statement in Algorithm~\ref{alg:biasing_a_coin}, so we know that
+This is consistent with the statement in Algorithm~\ref{alg:biasing_a_coin_theory}, so we know that
 the process returns bits with the correct bias.
 In terms of efficiency, we know that we can stop coin flipping once we get a heads,
-so that part of the algorithm has $\E(\# flips) = 2$. \newline
+so that part of the algorithm has $\E(\# flips) = 2$ because the probability of getting a heads 
+on any given flip is $1/2$. \newline
 
-The part that is a bit more difficult is constructing the infinite binary expansion of $p$.
+We now move to constructing the infinite binary expansion of $p$.
 We start by noting that, for our purposes, we do not actually need an infinite binary expansion.
 Because $p$ will always be a 64-bit floating-point number, we need only get a binary
 expansion that covers all representable numbers in our floating-point standard that are
@@ -152,9 +139,113 @@ where $s$ is a sign bit we ignore for our purposes.
 Our binary expansion is just the mantissa $(1.m_1m_2 \hdots m_{52})_2$, with
 the radix point shifted based on the value of the exponent.
 We can then index into the properly shifted mantissa and check the value of the $k$th element.
+We end up with the following algorithm:
+\begin{algorithm}[H]
+	\caption{Biasing an unbiased coin (in practice): \newline sample\_bit(p: f64)}
+	\label{alg:biasing_a_coin_practice}
+	\begin{algorithmic}[1]
+		\State We know that $p$ is respresentable as an IEEE-754 64-bit floating point number.
+		\State $m, x \gets $ mantissa and exponent of the floating-point representation of $p$. 
+		We ensure that the mantissa gets the implicit leading 1 and the exponent is the ``unbiased'' version.
+		So $m \in \{1\} \bigcup \{0, 1\}^{52}$ and $x \in \{0, 1, \hdots, 1022\}$
+		\State Toss an unbiased coin until the first instance of ``heads''. Call the (0-based) index where this occurred $k$.
+		\State n\_leading\_zeros $\gets \max(0, 1022 - x)$
+		\If{$k <$ n\_leading\_zeros}
+			\State return 0
+		\Else
+			\State $i \gets k -$ n\_leading\_zeros 
+			\If{$i > \text{len}(m)$}
+				\State return 0
+			\Else
+				\State return $i^{th}$ element of $m$ (using 0-based indexing)
+			\EndIf
+		\EndIf
+	\end{algorithmic}
+\end{algorithm}
+Note that $x \in \{0, 1, \hdots, 1022\}$ above because these are the biased exponent values that correspond to $p \in [0,1]$.
+When $x=0$, $p$ is subnormal.
 
-\subsection{Other Continuous Distributions}
-In general, we can generate draws from non-uniform continuous distributions (e.g. Laplace)
+\subsection{Sampling from censored Geometric}
+The Geometric distribution is a building block for many of our other mechanism, either as the basis of the 
+noise distribution (as for the Geometric mechanism) or as a component of a larger algorithm (as we will show in 
+section~\ref{subsec:unif_sampling}). For now, the library supports sampling only from a censored Geometric distribution. \newline 
+
+The function accepts three arguments. $p$ is the probability of success on any given trial. max\_trials is the maximum number of 
+trials for which the algorithm will run -- if no success has occurred by the time max\_trials has been reached, the algorithm 
+will return max\_trials as its answer. 
+The $ect$ boolean stands for \emph{enforce constant time} and tells the algorithm to run for the maximum number 
+of trials, regardless of when success is achieved. This is useful for reducing variability in algorithm runtime that could be used 
+for a timing attack. 
+\begin{algorithm}[H]
+	\caption{Generating draws from Censored Geometric: \newline sample\_geometric\_censored(p: f64, max\_trials: i64, ect: bool)}
+	\label{alg:censored_geom_p}
+	\begin{algorithmic}[1]
+		\State trial\_index $\gets 1$
+		\State geom\_return $\gets 0$
+		\While trial\_index $\leq$ max\_trials
+			\State bit $\gets sample\_bit(p)$
+			\If{bit $== 1$}
+				\If{geom\_return $== 0$} \Comment{Update result from Geometric only if we have not already seen a 1}
+					\State geom\_return $\gets$ trial\_index
+					\If{ect $==$ False} \Comment{If we do not care to enforce constant time...}
+						\State return geom\_return \Comment{return the result}
+					\EndIf
+				\EndIf
+			\Else
+				\State trial\_index $+= 1$
+			\EndIf
+		\EndWhile
+		\If{geom\_return $== 0$} \Comment{If Geometric result $>$ censoring bound...}
+			\State return max\_trials \Comment{have it return the value of the bound}
+		\EndIf
+	\end{algorithmic}
+\end{algorithm}
+
+\subsection{Sampling from Uniform[min, max)}
+\label{subsec:unif_sampling}
+In this method, we start by generating a floating-point number $y \in [0,1)$,
+where each is generated with probability relative to its unit of least precision (ULP).\footnote{The ULP is the value
+represented by the least significant bit of the mantissa if that bit is a 1.} 
+That is, we generate $y \in [2^{-g}, 2^{-g+1})$ with probability $\frac{1}{2^i}$
+for all $g \in \{1,2,\hdots,1022\}$ and $y \in [0, 2^{-1022})$ for $g = 1023$.
+At the end, we will scale our output from $[0,1)$ to be instead in $[min, max)$. \newline 
+
+The algorithm is as follows:
+\begin{algorithm}[H]
+	\caption{Generating draws from Uniform[min, max)}
+	\label{alg:unif_min_max}
+	\begin{algorithmic}[1]
+		\State $m \gets \{0, 1\}^{52}$ from OpenSSL (or other cryptographically-secure RNG)
+		\State $g \gets min(1023, sample\_geometric\_censored(p = 0.5, max\_trials = 1023, ect = True))$
+		\State $u \gets (1.m_1m_2 \hdots m_{52})_2 * 2^{-g} * (max - min) + min$
+		\State return $u$
+	\end{algorithmic}
+\end{algorithm}
+
+This method was proposed in \cite{Mir12} as a component of a larger attempt to create
+a version of the Laplace mechanism that is not susceptible to floating-point attacks.
+Note that the original method generates values $\in [0,1)$ rather than arbitrary $[min, max)$ 
+and does not give guidance on what to do if the sample from the Geometric is $> 1023$.
+There is no universally agreed upon method for generating uniform random numbers (for privacy
+applications or otherwise), but this method seems to approximate the real numbers better than many
+others because of the sampling relative to the ULP. \newline
+
+\begin{tcolorbox}[colback = {green}, title = {Known Privacy Issues}, colbacktitle = black]
+	When $g=1023$ we are sampling from subnormal floating-point numbers. Because processors do not typically support
+	subnormals natively, they take much longer to sample and open us up to an easier timing attack, as
+	seen in \cite{AKM+15}. \newline
+
+	We are incurring some floating-point error when converting from $[0,1)$ to $[min, max)$ which
+	could jeopardize privacy guarantees in ways that are difficult to reason about.\cite{Mir12} \cite{Ilv19}
+\end{tcolorbox}
+
+We have a method for generating uniform samples via MPFR that respects exact rounding, but it is being used sparingly in the library.
+We are working to figure out if and how we can use this method as a building block for floating-point safe methods of drawing from 
+other distributions.
+
+
+\subsection{Problems with sampling from other continuous distributions}
+In principle, we can generate draws from non-uniform continuous distributions (e.g. Laplace, Gaussian)
 by using \href{https://en.wikipedia.org/wiki/Inverse_transform_sampling}{inverse transform sampling}.
 To draw from a distribution $f$ with CDF $F$,
 we sample $u$ from $Unif[0,1)$ and return $F^{-1}(u)$. \newline
@@ -163,17 +254,30 @@ we sample $u$ from $Unif[0,1)$ and return $F^{-1}(u)$. \newline
 	Carrying out the inverse probability transform employs floating-point arithmetic,
 	so we run into the same problems as were described in the uniform sampling section.
 	This is potentially a very significant problem, and one for which we do not
-	currently have a good solution.
+	currently have a good general solution.
 \end{tcolorbox}
 Because of the vulnerabilities inherent in using floating-point arithmetic, we would
-like to avoid using inverse transform sampling when possible.
+like to avoid using inverse transform sampling. We do not have a completely general way of ensuring 
+that algorithms designed to be private when drawing noise from $\R$ remain private when they have 
+access only to floating-point numbers. Instead, we will take each relevant distribution individually 
+and discuss potential solutions. \newline 
 
-\subsection{Geometric Distribution}
-The Geometric is one such case where we can generate a distribution without inverse transform sampling.
-To generate a $Geom(p)$, we can use our $sample\_bit$ function to
-repeatedly sample random bits where $\Pr(bit = 1) = p$. We then return the number of samples
-it takes to get our first $1$. This method is not susceptible to attacks based on floating-point vulnerabilities,
-as it operates only over the integers. \newline
+\subsubsection{Potential fixes for Laplace}
+We have a \href{https://github.com/opendifferentialprivacy/whitenoise-core/tree/CC_add_snapping}{branch} with an implementation of 
+the Snapping mechanism from \cite{Mir12}. We are currently working to verify the theory and associated implementation, as well 
+as consider how to use it effectively in practice. \newline 
+
+\subsubsection{Potential fixes for Gaussian}
+As mentioned for the Uniform, we have a method for generating Gaussian samples via MPFR that respects exact rounding. 
+It is not currently being used in the library. \newline 
+
+\cite{DKM+06} proposes using the binomial approximation to the Gaussian, and notes that
+an additive noise mechanism drawing noise from a $Binomial(n, p = 0.5)$ respects $(\epsilon, \delta)$-DP
+provided that $n \geq 64 \frac{\log(2/\delta)}{\epsilon^2}$. This seems promising and we already 
+have the infrastructure for generating a Binomial without floating-point arithmetic, but it 
+involves manually sampling bits. For small $\epsilon$, this method could quickly become 
+computationally unwieldy. For example, having the mechanism respect $(10^{-2}, 10^{-9})$-DP
+requires sampling nearly 14 million bits.
 
 \bibliographystyle{alpha}
 \bibliography{noise}

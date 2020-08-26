@@ -7,9 +7,26 @@ use openssl::rand::rand_bytes;
 use ieee754::Ieee754;
 
 use ndarray::{ArrayD, Zip, Axis};
-
-use rug::Float;
 use std::cmp::Ordering;
+use whitenoise_validator::utilities::array::{slow_select, slow_stack};
+use ndarray::prelude::IxDyn;
+
+
+///  Accepts an ndarray and returns the number of columns.
+///
+/// # Arguments
+/// * `data` - The data for which you want to know the number of columns.
+///
+/// # Return
+/// Number of columns in data.
+pub fn get_num_columns<T>(data: &ArrayD<T>) -> Result<i64> {
+    match data.ndim() {
+        0 => Err("data is a scalar".into()),
+        1 => Ok(1),
+        2 => Ok(data.len_of(Axis(1)) as i64),
+        _ => Err("data may be at most 2-dimensional".into())
+    }
+}
 
 
 /// Broadcast left and right to match each other, and map an operator over the pairs
@@ -29,34 +46,34 @@ use std::cmp::Ordering;
 /// use whitenoise_runtime::utilities::broadcast_map;
 /// let left: ArrayD<f64> = arr1(&[1., -2., 3., 5.]).into_dyn();
 /// let right: ArrayD<f64> = arr1(&[2.]).into_dyn();
-/// let mapped: Result<ArrayD<f64>> = broadcast_map(&left, &right, &|l, r| l.max(r.clone()));
+/// let mapped: Result<ArrayD<f64>> = broadcast_map(left, right, &|l, r| l.max(r.clone()));
 /// println!("{:?}", mapped); // [2., 2., 3., 5.]
 /// ```
 pub fn broadcast_map<T, U>(
-    left: &ArrayD<T>,
-    right: &ArrayD<T>,
+    left: ArrayD<T>,
+    right: ArrayD<T>,
     operator: &dyn Fn(&T, &T) -> U) -> Result<ArrayD<U>> where T: std::clone::Clone, U: Default {
     let shape = match left.ndim().cmp(&right.ndim()) {
         Ordering::Less => right.shape(),
         Ordering::Equal => if left.len() > right.len() { left.shape() } else { right.shape() },
         Ordering::Greater => left.shape()
-    };
+    }.to_vec();
 
 //    println!("shape {:?}", shape);
 //    println!("left shape {:?}", left.shape());
 //    println!("right shape {:?}", right.shape());
-    // TODO: switch to array views to prevent the clone()
-    let left = to_nd(left.clone(), &shape.len())?;
-    let right = to_nd(right.clone(), &shape.len())?;
+
+    let left = to_nd(left, shape.len())?;
+    let right = to_nd(right, shape.len())?;
 
 //    println!("shape {:?}", shape);
 //    println!("left shape {:?}", left.shape());
 //    println!("right shape {:?}", right.shape());
 //    println!();
 
-    let mut output: ArrayD<U> = ndarray::Array::default(shape);
+    let mut output: ArrayD<U> = ndarray::Array::default(shape.clone());
     Zip::from(&mut output)
-        .and(left.broadcast(shape).ok_or("could not broadcast left argument")?)
+        .and(left.broadcast(shape.clone()).ok_or("could not broadcast left argument")?)
         .and(right.broadcast(shape).ok_or("could not broadcast right argument")?)
         .apply(|acc, l, r| *acc = operator(&l, &r));
 
@@ -75,17 +92,17 @@ mod test_broadcast_map {
         let data1d = arr1(&[2., 3., 5.]).into_dyn();
         let data2d = arr2(&[[2., 4.], [3., 7.], [5., 2.]]).into_dyn();
 
-        assert!(broadcast_map(
-            &data0d, &data1d, &|l, r| l * r,
-        ).unwrap() == arr1(&[4., 6., 10.]).into_dyn());
+        assert_eq!(
+            broadcast_map(data0d.clone(), data1d.clone(), &|l, r| l * r).unwrap(),
+            arr1(&[4., 6., 10.]).into_dyn());
 
-        assert!(broadcast_map(
-            &data1d, &data2d, &|l, r| l / r,
-        ).unwrap() == arr2(&[[1., 2./4.], [1., 3./7.], [1., 5. / 2.]]).into_dyn());
+        assert_eq!(
+            broadcast_map(data1d.clone(), data2d.clone(), &|l, r| l / r).unwrap(),
+            arr2(&[[1., 2. / 4.], [1., 3. / 7.], [1., 5. / 2.]]).into_dyn());
 
-        assert!(broadcast_map(
-            &data2d, &data0d, &|l, r| l + r,
-        ).unwrap() == arr2(&[[4., 6.], [5., 9.], [7., 4.]]).into_dyn());
+        assert_eq!(
+            broadcast_map(data2d, data0d, &|l, r| l + r).unwrap(),
+            arr2(&[[4., 6.], [5., 9.], [7., 4.]]).into_dyn());
     }
 
     #[test]
@@ -94,7 +111,7 @@ mod test_broadcast_map {
         let right = arr1(&[2., 3., 5., 6.]).into_dyn();
 
         assert!(broadcast_map(
-            &left, &right, &|l, r| l * r,
+            left, right, &|l, r| l * r,
         ).is_err());
     }
 
@@ -110,16 +127,19 @@ mod test_broadcast_map {
     }
 }
 
-pub fn to_nd<T>(mut array: ArrayD<T>, ndim: &usize) -> Result<ArrayD<T>> {
-    match (*ndim as i32) - (array.ndim() as i32) {
+pub fn to_nd<T>(mut array: ArrayD<T>, ndim: usize) -> Result<ArrayD<T>> {
+    match (ndim as i32) - (array.ndim() as i32) {
         0 => {}
         // must remove i axes
         i if i < 0 => {
-            (0..-(i as i32)).map(|_| match array.shape().last()
+            (0..-(i as i32)).try_for_each(|_| match array.shape().last()
                 .ok_or_else(|| Error::from("ndim may not be negative"))? {
-                1 => Ok(array.index_axis_inplace(Axis(array.ndim() - 1), 0)),
-                _ => Err("cannot remove non-singleton trailing axis".into())
-            }).collect::<Result<()>>()?
+                1 => {
+                    array.index_axis_inplace(Axis(array.ndim() - 1), 0);
+                    Ok(())
+                },
+                _ => Err(Error::from("cannot remove non-singleton trailing axis"))
+            })?
         }
         // must add i axes
         i if i > 0 => (0..i).for_each(|_| array.insert_axis_inplace(Axis(array.ndim()))),
@@ -127,6 +147,31 @@ pub fn to_nd<T>(mut array: ArrayD<T>, ndim: &usize) -> Result<ArrayD<T>> {
     };
 
     Ok(array)
+}
+
+
+pub fn standardize_columns<T: Default + Clone>(array: ArrayD<T>, column_len: usize) -> Result<ArrayD<T>> {
+    Ok(match array.ndim() {
+        0 => return Err("dataset may not be a scalar".into()),
+        1 => match column_len {
+            0 => slow_select(&array, Axis(1), &[]),
+            1 => array,
+            _ => slow_stack(
+                Axis(1),
+                &[array.view(), ndarray::Array::<T, IxDyn>::default(IxDyn(&[array.len(), column_len])).view()])?
+        },
+        2 => match array.len_of(Axis(1)).cmp(&column_len) {
+            Ordering::Less => slow_stack(
+                Axis(1),
+                &[array.view(), ndarray::Array::<T, IxDyn>::default(IxDyn(&[
+                    array.len_of(Axis(0)),
+                    column_len - array.len_of(Axis(1))])).view()],
+            )?,
+            Ordering::Equal => array,
+            Ordering::Greater => slow_select(&array, Axis(1), &(0..column_len).collect::<Vec<_>>())
+        },
+        _ => return Err("array must be 1 or 2-dimensional".into())
+    })
 }
 
 
@@ -146,15 +191,17 @@ pub fn get_bytes(n_bytes: usize) -> String {
     rand_bytes(&mut buffer).unwrap();
 
     // create new buffer of binary representations, rather than u8
-    let mut new_buffer = Vec::new();
-    for i in 0..buffer.len() {
-        new_buffer.push(format!("{:08b}", buffer[i]));
-    }
+    let new_buffer = buffer.into_iter()
+        .map(|v| format!("{:08b}", v))
+        .collect::<Vec<String>>();
 
-    // combine binary representations into single string and subset mantissa
-    let binary_string = new_buffer.join("");
+    // combine binary representations into single string and subset mantissa, and return
+    new_buffer.concat()
+}
 
-    return binary_string;
+// TODO: substitute implementation with different generators
+pub fn fill_bytes(mut buffer: &mut [u8]) {
+    rand_bytes(&mut buffer).ok();
 }
 
 /// Converts an `f64` to `String` of length 64, yielding the IEEE-754 binary representation of the `f64`.
@@ -168,7 +215,7 @@ pub fn get_bytes(n_bytes: usize) -> String {
 ///
 /// # Return
 /// A string showing the IEEE-754 binary representation of `num`.
-pub fn f64_to_binary(num: &f64) -> String {
+pub fn f64_to_binary(num: f64) -> String {
     // decompose num into component parts
     let (sign, exponent, mantissa) = num.decompose_raw();
 
@@ -177,11 +224,8 @@ pub fn f64_to_binary(num: &f64) -> String {
     let mantissa_string = format!("{:052b}", mantissa);
     let exponent_string = format!("{:011b}", exponent);
 
-    // join component strings
-    let binary_string = vec![sign_string, exponent_string, mantissa_string].join("");
-
-    // return string representation
-    return binary_string;
+    // join component strings and return string representation
+    vec![sign_string, exponent_string, mantissa_string].concat()
 }
 
 /// Converts `String` of length 64 to `f64`, yielding the floating-point number represented by the `String`.
@@ -195,14 +239,10 @@ pub fn f64_to_binary(num: &f64) -> String {
 ///
 /// # Return
 /// * `num`: f64 version of the String
-pub fn binary_to_f64(binary_string: &String) -> f64 {
+pub fn binary_to_f64(binary_string: &str) -> f64 {
     // get sign and convert to bool as recompose expects
     let sign = &binary_string[0..1];
-    let sign_bool = if sign.parse::<i32>().unwrap() == 0 {
-        false
-    } else {
-        true
-    };
+    let sign_bool = sign.parse::<i32>().unwrap() != 0;
 
     // convert exponent to int
     let exponent = &binary_string[1..12];
@@ -213,8 +253,7 @@ pub fn binary_to_f64(binary_string: &String) -> f64 {
     let mantissa_int = u64::from_str_radix(mantissa, 2).unwrap();
 
     // combine elements into f64 and return
-    let num = f64::recompose_raw(sign_bool, exponent_int, mantissa_int);
-    return num;
+    f64::recompose_raw(sign_bool, exponent_int, mantissa_int)
 }
 
 /// Takes `String` of form `{0,1}^64` and splits it into a sign, exponent, and mantissa
@@ -225,8 +264,8 @@ pub fn binary_to_f64(binary_string: &String) -> f64 {
 ///
 /// # Return
 /// * `(sign, exponent, mantissa)` - where each is a `String`.
-pub fn split_ieee_into_components(binary_string: &String) -> (String, String, String) {
-    return (binary_string[0..1].to_string(), binary_string[1..12].to_string(), binary_string[12..].to_string());
+pub fn split_ieee_into_components(binary_string: &str) -> (String, String, String) {
+    (binary_string[0..1].to_string(), binary_string[1..12].to_string(), binary_string[12..].to_string())
 }
 
 /// Combines `String` versions of sign, exponent, and mantissa into
@@ -240,7 +279,7 @@ pub fn split_ieee_into_components(binary_string: &String) -> (String, String, St
 /// # Return
 /// Concatenation of sign, exponent, and mantissa.
 pub fn combine_components_into_ieee(sign: &str, exponent: &str, mantissa: &str) -> String {
-    return vec![sign, exponent, mantissa].join("");
+    vec![sign, exponent, mantissa].concat()
 }
 
 /// Samples a single element from a set according to provided weights.
@@ -251,13 +290,19 @@ pub fn combine_components_into_ieee(sign: &str, exponent: &str, mantissa: &str) 
 ///
 /// # Return
 /// Element from the candidate set
-pub fn sample_from_set<T>(candidate_set: &Vec<T>, weights: &Vec<f64>)
-                          -> Result<T> where T: Clone {
+#[cfg(feature="use-mpfr")]
+pub fn sample_from_set<T>(
+    candidate_set: &[T], weights: &[whitenoise_validator::Float],
+    _enforce_constant_time: bool
+) -> Result<T> where T: Clone {
+
+    use rug::Float;
+
     // generate uniform random number on [0,1)
     let unif: rug::Float = Float::with_val(53, noise::sample_uniform_mpfr(0., 1.)?);
 
     // generate sum of weights
-    let weights_rug: Vec<rug::Float> = weights.into_iter().map(|w| Float::with_val(53, w)).collect();
+    let weights_rug: Vec<rug::Float> = weights.iter().map(|w| Float::with_val(53, w)).collect();
     let weights_sum: rug::Float = Float::with_val(53, Float::sum(weights_rug.iter()));
 
     // NOTE: use this instead of the two lines above if we switch to accepting rug::Float rather than f64 weights
@@ -273,28 +318,123 @@ pub fn sample_from_set<T>(candidate_set: &Vec<T>, weights: &Vec<f64>)
     }
 
     // sample an element relative to its probability
-    let mut return_index = 0;
-    for i in 0..cumulative_probability_vec.len() {
-        if unif <= cumulative_probability_vec[i] {
+    let mut return_index: usize = 0;
+    for (i, cum_prob) in cumulative_probability_vec.into_iter().enumerate() {
+        if unif <= cum_prob {
             return_index = i;
             break;
         }
     }
-    Ok(candidate_set[return_index as usize].clone())
+    Ok(candidate_set[return_index].clone())
 }
 
-///  Accepts an ndarray and returns the number of columns.
+#[cfg(not(feature="use-mpfr"))]
+pub fn sample_from_set<T>(
+    candidate_set: &[T], weights: &[whitenoise_validator::Float],
+    enforce_constant_time: bool
+) -> Result<T> where T: Clone {
+
+    // generate uniform random number on [0,sum(weights))
+    let sample: f64 = noise::sample_uniform(0., weights.iter().sum(), enforce_constant_time)?;
+
+    // return once the cumulative weight reaches the uniform sample
+    let mut cumulative = 0.;
+    let mut return_index: usize = 0;
+    loop {
+        cumulative += weights[return_index];
+        if cumulative >= sample { break }
+        return_index += 1;
+    }
+    Ok(candidate_set[return_index].clone())
+}
+
+/// Accepts set and element weights and returns a subset of size k (without replacement).
+///
+/// Weights are (after being normalized) the probability of drawing each element on the first draw (they sum to 1)
+/// Based on Algorithm A from Raimidis PS, Spirakis PG (2006). “Weighted random sampling with a reservoir.”
 ///
 /// # Arguments
-/// * `data` - The data for which you want to know the number of columns.
+/// * `set` - Set of elements for which you would like to create a subset
+/// * `weights` - Weight for each element in the set, corresponding to the probability it is drawn on the first draw.
+/// * `k` - The size of the desired subset
 ///
 /// # Return
-/// Number of columns in data.
-pub fn get_num_columns<T>(data: &ArrayD<T>) -> Result<i64> {
-    match data.ndim() {
-        0 => Err("data is a scalar".into()),
-        1 => Ok(1),
-        2 => Ok(data.shape().last().unwrap().clone() as i64),
-        _ => Err("data may be at most 2-dimensional".into())
+/// subset of size k sampled according to weights
+///
+/// # Example
+/// ```
+/// use whitenoise_runtime::utilities::create_subset;
+/// let set = vec![1, 2, 3, 4, 5, 6];
+/// let weights = vec![1., 1., 1., 2., 2., 2.];
+/// let k = 3;
+/// let subset = create_subset(&set, &weights, k, false);
+/// # subset.unwrap();
+/// ```
+#[cfg(feature="use-mpfr")]
+pub fn create_subset<T>(
+    set: &[T], weights: &[f64], k: usize,
+    _enforce_constant_time: bool
+) -> Result<Vec<T>> where T: Clone {
+    if k > set.len() { return Err("k must be less than the set length".into()); }
+
+    use rug::Float;
+    use rug::ops::Pow;
+
+    // generate sum of weights
+    let weights_rug: Vec<rug::Float> = weights.iter().map(|w| Float::with_val(53, w)).collect();
+    let weights_sum: rug::Float = Float::with_val(53, Float::sum(weights_rug.iter()));
+
+    // convert weights to probabilities
+    let probabilities: Vec<rug::Float> = weights_rug.iter().map(|w| w / weights_sum.clone()).collect();
+
+    // generate keys and identify top k indices
+    //
+
+    // generate key/index tuples
+    let mut key_vec = probabilities.into_iter()
+        .take(set.len()).enumerate()
+        .map(|(i, prob)| Ok((noise::sample_uniform_mpfr(0., 1.)?.pow(1. / prob), i)))
+        .collect::<Result<Vec<(rug::Float, usize)>>>()?;
+
+    // sort key/index tuples by key and identify top k indices
+    let mut top_indices: Vec<usize> = Vec::with_capacity(k);
+    key_vec.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap());
+    top_indices.extend(key_vec.iter()
+        .take(k).map(|v| v.1));
+
+    // subsample based on top k indices
+    let mut subset: Vec<T> = Vec::with_capacity(k);
+    for value in top_indices.iter().map(|&index| set[index].clone()) {
+        subset.push(value);
     }
+
+    Ok(subset)
+}
+
+#[cfg(not(feature="use-mpfr"))]
+pub fn create_subset<T>(
+    set: &[T], weights: &[f64], k: usize,
+    enforce_constant_time: bool
+) -> Result<Vec<T>> where T: Clone {
+    if k > set.len() { return Err("k must be less than the set length".into()); }
+
+    // generate sum of weights
+    let weights_sum: f64 = weights.iter().sum();
+
+    // convert weights to probabilities
+    let probabilities: Vec<f64> = weights.iter().map(|w| w / weights_sum).collect();
+
+    // generate keys and identify top k indices
+    //
+
+    // generate key/index tuples
+    let mut key_vec = (0..set.len())
+        .map(|i| Ok((noise::sample_uniform(0., 1., enforce_constant_time)?.powf(1. / probabilities[i]), i)))
+        .collect::<Result<Vec<(f64, usize)>>>()?;
+
+    // sort key/index tuples by key and identify top k indices
+    key_vec.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap());
+
+    // subsample based on top k indices
+    Ok(key_vec.iter().take(k).map(|v| set[v.1].clone()).collect())
 }

@@ -1,42 +1,39 @@
 [package]
 name = "whitenoise_validator"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["OpenDP-WhiteNoise <whitenoise@opendp.io>"]
 description = "A library for validating whether or not an analysis is differentially private."
 readme = "README.md"
 keywords = ["differential-privacy", "data-privacy", "privacy"]
 categories = ["cryptography", "science"] # up to 5 allowed, must match those listed at https://crates.io/category_slugs
 repository = "https://github.com/opendifferentialprivacy/whitenoise-core"
-build="build/main.rs"
+build = "build/main.rs"
 edition = "2018"
 license = "MIT"
 
 [dependencies]
-prost = "0.5.0"
-bytes = "0.4.12"
-libc = "0.2"
-byteorder = "1.3.2"
-ffi-support = "0.3.5"
-itertools = "0.8.2"
-num = "0.2.1"
-ndarray = "0.13.0"
+prost = "0.6.1"
+bytes = "0.5.4"
+itertools = "0.9.0"
+num = "0.3.0"
+indexmap = "1.4.0"
+ndarray = "0.13.1"
 ndarray-stats = "0.3.0"
 error-chain = "0.12.2"
-serde_json = "1.0.48"
-serde = "1.0.104"
+serde_json = "1.0.55"
+serde = "1.0.112"
 noisy_float = "0.1.12"
 statrs = "0.12.0"
-libmath = "0.2.1"
 
 [build-dependencies]
-serde_json = "1.0.48"
-serde = "1.0.104"
-itertools = "0.8.2"
+serde_json = "1.0.55"
+serde = { version = "1.0.112", features = ["derive"] }
+itertools = "0.9.0"
 heck = "0.3.1"
-prost-build = { version = "0.5.0" }
-cbindgen = "0.9.1"
+prost-build = "0.6.1"
 build-deps = "0.1.4"
+indexmap = { version = "1.4.0", features = ["serde-1"] }
 
 [lib]
 name = "whitenoise_validator"
-crate-type = ["rlib", "cdylib", "staticlib"]
+crate-type = ["rlib"]

@@ -6,9 +6,18 @@
   },
   "id": "Count",
   "name": "count",
-  "options": {},
+  "options": {
+    "distinct": {
+      "type_proto": "bool",
+      "type_rust": "bool",
+      "default_python": "False",
+      "default_rust": "false",
+      "description": "Set to true for the number of unique members in the data."
+    }
+  },
   "return": {
     "type_value": "Array"
   },
-  "description": "Returns the number of rows in the data."
+  "description": "Returns the number of rows in the data.",
+  "proto_id": 6
 }

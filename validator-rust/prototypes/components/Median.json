@@ -1,0 +1,23 @@
+{
+  "arguments": {
+    "data": {
+      "type_value": "Array",
+      "description": "Data for which you want the median value in each column."
+    },
+    "candidates": {
+      "type_value": "Jagged",
+      "default_python": "None",
+      "default_rust": "None",
+      "description": "Set from which to compute scores for the Exponential mechanism."
+    }
+  },
+  "id": "Median",
+  "name": "median",
+  "options": {},
+  "return": {
+    "type_value": "Array",
+    "description": "Median of each column in the data."
+  },
+  "description": "Find the median value of each column in the data.",
+  "proto_id": 63
+}

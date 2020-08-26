@@ -32,6 +32,7 @@ where $l = \lfloor \frac{n+1}{2} \rfloor$ and $u = \lceil \frac{n+1}{2} \rceil$ 
 $\tilde{X} = (\tilde{x}_1, \hdots, \tilde{x}_n)$ is the sorted version of $X$.
 \end{definition}
 
+Note that this method of producing a DP median is not usable as the noise is scaled to the full range of the dataset.
 \section{Neighboring Definition: Change One}
 
 % l1 sensitivity
@@ -74,8 +75,8 @@ $\tilde{X} = (\tilde{x}_1, \hdots, \tilde{x}_n)$ is the sorted version of $X$.
 	\[
 		\Delta f(\cdot) =
 			\begin{cases}
-				\left( \frac{M - m}{2} \right)^2, \text{ if } n \equiv 0 \pmod{2} \\
-				(M-m)^2 \text{ if } n \equiv 1 \pmod{2}
+				\frac{M - m}{2}, \text{ if } n \equiv 0 \pmod{2} \\
+				M-m \text{ if } n \equiv 1 \pmod{2}
 			\end{cases}
 	\]
 \end{theorem}
@@ -117,7 +118,7 @@ $$ \Delta f(\cdot) = \max_{X,X'} \left\vert f(X') - f(X) \right\vert = \frac{M-m
 
 \begin{theorem}
 Let the database $X$ have elements bounded above by $M$ and below by $m$. Then the global $\ell_2$-sensitivity in the add/drop-one model of the median is
-$$ \Delta f(\cdot) = \left(\frac{M-m}{2}\right)^2.$$
+$$ \Delta f(\cdot) = \frac{M-m}{2}.$$
 \end{theorem}
 
 \begin{proof}

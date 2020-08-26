@@ -1,21 +1,22 @@
 use crate::errors::*;
 
 use crate::components::Component;
-use std::collections::HashMap;
-use crate::base::{Value, ValueProperties, DataType};
+use crate::base::{Value, ValueProperties, DataType, IndexKey};
 use crate::utilities::prepend;
-use crate::base;
+use crate::{base, Warnable};
 use crate::proto;
 use crate::components::transforms::propagate_binary_shape;
+use indexmap::map::IndexMap;
 
 impl Component for proto::Filter {
     fn propagate_property(
         &self,
-        _privacy_definition: &proto::PrivacyDefinition,
-        _public_arguments: &HashMap<String, Value>,
-        properties: &base::NodeProperties,
-    ) -> Result<ValueProperties> {
-        let mut data_property = properties.get("data")
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
+        _public_arguments: IndexMap<base::IndexKey, &Value>,
+        properties: base::NodeProperties,
+        node_id: u32
+    ) -> Result<Warnable<ValueProperties>> {
+        let mut data_property = properties.get::<base::IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
@@ -23,7 +24,7 @@ impl Component for proto::Filter {
             data_property.assert_is_not_aggregated()?;
         }
 
-        let mask_property = properties.get("mask")
+        let mask_property = properties.get::<IndexKey>(&"mask".into())
             .ok_or("mask: missing")?.array()
             .map_err(prepend("mask:"))?.clone();
 
@@ -45,11 +46,11 @@ impl Component for proto::Filter {
         data_property.num_records = None;
 
         // This exists to prevent binary ops on non-conformable arrays from being approved
-        data_property.dataset_id = None;
+        data_property.dataset_id = Some(node_id as i64);
 
         // no longer know if the data has a nonzero number of records
         data_property.is_not_empty = false;
 
-        Ok(data_property.into())
+        Ok(ValueProperties::Array(data_property).into())
     }
 }

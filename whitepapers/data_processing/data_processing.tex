@@ -17,122 +17,287 @@
 	\vspace{12pt} % Whitespace
 }
 
-\author{\LARGE Christian Covington} % Your name
+\author{} % Your name
 
-\date{\normalsize\today} % Today's date (\today) or a custom date
+\date{} % Today's date (\today) or a custom date
 
 \begin{document}
 
 \maketitle
+
+\tableofcontents
 
 \section{Overview}
 This document contains notes on our choices regarding ``data processing'', which I am using to stand in
 for all things related to data bookkeeping (data bounds, imputation, sample size calculations, etc.).
 
 \section{Clamping}
+
+\subsection{Introduction}
 Many operations in the library require the definition of a set of possible data values
 we would like to use for said operation. For numeric variables, this typically
 takes the form of a closed interval $[min, max] \in \R$ or $\Z$. For categorical
-variables, this is a discrete set of elements.
+variables, this is a discrete set of elements. The \emph{clamp} component sets these 
+properties for a given analysis.
 In our system, we have slightly different notions of clamping for numeric and categorical variables.
-We consider $f64$ and $i64$ to be allowable numeric types, and $f64, i64, bool,$ and $String$ to be
+We consider $f64$ and $i64$ to be allowable numeric types, and $i64, bool,$ and $String$ to be
 allowable categorical types. \newline
 
-Our method for clamping numeric types should be familiar; it accepts data, a min, and a max,
+Our method for clamping numeric types should be familiar; it requires data, a lower bound, and an upper bound,
 and maps data elements outside of the interval $[min, max]$ to the nearest point in the interval.
-Null values (represented as $NAN$ for the $f64$ type and which do not exist for the $i64$ type)
+Null values (represented as NAN for the $f64$ type and which do not exist for the $i64$ type)
 are preserved by numeric clamping. \newline
 
-Our categorical clamping accepts data, a set of feasible values, and a null value.
+Our categorical clamping requires data, a set of feasible values, and a null value.
 Data elements that are outside the set of feasible values are mapped to the null value.
-Null values are preserved by the categorical clamping. \newline
+Null values are preserved by the categorical clamping. \newline 
 
-\section{Imputation}
+\subsection{Algorithm Statement}
+The component arguments are as follows:
+\begin{enumerate}
+    \item X: The data of size $n \times m$ to be clamped.
+    \item categories: A vector of length $m$, where each element is the set of plausible data values 
+                      for column $m$ of $X$. If not provided, defaults to None.
+    \item null\_value: A vector of length $m$, where each element is the designated ``null'' 
+                      for column $m$ of $X$. That is, elements $\not\in$ categories are mapped to the 
+                      null\_value. If not provided, defaults to None.
+    \item lower: A vector of length $m$, where each element is a proposed minimum value for column $m$ of $X$.
+                 If not provided, defaults to None.
+    \item upper: A vector of length $m$, where each element is a proposed maximum value for column $m$ of $X$.
+                 If not provided, defaults to None. 
+\end{enumerate}
+
+\begin{algorithm}[H]
+    \label{alg:clamping}
+    \caption{Clamping: clamp($X$, categories, lower, upper)}
+    \begin{algorithmic}[1]
+        \For{$j \in [m]$} \Comment{Iterate over columns}
+            \For{$i \in [n]$} \Comment{Iterate over rows}
+                \If{categories $\neq$ None} \Comment{Proceed with categorical clamping}
+                    \If{$X_{i,j} \not\in categories[j]$}
+                        \State $X_{i,j} \gets null\_value[j]$
+                    \EndIf
+                \Else \Comment{Proceed with numeric clamping}
+                    \If{$X_{i,j} < lower[j]$}
+                        \State $X_{i,j} \gets lower[j]$
+                    \ElsIf{$X_{i,j} > upper[j]$}
+                        \State $X_{i,j} \gets upper[j]$
+                    \EndIf
+                \EndIf
+            \EndFor
+        \EndFor
+        \\ \Return $X$
+    \end{algorithmic}
+\end{algorithm}
+
+\section{Imputation} 
+\label{sec:impute}
+
+\subsection{Introduction}
+Some operations in the library require the private data to be non-null. The \emph{impute} component 
+sets the non-null property for an analysis. \newline 
+
 Much like clamping, we have slightly different notions of imputation for numeric and categorical variables.
 In this case, we consider only $f64$ to be an allowable numeric type, while
-$f64, i64, bool,$ and $String$ are allowable categorical types. \newline
+$f64, i64, bool,$ and $String$ are allowable categorical types. We do not allow for numeric imputation on $i64$
+because $i64$ does not support NAN values and thus are non-null by default. \newline
 
-Numeric imputation is parameterized by min, max, and a supported probability distribution (e.g. Gaussian or Uniform)
-with appropriate arguments. $NAN$ values are replaced with a draw from the provided distribution. \newline
+Numeric imputation is parameterized by min, max, and a supported probability distribution (Gaussian or Uniform)
+with appropriate arguments. NAN values are replaced with a draw from the provided distribution. \newline
 
 Categorical imputation is parameterized by categories, probabilities, and a null value.
 Each data element equal to the null value is replaced with a draw from the set of categories,
 according to the probabilities provided.
 
-\section{Public vs. Private $n$}
+\subsection{Algorithm Statement}
+The component arguments are as follows:
+\begin{enumerate}
+    \item X: The data of size $n \times m$ for which values should be imputed.
+    \item categories: A vector of length $m$, where each element is the set of plausible data values 
+                      for column $m$ of $X$. If not provided, defaults to None.
+    \item weights: A vector of length $m$, where each element is a set of imputation weights associated with the categories 
+                   for column $m$ of $X$. If not provided, defaults to None.
+    \item null\_value: A vector of length $m$, where each element is the designated ``null'' 
+                      for column $m$ of $X$. If an element is equal to the corresponding null\_value
+                      for its column, it is imputed from the probability distribution over the categories
+                      defined by the weights.
+    \item distribution: A string providing the distribution from which elements will be imputed. 
+                        Currently supported options are ``Uniform'' and ``Gaussian''. 
+                        Used only if \emph{categories} == None. 
+                        Defaults to ``Uniform''.
+    \item shift: A vector of length $m$, where each element is the expectation of the Gaussian distribution used 
+                 for imputing missing values in column $m$ of $X$. Used only if \emph{distribution} == ``Gaussian''.
+                 Defaults to None. 
+    \item scale: A vector of length $m$, where each element is the standard deviation of the Gaussian distribution used 
+                 for imputing missing values in column $m$ of $X$. Used only if \emph{distribution} == ``Gaussian''.
+                 Defaults to None. 
+    \item lower: A vector of length $m$, where each element is a proposed minimum value for column $m$ of $X$.
+                 Acts as a lower bound for the distribution from which elements are imputed.
+                 If not provided, defaults to None.
+    \item upper: A vector of length $m$, where each element is a proposed maximum value for column $m$ of $X$.
+                 Acts as a lower bound for the distribution from which elements are imputed.
+                 If not provided, defaults to None. 
+\end{enumerate}
+
+Let Categorical$(k, (p_1, \hdots, p_k))$ be the \href{https://en.wikipedia.org/wiki/Categorical_distribution}{categorical distribution}, which chooses 
+a single element from the set $\{1, 2, \hdots, k\}$ where each element $i$ has probability of being chosen $p_i$.
+Then we have
+\begin{algorithm}[H]
+    \label{alg:imputation}
+    \caption{Imputation: \newline impute($X$, categories, weights, null\_value, distribution, shift, scale, lower, upper)}
+    \begin{algorithmic}[1]
+        \For{$j \in [m]$} \Comment{Iterate over columns}
+            \For{$i \in [n]$} \Comment{Iterate over rows}
+                \If{categories $\neq$ None} \Comment{Proceed with categorical imputation}
+                    \If{$X_{i,j} == null\_value[j]$}
+                        \State sampling\_index $\gets$ Categorical$(\big\vert \text{weights}[j] \big\vert, \text{weights}[j])$ 
+                        \State $X_{i,j} \gets$ categories[j][sampling\_index] 
+                    \EndIf
+                \Else \Comment{Proceed with numeric imputation}
+                    \If{$X_{i,j} ==$ NAN}
+                        \If{distribution $==$ ``Uniform''}
+                            \State $X_{i,j} \gets$ Uniform(lower[j], upper[j])
+                        \ElsIf{distribution $==$ ``Gaussian''}
+                            \State $X_{i,j} \gets$ Gaussian(shift[j], scale[j])
+                            \If{$X_{i,j} < lower[j]$}
+                                \State $X_{i,j} \gets lower[j]$
+                            \ElsIf{$X_{i,j} > upper[j]$}
+                                \State $X_{i,j} \gets upper[j]$
+                            \EndIf
+                        \EndIf
+                    \EndIf
+                \EndIf
+            \EndFor
+        \EndFor
+        \\ \Return $X$
+    \end{algorithmic}
+\end{algorithm}
+
+\section{Resize}
+\label{sec:resize}
+
+\subsection{Motivation}
 We want our library to support cases both in which the analyst does and does not have access to
-the number of records in the data. This is an under-explored problem, so we provide
-our strategy for dealing with it as well as some potential alternatives.
+the number of records in the data. Doing the latter well is an under-explored problem, so we 
+propose the \emph{resize} framework as a possible solution.
 
-\subsection{Our strategy}
-We require that, when asking for a statistic, the analyst must choose an $\hat{n}$ -- an estimate
-of the true sample size $n$. If $\hat{n} = n$, then the analysis proceeds on the
-true data, $x$. If $\hat{n} \neq n$, the we either subsample or create synthetic data
-to create a data set, $\tilde{x}$, of size $\hat{n}$ to be used for the analysis.
+\subsection{Goals}
+The \emph{resize} framework is a means of jointly achieving a few different goals:
+\begin{enumerate}
+    \item guarantee known $n$ for analyses that require it,
+    \item give users flexibility in how they trade off between bias and variance, and
+    \item allow for both c-stability and privacy amplification from subsampling within the same privacy calculus.
+\end{enumerate}
 
-\subsubsection{Choosing $\hat{n}$}
-We offer two ways to choose an $\hat{n}$; the analyst make their own guess about $n$, or they can
-consume some privacy budget to estimate $n$. In the case of a user-provided $\hat{n}$, this could be because
-$n$ is actually public knowledge (in which case the user's estimate should be correct), or it could be
-a guess by the user. Whether $\hat{n}$ is provided by the user or estimated, this $\hat{n}$ will be used throughout
-the entire analysis. \newline
+\subsection{Algorithm Statement}
+\label{subsec:algorithm_statement}
+The \emph{resize} function takes the following inputs:
+\begin{enumerate}
+    \item $X$: The private underlying data.
+    \item $\tilde{n}$: The size of the private underlying data.
+    \item $n$: The desired size of the new data.
+    \item $p$: The proportion of the underlying data that can be used to construct the new data. $p$ can be $> 1$.
+    \item $...$: Various arguments explaining imputation rules (these will follow the rules from section~\ref{sec:impute}).
+\end{enumerate}
 
-We chose this strategy for a few reasons. First, we want the library to be general and this strategy
-seemed to meet that criterion. Second, we did not feel comfortable having different processes for
-public vs. private $n$, e.g. one in which the library automatically finds the sample size from public metadata and treats
-it as ground truth if the metadata states that $n \neq private$.
-Because public metadata are not typically assumed to be stored securely, it is
-possible that a metadata file could be changed nefariously, for example from $n = private$ to $n = 1,000$
-(and thus $n \neq private$).
-In such a case, we would not want the library to accept sample sizes from public metadata without
-suspicion; if it did so, then it would likely throw errors if the actual size of the data were not $n$, thus
-revealing to the adversary that the actual size of the data $\neq 1,000$.
-By not distinguishing between public and private $n$ and treating any user-input as a guess,
-we are making our system robust to metadata attacks.
-This does come with the downside that we have no notion of verifying $n$ within the library, this
-verification must come from users' trust in the veracity of the public metadata.
+Let $sample(Y, m)$ be a function that samples $m$ elements from data set $Y$ without replacement. 
+Let $Aug(Y, m, \hdots)$ be a function that imputes new elements independent of the data (using imputation parameters given by $\hdots$) for a data set $Y$ until it is of size $m$. 
+The algorithm will look something like the following:
+\begin{algorithm}[H]
+    \caption{Resize: resize($X$, $n$, $p$, neighboring, ...)}
+    \label{alg:gen_resize}
+    \begin{algorithmic}[1]
+        \State $c \gets \lceil p \rceil$ \Comment{sets c-stability property}
+        \State $s \gets p/c$ \Comment{sets subsampled\_proportion property}
+        \State $X_c \gets \bigcup_{i=1}^{c}X$ \Comment{create new database of size $c\tilde{n}$, composed of $c$ copies of $X$}
+        \If{neighboring == ``replace one''}
+            \State $m \gets \lfloor sc\tilde{n} \rfloor$ \Comment{number of records that can be filled using subsampled private data}
+        \ElsIf{neighboring == ``add/remove one''}
+            \State $m \gets Binomial(c\tilde{n}, s)$ \Comment{number of records that can be filled using subsampled private data}
+        \EndIf
+        \State $(\epsilon', \delta') \gets \left(\log\left(1+s\left(e^{c\epsilon}-1\right) \right), s\left(\sum_{i=0}^{c-1}e^{i \epsilon}\right)\delta \right)$ \Comment{privacy amplification via subsampling}
+        \State $X' \gets sample\left( X_c, \max(m, n) \right) \bigcup \left( Aug(\varnothing, \max(0, n - m), \hdots) \right)$
+        \\ \Return $(X', \epsilon', \delta')$
+    \end{algorithmic}
+\end{algorithm}
 
-% \subsubsection{Functions dependent on $\hat{n}$}
-% It is very common for our functions to be dependent on $\hat{n}$, which adds a layer of complication.
-% Say, for example, that we want the mean of a vector $x$. Typically, we would write
-% \[ \bar{x} = \frac{1}{n} \sum_{i=1}^{n} x_i, \]
-% but in our setting we do not know $n$. We could just replace $1/n$ with $1/\hat{n}$ and keep
-% the summation over the actual $n$ elements, but this would bias our estimate.
-% We will instead change our data $x$ to ensure that $\hat{n}$ is the correct number of elements in $x$.
+The $\epsilon', \delta'$ terms come from first applying the group privacy definition with group size $c$ to the 
+database $X_c$ to get $\left(c\epsilon, \left(\sum_{i=0}^{c-1}e^{i \epsilon}\right)\delta \right)$ \cite{Vad17}
+and then applying privacy amplification by subsampling results from Theorems 8 and 9 of \cite{BBG18}. 
+Note that, for the ``replace one'' definition, we could be using $\frac{m}{c\tilde{n}}$ instead of $s$ in the privacy calculation. Using $s$ gives us a very slightly 
+worse privacy guarantee (the only difference is the $\lfloor \cdot \rfloor$ we used to get $m$), but is nice for 
+consistency between the methods and not having to keep track of $m$ as an extra property.
 
-\subsubsection{Making data consistent with $\hat{n}$}
-% If $\hat{n} < n$, then we can subsample $x$ to get $\tilde{x}$ where $|\tilde{x}| = \hat{n}$. \newline
-% If $\hat{n} > n$, then we will add elements to $x$ to get $\tilde{x}$ where $|\tilde{x}| = \hat{n}$. \newline
-If we need to create synthetic data, we generate $\hat{n} - n$ new elements using
-the user-provided data bounds specified for the statistic in question.
-This could be done via any imputation method supported by the library.
-Because these imputed values are within the data bounds and independent of the actual data,
-our function sensitivity calculations remain correct. \newline
+\subsection{Functional Privacy Parameters}
+We established in section~\ref{subsec:algorithm_statement} that a user asking for an $(\epsilon, \delta)$-DP guarantee will get an 
+$(\epsilon', \delta')$-DP guarantee with respect to the original private data. What we'd really like, however, is for the user to ask for an $(\epsilon, \delta)$-DP 
+gurantee and have the library come up with what we will call a \emph{functional $(\epsilon_f, \delta_f)$} that will ensure $(\epsilon, \delta)$-DP 
+on the original data. Any components that operate on the resized data will use the \emph{functional $(\epsilon_f, \delta_f)$} internally instead of 
+the parameters passed by the user.
 
-If we need to subsample, we simply subsample without replacement to the desired size.
-Note that we cannot take advantage of any privacy amplification via subsampling results,
-as this would leak information about the relationship between $\hat{n}$ and $n$.
+\begin{theorem}
+    A mechanism that respects 
+    \[ (\epsilon_f, \delta_f) = \left( \frac{1}{c}\log\left(\frac{e^{\epsilon}-1}{s} + 1 \right), \frac{\delta}{s\left(\sum_{i=0}^{c-1}e^{i \epsilon}\right)} \right)\text{-DP} \] 
+    on the resized data respects $(\epsilon, \delta)$-DP on the true private data.
+    \begin{proof}
+        We know that an $(\epsilon, \delta)$-DP on the resized data corresponds to a 
+        \[ (\epsilon', \delta') = \left(\log\left(1+s\left(e^{c\epsilon}-1\right) \right), s\left(\sum_{i=0}^{c-1}e^{i \epsilon}\right)\delta \right) \]
+        guarantee on the original data. But we want our mechanism to respect $(\epsilon_f, \delta_f)$ on the resized data such that it 
+        respects $(\epsilon, \delta)$ on the original data. So we replace $(\epsilon, \delta)$ with 
+        $\epsilon_f, \delta_f$ and $(\epsilon', \delta')$ with $(\epsilon, \delta)$. 
+        Then we can invert the function to get what we want. \newline 
 
-% We considered sampling with replacement to generate $\tilde{x}$ for the case where $\hat{n} > n$,
-% but this complicates sensitivity calculations as any element in $x$ could appear in $\tilde{x}$ multiple times.
-% Hypothetically, we could sample with replacement in a way that guarantees for $\hat{n} < c \cdot n$ that any element in
-% $x$ occurs in $\tilde{x}$ at most $c$ times, but we cannot establish such a $c$ (with probability 1 that our
-% $c$ is correct) without leaking extra information about $n$.
+        Let's start with $\epsilon, \epsilon_f$:
+        \begin{align*}
+            \epsilon &= \log\left(1+s\left(e^{c\epsilon_f}-1\right)\right) \\
+            e^{\epsilon} &= 1+s\left(e^{c\epsilon_f}-1\right) \\
+            \frac{e^{\epsilon}-1}{s} &= e^{c\epsilon_f}-1 \\
+            \frac{1}{c}\log\left(\frac{e^{\epsilon}-1}{s} + 1 \right) &= \epsilon_f.
+        \end{align*}
+
+        We carry out a similar calculation for $\delta, \delta_f$:
+        \begin{align*}
+            \delta &= s\left(\sum_{i=0}^{c-1}e^{i \epsilon}\right)\delta_f \\
+            \frac{\delta}{s\left(\sum_{i=0}^{c-1}e^{i \epsilon}\right)} &= \delta_f.
+        \end{align*}
+    \end{proof} 
+    So, in order for a mechanism to respect $(\epsilon, \delta)$-DP on the original data, it must respect 
+    $\left( \frac{1}{c}\log\left(\frac{e^{\epsilon}-1}{s} + 1 \right), \frac{\delta}{s\left(\sum_{i=0}^{c-1}e^{i \epsilon}\right)} \right)$-DP 
+    on the resized data.
+\end{theorem}
+
+We now present an mini-algorithm for finding the \emph{functional} $(\epsilon, \delta)$.
+\begin{algorithm}
+    \caption{Finding Functional $(\epsilon_f, \delta_f)$: get\_func\_priv($p, \epsilon, \delta$)}
+    \label{alg:finding_functional_privacy}
+    \begin{algorithmic}[1]
+        \State $c \gets \lceil p \rceil$ \Comment{sets c-stability property}
+        \State $s \gets p/c$ \Comment{sets subsampled\_proportion property}
+        \State $\epsilon_{f} \gets \frac{1}{c}\log\left(\frac{e^{\epsilon}-1}{s} + 1\right)$
+        \State $\delta_{f} \gets \frac{\delta}{s\left(\sum_{i=0}^{c-1}e^{i \epsilon}\right)}$
+        \\ \Return $(\epsilon_{f}, \delta_{f})$ 
+    \end{algorithmic}
+\end{algorithm}
+
+\subsection{Examples} \label{subsec:examples}
+Let $X$ be such that $\tilde{n} = \vert X \vert = 100$. We can look at a few examples of calls to the resize function (which will return $X'$) and check the behavior.
+\begin{enumerate}
+    \item resize(X, 150, 1, ...): $X'$ will be made up of the 100 true elements of $X$ and 50 imputed values. The functional privacy parameters are identical to the ones the user provides. 
+    \item resize(X, 100, 0.75, ...): $X'$ will be made up of 75 true elements of $X$ and 25 imputed values. The functional privacy parameters will benefit (lower noise) from amplification via subsampling.
+    \item resize(X, 90, 1.5, ...): $X'$ will be a random sample of $X \bigcup X$ of size 90. 
+            The functional privacy parameters will lead to greater noise than what the user provides, as they have to take into account the new c-stability of $2$. 
+            This example is illustrative in that is shows that the functional privacy usage is affected only by $p$ -- it has nothing to do with the relative sizes of the $X$ and $X'$.
+\end{enumerate}
+
+\subsection{How to choose $n$} \label{subsec:choosing_n}
+To this point, we have ignored how a user would go about choosing $n$. If no trusted public metadata exist, we 
+suggest estimating the size of the private database (e.g. using the Geometric mechanism) and using that release 
+for $n$.  
 
 \subsection{Accuracy/Error}
-Our accuracy and error calculations in the library always assume that $\tilde{x}$ is the true data in question.
-That is, the additional error induced by subsampling or imputing extra values is not considered.
+The accuracy/error calculations in the library are always relative to the resized data $X'$, rather than the true private data $X$. 
+We are currently thinking about how best to extend guarantees from $X'$ to $X$.
 
-\subsubsection{Maintaining Subset Consistency}
-Consider the case where $\hat{n} < n$ such that the library will subsample the data
-before calculating the statistic of interest. There are many cases in which
-the library should ensure subsampling across multiple steps with a consistent set of indices.
-For example, say the analyst wants to add two columns together or calculate a covariance --
-these operations become meaningless without a guarantee that the columns in question retain
-their relationship to each other when subset. \newline
-
-% \textbf{TODO: Talk to Mike about how exactly we are going to do this in the library}
-
-% \bibliographystyle{alpha}
-% \bibliography{data_processing}
+\bibliographystyle{alpha}
+\bibliography{data_processing}
 \end{document}

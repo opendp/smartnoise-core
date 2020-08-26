@@ -2,7 +2,7 @@ use whitenoise_validator::errors::*;
 
 use crate::NodeArguments;
 use whitenoise_validator::base::{Array, ReleaseNode};
-use whitenoise_validator::utilities::{get_argument};
+use whitenoise_validator::utilities::{take_argument};
 use crate::components::Evaluable;
 use whitenoise_validator::proto;
 use ndarray::{ArrayD};
@@ -11,10 +11,10 @@ use crate::utilities::get_num_columns;
 use num::Zero;
 
 impl Evaluable for proto::Sum {
-    fn evaluate(&self, arguments: &NodeArguments) -> Result<ReleaseNode> {
-        match get_argument(&arguments, "data")?.array()? {
-            Array::F64(data) => Ok(sum(&data)?.into()),
-            Array::I64(data) => Ok(sum(&data)?.into()),
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
+        match take_argument(&mut arguments, "data")?.array()? {
+            Array::Float(data) => Ok(sum(&data)?.into()),
+            Array::Int(data) => Ok(sum(&data)?.into()),
             _ => return Err("data must be either f64 or i64".into())
         }.map(ReleaseNode::new)
     }
