@@ -671,7 +671,7 @@ pub fn sample_simple_geometric_mechanism(
 pub fn apply_snapping_noise(
     mut value: f64, mut epsilon: f64, b: f64,
     enforce_constant_time: bool
-) -> Result<f64> {
+) -> Result<(f64, f64)> {
     // must be computed before redefining epsilon
     let precision = compute_precision(epsilon);
 
@@ -700,7 +700,9 @@ pub fn apply_snapping_noise(
 
     // snap to lambda
     let m = get_smallest_greater_or_eq_power_of_two(lambda);
-    get_closest_multiple_of_lambda(value, m)
+    value = get_closest_multiple_of_lambda(value, m)?;
+
+    Ok((value, epsilon))
 }
 
 #[cfg(not(feature = "use-mpfr"))]

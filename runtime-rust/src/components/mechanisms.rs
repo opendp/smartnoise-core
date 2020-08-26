@@ -270,6 +270,11 @@ impl Evaluable for proto::SnappingMechanism {
             return Err("upper must share the same number of columns as data".into())
         }
 
+        let binding_probability = match take_argument(&mut arguments, "binding_probability") {
+            Ok(prob) => Some(prob.array()?.first_float()?),
+            _ => None
+        };
+
         data.gencolumns_mut().into_iter()
             .zip(sensitivity.gencolumns().into_iter().zip(epsilon.gencolumns().into_iter()))
             .zip(lower.into_iter().zip(upper.into_iter()))
@@ -279,7 +284,7 @@ impl Evaluable for proto::SnappingMechanism {
 
                     utilities::mechanisms::snapping_mechanism(
                         *v, *eps, *sens as f64,
-                        lower, upper,
+                        lower, upper, binding_probability,
                         enforce_constant_time
                     ).map(|privatized| *v = privatized as Float)))?;
 

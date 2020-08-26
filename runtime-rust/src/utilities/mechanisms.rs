@@ -60,12 +60,12 @@ pub fn laplace_mechanism(epsilon: f64, sensitivity: f64, enforce_constant_time: 
 /// let upper: f64 = 150.0;
 /// let sensitivity: f64 = 1.0/1000.0;
 /// let precision: i64 = 118;
-/// snapping_mechanism(value, epsilon, sensitivity, lower, upper, false).unwrap();
+/// snapping_mechanism(value, epsilon, sensitivity, lower, upper, None, false).unwrap();
 /// println!("snapped value: {}", value);
 /// ```
 pub fn snapping_mechanism(
     mut value: f64, epsilon: f64, sensitivity: f64,
-    min: f64, max: f64,
+    min: f64, max: f64, binding_probability: Option<f64>,
     enforce_constant_time: bool
 ) -> Result<f64> {
     if sensitivity < 0. {
@@ -78,7 +78,7 @@ pub fn snapping_mechanism(
         return Err("lower may not be greater than upper".into())
     }
 
-    let b = (max - min) / 2.;
+    let mut b = (max - min) / 2.;
     let shift = min + b;
 
     // ~~ preprocess ~~
@@ -88,13 +88,19 @@ pub fn snapping_mechanism(
     value = num::clamp(value, -b.abs(), b.abs());
     // (C) scale by sensitivity, to convert quantity to sensitivity-1
     value /= sensitivity;
+    b /= sensitivity;
 
     // ~~ internals ~~
-    value = noise::apply_snapping_noise(value, epsilon, b / sensitivity, enforce_constant_time)?;
+    let (mut value, epsilon) = noise::apply_snapping_noise(value, epsilon, b, enforce_constant_time)?;
+
+    if let Some(binding_probability) = binding_probability {
+        b += (1.0 - 2.0 * (1.0 - binding_probability).ln()) / epsilon;
+    }
 
     // ~~ postprocess ~~
     // (C) return to original scale
     value *= sensitivity;
+    b *= sensitivity;
     // (B) re-clamp by b
     value = num::clamp(value, -b.abs(), b.abs());
     // (A) shift mechanism output back to original location

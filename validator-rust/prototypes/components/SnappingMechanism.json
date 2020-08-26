@@ -15,6 +15,12 @@
       "default_python": "None",
       "default_rust": "None",
       "description": "Estimated maximum possible value of the statistic. Only useful for the snapping mechanism."
+    },
+    "binding_probability": {
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
+      "description": "Upper bound on probability that final clamp binds. Must be within [0, 1)."
     }
   },
   "id": "SnappingMechanism",

@@ -35,7 +35,8 @@ impl Component for proto::Resize {
                 return Err("cannot resize number of columns when number of columns is known".into())
             }
 
-            let num_columns = num_columns.ref_array()?.first_int()? as i64;
+            let num_columns = num_columns.ref_array()?.first_int()
+                .map_err(prepend("number_columns:"))? as i64;
             if num_columns < 1 {
                 return Err("number_columns must be greater than zero".into());
             }
@@ -46,9 +47,10 @@ impl Component for proto::Resize {
         }
 
         if let Some(num_records) = public_arguments.get::<IndexKey>(&"number_rows".into()) {
-            let num_records = num_records.ref_array()?.first_int()?;
+            let num_records = num_records.ref_array()?.first_int()?
+                .map_err(prepend("number_rows:"));
             if num_records < 1 {
-                return Err("number_rows must be greater than zero".into());
+                return Err("number_rows: must be greater than zero".into());
             }
 
             data_property.num_records = Some(num_records as i64);
