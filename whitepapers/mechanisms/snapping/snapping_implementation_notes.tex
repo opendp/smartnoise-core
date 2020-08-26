@@ -46,6 +46,11 @@ Mironov presents the Laplace noise as
 \[ S \otimes \lambda \otimes LN(U^*) \]
 where $S$ is a uniform draw over $\{\pm 1\}$, $\lambda = \frac{\Delta_f}{\epsilon}$, $LN(\cdot)$ is the floating-point implementation of the natural logarithm with exact rounding, and $U^*$ is the uniform distribution over $\mathbb{D} \cap (0,1)$ such that each double is output with proportion relative to its \href{https://en.wikipedia.org/wiki/Unit_in_the_last_place}{unit of least precision}. $\oplus$ and $\otimes$ are the floating-point implementations of addition and multiplication, respectively. \newline
 
+<<<<<<< HEAD
+=======
+Drawing $S$ should be done with whichever source of randomness we end up wanting to use. The current Python implementation uses system-level randomness by utilizing an instance of the \textbf{random.SystemRandom} class. \newline
+
+>>>>>>> restructure whitepapers directory and add snapping
 We get $U^*$ as Mironov suggests, by sampling our exponent from a geometric distribution with parameter $p = 0.5$ and a mantissa uniformly from $\{0,1\}^{52}$. Let $e$ be a draw from $Geom(0.5)$ and $m_1, m_2 \hdots, m_{52}$ be the bits of our mantissa. Then we have
 \[ U^{*} = (1.m_1m_2 \hdots m_{52})_2 * 2^{- e}. \]
 The unit of least precision is completely decided by the value of $e$, so the floating-point values within each unit of least precision are uniformly distributed. Drawing $e$ from the geometric ensures that the probability of drawing a value from a given band is equal to the size of the band. \newline
@@ -312,7 +317,11 @@ We can find this $x$ by performing algebra on $F_{Z}^{-}(x)$, which yields the f
 		\EndFunction
 	\end{algorithmic}
 \end{algorithm}
+<<<<<<< HEAD
 Calculations/explanations of the return statements above can be found in $\autoref{appendix:accuracy}$. \newline
+=======
+Calculations/explanations of the return statements above can be found in Appendix $\autoref{appendix:accuracy}$. \newline
+>>>>>>> restructure whitepapers directory and add snapping
 
 There are some complications with \emph{GetAccuracy}. \newline
 
@@ -364,9 +373,13 @@ exceeds this, as the outer clamp ensures that the mechanism output is $\in [-B, 
 \end{algorithm}
 
 For a less tight, but simpler, bound we can use that $\frac{\Lambda'}{2} \leq \lambda' = 
+<<<<<<< HEAD
 \frac{1}{\epsilon'}$ and set $a = \frac{1 + \ln \left( \frac{1}{\alpha} \right)}{\epsilon'}$. 
 Also recall that this accuracy statement is conditional of $f(D) \in [-B, B]$. If the clamping bounds are not 
 explicitly set to contain $f(D)$ with probability $1$, then we cannot give any accuracy guarantee. \newline 
+=======
+\frac{1}{\epsilon'}$ and set $a = \frac{1 + \ln \left( \frac{1}{\alpha} \right)}{\epsilon'}$. \newline 
+>>>>>>> restructure whitepapers directory and add snapping
 
 The accuracy for the pure Laplace is given as $\frac{\ln \left( \frac{1}{\alpha} \right)}{\epsilon}$. Recalling that
 $\epsilon' = \frac{\epsilon - 2\eta}{1 + 12B\eta}$ we can represent the difference between the accuracy of the
@@ -377,6 +390,16 @@ Snapping and Laplace as follows:
 	&= \frac{(1 + 12B \eta) \left(\ln \left( \frac{1}{\alpha} \right) \right)}{\epsilon - 2\eta} + \frac{\Lambda'}{2} \\
 	&= \frac{\epsilon(1 + 12B \eta)}{\epsilon - 2\eta } \cdot \left(\frac{\ln \left( \frac{1}{\alpha} \right)}{\epsilon} \right) + \frac{\Lambda'}{2} \\
 	&= \frac{\epsilon(1 + 12B \eta)}{\epsilon - 2\eta} \cdot a_{Laplace} + \frac{\Lambda'}{2}
+<<<<<<< HEAD
+=======
+	% a_{Snapping} &= \frac{1 + \ln \left( \frac{1}{\alpha} \right)}{\epsilon'} \\
+	% &= \frac{1 + \ln \left( \frac{1}{\alpha} \right)}{\left( \frac{\epsilon - 2\eta}{1 + 12B\eta} \right)} \\
+	% &= \frac{(1 + 12B \eta) \left( 1 + \ln \left( \frac{1}{\alpha} \right) \right)}{\epsilon - 2\eta} \\
+	% &= \frac{1 + 12B \eta}{\epsilon - 2\eta} \cdot \left( 1 + \ln \left( \frac{1}{\alpha} \right) \right) \\
+	% &= \frac{1 + 12B \eta}{\epsilon - 2\eta} \cdot \frac{1 + \ln \left( \frac{1}{\alpha} \right)}{\epsilon} \cdot \epsilon \\
+	% &= \frac{\epsilon(1 + 12B \eta)}{\epsilon - 2\eta } \cdot \left( \frac{1}{\epsilon} + \frac{\ln \left( \frac{1}{\alpha} \right)}{\epsilon} \right) \\
+	% &= \frac{1 + 12B \eta}{\epsilon - 2\eta} \cdot \left(1 + \epsilon \cdot a_{Laplace} \right)\\
+>>>>>>> restructure whitepapers directory and add snapping
 \end{align*}
 
 We would also like to be able to go from accuracy to get epsilon. We perform some algebra
@@ -387,6 +410,7 @@ or, if we wanted our overall $\epsilon$
 	\label{eq:accuracy_to_overall_epsilon}
 	\epsilon = (1+12B\eta) \left( \frac{\ln\left( \frac{1}{\alpha} \right)}{a - \frac{\Lambda'}{2}} \right) + 2\eta.
 \end{equation}
+<<<<<<< HEAD
 This is a bit unsatisfying, as both $\Lambda'$ and $\eta$ are non-trivial functions of $\epsilon$. 
 We can use $\frac{\Lambda'}{2} \leq \lambda' = \frac{1}{\epsilon'}$ to get a nicer statement: 
 \begin{align}
@@ -412,11 +436,23 @@ the sample notebook \href{https://github.com/opendifferentialprivacy/whitenoise-
 Because of the clamping to $[-B,B]$, the snapping mechanism will almost always bias estimates toward $0$.
 I am not yet sure if it would be possible to give information about bias of the released statistic without leaking information
 about the data (I lean toward thinking that it is not), but I believe we could provide the bias for a statistic for
+=======
+
+\subsection{Bias}
+\label{subsec:bias}
+Because of the clamping to $[-B,B]$, the snapping mechanism will almost always bias estimates towards $0$.
+I am not yet sure if it would be possible to give information about bias of the released statistic without leaking information
+about the data (I lean towards thinking that it is not), but I believe we could provide the bias for a statistic for
+>>>>>>> restructure whitepapers directory and add snapping
 a user's guesses about what $f(D)$ might be. \newline
 
 Let $\hat{f}(D)$ be the user's estimate of $f(D)$ and $\hat{\tilde{f}}(D)$ be the output of the snapping mechanism as applied to
 $\hat{f}(D)$. Without loss of generality, we will assume that $\hat{f}(D) \geq 0$. If it were not, we could
+<<<<<<< HEAD
 multiply $f'(D)$ by $-1$ and use this algorithm to get the correct result.\footnote{This works because our bounds, $-B \text{ and } B$, are symmetric about $0$.}
+=======
+multiply $f'(D)$ by $-1$ and use this algorithm to get the correct result.\footnote{This works because our bounds, $-B, B$, are symmetric about $0$.}
+>>>>>>> restructure whitepapers directory and add snapping
 We think about the distribution of noise not as the absolute value of noise (which we used earlier), but as
 being some distribution with support $[-B - \hat{f}(D), B - \hat{f}(D)]$. \newline
 
