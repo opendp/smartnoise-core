@@ -1,1 +1,0 @@
-initSidebarItems({"mod":[["mean","Functions for calculating mean"],["round","Rounding functions"]]});

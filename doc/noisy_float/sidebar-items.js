@@ -1,1 +1,0 @@
-initSidebarItems({"mod":[["checkers","Standard implementations of `FloatChecker`."],["prelude","Prelude for the `noisy_float` crate."],["types","Standard definitions of `NoisyFloat`."]],"struct":[["NoisyFloat","A floating point number with a restricted set of legal values."]],"trait":[["FloatChecker","Trait for checking whether a floating point number is valid."]]});

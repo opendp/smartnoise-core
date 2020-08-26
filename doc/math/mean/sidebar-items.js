@@ -1,1 +1,0 @@
-initSidebarItems({"fn":[["arithmetic","Calculates arithmetic mean (AM) of data set `slice`."],["geometric","Calculate geometric mean (GM) of data set `slice`."],["harmonic","Calculate harmonic mean (HM) of data set `slice`."]]});

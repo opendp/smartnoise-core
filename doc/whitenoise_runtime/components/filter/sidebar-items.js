@@ -1,1 +1,0 @@
-initSidebarItems({"fn":[["filter","Filters data down into only the desired rows."]]});
