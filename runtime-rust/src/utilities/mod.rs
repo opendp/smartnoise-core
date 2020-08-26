@@ -12,7 +12,6 @@ pub mod mechanisms;
 pub mod noise;
 
 pub mod analytic_gaussian;
-pub mod snapping;
 
 ///  Accepts an ndarray and returns the number of columns.
 ///
