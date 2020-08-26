@@ -17,6 +17,21 @@
 #![recursion_limit = "1024"]
 #[macro_use]
 extern crate error_chain;
+#[macro_use] extern crate indexmap;
+
+use std::collections::{HashMap, HashSet};
+use std::iter::FromIterator;
+
+use indexmap::map::IndexMap;
+
+#[doc(hidden)]
+pub use errors::*;
+
+use crate::base::{IndexKey, Release, Value, ValueProperties};
+// import all trait implementations
+use crate::components::*;
+use crate::utilities::get_public_arguments;
+use crate::utilities::privacy::compute_graph_privacy_usage;
 
 #[doc(hidden)]
 pub mod errors {
@@ -37,8 +52,6 @@ impl<T: std::fmt::Debug> From<T> for Warnable<T> {
     }
 }
 
-#[doc(hidden)]
-pub use errors::*;
 // trait which holds `display_chain`
 
 pub mod base;
@@ -47,20 +60,11 @@ pub mod utilities;
 pub mod components;
 pub mod docs;
 
-// import all trait implementations
-use crate::components::*;
-use std::collections::{HashMap, HashSet};
-use crate::base::{Value, IndexKey, ValueProperties};
-use std::iter::FromIterator;
-use crate::utilities::privacy::compute_graph_privacy_usage;
-use indexmap::map::IndexMap;
-
 // include protobuf-generated traits
 pub mod proto {
     include!(concat!(env!("OUT_DIR"), "/whitenoise.rs"));
 }
 
-#[macro_use] extern crate indexmap;
 // define the useful macro for building hashmaps globally
 #[macro_export]
 #[doc(hidden)]
@@ -204,13 +208,18 @@ pub fn generate_report(
 pub fn accuracy_to_privacy_usage(
     component: proto::Component,
     privacy_definition: proto::PrivacyDefinition,
-    properties: IndexMap<IndexKey, base::ValueProperties>,
-    accuracies: proto::Accuracies
+    mut properties: IndexMap<IndexKey, base::ValueProperties>,
+    accuracies: proto::Accuracies,
+    mut public_arguments: IndexMap<IndexKey, base::ReleaseNode>
 ) -> Result<proto::PrivacyUsages> {
 
     let proto_properties = component.arguments().iter()
-        .filter_map(|(name, idx)| Some((*idx, properties.get(name)?.clone())))
+        .filter_map(|(name, idx)| Some((*idx, properties.remove(name)?)))
         .collect::<HashMap<u32, base::ValueProperties>>();
+
+    let mut release = component.arguments().iter()
+        .filter_map(|(name, idx)| Some((*idx, public_arguments.remove(name)?)))
+        .collect::<Release>();
 
     let mut computation_graph = hashmap![
         component.arguments().values().max().cloned().unwrap_or(0) + 1 => component
@@ -219,7 +228,7 @@ pub fn accuracy_to_privacy_usage(
     let (properties, _) = utilities::propagate_properties(
         &Some(privacy_definition.clone()),
             &mut computation_graph,
-        &mut HashMap::new(),
+        &mut release,
         Some(proto_properties),
         true,
     )?;
@@ -229,11 +238,12 @@ pub fn accuracy_to_privacy_usage(
             .filter_map(|(name, idx)| Some((name.clone(), properties.get(idx)?.clone())))
             .collect::<IndexMap<base::IndexKey, base::ValueProperties>>();
 
-        Ok(match component.accuracy_to_privacy_usage(
-            &privacy_definition, &component_properties, &accuracies)? {
-            Some(accuracies) => Some((*idx, accuracies)),
-            None => None
-        })
+        Ok(component.accuracy_to_privacy_usage(
+            &privacy_definition,
+            &component_properties,
+            &accuracies,
+            get_public_arguments(&component, &release)?)?
+            .and_then(|usages| Some((*idx, usages))))
     })
         .collect::<Result<Vec<Option<(u32, Vec<proto::PrivacyUsage>)>>>>()?
         .into_iter().filter_map(|v| v)
@@ -254,12 +264,17 @@ pub fn privacy_usage_to_accuracy(
     component: proto::Component,
     privacy_definition: proto::PrivacyDefinition,
     properties: IndexMap<IndexKey, base::ValueProperties>,
+    mut public_arguments: IndexMap<IndexKey, base::ReleaseNode>,
     alpha: f64
 ) -> Result<proto::Accuracies> {
 
     let proto_properties = component.arguments().iter()
         .filter_map(|(name, idx)| Some((*idx, properties.get(name)?.clone())))
         .collect::<HashMap<u32, base::ValueProperties>>();
+
+    let mut release: Release = component.arguments().iter()
+        .filter_map(|(name, idx)| Some((*idx, public_arguments.remove(name)?)))
+        .collect();
 
     let mut computation_graph = hashmap![
         component.arguments().values().max().cloned().unwrap_or(0) + 1 => component
@@ -268,7 +283,7 @@ pub fn privacy_usage_to_accuracy(
     let (properties, _) = utilities::propagate_properties(
         &Some(privacy_definition.clone()),
         &mut computation_graph,
-        &mut HashMap::new(),
+        &mut release,
         Some(proto_properties),
         false,
     )?;
@@ -278,11 +293,13 @@ pub fn privacy_usage_to_accuracy(
             .filter_map(|(name, idx)| Some((name.clone(), properties.get(idx)?.clone())))
             .collect::<IndexMap<IndexKey, base::ValueProperties>>();
 
-        Ok(match component.privacy_usage_to_accuracy(
-            &privacy_definition, &component_properties, alpha)? {
-            Some(accuracies) => Some((*idx, accuracies)),
-            None => None
-        })
+        Ok(component.privacy_usage_to_accuracy(
+            &privacy_definition,
+            &component_properties,
+            get_public_arguments(&component, &release)?,
+            alpha,
+        )?
+            .and_then(|accuracies| Some((*idx, accuracies))))
     })
         .collect::<Result<Vec<Option<(u32, Vec<proto::Accuracy>)>>>>()?
         .into_iter().filter_map(|v| v)

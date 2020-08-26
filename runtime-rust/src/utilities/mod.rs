@@ -12,7 +12,6 @@ pub mod mechanisms;
 pub mod noise;
 
 pub mod analytic_gaussian;
-pub mod snapping;
 
 ///  Accepts an ndarray and returns the number of columns.
 ///
@@ -450,4 +449,86 @@ pub fn create_subset<T>(
 
     // subsample based on top k indices
     Ok(key_vec.iter().take(k).map(|v| set[v.1].clone()).collect())
+}
+
+
+/// Finds the closest number to x that is a multiple of Lambda.
+///
+/// # Arguments
+/// * `x` - Number to be rounded to closest multiple of Lambda.
+/// * `m` - Integer such that Lambda = 2^m.
+///
+/// # Returns
+/// Closest multiple of Lambda to x.
+pub fn get_closest_multiple_of_lambda(x: f64, m: i16) -> Result<f64> {
+    let (sign, mut exponent, mantissa) = x.decompose();
+    exponent -= m;
+
+    let (sign, mut exponent, mantissa) = match exponent {
+        // original components already represent an integer (decimal shifted >= 52 places on mantissa)
+        exponent if exponent >= 52 => (sign, exponent, mantissa),
+        // round int to +- 1
+        exponent if exponent == -1 => (sign, 0, 0),
+        // round int to 0, and keep it zero after adding m
+        exponent if exponent < -1 => (sign, -1023 - m, 0),
+        // round to int when decimal is within range of mantissa
+        _ => {
+            // get elements of mantissa that represent integers (after decimal is shifted by "exponent" places)
+            //     shift 1 "exponent" places to the left (no overflow because exponent < 64)
+            //     subtract one to set "exponent" bits to one
+            //     shift the mask to the left for a 52-bit mask that keeps the top #"exponent" bits
+            let integer_mask: u64 = ((1u64 << exponent) - 1) << (52 - exponent);
+            let integer_mantissa: u64 = mantissa & integer_mask;
+
+            // check if digit after exponent point is set
+            if mantissa & (1u64 << (52 - (exponent + 1))) == 0u64 {
+                (sign, exponent, integer_mantissa)
+            } else {
+                // if integer part of mantissa is all 1s, rounding needs to be reflected in the exponent instead
+                if integer_mantissa == integer_mask {
+                    (sign, exponent + 1, 0)
+                } else {
+                    (sign, exponent, integer_mantissa + (1u64 << (52 - exponent)))
+                }
+            }
+        }
+    };
+
+    exponent += m;
+    Ok(f64::recompose(sign, exponent, mantissa))
+}
+
+#[cfg(test)]
+mod test_get_closest_multiple_of_lambda {
+    use whitenoise_validator::hashmap;
+    use crate::utilities::get_closest_multiple_of_lambda;
+
+    #[test]
+    fn test_get_closest_multiple_of_lambda_range() {
+        (0..100).for_each(|i| {
+            let x = 1. - 0.01 * (i as f64);
+            println!("{}: {}", x, get_closest_multiple_of_lambda(x, -1).unwrap())
+        });
+    }
+
+    #[test]
+    fn test_get_closest_multiple_of_lambda() {
+        let input = vec![-30.01, -2.51, -1.01, -0.76, -0.51, -0.26, 0.0, 0.26, 0.51, 0.76, 1.01, 2.51, 30.01];
+
+        hashmap![
+            -2 => vec![-30., -2.5, -1.0, -0.75, -0.5, -0.25, 0.0, 0.25, 0.5, 0.75, 1.0, 2.5, 30.0],
+            -1 => vec![-30., -2.5, -1.0, -1.0, -0.5, -0.5, 0.0, 0.5, 0.5, 1.0, 1.0, 2.5, 30.0],
+            0 => vec![-30., -3.0, -1.0, -1.0, -1.0, -0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 3.0, 30.0],
+            1 => vec![-30., -2.0, -2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0, 2.0, 30.0],
+            2 => vec![-32., -4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 4.0, 32.0]
+        ].into_iter().for_each(|(m, outputs)| {
+            input.iter().copied().zip(outputs.into_iter())
+                .for_each(|(input, expected)| {
+                    let actual = get_closest_multiple_of_lambda(input, m).unwrap();
+                    println!("m: {:?}, input: {:?}, actual: {:?}, expected: {:?}",
+                             m, input, actual, expected);
+                    assert_eq!(actual, expected)
+                })
+        });
+    }
 }

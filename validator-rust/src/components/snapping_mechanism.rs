@@ -1,14 +1,15 @@
 use indexmap::map::IndexMap;
 use itertools::Itertools;
+use ndarray;
 
 use crate::{base, proto, Warnable};
 use crate::base::{DataType, IndexKey, NodeProperties, SensitivitySpace, Value, ValueProperties};
-use crate::components::{Mechanism, Sensitivity};
+use crate::components::{Mechanism, Sensitivity, Accuracy};
 use crate::components::{Component, Expandable};
 use crate::errors::*;
-use crate::utilities::{expand_mechanism, prepend, get_literal};
-use crate::utilities::privacy::privacy_usage_check;
+use crate::utilities::{expand_mechanism, get_literal, prepend, standardize_numeric_argument};
 use crate::utilities::inference::infer_property;
+use crate::utilities::privacy::{privacy_usage_check, spread_privacy_usage, get_epsilon};
 
 impl Component for proto::SnappingMechanism {
     fn propagate_property(
@@ -149,5 +150,184 @@ impl Mechanism for proto::SnappingMechanism {
             .map(|(usage, c_stab)|
                 usage.effective_to_actual(1., *c_stab as f64, privacy_definition.group_size))
             .collect::<Result<Vec<proto::PrivacyUsage>>>()).transpose()
+    }
+}
+
+
+impl Accuracy for proto::SnappingMechanism {
+    fn accuracy_to_privacy_usage(
+        &self,
+        privacy_definition: &proto::PrivacyDefinition,
+        properties: &base::NodeProperties,
+        accuracies: &proto::Accuracies,
+        _public_arguments: IndexMap<base::IndexKey, &Value>
+    ) -> Result<Option<Vec<proto::PrivacyUsage>>> {
+        let data_property = properties.get::<IndexKey>(&"data".into())
+            .ok_or("data: missing")?.array()
+            .map_err(prepend("data:"))?.clone();
+
+        let aggregator = data_property.aggregator
+            .ok_or_else(|| Error::from("aggregator: missing"))?;
+
+        let sensitivity_values = aggregator.component.compute_sensitivity(
+            &privacy_definition,
+            &aggregator.properties,
+            &SensitivitySpace::KNorm(1))?;
+
+        // sensitivity must be computable
+        let sensitivities = sensitivity_values.array()?.float()?;
+
+        Ok(Some(sensitivities.into_iter().zip(accuracies.values.iter())
+            .map(|(sensitivity, accuracy)| proto::PrivacyUsage {
+                distance: Some(proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
+                    epsilon: accuracy_to_epsilon(accuracy.value, accuracy.alpha, *sensitivity),
+                    delta: 0.,
+                }))
+            })
+            .collect()))
+    }
+
+    fn privacy_usage_to_accuracy(
+        &self,
+        privacy_definition: &proto::PrivacyDefinition,
+        properties: &base::NodeProperties,
+        mut public_arguments: IndexMap<base::IndexKey, &Value>,
+        alpha: f64
+    ) -> Result<Option<Vec<proto::Accuracy>>> {
+        let data_property = properties.get::<IndexKey>(&"data".into())
+            .ok_or("data: missing")?.array()
+            .map_err(prepend("data:"))?.clone();
+
+        let aggregator = data_property.aggregator.as_ref()
+            .ok_or_else(|| Error::from("aggregator: missing"))?;
+
+        let sensitivity_values = aggregator.component.compute_sensitivity(
+            &privacy_definition,
+            &aggregator.properties,
+            &SensitivitySpace::KNorm(1))?;
+
+        // sensitivity must be computable
+        let sensitivities = sensitivity_values.array()?.float()?;
+
+        let usages = spread_privacy_usage(&self.privacy_usage, sensitivities.len())?;
+        let epsilons = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
+
+        let lower = standardize_numeric_argument(
+            public_arguments.remove(&IndexKey::from("lower"))
+                .ok_or_else(|| Error::from("lower: missing"))?.clone().array()?.float()?,
+            data_property.num_columns()?)?
+            .into_dimensionality::<ndarray::Ix1>()?.to_vec();
+
+        let upper = standardize_numeric_argument(
+            public_arguments.remove(&IndexKey::from("upper"))
+                .ok_or_else(|| Error::from("upper: missing"))?.clone().array()?.float()?,
+            data_property.num_columns()?)?
+            .into_dimensionality::<ndarray::Ix1>()?.to_vec();
+
+        Ok(Some(sensitivities.into_iter().zip(epsilons.into_iter())
+            .zip(lower.into_iter().zip(upper.into_iter()))
+            .map(|((sensitivity, epsilon), (lower, upper))| proto::Accuracy {
+                value: epsilon_to_accuracy(alpha, epsilon, *sensitivity, (upper - lower) / 2.),
+                alpha,
+            })
+            .collect()))
+    }
+}
+
+/// Finds the smallest integer m such that 2^m is equal to or greater than x.
+///
+/// # Arguments
+/// * `x` - The number for which we want the next power of two.
+///
+/// # Returns
+/// The found power of two
+pub fn get_smallest_greater_or_eq_power_of_two(x: f64) -> i16 {
+    x.log2().ceil() as i16
+}
+
+/// Gets functional epsilon for Snapping mechanism such that privacy loss does not exceed the user's proposed budget.
+/// Described in https://github.com/ctcovington/floating_point/blob/master/snapping_mechanism/notes/snapping_implementation_notes.pdf
+///
+/// # Arguments
+/// * `epsilon` - Desired privacy guarantee.
+/// * `b` - Upper bound on function value being privatized.
+/// * `precision` - Number of bits of precision to which arithmetic inside the mechanism has access.
+///
+/// # Returns
+/// Functional epsilon that will determine amount of noise.
+pub fn redefine_epsilon(epsilon: f64, b: f64, precision: u32) -> f64 {
+    let eta = 2_f64.powi(-(precision as i32));
+    (epsilon - 2.0 * eta) / (1.0 + 12.0 * b * eta)
+}
+
+/// Finds accuracy that is achievable given desired epsilon and confidence requirements. Described in
+/// https://github.com/ctcovington/floating_point/blob/master/snapping_mechanism/notes/snapping_implementation_notes.pdf
+///
+/// # Arguments
+/// * `alpha` - Desired confidence level.
+/// * `epsilon` - Desired privacy guarantee.
+/// * `sensitivity` - l1 Sensitivity of function to which mechanism is being applied.
+/// * `b` - Upper bound on function value being privatized.
+/// * `precision` - Number of bits of precision to which arithmetic inside the mechanism has access.
+///
+/// # Returns
+/// Epsilon use for the Snapping mechanism.
+pub fn epsilon_to_accuracy(
+    alpha: f64, epsilon: f64, sensitivity: f64, b: f64
+) -> f64 {
+    let precision = compute_precision(epsilon);
+    let epsilon = redefine_epsilon(epsilon, b, precision);
+    let lambda = 2f64.powi(get_smallest_greater_or_eq_power_of_two(1.0 / epsilon) as i32); // 2^m
+    ((1.0 / alpha).ln() / epsilon + lambda / 2.) * sensitivity
+}
+
+/// Finds epsilon that will achieve desired accuracy and confidence requirements. Described in
+/// https://github.com/ctcovington/floating_point/blob/master/snapping_mechanism/notes/snapping_implementation_notes.pdf
+///
+/// # Arguments
+/// * `accuracy` - Desired accuracy level.
+/// * `alpha` - Desired confidence level.
+/// * `sensitivity` - l1 Sensitivity of function to which mechanism is being applied.
+///
+/// # Returns
+/// Epsilon use for the Snapping mechanism.
+pub fn accuracy_to_epsilon(
+    accuracy: f64, alpha: f64, sensitivity: f64
+) -> f64 {
+    (1. - alpha.ln()) / accuracy * sensitivity
+}
+
+
+/// Finds the necessary precision for the snapping mechanism
+/// 118 bits required for LN
+/// Floating-point-exponent + 2 bits required for non-zero epsilon
+/// # Arguments
+/// * `epsilon` - privacy usage before redefinition
+pub fn compute_precision(epsilon: f64) -> u32 {
+    118.max(get_smallest_greater_or_eq_power_of_two(epsilon) + 2) as u32
+}
+
+
+
+
+
+
+#[cfg(test)]
+pub mod test_get_smallest_greater_or_eq_power_of_two {
+    use crate::components::snapping_mechanism::get_smallest_greater_or_eq_power_of_two;
+
+    pub fn ieee754_crate_get_smallest_geq_pow2(x: f64) -> i16 {
+        use ieee754::Ieee754;
+        let (_sign, exponent, mantissa) = x.decompose();
+        exponent + if mantissa == 0 {0} else {1}
+    }
+
+    #[test]
+    fn test() {
+        (1..1000)
+            .map(|i| i as f64 / 100.)
+            .for_each(|v| assert_eq!(
+                get_smallest_greater_or_eq_power_of_two(v),
+                ieee754_crate_get_smallest_geq_pow2(v)))
     }
 }

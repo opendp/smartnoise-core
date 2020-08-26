@@ -53,30 +53,33 @@ pub fn laplace_mechanism(epsilon: f64, sensitivity: f64, enforce_constant_time: 
 ///
 /// # Example
 /// ```
-/// use whitenoise_runtime::utilities::noise::apply_snapping_mechanism;
+/// use whitenoise_runtime::utilities::mechanisms::snapping_mechanism;
 /// let value: f64 = 50.0;
 /// let epsilon: f64 = 1.0;
 /// let lower: f64 = -50.;
 /// let upper: f64 = 150.0;
 /// let sensitivity: f64 = 1.0/1000.0;
 /// let precision: i64 = 118;
-/// apply_snapping_mechanism(value, epsilon, sensitivity, lower, upper, false).unwrap();
+/// snapping_mechanism(value, epsilon, sensitivity, lower, upper, false).unwrap();
 /// println!("snapped value: {}", value);
 /// ```
 pub fn snapping_mechanism(
     mut value: f64, epsilon: f64, sensitivity: f64,
-    lower: f64, upper: f64,
+    min: f64, max: f64,
     enforce_constant_time: bool
 ) -> Result<f64> {
-    if epsilon <= 0. || sensitivity <= 0. {
-        return Err(format!("epsilon ({}) and sensitivity ({}) must be positive", epsilon, sensitivity).into());
+    if sensitivity < 0. {
+        return Err(format!("sensitivity ({}) must be non-negative", sensitivity).into());
     }
-    if lower > upper {
+    if epsilon <= 0. {
+        return Err(format!("epsilon ({}) must be positive", epsilon).into())
+    }
+    if min > max {
         return Err("lower may not be greater than upper".into())
     }
 
-    let b = (upper - lower) / 2.;
-    let shift = lower + b;
+    let b = (max - min) / 2.;
+    let shift = min + b;
 
     // ~~ preprocess ~~
     // (A) shift mechanism input to be about zero

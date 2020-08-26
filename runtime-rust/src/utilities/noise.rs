@@ -11,8 +11,8 @@ use whitenoise_validator::errors::*;
 use whitenoise_validator::Integer;
 
 use crate::utilities;
-use crate::utilities::snapping;
-use crate::utilities::snapping::{get_smallest_greater_or_eq_power_of_two, redefine_epsilon};
+use crate::utilities::get_closest_multiple_of_lambda;
+use whitenoise_validator::components::snapping_mechanism::{get_smallest_greater_or_eq_power_of_two, redefine_epsilon, compute_precision};
 
 // Give MPFR ability to draw randomness from OpenSSL
 #[cfg(feature="use-mpfr")]
@@ -672,9 +672,8 @@ pub fn apply_snapping_noise(
     mut value: f64, mut epsilon: f64, b: f64,
     enforce_constant_time: bool
 ) -> Result<f64> {
-
-    // 118 bits required for LN; Floating-point-exponent + 2 bits required for non-zero epsilon
-    let precision = 118.max(get_smallest_greater_or_eq_power_of_two(epsilon) + 2) as u32;
+    // must be computed before redefining epsilon
+    let precision = compute_precision(epsilon);
 
     // ensure that precision is supported by the OS
     if precision > rug::float::prec_max() {
@@ -701,7 +700,7 @@ pub fn apply_snapping_noise(
 
     // snap to lambda
     let m = get_smallest_greater_or_eq_power_of_two(lambda);
-    snapping::get_closest_multiple_of_lambda(value, m)
+    get_closest_multiple_of_lambda(value, m)
 }
 
 #[cfg(not(feature = "use-mpfr"))]

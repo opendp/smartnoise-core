@@ -45,7 +45,7 @@ mod exponential_mechanism;
 mod gaussian_mechanism;
 mod laplace_mechanism;
 mod simple_geometric_mechanism;
-mod snapping_mechanism;
+pub mod snapping_mechanism;
 mod resize;
 mod sum;
 mod union;
@@ -180,12 +180,14 @@ pub trait Accuracy {
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
         accuracies: &proto::Accuracies,
+        public_arguments: IndexMap<base::IndexKey, &Value>
     ) -> Result<Option<Vec<proto::PrivacyUsage>>>;
 
     fn privacy_usage_to_accuracy(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
+        public_arguments: IndexMap<base::IndexKey, &Value>,
         alpha: f64,
     ) -> Result<Option<Vec<proto::Accuracy>>>;
 }
@@ -418,6 +420,7 @@ impl Accuracy for proto::Component {
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
         accuracy: &proto::Accuracies,
+        public_arguments: IndexMap<base::IndexKey, &Value>
     ) -> Result<Option<Vec<proto::PrivacyUsage>>> {
         let variant = self.variant.as_ref()
             .ok_or_else(|| "variant: must be defined")?;
@@ -427,7 +430,8 @@ impl Accuracy for proto::Component {
                 {
                     $(
                        if let proto::component::Variant::$variant(x) = variant {
-                            return x.accuracy_to_privacy_usage(privacy_definition, properties, accuracy)
+                            return x.accuracy_to_privacy_usage(
+                                privacy_definition, properties, accuracy, public_arguments)
                                 .chain_err(|| format!("node specification {:?}:", variant))
                        }
                     )*
@@ -451,6 +455,7 @@ impl Accuracy for proto::Component {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
+        public_arguments: IndexMap<base::IndexKey, &Value>,
         alpha: f64,
     ) -> Result<Option<Vec<proto::Accuracy>>> {
         let variant = self.variant.as_ref()
@@ -461,7 +466,8 @@ impl Accuracy for proto::Component {
                 {
                     $(
                        if let proto::component::Variant::$variant(x) = variant {
-                            return x.privacy_usage_to_accuracy(privacy_definition, properties, alpha)
+                            return x.privacy_usage_to_accuracy(
+                                privacy_definition, properties, public_arguments, alpha)
                                 .chain_err(|| format!("node specification {:?}:", variant))
                        }
                     )*
