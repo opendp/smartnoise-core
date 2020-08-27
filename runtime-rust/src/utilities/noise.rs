@@ -646,7 +646,7 @@ pub fn sample_simple_geometric_mechanism(
     })
 }
 
-/// Get noise according to the Snapping mechanism.
+/// Apply noise to value according to the Snapping mechanism.
 /// Sensitivity is assumed to be 1 in L1 space.
 ///
 /// # Arguments
