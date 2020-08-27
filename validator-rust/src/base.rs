@@ -704,7 +704,9 @@ pub struct ArrayProperties {
     /// used for tracking subpartitions
     pub group_id: Vec<GroupId>,
     /// used to determine if order of rows has changed
-    pub naturally_ordered: bool
+    pub naturally_ordered: bool,
+    /// proportion of original data sampled
+    pub sample_proportion: Vec<f64>,
 }
 
 
@@ -852,6 +854,11 @@ impl ArrayProperties {
     }
     pub fn assert_is_not_aggregated(&self) -> Result<()> {
         if self.aggregator.is_some() { Err("aggregated data may not be manipulated".into()) } else { Ok(()) }
+    }
+    pub fn assert_is_not_sampled(&self) -> Result<()> {
+        if self.sample_proportion.iter().any(|v| v != &1.) {
+            Err("sampled data may not be manipulated in this way".into())
+        } else { Ok(())}
     }
 }
 
@@ -1121,23 +1128,25 @@ pub type NodeProperties = IndexMap<base::IndexKey, ValueProperties>;
 
 
 impl proto::PrivacyUsage {
-    pub(crate) fn actual_to_effective(&self, p: f64, c_stability: f64, group_size: u32) -> Result<Self> {
+    pub(crate) fn actual_to_effective(&self, s: f64, mut c_stability: f64, group_size: u32) -> Result<Self> {
+        c_stability *= group_size as f64;
         Ok(proto::PrivacyUsage {
             distance: Some(match self.distance.as_ref().ok_or_else(|| "distance must be defined")? {
                 proto::privacy_usage::Distance::Approximate(app) => proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
-                    epsilon: app.epsilon / c_stability / p / group_size as f64,
-                    delta: app.delta / c_stability / p / ((group_size as f64 * app.epsilon).exp() - 1.) / (app.epsilon.exp() - 1.),
+                    epsilon: (((app.epsilon.exp() - 1.) / s) + 1.).ln() / c_stability,
+                    delta: app.delta / s / ((c_stability * app.epsilon).exp() - 1.) / (app.epsilon.exp() - 1.),
                 })
             })
         })
     }
 
-    pub(crate) fn effective_to_actual(&self, p: f64, c_stability: f64, group_size: u32) -> Result<Self> {
+    pub(crate) fn effective_to_actual(&self, s: f64, mut c_stability: f64, group_size: u32) -> Result<Self> {
+        c_stability *= group_size as f64;
         Ok(proto::PrivacyUsage {
             distance: Some(match self.distance.as_ref().ok_or_else(|| "distance must be defined")? {
                 proto::privacy_usage::Distance::Approximate(app) => proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
-                    epsilon: app.epsilon * c_stability * p * group_size as f64,
-                    delta: app.delta * c_stability * p * ((group_size as f64 * app.epsilon).exp() - 1.) / (app.epsilon.exp() - 1.),
+                    epsilon: (((app.epsilon * c_stability).exp() - 1.) * s + 1.).ln(),
+                    delta: app.delta * s * ((c_stability * app.epsilon).exp() - 1.) / (app.epsilon.exp() - 1.),
                 })
             })
         })

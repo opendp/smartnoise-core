@@ -82,9 +82,11 @@ impl Component for proto::Add {
 
         if !left_property.releasable {
             left_property.assert_is_not_aggregated()?;
+            left_property.assert_is_not_sampled()?;
         }
         if !right_property.releasable {
             right_property.assert_is_not_aggregated()?;
+            right_property.assert_is_not_sampled()?;
         }
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
@@ -133,7 +135,9 @@ impl Component for proto::Add {
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality),
-            naturally_ordered: true
+            naturally_ordered: true,
+            // assertion is made above that data is not sampled
+            sample_proportion: (0..num_columns).map(|_| 1.).collect()
         }).into())
     }
 }
@@ -155,9 +159,11 @@ impl Component for proto::And {
 
         if !left_property.releasable {
             left_property.assert_is_not_aggregated()?;
+            left_property.assert_is_not_sampled()?;
         }
         if !right_property.releasable {
             right_property.assert_is_not_aggregated()?;
+            right_property.assert_is_not_sampled()?;
         }
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
@@ -209,9 +215,11 @@ impl Component for proto::Divide {
 
         if !left_property.releasable {
             left_property.assert_is_not_aggregated()?;
+            left_property.assert_is_not_sampled()?;
         }
         if !right_property.releasable {
             right_property.assert_is_not_aggregated()?;
+            right_property.assert_is_not_sampled()?;
         }
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
@@ -333,7 +341,9 @@ impl Component for proto::Divide {
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality),
-            naturally_ordered: true
+            naturally_ordered: true,
+            // assertion is made above that data is not sampled
+            sample_proportion: (0..num_columns).map(|_| 1.).collect()
         }).into())
     }
 }
@@ -355,9 +365,11 @@ impl Component for proto::Equal {
 
         if !left_property.releasable {
             left_property.assert_is_not_aggregated()?;
+            left_property.assert_is_not_sampled()?;
         }
         if !right_property.releasable {
             right_property.assert_is_not_aggregated()?;
+            right_property.assert_is_not_sampled()?;
         }
 
         if left_property.data_type != right_property.data_type {
@@ -383,7 +395,9 @@ impl Component for proto::Equal {
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality.max(right_property.dimensionality),
             group_id: propagate_binary_group_id(&left_property, &right_property)?,
-            naturally_ordered: true
+            naturally_ordered: true,
+            // assertion is made above that data is not sampled
+            sample_proportion: (0..num_columns).map(|_| 1.).collect()
         }).into())
     }
 }
@@ -406,9 +420,11 @@ impl Component for proto::GreaterThan {
 
         if !left_property.releasable {
             left_property.assert_is_not_aggregated()?;
+            left_property.assert_is_not_sampled()?;
         }
         if !right_property.releasable {
             right_property.assert_is_not_aggregated()?;
+            right_property.assert_is_not_sampled()?;
         }
 
         if left_property.data_type != right_property.data_type {
@@ -441,7 +457,9 @@ impl Component for proto::GreaterThan {
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality),
             group_id: propagate_binary_group_id(&left_property, &right_property)?,
-            naturally_ordered: true
+            naturally_ordered: true,
+            // assertion is made above that data is not sampled
+            sample_proportion: (0..num_columns).map(|_| 1.).collect()
         }).into())
     }
 }
@@ -464,9 +482,11 @@ impl Component for proto::LessThan {
 
         if !left_property.releasable {
             left_property.assert_is_not_aggregated()?;
+            left_property.assert_is_not_sampled()?;
         }
         if !right_property.releasable {
             right_property.assert_is_not_aggregated()?;
+            right_property.assert_is_not_sampled()?;
         }
 
         if left_property.data_type != right_property.data_type {
@@ -499,7 +519,9 @@ impl Component for proto::LessThan {
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality),
             group_id: propagate_binary_group_id(&left_property, &right_property)?,
-            naturally_ordered: true
+            naturally_ordered: true,
+            // assertion is made above that data is not sampled
+            sample_proportion: (0..num_columns).map(|_| 1.).collect()
         }).into())
     }
 }
@@ -522,9 +544,11 @@ impl Component for proto::Log {
 
         if !data_property.releasable {
             data_property.assert_is_not_aggregated()?;
+            data_property.assert_is_not_sampled()?;
         }
         if !base_property.releasable {
             base_property.assert_is_not_aggregated()?;
+            base_property.assert_is_not_sampled()?;
         }
 
         if data_property.data_type != DataType::Float {
@@ -585,9 +609,11 @@ impl Component for proto::Modulo {
 
         if !left_property.releasable {
             left_property.assert_is_not_aggregated()?;
+            left_property.assert_is_not_sampled()?;
         }
         if !right_property.releasable {
             right_property.assert_is_not_aggregated()?;
+            right_property.assert_is_not_sampled()?;
         }
 
         match (left_property.data_type.clone(), right_property.data_type.clone()) {
@@ -657,9 +683,11 @@ impl Component for proto::Multiply {
 
         if !left_property.releasable {
             left_property.assert_is_not_aggregated()?;
+            left_property.assert_is_not_sampled()?;
         }
         if !right_property.releasable {
             right_property.assert_is_not_aggregated()?;
+            right_property.assert_is_not_sampled()?;
         }
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
@@ -733,7 +761,9 @@ impl Component for proto::Multiply {
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality),
-            naturally_ordered: true
+            naturally_ordered: true,
+            // assertion is made above that data is not sampled
+            sample_proportion: (0..num_columns).map(|_| 1.).collect()
         }).into())
     }
 }
@@ -822,9 +852,11 @@ impl Component for proto::Or {
 
         if !left_property.releasable {
             left_property.assert_is_not_aggregated()?;
+            left_property.assert_is_not_sampled()?;
         }
         if !right_property.releasable {
             right_property.assert_is_not_aggregated()?;
+            right_property.assert_is_not_sampled()?;
         }
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
@@ -876,9 +908,11 @@ impl Component for proto::Power {
 
         if !data_property.releasable {
             data_property.assert_is_not_aggregated()?;
+            data_property.assert_is_not_sampled()?;
         }
         if !radical_property.releasable {
             radical_property.assert_is_not_aggregated()?;
+            radical_property.assert_is_not_sampled()?;
         }
 
         match (data_property.data_type.clone(), radical_property.data_type.clone()) {
@@ -947,9 +981,11 @@ impl Component for proto::RowMax {
 
         if !left_property.releasable {
             left_property.assert_is_not_aggregated()?;
+            left_property.assert_is_not_sampled()?;
         }
         if !right_property.releasable {
             right_property.assert_is_not_aggregated()?;
+            right_property.assert_is_not_sampled()?;
         }
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
@@ -1005,7 +1041,9 @@ impl Component for proto::RowMax {
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality),
-            naturally_ordered: true
+            naturally_ordered: true,
+            // assertion is made above that data is not sampled
+            sample_proportion: (0..num_columns).map(|_| 1.).collect()
         }).into())
     }
 }
@@ -1027,9 +1065,11 @@ impl Component for proto::RowMin {
 
         if !left_property.releasable {
             left_property.assert_is_not_aggregated()?;
+            left_property.assert_is_not_sampled()?;
         }
         if !right_property.releasable {
             right_property.assert_is_not_aggregated()?;
+            right_property.assert_is_not_sampled()?;
         }
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
@@ -1085,7 +1125,9 @@ impl Component for proto::RowMin {
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality),
-            naturally_ordered: true
+            naturally_ordered: true,
+            // assertion is made above that data is not sampled
+            sample_proportion: (0..num_columns).map(|_| 1.).collect()
         }).into())
     }
 }
@@ -1107,9 +1149,11 @@ impl Component for proto::Subtract {
 
         if !left_property.releasable {
             left_property.assert_is_not_aggregated()?;
+            left_property.assert_is_not_sampled()?;
         }
         if !right_property.releasable {
             right_property.assert_is_not_aggregated()?;
+            right_property.assert_is_not_sampled()?;
         }
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
@@ -1158,7 +1202,9 @@ impl Component for proto::Subtract {
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality),
-            naturally_ordered: true
+            naturally_ordered: true,
+            // assertion is made above that data is not sampled
+            sample_proportion: (0..num_columns).map(|_| 1.).collect()
         }).into())
     }
 }

@@ -96,7 +96,8 @@ pub fn stack_properties(all_properties: &[ValueProperties], dimensionality: Opti
         is_not_empty: all_properties.iter().all(|prop| prop.is_not_empty),
         dimensionality,
         group_id,
-        naturally_ordered: true
+        naturally_ordered: true,
+        sample_proportion: all_properties.iter().flat_map(|prop| prop.sample_proportion.clone()).collect()
     }))
 }
 

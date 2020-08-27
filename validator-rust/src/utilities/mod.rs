@@ -545,9 +545,10 @@ pub fn expand_mechanism(
     // convert to effective usage
     let effective_usages = spread_usages.into_iter()
         .zip(data_property.c_stability.iter())
+        .zip(data_property.sample_proportion.iter())
         // reduce epsilon allowed to algorithm based on c-stability and group size
-        .map(|(usage, c_stab)|
-            usage.actual_to_effective(1., *c_stab as f64, privacy_definition.group_size))
+        .map(|((usage, c_stab), s_prop)|
+            usage.actual_to_effective(*s_prop, *c_stab as f64, privacy_definition.group_size))
         .collect::<Result<Vec<proto::PrivacyUsage>>>()?;
 
     // insert sensitivity and usage

@@ -71,7 +71,10 @@ impl Component for proto::Union {
                 group_id: get_group_id_path(array_props.iter()
                     .map(|prop| prop.group_id.clone())
                     .collect())?,
-                naturally_ordered: false
+                naturally_ordered: false,
+                sample_proportion: array_props.iter().map(|v| v.sample_proportion.clone())
+                    .fold1(|l, r| l.iter().zip(r).map(|(l, r)| l.max(r)).collect::<Vec<Float>>())
+                    .ok_or_else(|| "must have at least one partition when unioning")?,
             })
         } else {
             ValueProperties::Partitions(PartitionsProperties { children: properties })

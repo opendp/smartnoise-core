@@ -29,7 +29,8 @@ impl Component for proto::Literal {
             is_not_empty: true,
             dimensionality: None,
             group_id: vec![],
-            naturally_ordered: true
+            naturally_ordered: true,
+            sample_proportion: vec![]
         }).into())
     }
 }

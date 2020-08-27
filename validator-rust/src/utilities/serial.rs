@@ -1,15 +1,17 @@
 //! Serialization and deserialization between prost protobuf structs and internal representations
 
-use crate::{proto, Integer, Float};
 use std::collections::HashMap;
-use crate::base::{
-    Release, Nature, Jagged, Vector1D, Value, Array, Vector1DNull,
-    NatureCategorical, NatureContinuous, AggregatorProperties, ValueProperties,
-    JaggedProperties, DataType, ArrayProperties, ReleaseNode, GroupId,
-    IndexKey, ComponentExpansion, DataframeProperties, PartitionsProperties
-};
-use indexmap::IndexMap;
+
 use error_chain::ChainedError;
+use indexmap::IndexMap;
+
+use crate::{Float, Integer, proto};
+use crate::base::{
+    AggregatorProperties, Array, ArrayProperties, ComponentExpansion, DataframeProperties, DataType, GroupId,
+    IndexKey, Jagged, JaggedProperties, Nature,
+    NatureCategorical, NatureContinuous, PartitionsProperties, Release, ReleaseNode,
+    Value, ValueProperties, Vector1D, Vector1DNull
+};
 
 // PARSERS
 pub fn parse_bool_null(value: proto::BoolNull) -> Option<bool> {
@@ -271,7 +273,9 @@ pub fn parse_array_properties(value: proto::ArrayProperties) -> ArrayProperties 
         is_not_empty: value.is_not_empty,
         dimensionality: value.dimensionality.and_then(parse_i64_null),
         group_id: value.group_id.into_iter().map(parse_group_id).collect(),
-        naturally_ordered: value.naturally_ordered
+        naturally_ordered: value.naturally_ordered,
+        sample_proportion: parse_array1d_f64(value.sample_proportion.to_owned().unwrap())
+            .into_iter().map(|v| v as Float).collect(),
     }
 }
 
@@ -538,7 +542,8 @@ pub fn serialize_array_properties(value: ArrayProperties) -> proto::ArrayPropert
         num_records, num_columns, nullity, releasable,
         c_stability, aggregator, nature,
         data_type, dataset_id, is_not_empty,
-        dimensionality, group_id, naturally_ordered
+        dimensionality, group_id,
+        naturally_ordered, sample_proportion
     } = value;
 
     proto::ArrayProperties {
@@ -572,7 +577,9 @@ pub fn serialize_array_properties(value: ArrayProperties) -> proto::ArrayPropert
         is_not_empty,
         dimensionality: Some(serialize_i64_null(dimensionality)),
         group_id: group_id.into_iter().map(serialize_group_id).collect(),
-        naturally_ordered
+        naturally_ordered,
+        sample_proportion: Some(serialize_array1d_f64(sample_proportion.into_iter()
+            .map(|v| v as f64).collect()))
     }
 }
 

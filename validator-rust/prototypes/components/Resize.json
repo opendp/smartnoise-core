@@ -58,6 +58,12 @@
       "default_rust": "None",
       "description": "The standard deviation of the Gaussian distribution used for imputation (used only if `distribution = Gaussian`)."
     },
+    "sample_proportion": {
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
+      "description": "The proportion of underlying data that may be used to construct the new data. May be > 1."
+    },
     "minimum_rows": {
       "type_value": "Array",
       "default_python": "None",

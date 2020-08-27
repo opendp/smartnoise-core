@@ -139,6 +139,9 @@ message ArrayProperties {
     }
 
     bool naturally_ordered = 12;
+
+    // proportion of records this array contains sampled from the original dataset
+    Array1dF64 sample_proportion = 13;
 }
 
 message NatureContinuous {

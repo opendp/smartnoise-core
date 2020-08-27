@@ -73,7 +73,8 @@ impl Component for proto::ExponentialMechanism {
             //     All outputs become 2D, so 1D outputs are lost
             dimensionality: Some(2),
             group_id: vec![],
-            naturally_ordered: true
+            naturally_ordered: true,
+            sample_proportion: vec![1.]
         };
 
         let privacy_usage = self.privacy_usage.iter().cloned().map(Ok)
@@ -151,8 +152,9 @@ impl Mechanism for proto::ExponentialMechanism {
 
         Some(release_usage.unwrap_or_else(|| &self.privacy_usage).iter()
             .zip(data_property.c_stability.iter())
-            .map(|(usage, c_stab)|
-                usage.effective_to_actual(1., *c_stab as f64, privacy_definition.group_size))
+            .zip(data_property.sample_proportion.iter())
+            .map(|((usage, c_stab), s_prop)|
+                usage.effective_to_actual(*s_prop, *c_stab as f64, privacy_definition.group_size))
             .collect::<Result<Vec<proto::PrivacyUsage>>>()).transpose()
     }
 }
