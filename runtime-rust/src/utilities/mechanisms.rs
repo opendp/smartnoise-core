@@ -3,6 +3,7 @@ use whitenoise_validator::errors::*;
 use crate::utilities;
 use whitenoise_validator::Float;
 use crate::utilities::{noise, analytic_gaussian};
+use whitenoise_validator::components::gaussian_mechanism::get_analytic_gaussian_sigma;
 
 /// Returns noise drawn according to the Laplace mechanism
 ///
@@ -148,7 +149,7 @@ pub fn gaussian_mechanism(
     }
 
     let scale = if analytic {
-        analytic_gaussian::get_analytic_gaussian_sigma(epsilon, delta, sensitivity)
+        get_analytic_gaussian_sigma(epsilon, delta, sensitivity)
     } else {
         sensitivity * (2. * (1.25 / delta).ln()).sqrt() / epsilon
     };

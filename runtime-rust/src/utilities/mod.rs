@@ -11,8 +11,6 @@ use whitenoise_validator::utilities::array::{slow_select, slow_stack};
 pub mod mechanisms;
 pub mod noise;
 
-pub mod analytic_gaussian;
-
 ///  Accepts an ndarray and returns the number of columns.
 ///
 /// # Arguments

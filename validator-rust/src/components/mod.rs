@@ -42,7 +42,7 @@ mod quantile;
 mod reshape;
 mod mean;
 mod exponential_mechanism;
-mod gaussian_mechanism;
+pub mod gaussian_mechanism;
 mod laplace_mechanism;
 mod simple_geometric_mechanism;
 pub mod snapping_mechanism;
