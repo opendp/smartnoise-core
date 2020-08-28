@@ -407,9 +407,9 @@ mod test_uniform {
     }
 }
 
-/// Generates a draw from Unif[min, max] using the MPFR library.
+/// Returns random sample from Uniform[min,max) using the MPFR library.
 ///
-/// If [min, max] == [0, 1],then this is done in a way that respects exact rounding.
+/// If [min, max) == [0, 1),then this is done in a way that respects exact rounding.
 /// Otherwise, the return will be the result of a composition of two operations that
 /// respect exact rounding (though the result will not necessarily).
 ///
@@ -489,9 +489,9 @@ pub fn sample_gaussian(shift: f64, scale: f64, enforce_constant_time: bool) -> R
     Ok(Gaussian::new(shift, scale).inverse(probability))
 }
 
-/// Generates a draw from a Gaussian distribution using the MPFR library.
+/// Generates a draw from a Gaussian(loc, scale) distribution using the MPFR library.
 ///
-/// If [min, max] == [0, 1],then this is done in a way that respects exact rounding.
+/// If shift = 0 and scale = 1, sampling is done in a way that respects exact rounding.
 /// Otherwise, the return will be the result of a composition of two operations that
 /// respect exact rounding (though the result will not necessarily).
 ///
@@ -500,7 +500,7 @@ pub fn sample_gaussian(shift: f64, scale: f64, enforce_constant_time: bool) -> R
 /// * `scale` - The scaling parameter (standard deviation) of the Gaussian distribution.
 ///
 /// # Return
-/// Draw from Gaussian(min, max)
+/// Draw from Gaussian(loc, scale)
 ///
 /// # Example
 /// ```
@@ -734,13 +734,15 @@ pub fn snapping_mechanism(
 /// # Return
 ///  Noise according to the Gumbel Distribution
 pub fn sample_gumbel(loc: f64, scale: f64) -> f64 {
-    let u = 1.0 - sample_uniform_mpfr(0.0, 1.0).unwrap().to_f64();
-    // Accept if less than 1, otherwise reject and call function again
-    if u < 1.0 {
+    let rug_loc = Float::with_val(120, loc);
+    let rug_scale = Float::with_val(120, scale);
+    let u = Float::with_val(120, sample_uniform_mpfr(0.0, 1.0).unwrap());
+    // Accept if u > 0, otherwise reject and call function again
+    if u.gt(&Float::with_val(120, 0.0))   {
         let negative_log = -(u.ln());
         let log_term = negative_log.ln();
-        loc - scale * log_term
+        (-rug_scale.mul_add(&log_term, &rug_loc)).to_f64()
     } else {
-        sample_gumbel(loc, scale)
+        sample_gumbel(loc, scale);
     }
 }
