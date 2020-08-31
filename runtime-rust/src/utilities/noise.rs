@@ -743,6 +743,6 @@ pub fn sample_gumbel(loc: f64, scale: f64) -> f64 {
         let log_term = negative_log.ln();
         (-rug_scale.mul_add(&log_term, &rug_loc)).to_f64()
     } else {
-        sample_gumbel(loc, scale);
+        sample_gumbel(loc, scale)
     }
 }
