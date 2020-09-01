@@ -33,6 +33,7 @@ mod filter;
 mod histogram;
 mod impute;
 pub mod index;
+mod join;
 mod raw_moment;
 mod literal;
 mod map;
@@ -46,12 +47,15 @@ mod gaussian_mechanism;
 mod laplace_mechanism;
 mod simple_geometric_mechanism;
 mod resize;
+mod stability_mechanism;
 mod sum;
+mod tau_threshold;
 mod union;
 mod variance;
 
 use crate::base::{IndexKey, Value, NodeProperties, SensitivitySpace, ValueProperties};
 use crate::{proto, Warnable, base};
+use crate::utilities::prepend;
 use crate::utilities::json::{JSONRelease};
 use indexmap::map::IndexMap;
 
@@ -251,7 +255,7 @@ impl Component for proto::Component {
             // INSERT COMPONENT LIST
             Cast, Clamp, ColumnBind, Count, Covariance, Digitize,
             Filter, Histogram, Impute, Index, Literal, Materialize, Mean,
-            Partition, Quantile, RawMoment, Reshape, Resize, Sum, Union, Variance,
+            Partition, Quantile, RawMoment, Reshape, Resize, Sum, TauThreshold, Union, Variance,
 
             ExponentialMechanism, GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism,
 
@@ -365,12 +369,42 @@ impl Mechanism for proto::Component {
 
         get_privacy_usage!(
             // INSERT COMPONENT LIST
-            ExponentialMechanism, GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism
+            ExponentialMechanism, GaussianMechanism, LaplaceMechanism,
+            SimpleGeometricMechanism, StabilityMechanism
         );
 
         Ok(None)
     }
 }
+
+macro_rules! impl_mechanism {
+    ($($variant:ident),+) => {
+        $(
+            impl Mechanism for proto::$variant {
+                fn get_privacy_usage(
+                    &self,
+                    privacy_definition: &proto::PrivacyDefinition,
+                    release_usage: Option<&Vec<proto::PrivacyUsage>>,
+                    properties: &NodeProperties
+                ) -> Result<Option<Vec<proto::PrivacyUsage>>> {
+                    let data_property = properties.get::<IndexKey>(&"data".into())
+                        .ok_or("data: missing")?.array()
+                        .map_err(prepend("data:"))?;
+
+                    Some(release_usage.unwrap_or_else(|| &self.privacy_usage).iter()
+                        .zip(data_property.c_stability.iter())
+                        .map(|(usage, c_stab)|
+                            usage.effective_to_actual(1., *c_stab as f64, privacy_definition.group_size))
+                        .collect::<Result<Vec<proto::PrivacyUsage>>>()).transpose()
+                }
+            }
+        )+
+    }
+}
+impl_mechanism!(
+    ExponentialMechanism, GaussianMechanism, LaplaceMechanism,
+    SimpleGeometricMechanism, StabilityMechanism
+);
 
 
 impl Sensitivity for proto::component::Variant {

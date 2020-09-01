@@ -1,6 +1,6 @@
 use crate::errors::*;
 
-use crate::base::{Nature, NatureCategorical, Vector1DNull, Jagged, ArrayProperties, ValueProperties, DataType, GroupId};
+use crate::base::{Nature, NatureCategorical, Vector1DNull, Jagged, ArrayProperties, ValueProperties, DataType, GroupId, DataframeProperties};
 
 use crate::{proto, base, Warnable, Integer, Float};
 
@@ -20,7 +20,7 @@ impl Component for proto::Abs {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        _node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
         let mut data_property = properties.get(&IndexKey::from("data"))
             .ok_or("data: missing")?.array()
@@ -62,7 +62,7 @@ impl Component for proto::Add {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        _node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
         let left_property = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
@@ -87,7 +87,7 @@ impl Component for proto::Add {
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
         if left_property.data_type != right_property.data_type {
-            return Err("left and right arguments must share the same data types".into())
+            return Err("left and right arguments must share the same data types".into());
         }
 
         Ok(ValueProperties::Array(ArrayProperties {
@@ -117,7 +117,7 @@ impl Component for proto::Add {
                         (Some(lmax), Some(rmax)) => Some(lmax.checked_add(rmax)
                             .ok_or_else(|| Error::from("addition may result in underflow or overflow"))?),
                         _ => None
-                    })))
+                    }))),
             }, num_columns)?,
             c_stability: broadcast(&left_property.c_stability, num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, num_columns)?)
@@ -141,7 +141,7 @@ impl Component for proto::And {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        _node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
         let mut left_property = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
@@ -159,7 +159,7 @@ impl Component for proto::And {
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
         if left_property.data_type != right_property.data_type {
-            return Err("left and right arguments must share the same data types".into())
+            return Err("left and right arguments must share the same data types".into());
         }
 
         left_property.releasable = left_property.releasable && right_property.releasable;
@@ -195,7 +195,7 @@ impl Component for proto::Divide {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        _node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
         let left_property = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
@@ -213,7 +213,7 @@ impl Component for proto::Divide {
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
         if left_property.data_type != right_property.data_type {
-            return Err("left and right arguments must share the same data types".into())
+            return Err("left and right arguments must share the same data types".into());
         }
 
         let float_denominator_may_span_zero = match right_property.clone().nature {
@@ -246,9 +246,8 @@ impl Component for proto::Divide {
 
         // minimize and maximize b / e when a <= b <= c and d <= e <= f
         fn optimize<T: PartialOrd + Div<Output=T> + Zero + Copy>(
-            a: T, c: T, d: T, f: T
+            a: T, c: T, d: T, f: T,
         ) -> Result<(Option<T>, Option<T>)> {
-
             let zero = T::zero();
             // maximize {b * d | a <= b <= c && d <= e <= f}
             let max = match (a, c, d, f) {
@@ -294,7 +293,6 @@ impl Component for proto::Divide {
         fn optimize_wrapper<T: PartialOrd + Div<Output=T> + Zero + Copy>(
             bounds: BinaryBounds<T>
         ) -> Result<(Option<T>, Option<T>)> {
-
             let a = match bounds.left_lower {
                 Some(v) => *v,
                 None => return Ok((None, None))
@@ -307,18 +305,18 @@ impl Component for proto::Divide {
                 Some(v) => *v,
                 None => {
                     if bounds.right_upper.map(|v| v >= T::zero()).unwrap_or(true) {
-                        return Err("potential division by zero".into())
+                        return Err("potential division by zero".into());
                     }
-                    return Ok((None, None))
+                    return Ok((None, None));
                 }
             };
             let f = match bounds.right_upper {
                 Some(v) => *v,
                 None => {
                     if bounds.right_lower.map(|v| v <= T::zero()).unwrap_or(true) {
-                        return Err("potential division by zero".into())
+                        return Err("potential division by zero".into());
                     }
-                    return Ok((None, None))
+                    return Ok((None, None));
                 }
             };
             optimize(a, c, d, f)
@@ -331,7 +329,7 @@ impl Component for proto::Divide {
                 float: Some(Box::new(|l: &Float, r: &Float| {
                     let category = l / r;
                     if !category.is_finite() {
-                        return Err("either division by zero, underflow or overflow".into())
+                        return Err("either division by zero, underflow or overflow".into());
                     }
                     Ok(category)
                 })),
@@ -341,7 +339,7 @@ impl Component for proto::Divide {
                 bool: None,
             }, &OptimizeBinaryOperators {
                 float: Some(&optimize_wrapper),
-                int: Some(&optimize_wrapper)
+                int: Some(&optimize_wrapper),
             }, num_columns)?,
             c_stability: broadcast(&left_property.c_stability, num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, num_columns)?)
@@ -365,7 +363,7 @@ impl Component for proto::Equal {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        _node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
         let left_property = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
@@ -382,7 +380,7 @@ impl Component for proto::Equal {
         }
 
         if left_property.data_type != right_property.data_type {
-            return Err("left and right must be homogeneously typed".into())
+            return Err("left and right must be homogeneously typed".into());
         }
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
@@ -403,7 +401,7 @@ impl Component for proto::Equal {
             dataset_id: left_property.dataset_id,
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality.max(right_property.dimensionality),
-            group_id: propagate_binary_group_id(&left_property, &right_property)?
+            group_id: propagate_binary_group_id(&left_property, &right_property)?,
         }).into())
     }
 }
@@ -415,7 +413,7 @@ impl Component for proto::GreaterThan {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        _node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
         let left_property = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
@@ -432,13 +430,13 @@ impl Component for proto::GreaterThan {
         }
 
         if left_property.data_type != right_property.data_type {
-            return Err("left and right must be homogeneously typed".into())
+            return Err("left and right must be homogeneously typed".into());
         }
         if left_property.data_type != DataType::Int && left_property.data_type != DataType::Float {
-            return Err("left must be numeric".into())
+            return Err("left must be numeric".into());
         }
         if right_property.data_type != DataType::Int && right_property.data_type != DataType::Float {
-            return Err("right must be numeric".into())
+            return Err("right must be numeric".into());
         }
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
@@ -460,7 +458,7 @@ impl Component for proto::GreaterThan {
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality),
-            group_id: propagate_binary_group_id(&left_property, &right_property)?
+            group_id: propagate_binary_group_id(&left_property, &right_property)?,
         }).into())
     }
 }
@@ -472,7 +470,7 @@ impl Component for proto::LessThan {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        _node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
         let left_property = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
@@ -489,13 +487,13 @@ impl Component for proto::LessThan {
         }
 
         if left_property.data_type != right_property.data_type {
-            return Err("left and right must be homogeneously typed".into())
+            return Err("left and right must be homogeneously typed".into());
         }
         if left_property.data_type != DataType::Int && left_property.data_type != DataType::Float {
-            return Err("left must be numeric".into())
+            return Err("left must be numeric".into());
         }
         if right_property.data_type != DataType::Int && right_property.data_type != DataType::Float {
-            return Err("right must be numeric".into())
+            return Err("right must be numeric".into());
         }
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
@@ -517,7 +515,7 @@ impl Component for proto::LessThan {
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality),
-            group_id: propagate_binary_group_id(&left_property, &right_property)?
+            group_id: propagate_binary_group_id(&left_property, &right_property)?,
         }).into())
     }
 }
@@ -529,7 +527,7 @@ impl Component for proto::Log {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        _node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
         let mut data_property = properties.get(&IndexKey::from("data"))
             .ok_or("left: missing")?.array()
@@ -552,12 +550,12 @@ impl Component for proto::Log {
         if !base_property.lower_float()?.iter()
             .zip(base_property.upper_float()?.iter())
             .all(|(min, max)| min > &0. && max < &1. || min > &1.) {
-            return Err("base must be in [0, 1) U (1, inf) and not span zero".into())
+            return Err("base must be in [0, 1) U (1, inf) and not span zero".into());
         }
 
         if !data_property.lower_float()?.iter()
             .all(|min| min > &0.) {
-            return Err("data may potentially be less than zero".into())
+            return Err("data may potentially be less than zero".into());
         }
 
         data_property.nature = propagate_binary_nature(
@@ -573,7 +571,7 @@ impl Component for proto::Log {
                     // TODO: derive data bounds for log transform
                     Ok((None, None))
                 }),
-                int: None
+                int: None,
             }, data_property.num_columns()?)?;
 
         data_property.is_not_empty = data_property.is_not_empty && base_property.is_not_empty;
@@ -592,7 +590,7 @@ impl Component for proto::Modulo {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        _node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
         let mut left_property = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
@@ -610,9 +608,8 @@ impl Component for proto::Modulo {
 
         match (left_property.data_type.clone(), right_property.data_type.clone()) {
             (DataType::Float, DataType::Float) => {
-
                 if !right_property.lower_float()?.iter().all(|v| v > &0.) {
-                    return Err("divisor must be greater than zero".into())
+                    return Err("divisor must be greater than zero".into());
                 }
 
                 left_property.nature = propagate_binary_nature(
@@ -626,12 +623,12 @@ impl Component for proto::Modulo {
                     &OptimizeBinaryOperators {
                         // TODO: this could be tighter
                         float: Some(&|bounds| Ok((Some(0.), *bounds.right_upper))),
-                        int: None
+                        int: None,
                     }, left_property.num_columns()?)?;
-            },
+            }
             (DataType::Int, DataType::Int) => {
                 if !right_property.lower_int()?.iter().all(|v| v > &0) {
-                    return Err("divisor must be greater than zero".into())
+                    return Err("divisor must be greater than zero".into());
                 }
                 left_property.nature = propagate_binary_nature(
                     &left_property, &right_property,
@@ -645,7 +642,7 @@ impl Component for proto::Modulo {
                         float: None,
                         int: Some(&|bounds| Ok((Some(0), bounds.right_upper.map(|v| v - 1)))),
                     }, left_property.num_columns()?)?;
-            },
+            }
             _ => return Err("arguments for power must be numeric and homogeneously typed".into())
         };
 
@@ -664,7 +661,7 @@ impl Component for proto::Multiply {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        _node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
         let left_property = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
@@ -682,14 +679,13 @@ impl Component for proto::Multiply {
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
         if left_property.data_type != right_property.data_type {
-            return Err("left and right arguments must share the same data types".into())
+            return Err("left and right arguments must share the same data types".into());
         }
 
         /// compute minimum and maximum of b * e when a <= b <= c and d <= e <= f
         fn optimize<T: PartialOrd + Mul<Output=T> + Zero + Copy>(
-            a: T, c: T, d: T, f: T
+            a: T, c: T, d: T, f: T,
         ) -> Result<(Option<T>, Option<T>)> {
-
             let zero = T::zero();
             // maximize {b * d | a <= b <= c && d <= e <= f}
             let max = match (a, c, d, f) {
@@ -769,7 +765,7 @@ impl Component for proto::Multiply {
                 float: Some(Box::new(|l: &Float, r: &Float| {
                     let category = l * r;
                     if !category.is_finite() {
-                        return Err("multiplication may result in underflow or overflow".into())
+                        return Err("multiplication may result in underflow or overflow".into());
                     }
                     Ok(category)
                 })),
@@ -804,7 +800,7 @@ impl Component for proto::Negate {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        _node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
         let mut data_property = properties.get(&IndexKey::from("data"))
             .ok_or("data: missing")?.array()
@@ -834,7 +830,7 @@ impl Component for proto::Negative {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        _node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
         let mut data_property = properties.get(&IndexKey::from("data"))
             .ok_or("data: missing")?.array()
@@ -870,7 +866,7 @@ impl Component for proto::Or {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        _node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
         let mut left_property = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
@@ -888,7 +884,7 @@ impl Component for proto::Or {
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
         if left_property.data_type != right_property.data_type {
-            return Err("left and right arguments must share the same data types".into())
+            return Err("left and right arguments must share the same data types".into());
         }
 
         left_property.releasable = left_property.releasable && right_property.releasable;
@@ -924,7 +920,7 @@ impl Component for proto::Power {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        _node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
         let mut data_property = properties.get(&IndexKey::from("data"))
             .ok_or("data: missing")?.array()
@@ -942,7 +938,6 @@ impl Component for proto::Power {
 
         match (data_property.data_type.clone(), radical_property.data_type.clone()) {
             (DataType::Float, DataType::Float) => {
-
                 data_property.nature = propagate_binary_nature(
                     &data_property, &radical_property,
                     &BinaryOperators {
@@ -954,12 +949,12 @@ impl Component for proto::Power {
                     // TODO: derive bounds
                     &OptimizeBinaryOperators {
                         float: Some(&|_bounds| Ok((None, None))),
-                        int: None
+                        int: None,
                     }, data_property.num_columns()?)?;
-            },
+            }
             (DataType::Int, DataType::Int) => {
                 if !radical_property.lower_int()?.iter().all(|min| min >= &0) {
-                    return Err("integer power must not be negative".into())
+                    return Err("integer power must not be negative".into());
                 }
 
                 data_property.nature = propagate_binary_nature(
@@ -976,7 +971,7 @@ impl Component for proto::Power {
                         float: None,
                         int: Some(&|_bounds| Ok((None, None))),
                     }, data_property.num_columns()?)?;
-            },
+            }
             _ => return Err("arguments for power must be numeric and homogeneously typed".into())
         }
 
@@ -995,7 +990,7 @@ impl Component for proto::RowMax {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        _node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
         let left_property = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
@@ -1013,7 +1008,7 @@ impl Component for proto::RowMax {
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
         if left_property.data_type != right_property.data_type {
-            return Err("left and right arguments must share the same data types".into())
+            return Err("left and right arguments must share the same data types".into());
         }
 
         Ok(ValueProperties::Array(ArrayProperties {
@@ -1050,7 +1045,7 @@ impl Component for proto::RowMax {
                         (Some(left_upper), Some(right_upper)) => Some(*left_upper.max(right_upper)),
                         _ => None
                     }
-                )))
+                ))),
             }, num_columns)?,
             c_stability: broadcast(&left_property.c_stability, num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, num_columns)?)
@@ -1074,7 +1069,7 @@ impl Component for proto::RowMin {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        _node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
         let left_property = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
@@ -1092,7 +1087,7 @@ impl Component for proto::RowMin {
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
         if left_property.data_type != right_property.data_type {
-            return Err("left and right arguments must share the same data types".into())
+            return Err("left and right arguments must share the same data types".into());
         }
 
         Ok(ValueProperties::Array(ArrayProperties {
@@ -1129,7 +1124,7 @@ impl Component for proto::RowMin {
                         (Some(left_upper), Some(right_upper)) => Some(*left_upper.min(right_upper)),
                         _ => None
                     }
-                )))
+                ))),
             }, num_columns)?,
             c_stability: broadcast(&left_property.c_stability, num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, num_columns)?)
@@ -1153,7 +1148,7 @@ impl Component for proto::Subtract {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        _node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
         let left_property = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
@@ -1171,7 +1166,7 @@ impl Component for proto::Subtract {
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
         if left_property.data_type != right_property.data_type {
-            return Err("left and right arguments must share the same data types".into())
+            return Err("left and right arguments must share the same data types".into());
         }
 
         Ok(ValueProperties::Array(ArrayProperties {
@@ -1201,7 +1196,7 @@ impl Component for proto::Subtract {
                         (Some(lmax), Some(rmax)) => Some(lmax.checked_sub(rmax)
                             .ok_or_else(|| Error::from("subtraction may result in underflow or overflow"))?),
                         _ => None
-                    })))
+                    }))),
             }, num_columns)?,
             c_stability: broadcast(&left_property.c_stability, num_columns)?.iter()
                 .zip(broadcast(&right_property.c_stability, num_columns)?)
@@ -1220,30 +1215,35 @@ impl Component for proto::Subtract {
 }
 
 type UnaryOperator<T> = Option<Box<dyn Fn(&T) -> Result<T>>>;
+
 pub struct UnaryOperators {
     pub float: UnaryOperator<Float>,
     pub int: UnaryOperator<Integer>,
     pub str: UnaryOperator<String>,
     pub bool: UnaryOperator<bool>,
 }
+
 pub struct UnaryBounds<'a, T> {
     pub lower: &'a Option<T>,
     pub upper: &'a Option<T>,
 }
 
 type UnaryOptimizer<T> = Option<Box<dyn Fn(UnaryBounds<T>) -> Result<(Option<T>, Option<T>)>>>;
+
 pub struct OptimizeUnaryOperators {
     pub float: UnaryOptimizer<Float>,
     pub int: UnaryOptimizer<Integer>,
 }
 
 type BinaryOperator<T> = Option<Box<dyn Fn(&T, &T) -> Result<T>>>;
+
 pub struct BinaryOperators {
     pub float: BinaryOperator<Float>,
     pub int: BinaryOperator<Integer>,
     pub str: BinaryOperator<String>,
     pub bool: BinaryOperator<bool>,
 }
+
 pub struct BinaryBounds<'a, T> {
     pub left_lower: &'a Option<T>,
     pub left_upper: &'a Option<T>,
@@ -1252,6 +1252,7 @@ pub struct BinaryBounds<'a, T> {
 }
 
 type BinaryOptimizer<'a, T> = Option<&'a dyn Fn(BinaryBounds<T>) -> Result<(Option<T>, Option<T>)>>;
+
 pub struct OptimizeBinaryOperators<'a> {
     pub float: BinaryOptimizer<'a, Float>,
     pub int: BinaryOptimizer<'a, Integer>,
@@ -1259,7 +1260,7 @@ pub struct OptimizeBinaryOperators<'a> {
 
 pub fn propagate_binary_shape(left_property: &ArrayProperties, right_property: &ArrayProperties) -> Result<(i64, Option<i64>)> {
     if !left_property.releasable && !right_property.releasable && left_property.group_id != right_property.group_id {
-        return Err("data from separate partitions may not be mixed".into())
+        return Err("data from separate partitions may not be mixed".into());
     }
 
     let left_num_columns = left_property.num_columns()?;
@@ -1297,7 +1298,7 @@ pub fn propagate_unary_nature(
     data_property: &ArrayProperties,
     operator: &UnaryOperators,
     optimization_operator: &OptimizeUnaryOperators,
-    output_num_columns: i64
+    output_num_columns: i64,
 ) -> Result<Option<Nature>> {
     Ok(match data_property.nature.clone() {
         Some(nature) => match nature {
@@ -1310,10 +1311,10 @@ pub fn propagate_unary_nature(
                         .try_for_each(|(min, max)| {
                             match &optimization_operator.float {
                                 Some(operator) => {
-                                    let (min, max) = operator(UnaryBounds{ lower: min, upper: max })?;
+                                    let (min, max) = operator(UnaryBounds { lower: min, upper: max })?;
                                     output_min.push(min);
                                     output_max.push(max);
-                                },
+                                }
                                 None => {
                                     output_min.push(None);
                                     output_max.push(None);
@@ -1321,7 +1322,7 @@ pub fn propagate_unary_nature(
                             };
                             Ok::<_, Error>(())
                         })?;
-                    Some(Nature::Continuous(NatureContinuous { lower: Vector1DNull::Float(output_min), upper: Vector1DNull::Float(output_max)}))
+                    Some(Nature::Continuous(NatureContinuous { lower: Vector1DNull::Float(output_min), upper: Vector1DNull::Float(output_max) }))
                 }
                 (Vector1DNull::Int(min), Vector1DNull::Int(max)) => {
                     let mut output_min = Vec::new();
@@ -1331,10 +1332,10 @@ pub fn propagate_unary_nature(
                         .try_for_each(|(min, max)| {
                             match &optimization_operator.int {
                                 Some(operator) => {
-                                    let (min, max) = operator(UnaryBounds{ lower: min, upper: max })?;
+                                    let (min, max) = operator(UnaryBounds { lower: min, upper: max })?;
                                     output_min.push(min);
                                     output_max.push(max);
-                                },
+                                }
                                 None => {
                                     output_min.push(None);
                                     output_max.push(None);
@@ -1342,36 +1343,38 @@ pub fn propagate_unary_nature(
                             };
                             Ok::<_, Error>(())
                         })?;
-                    Some(Nature::Continuous(NatureContinuous { lower: Vector1DNull::Int(output_min), upper: Vector1DNull::Int(output_max)}))
-                },
+                    Some(Nature::Continuous(NatureContinuous { lower: Vector1DNull::Int(output_min), upper: Vector1DNull::Int(output_max) }))
+                }
                 _ => return Err("continuous bounds must be numeric and homogeneously typed".into())
             }
-            Nature::Categorical(nature) => Some(Nature::Categorical(NatureCategorical { categories: match nature.categories.standardize(output_num_columns)? {
-                Jagged::Float(categories) => Jagged::Float(categories.iter().map(|cats|
-                    match &operator.float {
-                        Some(operator) =>
-                            Ok(cats.iter().map(operator).collect::<Result<Vec<_>>>()?),
-                        None => Err("categories cannot be propagated for floats".into()),
-                    }).collect::<Result<Vec<Vec<_>>>>()?),
-                Jagged::Int(categories) => Jagged::Int(categories.iter().map(|cats|
-                    match &operator.int {
-                        Some(operator) =>
-                            Ok(cats.iter().map(operator).collect::<Result<Vec<_>>>()?),
-                        None => Err("categories cannot be propagated for integers".into()),
-                    }).collect::<Result<Vec<Vec<_>>>>()?),
-                Jagged::Bool(categories) => Jagged::Bool(categories.iter().map(|cats|
-                    match &operator.bool {
-                        Some(operator) =>
-                            Ok(cats.iter().map(operator).collect::<Result<Vec<_>>>()?),
-                        None => Err("categories cannot be propagated for booleans".into()),
-                    }).collect::<Result<Vec<Vec<_>>>>()?),
-                Jagged::Str(categories) => Jagged::Str(categories.iter().map(|cats|
-                    match &operator.str {
-                        Some(operator) =>
-                            Ok(cats.iter().map(operator).collect::<Result<Vec<_>>>()?),
-                        None => Err("categories cannot be propagated for strings".into()),
-                    }).collect::<Result<Vec<Vec<_>>>>()?),
-            }}))
+            Nature::Categorical(nature) => Some(Nature::Categorical(NatureCategorical {
+                categories: match nature.categories.standardize(output_num_columns)? {
+                    Jagged::Float(categories) => Jagged::Float(categories.iter().map(|cats|
+                        match &operator.float {
+                            Some(operator) =>
+                                Ok(cats.iter().map(operator).collect::<Result<Vec<_>>>()?),
+                            None => Err("categories cannot be propagated for floats".into()),
+                        }).collect::<Result<Vec<Vec<_>>>>()?),
+                    Jagged::Int(categories) => Jagged::Int(categories.iter().map(|cats|
+                        match &operator.int {
+                            Some(operator) =>
+                                Ok(cats.iter().map(operator).collect::<Result<Vec<_>>>()?),
+                            None => Err("categories cannot be propagated for integers".into()),
+                        }).collect::<Result<Vec<Vec<_>>>>()?),
+                    Jagged::Bool(categories) => Jagged::Bool(categories.iter().map(|cats|
+                        match &operator.bool {
+                            Some(operator) =>
+                                Ok(cats.iter().map(operator).collect::<Result<Vec<_>>>()?),
+                            None => Err("categories cannot be propagated for booleans".into()),
+                        }).collect::<Result<Vec<Vec<_>>>>()?),
+                    Jagged::Str(categories) => Jagged::Str(categories.iter().map(|cats|
+                        match &operator.str {
+                            Some(operator) =>
+                                Ok(cats.iter().map(operator).collect::<Result<Vec<_>>>()?),
+                            None => Err("categories cannot be propagated for strings".into()),
+                        }).collect::<Result<Vec<Vec<_>>>>()?),
+                }
+            }))
         },
         None => None
     })
@@ -1384,9 +1387,8 @@ pub fn propagate_binary_nature(
     left_property: &ArrayProperties, right_property: &ArrayProperties,
     operator: &BinaryOperators,
     optimization_operator: &OptimizeBinaryOperators,
-    output_num_columns: i64
+    output_num_columns: i64,
 ) -> Result<Option<Nature>> {
-
     let (left_nature, right_nature) = match (&left_property.nature, &right_property.nature) {
         (Some(l), Some(r)) => (l, r),
         _ => return Ok(None)
@@ -1405,7 +1407,7 @@ pub fn propagate_binary_nature(
 fn propagate_binary_continuous_nature(
     left_nature: &NatureContinuous, right_nature: &NatureContinuous,
     optimization_operator: &OptimizeBinaryOperators,
-    output_num_columns: i64
+    output_num_columns: i64,
 ) -> Result<Option<Nature>> {
     let NatureContinuous {
         lower: left_lower, upper: left_upper
@@ -1431,7 +1433,7 @@ fn propagate_binary_continuous_nature(
                             let (col_min, col_max) = operator(BinaryBounds { left_lower: left_min, left_upper: left_max, right_lower: right_min, right_upper: right_max })?;
                             min.push(col_min);
                             max.push(col_max);
-                        },
+                        }
                         None => {
                             min.push(None);
                             max.push(None);
@@ -1439,8 +1441,8 @@ fn propagate_binary_continuous_nature(
                     }
                     Ok::<_, Error>(())
                 })?;
-            Some(Nature::Continuous(NatureContinuous { lower: Vector1DNull::Float(min), upper: Vector1DNull::Float(max)}))
-        },
+            Some(Nature::Continuous(NatureContinuous { lower: Vector1DNull::Float(min), upper: Vector1DNull::Float(max) }))
+        }
         (Vector1DNull::Int(lmin), Vector1DNull::Int(lmax), Vector1DNull::Int(rmin), Vector1DNull::Int(rmax)) => {
             let lmin = broadcast(&lmin, output_num_columns)?;
             let lmax = broadcast(&lmax, output_num_columns)?;
@@ -1456,7 +1458,7 @@ fn propagate_binary_continuous_nature(
                             let (col_min, col_max) = operator(BinaryBounds { left_lower: left_min, left_upper: left_max, right_lower: right_min, right_upper: right_max })?;
                             min.push(col_min);
                             max.push(col_max);
-                        },
+                        }
                         None => {
                             min.push(None);
                             max.push(None);
@@ -1464,8 +1466,8 @@ fn propagate_binary_continuous_nature(
                     }
                     Ok::<_, Error>(())
                 })?;
-            Some(Nature::Continuous(NatureContinuous { lower: Vector1DNull::Int(min), upper: Vector1DNull::Int(max)}))
-        },
+            Some(Nature::Continuous(NatureContinuous { lower: Vector1DNull::Int(min), upper: Vector1DNull::Int(max) }))
+        }
         _ => return Err("continuous bounds must be numeric and homogeneously typed".into())
     })
 }
@@ -1474,7 +1476,7 @@ fn propagate_binary_continuous_nature(
 fn propagate_binary_categorical_nature(
     left_nature: &NatureCategorical, right_nature: &NatureCategorical,
     operator: &BinaryOperators,
-    output_num_columns: i64
+    output_num_columns: i64,
 ) -> Result<Option<Nature>> {
     Ok(Some(Nature::Categorical(NatureCategorical {
         categories: match (left_nature.categories.clone().standardize(output_num_columns)?, right_nature.categories.clone().standardize(output_num_columns)?) {
@@ -1529,16 +1531,16 @@ fn propagate_binary_categorical_nature(
 
 
 fn propagate_binary_group_id(
-    left_property: &ArrayProperties, right_property: &ArrayProperties
+    left_property: &ArrayProperties, right_property: &ArrayProperties,
 ) -> Result<Vec<GroupId>> {
     if left_property.releasable {
-        return Ok(right_property.group_id.clone())
+        return Ok(right_property.group_id.clone());
     }
     if right_property.releasable {
-        return Ok(left_property.group_id.clone())
+        return Ok(left_property.group_id.clone());
     }
     if left_property.group_id != right_property.group_id {
-        return Err("arguments to a binary operation come from different partitions".into())
+        return Err("arguments to a binary operation come from different partitions".into());
     }
     Ok(left_property.group_id.clone())
 }

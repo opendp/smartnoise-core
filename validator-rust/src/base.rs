@@ -851,6 +851,7 @@ pub struct AggregatorProperties {
     pub component: proto::component::Variant,
     pub properties: IndexMap<IndexKey, ValueProperties>,
     pub lipschitz_constants: Value,
+    pub censor_rows: bool
 }
 
 #[derive(Clone, Debug)]

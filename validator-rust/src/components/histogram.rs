@@ -3,11 +3,16 @@ use crate::errors::*;
 use crate::{proto, Warnable, base, Float};
 
 use crate::components::{Component, Sensitivity, Expandable};
-use crate::base::{IndexKey, Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType, NatureContinuous, Nature, Vector1DNull, Jagged};
+use crate::base::{
+    IndexKey, Value, NodeProperties, AggregatorProperties, SensitivitySpace,
+    ValueProperties, DataType, NatureContinuous, Nature, Vector1DNull, Jagged,
+    DataframeProperties
+};
 use crate::utilities::{prepend, get_literal};
 use ndarray::{arr1, Array};
 use indexmap::map::IndexMap;
 use crate::utilities::inference::infer_property;
+use crate::base::ArrayProperties;
 
 
 impl Component for proto::Histogram {
@@ -18,7 +23,7 @@ impl Component for proto::Histogram {
         properties: NodeProperties,
         node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let mut data_property = properties.get::<base::IndexKey>(&"data".into())
+        let mut data_property: ArrayProperties = properties.get::<base::IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
@@ -31,12 +36,6 @@ impl Component for proto::Histogram {
             return Err("data_type must be known".into())
         }
 
-        let categories = data_property.categories()?;
-
-        if categories.num_columns() != 1 {
-            return Err("data must contain one column".into())
-        }
-        data_property.num_records = Some(categories.num_records()[0] as i64);
         let num_columns = data_property.num_columns()?;
 
         // save a snapshot of the state when aggregating
@@ -45,17 +44,59 @@ impl Component for proto::Histogram {
             properties,
             lipschitz_constants: ndarray::Array::from_shape_vec(
                 vec![1, num_columns as usize],
-                (0..num_columns).map(|_| 1.).collect())?.into_dyn().into()
+                (0..num_columns).map(|_| 1.).collect())?.into_dyn().into(),
+            censor_rows: false
         });
+        data_property.dataset_id = Some(node_id as i64);
 
-        data_property.nature = Some(Nature::Continuous(NatureContinuous {
+        let mut count_property = data_property.clone();
+
+        count_property.nature = Some(Nature::Continuous(NatureContinuous {
             lower: Vector1DNull::Int((0..num_columns).map(|_| Some(0)).collect()),
             upper: Vector1DNull::Int((0..num_columns).map(|_| None).collect()),
         }));
-        data_property.data_type = DataType::Int;
-        data_property.dataset_id = Some(node_id as i64);
+        count_property.data_type = DataType::Int;
 
-        Ok(ValueProperties::Array(data_property).into())
+        if let Ok(categories) = data_property.categories() {
+            // properties specific to categorical histograms
+
+            if categories.num_columns() != 1 {
+                return Err("categories must contain one column".into())
+            }
+            count_property.num_records = Some(categories.num_records()[0] as i64);
+
+            Ok(ValueProperties::Array(count_property).into())
+
+        } else {
+            // properties specific to stability histograms
+            if num_columns > 1 {
+                return Err("only one data column is allowed on stability-histograms".into())
+            }
+
+            data_property.num_records = None;
+            count_property.num_records = None;
+
+            data_property.dimensionality = Some(1);
+            count_property.num_records = Some(1);
+
+            data_property.dataset_id = Some(node_id as i64);
+            count_property.dataset_id = Some(node_id as i64);
+
+            if let Some(aggregator) = &mut data_property.aggregator {
+                aggregator.censor_rows = true;
+            }
+            if let Some(aggregator) = &mut count_property.aggregator {
+                aggregator.censor_rows = true;
+            }
+
+            Ok(ValueProperties::Dataframe(DataframeProperties {
+                children: indexmap![
+                    "counts".into() => count_property.into(),
+                    "categories".into() => data_property.into()
+                ]
+            }).into())
+        }
+
     }
 }
 
@@ -135,25 +176,21 @@ impl Expandable for proto::Histogram {
                     .ok_or("data: missing")?.array()
                     .map_err(prepend("data:"))?.clone();
 
-                if data_property.categories().is_err() {
-                    return Err("either edges or categories must be supplied".into())
+                if let Ok(categories) = data_property.categories() {
+                    maximum_id += 1;
+                    let id_categories = maximum_id;
+                    let value = match categories {
+                        Jagged::Int(jagged) => arr1(&jagged[0]).into_dyn().into(),
+                        Jagged::Float(jagged) => arr1(&jagged[0]).into_dyn().into(),
+                        Jagged::Bool(jagged) => arr1(&jagged[0]).into_dyn().into(),
+                        Jagged::Str(jagged) => arr1(&jagged[0]).into_dyn().into(),
+                    };
+                    let (patch_node, categories_release) = get_literal(value, component.submission)?;
+                    expansion.computation_graph.insert(id_categories, patch_node);
+                    expansion.properties.insert(id_categories, infer_property(&categories_release.value, None)?);
+                    expansion.releases.insert(id_categories, categories_release);
+                    component.insert_argument(&"categories".into(), id_categories);
                 }
-
-                maximum_id += 1;
-                let id_categories = maximum_id;
-                let categories = properties.get::<IndexKey>(&"data".into())
-                    .ok_or("data: missing")?.array()?.categories()?;
-                let value = match categories {
-                    Jagged::Int(jagged) => arr1(&jagged[0]).into_dyn().into(),
-                    Jagged::Float(jagged) => arr1(&jagged[0]).into_dyn().into(),
-                    Jagged::Bool(jagged) => arr1(&jagged[0]).into_dyn().into(),
-                    Jagged::Str(jagged) => arr1(&jagged[0]).into_dyn().into(),
-                };
-                let (patch_node, categories_release) = get_literal(value, component.submission)?;
-                expansion.computation_graph.insert(id_categories, patch_node);
-                expansion.properties.insert(id_categories, infer_property(&categories_release.value, None)?);
-                expansion.releases.insert(id_categories, categories_release);
-                component.insert_argument(&"categories".into(), id_categories);
             }
 
             (Some(_), Some(_)) => return Err("either edges or categories must be supplied".into())
@@ -180,6 +217,8 @@ impl Sensitivity for proto::Histogram {
 
         data_property.assert_is_not_aggregated()?;
 
+
+
         match sensitivity_type {
             SensitivitySpace::KNorm(k) => {
 
@@ -189,24 +228,24 @@ impl Sensitivity for proto::Histogram {
                     .ok_or_else(|| Error::from("neighboring definition must be either \"AddRemove\" or \"Substitute\""))?;
 
                 // when categories are defined, a disjoint group by query is performed
-                let categories_length = data_property.categories()?.num_records()[0];
+                let categories_length = data_property.categories().ok().map(|v| v.num_records()[0]);
 
                 let num_records = data_property.num_records;
 
                 // SENSITIVITY DERIVATIONS
                 let sensitivity: Float = match (neighboring_type, categories_length, num_records) {
                     // one category, known N. Applies to any neighboring type.
-                    (_, 1, Some(_)) => 0.,
+                    (_, Some(1), Some(_)) => 0.,
 
                     // one category, unknown N. The sensitivity here is really zero-- artificially raised
-                    (Substitute, 1, None) => 1.,
+                    (Substitute, Some(1), None) => 1.,
                     // two categories, known N. Knowing N determines the second category
-                    (Substitute, 2, Some(_)) => 1.,
+                    (Substitute, Some(2), Some(_)) => 1.,
 
                     // one category, unknown N
-                    (AddRemove, 1, None) => 1.,
+                    (AddRemove, Some(1), None) => 1.,
                     // two categories, known N
-                    (AddRemove, 2, Some(_)) => 1.,
+                    (AddRemove, Some(2), Some(_)) => 1.,
 
                     // over two categories, N either known or unknown. Record may switch from one bin to another.
                     (Substitute, _, _) => match k {
@@ -219,15 +258,11 @@ impl Sensitivity for proto::Histogram {
                 };
 
                 let num_columns = data_property.num_columns()?;
-                let num_records = categories_length;
 
                 Ok(Array::from_shape_vec(
-                    vec![num_records as usize, num_columns as usize],
-                    (0..num_records)
-                        .map(|_| (0..num_columns)
-                            .map(|_| sensitivity)
-                            .collect::<Vec<Float>>())
-                        .flatten()
+                    vec![1, num_columns as usize],
+                    (0..num_columns)
+                        .map(|_| sensitivity)
                         .collect::<Vec<Float>>())?.into())
             },
             _ => Err("Histogram sensitivity is only implemented for KNorm".into())

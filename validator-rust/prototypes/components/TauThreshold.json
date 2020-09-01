@@ -1,0 +1,16 @@
+{
+  "arguments": {
+    "data": {
+      "type_value": "Array"
+    }
+  },
+  "id": "TauThreshold",
+  "name": "tau_threshold",
+  "options": {},
+  "return": {
+    "type_value": "Array",
+    "description": "Constant to use for thresholding"
+  },
+  "description": "Calculates the tau threshold constant to use in stability histograms",
+  "proto_id": 64
+}

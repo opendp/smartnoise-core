@@ -48,7 +48,8 @@ impl Component for proto::Quantile {
                         properties,
                         lipschitz_constants: ndarray::Array::from_shape_vec(
                             vec![1, num_columns as usize],
-                            (0..num_columns).map(|_| 1.).collect())?.into_dyn().into()
+                            (0..num_columns).map(|_| 1.).collect())?.into_dyn().into(),
+                        censor_rows: false
                     }),
                     nature: None,
                     data_type: DataType::Float,
@@ -63,7 +64,8 @@ impl Component for proto::Quantile {
                     properties,
                     lipschitz_constants: ndarray::Array::from_shape_vec(
                         vec![1, num_columns as usize],
-                        (0..num_columns).map(|_| 1.).collect())?.into_dyn().into()
+                        (0..num_columns).map(|_| 1.).collect())?.into_dyn().into(),
+                    censor_rows: false
                 });
 
                 data_property.num_records = Some(1);

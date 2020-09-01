@@ -1,0 +1,29 @@
+{
+  "arguments": {
+    "left": {
+      "type_value": "Array"
+    },
+    "right": {
+      "type_value": "Array"
+    },
+    "left_on": {
+      "type_value": "Array"
+    },
+    "right_on": {
+      "type_value": "Array"
+    }
+  },
+  "id": "Join",
+  "name": "join",
+  "options": {
+    "k": {
+      "type_proto": "uint32",
+      "type_rust": "u32",
+      "default_python": "1",
+      "description": "Maximum number of records that can be joined together for each matching key."
+    }
+  },
+  "return": {},
+  "description": "Join the left array with the right array, or the left dataframe with the right dataframe",
+  "proto_id": 67
+}

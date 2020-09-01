@@ -1,0 +1,27 @@
+{
+  "arguments": {
+    "data": {
+      "type_value": "Array"
+    }
+  },
+  "id": "StabilityMechanism",
+  "name": "stability_mechanism",
+  "options": {
+    "mechanism": {
+      "type_proto": "string",
+      "type_rust": "String",
+      "default_python": "'Automatic'",
+      "default_rust": "String::from(\"Automatic\")",
+      "description": "Privatizing mechanism to use. One of [`Automatic`, `SimpleGeometric`, `Laplace`, `Gaussian`]."
+    },
+    "privacy_usage": {
+      "type_proto": "repeated PrivacyUsage",
+      "type_rust": "Vec<proto::PrivacyUsage>",
+      "default_python": "None",
+      "description": "Object describing the type and amount of privacy to be used for the mechanism release."
+    }
+  },
+  "return": {},
+  "description": "Calculates counts for an unknown set of categories.",
+  "proto_id": 65
+}

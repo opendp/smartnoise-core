@@ -2,8 +2,8 @@ use crate::errors::*;
 
 use crate::{proto, base, Warnable};
 
-use crate::components::{Component, Expandable, Sensitivity, Mechanism};
-use crate::base::{Value, SensitivitySpace, ValueProperties, DataType, ArrayProperties, NodeProperties, IndexKey};
+use crate::components::{Component, Expandable, Sensitivity};
+use crate::base::{Value, SensitivitySpace, ValueProperties, DataType, ArrayProperties, IndexKey};
 use crate::utilities::{prepend, get_literal, get_argument};
 use crate::utilities::privacy::{privacy_usage_check};
 use itertools::Itertools;
@@ -133,25 +133,5 @@ impl Expandable for proto::ExponentialMechanism {
         expansion.computation_graph.insert(component_id, noise_component);
 
         Ok(expansion)
-    }
-}
-
-impl Mechanism for proto::ExponentialMechanism {
-    fn get_privacy_usage(
-        &self,
-        privacy_definition: &proto::PrivacyDefinition,
-        release_usage: Option<&Vec<proto::PrivacyUsage>>,
-        properties: &NodeProperties,
-    ) -> Result<Option<Vec<proto::PrivacyUsage>>> {
-        let data_property = properties.get::<IndexKey>(&"data".into())
-            .ok_or("data: missing")?.array()
-            .map_err(prepend("data:"))?;
-
-
-        Some(release_usage.unwrap_or_else(|| &self.privacy_usage).iter()
-            .zip(data_property.c_stability.iter())
-            .map(|(usage, c_stab)|
-                usage.effective_to_actual(1., *c_stab as f64, privacy_definition.group_size))
-            .collect::<Result<Vec<proto::PrivacyUsage>>>()).transpose()
     }
 }

@@ -49,7 +49,7 @@ jobs:
     # switch to master after initial version
     #- if [ "$TRAVIS_BRANCH" == "ms_readme" ]; then
     - if [ "$TRAVIS_BRANCH" == "master" ]; then
-        bash build_docs.sh;
+        bash scripts/build_docs.sh;
       fi;
     # -------------------------------------------
     # Deploy the Rust documentation to

@@ -248,7 +248,8 @@ pub fn parse_array_properties(value: proto::ArrayProperties) -> ArrayProperties 
         aggregator: value.aggregator.map(|aggregator| AggregatorProperties {
             component: aggregator.component.unwrap().variant.unwrap(),
             properties: parse_argument_properties(aggregator.properties.unwrap()),
-            lipschitz_constants: parse_value(aggregator.lipschitz_constants.unwrap())
+            lipschitz_constants: parse_value(aggregator.lipschitz_constants.unwrap()),
+            censor_rows: aggregator.censor_rows
         }),
         nature: value.nature.map(|nature| match nature {
             proto::array_properties::Nature::Continuous(continuous) =>
@@ -277,7 +278,8 @@ pub fn parse_jagged_properties(value: proto::JaggedProperties) -> JaggedProperti
         aggregator: value.aggregator.map(|aggregator| AggregatorProperties {
             component: aggregator.component.unwrap().variant.unwrap(),
             properties: parse_argument_properties(aggregator.properties.unwrap()),
-            lipschitz_constants: parse_value(aggregator.lipschitz_constants.unwrap())
+            lipschitz_constants: parse_value(aggregator.lipschitz_constants.unwrap()),
+            censor_rows: aggregator.censor_rows
         }),
         nature: value.nature.map(|nature| match nature {
             proto::jagged_properties::Nature::Continuous(continuous) =>
@@ -560,6 +562,7 @@ pub fn serialize_array_properties(value: ArrayProperties) -> proto::ArrayPropert
             }),
             properties: Some(serialize_argument_properties(aggregator.properties)),
             lipschitz_constants: Some(serialize_value(aggregator.lipschitz_constants)),
+            censor_rows: aggregator.censor_rows
         }),
         data_type: serialize_data_type(data_type) as i32,
         dataset_id: Some(serialize_i64_null(dataset_id)),
@@ -595,7 +598,8 @@ pub fn serialize_jagged_properties(value: JaggedProperties) -> proto::JaggedProp
                 arguments: Some(proto::ArgumentNodeIds::default()),
             }),
             properties: Some(serialize_argument_properties(aggregator.properties)),
-            lipschitz_constants: Some(serialize_value(aggregator.lipschitz_constants))
+            lipschitz_constants: Some(serialize_value(aggregator.lipschitz_constants)),
+            censor_rows: aggregator.censor_rows
         }),
         data_type: serialize_data_type(data_type) as i32
     }

@@ -59,6 +59,7 @@ impl Component for proto::Union {
                                 .ok_or_else(|| Error::from("all arguments to union must be aggregated"))?
                                 .iter().map(|v| Ok(v.lipschitz_constants.ref_array()?.ref_float()?.view()))
                                 .collect::<Result<Vec<ArrayViewD<Float>>>>()?)?.into(),
+                        censor_rows: false
                     })
                 },
                 // TODO: merge natures

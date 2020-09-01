@@ -90,6 +90,7 @@ message AggregatorProperties {
     Component component = 1;
     ArgumentProperties properties = 2;
     Value lipschitz_constants = 3;
+    bool censor_rows = 4;
 }
 
 /// derived properties for the Value::Array

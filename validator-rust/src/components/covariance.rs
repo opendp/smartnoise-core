@@ -44,7 +44,8 @@ impl Component for proto::Covariance {
                 properties,
                 lipschitz_constants: ndarray::Array::from_shape_vec(
                     vec![1, num_columns as usize],
-                    (0..num_columns).map(|_| 1.).collect())?.into_dyn().into()
+                    (0..num_columns).map(|_| 1.).collect())?.into_dyn().into(),
+                censor_rows: false
             });
 
             data_property.num_records = Some(1);
@@ -96,7 +97,8 @@ impl Component for proto::Covariance {
                 properties,
                 lipschitz_constants: ndarray::Array::from_shape_vec(
                     vec![1, num_columns as usize],
-                    (0..num_columns).map(|_| 1.).collect())?.into_dyn().into()
+                    (0..num_columns).map(|_| 1.).collect())?.into_dyn().into(),
+                censor_rows: false
             });
 
             left_property.nature = None;

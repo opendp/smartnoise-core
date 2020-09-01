@@ -66,7 +66,8 @@ impl Component for proto::Count {
         data_property.aggregator = Some(AggregatorProperties {
             component: proto::component::Variant::Count(self.clone()),
             properties,
-            lipschitz_constants: ndarray::Array::from_shape_vec(vec![1, 1], vec![1.0])?.into_dyn().into()
+            lipschitz_constants: ndarray::Array::from_shape_vec(vec![1, 1], vec![1.0])?.into_dyn().into(),
+            censor_rows: false
         });
         data_property.c_stability = c_stability;
 

@@ -556,7 +556,9 @@ pub fn expand_mechanism(
         proto::component::Variant::GaussianMechanism(variant) => variant.privacy_usage = effective_usages,
         proto::component::Variant::ExponentialMechanism(variant) => variant.privacy_usage = effective_usages,
         proto::component::Variant::SimpleGeometricMechanism(variant) => variant.privacy_usage = effective_usages,
-        _ => ()
+        proto::component::Variant::StabilityMechanism(variant) => variant.privacy_usage = effective_usages,
+        // if this is ever reached, we have an unregistered mechanism
+        _ => unreachable!()
     };
     expansion.computation_graph.insert(component_id, noise_component);
 

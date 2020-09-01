@@ -1,10 +1,10 @@
 use crate::errors::*;
 
-use crate::components::{Sensitivity, Accuracy, Mechanism};
+use crate::components::{Sensitivity, Accuracy};
 use crate::{proto, base, Warnable};
 
 use crate::components::{Component, Expandable};
-use crate::base::{Value, SensitivitySpace, ValueProperties, DataType, NodeProperties, IndexKey};
+use crate::base::{Value, SensitivitySpace, ValueProperties, DataType, IndexKey};
 use crate::utilities::{prepend, expand_mechanism};
 use crate::utilities::privacy::{spread_privacy_usage, get_epsilon, privacy_usage_check};
 use itertools::Itertools;
@@ -50,6 +50,10 @@ impl Component for proto::SimpleGeometricMechanism {
         let aggregator = data_property.aggregator.clone()
             .ok_or_else(|| Error::from("aggregator: missing"))?;
 
+        if aggregator.censor_rows {
+            return Err("cannot use the simple geometric mechanism on data that must be censored".into())
+        }
+
         // sensitivity must be computable
         aggregator.component.compute_sensitivity(
             privacy_definition,
@@ -91,26 +95,6 @@ impl Expandable for proto::SimpleGeometricMechanism {
             component_id,
             maximum_id
         )
-    }
-}
-
-impl Mechanism for proto::SimpleGeometricMechanism {
-    fn get_privacy_usage(
-        &self,
-        privacy_definition: &proto::PrivacyDefinition,
-        release_usage: Option<&Vec<proto::PrivacyUsage>>,
-        properties: &NodeProperties
-    ) -> Result<Option<Vec<proto::PrivacyUsage>>> {
-
-        let data_property = properties.get::<IndexKey>(&"data".into())
-            .ok_or("data: missing")?.array()
-            .map_err(prepend("data:"))?;
-
-        Some(release_usage.unwrap_or_else(|| &self.privacy_usage).iter()
-            .zip(data_property.c_stability.iter())
-            .map(|(usage, c_stab)|
-                usage.effective_to_actual(1., *c_stab as f64, privacy_definition.group_size))
-            .collect::<Result<Vec<proto::PrivacyUsage>>>()).transpose()
     }
 }
 

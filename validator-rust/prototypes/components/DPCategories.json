@@ -1,0 +1,20 @@
+{
+  "arguments": {
+    "data": {
+      "type_value": "Array"
+    }
+  },
+  "id": "DPCategories",
+  "name": "dp_categories",
+  "options": {
+    "privacy_usage": {
+      "type_proto": "repeated PrivacyUsage",
+      "type_rust": "Vec<proto::PrivacyUsage>",
+      "default_python": "None",
+      "description": "Object describing the type and amount of privacy to be used for the mechanism release."
+    }
+  },
+  "return": {},
+  "description": "Retrieve the most frequent categories. Use DPHistogram without supplying categories to also get the counts.",
+  "proto_id": 66
+}
