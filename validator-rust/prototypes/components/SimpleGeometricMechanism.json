@@ -5,10 +5,12 @@
       "description": "Result to be released privately via the Geometric mechanism."
     },
     "lower": {
-      "type_value": "Array"
+      "type_value": "Array",
+      "default_python": "None"
     },
     "upper": {
-      "type_value": "Array"
+      "type_value": "Array",
+      "default_python": "None"
     }
   },
   "id": "SimpleGeometricMechanism",

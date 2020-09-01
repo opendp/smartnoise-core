@@ -5,10 +5,12 @@ use crate::{proto, base, Warnable};
 
 use crate::components::{Component, Expandable};
 use crate::base::{Value, SensitivitySpace, ValueProperties, DataType, NodeProperties, IndexKey};
-use crate::utilities::{prepend, expand_mechanism};
+use crate::utilities::{prepend, expand_mechanism, get_literal};
 use crate::utilities::privacy::{spread_privacy_usage, get_epsilon, privacy_usage_check};
 use itertools::Itertools;
 use indexmap::map::IndexMap;
+use crate::utilities::inference::infer_property;
+use ndarray::arr1;
 
 
 impl Component for proto::SimpleGeometricMechanism {
@@ -25,18 +27,6 @@ impl Component for proto::SimpleGeometricMechanism {
 
         if privacy_definition.group_size == 0 {
             return Err("group size must be greater than zero".into())
-        }
-
-        if properties.get::<IndexKey>(&"lower".into())
-            .ok_or("lower: missing")?.array()
-            .map_err(prepend("lower:"))?.data_type != DataType::Int {
-            return Err("lower: must be of integer atomic type".into());
-        }
-
-        if properties.get::<IndexKey>(&"upper".into())
-            .ok_or("upper: missing")?.array()
-            .map_err(prepend("upper:"))?.data_type != DataType::Int {
-            return Err("upper: must be of integer atomic type".into());
         }
 
         let mut data_property = properties.get::<IndexKey>(&"data".into())
@@ -77,12 +67,26 @@ impl Expandable for proto::SimpleGeometricMechanism {
         &self,
         privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
-        _public_arguments: &IndexMap<IndexKey, &Value>,
+        public_arguments: &IndexMap<IndexKey, &Value>,
         properties: &base::NodeProperties,
         component_id: u32,
-        maximum_id: u32,
+        mut maximum_id: u32,
     ) -> Result<base::ComponentExpansion> {
-        expand_mechanism(
+        let lower_id = if public_arguments.contains_key::<IndexKey>(&"lower".into()) {
+            None
+        } else {
+            maximum_id += 1;
+            Some(maximum_id)
+        };
+
+        let upper_id = if public_arguments.contains_key::<IndexKey>(&"upper".into()) {
+            None
+        } else {
+            maximum_id += 1;
+            Some(maximum_id)
+        };
+
+        let mut expansion = expand_mechanism(
             &SensitivitySpace::KNorm(1),
             privacy_definition,
             self.privacy_usage.as_ref(),
@@ -90,7 +94,32 @@ impl Expandable for proto::SimpleGeometricMechanism {
             properties,
             component_id,
             maximum_id
-        )
+        )?;
+
+        if lower_id.is_some() || upper_id.is_some() {
+            let mut component = expansion.computation_graph.get(&component_id).unwrap().clone();
+
+            let data_property = properties.get::<IndexKey>(&"data".into())
+                .ok_or("data: missing")?.array()?.clone();
+
+            if let Some(lower_id) = lower_id {
+                let (patch_node, release) = get_literal(arr1(&data_property.lower_int()?).into_dyn().into(), component.submission)?;
+                expansion.computation_graph.insert(lower_id, patch_node);
+                expansion.properties.insert(lower_id, infer_property(&release.value, None)?);
+                expansion.releases.insert(lower_id, release);
+                component.insert_argument(&"lower".into(), lower_id);
+            }
+
+            if let Some(upper_id) = upper_id {
+                let (patch_node, release) = get_literal(arr1(&data_property.upper_int()?).into_dyn().into(), component.submission)?;
+                expansion.computation_graph.insert(upper_id, patch_node);
+                expansion.properties.insert(upper_id, infer_property(&release.value, None)?);
+                expansion.releases.insert(upper_id, release);
+                component.insert_argument(&"upper".into(), upper_id);
+            }
+            expansion.computation_graph.insert(component_id, component);
+        }
+        Ok(expansion)
     }
 }
 

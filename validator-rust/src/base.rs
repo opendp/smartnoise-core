@@ -734,7 +734,9 @@ impl ArrayProperties {
             Some(value) => match value {
                 Nature::Continuous(continuous) => match continuous.lower {
                     Vector1DNull::Float(bound) => Ok(bound),
-                    _ => Err("lower must be composed of floats".into())
+                    Vector1DNull::Int(bound) => Ok(bound.into_iter()
+                        .map(|v_opt| v_opt.map(|v| v as Float)).collect()),
+                    _ => Err("lower must be numeric".into())
                 },
                 _ => Err("lower must be an array".into())
             },
@@ -751,7 +753,9 @@ impl ArrayProperties {
             Some(value) => match value {
                 Nature::Continuous(continuous) => match continuous.upper {
                     Vector1DNull::Float(bound) => Ok(bound),
-                    _ => Err("upper must be composed of floats".into())
+                    Vector1DNull::Int(bound) => Ok(bound.into_iter()
+                        .map(|v_opt| v_opt.map(|v| v as Float)).collect()),
+                    _ => Err("upper must be numeric".into())
                 },
                 _ => Err("upper must be an array".into())
             },

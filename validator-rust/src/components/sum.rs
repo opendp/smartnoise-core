@@ -3,7 +3,7 @@ use crate::errors::*;
 use crate::{proto, base, Warnable, Float};
 
 use crate::components::{Component, Sensitivity};
-use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType, IndexKey};
+use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType, IndexKey, Vector1DNull, Nature, NatureContinuous};
 use crate::utilities::prepend;
 use ndarray::prelude::*;
 use indexmap::map::IndexMap;
@@ -40,7 +40,22 @@ impl Component for proto::Sum {
         }
 
         data_property.num_records = Some(1);
-        data_property.nature = None;
+        data_property.nature = data_property.num_records.and_then(|n| Some(Nature::Continuous(NatureContinuous {
+            lower: match data_property.data_type {
+                DataType::Int => Vector1DNull::Int(data_property
+                    .lower_int().ok()?.iter().map(|l| Some(l * n)).collect()),
+                DataType::Float => Vector1DNull::Float(data_property
+                    .lower_float().ok()?.iter().map(|l| Some(l * (n as Float))).collect()),
+                _ => unreachable!()
+            },
+            upper: match data_property.data_type {
+                DataType::Int => Vector1DNull::Int(data_property
+                    .upper_int().ok()?.iter().map(|u| Some(u * n)).collect()),
+                DataType::Float => Vector1DNull::Float(data_property
+                    .upper_float().ok()?.iter().map(|u| Some(u * (n as Float))).collect()),
+                _ => unreachable!()
+            },
+        })));
         data_property.dataset_id = Some(node_id as i64);
 
         Ok(ValueProperties::Array(data_property).into())
