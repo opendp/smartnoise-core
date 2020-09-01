@@ -1,7 +1,7 @@
 use crate::errors::*;
 
 use crate::{proto, base, Warnable};
-use crate::components::{Expandable, Report, Component};
+use crate::components::{Report, Component};
 
 use crate::base::{NodeProperties, Value, ValueProperties, DataType, IndexKey, Array};
 use crate::utilities::json::{JSONRelease, value_to_json, privacy_usage_to_json, AlgorithmInfo};
@@ -28,33 +28,6 @@ impl Component for proto::DpGumbelMedian {
             data_property.assert_is_not_aggregated()?;
         }
         Ok(ValueProperties::Array(data_property).into())
-
-    }
-}
-
-impl Expandable for proto::DpGumbelMedian {
-    fn expand_component(
-        &self,
-        _privacy_definition: &Option<proto::PrivacyDefinition>,
-        component: &proto::Component,
-        _public_arguments: &IndexMap<IndexKey, &Value>,
-        _properties: &base::NodeProperties,
-        component_id: u32,
-        _maximum_id: u32,
-    ) -> Result<base::ComponentExpansion> {
-        let mut expansion = base::ComponentExpansion::default();
-
-        expansion.computation_graph.insert(component_id, proto::Component {
-            arguments: component.arguments.clone(),
-            variant: Some(proto::component::Variant::DpGumbelMedian(proto::DpGumbelMedian {
-                privacy_usage: self.privacy_usage.clone()
-            })),
-            omit: true,
-            submission: component.submission,
-        });
-        expansion.traversal.push(component_id);
-
-        Ok(expansion)
     }
 }
 

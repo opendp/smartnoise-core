@@ -18,32 +18,13 @@ impl Component for proto::TheilSen {
         node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
 
-        let num_records = Some(0);
-
-        let mut output_properties = ArrayProperties {
-            num_records,
-            num_columns: Some(2),
-            nullity: false,
-            releasable: false, // x.releasable && y.releasable,
-            c_stability: Vec::new(),
-            aggregator: None,
-            nature: None,
-            data_type: DataType::Float,
-            dataset_id: None,
-            is_not_empty: true,
-            dimensionality: Some(1),
-
-            // TODO
-            group_id: Vec::new(),
-        };
-
         let data_property_x = properties.get::<IndexKey>(&"data_x".into())
-            .ok_or("data x: missing")?.array()
-            .map_err(prepend("data x:"))?.clone();
+            .ok_or("data_x: missing")?.array()
+            .map_err(prepend("data_x:"))?.clone();
 
         let data_property_y = properties.get::<IndexKey>(&"data_y".into())
-            .ok_or("data y: missing")?.array()
-            .map_err(prepend("data y:"))?.clone();
+            .ok_or("data_y: missing")?.array()
+            .map_err(prepend("data_y:"))?.clone();
 
         if !data_property_x.releasable {
             data_property_x.assert_is_not_aggregated()?;
@@ -56,15 +37,15 @@ impl Component for proto::TheilSen {
 
 
         if data_property_x.data_type != DataType::Float {
-            return Err("data x: atomic type must be float".into());
+            return Err("data_x: atomic type must be float".into());
         }
 
         if data_property_y.data_type != DataType::Float {
-            return Err("data y: atomic type must be float".into());
+            return Err("data_y: atomic type must be float".into());
         }
 
         if data_property_x.num_records != data_property_y.num_records {
-            return Err("data x and data y: must be same length".into());
+            return Err("data_x and data_y: must be same length".into());
         }
 
         let num_records = match self.implementation.to_lowercase().as_str() {
@@ -73,18 +54,26 @@ impl Component for proto::TheilSen {
              _ => return Err("Invalid implementation passed. \
                      Valid values are theil-sen and theil-sen-k-match".into())
         };
-        // let num_records = 1;
-        output_properties.num_records = Some(num_records);
-        output_properties.dataset_id = Some(node_id as i64);
-        output_properties.releasable = data_property_x.releasable && data_property_y.releasable;
-        output_properties.group_id = propagate_binary_group_id(&data_property_x, &data_property_y)?;
-        output_properties.c_stability = data_property_x.c_stability.iter().zip(data_property_y.c_stability.iter()).map(|(l, r)| l * r).collect();
 
-        let result: ValueProperties = output_properties.into();
+        let output_properties = ArrayProperties {
+            num_records: Some(num_records),
+            num_columns: Some(2),
+            nullity: false,
+            releasable: data_property_x.releasable && data_property_y.releasable,
+            c_stability: data_property_x.c_stability.iter().zip(data_property_y.c_stability.iter()).map(|(l, r)| l * r).collect(),
+            aggregator: None,
+            nature: None,
+            data_type: DataType::Float,
+            dataset_id: Some(node_id as i64),
+            is_not_empty: true,
+            dimensionality: Some(1),
+            group_id: propagate_binary_group_id(&data_property_x, &data_property_y)?,
+        };
 
         Ok(ValueProperties::Dataframe(DataframeProperties {
-            children: indexmap![IndexKey::from("slope") => result.clone() as ValueProperties,
-                                IndexKey::from("intercept") => result]
+            children: indexmap![
+                IndexKey::from("slope") => output_properties.clone().into(),
+                IndexKey::from("intercept") => output_properties.into()]
         }).into())
     }
 }

@@ -25,7 +25,6 @@ pub mod filter;
 pub mod histogram;
 pub mod impute;
 pub mod index;
-pub mod linreg_error;
 pub mod linreg_noisystats;
 pub mod linreg_theilsen;
 pub mod materialize;

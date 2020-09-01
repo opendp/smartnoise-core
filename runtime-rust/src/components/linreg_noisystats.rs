@@ -1,20 +1,23 @@
+use core::iter::Iterator;
+
 /// Beginnings of DP Linear Regression
 /// Borrowing heavily from the crate 'linreg'
 
-/// use num_traits::float::{Float, FloatCore};
-
-use core::iter::Iterator;
-use crate::utilities::mechanisms::laplace_mechanism;
+use whitenoise_validator::errors::*;
 use whitenoise_validator::Float;
 
-use crate::components::linreg_error::Error;
+use crate::utilities::mechanisms::laplace_mechanism;
 
 /// Calculates "NoisyStat", which adds Laplace noise to the OLS sufficient statistics
 ///
-fn _noisy_stats_linreg(data_x: Vec<Float>, data_y: Vec<Float>, epsilon: Float, enforce_constant_time: bool) -> Result<(Float, Float), Error>
-{
+fn noisy_stats_linreg(
+    data_x: Vec<Float>, data_y: Vec<Float>,
+    epsilon: Float, enforce_constant_time: bool,
+) -> Result<(Float, Float)> {
+    if data_x.len() != data_y.len() {
+        return Err("predictors and targets must share same length".into())
+    }
     let data_size: Float = data_x.len() as Float;
-    assert_eq!(data_size, data_y.len() as Float);
 
     let mean = |data: &Vec<Float>| data.iter().sum::<Float>() / data.len() as Float;
 
@@ -23,8 +26,8 @@ fn _noisy_stats_linreg(data_x: Vec<Float>, data_y: Vec<Float>, epsilon: Float, e
 
     let delta: Float = 1.0 - 1.0 / data_size;
 
-    let laplace_1: Float = laplace_mechanism(epsilon, 3.0 * delta, enforce_constant_time).unwrap();
-    let laplace_2: Float = laplace_mechanism(epsilon, 3.0 * delta, enforce_constant_time).unwrap();
+    let laplace_1: Float = laplace_mechanism(epsilon, 3.0 * delta, enforce_constant_time)?;
+    let laplace_2: Float = laplace_mechanism(epsilon, 3.0 * delta, enforce_constant_time)?;
 
     let xxm2: f64 = data_x.iter()
         .map(|x| (x - x_mean).powi(2))
@@ -38,14 +41,14 @@ fn _noisy_stats_linreg(data_x: Vec<Float>, data_y: Vec<Float>, epsilon: Float, e
 
     let delta_2 = (1.0 / data_size) * (1.0 + slope.abs());
 
-    let laplace_3: Float = laplace_mechanism(epsilon, 3.0 * delta_2, false).unwrap();
+    let laplace_3: Float = laplace_mechanism(epsilon, 3.0 * delta_2, enforce_constant_time)?;
 
     let intercept = y_mean - slope * x_mean + laplace_3;
 
 
     // we check for divide-by-zero after the fact
-    if slope.is_nan() {
-        return Err(Error::TooSteep);
+    if !slope.is_finite() {
+        return Err("Too Steep".into());
     }
 
     Ok((slope, intercept))
@@ -53,9 +56,11 @@ fn _noisy_stats_linreg(data_x: Vec<Float>, data_y: Vec<Float>, epsilon: Float, e
 
 /// Calculate noisy linreg, then return "quartiles" consistent with implementation from paper
 ///
-pub fn noisy_stats(data_x: Vec<Float>, data_y: Vec<Float>, epsilon: Float, enforce_constant_time: bool) -> Result<(Float, Float), Error>
-{
-    let (slope, intercept) = _noisy_stats_linreg(data_x, data_y, epsilon, enforce_constant_time).unwrap();
+pub fn noisy_stats(
+    data_x: Vec<Float>, data_y: Vec<Float>,
+    epsilon: Float, enforce_constant_time: bool,
+) -> Result<(Float, Float)> {
+    let (slope, intercept) = noisy_stats_linreg(data_x, data_y, epsilon, enforce_constant_time)?;
     Ok((0.25 * slope + intercept, 0.75 * slope + intercept))
 }
 
@@ -73,7 +78,7 @@ mod tests {
         let y: Vec<Float> = vec![2.0, 4.0, 5.0, 6.0, 7.0, 9.0, 10.0];
         let epsilon = 0.1;
         let enforce_constant_time = false;
-        _noisy_stats_linreg(x, y, epsilon, enforce_constant_time);
+        noisy_stats_linreg(x, y, epsilon, enforce_constant_time).unwrap();
     }
 
     #[test]
@@ -82,7 +87,7 @@ mod tests {
         let y: Vec<Float> = vec![2.0, 4.0, 5.0, 6.0, 7.0];
         let epsilon = 0.1;
         let enforce_constant_time = false;
-        let result = _noisy_stats_linreg(x, y, epsilon, enforce_constant_time);
+        let result = noisy_stats_linreg(x, y, epsilon, enforce_constant_time);
 
         // This is, admittedly, not the greatest test, but it does ensure that noisy_stats
         // is returning values without panicking.
@@ -99,7 +104,7 @@ mod tests {
             let true_intercept = 0.0;
 
             let enforce_constant_time = false;
-            let (slope, intercept) = _noisy_stats_linreg(x, y, *epsilon, enforce_constant_time).unwrap();
+            let (slope, intercept) = noisy_stats_linreg(x, y, *epsilon, enforce_constant_time).unwrap();
             let slope_diff = (slope - true_slope).abs();
             let intercept_diff = (intercept - true_intercept).abs();
 
@@ -126,7 +131,7 @@ mod tests {
 
         // println!("{} {} {}", base_p75, p_75, 1.0/epsilon);
 
-        assert!((base_p25 - p_25).abs() < 1.0/epsilon);
-        assert!((base_p75 - p_75).abs() < 1.0/epsilon);
+        assert!((base_p25 - p_25).abs() < 1.0 / epsilon);
+        assert!((base_p75 - p_75).abs() < 1.0 / epsilon);
     }
 }
