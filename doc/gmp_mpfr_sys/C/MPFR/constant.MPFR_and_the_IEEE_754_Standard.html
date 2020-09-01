@@ -1,0 +1,58 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `MPFR_and_the_IEEE_754_Standard` constant in crate `gmp_mpfr_sys`."><meta name="keywords" content="rust, rustlang, rust-lang, MPFR_and_the_IEEE_754_Standard"><title>gmp_mpfr_sys::C::MPFR::MPFR_and_the_IEEE_754_Standard - Rust</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc constant"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../gmp_mpfr_sys/index.html'><div class='logo-container'><img src='https://tspiteri.gitlab.io/gmp-mpfr-sys/rug.svg' alt='logo'></div></a><div class="sidebar-elems"><p class='location'><a href='../../index.html'>gmp_mpfr_sys</a>::<wbr><a href='../index.html'>C</a>::<wbr><a href='index.html'>MPFR</a></p><script>window.sidebarCurrent = {name: 'MPFR_and_the_IEEE_754_Standard', ty: 'constant', relpath: ''};</script><script defer src="sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+                <a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../../../src/gmp_mpfr_sys/C.rs.html#204' title='goto source code'>[src]</a></span><span class='in-band'>Constant <a href='../../index.html'>gmp_mpfr_sys</a>::<wbr><a href='../index.html'>C</a>::<wbr><a href='index.html'>MPFR</a>::<wbr><a class="constant" href=''>MPFR_and_the_IEEE_754_Standard</a></span></h1><pre class='rust const'>pub const MPFR_and_the_IEEE_754_Standard: ();</pre><div class='docblock'><p>This constant is a place-holder for documentation; do not use it in code.</p>
+<hr />
+<div><span id="start"></span></div>
+<span id="MPFR-and-the-IEEE-754-Standard"></span><div class="header">
+<p>
+Next: <a href="constant.Contributors.html#start" accesskey="n" rel="next">Contributors</a>, Previous: <a href="constant.API_Compatibility.html#API-Compatibility" accesskey="p" rel="prev">API Compatibility</a>, Up: <a href="index.html#start" accesskey="u" rel="up">Top</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="MPFR-and-the-IEEE-754-Standard-1"></span><h2 class="chapter">7 MPFR and the IEEE 754 Standard</h2>
+<p>This section describes differences between MPFR and the IEEE&nbsp;754
+standard, and behaviors that are not specified yet in IEEE&nbsp;754.
+</p>
+<p>The MPFR numbers do not include subnormals. The reason is that subnormals
+are less useful than in IEEE&nbsp;754 as the default exponent range in MPFR
+is large and they would have made the implementation more complex.
+However, subnormals can be emulated using <code>mpfr_subnormalize</code>.
+</p>
+<p>MPFR has a single NaN. The behavior is similar either to a signaling NaN or
+to a quiet NaN, depending on the context. For any function returning a NaN
+(either produced or propagated), the NaN flag is set, while in IEEE&nbsp;754,
+some operations are quiet (even on a signaling NaN).
+</p>
+<p>The <code>mpfr_rec_sqrt</code> function differs from IEEE&nbsp;754 on -0,
+where it gives +Inf (like for +0), following the usual limit rules,
+instead of -Inf.
+</p>
+<p>The <code>mpfr_root</code> function predates IEEE&nbsp;754-2008 and behaves
+differently from its rootn operation.
+It is deprecated and <code>mpfr_rootn_ui</code> should be used instead.
+</p>
+<p>Operations with an unsigned zero: For functions taking an argument of
+integer or rational type, a zero of such a type is unsigned unlike the
+floating-point zero (this includes the zero of type <code>unsigned long</code>,
+which is a mathematical, exact zero, as opposed to a floating-point zero,
+which may come from an underflow and whose sign would correspond to the
+sign of the real non-zero value). Unless documented otherwise, this zero
+is regarded as +0, as if it were first converted to a MPFR number with
+<code>mpfr_set_ui</code> or <code>mpfr_set_si</code> (thus the result may not agree
+with the usual limit rules applied to a mathematical zero). This is not
+the case of addition and subtraction (<code>mpfr_add_ui</code>, etc.), but for
+these functions, only the sign of a zero result would be affected, with
++0 and -0 considered equal.
+Such operations are currently out of the scope of the IEEE&nbsp;754 standard,
+and at the time of specification in MPFR, the Floating-Point Working Group
+in charge of the revision of IEEE&nbsp;754 did not want to discuss issues with
+non-floating-point types in general.
+</p>
+<p>Note also that some obvious differences may come from the fact that in
+MPFR, each variable has its own precision. For instance, a subtraction
+of two numbers of the same sign may yield an overflow; idem for a call
+to <code>mpfr_set</code>, <code>mpfr_neg</code> or <code>mpfr_abs</code>, if the destination
+variable has a smaller precision.
+</p>
+<hr>
+<div class="header">
+<p>
+Next: <a href="constant.Contributors.html#start" accesskey="n" rel="next">Contributors</a>, Previous: <a href="constant.API_Compatibility.html#API-Compatibility" accesskey="p" rel="prev">API Compatibility</a>, Up: <a href="index.html#start" accesskey="u" rel="up">Top</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div></div></section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../";window.currentCrate = "gmp_mpfr_sys";</script><script src="../../../main.js"></script><script defer src="../../../search-index.js"></script></body></html>

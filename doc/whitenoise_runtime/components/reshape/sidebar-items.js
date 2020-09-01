@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Layout",""]],"fn":[["reshape","Reshape an upper triangular matrix or dense matrix represented in one row, to a square matrix. One matrix is returned per row."]]});

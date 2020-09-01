@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["compute_graph_privacy_usage","Compute the privacy usage of a graph, based on the privacy definition and actual usages reported by any computed values."],["get_c_stability_multiplier",""],["get_delta",""],["get_epsilon",""],["get_group_id_path",""],["privacy_usage_check",""],["spread_privacy_usage",""]]});

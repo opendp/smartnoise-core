@@ -1,0 +1,53 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `Reporting_Bugs` constant in crate `gmp_mpfr_sys`."><meta name="keywords" content="rust, rustlang, rust-lang, Reporting_Bugs"><title>gmp_mpfr_sys::C::MPFR::Reporting_Bugs - Rust</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc constant"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../gmp_mpfr_sys/index.html'><div class='logo-container'><img src='https://tspiteri.gitlab.io/gmp-mpfr-sys/rug.svg' alt='logo'></div></a><div class="sidebar-elems"><p class='location'><a href='../../index.html'>gmp_mpfr_sys</a>::<wbr><a href='../index.html'>C</a>::<wbr><a href='index.html'>MPFR</a></p><script>window.sidebarCurrent = {name: 'Reporting_Bugs', ty: 'constant', relpath: ''};</script><script defer src="sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+                <a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../../../src/gmp_mpfr_sys/C.rs.html#228' title='goto source code'>[src]</a></span><span class='in-band'>Constant <a href='../../index.html'>gmp_mpfr_sys</a>::<wbr><a href='../index.html'>C</a>::<wbr><a href='index.html'>MPFR</a>::<wbr><a class="constant" href=''>Reporting_Bugs</a></span></h1><pre class='rust const'>pub const Reporting_Bugs: ();</pre><div class='docblock'><p>This constant is a place-holder for documentation; do not use it in code.</p>
+<hr />
+<div><span id="start"></span></div>
+<span id="Reporting-Bugs"></span><div class="header">
+<p>
+Next: <a href="constant.MPFR_Basics.html#MPFR-Basics" accesskey="n" rel="next">MPFR Basics</a>, Previous: <a href="constant.Installing_MPFR.html#start" accesskey="p" rel="prev">Installing MPFR</a>, Up: <a href="index.html#start" accesskey="u" rel="up">Top</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Reporting-Bugs-1"></span><h2 class="chapter">3 Reporting Bugs</h2>
+<span id="index-Reporting-bugs"></span>
+<p>If you think you have found a bug in the MPFR library, first have a look
+on the MPFR&nbsp;4.1.0 web page <a href="https://www.mpfr.org/mpfr-4.1.0/">https://www.mpfr.org/mpfr-4.1.0/</a>
+and the FAQ <a href="https://www.mpfr.org/faq.html">https://www.mpfr.org/faq.html</a>:
+perhaps this bug is already known, in which case you may find there
+a workaround for it.
+You might also look in the archives of the MPFR mailing-list:
+<a href="https://sympa.inria.fr/sympa/arc/mpfr">https://sympa.inria.fr/sympa/arc/mpfr</a>.
+Otherwise, please investigate and report it.
+We have made this library available to you, and it is not to ask too
+much from you, to ask you to report the bugs that you find.
+</p>
+<p>There are a few things you should think about when you put your bug report
+together.
+</p>
+<p>You have to send us a test case that makes it possible for us to reproduce the
+bug, i.e., a small self-content program, using no other library than MPFR.
+Include instructions on how to run the test case.
+</p>
+<p>You also have to explain what is wrong; if you get a crash, or if the results
+you get are incorrect and in that case, in what way.
+</p>
+<p>Please include compiler version information in your bug report. This can
+be extracted using &lsquo;<samp>cc -V</samp>&rsquo; on some machines, or, if you are using GCC,
+&lsquo;<samp>gcc -v</samp>&rsquo;. Also, include the output from &lsquo;<samp>uname -a</samp>&rsquo; and the MPFR
+version (the GMP version may be useful too).
+If you get a failure while running &lsquo;<samp>make</samp>&rsquo; or &lsquo;<samp>make check</samp>&rsquo;, please
+include the <samp>config.log</samp> file in your bug report, and in case of test
+failure, the <samp>tests/test-suite.log</samp> file too.
+</p>
+<p>If your bug report is good, we will do our best to help you to get a corrected
+version of the library; if the bug report is poor, we will not do anything
+about it (aside of chiding you to send better bug reports).
+</p>
+<p>Send your bug report to the MPFR mailing-list &lsquo;<samp>mpfr@inria.fr</samp>&rsquo;.
+</p>
+<p>If you think something in this manual is unclear, or downright incorrect, or if
+the language needs to be improved, please send a note to the same address.
+</p>
+<hr>
+<div class="header">
+<p>
+Next: <a href="constant.MPFR_Basics.html#MPFR-Basics" accesskey="n" rel="next">MPFR Basics</a>, Previous: <a href="constant.Installing_MPFR.html#start" accesskey="p" rel="prev">Installing MPFR</a>, Up: <a href="index.html#start" accesskey="u" rel="up">Top</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div></div></section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../";window.currentCrate = "gmp_mpfr_sys";</script><script src="../../../main.js"></script><script defer src="../../../search-index.js"></script></body></html>

@@ -1,0 +1,330 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `Formatted_Output` constant in crate `gmp_mpfr_sys`."><meta name="keywords" content="rust, rustlang, rust-lang, Formatted_Output"><title>gmp_mpfr_sys::C::GMP::Formatted_Output - Rust</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc constant"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../gmp_mpfr_sys/index.html'><div class='logo-container'><img src='https://tspiteri.gitlab.io/gmp-mpfr-sys/rug.svg' alt='logo'></div></a><div class="sidebar-elems"><p class='location'><a href='../../index.html'>gmp_mpfr_sys</a>::<wbr><a href='../index.html'>C</a>::<wbr><a href='index.html'>GMP</a></p><script>window.sidebarCurrent = {name: 'Formatted_Output', ty: 'constant', relpath: ''};</script><script defer src="sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+                <a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../../../src/gmp_mpfr_sys/C.rs.html#64' title='goto source code'>[src]</a></span><span class='in-band'>Constant <a href='../../index.html'>gmp_mpfr_sys</a>::<wbr><a href='../index.html'>C</a>::<wbr><a href='index.html'>GMP</a>::<wbr><a class="constant" href=''>Formatted_Output</a></span></h1><pre class='rust const'>pub const Formatted_Output: ();</pre><div class='docblock'><p>This constant is a place-holder for documentation; do not use it in code.</p>
+<hr />
+<div><span id="start"></span></div>
+<span id="Formatted-Output"></span><div class="header">
+<p>
+Next: <a href="constant.Formatted_Input.html#Formatted-Input" accesskey="n" rel="next">Formatted Input</a>, Previous: <a href="constant.Random_Number_Functions.html#Random-Number-Functions" accesskey="p" rel="prev">Random Number Functions</a>, Up: <a href="index.html#start" accesskey="u" rel="up">Top</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Formatted-Output-1"></span><h2 class="chapter">10 Formatted Output</h2>
+<span id="index-Formatted-output"></span>
+<span id="index-printf-formatted-output"></span>
+<table class="menu" style="margin: 0; width: auto; padding: 0; border: 0;" border="0" cellspacing="0">
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Formatted-Output-Strings" accesskey="1">Formatted Output Strings</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Formatted-Output-Functions" accesskey="2">Formatted Output Functions</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#C_002b_002b-Formatted-Output" accesskey="3">C++ Formatted Output</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+</table>
+<hr>
+<span id="Formatted-Output-Strings"></span><div class="header">
+<p>
+Next: <a href="#Formatted-Output-Functions" accesskey="n" rel="next">Formatted Output Functions</a>, Previous: <a href="#Formatted-Output" accesskey="p" rel="prev">Formatted Output</a>, Up: <a href="#Formatted-Output" accesskey="u" rel="up">Formatted Output</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Format-Strings"></span><h3 class="section">10.1 Format Strings</h3>
+<p><code>gmp_printf</code> and friends accept format strings similar to the standard C
+<code>printf</code> (see <a href="https://www.gnu.org/software/libc/manual/html_node/Formatted-Output.html#Formatted-Output">Formatted Output</a> in <cite>The GNU C
+Library Reference Manual</cite>).  A format specification is of the form
+</p>
+<div class="example">
+<pre class="example">% [flags] [width] [.[precision]] [type] conv
+</pre></div>
+<p>GMP adds types &lsquo;<samp>Z</samp>&rsquo;, &lsquo;<samp>Q</samp>&rsquo; and &lsquo;<samp>F</samp>&rsquo; for <code>mpz_t</code>, <code>mpq_t</code>
+and <code>mpf_t</code> respectively, &lsquo;<samp>M</samp>&rsquo; for <code>mp_limb_t</code>, and &lsquo;<samp>N</samp>&rsquo; for
+an <code>mp_limb_t</code> array.  &lsquo;<samp>Z</samp>&rsquo;, &lsquo;<samp>Q</samp>&rsquo;, &lsquo;<samp>M</samp>&rsquo; and &lsquo;<samp>N</samp>&rsquo; behave
+like integers.  &lsquo;<samp>Q</samp>&rsquo; will print a &lsquo;<samp>/</samp>&rsquo; and a denominator, if needed.
+&lsquo;<samp>F</samp>&rsquo; behaves like a float.  For example,
+</p>
+<div class="example">
+<pre class="example">mpz_t z;
+gmp_printf (&quot;%s is an mpz %Zd\n&quot;, &quot;here&quot;, z);
+mpq_t q;
+gmp_printf (&quot;a hex rational: %#40Qx\n&quot;, q);
+mpf_t f;
+int   n;
+gmp_printf (&quot;fixed point mpf %.*Ff with %d digits\n&quot;, n, f, n);
+mp_limb_t l;
+gmp_printf (&quot;limb %Mu\n&quot;, l);
+const mp_limb_t *ptr;
+mp_size_t       size;
+gmp_printf (&quot;limb array %Nx\n&quot;, ptr, size);
+</pre></div>
+<p>For &lsquo;<samp>N</samp>&rsquo; the limbs are expected least significant first, as per the
+<code>mpn</code> functions (see <a href="constant.Low_level_Functions.html#start">Low-level Functions</a>).  A negative size can be
+given to print the value as a negative.
+</p>
+<p>All the standard C <code>printf</code> types behave the same as the C library
+<code>printf</code>, and can be freely intermixed with the GMP extensions.  In the
+current implementation the standard parts of the format string are simply
+handed to <code>printf</code> and only the GMP extensions handled directly.
+</p>
+<p>The flags accepted are as follows.  GLIBC style &lsquo;<samp>'</samp>&rsquo; is only for the
+standard C types (not the GMP types), and only if the C library supports it.
+</p>
+<blockquote>
+<table>
+<tr><td><code>0</code></td><td>pad with zeros (rather than spaces)</td></tr>
+<tr><td><code>#</code></td><td>show the base with &lsquo;<samp>0x</samp>&rsquo;, &lsquo;<samp>0X</samp>&rsquo; or &lsquo;<samp>0</samp>&rsquo;</td></tr>
+<tr><td><code>+</code></td><td>always show a sign</td></tr>
+<tr><td>(space)</td><td>show a space or a &lsquo;<samp>-</samp>&rsquo; sign</td></tr>
+<tr><td><code>'</code></td><td>group digits, GLIBC style (not GMP types)</td></tr>
+</table>
+</blockquote>
+<p>The optional width and precision can be given as a number within the format
+string, or as a &lsquo;<samp>*</samp>&rsquo; to take an extra parameter of type <code>int</code>, the
+same as the standard <code>printf</code>.
+</p>
+<p>The standard types accepted are as follows.  &lsquo;<samp>h</samp>&rsquo; and &lsquo;<samp>l</samp>&rsquo; are
+portable, the rest will depend on the compiler (or include files) for the type
+and the C library for the output.
+</p>
+<blockquote>
+<table>
+<tr><td><code>h</code></td><td><code>short</code></td></tr>
+<tr><td><code>hh</code></td><td><code>char</code></td></tr>
+<tr><td><code>j</code></td><td><code>intmax_t</code> or <code>uintmax_t</code></td></tr>
+<tr><td><code>l</code></td><td><code>long</code> or <code>wchar_t</code></td></tr>
+<tr><td><code>ll</code></td><td><code>long long</code></td></tr>
+<tr><td><code>L</code></td><td><code>long double</code></td></tr>
+<tr><td><code>q</code></td><td><code>quad_t</code> or <code>u_quad_t</code></td></tr>
+<tr><td><code>t</code></td><td><code>ptrdiff_t</code></td></tr>
+<tr><td><code>z</code></td><td><code>size_t</code></td></tr>
+</table>
+</blockquote>
+<p>The GMP types are
+</p>
+<blockquote>
+<table>
+<tr><td><code>F</code></td><td><code>mpf_t</code>, float conversions</td></tr>
+<tr><td><code>Q</code></td><td><code>mpq_t</code>, integer conversions</td></tr>
+<tr><td><code>M</code></td><td><code>mp_limb_t</code>, integer conversions</td></tr>
+<tr><td><code>N</code></td><td><code>mp_limb_t</code> array, integer conversions</td></tr>
+<tr><td><code>Z</code></td><td><code>mpz_t</code>, integer conversions</td></tr>
+</table>
+</blockquote>
+<p>The conversions accepted are as follows.  &lsquo;<samp>a</samp>&rsquo; and &lsquo;<samp>A</samp>&rsquo; are always
+supported for <code>mpf_t</code> but depend on the C library for standard C float
+types.  &lsquo;<samp>m</samp>&rsquo; and &lsquo;<samp>p</samp>&rsquo; depend on the C library.
+</p>
+<blockquote>
+<table>
+<tr><td><code>a</code> <code>A</code></td><td>hex floats, C99 style</td></tr>
+<tr><td><code>c</code></td><td>character</td></tr>
+<tr><td><code>d</code></td><td>decimal integer</td></tr>
+<tr><td><code>e</code> <code>E</code></td><td>scientific format float</td></tr>
+<tr><td><code>f</code></td><td>fixed point float</td></tr>
+<tr><td><code>i</code></td><td>same as <code>d</code></td></tr>
+<tr><td><code>g</code> <code>G</code></td><td>fixed or scientific float</td></tr>
+<tr><td><code>m</code></td><td><code>strerror</code> string, GLIBC style</td></tr>
+<tr><td><code>n</code></td><td>store characters written so far</td></tr>
+<tr><td><code>o</code></td><td>octal integer</td></tr>
+<tr><td><code>p</code></td><td>pointer</td></tr>
+<tr><td><code>s</code></td><td>string</td></tr>
+<tr><td><code>u</code></td><td>unsigned integer</td></tr>
+<tr><td><code>x</code> <code>X</code></td><td>hex integer</td></tr>
+</table>
+</blockquote>
+<p>&lsquo;<samp>o</samp>&rsquo;, &lsquo;<samp>x</samp>&rsquo; and &lsquo;<samp>X</samp>&rsquo; are unsigned for the standard C types, but for
+types &lsquo;<samp>Z</samp>&rsquo;, &lsquo;<samp>Q</samp>&rsquo; and &lsquo;<samp>N</samp>&rsquo; they are signed.  &lsquo;<samp>u</samp>&rsquo; is not
+meaningful for &lsquo;<samp>Z</samp>&rsquo;, &lsquo;<samp>Q</samp>&rsquo; and &lsquo;<samp>N</samp>&rsquo;.
+</p>
+<p>&lsquo;<samp>M</samp>&rsquo; is a proxy for the C library &lsquo;<samp>l</samp>&rsquo; or &lsquo;<samp>L</samp>&rsquo;, according to the
+size of <code>mp_limb_t</code>.  Unsigned conversions will be usual, but a signed
+conversion can be used and will interpret the value as a twos complement
+negative.
+</p>
+<p>&lsquo;<samp>n</samp>&rsquo; can be used with any type, even the GMP types.
+</p>
+<p>Other types or conversions that might be accepted by the C library
+<code>printf</code> cannot be used through <code>gmp_printf</code>, this includes for
+instance extensions registered with GLIBC <code>register_printf_function</code>.
+Also currently there&rsquo;s no support for POSIX &lsquo;<samp>$</samp>&rsquo; style numbered arguments
+(perhaps this will be added in the future).
+</p>
+<p>The precision field has its usual meaning for integer &lsquo;<samp>Z</samp>&rsquo; and float
+&lsquo;<samp>F</samp>&rsquo; types, but is currently undefined for &lsquo;<samp>Q</samp>&rsquo; and should not be used
+with that.
+</p>
+<p><code>mpf_t</code> conversions only ever generate as many digits as can be
+accurately represented by the operand, the same as <code>mpf_get_str</code> does.
+Zeros will be used if necessary to pad to the requested precision.  This
+happens even for an &lsquo;<samp>f</samp>&rsquo; conversion of an <code>mpf_t</code> which is an
+integer, for instance <em>2^1024<!-- /@w --></em> in an <code>mpf_t</code> of 128 bits
+precision will only produce about 40 digits, then pad with zeros to the
+decimal point.  An empty precision field like &lsquo;<samp>%.Fe</samp>&rsquo; or &lsquo;<samp>%.Ff</samp>&rsquo; can
+be used to specifically request just the significant digits.  Without any dot
+and thus no precision field, a precision value of 6 will be used.  Note that
+these rules mean that &lsquo;<samp>%Ff</samp>&rsquo;, &lsquo;<samp>%.Ff</samp>&rsquo;, and &lsquo;<samp>%.0Ff</samp>&rsquo; will all be
+different.
+</p>
+<p>The decimal point character (or string) is taken from the current locale
+settings on systems which provide <code>localeconv</code> (see <a href="https://www.gnu.org/software/libc/manual/html_node/Locales.html#Locales">Locales
+and Internationalization</a> in <cite>The GNU C Library Reference Manual</cite>).  The C
+library will normally do the same for standard float output.
+</p>
+<p>The format string is only interpreted as plain <code>char</code>s, multibyte
+characters are not recognised.  Perhaps this will change in the future.
+</p>
+<hr>
+<span id="Formatted-Output-Functions"></span><div class="header">
+<p>
+Next: <a href="#C_002b_002b-Formatted-Output" accesskey="n" rel="next">C++ Formatted Output</a>, Previous: <a href="#Formatted-Output-Strings" accesskey="p" rel="prev">Formatted Output Strings</a>, Up: <a href="#Formatted-Output" accesskey="u" rel="up">Formatted Output</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Functions"></span><h3 class="section">10.2 Functions</h3>
+<span id="index-Output-functions-3"></span>
+<p>Each of the following functions is similar to the corresponding C library
+function.  The basic <code>printf</code> forms take a variable argument list.  The
+<code>vprintf</code> forms take an argument pointer, see <a href="https://www.gnu.org/software/libc/manual/html_node/Variadic-Functions.html#Variadic-Functions">Variadic Functions</a> in <cite>The GNU C Library Reference Manual</cite>, or &lsquo;<samp>man 3
+va_start</samp>&rsquo;.
+</p>
+<p>It should be emphasised that if a format string is invalid, or the arguments
+don&rsquo;t match what the format specifies, then the behaviour of any of these
+functions will be unpredictable.  GCC format string checking is not available,
+since it doesn&rsquo;t recognise the GMP extensions.
+</p>
+<p>The file based functions <code>gmp_printf</code> and <code>gmp_fprintf</code> will return
+<em>-1</em> to indicate a write error.  Output is not &ldquo;atomic&rdquo;, so partial
+output may be produced if a write error occurs.  All the functions can return
+<em>-1</em> if the C library <code>printf</code> variant in use returns <em>-1</em>, but
+this shouldn&rsquo;t normally occur.
+</p>
+<dl>
+<dt id="index-gmp_005fprintf">Function: <em>int</em> <strong>gmp_printf</strong> <em>(const char *<var>fmt</var>, &hellip;)</em></dt>
+<dt id="index-gmp_005fvprintf">Function: <em>int</em> <strong>gmp_vprintf</strong> <em>(const char *<var>fmt</var>, va_list <var>ap</var>)</em></dt>
+<dd><p>Print to the standard output <code>stdout</code>.  Return the number of characters
+written, or <em>-1</em> if an error occurred.
+</p></dd></dl>
+<dl>
+<dt id="index-gmp_005ffprintf">Function: <em>int</em> <strong>gmp_fprintf</strong> <em>(FILE *<var>fp</var>, const char *<var>fmt</var>, &hellip;)</em></dt>
+<dt id="index-gmp_005fvfprintf">Function: <em>int</em> <strong>gmp_vfprintf</strong> <em>(FILE *<var>fp</var>, const char *<var>fmt</var>, va_list <var>ap</var>)</em></dt>
+<dd><p>Print to the stream <var>fp</var>.  Return the number of characters written, or
+<em>-1</em> if an error occurred.
+</p></dd></dl>
+<dl>
+<dt id="index-gmp_005fsprintf">Function: <em>int</em> <strong>gmp_sprintf</strong> <em>(char *<var>buf</var>, const char *<var>fmt</var>, &hellip;)</em></dt>
+<dt id="index-gmp_005fvsprintf">Function: <em>int</em> <strong>gmp_vsprintf</strong> <em>(char *<var>buf</var>, const char *<var>fmt</var>, va_list <var>ap</var>)</em></dt>
+<dd><p>Form a null-terminated string in <var>buf</var>.  Return the number of characters
+written, excluding the terminating null.
+</p>
+<p>No overlap is permitted between the space at <var>buf</var> and the string
+<var>fmt</var>.
+</p>
+<p>These functions are not recommended, since there&rsquo;s no protection against
+exceeding the space available at <var>buf</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-gmp_005fsnprintf">Function: <em>int</em> <strong>gmp_snprintf</strong> <em>(char *<var>buf</var>, size_t <var>size</var>, const char *<var>fmt</var>, &hellip;)</em></dt>
+<dt id="index-gmp_005fvsnprintf">Function: <em>int</em> <strong>gmp_vsnprintf</strong> <em>(char *<var>buf</var>, size_t <var>size</var>, const char *<var>fmt</var>, va_list <var>ap</var>)</em></dt>
+<dd><p>Form a null-terminated string in <var>buf</var>.  No more than <var>size</var> bytes
+will be written.  To get the full output, <var>size</var> must be enough for the
+string and null-terminator.
+</p>
+<p>The return value is the total number of characters which ought to have been
+produced, excluding the terminating null.  If <em><var>retval</var> &gt;=
+<var>size</var></em> then the actual output has been truncated to the first
+<em><var>size</var>-1</em> characters, and a null appended.
+</p>
+<p>No overlap is permitted between the region {<var>buf</var>,<var>size</var>} and the
+<var>fmt</var> string.
+</p>
+<p>Notice the return value is in ISO C99 <code>snprintf</code> style.  This is so even
+if the C library <code>vsnprintf</code> is the older GLIBC 2.0.x style.
+</p></dd></dl>
+<dl>
+<dt id="index-gmp_005fasprintf">Function: <em>int</em> <strong>gmp_asprintf</strong> <em>(char **<var>pp</var>, const char *<var>fmt</var>, &hellip;)</em></dt>
+<dt id="index-gmp_005fvasprintf">Function: <em>int</em> <strong>gmp_vasprintf</strong> <em>(char **<var>pp</var>, const char *<var>fmt</var>, va_list <var>ap</var>)</em></dt>
+<dd><p>Form a null-terminated string in a block of memory obtained from the current
+memory allocation function (see <a href="constant.Custom_Allocation.html#start">Custom Allocation</a>).  The block will be the
+size of the string and null-terminator.  The address of the block in stored to
+*<var>pp</var>.  The return value is the number of characters produced, excluding
+the null-terminator.
+</p>
+<p>Unlike the C library <code>asprintf</code>, <code>gmp_asprintf</code> doesn&rsquo;t return
+<em>-1</em> if there&rsquo;s no more memory available, it lets the current allocation
+function handle that.
+</p></dd></dl>
+<dl>
+<dt id="index-gmp_005fobstack_005fprintf">Function: <em>int</em> <strong>gmp_obstack_printf</strong> <em>(struct obstack *<var>ob</var>, const char *<var>fmt</var>, &hellip;)</em></dt>
+<dt id="index-gmp_005fobstack_005fvprintf">Function: <em>int</em> <strong>gmp_obstack_vprintf</strong> <em>(struct obstack *<var>ob</var>, const char *<var>fmt</var>, va_list <var>ap</var>)</em></dt>
+<dd><span id="index-obstack-output"></span>
+<p>Append to the current object in <var>ob</var>.  The return value is the number of
+characters written.  A null-terminator is not written.
+</p>
+<p><var>fmt</var> cannot be within the current object in <var>ob</var>, since that object
+might move as it grows.
+</p>
+<p>These functions are available only when the C library provides the obstack
+feature, which probably means only on GNU systems, see <a href="https://www.gnu.org/software/libc/manual/html_node/Obstacks.html#Obstacks">Obstacks</a> in <cite>The GNU C Library Reference Manual</cite>.
+</p></dd></dl>
+<hr>
+<span id="C_002b_002b-Formatted-Output"></span><div class="header">
+<p>
+Previous: <a href="#Formatted-Output-Functions" accesskey="p" rel="prev">Formatted Output Functions</a>, Up: <a href="#Formatted-Output" accesskey="u" rel="up">Formatted Output</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="C_002b_002b-Formatted-Output-1"></span><h3 class="section">10.3 C++ Formatted Output</h3>
+<span id="index-C_002b_002b-ostream-output"></span>
+<span id="index-ostream-output"></span>
+<p>The following functions are provided in <samp>libgmpxx</samp> (see <a href="constant.GMP_Basics.html#Headers-and-Libraries">Headers and Libraries</a>), which is built if C++ support is enabled (see <a href="constant.Installing_GMP.html#Build-Options">Build Options</a>).
+Prototypes are available from <code>&lt;gmp.h&gt;</code>.
+</p>
+<dl>
+<dt id="index-operator_003c_003c">Function: <em>ostream&amp;</em> <strong>operator&lt;&lt;</strong> <em>(ostream&amp; <var>stream</var>, const mpz_t <var>op</var>)</em></dt>
+<dd><p>Print <var>op</var> to <var>stream</var>, using its <code>ios</code> formatting settings.
+<code>ios::width</code> is reset to 0 after output, the same as the standard
+<code>ostream operator&lt;&lt;</code> routines do.
+</p>
+<p>In hex or octal, <var>op</var> is printed as a signed number, the same as for
+decimal.  This is unlike the standard <code>operator&lt;&lt;</code> routines on <code>int</code>
+etc, which instead give twos complement.
+</p></dd></dl>
+<dl>
+<dt id="index-operator_003c_003c-1">Function: <em>ostream&amp;</em> <strong>operator&lt;&lt;</strong> <em>(ostream&amp; <var>stream</var>, const mpq_t <var>op</var>)</em></dt>
+<dd><p>Print <var>op</var> to <var>stream</var>, using its <code>ios</code> formatting settings.
+<code>ios::width</code> is reset to 0 after output, the same as the standard
+<code>ostream operator&lt;&lt;</code> routines do.
+</p>
+<p>Output will be a fraction like &lsquo;<samp>5/9</samp>&rsquo;, or if the denominator is 1 then
+just a plain integer like &lsquo;<samp>123</samp>&rsquo;.
+</p>
+<p>In hex or octal, <var>op</var> is printed as a signed value, the same as for
+decimal.  If <code>ios::showbase</code> is set then a base indicator is shown on
+both the numerator and denominator (if the denominator is required).
+</p></dd></dl>
+<dl>
+<dt id="index-operator_003c_003c-2">Function: <em>ostream&amp;</em> <strong>operator&lt;&lt;</strong> <em>(ostream&amp; <var>stream</var>, const mpf_t <var>op</var>)</em></dt>
+<dd><p>Print <var>op</var> to <var>stream</var>, using its <code>ios</code> formatting settings.
+<code>ios::width</code> is reset to 0 after output, the same as the standard
+<code>ostream operator&lt;&lt;</code> routines do.
+</p>
+<p>The decimal point follows the standard library float <code>operator&lt;&lt;</code>, which
+on recent systems means the <code>std::locale</code> imbued on <var>stream</var>.
+</p>
+<p>Hex and octal are supported, unlike the standard <code>operator&lt;&lt;</code> on
+<code>double</code>.  The mantissa will be in hex or octal, the exponent will be in
+decimal.  For hex the exponent delimiter is an &lsquo;<samp>@</samp>&rsquo;.  This is as per
+<code>mpf_out_str</code>.
+</p>
+<p><code>ios::showbase</code> is supported, and will put a base on the mantissa, for
+example hex &lsquo;<samp>0x1.8</samp>&rsquo; or &lsquo;<samp>0x0.8</samp>&rsquo;, or octal &lsquo;<samp>01.4</samp>&rsquo; or &lsquo;<samp>00.4</samp>&rsquo;.
+This last form is slightly strange, but at least differentiates itself from
+decimal.
+</p></dd></dl>
+<p>These operators mean that GMP types can be printed in the usual C++ way, for
+example,
+</p>
+<div class="example">
+<pre class="example">mpz_t  z;
+int    n;
+...
+cout &lt;&lt; &quot;iteration &quot; &lt;&lt; n &lt;&lt; &quot; value &quot; &lt;&lt; z &lt;&lt; &quot;\n&quot;;
+</pre></div>
+<p>But note that <code>ostream</code> output (and <code>istream</code> input, see <a href="constant.Formatted_Input.html#C_002b_002b-Formatted-Input">C++ Formatted Input</a>) is the only overloading available for the GMP types and that
+for instance using <code>+</code> with an <code>mpz_t</code> will have unpredictable
+results.  For classes with overloading, see <a href="constant.CPP_Class_Interface.html#C_002b_002b-Class-Interface">C++ Class Interface</a>.
+</p>
+<hr>
+<div class="header">
+<p>
+Previous: <a href="#Formatted-Output-Functions" accesskey="p" rel="prev">Formatted Output Functions</a>, Up: <a href="#Formatted-Output" accesskey="u" rel="up">Formatted Output</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div></div></section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../";window.currentCrate = "gmp_mpfr_sys";</script><script src="../../../main.js"></script><script defer src="../../../search-index.js"></script></body></html>

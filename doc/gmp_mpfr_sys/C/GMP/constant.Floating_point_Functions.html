@@ -1,0 +1,591 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `Floating_point_Functions` constant in crate `gmp_mpfr_sys`."><meta name="keywords" content="rust, rustlang, rust-lang, Floating_point_Functions"><title>gmp_mpfr_sys::C::GMP::Floating_point_Functions - Rust</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc constant"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../gmp_mpfr_sys/index.html'><div class='logo-container'><img src='https://tspiteri.gitlab.io/gmp-mpfr-sys/rug.svg' alt='logo'></div></a><div class="sidebar-elems"><p class='location'><a href='../../index.html'>gmp_mpfr_sys</a>::<wbr><a href='../index.html'>C</a>::<wbr><a href='index.html'>GMP</a></p><script>window.sidebarCurrent = {name: 'Floating_point_Functions', ty: 'constant', relpath: ''};</script><script defer src="sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+                <a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../../../src/gmp_mpfr_sys/C.rs.html#52' title='goto source code'>[src]</a></span><span class='in-band'>Constant <a href='../../index.html'>gmp_mpfr_sys</a>::<wbr><a href='../index.html'>C</a>::<wbr><a href='index.html'>GMP</a>::<wbr><a class="constant" href=''>Floating_point_Functions</a></span></h1><pre class='rust const'>pub const Floating_point_Functions: ();</pre><div class='docblock'><p>This constant is a place-holder for documentation; do not use it in code.</p>
+<hr />
+<div><span id="start"></span></div>
+<span id="Floating_002dpoint-Functions"></span><div class="header">
+<p>
+Next: <a href="constant.Low_level_Functions.html#start" accesskey="n" rel="next">Low-level Functions</a>, Previous: <a href="constant.Rational_Number_Functions.html#Rational-Number-Functions" accesskey="p" rel="prev">Rational Number Functions</a>, Up: <a href="index.html#start" accesskey="u" rel="up">Top</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Floating_002dpoint-Functions-1"></span><h2 class="chapter">7 Floating-point Functions</h2>
+<span id="index-Floating_002dpoint-functions"></span>
+<span id="index-Float-functions"></span>
+<span id="index-User_002ddefined-precision"></span>
+<span id="index-Precision-of-floats"></span>
+<p>GMP floating point numbers are stored in objects of type <code>mpf_t</code> and
+functions operating on them have an <code>mpf_</code> prefix.
+</p>
+<p>The mantissa of each float has a user-selectable precision, in practice only
+limited by available memory.  Each variable has its own precision, and that can
+be increased or decreased at any time.  This selectable precision is a minimum
+value, GMP rounds it up to a whole limb.
+</p>
+<p>The accuracy of a calculation is determined by the priorly set precision of the
+destination variable and the numeric values of the input variables.  Input
+variables&rsquo; set precisions do not affect calculations (except indirectly as
+their values might have been affected when they were assigned).
+</p>
+<p>The exponent of each float has fixed precision, one machine word on most
+systems.  In the current implementation the exponent is a count of limbs, so
+for example on a 32-bit system this means a range of roughly
+<em>2^<span class="nolinebreak">-68719476768</span><!-- /@w --></em> to <em>2^68719476736<!-- /@w --></em>, or on a 64-bit system
+this will be much greater.  Note however that <code>mpf_get_str</code> can only
+return an exponent which fits an <code>mp_exp_t</code> and currently
+<code>mpf_set_str</code> doesn&rsquo;t accept exponents bigger than a <code>long</code>.
+</p>
+<p>Each variable keeps track of the mantissa data actually in use.  This means
+that if a float is exactly represented in only a few bits then only those bits
+will be used in a calculation, even if the variable&rsquo;s selected precision is
+high.  This is a performance optimization; it does not affect the numeric
+results.
+</p>
+<p>Internally, GMP sometimes calculates with higher precision than that of the
+destination variable in order to limit errors.  Final results are always
+truncated to the destination variable&rsquo;s precision.
+</p>
+<p>The mantissa is stored in binary.  One consequence of this is that decimal
+fractions like <em>0.1</em> cannot be represented exactly.  The same is true of
+plain IEEE <code>double</code> floats.  This makes both highly unsuitable for
+calculations involving money or other values that should be exact decimal
+fractions.  (Suitably scaled integers, or perhaps rationals, are better
+choices.)
+</p>
+<p>The <code>mpf</code> functions and variables have no special notion of infinity or
+not-a-number, and applications must take care not to overflow the exponent or
+results will be unpredictable.
+</p>
+<p>Note that the <code>mpf</code> functions are <em>not</em> intended as a smooth
+extension to IEEE P754 arithmetic.  In particular results obtained on one
+computer often differ from the results on a computer with a different word
+size.
+</p>
+<p>New projects should consider using the GMP extension library MPFR
+(<a href="http://mpfr.org">http://mpfr.org</a>) instead.  MPFR provides well-defined precision and
+accurate rounding, and thereby naturally extends IEEE P754.
+</p>
+<table class="menu" style="margin: 0; width: auto; padding: 0; border: 0;" border="0" cellspacing="0">
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Initializing-Floats" accesskey="1">Initializing Floats</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Assigning-Floats" accesskey="2">Assigning Floats</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Simultaneous-Float-Init-_0026-Assign" accesskey="3">Simultaneous Float Init &amp; Assign</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Converting-Floats" accesskey="4">Converting Floats</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Float-Arithmetic" accesskey="5">Float Arithmetic</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Float-Comparison" accesskey="6">Float Comparison</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#I_002fO-of-Floats" accesskey="7">I/O of Floats</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Miscellaneous-Float-Functions" accesskey="8">Miscellaneous Float Functions</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+</table>
+<hr>
+<span id="Initializing-Floats"></span><div class="header">
+<p>
+Next: <a href="#Assigning-Floats" accesskey="n" rel="next">Assigning Floats</a>, Previous: <a href="#Floating_002dpoint-Functions" accesskey="p" rel="prev">Floating-point Functions</a>, Up: <a href="#Floating_002dpoint-Functions" accesskey="u" rel="up">Floating-point Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Initialization-Functions-1"></span><h3 class="section">7.1 Initialization Functions</h3>
+<span id="index-Float-initialization-functions"></span>
+<span id="index-Initialization-functions-3"></span>
+<dl>
+<dt id="index-mpf_005fset_005fdefault_005fprec">Function: <em>void</em> <strong>mpf_set_default_prec</strong> <em>(mp_bitcnt_t <var>prec</var>)</em></dt>
+<dd><p>Set the default precision to be <strong>at least</strong> <var>prec</var> bits.  All
+subsequent calls to <code>mpf_init</code> will use this precision, but previously
+initialized variables are unaffected.
+</p></dd></dl>
+<dl>
+<dt id="index-mpf_005fget_005fdefault_005fprec">Function: <em>mp_bitcnt_t</em> <strong>mpf_get_default_prec</strong> <em>(void)</em></dt>
+<dd><p>Return the default precision actually used.
+</p></dd></dl>
+<p>An <code>mpf_t</code> object must be initialized before storing the first value in
+it.  The functions <code>mpf_init</code> and <code>mpf_init2</code> are used for that
+purpose.
+</p>
+<dl>
+<dt id="index-mpf_005finit">Function: <em>void</em> <strong>mpf_init</strong> <em>(mpf_t <var>x</var>)</em></dt>
+<dd><p>Initialize <var>x</var> to 0.  Normally, a variable should be initialized once only
+or at least be cleared, using <code>mpf_clear</code>, between initializations.  The
+precision of <var>x</var> is undefined unless a default precision has already been
+established by a call to <code>mpf_set_default_prec</code>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpf_005finit2">Function: <em>void</em> <strong>mpf_init2</strong> <em>(mpf_t <var>x</var>, mp_bitcnt_t <var>prec</var>)</em></dt>
+<dd><p>Initialize <var>x</var> to 0 and set its precision to be <strong>at least</strong>
+<var>prec</var> bits.  Normally, a variable should be initialized once only or at
+least be cleared, using <code>mpf_clear</code>, between initializations.
+</p></dd></dl>
+<dl>
+<dt id="index-mpf_005finits">Function: <em>void</em> <strong>mpf_inits</strong> <em>(mpf_t <var>x</var>, ...)</em></dt>
+<dd><p>Initialize a NULL-terminated list of <code>mpf_t</code> variables, and set their
+values to 0.  The precision of the initialized variables is undefined unless a
+default precision has already been established by a call to
+<code>mpf_set_default_prec</code>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpf_005fclear">Function: <em>void</em> <strong>mpf_clear</strong> <em>(mpf_t <var>x</var>)</em></dt>
+<dd><p>Free the space occupied by <var>x</var>.  Make sure to call this function for all
+<code>mpf_t</code> variables when you are done with them.
+</p></dd></dl>
+<dl>
+<dt id="index-mpf_005fclears">Function: <em>void</em> <strong>mpf_clears</strong> <em>(mpf_t <var>x</var>, ...)</em></dt>
+<dd><p>Free the space occupied by a NULL-terminated list of <code>mpf_t</code> variables.
+</p></dd></dl>
+<p>Here is an example on how to initialize floating-point variables:
+</p><div class="example">
+<pre class="example">{
+  mpf_t x, y;
+  mpf_init (x);           /* use default precision */
+  mpf_init2 (y, 256);     /* precision <em>at least</em> 256 bits */
+  &hellip;
+  /* Unless the program is about to exit, do ... */
+  mpf_clear (x);
+  mpf_clear (y);
+}
+</pre></div>
+<p>The following three functions are useful for changing the precision during a
+calculation.  A typical use would be for adjusting the precision gradually in
+iterative algorithms like Newton-Raphson, making the computation precision
+closely match the actual accurate part of the numbers.
+</p>
+<dl>
+<dt id="index-mpf_005fget_005fprec">Function: <em>mp_bitcnt_t</em> <strong>mpf_get_prec</strong> <em>(const mpf_t <var>op</var>)</em></dt>
+<dd><p>Return the current precision of <var>op</var>, in bits.
+</p></dd></dl>
+<dl>
+<dt id="index-mpf_005fset_005fprec">Function: <em>void</em> <strong>mpf_set_prec</strong> <em>(mpf_t <var>rop</var>, mp_bitcnt_t <var>prec</var>)</em></dt>
+<dd><p>Set the precision of <var>rop</var> to be <strong>at least</strong> <var>prec</var> bits.  The
+value in <var>rop</var> will be truncated to the new precision.
+</p>
+<p>This function requires a call to <code>realloc</code>, and so should not be used in
+a tight loop.
+</p></dd></dl>
+<dl>
+<dt id="index-mpf_005fset_005fprec_005fraw">Function: <em>void</em> <strong>mpf_set_prec_raw</strong> <em>(mpf_t <var>rop</var>, mp_bitcnt_t <var>prec</var>)</em></dt>
+<dd><p>Set the precision of <var>rop</var> to be <strong>at least</strong> <var>prec</var> bits,
+without changing the memory allocated.
+</p>
+<p><var>prec</var> must be no more than the allocated precision for <var>rop</var>, that
+being the precision when <var>rop</var> was initialized, or in the most recent
+<code>mpf_set_prec</code>.
+</p>
+<p>The value in <var>rop</var> is unchanged, and in particular if it had a higher
+precision than <var>prec</var> it will retain that higher precision.  New values
+written to <var>rop</var> will use the new <var>prec</var>.
+</p>
+<p>Before calling <code>mpf_clear</code> or the full <code>mpf_set_prec</code>, another
+<code>mpf_set_prec_raw</code> call must be made to restore <var>rop</var> to its original
+allocated precision.  Failing to do so will have unpredictable results.
+</p>
+<p><code>mpf_get_prec</code> can be used before <code>mpf_set_prec_raw</code> to get the
+original allocated precision.  After <code>mpf_set_prec_raw</code> it reflects the
+<var>prec</var> value set.
+</p>
+<p><code>mpf_set_prec_raw</code> is an efficient way to use an <code>mpf_t</code> variable at
+different precisions during a calculation, perhaps to gradually increase
+precision in an iteration, or just to use various different precisions for
+different purposes during a calculation.
+</p></dd></dl>
+<hr>
+<span id="Assigning-Floats"></span><div class="header">
+<p>
+Next: <a href="#Simultaneous-Float-Init-_0026-Assign" accesskey="n" rel="next">Simultaneous Float Init &amp; Assign</a>, Previous: <a href="#Initializing-Floats" accesskey="p" rel="prev">Initializing Floats</a>, Up: <a href="#Floating_002dpoint-Functions" accesskey="u" rel="up">Floating-point Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Assignment-Functions-1"></span><h3 class="section">7.2 Assignment Functions</h3>
+<span id="index-Float-assignment-functions"></span>
+<span id="index-Assignment-functions-3"></span>
+<p>These functions assign new values to already initialized floats
+(see <a href="#Initializing-Floats">Initializing Floats</a>).
+</p>
+<dl>
+<dt id="index-mpf_005fset">Function: <em>void</em> <strong>mpf_set</strong> <em>(mpf_t <var>rop</var>, const mpf_t <var>op</var>)</em></dt>
+<dt id="index-mpf_005fset_005fui">Function: <em>void</em> <strong>mpf_set_ui</strong> <em>(mpf_t <var>rop</var>, unsigned long int <var>op</var>)</em></dt>
+<dt id="index-mpf_005fset_005fsi">Function: <em>void</em> <strong>mpf_set_si</strong> <em>(mpf_t <var>rop</var>, signed long int <var>op</var>)</em></dt>
+<dt id="index-mpf_005fset_005fd">Function: <em>void</em> <strong>mpf_set_d</strong> <em>(mpf_t <var>rop</var>, double <var>op</var>)</em></dt>
+<dt id="index-mpf_005fset_005fz">Function: <em>void</em> <strong>mpf_set_z</strong> <em>(mpf_t <var>rop</var>, const mpz_t <var>op</var>)</em></dt>
+<dt id="index-mpf_005fset_005fq">Function: <em>void</em> <strong>mpf_set_q</strong> <em>(mpf_t <var>rop</var>, const mpq_t <var>op</var>)</em></dt>
+<dd><p>Set the value of <var>rop</var> from <var>op</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpf_005fset_005fstr">Function: <em>int</em> <strong>mpf_set_str</strong> <em>(mpf_t <var>rop</var>, const char *<var>str</var>, int <var>base</var>)</em></dt>
+<dd><p>Set the value of <var>rop</var> from the string in <var>str</var>.  The string is of the
+form &lsquo;<samp>M@N</samp>&rsquo; or, if the base is 10 or less, alternatively &lsquo;<samp>MeN</samp>&rsquo;.
+&lsquo;<samp>M</samp>&rsquo; is the mantissa and &lsquo;<samp>N</samp>&rsquo; is the exponent.  The mantissa is always
+in the specified base.  The exponent is either in the specified base or, if
+<var>base</var> is negative, in decimal.  The decimal point expected is taken from
+the current locale, on systems providing <code>localeconv</code>.
+</p>
+<p>The argument <var>base</var> may be in the ranges 2 to 62, or -62 to
+-2.  Negative values are used to specify that the exponent is in
+decimal.
+</p>
+<p>For bases up to 36, case is ignored; upper-case and lower-case letters have
+the same value; for bases 37 to 62, upper-case letter represent the usual
+10..35 while lower-case letter represent 36..61.
+</p>
+<p>Unlike the corresponding <code>mpz</code> function, the base will not be determined
+from the leading characters of the string if <var>base</var> is 0.  This is so that
+numbers like &lsquo;<samp>0.23</samp>&rsquo; are not interpreted as octal.
+</p>
+<p>White space is allowed in the string, and is simply ignored.  [This is not
+really true; white-space is ignored in the beginning of the string and within
+the mantissa, but not in other places, such as after a minus sign or in the
+exponent.  We are considering changing the definition of this function, making
+it fail when there is any white-space in the input, since that makes a lot of
+sense.  Please tell us your opinion about this change.  Do you really want it
+to accept <code>&quot;3 14&quot;</code> as meaning 314 as it does now?]
+</p>
+<p>This function returns 0 if the entire string is a valid number in base
+<var>base</var>.  Otherwise it returns -1.
+</p></dd></dl>
+<dl>
+<dt id="index-mpf_005fswap">Function: <em>void</em> <strong>mpf_swap</strong> <em>(mpf_t <var>rop1</var>, mpf_t <var>rop2</var>)</em></dt>
+<dd><p>Swap <var>rop1</var> and <var>rop2</var> efficiently.  Both the values and the
+precisions of the two variables are swapped.
+</p></dd></dl>
+<hr>
+<span id="Simultaneous-Float-Init-_0026-Assign"></span><div class="header">
+<p>
+Next: <a href="#Converting-Floats" accesskey="n" rel="next">Converting Floats</a>, Previous: <a href="#Assigning-Floats" accesskey="p" rel="prev">Assigning Floats</a>, Up: <a href="#Floating_002dpoint-Functions" accesskey="u" rel="up">Floating-point Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Combined-Initialization-and-Assignment-Functions-1"></span><h3 class="section">7.3 Combined Initialization and Assignment Functions</h3>
+<span id="index-Float-assignment-functions-1"></span>
+<span id="index-Assignment-functions-4"></span>
+<span id="index-Float-initialization-functions-1"></span>
+<span id="index-Initialization-functions-4"></span>
+<p>For convenience, GMP provides a parallel series of initialize-and-set functions
+which initialize the output and then store the value there.  These functions&rsquo;
+names have the form <code>mpf_init_set&hellip;</code>
+</p>
+<p>Once the float has been initialized by any of the <code>mpf_init_set&hellip;</code>
+functions, it can be used as the source or destination operand for the ordinary
+float functions.  Don&rsquo;t use an initialize-and-set function on a variable
+already initialized!
+</p>
+<dl>
+<dt id="index-mpf_005finit_005fset">Function: <em>void</em> <strong>mpf_init_set</strong> <em>(mpf_t <var>rop</var>, const mpf_t <var>op</var>)</em></dt>
+<dt id="index-mpf_005finit_005fset_005fui">Function: <em>void</em> <strong>mpf_init_set_ui</strong> <em>(mpf_t <var>rop</var>, unsigned long int <var>op</var>)</em></dt>
+<dt id="index-mpf_005finit_005fset_005fsi">Function: <em>void</em> <strong>mpf_init_set_si</strong> <em>(mpf_t <var>rop</var>, signed long int <var>op</var>)</em></dt>
+<dt id="index-mpf_005finit_005fset_005fd">Function: <em>void</em> <strong>mpf_init_set_d</strong> <em>(mpf_t <var>rop</var>, double <var>op</var>)</em></dt>
+<dd><p>Initialize <var>rop</var> and set its value from <var>op</var>.
+</p>
+<p>The precision of <var>rop</var> will be taken from the active default precision, as
+set by <code>mpf_set_default_prec</code>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpf_005finit_005fset_005fstr">Function: <em>int</em> <strong>mpf_init_set_str</strong> <em>(mpf_t <var>rop</var>, const char *<var>str</var>, int <var>base</var>)</em></dt>
+<dd><p>Initialize <var>rop</var> and set its value from the string in <var>str</var>.  See
+<code>mpf_set_str</code> above for details on the assignment operation.
+</p>
+<p>Note that <var>rop</var> is initialized even if an error occurs.  (I.e., you have to
+call <code>mpf_clear</code> for it.)
+</p>
+<p>The precision of <var>rop</var> will be taken from the active default precision, as
+set by <code>mpf_set_default_prec</code>.
+</p></dd></dl>
+<hr>
+<span id="Converting-Floats"></span><div class="header">
+<p>
+Next: <a href="#Float-Arithmetic" accesskey="n" rel="next">Float Arithmetic</a>, Previous: <a href="#Simultaneous-Float-Init-_0026-Assign" accesskey="p" rel="prev">Simultaneous Float Init &amp; Assign</a>, Up: <a href="#Floating_002dpoint-Functions" accesskey="u" rel="up">Floating-point Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Conversion-Functions-2"></span><h3 class="section">7.4 Conversion Functions</h3>
+<span id="index-Float-conversion-functions"></span>
+<span id="index-Conversion-functions-2"></span>
+<dl>
+<dt id="index-mpf_005fget_005fd">Function: <em>double</em> <strong>mpf_get_d</strong> <em>(const mpf_t <var>op</var>)</em></dt>
+<dd><p>Convert <var>op</var> to a <code>double</code>, truncating if necessary (i.e. rounding
+towards zero).
+</p>
+<p>If the exponent in <var>op</var> is too big or too small to fit a <code>double</code>
+then the result is system dependent.  For too big an infinity is returned when
+available.  For too small <em>0.0</em> is normally returned.  Hardware overflow,
+underflow and denorm traps may or may not occur.
+</p></dd></dl>
+<dl>
+<dt id="index-mpf_005fget_005fd_005f2exp">Function: <em>double</em> <strong>mpf_get_d_2exp</strong> <em>(signed long int *<var>exp</var>, const mpf_t <var>op</var>)</em></dt>
+<dd><p>Convert <var>op</var> to a <code>double</code>, truncating if necessary (i.e. rounding
+towards zero), and with an exponent returned separately.
+</p>
+<p>The return value is in the range <em>0.5&lt;=abs(<var>d</var>)&lt;1</em> and the
+exponent is stored to <code>*<var>exp</var></code>.  <em><var>d</var> * 2^<var>exp</var></em> is the (truncated) <var>op</var> value.  If <var>op</var> is zero,
+the return is <em>0.0</em> and 0 is stored to <code>*<var>exp</var></code>.
+</p>
+<span id="index-frexp-1"></span>
+<p>This is similar to the standard C <code>frexp</code> function (see <a href="https://www.gnu.org/software/libc/manual/html_node/Normalization-Functions.html#Normalization-Functions">Normalization
+Functions</a> in <cite>The GNU C Library Reference Manual</cite>).
+</p></dd></dl>
+<dl>
+<dt id="index-mpf_005fget_005fsi">Function: <em>long</em> <strong>mpf_get_si</strong> <em>(const mpf_t <var>op</var>)</em></dt>
+<dt id="index-mpf_005fget_005fui">Function: <em>unsigned long</em> <strong>mpf_get_ui</strong> <em>(const mpf_t <var>op</var>)</em></dt>
+<dd><p>Convert <var>op</var> to a <code>long</code> or <code>unsigned long</code>, truncating any
+fraction part.  If <var>op</var> is too big for the return type, the result is
+undefined.
+</p>
+<p>See also <code>mpf_fits_slong_p</code> and <code>mpf_fits_ulong_p</code>
+(see <a href="#Miscellaneous-Float-Functions">Miscellaneous Float Functions</a>).
+</p></dd></dl>
+<dl>
+<dt id="index-mpf_005fget_005fstr">Function: <em>char *</em> <strong>mpf_get_str</strong> <em>(char *<var>str</var>, mp_exp_t *<var>expptr</var>, int <var>base</var>, size_t <var>n_digits</var>, const mpf_t <var>op</var>)</em></dt>
+<dd><p>Convert <var>op</var> to a string of digits in base <var>base</var>.  The base argument
+may vary from 2 to 62 or from -2 to -36.  Up to <var>n_digits</var>
+digits will be generated.  Trailing zeros are not returned.  No more digits
+than can be accurately represented by <var>op</var> are ever generated.  If
+<var>n_digits</var> is 0 then that accurate maximum number of digits are generated.
+</p>
+<p>For <var>base</var> in the range 2..36, digits and lower-case letters are used; for
+-2..-36, digits and upper-case letters are used; for 37..62,
+digits, upper-case letters, and lower-case letters (in that significance order)
+are used.
+</p>
+<p>If <var>str</var> is <code>NULL</code>, the result string is allocated using the current
+allocation function (see <a href="constant.Custom_Allocation.html#start">Custom Allocation</a>).  The block will be
+<code>strlen(str)+1</code> bytes, that being exactly enough for the string and
+null-terminator.
+</p>
+<p>If <var>str</var> is not <code>NULL</code>, it should point to a block of
+<em><var>n_digits</var> + 2</em> bytes, that being enough for the mantissa, a
+possible minus sign, and a null-terminator.  When <var>n_digits</var> is 0 to get
+all significant digits, an application won&rsquo;t be able to know the space
+required, and <var>str</var> should be <code>NULL</code> in that case.
+</p>
+<p>The generated string is a fraction, with an implicit radix point immediately
+to the left of the first digit.  The applicable exponent is written through
+the <var>expptr</var> pointer.  For example, the number 3.1416 would be returned as
+string <code>&quot;31416&quot;</code> and exponent 1.
+</p>
+<p>When <var>op</var> is zero, an empty string is produced and the exponent returned
+is 0.
+</p>
+<p>A pointer to the result string is returned, being either the allocated block
+or the given <var>str</var>.
+</p></dd></dl>
+<hr>
+<span id="Float-Arithmetic"></span><div class="header">
+<p>
+Next: <a href="#Float-Comparison" accesskey="n" rel="next">Float Comparison</a>, Previous: <a href="#Converting-Floats" accesskey="p" rel="prev">Converting Floats</a>, Up: <a href="#Floating_002dpoint-Functions" accesskey="u" rel="up">Floating-point Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Arithmetic-Functions-2"></span><h3 class="section">7.5 Arithmetic Functions</h3>
+<span id="index-Float-arithmetic-functions"></span>
+<span id="index-Arithmetic-functions-2"></span>
+<dl>
+<dt id="index-mpf_005fadd">Function: <em>void</em> <strong>mpf_add</strong> <em>(mpf_t <var>rop</var>, const mpf_t <var>op1</var>, const mpf_t <var>op2</var>)</em></dt>
+<dt id="index-mpf_005fadd_005fui">Function: <em>void</em> <strong>mpf_add_ui</strong> <em>(mpf_t <var>rop</var>, const mpf_t <var>op1</var>, unsigned long int <var>op2</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <em><var>op1</var> + <var>op2</var></em>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpf_005fsub">Function: <em>void</em> <strong>mpf_sub</strong> <em>(mpf_t <var>rop</var>, const mpf_t <var>op1</var>, const mpf_t <var>op2</var>)</em></dt>
+<dt id="index-mpf_005fui_005fsub">Function: <em>void</em> <strong>mpf_ui_sub</strong> <em>(mpf_t <var>rop</var>, unsigned long int <var>op1</var>, const mpf_t <var>op2</var>)</em></dt>
+<dt id="index-mpf_005fsub_005fui">Function: <em>void</em> <strong>mpf_sub_ui</strong> <em>(mpf_t <var>rop</var>, const mpf_t <var>op1</var>, unsigned long int <var>op2</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <var>op1</var> - <var>op2</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpf_005fmul">Function: <em>void</em> <strong>mpf_mul</strong> <em>(mpf_t <var>rop</var>, const mpf_t <var>op1</var>, const mpf_t <var>op2</var>)</em></dt>
+<dt id="index-mpf_005fmul_005fui">Function: <em>void</em> <strong>mpf_mul_ui</strong> <em>(mpf_t <var>rop</var>, const mpf_t <var>op1</var>, unsigned long int <var>op2</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <em><var>op1</var> times <var>op2</var></em>.
+</p></dd></dl>
+<p>Division is undefined if the divisor is zero, and passing a zero divisor to the
+divide functions will make these functions intentionally divide by zero.  This
+lets the user handle arithmetic exceptions in these functions in the same
+manner as other arithmetic exceptions.
+</p>
+<dl>
+<dt id="index-mpf_005fdiv">Function: <em>void</em> <strong>mpf_div</strong> <em>(mpf_t <var>rop</var>, const mpf_t <var>op1</var>, const mpf_t <var>op2</var>)</em></dt>
+<dt id="index-mpf_005fui_005fdiv">Function: <em>void</em> <strong>mpf_ui_div</strong> <em>(mpf_t <var>rop</var>, unsigned long int <var>op1</var>, const mpf_t <var>op2</var>)</em></dt>
+<dt id="index-mpf_005fdiv_005fui">Function: <em>void</em> <strong>mpf_div_ui</strong> <em>(mpf_t <var>rop</var>, const mpf_t <var>op1</var>, unsigned long int <var>op2</var>)</em></dt>
+<dd><span id="index-Division-functions-2"></span>
+<p>Set <var>rop</var> to <var>op1</var>/<var>op2</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpf_005fsqrt">Function: <em>void</em> <strong>mpf_sqrt</strong> <em>(mpf_t <var>rop</var>, const mpf_t <var>op</var>)</em></dt>
+<dt id="index-mpf_005fsqrt_005fui">Function: <em>void</em> <strong>mpf_sqrt_ui</strong> <em>(mpf_t <var>rop</var>, unsigned long int <var>op</var>)</em></dt>
+<dd><span id="index-Root-extraction-functions-1"></span>
+<p>Set <var>rop</var> to <em>the square root of <var>op</var></em>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpf_005fpow_005fui">Function: <em>void</em> <strong>mpf_pow_ui</strong> <em>(mpf_t <var>rop</var>, const mpf_t <var>op1</var>, unsigned long int <var>op2</var>)</em></dt>
+<dd><span id="index-Exponentiation-functions-1"></span>
+<span id="index-Powering-functions-1"></span>
+<p>Set <var>rop</var> to <em><var>op1</var> raised to the power <var>op2</var></em>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpf_005fneg">Function: <em>void</em> <strong>mpf_neg</strong> <em>(mpf_t <var>rop</var>, const mpf_t <var>op</var>)</em></dt>
+<dd><p>Set <var>rop</var> to -<var>op</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpf_005fabs">Function: <em>void</em> <strong>mpf_abs</strong> <em>(mpf_t <var>rop</var>, const mpf_t <var>op</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the absolute value of <var>op</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpf_005fmul_005f2exp">Function: <em>void</em> <strong>mpf_mul_2exp</strong> <em>(mpf_t <var>rop</var>, const mpf_t <var>op1</var>, mp_bitcnt_t <var>op2</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <em><var>op1</var> times 2 raised to
+<var>op2</var></em>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpf_005fdiv_005f2exp">Function: <em>void</em> <strong>mpf_div_2exp</strong> <em>(mpf_t <var>rop</var>, const mpf_t <var>op1</var>, mp_bitcnt_t <var>op2</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <em><var>op1</var> divided by 2 raised to
+<var>op2</var></em>.
+</p></dd></dl>
+<hr>
+<span id="Float-Comparison"></span><div class="header">
+<p>
+Next: <a href="#I_002fO-of-Floats" accesskey="n" rel="next">I/O of Floats</a>, Previous: <a href="#Float-Arithmetic" accesskey="p" rel="prev">Float Arithmetic</a>, Up: <a href="#Floating_002dpoint-Functions" accesskey="u" rel="up">Floating-point Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Comparison-Functions-2"></span><h3 class="section">7.6 Comparison Functions</h3>
+<span id="index-Float-comparison-functions"></span>
+<span id="index-Comparison-functions-2"></span>
+<dl>
+<dt id="index-mpf_005fcmp">Function: <em>int</em> <strong>mpf_cmp</strong> <em>(const mpf_t <var>op1</var>, const mpf_t <var>op2</var>)</em></dt>
+<dt id="index-mpf_005fcmp_005fz">Function: <em>int</em> <strong>mpf_cmp_z</strong> <em>(const mpf_t <var>op1</var>, const mpz_t <var>op2</var>)</em></dt>
+<dt id="index-mpf_005fcmp_005fd">Function: <em>int</em> <strong>mpf_cmp_d</strong> <em>(const mpf_t <var>op1</var>, double <var>op2</var>)</em></dt>
+<dt id="index-mpf_005fcmp_005fui">Function: <em>int</em> <strong>mpf_cmp_ui</strong> <em>(const mpf_t <var>op1</var>, unsigned long int <var>op2</var>)</em></dt>
+<dt id="index-mpf_005fcmp_005fsi">Function: <em>int</em> <strong>mpf_cmp_si</strong> <em>(const mpf_t <var>op1</var>, signed long int <var>op2</var>)</em></dt>
+<dd><p>Compare <var>op1</var> and <var>op2</var>.  Return a positive value if <em><var>op1</var> &gt;
+<var>op2</var></em>, zero if <em><var>op1</var> = <var>op2</var></em>, and a negative value if
+<em><var>op1</var> &lt; <var>op2</var></em>.
+</p>
+<p><code>mpf_cmp_d</code> can be called with an infinity, but results are undefined for
+a NaN.
+</p></dd></dl>
+<dl>
+<dt id="index-mpf_005feq">Function: <em>int</em> <strong>mpf_eq</strong> <em>(const mpf_t <var>op1</var>, const mpf_t <var>op2</var>, mp_bitcnt_t op3)</em></dt>
+<dd><p><strong>This function is mathematically ill-defined and should not be used.</strong>
+</p>
+<p>Return non-zero if the first <var>op3</var> bits of <var>op1</var> and <var>op2</var> are
+equal, zero otherwise.  Note that numbers like e.g., 256 (binary 100000000) and
+255 (binary 11111111) will never be equal by this function&rsquo;s measure, and
+furthermore that 0 will only be equal to itself.
+</p></dd></dl>
+<dl>
+<dt id="index-mpf_005freldiff">Function: <em>void</em> <strong>mpf_reldiff</strong> <em>(mpf_t <var>rop</var>, const mpf_t <var>op1</var>, const mpf_t <var>op2</var>)</em></dt>
+<dd><p>Compute the relative difference between <var>op1</var> and <var>op2</var> and store the
+result in <var>rop</var>.  This is <em>abs(<var>op1</var>-<var>op2</var>)/<var>op1</var></em>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpf_005fsgn">Macro: <em>int</em> <strong>mpf_sgn</strong> <em>(const mpf_t <var>op</var>)</em></dt>
+<dd><span id="index-Sign-tests-2"></span>
+<span id="index-Float-sign-tests"></span>
+<p>Return <em>+1</em> if <em><var>op</var> &gt; 0</em>, 0 if <em><var>op</var> = 0</em>, and
+<em>-1</em> if <em><var>op</var> &lt; 0</em>.
+</p>
+<p>This function is actually implemented as a macro.  It evaluates its argument
+multiple times.
+</p></dd></dl>
+<hr>
+<span id="I_002fO-of-Floats"></span><div class="header">
+<p>
+Next: <a href="#Miscellaneous-Float-Functions" accesskey="n" rel="next">Miscellaneous Float Functions</a>, Previous: <a href="#Float-Comparison" accesskey="p" rel="prev">Float Comparison</a>, Up: <a href="#Floating_002dpoint-Functions" accesskey="u" rel="up">Floating-point Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Input-and-Output-Functions-2"></span><h3 class="section">7.7 Input and Output Functions</h3>
+<span id="index-Float-input-and-output-functions"></span>
+<span id="index-Input-functions-2"></span>
+<span id="index-Output-functions-2"></span>
+<span id="index-I_002fO-functions-2"></span>
+<p>Functions that perform input from a stdio stream, and functions that output to
+a stdio stream, of <code>mpf</code> numbers.  Passing a <code>NULL</code> pointer for a
+<var>stream</var> argument to any of these functions will make them read from
+<code>stdin</code> and write to <code>stdout</code>, respectively.
+</p>
+<p>When using any of these functions, it is a good idea to include <samp>stdio.h</samp>
+before <samp>gmp.h</samp>, since that will allow <samp>gmp.h</samp> to define prototypes
+for these functions.
+</p>
+<p>See also <a href="constant.Formatted_Output.html#Formatted-Output">Formatted Output</a> and <a href="constant.Formatted_Input.html#Formatted-Input">Formatted Input</a>.
+</p>
+<dl>
+<dt id="index-mpf_005fout_005fstr">Function: <em>size_t</em> <strong>mpf_out_str</strong> <em>(FILE *<var>stream</var>, int <var>base</var>, size_t <var>n_digits</var>, const mpf_t <var>op</var>)</em></dt>
+<dd><p>Print <var>op</var> to <var>stream</var>, as a string of digits.  Return the number of
+bytes written, or if an error occurred, return 0.
+</p>
+<p>The mantissa is prefixed with an &lsquo;<samp>0.</samp>&rsquo; and is in the given <var>base</var>,
+which may vary from 2 to 62 or from -2 to -36.  An exponent is
+then printed, separated by an &lsquo;<samp>e</samp>&rsquo;, or if the base is greater than 10 then
+by an &lsquo;<samp>@</samp>&rsquo;.  The exponent is always in decimal.  The decimal point follows
+the current locale, on systems providing <code>localeconv</code>.
+</p>
+<p>For <var>base</var> in the range 2..36, digits and lower-case letters are used; for
+-2..-36, digits and upper-case letters are used; for 37..62,
+digits, upper-case letters, and lower-case letters (in that significance order)
+are used.
+</p>
+<p>Up to <var>n_digits</var> will be printed from the mantissa, except that no more
+digits than are accurately representable by <var>op</var> will be printed.
+<var>n_digits</var> can be 0 to select that accurate maximum.
+</p></dd></dl>
+<dl>
+<dt id="index-mpf_005finp_005fstr">Function: <em>size_t</em> <strong>mpf_inp_str</strong> <em>(mpf_t <var>rop</var>, FILE *<var>stream</var>, int <var>base</var>)</em></dt>
+<dd><p>Read a string in base <var>base</var> from <var>stream</var>, and put the read float in
+<var>rop</var>.  The string is of the form &lsquo;<samp>M@N</samp>&rsquo; or, if the base is 10 or
+less, alternatively &lsquo;<samp>MeN</samp>&rsquo;.  &lsquo;<samp>M</samp>&rsquo; is the mantissa and &lsquo;<samp>N</samp>&rsquo; is the
+exponent.  The mantissa is always in the specified base.  The exponent is
+either in the specified base or, if <var>base</var> is negative, in decimal.  The
+decimal point expected is taken from the current locale, on systems providing
+<code>localeconv</code>.
+</p>
+<p>The argument <var>base</var> may be in the ranges 2 to 36, or -36 to
+-2.  Negative values are used to specify that the exponent is in
+decimal.
+</p>
+<p>Unlike the corresponding <code>mpz</code> function, the base will not be determined
+from the leading characters of the string if <var>base</var> is 0.  This is so that
+numbers like &lsquo;<samp>0.23</samp>&rsquo; are not interpreted as octal.
+</p>
+<p>Return the number of bytes read, or if an error occurred, return 0.
+</p></dd></dl>
+<hr>
+<span id="Miscellaneous-Float-Functions"></span><div class="header">
+<p>
+Previous: <a href="#I_002fO-of-Floats" accesskey="p" rel="prev">I/O of Floats</a>, Up: <a href="#Floating_002dpoint-Functions" accesskey="u" rel="up">Floating-point Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Miscellaneous-Functions-1"></span><h3 class="section">7.8 Miscellaneous Functions</h3>
+<span id="index-Miscellaneous-float-functions"></span>
+<span id="index-Float-miscellaneous-functions"></span>
+<dl>
+<dt id="index-mpf_005fceil">Function: <em>void</em> <strong>mpf_ceil</strong> <em>(mpf_t <var>rop</var>, const mpf_t <var>op</var>)</em></dt>
+<dt id="index-mpf_005ffloor">Function: <em>void</em> <strong>mpf_floor</strong> <em>(mpf_t <var>rop</var>, const mpf_t <var>op</var>)</em></dt>
+<dt id="index-mpf_005ftrunc">Function: <em>void</em> <strong>mpf_trunc</strong> <em>(mpf_t <var>rop</var>, const mpf_t <var>op</var>)</em></dt>
+<dd><span id="index-Rounding-functions"></span>
+<span id="index-Float-rounding-functions"></span>
+<p>Set <var>rop</var> to <var>op</var> rounded to an integer.  <code>mpf_ceil</code> rounds to the
+next higher integer, <code>mpf_floor</code> to the next lower, and <code>mpf_trunc</code>
+to the integer towards zero.
+</p></dd></dl>
+<dl>
+<dt id="index-mpf_005finteger_005fp">Function: <em>int</em> <strong>mpf_integer_p</strong> <em>(const mpf_t <var>op</var>)</em></dt>
+<dd><p>Return non-zero if <var>op</var> is an integer.
+</p></dd></dl>
+<dl>
+<dt id="index-mpf_005ffits_005fulong_005fp">Function: <em>int</em> <strong>mpf_fits_ulong_p</strong> <em>(const mpf_t <var>op</var>)</em></dt>
+<dt id="index-mpf_005ffits_005fslong_005fp">Function: <em>int</em> <strong>mpf_fits_slong_p</strong> <em>(const mpf_t <var>op</var>)</em></dt>
+<dt id="index-mpf_005ffits_005fuint_005fp">Function: <em>int</em> <strong>mpf_fits_uint_p</strong> <em>(const mpf_t <var>op</var>)</em></dt>
+<dt id="index-mpf_005ffits_005fsint_005fp">Function: <em>int</em> <strong>mpf_fits_sint_p</strong> <em>(const mpf_t <var>op</var>)</em></dt>
+<dt id="index-mpf_005ffits_005fushort_005fp">Function: <em>int</em> <strong>mpf_fits_ushort_p</strong> <em>(const mpf_t <var>op</var>)</em></dt>
+<dt id="index-mpf_005ffits_005fsshort_005fp">Function: <em>int</em> <strong>mpf_fits_sshort_p</strong> <em>(const mpf_t <var>op</var>)</em></dt>
+<dd><p>Return non-zero if <var>op</var> would fit in the respective C data type, when
+truncated to an integer.
+</p></dd></dl>
+<dl>
+<dt id="index-mpf_005furandomb">Function: <em>void</em> <strong>mpf_urandomb</strong> <em>(mpf_t <var>rop</var>, gmp_randstate_t <var>state</var>, mp_bitcnt_t <var>nbits</var>)</em></dt>
+<dd><span id="index-Random-number-functions-1"></span>
+<span id="index-Float-random-number-functions"></span>
+<p>Generate a uniformly distributed random float in <var>rop</var>, such that <em>0
+&lt;= <var>rop</var> &lt; 1</em>, with <var>nbits</var> significant bits in the mantissa or
+less if the precision of <var>rop</var> is smaller.
+</p>
+<p>The variable <var>state</var> must be initialized by calling one of the
+<code>gmp_randinit</code> functions (<a href="constant.Random_Number_Functions.html#Random-State-Initialization">Random State Initialization</a>) before
+invoking this function.
+</p></dd></dl>
+<dl>
+<dt id="index-mpf_005frandom2">Function: <em>void</em> <strong>mpf_random2</strong> <em>(mpf_t <var>rop</var>, mp_size_t <var>max_size</var>, mp_exp_t <var>exp</var>)</em></dt>
+<dd><p>Generate a random float of at most <var>max_size</var> limbs, with long strings of
+zeros and ones in the binary representation.  The exponent of the number is in
+the interval -<var>exp</var> to <var>exp</var> (in limbs).  This function is
+useful for testing functions and algorithms, since these kind of random
+numbers have proven to be more likely to trigger corner-case bugs.  Negative
+random numbers are generated when <var>max_size</var> is negative.
+</p></dd></dl>
+<hr>
+<div class="header">
+<p>
+Previous: <a href="#I_002fO-of-Floats" accesskey="p" rel="prev">I/O of Floats</a>, Up: <a href="#Floating_002dpoint-Functions" accesskey="u" rel="up">Floating-point Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div></div></section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../";window.currentCrate = "gmp_mpfr_sys";</script><script src="../../../main.js"></script><script defer src="../../../search-index.js"></script></body></html>

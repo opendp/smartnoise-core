@@ -1,0 +1,138 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `Installing_GNU_MPC` constant in crate `gmp_mpfr_sys`."><meta name="keywords" content="rust, rustlang, rust-lang, Installing_GNU_MPC"><title>gmp_mpfr_sys::C::MPC::Installing_GNU_MPC - Rust</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc constant"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../gmp_mpfr_sys/index.html'><div class='logo-container'><img src='https://tspiteri.gitlab.io/gmp-mpfr-sys/rug.svg' alt='logo'></div></a><div class="sidebar-elems"><p class='location'><a href='../../index.html'>gmp_mpfr_sys</a>::<wbr><a href='../index.html'>C</a>::<wbr><a href='index.html'>MPC</a></p><script>window.sidebarCurrent = {name: 'Installing_GNU_MPC', ty: 'constant', relpath: ''};</script><script defer src="sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+                <a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../../../src/gmp_mpfr_sys/C.rs.html#278' title='goto source code'>[src]</a></span><span class='in-band'>Constant <a href='../../index.html'>gmp_mpfr_sys</a>::<wbr><a href='../index.html'>C</a>::<wbr><a href='index.html'>MPC</a>::<wbr><a class="constant" href=''>Installing_GNU_MPC</a></span></h1><pre class='rust const'>pub const Installing_GNU_MPC: ();</pre><div class='docblock'><p>This constant is a place-holder for documentation; do not use it in code.</p>
+<hr />
+<div><span id="start"></span></div>
+<span id="Installing-GNU-MPC"></span><div class="header">
+<p>
+Next: <a href="constant.Reporting_Bugs.html#start" accesskey="n" rel="next">Reporting Bugs</a>, Previous: <a href="constant.Introduction_to_GNU_MPC.html#start" accesskey="p" rel="prev">Introduction to GNU MPC</a>, Up: <a href="index.html#start" accesskey="u" rel="up">Top</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Installing-GNU-MPC-1"></span><h2 class="chapter">2 Installing GNU MPC</h2>
+<span id="index-Installation"></span>
+<p>To build GNU MPC, you first have to install GNU MP (version 5.0.0 or higher) and
+GNU MPFR (version 3.0.0 or higher) on your computer.  You need a C compiler;
+GCC version 4.4 or higher is recommended, since GNU MPC may trigger a bug in previous
+versions, see the thread at
+<a href="http://lists.gforge.inria.fr/pipermail/mpc-discuss/2011-February/000823.html">http://lists.gforge.inria.fr/pipermail/mpc-discuss/2011-February/000823.html</a>.
+And you need a
+standard Unix &lsquo;<samp>make</samp>&rsquo; program, plus some other standard Unix utility
+programs.
+</p>
+<p>Here are the steps needed to install the library on Unix systems:
+</p>
+<ol>
+<li> &lsquo;<samp>tar xzf mpc-1.1.0.tar.gz</samp>&rsquo;
+</li><li> &lsquo;<samp>cd mpc-1.1.0</samp>&rsquo;
+</li><li> &lsquo;<samp>./configure</samp>&rsquo;
+<p>if GMP and GNU MPFR are installed into standard directories, that is, directories
+that are searched by default by the compiler and the linking tools.
+</p>
+<p>&lsquo;<samp>./configure --with-gmp=&lt;gmp_install_dir&gt;</samp>&rsquo;
+</p>
+<p>is used to indicate a different location where GMP is
+installed. Alternatively, you can specify directly GMP include and GMP lib
+directories with &lsquo;<samp>./configure --with-gmp-lib=&lt;gmp_lib_dir&gt;
+--with-gmp-include=&lt;gmp_include_dir&gt;</samp>&rsquo;.
+</p>
+<p>&lsquo;<samp>./configure --with-mpfr=&lt;mpfr_install_dir&gt;</samp>&rsquo;
+</p>
+<p>is used to indicate a different location where GNU MPFR is
+installed. Alternatively, you can specify directly GNU MPFR include and GNU MPFR lib
+directories with &lsquo;<samp>./configure --with-mpf-lib=&lt;mpfr_lib_dir&gt;
+--with-mpfr-include=&lt;mpfr_include_dir&gt;</samp>&rsquo;.
+</p>
+<p>Another useful parameter is &lsquo;<samp>--prefix</samp>&rsquo;, which can be used to
+specify an alternative installation location instead of
+<samp>/usr/local</samp>; see &lsquo;<samp>make install</samp>&rsquo; below.
+</p>
+<p>To enable checking for memory leaks using <code>valgrind</code> during
+<code>make check</code>, add the parameter <code>--enable-valgrind-tests</code>.
+</p>
+<p>If for debugging purposes you wish to log calls to GNU MPC functions from
+within your code, add the parameter &lsquo;<samp>--enable-logging</samp>&rsquo;.
+In your code, replace the inclusion of <samp>mpc.h</samp> by <samp>mpc-log.h</samp>
+and link the executable dynamically.
+Then all calls to functions with only complex arguments are printed to
+<samp>stderr</samp> in the following form: First, the function name is given,
+followed by its type such as &lsquo;<samp>c_cc</samp>&rsquo;, meaning that the function has
+one complex result (one &lsquo;<samp>c</samp>&rsquo; in front of the &lsquo;<samp>_</samp>&rsquo;), computed from
+two complex arguments (two &lsquo;<samp>c</samp>&rsquo; after the &lsquo;<samp>_</samp>&rsquo;). Then, the
+precisions of the real and the imaginary part of the first result is given,
+followed by the second one and so on. Finally, for each argument, the
+precisions of its real and imaginary part are specified and the argument
+itself is printed in hexadecimal via the function
+<code>mpc_out_str</code>
+(see <a href="constant.Complex_Functions.html#String-and-Stream-Input-and-Output">String and Stream Input and Output</a>).
+The option requires a dynamic library, so it may not be combined with
+<code>--disable-shared</code>.
+</p>
+<p>Use &lsquo;<samp>./configure --help</samp>&rsquo; for an exhaustive list of parameters.
+</p>
+</li><li> &lsquo;<samp>make</samp>&rsquo;
+<p>This compiles GNU MPC in the working directory.
+</p>
+</li><li> &lsquo;<samp>make check</samp>&rsquo;
+<p>This will make sure GNU MPC was built correctly.
+</p>
+<p>If you get error messages, please report them to
+&lsquo;<samp>mpc-discuss@lists.gforge.inria.fr</samp>&rsquo; (See <a href="constant.Reporting_Bugs.html#start">Reporting Bugs</a>, for
+information on what to include in useful bug reports).
+</p>
+</li><li> &lsquo;<samp>make install</samp>&rsquo;
+<p>This will copy the file <samp>mpc.h</samp> to the directory
+<samp>/usr/local/include</samp>, the file <samp>libmpc.a</samp> to the directory
+<samp>/usr/local/lib</samp>, and the file <samp>mpc.info</samp> to the directory
+<samp>/usr/local/share/info</samp> (or if you passed the &lsquo;<samp>--prefix</samp>&rsquo; option to
+<samp>configure</samp>, using the prefix directory given as argument to
+&lsquo;<samp>--prefix</samp>&rsquo; instead of <samp>/usr/local</samp>). Note: you need write permissions
+on these directories.
+</p>
+</li></ol>
+<span id="Other-_0060make_0027-Targets"></span><h3 class="section">2.1 Other &lsquo;make&rsquo; Targets</h3>
+<p>There are some other useful make targets:
+</p>
+<ul>
+<li> &lsquo;<samp>info</samp>&rsquo;
+<p>Create an info version of the manual, in <samp>mpc.info</samp>.
+</p>
+</li><li> &lsquo;<samp>pdf</samp>&rsquo;
+<p>Create a PDF version of the manual, in <samp>doc/mpc.pdf</samp>.
+</p>
+</li><li> &lsquo;<samp>dvi</samp>&rsquo;
+<p>Create a DVI version of the manual, in <samp>doc/mpc.dvi</samp>.
+</p>
+</li><li> &lsquo;<samp>ps</samp>&rsquo;
+<p>Create a Postscript version of the manual, in <samp>doc/mpc.ps</samp>.
+</p>
+</li><li> &lsquo;<samp>html</samp>&rsquo;
+<p>Create an HTML version of the manual, in several pages in the
+directory <samp>doc/mpc.html</samp>; if you want only one output HTML file,
+then type &lsquo;<samp>makeinfo --html --no-split mpc.texi</samp>&rsquo; instead.
+</p>
+</li><li> &lsquo;<samp>clean</samp>&rsquo;
+<p>Delete all object files and archive files, but not the configuration files.
+</p>
+</li><li> &lsquo;<samp>distclean</samp>&rsquo;
+<p>Delete all files not included in the distribution.
+</p>
+</li><li> &lsquo;<samp>uninstall</samp>&rsquo;
+<p>Delete all files copied by &lsquo;<samp>make install</samp>&rsquo;.
+</p></li></ul>
+<span id="Known-Build-Problems"></span><h3 class="section">2.2 Known Build Problems</h3>
+<p>On AIX, if GMP was built with the 64-bit ABI, before building and testing GNU MPC,
+it might be necessary to set the &lsquo;<samp>OBJECT_MODE</samp>&rsquo; environment variable to 64
+by, e.g.,
+</p>
+<p>&lsquo;<samp>export OBJECT_MODE=64</samp>&rsquo;
+</p>
+<p>This has been tested with the C compiler IBM XL C/C++ Enterprise Edition
+V8.0 for AIX, version: 08.00.0000.0021, GMP 4.2.4 and GNU MPFR 2.4.1.
+</p>
+<p>Please report any other problems you encounter to
+&lsquo;<samp>mpc-discuss@lists.gforge.inria.fr</samp>&rsquo;.
+See <a href="constant.Reporting_Bugs.html#start">Reporting Bugs</a>.
+</p>
+<hr>
+<div class="header">
+<p>
+Next: <a href="constant.Reporting_Bugs.html#start" accesskey="n" rel="next">Reporting Bugs</a>, Previous: <a href="constant.Introduction_to_GNU_MPC.html#start" accesskey="p" rel="prev">Introduction to GNU MPC</a>, Up: <a href="index.html#start" accesskey="u" rel="up">Top</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div></div></section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../";window.currentCrate = "gmp_mpfr_sys";</script><script src="../../../main.js"></script><script defer src="../../../search-index.js"></script></body></html>

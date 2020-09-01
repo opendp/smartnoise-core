@@ -1,0 +1,350 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `Rational_Number_Functions` constant in crate `gmp_mpfr_sys`."><meta name="keywords" content="rust, rustlang, rust-lang, Rational_Number_Functions"><title>gmp_mpfr_sys::C::GMP::Rational_Number_Functions - Rust</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc constant"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../gmp_mpfr_sys/index.html'><div class='logo-container'><img src='https://tspiteri.gitlab.io/gmp-mpfr-sys/rug.svg' alt='logo'></div></a><div class="sidebar-elems"><p class='location'><a href='../../index.html'>gmp_mpfr_sys</a>::<wbr><a href='../index.html'>C</a>::<wbr><a href='index.html'>GMP</a></p><script>window.sidebarCurrent = {name: 'Rational_Number_Functions', ty: 'constant', relpath: ''};</script><script defer src="sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+                <a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../../../src/gmp_mpfr_sys/C.rs.html#130' title='goto source code'>[src]</a></span><span class='in-band'>Constant <a href='../../index.html'>gmp_mpfr_sys</a>::<wbr><a href='../index.html'>C</a>::<wbr><a href='index.html'>GMP</a>::<wbr><a class="constant" href=''>Rational_Number_Functions</a></span></h1><pre class='rust const'>pub const Rational_Number_Functions: ();</pre><div class='docblock'><p>This constant is a place-holder for documentation; do not use it in code.</p>
+<hr />
+<div><span id="start"></span></div>
+<span id="Rational-Number-Functions"></span><div class="header">
+<p>
+Next: <a href="constant.Floating_point_Functions.html#Floating_002dpoint-Functions" accesskey="n" rel="next">Floating-point Functions</a>, Previous: <a href="constant.Integer_Functions.html#Integer-Functions" accesskey="p" rel="prev">Integer Functions</a>, Up: <a href="index.html#start" accesskey="u" rel="up">Top</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Rational-Number-Functions-1"></span><h2 class="chapter">6 Rational Number Functions</h2>
+<span id="index-Rational-number-functions"></span>
+<p>This chapter describes the GMP functions for performing arithmetic on rational
+numbers.  These functions start with the prefix <code>mpq_</code>.
+</p>
+<p>Rational numbers are stored in objects of type <code>mpq_t</code>.
+</p>
+<p>All rational arithmetic functions assume operands have a canonical form, and
+canonicalize their result.  The canonical form means that the denominator and
+the numerator have no common factors, and that the denominator is positive.
+Zero has the unique representation 0/1.
+</p>
+<p>Pure assignment functions do not canonicalize the assigned variable.  It is
+the responsibility of the user to canonicalize the assigned variable before
+any arithmetic operations are performed on that variable.
+</p>
+<dl>
+<dt id="index-mpq_005fcanonicalize">Function: <em>void</em> <strong>mpq_canonicalize</strong> <em>(mpq_t <var>op</var>)</em></dt>
+<dd><p>Remove any factors that are common to the numerator and denominator of
+<var>op</var>, and make the denominator positive.
+</p></dd></dl>
+<table class="menu" style="margin: 0; width: auto; padding: 0; border: 0;" border="0" cellspacing="0">
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Initializing-Rationals" accesskey="1">Initializing Rationals</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Rational-Conversions" accesskey="2">Rational Conversions</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Rational-Arithmetic" accesskey="3">Rational Arithmetic</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Comparing-Rationals" accesskey="4">Comparing Rationals</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Applying-Integer-Functions" accesskey="5">Applying Integer Functions</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#I_002fO-of-Rationals" accesskey="6">I/O of Rationals</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+</table>
+<hr>
+<span id="Initializing-Rationals"></span><div class="header">
+<p>
+Next: <a href="#Rational-Conversions" accesskey="n" rel="next">Rational Conversions</a>, Previous: <a href="#Rational-Number-Functions" accesskey="p" rel="prev">Rational Number Functions</a>, Up: <a href="#Rational-Number-Functions" accesskey="u" rel="up">Rational Number Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Initialization-and-Assignment-Functions"></span><h3 class="section">6.1 Initialization and Assignment Functions</h3>
+<span id="index-Rational-assignment-functions"></span>
+<span id="index-Assignment-functions-2"></span>
+<span id="index-Rational-initialization-functions"></span>
+<span id="index-Initialization-functions-2"></span>
+<dl>
+<dt id="index-mpq_005finit">Function: <em>void</em> <strong>mpq_init</strong> <em>(mpq_t <var>x</var>)</em></dt>
+<dd><p>Initialize <var>x</var> and set it to 0/1.  Each variable should normally only be
+initialized once, or at least cleared out (using the function <code>mpq_clear</code>)
+between each initialization.
+</p></dd></dl>
+<dl>
+<dt id="index-mpq_005finits">Function: <em>void</em> <strong>mpq_inits</strong> <em>(mpq_t <var>x</var>, ...)</em></dt>
+<dd><p>Initialize a NULL-terminated list of <code>mpq_t</code> variables, and set their
+values to 0/1.
+</p></dd></dl>
+<dl>
+<dt id="index-mpq_005fclear">Function: <em>void</em> <strong>mpq_clear</strong> <em>(mpq_t <var>x</var>)</em></dt>
+<dd><p>Free the space occupied by <var>x</var>.  Make sure to call this function for all
+<code>mpq_t</code> variables when you are done with them.
+</p></dd></dl>
+<dl>
+<dt id="index-mpq_005fclears">Function: <em>void</em> <strong>mpq_clears</strong> <em>(mpq_t <var>x</var>, ...)</em></dt>
+<dd><p>Free the space occupied by a NULL-terminated list of <code>mpq_t</code> variables.
+</p></dd></dl>
+<dl>
+<dt id="index-mpq_005fset">Function: <em>void</em> <strong>mpq_set</strong> <em>(mpq_t <var>rop</var>, const mpq_t <var>op</var>)</em></dt>
+<dt id="index-mpq_005fset_005fz">Function: <em>void</em> <strong>mpq_set_z</strong> <em>(mpq_t <var>rop</var>, const mpz_t <var>op</var>)</em></dt>
+<dd><p>Assign <var>rop</var> from <var>op</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpq_005fset_005fui">Function: <em>void</em> <strong>mpq_set_ui</strong> <em>(mpq_t <var>rop</var>, unsigned long int <var>op1</var>, unsigned long int <var>op2</var>)</em></dt>
+<dt id="index-mpq_005fset_005fsi">Function: <em>void</em> <strong>mpq_set_si</strong> <em>(mpq_t <var>rop</var>, signed long int <var>op1</var>, unsigned long int <var>op2</var>)</em></dt>
+<dd><p>Set the value of <var>rop</var> to <var>op1</var>/<var>op2</var>.  Note that if <var>op1</var> and
+<var>op2</var> have common factors, <var>rop</var> has to be passed to
+<code>mpq_canonicalize</code> before any operations are performed on <var>rop</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpq_005fset_005fstr">Function: <em>int</em> <strong>mpq_set_str</strong> <em>(mpq_t <var>rop</var>, const char *<var>str</var>, int <var>base</var>)</em></dt>
+<dd><p>Set <var>rop</var> from a null-terminated string <var>str</var> in the given <var>base</var>.
+</p>
+<p>The string can be an integer like &ldquo;41&rdquo; or a fraction like &ldquo;41/152&rdquo;.  The
+fraction must be in canonical form (see <a href="#Rational-Number-Functions">Rational Number Functions</a>), or if
+not then <code>mpq_canonicalize</code> must be called.
+</p>
+<p>The numerator and optional denominator are parsed the same as in
+<code>mpz_set_str</code> (see <a href="constant.Integer_Functions.html#Assigning-Integers">Assigning Integers</a>).  White space is allowed in
+the string, and is simply ignored.  The <var>base</var> can vary from 2 to 62, or
+if <var>base</var> is 0 then the leading characters are used: <code>0x</code> or <code>0X</code> for hex,
+<code>0b</code> or <code>0B</code> for binary,
+<code>0</code> for octal, or decimal otherwise.  Note that this is done separately
+for the numerator and denominator, so for instance <code>0xEF/100</code> is 239/100,
+whereas <code>0xEF/0x100</code> is 239/256.
+</p>
+<p>The return value is 0 if the entire string is a valid number, or -1 if
+not.
+</p></dd></dl>
+<dl>
+<dt id="index-mpq_005fswap">Function: <em>void</em> <strong>mpq_swap</strong> <em>(mpq_t <var>rop1</var>, mpq_t <var>rop2</var>)</em></dt>
+<dd><p>Swap the values <var>rop1</var> and <var>rop2</var> efficiently.
+</p></dd></dl>
+<hr>
+<span id="Rational-Conversions"></span><div class="header">
+<p>
+Next: <a href="#Rational-Arithmetic" accesskey="n" rel="next">Rational Arithmetic</a>, Previous: <a href="#Initializing-Rationals" accesskey="p" rel="prev">Initializing Rationals</a>, Up: <a href="#Rational-Number-Functions" accesskey="u" rel="up">Rational Number Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Conversion-Functions-1"></span><h3 class="section">6.2 Conversion Functions</h3>
+<span id="index-Rational-conversion-functions"></span>
+<span id="index-Conversion-functions-1"></span>
+<dl>
+<dt id="index-mpq_005fget_005fd">Function: <em>double</em> <strong>mpq_get_d</strong> <em>(const mpq_t <var>op</var>)</em></dt>
+<dd><p>Convert <var>op</var> to a <code>double</code>, truncating if necessary (i.e. rounding
+towards zero).
+</p>
+<p>If the exponent from the conversion is too big or too small to fit a
+<code>double</code> then the result is system dependent.  For too big an infinity is
+returned when available.  For too small <em>0.0</em> is normally returned.
+Hardware overflow, underflow and denorm traps may or may not occur.
+</p></dd></dl>
+<dl>
+<dt id="index-mpq_005fset_005fd">Function: <em>void</em> <strong>mpq_set_d</strong> <em>(mpq_t <var>rop</var>, double <var>op</var>)</em></dt>
+<dt id="index-mpq_005fset_005ff">Function: <em>void</em> <strong>mpq_set_f</strong> <em>(mpq_t <var>rop</var>, const mpf_t <var>op</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the value of <var>op</var>.  There is no rounding, this conversion
+is exact.
+</p></dd></dl>
+<dl>
+<dt id="index-mpq_005fget_005fstr">Function: <em>char *</em> <strong>mpq_get_str</strong> <em>(char *<var>str</var>, int <var>base</var>, const mpq_t <var>op</var>)</em></dt>
+<dd><p>Convert <var>op</var> to a string of digits in base <var>base</var>.  The base argument
+may vary from 2 to 62 or from -2 to -36.  The string will be of
+the form &lsquo;<samp>num/den</samp>&rsquo;, or if the denominator is 1 then just &lsquo;<samp>num</samp>&rsquo;.
+</p>
+<p>For <var>base</var> in the range 2..36, digits and lower-case letters are used; for
+-2..-36, digits and upper-case letters are used; for 37..62,
+digits, upper-case letters, and lower-case letters (in that significance order)
+are used.
+</p>
+<p>If <var>str</var> is <code>NULL</code>, the result string is allocated using the current
+allocation function (see <a href="constant.Custom_Allocation.html#start">Custom Allocation</a>).  The block will be
+<code>strlen(str)+1</code> bytes, that being exactly enough for the string and
+null-terminator.
+</p>
+<p>If <var>str</var> is not <code>NULL</code>, it should point to a block of storage large
+enough for the result, that being
+</p>
+<div class="example">
+<pre class="example">mpz_sizeinbase (mpq_numref(<var>op</var>), <var>base</var>)
++ mpz_sizeinbase (mpq_denref(<var>op</var>), <var>base</var>) + 3
+</pre></div>
+<p>The three extra bytes are for a possible minus sign, possible slash, and the
+null-terminator.
+</p>
+<p>A pointer to the result string is returned, being either the allocated block,
+or the given <var>str</var>.
+</p></dd></dl>
+<hr>
+<span id="Rational-Arithmetic"></span><div class="header">
+<p>
+Next: <a href="#Comparing-Rationals" accesskey="n" rel="next">Comparing Rationals</a>, Previous: <a href="#Rational-Conversions" accesskey="p" rel="prev">Rational Conversions</a>, Up: <a href="#Rational-Number-Functions" accesskey="u" rel="up">Rational Number Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Arithmetic-Functions-1"></span><h3 class="section">6.3 Arithmetic Functions</h3>
+<span id="index-Rational-arithmetic-functions"></span>
+<span id="index-Arithmetic-functions-1"></span>
+<dl>
+<dt id="index-mpq_005fadd">Function: <em>void</em> <strong>mpq_add</strong> <em>(mpq_t <var>sum</var>, const mpq_t <var>addend1</var>, const mpq_t <var>addend2</var>)</em></dt>
+<dd><p>Set <var>sum</var> to <var>addend1</var> + <var>addend2</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpq_005fsub">Function: <em>void</em> <strong>mpq_sub</strong> <em>(mpq_t <var>difference</var>, const mpq_t <var>minuend</var>, const mpq_t <var>subtrahend</var>)</em></dt>
+<dd><p>Set <var>difference</var> to <var>minuend</var> - <var>subtrahend</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpq_005fmul">Function: <em>void</em> <strong>mpq_mul</strong> <em>(mpq_t <var>product</var>, const mpq_t <var>multiplier</var>, const mpq_t <var>multiplicand</var>)</em></dt>
+<dd><p>Set <var>product</var> to <em><var>multiplier</var> times <var>multiplicand</var></em>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpq_005fmul_005f2exp">Function: <em>void</em> <strong>mpq_mul_2exp</strong> <em>(mpq_t <var>rop</var>, const mpq_t <var>op1</var>, mp_bitcnt_t <var>op2</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <em><var>op1</var> times 2 raised to
+<var>op2</var></em>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpq_005fdiv">Function: <em>void</em> <strong>mpq_div</strong> <em>(mpq_t <var>quotient</var>, const mpq_t <var>dividend</var>, const mpq_t <var>divisor</var>)</em></dt>
+<dd><span id="index-Division-functions-1"></span>
+<p>Set <var>quotient</var> to <var>dividend</var>/<var>divisor</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpq_005fdiv_005f2exp">Function: <em>void</em> <strong>mpq_div_2exp</strong> <em>(mpq_t <var>rop</var>, const mpq_t <var>op1</var>, mp_bitcnt_t <var>op2</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <em><var>op1</var> divided by 2 raised to
+<var>op2</var></em>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpq_005fneg">Function: <em>void</em> <strong>mpq_neg</strong> <em>(mpq_t <var>negated_operand</var>, const mpq_t <var>operand</var>)</em></dt>
+<dd><p>Set <var>negated_operand</var> to -<var>operand</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpq_005fabs">Function: <em>void</em> <strong>mpq_abs</strong> <em>(mpq_t <var>rop</var>, const mpq_t <var>op</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the absolute value of <var>op</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpq_005finv">Function: <em>void</em> <strong>mpq_inv</strong> <em>(mpq_t <var>inverted_number</var>, const mpq_t <var>number</var>)</em></dt>
+<dd><p>Set <var>inverted_number</var> to 1/<var>number</var>.  If the new denominator is
+zero, this routine will divide by zero.
+</p></dd></dl>
+<hr>
+<span id="Comparing-Rationals"></span><div class="header">
+<p>
+Next: <a href="#Applying-Integer-Functions" accesskey="n" rel="next">Applying Integer Functions</a>, Previous: <a href="#Rational-Arithmetic" accesskey="p" rel="prev">Rational Arithmetic</a>, Up: <a href="#Rational-Number-Functions" accesskey="u" rel="up">Rational Number Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Comparison-Functions-1"></span><h3 class="section">6.4 Comparison Functions</h3>
+<span id="index-Rational-comparison-functions"></span>
+<span id="index-Comparison-functions-1"></span>
+<dl>
+<dt id="index-mpq_005fcmp">Function: <em>int</em> <strong>mpq_cmp</strong> <em>(const mpq_t <var>op1</var>, const mpq_t <var>op2</var>)</em></dt>
+<dt id="index-mpq_005fcmp_005fz">Function: <em>int</em> <strong>mpq_cmp_z</strong> <em>(const mpq_t <var>op1</var>, const mpz_t <var>op2</var>)</em></dt>
+<dd><p>Compare <var>op1</var> and <var>op2</var>.  Return a positive value if <em><var>op1</var> &gt;
+<var>op2</var></em>, zero if <em><var>op1</var> = <var>op2</var></em>, and a negative value if
+<em><var>op1</var> &lt; <var>op2</var></em>.
+</p>
+<p>To determine if two rationals are equal, <code>mpq_equal</code> is faster than
+<code>mpq_cmp</code>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpq_005fcmp_005fui">Macro: <em>int</em> <strong>mpq_cmp_ui</strong> <em>(const mpq_t <var>op1</var>, unsigned long int <var>num2</var>, unsigned long int <var>den2</var>)</em></dt>
+<dt id="index-mpq_005fcmp_005fsi">Macro: <em>int</em> <strong>mpq_cmp_si</strong> <em>(const mpq_t <var>op1</var>, long int <var>num2</var>, unsigned long int <var>den2</var>)</em></dt>
+<dd><p>Compare <var>op1</var> and <var>num2</var>/<var>den2</var>.  Return a positive value if
+<em><var>op1</var> &gt; <var>num2</var>/<var>den2</var></em>, zero if <em><var>op1</var> =
+<var>num2</var>/<var>den2</var></em>, and a negative value if <em><var>op1</var> &lt;
+<var>num2</var>/<var>den2</var></em>.
+</p>
+<p><var>num2</var> and <var>den2</var> are allowed to have common factors.
+</p>
+<p>These functions are implemented as a macros and evaluate their arguments
+multiple times.
+</p></dd></dl>
+<dl>
+<dt id="index-mpq_005fsgn">Macro: <em>int</em> <strong>mpq_sgn</strong> <em>(const mpq_t <var>op</var>)</em></dt>
+<dd><span id="index-Sign-tests-1"></span>
+<span id="index-Rational-sign-tests"></span>
+<p>Return <em>+1</em> if <em><var>op</var> &gt; 0</em>, 0 if <em><var>op</var> = 0</em>, and
+<em>-1</em> if <em><var>op</var> &lt; 0</em>.
+</p>
+<p>This function is actually implemented as a macro.  It evaluates its
+argument multiple times.
+</p></dd></dl>
+<dl>
+<dt id="index-mpq_005fequal">Function: <em>int</em> <strong>mpq_equal</strong> <em>(const mpq_t <var>op1</var>, const mpq_t <var>op2</var>)</em></dt>
+<dd><p>Return non-zero if <var>op1</var> and <var>op2</var> are equal, zero if they are
+non-equal.  Although <code>mpq_cmp</code> can be used for the same purpose, this
+function is much faster.
+</p></dd></dl>
+<hr>
+<span id="Applying-Integer-Functions"></span><div class="header">
+<p>
+Next: <a href="#I_002fO-of-Rationals" accesskey="n" rel="next">I/O of Rationals</a>, Previous: <a href="#Comparing-Rationals" accesskey="p" rel="prev">Comparing Rationals</a>, Up: <a href="#Rational-Number-Functions" accesskey="u" rel="up">Rational Number Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Applying-Integer-Functions-to-Rationals"></span><h3 class="section">6.5 Applying Integer Functions to Rationals</h3>
+<span id="index-Rational-numerator-and-denominator"></span>
+<span id="index-Numerator-and-denominator"></span>
+<p>The set of <code>mpq</code> functions is quite small.  In particular, there are few
+functions for either input or output.  The following functions give direct
+access to the numerator and denominator of an <code>mpq_t</code>.
+</p>
+<p>Note that if an assignment to the numerator and/or denominator could take an
+<code>mpq_t</code> out of the canonical form described at the start of this chapter
+(see <a href="#Rational-Number-Functions">Rational Number Functions</a>) then <code>mpq_canonicalize</code> must be
+called before any other <code>mpq</code> functions are applied to that <code>mpq_t</code>.
+</p>
+<dl>
+<dt id="index-mpq_005fnumref">Macro: <em>mpz_t</em> <strong>mpq_numref</strong> <em>(const mpq_t <var>op</var>)</em></dt>
+<dt id="index-mpq_005fdenref">Macro: <em>mpz_t</em> <strong>mpq_denref</strong> <em>(const mpq_t <var>op</var>)</em></dt>
+<dd><p>Return a reference to the numerator and denominator of <var>op</var>, respectively.
+The <code>mpz</code> functions can be used on the result of these macros.
+</p></dd></dl>
+<dl>
+<dt id="index-mpq_005fget_005fnum">Function: <em>void</em> <strong>mpq_get_num</strong> <em>(mpz_t <var>numerator</var>, const mpq_t <var>rational</var>)</em></dt>
+<dt id="index-mpq_005fget_005fden">Function: <em>void</em> <strong>mpq_get_den</strong> <em>(mpz_t <var>denominator</var>, const mpq_t <var>rational</var>)</em></dt>
+<dt id="index-mpq_005fset_005fnum">Function: <em>void</em> <strong>mpq_set_num</strong> <em>(mpq_t <var>rational</var>, const mpz_t <var>numerator</var>)</em></dt>
+<dt id="index-mpq_005fset_005fden">Function: <em>void</em> <strong>mpq_set_den</strong> <em>(mpq_t <var>rational</var>, const mpz_t <var>denominator</var>)</em></dt>
+<dd><p>Get or set the numerator or denominator of a rational.  These functions are
+equivalent to calling <code>mpz_set</code> with an appropriate <code>mpq_numref</code> or
+<code>mpq_denref</code>.  Direct use of <code>mpq_numref</code> or <code>mpq_denref</code> is
+recommended instead of these functions.
+</p></dd></dl>
+<hr>
+<span id="I_002fO-of-Rationals"></span><div class="header">
+<p>
+Previous: <a href="#Applying-Integer-Functions" accesskey="p" rel="prev">Applying Integer Functions</a>, Up: <a href="#Rational-Number-Functions" accesskey="u" rel="up">Rational Number Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Input-and-Output-Functions-1"></span><h3 class="section">6.6 Input and Output Functions</h3>
+<span id="index-Rational-input-and-output-functions"></span>
+<span id="index-Input-functions-1"></span>
+<span id="index-Output-functions-1"></span>
+<span id="index-I_002fO-functions-1"></span>
+<p>Functions that perform input from a stdio stream, and functions that output to
+a stdio stream, of <code>mpq</code> numbers.  Passing a <code>NULL</code> pointer for a
+<var>stream</var> argument to any of these functions will make them read from
+<code>stdin</code> and write to <code>stdout</code>, respectively.
+</p>
+<p>When using any of these functions, it is a good idea to include <samp>stdio.h</samp>
+before <samp>gmp.h</samp>, since that will allow <samp>gmp.h</samp> to define prototypes
+for these functions.
+</p>
+<p>See also <a href="constant.Formatted_Output.html#Formatted-Output">Formatted Output</a> and <a href="constant.Formatted_Input.html#Formatted-Input">Formatted Input</a>.
+</p>
+<dl>
+<dt id="index-mpq_005fout_005fstr">Function: <em>size_t</em> <strong>mpq_out_str</strong> <em>(FILE *<var>stream</var>, int <var>base</var>, const mpq_t <var>op</var>)</em></dt>
+<dd><p>Output <var>op</var> on stdio stream <var>stream</var>, as a string of digits in base
+<var>base</var>.  The base argument may vary from 2 to 62 or from -2 to
+-36. Output is in the form
+&lsquo;<samp>num/den</samp>&rsquo; or if the denominator is 1 then just &lsquo;<samp>num</samp>&rsquo;.
+</p>
+<p>For <var>base</var> in the range 2..36, digits and lower-case letters are used; for
+-2..-36, digits and upper-case letters are used; for 37..62,
+digits, upper-case letters, and lower-case letters (in that significance order)
+are used.
+</p>
+<p>Return the number of bytes written, or if an error occurred, return 0.
+</p></dd></dl>
+<dl>
+<dt id="index-mpq_005finp_005fstr">Function: <em>size_t</em> <strong>mpq_inp_str</strong> <em>(mpq_t <var>rop</var>, FILE *<var>stream</var>, int <var>base</var>)</em></dt>
+<dd><p>Read a string of digits from <var>stream</var> and convert them to a rational in
+<var>rop</var>.  Any initial white-space characters are read and discarded.  Return
+the number of characters read (including white space), or 0 if a rational
+could not be read.
+</p>
+<p>The input can be a fraction like &lsquo;<samp>17/63</samp>&rsquo; or just an integer like
+&lsquo;<samp>123</samp>&rsquo;.  Reading stops at the first character not in this form, and white
+space is not permitted within the string.  If the input might not be in
+canonical form, then <code>mpq_canonicalize</code> must be called (see <a href="#Rational-Number-Functions">Rational Number Functions</a>).
+</p>
+<p>The <var>base</var> can be between 2 and 62, or can be 0 in which case the leading
+characters of the string determine the base, &lsquo;<samp>0x</samp>&rsquo; or &lsquo;<samp>0X</samp>&rsquo; for
+hexadecimal, <code>0b</code> and <code>0B</code> for binary, &lsquo;<samp>0</samp>&rsquo; for octal, or
+decimal otherwise.  The leading characters
+are examined separately for the numerator and denominator of a fraction, so
+for instance &lsquo;<samp>0x10/11</samp>&rsquo; is <em>16/11</em>, whereas &lsquo;<samp>0x10/0x11</samp>&rsquo; is
+<em>16/17</em>.
+</p></dd></dl>
+<hr>
+<div class="header">
+<p>
+Previous: <a href="#Applying-Integer-Functions" accesskey="p" rel="prev">Applying Integer Functions</a>, Up: <a href="#Rational-Number-Functions" accesskey="u" rel="up">Rational Number Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div></div></section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../";window.currentCrate = "gmp_mpfr_sys";</script><script src="../../../main.js"></script><script defer src="../../../search-index.js"></script></body></html>

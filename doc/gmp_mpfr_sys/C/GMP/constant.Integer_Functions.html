@@ -1,0 +1,1259 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `Integer_Functions` constant in crate `gmp_mpfr_sys`."><meta name="keywords" content="rust, rustlang, rust-lang, Integer_Functions"><title>gmp_mpfr_sys::C::GMP::Integer_Functions - Rust</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc constant"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../gmp_mpfr_sys/index.html'><div class='logo-container'><img src='https://tspiteri.gitlab.io/gmp-mpfr-sys/rug.svg' alt='logo'></div></a><div class="sidebar-elems"><p class='location'><a href='../../index.html'>gmp_mpfr_sys</a>::<wbr><a href='../index.html'>C</a>::<wbr><a href='index.html'>GMP</a></p><script>window.sidebarCurrent = {name: 'Integer_Functions', ty: 'constant', relpath: ''};</script><script defer src="sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+                <a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../../../src/gmp_mpfr_sys/C.rs.html#94' title='goto source code'>[src]</a></span><span class='in-band'>Constant <a href='../../index.html'>gmp_mpfr_sys</a>::<wbr><a href='../index.html'>C</a>::<wbr><a href='index.html'>GMP</a>::<wbr><a class="constant" href=''>Integer_Functions</a></span></h1><pre class='rust const'>pub const Integer_Functions: ();</pre><div class='docblock'><p>This constant is a place-holder for documentation; do not use it in code.</p>
+<hr />
+<div><span id="start"></span></div>
+<span id="Integer-Functions"></span><div class="header">
+<p>
+Next: <a href="constant.Rational_Number_Functions.html#Rational-Number-Functions" accesskey="n" rel="next">Rational Number Functions</a>, Previous: <a href="constant.Reporting_Bugs.html#start" accesskey="p" rel="prev">Reporting Bugs</a>, Up: <a href="index.html#start" accesskey="u" rel="up">Top</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Integer-Functions-1"></span><h2 class="chapter">5 Integer Functions</h2>
+<span id="index-Integer-functions"></span>
+<p>This chapter describes the GMP functions for performing integer arithmetic.
+These functions start with the prefix <code>mpz_</code>.
+</p>
+<p>GMP integers are stored in objects of type <code>mpz_t</code>.
+</p>
+<table class="menu" style="margin: 0; width: auto; padding: 0; border: 0;" border="0" cellspacing="0">
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Initializing-Integers" accesskey="1">Initializing Integers</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Assigning-Integers" accesskey="2">Assigning Integers</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Simultaneous-Integer-Init-_0026-Assign" accesskey="3">Simultaneous Integer Init &amp; Assign</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Converting-Integers" accesskey="4">Converting Integers</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Integer-Arithmetic" accesskey="5">Integer Arithmetic</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Integer-Division" accesskey="6">Integer Division</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Integer-Exponentiation" accesskey="7">Integer Exponentiation</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Integer-Roots" accesskey="8">Integer Roots</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Number-Theoretic-Functions" accesskey="9">Number Theoretic Functions</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Integer-Comparisons">Integer Comparisons</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Integer-Logic-and-Bit-Fiddling">Integer Logic and Bit Fiddling</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#I_002fO-of-Integers">I/O of Integers</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Integer-Random-Numbers">Integer Random Numbers</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Integer-Import-and-Export">Integer Import and Export</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Miscellaneous-Integer-Functions">Miscellaneous Integer Functions</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Integer-Special-Functions">Integer Special Functions</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+</table>
+<hr>
+<span id="Initializing-Integers"></span><div class="header">
+<p>
+Next: <a href="#Assigning-Integers" accesskey="n" rel="next">Assigning Integers</a>, Previous: <a href="#Integer-Functions" accesskey="p" rel="prev">Integer Functions</a>, Up: <a href="#Integer-Functions" accesskey="u" rel="up">Integer Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Initialization-Functions"></span><h3 class="section">5.1 Initialization Functions</h3>
+<span id="index-Integer-initialization-functions"></span>
+<span id="index-Initialization-functions"></span>
+<p>The functions for integer arithmetic assume that all integer objects are
+initialized.  You do that by calling the function <code>mpz_init</code>.  For
+example,
+</p>
+<div class="example">
+<pre class="example">{
+  mpz_t integ;
+  mpz_init (integ);
+  &hellip;
+  mpz_add (integ, &hellip;);
+  &hellip;
+  mpz_sub (integ, &hellip;);
+  /* Unless the program is about to exit, do ... */
+  mpz_clear (integ);
+}
+</pre></div>
+<p>As you can see, you can store new values any number of times, once an
+object is initialized.
+</p>
+<dl>
+<dt id="index-mpz_005finit">Function: <em>void</em> <strong>mpz_init</strong> <em>(mpz_t <var>x</var>)</em></dt>
+<dd><p>Initialize <var>x</var>, and set its value to 0.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005finits">Function: <em>void</em> <strong>mpz_inits</strong> <em>(mpz_t <var>x</var>, ...)</em></dt>
+<dd><p>Initialize a NULL-terminated list of <code>mpz_t</code> variables, and set their
+values to 0.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005finit2">Function: <em>void</em> <strong>mpz_init2</strong> <em>(mpz_t <var>x</var>, mp_bitcnt_t <var>n</var>)</em></dt>
+<dd><p>Initialize <var>x</var>, with space for <var>n</var>-bit numbers, and set its value to 0.
+Calling this function instead of <code>mpz_init</code> or <code>mpz_inits</code> is never
+necessary; reallocation is handled automatically by GMP when needed.
+</p>
+<p>While <var>n</var> defines the initial space, <var>x</var> will grow automatically in the
+normal way, if necessary, for subsequent values stored.  <code>mpz_init2</code> makes
+it possible to avoid such reallocations if a maximum size is known in advance.
+</p>
+<p>In preparation for an operation, GMP often allocates one limb more than
+ultimately needed.  To make sure GMP will not perform reallocation for
+<var>x</var>, you need to add the number of bits in <code>mp_limb_t</code> to <var>n</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fclear">Function: <em>void</em> <strong>mpz_clear</strong> <em>(mpz_t <var>x</var>)</em></dt>
+<dd><p>Free the space occupied by <var>x</var>.  Call this function for all <code>mpz_t</code>
+variables when you are done with them.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fclears">Function: <em>void</em> <strong>mpz_clears</strong> <em>(mpz_t <var>x</var>, ...)</em></dt>
+<dd><p>Free the space occupied by a NULL-terminated list of <code>mpz_t</code> variables.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005frealloc2">Function: <em>void</em> <strong>mpz_realloc2</strong> <em>(mpz_t <var>x</var>, mp_bitcnt_t <var>n</var>)</em></dt>
+<dd><p>Change the space allocated for <var>x</var> to <var>n</var> bits.  The value in <var>x</var>
+is preserved if it fits, or is set to 0 if not.
+</p>
+<p>Calling this function is never necessary; reallocation is handled automatically
+by GMP when needed.  But this function can be used to increase the space for a
+variable in order to avoid repeated automatic reallocations, or to decrease it
+to give memory back to the heap.
+</p></dd></dl>
+<hr>
+<span id="Assigning-Integers"></span><div class="header">
+<p>
+Next: <a href="#Simultaneous-Integer-Init-_0026-Assign" accesskey="n" rel="next">Simultaneous Integer Init &amp; Assign</a>, Previous: <a href="#Initializing-Integers" accesskey="p" rel="prev">Initializing Integers</a>, Up: <a href="#Integer-Functions" accesskey="u" rel="up">Integer Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Assignment-Functions"></span><h3 class="section">5.2 Assignment Functions</h3>
+<span id="index-Integer-assignment-functions"></span>
+<span id="index-Assignment-functions"></span>
+<p>These functions assign new values to already initialized integers
+(see <a href="#Initializing-Integers">Initializing Integers</a>).
+</p>
+<dl>
+<dt id="index-mpz_005fset">Function: <em>void</em> <strong>mpz_set</strong> <em>(mpz_t <var>rop</var>, const mpz_t <var>op</var>)</em></dt>
+<dt id="index-mpz_005fset_005fui">Function: <em>void</em> <strong>mpz_set_ui</strong> <em>(mpz_t <var>rop</var>, unsigned long int <var>op</var>)</em></dt>
+<dt id="index-mpz_005fset_005fsi">Function: <em>void</em> <strong>mpz_set_si</strong> <em>(mpz_t <var>rop</var>, signed long int <var>op</var>)</em></dt>
+<dt id="index-mpz_005fset_005fd">Function: <em>void</em> <strong>mpz_set_d</strong> <em>(mpz_t <var>rop</var>, double <var>op</var>)</em></dt>
+<dt id="index-mpz_005fset_005fq">Function: <em>void</em> <strong>mpz_set_q</strong> <em>(mpz_t <var>rop</var>, const mpq_t <var>op</var>)</em></dt>
+<dt id="index-mpz_005fset_005ff">Function: <em>void</em> <strong>mpz_set_f</strong> <em>(mpz_t <var>rop</var>, const mpf_t <var>op</var>)</em></dt>
+<dd><p>Set the value of <var>rop</var> from <var>op</var>.
+</p>
+<p><code>mpz_set_d</code>, <code>mpz_set_q</code> and <code>mpz_set_f</code> truncate <var>op</var> to
+make it an integer.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fset_005fstr">Function: <em>int</em> <strong>mpz_set_str</strong> <em>(mpz_t <var>rop</var>, const char *<var>str</var>, int <var>base</var>)</em></dt>
+<dd><p>Set the value of <var>rop</var> from <var>str</var>, a null-terminated C string in base
+<var>base</var>.  White space is allowed in the string, and is simply ignored.
+</p>
+<p>The <var>base</var> may vary from 2 to 62, or if <var>base</var> is 0, then the leading
+characters are used: <code>0x</code> and <code>0X</code> for hexadecimal, <code>0b</code> and
+<code>0B</code> for binary, <code>0</code> for octal, or decimal otherwise.
+</p>
+<p>For bases up to 36, case is ignored; upper-case and lower-case letters have
+the same value.  For bases 37 to 62, upper-case letter represent the usual
+10..35 while lower-case letter represent 36..61.
+</p>
+<p>This function returns 0 if the entire string is a valid number in base
+<var>base</var>.  Otherwise it returns -1.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fswap">Function: <em>void</em> <strong>mpz_swap</strong> <em>(mpz_t <var>rop1</var>, mpz_t <var>rop2</var>)</em></dt>
+<dd><p>Swap the values <var>rop1</var> and <var>rop2</var> efficiently.
+</p></dd></dl>
+<hr>
+<span id="Simultaneous-Integer-Init-_0026-Assign"></span><div class="header">
+<p>
+Next: <a href="#Converting-Integers" accesskey="n" rel="next">Converting Integers</a>, Previous: <a href="#Assigning-Integers" accesskey="p" rel="prev">Assigning Integers</a>, Up: <a href="#Integer-Functions" accesskey="u" rel="up">Integer Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Combined-Initialization-and-Assignment-Functions"></span><h3 class="section">5.3 Combined Initialization and Assignment Functions</h3>
+<span id="index-Integer-assignment-functions-1"></span>
+<span id="index-Assignment-functions-1"></span>
+<span id="index-Integer-initialization-functions-1"></span>
+<span id="index-Initialization-functions-1"></span>
+<p>For convenience, GMP provides a parallel series of initialize-and-set functions
+which initialize the output and then store the value there.  These functions&rsquo;
+names have the form <code>mpz_init_set&hellip;</code>
+</p>
+<p>Here is an example of using one:
+</p>
+<div class="example">
+<pre class="example">{
+  mpz_t pie;
+  mpz_init_set_str (pie, &quot;3141592653589793238462643383279502884&quot;, 10);
+  &hellip;
+  mpz_sub (pie, &hellip;);
+  &hellip;
+  mpz_clear (pie);
+}
+</pre></div>
+<p>Once the integer has been initialized by any of the <code>mpz_init_set&hellip;</code>
+functions, it can be used as the source or destination operand for the ordinary
+integer functions.  Don&rsquo;t use an initialize-and-set function on a variable
+already initialized!
+</p>
+<dl>
+<dt id="index-mpz_005finit_005fset">Function: <em>void</em> <strong>mpz_init_set</strong> <em>(mpz_t <var>rop</var>, const mpz_t <var>op</var>)</em></dt>
+<dt id="index-mpz_005finit_005fset_005fui">Function: <em>void</em> <strong>mpz_init_set_ui</strong> <em>(mpz_t <var>rop</var>, unsigned long int <var>op</var>)</em></dt>
+<dt id="index-mpz_005finit_005fset_005fsi">Function: <em>void</em> <strong>mpz_init_set_si</strong> <em>(mpz_t <var>rop</var>, signed long int <var>op</var>)</em></dt>
+<dt id="index-mpz_005finit_005fset_005fd">Function: <em>void</em> <strong>mpz_init_set_d</strong> <em>(mpz_t <var>rop</var>, double <var>op</var>)</em></dt>
+<dd><p>Initialize <var>rop</var> with limb space and set the initial numeric value from
+<var>op</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005finit_005fset_005fstr">Function: <em>int</em> <strong>mpz_init_set_str</strong> <em>(mpz_t <var>rop</var>, const char *<var>str</var>, int <var>base</var>)</em></dt>
+<dd><p>Initialize <var>rop</var> and set its value like <code>mpz_set_str</code> (see its
+documentation above for details).
+</p>
+<p>If the string is a correct base <var>base</var> number, the function returns 0;
+if an error occurs it returns -1.  <var>rop</var> is initialized even if
+an error occurs.  (I.e., you have to call <code>mpz_clear</code> for it.)
+</p></dd></dl>
+<hr>
+<span id="Converting-Integers"></span><div class="header">
+<p>
+Next: <a href="#Integer-Arithmetic" accesskey="n" rel="next">Integer Arithmetic</a>, Previous: <a href="#Simultaneous-Integer-Init-_0026-Assign" accesskey="p" rel="prev">Simultaneous Integer Init &amp; Assign</a>, Up: <a href="#Integer-Functions" accesskey="u" rel="up">Integer Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Conversion-Functions"></span><h3 class="section">5.4 Conversion Functions</h3>
+<span id="index-Integer-conversion-functions"></span>
+<span id="index-Conversion-functions"></span>
+<p>This section describes functions for converting GMP integers to standard C
+types.  Functions for converting <em>to</em> GMP integers are described in
+<a href="#Assigning-Integers">Assigning Integers</a> and <a href="#I_002fO-of-Integers">I/O of Integers</a>.
+</p>
+<dl>
+<dt id="index-mpz_005fget_005fui">Function: <em>unsigned long int</em> <strong>mpz_get_ui</strong> <em>(const mpz_t <var>op</var>)</em></dt>
+<dd><p>Return the value of <var>op</var> as an <code>unsigned long</code>.
+</p>
+<p>If <var>op</var> is too big to fit an <code>unsigned long</code> then just the least
+significant bits that do fit are returned.  The sign of <var>op</var> is ignored,
+only the absolute value is used.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fget_005fsi">Function: <em>signed long int</em> <strong>mpz_get_si</strong> <em>(const mpz_t <var>op</var>)</em></dt>
+<dd><p>If <var>op</var> fits into a <code>signed long int</code> return the value of <var>op</var>.
+Otherwise return the least significant part of <var>op</var>, with the same sign
+as <var>op</var>.
+</p>
+<p>If <var>op</var> is too big to fit in a <code>signed long int</code>, the returned
+result is probably not very useful.  To find out if the value will fit, use
+the function <code>mpz_fits_slong_p</code>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fget_005fd">Function: <em>double</em> <strong>mpz_get_d</strong> <em>(const mpz_t <var>op</var>)</em></dt>
+<dd><p>Convert <var>op</var> to a <code>double</code>, truncating if necessary (i.e. rounding
+towards zero).
+</p>
+<p>If the exponent from the conversion is too big, the result is system
+dependent.  An infinity is returned where available.  A hardware overflow trap
+may or may not occur.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fget_005fd_005f2exp">Function: <em>double</em> <strong>mpz_get_d_2exp</strong> <em>(signed long int *<var>exp</var>, const mpz_t <var>op</var>)</em></dt>
+<dd><p>Convert <var>op</var> to a <code>double</code>, truncating if necessary (i.e. rounding
+towards zero), and returning the exponent separately.
+</p>
+<p>The return value is in the range <em>0.5&lt;=abs(<var>d</var>)&lt;1</em> and the
+exponent is stored to <code>*<var>exp</var></code>.  <em><var>d</var> *
+2^<var>exp</var></em> is the (truncated) <var>op</var> value.  If <var>op</var> is zero, the
+return is <em>0.0</em> and 0 is stored to <code>*<var>exp</var></code>.
+</p>
+<span id="index-frexp"></span>
+<p>This is similar to the standard C <code>frexp</code> function (see <a href="https://www.gnu.org/software/libc/manual/html_node/Normalization-Functions.html#Normalization-Functions">Normalization
+Functions</a> in <cite>The GNU C Library Reference Manual</cite>).
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fget_005fstr">Function: <em>char *</em> <strong>mpz_get_str</strong> <em>(char *<var>str</var>, int <var>base</var>, const mpz_t <var>op</var>)</em></dt>
+<dd><p>Convert <var>op</var> to a string of digits in base <var>base</var>.  The base argument
+may vary from 2 to 62 or from -2 to -36.
+</p>
+<p>For <var>base</var> in the range 2..36, digits and lower-case letters are used; for
+-2..-36, digits and upper-case letters are used; for 37..62,
+digits, upper-case letters, and lower-case letters (in that significance order)
+are used.
+</p>
+<p>If <var>str</var> is <code>NULL</code>, the result string is allocated using the current
+allocation function (see <a href="constant.Custom_Allocation.html#start">Custom Allocation</a>).  The block will be
+<code>strlen(str)+1</code> bytes, that being exactly enough for the string and
+null-terminator.
+</p>
+<p>If <var>str</var> is not <code>NULL</code>, it should point to a block of storage large
+enough for the result, that being <code>mpz_sizeinbase (<var>op</var>, <var>base</var>)
++ 2</code>.  The two extra bytes are for a possible minus sign, and the
+null-terminator.
+</p>
+<p>A pointer to the result string is returned, being either the allocated block,
+or the given <var>str</var>.
+</p></dd></dl>
+<hr>
+<span id="Integer-Arithmetic"></span><div class="header">
+<p>
+Next: <a href="#Integer-Division" accesskey="n" rel="next">Integer Division</a>, Previous: <a href="#Converting-Integers" accesskey="p" rel="prev">Converting Integers</a>, Up: <a href="#Integer-Functions" accesskey="u" rel="up">Integer Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Arithmetic-Functions"></span><h3 class="section">5.5 Arithmetic Functions</h3>
+<span id="index-Integer-arithmetic-functions"></span>
+<span id="index-Arithmetic-functions"></span>
+<dl>
+<dt id="index-mpz_005fadd">Function: <em>void</em> <strong>mpz_add</strong> <em>(mpz_t <var>rop</var>, const mpz_t <var>op1</var>, const mpz_t <var>op2</var>)</em></dt>
+<dt id="index-mpz_005fadd_005fui">Function: <em>void</em> <strong>mpz_add_ui</strong> <em>(mpz_t <var>rop</var>, const mpz_t <var>op1</var>, unsigned long int <var>op2</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <em><var>op1</var> + <var>op2</var></em>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fsub">Function: <em>void</em> <strong>mpz_sub</strong> <em>(mpz_t <var>rop</var>, const mpz_t <var>op1</var>, const mpz_t <var>op2</var>)</em></dt>
+<dt id="index-mpz_005fsub_005fui">Function: <em>void</em> <strong>mpz_sub_ui</strong> <em>(mpz_t <var>rop</var>, const mpz_t <var>op1</var>, unsigned long int <var>op2</var>)</em></dt>
+<dt id="index-mpz_005fui_005fsub">Function: <em>void</em> <strong>mpz_ui_sub</strong> <em>(mpz_t <var>rop</var>, unsigned long int <var>op1</var>, const mpz_t <var>op2</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <var>op1</var> - <var>op2</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fmul">Function: <em>void</em> <strong>mpz_mul</strong> <em>(mpz_t <var>rop</var>, const mpz_t <var>op1</var>, const mpz_t <var>op2</var>)</em></dt>
+<dt id="index-mpz_005fmul_005fsi">Function: <em>void</em> <strong>mpz_mul_si</strong> <em>(mpz_t <var>rop</var>, const mpz_t <var>op1</var>, long int <var>op2</var>)</em></dt>
+<dt id="index-mpz_005fmul_005fui">Function: <em>void</em> <strong>mpz_mul_ui</strong> <em>(mpz_t <var>rop</var>, const mpz_t <var>op1</var>, unsigned long int <var>op2</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <em><var>op1</var> times <var>op2</var></em>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005faddmul">Function: <em>void</em> <strong>mpz_addmul</strong> <em>(mpz_t <var>rop</var>, const mpz_t <var>op1</var>, const mpz_t <var>op2</var>)</em></dt>
+<dt id="index-mpz_005faddmul_005fui">Function: <em>void</em> <strong>mpz_addmul_ui</strong> <em>(mpz_t <var>rop</var>, const mpz_t <var>op1</var>, unsigned long int <var>op2</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <em><var>rop</var> + <var>op1</var> times <var>op2</var></em>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fsubmul">Function: <em>void</em> <strong>mpz_submul</strong> <em>(mpz_t <var>rop</var>, const mpz_t <var>op1</var>, const mpz_t <var>op2</var>)</em></dt>
+<dt id="index-mpz_005fsubmul_005fui">Function: <em>void</em> <strong>mpz_submul_ui</strong> <em>(mpz_t <var>rop</var>, const mpz_t <var>op1</var>, unsigned long int <var>op2</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <em><var>rop</var> - <var>op1</var> times <var>op2</var></em>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fmul_005f2exp">Function: <em>void</em> <strong>mpz_mul_2exp</strong> <em>(mpz_t <var>rop</var>, const mpz_t <var>op1</var>, mp_bitcnt_t <var>op2</var>)</em></dt>
+<dd><span id="index-Bit-shift-left"></span>
+<p>Set <var>rop</var> to <em><var>op1</var> times 2 raised to
+<var>op2</var></em>.  This operation can also be defined as a left shift by <var>op2</var>
+bits.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fneg">Function: <em>void</em> <strong>mpz_neg</strong> <em>(mpz_t <var>rop</var>, const mpz_t <var>op</var>)</em></dt>
+<dd><p>Set <var>rop</var> to -<var>op</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fabs">Function: <em>void</em> <strong>mpz_abs</strong> <em>(mpz_t <var>rop</var>, const mpz_t <var>op</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the absolute value of <var>op</var>.
+</p></dd></dl>
+<hr>
+<span id="Integer-Division"></span><div class="header">
+<p>
+Next: <a href="#Integer-Exponentiation" accesskey="n" rel="next">Integer Exponentiation</a>, Previous: <a href="#Integer-Arithmetic" accesskey="p" rel="prev">Integer Arithmetic</a>, Up: <a href="#Integer-Functions" accesskey="u" rel="up">Integer Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Division-Functions"></span><h3 class="section">5.6 Division Functions</h3>
+<span id="index-Integer-division-functions"></span>
+<span id="index-Division-functions"></span>
+<p>Division is undefined if the divisor is zero.  Passing a zero divisor to the
+division or modulo functions (including the modular powering functions
+<code>mpz_powm</code> and <code>mpz_powm_ui</code>), will cause an intentional division by
+zero.  This lets a program handle arithmetic exceptions in these functions the
+same way as for normal C <code>int</code> arithmetic.
+</p>
+<dl>
+<dt id="index-mpz_005fcdiv_005fq">Function: <em>void</em> <strong>mpz_cdiv_q</strong> <em>(mpz_t <var>q</var>, const mpz_t <var>n</var>, const mpz_t <var>d</var>)</em></dt>
+<dt id="index-mpz_005fcdiv_005fr">Function: <em>void</em> <strong>mpz_cdiv_r</strong> <em>(mpz_t <var>r</var>, const mpz_t <var>n</var>, const mpz_t <var>d</var>)</em></dt>
+<dt id="index-mpz_005fcdiv_005fqr">Function: <em>void</em> <strong>mpz_cdiv_qr</strong> <em>(mpz_t <var>q</var>, mpz_t <var>r</var>, const mpz_t <var>n</var>, const mpz_t <var>d</var>)</em></dt>
+<dt id="index-mpz_005fcdiv_005fq_005fui">Function: <em>unsigned long int</em> <strong>mpz_cdiv_q_ui</strong> <em>(mpz_t <var>q</var>, const mpz_t <var>n</var>, unsigned&nbsp;long&nbsp;int&nbsp;<var>d</var><!-- /@w -->)</em></dt>
+<dt id="index-mpz_005fcdiv_005fr_005fui">Function: <em>unsigned long int</em> <strong>mpz_cdiv_r_ui</strong> <em>(mpz_t <var>r</var>, const mpz_t <var>n</var>, unsigned&nbsp;long&nbsp;int&nbsp;<var>d</var><!-- /@w -->)</em></dt>
+<dt id="index-mpz_005fcdiv_005fqr_005fui">Function: <em>unsigned long int</em> <strong>mpz_cdiv_qr_ui</strong> <em>(mpz_t <var>q</var>, mpz_t <var>r</var>, const&nbsp;<span class="nolinebreak">mpz_t</span>&nbsp;<var>n</var><!-- /@w -->, unsigned&nbsp;long&nbsp;int&nbsp;<var>d</var><!-- /@w -->)</em></dt>
+<dt id="index-mpz_005fcdiv_005fui">Function: <em>unsigned long int</em> <strong>mpz_cdiv_ui</strong> <em>(const mpz_t <var>n</var>, unsigned&nbsp;long&nbsp;int&nbsp;<var>d</var><!-- /@w -->)</em></dt>
+<dt id="index-mpz_005fcdiv_005fq_005f2exp">Function: <em>void</em> <strong>mpz_cdiv_q_2exp</strong> <em>(mpz_t <var>q</var>, const mpz_t <var>n</var>, <span class="nolinebreak">mp_bitcnt_t</span>&nbsp;<var>b</var><!-- /@w -->)</em></dt>
+<dt id="index-mpz_005fcdiv_005fr_005f2exp">Function: <em>void</em> <strong>mpz_cdiv_r_2exp</strong> <em>(mpz_t <var>r</var>, const mpz_t <var>n</var>, <span class="nolinebreak">mp_bitcnt_t</span>&nbsp;<var>b</var><!-- /@w -->)</em></dt>
+</dl>
+<dl>
+<dt id="index-mpz_005ffdiv_005fq">Function: <em>void</em> <strong>mpz_fdiv_q</strong> <em>(mpz_t <var>q</var>, const mpz_t <var>n</var>, const mpz_t <var>d</var>)</em></dt>
+<dt id="index-mpz_005ffdiv_005fr">Function: <em>void</em> <strong>mpz_fdiv_r</strong> <em>(mpz_t <var>r</var>, const mpz_t <var>n</var>, const mpz_t <var>d</var>)</em></dt>
+<dt id="index-mpz_005ffdiv_005fqr">Function: <em>void</em> <strong>mpz_fdiv_qr</strong> <em>(mpz_t <var>q</var>, mpz_t <var>r</var>, const mpz_t <var>n</var>, const mpz_t <var>d</var>)</em></dt>
+<dt id="index-mpz_005ffdiv_005fq_005fui">Function: <em>unsigned long int</em> <strong>mpz_fdiv_q_ui</strong> <em>(mpz_t <var>q</var>, const mpz_t <var>n</var>, unsigned&nbsp;long&nbsp;int&nbsp;<var>d</var><!-- /@w -->)</em></dt>
+<dt id="index-mpz_005ffdiv_005fr_005fui">Function: <em>unsigned long int</em> <strong>mpz_fdiv_r_ui</strong> <em>(mpz_t <var>r</var>, const mpz_t <var>n</var>, unsigned&nbsp;long&nbsp;int&nbsp;<var>d</var><!-- /@w -->)</em></dt>
+<dt id="index-mpz_005ffdiv_005fqr_005fui">Function: <em>unsigned long int</em> <strong>mpz_fdiv_qr_ui</strong> <em>(mpz_t <var>q</var>, mpz_t <var>r</var>, const&nbsp;<span class="nolinebreak">mpz_t</span>&nbsp;<var>n</var><!-- /@w -->, unsigned&nbsp;long&nbsp;int&nbsp;<var>d</var><!-- /@w -->)</em></dt>
+<dt id="index-mpz_005ffdiv_005fui">Function: <em>unsigned long int</em> <strong>mpz_fdiv_ui</strong> <em>(const mpz_t <var>n</var>, unsigned&nbsp;long&nbsp;int&nbsp;<var>d</var><!-- /@w -->)</em></dt>
+<dt id="index-mpz_005ffdiv_005fq_005f2exp">Function: <em>void</em> <strong>mpz_fdiv_q_2exp</strong> <em>(mpz_t <var>q</var>, const mpz_t <var>n</var>, <span class="nolinebreak">mp_bitcnt_t</span>&nbsp;<var>b</var><!-- /@w -->)</em></dt>
+<dt id="index-mpz_005ffdiv_005fr_005f2exp">Function: <em>void</em> <strong>mpz_fdiv_r_2exp</strong> <em>(mpz_t <var>r</var>, const mpz_t <var>n</var>, <span class="nolinebreak">mp_bitcnt_t</span>&nbsp;<var>b</var><!-- /@w -->)</em></dt>
+</dl>
+<dl>
+<dt id="index-mpz_005ftdiv_005fq">Function: <em>void</em> <strong>mpz_tdiv_q</strong> <em>(mpz_t <var>q</var>, const mpz_t <var>n</var>, const mpz_t <var>d</var>)</em></dt>
+<dt id="index-mpz_005ftdiv_005fr">Function: <em>void</em> <strong>mpz_tdiv_r</strong> <em>(mpz_t <var>r</var>, const mpz_t <var>n</var>, const mpz_t <var>d</var>)</em></dt>
+<dt id="index-mpz_005ftdiv_005fqr">Function: <em>void</em> <strong>mpz_tdiv_qr</strong> <em>(mpz_t <var>q</var>, mpz_t <var>r</var>, const mpz_t <var>n</var>, const mpz_t <var>d</var>)</em></dt>
+<dt id="index-mpz_005ftdiv_005fq_005fui">Function: <em>unsigned long int</em> <strong>mpz_tdiv_q_ui</strong> <em>(mpz_t <var>q</var>, const mpz_t <var>n</var>, unsigned&nbsp;long&nbsp;int&nbsp;<var>d</var><!-- /@w -->)</em></dt>
+<dt id="index-mpz_005ftdiv_005fr_005fui">Function: <em>unsigned long int</em> <strong>mpz_tdiv_r_ui</strong> <em>(mpz_t <var>r</var>, const mpz_t <var>n</var>, unsigned&nbsp;long&nbsp;int&nbsp;<var>d</var><!-- /@w -->)</em></dt>
+<dt id="index-mpz_005ftdiv_005fqr_005fui">Function: <em>unsigned long int</em> <strong>mpz_tdiv_qr_ui</strong> <em>(mpz_t <var>q</var>, mpz_t <var>r</var>, const&nbsp;<span class="nolinebreak">mpz_t</span>&nbsp;<var>n</var><!-- /@w -->, unsigned&nbsp;long&nbsp;int&nbsp;<var>d</var><!-- /@w -->)</em></dt>
+<dt id="index-mpz_005ftdiv_005fui">Function: <em>unsigned long int</em> <strong>mpz_tdiv_ui</strong> <em>(const mpz_t <var>n</var>, unsigned&nbsp;long&nbsp;int&nbsp;<var>d</var><!-- /@w -->)</em></dt>
+<dt id="index-mpz_005ftdiv_005fq_005f2exp">Function: <em>void</em> <strong>mpz_tdiv_q_2exp</strong> <em>(mpz_t <var>q</var>, const mpz_t <var>n</var>, <span class="nolinebreak">mp_bitcnt_t</span>&nbsp;<var>b</var><!-- /@w -->)</em></dt>
+<dt id="index-mpz_005ftdiv_005fr_005f2exp">Function: <em>void</em> <strong>mpz_tdiv_r_2exp</strong> <em>(mpz_t <var>r</var>, const mpz_t <var>n</var>, <span class="nolinebreak">mp_bitcnt_t</span>&nbsp;<var>b</var><!-- /@w -->)</em></dt>
+<dd><span id="index-Bit-shift-right"></span>
+<br>
+<p>Divide <var>n</var> by <var>d</var>, forming a quotient <var>q</var> and/or remainder
+<var>r</var>.  For the <code>2exp</code> functions, <em><var>d</var>=2^<var>b</var></em>.
+The rounding is in three styles, each suiting different applications.
+</p>
+<ul>
+<li> <code>cdiv</code> rounds <var>q</var> up towards <em>+infinity</em>, and <var>r</var> will
+have the opposite sign to <var>d</var>.  The <code>c</code> stands for &ldquo;ceil&rdquo;.
+</li><li> <code>fdiv</code> rounds <var>q</var> down towards <em>-infinity</em>, and
+<var>r</var> will have the same sign as <var>d</var>.  The <code>f</code> stands for
+&ldquo;floor&rdquo;.
+</li><li> <code>tdiv</code> rounds <var>q</var> towards zero, and <var>r</var> will have the same sign
+as <var>n</var>.  The <code>t</code> stands for &ldquo;truncate&rdquo;.
+</li></ul>
+<p>In all cases <var>q</var> and <var>r</var> will satisfy
+<em><var>n</var>=<var>q</var>*<var>d</var>+<var>r</var></em>, and
+<var>r</var> will satisfy <em>0&lt;=abs(<var>r</var>)&lt;abs(<var>d</var>)</em>.
+</p>
+<p>The <code>q</code> functions calculate only the quotient, the <code>r</code> functions
+only the remainder, and the <code>qr</code> functions calculate both.  Note that for
+<code>qr</code> the same variable cannot be passed for both <var>q</var> and <var>r</var>, or
+results will be unpredictable.
+</p>
+<p>For the <code>ui</code> variants the return value is the remainder, and in fact
+returning the remainder is all the <code>div_ui</code> functions do.  For
+<code>tdiv</code> and <code>cdiv</code> the remainder can be negative, so for those the
+return value is the absolute value of the remainder.
+</p>
+<p>For the <code>2exp</code> variants the divisor is <em>2^<var>b</var></em>.  These
+functions are implemented as right shifts and bit masks, but of course they
+round the same as the other functions.
+</p>
+<p>For positive <var>n</var> both <code>mpz_fdiv_q_2exp</code> and <code>mpz_tdiv_q_2exp</code>
+are simple bitwise right shifts.  For negative <var>n</var>, <code>mpz_fdiv_q_2exp</code>
+is effectively an arithmetic right shift treating <var>n</var> as twos complement
+the same as the bitwise logical functions do, whereas <code>mpz_tdiv_q_2exp</code>
+effectively treats <var>n</var> as sign and magnitude.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fmod">Function: <em>void</em> <strong>mpz_mod</strong> <em>(mpz_t <var>r</var>, const mpz_t <var>n</var>, const mpz_t <var>d</var>)</em></dt>
+<dt id="index-mpz_005fmod_005fui">Function: <em>unsigned long int</em> <strong>mpz_mod_ui</strong> <em>(mpz_t <var>r</var>, const mpz_t <var>n</var>, unsigned&nbsp;long&nbsp;int&nbsp;<var>d</var><!-- /@w -->)</em></dt>
+<dd><p>Set <var>r</var> to <var>n</var> <code>mod</code> <var>d</var>.  The sign of the divisor is
+ignored; the result is always non-negative.
+</p>
+<p><code>mpz_mod_ui</code> is identical to <code>mpz_fdiv_r_ui</code> above, returning the
+remainder as well as setting <var>r</var>.  See <code>mpz_fdiv_ui</code> above if only
+the return value is wanted.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fdivexact">Function: <em>void</em> <strong>mpz_divexact</strong> <em>(mpz_t <var>q</var>, const mpz_t <var>n</var>, const mpz_t <var>d</var>)</em></dt>
+<dt id="index-mpz_005fdivexact_005fui">Function: <em>void</em> <strong>mpz_divexact_ui</strong> <em>(mpz_t <var>q</var>, const mpz_t <var>n</var>, unsigned long <var>d</var>)</em></dt>
+<dd><span id="index-Exact-division-functions"></span>
+<p>Set <var>q</var> to <var>n</var>/<var>d</var>.  These functions produce correct results only
+when it is known in advance that <var>d</var> divides <var>n</var>.
+</p>
+<p>These routines are much faster than the other division functions, and are the
+best choice when exact division is known to occur, for example reducing a
+rational to lowest terms.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fdivisible_005fp">Function: <em>int</em> <strong>mpz_divisible_p</strong> <em>(const mpz_t <var>n</var>, const mpz_t <var>d</var>)</em></dt>
+<dt id="index-mpz_005fdivisible_005fui_005fp">Function: <em>int</em> <strong>mpz_divisible_ui_p</strong> <em>(const mpz_t <var>n</var>, unsigned long int <var>d</var>)</em></dt>
+<dt id="index-mpz_005fdivisible_005f2exp_005fp">Function: <em>int</em> <strong>mpz_divisible_2exp_p</strong> <em>(const mpz_t <var>n</var>, mp_bitcnt_t <var>b</var>)</em></dt>
+<dd><span id="index-Divisibility-functions"></span>
+<p>Return non-zero if <var>n</var> is exactly divisible by <var>d</var>, or in the case of
+<code>mpz_divisible_2exp_p</code> by <em>2^<var>b</var></em>.
+</p>
+<p><var>n</var> is divisible by <var>d</var> if there exists an integer <var>q</var> satisfying
+<em><var>n</var> = <var>q</var>*<var>d</var></em>.  Unlike the other division
+functions, <em><var>d</var>=0</em> is accepted and following the rule it can be seen
+that only 0 is considered divisible by 0.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fcongruent_005fp">Function: <em>int</em> <strong>mpz_congruent_p</strong> <em>(const mpz_t <var>n</var>, const mpz_t <var>c</var>, const mpz_t <var>d</var>)</em></dt>
+<dt id="index-mpz_005fcongruent_005fui_005fp">Function: <em>int</em> <strong>mpz_congruent_ui_p</strong> <em>(const mpz_t <var>n</var>, unsigned long int <var>c</var>, unsigned long int <var>d</var>)</em></dt>
+<dt id="index-mpz_005fcongruent_005f2exp_005fp">Function: <em>int</em> <strong>mpz_congruent_2exp_p</strong> <em>(const mpz_t <var>n</var>, const mpz_t <var>c</var>, mp_bitcnt_t <var>b</var>)</em></dt>
+<dd><span id="index-Divisibility-functions-1"></span>
+<span id="index-Congruence-functions"></span>
+<p>Return non-zero if <var>n</var> is congruent to <var>c</var> modulo <var>d</var>, or in the
+case of <code>mpz_congruent_2exp_p</code> modulo <em>2^<var>b</var></em>.
+</p>
+<p><var>n</var> is congruent to <var>c</var> mod <var>d</var> if there exists an integer <var>q</var>
+satisfying <em><var>n</var> = <var>c</var> + <var>q</var>*<var>d</var></em>.  Unlike
+the other division functions, <em><var>d</var>=0</em> is accepted and following the
+rule it can be seen that <var>n</var> and <var>c</var> are considered congruent mod 0
+only when exactly equal.
+</p></dd></dl>
+<hr>
+<span id="Integer-Exponentiation"></span><div class="header">
+<p>
+Next: <a href="#Integer-Roots" accesskey="n" rel="next">Integer Roots</a>, Previous: <a href="#Integer-Division" accesskey="p" rel="prev">Integer Division</a>, Up: <a href="#Integer-Functions" accesskey="u" rel="up">Integer Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Exponentiation-Functions"></span><h3 class="section">5.7 Exponentiation Functions</h3>
+<span id="index-Integer-exponentiation-functions"></span>
+<span id="index-Exponentiation-functions"></span>
+<span id="index-Powering-functions"></span>
+<dl>
+<dt id="index-mpz_005fpowm">Function: <em>void</em> <strong>mpz_powm</strong> <em>(mpz_t <var>rop</var>, const mpz_t <var>base</var>, const mpz_t <var>exp</var>, const mpz_t <var>mod</var>)</em></dt>
+<dt id="index-mpz_005fpowm_005fui">Function: <em>void</em> <strong>mpz_powm_ui</strong> <em>(mpz_t <var>rop</var>, const mpz_t <var>base</var>, unsigned long int <var>exp</var>, const mpz_t <var>mod</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <em>(<var>base</var> raised to <var>exp</var>)
+modulo <var>mod</var></em>.
+</p>
+<p>Negative <var>exp</var> is supported if the inverse <em><var>base</var><sup>-1</sup> mod
+<var>mod</var></em> exists (see <code>mpz_invert</code> in
+<a href="#Number-Theoretic-Functions">Number Theoretic Functions</a>).  If an inverse doesn&rsquo;t exist then a divide
+by zero is raised.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fpowm_005fsec">Function: <em>void</em> <strong>mpz_powm_sec</strong> <em>(mpz_t <var>rop</var>, const mpz_t <var>base</var>, const mpz_t <var>exp</var>, const mpz_t <var>mod</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <em>(<var>base</var> raised to <var>exp</var>)
+modulo <var>mod</var></em>.
+</p>
+<p>It is required that <em><var>exp</var> &gt; 0</em> and that <var>mod</var> is odd.
+</p>
+<p>This function is designed to take the same time and have the same cache access
+patterns for any two same-size arguments, assuming that function arguments are
+placed at the same position and that the machine state is identical upon
+function entry.  This function is intended for cryptographic purposes, where
+resilience to side-channel attacks is desired.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fpow_005fui">Function: <em>void</em> <strong>mpz_pow_ui</strong> <em>(mpz_t <var>rop</var>, const mpz_t <var>base</var>, unsigned long int <var>exp</var>)</em></dt>
+<dt id="index-mpz_005fui_005fpow_005fui">Function: <em>void</em> <strong>mpz_ui_pow_ui</strong> <em>(mpz_t <var>rop</var>, unsigned long int <var>base</var>, unsigned long int <var>exp</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <em><var>base</var> raised to <var>exp</var></em>.  The case
+<em>0^0</em> yields 1.
+</p></dd></dl>
+<hr>
+<span id="Integer-Roots"></span><div class="header">
+<p>
+Next: <a href="#Number-Theoretic-Functions" accesskey="n" rel="next">Number Theoretic Functions</a>, Previous: <a href="#Integer-Exponentiation" accesskey="p" rel="prev">Integer Exponentiation</a>, Up: <a href="#Integer-Functions" accesskey="u" rel="up">Integer Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Root-Extraction-Functions"></span><h3 class="section">5.8 Root Extraction Functions</h3>
+<span id="index-Integer-root-functions"></span>
+<span id="index-Root-extraction-functions"></span>
+<dl>
+<dt id="index-mpz_005froot">Function: <em>int</em> <strong>mpz_root</strong> <em>(mpz_t <var>rop</var>, const mpz_t <var>op</var>, unsigned long int <var>n</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <em></em> the truncated integer
+part of the <var>n</var>th root of <var>op</var>.  Return non-zero if the computation
+was exact, i.e., if <var>op</var> is <var>rop</var> to the <var>n</var>th power.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005frootrem">Function: <em>void</em> <strong>mpz_rootrem</strong> <em>(mpz_t <var>root</var>, mpz_t <var>rem</var>, const mpz_t <var>u</var>, unsigned long int <var>n</var>)</em></dt>
+<dd><p>Set <var>root</var> to <em></em> the truncated
+integer part of the <var>n</var>th root of <var>u</var>.  Set <var>rem</var> to the
+remainder, <em><var>u</var>-<var>root</var>**<var>n</var></em>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fsqrt">Function: <em>void</em> <strong>mpz_sqrt</strong> <em>(mpz_t <var>rop</var>, const mpz_t <var>op</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <em></em> the truncated
+integer part of the square root of <var>op</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fsqrtrem">Function: <em>void</em> <strong>mpz_sqrtrem</strong> <em>(mpz_t <var>rop1</var>, mpz_t <var>rop2</var>, const mpz_t <var>op</var>)</em></dt>
+<dd><p>Set <var>rop1</var> to <em>the truncated integer part
+of the square root of <var>op</var></em>, like <code>mpz_sqrt</code>.  Set <var>rop2</var> to the
+remainder <em><var>op</var>-<var>rop1</var>*<var>rop1</var></em>, which will be zero if <var>op</var> is a
+perfect square.
+</p>
+<p>If <var>rop1</var> and <var>rop2</var> are the same variable, the results are
+undefined.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fperfect_005fpower_005fp">Function: <em>int</em> <strong>mpz_perfect_power_p</strong> <em>(const mpz_t <var>op</var>)</em></dt>
+<dd><span id="index-Perfect-power-functions"></span>
+<span id="index-Root-testing-functions"></span>
+<p>Return non-zero if <var>op</var> is a perfect power, i.e., if there exist integers
+<em><var>a</var></em> and <em><var>b</var></em>, with <em><var>b</var>&gt;1</em>, such that
+<em><var>op</var> equals <var>a</var> raised to the power <var>b</var></em>.
+</p>
+<p>Under this definition both 0 and 1 are considered to be perfect powers.
+Negative values of <var>op</var> are accepted, but of course can only be odd
+perfect powers.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fperfect_005fsquare_005fp">Function: <em>int</em> <strong>mpz_perfect_square_p</strong> <em>(const mpz_t <var>op</var>)</em></dt>
+<dd><span id="index-Perfect-square-functions"></span>
+<span id="index-Root-testing-functions-1"></span>
+<p>Return non-zero if <var>op</var> is a perfect square, i.e., if the square root of
+<var>op</var> is an integer.  Under this definition both 0 and 1 are considered to
+be perfect squares.
+</p></dd></dl>
+<hr>
+<span id="Number-Theoretic-Functions"></span><div class="header">
+<p>
+Next: <a href="#Integer-Comparisons" accesskey="n" rel="next">Integer Comparisons</a>, Previous: <a href="#Integer-Roots" accesskey="p" rel="prev">Integer Roots</a>, Up: <a href="#Integer-Functions" accesskey="u" rel="up">Integer Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Number-Theoretic-Functions-1"></span><h3 class="section">5.9 Number Theoretic Functions</h3>
+<span id="index-Number-theoretic-functions"></span>
+<dl>
+<dt id="index-mpz_005fprobab_005fprime_005fp">Function: <em>int</em> <strong>mpz_probab_prime_p</strong> <em>(const mpz_t <var>n</var>, int <var>reps</var>)</em></dt>
+<dd><span id="index-Prime-testing-functions"></span>
+<span id="index-Probable-prime-testing-functions"></span>
+<p>Determine whether <var>n</var> is prime.  Return 2 if <var>n</var> is definitely prime,
+return 1 if <var>n</var> is probably prime (without being certain), or return 0 if
+<var>n</var> is definitely non-prime.
+</p>
+<p>This function performs some trial divisions, a Baillie-PSW probable prime
+test, then <var>reps-24</var> Miller-Rabin probabilistic primality tests.  A
+higher <var>reps</var> value will reduce the chances of a non-prime being
+identified as &ldquo;probably prime&rdquo;.  A composite number will be identified as a
+prime with an asymptotic probability of less than <em>4^(-<var>reps</var>)</em>.
+Reasonable values of <var>reps</var> are between 15 and 50.
+</p>
+<p>GMP versions up to and including 6.1.2 did not use the Baillie-PSW
+primality test. In those older versions of GMP, this function performed
+<var>reps</var> Miller-Rabin tests.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fnextprime">Function: <em>void</em> <strong>mpz_nextprime</strong> <em>(mpz_t <var>rop</var>, const mpz_t <var>op</var>)</em></dt>
+<dd><span id="index-Next-prime-function"></span>
+<p>Set <var>rop</var> to the next prime greater than <var>op</var>.
+</p>
+<p>This function uses a probabilistic algorithm to identify primes.  For
+practical purposes it&rsquo;s adequate, the chance of a composite passing will be
+extremely small.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fgcd">Function: <em>void</em> <strong>mpz_gcd</strong> <em>(mpz_t <var>rop</var>, const mpz_t <var>op1</var>, const mpz_t <var>op2</var>)</em></dt>
+<dd><span id="index-Greatest-common-divisor-functions"></span>
+<span id="index-GCD-functions"></span>
+<p>Set <var>rop</var> to the greatest common divisor of <var>op1</var> and <var>op2</var>.  The
+result is always positive even if one or both input operands are negative.
+Except if both inputs are zero; then this function defines <em>gcd(0,0) = 0</em>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fgcd_005fui">Function: <em>unsigned long int</em> <strong>mpz_gcd_ui</strong> <em>(mpz_t <var>rop</var>, const mpz_t <var>op1</var>, unsigned long int <var>op2</var>)</em></dt>
+<dd><p>Compute the greatest common divisor of <var>op1</var> and <var>op2</var>.  If
+<var>rop</var> is not <code>NULL</code>, store the result there.
+</p>
+<p>If the result is small enough to fit in an <code>unsigned long int</code>, it is
+returned.  If the result does not fit, 0 is returned, and the result is equal
+to the argument <var>op1</var>.  Note that the result will always fit if <var>op2</var>
+is non-zero.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fgcdext">Function: <em>void</em> <strong>mpz_gcdext</strong> <em>(mpz_t <var>g</var>, mpz_t <var>s</var>, mpz_t <var>t</var>, const mpz_t <var>a</var>, const mpz_t <var>b</var>)</em></dt>
+<dd><span id="index-Extended-GCD"></span>
+<span id="index-GCD-extended"></span>
+<p>Set <var>g</var> to the greatest common divisor of <var>a</var> and <var>b</var>, and in
+addition set <var>s</var> and <var>t</var> to coefficients satisfying
+<em><var>a</var>*<var>s</var> + <var>b</var>*<var>t</var> = <var>g</var></em>.
+The value in <var>g</var> is always positive, even if one or both of <var>a</var> and
+<var>b</var> are negative (or zero if both inputs are zero).  The values in <var>s</var>
+and <var>t</var> are chosen such that normally, <em>abs(<var>s</var>) &lt;
+abs(<var>b</var>) / (2 <var>g</var>)</em> and <em>abs(<var>t</var>) &lt; abs(<var>a</var>)
+/ (2 <var>g</var>)</em>, and these relations define <var>s</var> and <var>t</var> uniquely.  There
+are a few exceptional cases:
+</p>
+<p>If <em>abs(<var>a</var>) = abs(<var>b</var>)</em>, then <em><var>s</var> = 0</em>,
+<em><var>t</var> = sgn(<var>b</var>)</em>.
+</p>
+<p>Otherwise, <em><var>s</var> = sgn(<var>a</var>)</em> if <em><var>b</var> = 0</em> or
+<em>abs(<var>b</var>) = 2 <var>g</var></em>, and <em><var>t</var> = sgn(<var>b</var>)</em> if
+<em><var>a</var> = 0</em> or <em>abs(<var>a</var>) = 2 <var>g</var></em>.
+</p>
+<p>In all cases, <em><var>s</var> = 0</em> if and only if <em><var>g</var> =
+abs(<var>b</var>)</em>, i.e., if <var>b</var> divides <var>a</var> or <em><var>a</var> = <var>b</var>
+= 0</em>.
+</p>
+<p>If <var>t</var> or <var>g</var> is <code>NULL</code> then that value is not computed.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005flcm">Function: <em>void</em> <strong>mpz_lcm</strong> <em>(mpz_t <var>rop</var>, const mpz_t <var>op1</var>, const mpz_t <var>op2</var>)</em></dt>
+<dt id="index-mpz_005flcm_005fui">Function: <em>void</em> <strong>mpz_lcm_ui</strong> <em>(mpz_t <var>rop</var>, const mpz_t <var>op1</var>, unsigned long <var>op2</var>)</em></dt>
+<dd><span id="index-Least-common-multiple-functions"></span>
+<span id="index-LCM-functions"></span>
+<p>Set <var>rop</var> to the least common multiple of <var>op1</var> and <var>op2</var>.
+<var>rop</var> is always positive, irrespective of the signs of <var>op1</var> and
+<var>op2</var>.  <var>rop</var> will be zero if either <var>op1</var> or <var>op2</var> is zero.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005finvert">Function: <em>int</em> <strong>mpz_invert</strong> <em>(mpz_t <var>rop</var>, const mpz_t <var>op1</var>, const mpz_t <var>op2</var>)</em></dt>
+<dd><span id="index-Modular-inverse-functions"></span>
+<span id="index-Inverse-modulo-functions"></span>
+<p>Compute the inverse of <var>op1</var> modulo <var>op2</var> and put the result in
+<var>rop</var>.  If the inverse exists, the return value is non-zero and <var>rop</var>
+will satisfy <em>0 &lt;= <var>rop</var> &lt; abs(<var>op2</var>)</em> (with <em><var>rop</var>
+= 0</em> possible only when <em>abs(<var>op2</var>) = 1</em>, i.e., in the
+somewhat degenerate zero ring).  If an inverse doesn&rsquo;t
+exist the return value is zero and <var>rop</var> is undefined.  The behaviour of
+this function is undefined when <var>op2</var> is zero.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fjacobi">Function: <em>int</em> <strong>mpz_jacobi</strong> <em>(const mpz_t <var>a</var>, const mpz_t <var>b</var>)</em></dt>
+<dd><span id="index-Jacobi-symbol-functions"></span>
+<p>Calculate the Jacobi symbol <em>(<var>a</var>/<var>b</var>)</em>.  This is defined only for <var>b</var> odd.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005flegendre">Function: <em>int</em> <strong>mpz_legendre</strong> <em>(const mpz_t <var>a</var>, const mpz_t <var>p</var>)</em></dt>
+<dd><span id="index-Legendre-symbol-functions"></span>
+<p>Calculate the Legendre symbol <em>(<var>a</var>/<var>p</var>)</em>.  This is defined only for <var>p</var> an odd positive
+prime, and for such <var>p</var> it&rsquo;s identical to the Jacobi symbol.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fkronecker">Function: <em>int</em> <strong>mpz_kronecker</strong> <em>(const mpz_t <var>a</var>, const mpz_t <var>b</var>)</em></dt>
+<dt id="index-mpz_005fkronecker_005fsi">Function: <em>int</em> <strong>mpz_kronecker_si</strong> <em>(const mpz_t <var>a</var>, long <var>b</var>)</em></dt>
+<dt id="index-mpz_005fkronecker_005fui">Function: <em>int</em> <strong>mpz_kronecker_ui</strong> <em>(const mpz_t <var>a</var>, unsigned long <var>b</var>)</em></dt>
+<dt id="index-mpz_005fsi_005fkronecker">Function: <em>int</em> <strong>mpz_si_kronecker</strong> <em>(long <var>a</var>, const mpz_t <var>b</var>)</em></dt>
+<dt id="index-mpz_005fui_005fkronecker">Function: <em>int</em> <strong>mpz_ui_kronecker</strong> <em>(unsigned long <var>a</var>, const mpz_t <var>b</var>)</em></dt>
+<dd><span id="index-Kronecker-symbol-functions"></span>
+<p>Calculate the Jacobi symbol <em>(<var>a</var>/<var>b</var>)</em> with the Kronecker extension <em>(a/2)=(2/a)</em> when <em>a</em> odd, or
+<em>(a/2)=0</em> when <em>a</em> even.
+</p>
+<p>When <var>b</var> is odd the Jacobi symbol and Kronecker symbol are
+identical, so <code>mpz_kronecker_ui</code> etc can be used for mixed
+precision Jacobi symbols too.
+</p>
+<p>For more information see Henri Cohen section 1.4.2 (see <a href="constant.References.html#start">References</a>),
+or any number theory textbook.  See also the example program
+<samp>demos/qcn.c</samp> which uses <code>mpz_kronecker_ui</code>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fremove">Function: <em>mp_bitcnt_t</em> <strong>mpz_remove</strong> <em>(mpz_t <var>rop</var>, const mpz_t <var>op</var>, const mpz_t <var>f</var>)</em></dt>
+<dd><span id="index-Remove-factor-functions"></span>
+<span id="index-Factor-removal-functions"></span>
+<p>Remove all occurrences of the factor <var>f</var> from <var>op</var> and store the
+result in <var>rop</var>.  The return value is how many such occurrences were
+removed.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005ffac_005fui">Function: <em>void</em> <strong>mpz_fac_ui</strong> <em>(mpz_t <var>rop</var>, unsigned long int <var>n</var>)</em></dt>
+<dt id="index-mpz_005f2fac_005fui">Function: <em>void</em> <strong>mpz_2fac_ui</strong> <em>(mpz_t <var>rop</var>, unsigned long int <var>n</var>)</em></dt>
+<dt id="index-mpz_005fmfac_005fuiui">Function: <em>void</em> <strong>mpz_mfac_uiui</strong> <em>(mpz_t <var>rop</var>, unsigned long int <var>n</var>, unsigned long int <var>m</var>)</em></dt>
+<dd><span id="index-Factorial-functions"></span>
+<p>Set <var>rop</var> to the factorial of <var>n</var>: <code>mpz_fac_ui</code> computes the plain factorial <var>n</var>!,
+<code>mpz_2fac_ui</code> computes the double-factorial <var>n</var>!!, and <code>mpz_mfac_uiui</code> the
+<var>m</var>-multi-factorial <em><var>n</var>!^(<var>m</var>)</em>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fprimorial_005fui">Function: <em>void</em> <strong>mpz_primorial_ui</strong> <em>(mpz_t <var>rop</var>, unsigned long int <var>n</var>)</em></dt>
+<dd><span id="index-Primorial-functions"></span>
+<p>Set <var>rop</var> to the primorial of <var>n</var>, i.e. the product of all positive
+prime numbers <em>&lt;=<var>n</var></em>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fbin_005fui">Function: <em>void</em> <strong>mpz_bin_ui</strong> <em>(mpz_t <var>rop</var>, const mpz_t <var>n</var>, unsigned long int <var>k</var>)</em></dt>
+<dt id="index-mpz_005fbin_005fuiui">Function: <em>void</em> <strong>mpz_bin_uiui</strong> <em>(mpz_t <var>rop</var>, unsigned long int <var>n</var>, unsigned&nbsp;long&nbsp;int&nbsp;<var>k</var><!-- /@w -->)</em></dt>
+<dd><span id="index-Binomial-coefficient-functions"></span>
+<p>Compute the binomial coefficient <em><var>n</var> over
+<var>k</var></em> and store the result in <var>rop</var>.  Negative values of <var>n</var> are
+supported by <code>mpz_bin_ui</code>, using the identity
+<em>bin(-n,k) = (-1)^k * bin(n+k-1,k)</em>, see Knuth volume 1 section 1.2.6
+part G.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005ffib_005fui">Function: <em>void</em> <strong>mpz_fib_ui</strong> <em>(mpz_t <var>fn</var>, unsigned long int <var>n</var>)</em></dt>
+<dt id="index-mpz_005ffib2_005fui">Function: <em>void</em> <strong>mpz_fib2_ui</strong> <em>(mpz_t <var>fn</var>, mpz_t <var>fnsub1</var>, unsigned long int <var>n</var>)</em></dt>
+<dd><span id="index-Fibonacci-sequence-functions"></span>
+<p><code>mpz_fib_ui</code> sets <var>fn</var> to to <em>F[n]</em>, the <var>n</var>&rsquo;th Fibonacci
+number.  <code>mpz_fib2_ui</code> sets <var>fn</var> to <em>F[n]</em>, and <var>fnsub1</var> to
+<em>F[n-1]</em>.
+</p>
+<p>These functions are designed for calculating isolated Fibonacci numbers.  When
+a sequence of values is wanted it&rsquo;s best to start with <code>mpz_fib2_ui</code> and
+iterate the defining <em>F[n+1]=F[n]+F[n-1]</em> or
+similar.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005flucnum_005fui">Function: <em>void</em> <strong>mpz_lucnum_ui</strong> <em>(mpz_t <var>ln</var>, unsigned long int <var>n</var>)</em></dt>
+<dt id="index-mpz_005flucnum2_005fui">Function: <em>void</em> <strong>mpz_lucnum2_ui</strong> <em>(mpz_t <var>ln</var>, mpz_t <var>lnsub1</var>, unsigned long int <var>n</var>)</em></dt>
+<dd><span id="index-Lucas-number-functions"></span>
+<p><code>mpz_lucnum_ui</code> sets <var>ln</var> to to <em>L[n]</em>, the <var>n</var>&rsquo;th Lucas
+number.  <code>mpz_lucnum2_ui</code> sets <var>ln</var> to <em>L[n]</em>, and <var>lnsub1</var>
+to <em>L[n-1]</em>.
+</p>
+<p>These functions are designed for calculating isolated Lucas numbers.  When a
+sequence of values is wanted it&rsquo;s best to start with <code>mpz_lucnum2_ui</code> and
+iterate the defining <em>L[n+1]=L[n]+L[n-1]</em> or
+similar.
+</p>
+<p>The Fibonacci numbers and Lucas numbers are related sequences, so it&rsquo;s never
+necessary to call both <code>mpz_fib2_ui</code> and <code>mpz_lucnum2_ui</code>.  The
+formulas for going from Fibonacci to Lucas can be found in <a href="constant.Algorithms.html#Lucas-Numbers-Algorithm">Lucas Numbers Algorithm</a>, the reverse is straightforward too.
+</p></dd></dl>
+<hr>
+<span id="Integer-Comparisons"></span><div class="header">
+<p>
+Next: <a href="#Integer-Logic-and-Bit-Fiddling" accesskey="n" rel="next">Integer Logic and Bit Fiddling</a>, Previous: <a href="#Number-Theoretic-Functions" accesskey="p" rel="prev">Number Theoretic Functions</a>, Up: <a href="#Integer-Functions" accesskey="u" rel="up">Integer Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Comparison-Functions"></span><h3 class="section">5.10 Comparison Functions</h3>
+<span id="index-Integer-comparison-functions"></span>
+<span id="index-Comparison-functions"></span>
+<dl>
+<dt id="index-mpz_005fcmp">Function: <em>int</em> <strong>mpz_cmp</strong> <em>(const mpz_t <var>op1</var>, const mpz_t <var>op2</var>)</em></dt>
+<dt id="index-mpz_005fcmp_005fd">Function: <em>int</em> <strong>mpz_cmp_d</strong> <em>(const mpz_t <var>op1</var>, double <var>op2</var>)</em></dt>
+<dt id="index-mpz_005fcmp_005fsi">Macro: <em>int</em> <strong>mpz_cmp_si</strong> <em>(const mpz_t <var>op1</var>, signed long int <var>op2</var>)</em></dt>
+<dt id="index-mpz_005fcmp_005fui">Macro: <em>int</em> <strong>mpz_cmp_ui</strong> <em>(const mpz_t <var>op1</var>, unsigned long int <var>op2</var>)</em></dt>
+<dd><p>Compare <var>op1</var> and <var>op2</var>.  Return a positive value if <em><var>op1</var> &gt;
+<var>op2</var></em>, zero if <em><var>op1</var> = <var>op2</var></em>, or a negative value if
+<em><var>op1</var> &lt; <var>op2</var></em>.
+</p>
+<p><code>mpz_cmp_ui</code> and <code>mpz_cmp_si</code> are macros and will evaluate their
+arguments more than once.  <code>mpz_cmp_d</code> can be called with an infinity,
+but results are undefined for a NaN.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fcmpabs">Function: <em>int</em> <strong>mpz_cmpabs</strong> <em>(const mpz_t <var>op1</var>, const mpz_t <var>op2</var>)</em></dt>
+<dt id="index-mpz_005fcmpabs_005fd">Function: <em>int</em> <strong>mpz_cmpabs_d</strong> <em>(const mpz_t <var>op1</var>, double <var>op2</var>)</em></dt>
+<dt id="index-mpz_005fcmpabs_005fui">Function: <em>int</em> <strong>mpz_cmpabs_ui</strong> <em>(const mpz_t <var>op1</var>, unsigned long int <var>op2</var>)</em></dt>
+<dd><p>Compare the absolute values of <var>op1</var> and <var>op2</var>.  Return a positive
+value if <em>abs(<var>op1</var>) &gt; abs(<var>op2</var>)</em>, zero if
+<em>abs(<var>op1</var>) = abs(<var>op2</var>)</em>, or a negative value if
+<em>abs(<var>op1</var>) &lt; abs(<var>op2</var>)</em>.
+</p>
+<p><code>mpz_cmpabs_d</code> can be called with an infinity, but results are undefined
+for a NaN.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fsgn">Macro: <em>int</em> <strong>mpz_sgn</strong> <em>(const mpz_t <var>op</var>)</em></dt>
+<dd><span id="index-Sign-tests"></span>
+<span id="index-Integer-sign-tests"></span>
+<p>Return <em>+1</em> if <em><var>op</var> &gt; 0</em>, 0 if <em><var>op</var> = 0</em>, and
+<em>-1</em> if <em><var>op</var> &lt; 0</em>.
+</p>
+<p>This function is actually implemented as a macro.  It evaluates its argument
+multiple times.
+</p></dd></dl>
+<hr>
+<span id="Integer-Logic-and-Bit-Fiddling"></span><div class="header">
+<p>
+Next: <a href="#I_002fO-of-Integers" accesskey="n" rel="next">I/O of Integers</a>, Previous: <a href="#Integer-Comparisons" accesskey="p" rel="prev">Integer Comparisons</a>, Up: <a href="#Integer-Functions" accesskey="u" rel="up">Integer Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Logical-and-Bit-Manipulation-Functions"></span><h3 class="section">5.11 Logical and Bit Manipulation Functions</h3>
+<span id="index-Logical-functions"></span>
+<span id="index-Bit-manipulation-functions"></span>
+<span id="index-Integer-logical-functions"></span>
+<span id="index-Integer-bit-manipulation-functions"></span>
+<p>These functions behave as if twos complement arithmetic were used (although
+sign-magnitude is the actual implementation).  The least significant bit is
+number 0.
+</p>
+<dl>
+<dt id="index-mpz_005fand">Function: <em>void</em> <strong>mpz_and</strong> <em>(mpz_t <var>rop</var>, const mpz_t <var>op1</var>, const mpz_t <var>op2</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <var>op1</var> bitwise-and <var>op2</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fior">Function: <em>void</em> <strong>mpz_ior</strong> <em>(mpz_t <var>rop</var>, const mpz_t <var>op1</var>, const mpz_t <var>op2</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <var>op1</var> bitwise inclusive-or <var>op2</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fxor">Function: <em>void</em> <strong>mpz_xor</strong> <em>(mpz_t <var>rop</var>, const mpz_t <var>op1</var>, const mpz_t <var>op2</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <var>op1</var> bitwise exclusive-or <var>op2</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fcom">Function: <em>void</em> <strong>mpz_com</strong> <em>(mpz_t <var>rop</var>, const mpz_t <var>op</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the one&rsquo;s complement of <var>op</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fpopcount">Function: <em>mp_bitcnt_t</em> <strong>mpz_popcount</strong> <em>(const mpz_t <var>op</var>)</em></dt>
+<dd><p>If <em><var>op</var>&gt;=0</em>, return the population count of <var>op</var>, which is the
+number of 1 bits in the binary representation.  If <em><var>op</var>&lt;0</em>, the
+number of 1s is infinite, and the return value is the largest possible
+<code>mp_bitcnt_t</code>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fhamdist">Function: <em>mp_bitcnt_t</em> <strong>mpz_hamdist</strong> <em>(const mpz_t <var>op1</var>, const mpz_t <var>op2</var>)</em></dt>
+<dd><p>If <var>op1</var> and <var>op2</var> are both <em>&gt;=0</em> or both <em>&lt;0</em>, return the
+hamming distance between the two operands, which is the number of bit positions
+where <var>op1</var> and <var>op2</var> have different bit values.  If one operand is
+<em>&gt;=0</em> and the other <em>&lt;0</em> then the number of bits different is
+infinite, and the return value is the largest possible <code>mp_bitcnt_t</code>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fscan0">Function: <em>mp_bitcnt_t</em> <strong>mpz_scan0</strong> <em>(const mpz_t <var>op</var>, mp_bitcnt_t <var>starting_bit</var>)</em></dt>
+<dt id="index-mpz_005fscan1">Function: <em>mp_bitcnt_t</em> <strong>mpz_scan1</strong> <em>(const mpz_t <var>op</var>, mp_bitcnt_t <var>starting_bit</var>)</em></dt>
+<dd><span id="index-Bit-scanning-functions"></span>
+<span id="index-Scan-bit-functions"></span>
+<p>Scan <var>op</var>, starting from bit <var>starting_bit</var>, towards more significant
+bits, until the first 0 or 1 bit (respectively) is found.  Return the index of
+the found bit.
+</p>
+<p>If the bit at <var>starting_bit</var> is already what&rsquo;s sought, then
+<var>starting_bit</var> is returned.
+</p>
+<p>If there&rsquo;s no bit found, then the largest possible <code>mp_bitcnt_t</code> is
+returned.  This will happen in <code>mpz_scan0</code> past the end of a negative
+number, or <code>mpz_scan1</code> past the end of a nonnegative number.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fsetbit">Function: <em>void</em> <strong>mpz_setbit</strong> <em>(mpz_t <var>rop</var>, mp_bitcnt_t <var>bit_index</var>)</em></dt>
+<dd><p>Set bit <var>bit_index</var> in <var>rop</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fclrbit">Function: <em>void</em> <strong>mpz_clrbit</strong> <em>(mpz_t <var>rop</var>, mp_bitcnt_t <var>bit_index</var>)</em></dt>
+<dd><p>Clear bit <var>bit_index</var> in <var>rop</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fcombit">Function: <em>void</em> <strong>mpz_combit</strong> <em>(mpz_t <var>rop</var>, mp_bitcnt_t <var>bit_index</var>)</em></dt>
+<dd><p>Complement bit <var>bit_index</var> in <var>rop</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005ftstbit">Function: <em>int</em> <strong>mpz_tstbit</strong> <em>(const mpz_t <var>op</var>, mp_bitcnt_t <var>bit_index</var>)</em></dt>
+<dd><p>Test bit <var>bit_index</var> in <var>op</var> and return 0 or 1 accordingly.
+</p></dd></dl>
+<hr>
+<span id="I_002fO-of-Integers"></span><div class="header">
+<p>
+Next: <a href="#Integer-Random-Numbers" accesskey="n" rel="next">Integer Random Numbers</a>, Previous: <a href="#Integer-Logic-and-Bit-Fiddling" accesskey="p" rel="prev">Integer Logic and Bit Fiddling</a>, Up: <a href="#Integer-Functions" accesskey="u" rel="up">Integer Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Input-and-Output-Functions"></span><h3 class="section">5.12 Input and Output Functions</h3>
+<span id="index-Integer-input-and-output-functions"></span>
+<span id="index-Input-functions"></span>
+<span id="index-Output-functions"></span>
+<span id="index-I_002fO-functions"></span>
+<p>Functions that perform input from a stdio stream, and functions that output to
+a stdio stream, of <code>mpz</code> numbers.  Passing a <code>NULL</code> pointer for a
+<var>stream</var> argument to any of these functions will make them read from
+<code>stdin</code> and write to <code>stdout</code>, respectively.
+</p>
+<p>When using any of these functions, it is a good idea to include <samp>stdio.h</samp>
+before <samp>gmp.h</samp>, since that will allow <samp>gmp.h</samp> to define prototypes
+for these functions.
+</p>
+<p>See also <a href="constant.Formatted_Output.html#Formatted-Output">Formatted Output</a> and <a href="constant.Formatted_Input.html#Formatted-Input">Formatted Input</a>.
+</p>
+<dl>
+<dt id="index-mpz_005fout_005fstr">Function: <em>size_t</em> <strong>mpz_out_str</strong> <em>(FILE *<var>stream</var>, int <var>base</var>, const mpz_t <var>op</var>)</em></dt>
+<dd><p>Output <var>op</var> on stdio stream <var>stream</var>, as a string of digits in base
+<var>base</var>.  The base argument may vary from 2 to 62 or from -2 to
+-36.
+</p>
+<p>For <var>base</var> in the range 2..36, digits and lower-case letters are used; for
+-2..-36, digits and upper-case letters are used; for 37..62,
+digits, upper-case letters, and lower-case letters (in that significance order)
+are used.
+</p>
+<p>Return the number of bytes written, or if an error occurred, return 0.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005finp_005fstr">Function: <em>size_t</em> <strong>mpz_inp_str</strong> <em>(mpz_t <var>rop</var>, FILE *<var>stream</var>, int <var>base</var>)</em></dt>
+<dd><p>Input a possibly white-space preceded string in base <var>base</var> from stdio
+stream <var>stream</var>, and put the read integer in <var>rop</var>.
+</p>
+<p>The <var>base</var> may vary from 2 to 62, or if <var>base</var> is 0, then the leading
+characters are used: <code>0x</code> and <code>0X</code> for hexadecimal, <code>0b</code> and
+<code>0B</code> for binary, <code>0</code> for octal, or decimal otherwise.
+</p>
+<p>For bases up to 36, case is ignored; upper-case and lower-case letters have
+the same value.  For bases 37 to 62, upper-case letter represent the usual
+10..35 while lower-case letter represent 36..61.
+</p>
+<p>Return the number of bytes read, or if an error occurred, return 0.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fout_005fraw">Function: <em>size_t</em> <strong>mpz_out_raw</strong> <em>(FILE *<var>stream</var>, const mpz_t <var>op</var>)</em></dt>
+<dd><p>Output <var>op</var> on stdio stream <var>stream</var>, in raw binary format.  The
+integer is written in a portable format, with 4 bytes of size information, and
+that many bytes of limbs.  Both the size and the limbs are written in
+decreasing significance order (i.e., in big-endian).
+</p>
+<p>The output can be read with <code>mpz_inp_raw</code>.
+</p>
+<p>Return the number of bytes written, or if an error occurred, return 0.
+</p>
+<p>The output of this can not be read by <code>mpz_inp_raw</code> from GMP 1, because
+of changes necessary for compatibility between 32-bit and 64-bit machines.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005finp_005fraw">Function: <em>size_t</em> <strong>mpz_inp_raw</strong> <em>(mpz_t <var>rop</var>, FILE *<var>stream</var>)</em></dt>
+<dd><p>Input from stdio stream <var>stream</var> in the format written by
+<code>mpz_out_raw</code>, and put the result in <var>rop</var>.  Return the number of
+bytes read, or if an error occurred, return 0.
+</p>
+<p>This routine can read the output from <code>mpz_out_raw</code> also from GMP 1, in
+spite of changes necessary for compatibility between 32-bit and 64-bit
+machines.
+</p></dd></dl>
+<hr>
+<span id="Integer-Random-Numbers"></span><div class="header">
+<p>
+Next: <a href="#Integer-Import-and-Export" accesskey="n" rel="next">Integer Import and Export</a>, Previous: <a href="#I_002fO-of-Integers" accesskey="p" rel="prev">I/O of Integers</a>, Up: <a href="#Integer-Functions" accesskey="u" rel="up">Integer Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Random-Number-Functions-1"></span><h3 class="section">5.13 Random Number Functions</h3>
+<span id="index-Integer-random-number-functions"></span>
+<span id="index-Random-number-functions"></span>
+<p>The random number functions of GMP come in two groups; older function
+that rely on a global state, and newer functions that accept a state
+parameter that is read and modified.  Please see the <a href="constant.Random_Number_Functions.html#Random-Number-Functions">Random Number Functions</a> for more information on how to use and not to use random
+number functions.
+</p>
+<dl>
+<dt id="index-mpz_005furandomb">Function: <em>void</em> <strong>mpz_urandomb</strong> <em>(mpz_t <var>rop</var>, gmp_randstate_t <var>state</var>, mp_bitcnt_t <var>n</var>)</em></dt>
+<dd><p>Generate a uniformly distributed random integer in the range 0 to
+<em>2<sup>n</sup>-1</em>, inclusive.
+</p>
+<p>The variable <var>state</var> must be initialized by calling one of the
+<code>gmp_randinit</code> functions (<a href="constant.Random_Number_Functions.html#Random-State-Initialization">Random State Initialization</a>) before
+invoking this function.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005furandomm">Function: <em>void</em> <strong>mpz_urandomm</strong> <em>(mpz_t <var>rop</var>, gmp_randstate_t <var>state</var>, const mpz_t <var>n</var>)</em></dt>
+<dd><p>Generate a uniform random integer in the range 0 to <em><var>n</var>-1</em>,
+inclusive.
+</p>
+<p>The variable <var>state</var> must be initialized by calling one of the
+<code>gmp_randinit</code> functions (<a href="constant.Random_Number_Functions.html#Random-State-Initialization">Random State Initialization</a>)
+before invoking this function.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005frrandomb">Function: <em>void</em> <strong>mpz_rrandomb</strong> <em>(mpz_t <var>rop</var>, gmp_randstate_t <var>state</var>, mp_bitcnt_t <var>n</var>)</em></dt>
+<dd><p>Generate a random integer with long strings of zeros and ones in the
+binary representation.  Useful for testing functions and algorithms,
+since this kind of random numbers have proven to be more likely to
+trigger corner-case bugs.  The random number will be in the range
+<em>2<sup>n-1</sup></em> to <em>2<sup>n</sup>-1</em>, inclusive.
+</p>
+<p>The variable <var>state</var> must be initialized by calling one of the
+<code>gmp_randinit</code> functions (<a href="constant.Random_Number_Functions.html#Random-State-Initialization">Random State Initialization</a>)
+before invoking this function.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005frandom">Function: <em>void</em> <strong>mpz_random</strong> <em>(mpz_t <var>rop</var>, mp_size_t <var>max_size</var>)</em></dt>
+<dd><p>Generate a random integer of at most <var>max_size</var> limbs.  The generated
+random number doesn&rsquo;t satisfy any particular requirements of randomness.
+Negative random numbers are generated when <var>max_size</var> is negative.
+</p>
+<p>This function is obsolete.  Use <code>mpz_urandomb</code> or
+<code>mpz_urandomm</code> instead.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005frandom2">Function: <em>void</em> <strong>mpz_random2</strong> <em>(mpz_t <var>rop</var>, mp_size_t <var>max_size</var>)</em></dt>
+<dd><p>Generate a random integer of at most <var>max_size</var> limbs, with long strings
+of zeros and ones in the binary representation.  Useful for testing functions
+and algorithms, since this kind of random numbers have proven to be more
+likely to trigger corner-case bugs.  Negative random numbers are generated
+when <var>max_size</var> is negative.
+</p>
+<p>This function is obsolete.  Use <code>mpz_rrandomb</code> instead.
+</p></dd></dl>
+<hr>
+<span id="Integer-Import-and-Export"></span><div class="header">
+<p>
+Next: <a href="#Miscellaneous-Integer-Functions" accesskey="n" rel="next">Miscellaneous Integer Functions</a>, Previous: <a href="#Integer-Random-Numbers" accesskey="p" rel="prev">Integer Random Numbers</a>, Up: <a href="#Integer-Functions" accesskey="u" rel="up">Integer Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Integer-Import-and-Export-1"></span><h3 class="section">5.14 Integer Import and Export</h3>
+<p><code>mpz_t</code> variables can be converted to and from arbitrary words of binary
+data with the following functions.
+</p>
+<dl>
+<dt id="index-mpz_005fimport">Function: <em>void</em> <strong>mpz_import</strong> <em>(mpz_t <var>rop</var>, size_t <var>count</var>, int <var>order</var>, size_t <var>size</var>, int <var>endian</var>, size_t <var>nails</var>, const void *<var>op</var>)</em></dt>
+<dd><span id="index-Integer-import"></span>
+<span id="index-Import"></span>
+<p>Set <var>rop</var> from an array of word data at <var>op</var>.
+</p>
+<p>The parameters specify the format of the data.  <var>count</var> many words are
+read, each <var>size</var> bytes.  <var>order</var> can be 1 for most significant word
+first or -1 for least significant first.  Within each word <var>endian</var> can be
+1 for most significant byte first, -1 for least significant first, or 0 for
+the native endianness of the host CPU.  The most significant <var>nails</var> bits
+of each word are skipped, this can be 0 to use the full words.
+</p>
+<p>There is no sign taken from the data, <var>rop</var> will simply be a positive
+integer.  An application can handle any sign itself, and apply it for instance
+with <code>mpz_neg</code>.
+</p>
+<p>There are no data alignment restrictions on <var>op</var>, any address is allowed.
+</p>
+<p>Here&rsquo;s an example converting an array of <code>unsigned long</code> data, most
+significant element first, and host byte order within each value.
+</p>
+<div class="example">
+<pre class="example">unsigned long  a[20];
+/* Initialize <var>z</var> and <var>a</var> */
+mpz_import (z, 20, 1, sizeof(a[0]), 0, 0, a);
+</pre></div>
+<p>This example assumes the full <code>sizeof</code> bytes are used for data in the
+given type, which is usually true, and certainly true for <code>unsigned long</code>
+everywhere we know of.  However on Cray vector systems it may be noted that
+<code>short</code> and <code>int</code> are always stored in 8 bytes (and with
+<code>sizeof</code> indicating that) but use only 32 or 46 bits.  The <var>nails</var>
+feature can account for this, by passing for instance
+<code>8*sizeof(int)-INT_BIT</code>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fexport">Function: <em>void *</em> <strong>mpz_export</strong> <em>(void *<var>rop</var>, size_t *<var>countp</var>, int <var>order</var>, size_t <var>size</var>, int <var>endian</var>, size_t <var>nails</var>, const mpz_t <var>op</var>)</em></dt>
+<dd><span id="index-Integer-export"></span>
+<span id="index-Export"></span>
+<p>Fill <var>rop</var> with word data from <var>op</var>.
+</p>
+<p>The parameters specify the format of the data produced.  Each word will be
+<var>size</var> bytes and <var>order</var> can be 1 for most significant word first or
+-1 for least significant first.  Within each word <var>endian</var> can be 1 for
+most significant byte first, -1 for least significant first, or 0 for the
+native endianness of the host CPU.  The most significant <var>nails</var> bits of
+each word are unused and set to zero, this can be 0 to produce full words.
+</p>
+<p>The number of words produced is written to <code>*<var>countp</var></code>, or
+<var>countp</var> can be <code>NULL</code> to discard the count.  <var>rop</var> must have
+enough space for the data, or if <var>rop</var> is <code>NULL</code> then a result array
+of the necessary size is allocated using the current GMP allocation function
+(see <a href="constant.Custom_Allocation.html#start">Custom Allocation</a>).  In either case the return value is the
+destination used, either <var>rop</var> or the allocated block.
+</p>
+<p>If <var>op</var> is non-zero then the most significant word produced will be
+non-zero.  If <var>op</var> is zero then the count returned will be zero and
+nothing written to <var>rop</var>.  If <var>rop</var> is <code>NULL</code> in this case, no
+block is allocated, just <code>NULL</code> is returned.
+</p>
+<p>The sign of <var>op</var> is ignored, just the absolute value is exported.  An
+application can use <code>mpz_sgn</code> to get the sign and handle it as desired.
+(see <a href="#Integer-Comparisons">Integer Comparisons</a>)
+</p>
+<p>There are no data alignment restrictions on <var>rop</var>, any address is allowed.
+</p>
+<p>When an application is allocating space itself the required size can be
+determined with a calculation like the following.  Since <code>mpz_sizeinbase</code>
+always returns at least 1, <code>count</code> here will be at least one, which
+avoids any portability problems with <code>malloc(0)</code>, though if <code>z</code> is
+zero no space at all is actually needed (or written).
+</p>
+<div class="example">
+<pre class="example">numb = 8*size - nail;
+count = (mpz_sizeinbase (z, 2) + numb-1) / numb;
+p = malloc (count * size);
+</pre></div>
+</dd></dl>
+<hr>
+<span id="Miscellaneous-Integer-Functions"></span><div class="header">
+<p>
+Next: <a href="#Integer-Special-Functions" accesskey="n" rel="next">Integer Special Functions</a>, Previous: <a href="#Integer-Import-and-Export" accesskey="p" rel="prev">Integer Import and Export</a>, Up: <a href="#Integer-Functions" accesskey="u" rel="up">Integer Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Miscellaneous-Functions"></span><h3 class="section">5.15 Miscellaneous Functions</h3>
+<span id="index-Miscellaneous-integer-functions"></span>
+<span id="index-Integer-miscellaneous-functions"></span>
+<dl>
+<dt id="index-mpz_005ffits_005fulong_005fp">Function: <em>int</em> <strong>mpz_fits_ulong_p</strong> <em>(const mpz_t <var>op</var>)</em></dt>
+<dt id="index-mpz_005ffits_005fslong_005fp">Function: <em>int</em> <strong>mpz_fits_slong_p</strong> <em>(const mpz_t <var>op</var>)</em></dt>
+<dt id="index-mpz_005ffits_005fuint_005fp">Function: <em>int</em> <strong>mpz_fits_uint_p</strong> <em>(const mpz_t <var>op</var>)</em></dt>
+<dt id="index-mpz_005ffits_005fsint_005fp">Function: <em>int</em> <strong>mpz_fits_sint_p</strong> <em>(const mpz_t <var>op</var>)</em></dt>
+<dt id="index-mpz_005ffits_005fushort_005fp">Function: <em>int</em> <strong>mpz_fits_ushort_p</strong> <em>(const mpz_t <var>op</var>)</em></dt>
+<dt id="index-mpz_005ffits_005fsshort_005fp">Function: <em>int</em> <strong>mpz_fits_sshort_p</strong> <em>(const mpz_t <var>op</var>)</em></dt>
+<dd><p>Return non-zero iff the value of <var>op</var> fits in an <code>unsigned long int</code>,
+<code>signed long int</code>, <code>unsigned int</code>, <code>signed int</code>, <code>unsigned
+short int</code>, or <code>signed short int</code>, respectively.  Otherwise, return zero.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fodd_005fp">Macro: <em>int</em> <strong>mpz_odd_p</strong> <em>(const mpz_t <var>op</var>)</em></dt>
+<dt id="index-mpz_005feven_005fp">Macro: <em>int</em> <strong>mpz_even_p</strong> <em>(const mpz_t <var>op</var>)</em></dt>
+<dd><p>Determine whether <var>op</var> is odd or even, respectively.  Return non-zero if
+yes, zero if no.  These macros evaluate their argument more than once.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fsizeinbase">Function: <em>size_t</em> <strong>mpz_sizeinbase</strong> <em>(const mpz_t <var>op</var>, int <var>base</var>)</em></dt>
+<dd><span id="index-Size-in-digits"></span>
+<span id="index-Digits-in-an-integer"></span>
+<p>Return the size of <var>op</var> measured in number of digits in the given
+<var>base</var>.  <var>base</var> can vary from 2 to 62.  The sign of <var>op</var> is
+ignored, just the absolute value is used.  The result will be either exact or
+1 too big.  If <var>base</var> is a power of 2, the result is always exact.  If
+<var>op</var> is zero the return value is always 1.
+</p>
+<p>This function can be used to determine the space required when converting
+<var>op</var> to a string.  The right amount of allocation is normally two more
+than the value returned by <code>mpz_sizeinbase</code>, one extra for a minus sign
+and one for the null-terminator.
+</p>
+<span id="index-Most-significant-bit"></span>
+<p>It will be noted that <code>mpz_sizeinbase(<var>op</var>,2)</code> can be used to locate
+the most significant 1 bit in <var>op</var>, counting from 1.  (Unlike the bitwise
+functions which start from 0, See <a href="#Integer-Logic-and-Bit-Fiddling">Logical
+and Bit Manipulation Functions</a>.)
+</p></dd></dl>
+<hr>
+<span id="Integer-Special-Functions"></span><div class="header">
+<p>
+Previous: <a href="#Miscellaneous-Integer-Functions" accesskey="p" rel="prev">Miscellaneous Integer Functions</a>, Up: <a href="#Integer-Functions" accesskey="u" rel="up">Integer Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Special-Functions"></span><h3 class="section">5.16 Special Functions</h3>
+<span id="index-Special-integer-functions"></span>
+<span id="index-Integer-special-functions"></span>
+<p>The functions in this section are for various special purposes.  Most
+applications will not need them.
+</p>
+<dl>
+<dt id="index-mpz_005farray_005finit">Function: <em>void</em> <strong>mpz_array_init</strong> <em>(mpz_t <var>integer_array</var>, mp_size_t <var>array_size</var>, <span class="nolinebreak">mp_size_t</span>&nbsp;<var><span class="nolinebreak">fixed_num_bits</span></var><!-- /@w -->)</em></dt>
+<dd><p><strong>This is an obsolete function.  Do not use it.</strong>
+</p></dd></dl>
+<dl>
+<dt id="index-_005fmpz_005frealloc">Function: <em>void *</em> <strong>_mpz_realloc</strong> <em>(mpz_t <var>integer</var>, mp_size_t <var>new_alloc</var>)</em></dt>
+<dd><p>Change the space for <var>integer</var> to <var>new_alloc</var> limbs.  The value in
+<var>integer</var> is preserved if it fits, or is set to 0 if not.  The return
+value is not useful to applications and should be ignored.
+</p>
+<p><code>mpz_realloc2</code> is the preferred way to accomplish allocation changes like
+this.  <code>mpz_realloc2</code> and <code>_mpz_realloc</code> are the same except that
+<code>_mpz_realloc</code> takes its size in limbs.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fgetlimbn">Function: <em>mp_limb_t</em> <strong>mpz_getlimbn</strong> <em>(const mpz_t <var>op</var>, mp_size_t <var>n</var>)</em></dt>
+<dd><p>Return limb number <var>n</var> from <var>op</var>.  The sign of <var>op</var> is ignored,
+just the absolute value is used.  The least significant limb is number 0.
+</p>
+<p><code>mpz_size</code> can be used to find how many limbs make up <var>op</var>.
+<code>mpz_getlimbn</code> returns zero if <var>n</var> is outside the range 0 to
+<code>mpz_size(<var>op</var>)-1</code>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005fsize">Function: <em>size_t</em> <strong>mpz_size</strong> <em>(const mpz_t <var>op</var>)</em></dt>
+<dd><p>Return the size of <var>op</var> measured in number of limbs.  If <var>op</var> is zero,
+the returned value will be zero.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005flimbs_005fread">Function: <em>const mp_limb_t *</em> <strong>mpz_limbs_read</strong> <em>(const mpz_t <var>x</var>)</em></dt>
+<dd><p>Return a pointer to the limb array representing the absolute value of <var>x</var>.
+The size of the array is <code>mpz_size(<var>x</var>)</code>. Intended for read access
+only.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005flimbs_005fwrite">Function: <em>mp_limb_t *</em> <strong>mpz_limbs_write</strong> <em>(mpz_t <var>x</var>, mp_size_t <var>n</var>)</em></dt>
+<dt id="index-mpz_005flimbs_005fmodify">Function: <em>mp_limb_t *</em> <strong>mpz_limbs_modify</strong> <em>(mpz_t <var>x</var>, mp_size_t <var>n</var>)</em></dt>
+<dd><p>Return a pointer to the limb array, intended for write access. The array is
+reallocated as needed, to make room for <var>n</var> limbs. Requires <em><var>n</var>
+&gt; 0</em>. The <code>mpz_limbs_modify</code> function returns an array that holds the old
+absolute value of <var>x</var>, while <code>mpz_limbs_write</code> may destroy the old
+value and return an array with unspecified contents.
+</p></dd></dl>
+<dl>
+<dt id="index-mpz_005flimbs_005ffinish">Function: <em>void</em> <strong>mpz_limbs_finish</strong> <em>(mpz_t <var>x</var>, mp_size_t <var>s</var>)</em></dt>
+<dd><p>Updates the internal size field of <var>x</var>. Used after writing to the limb
+array pointer returned by <code>mpz_limbs_write</code> or <code>mpz_limbs_modify</code> is
+completed. The array should contain <em>abs(<var>s</var>)</em> valid limbs,
+representing the new absolute value for <var>x</var>, and the sign of <var>x</var> is
+taken from the sign of <var>s</var>. This function never reallocates <var>x</var>, so
+the limb pointer remains valid.
+</p></dd></dl>
+<div class="example">
+<pre class="example">void foo (mpz_t x)
+{
+  mp_size_t n, i;
+  mp_limb_t *xp;
+  n = mpz_size (x);
+  xp = mpz_limbs_modify (x, 2*n);
+  for (i = 0; i &lt; n; i++)
+    xp[n+i] = xp[n-1-i];
+  mpz_limbs_finish (x, mpz_sgn (x) &lt; 0 ? - 2*n : 2*n);
+}
+</pre></div>
+<dl>
+<dt id="index-mpz_005froinit_005fn">Function: <em>mpz_srcptr</em> <strong>mpz_roinit_n</strong> <em>(mpz_t <var>x</var>, const mp_limb_t *<var>xp</var>, mp_size_t <var>xs</var>)</em></dt>
+<dd><p>Special initialization of <var>x</var>, using the given limb array and size.
+<var>x</var> should be treated as read-only: it can be passed safely as input to
+any mpz function, but not as an output. The array <var>xp</var> must point to at
+least a readable limb, its size is
+<em>abs(<var>xs</var>)</em>, and the sign of <var>x</var> is the sign of <var>xs</var>. For
+convenience, the function returns <var>x</var>, but cast to a const pointer type.
+</p></dd></dl>
+<div class="example">
+<pre class="example">void foo (mpz_t x)
+{
+  static const mp_limb_t y[3] = { 0x1, 0x2, 0x3 };
+  mpz_t tmp;
+  mpz_add (x, x, mpz_roinit_n (tmp, y, 3));
+}
+</pre></div>
+<dl>
+<dt id="index-MPZ_005fROINIT_005fN">Macro: <em>mpz_t</em> <strong>MPZ_ROINIT_N</strong> <em>(mp_limb_t *<var>xp</var>, mp_size_t <var>xs</var>)</em></dt>
+<dd><p>This macro expands to an initializer which can be assigned to an mpz_t
+variable. The limb array <var>xp</var> must point to at least a readable limb,
+moreover, unlike the <code>mpz_roinit_n</code> function, the array must be
+normalized: if <var>xs</var> is non-zero, then
+<code><var>xp</var>[<em>abs(<var>xs</var>)-1</em>]</code> must be non-zero. Intended
+primarily for constant values. Using it for non-constant values requires a C
+compiler supporting C99.
+</p></dd></dl>
+<div class="example">
+<pre class="example">void foo (mpz_t x)
+{
+  static const mp_limb_t ya[3] = { 0x1, 0x2, 0x3 };
+  static const mpz_t y = MPZ_ROINIT_N ((mp_limb_t *) ya, 3);
+  mpz_add (x, x, y);
+}
+</pre></div>
+<hr>
+<div class="header">
+<p>
+Previous: <a href="#Miscellaneous-Integer-Functions" accesskey="p" rel="prev">Miscellaneous Integer Functions</a>, Up: <a href="#Integer-Functions" accesskey="u" rel="up">Integer Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div></div></section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../";window.currentCrate = "gmp_mpfr_sys";</script><script src="../../../main.js"></script><script defer src="../../../search-index.js"></script></body></html>

@@ -1,0 +1,21 @@
+(function() {var implementors = {};
+implementors["bstr"] = [{"text":"impl Error for FromUtf8Error","synthetic":false,"types":[]},{"text":"impl Error for Utf8Error","synthetic":false,"types":[]}];
+implementors["csv"] = [{"text":"impl Error for DeserializeError","synthetic":false,"types":[]},{"text":"impl Error for Error","synthetic":false,"types":[]},{"text":"impl Error for FromUtf8Error","synthetic":false,"types":[]},{"text":"impl Error for Utf8Error","synthetic":false,"types":[]},{"text":"impl&lt;W:&nbsp;Any&gt; Error for IntoInnerError&lt;W&gt;","synthetic":false,"types":[]}];
+implementors["error_chain"] = [{"text":"impl Error for Error","synthetic":false,"types":[]},{"text":"impl Error for Error","synthetic":false,"types":[]}];
+implementors["ffi_support"] = [{"text":"impl Error for HandleError","synthetic":false,"types":[]}];
+implementors["getrandom"] = [{"text":"impl Error for Error","synthetic":false,"types":[]}];
+implementors["ndarray"] = [{"text":"impl Error for ShapeError","synthetic":false,"types":[]}];
+implementors["ndarray_stats"] = [{"text":"impl Error for EmptyInput","synthetic":false,"types":[]},{"text":"impl Error for MinMaxError","synthetic":false,"types":[]},{"text":"impl Error for ShapeMismatch","synthetic":false,"types":[]},{"text":"impl Error for MultiInputError","synthetic":false,"types":[]},{"text":"impl Error for QuantileError","synthetic":false,"types":[]},{"text":"impl Error for BinNotFound","synthetic":false,"types":[]},{"text":"impl Error for BinsBuildError","synthetic":false,"types":[]}];
+implementors["num_bigint"] = [{"text":"impl Error for ParseBigIntError","synthetic":false,"types":[]},{"text":"impl&lt;T&gt; Error for TryFromBigIntError&lt;T&gt; <span class=\"where fmt-newline\">where<br>&nbsp;&nbsp;&nbsp;&nbsp;T: Debug,&nbsp;</span>","synthetic":false,"types":[]}];
+implementors["num_complex"] = [{"text":"impl&lt;E:&nbsp;Error&gt; Error for ParseComplexError&lt;E&gt;","synthetic":false,"types":[]}];
+implementors["num_rational"] = [{"text":"impl Error for ParseRatioError","synthetic":false,"types":[]}];
+implementors["openssl"] = [{"text":"impl Error for ErrorStack","synthetic":false,"types":[]},{"text":"impl Error for Error","synthetic":false,"types":[]},{"text":"impl Error for Error","synthetic":false,"types":[]},{"text":"impl&lt;S:&nbsp;Debug&gt; Error for HandshakeError&lt;S&gt;","synthetic":false,"types":[]},{"text":"impl Error for X509VerifyResult","synthetic":false,"types":[]}];
+implementors["prost"] = [{"text":"impl Error for DecodeError","synthetic":false,"types":[]},{"text":"impl Error for EncodeError","synthetic":false,"types":[]}];
+implementors["rand"] = [{"text":"impl Error for BernoulliError","synthetic":false,"types":[]},{"text":"impl Error for WeightedError","synthetic":false,"types":[]},{"text":"impl Error for ReadError","synthetic":false,"types":[]}];
+implementors["rand_core"] = [{"text":"impl Error for Error","synthetic":false,"types":[]}];
+implementors["rug"] = [{"text":"impl Error for ParseIntegerError","synthetic":false,"types":[]},{"text":"impl Error for TryFromIntegerError","synthetic":false,"types":[]},{"text":"impl Error for ParseFloatError","synthetic":false,"types":[]}];
+implementors["serde"] = [{"text":"impl Error for Error","synthetic":false,"types":[]}];
+implementors["serde_json"] = [{"text":"impl Error for Error","synthetic":false,"types":[]}];
+implementors["statrs"] = [{"text":"impl Error for StatsError","synthetic":false,"types":[]}];
+implementors["syn"] = [{"text":"impl Error for Error","synthetic":false,"types":[]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

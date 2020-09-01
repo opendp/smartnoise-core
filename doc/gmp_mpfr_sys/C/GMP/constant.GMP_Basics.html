@@ -1,0 +1,1010 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `GMP_Basics` constant in crate `gmp_mpfr_sys`."><meta name="keywords" content="rust, rustlang, rust-lang, GMP_Basics"><title>gmp_mpfr_sys::C::GMP::GMP_Basics - Rust</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc constant"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../gmp_mpfr_sys/index.html'><div class='logo-container'><img src='https://tspiteri.gitlab.io/gmp-mpfr-sys/rug.svg' alt='logo'></div></a><div class="sidebar-elems"><p class='location'><a href='../../index.html'>gmp_mpfr_sys</a>::<wbr><a href='../index.html'>C</a>::<wbr><a href='index.html'>GMP</a></p><script>window.sidebarCurrent = {name: 'GMP_Basics', ty: 'constant', relpath: ''};</script><script defer src="sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+                <a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../../../src/gmp_mpfr_sys/C.rs.html#76' title='goto source code'>[src]</a></span><span class='in-band'>Constant <a href='../../index.html'>gmp_mpfr_sys</a>::<wbr><a href='../index.html'>C</a>::<wbr><a href='index.html'>GMP</a>::<wbr><a class="constant" href=''>GMP_Basics</a></span></h1><pre class='rust const'>pub const GMP_Basics: ();</pre><div class='docblock'><p>This constant is a place-holder for documentation; do not use it in code.</p>
+<hr />
+<div><span id="start"></span></div>
+<span id="GMP-Basics"></span><div class="header">
+<p>
+Next: <a href="constant.Reporting_Bugs.html#start" accesskey="n" rel="next">Reporting Bugs</a>, Previous: <a href="constant.Installing_GMP.html#Installing-GMP" accesskey="p" rel="prev">Installing GMP</a>, Up: <a href="index.html#start" accesskey="u" rel="up">Top</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="GMP-Basics-1"></span><h2 class="chapter">3 GMP Basics</h2>
+<span id="index-Basics"></span>
+<p><strong>Using functions, macros, data types, etc. not documented in this
+manual is strongly discouraged.  If you do so your application is guaranteed
+to be incompatible with future versions of GMP.</strong>
+</p>
+<table class="menu" style="margin: 0; width: auto; padding: 0; border: 0;" border="0" cellspacing="0">
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Headers-and-Libraries" accesskey="1">Headers and Libraries</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Nomenclature-and-Types" accesskey="2">Nomenclature and Types</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Function-Classes" accesskey="3">Function Classes</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Variable-Conventions" accesskey="4">Variable Conventions</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Parameter-Conventions" accesskey="5">Parameter Conventions</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Memory-Management" accesskey="6">Memory Management</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Reentrancy" accesskey="7">Reentrancy</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Useful-Macros-and-Constants" accesskey="8">Useful Macros and Constants</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Compatibility-with-older-versions" accesskey="9">Compatibility with older versions</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Demonstration-Programs">Demonstration Programs</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Efficiency">Efficiency</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Debugging">Debugging</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Profiling">Profiling</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Autoconf">Autoconf</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Emacs">Emacs</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+</table>
+<hr>
+<span id="Headers-and-Libraries"></span><div class="header">
+<p>
+Next: <a href="#Nomenclature-and-Types" accesskey="n" rel="next">Nomenclature and Types</a>, Previous: <a href="#GMP-Basics" accesskey="p" rel="prev">GMP Basics</a>, Up: <a href="#GMP-Basics" accesskey="u" rel="up">GMP Basics</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Headers-and-Libraries-1"></span><h3 class="section">3.1 Headers and Libraries</h3>
+<span id="index-Headers"></span>
+<span id="index-gmp_002eh"></span>
+<span id="index-Include-files"></span>
+<span id="index-_0023include"></span>
+<p>All declarations needed to use GMP are collected in the include file
+<samp>gmp.h</samp>.  It is designed to work with both C and C++ compilers.
+</p>
+<div class="example">
+<pre class="example">#include &lt;gmp.h&gt;
+</pre></div>
+<span id="index-stdio_002eh"></span>
+<p>Note however that prototypes for GMP functions with <code>FILE *</code> parameters
+are only provided if <code>&lt;stdio.h&gt;</code> is included too.
+</p>
+<div class="example">
+<pre class="example">#include &lt;stdio.h&gt;
+#include &lt;gmp.h&gt;
+</pre></div>
+<span id="index-stdarg_002eh"></span>
+<p>Likewise <code>&lt;stdarg.h&gt;</code> is required for prototypes with <code>va_list</code>
+parameters, such as <code>gmp_vprintf</code>.  And <code>&lt;obstack.h&gt;</code> for prototypes
+with <code>struct obstack</code> parameters, such as <code>gmp_obstack_printf</code>, when
+available.
+</p>
+<span id="index-Libraries"></span>
+<span id="index-Linking"></span>
+<span id="index-libgmp"></span>
+<p>All programs using GMP must link against the <samp>libgmp</samp> library.  On a
+typical Unix-like system this can be done with &lsquo;<samp>-lgmp</samp>&rsquo;, for example
+</p>
+<div class="example">
+<pre class="example">gcc myprogram.c -lgmp
+</pre></div>
+<span id="index-libgmpxx"></span>
+<p>GMP C++ functions are in a separate <samp>libgmpxx</samp> library.  This is built
+and installed if C++ support has been enabled (see <a href="constant.Installing_GMP.html#Build-Options">Build Options</a>).  For
+example,
+</p>
+<div class="example">
+<pre class="example">g++ mycxxprog.cc -lgmpxx -lgmp
+</pre></div>
+<span id="index-Libtool"></span>
+<p>GMP is built using Libtool and an application can use that to link if desired,
+see <a href="https://www.gnu.org/software/libtool/manual/html_node/index.html#Top">GNU Libtool</a> in <cite>GNU Libtool</cite>.
+</p>
+<p>If GMP has been installed to a non-standard location then it may be necessary
+to use &lsquo;<samp>-I</samp>&rsquo; and &lsquo;<samp>-L</samp>&rsquo; compiler options to point to the right
+directories, and some sort of run-time path for a shared library.
+</p>
+<hr>
+<span id="Nomenclature-and-Types"></span><div class="header">
+<p>
+Next: <a href="#Function-Classes" accesskey="n" rel="next">Function Classes</a>, Previous: <a href="#Headers-and-Libraries" accesskey="p" rel="prev">Headers and Libraries</a>, Up: <a href="#GMP-Basics" accesskey="u" rel="up">GMP Basics</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Nomenclature-and-Types-1"></span><h3 class="section">3.2 Nomenclature and Types</h3>
+<span id="index-Nomenclature"></span>
+<span id="index-Types"></span>
+<span id="index-Integer"></span>
+<span id="index-mpz_005ft"></span>
+<p>In this manual, <em>integer</em> usually means a multiple precision integer, as
+defined by the GMP library.  The C data type for such integers is <code>mpz_t</code>.
+Here are some examples of how to declare such integers:
+</p>
+<div class="example">
+<pre class="example">mpz_t sum;
+struct foo { mpz_t x, y; };
+mpz_t vec[20];
+</pre></div>
+<span id="index-Rational-number"></span>
+<span id="index-mpq_005ft"></span>
+<p><em>Rational number</em> means a multiple precision fraction.  The C data type
+for these fractions is <code>mpq_t</code>.  For example:
+</p>
+<div class="example">
+<pre class="example">mpq_t quotient;
+</pre></div>
+<span id="index-Floating_002dpoint-number"></span>
+<span id="index-mpf_005ft"></span>
+<p><em>Floating point number</em> or <em>Float</em> for short, is an arbitrary precision
+mantissa with a limited precision exponent.  The C data type for such objects
+is <code>mpf_t</code>.  For example:
+</p>
+<div class="example">
+<pre class="example">mpf_t fp;
+</pre></div>
+<span id="index-mp_005fexp_005ft"></span>
+<p>The floating point functions accept and return exponents in the C type
+<code>mp_exp_t</code>.  Currently this is usually a <code>long</code>, but on some systems
+it&rsquo;s an <code>int</code> for efficiency.
+</p>
+<span id="index-Limb"></span>
+<span id="index-mp_005flimb_005ft"></span>
+<p>A <em>limb</em> means the part of a multi-precision number that fits in a single
+machine word.  (We chose this word because a limb of the human body is
+analogous to a digit, only larger, and containing several digits.)  Normally a
+limb is 32 or 64 bits.  The C data type for a limb is <code>mp_limb_t</code>.
+</p>
+<span id="index-mp_005fsize_005ft"></span>
+<p>Counts of limbs of a multi-precision number represented in the C type
+<code>mp_size_t</code>.  Currently this is normally a <code>long</code>, but on some
+systems it&rsquo;s an <code>int</code> for efficiency, and on some systems it will be
+<code>long long</code> in the future.
+</p>
+<span id="index-mp_005fbitcnt_005ft"></span>
+<p>Counts of bits of a multi-precision number are represented in the C type
+<code>mp_bitcnt_t</code>.  Currently this is always an <code>unsigned long</code>, but on
+some systems it will be an <code>unsigned long long</code> in the future.
+</p>
+<span id="index-Random-state"></span>
+<span id="index-gmp_005frandstate_005ft"></span>
+<p><em>Random state</em> means an algorithm selection and current state data.  The C
+data type for such objects is <code>gmp_randstate_t</code>.  For example:
+</p>
+<div class="example">
+<pre class="example">gmp_randstate_t rstate;
+</pre></div>
+<p>Also, in general <code>mp_bitcnt_t</code> is used for bit counts and ranges, and
+<code>size_t</code> is used for byte or character counts.
+</p>
+<hr>
+<span id="Function-Classes"></span><div class="header">
+<p>
+Next: <a href="#Variable-Conventions" accesskey="n" rel="next">Variable Conventions</a>, Previous: <a href="#Nomenclature-and-Types" accesskey="p" rel="prev">Nomenclature and Types</a>, Up: <a href="#GMP-Basics" accesskey="u" rel="up">GMP Basics</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Function-Classes-1"></span><h3 class="section">3.3 Function Classes</h3>
+<span id="index-Function-classes"></span>
+<p>There are six classes of functions in the GMP library:
+</p>
+<ol>
+<li> Functions for signed integer arithmetic, with names beginning with
+<code>mpz_</code>.  The associated type is <code>mpz_t</code>.  There are about 150
+functions in this class.  (see <a href="constant.Integer_Functions.html#Integer-Functions">Integer Functions</a>)
+</li><li> Functions for rational number arithmetic, with names beginning with
+<code>mpq_</code>.  The associated type is <code>mpq_t</code>.  There are about 35
+functions in this class, but the integer functions can be used for arithmetic
+on the numerator and denominator separately.  (see <a href="constant.Rational_Number_Functions.html#Rational-Number-Functions">Rational Number Functions</a>)
+</li><li> Functions for floating-point arithmetic, with names beginning with
+<code>mpf_</code>.  The associated type is <code>mpf_t</code>.  There are about 70
+functions is this class.  (see <a href="constant.Floating_point_Functions.html#Floating_002dpoint-Functions">Floating-point Functions</a>)
+</li><li> Fast low-level functions that operate on natural numbers.  These are used by
+the functions in the preceding groups, and you can also call them directly
+from very time-critical user programs.  These functions&rsquo; names begin with
+<code>mpn_</code>.  The associated type is array of <code>mp_limb_t</code>.  There are
+about 60 (hard-to-use) functions in this class.  (see <a href="constant.Low_level_Functions.html#start">Low-level Functions</a>)
+</li><li> Miscellaneous functions.  Functions for setting up custom allocation and
+functions for generating random numbers.  (see <a href="constant.Custom_Allocation.html#start">Custom Allocation</a>, and
+see <a href="constant.Random_Number_Functions.html#Random-Number-Functions">Random Number Functions</a>)
+</li></ol>
+<hr>
+<span id="Variable-Conventions"></span><div class="header">
+<p>
+Next: <a href="#Parameter-Conventions" accesskey="n" rel="next">Parameter Conventions</a>, Previous: <a href="#Function-Classes" accesskey="p" rel="prev">Function Classes</a>, Up: <a href="#GMP-Basics" accesskey="u" rel="up">GMP Basics</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Variable-Conventions-1"></span><h3 class="section">3.4 Variable Conventions</h3>
+<span id="index-Variable-conventions"></span>
+<span id="index-Conventions-for-variables"></span>
+<p>GMP functions generally have output arguments before input arguments.  This
+notation is by analogy with the assignment operator.
+</p>
+<p>GMP lets you use the same variable for both input and output in one call.  For
+example, the main function for integer multiplication, <code>mpz_mul</code>, can be
+used to square <code>x</code> and put the result back in <code>x</code> with
+</p>
+<div class="example">
+<pre class="example">mpz_mul (x, x, x);
+</pre></div>
+<p>Before you can assign to a GMP variable, you need to initialize it by calling
+one of the special initialization functions.  When you&rsquo;re done with a
+variable, you need to clear it out, using one of the functions for that
+purpose.  Which function to use depends on the type of variable.  See the
+chapters on integer functions, rational number functions, and floating-point
+functions for details.
+</p>
+<p>A variable should only be initialized once, or at least cleared between each
+initialization.  After a variable has been initialized, it may be assigned to
+any number of times.
+</p>
+<p>For efficiency reasons, avoid excessive initializing and clearing.  In
+general, initialize near the start of a function and clear near the end.  For
+example,
+</p>
+<div class="example">
+<pre class="example">void
+foo (void)
+{
+  mpz_t  n;
+  int    i;
+  mpz_init (n);
+  for (i = 1; i &lt; 100; i++)
+    {
+      mpz_mul (n, &hellip;);
+      mpz_fdiv_q (n, &hellip;);
+      &hellip;
+    }
+  mpz_clear (n);
+}
+</pre></div>
+<p>GMP types like <code>mpz_t</code> are implemented as one-element arrays of certain
+structures.  Declaring a variable creates an object with the fields GMP needs,
+but variables are normally manipulated by using the pointer to the object.  For
+both behavior and efficiency reasons, it is discouraged to make copies of the
+GMP object itself (either directly or via aggregate objects containing such GMP
+objects).  If copies are done, all of them must be used read-only; using a copy
+as the output of some function will invalidate all the other copies.  Note that
+the actual fields in each <code>mpz_t</code> etc are for internal use only and should
+not be accessed directly by code that expects to be compatible with future GMP
+releases.
+</p>
+<hr>
+<span id="Parameter-Conventions"></span><div class="header">
+<p>
+Next: <a href="#Memory-Management" accesskey="n" rel="next">Memory Management</a>, Previous: <a href="#Variable-Conventions" accesskey="p" rel="prev">Variable Conventions</a>, Up: <a href="#GMP-Basics" accesskey="u" rel="up">GMP Basics</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Parameter-Conventions-1"></span><h3 class="section">3.5 Parameter Conventions</h3>
+<span id="index-Parameter-conventions"></span>
+<span id="index-Conventions-for-parameters"></span>
+<p>When a GMP variable is used as a function parameter, it&rsquo;s effectively a
+call-by-reference, meaning that when the function stores a value there it will
+change the original in the caller.  Parameters which are input-only can be
+designated <code>const</code> to provoke a compiler error or warning on attempting to
+modify them.
+</p>
+<p>When a function is going to return a GMP result, it should designate a
+parameter that it sets, like the library functions do.  More than one value
+can be returned by having more than one output parameter, again like the
+library functions.  A <code>return</code> of an <code>mpz_t</code> etc doesn&rsquo;t return the
+object, only a pointer, and this is almost certainly not what&rsquo;s wanted.
+</p>
+<p>Here&rsquo;s an example accepting an <code>mpz_t</code> parameter, doing a calculation,
+and storing the result to the indicated parameter.
+</p>
+<div class="example">
+<pre class="example">void
+foo (mpz_t result, const mpz_t param, unsigned long n)
+{
+  unsigned long  i;
+  mpz_mul_ui (result, param, n);
+  for (i = 1; i &lt; n; i++)
+    mpz_add_ui (result, result, i*7);
+}
+int
+main (void)
+{
+  mpz_t  r, n;
+  mpz_init (r);
+  mpz_init_set_str (n, &quot;123456&quot;, 0);
+  foo (r, n, 20L);
+  gmp_printf (&quot;%Zd\n&quot;, r);
+  return 0;
+}
+</pre></div>
+<p>Our function <code>foo</code> works even if its caller passes the same variable for
+<code>param</code> and <code>result</code>, just like the library functions.  But
+sometimes it&rsquo;s tricky to make that work, and an application might not want to
+bother supporting that sort of thing.
+</p>
+<p>Since GMP types are implemented as one-element arrays, using a GMP variable as
+a parameter passes a pointer to the object. Hence the call-by-reference.
+</p>
+<hr>
+<span id="Memory-Management"></span><div class="header">
+<p>
+Next: <a href="#Reentrancy" accesskey="n" rel="next">Reentrancy</a>, Previous: <a href="#Parameter-Conventions" accesskey="p" rel="prev">Parameter Conventions</a>, Up: <a href="#GMP-Basics" accesskey="u" rel="up">GMP Basics</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Memory-Management-1"></span><h3 class="section">3.6 Memory Management</h3>
+<span id="index-Memory-management"></span>
+<p>The GMP types like <code>mpz_t</code> are small, containing only a couple of sizes,
+and pointers to allocated data.  Once a variable is initialized, GMP takes
+care of all space allocation.  Additional space is allocated whenever a
+variable doesn&rsquo;t have enough.
+</p>
+<p><code>mpz_t</code> and <code>mpq_t</code> variables never reduce their allocated space.
+Normally this is the best policy, since it avoids frequent reallocation.
+Applications that need to return memory to the heap at some particular point
+can use <code>mpz_realloc2</code>, or clear variables no longer needed.
+</p>
+<p><code>mpf_t</code> variables, in the current implementation, use a fixed amount of
+space, determined by the chosen precision and allocated at initialization, so
+their size doesn&rsquo;t change.
+</p>
+<p>All memory is allocated using <code>malloc</code> and friends by default, but this
+can be changed, see <a href="constant.Custom_Allocation.html#start">Custom Allocation</a>.  Temporary memory on the stack is
+also used (via <code>alloca</code>), but this can be changed at build-time if
+desired, see <a href="constant.Installing_GMP.html#Build-Options">Build Options</a>.
+</p>
+<hr>
+<span id="Reentrancy"></span><div class="header">
+<p>
+Next: <a href="#Useful-Macros-and-Constants" accesskey="n" rel="next">Useful Macros and Constants</a>, Previous: <a href="#Memory-Management" accesskey="p" rel="prev">Memory Management</a>, Up: <a href="#GMP-Basics" accesskey="u" rel="up">GMP Basics</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Reentrancy-1"></span><h3 class="section">3.7 Reentrancy</h3>
+<span id="index-Reentrancy"></span>
+<span id="index-Thread-safety"></span>
+<span id="index-Multi_002dthreading"></span>
+<p>GMP is reentrant and thread-safe, with some exceptions:
+</p>
+<ul>
+<li> If configured with <samp>--enable-alloca=malloc-notreentrant</samp> (or with
+<samp>--enable-alloca=notreentrant</samp> when <code>alloca</code> is not available),
+then naturally GMP is not reentrant.
+</li><li> <code>mpf_set_default_prec</code> and <code>mpf_init</code> use a global variable for the
+selected precision.  <code>mpf_init2</code> can be used instead, and in the C++
+interface an explicit precision to the <code>mpf_class</code> constructor.
+</li><li> <code>mpz_random</code> and the other old random number functions use a global
+random state and are hence not reentrant.  The newer random number functions
+that accept a <code>gmp_randstate_t</code> parameter can be used instead.
+</li><li> <code>gmp_randinit</code> (obsolete) returns an error indication through a global
+variable, which is not thread safe.  Applications are advised to use
+<code>gmp_randinit_default</code> or <code>gmp_randinit_lc_2exp</code> instead.
+</li><li> <code>mp_set_memory_functions</code> uses global variables to store the selected
+memory allocation functions.
+</li><li> If the memory allocation functions set by a call to
+<code>mp_set_memory_functions</code> (or <code>malloc</code> and friends by default) are
+not reentrant, then GMP will not be reentrant either.
+</li><li> If the standard I/O functions such as <code>fwrite</code> are not reentrant then the
+GMP I/O functions using them will not be reentrant either.
+</li><li> It&rsquo;s safe for two threads to read from the same GMP variable simultaneously,
+but it&rsquo;s not safe for one to read while another might be writing, nor for
+two threads to write simultaneously.  It&rsquo;s not safe for two threads to
+generate a random number from the same <code>gmp_randstate_t</code> simultaneously,
+since this involves an update of that variable.
+</li></ul>
+<hr>
+<span id="Useful-Macros-and-Constants"></span><div class="header">
+<p>
+Next: <a href="#Compatibility-with-older-versions" accesskey="n" rel="next">Compatibility with older versions</a>, Previous: <a href="#Reentrancy" accesskey="p" rel="prev">Reentrancy</a>, Up: <a href="#GMP-Basics" accesskey="u" rel="up">GMP Basics</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Useful-Macros-and-Constants-1"></span><h3 class="section">3.8 Useful Macros and Constants</h3>
+<span id="index-Useful-macros-and-constants"></span>
+<span id="index-Constants"></span>
+<dl>
+<dt id="index-mp_005fbits_005fper_005flimb-1">Global Constant: <em>const int</em> <strong>mp_bits_per_limb</strong></dt>
+<dd><span id="index-mp_005fbits_005fper_005flimb"></span>
+<span id="index-Bits-per-limb"></span>
+<span id="index-Limb-size"></span>
+<p>The number of bits per limb.
+</p></dd></dl>
+<dl>
+<dt id="index-_005f_005fGNU_005fMP_005fVERSION">Macro: <strong>__GNU_MP_VERSION</strong></dt>
+<dt id="index-_005f_005fGNU_005fMP_005fVERSION_005fMINOR">Macro: <strong>__GNU_MP_VERSION_MINOR</strong></dt>
+<dt id="index-_005f_005fGNU_005fMP_005fVERSION_005fPATCHLEVEL">Macro: <strong>__GNU_MP_VERSION_PATCHLEVEL</strong></dt>
+<dd><span id="index-Version-number"></span>
+<span id="index-GMP-version-number"></span>
+<p>The major and minor GMP version, and patch level, respectively, as integers.
+For GMP i.j, these numbers will be i, j, and 0, respectively.
+For GMP i.j.k, these numbers will be i, j, and k, respectively.
+</p></dd></dl>
+<dl>
+<dt id="index-gmp_005fversion-1">Global Constant: <em>const char * const</em> <strong>gmp_version</strong></dt>
+<dd><span id="index-gmp_005fversion"></span>
+<p>The GMP version number, as a null-terminated string, in the form &ldquo;i.j.k&rdquo;.
+This release is <code>&quot;6.2.0&quot;</code>.  Note that the format &ldquo;i.j&rdquo; was
+used, before version 4.3.0, when k was zero.
+</p></dd></dl>
+<dl>
+<dt id="index-_005f_005fGMP_005fCC">Macro: <strong>__GMP_CC</strong></dt>
+<dt id="index-_005f_005fGMP_005fCFLAGS">Macro: <strong>__GMP_CFLAGS</strong></dt>
+<dd><p>The compiler and compiler flags, respectively, used when compiling GMP, as
+strings.
+</p></dd></dl>
+<hr>
+<span id="Compatibility-with-older-versions"></span><div class="header">
+<p>
+Next: <a href="#Demonstration-Programs" accesskey="n" rel="next">Demonstration Programs</a>, Previous: <a href="#Useful-Macros-and-Constants" accesskey="p" rel="prev">Useful Macros and Constants</a>, Up: <a href="#GMP-Basics" accesskey="u" rel="up">GMP Basics</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Compatibility-with-older-versions-1"></span><h3 class="section">3.9 Compatibility with older versions</h3>
+<span id="index-Compatibility-with-older-versions"></span>
+<span id="index-Past-GMP-versions"></span>
+<span id="index-Upward-compatibility"></span>
+<p>This version of GMP is upwardly binary compatible with all 5.x, 4.x, and 3.x
+versions, and upwardly compatible at the source level with all 2.x versions,
+with the following exceptions.
+</p>
+<ul>
+<li> <code>mpn_gcd</code> had its source arguments swapped as of GMP 3.0, for consistency
+with other <code>mpn</code> functions.
+</li><li> <code>mpf_get_prec</code> counted precision slightly differently in GMP 3.0 and
+3.0.1, but in 3.1 reverted to the 2.x style.
+</li><li> <code>mpn_bdivmod</code>, documented as preliminary in GMP 4, has been removed.
+</li></ul>
+<p>There are a number of compatibility issues between GMP 1 and GMP 2 that of
+course also apply when porting applications from GMP 1 to GMP 5.  Please
+see the GMP 2 manual for details.
+</p>
+<hr>
+<span id="Demonstration-Programs"></span><div class="header">
+<p>
+Next: <a href="#Efficiency" accesskey="n" rel="next">Efficiency</a>, Previous: <a href="#Compatibility-with-older-versions" accesskey="p" rel="prev">Compatibility with older versions</a>, Up: <a href="#GMP-Basics" accesskey="u" rel="up">GMP Basics</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Demonstration-programs"></span><h3 class="section">3.10 Demonstration programs</h3>
+<span id="index-Demonstration-programs"></span>
+<span id="index-Example-programs"></span>
+<span id="index-Sample-programs"></span>
+<p>The <samp>demos</samp> subdirectory has some sample programs using GMP.  These
+aren&rsquo;t built or installed, but there&rsquo;s a <samp>Makefile</samp> with rules for them.
+For instance,
+</p>
+<div class="example">
+<pre class="example">make pexpr
+./pexpr 68^975+10
+</pre></div>
+<p>The following programs are provided
+</p>
+<ul>
+<li> <span id="index-Expression-parsing-demo"></span>
+<span id="index-Parsing-expressions-demo"></span>
+&lsquo;<samp>pexpr</samp>&rsquo; is an expression evaluator, the program used on the GMP web page.
+</li><li> <span id="index-Expression-parsing-demo-1"></span>
+<span id="index-Parsing-expressions-demo-1"></span>
+The &lsquo;<samp>calc</samp>&rsquo; subdirectory has a similar but simpler evaluator using
+<code>lex</code> and <code>yacc</code>.
+</li><li> <span id="index-Expression-parsing-demo-2"></span>
+<span id="index-Parsing-expressions-demo-2"></span>
+The &lsquo;<samp>expr</samp>&rsquo; subdirectory is yet another expression evaluator, a library
+designed for ease of use within a C program.  See <samp>demos/expr/README</samp> for
+more information.
+</li><li> <span id="index-Factorization-demo"></span>
+&lsquo;<samp>factorize</samp>&rsquo; is a Pollard-Rho factorization program.
+</li><li> &lsquo;<samp>isprime</samp>&rsquo; is a command-line interface to the <code>mpz_probab_prime_p</code>
+function.
+</li><li> &lsquo;<samp>primes</samp>&rsquo; counts or lists primes in an interval, using a sieve.
+</li><li> &lsquo;<samp>qcn</samp>&rsquo; is an example use of <code>mpz_kronecker_ui</code> to estimate quadratic
+class numbers.
+</li><li> <span id="index-perl"></span>
+<span id="index-GMP-Perl-module"></span>
+<span id="index-Perl-module"></span>
+The &lsquo;<samp>perl</samp>&rsquo; subdirectory is a comprehensive perl interface to GMP.  See
+<samp>demos/perl/INSTALL</samp> for more information.  Documentation is in POD
+format in <samp>demos/perl/GMP.pm</samp>.
+</li></ul>
+<p>As an aside, consideration has been given at various times to some sort of
+expression evaluation within the main GMP library.  Going beyond something
+minimal quickly leads to matters like user-defined functions, looping, fixnums
+for control variables, etc, which are considered outside the scope of GMP
+(much closer to language interpreters or compilers, See <a href="constant.Language_Bindings.html#start">Language Bindings</a>.)
+Something simple for program input convenience may yet be a possibility, a
+combination of the <samp>expr</samp> demo and the <samp>pexpr</samp> tree back-end
+perhaps.  But for now the above evaluators are offered as illustrations.
+</p>
+<hr>
+<span id="Efficiency"></span><div class="header">
+<p>
+Next: <a href="#Debugging" accesskey="n" rel="next">Debugging</a>, Previous: <a href="#Demonstration-Programs" accesskey="p" rel="prev">Demonstration Programs</a>, Up: <a href="#GMP-Basics" accesskey="u" rel="up">GMP Basics</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Efficiency-1"></span><h3 class="section">3.11 Efficiency</h3>
+<span id="index-Efficiency"></span>
+<dl compact="compact">
+<dt>Small Operands</dt>
+<dd><span id="index-Small-operands"></span>
+<p>On small operands, the time for function call overheads and memory allocation
+can be significant in comparison to actual calculation.  This is unavoidable
+in a general purpose variable precision library, although GMP attempts to be
+as efficient as it can on both large and small operands.
+</p>
+</dd>
+<dt>Static Linking</dt>
+<dd><span id="index-Static-linking"></span>
+<p>On some CPUs, in particular the x86s, the static <samp>libgmp.a</samp> should be
+used for maximum speed, since the PIC code in the shared <samp>libgmp.so</samp> will
+have a small overhead on each function call and global data address.  For many
+programs this will be insignificant, but for long calculations there&rsquo;s a gain
+to be had.
+</p>
+</dd>
+<dt>Initializing and Clearing</dt>
+<dd><span id="index-Initializing-and-clearing"></span>
+<p>Avoid excessive initializing and clearing of variables, since this can be
+quite time consuming, especially in comparison to otherwise fast operations
+like addition.
+</p>
+<p>A language interpreter might want to keep a free list or stack of
+initialized variables ready for use.  It should be possible to integrate
+something like that with a garbage collector too.
+</p>
+</dd>
+<dt>Reallocations</dt>
+<dd><span id="index-Reallocations"></span>
+<p>An <code>mpz_t</code> or <code>mpq_t</code> variable used to hold successively increasing
+values will have its memory repeatedly <code>realloc</code>ed, which could be quite
+slow or could fragment memory, depending on the C library.  If an application
+can estimate the final size then <code>mpz_init2</code> or <code>mpz_realloc2</code> can
+be called to allocate the necessary space from the beginning
+(see <a href="constant.Integer_Functions.html#Initializing-Integers">Initializing Integers</a>).
+</p>
+<p>It doesn&rsquo;t matter if a size set with <code>mpz_init2</code> or <code>mpz_realloc2</code>
+is too small, since all functions will do a further reallocation if necessary.
+Badly overestimating memory required will waste space though.
+</p>
+</dd>
+<dt><code>2exp</code> Functions</dt>
+<dd><span id="index-2exp-functions"></span>
+<p>It&rsquo;s up to an application to call functions like <code>mpz_mul_2exp</code> when
+appropriate.  General purpose functions like <code>mpz_mul</code> make no attempt to
+identify powers of two or other special forms, because such inputs will
+usually be very rare and testing every time would be wasteful.
+</p>
+</dd>
+<dt><code>ui</code> and <code>si</code> Functions</dt>
+<dd><span id="index-ui-and-si-functions"></span>
+<p>The <code>ui</code> functions and the small number of <code>si</code> functions exist for
+convenience and should be used where applicable.  But if for example an
+<code>mpz_t</code> contains a value that fits in an <code>unsigned long</code> there&rsquo;s no
+need extract it and call a <code>ui</code> function, just use the regular <code>mpz</code>
+function.
+</p>
+</dd>
+<dt>In-Place Operations</dt>
+<dd><span id="index-In_002dplace-operations"></span>
+<p><code>mpz_abs</code>, <code>mpq_abs</code>, <code>mpf_abs</code>, <code>mpz_neg</code>, <code>mpq_neg</code>
+and <code>mpf_neg</code> are fast when used for in-place operations like
+<code>mpz_abs(x,x)</code>, since in the current implementation only a single field
+of <code>x</code> needs changing.  On suitable compilers (GCC for instance) this is
+inlined too.
+</p>
+<p><code>mpz_add_ui</code>, <code>mpz_sub_ui</code>, <code>mpf_add_ui</code> and <code>mpf_sub_ui</code>
+benefit from an in-place operation like <code>mpz_add_ui(x,x,y)</code>, since
+usually only one or two limbs of <code>x</code> will need to be changed.  The same
+applies to the full precision <code>mpz_add</code> etc if <code>y</code> is small.  If
+<code>y</code> is big then cache locality may be helped, but that&rsquo;s all.
+</p>
+<p><code>mpz_mul</code> is currently the opposite, a separate destination is slightly
+better.  A call like <code>mpz_mul(x,x,y)</code> will, unless <code>y</code> is only one
+limb, make a temporary copy of <code>x</code> before forming the result.  Normally
+that copying will only be a tiny fraction of the time for the multiply, so
+this is not a particularly important consideration.
+</p>
+<p><code>mpz_set</code>, <code>mpq_set</code>, <code>mpq_set_num</code>, <code>mpf_set</code>, etc, make
+no attempt to recognise a copy of something to itself, so a call like
+<code>mpz_set(x,x)</code> will be wasteful.  Naturally that would never be written
+deliberately, but if it might arise from two pointers to the same object then
+a test to avoid it might be desirable.
+</p>
+<div class="example">
+<pre class="example">if (x != y)
+  mpz_set (x, y);
+</pre></div>
+<p>Note that it&rsquo;s never worth introducing extra <code>mpz_set</code> calls just to get
+in-place operations.  If a result should go to a particular variable then just
+direct it there and let GMP take care of data movement.
+</p>
+</dd>
+<dt>Divisibility Testing (Small Integers)</dt>
+<dd><span id="index-Divisibility-testing"></span>
+<p><code>mpz_divisible_ui_p</code> and <code>mpz_congruent_ui_p</code> are the best functions
+for testing whether an <code>mpz_t</code> is divisible by an individual small
+integer.  They use an algorithm which is faster than <code>mpz_tdiv_ui</code>, but
+which gives no useful information about the actual remainder, only whether
+it&rsquo;s zero (or a particular value).
+</p>
+<p>However when testing divisibility by several small integers, it&rsquo;s best to take
+a remainder modulo their product, to save multi-precision operations.  For
+instance to test whether a number is divisible by any of 23, 29 or 31 take a
+remainder modulo <em>23*29*31 = 20677</em> and then test that.
+</p>
+<p>The division functions like <code>mpz_tdiv_q_ui</code> which give a quotient as well
+as a remainder are generally a little slower than the remainder-only functions
+like <code>mpz_tdiv_ui</code>.  If the quotient is only rarely wanted then it&rsquo;s
+probably best to just take a remainder and then go back and calculate the
+quotient if and when it&rsquo;s wanted (<code>mpz_divexact_ui</code> can be used if the
+remainder is zero).
+</p>
+</dd>
+<dt>Rational Arithmetic</dt>
+<dd><span id="index-Rational-arithmetic"></span>
+<p>The <code>mpq</code> functions operate on <code>mpq_t</code> values with no common factors
+in the numerator and denominator.  Common factors are checked-for and cast out
+as necessary.  In general, cancelling factors every time is the best approach
+since it minimizes the sizes for subsequent operations.
+</p>
+<p>However, applications that know something about the factorization of the
+values they&rsquo;re working with might be able to avoid some of the GCDs used for
+canonicalization, or swap them for divisions.  For example when multiplying by
+a prime it&rsquo;s enough to check for factors of it in the denominator instead of
+doing a full GCD.  Or when forming a big product it might be known that very
+little cancellation will be possible, and so canonicalization can be left to
+the end.
+</p>
+<p>The <code>mpq_numref</code> and <code>mpq_denref</code> macros give access to the
+numerator and denominator to do things outside the scope of the supplied
+<code>mpq</code> functions.  See <a href="constant.Rational_Number_Functions.html#Applying-Integer-Functions">Applying Integer Functions</a>.
+</p>
+<p>The canonical form for rationals allows mixed-type <code>mpq_t</code> and integer
+additions or subtractions to be done directly with multiples of the
+denominator.  This will be somewhat faster than <code>mpq_add</code>.  For example,
+</p>
+<div class="example">
+<pre class="example">/* mpq increment */
+mpz_add (mpq_numref(q), mpq_numref(q), mpq_denref(q));
+/* mpq += unsigned long */
+mpz_addmul_ui (mpq_numref(q), mpq_denref(q), 123UL);
+/* mpq -= mpz */
+mpz_submul (mpq_numref(q), mpq_denref(q), z);
+</pre></div>
+</dd>
+<dt>Number Sequences</dt>
+<dd><span id="index-Number-sequences"></span>
+<p>Functions like <code>mpz_fac_ui</code>, <code>mpz_fib_ui</code> and <code>mpz_bin_uiui</code>
+are designed for calculating isolated values.  If a range of values is wanted
+it&rsquo;s probably best to call to get a starting point and iterate from there.
+</p>
+</dd>
+<dt>Text Input/Output</dt>
+<dd><span id="index-Text-input_002foutput"></span>
+<p>Hexadecimal or octal are suggested for input or output in text form.
+Power-of-2 bases like these can be converted much more efficiently than other
+bases, like decimal.  For big numbers there&rsquo;s usually nothing of particular
+interest to be seen in the digits, so the base doesn&rsquo;t matter much.
+</p>
+<p>Maybe we can hope octal will one day become the normal base for everyday use,
+as proposed by King Charles XII of Sweden and later reformers.
+</p></dd>
+</dl>
+<hr>
+<span id="Debugging"></span><div class="header">
+<p>
+Next: <a href="#Profiling" accesskey="n" rel="next">Profiling</a>, Previous: <a href="#Efficiency" accesskey="p" rel="prev">Efficiency</a>, Up: <a href="#GMP-Basics" accesskey="u" rel="up">GMP Basics</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Debugging-1"></span><h3 class="section">3.12 Debugging</h3>
+<span id="index-Debugging"></span>
+<dl compact="compact">
+<dt>Stack Overflow</dt>
+<dd><span id="index-Stack-overflow-1"></span>
+<span id="index-Segmentation-violation"></span>
+<span id="index-Bus-error"></span>
+<p>Depending on the system, a segmentation violation or bus error might be the
+only indication of stack overflow.  See &lsquo;<samp>--enable-alloca</samp>&rsquo; choices in
+<a href="constant.Installing_GMP.html#Build-Options">Build Options</a>, for how to address this.
+</p>
+<p>In new enough versions of GCC, &lsquo;<samp>-fstack-check</samp>&rsquo; may be able to ensure an
+overflow is recognised by the system before too much damage is done, or
+&lsquo;<samp>-fstack-limit-symbol</samp>&rsquo; or &lsquo;<samp>-fstack-limit-register</samp>&rsquo; may be able to
+add checking if the system itself doesn&rsquo;t do any (see <a href="https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#Code-Gen-Options">Options for Code Generation</a> in <cite>Using the GNU Compiler Collection (GCC)</cite>).
+These options must be added to the &lsquo;<samp>CFLAGS</samp>&rsquo; used in the GMP build
+(see <a href="constant.Installing_GMP.html#Build-Options">Build Options</a>), adding them just to an application will have no
+effect.  Note also they&rsquo;re a slowdown, adding overhead to each function call
+and each stack allocation.
+</p>
+</dd>
+<dt>Heap Problems</dt>
+<dd><span id="index-Heap-problems"></span>
+<span id="index-Malloc-problems"></span>
+<p>The most likely cause of application problems with GMP is heap corruption.
+Failing to <code>init</code> GMP variables will have unpredictable effects, and
+corruption arising elsewhere in a program may well affect GMP.  Initializing
+GMP variables more than once or failing to clear them will cause memory leaks.
+</p>
+<span id="index-Malloc-debugger"></span>
+<p>In all such cases a <code>malloc</code> debugger is recommended.  On a GNU or BSD
+system the standard C library <code>malloc</code> has some diagnostic facilities,
+see <a href="https://www.gnu.org/software/libc/manual/html_node/Allocation-Debugging.html#Allocation-Debugging">Allocation Debugging</a> in <cite>The GNU C Library
+Reference Manual</cite>, or &lsquo;<samp>man 3 malloc</samp>&rsquo;.  Other possibilities, in no
+particular order, include
+</p>
+<div class="display">
+<pre class="display"><a href="http://cs.ecs.baylor.edu/~donahoo/tools/ccmalloc/">http://cs.ecs.baylor.edu/~donahoo/tools/ccmalloc/</a>
+<a href="http://dmalloc.com/">http://dmalloc.com/</a>
+<a href="https://wiki.gnome.org/Apps/MemProf">https://wiki.gnome.org/Apps/MemProf</a>
+</pre></div>
+<p>The GMP default allocation routines in <samp>memory.c</samp> also have a simple
+sentinel scheme which can be enabled with <code>#define DEBUG</code> in that file.
+This is mainly designed for detecting buffer overruns during GMP development,
+but might find other uses.
+</p>
+</dd>
+<dt>Stack Backtraces</dt>
+<dd><span id="index-Stack-backtrace"></span>
+<p>On some systems the compiler options GMP uses by default can interfere with
+debugging.  In particular on x86 and 68k systems &lsquo;<samp>-fomit-frame-pointer</samp>&rsquo;
+is used and this generally inhibits stack backtracing.  Recompiling without
+such options may help while debugging, though the usual caveats about it
+potentially moving a memory problem or hiding a compiler bug will apply.
+</p>
+</dd>
+<dt>GDB, the GNU Debugger</dt>
+<dd><span id="index-GDB"></span>
+<span id="index-GNU-Debugger"></span>
+<p>A sample <samp>.gdbinit</samp> is included in the distribution, showing how to call
+some undocumented dump functions to print GMP variables from within GDB.  Note
+that these functions shouldn&rsquo;t be used in final application code since they&rsquo;re
+undocumented and may be subject to incompatible changes in future versions of
+GMP.
+</p>
+</dd>
+<dt>Source File Paths</dt>
+<dd><p>GMP has multiple source files with the same name, in different directories.
+For example <samp>mpz</samp>, <samp>mpq</samp> and <samp>mpf</samp> each have an
+<samp>init.c</samp>.  If the debugger can&rsquo;t already determine the right one it may
+help to build with absolute paths on each C file.  One way to do that is to
+use a separate object directory with an absolute path to the source directory.
+</p>
+<div class="example">
+<pre class="example">cd /my/build/dir
+/my/source/dir/gmp-6.2.0/configure
+</pre></div>
+<p>This works via <code>VPATH</code>, and might require GNU <code>make</code>.
+Alternately it might be possible to change the <code>.c.lo</code> rules
+appropriately.
+</p>
+</dd>
+<dt>Assertion Checking</dt>
+<dd><span id="index-Assertion-checking-1"></span>
+<p>The build option <samp>--enable-assert</samp> is available to add some consistency
+checks to the library (see <a href="constant.Installing_GMP.html#Build-Options">Build Options</a>).  These are likely to be of
+limited value to most applications.  Assertion failures are just as likely to
+indicate memory corruption as a library or compiler bug.
+</p>
+<p>Applications using the low-level <code>mpn</code> functions, however, will benefit
+from <samp>--enable-assert</samp> since it adds checks on the parameters of most
+such functions, many of which have subtle restrictions on their usage.  Note
+however that only the generic C code has checks, not the assembly code, so
+<samp>--disable-assembly</samp> should be used for maximum checking.
+</p>
+</dd>
+<dt>Temporary Memory Checking</dt>
+<dd><p>The build option <samp>--enable-alloca=debug</samp> arranges that each block of
+temporary memory in GMP is allocated with a separate call to <code>malloc</code> (or
+the allocation function set with <code>mp_set_memory_functions</code>).
+</p>
+<p>This can help a malloc debugger detect accesses outside the intended bounds,
+or detect memory not released.  In a normal build, on the other hand,
+temporary memory is allocated in blocks which GMP divides up for its own use,
+or may be allocated with a compiler builtin <code>alloca</code> which will go
+nowhere near any malloc debugger hooks.
+</p>
+</dd>
+<dt>Maximum Debuggability</dt>
+<dd><p>To summarize the above, a GMP build for maximum debuggability would be
+</p>
+<div class="example">
+<pre class="example">./configure --disable-shared --enable-assert \
+  --enable-alloca=debug --disable-assembly CFLAGS=-g
+</pre></div>
+<p>For C++, add &lsquo;<samp>--enable-cxx CXXFLAGS=-g</samp>&rsquo;.
+</p>
+</dd>
+<dt>Checker</dt>
+<dd><span id="index-Checker"></span>
+<span id="index-GCC-Checker"></span>
+<p>The GCC checker (<a href="https://savannah.nongnu.org/projects/checker/">https://savannah.nongnu.org/projects/checker/</a>) can be
+used with GMP.  It contains a stub library which means GMP applications
+compiled with checker can use a normal GMP build.
+</p>
+<p>A build of GMP with checking within GMP itself can be made.  This will run
+very very slowly.  On GNU/Linux for example,
+</p>
+<span id="index-checkergcc"></span>
+<div class="example">
+<pre class="example">./configure --disable-assembly CC=checkergcc
+</pre></div>
+<p><samp>--disable-assembly</samp> must be used, since the GMP assembly code doesn&rsquo;t
+support the checking scheme.  The GMP C++ features cannot be used, since
+current versions of checker (0.9.9.1) don&rsquo;t yet support the standard C++
+library.
+</p>
+</dd>
+<dt>Valgrind</dt>
+<dd><span id="index-Valgrind"></span>
+<p>Valgrind (<a href="http://valgrind.org/">http://valgrind.org/</a>) is a memory checker for x86, ARM, MIPS,
+PowerPC, and S/390.  It translates and emulates machine instructions to do
+strong checks for uninitialized data (at the level of individual bits), memory
+accesses through bad pointers, and memory leaks.
+</p>
+<p>Valgrind does not always support every possible instruction, in particular
+ones recently added to an ISA.  Valgrind might therefore be incompatible with
+a recent GMP or even a less recent GMP which is compiled using a recent GCC.
+</p>
+<p>GMP&rsquo;s assembly code sometimes promotes a read of the limbs to some larger size,
+for efficiency.  GMP will do this even at the start and end of a multilimb
+operand, using naturally aligned operations on the larger type.  This may lead
+to benign reads outside of allocated areas, triggering complaints from
+Valgrind.  Valgrind&rsquo;s option &lsquo;<samp>--partial-loads-ok=yes</samp>&rsquo; should help.
+</p>
+</dd>
+<dt>Other Problems</dt>
+<dd><p>Any suspected bug in GMP itself should be isolated to make sure it&rsquo;s not an
+application problem, see <a href="constant.Reporting_Bugs.html#start">Reporting Bugs</a>.
+</p></dd>
+</dl>
+<hr>
+<span id="Profiling"></span><div class="header">
+<p>
+Next: <a href="#Autoconf" accesskey="n" rel="next">Autoconf</a>, Previous: <a href="#Debugging" accesskey="p" rel="prev">Debugging</a>, Up: <a href="#GMP-Basics" accesskey="u" rel="up">GMP Basics</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Profiling-1"></span><h3 class="section">3.13 Profiling</h3>
+<span id="index-Profiling"></span>
+<span id="index-Execution-profiling-1"></span>
+<span id="index-_002d_002denable_002dprofiling-1"></span>
+<p>Running a program under a profiler is a good way to find where it&rsquo;s spending
+most time and where improvements can be best sought.  The profiling choices
+for a GMP build are as follows.
+</p>
+<dl compact="compact">
+<dt>&lsquo;<samp>--disable-profiling</samp>&rsquo;</dt>
+<dd><p>The default is to add nothing special for profiling.
+</p>
+<p>It should be possible to just compile the mainline of a program with <code>-p</code>
+and use <code>prof</code> to get a profile consisting of timer-based sampling of
+the program counter.  Most of the GMP assembly code has the necessary symbol
+information.
+</p>
+<p>This approach has the advantage of minimizing interference with normal program
+operation, but on most systems the resolution of the sampling is quite low (10
+milliseconds for instance), requiring long runs to get accurate information.
+</p>
+</dd>
+<dt>&lsquo;<samp>--enable-profiling=prof</samp>&rsquo;</dt>
+<dd><span id="index-prof"></span>
+<p>Build with support for the system <code>prof</code>, which means &lsquo;<samp>-p</samp>&rsquo; added
+to the &lsquo;<samp>CFLAGS</samp>&rsquo;.
+</p>
+<p>This provides call counting in addition to program counter sampling, which
+allows the most frequently called routines to be identified, and an average
+time spent in each routine to be determined.
+</p>
+<p>The x86 assembly code has support for this option, but on other processors
+the assembly routines will be as if compiled without &lsquo;<samp>-p</samp>&rsquo; and therefore
+won&rsquo;t appear in the call counts.
+</p>
+<p>On some systems, such as GNU/Linux, &lsquo;<samp>-p</samp>&rsquo; in fact means &lsquo;<samp>-pg</samp>&rsquo; and in
+this case &lsquo;<samp>--enable-profiling=gprof</samp>&rsquo; described below should be used
+instead.
+</p>
+</dd>
+<dt>&lsquo;<samp>--enable-profiling=gprof</samp>&rsquo;</dt>
+<dd><span id="index-gprof"></span>
+<p>Build with support for <code>gprof</code>, which means &lsquo;<samp>-pg</samp>&rsquo; added to the
+&lsquo;<samp>CFLAGS</samp>&rsquo;.
+</p>
+<p>This provides call graph construction in addition to call counting and program
+counter sampling, which makes it possible to count calls coming from different
+locations.  For example the number of calls to <code>mpn_mul</code> from
+<code>mpz_mul</code> versus the number from <code>mpf_mul</code>.  The program counter
+sampling is still flat though, so only a total time in <code>mpn_mul</code> would be
+accumulated, not a separate amount for each call site.
+</p>
+<p>The x86 assembly code has support for this option, but on other processors
+the assembly routines will be as if compiled without &lsquo;<samp>-pg</samp>&rsquo; and therefore
+not be included in the call counts.
+</p>
+<p>On x86 and m68k systems &lsquo;<samp>-pg</samp>&rsquo; and &lsquo;<samp>-fomit-frame-pointer</samp>&rsquo; are
+incompatible, so the latter is omitted from the default flags in that case,
+which might result in poorer code generation.
+</p>
+<p>Incidentally, it should be possible to use the <code>gprof</code> program with a
+plain &lsquo;<samp>--enable-profiling=prof</samp>&rsquo; build.  But in that case only the
+&lsquo;<samp>gprof -p</samp>&rsquo; flat profile and call counts can be expected to be valid, not
+the &lsquo;<samp>gprof -q</samp>&rsquo; call graph.
+</p>
+</dd>
+<dt>&lsquo;<samp>--enable-profiling=instrument</samp>&rsquo;</dt>
+<dd><span id="index-_002dfinstrument_002dfunctions"></span>
+<span id="index-instrument_002dfunctions"></span>
+<p>Build with the GCC option &lsquo;<samp>-finstrument-functions</samp>&rsquo; added to the
+&lsquo;<samp>CFLAGS</samp>&rsquo; (see <a href="https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#Code-Gen-Options">Options for Code Generation</a> in <cite>Using the GNU Compiler Collection (GCC)</cite>).
+</p>
+<p>This inserts special instrumenting calls at the start and end of each
+function, allowing exact timing and full call graph construction.
+</p>
+<p>This instrumenting is not normally a standard system feature and will require
+support from an external library, such as
+</p>
+<span id="index-FunctionCheck"></span>
+<span id="index-fnccheck"></span>
+<div class="display">
+<pre class="display"><a href="https://sourceforge.net/projects/fnccheck/">https://sourceforge.net/projects/fnccheck/</a>
+</pre></div>
+<p>This should be included in &lsquo;<samp>LIBS</samp>&rsquo; during the GMP configure so that test
+programs will link.  For example,
+</p>
+<div class="example">
+<pre class="example">./configure --enable-profiling=instrument LIBS=-lfc
+</pre></div>
+<p>On a GNU system the C library provides dummy instrumenting functions, so
+programs compiled with this option will link.  In this case it&rsquo;s only
+necessary to ensure the correct library is added when linking an application.
+</p>
+<p>The x86 assembly code supports this option, but on other processors the
+assembly routines will be as if compiled without
+&lsquo;<samp>-finstrument-functions</samp>&rsquo; meaning time spent in them will effectively be
+attributed to their caller.
+</p></dd>
+</dl>
+<hr>
+<span id="Autoconf"></span><div class="header">
+<p>
+Next: <a href="#Emacs" accesskey="n" rel="next">Emacs</a>, Previous: <a href="#Profiling" accesskey="p" rel="prev">Profiling</a>, Up: <a href="#GMP-Basics" accesskey="u" rel="up">GMP Basics</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Autoconf-1"></span><h3 class="section">3.14 Autoconf</h3>
+<span id="index-Autoconf"></span>
+<p>Autoconf based applications can easily check whether GMP is installed.  The
+only thing to be noted is that GMP library symbols from version 3 onwards have
+prefixes like <code>__gmpz</code>.  The following therefore would be a simple test,
+</p>
+<span id="index-AC_005fCHECK_005fLIB"></span>
+<div class="example">
+<pre class="example">AC_CHECK_LIB(gmp, __gmpz_init)
+</pre></div>
+<p>This just uses the default <code>AC_CHECK_LIB</code> actions for found or not found,
+but an application that must have GMP would want to generate an error if not
+found.  For example,
+</p>
+<div class="example">
+<pre class="example">AC_CHECK_LIB(gmp, __gmpz_init, ,
+  [AC_MSG_ERROR([GNU MP not found, see https://gmplib.org/])])
+</pre></div>
+<p>If functions added in some particular version of GMP are required, then one of
+those can be used when checking.  For example <code>mpz_mul_si</code> was added in
+GMP 3.1,
+</p>
+<div class="example">
+<pre class="example">AC_CHECK_LIB(gmp, __gmpz_mul_si, ,
+  [AC_MSG_ERROR(
+  [GNU MP not found, or not 3.1 or up, see https://gmplib.org/])])
+</pre></div>
+<p>An alternative would be to test the version number in <samp>gmp.h</samp> using say
+<code>AC_EGREP_CPP</code>.  That would make it possible to test the exact version,
+if some particular sub-minor release is known to be necessary.
+</p>
+<p>In general it&rsquo;s recommended that applications should simply demand a new
+enough GMP rather than trying to provide supplements for features not
+available in past versions.
+</p>
+<p>Occasionally an application will need or want to know the size of a type at
+configuration or preprocessing time, not just with <code>sizeof</code> in the code.
+This can be done in the normal way with <code>mp_limb_t</code> etc, but GMP 4.0 or
+up is best for this, since prior versions needed certain &lsquo;<samp>-D</samp>&rsquo; defines on
+systems using a <code>long long</code> limb.  The following would suit Autoconf 2.50
+or up,
+</p>
+<div class="example">
+<pre class="example">AC_CHECK_SIZEOF(mp_limb_t, , [#include &lt;gmp.h&gt;])
+</pre></div>
+<hr>
+<span id="Emacs"></span><div class="header">
+<p>
+Previous: <a href="#Autoconf" accesskey="p" rel="prev">Autoconf</a>, Up: <a href="#GMP-Basics" accesskey="u" rel="up">GMP Basics</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Emacs-1"></span><h3 class="section">3.15 Emacs</h3>
+<span id="index-Emacs"></span>
+<span id="index-info_002dlookup_002dsymbol"></span>
+<p><tt class="key">C-h C-i</tt> (<code>info-lookup-symbol</code>) is a good way to find documentation
+on C functions while editing (see <a href="https://www.gnu.org/software/emacs/manual/html_node/emacs/Info-Lookup.html#Info-Lookup">Info Documentation Lookup</a> in <cite>The Emacs Editor</cite>).
+</p>
+<p>The GMP manual can be included in such lookups by putting the following in
+your <samp>.emacs</samp>,
+</p>
+<div class="example">
+<pre class="example">(eval-after-load &quot;info-look&quot;
+  '(let ((mode-value (assoc 'c-mode (assoc 'symbol info-lookup-alist))))
+     (setcar (nthcdr 3 mode-value)
+             (cons '(&quot;(gmp)Function Index&quot; nil &quot;^ -.* &quot; &quot;\\&gt;&quot;)
+                   (nth 3 mode-value)))))
+</pre></div>
+<hr>
+<div class="header">
+<p>
+Previous: <a href="#Autoconf" accesskey="p" rel="prev">Autoconf</a>, Up: <a href="#GMP-Basics" accesskey="u" rel="up">GMP Basics</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div></div></section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../";window.currentCrate = "gmp_mpfr_sys";</script><script src="../../../main.js"></script><script defer src="../../../search-index.js"></script></body></html>

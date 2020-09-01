@@ -1,0 +1,726 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `Complex_Functions` constant in crate `gmp_mpfr_sys`."><meta name="keywords" content="rust, rustlang, rust-lang, Complex_Functions"><title>gmp_mpfr_sys::C::MPC::Complex_Functions - Rust</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc constant"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../gmp_mpfr_sys/index.html'><div class='logo-container'><img src='https://tspiteri.gitlab.io/gmp-mpfr-sys/rug.svg' alt='logo'></div></a><div class="sidebar-elems"><p class='location'><a href='../../index.html'>gmp_mpfr_sys</a>::<wbr><a href='../index.html'>C</a>::<wbr><a href='index.html'>MPC</a></p><script>window.sidebarCurrent = {name: 'Complex_Functions', ty: 'constant', relpath: ''};</script><script defer src="sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+                <a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../../../src/gmp_mpfr_sys/C.rs.html#242' title='goto source code'>[src]</a></span><span class='in-band'>Constant <a href='../../index.html'>gmp_mpfr_sys</a>::<wbr><a href='../index.html'>C</a>::<wbr><a href='index.html'>MPC</a>::<wbr><a class="constant" href=''>Complex_Functions</a></span></h1><pre class='rust const'>pub const Complex_Functions: ();</pre><div class='docblock'><p>This constant is a place-holder for documentation; do not use it in code.</p>
+<hr />
+<div><span id="start"></span></div>
+<span id="Complex-Functions"></span><div class="header">
+<p>
+Next: <a href="constant.References.html#start" accesskey="n" rel="next">References</a>, Previous: <a href="constant.GNU_MPC_Basics.html#start" accesskey="p" rel="prev">GNU MPC Basics</a>, Up: <a href="index.html#start" accesskey="u" rel="up">Top</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Complex-Functions-1"></span><h2 class="chapter">5 Complex Functions</h2>
+<span id="index-Complex-functions"></span>
+<p>The complex functions expect arguments of type <code>mpc_t</code>.
+</p>
+<p>The GNU MPC floating-point functions have an interface that is similar to the
+GNU MP
+integer functions.  The function prefix for operations on complex numbers is
+<code>mpc_</code>.
+</p>
+<span id="index-User_002ddefined-precision"></span>
+<p>The precision of a computation is defined as follows: Compute the requested
+operation exactly (with &ldquo;infinite precision&rdquo;), and round the result to
+the destination variable precision with the given rounding mode.
+</p>
+<p>The GNU MPC complex functions are intended to be a smooth extension
+of the IEEE P754 arithmetic. The results obtained on one
+computer should not differ from the results obtained on a computer with a
+different word size.
+</p>
+<table class="menu" style="margin: 0; width: auto; padding: 0; border: 0;" border="0" cellspacing="0">
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Initializing-Complex-Numbers" accesskey="1">Initializing Complex Numbers</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Assigning-Complex-Numbers" accesskey="2">Assigning Complex Numbers</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Converting-Complex-Numbers" accesskey="3">Converting Complex Numbers</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#String-and-Stream-Input-and-Output" accesskey="4">String and Stream Input and Output</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Complex-Comparison" accesskey="5">Complex Comparison</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Projection-_0026-Decomposing" accesskey="6">Projection &amp; Decomposing</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Basic-Arithmetic" accesskey="7">Basic Arithmetic</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Power-Functions-and-Logarithm" accesskey="8">Power Functions and Logarithm</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Trigonometric-Functions" accesskey="9">Trigonometric Functions</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Miscellaneous-Complex-Functions">Miscellaneous Complex Functions</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Advanced-Functions">Advanced Functions</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Internals">Internals</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+</table>
+<hr>
+<span id="Initializing-Complex-Numbers"></span><div class="header">
+<p>
+Next: <a href="#Assigning-Complex-Numbers" accesskey="n" rel="next">Assigning Complex Numbers</a>, Up: <a href="#Complex-Functions" accesskey="u" rel="up">Complex Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Initialization-Functions"></span><h3 class="section">5.1 Initialization Functions</h3>
+<p>An <code>mpc_t</code> object must be initialised before storing the first value in
+it.  The functions <code>mpc_init2</code> and <code>mpc_init3</code>
+are used for that purpose.
+</p>
+<dl>
+<dt id="index-mpc_005finit2">Function: <em>void</em> <strong>mpc_init2</strong> <em>(mpc_t <var>z</var>, mpfr_prec_t <var>prec</var>)</em></dt>
+<dd><p>Initialise <var>z</var> to precision <var>prec</var> bits
+and set its real and imaginary parts to NaN.
+Normally, a variable should be initialised once only
+or at least be cleared, using <code>mpc_clear</code>, between initializations.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005finit3">Function: <em>void</em> <strong>mpc_init3</strong> <em>(mpc_t <var>z</var>, mpfr_prec_t <var>prec_r</var>, mpfr_prec_t <var>prec_i</var>)</em></dt>
+<dd><p>Initialise <var>z</var> with the precision of its real part being
+<var>prec_r</var> bits and the precision of its imaginary part being
+<var>prec_i</var> bits, and set the real and imaginary parts to NaN.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005fclear">Function: <em>void</em> <strong>mpc_clear</strong> <em>(mpc_t <var>z</var>)</em></dt>
+<dd><p>Free the space occupied by <var>z</var>.  Make sure to call this function for all
+<code>mpc_t</code> variables when you are done with them.
+</p></dd></dl>
+<p>Here is an example on how to initialise complex variables:
+</p><div class="example">
+<pre class="example">{
+  mpc_t x, y;
+  mpc_init2 (x, 256);		/* precision <em>exactly</em> 256 bits */
+  mpc_init3 (y, 100, 50);	/* 100/50 bits for the real/imaginary part */
+  &hellip;
+  mpc_clear (x);
+  mpc_clear (y);
+}
+</pre></div>
+<p>The following function is useful for changing the precision during a
+calculation.  A typical use would be for adjusting the precision gradually in
+iterative algorithms like Newton-Raphson, making the computation precision
+closely match the actual accurate part of the numbers.
+</p>
+<dl>
+<dt id="index-mpc_005fset_005fprec">Function: <em>void</em> <strong>mpc_set_prec</strong> <em>(mpc_t <var>x</var>, mpfr_prec_t <var>prec</var>)</em></dt>
+<dd><p>Reset the precision of <var>x</var> to be <strong>exactly</strong> <var>prec</var> bits,
+and set its real/imaginary parts to NaN.
+The previous value stored in <var>x</var> is lost. It is equivalent to
+a call to <code>mpc_clear(x)</code> followed by a call to
+<code>mpc_init2(x, prec)</code>, but more efficient as no allocation is done in
+case the current allocated space for the mantissa of <var>x</var> is sufficient.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005fget_005fprec">Function: <em>mpfr_prec_t</em> <strong>mpc_get_prec</strong> <em>(mpc_t <var>x</var>)</em></dt>
+<dd><p>If the real and imaginary part of <var>x</var> have the same precision, it is returned,
+otherwise, 0 is returned.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005fget_005fprec2">Function: <em>void</em> <strong>mpc_get_prec2</strong> <em>(mpfr_prec_t* <var>pr</var>, mpfr_prec_t* <var>pi</var>, mpc_t <var>x</var>)</em></dt>
+<dd><p>Returns the precision of the real part of <var>x</var> via <var>pr</var> and of its imaginary part
+via <var>pi</var>.
+</p></dd></dl>
+<hr>
+<span id="Assigning-Complex-Numbers"></span><div class="header">
+<p>
+Next: <a href="#Converting-Complex-Numbers" accesskey="n" rel="next">Converting Complex Numbers</a>, Previous: <a href="#Initializing-Complex-Numbers" accesskey="p" rel="prev">Initializing Complex Numbers</a>, Up: <a href="#Complex-Functions" accesskey="u" rel="up">Complex Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Assignment-Functions"></span><h3 class="section">5.2 Assignment Functions</h3>
+<span id="index-Complex-assignment-functions"></span>
+<p>These functions assign new values to already initialised complex numbers
+(see <a href="#Initializing-Complex-Numbers">Initializing Complex Numbers</a>).
+When using any functions with <code>intmax_t</code> or <code>uintmax_t</code>
+parameters, you must include
+<code>&lt;stdint.h&gt;</code> or <code>&lt;inttypes.h&gt;</code> <em>before</em> <samp>mpc.h</samp>, to allow
+<samp>mpc.h</samp> to define prototypes for these functions.
+Similarly, functions with parameters of type <code>complex</code> or
+<code>long complex</code> are defined only if <code>&lt;complex.h&gt;</code> is included
+<em>before</em> <samp>mpc.h</samp>.
+If you need assignment functions that are not in the current API, you can
+define them using the <code>MPC_SET_X_Y</code> macro (see <a href="#Advanced-Functions">Advanced Functions</a>).
+</p>
+<dl>
+<dt id="index-mpc_005fset">Function: <em>int</em> <strong>mpc_set</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set the value of <var>rop</var> from <var>op</var>, rounded to the precision of <var>rop</var>
+with the given rounding mode <var>rnd</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005fset_005fui">Function: <em>int</em> <strong>mpc_set_ui</strong> <em>(mpc_t <var>rop</var>, unsigned long int <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fset_005fsi">Function: <em>int</em> <strong>mpc_set_si</strong> <em>(mpc_t <var>rop</var>, long int <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fset_005fuj">Function: <em>int</em> <strong>mpc_set_uj</strong> <em>(mpc_t <var>rop</var>, uintmax_t <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fset_005fsj">Function: <em>int</em> <strong>mpc_set_sj</strong> <em>(mpc_t <var>rop</var>, intmax_t <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fset_005fd">Function: <em>int</em> <strong>mpc_set_d</strong> <em>(mpc_t <var>rop</var>, double <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fset_005fld">Function: <em>int</em> <strong>mpc_set_ld</strong> <em>(mpc_t <var>rop</var>, long double <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fset_005fdc">Function: <em>int</em> <strong>mpc_set_dc</strong> <em>(mpc_t <var>rop</var>, double _Complex <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fset_005fldc">Function: <em>int</em> <strong>mpc_set_ldc</strong> <em>(mpc_t <var>rop</var>, long double _Complex <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fset_005fz">Function: <em>int</em> <strong>mpc_set_z</strong> <em>(mpc_t <var>rop</var>, mpz_t <var>op</var> mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fset_005fq">Function: <em>int</em> <strong>mpc_set_q</strong> <em>(mpc_t <var>rop</var>, mpq_t <var>op</var> mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fset_005ff">Function: <em>int</em> <strong>mpc_set_f</strong> <em>(mpc_t <var>rop</var>, mpf_t <var>op</var> mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fset_005ffr">Function: <em>int</em> <strong>mpc_set_fr</strong> <em>(mpc_t <var>rop</var>, mpfr_t <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set the value of <var>rop</var> from <var>op</var>, rounded to the precision of
+<var>rop</var> with the given rounding mode <var>rnd</var>.
+The argument <var>op</var> is interpreted as real, so the imaginary part of
+<var>rop</var> is set to zero with a positive sign.
+Please note that even a <code>long int</code> may have to be rounded, if the
+destination precision is less than the machine word width.
+For <code>mpc_set_d</code>, be careful that the input number <var>op</var> may not be
+exactly representable as a double-precision number (this happens for 0.1 for
+instance), in which case it is first rounded by the C compiler to a
+double-precision number, and then only to a complex number.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005fset_005fui_005fui">Function: <em>int</em> <strong>mpc_set_ui_ui</strong> <em>(mpc_t <var>rop</var>, unsigned long int <var>op1</var>, unsigned long int <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fset_005fsi_005fsi">Function: <em>int</em> <strong>mpc_set_si_si</strong> <em>(mpc_t <var>rop</var>, long int <var>op1</var>, long int <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fset_005fuj_005fuj">Function: <em>int</em> <strong>mpc_set_uj_uj</strong> <em>(mpc_t <var>rop</var>, uintmax_t <var>op1</var>, uintmax_t <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fset_005fsj_005fsj">Function: <em>int</em> <strong>mpc_set_sj_sj</strong> <em>(mpc_t <var>rop</var>, intmax_t <var>op1</var>, intmax_t <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fset_005fd_005fd">Function: <em>int</em> <strong>mpc_set_d_d</strong> <em>(mpc_t <var>rop</var>, double <var>op1</var>, double <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fset_005fld_005fld">Function: <em>int</em> <strong>mpc_set_ld_ld</strong> <em>(mpc_t <var>rop</var>, long double <var>op1</var>, long double <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fset_005fz_005fz">Function: <em>int</em> <strong>mpc_set_z_z</strong> <em>(mpc_t <var>rop</var>, mpz_t <var>op1</var>, mpz_t <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fset_005fq_005fq">Function: <em>int</em> <strong>mpc_set_q_q</strong> <em>(mpc_t <var>rop</var>, mpq_t <var>op1</var>, mpq_t <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fset_005ff_005ff">Function: <em>int</em> <strong>mpc_set_f_f</strong> <em>(mpc_t <var>rop</var>, mpf_t <var>op1</var>, mpf_t <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fset_005ffr_005ffr">Function: <em>int</em> <strong>mpc_set_fr_fr</strong> <em>(mpc_t <var>rop</var>, mpfr_t <var>op1</var>, mpfr_t <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set the real part of <var>rop</var> from <var>op1</var>, and its imaginary part from
+<var>op2</var>, according to the rounding mode <var>rnd</var>.
+</p>
+<p>Beware that the behaviour of <code>mpc_set_fr_fr</code> is undefined if <var>op1</var>
+or <var>op2</var> is a pointer to the real or imaginary part of <var>rop</var>.
+To exchange the real and the imaginary part of a complex number, either use
+<code>mpfr_swap (mpc_realref (rop), mpc_imagref (rop))</code>, which also exchanges
+the precisions of the two parts; or use a temporary variable.
+</p></dd></dl>
+<p>For functions assigning complex variables from strings or input streams,
+see <a href="#String-and-Stream-Input-and-Output">String and Stream Input and Output</a>.
+</p>
+<dl>
+<dt id="index-mpc_005fset_005fnan">Function: <em>void</em> <strong>mpc_set_nan</strong> <em>(mpc_t <var>rop</var>)</em></dt>
+<dd><p>Set <var>rop</var> to Nan+i*NaN.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005fswap">Function: <em>void</em> <strong>mpc_swap</strong> <em>(mpc_t <var>op1</var>, mpc_t <var>op2</var>)</em></dt>
+<dd><p>Swap the values of <var>op1</var> and <var>op2</var> efficiently. Warning: The
+precisions are exchanged, too; in case these are different,
+<code>mpc_swap</code> is thus not equivalent to three <code>mpc_set</code> calls using a
+third auxiliary variable.
+</p></dd></dl>
+<hr>
+<span id="Converting-Complex-Numbers"></span><div class="header">
+<p>
+Next: <a href="#String-and-Stream-Input-and-Output" accesskey="n" rel="next">String and Stream Input and Output</a>, Previous: <a href="#Assigning-Complex-Numbers" accesskey="p" rel="prev">Assigning Complex Numbers</a>, Up: <a href="#Complex-Functions" accesskey="u" rel="up">Complex Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Conversion-Functions"></span><h3 class="section">5.3 Conversion Functions</h3>
+<span id="index-Conversion-functions"></span>
+<p>The following functions are available only if <code>&lt;complex.h&gt;</code>
+is included <em>before</em> <samp>mpc.h</samp>.
+</p>
+<dl>
+<dt id="index-_005fComplex">Function: <em>double</em> <strong>_Complex</strong> <em>mpc_get_dc (mpc_t <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fget_005fldc">Function: <em>long double _Complex</em> <strong>mpc_get_ldc</strong> <em>(mpc_t <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Convert <var>op</var> to a C complex number, using the rounding mode <var>rnd</var>.
+</p></dd></dl>
+<p>For functions converting complex variables to strings or stream output,
+see <a href="#String-and-Stream-Input-and-Output">String and Stream Input and Output</a>.
+</p>
+<hr>
+<span id="String-and-Stream-Input-and-Output"></span><div class="header">
+<p>
+Next: <a href="#Complex-Comparison" accesskey="n" rel="next">Complex Comparison</a>, Previous: <a href="#Converting-Complex-Numbers" accesskey="p" rel="prev">Converting Complex Numbers</a>, Up: <a href="#Complex-Functions" accesskey="u" rel="up">Complex Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="String-and-Stream-Input-and-Output-1"></span><h3 class="section">5.4 String and Stream Input and Output</h3>
+<span id="index-String-and-stream-input-and-output"></span>
+<dl>
+<dt id="index-mpc_005fstrtoc">Function: <em>int</em> <strong>mpc_strtoc</strong> <em>(mpc_t <var>rop</var>, const char *<var>nptr</var>, char **<var>endptr</var>, int <var>base</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Read a complex number from a string <var>nptr</var> in base <var>base</var>, rounded to
+the precision of <var>rop</var> with the given rounding mode <var>rnd</var>.
+The <var>base</var> must be either 0 or a number from 2 to 36 (otherwise the
+behaviour is undefined).
+If <var>nptr</var> starts with valid data, the result is stored in <var>rop</var>,
+the usual inexact value is returned (see <a href="constant.GNU_MPC_Basics.html#return_002dvalue">Return
+Value</a>) and, if <var>endptr</var> is not the null pointer,
+<var>*endptr</var> points to the character just after the valid data.
+Otherwise, <var>rop</var> is set to <code>NaN + i * NaN</code>, -1 is returned and,
+if <var>endptr</var> is not the null pointer,
+the value of <var>nptr</var> is stored in the location referenced by
+<var>endptr</var>.
+</p>
+<p>The expected form of a complex number string is either a real number (an
+optional leading whitespace, an optional sign followed by a floating-point
+number), or a pair of real numbers in parentheses separated by whitespace. If
+a real number is read, the missing imaginary part is set to +0.
+The form of a floating-point number depends on the base and is described
+in the documentation of <code>mpfr_strtofr</code>
+in the GNU MPFR manual.
+For instance, <code>&quot;3.1415926&quot;</code>, <code>&quot;(1.25e+7 +.17)&quot;</code>, <code>&quot;(@nan@
+2)&quot;</code> and <code>&quot;(-0 -7)&quot;</code> are valid strings for <var>base</var> = 10.
+If <var>base</var> = 0, then a prefix may be used to indicate the base in which the
+floating-point number is written. Use prefix &rsquo;0b&rsquo; for binary numbers, prefix
+&rsquo;0x&rsquo; for hexadecimal numbers, and no prefix for decimal numbers.
+The real and imaginary part may then be written in different bases.
+For instance, <code>&quot;(1.024e+3 +2.05e+3)&quot;</code> and <code>&quot;(0b1p+10 +0x802)&quot;</code> are
+valid strings for <code>base</code>=0 and represent the same value.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005fset_005fstr">Function: <em>int</em> <strong>mpc_set_str</strong> <em>(mpc_t <var>rop</var>, const char *<var>s</var>, int <var>base</var>, mpc_rnd_t rnd)</em></dt>
+<dd><p>Set <var>rop</var> to the value of the string <var>s</var> in base <var>base</var>, rounded
+to the precision of <var>rop</var> with the given rounding mode <var>rnd</var>.
+See the documentation of <code>mpc_strtoc</code> for a detailed description of the
+valid string formats.
+Contrarily to <code>mpc_strtoc</code>, <code>mpc_set_str</code> requires the <em>whole</em>
+string to represent a valid complex number (potentially followed by
+additional white space).
+This function returns the usual inexact value (see <a href="constant.GNU_MPC_Basics.html#return_002dvalue">Return
+Value</a>) if the entire string up to the final null character is a valid number
+in base <var>base</var>; otherwise it returns -1, and <var>rop</var> is set to
+NaN+i*NaN.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005fget_005fstr">Function: <em>char *</em> <strong>mpc_get_str</strong> <em>(int <var>b</var>, size_t <var>n</var>, mpc_t <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Convert <var>op</var> to a string containing its real and imaginary parts,
+separated by a space and enclosed in a pair of parentheses.
+The numbers are written in base <var>b</var> (which may vary from 2 to 36) and
+rounded according to <var>rnd</var>. The number of significant digits, at least 2,
+is given by <var>n</var>. It is also possible to let
+<var>n</var> be zero, in which case the number of digits is chosen large
+enough so that re-reading the printed value with the same precision, assuming
+both output and input use rounding to nearest, will recover the original value
+of <var>op</var>.
+Note that <code>mpc_get_str</code> uses the decimal point of the current locale
+if available, and &lsquo;<samp>.</samp>&rsquo; otherwise.
+</p>
+<p>The string is generated using the current memory allocation function
+(<code>malloc</code> by default, unless it has been modified using the custom
+memory allocation interface of <code>gmp</code>); once it is not needed any more,
+it should be freed by calling <code>mpc_free_str</code>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005ffree_005fstr">Function: <em>void</em> <strong>mpc_free_str</strong> <em>(char *<var>str</var>)</em></dt>
+<dd><p>Free the string <var>str</var>, which needs to have been allocated by
+a call to <code>mpc_get_str</code>.
+</p></dd></dl>
+<p>The following two functions read numbers from input streams and write
+them to output streams.
+When using any of these functions, you need to include <samp>stdio.h</samp>
+<em>before</em> <samp>mpc.h</samp>.
+</p>
+<dl>
+<dt id="index-mpc_005finp_005fstr">Function: <em>int</em> <strong>mpc_inp_str</strong> <em>(mpc_t <var>rop</var>, FILE *<var>stream</var>, size_t *<var>read</var>, int <var>base</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Input a string in base <var>base</var> in the same format as for <code>mpc_strtoc</code>
+from stdio stream <var>stream</var>, rounded according to <var>rnd</var>, and put the
+read complex number into <var>rop</var>.
+If <var>stream</var> is the null pointer, <var>rop</var> is read from <code>stdin</code>.
+Return the usual inexact value; if an error occurs, set <var>rop</var> to <code>NaN
++ i * NaN</code> and return -1.
+If <var>read</var> is not the null pointer, it is set to the number of read
+characters.
+</p>
+<p>Unlike <code>mpc_strtoc</code>, the function <code>mpc_inp_str</code> does not possess
+perfect knowledge of the string to transform and has to read it
+character by character, so it behaves slightly differently: It tries
+to read a string describing a complex number and processes this string
+through a call to <code>mpc_set_str</code>. Precisely, after skipping optional
+whitespace, a minimal string is read according to the regular expression
+<code>mpfr | '(' \s* mpfr \s+ mpfr \s* ')'</code>, where <code>\s</code> denotes a whitespace,
+and <code>mpfr</code> is either a string containing neither whitespaces nor
+parentheses, or <code>nan(n-char-sequence)</code> or <code>@nan@(n-char-sequence)</code>
+(regardless of capitalisation) with <code>n-char-sequence</code> a string
+of ascii letters, digits or <code>'_'</code>.
+</p>
+<p>For instance, upon input of <code>&quot;nan(13 1)&quot;</code>, the function
+<code>mpc_inp_str</code> starts to recognise a value of NaN followed by an
+n-char-sequence indicated by the opening parenthesis; as soon as the
+space is reached, it becomes clear that the expression in parentheses
+is not an n-char-sequence, and the error flag -1 is returned after 6
+characters have been consumed from the stream (the whitespace itself
+remaining in the stream).
+The function <code>mpc_strtoc</code>, on the other hand, may track back
+when reaching the whitespace; it treats the string as the two successive
+complex numbers <code>NaN + i * 0</code> and <code>13 + i</code>.
+It is thus recommended to have a whitespace follow each floating point number
+to avoid this problem.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005fout_005fstr">Function: <em>size_t</em> <strong>mpc_out_str</strong> <em>(FILE *<var>stream</var>, int <var>base</var>, size_t <var>n_digits</var>, mpc_t <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Output <var>op</var> on stdio stream <var>stream</var> in
+base <var>base</var>, rounded according to <var>rnd</var>, in the same format
+as for <code>mpc_strtoc</code>
+If <var>stream</var> is the null pointer, <var>rop</var> is written to <code>stdout</code>.
+</p>
+<p>Return the number of characters written.
+</p></dd></dl>
+<hr>
+<span id="Complex-Comparison"></span><div class="header">
+<p>
+Next: <a href="#Projection-_0026-Decomposing" accesskey="n" rel="next">Projection &amp; Decomposing</a>, Previous: <a href="#String-and-Stream-Input-and-Output" accesskey="p" rel="prev">String and Stream Input and Output</a>, Up: <a href="#Complex-Functions" accesskey="u" rel="up">Complex Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Comparison-Functions"></span><h3 class="section">5.5 Comparison Functions</h3>
+<span id="index-Complex-comparisons-functions"></span>
+<span id="index-Comparison-functions"></span>
+<dl>
+<dt id="index-mpc_005fcmp">Function: <em>int</em> <strong>mpc_cmp</strong> <em>(mpc_t <var>op1</var>, mpc_t <var>op2</var>)</em></dt>
+<dt id="index-mpc_005fcmp_005fsi_005fsi">Function: <em>int</em> <strong>mpc_cmp_si_si</strong> <em>(mpc_t <var>op1</var>, long int <var>op2r</var>, long int <var>op2i</var>)</em></dt>
+<dt id="index-mpc_005fcmp_005fsi">Macro: <em>int</em> <strong>mpc_cmp_si</strong> <em>(mpc_t <var>op1</var>, long int <var>op2</var>)</em></dt>
+<dd>
+<p>Compare <var>op1</var> and <var>op2</var>, where in the case of <code>mpc_cmp_si_si</code>,
+<var>op2</var> is taken to be <var>op2r</var> + i <var>op2i</var>.
+The return value <var>c</var> can be decomposed into <code>x = MPC_INEX_RE(c)</code>
+and <code>y = MPC_INEX_IM(c)</code>, such that <var>x</var> is
+positive if the real part of <var>op1</var> is greater than that of <var>op2</var>,
+zero if both real parts are equal, and negative if the real part of <var>op1</var>
+is less than that of <var>op2</var>, and likewise for <var>y</var>.
+Both <var>op1</var> and <var>op2</var> are considered to their full own precision,
+which may differ.
+It is not allowed that one of the operands has a NaN (Not-a-Number) part.
+</p>
+<p>The storage of the return value is such that equality can be simply checked
+with <code>mpc_cmp (op1, op2) == 0</code>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005fcmp_005fabs">Function: <em>int</em> <strong>mpc_cmp_abs</strong> <em>(mpc_t <var>op1</var>, mpc_t <var>op2</var>)</em></dt>
+<dd>
+<p>Compare the absolute values of <var>op1</var> and <var>op2</var>.
+The return value is 0 if both are the same (including infinity),
+positive if the absolute value of <var>op1</var> is greater than that of <var>op2</var>,
+and negative if it is smaller.
+If <var>op1</var> or <var>op2</var> has a real or imaginary part which is NaN,
+the function behaves like <code>mpfr_cmp</code> on two real numbers of which at least
+one is NaN.
+</p></dd></dl>
+<hr>
+<span id="Projection-_0026-Decomposing"></span><div class="header">
+<p>
+Next: <a href="#Basic-Arithmetic" accesskey="n" rel="next">Basic Arithmetic</a>, Previous: <a href="#Complex-Comparison" accesskey="p" rel="prev">Complex Comparison</a>, Up: <a href="#Complex-Functions" accesskey="u" rel="up">Complex Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Projection-and-Decomposing-Functions"></span><h3 class="section">5.6 Projection and Decomposing Functions</h3>
+<span id="index-Projection-and-Decomposing-Functions"></span>
+<dl>
+<dt id="index-mpc_005freal">Function: <em>int</em> <strong>mpc_real</strong> <em>(mpfr_t <var>rop</var>, mpc_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the value of the real part of <var>op</var> rounded
+in the direction <var>rnd</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005fimag">Function: <em>int</em> <strong>mpc_imag</strong> <em>(mpfr_t <var>rop</var>, mpc_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the value of the imaginary part of <var>op</var> rounded in the
+direction <var>rnd</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005frealref">Macro: <em>mpfr_t</em> <strong>mpc_realref</strong> <em>(mpc_t <var>op</var>)</em></dt>
+<dt id="index-mpc_005fimagref">Macro: <em>mpfr_t</em> <strong>mpc_imagref</strong> <em>(mpc_t <var>op</var>)</em></dt>
+<dd><p>Return a reference to the real part and imaginary part of <var>op</var>,
+respectively. The <code>mpfr</code> functions can be used on the result of these
+macros (note that the <code>mpfr_t</code> type is itself a pointer).
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005farg">Function: <em>int</em> <strong>mpc_arg</strong> <em>(mpfr_t <var>rop</var>, mpc_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the argument of <var>op</var>, with a branch cut along the
+negative real axis.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005fproj">Function: <em>int</em> <strong>mpc_proj</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Compute a projection of <var>op</var> onto the Riemann sphere. Set <var>rop</var> to
+<var>op</var> rounded in the direction <var>rnd</var>, except when at least one part of
+<var>op</var> is infinite (even if the other part is a NaN) in which case the real
+part of <var>rop</var> is set to plus infinity and its imaginary part to a signed
+zero with the same sign as the imaginary part of <var>op</var>.
+</p></dd></dl>
+<hr>
+<span id="Basic-Arithmetic"></span><div class="header">
+<p>
+Next: <a href="#Power-Functions-and-Logarithm" accesskey="n" rel="next">Power Functions and Logarithm</a>, Previous: <a href="#Projection-_0026-Decomposing" accesskey="p" rel="prev">Projection &amp; Decomposing</a>, Up: <a href="#Complex-Functions" accesskey="u" rel="up">Complex Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Basic-Arithmetic-Functions"></span><h3 class="section">5.7 Basic Arithmetic Functions</h3>
+<span id="index-Complex-arithmetic-functions"></span>
+<span id="index-Arithmetic-functions"></span>
+<p>All the following functions are designed in such a way that, when working
+with real numbers instead of complex numbers, their complexity should
+essentially be the same as with the GNU MPFR library, with only a marginal
+overhead due to the GNU MPC layer.
+</p>
+<dl>
+<dt id="index-mpc_005fadd">Function: <em>int</em> <strong>mpc_add</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op1</var>, mpc_t <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fadd_005fui">Function: <em>int</em> <strong>mpc_add_ui</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op1</var>, unsigned long int <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fadd_005ffr">Function: <em>int</em> <strong>mpc_add_fr</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op1</var>, mpfr_t <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <var>op1</var> <em>+</em> <var>op2</var> rounded according to <var>rnd</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005fsub">Function: <em>int</em> <strong>mpc_sub</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op1</var>, mpc_t <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fsub_005ffr">Function: <em>int</em> <strong>mpc_sub_fr</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op1</var>, mpfr_t <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005ffr_005fsub">Function: <em>int</em> <strong>mpc_fr_sub</strong> <em>(mpc_t <var>rop</var>, mpfr_t <var>op1</var>, mpc_t <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fsub_005fui">Function: <em>int</em> <strong>mpc_sub_ui</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op1</var>, unsigned long int <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fui_005fsub">Macro: <em>int</em> <strong>mpc_ui_sub</strong> <em>(mpc_t <var>rop</var>, unsigned long int <var>op1</var>, mpc_t <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fui_005fui_005fsub">Function: <em>int</em> <strong>mpc_ui_ui_sub</strong> <em>(mpc_t <var>rop</var>, unsigned long int <var>re1</var>, unsigned long int <var>im1</var>, mpc_t <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <var>op1</var> - <var>op2</var> rounded according to <var>rnd</var>.
+For <code>mpc_ui_ui_sub</code>, <var>op1</var> is <var>re1</var> + <var>im1</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005fneg">Function: <em>int</em> <strong>mpc_neg</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to -<var>op</var> rounded according to <var>rnd</var>.
+Just changes the sign if <var>rop</var> and <var>op</var> are the same variable.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005fmul">Function: <em>int</em> <strong>mpc_mul</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op1</var>, mpc_t <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fmul_005fui">Function: <em>int</em> <strong>mpc_mul_ui</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op1</var>, unsigned long int <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fmul_005fsi">Function: <em>int</em> <strong>mpc_mul_si</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op1</var>, long int <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fmul_005ffr">Function: <em>int</em> <strong>mpc_mul_fr</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op1</var>, mpfr_t <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <var>op1</var> times <var>op2</var> rounded according to <var>rnd</var>.
+Note: for <code>mpc_mul</code>, in case <var>op1</var> and <var>op2</var> have the same value,
+use <code>mpc_sqr</code> for better efficiency.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005fmul_005fi">Function: <em>int</em> <strong>mpc_mul_i</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op</var>, int <var>sgn</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <var>op</var> times the imaginary unit i if <var>sgn</var> is
+non-negative, set <var>rop</var> to <var>op</var> times -i otherwise,
+in both cases rounded according to <var>rnd</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005fsqr">Function: <em>int</em> <strong>mpc_sqr</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the square of <var>op</var> rounded according to <var>rnd</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005ffma">Function: <em>int</em> <strong>mpc_fma</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op1</var>, mpc_t <var>op2</var>, mpc_t <var>op3</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <var>op1</var>*<var>op2</var>+<var>op3</var>,
+rounded according to <var>rnd</var>, with only one final rounding.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005fdiv">Function: <em>int</em> <strong>mpc_div</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op1</var>, mpc_t <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fdiv_005fui">Function: <em>int</em> <strong>mpc_div_ui</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op1</var>, unsigned long int <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fdiv_005ffr">Function: <em>int</em> <strong>mpc_div_fr</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op1</var>, mpfr_t <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fui_005fdiv">Function: <em>int</em> <strong>mpc_ui_div</strong> <em>(mpc_t <var>rop</var>, unsigned long int <var>op1</var>, mpc_t <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005ffr_005fdiv">Function: <em>int</em> <strong>mpc_fr_div</strong> <em>(mpc_t <var>rop</var>, mpfr_t <var>op1</var>, mpc_t <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <var>op1</var>/<var>op2</var> rounded according to <var>rnd</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005fconj">Function: <em>int</em> <strong>mpc_conj</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the conjugate of <var>op</var> rounded according to <var>rnd</var>.
+Just changes the sign of the imaginary part
+if <var>rop</var> and <var>op</var> are the same variable.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005fabs">Function: <em>int</em> <strong>mpc_abs</strong> <em>(mpfr_t <var>rop</var>, mpc_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set the floating-point number <var>rop</var> to the absolute value of <var>op</var>,
+rounded in the direction <var>rnd</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005fnorm">Function: <em>int</em> <strong>mpc_norm</strong> <em>(mpfr_t <var>rop</var>, mpc_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set the floating-point number <var>rop</var> to the norm of <var>op</var>
+(i.e., the square of its absolute value),
+rounded in the direction <var>rnd</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005fmul_005f2ui">Function: <em>int</em> <strong>mpc_mul_2ui</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op1</var>, unsigned long int <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fmul_005f2si">Function: <em>int</em> <strong>mpc_mul_2si</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op1</var>, long int <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <var>op1</var> times 2 raised to <var>op2</var>
+rounded according to <var>rnd</var>. Just modifies the exponents
+of the real and imaginary parts by <var>op2</var>
+when <var>rop</var> and <var>op1</var> are identical.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005fdiv_005f2ui">Function: <em>int</em> <strong>mpc_div_2ui</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op1</var>, unsigned long int <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fdiv_005f2si">Function: <em>int</em> <strong>mpc_div_2si</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op1</var>, long int <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <var>op1</var> divided by 2 raised to <var>op2</var>
+rounded according to <var>rnd</var>. Just modifies the exponents
+of the real and imaginary parts by <var>op2</var>
+when <var>rop</var> and <var>op1</var> are identical.
+</p></dd></dl>
+<hr>
+<span id="Power-Functions-and-Logarithm"></span><div class="header">
+<p>
+Next: <a href="#Trigonometric-Functions" accesskey="n" rel="next">Trigonometric Functions</a>, Previous: <a href="#Basic-Arithmetic" accesskey="p" rel="prev">Basic Arithmetic</a>, Up: <a href="#Complex-Functions" accesskey="u" rel="up">Complex Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Power-Functions-and-Logarithm-1"></span><h3 class="section">5.8 Power Functions and Logarithm</h3>
+<span id="index-Power-functions"></span>
+<span id="index-Logarithm"></span>
+<dl>
+<dt id="index-mpc_005fsqrt">Function: <em>int</em> <strong>mpc_sqrt</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the square root of <var>op</var> rounded according to <var>rnd</var>.
+The returned value <var>rop</var> has a non-negative real part, and if its real
+part is zero, a non-negative imaginary part.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005fpow">Function: <em>int</em> <strong>mpc_pow</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op1</var>, mpc_t <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fpow_005fd">Function: <em>int</em> <strong>mpc_pow_d</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op1</var>, double <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fpow_005fld">Function: <em>int</em> <strong>mpc_pow_ld</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op1</var>, long double <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fpow_005fsi">Function: <em>int</em> <strong>mpc_pow_si</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op1</var>, long <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fpow_005fui">Function: <em>int</em> <strong>mpc_pow_ui</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op1</var>, unsigned long <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fpow_005fz">Function: <em>int</em> <strong>mpc_pow_z</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op1</var>, mpz_t <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fpow_005ffr">Function: <em>int</em> <strong>mpc_pow_fr</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op1</var>, mpfr_t <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <var>op1</var> raised to the power <var>op2</var>, rounded according
+to <var>rnd</var>.
+For <code>mpc_pow_d</code>, <code>mpc_pow_ld</code>, <code>mpc_pow_si</code>, <code>mpc_pow_ui</code>,
+<code>mpc_pow_z</code> and <code>mpc_pow_fr</code>,
+the imaginary part of <var>op2</var> is considered as +0.
+When both <var>op1</var> and <var>op2</var> are zero, the result has real part 1,
+and imaginary part 0, with sign being the opposite of that of <var>op2</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005fexp">Function: <em>int</em> <strong>mpc_exp</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the exponential of <var>op</var>,
+rounded according to <var>rnd</var> with the precision of <var>rop</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005flog">Function: <em>int</em> <strong>mpc_log</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005flog10">Function: <em>int</em> <strong>mpc_log10</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the natural and base-10 logarithm of <var>op</var> respectively,
+rounded according to <var>rnd</var> with the precision of <var>rop</var>.
+The principal branch is chosen, with the branch cut on the negative real axis,
+so that the imaginary part of the result lies in
+<em>]-Pi , Pi]</em> and <em>]-Pi/log(10) , Pi/log(10)]</em> respectively.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005frootofunity">Function: <em>int</em> <strong>mpc_rootofunity</strong> <em>(mpc_t <var>rop</var>, unsigned long int <var>n</var>, unsigned long int <var>k</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the standard primitive <var>n</var>-th root of unity raised to the power <var>k</var>, that is,
+<em>exp (2 Pi i k / n)</em>,
+rounded according to <var>rnd</var> with the precision of <var>rop</var>.
+</p></dd></dl>
+<hr>
+<span id="Trigonometric-Functions"></span><div class="header">
+<p>
+Next: <a href="#Miscellaneous-Complex-Functions" accesskey="n" rel="next">Miscellaneous Complex Functions</a>, Previous: <a href="#Power-Functions-and-Logarithm" accesskey="p" rel="prev">Power Functions and Logarithm</a>, Up: <a href="#Complex-Functions" accesskey="u" rel="up">Complex Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Trigonometric-Functions-1"></span><h3 class="section">5.9 Trigonometric Functions</h3>
+<span id="index-Trigonometric-functions"></span>
+<dl>
+<dt id="index-mpc_005fsin">Function: <em>int</em> <strong>mpc_sin</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the sine of <var>op</var>,
+rounded according to <var>rnd</var> with the precision of <var>rop</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005fcos">Function: <em>int</em> <strong>mpc_cos</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the cosine of <var>op</var>,
+rounded according to <var>rnd</var> with the precision of <var>rop</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005fsin_005fcos">Function: <em>int</em> <strong>mpc_sin_cos</strong> <em>(mpc_t <var>rop_sin</var>, mpc_t <var>rop_cos</var>, mpc_t <var>op</var>, mpc_rnd_t <var>rnd_sin</var>, mpc_rnd_t <var>rnd_cos</var>)</em></dt>
+<dd><p>Set <var>rop_sin</var> to the sine of <var>op</var>,
+rounded according to <var>rnd_sin</var> with the precision of <var>rop_sin</var>,
+and <var>rop_cos</var> to the cosine of <var>op</var>,
+rounded according to <var>rnd_cos</var> with the precision of <var>rop_cos</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005ftan">Function: <em>int</em> <strong>mpc_tan</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the tangent of <var>op</var>,
+rounded according to <var>rnd</var> with the precision of <var>rop</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005fsinh">Function: <em>int</em> <strong>mpc_sinh</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the hyperbolic sine of <var>op</var>,
+rounded according to <var>rnd</var> with the precision of <var>rop</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005fcosh">Function: <em>int</em> <strong>mpc_cosh</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the hyperbolic cosine of <var>op</var>,
+rounded according to <var>rnd</var> with the precision of <var>rop</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005ftanh">Function: <em>int</em> <strong>mpc_tanh</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the hyperbolic tangent of <var>op</var>,
+rounded according to <var>rnd</var> with the precision of <var>rop</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005fasin">Function: <em>int</em> <strong>mpc_asin</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005facos">Function: <em>int</em> <strong>mpc_acos</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fatan">Function: <em>int</em> <strong>mpc_atan</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the inverse sine, inverse cosine, inverse tangent of <var>op</var>,
+rounded according to <var>rnd</var> with the precision of <var>rop</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005fasinh">Function: <em>int</em> <strong>mpc_asinh</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005facosh">Function: <em>int</em> <strong>mpc_acosh</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt id="index-mpc_005fatanh">Function: <em>int</em> <strong>mpc_atanh</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the inverse hyperbolic sine, inverse hyperbolic cosine,
+inverse hyperbolic tangent of <var>op</var>,
+rounded according to <var>rnd</var> with the precision of <var>rop</var>.
+The branch cut of <var>mpc_acosh</var> is <em>(-Inf, 1)</em>.
+</p></dd></dl>
+<hr>
+<span id="Miscellaneous-Complex-Functions"></span><div class="header">
+<p>
+Next: <a href="#Advanced-Functions" accesskey="n" rel="next">Advanced Functions</a>, Previous: <a href="#Trigonometric-Functions" accesskey="p" rel="prev">Trigonometric Functions</a>, Up: <a href="#Complex-Functions" accesskey="u" rel="up">Complex Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Miscellaneous-Functions"></span><h3 class="section">5.10 Miscellaneous Functions</h3>
+<span id="index-Miscellaneous-complex-functions"></span>
+<dl>
+<dt id="index-mpc_005furandom">Function: <em>int</em> <strong>mpc_urandom</strong> <em>(mpc_t <var>rop</var>, gmp_randstate_t <var>state</var>)</em></dt>
+<dd><p>Generate a uniformly distributed random complex in the unit square <em>[0,
+1] x [0, 1]</em>. Return 0, unless an exponent in the real or imaginary part
+is not in the current exponent range, in which case that part is set to NaN
+and a zero value is returned. The second argument is a <code>gmp_randstate_t</code>
+structure which should be created using the GMP <code>rand_init</code> function, see
+the GMP manual.
+</p></dd></dl>
+<dl>
+<dt id="index-mpc_005fget_005fversion">Function: <em>const char *</em> <strong>mpc_get_version</strong> <em>(void)</em></dt>
+<dd><p>Return the GNU MPC version, as a null-terminated string.
+</p></dd></dl>
+<dl>
+<dt id="index-MPC_005fVERSION">Macro: <strong>MPC_VERSION</strong></dt>
+<dt id="index-MPC_005fVERSION_005fMAJOR">Macro: <strong>MPC_VERSION_MAJOR</strong></dt>
+<dt id="index-MPC_005fVERSION_005fMINOR">Macro: <strong>MPC_VERSION_MINOR</strong></dt>
+<dt id="index-MPC_005fVERSION_005fPATCHLEVEL">Macro: <strong>MPC_VERSION_PATCHLEVEL</strong></dt>
+<dt id="index-MPC_005fVERSION_005fSTRING">Macro: <strong>MPC_VERSION_STRING</strong></dt>
+<dd><p><code>MPC_VERSION</code> is the version of GNU MPC as a preprocessing constant.
+<code>MPC_VERSION_MAJOR</code>, <code>MPC_VERSION_MINOR</code> and
+<code>MPC_VERSION_PATCHLEVEL</code> are respectively the major, minor and
+patch level of GNU MPC version, as preprocessing constants.
+<code>MPC_VERSION_STRING</code> is the version as a string constant, which
+can be compared to the result of <code>mpc_get_version</code> to check at
+run time the header file and library used match:
+</p><div class="example">
+<pre class="example">if (strcmp (mpc_get_version (), MPC_VERSION_STRING))
+  fprintf (stderr, &quot;Warning: header and library do not match\n&quot;);
+</pre></div>
+<p>Note: Obtaining different strings is not necessarily an error, as in
+general, a program compiled with some old GNU MPC version can be
+dynamically linked with a newer GNU MPC library version (if allowed by the
+library versioning system).
+</p></dd></dl>
+<dl>
+<dt id="index-MPC_005fVERSION_005fNUM">Macro: <em>long</em> <strong>MPC_VERSION_NUM</strong> <em>(<var>major</var>, <var>minor</var>, <var>patchlevel</var>)</em></dt>
+<dd><p>Create an integer in the same format as used by <code>MPC_VERSION</code> from the
+given <var>major</var>, <var>minor</var> and <var>patchlevel</var>.
+Here is an example of how to check the GNU MPC version at compile time:
+</p><div class="example">
+<pre class="example">#if (!defined(MPC_VERSION) || (MPC_VERSION&lt;MPC_VERSION_NUM(2,1,0)))
+# error &quot;Wrong GNU MPC version.&quot;
+#endif
+</pre></div>
+</dd></dl>
+<hr>
+<span id="Advanced-Functions"></span><div class="header">
+<p>
+Next: <a href="#Internals" accesskey="n" rel="next">Internals</a>, Previous: <a href="#Miscellaneous-Complex-Functions" accesskey="p" rel="prev">Miscellaneous Complex Functions</a>, Up: <a href="#Complex-Functions" accesskey="u" rel="up">Complex Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Advanced-Functions-1"></span><h3 class="section">5.11 Advanced Functions</h3>
+<dl>
+<dt id="index-MPC_005fSET_005fX_005fY">Macro: <strong>MPC_SET_X_Y</strong> <em>(<var>real_suffix</var>, <var>imag_suffix</var>, <var>rop</var>, <var>real</var>, <var>imag</var>, <var>rnd</var>)</em></dt>
+<dd><p>The macro MPC_SET_X_Y is designed to serve as the body of an assignment
+function and cannot be used by itself.
+The <var>real_suffix</var> and <var>imag_suffix</var> parameters are the
+types of the real and imaginary part, that is, the <code>x</code> in the
+<code>mpfr_set_x</code> function one would use to set the part;
+for the mpfr type, use <code>fr</code>.
+<var>real</var> (respectively <var>imag</var>) is the value you want to assign to the
+real (resp. imaginary) part, its type must conform to <var>real_suffix</var>
+(resp. <var>imag_suffix</var>).
+<var>rnd</var> is the <code>mpc_rnd_t</code> rounding mode.
+The return value is the usual inexact value (see <a href="constant.GNU_MPC_Basics.html#return_002dvalue">Return
+Value</a>).
+</p>
+<p>For instance, you can define mpc_set_ui_fr as follows:
+</p><div class="example">
+<pre class="example">int mpc_set_ui_fr (mpc_t rop, long int re, double im, mpc_rnd_t rnd)
+    MPC_SET_X_Y (ui, fr, rop, re, im, rnd);
+</pre></div>
+</dd></dl>
+<hr>
+<span id="Internals"></span><div class="header">
+<p>
+Previous: <a href="#Advanced-Functions" accesskey="p" rel="prev">Advanced Functions</a>, Up: <a href="#Complex-Functions" accesskey="u" rel="up">Complex Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Internals-1"></span><h3 class="section">5.12 Internals</h3>
+<p>These macros and
+functions are mainly designed for the implementation of GNU MPC,
+but may be useful for users too.
+However, no upward compatibility is guaranteed.
+You need to include <code>mpc-impl.h</code> to use them.
+</p>
+<p>The macro <code>MPC_MAX_PREC(z)</code> gives the maximum of the precisions
+of the real and imaginary parts of a complex number.
+</p>
+<hr>
+<div class="header">
+<p>
+Previous: <a href="#Advanced-Functions" accesskey="p" rel="prev">Advanced Functions</a>, Up: <a href="#Complex-Functions" accesskey="u" rel="up">Complex Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div></div></section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../";window.currentCrate = "gmp_mpfr_sys";</script><script src="../../../main.js"></script><script defer src="../../../search-index.js"></script></body></html>

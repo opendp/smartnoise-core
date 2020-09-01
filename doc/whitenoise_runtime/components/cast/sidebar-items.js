@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["cast_bool","Cast data to type `bool`."],["cast_float","Cast data to type `f64`."],["cast_int","Cast data to type `i64`."],["cast_str","Cast data to type `String`."]]});

@@ -1,0 +1,157 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `Random_Number_Functions` constant in crate `gmp_mpfr_sys`."><meta name="keywords" content="rust, rustlang, rust-lang, Random_Number_Functions"><title>gmp_mpfr_sys::C::GMP::Random_Number_Functions - Rust</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc constant"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../gmp_mpfr_sys/index.html'><div class='logo-container'><img src='https://tspiteri.gitlab.io/gmp-mpfr-sys/rug.svg' alt='logo'></div></a><div class="sidebar-elems"><p class='location'><a href='../../index.html'>gmp_mpfr_sys</a>::<wbr><a href='../index.html'>C</a>::<wbr><a href='index.html'>GMP</a></p><script>window.sidebarCurrent = {name: 'Random_Number_Functions', ty: 'constant', relpath: ''};</script><script defer src="sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+                <a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../../../src/gmp_mpfr_sys/C.rs.html#124' title='goto source code'>[src]</a></span><span class='in-band'>Constant <a href='../../index.html'>gmp_mpfr_sys</a>::<wbr><a href='../index.html'>C</a>::<wbr><a href='index.html'>GMP</a>::<wbr><a class="constant" href=''>Random_Number_Functions</a></span></h1><pre class='rust const'>pub const Random_Number_Functions: ();</pre><div class='docblock'><p>This constant is a place-holder for documentation; do not use it in code.</p>
+<hr />
+<div><span id="start"></span></div>
+<span id="Random-Number-Functions"></span><div class="header">
+<p>
+Next: <a href="constant.Formatted_Output.html#Formatted-Output" accesskey="n" rel="next">Formatted Output</a>, Previous: <a href="constant.Low_level_Functions.html#start" accesskey="p" rel="prev">Low-level Functions</a>, Up: <a href="index.html#start" accesskey="u" rel="up">Top</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Random-Number-Functions-2"></span><h2 class="chapter">9 Random Number Functions</h2>
+<span id="index-Random-number-functions-2"></span>
+<p>Sequences of pseudo-random numbers in GMP are generated using a variable of
+type <code>gmp_randstate_t</code>, which holds an algorithm selection and a current
+state.  Such a variable must be initialized by a call to one of the
+<code>gmp_randinit</code> functions, and can be seeded with one of the
+<code>gmp_randseed</code> functions.
+</p>
+<p>The functions actually generating random numbers are described in <a href="constant.Integer_Functions.html#Integer-Random-Numbers">Integer Random Numbers</a>, and <a href="constant.Floating_point_Functions.html#Miscellaneous-Float-Functions">Miscellaneous Float Functions</a>.
+</p>
+<p>The older style random number functions don&rsquo;t accept a <code>gmp_randstate_t</code>
+parameter but instead share a global variable of that type.  They use a
+default algorithm and are currently not seeded (though perhaps that will
+change in the future).  The new functions accepting a <code>gmp_randstate_t</code>
+are recommended for applications that care about randomness.
+</p>
+<table class="menu" style="margin: 0; width: auto; padding: 0; border: 0;" border="0" cellspacing="0">
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Random-State-Initialization" accesskey="1">Random State Initialization</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Random-State-Seeding" accesskey="2">Random State Seeding</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Random-State-Miscellaneous" accesskey="3">Random State Miscellaneous</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+</table>
+<hr>
+<span id="Random-State-Initialization"></span><div class="header">
+<p>
+Next: <a href="#Random-State-Seeding" accesskey="n" rel="next">Random State Seeding</a>, Previous: <a href="#Random-Number-Functions" accesskey="p" rel="prev">Random Number Functions</a>, Up: <a href="#Random-Number-Functions" accesskey="u" rel="up">Random Number Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Random-State-Initialization-1"></span><h3 class="section">9.1 Random State Initialization</h3>
+<span id="index-Random-number-state"></span>
+<span id="index-Initialization-functions-5"></span>
+<dl>
+<dt id="index-gmp_005frandinit_005fdefault">Function: <em>void</em> <strong>gmp_randinit_default</strong> <em>(gmp_randstate_t <var>state</var>)</em></dt>
+<dd><p>Initialize <var>state</var> with a default algorithm.  This will be a compromise
+between speed and randomness, and is recommended for applications with no
+special requirements.  Currently this is <code>gmp_randinit_mt</code>.
+</p></dd></dl>
+<dl>
+<dt id="index-gmp_005frandinit_005fmt">Function: <em>void</em> <strong>gmp_randinit_mt</strong> <em>(gmp_randstate_t <var>state</var>)</em></dt>
+<dd><span id="index-Mersenne-twister-random-numbers"></span>
+<p>Initialize <var>state</var> for a Mersenne Twister algorithm.  This algorithm is
+fast and has good randomness properties.
+</p></dd></dl>
+<dl>
+<dt id="index-gmp_005frandinit_005flc_005f2exp">Function: <em>void</em> <strong>gmp_randinit_lc_2exp</strong> <em>(gmp_randstate_t <var>state</var>, const mpz_t <var>a</var>, unsigned&nbsp;long&nbsp;<var>c</var><!-- /@w -->, <span class="nolinebreak">mp_bitcnt_t</span>&nbsp;<var>m2exp</var><!-- /@w -->)</em></dt>
+<dd><span id="index-Linear-congruential-random-numbers"></span>
+<p>Initialize <var>state</var> with a linear congruential algorithm <em>X = (<var>a</var>*X + <var>c</var>) mod 2^<var>m2exp</var></em>.
+</p>
+<p>The low bits of <em>X</em> in this algorithm are not very random.  The least
+significant bit will have a period no more than 2, and the second bit no more
+than 4, etc.  For this reason only the high half of each <em>X</em> is actually
+used.
+</p>
+<p>When a random number of more than <em><var>m2exp</var>/2</em> bits is to be
+generated, multiple iterations of the recurrence are used and the results
+concatenated.
+</p></dd></dl>
+<dl>
+<dt id="index-gmp_005frandinit_005flc_005f2exp_005fsize">Function: <em>int</em> <strong>gmp_randinit_lc_2exp_size</strong> <em>(gmp_randstate_t <var>state</var>, mp_bitcnt_t <var>size</var>)</em></dt>
+<dd><span id="index-Linear-congruential-random-numbers-1"></span>
+<p>Initialize <var>state</var> for a linear congruential algorithm as per
+<code>gmp_randinit_lc_2exp</code>.  <var>a</var>, <var>c</var> and <var>m2exp</var> are selected
+from a table, chosen so that <var>size</var> bits (or more) of each <em>X</em> will
+be used, i.e. <em><var>m2exp</var>/2 &gt;= <var>size</var></em>.
+</p>
+<p>If successful the return value is non-zero.  If <var>size</var> is bigger than the
+table data provides then the return value is zero.  The maximum <var>size</var>
+currently supported is 128.
+</p></dd></dl>
+<dl>
+<dt id="index-gmp_005frandinit_005fset">Function: <em>void</em> <strong>gmp_randinit_set</strong> <em>(gmp_randstate_t <var>rop</var>, gmp_randstate_t <var>op</var>)</em></dt>
+<dd><p>Initialize <var>rop</var> with a copy of the algorithm and state from <var>op</var>.
+</p></dd></dl>
+<dl>
+<dt id="index-gmp_005frandinit">Function: <em>void</em> <strong>gmp_randinit</strong> <em>(gmp_randstate_t <var>state</var>, <span class="nolinebreak">gmp_randalg_t</span>&nbsp;<var>alg</var><!-- /@w -->, &hellip;)</em></dt>
+<dd><p><strong>This function is obsolete.</strong>
+</p>
+<span id="index-GMP_005fRAND_005fALG_005fLC"></span>
+<span id="index-GMP_005fRAND_005fALG_005fDEFAULT"></span>
+<p>Initialize <var>state</var> with an algorithm selected by <var>alg</var>.  The only
+choice is <code>GMP_RAND_ALG_LC</code>, which is <code>gmp_randinit_lc_2exp_size</code>
+described above.  A third parameter of type <code>unsigned long</code> is required,
+this is the <var>size</var> for that function.  <code>GMP_RAND_ALG_DEFAULT</code> or 0
+are the same as <code>GMP_RAND_ALG_LC</code>.
+</p>
+<span id="index-gmp_005ferrno"></span>
+<span id="index-GMP_005fERROR_005fUNSUPPORTED_005fARGUMENT"></span>
+<span id="index-GMP_005fERROR_005fINVALID_005fARGUMENT"></span>
+<p><code>gmp_randinit</code> sets bits in the global variable <code>gmp_errno</code> to
+indicate an error.  <code>GMP_ERROR_UNSUPPORTED_ARGUMENT</code> if <var>alg</var> is
+unsupported, or <code>GMP_ERROR_INVALID_ARGUMENT</code> if the <var>size</var> parameter
+is too big.  It may be noted this error reporting is not thread safe (a good
+reason to use <code>gmp_randinit_lc_2exp_size</code> instead).
+</p></dd></dl>
+<dl>
+<dt id="index-gmp_005frandclear">Function: <em>void</em> <strong>gmp_randclear</strong> <em>(gmp_randstate_t <var>state</var>)</em></dt>
+<dd><p>Free all memory occupied by <var>state</var>.
+</p></dd></dl>
+<hr>
+<span id="Random-State-Seeding"></span><div class="header">
+<p>
+Next: <a href="#Random-State-Miscellaneous" accesskey="n" rel="next">Random State Miscellaneous</a>, Previous: <a href="#Random-State-Initialization" accesskey="p" rel="prev">Random State Initialization</a>, Up: <a href="#Random-Number-Functions" accesskey="u" rel="up">Random Number Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Random-State-Seeding-1"></span><h3 class="section">9.2 Random State Seeding</h3>
+<span id="index-Random-number-seeding"></span>
+<span id="index-Seeding-random-numbers"></span>
+<dl>
+<dt id="index-gmp_005frandseed">Function: <em>void</em> <strong>gmp_randseed</strong> <em>(gmp_randstate_t <var>state</var>, const mpz_t <var>seed</var>)</em></dt>
+<dt id="index-gmp_005frandseed_005fui">Function: <em>void</em> <strong>gmp_randseed_ui</strong> <em>(gmp_randstate_t <var>state</var>, unsigned&nbsp;long&nbsp;int&nbsp;<var>seed</var><!-- /@w -->)</em></dt>
+<dd><p>Set an initial seed value into <var>state</var>.
+</p>
+<p>The size of a seed determines how many different sequences of random numbers
+that it&rsquo;s possible to generate.  The &ldquo;quality&rdquo; of the seed is the randomness
+of a given seed compared to the previous seed used, and this affects the
+randomness of separate number sequences.  The method for choosing a seed is
+critical if the generated numbers are to be used for important applications,
+such as generating cryptographic keys.
+</p>
+<p>Traditionally the system time has been used to seed, but care needs to be
+taken with this.  If an application seeds often and the resolution of the
+system clock is low, then the same sequence of numbers might be repeated.
+Also, the system time is quite easy to guess, so if unpredictability is
+required then it should definitely not be the only source for the seed value.
+On some systems there&rsquo;s a special device <samp>/dev/random</samp> which provides
+random data better suited for use as a seed.
+</p></dd></dl>
+<hr>
+<span id="Random-State-Miscellaneous"></span><div class="header">
+<p>
+Previous: <a href="#Random-State-Seeding" accesskey="p" rel="prev">Random State Seeding</a>, Up: <a href="#Random-Number-Functions" accesskey="u" rel="up">Random Number Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Random-State-Miscellaneous-1"></span><h3 class="section">9.3 Random State Miscellaneous</h3>
+<dl>
+<dt id="index-gmp_005furandomb_005fui">Function: <em>unsigned long</em> <strong>gmp_urandomb_ui</strong> <em>(gmp_randstate_t <var>state</var>, unsigned long <var>n</var>)</em></dt>
+<dd><p>Return a uniformly distributed random number of <var>n</var> bits, i.e. in the
+range 0 to <em>2^<var>n</var>-1</em> inclusive.  <var>n</var> must be less than or
+equal to the number of bits in an <code>unsigned long</code>.
+</p></dd></dl>
+<dl>
+<dt id="index-gmp_005furandomm_005fui">Function: <em>unsigned long</em> <strong>gmp_urandomm_ui</strong> <em>(gmp_randstate_t <var>state</var>, unsigned long <var>n</var>)</em></dt>
+<dd><p>Return a uniformly distributed random number in the range 0 to
+<em><var>n</var>-1</em>, inclusive.
+</p></dd></dl>
+<hr>
+<div class="header">
+<p>
+Previous: <a href="#Random-State-Seeding" accesskey="p" rel="prev">Random State Seeding</a>, Up: <a href="#Random-Number-Functions" accesskey="u" rel="up">Random Number Functions</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div></div></section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../";window.currentCrate = "gmp_mpfr_sys";</script><script src="../../../main.js"></script><script defer src="../../../search-index.js"></script></body></html>

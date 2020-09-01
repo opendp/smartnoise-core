@@ -1,0 +1,427 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `API_Compatibility` constant in crate `gmp_mpfr_sys`."><meta name="keywords" content="rust, rustlang, rust-lang, API_Compatibility"><title>gmp_mpfr_sys::C::MPFR::API_Compatibility - Rust</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc constant"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../gmp_mpfr_sys/index.html'><div class='logo-container'><img src='https://tspiteri.gitlab.io/gmp-mpfr-sys/rug.svg' alt='logo'></div></a><div class="sidebar-elems"><p class='location'><a href='../../index.html'>gmp_mpfr_sys</a>::<wbr><a href='../index.html'>C</a>::<wbr><a href='index.html'>MPFR</a></p><script>window.sidebarCurrent = {name: 'API_Compatibility', ty: 'constant', relpath: ''};</script><script defer src="sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+                <a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../../../src/gmp_mpfr_sys/C.rs.html#156' title='goto source code'>[src]</a></span><span class='in-band'>Constant <a href='../../index.html'>gmp_mpfr_sys</a>::<wbr><a href='../index.html'>C</a>::<wbr><a href='index.html'>MPFR</a>::<wbr><a class="constant" href=''>API_Compatibility</a></span></h1><pre class='rust const'>pub const API_Compatibility: ();</pre><div class='docblock'><p>This constant is a place-holder for documentation; do not use it in code.</p>
+<hr />
+<div><span id="start"></span></div>
+<span id="API-Compatibility"></span><div class="header">
+<p>
+Next: <a href="constant.MPFR_and_the_IEEE_754_Standard.html#start" accesskey="n" rel="next">MPFR and the IEEE 754 Standard</a>, Previous: <a href="constant.MPFR_Interface.html#MPFR-Interface" accesskey="p" rel="prev">MPFR Interface</a>, Up: <a href="index.html#start" accesskey="u" rel="up">Top</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="API-Compatibility-1"></span><h2 class="chapter">6 API Compatibility</h2>
+<p>The goal of this section is to describe some API changes that occurred
+from one version of MPFR to another, and how to write code that can be compiled
+and run with older MPFR versions.  The minimum MPFR version that is
+considered here is 2.2.0 (released on 20 September 2005).
+</p>
+<p>API changes can only occur between major or minor versions.  Thus the
+patchlevel (the third number in the MPFR version) will be ignored in
+the following.  If a program does not use MPFR internals, changes in
+the behavior between two versions differing only by the patchlevel
+should only result from what was regarded as a bug or unspecified behavior.
+</p>
+<p>As a general rule, a program written for some MPFR version should work
+with later versions, possibly except at a new major version, where
+some features (described as obsolete for some time) can be removed.
+In such a case, a failure should occur during compilation or linking.
+If a result becomes incorrect because of such a change, please look
+at the various changes below (they are minimal, and most software
+should be unaffected), at the FAQ and at the MPFR web page for your
+version (a bug could have been introduced and be already fixed);
+and if the problem is not mentioned, please send us a bug report
+(see <a href="constant.Reporting_Bugs.html#start">Reporting Bugs</a>).
+</p>
+<p>However, a program written for the current MPFR version (as documented
+by this manual) may not necessarily work with previous versions of
+MPFR.  This section should help developers to write portable code.
+</p>
+<p>Note: Information given here may be incomplete.  API changes are
+also described in the NEWS file (for each version, instead of being
+classified like here), together with other changes.
+</p>
+<table class="menu" style="margin: 0; width: auto; padding: 0; border: 0;" border="0" cellspacing="0">
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Type-and-Macro-Changes" accesskey="1">Type and Macro Changes</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Added-Functions" accesskey="2">Added Functions</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Changed-Functions" accesskey="3">Changed Functions</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Removed-Functions" accesskey="4">Removed Functions</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+<tr><td style="padding: 0; border: 0;"  align="left" valign="top">&bull; <a href="#Other-Changes" accesskey="5">Other Changes</a></td><td style="padding: 0; border: 0;" >&nbsp;&nbsp;</td><td style="padding: 0; border: 0;"  align="left" valign="top">
+</td></tr>
+</table>
+<hr>
+<span id="Type-and-Macro-Changes"></span><div class="header">
+<p>
+Next: <a href="#Added-Functions" accesskey="n" rel="next">Added Functions</a>, Previous: <a href="#API-Compatibility" accesskey="p" rel="prev">API Compatibility</a>, Up: <a href="#API-Compatibility" accesskey="u" rel="up">API Compatibility</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Type-and-Macro-Changes-1"></span><h3 class="section">6.1 Type and Macro Changes</h3>
+<p>The official type for exponent values changed from <code>mp_exp_t</code> to
+<code>mpfr_exp_t</code> in MPFR&nbsp;3.0.  The type <code>mp_exp_t</code> will remain
+available as it comes from GMP (with a different meaning).  These types
+are currently the same (<code>mpfr_exp_t</code> is defined as <code>mp_exp_t</code>
+with <code>typedef</code>), so that programs can still use <code>mp_exp_t</code>;
+but this may change in the future.
+Alternatively, using the following code after including <samp>mpfr.h</samp>
+will work with official MPFR versions, as <code>mpfr_exp_t</code> was never
+defined in MPFR&nbsp;2.x:
+</p><div class="example">
+<pre class="example">#if MPFR_VERSION_MAJOR &lt; 3
+typedef mp_exp_t mpfr_exp_t;
+#endif
+</pre></div>
+<p>The official types for precision values and for rounding modes
+respectively changed from <code>mp_prec_t</code> and <code>mp_rnd_t</code>
+to <code>mpfr_prec_t</code> and <code>mpfr_rnd_t</code> in MPFR&nbsp;3.0.  This
+change was actually done a long time ago in MPFR, at least since
+MPFR&nbsp;2.2.0, with the following code in <samp>mpfr.h</samp>:
+</p><div class="example">
+<pre class="example">#ifndef mp_rnd_t
+# define mp_rnd_t  mpfr_rnd_t
+#endif
+#ifndef mp_prec_t
+# define mp_prec_t mpfr_prec_t
+#endif
+</pre></div>
+<p>This means that it is safe to use the new official types
+<code>mpfr_prec_t</code> and <code>mpfr_rnd_t</code> in your programs.
+The types <code>mp_prec_t</code> and <code>mp_rnd_t</code> (defined
+in MPFR only) may be removed in the future, as the prefix
+<code>mp_</code> is reserved by GMP.
+</p>
+<p>The precision type <code>mpfr_prec_t</code> (<code>mp_prec_t</code>) was unsigned
+before MPFR&nbsp;3.0; it is now signed.  <code>MPFR_PREC_MAX</code> has not
+changed, though.  Indeed the MPFR code requires that <code>MPFR_PREC_MAX</code> be
+representable in the exponent type, which may have the same size as
+<code>mpfr_prec_t</code> but has always been signed.
+The consequence is that valid code that does not assume anything about
+the signedness of <code>mpfr_prec_t</code> should work with past and new MPFR
+versions.
+This change was useful as the use of unsigned types tends to convert
+signed values to unsigned ones in expressions due to the usual arithmetic
+conversions, which can yield incorrect results if a negative value is
+converted in such a way.
+Warning!  A program assuming (intentionally or not) that
+<code>mpfr_prec_t</code> is signed may be affected by this problem when
+it is built and run against MPFR&nbsp;2.x.
+</p>
+<p>The rounding modes <code>GMP_RNDx</code> were renamed to <code>MPFR_RNDx</code>
+in MPFR&nbsp;3.0. However the old names <code>GMP_RNDx</code> have been kept for
+compatibility (this might change in future versions), using:
+</p><div class="example">
+<pre class="example">#define GMP_RNDN MPFR_RNDN
+#define GMP_RNDZ MPFR_RNDZ
+#define GMP_RNDU MPFR_RNDU
+#define GMP_RNDD MPFR_RNDD
+</pre></div>
+<p>The rounding mode &ldquo;round away from zero&rdquo; (<code>MPFR_RNDA</code>) was added in
+MPFR&nbsp;3.0 (however no rounding mode <code>GMP_RNDA</code> exists).
+Faithful rounding (<code>MPFR_RNDF</code>) was added in MPFR&nbsp;4.0, but
+currently, it is partially supported.
+</p>
+<p>The flags-related macros, whose name starts with <code>MPFR_FLAGS_</code>,
+were added in MPFR&nbsp;4.0 (for the new functions <code>mpfr_flags_clear</code>,
+<code>mpfr_flags_restore</code>, <code>mpfr_flags_set</code> and <code>mpfr_flags_test</code>,
+in particular).
+</p>
+<hr>
+<span id="Added-Functions"></span><div class="header">
+<p>
+Next: <a href="#Changed-Functions" accesskey="n" rel="next">Changed Functions</a>, Previous: <a href="#Type-and-Macro-Changes" accesskey="p" rel="prev">Type and Macro Changes</a>, Up: <a href="#API-Compatibility" accesskey="u" rel="up">API Compatibility</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Added-Functions-1"></span><h3 class="section">6.2 Added Functions</h3>
+<p>We give here in alphabetical order the functions (and function-like macros)
+that were added after MPFR&nbsp;2.2, and in which MPFR version.
+</p>
+<ul>
+<li> <code>mpfr_add_d</code> in MPFR&nbsp;2.4.
+</li><li> <code>mpfr_ai</code> in MPFR&nbsp;3.0 (incomplete, experimental).
+</li><li> <code>mpfr_asprintf</code> in MPFR&nbsp;2.4.
+</li><li> <code>mpfr_beta</code> in MPFR&nbsp;4.0 (incomplete, experimental).
+</li><li> <code>mpfr_buildopt_decimal_p</code> in MPFR&nbsp;3.0.
+</li><li> <code>mpfr_buildopt_float128_p</code> in MPFR&nbsp;4.0.
+</li><li> <code>mpfr_buildopt_gmpinternals_p</code> in MPFR&nbsp;3.1.
+</li><li> <code>mpfr_buildopt_sharedcache_p</code> in MPFR&nbsp;4.0.
+</li><li> <code>mpfr_buildopt_tls_p</code> in MPFR&nbsp;3.0.
+</li><li> <code>mpfr_buildopt_tune_case</code> in MPFR&nbsp;3.1.
+</li><li> <code>mpfr_clear_divby0</code> in MPFR&nbsp;3.1
+(new divide-by-zero exception).
+</li><li> <code>mpfr_cmpabs_ui</code> in MPFR&nbsp;4.1.
+</li><li> <code>mpfr_copysign</code> in MPFR&nbsp;2.3.
+Note: MPFR&nbsp;2.2 had a <code>mpfr_copysign</code> function that was available,
+but not documented,
+and with a slight difference in the semantics (when
+the second input operand is a NaN).
+</li><li> <code>mpfr_custom_get_significand</code> in MPFR&nbsp;3.0.
+This function was named <code>mpfr_custom_get_mantissa</code> in previous
+versions; <code>mpfr_custom_get_mantissa</code> is still available via a
+macro in <samp>mpfr.h</samp>:
+<div class="example">
+<pre class="example">#define mpfr_custom_get_mantissa mpfr_custom_get_significand
+</pre></div>
+<p>Thus code that needs to work with both MPFR&nbsp;2.x and MPFR&nbsp;3.x should
+use <code>mpfr_custom_get_mantissa</code>.
+</p>
+</li><li> <code>mpfr_d_div</code> and <code>mpfr_d_sub</code> in MPFR&nbsp;2.4.
+</li><li> <code>mpfr_digamma</code> in MPFR&nbsp;3.0.
+</li><li> <code>mpfr_divby0_p</code> in MPFR&nbsp;3.1 (new divide-by-zero exception).
+</li><li> <code>mpfr_div_d</code> in MPFR&nbsp;2.4.
+</li><li> <code>mpfr_dot</code> in MPFR&nbsp;4.1 (incomplete, experimental).
+</li><li> <code>mpfr_erandom</code> in MPFR&nbsp;4.0.
+</li><li> <code>mpfr_flags_clear</code>, <code>mpfr_flags_restore</code>,
+<code>mpfr_flags_save</code>, <code>mpfr_flags_set</code> and <code>mpfr_flags_test</code>
+in MPFR&nbsp;4.0.
+</li><li> <code>mpfr_fmma</code> and <code>mpfr_fmms</code> in MPFR&nbsp;4.0.
+</li><li> <code>mpfr_fmod</code> in MPFR&nbsp;2.4.
+</li><li> <code>mpfr_fmodquo</code> in MPFR&nbsp;4.0.
+</li><li> <code>mpfr_fms</code> in MPFR&nbsp;2.3.
+</li><li> <code>mpfr_fpif_export</code> and <code>mpfr_fpif_import</code> in MPFR&nbsp;4.0.
+</li><li> <code>mpfr_fprintf</code> in MPFR&nbsp;2.4.
+</li><li> <code>mpfr_free_cache2</code> in MPFR&nbsp;4.0.
+</li><li> <code>mpfr_free_pool</code> in MPFR&nbsp;4.0.
+</li><li> <code>mpfr_frexp</code> in MPFR&nbsp;3.1.
+</li><li> <code>mpfr_gamma_inc</code> in MPFR&nbsp;4.0.
+</li><li> <code>mpfr_get_decimal128</code> in MPFR&nbsp;4.1.
+</li><li> <code>mpfr_get_float128</code> in MPFR&nbsp;4.0 if configured with
+&lsquo;<samp>--enable-float128</samp>&rsquo;.
+</li><li> <code>mpfr_get_flt</code> in MPFR&nbsp;3.0.
+</li><li> <code>mpfr_get_patches</code> in MPFR&nbsp;2.3.
+</li><li> <code>mpfr_get_q</code> in MPFR&nbsp;4.0.
+</li><li> <code>mpfr_get_str_ndigits</code> in MPFR&nbsp;4.1.
+</li><li> <code>mpfr_get_z_2exp</code> in MPFR&nbsp;3.0.
+This function was named <code>mpfr_get_z_exp</code> in previous versions;
+<code>mpfr_get_z_exp</code> is still available via a macro in <samp>mpfr.h</samp>:
+<div class="example">
+<pre class="example">#define mpfr_get_z_exp mpfr_get_z_2exp
+</pre></div>
+<p>Thus code that needs to work with both MPFR&nbsp;2.x and MPFR&nbsp;3.x should
+use <code>mpfr_get_z_exp</code>.
+</p>
+</li><li> <code>mpfr_grandom</code> in MPFR&nbsp;3.1.
+</li><li> <code>mpfr_j0</code>, <code>mpfr_j1</code> and <code>mpfr_jn</code> in MPFR&nbsp;2.3.
+</li><li> <code>mpfr_lgamma</code> in MPFR&nbsp;2.3.
+</li><li> <code>mpfr_li2</code> in MPFR&nbsp;2.4.
+</li><li> <code>mpfr_log_ui</code> in MPFR&nbsp;4.0.
+</li><li> <code>mpfr_min_prec</code> in MPFR&nbsp;3.0.
+</li><li> <code>mpfr_modf</code> in MPFR&nbsp;2.4.
+</li><li> <code>mpfr_mp_memory_cleanup</code> in MPFR&nbsp;4.0.
+</li><li> <code>mpfr_mul_d</code> in MPFR&nbsp;2.4.
+</li><li> <code>mpfr_nrandom</code> in MPFR&nbsp;4.0.
+</li><li> <code>mpfr_printf</code> in MPFR&nbsp;2.4.
+</li><li> <code>mpfr_rec_sqrt</code> in MPFR&nbsp;2.4.
+</li><li> <code>mpfr_regular_p</code> in MPFR&nbsp;3.0.
+</li><li> <code>mpfr_remainder</code> and <code>mpfr_remquo</code> in MPFR&nbsp;2.3.
+</li><li> <code>mpfr_rint_roundeven</code> and <code>mpfr_roundeven</code> in MPFR&nbsp;4.0.
+</li><li> <code>mpfr_round_nearest_away</code> in MPFR&nbsp;4.0.
+</li><li> <code>mpfr_rootn_ui</code> in MPFR&nbsp;4.0.
+</li><li> <code>mpfr_set_decimal128</code> in MPFR&nbsp;4.1.
+</li><li> <code>mpfr_set_divby0</code> in MPFR&nbsp;3.1 (new divide-by-zero exception).
+</li><li> <code>mpfr_set_float128</code> in MPFR&nbsp;4.0 if configured with
+&lsquo;<samp>--enable-float128</samp>&rsquo;.
+</li><li> <code>mpfr_set_flt</code> in MPFR&nbsp;3.0.
+</li><li> <code>mpfr_set_z_2exp</code> in MPFR&nbsp;3.0.
+</li><li> <code>mpfr_set_zero</code> in MPFR&nbsp;3.0.
+</li><li> <code>mpfr_setsign</code> in MPFR&nbsp;2.3.
+</li><li> <code>mpfr_signbit</code> in MPFR&nbsp;2.3.
+</li><li> <code>mpfr_sinh_cosh</code> in MPFR&nbsp;2.4.
+</li><li> <code>mpfr_snprintf</code> and <code>mpfr_sprintf</code> in MPFR&nbsp;2.4.
+</li><li> <code>mpfr_sub_d</code> in MPFR&nbsp;2.4.
+</li><li> <code>mpfr_total_order_p</code> in MPFR&nbsp;4.1.
+</li><li> <code>mpfr_urandom</code> in MPFR&nbsp;3.0.
+</li><li> <code>mpfr_vasprintf</code>, <code>mpfr_vfprintf</code>, <code>mpfr_vprintf</code>,
+      <code>mpfr_vsprintf</code> and <code>mpfr_vsnprintf</code> in MPFR&nbsp;2.4.
+</li><li> <code>mpfr_y0</code>, <code>mpfr_y1</code> and <code>mpfr_yn</code> in MPFR&nbsp;2.3.
+</li><li> <code>mpfr_z_sub</code> in MPFR&nbsp;3.1.
+</li></ul>
+<hr>
+<span id="Changed-Functions"></span><div class="header">
+<p>
+Next: <a href="#Removed-Functions" accesskey="n" rel="next">Removed Functions</a>, Previous: <a href="#Added-Functions" accesskey="p" rel="prev">Added Functions</a>, Up: <a href="#API-Compatibility" accesskey="u" rel="up">API Compatibility</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Changed-Functions-1"></span><h3 class="section">6.3 Changed Functions</h3>
+<p>The following functions have changed after MPFR&nbsp;2.2. Changes can affect
+the behavior of code written for some MPFR version when built and run
+against another MPFR version (older or newer), as described below.
+</p>
+<ul>
+<li> The formatted output functions (<code>mpfr_printf</code>, etc.) have
+slightly changed in MPFR&nbsp;4.1 in the case where the precision field
+is empty: trailing zeros were not output with the conversion specifier
+&lsquo;<samp>e</samp>&rsquo; / &lsquo;<samp>E</samp>&rsquo; (the chosen precision was not fully specified and
+it depended on the input value), and also on the value zero with the
+conversion specifiers &lsquo;<samp>f</samp>&rsquo; / &lsquo;<samp>F</samp>&rsquo; / &lsquo;<samp>g</samp>&rsquo; / &lsquo;<samp>G</samp>&rsquo; (this
+could partly be regarded as a bug); they are now kept in a way similar
+to the formatted output functions from C.
+</li><li> <code>mpfr_abs</code>, <code>mpfr_neg</code> and <code>mpfr_set</code> changed in
+MPFR&nbsp;4.0.
+In previous MPFR versions, the sign bit of a NaN was unspecified; however,
+in practice, it was set as now specified except for <code>mpfr_neg</code> with
+a reused argument: <code>mpfr_neg(x,x,rnd)</code>.
+</li><li> <code>mpfr_check_range</code> changed in MPFR&nbsp;2.3.2 and MPFR&nbsp;2.4.
+If the value is an inexact infinity, the overflow flag is now set
+(in case it was lost), while it was previously left unchanged.
+This is really what is expected in practice (and what the MPFR code
+was expecting), so that the previous behavior was regarded as a bug.
+Hence the change in MPFR&nbsp;2.3.2.
+</li><li> <code>mpfr_eint</code> changed in MPFR&nbsp;4.0.
+This function now returns the value of the E1/eint1 function for
+negative argument (before MPFR&nbsp;4.0, it was returning NaN).
+</li><li> <code>mpfr_get_f</code> changed in MPFR&nbsp;3.0.
+This function was returning zero, except for NaN and Inf, which do not
+exist in MPF. The <em>erange</em> flag is now set in these cases,
+and <code>mpfr_get_f</code> now returns the usual ternary value.
+</li><li> <code>mpfr_get_si</code>, <code>mpfr_get_sj</code>, <code>mpfr_get_ui</code>
+and <code>mpfr_get_uj</code> changed in MPFR&nbsp;3.0.
+In previous MPFR versions, the cases where the <em>erange</em> flag
+is set were unspecified.
+</li><li> <code>mpfr_get_str</code> changed in MPFR&nbsp;4.0.
+This function now sets the NaN flag on NaN input (to follow the usual MPFR
+rules on NaN and IEEE&nbsp;754-2008 recommendations on string conversions
+from Subclause&nbsp;5.12.1) and sets the inexact flag when the conversion
+is inexact.
+</li><li> <code>mpfr_get_z</code> changed in MPFR&nbsp;3.0.
+The return type was <code>void</code>; it is now <code>int</code>, and the usual
+ternary value is returned.  Thus programs that need to work with both
+MPFR&nbsp;2.x and 3.x must not use the return value.  Even in this case,
+C code using <code>mpfr_get_z</code> as the second or third term of
+a conditional operator may also be affected. For instance, the
+following is correct with MPFR&nbsp;3.0, but not with MPFR&nbsp;2.x:
+<div class="example">
+<pre class="example">  bool ? mpfr_get_z(...) : mpfr_add(...);
+</pre></div>
+<p>On the other hand, the following is correct with MPFR&nbsp;2.x, but not
+with MPFR&nbsp;3.0:
+</p><div class="example">
+<pre class="example">  bool ? mpfr_get_z(...) : (void) mpfr_add(...);
+</pre></div>
+<p>Portable code should cast <code>mpfr_get_z(...)</code> to <code>void</code> to
+use the type <code>void</code> for both terms of the conditional operator,
+as in:
+</p><div class="example">
+<pre class="example">  bool ? (void) mpfr_get_z(...) : (void) mpfr_add(...);
+</pre></div>
+<p>Alternatively, <code>if ... else</code> can be used instead of the
+conditional operator.
+</p>
+<p>Moreover the cases where the <em>erange</em> flag is set were unspecified
+in MPFR&nbsp;2.x.
+</p>
+</li><li> <code>mpfr_get_z_exp</code> changed in MPFR&nbsp;3.0.
+In previous MPFR versions, the cases where the <em>erange</em> flag
+is set were unspecified.
+Note: this function has been renamed to <code>mpfr_get_z_2exp</code>
+in MPFR&nbsp;3.0, but <code>mpfr_get_z_exp</code> is still available for
+compatibility reasons.
+</li><li> <code>mpfr_out_str</code> changed in MPFR&nbsp;4.1.
+The argument <var>base</var> can now be negative (from -2 to
+-36), in order to follow <code>mpfr_get_str</code> and GMP&rsquo;s
+<code>mpf_out_str</code> functions.
+</li><li> <code>mpfr_set_exp</code> changed in MPFR&nbsp;4.0.
+Before MPFR&nbsp;4.0, the exponent was set whatever the contents of the MPFR
+object in argument. In practice, this could be useful as a low-level
+function when the MPFR number was being constructed by setting the fields
+of its internal structure, but the API does not provide a way to do this
+except by using internals. Thus, for the API, this behavior was useless
+and could quickly lead to undefined behavior due to the fact that the
+generated value could have an invalid format if the MPFR object contained
+a special value (NaN, infinity or zero).
+</li><li> <code>mpfr_strtofr</code> changed in MPFR&nbsp;2.3.1 and MPFR&nbsp;2.4.
+This was actually a bug fix since the code and the documentation did
+not match.  But both were changed in order to have a more consistent
+and useful behavior.  The main changes in the code are as follows.
+The binary exponent is now accepted even without the <code>0b</code> or
+<code>0x</code> prefix.  Data corresponding to NaN can now have an optional
+sign (such data were previously invalid).
+</li><li> <code>mpfr_strtofr</code> changed in MPFR&nbsp;3.0.
+This function now accepts bases from 37 to 62 (no changes for the other
+bases).  Note: if an unsupported base is provided to this function,
+the behavior is undefined; more precisely, in MPFR&nbsp;2.3.1 and later,
+providing an unsupported base yields an assertion failure (this
+behavior may change in the future).
+</li><li> <code>mpfr_subnormalize</code> changed in MPFR&nbsp;3.1.
+This was actually regarded as a bug fix. The <code>mpfr_subnormalize</code>
+implementation up to MPFR&nbsp;3.0.0 did not change the flags. In particular,
+it did not follow the generic rule concerning the inexact flag (and no
+special behavior was specified). The case of the underflow flag was more
+a lack of specification.
+</li><li> <code>mpfr_sum</code> changed in MPFR&nbsp;4.0.
+The <code>mpfr_sum</code> function has completely been rewritten for MPFR&nbsp;4.0,
+with an update of the specification: the sign of an exact zero result
+is now specified, and the return value is now the usual ternary value.
+The old <code>mpfr_sum</code> implementation could also take all the memory
+and crash on inputs of very different magnitude.
+</li><li> <code>mpfr_urandom</code> and <code>mpfr_urandomb</code> changed in MPFR&nbsp;3.1.
+Their behavior no longer depends on the platform (assuming this is also true
+for GMP&rsquo;s random generator, which is not the case between GMP 4.1 and 4.2 if
+<code>gmp_randinit_default</code> is used).  As a consequence, the returned values
+can be different between MPFR&nbsp;3.1 and previous MPFR versions.
+Note: as the reproducibility of these functions was not specified
+before MPFR&nbsp;3.1, the MPFR&nbsp;3.1 behavior is <em>not</em> regarded as
+backward incompatible with previous versions.
+</li><li> <code>mpfr_urandom</code> changed in MPFR&nbsp;4.0.
+The next random state no longer depends on the current exponent range and
+the rounding mode. The exceptions due to the rounding of the random number
+are now correctly generated, following the uniform distribution.
+As a consequence, the returned values can be different between MPFR&nbsp;4.0
+and previous MPFR versions.
+</li></ul>
+<hr>
+<span id="Removed-Functions"></span><div class="header">
+<p>
+Next: <a href="#Other-Changes" accesskey="n" rel="next">Other Changes</a>, Previous: <a href="#Changed-Functions" accesskey="p" rel="prev">Changed Functions</a>, Up: <a href="#API-Compatibility" accesskey="u" rel="up">API Compatibility</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Removed-Functions-1"></span><h3 class="section">6.4 Removed Functions</h3>
+<p>Functions <code>mpfr_random</code> and <code>mpfr_random2</code> have been
+removed in MPFR&nbsp;3.0 (this only affects old code built against
+MPFR&nbsp;3.0 or later).
+(The function <code>mpfr_random</code> had been deprecated since at least
+MPFR&nbsp;2.2.0, and <code>mpfr_random2</code> since MPFR&nbsp;2.4.0.)
+</p>
+<p>Macros <code>mpfr_add_one_ulp</code> and <code>mpfr_sub_one_ulp</code> have been
+removed in MPFR&nbsp;4.0. They were no longer documented since
+MPFR&nbsp;2.1.0 and were announced as deprecated since MPFR&nbsp;3.1.0.
+</p>
+<p>Function <code>mpfr_grandom</code> is marked as deprecated in MPFR&nbsp;4.0.
+It will be removed in a future release.
+</p>
+<hr>
+<span id="Other-Changes"></span><div class="header">
+<p>
+Previous: <a href="#Removed-Functions" accesskey="p" rel="prev">Removed Functions</a>, Up: <a href="#API-Compatibility" accesskey="u" rel="up">API Compatibility</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div>
+<span id="Other-Changes-1"></span><h3 class="section">6.5 Other Changes</h3>
+<p>For users of a C++ compiler, the way how the availability of <code>intmax_t</code>
+is detected has changed in MPFR&nbsp;3.0.
+In MPFR&nbsp;2.x, if a macro <code>INTMAX_C</code> or <code>UINTMAX_C</code> was defined
+(e.g. when the <code>__STDC_CONSTANT_MACROS</code> macro had been defined
+before <code>&lt;stdint.h&gt;</code> or <code>&lt;inttypes.h&gt;</code> has been included),
+<code>intmax_t</code> was assumed to be defined.
+However this was not always the case (more precisely, <code>intmax_t</code>
+can be defined only in the namespace <code>std</code>, as with Boost), so
+that compilations could fail.
+Thus the check for <code>INTMAX_C</code> or <code>UINTMAX_C</code> is now disabled for
+C++ compilers, with the following consequences:
+</p>
+<ul>
+<li> Programs written for MPFR&nbsp;2.x that need <code>intmax_t</code> may no
+longer be compiled against MPFR&nbsp;3.0: a <code>#define MPFR_USE_INTMAX_T</code>
+may be necessary before <samp>mpfr.h</samp> is included.
+</li><li> The compilation of programs that work with MPFR&nbsp;3.0 may fail with
+MPFR&nbsp;2.x due to the problem described above.  Workarounds are possible,
+such as defining <code>intmax_t</code> and <code>uintmax_t</code> in the global
+namespace, though this is not clean.
+</li></ul>
+<p>The divide-by-zero exception is new in MPFR&nbsp;3.1. However it should
+not introduce incompatible changes for programs that strictly follow
+the MPFR API since the exception can only be seen via new functions.
+</p>
+<p>As of MPFR&nbsp;3.1, the <samp>mpfr.h</samp> header can be included several times,
+while still supporting optional functions (see <a href="constant.MPFR_Basics.html#Headers-and-Libraries">Headers and Libraries</a>).
+</p>
+<p>The way memory is allocated by MPFR should be regarded as well-specified
+only as of MPFR&nbsp;4.0.
+</p>
+<hr>
+<div class="header">
+<p>
+Previous: <a href="#Removed-Functions" accesskey="p" rel="prev">Removed Functions</a>, Up: <a href="#API-Compatibility" accesskey="u" rel="up">API Compatibility</a> &nbsp; [<a href="constant.Concept_Index.html#start" title="Index" rel="index">Index</a>]</p>
+</div></div></section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../";window.currentCrate = "gmp_mpfr_sys";</script><script src="../../../main.js"></script><script defer src="../../../search-index.js"></script></body></html>
