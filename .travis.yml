@@ -32,12 +32,8 @@ jobs:
     language: rust
     rust: stable
     script:
-    # (1) Rust Validator -> Test & Build
-    - cd validator-rust; cargo build --verbose --workspace;
-    - cargo test --verbose --workspace;
-    - cd ..
-    # (2) Rust Runtime -> Test & Build
-    - cd runtime-rust; cargo build --verbose --workspace;
+    # Rust FFI (depends on Validator and Runtime) -> Test & Build
+    - cd ffi-rust; cargo build --verbose --workspace;
     - cargo test --verbose --workspace;
     - cd ..;
 
