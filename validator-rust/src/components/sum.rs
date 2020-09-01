@@ -38,8 +38,6 @@ impl Component for proto::Sum {
         if data_property.data_type != DataType::Float && data_property.data_type != DataType::Int {
             return Err("data: atomic type must be numeric".into())
         }
-
-        data_property.num_records = Some(1);
         data_property.nature = data_property.num_records.and_then(|n| Some(Nature::Continuous(NatureContinuous {
             lower: match data_property.data_type {
                 DataType::Int => Vector1DNull::Int(data_property
@@ -56,6 +54,7 @@ impl Component for proto::Sum {
                 _ => unreachable!()
             },
         })));
+        data_property.num_records = Some(1);
         data_property.dataset_id = Some(node_id as i64);
 
         Ok(ValueProperties::Array(data_property).into())
