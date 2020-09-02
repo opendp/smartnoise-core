@@ -157,18 +157,16 @@ pub fn exponential_mechanism<T>(
 ) -> Result<T> where T: Clone, {
 
     // get vector of e^(util), then use to find probabilities
-    use rug::{float::Constant, Float, ops::Pow};
-
-    // establish rug versions of values
-    let rug_e = Float::with_val(53, Constant::Euler);
-    let rug_eps = Float::with_val(53, epsilon);
-    let rug_sens = Float::with_val(53, sensitivity);
+    macro_rules! to_rug {($v:expr) => {rug::Float::with_val(53, $v)}}
 
     // establish selection probabilities for each element
-    let e_util_vec: Vec<rug::Float> = utilities.iter()
-        .map(|x| rug_e.clone().pow(rug_eps.clone() * Float::with_val(53, x) / (2.0 * rug_sens.clone()))).collect();
-    let sum_e_util_vec: rug::Float = Float::with_val(53, Float::sum(e_util_vec.iter()));
-    let probability_vec: Vec<whitenoise_validator::Float> = e_util_vec.iter().map(|x| (x / sum_e_util_vec.clone()).to_f64() as whitenoise_validator::Float).collect();
+    let e_util_vec: Vec<rug::Float> = utilities.into_iter()
+        .map(|util| to_rug!(to_rug!(epsilon) * to_rug!(util) / (2. * to_rug!(sensitivity))).exp())
+        .collect();
+    let sum_e_util_vec = to_rug!(rug::Float::sum(e_util_vec.iter()));
+    let probability_vec: Vec<Float> = e_util_vec.into_iter()
+        .map(|x| (x / sum_e_util_vec.clone()).to_f64() as Float)
+        .collect();
 
     // sample element relative to probability
     utilities::sample_from_set(candidate_set, &probability_vec, enforce_constant_time)
