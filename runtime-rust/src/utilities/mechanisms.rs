@@ -2,6 +2,7 @@ use whitenoise_validator::errors::*;
 
 use crate::utilities::noise;
 use crate::utilities;
+use whitenoise_validator::Float;
 
 /// Returns noise drawn according to the Laplace mechanism
 ///
