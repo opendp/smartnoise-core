@@ -17,6 +17,7 @@ use whitenoise_validator::proto;
 //pub mod bin;
 pub mod cast;
 pub mod clamp;
+pub mod clustering;
 pub mod count;
 pub mod covariance;
 pub mod column_bind;
@@ -37,6 +38,7 @@ pub mod sum;
 pub mod transforms;
 pub mod union;
 pub mod variance;
+
 
 /// Evaluable component trait
 ///
