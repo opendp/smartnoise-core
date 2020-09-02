@@ -5,7 +5,7 @@
       "description": "Data for which you want the median value in each column."
     },
     "candidates": {
-      "type_value": "Jagged",
+      "type_value": "Array",
       "default_python": "None",
       "default_rust": "None",
       "description": "Set from which to compute scores for the Exponential mechanism."

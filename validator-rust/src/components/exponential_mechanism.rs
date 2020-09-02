@@ -1,3 +1,15 @@
+<<<<<<< HEAD
+=======
+use crate::errors::*;
+
+use crate::{proto, base, Warnable};
+
+use crate::components::{Component, Expandable, Sensitivity, Mechanism};
+use crate::base::{Value, SensitivitySpace, ValueProperties, DataType, ArrayProperties, NodeProperties, IndexKey};
+use crate::utilities::{prepend, get_literal};
+use crate::utilities::privacy::{privacy_usage_check};
+use itertools::Itertools;
+>>>>>>> switch exponential mechanism from Value::Jagged -> Value::Array
 use indexmap::map::IndexMap;
 use itertools::Itertools;
 
@@ -13,7 +25,7 @@ impl Component for proto::ExponentialMechanism {
     fn propagate_property(
         &self,
         privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: IndexMap<base::IndexKey, &Value>,
+        _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
         _node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
@@ -25,27 +37,27 @@ impl Component for proto::ExponentialMechanism {
         }
 
         let utilities_property = properties.get::<IndexKey>(&"utilities".into())
-            .ok_or("utilities: missing")?.jagged()
+            .ok_or("utilities: missing")?.array()
             .map_err(prepend("utilities:"))?.clone();
 
         if utilities_property.data_type != DataType::Float {
             return Err("utilities: data_type must be float".into());
         }
 
-        let candidates = get_argument(&public_arguments, "candidates")?.ref_jagged()?;
+        let candidates_property = properties.get(&IndexKey::from("candidates"))
+            .ok_or_else(|| Error::from("candidates: missing"))?.array()?;
 
-        let utilities_num_records = utilities_property.num_records()?;
-        let candidates_num_records = candidates.num_records();
-
-        if utilities_num_records.len() != candidates_num_records.len() {
-            return Err("utilities and candidates must share the same number of columns".into());
+        if utilities_property.num_records()? != candidates_property.num_records()? {
+            return Err("utilities and candidates must share the same number of records".into());
         }
-        if !utilities_num_records.iter().zip(candidates_num_records.iter()).all(|(l, r)| l == r) {
-            return Err("utilities and candidates must share the same number of rows in every column".into());
+        if utilities_property.num_columns()? != candidates_property.num_columns()? {
+            return Err("utilities and candidates must share the same number of columns".into());
         }
 
         let aggregator = utilities_property.aggregator.clone()
             .ok_or_else(|| Error::from("aggregator: missing"))?;
+
+        // TODO: check that aggregator data id matches data id
 
         // sensitivity must be computable
         let sensitivity_values = aggregator.component.compute_sensitivity(
@@ -57,7 +69,7 @@ impl Component for proto::ExponentialMechanism {
         sensitivity_values.array()?.float()?;
 
         let num_columns = utilities_property.num_columns()?;
-        let mut output_property = ArrayProperties {
+        let output_property = ArrayProperties {
             num_records: Some(1),
             num_columns: Some(num_columns),
             nullity: false,
@@ -65,15 +77,20 @@ impl Component for proto::ExponentialMechanism {
             c_stability: 1,
             aggregator: None,
             nature: None,
-            data_type: candidates.data_type(),
+            data_type: candidates_property.data_type.clone(),
             dataset_id: None,
             is_not_empty: true,
+<<<<<<< HEAD
             // TODO: preserve dimensionality through exponential mechanism
             //     All outputs become 2D, so 1D outputs are lost
             dimensionality: Some(2),
             group_id: vec![],
             naturally_ordered: true,
             sample_proportion: None
+=======
+            dimensionality: utilities_property.dimensionality.map(|v| v - 1),
+            group_id: utilities_property.group_id
+>>>>>>> switch exponential mechanism from Value::Jagged -> Value::Array
         };
 
         let privacy_usage = self.privacy_usage.iter().cloned().map(Ok)
@@ -84,8 +101,6 @@ impl Component for proto::ExponentialMechanism {
             &privacy_usage,
             output_property.num_records,
             privacy_definition.strict_parameter_checks)?;
-
-        output_property.releasable = true;
 
         Ok(Warnable(output_property.into(), warnings))
     }
@@ -109,7 +124,7 @@ impl Expandable for proto::ExponentialMechanism {
 
         // always overwrite sensitivity. This is not something a user may configure
         let utilities_properties = properties.get::<IndexKey>(&"utilities".into())
-            .ok_or("utilities: missing")?.jagged()
+            .ok_or("utilities: missing")?.array()
             .map_err(prepend("utilities:"))?.clone();
 
         let aggregator = utilities_properties.aggregator

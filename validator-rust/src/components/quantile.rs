@@ -1,3 +1,18 @@
+<<<<<<< HEAD
+=======
+use crate::errors::*;
+
+use crate::{proto, base, Warnable, Float};
+
+use crate::components::{Component, Sensitivity, Expandable};
+use crate::base::{
+    Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties,
+    DataType, IndexKey, ArrayProperties, Nature, NatureContinuous, Vector1DNull
+};
+
+use crate::utilities::prepend;
+use ndarray::prelude::*;
+>>>>>>> switch exponential mechanism from Value::Jagged -> Value::Array
 use indexmap::map::IndexMap;
 use ndarray::prelude::*;
 
@@ -11,8 +26,8 @@ impl Component for proto::Quantile {
     fn propagate_property(
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
-        public_arguments: IndexMap<base::IndexKey, &Value>,
-        properties: base::NodeProperties,
+        _public_arguments: IndexMap<base::IndexKey, &Value>,
+        mut properties: base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
         let mut data_property = properties.get::<IndexKey>(&"data".into())
@@ -28,28 +43,49 @@ impl Component for proto::Quantile {
             return Err("data: atomic type must be numeric".into());
         }
 
-        Ok(match public_arguments.get::<IndexKey>(&"candidates".into()) {
-            Some(candidates) => {
-                let candidates = candidates.ref_jagged()?;
+        Ok(match properties.remove::<IndexKey>(&"candidates".into()) {
+            Some(candidates_property) => {
+                let candidates_property: &ArrayProperties = candidates_property.array()
+                    .map_err(prepend("candidates:"))?;
 
-                if data_property.data_type != candidates.data_type() {
+                if data_property.data_type != candidates_property.data_type {
                     return Err("data_type of data must match data_type of candidates".into())
                 }
 
-                let num_columns = data_property.num_columns()?;
-                ValueProperties::Jagged(JaggedProperties {
-                    num_records: Some(candidates.num_records()),
-                    nullity: false,
+                if data_property.num_columns()? != candidates_property.num_columns()? {
+                    return Err("candidates is not column-conformable with the data".into())
+                }
+
+                // upper bound for n * max(a, 1 - a) - |(1 - a) * #z - a * (n - #z)|
+                //               = n * max(a, 1 - a) - |#z - an|
+                //              <= n * max(a, 1 - a) (because |#z - an| minimized when #z = an)
+                let utility_upper_bound = candidates_property.num_records
+                    .map(|n| n as f64 * self.alpha.max(1. - self.alpha));
+
+                ValueProperties::Array(ArrayProperties {
+                    num_records: candidates_property.num_records,
+                    num_columns: data_property.num_columns,
+                    nullity: candidates_property.nullity,
+                    releasable: data_property.releasable && candidates_property.releasable,
+                    c_stability: data_property.c_stability.clone(),
                     aggregator: Some(AggregatorProperties {
                         component: proto::component::Variant::Quantile(self.clone()),
                         properties,
                         lipschitz_constants: ndarray::Array::from_shape_vec(
-                            vec![1, num_columns as usize],
-                            (0..num_columns).map(|_| 1.).collect())?.into_dyn().into()
+                            vec![1, data_property.num_columns()? as usize],
+                            (0..data_property.num_columns()?).map(|_| 1.).collect())?.into_dyn().into()
                     }),
-                    nature: None,
+                    nature: Some(Nature::Continuous(NatureContinuous {
+                        lower: Vector1DNull::Float((0..data_property.num_columns()?)
+                            .map(|_| Some(0.)).collect()),
+                        upper: Vector1DNull::Float((0..data_property.num_columns()?)
+                            .map(|_| utility_upper_bound).collect())
+                    })),
                     data_type: DataType::Float,
-                    releasable: false
+                    dataset_id: None,
+                    is_not_empty: false,
+                    dimensionality: candidates_property.dimensionality,
+                    group_id: data_property.group_id
                 }).into()
             },
             None => {

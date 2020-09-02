@@ -1247,7 +1247,10 @@ pub struct OptimizeBinaryOperators<'a> {
     pub int: BinaryOptimizer<'a, Integer>,
 }
 
-pub fn propagate_binary_shape(left_property: &ArrayProperties, right_property: &ArrayProperties) -> Result<(i64, Option<i64>)> {
+pub fn propagate_binary_shape(
+    left_property: &ArrayProperties, right_property: &ArrayProperties
+) -> Result<(i64, Option<i64>)> {
+
     if !left_property.releasable && !right_property.releasable && left_property.group_id != right_property.group_id {
         return Err("data from separate partitions may not be mixed".into())
     }
