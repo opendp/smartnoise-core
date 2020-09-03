@@ -265,7 +265,8 @@ pub fn parse_array_properties(value: proto::ArrayProperties) -> ArrayProperties 
         dataset_id: value.dataset_id.and_then(parse_i64_null),
         is_not_empty: value.is_not_empty,
         dimensionality: value.dimensionality.and_then(parse_i64_null),
-        group_id: value.group_id.into_iter().map(parse_group_id).collect()
+        group_id: value.group_id.into_iter().map(parse_group_id).collect(),
+        naturally_ordered: value.naturally_ordered
     }
 }
 
@@ -532,7 +533,7 @@ pub fn serialize_array_properties(value: ArrayProperties) -> proto::ArrayPropert
         num_records, num_columns, nullity, releasable,
         c_stability, aggregator, nature,
         data_type, dataset_id, is_not_empty,
-        dimensionality, group_id
+        dimensionality, group_id, naturally_ordered
     } = value;
 
     proto::ArrayProperties {
@@ -565,7 +566,8 @@ pub fn serialize_array_properties(value: ArrayProperties) -> proto::ArrayPropert
         dataset_id: Some(serialize_i64_null(dataset_id)),
         is_not_empty,
         dimensionality: Some(serialize_i64_null(dimensionality)),
-        group_id: group_id.into_iter().map(serialize_group_id).collect()
+        group_id: group_id.into_iter().map(serialize_group_id).collect(),
+        naturally_ordered
     }
 }
 

@@ -72,7 +72,8 @@ impl Component for proto::ExponentialMechanism {
             // TODO: preserve dimensionality through exponential mechanism
             //     All outputs become 2D, so 1D outputs are lost
             dimensionality: Some(2),
-            group_id: vec![]
+            group_id: vec![],
+            naturally_ordered: true
         };
 
         let privacy_usage = self.privacy_usage.iter().cloned().map(Ok)

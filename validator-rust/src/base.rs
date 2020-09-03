@@ -696,7 +696,9 @@ pub struct ArrayProperties {
     /// number of axes in the array
     pub dimensionality: Option<i64>,
     /// used for tracking subpartitions
-    pub group_id: Vec<GroupId>
+    pub group_id: Vec<GroupId>,
+    /// used to determine if order of rows has changed
+    pub naturally_ordered: bool
 }
 
 

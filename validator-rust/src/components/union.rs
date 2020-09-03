@@ -70,7 +70,8 @@ impl Component for proto::Union {
                 dimensionality: Some(2),
                 group_id: get_group_id_path(array_props.iter()
                     .map(|prop| prop.group_id.clone())
-                    .collect())?
+                    .collect())?,
+                naturally_ordered: false
             })
         } else {
             ValueProperties::Partitions(PartitionsProperties { children: properties })
