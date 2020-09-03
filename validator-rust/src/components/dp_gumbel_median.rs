@@ -1,7 +1,7 @@
 use crate::errors::*;
 
 use crate::{proto, base, Warnable};
-use crate::components::{Report, Component};
+use crate::components::{Report, Component, Mechanism};
 
 use crate::base::{NodeProperties, Value, ValueProperties, DataType, IndexKey, Array};
 use crate::utilities::json::{JSONRelease, value_to_json, privacy_usage_to_json, AlgorithmInfo};
@@ -23,6 +23,8 @@ impl Component for proto::DpGumbelMedian {
         if data_property.data_type == DataType::Unknown {
             return Err("data_type must be known".into())
         }
+
+
 
         if !data_property.releasable {
             data_property.assert_is_not_aggregated()?;

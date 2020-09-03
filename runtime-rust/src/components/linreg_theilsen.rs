@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 
 use indexmap::indexmap;
-use ndarray::{Array, ArrayD, IxDyn};
+use ndarray::{Array, ArrayD, IxDyn, Axis};
 use rand::prelude::*;
 
 use whitenoise_validator::{Float, Integer, proto};
@@ -38,7 +38,7 @@ impl Evaluable for proto::DpGumbelMedian {
         let data = take_argument(&mut arguments, "data")?.array()?.float()?;
         let num_columns = get_num_columns(&data)? as usize;
         let usages = spread_privacy_usage(&self.privacy_usage, num_columns)?;
-        let epsilon = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?[0];
+        let epsilon = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
 
         let r_upper = take_argument(&mut arguments, "r_upper")?.array()?.first_float()?;
         let r_lower = take_argument(&mut arguments, "r_lower")?.array()?.first_float()?;
@@ -81,7 +81,9 @@ fn compute_intercept(x: &Vec<Float>, y: &Vec<Float>, slope: Float) -> Float {
 
 /// Compute slope between all pairs of points where defined
 ///
-pub fn compute_all_estimates(x: &ArrayD<Float>, y: &ArrayD<Float>) -> Result<(ArrayD<Float>, ArrayD<Float>)> {
+pub fn compute_all_estimates(
+    x: &ArrayD<Float>, y: &ArrayD<Float>
+) -> Result<(ArrayD<Float>, ArrayD<Float>)> {
     let n = x.len();
     let mut slopes: Vec<Float> = Vec::new(); // ArrayD::<Float>::zeros(IxDyn(&[n])) = ();
     let mut intercepts: Vec<Float> = Vec::new();
@@ -108,12 +110,13 @@ pub fn compute_all_estimates(x: &ArrayD<Float>, y: &ArrayD<Float>) -> Result<(Ar
 /// Wraps dp_med_column to call on each column in an ArrayD
 ///
 pub fn dp_med(
-    data: &ArrayD<Float>, epsilon: Float,
+    data: &ArrayD<Float>, epsilon: Vec<Float>,
     r_lower: Float, r_upper: Float,
     enforce_constant_time: bool,
 ) -> Result<ArrayD<Float>> {
     let medians = data.gencolumns().into_iter()
-        .map(|column| dp_med_column(&column.to_owned().into_dyn(), epsilon, r_lower, r_upper, enforce_constant_time))
+        .zip(epsilon.into_iter())
+        .map(|(column, epsilon)| dp_med_column(column.to_owned().into_dyn(), epsilon, r_lower, r_upper, enforce_constant_time))
         .collect::<Result<Vec<Float>>>()?;
 
     match data.ndim() {
@@ -126,22 +129,17 @@ pub fn dp_med(
 /// This follows closely the DP Median implementation from the paper, including notation
 ///
 fn dp_med_column(
-    z: &ArrayD<Float>, epsilon: Float,
+    z: ArrayD<Float>, epsilon: Float,
     r_lower: Float, r_upper: Float,
     enforce_constant_time: bool,
 ) -> Result<Float> {
-    let n = z.len();
-    let mut z_clipped = Vec::new();
-    for i in 0..n {
-        if z[i] >= r_lower {
-            if z[i] <= r_upper {
-                z_clipped.push(z[i]);
-            }
-        }
-    }
-    z_clipped.push(r_lower);
-    z_clipped.push(r_upper);
+    let mut z_clipped = z.into_dimensionality::<ndarray::Ix1>()?.into_iter()
+        .filter(|v| &r_lower <= v && v <= &r_upper)
+        .chain(vec![r_lower, r_upper])
+        .collect::<Vec<_>>();
     z_clipped.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal));
+
+    let n = z.len_of(Axis(0)) + 2;
 
     let mut max_noisy_score = f64::NEG_INFINITY;
     let mut arg_max_noisy_score: usize = 0;
@@ -151,11 +149,10 @@ fn dp_med_column(
 
     for i in 1..limit {
         let length = z_clipped[i] - z_clipped[i - 1];
-        let log_interval_length: Float = if length <= 0.0 { std::f64::NEG_INFINITY } else { length.ln() };
         let dist_from_median = (i as Float - (n as Float / 2.0)).abs().ceil();
 
         // This term makes the score *very* sensitive to changes in epsilon
-        let score = log_interval_length - (epsilon / 2.0) * dist_from_median;
+        let score = length.ln() - (epsilon / 2.0) * dist_from_median;
 
         let noise_term = noise::sample_gumbel(0.0, 1.0); // gumbel1(&rng, 0.0, 1.0);
         let noisy_score: Float = score + noise_term;
@@ -166,7 +163,6 @@ fn dp_med_column(
         }
     }
 
-    // TODO: potential index out-of-bounds
     let left = z_clipped[arg_max_noisy_score - 1];
     let right = z_clipped[arg_max_noisy_score];
     let median = noise::sample_uniform(left, right, enforce_constant_time)?;
@@ -177,13 +173,14 @@ fn dp_med_column(
 ///
 pub fn dp_theil_sen(
     x: &ArrayD<Float>, y: &ArrayD<Float>,
-    epsilon: Float, r_lower: Float, r_upper: Float,
+    epsilon: Float,
+    r_lower: Float, r_upper: Float,
     enforce_constant_time: bool,
 ) -> Result<(Float, Float)> {
     let (slopes, intercepts) = compute_all_estimates(x, y)?;
 
-    let slope = dp_med_column(&slopes, epsilon, r_lower, r_upper, enforce_constant_time)?;
-    let intercept = dp_med_column(&intercepts, epsilon, r_lower, r_upper, enforce_constant_time)?;
+    let slope = dp_med_column(slopes, epsilon, r_lower, r_upper, enforce_constant_time)?;
+    let intercept = dp_med_column(intercepts, epsilon, r_lower, r_upper, enforce_constant_time)?;
 
     Ok((slope, intercept))
 }
@@ -191,7 +188,10 @@ pub fn dp_theil_sen(
 /// Implementation from paper
 /// Separate data into two bins, match members of each bin to form pairs
 /// Note: k is number of trials here
-pub fn theil_sen_k_match(x: &ArrayD<Float>, y: &ArrayD<Float>, k: Integer) -> Result<(ArrayD<Float>, ArrayD<Float>)> {
+pub fn theil_sen_k_match(
+    x: &ArrayD<Float>, y: &ArrayD<Float>, k: Integer
+) -> Result<(ArrayD<Float>, ArrayD<Float>)> {
+
     if x.len() != y.len() {
         return Err("x and y must be the same length".into())
     }
@@ -232,7 +232,13 @@ pub fn theil_sen_k_match(x: &ArrayD<Float>, y: &ArrayD<Float>, k: Integer) -> Re
 
 /// Randomly select k points from x and y (k < n) and then perform DP-TheilSen.
 /// Useful for larger datasets where calculating on n^2 points is less than ideal.
-pub fn dp_theil_sen_k_subset(x: &ArrayD<Float>, y: &ArrayD<Float>, n: Integer, k: Integer, epsilon: Float, r_lower: Float, r_upper: Float, enforce_constant_time: bool) -> Result<(Float, Float)> {
+pub fn dp_theil_sen_k_subset(
+    x: &ArrayD<Float>, y: &ArrayD<Float>,
+    n: Integer, k: Integer, epsilon: Float,
+    r_lower: Float, r_upper: Float,
+    enforce_constant_time: bool
+) -> Result<(Float, Float)> {
+
     let indices: Vec<usize> = permute_range(n, k).iter().map(|x| *x as usize).collect::<Vec<usize>>();
     let mut x_kmatch = ArrayD::<f64>::zeros(IxDyn(&[n as usize, 1, 1]));
     let mut y_kmatch = ArrayD::<f64>::zeros(IxDyn(&[n as usize, 1, 1]));
@@ -322,7 +328,7 @@ mod tests {
         let estimates = array![-1.25, -2.0, -4.75].into_dyn();
         let true_median = 5.0;
         let median = dp_med_column(
-            &estimates, 1e-6 as Float,
+            estimates, 1e-6 as Float,
             0.0, 10.0, true).unwrap();
         assert!((true_median - median).abs() / true_median < 1.0);
     }
@@ -331,7 +337,7 @@ mod tests {
     fn dp_median_column_test() {
         let z = array![0.0, 2.50, 5.0, 7.50, 10.0].into_dyn();
         let true_median = 5.0;
-        let median = dp_med_column(&z, 1e-6 as Float, 0.0, 10.0, true).unwrap();
+        let median = dp_med_column(z, 1e-6 as Float, 0.0, 10.0, true).unwrap();
         assert!((true_median - median).abs() / true_median < 1.0);
     }
 
@@ -369,8 +375,8 @@ mod tests {
         assert_eq!(dp_slope_candidates.len() as Integer, k * (n / 2));
         assert_eq!(dp_intercept_candidates.len() as Integer, k * (n / 2));
 
-        let dp_slope = dp_med_column(&dp_slope_candidates, epsilon, 0.0, 2.0, true).unwrap();
-        let dp_intercept = dp_med_column(&dp_intercept_candidates, epsilon, 0.0, 2.0, true).unwrap();
+        let dp_slope = dp_med_column(dp_slope_candidates, epsilon, 0.0, 2.0, true).unwrap();
+        let dp_intercept = dp_med_column(dp_intercept_candidates, epsilon, 0.0, 2.0, true).unwrap();
         // println!("Theil-Sen Slope Estimate: {}, {}", slope, intercept);
         // println!("DP Theil-Sen Slope Estimate: {}, {}", dp_slope, dp_intercept);
         println!("Theil-Sen Estimate Difference: {}, {}", (dp_slope - slope).abs(), (dp_intercept - intercept).abs());

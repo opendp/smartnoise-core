@@ -35,6 +35,9 @@ impl Component for proto::TheilSen {
         data_property_x.assert_is_not_empty()?;
         data_property_y.assert_is_not_empty()?;
 
+        data_property_x.assert_not_null()?;
+        data_property_y.assert_not_null()?;
+
 
         if data_property_x.data_type != DataType::Float {
             return Err("data_x: atomic type must be float".into());
@@ -48,9 +51,15 @@ impl Component for proto::TheilSen {
             return Err("data_x and data_y: must be same length".into());
         }
 
-        let num_records = match self.implementation.to_lowercase().as_str() {
-            "theil-sen" => data_property_x.num_records()?.pow(2),
-            "theil-sen-k-match" => ((self.k as i64) * data_property_x.num_records()? / 2) as i64,
+        let (k, num_records) = match self.implementation.to_lowercase().as_str() {
+            "theil-sen" => (
+                data_property_x.num_records()? / 2,
+                (data_property_x.num_records()? / 2 * 2).pow(2)
+            ),
+            "theil-sen-k-match" => (
+                self.k,
+                ((self.k as i64) * data_property_x.num_records()? / 2) as i64
+            ),
              _ => return Err("Invalid implementation passed. \
                      Valid values are theil-sen and theil-sen-k-match".into())
         };
@@ -58,9 +67,9 @@ impl Component for proto::TheilSen {
         let output_properties = ArrayProperties {
             num_records: Some(num_records),
             num_columns: Some(2),
-            nullity: false,
+            nullity: data_property_x.nullity || data_property_y.nullity,
             releasable: data_property_x.releasable && data_property_y.releasable,
-            c_stability: data_property_x.c_stability.iter().zip(data_property_y.c_stability.iter()).map(|(l, r)| l * r).collect(),
+            c_stability: data_property_x.c_stability.iter().zip(data_property_y.c_stability.iter()).map(|(l, r)| l * r * k).collect(),
             aggregator: None,
             nature: None,
             data_type: DataType::Float,
