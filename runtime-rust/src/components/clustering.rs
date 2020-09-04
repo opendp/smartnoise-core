@@ -4,14 +4,25 @@ use whitenoise_validator::{Integer, Float};
 use crate::utilities::noise::sample_uniform_mpfr;
 
 #[derive(Debug)]
+#[derive(Clone)]
 struct Cluster {
     center: ArrayD<rug::Float>,
     members: Vec<ArrayD<Float>>
 }
 
 impl Cluster {
+
     pub fn add_member(&mut self, data: &ArrayD<Float>) {
         &self.members.push(data.to_owned().into_dyn());
+    }
+
+    pub fn remove_member(&mut self, index: usize) -> ArrayD<Float> {
+        self.members.remove(index)
+    }
+
+    /// Take average of all members, set to new center
+    pub fn update_center(&mut self) {
+
     }
 }
 
@@ -64,18 +75,37 @@ fn assign_initial_clusters(data: &ArrayD<Float>, clusters: &mut Vec<Cluster>) {
     }
 }
 
-// fn update_centroids(cluster_map: HashMap<&ArrayD<Float>, Integer>, centroids: Vec<Vec<rug::Float>>) -> Vec<Vec<rug::Float>> {
-// }
+/// TODO: make this more efficient?
+fn update_clusters(clusters: &Vec<Cluster>) {
+    let clusters = clusters.clone();
+    for (cluster_index, current_cluster) in clusters.iter().enumerate() {
+        for (member_index, member) in current_cluster.members.iter().enumerate() {
+            let new_cluster_index = find_closest_centroid(&member, &clusters) as usize;
+            if new_cluster_index != cluster_index {
+                let mut new_cluster: Cluster = clusters.get(new_cluster_index).unwrap().clone();
+                let removed_member = current_cluster.to_owned().remove_member(member_index).into_dyn();
+                new_cluster.add_member(&removed_member);
+            }
+        }
+    }
+}
 
-pub fn kmeans(data: &ArrayD<Float>, k: Integer, r_min: Float, r_max: Float) {
-    let _clusters = generate_clusters(data, k, r_min, r_max);
+pub fn kmeans(data: &ArrayD<Float>, k: Integer, r_min: Float, r_max: Float, niters: Integer) {
+    let mut clusters = generate_clusters(data, k, r_min, r_max).clone();
+    assign_initial_clusters(&data, &mut clusters);
+    for _ in 0..niters-1 {
+        for mut c in clusters.to_owned() {
+            c.update_center();
+        }
+        update_clusters(&clusters);
+    }
 }
 
 #[cfg(test)]
 pub mod test_clustering {
 
     use ndarray::{arr2, arr1};
-    use crate::components::clustering::{find_closest_centroid, generate_clusters, assign_initial_clusters, array_magnitude};
+    use crate::components::clustering::{find_closest_centroid, generate_clusters, assign_initial_clusters, array_magnitude, update_clusters};
     use whitenoise_validator::Integer;
     // use rug::Float;
 
@@ -135,6 +165,20 @@ pub mod test_clustering {
             // assert_eq!(c.members.len(), 1);
         }
         println!("\n");
+    }
+
+    #[test]
+    pub fn test_update_center() {
+        let data = arr2(&[[0., 0., 0.], [1., 1., 1.], [10., 10., 10.]]).into_dyn();
+        let k = 3;
+        let r_min = 0.0;
+        let r_max = 10.0;
+        let mut clusters = generate_clusters(&data, k, r_min, r_max);
+        assign_initial_clusters(&data, &mut clusters);
+        for mut c in clusters {
+            c.update_center();
+        }
+        assert_eq!(1, 1);
     }
 
 }
