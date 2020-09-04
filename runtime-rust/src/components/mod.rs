@@ -21,6 +21,7 @@ pub mod count;
 pub mod covariance;
 pub mod column_bind;
 pub mod digitize;
+pub mod dp_gumbel_median;
 pub mod filter;
 pub mod histogram;
 pub mod impute;

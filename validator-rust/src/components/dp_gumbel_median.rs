@@ -1,7 +1,7 @@
 use crate::errors::*;
 
 use crate::{proto, base, Warnable};
-use crate::components::{Report, Component, Mechanism};
+use crate::components::{Report, Component};
 
 use crate::base::{NodeProperties, Value, ValueProperties, DataType, IndexKey, Array};
 use crate::utilities::json::{JSONRelease, value_to_json, privacy_usage_to_json, AlgorithmInfo};
