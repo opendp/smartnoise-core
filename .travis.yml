@@ -32,12 +32,8 @@ jobs:
     language: rust
     rust: stable
     script:
-    # (1) Rust Validator -> Test & Build
-    - cd validator-rust; cargo build --verbose --workspace;
-    - cargo test --verbose --workspace;
-    - cd ..
-    # (2) Rust Runtime -> Test & Build
-    - cd runtime-rust; cargo build --verbose --workspace;
+    # Rust FFI (depends on Validator and Runtime) -> Test & Build
+    - cd ffi-rust; cargo build --verbose --workspace;
     - cargo test --verbose --workspace;
     - cd ..;
 
@@ -49,7 +45,7 @@ jobs:
     # switch to master after initial version
     #- if [ "$TRAVIS_BRANCH" == "ms_readme" ]; then
     - if [ "$TRAVIS_BRANCH" == "master" ]; then
-        bash build_docs.sh;
+        bash scripts/build_docs.sh;
       fi;
     # -------------------------------------------
     # Deploy the Rust documentation to
