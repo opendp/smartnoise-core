@@ -1,12 +1,12 @@
 use ndarray::{ArrayD, Array};
 use ndarray;
 use whitenoise_validator::{Integer, Float};
-use crate::utilities::noise::sample_uniform_mpfr;
+use crate::utilities::noise::sample_uniform;
 
 #[derive(Debug)]
 #[derive(Clone)]
-struct Cluster {
-    center: ArrayD<rug::Float>,
+pub struct Cluster {
+    center: ArrayD<Float>,
     members: Vec<ArrayD<Float>>
 }
 
@@ -31,9 +31,9 @@ fn generate_clusters(data: &ArrayD<Float>, k: Integer, r_min: Float, r_max: Floa
     // let mut centroids: Vec<Vec<rug::Float>> = Vec::new();
     let mut clusters: Vec<Cluster> = Vec::new();
     for _ in 0..k {
-        let mut centroid: Vec<rug::Float> = Vec::new();
+        let mut centroid: Vec<Float> = Vec::new();
         for _ in data.gencolumns() {
-            let sample = sample_uniform_mpfr(r_min, r_max).unwrap();
+            let sample: Float = sample_uniform(r_min, r_max, true).unwrap();
             centroid.push(sample);
         }
         let new_cluster = Cluster{ center: Array::from(centroid).into_dyn(), members: vec![] };
@@ -56,7 +56,7 @@ fn find_closest_centroid(data_point: &ArrayD<Float>, clusters: &Vec<Cluster>) ->
     let mut min_distance = Float::INFINITY;
     let mut cluster: Integer = -1;
     for i in 0..clusters.len() {
-        let current_distance = (&clusters[i].center - data_point).len() as Float;
+        let current_distance = array_magnitude(&(&clusters[i].center - data_point)) as Float;
         if current_distance < min_distance {
             cluster = i as Integer;
             min_distance = current_distance;
@@ -90,7 +90,7 @@ fn update_clusters(clusters: &Vec<Cluster>) {
     }
 }
 
-pub fn kmeans(data: &ArrayD<Float>, k: Integer, r_min: Float, r_max: Float, niters: Integer) {
+pub fn kmeans(data: &ArrayD<Float>, k: Integer, r_min: Float, r_max: Float, niters: Integer) -> Vec<Cluster> {
     let mut clusters = generate_clusters(data, k, r_min, r_max).clone();
     assign_initial_clusters(&data, &mut clusters);
     for _ in 0..niters-1 {
@@ -99,13 +99,14 @@ pub fn kmeans(data: &ArrayD<Float>, k: Integer, r_min: Float, r_max: Float, nite
         }
         update_clusters(&clusters);
     }
+    clusters
 }
 
 #[cfg(test)]
 pub mod test_clustering {
 
     use ndarray::{arr2, arr1};
-    use crate::components::clustering::{find_closest_centroid, generate_clusters, assign_initial_clusters, array_magnitude, update_clusters};
+    use crate::components::clustering::{find_closest_centroid, generate_clusters, assign_initial_clusters, array_magnitude, update_clusters, kmeans};
     use whitenoise_validator::Integer;
     // use rug::Float;
 
@@ -179,6 +180,53 @@ pub mod test_clustering {
             c.update_center();
         }
         assert_eq!(1, 1);
+    }
+
+    #[test]
+    pub fn test_assign_update_clusters() {
+        let data = arr2(&[[0., 0., 0.], [1., 1., 1.], [10., 10., 10.]]).into_dyn();
+        let k = 3;
+        let r_min = 0.0;
+        let r_max = 10.0;
+        let mut clusters = generate_clusters(&data, k, r_min, r_max);
+
+        assign_initial_clusters(&data, &mut clusters);
+        update_clusters(&clusters);
+        println!("test_update_clusters");
+        for c in &clusters {
+            println!("Center: {} \t Member Count: {}", c.center, c.members.len());
+            // assert_eq!(c.members.len(), 1);
+        }
+        println!("\n");
+    }
+
+    #[test]
+    pub fn test_kmeans() {
+        let data = arr2(&[
+            [0., 0., 0.],
+            [1., 1., 1.],
+            [5., 5., 5.],
+            [10., 10., 10.],
+            [100., 100., 100.],
+        ]).into_dyn();
+        let k = 3;
+        let r_min = 0.0;
+        let r_max = 10.0;
+        let niters = 1000;
+        let clusters = kmeans(&data, k, r_min, r_max, niters);
+        println!("---------------");
+        println!("- test_kmeans -");
+        println!("---------------");
+        for (cluster_index, c) in clusters.iter().enumerate() {
+            println!("Cluster {}", cluster_index);
+            println!("Center: {} \t Member Count: {}", c.center, c.members.len());
+            for (i, m) in c.members.iter().enumerate() {
+                println!("Member {}: {:?}", i, m);
+            }
+            // assert_eq!(c.members.len(), 1);
+            println!();
+        }
+
     }
 
 }
