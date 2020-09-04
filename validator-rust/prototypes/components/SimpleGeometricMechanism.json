@@ -5,10 +5,14 @@
       "description": "Result to be released privately via the Geometric mechanism."
     },
     "lower": {
-      "type_value": "Array"
+      "type_value": "Array",
+      "default_python": "None",
+      "description": "Lower bound of the statistic to be privatized."
     },
     "upper": {
-      "type_value": "Array"
+      "type_value": "Array",
+      "default_python": "None",
+      "description": "Upper bound of the statistic to be privatized."
     }
   },
   "id": "SimpleGeometricMechanism",

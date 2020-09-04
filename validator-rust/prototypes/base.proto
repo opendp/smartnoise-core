@@ -137,6 +137,8 @@ message ArrayProperties {
         /// categories of each column
         NatureCategorical categorical = 101;
     }
+
+    bool naturally_ordered = 12;
 }
 
 message NatureContinuous {
