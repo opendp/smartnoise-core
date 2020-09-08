@@ -19,22 +19,32 @@ impl Evaluable for proto::Quantile {
         let data = take_argument(&mut arguments, "data")?.array()?;
 
         Ok(match arguments.remove::<IndexKey>(&"candidates".into()) {
-            Some(candidates) => match (candidates.array()?, data) {
-                (Array::Float(candidates), Array::Float(data)) =>
-                    Value::Array(Array::Float(quantile_utilities(
-                        candidates.mapv(|v| n64(v as f64)),
-                        data.mapv(|v| n64(v as f64)),
-                        self.alpha as Float)?)),
-                (Array::Int(candidates), Array::Int(data)) =>
-                    Value::Array(Array::Float(quantile_utilities(
-                        candidates,
-                        data,
-                        self.alpha as Float)?)),
-                _ => return Err("data must be either f64 or i64".into())
+            Some(candidates) => {
+                let lower = arguments.remove(&IndexKey::from("lower"));
+                let upper = arguments.remove(&IndexKey::from("upper"));
+
+                match (candidates.array()?, data) {
+                    (Array::Float(candidates), Array::Float(data)) =>
+                        Value::Array(Array::Float(quantile_utilities_arrayd(
+                            candidates.mapv(|v| n64(v as f64)),
+                            data.mapv(|v| n64(v as f64)),
+                            lower.map(|v| v.array()?.first_float().map(n64)).transpose()?,
+                            upper.map(|v| v.array()?.first_float().map(n64)).transpose()?,
+                            self.alpha as Float)?)),
+                    (Array::Int(candidates), Array::Int(data)) =>
+                        Value::Array(Array::Float(quantile_utilities_arrayd(
+                            candidates,
+                            data,
+                            lower.map(|v| v.array()?.first_int()).transpose()?,
+                            upper.map(|v| v.array()?.first_int()).transpose()?,
+                            self.alpha as Float)?)),
+                    _ => return Err("data must be either f64 or i64".into())
+                }
             },
             None => match data {
                 Array::Float(data) =>
-                    quantile(data.mapv(|v| n64(v as f64)), self.alpha, &self.interpolation)?.mapv(|v| v.raw() as Float).into(),
+                    quantile(data.mapv(|v| n64(v as f64)), self.alpha, &self.interpolation)?
+                        .mapv(|v| v.raw() as Float).into(),
                 Array::Int(data) =>
                     quantile(data, self.alpha, &self.interpolation)?.into(),
                 _ => return Err("data must be either f64 or i64".into())
@@ -85,54 +95,72 @@ pub fn quantile<T: FromPrimitive + Ord + Clone + Sub<Output=T> + Mul<Output=T> +
 }
 
 
-pub fn quantile_utilities<T: Ord + Clone + Copy>(
-    candidates: ArrayD<T>, data: ArrayD<T>,
+pub fn quantile_utilities_arrayd<T: Ord + Clone + Copy>(
+    candidates: ArrayD<T>, data: ArrayD<T>, lower: Option<T>, upper: Option<T>,
     alpha: Float
 ) -> Result<ArrayD<Float>> {
-    let n = data.len_of(Axis(0)) as Float;
+
+    Ok(ndarray::Array::from_shape_vec(candidates.shape(), candidates.gencolumns().into_iter()
+        .zip(data.gencolumns().into_iter())
+        .map(|(candidates, column)|
+            quantile_utilities(candidates.to_vec(), column.to_vec(), lower, upper, alpha))
+        .collect::<Result<Vec<Vec<_>>>>()?.into_iter()
+        .flatten().collect::<Vec<_>>())?.into_dyn())
+}
+
+pub fn quantile_utilities<T: Ord + Clone + Copy>(
+    mut candidates: Vec<T>, mut data: Vec<T>,
+    lower: Option<T>, upper: Option<T>,
+    alpha: Float
+) -> Result<Vec<Float>> {
+    match (lower, upper) {
+        (Some(l), Some(u)) => {
+            if l > u { return Err("lower must not be greater than upper".into()) }
+            candidates.push(l);
+            candidates.push(u);
+            data.iter_mut().for_each(|v| *v = l.max(*v).min(u));
+        }
+        _ => ()
+    }
+
+    let n = data.len() as Float;
     let constant = alpha.max(1. - alpha);
+    let mut candidates = candidates.into_iter().enumerate().collect::<Vec<(usize, T)>>();
+    candidates.sort_unstable_by_key(|v| v.1);
+    data.sort_unstable();
 
-    Ok(ndarray::Array::from_shape_vec(candidates.shape(), data.gencolumns().into_iter()
-        .zip(candidates.gencolumns().into_iter())
-        .map(|(column, candidates)| {
-            let mut column = column.to_vec();
-            let mut candidates = candidates.into_iter().enumerate().collect::<Vec<(usize, &T)>>();
-            candidates.sort_unstable_by_key(|v| v.1);
-            column.sort_unstable();
+    let mut offsets = Vec::new();
+    let mut index = 0;
+    data.into_iter().enumerate().for_each(|(offset, v)| {
+        while index < candidates.len() && v > candidates[index].1 {
+            offsets.push(offset as Float);
+            index += 1;
+        }
+    });
 
-            let mut offsets = Vec::new();
-            let mut index = 0;
-            column.into_iter().enumerate().for_each(|(offset, v)| {
-                while index < candidates.len() && &v > candidates[index].1 {
-                    offsets.push(offset as Float);
-                    index += 1;
-                }
-            });
+    // ensure offsets and candidates have the same length by appending offsets for candidates greater than the maximum value of the dataset
+    offsets.extend((0..candidates.len() - offsets.len()).map(|_| n));
 
-            // ensure offsets and candidates have the same length by appending offsets for candidates greater than the maximum value of the dataset
-            offsets.extend((0..candidates.len() - offsets.len()).map(|_| n));
+    let utilities = offsets.into_iter()
+        .map(|offset| constant * n - (offset - alpha * n).abs())
+        .collect::<Vec<Float>>();
 
-            let utilities = offsets.into_iter()
-                .map(|offset| constant * n - (offset - alpha * n).abs())
-                .collect::<Vec<Float>>();
-
-            // order the utilities by the order of the candidates before they were sorted
-            candidates.into_iter().map(|(idx, _)| utilities[idx]).collect::<Vec<_>>()
-        }).flatten()
-        .collect::<Vec<Float>>())?.into_dyn())
+    // order the utilities by the order of the candidates before they were sorted
+    Ok(candidates.into_iter().map(|(idx, _)| utilities[idx]).collect::<Vec<_>>())
 }
 
 #[cfg(test)]
 pub mod test_quantile {
-    use crate::components::quantile::quantile_utilities;
+    use crate::components::quantile::quantile_utilities_arrayd;
     use ndarray::arr1;
     use noisy_float::types::n64;
 
     #[test]
     fn utility() {
-        let utilities = quantile_utilities(
+        let utilities = quantile_utilities_arrayd(
             arr1(&[-10., -5., 0., 2., 5., 7., 10., 12.]).into_dyn().mapv(n64),
             arr1(&[0., 10., 5., 7., 6., 4., 3., 8., 7., 6., 5., 5.]).into_dyn().mapv(n64),
+            None, None,
             0.5
         ).unwrap();
 

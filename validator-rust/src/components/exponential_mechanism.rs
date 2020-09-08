@@ -1,15 +1,3 @@
-<<<<<<< HEAD
-=======
-use crate::errors::*;
-
-use crate::{proto, base, Warnable};
-
-use crate::components::{Component, Expandable, Sensitivity, Mechanism};
-use crate::base::{Value, SensitivitySpace, ValueProperties, DataType, ArrayProperties, NodeProperties, IndexKey};
-use crate::utilities::{prepend, get_literal};
-use crate::utilities::privacy::{privacy_usage_check};
-use itertools::Itertools;
->>>>>>> switch exponential mechanism from Value::Jagged -> Value::Array
 use indexmap::map::IndexMap;
 use itertools::Itertools;
 
@@ -27,7 +15,7 @@ impl Component for proto::ExponentialMechanism {
         privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32,
+        node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
         let privacy_definition = privacy_definition.as_ref()
             .ok_or_else(|| "privacy_definition must be defined")?;
@@ -36,7 +24,7 @@ impl Component for proto::ExponentialMechanism {
             return Err("group size must be greater than zero".into());
         }
 
-        let utilities_property = properties.get::<IndexKey>(&"utilities".into())
+        let utilities_property: ArrayProperties = properties.get::<IndexKey>(&"utilities".into())
             .ok_or("utilities: missing")?.array()
             .map_err(prepend("utilities:"))?.clone();
 
@@ -79,18 +67,12 @@ impl Component for proto::ExponentialMechanism {
             nature: None,
             data_type: candidates_property.data_type.clone(),
             dataset_id: None,
+            node_id: node_id as i64,
             is_not_empty: true,
-<<<<<<< HEAD
-            // TODO: preserve dimensionality through exponential mechanism
-            //     All outputs become 2D, so 1D outputs are lost
-            dimensionality: Some(2),
-            group_id: vec![],
+            dimensionality: utilities_property.dimensionality.map(|v| v - 1),
+            group_id: utilities_property.group_id,
             naturally_ordered: true,
             sample_proportion: None
-=======
-            dimensionality: utilities_property.dimensionality.map(|v| v - 1),
-            group_id: utilities_property.group_id
->>>>>>> switch exponential mechanism from Value::Jagged -> Value::Array
         };
 
         let privacy_usage = self.privacy_usage.iter().cloned().map(Ok)
@@ -139,7 +121,7 @@ impl Expandable for proto::ExponentialMechanism {
         let id_sensitivity = maximum_id;
         let (patch_node, release) = get_literal(sensitivity, component.submission)?;
         expansion.computation_graph.insert(id_sensitivity, patch_node);
-        expansion.properties.insert(id_sensitivity, infer_property(&release.value, None)?);
+        expansion.properties.insert(id_sensitivity, infer_property(&release.value, None, id_sensitivity)?);
         expansion.releases.insert(id_sensitivity, release);
 
         // noising

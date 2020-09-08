@@ -64,7 +64,7 @@ impl Component for proto::Add {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
         let left_property: ArrayProperties = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
@@ -132,6 +132,7 @@ impl Component for proto::Add {
             group_id: propagate_binary_group_id(&left_property, &right_property)?,
             data_type: left_property.data_type,
             dataset_id: left_property.dataset_id,
+            node_id: node_id as i64,
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality),
@@ -204,7 +205,7 @@ impl Component for proto::Divide {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
         let left_property: ArrayProperties = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
@@ -338,6 +339,7 @@ impl Component for proto::Divide {
             group_id: propagate_binary_group_id(&left_property, &right_property)?,
             data_type: left_property.data_type,
             dataset_id: left_property.dataset_id,
+            node_id: node_id as i64,
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality),
@@ -354,7 +356,7 @@ impl Component for proto::Equal {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
         let left_property: ArrayProperties = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
@@ -392,6 +394,7 @@ impl Component for proto::Equal {
             aggregator: None,
             data_type: DataType::Bool,
             dataset_id: left_property.dataset_id,
+            node_id: node_id as i64,
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality.max(right_property.dimensionality),
             group_id: propagate_binary_group_id(&left_property, &right_property)?,
@@ -409,7 +412,7 @@ impl Component for proto::GreaterThan {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
         let left_property: ArrayProperties = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
@@ -453,6 +456,7 @@ impl Component for proto::GreaterThan {
             aggregator: None,
             data_type: DataType::Bool,
             dataset_id: left_property.dataset_id,
+            node_id: node_id as i64,
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality),
@@ -471,7 +475,7 @@ impl Component for proto::LessThan {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
         let left_property: ArrayProperties = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
@@ -515,6 +519,7 @@ impl Component for proto::LessThan {
             aggregator: None,
             data_type: DataType::Bool,
             dataset_id: left_property.dataset_id,
+            node_id: node_id as i64,
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality),
@@ -672,7 +677,7 @@ impl Component for proto::Multiply {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
         let left_property: ArrayProperties = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
@@ -758,6 +763,7 @@ impl Component for proto::Multiply {
             num_records,
             aggregator: None,
             dataset_id: left_property.dataset_id,
+            node_id: node_id as i64,
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality),
@@ -970,7 +976,7 @@ impl Component for proto::RowMax {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
         let left_property: ArrayProperties = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
@@ -1038,6 +1044,7 @@ impl Component for proto::RowMax {
             group_id: propagate_binary_group_id(&left_property, &right_property)?,
             data_type: left_property.data_type,
             dataset_id: left_property.dataset_id,
+            node_id: node_id as i64,
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality),
@@ -1054,7 +1061,7 @@ impl Component for proto::RowMin {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
         let left_property: ArrayProperties = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
@@ -1122,6 +1129,7 @@ impl Component for proto::RowMin {
             group_id: propagate_binary_group_id(&left_property, &right_property)?,
             data_type: left_property.data_type,
             dataset_id: left_property.dataset_id,
+            node_id: node_id as i64,
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality),
@@ -1138,7 +1146,7 @@ impl Component for proto::Subtract {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
         let left_property: ArrayProperties = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
@@ -1199,6 +1207,7 @@ impl Component for proto::Subtract {
             group_id: propagate_binary_group_id(&left_property, &right_property)?,
             data_type: left_property.data_type,
             dataset_id: left_property.dataset_id,
+            node_id: node_id as i64,
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality),

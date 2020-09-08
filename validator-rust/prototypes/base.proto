@@ -138,10 +138,14 @@ message ArrayProperties {
         NatureCategorical categorical = 101;
     }
 
+    // true if row ordering has not changed
     bool naturally_ordered = 12;
 
     // proportion of records this array contains sampled from the original dataset
     F64Null sample_proportion = 13;
+
+    // useful to reference an intermediate calculation
+    uint32 node_id = 14;
 }
 
 message NatureContinuous {

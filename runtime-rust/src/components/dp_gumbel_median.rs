@@ -1,6 +1,5 @@
 use std::cmp::Ordering;
 
-use ndarray::{Array, ArrayD};
 use rand::seq::SliceRandom;
 
 use whitenoise_validator::{Float, Integer, proto};
@@ -11,7 +10,7 @@ use whitenoise_validator::utilities::take_argument;
 
 use crate::components::Evaluable;
 use crate::NodeArguments;
-use crate::utilities::{get_num_columns, noise};
+use crate::utilities::{noise};
 
 impl Evaluable for proto::DpGumbelMedian {
     fn evaluate(&self, privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
@@ -84,17 +83,18 @@ fn dp_gumbel_median(
 
 #[cfg(test)]
 pub mod test {
+    use ndarray::{array, ArrayD};
+
     use whitenoise_validator::{Float, Integer};
+    use whitenoise_validator::errors::*;
 
     use crate::components::dp_gumbel_median::{dp_gumbel_median, permute_range};
-    use crate::components::linreg_theilsen::{theil_sen_transform_k_match, theil_sen_transform};
+    use crate::components::linreg_theilsen::{theil_sen_transform, theil_sen_transform_k_match};
+    use crate::components::linreg_theilsen::tests::{public_theil_sen, test_dataset};
     use crate::utilities::noise;
-    use whitenoise_validator::errors::*;
-    use ndarray::{ArrayD, array};
-    use crate::components::linreg_theilsen::tests::{test_dataset, public_theil_sen};
 
     /// Randomly select k points from x and y (k < n) and then perform DP-TheilSen.
-    /// Useful for larger datasets where calculating on n^2 points is less than ideal.
+        /// Useful for larger datasets where calculating on n^2 points is less than ideal.
     pub fn dp_theil_sen_k_subset(
         x: &ArrayD<Float>, y: &ArrayD<Float>,
         n: Integer, k: Integer, epsilon: Float,

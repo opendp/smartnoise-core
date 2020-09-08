@@ -56,6 +56,7 @@ mod variance;
 use crate::base::{IndexKey, Value, NodeProperties, SensitivitySpace, ValueProperties};
 use crate::{proto, Warnable, base};
 use crate::utilities::json::{JSONRelease};
+use crate::utilities::set_node_id;
 use indexmap::map::IndexMap;
 
 /// Universal Component trait
@@ -244,8 +245,12 @@ impl Component for proto::Component {
                 {
                     $(
                        if let proto::component::Variant::$variant(x) = variant {
-                            return x.propagate_property(privacy_definition, public_arguments, properties, node_id)
-                                .chain_err(|| format!("node specification {:?}:", variant))
+                            let Warnable(mut property, warnings) = x.propagate_property(
+                                privacy_definition, public_arguments, properties, node_id)
+                                .chain_err(|| format!("node specification {:?}:", variant))?;
+                            set_node_id(&mut property, node_id);
+
+                            return Ok(Warnable(property, warnings));
                        }
                     )*
                 }

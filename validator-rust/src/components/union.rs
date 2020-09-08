@@ -66,6 +66,7 @@ impl Component for proto::Union {
                 data_type: get_common_value(&array_props.iter().map(|v| v.data_type.clone()).collect())
                     .ok_or_else(|| "data_types must be equivalent when merging")?,
                 dataset_id: Some(node_id as i64),
+                node_id: node_id as i64,
                 is_not_empty: array_props.iter().any(|v| v.is_not_empty),
                 dimensionality: Some(2),
                 group_id: get_group_id_path(array_props.iter()

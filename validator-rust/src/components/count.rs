@@ -52,11 +52,8 @@ impl Component for proto::Count {
         };
 
         // save a snapshot of the state when aggregating
-        data_property.aggregator = Some(AggregatorProperties {
-            component: proto::component::Variant::Count(self.clone()),
-            properties,
-            lipschitz_constants: ndarray::Array::from_shape_vec(vec![1, 1], vec![1.0])?.into_dyn().into()
-        });
+        data_property.aggregator = Some(AggregatorProperties::new(
+            proto::component::Variant::Count(self.clone()), properties, 1));
         data_property.c_stability = c_stability;
 
         let data_num_records = data_property.num_records.map(|v| v as Integer);

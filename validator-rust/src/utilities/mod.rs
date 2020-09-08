@@ -105,7 +105,7 @@ pub fn propagate_properties(
         .map(|(node_id, release_node)|
             Ok((*node_id, infer_property(
                 &release_node.value,
-                properties.get(node_id))?)))
+                properties.get(node_id), *node_id)?)))
         .collect::<Result<HashMap<u32, ValueProperties>>>()?);
 
 
@@ -186,7 +186,7 @@ pub fn propagate_properties(
             // println!("inferring property");
             Ok(Warnable(infer_property(
                 &release_node.unwrap().value,
-                properties.get(&node_id))?, vec![]))
+                properties.get(&node_id), node_id)?, vec![]))
         } else {
             // if node has not been evaluated, propagate properties over it
             computation_graph.get(&node_id).unwrap()
@@ -302,6 +302,20 @@ pub fn get_sinks(computation_graph: &HashMap<u32, proto::Component>) -> HashSet<
     node_ids
 }
 
+
+/// Sets the node id of properties
+///
+pub fn set_node_id(property: &mut ValueProperties, node_id: u32) -> () {
+    match property {
+        ValueProperties::Array(array) => array.node_id = node_id as i64,
+        ValueProperties::Dataframe(dataframe) => dataframe.children.iter_mut()
+            .for_each(|(_k, v)| set_node_id(v, node_id)),
+        ValueProperties::Partitions(partitions) => partitions.children.iter_mut()
+            .for_each(|(_k, v)| set_node_id(v, node_id)),
+        ValueProperties::Jagged(_) => (),
+        ValueProperties::Function(_) => ()
+    };
+}
 
 /// Given an array, conduct well-formedness checks and broadcast
 ///
@@ -534,7 +548,7 @@ pub fn expand_mechanism(
     let id_sensitivity = maximum_id;
     let (patch_node, release) = get_literal(sensitivity_value.clone(), component.submission)?;
     expansion.computation_graph.insert(id_sensitivity, patch_node);
-    expansion.properties.insert(id_sensitivity, infer_property(&release.value, None)?);
+    expansion.properties.insert(id_sensitivity, infer_property(&release.value, None, id_sensitivity)?);
     expansion.releases.insert(id_sensitivity, release);
 
     // spread privacy usage over each column

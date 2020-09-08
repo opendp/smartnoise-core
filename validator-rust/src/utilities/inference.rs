@@ -213,7 +213,7 @@ pub fn infer_nullity(value: &Value) -> Result<bool> {
 }
 
 pub fn infer_property(
-    value: &Value, prior_property: Option<&ValueProperties>
+    value: &Value, prior_property: Option<&ValueProperties>, node_id: u32
 ) -> Result<ValueProperties> {
 
     Ok(match value {
@@ -239,6 +239,7 @@ pub fn infer_property(
                     Array::Str(_) => DataType::Str,
                 },
                 dataset_id: prior_prop_arr.and_then(|p| p.dataset_id),
+                node_id: node_id as i64,
                 is_not_empty: array.num_records()? != 0,
                 dimensionality: Some(array.shape().len() as i64),
                 group_id: prior_prop_arr
@@ -254,7 +255,7 @@ pub fn infer_property(
                     children: dataframe.iter()
                         .zip(prior_property.children.values())
                         .map(|((name, value), prop)|
-                            infer_property(value, Some(prop))
+                            infer_property(value, Some(prop), node_id)
                                 .map(|v| (name.clone(), v)))
                         .collect::<Result<IndexMap<IndexKey, ValueProperties>>>()?,
                 }.into(),
@@ -262,7 +263,7 @@ pub fn infer_property(
             None =>
                 DataframeProperties {
                     children: dataframe.iter()
-                        .map(|(name, value)| infer_property(value, None)
+                        .map(|(name, value)| infer_property(value, None, node_id)
                             .map(|v| (name.clone(), v)))
                         .collect::<Result<IndexMap<IndexKey, ValueProperties>>>()?,
                 }.into()
@@ -273,7 +274,7 @@ pub fn infer_property(
                     children: partitions.iter()
                         .zip(prior_property.children.values())
                         .map(|((name, value), prop)|
-                            infer_property(value, Some(prop))
+                            infer_property(value, Some(prop), node_id)
                                 .map(|v| (name.clone(), v)))
                         .collect::<Result<IndexMap<IndexKey, ValueProperties>>>()?,
                 }.into(),
@@ -281,7 +282,7 @@ pub fn infer_property(
             None =>
                 PartitionsProperties {
                     children: partitions.iter()
-                        .map(|(name, value)| infer_property(value, None)
+                        .map(|(name, value)| infer_property(value, None, node_id)
                             .map(|v| (name.clone(), v)))
                         .collect::<Result<IndexMap<IndexKey, ValueProperties>>>()?,
                 }.into()

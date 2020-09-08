@@ -44,7 +44,9 @@ pub fn select_properties(properties: &ArrayProperties, index: usize) -> Result<V
     Ok(ValueProperties::Array(properties))
 }
 
-pub fn stack_properties(all_properties: &[ValueProperties], dimensionality: Option<i64>) -> Result<ValueProperties> {
+pub fn stack_properties(
+    all_properties: &[ValueProperties], dimensionality: Option<i64>, node_id: u32
+) -> Result<ValueProperties> {
     let all_properties = all_properties.iter()
         .map(|property| Ok(property.array()?.clone()))
         .collect::<Result<Vec<ArrayProperties>>>()?;
@@ -102,6 +104,7 @@ pub fn stack_properties(all_properties: &[ValueProperties], dimensionality: Opti
         nature,
         data_type,
         dataset_id,
+        node_id: node_id as i64,
         is_not_empty: all_properties.iter().all(|prop| prop.is_not_empty),
         dimensionality,
         group_id,

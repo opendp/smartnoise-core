@@ -269,6 +269,7 @@ pub fn parse_array_properties(value: proto::ArrayProperties) -> ArrayProperties 
         }),
         data_type: parse_data_type(proto::DataType::from_i32(value.data_type).unwrap()),
         dataset_id: value.dataset_id.and_then(parse_i64_null),
+        node_id: value.node_id as i64,
         is_not_empty: value.is_not_empty,
         dimensionality: value.dimensionality.and_then(parse_i64_null),
         group_id: value.group_id.into_iter().map(parse_group_id).collect(),
@@ -541,7 +542,7 @@ pub fn serialize_array_properties(value: ArrayProperties) -> proto::ArrayPropert
         c_stability, aggregator, nature,
         data_type, dataset_id, is_not_empty,
         dimensionality, group_id,
-        naturally_ordered, sample_proportion
+        naturally_ordered, sample_proportion, node_id
     } = value;
 
     proto::ArrayProperties {
@@ -577,6 +578,7 @@ pub fn serialize_array_properties(value: ArrayProperties) -> proto::ArrayPropert
         group_id: group_id.into_iter().map(serialize_group_id).collect(),
         naturally_ordered,
         sample_proportion: Some(serialize_f64_null(sample_proportion.map(f64::from)))
+        node_id: node_id as u32
     }
 }
 

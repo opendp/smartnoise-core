@@ -697,6 +697,8 @@ pub struct ArrayProperties {
     /// index of last Materialize or Filter node, where dataset was created
     /// used to determine if arrays are conformable even when N is not known
     pub dataset_id: Option<i64>,
+    /// node index of the value
+    pub node_id: i64,
     /// true if the number of rows is known to not be length zero
     pub is_not_empty: bool,
     /// number of axes in the array
@@ -884,7 +886,23 @@ pub enum DataType {
 pub struct AggregatorProperties {
     pub component: proto::component::Variant,
     pub properties: IndexMap<IndexKey, ValueProperties>,
-    pub lipschitz_constants: Value,
+    pub lipschitz_constants: Value
+}
+
+impl AggregatorProperties {
+    pub(crate) fn new(
+        component: proto::component::Variant,
+        properties: base::NodeProperties,
+        num_columns: i64
+    ) -> AggregatorProperties {
+        AggregatorProperties {
+            component,
+            properties,
+            lipschitz_constants: ndarray::Array::from_shape_vec(
+                vec![1, num_columns as usize],
+                (0..num_columns).map(|_| 1.).collect()).unwrap().into_dyn().into()
+        }
+    }
 }
 
 #[derive(Clone, Debug)]

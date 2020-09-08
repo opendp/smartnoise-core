@@ -29,6 +29,7 @@ impl Component for proto::Materialize {
                     nature: None,
                     data_type: DataType::Str,
                     dataset_id: Some(node_id as i64),
+                    node_id: node_id as i64,
                     // this is a library-wide assumption - that datasets initially have more than zero rows
                     is_not_empty: true,
                     dimensionality: Some(1),

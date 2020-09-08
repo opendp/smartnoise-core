@@ -288,7 +288,7 @@ impl Expandable for proto::Resize {
                 let (patch_node, release) = get_literal(
                     Value::Array(data_property.lower()?), component.submission)?;
                 expansion.computation_graph.insert(id_lower, patch_node);
-                expansion.properties.insert(id_lower, infer_property(&release.value, None)?);
+                expansion.properties.insert(id_lower, infer_property(&release.value, None, id_lower)?);
                 expansion.releases.insert(id_lower, release);
                 component.insert_argument(&"lower".into(), id_lower);
             }
@@ -298,7 +298,7 @@ impl Expandable for proto::Resize {
                 let (patch_node, release) = get_literal(
                     Value::Array(data_property.upper()?), component.submission)?;
                 expansion.computation_graph.insert(id_upper, patch_node);
-                expansion.properties.insert(id_upper, infer_property(&release.value, None)?);
+                expansion.properties.insert(id_upper, infer_property(&release.value, None, id_upper)?);
                 expansion.releases.insert(id_upper, release);
                 component.insert_argument(&"upper".into(), id_upper);
             }

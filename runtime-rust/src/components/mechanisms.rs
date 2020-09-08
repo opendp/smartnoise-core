@@ -158,8 +158,6 @@ impl Evaluable for proto::ExponentialMechanism {
 
         let utilities = take_argument(&mut arguments, "utilities")?.array()?.float()?;
 
-        println!("utilities {:?}", utilities);
-
         macro_rules! apply_exponential {
             ($candidates:ident) => {
                 {
