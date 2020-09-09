@@ -6,6 +6,23 @@ patch = 1
 
 [paths]
 # locations of repositories to update
-core = "/Users/michael/whitenoise/python/whitenoise-core"
-python = "/Users/michael/whitenoise/python"
-R = "/Users/michael/whitenoise/R"
+#
+# Path to the repository "whitenoise-core-python"
+#   - e.g. "/Users/username/github/repos/whitenoise-core-python"
+#
+python = "/Users/michael/whitenoise/python"   
+#python = "/Users/ramanprasad/Documents/github-rp/whitenoise-core" 
+#
+#
+# Path to the repository "whitenoise-core"
+#   - e.g. "/Users/username/github/repos/whitenoise-core"
+#
+core = "/Users/michael/whitenoise/python/whitenoise-core" 
+#core = "/Users/ramanprasad/Documents/github-rp/whitenoise-core" 
+#
+# Path to the repository "whitenoise-core-r"
+#  ** Currently not in use **
+#
+#R = "/Users/michael/whitenoise/R"
+
+
