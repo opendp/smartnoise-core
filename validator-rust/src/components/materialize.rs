@@ -32,7 +32,8 @@ impl Component for proto::Materialize {
                     // this is a library-wide assumption - that datasets initially have more than zero rows
                     is_not_empty: true,
                     dimensionality: Some(1),
-                    group_id: vec![]
+                    group_id: vec![],
+                    naturally_ordered: true
                 }))).collect(),
         }).into())
     }
