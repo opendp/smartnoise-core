@@ -12,6 +12,7 @@ use crate::base::{IndexKey, Value, NatureContinuous};
 use num::{CheckedAdd, CheckedSub, Zero};
 use indexmap::map::IndexMap;
 use std::ops::{Mul, Div};
+use std::cmp::Ordering;
 
 
 impl Component for proto::Abs {
@@ -249,47 +250,13 @@ impl Component for proto::Divide {
         fn optimize<T: PartialOrd + Div<Output=T> + Zero + Copy>(
             a: T, c: T, d: T, f: T
         ) -> Result<(Option<T>, Option<T>)> {
-
-            let zero = T::zero();
-            // maximize {b * d | a <= b <= c && d <= e <= f}
-            let max = match (a, c, d, f) {
-
-                // if either interval is a point
-                (a, c, d, f) if a == c || d == f =>
-                    Some(c / f),
-
-                // if both intervals are not points
-                (a, c, d, f) if a > zero && a < c && ((f == zero && d < zero) && (d < f && f < zero)) =>
-                    Some(a / d),
-                (a, c, d, f) if d > zero && d < f && c > zero && a < c =>
-                    Some(c / d),
-                (a, c, d, f) if (a < c || c > zero) && d < f && f < zero && (a <= zero || c <= zero) =>
-                    Some(a / f),
-                (a, c, d, f) if f > zero && a < c && c <= zero && (d == zero || (d >= zero && d < f)) =>
-                    Some(c / f),
-
-                _ => return Err("potential division by zero".into())
-            };
-
-            // minimize {b * d | a <= b <= c && d <= e <= f}
-            let min = match (a, c, d, f) {
-                // if either interval is a point
-                (a, c, d, f) if a == c || d == f =>
-                    Some(a / d),
-
-                // if both intervals are not points
-                (a, c, d, f) if zero < d && d < f && (a < zero || c <= zero) && (a < c && c > zero) =>
-                    Some(a / d),
-                (a, c, d, f) if a < c && c <= zero && ((f == zero && d < zero) || (d < f && f < zero)) =>
-                    Some(c / d),
-                (a, c, d, f) if (d == zero || (zero < d && d < f)) && zero < a && a < c && f > zero =>
-                    Some(a / f),
-                (a, c, d, f) if f < zero && d < f && c > zero && a < c =>
-                    Some(c / f),
-
-                _ => return Err("potential division by zero".into())
-            };
-            Ok((min, max))
+            let corners = vec![a / f, a / d, c / f, c / d];
+            Ok((
+                corners.iter().min_by(|x, y|
+                    x.partial_cmp(y).unwrap_or(Ordering::Equal)).cloned(),
+                corners.iter().max_by(|x, y|
+                    x.partial_cmp(y).unwrap_or(Ordering::Equal)).cloned()
+            ))
         }
 
         fn optimize_wrapper<T: PartialOrd + Div<Output=T> + Zero + Copy>(
@@ -694,55 +661,13 @@ impl Component for proto::Multiply {
         fn optimize<T: PartialOrd + Mul<Output=T> + Zero + Copy>(
             a: T, c: T, d: T, f: T
         ) -> Result<(Option<T>, Option<T>)> {
-
-            let zero = T::zero();
-            // maximize {b * d | a <= b <= c && d <= e <= f}
-            let max = match (a, c, d, f) {
-
-                // if either interval is a point
-                (a, c, d, f) if a == c || d == f =>
-                    Some(c * f),
-
-                // if both intervals are not points
-                (a, c, d, f) if (d < zero && ((c > zero && ((f == zero && a < zero) || (a * d > c * f && f > zero && d + f >= zero))) || (a < c && f >= zero && c <= zero)))
-                    || (a < c && c <= zero && ((d < f && f < zero) || (f > zero && d + f < zero)))
-                    || (c > zero && ((d < f && f < zero && a <= zero) || (f > zero && d + f < zero && a * d <= c * f))) =>
-                    Some(a * d),
-                (a, c, d, f) if zero <= d && d < f && c <= zero && a < c =>
-                    Some(c * d),
-                (a, c, d, f) if f < zero && d < f && zero < a && a < c =>
-                    Some(a * f),
-                (a, c, d, f) if c > zero && f > zero && a < c
-                    && ((a * d >= c * f && d + f >= zero && d < zero) || (d < f && d >= zero) || (c * f < a * d && d + f < zero)) =>
-                    Some(c * f),
-
-                // Prior cases should cover all
-                _ => None
-            };
-
-            // minimize {b * d | a <= b <= c && d <= e <= f}
-            let min = match (a, c, d, f) {
-                // if either interval is a point
-                (a, c, d, f) if a == c || d == f =>
-                    Some(a * d),
-
-                // if both intervals are not points
-                (a, c, d, f) if d > zero && d < f && a > zero && a < c =>
-                    Some(a * d),
-                (a, c, d, f) if c > zero && a < c && ((f > zero && a * f > c * d && d < zero)
-                    || (d < f && f <= zero)) =>
-                    Some(c * d),
-                (a, c, d, f) if f > zero && ((c > zero && ((a < zero && (d == zero || (d >= zero && d < f)
-                    || (d <= zero && a * f <= c * d))) || (d < zero && a * f <= c * d)))
-                    || (a < c && c <= zero && (d < f || d <= zero))) =>
-                    Some(a * f),
-                (a, c, d, f) if f <= zero && d < f && c <= zero && a < c =>
-                    Some(c * f),
-
-                // Prior cases should cover all
-                _ => None
-            };
-            Ok((min, max))
+            let corners = vec![a * d, a * f, c * d, c * f];
+            Ok((
+                corners.iter().min_by(|x, y|
+                    x.partial_cmp(y).unwrap_or(Ordering::Equal)).cloned(),
+                corners.iter().max_by(|x, y|
+                    x.partial_cmp(y).unwrap_or(Ordering::Equal)).cloned()
+            ))
         }
 
         fn optimize_wrapper<T: PartialOrd + Mul<Output=T> + Zero + Copy>(
